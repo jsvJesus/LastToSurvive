@@ -1,0 +1,6 @@
+RmlUi 6.2 binaries for win64.
+
+https://github.com/mikke89/RmlUi
+
+Built using Visual Studio 17 2022 (MSVC 19.44.35222.0) on 2026-01-11 22:13:44 +0100 (run 20902150728).
+Commit id: 2230d1a6e8e0848ed87a5761e2a5160b2a175ba4

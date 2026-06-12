@@ -9,10 +9,15 @@
 !/api/
 !/sql/
 !/server/
+!/External/
+
+# Keep only RmlUI source package from External
+/External/*
+!/External/RmlUI/
+!/External/RmlUI/**
 
 # Explicitly exclude root runtime/build folder
 /bin/
-/External/
 
 # Visual Studio / Rider
 .vs/
@@ -56,6 +61,21 @@ GeneratedFiles/
 *.map
 *.res
 *.tmp
+
+# RmlUI packaged binaries/build output
+/External/RmlUI/Bin-Dynamic/
+/External/RmlUI/Bin-Static/
+/External/RmlUI/**/[Bb]in/
+/External/RmlUI/**/[Oo]bj/
+/External/RmlUI/**/[Dd]ebug/
+/External/RmlUI/**/[Rr]elease/
+/External/RmlUI/**/*.dll
+/External/RmlUI/**/*.lib
+/External/RmlUI/**/*.pdb
+/External/RmlUI/**/*.exe
+/External/RmlUI/**/*.ilk
+/External/RmlUI/**/*.exp
+/External/RmlUI/**/*.map
 
 # Crash/debug/runtime junk
 *.dmp
