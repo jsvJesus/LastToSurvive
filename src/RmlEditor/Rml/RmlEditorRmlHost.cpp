@@ -2,9 +2,286 @@
 
 #include "../App/RmlEditorLog.h"
 
+#include <commdlg.h>
 #include <windowsx.h>
 
 #include <algorithm>
+#include <filesystem>
+#include <sstream>
+
+namespace
+{
+	std::string EscapeRmlText(const std::string& Text)
+	{
+		std::string Result;
+		Result.reserve(Text.size());
+
+		for (const char Character : Text)
+		{
+			switch (Character)
+			{
+			case '&':
+				Result += "&amp;";
+				break;
+
+			case '<':
+				Result += "&lt;";
+				break;
+
+			case '>':
+				Result += "&gt;";
+				break;
+
+			case '"':
+				Result += "&quot;";
+				break;
+
+			case '\'':
+				Result += "&#39;";
+				break;
+
+			case '\t':
+				Result += "    ";
+				break;
+
+			case '\r':
+				break;
+
+			default:
+				Result.push_back(Character);
+				break;
+			}
+		}
+
+		return Result;
+	}
+
+	std::string EscapeRmlAttribute(const std::string& Text)
+	{
+		return EscapeRmlText(Text);
+	}
+
+	std::string BuildLineNumbers(const std::string& Text)
+	{
+		int Lines = 1;
+
+		for (const char Character : Text)
+		{
+			if (Character == '\n')
+				++Lines;
+		}
+
+		std::ostringstream Stream;
+
+		for (int Line = 1; Line <= Lines; ++Line)
+		{
+			if (Line > 1)
+				Stream << "<br/>";
+
+			Stream << Line;
+		}
+
+		return Stream.str();
+	}
+
+	std::string BuildSourceRml(const std::string& Text)
+	{
+		if (Text.empty())
+			return "<span class=\"code_dim\">No source loaded.</span>";
+
+		std::string Escaped = EscapeRmlText(Text);
+		std::string Result;
+		Result.reserve(Escaped.size() + 64);
+
+		for (const char Character : Escaped)
+		{
+			if (Character == '\n')
+				Result += "<br/>";
+			else if (Character == ' ')
+				Result += "&#160;";
+			else
+				Result.push_back(Character);
+		}
+
+		return Result;
+	}
+
+	std::wstring FileNameOnly(const std::wstring& Path)
+	{
+		return std::filesystem::path(Path).filename().wstring();
+	}
+
+	std::string FileNameOnlyUtf8(const std::wstring& Path)
+	{
+		return RmlDocumentSession::WideToUtf8(FileNameOnly(Path));
+	}
+
+	void SetElementText(
+		Rml::ElementDocument* Document,
+		const char* Id,
+		const std::string& Text
+	)
+	{
+		if (!Document || !Id)
+			return;
+
+		if (Rml::Element* Element = Document->GetElementById(Id))
+			Element->SetInnerRML(EscapeRmlText(Text));
+	}
+
+	void SetElementRml(
+		Rml::ElementDocument* Document,
+		const char* Id,
+		const std::string& Rml
+	)
+	{
+		if (!Document || !Id)
+			return;
+
+		if (Rml::Element* Element = Document->GetElementById(Id))
+			Element->SetInnerRML(Rml);
+	}
+
+	void SetElementDisplay(
+		Rml::ElementDocument* Document,
+		const char* Id,
+		const char* Display
+	)
+	{
+		if (!Document || !Id || !Display)
+			return;
+
+		if (Rml::Element* Element = Document->GetElementById(Id))
+			Element->SetProperty("display", Display);
+	}
+
+	void AppendTreeItem(
+		std::ostringstream& Stream,
+		const char* IconClass,
+		const std::string& Name,
+		bool Selected
+	)
+	{
+		Stream
+			<< "<div class=\"tree_item"
+			<< (Selected ? " selected" : "")
+			<< "\"><span class=\""
+			<< IconClass
+			<< "\"></span><span>"
+			<< EscapeRmlText(Name)
+			<< "</span></div>";
+	}
+
+	void AppendTreeGroupStart(
+		std::ostringstream& Stream,
+		const std::string& Title
+	)
+	{
+		Stream
+			<< "<div class=\"tree_group\">"
+			<< "<div class=\"tree_group_title\">"
+			<< "<span class=\"tree_arrow\">v</span>"
+			<< "<span class=\"tree_folder\"></span><span>"
+			<< EscapeRmlText(Title)
+			<< "</span></div>";
+	}
+
+	void AppendTreeGroupEnd(std::ostringstream& Stream)
+	{
+		Stream << "</div>";
+	}
+
+	std::string BuildFileTreeRml(
+		const RmlDocumentSession& Session
+	)
+	{
+		if (!Session.HasDocument())
+		{
+			return
+				"<div class=\"tree_group\">"
+				"<div class=\"tree_item selected\">"
+				"<span class=\"tree_file\"></span>"
+				"<span>No document opened</span>"
+				"</div>"
+				"</div>";
+		}
+
+		std::ostringstream Stream;
+
+		AppendTreeGroupStart(Stream, "UI");
+		AppendTreeItem(
+			Stream,
+			"tree_file",
+			FileNameOnlyUtf8(Session.GetDocumentPath()),
+			true
+		);
+
+		for (const std::wstring& StylePath : Session.GetStyleSheetPaths())
+		{
+			AppendTreeItem(
+				Stream,
+				"tree_file",
+				FileNameOnlyUtf8(StylePath),
+				false
+			);
+		}
+
+		AppendTreeGroupEnd(Stream);
+
+		if (!Session.GetImagePaths().empty())
+		{
+			AppendTreeGroupStart(Stream, "Images");
+
+			for (const std::wstring& ImagePath : Session.GetImagePaths())
+			{
+				AppendTreeItem(
+					Stream,
+					"tree_image",
+					FileNameOnlyUtf8(ImagePath),
+					false
+				);
+			}
+
+			AppendTreeGroupEnd(Stream);
+		}
+
+		if (!Session.GetFontPaths().empty())
+		{
+			AppendTreeGroupStart(Stream, "Fonts");
+
+			for (const std::wstring& FontPath : Session.GetFontPaths())
+			{
+				AppendTreeItem(
+					Stream,
+					"tree_file",
+					FileNameOnlyUtf8(FontPath),
+					false
+				);
+			}
+
+			AppendTreeGroupEnd(Stream);
+		}
+
+		if (!Session.GetIncludePaths().empty())
+		{
+			AppendTreeGroupStart(Stream, "Includes");
+
+			for (const std::wstring& IncludePath : Session.GetIncludePaths())
+			{
+				AppendTreeItem(
+					Stream,
+					"tree_file",
+					FileNameOnlyUtf8(IncludePath),
+					false
+				);
+			}
+
+			AppendTreeGroupEnd(Stream);
+		}
+
+		return Stream.str();
+	}
+}
 
 RmlEditorRmlHost::RmlEditorRmlHost() = default;
 
@@ -119,7 +396,7 @@ bool RmlEditorRmlHost::Initialize(
 
 	PreviewContext = Rml::CreateContext(
 		"RmlEditor.PreviewContext",
-		Rml::Vector2i(1280, 720)
+		Rml::Vector2i(1920, 1080)
 	);
 
 	if (!PreviewContext)
@@ -134,6 +411,20 @@ bool RmlEditorRmlHost::Initialize(
 
 	EditorContext->EnableMouseCursor(true);
 	PreviewContext->EnableMouseCursor(false);
+
+	if (!PreviewController.Initialize(
+		PreviewContext,
+		FileInterface.get(),
+		RenderInterface.get()
+	))
+	{
+		RmlEditorLog::Write(
+			"[RmlEditor] Failed to initialize preview controller"
+		);
+
+		Shutdown();
+		return false;
+	}
 
 	Initialized = true;
 
@@ -206,6 +497,8 @@ bool RmlEditorRmlHost::LoadEditorShell()
 	}
 
 	EditorDocument->Show();
+	AttachShellController();
+	UpdateEditorShellForCurrentDocument();
 
 	RmlEditorLog::Write(
 		"[RmlEditor] EditorShell.rml loaded"
@@ -214,10 +507,34 @@ bool RmlEditorRmlHost::LoadEditorShell()
 	return true;
 }
 
+void RmlEditorRmlHost::AttachShellController()
+{
+	ShellController.SetOpenCallback(
+		[this]()
+		{
+			OpenDocumentFromDialog();
+		}
+	);
+
+	ShellController.SetReloadCallback(
+		[this]()
+		{
+			ReloadDocument();
+		}
+	);
+
+	ShellController.Attach(EditorDocument);
+}
+
 void RmlEditorRmlHost::Shutdown()
 {
 	Initialized = false;
 	MouseTrackingEnabled = false;
+	MouseInPreview = false;
+	MouseCapturedByPreview = false;
+
+	ShellController.Detach();
+	PreviewController.Shutdown();
 
 	if (EditorContext && EditorDocument)
 	{
@@ -317,8 +634,8 @@ void RmlEditorRmlHost::Update(float DeltaSeconds)
 	if (EditorContext)
 		EditorContext->Update();
 
-	if (PreviewContext)
-		PreviewContext->Update();
+	UpdatePreviewViewport();
+	PreviewController.Update();
 }
 
 void RmlEditorRmlHost::Render()
@@ -336,12 +653,246 @@ void RmlEditorRmlHost::Render()
 	);
 
 	EditorContext->Render();
+	PreviewController.Render(PreviewViewport);
 
 	// PreviewContext существует отдельно.
 	// Его вывод в центральный viewport будет добавлен
 	// на следующем этапе через RmlEditorViewport.
 
 	RenderInterface->EndFrame();
+}
+
+void RmlEditorRmlHost::UpdatePreviewViewport()
+{
+	if (!EditorDocument)
+	{
+		PreviewViewport.Clear();
+		return;
+	}
+
+	PreviewViewport.SetLogicalSize(1920, 1080);
+	PreviewViewport.UpdateFromElement(
+		EditorDocument->GetElementById("preview_frame")
+	);
+}
+
+std::wstring RmlEditorRmlHost::GetOpenDialogInitialDirectory(
+	const std::wstring& DataRoot
+)
+{
+	return std::filesystem::path(DataRoot)
+		.append(L"Rml")
+		.wstring();
+}
+
+void RmlEditorRmlHost::OpenDocumentFromDialog()
+{
+	wchar_t FileName[MAX_PATH] = {};
+	const std::wstring InitialDirectory =
+		GetOpenDialogInitialDirectory(DataRoot);
+
+	OPENFILENAMEW OpenFileName{};
+	OpenFileName.lStructSize = sizeof(OpenFileName);
+	OpenFileName.hwndOwner = WindowHandle;
+	OpenFileName.lpstrFilter =
+		L"RML documents (*.rml)\0*.rml\0All files (*.*)\0*.*\0";
+	OpenFileName.lpstrFile = FileName;
+	OpenFileName.nMaxFile = static_cast<DWORD>(_countof(FileName));
+	OpenFileName.lpstrInitialDir = InitialDirectory.c_str();
+	OpenFileName.Flags =
+		OFN_FILEMUSTEXIST |
+		OFN_PATHMUSTEXIST |
+		OFN_NOCHANGEDIR;
+	OpenFileName.lpstrDefExt = L"rml";
+
+	if (!GetOpenFileNameW(&OpenFileName))
+	{
+		const DWORD DialogError = CommDlgExtendedError();
+
+		if (DialogError != 0)
+		{
+			RmlEditorLog::Write(
+				"[RmlEditor] Open dialog failed: %lu",
+				DialogError
+			);
+		}
+
+		return;
+	}
+
+	OpenDocument(FileName);
+}
+
+bool RmlEditorRmlHost::OpenDocument(
+	const std::wstring& FilePath
+)
+{
+	if (!PreviewController.OpenDocument(FilePath))
+	{
+		UpdateEditorShellStatus(
+			"Open failed: " + PreviewController.GetLastError()
+		);
+
+		return false;
+	}
+
+	UpdateEditorShellForCurrentDocument();
+	return true;
+}
+
+void RmlEditorRmlHost::ReloadDocument()
+{
+	if (!PreviewController.HasDocument())
+	{
+		UpdateEditorShellStatus("No document to reload.");
+		return;
+	}
+
+	if (!PreviewController.ReloadDocument())
+	{
+		UpdateEditorShellStatus(
+			"Reload failed: " + PreviewController.GetLastError()
+		);
+
+		return;
+	}
+
+	UpdateEditorShellForCurrentDocument();
+}
+
+bool RmlEditorRmlHost::ExecuteShellCommandAt(
+	int MouseX,
+	int MouseY
+)
+{
+	if (!EditorContext)
+		return false;
+
+	Rml::Element* Element =
+		EditorContext->GetElementAtPoint(
+			Rml::Vector2f(
+				static_cast<float>(MouseX),
+				static_cast<float>(MouseY)
+			)
+		);
+
+	while (Element)
+	{
+		const Rml::String& Id = Element->GetId();
+
+		if (Id == "menu_file" ||
+			Id == "toolbar_open" ||
+			Id == "preview_open_button")
+		{
+			OpenDocumentFromDialog();
+			return true;
+		}
+
+		if (Id == "menu_reload" ||
+			Id == "toolbar_reload")
+		{
+			ReloadDocument();
+			return true;
+		}
+
+		Element = Element->GetParentNode();
+	}
+
+	return false;
+}
+
+void RmlEditorRmlHost::UpdateEditorShellStatus(
+	const std::string& StatusText
+)
+{
+	SetElementText(EditorDocument, "window_caption", StatusText);
+	SetElementText(EditorDocument, "preview_empty_description", StatusText);
+	SetElementText(EditorDocument, "rml_save_status", "Read only");
+	SetElementText(EditorDocument, "rcss_save_status", "Read only");
+}
+
+void RmlEditorRmlHost::UpdateEditorShellForCurrentDocument()
+{
+	if (!EditorDocument)
+		return;
+
+	const RmlDocumentSession& Session =
+		PreviewController.GetSession();
+
+	if (!Session.HasDocument())
+	{
+		SetWindowTextW(
+			WindowHandle,
+			L"WarZ RML Editor"
+		);
+
+		SetElementText(
+			EditorDocument,
+			"window_caption",
+			"No document opened"
+		);
+
+		SetElementDisplay(
+			EditorDocument,
+			"preview_empty",
+			"flex"
+		);
+
+		SetElementRml(
+			EditorDocument,
+			"file_tree",
+			BuildFileTreeRml(Session)
+		);
+
+		return;
+	}
+
+	const std::wstring WindowTitle =
+		L"WarZ RML Editor - " + Session.GetFileName();
+
+	SetWindowTextW(WindowHandle, WindowTitle.c_str());
+
+	const std::string FileName =
+		RmlDocumentSession::WideToUtf8(Session.GetFileName());
+
+	SetElementText(EditorDocument, "window_caption", FileName);
+
+	SetElementDisplay(EditorDocument, "preview_empty", "none");
+
+	SetElementRml(
+		EditorDocument,
+		"file_tree",
+		BuildFileTreeRml(Session)
+	);
+
+	SetElementRml(
+		EditorDocument,
+		"rml_line_numbers",
+		BuildLineNumbers(Session.GetRmlSource())
+	);
+
+	SetElementRml(
+		EditorDocument,
+		"rml_code",
+		BuildSourceRml(Session.GetRmlSource())
+	);
+
+	SetElementRml(
+		EditorDocument,
+		"rcss_line_numbers",
+		BuildLineNumbers(Session.GetRcssSource())
+	);
+
+	SetElementRml(
+		EditorDocument,
+		"rcss_code",
+		BuildSourceRml(Session.GetRcssSource())
+	);
+
+	SetElementText(EditorDocument, "rml_cursor_status", "Line 1, Col 1");
+	SetElementText(EditorDocument, "rcss_cursor_status", "Line 1, Col 1");
+	SetElementText(EditorDocument, "rml_save_status", "Read only");
+	SetElementText(EditorDocument, "rcss_save_status", "Read only");
 }
 
 void RmlEditorRmlHost::OnDeviceLost()
@@ -541,6 +1092,18 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 	if (!Initialized || !EditorContext)
 		return false;
 
+	if ((Message == WM_SYSKEYDOWN || Message == WM_SYSKEYUP) &&
+		WParam == VK_TAB &&
+		(GetKeyState(VK_MENU) & 0x8000))
+	{
+		return false;
+	}
+
+	const bool PreviewInputAvailable =
+		PreviewController.HasDocument() &&
+		PreviewContext != nullptr &&
+		PreviewViewport.IsValid();
+
 	switch (Message)
 	{
 	case WM_MOUSEMOVE:
@@ -550,11 +1113,41 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 		const int MouseX = GET_X_LPARAM(LParam);
 		const int MouseY = GET_Y_LPARAM(LParam);
 
-		EditorContext->ProcessMouseMove(
-			MouseX,
-			MouseY,
-			GetKeyModifiers()
-		);
+		if (PreviewInputAvailable &&
+			(MouseCapturedByPreview ||
+				PreviewViewport.ContainsScreenPoint(MouseX, MouseY)))
+		{
+			if (!MouseInPreview)
+				EditorContext->ProcessMouseLeave();
+
+			MouseInPreview = true;
+
+			const Rml::Vector2i PreviewPoint =
+				PreviewController.ScreenToPreview(
+					PreviewViewport,
+					MouseX,
+					MouseY
+				);
+
+			PreviewContext->ProcessMouseMove(
+				PreviewPoint.x,
+				PreviewPoint.y,
+				GetKeyModifiers()
+			);
+		}
+		else
+		{
+			if (MouseInPreview && PreviewContext)
+				PreviewContext->ProcessMouseLeave();
+
+			MouseInPreview = false;
+
+			EditorContext->ProcessMouseMove(
+				MouseX,
+				MouseY,
+				GetKeyModifiers()
+			);
+		}
 
 		return true;
 	}
@@ -562,6 +1155,12 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 	case WM_MOUSELEAVE:
 	{
 		MouseTrackingEnabled = false;
+		MouseInPreview = false;
+		MouseCapturedByPreview = false;
+
+		if (PreviewContext)
+			PreviewContext->ProcessMouseLeave();
+
 		EditorContext->ProcessMouseLeave();
 		return true;
 	}
@@ -569,13 +1168,55 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDBLCLK:
+	case WM_MBUTTONDBLCLK:
 	{
+		const int MouseX = GET_X_LPARAM(LParam);
+		const int MouseY = GET_Y_LPARAM(LParam);
+
+		if ((!PreviewInputAvailable ||
+				!PreviewViewport.ContainsScreenPoint(MouseX, MouseY)) &&
+			ExecuteShellCommandAt(MouseX, MouseY))
+		{
+			return true;
+		}
+
 		SetCapture(Window);
 
-		EditorContext->ProcessMouseButtonDown(
-			TranslateMouseButton(Message),
-			GetKeyModifiers()
-		);
+		if (PreviewInputAvailable &&
+			PreviewViewport.ContainsScreenPoint(MouseX, MouseY))
+		{
+			MouseCapturedByPreview = true;
+			MouseInPreview = true;
+
+			const Rml::Vector2i PreviewPoint =
+				PreviewController.ScreenToPreview(
+					PreviewViewport,
+					MouseX,
+					MouseY
+				);
+
+			PreviewContext->ProcessMouseMove(
+				PreviewPoint.x,
+				PreviewPoint.y,
+				GetKeyModifiers()
+			);
+
+			PreviewContext->ProcessMouseButtonDown(
+				TranslateMouseButton(Message),
+				GetKeyModifiers()
+			);
+		}
+		else
+		{
+			MouseCapturedByPreview = false;
+
+			EditorContext->ProcessMouseButtonDown(
+				TranslateMouseButton(Message),
+				GetKeyModifiers()
+			);
+		}
 
 		return true;
 	}
@@ -587,16 +1228,34 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 		if (GetCapture() == Window)
 			ReleaseCapture();
 
-		EditorContext->ProcessMouseButtonUp(
-			TranslateMouseButton(Message),
-			GetKeyModifiers()
-		);
+		if (MouseCapturedByPreview &&
+			PreviewInputAvailable)
+		{
+			PreviewContext->ProcessMouseButtonUp(
+				TranslateMouseButton(Message),
+				GetKeyModifiers()
+			);
+
+			MouseCapturedByPreview = false;
+		}
+		else
+		{
+			EditorContext->ProcessMouseButtonUp(
+				TranslateMouseButton(Message),
+				GetKeyModifiers()
+			);
+		}
 
 		return true;
 	}
 
 	case WM_MOUSEWHEEL:
 	{
+		POINT ClientPoint{};
+		ClientPoint.x = GET_X_LPARAM(LParam);
+		ClientPoint.y = GET_Y_LPARAM(LParam);
+		ScreenToClient(Window, &ClientPoint);
+
 		const short WheelDelta =
 			GET_WHEEL_DELTA_WPARAM(WParam);
 
@@ -604,10 +1263,24 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 			-static_cast<float>(WheelDelta) /
 			static_cast<float>(WHEEL_DELTA);
 
-		EditorContext->ProcessMouseWheel(
-			Rml::Vector2f(0.0f, Delta),
-			GetKeyModifiers()
-		);
+		if (PreviewInputAvailable &&
+			PreviewViewport.ContainsScreenPoint(
+				ClientPoint.x,
+				ClientPoint.y
+			))
+		{
+			PreviewContext->ProcessMouseWheel(
+				Rml::Vector2f(0.0f, Delta),
+				GetKeyModifiers()
+			);
+		}
+		else
+		{
+			EditorContext->ProcessMouseWheel(
+				Rml::Vector2f(0.0f, Delta),
+				GetKeyModifiers()
+			);
+		}
 
 		return true;
 	}
@@ -615,15 +1288,32 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	{
+		if (WParam == VK_F5)
+		{
+			ReloadDocument();
+			return true;
+		}
+
 		const Rml::Input::KeyIdentifier Key =
 			TranslateKey(WParam);
 
 		if (Key != Rml::Input::KI_UNKNOWN)
 		{
-			EditorContext->ProcessKeyDown(
-				Key,
-				GetKeyModifiers()
-			);
+			if (PreviewInputAvailable &&
+				(MouseInPreview || MouseCapturedByPreview))
+			{
+				PreviewContext->ProcessKeyDown(
+					Key,
+					GetKeyModifiers()
+				);
+			}
+			else
+			{
+				EditorContext->ProcessKeyDown(
+					Key,
+					GetKeyModifiers()
+				);
+			}
 
 			return true;
 		}
@@ -639,10 +1329,21 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 
 		if (Key != Rml::Input::KI_UNKNOWN)
 		{
-			EditorContext->ProcessKeyUp(
-				Key,
-				GetKeyModifiers()
-			);
+			if (PreviewInputAvailable &&
+				(MouseInPreview || MouseCapturedByPreview))
+			{
+				PreviewContext->ProcessKeyUp(
+					Key,
+					GetKeyModifiers()
+				);
+			}
+			else
+			{
+				EditorContext->ProcessKeyUp(
+					Key,
+					GetKeyModifiers()
+				);
+			}
 
 			return true;
 		}
@@ -654,9 +1355,19 @@ bool RmlEditorRmlHost::ProcessWindowMessage(
 	{
 		if (WParam >= 32)
 		{
-			EditorContext->ProcessTextInput(
-				static_cast<Rml::Character>(WParam)
-			);
+			if (PreviewInputAvailable &&
+				(MouseInPreview || MouseCapturedByPreview))
+			{
+				PreviewContext->ProcessTextInput(
+					static_cast<Rml::Character>(WParam)
+				);
+			}
+			else
+			{
+				EditorContext->ProcessTextInput(
+					static_cast<Rml::Character>(WParam)
+				);
+			}
 		}
 
 		return true;

@@ -26,6 +26,10 @@ public:
 	void OnDeviceLost();
 	void OnDeviceReset(int Width, int Height);
 
+	void SetDocumentDirectory(const wchar_t* Directory);
+	void BeginViewportFrame(const class RmlEditorViewport& Viewport);
+	void EndViewportFrame();
+
 	Rml::CompiledGeometryHandle CompileGeometry(
 		Rml::Span<const Rml::Vertex> Vertices,
 		Rml::Span<const int> Indices
@@ -91,18 +95,40 @@ private:
 	IDirect3DStateBlock9* StateBlock = nullptr;
 
 	std::wstring RootDirectory;
+	std::wstring DocumentDirectory;
 
 	int ViewWidth = 1;
 	int ViewHeight = 1;
+
+	int FullViewWidth = 1;
+	int FullViewHeight = 1;
+
+	bool ViewportRendering = false;
+	int ViewportX = 0;
+	int ViewportY = 0;
+	int ViewportWidth = 1;
+	int ViewportHeight = 1;
+	float ViewportScaleX = 1.0f;
+	float ViewportScaleY = 1.0f;
 
 	bool ScissorEnabled = false;
 	RECT ScissorRectangle{0, 0, 1, 1};
 
 	void SetupRenderState();
+	void SetupRenderStateForViewport(
+		int PhysicalX,
+		int PhysicalY,
+		int PhysicalWidth,
+		int PhysicalHeight,
+		int LogicalWidth,
+		int LogicalHeight
+	);
 
 	std::wstring ResolvePath(
 		const Rml::String& Path
 	) const;
+
+	static bool FileExists(const std::wstring& Path);
 
 	bool CreateTextureFromRGBA(
 		const unsigned char* Source,

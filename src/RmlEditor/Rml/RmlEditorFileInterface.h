@@ -27,11 +27,14 @@ public:
     size_t Tell(Rml::FileHandle File) override;
     size_t Length(Rml::FileHandle File) override;
 
+    void SetDocumentDirectory(const wchar_t* Directory);
     std::wstring ResolvePath(const Rml::String& Path) const;
 
 private:
     std::wstring RootDirectory;
+    std::wstring DocumentDirectory;
 
     static std::wstring Utf8ToWide(const Rml::String& Text);
     static bool IsAbsolutePath(const std::wstring& Path);
+    static bool FileExists(const std::wstring& Path);
 };

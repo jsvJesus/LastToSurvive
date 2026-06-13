@@ -1,11 +1,14 @@
 #include "RmlEditorRenderDX9.h"
 
 #include "../App/RmlEditorLog.h"
+#include "RmlEditorViewport.h"
 
 #include <windows.h>
 
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
+#include <cmath>
 #include <new>
 
 #pragma comment(lib, "d3d9.lib")
@@ -69,6 +72,24 @@ void RmlEditorRenderDX9::Shutdown()
 	}
 
 	RootDirectory.clear();
+	DocumentDirectory.clear();
+}
+
+void RmlEditorRenderDX9::SetDocumentDirectory(
+	const wchar_t* Directory
+)
+{
+	DocumentDirectory = Directory ? Directory : L"";
+
+	while (!DocumentDirectory.empty())
+	{
+		const wchar_t LastCharacter = DocumentDirectory.back();
+
+		if (LastCharacter != L'\\' && LastCharacter != L'/')
+			break;
+
+		DocumentDirectory.pop_back();
+	}
 }
 
 void RmlEditorRenderDX9::BeginFrame(int Width, int Height)
@@ -78,6 +99,9 @@ void RmlEditorRenderDX9::BeginFrame(int Width, int Height)
 
 	ViewWidth = std::max(1, Width);
 	ViewHeight = std::max(1, Height);
+	FullViewWidth = ViewWidth;
+	FullViewHeight = ViewHeight;
+	ViewportRendering = false;
 
 	if (StateBlock)
 	{
@@ -90,6 +114,53 @@ void RmlEditorRenderDX9::BeginFrame(int Width, int Height)
 		if (StateBlock)
 			StateBlock->Capture();
 	}
+
+	SetupRenderState();
+}
+
+void RmlEditorRenderDX9::BeginViewportFrame(
+	const RmlEditorViewport& Viewport
+)
+{
+	if (!Device || !Viewport.IsValid())
+		return;
+
+	const RmlEditorViewport::Rectangle& Rectangle =
+		Viewport.GetPhysicalRectangle();
+
+	ViewportRendering = true;
+	ViewportX = Rectangle.X;
+	ViewportY = Rectangle.Y;
+	ViewportWidth = std::max(1, Rectangle.Width);
+	ViewportHeight = std::max(1, Rectangle.Height);
+	ViewportScaleX = Viewport.GetScaleX();
+	ViewportScaleY = Viewport.GetScaleY();
+
+	SetupRenderStateForViewport(
+		ViewportX,
+		ViewportY,
+		ViewportWidth,
+		ViewportHeight,
+		Viewport.GetLogicalWidth(),
+		Viewport.GetLogicalHeight()
+	);
+}
+
+void RmlEditorRenderDX9::EndViewportFrame()
+{
+	if (!Device)
+		return;
+
+	ViewportRendering = false;
+	ViewportX = 0;
+	ViewportY = 0;
+	ViewportWidth = std::max(1, FullViewWidth);
+	ViewportHeight = std::max(1, FullViewHeight);
+	ViewportScaleX = 1.0f;
+	ViewportScaleY = 1.0f;
+
+	ViewWidth = std::max(1, FullViewWidth);
+	ViewHeight = std::max(1, FullViewHeight);
 
 	SetupRenderState();
 }
@@ -330,6 +401,84 @@ void RmlEditorRenderDX9::SetupRenderState()
 		D3DSAMP_ADDRESSV,
 		D3DTADDRESS_CLAMP
 	);
+}
+
+void RmlEditorRenderDX9::SetupRenderStateForViewport(
+	int PhysicalX,
+	int PhysicalY,
+	int PhysicalWidth,
+	int PhysicalHeight,
+	int LogicalWidth,
+	int LogicalHeight
+)
+{
+	if (!Device)
+		return;
+
+	ViewWidth = std::max(1, LogicalWidth);
+	ViewHeight = std::max(1, LogicalHeight);
+
+	D3DVIEWPORT9 Viewport{};
+
+	Viewport.X = static_cast<DWORD>(std::max(0, PhysicalX));
+	Viewport.Y = static_cast<DWORD>(std::max(0, PhysicalY));
+	Viewport.Width = static_cast<DWORD>(std::max(1, PhysicalWidth));
+	Viewport.Height = static_cast<DWORD>(std::max(1, PhysicalHeight));
+	Viewport.MinZ = 0.0f;
+	Viewport.MaxZ = 1.0f;
+
+	Device->SetViewport(&Viewport);
+
+	const D3DMATRIX World = IdentityMatrix();
+	const D3DMATRIX View = IdentityMatrix();
+
+	const D3DMATRIX Projection = OrthographicMatrix(
+		0.0f,
+		static_cast<float>(ViewWidth),
+		static_cast<float>(ViewHeight),
+		0.0f,
+		-1.0f,
+		1.0f
+	);
+
+	Device->SetTransform(D3DTS_WORLD, &World);
+	Device->SetTransform(D3DTS_VIEW, &View);
+	Device->SetTransform(D3DTS_PROJECTION, &Projection);
+
+	Device->SetFVF(VertexFormat);
+
+	Device->SetRenderState(D3DRS_LIGHTING, FALSE);
+	Device->SetRenderState(D3DRS_ZENABLE, FALSE);
+	Device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	Device->SetRenderState(D3DRS_FOGENABLE, FALSE);
+	Device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	Device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	Device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	Device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	Device->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+
+	RECT PhysicalScissor{};
+	PhysicalScissor.left = ViewportX;
+	PhysicalScissor.top = ViewportY;
+	PhysicalScissor.right = ViewportX + ViewportWidth;
+	PhysicalScissor.bottom = ViewportY + ViewportHeight;
+	Device->SetScissorRect(&PhysicalScissor);
+
+	Device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	Device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	Device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	Device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+	Device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	Device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+	Device->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+	Device->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+	Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+	Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+	Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 }
 
 Rml::CompiledGeometryHandle
@@ -692,7 +841,29 @@ std::wstring RmlEditorRenderDX9::ResolvePath(
 	if (Absolute || RootDirectory.empty())
 		return WidePath;
 
-	return RootDirectory + L"\\" + WidePath;
+	if (!DocumentDirectory.empty())
+	{
+		const std::wstring DocumentPath =
+			DocumentDirectory + L"\\" + WidePath;
+
+		if (FileExists(DocumentPath))
+			return DocumentPath;
+	}
+
+	const std::wstring DataPath =
+		RootDirectory + L"\\" + WidePath;
+
+	if (FileExists(DataPath))
+		return DataPath;
+
+	return DataPath;
+}
+
+bool RmlEditorRenderDX9::FileExists(
+	const std::wstring& Path
+)
+{
+	return std::filesystem::exists(std::filesystem::path(Path));
 }
 
 bool RmlEditorRenderDX9::CreateTextureFromRGBA(
@@ -889,6 +1060,26 @@ void RmlEditorRenderDX9::EnableScissorRegion(bool Enable)
 
 	if (Device)
 	{
+		if (ViewportRendering)
+		{
+			Device->SetRenderState(
+				D3DRS_SCISSORTESTENABLE,
+				TRUE
+			);
+
+			if (!Enable)
+			{
+				RECT PhysicalScissor{};
+				PhysicalScissor.left = ViewportX;
+				PhysicalScissor.top = ViewportY;
+				PhysicalScissor.right = ViewportX + ViewportWidth;
+				PhysicalScissor.bottom = ViewportY + ViewportHeight;
+				Device->SetScissorRect(&PhysicalScissor);
+			}
+
+			return;
+		}
+
 		Device->SetRenderState(
 			D3DRS_SCISSORTESTENABLE,
 			Enable ? TRUE : FALSE
@@ -924,8 +1115,78 @@ void RmlEditorRenderDX9::SetScissorRegion(
 			ScissorRectangle.top;
 	}
 
-	if (Device)
+	if (!Device)
+		return;
+
+	if (!ViewportRendering)
+	{
 		Device->SetScissorRect(&ScissorRectangle);
+		return;
+	}
+
+	RECT PhysicalScissor{};
+
+	PhysicalScissor.left =
+		ViewportX +
+		static_cast<LONG>(
+			std::floor(
+				static_cast<float>(ScissorRectangle.left) *
+				ViewportScaleX
+			)
+		);
+
+	PhysicalScissor.top =
+		ViewportY +
+		static_cast<LONG>(
+			std::floor(
+				static_cast<float>(ScissorRectangle.top) *
+				ViewportScaleY
+			)
+		);
+
+	PhysicalScissor.right =
+		ViewportX +
+		static_cast<LONG>(
+			std::ceil(
+				static_cast<float>(ScissorRectangle.right) *
+				ViewportScaleX
+			)
+		);
+
+	PhysicalScissor.bottom =
+		ViewportY +
+		static_cast<LONG>(
+			std::ceil(
+				static_cast<float>(ScissorRectangle.bottom) *
+				ViewportScaleY
+			)
+		);
+
+	PhysicalScissor.left =
+		std::max<LONG>(ViewportX, PhysicalScissor.left);
+
+	PhysicalScissor.top =
+		std::max<LONG>(ViewportY, PhysicalScissor.top);
+
+	PhysicalScissor.right =
+		std::min<LONG>(
+			ViewportX + ViewportWidth,
+			PhysicalScissor.right
+		);
+
+	PhysicalScissor.bottom =
+		std::min<LONG>(
+			ViewportY + ViewportHeight,
+			PhysicalScissor.bottom
+		);
+
+	if (PhysicalScissor.right < PhysicalScissor.left)
+		PhysicalScissor.right = PhysicalScissor.left;
+
+	if (PhysicalScissor.bottom < PhysicalScissor.top)
+		PhysicalScissor.bottom = PhysicalScissor.top;
+
+	Device->SetScissorRect(&PhysicalScissor);
 }
 
 void RmlEditorRenderDX9::SetTransform(

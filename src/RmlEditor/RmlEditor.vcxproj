@@ -102,6 +102,7 @@
         user32.lib;
         gdi32.lib;
         shell32.lib;
+        comdlg32.lib;
         ole32.lib;
         winmm.lib;
         %(AdditionalDependencies)
@@ -124,9 +125,14 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
     <ClCompile Include="App\RmlEditorLog.cpp" />
 
     <ClCompile Include="Rendering\RmlEditorRenderDX9.cpp" />
+    <ClCompile Include="Rendering\RmlEditorViewport.cpp" />
+
+    <ClCompile Include="Editor\RmlEditorShellController.cpp" />
 
     <ClCompile Include="Rml\RmlEditorSystemInterface.cpp" />
     <ClCompile Include="Rml\RmlEditorFileInterface.cpp" />
+    <ClCompile Include="Rml\RmlDocumentSession.cpp" />
+    <ClCompile Include="Rml\RmlPreviewController.cpp" />
     <ClCompile Include="Rml\RmlEditorRmlHost.cpp" />
   </ItemGroup>
 
@@ -135,9 +141,14 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
     <ClInclude Include="App\RmlEditorLog.h" />
 
     <ClInclude Include="Rendering\RmlEditorRenderDX9.h" />
+    <ClInclude Include="Rendering\RmlEditorViewport.h" />
+
+    <ClInclude Include="Editor\RmlEditorShellController.h" />
 
     <ClInclude Include="Rml\RmlEditorSystemInterface.h" />
     <ClInclude Include="Rml\RmlEditorFileInterface.h" />
+    <ClInclude Include="Rml\RmlDocumentSession.h" />
+    <ClInclude Include="Rml\RmlPreviewController.h" />
     <ClInclude Include="Rml\RmlEditorRmlHost.h" />
   </ItemGroup>
 

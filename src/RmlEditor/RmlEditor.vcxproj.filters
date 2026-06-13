@@ -21,6 +21,12 @@
       </UniqueIdentifier>
     </Filter>
 
+    <Filter Include="Editor">
+      <UniqueIdentifier>
+        {F93D7A6A-B10B-4D7E-8E13-1C7A74842F13}
+      </UniqueIdentifier>
+    </Filter>
+
     <Filter Include="Data">
       <UniqueIdentifier>
         {725B2645-A562-4995-861E-C63EFEB3A964}
@@ -43,11 +49,27 @@
       <Filter>Rendering</Filter>
     </ClCompile>
 
+    <ClCompile Include="Rendering\RmlEditorViewport.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Editor\RmlEditorShellController.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+
     <ClCompile Include="Rml\RmlEditorSystemInterface.cpp">
       <Filter>Rml</Filter>
     </ClCompile>
 
     <ClCompile Include="Rml\RmlEditorFileInterface.cpp">
+      <Filter>Rml</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rml\RmlDocumentSession.cpp">
+      <Filter>Rml</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rml\RmlPreviewController.cpp">
       <Filter>Rml</Filter>
     </ClCompile>
 
@@ -69,11 +91,27 @@
       <Filter>Rendering</Filter>
     </ClInclude>
 
+    <ClInclude Include="Rendering\RmlEditorViewport.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Editor\RmlEditorShellController.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+
     <ClInclude Include="Rml\RmlEditorSystemInterface.h">
       <Filter>Rml</Filter>
     </ClInclude>
 
     <ClInclude Include="Rml\RmlEditorFileInterface.h">
+      <Filter>Rml</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rml\RmlDocumentSession.h">
+      <Filter>Rml</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rml\RmlPreviewController.h">
       <Filter>Rml</Filter>
     </ClInclude>
 

@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include <cstdio>
+#include <filesystem>
 
 RmlEditorFileInterface::RmlEditorFileInterface(const wchar_t* DataRoot)
 	: RootDirectory(DataRoot ? DataRoot : L"")
@@ -65,6 +66,28 @@ bool RmlEditorFileInterface::IsAbsolutePath(const std::wstring& Path)
 	return false;
 }
 
+bool RmlEditorFileInterface::FileExists(const std::wstring& Path)
+{
+	return std::filesystem::exists(std::filesystem::path(Path));
+}
+
+void RmlEditorFileInterface::SetDocumentDirectory(
+	const wchar_t* Directory
+)
+{
+	DocumentDirectory = Directory ? Directory : L"";
+
+	while (!DocumentDirectory.empty())
+	{
+		const wchar_t LastCharacter = DocumentDirectory.back();
+
+		if (LastCharacter != L'\\' && LastCharacter != L'/')
+			break;
+
+		DocumentDirectory.pop_back();
+	}
+}
+
 std::wstring RmlEditorFileInterface::ResolvePath(
 	const Rml::String& Path
 ) const
@@ -80,8 +103,34 @@ std::wstring RmlEditorFileInterface::ResolvePath(
 	if (IsAbsolutePath(WidePath))
 		return WidePath;
 
+	if (!DocumentDirectory.empty())
+	{
+		const std::wstring DocumentPath =
+			DocumentDirectory + L"\\" + WidePath;
+
+		if (FileExists(DocumentPath))
+			return DocumentPath;
+	}
+
+	if (!RootDirectory.empty())
+	{
+		const std::wstring DataPath =
+			RootDirectory + L"\\" + WidePath;
+
+		if (FileExists(DataPath))
+			return DataPath;
+	}
+
 	if (RootDirectory.empty())
+	{
+		if (!DocumentDirectory.empty())
+			return DocumentDirectory + L"\\" + WidePath;
+
 		return WidePath;
+	}
+
+	if (!DocumentDirectory.empty())
+		return DocumentDirectory + L"\\" + WidePath;
 
 	return RootDirectory + L"\\" + WidePath;
 }

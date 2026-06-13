@@ -1,9 +1,12 @@
 #pragma once
 
 #include "RmlEditorFileInterface.h"
+#include "RmlPreviewController.h"
 #include "RmlEditorSystemInterface.h"
 
+#include "../Editor/RmlEditorShellController.h"
 #include "../Rendering/RmlEditorRenderDX9.h"
+#include "../Rendering/RmlEditorViewport.h"
 
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/ElementDocument.h>
@@ -62,6 +65,9 @@ private:
     Rml::Context* PreviewContext = nullptr;
 
     Rml::ElementDocument* EditorDocument = nullptr;
+    RmlPreviewController PreviewController;
+    RmlEditorViewport PreviewViewport;
+    RmlEditorShellController ShellController;
 
     std::wstring DataRoot;
 
@@ -71,14 +77,29 @@ private:
     bool Initialized = false;
     bool RmlInitialized = false;
     bool MouseTrackingEnabled = false;
+    bool MouseInPreview = false;
+    bool MouseCapturedByPreview = false;
 
     void UpdateClientSize();
     void BeginMouseTracking(HWND Window);
 
     bool LoadEditorShell();
     void LoadFonts();
+    void AttachShellController();
+
+    void OpenDocumentFromDialog();
+    void ReloadDocument();
+    bool OpenDocument(const std::wstring& FilePath);
+
+    void UpdatePreviewViewport();
+    void UpdateEditorShellForCurrentDocument();
+    void UpdateEditorShellStatus(const std::string& StatusText);
+    bool ExecuteShellCommandAt(int MouseX, int MouseY);
 
     static std::wstring GetDataRoot();
+    static std::wstring GetOpenDialogInitialDirectory(
+        const std::wstring& DataRoot
+    );
 
     static int GetKeyModifiers();
 
