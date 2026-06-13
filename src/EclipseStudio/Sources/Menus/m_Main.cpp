@@ -210,6 +210,12 @@ static bool MainRml_MsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (!g_MainRmlInputEnabled)
 		return false;
 
+	if (!g_MainRmlUI.IsInitialized())
+		return false;
+
+	if (!g_MainRmlUI.IsAppMainVisible())
+		return false;
+
 	LRESULT Result = 0;
 	return g_MainRmlUI.ProcessWin32Message(win::hWnd, uMsg, wParam, lParam, &Result);
 }
@@ -508,6 +514,23 @@ int Menu_Main::DoModal()
 		}
 	}
 
+	auto ShutdownMainRml = [&]()
+	{
+		g_MainRmlInputEnabled = false;
+
+		if (bRmlMsgProcRegistered)
+		{
+			UnregisterMsgProc(MainRml_MsgProc);
+			bRmlMsgProcRegistered = false;
+		}
+
+		if (g_MainRmlUI.IsInitialized())
+		{
+			g_MainRmlUI.HideAppMain();
+			g_MainRmlUI.Shutdown();
+		}
+	};
+
 	if (bUseRmlUI)
 	{
 		int FinalResult = 0;
@@ -559,6 +582,7 @@ int Menu_Main::DoModal()
 			g_MainRmlUI.Shutdown();
 		}
 
+		ShutdownMainRml();
 		return FinalResult;
 	}
 
