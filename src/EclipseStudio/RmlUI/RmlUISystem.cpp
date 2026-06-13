@@ -5,11 +5,13 @@
 
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/Elements/ElementFormControlInput.h>
+#include <RmlUi/Core/Traits.h>
 
 #include <windowsx.h>
 #include <string>
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 
 namespace
 {
@@ -205,6 +207,247 @@ void RmlUISystem::FAppMainClickListener::OnDetach(Rml::Element* Element)
 	(void)Element;
 }
 
+RmlUISystem::FCharacterClickListener::
+FCharacterClickListener(
+	RmlUISystem* InOwner
+)
+	: Owner(InOwner)
+{
+}
+
+void RmlUISystem::FCharacterClickListener::
+ProcessEvent(
+	Rml::Event& Event
+)
+{
+	if (!Owner || !Owner->CharacterCallback)
+		return;
+
+	Rml::Element* Element =
+		Event.GetTargetElement();
+
+	while (Element)
+	{
+		const Rml::String& Id =
+			Element->GetId();
+
+		const char* StatePrefix =
+			"btn_char_state_";
+
+		const char* DirectionPrefix =
+			"btn_char_direction_";
+
+		const char* AnimationPrefix =
+			"char_anim_";
+
+		if (
+			Id.compare(
+				0,
+				strlen(StatePrefix),
+				StatePrefix
+			) == 0
+		)
+		{
+			Owner->CharacterCallback(
+				"state",
+				Id.c_str() + strlen(StatePrefix)
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				strlen(DirectionPrefix),
+				DirectionPrefix
+			) == 0
+		)
+		{
+			Owner->CharacterCallback(
+				"direction",
+				Id.c_str() + strlen(DirectionPrefix)
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				strlen(AnimationPrefix),
+				AnimationPrefix
+			) == 0
+		)
+		{
+			Owner->CharacterCallback(
+				"animation",
+				Id.c_str() + strlen(AnimationPrefix)
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_mode_states")
+		{
+			Owner->CharacterCallback(
+				"mode",
+				"0"
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_mode_all_anims")
+		{
+			Owner->CharacterCallback(
+				"mode",
+				"1"
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_ui_idle")
+		{
+			Owner->CharacterCallback(
+				"ui_idle",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_reload")
+		{
+			Owner->CharacterCallback(
+				"reload",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_shoot")
+		{
+			Owner->CharacterCallback(
+				"shoot",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_jump")
+		{
+			Owner->CharacterCallback(
+				"jump",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_jump_anim")
+		{
+			Owner->CharacterCallback(
+				"jump_anim",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_in_air")
+		{
+			Owner->CharacterCallback(
+				"in_air",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_play_pause")
+		{
+			Owner->CharacterCallback(
+				"play_pause",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_stop")
+		{
+			Owner->CharacterCallback(
+				"stop",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_default_speed")
+		{
+			Owner->CharacterCallback(
+				"default_speed",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_show_skeleton")
+		{
+			Owner->CharacterCallback(
+				"show_skeleton",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_show_anim_stack")
+		{
+			Owner->CharacterCallback(
+				"show_anim_stack",
+				""
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_show_equipment")
+		{
+			Owner->CharacterCallback(
+				"show_equipment",
+				""
+			);
+
+			return;
+		}
+
+		if (
+			Element ==
+			Owner->CharacterEditorDocument
+		)
+		{
+			break;
+		}
+
+		Element = Element->GetParentNode();
+	}
+}
+
+void RmlUISystem::FCharacterClickListener::
+OnDetach(
+	Rml::Element* Element
+)
+{
+	(void)Element;
+}
+
 RmlUISystem::RmlUISystem()
 {
 }
@@ -285,6 +528,7 @@ bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSel
 
 	AppSelectClickListener = std::make_unique<FAppSelectClickListener>(this);
 	AppMainClickListener = std::make_unique<FAppMainClickListener>(this);
+	CharacterClickListener = std::make_unique<FCharacterClickListener>(this);
 
 	bInitialized = true;
 
@@ -321,6 +565,17 @@ void RmlUISystem::Shutdown()
 			AppMainDocument = nullptr;
 		}
 
+		if (CharacterEditorDocument)
+		{
+			DetachCharacterEvents();
+
+			Context->UnloadDocument(
+				CharacterEditorDocument
+			);
+
+			CharacterEditorDocument = nullptr;
+		}
+
 		Rml::RemoveContext(Context->GetName());
 		Context = nullptr;
 	}
@@ -340,12 +595,15 @@ void RmlUISystem::Shutdown()
 	FileInterface.reset();
 	SystemInterface.reset();
 	AppSelectClickListener.reset();
+	CharacterClickListener.reset();
+	CharacterCallback = nullptr;
 
 	Hwnd = nullptr;
 	bInitialized = false;
 	bAppSelectVisible = false;
 	bAppMainVisible = false;
 	bLoadingScreenVisible = false;
+	bCharacterEditorVisible = false;
 
 	OutputDebugStringA("[RmlUI] Shutdown\n");
 }
@@ -599,9 +857,13 @@ void RmlUISystem::Render()
 		return;
 
 	const bool bHasVisibleDocument =
-		(bAppSelectVisible && AppSelectDocument) ||
-		(bLoadingScreenVisible && LoadingScreenDocument) ||
-		(bAppMainVisible && AppMainDocument);
+	(bAppSelectVisible && AppSelectDocument) ||
+	(bLoadingScreenVisible && LoadingScreenDocument) ||
+	(bAppMainVisible && AppMainDocument) ||
+	(
+		bCharacterEditorVisible &&
+		CharacterEditorDocument
+	);
 
 	if (!bHasVisibleDocument)
 		return;
@@ -750,8 +1012,18 @@ bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, 
 	if (OutResult)
 		*OutResult = 0;
 
-	if (!bInitialized || !Context || (!bAppSelectVisible && !bAppMainVisible))
+	if (
+		!bInitialized ||
+		!Context ||
+		(
+			!bAppSelectVisible &&
+			!bAppMainVisible &&
+			!bCharacterEditorVisible
+		)
+	)
+	{
 		return false;
+	}
 
 	switch (Message)
 	{
@@ -1344,4 +1616,628 @@ void RmlUISystem::SetAppMainScrollInfo(int FirstIndex, int VisibleCount, int Tot
 
 	sprintf_s(Text, "%dpx", ThumbHeight);
 	Thumb->SetProperty("height", Text);
+}
+
+void RmlUISystem::SetCharacterCallback(
+	FCharacterCallback Callback
+)
+{
+	CharacterCallback = std::move(Callback);
+}
+
+bool RmlUISystem::LoadCharacterEditor()
+{
+	if (!bInitialized || !Context)
+		return false;
+
+	if (CharacterEditorDocument)
+		return true;
+
+	CharacterEditorDocument =
+		Context->LoadDocument(
+			"Rml/Studio/Editor_Character.rml"
+		);
+
+	if (!CharacterEditorDocument)
+	{
+		OutputDebugStringA(
+			"[RmlUI] Failed to load "
+			"Data/Rml/Studio/Editor_Character.rml\n"
+		);
+
+		return false;
+	}
+
+	AttachCharacterEvents();
+
+	CharacterEditorDocument->Hide();
+	bCharacterEditorVisible = false;
+
+	OutputDebugStringA(
+		"[RmlUI] Character editor loaded\n"
+	);
+
+	return true;
+}
+
+void RmlUISystem::ShowCharacterEditor()
+{
+	if (!LoadCharacterEditor())
+		return;
+
+	CharacterEditorDocument->Show();
+	bCharacterEditorVisible = true;
+}
+
+void RmlUISystem::HideCharacterEditor()
+{
+	if (CharacterEditorDocument)
+		CharacterEditorDocument->Hide();
+
+	bCharacterEditorVisible = false;
+}
+
+bool RmlUISystem::IsCharacterEditorReady() const
+{
+	return
+		bInitialized &&
+		CharacterEditorDocument != nullptr;
+}
+
+bool RmlUISystem::IsCharacterEditorVisible() const
+{
+	return
+		IsCharacterEditorReady() &&
+		bCharacterEditorVisible;
+}
+
+void RmlUISystem::AttachCharacterEvents()
+{
+	if (
+		!CharacterEditorDocument ||
+		!CharacterClickListener
+	)
+	{
+		return;
+	}
+
+	CharacterEditorDocument->AddEventListener(
+		"click",
+		CharacterClickListener.get()
+	);
+}
+
+void RmlUISystem::DetachCharacterEvents()
+{
+	if (
+		!CharacterEditorDocument ||
+		!CharacterClickListener
+	)
+	{
+		return;
+	}
+
+	CharacterEditorDocument->RemoveEventListener(
+		"click",
+		CharacterClickListener.get()
+	);
+}
+
+void RmlUISystem::SetCharacterMode(
+	int ModeIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* StatesButton =
+		CharacterEditorDocument->GetElementById(
+			"btn_char_mode_states"
+		);
+
+	Rml::Element* AnimationsButton =
+		CharacterEditorDocument->GetElementById(
+			"btn_char_mode_all_anims"
+		);
+
+	Rml::Element* StatesPanel =
+		CharacterEditorDocument->GetElementById(
+			"character_states_panel"
+		);
+
+	Rml::Element* AnimationsPanel =
+		CharacterEditorDocument->GetElementById(
+			"character_all_anims_panel"
+		);
+
+	if (StatesButton)
+	{
+		StatesButton->SetClass(
+			"selected",
+			ModeIndex == 0
+		);
+	}
+
+	if (AnimationsButton)
+	{
+		AnimationsButton->SetClass(
+			"selected",
+			ModeIndex == 1
+		);
+	}
+
+	if (StatesPanel)
+	{
+		StatesPanel->SetProperty(
+			"display",
+			ModeIndex == 0
+				? "block"
+				: "none"
+		);
+	}
+
+	if (AnimationsPanel)
+	{
+		AnimationsPanel->SetProperty(
+			"display",
+			ModeIndex == 1
+				? "block"
+				: "none"
+		);
+	}
+}
+
+void RmlUISystem::SetCharacterSelectedState(
+	int StateIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	for (int Index = 0; Index < 9; ++Index)
+	{
+		char ElementId[64]{};
+
+		sprintf_s(
+			ElementId,
+			"btn_char_state_%d",
+			Index
+		);
+
+		Rml::Element* Element =
+			CharacterEditorDocument->GetElementById(
+				ElementId
+			);
+
+		if (Element)
+		{
+			Element->SetClass(
+				"selected",
+				Index == StateIndex
+			);
+		}
+	}
+}
+
+void RmlUISystem::SetCharacterSelectedDirection(
+	int DirectionIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	for (int Index = 0; Index < 9; ++Index)
+	{
+		char ElementId[64]{};
+
+		sprintf_s(
+			ElementId,
+			"btn_char_direction_%d",
+			Index
+		);
+
+		Rml::Element* Element =
+			CharacterEditorDocument->GetElementById(
+				ElementId
+			);
+
+		if (Element)
+		{
+			Element->SetClass(
+				"selected",
+				Index == DirectionIndex
+			);
+		}
+	}
+}
+
+void RmlUISystem::SetCharacterToggle(
+	const char* ButtonId,
+	const char* ValueId,
+	bool bEnabled
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* Button =
+		CharacterEditorDocument->GetElementById(
+			ButtonId
+		);
+
+	if (Button)
+	{
+		Button->SetClass(
+			"enabled",
+			bEnabled
+		);
+	}
+
+	SetCharacterText(
+		ValueId,
+		bEnabled ? "ON" : "OFF"
+	);
+}
+
+void RmlUISystem::SetCharacterText(
+	const char* ElementId,
+	const char* Text
+)
+{
+	SetElementText(
+		CharacterEditorDocument,
+		ElementId,
+		Text ? Text : ""
+	);
+}
+
+void RmlUISystem::SetCharacterVisible(
+	const char* ElementId,
+	bool bVisible
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* Element =
+		CharacterEditorDocument->GetElementById(
+			ElementId
+		);
+
+	if (!Element)
+		return;
+
+	Element->SetProperty(
+		"display",
+		bVisible ? "block" : "none"
+	);
+}
+
+void RmlUISystem::SetCharacterAnimationList(
+	const char** Names,
+	int Count,
+	int SelectedIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* Container =
+		CharacterEditorDocument->GetElementById(
+			"character_animation_list"
+		);
+
+	if (!Container)
+		return;
+
+	Rml::String Markup;
+
+	if (!Names || Count <= 0)
+	{
+		Markup =
+			"<div class=\"empty_text\">"
+			"NO ANIMATIONS LOADED"
+			"</div>";
+
+		Container->SetInnerRML(Markup);
+		return;
+	}
+
+	for (int Index = 0; Index < Count; ++Index)
+	{
+		Markup += "<button id=\"char_anim_";
+		Markup += std::to_string(Index);
+		Markup += "\" class=\"list_button";
+
+		if (Index == SelectedIndex)
+			Markup += " selected";
+
+		Markup += "\">";
+
+		Markup += EscapeRmlText(
+			Names[Index] ? Names[Index] : ""
+		);
+
+		Markup += "</button>";
+	}
+
+	Container->SetInnerRML(Markup);
+}
+
+void RmlUISystem::SetCharacterAnimationStack(
+	const char** Names,
+	const char** Data,
+	int Count
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* Container =
+		CharacterEditorDocument->GetElementById(
+			"character_anim_stack_list"
+		);
+
+	if (!Container)
+		return;
+
+	Rml::String Markup;
+
+	if (
+		!Names ||
+		!Data ||
+		Count <= 0
+	)
+	{
+		Markup =
+			"<div class=\"empty_text\">"
+			"NO ACTIVE TRACKS"
+			"</div>";
+
+		Container->SetInnerRML(Markup);
+		return;
+	}
+
+	for (int Index = 0; Index < Count; ++Index)
+	{
+		Markup +=
+			"<div class=\"stack_item\">";
+
+		Markup +=
+			"<div class=\"stack_item_name\">";
+
+		Markup += EscapeRmlText(
+			Names[Index] ? Names[Index] : ""
+		);
+
+		Markup += "</div>";
+
+		Markup +=
+			"<div class=\"stack_item_data\">";
+
+		Markup += EscapeRmlText(
+			Data[Index] ? Data[Index] : ""
+		);
+
+		Markup += "</div>";
+		Markup += "</div>";
+	}
+
+	Container->SetInnerRML(Markup);
+}
+
+void RmlUISystem::SetCharacterAnimationInfo(
+	float Length,
+	int Frames,
+	int Tracks,
+	float FrameRate,
+	const char* AnimationName,
+	const char* AnimationFile
+)
+{
+	char Text[128]{};
+
+	sprintf_s(
+		Text,
+		"%.4f SEC",
+		Length
+	);
+
+	SetCharacterText(
+		"character_anim_length",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Frames
+	);
+
+	SetCharacterText(
+		"character_anim_frames",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Tracks
+	);
+
+	SetCharacterText(
+		"character_anim_tracks",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%.4f",
+		FrameRate
+	);
+
+	SetCharacterText(
+		"character_anim_framerate",
+		Text
+	);
+
+	SetCharacterText(
+		"character_anim_name",
+		AnimationName ? AnimationName : "-"
+	);
+
+	SetCharacterText(
+		"character_anim_file",
+		AnimationFile ? AnimationFile : "-"
+	);
+}
+
+float RmlUISystem::GetCharacterInputValue(
+	const char* ElementId,
+	float DefaultValue
+) const
+{
+	if (!CharacterEditorDocument || !ElementId)
+		return DefaultValue;
+
+	Rml::Element* Element =
+		CharacterEditorDocument->GetElementById(ElementId);
+
+	if (!Element)
+		return DefaultValue;
+
+	Rml::ElementFormControlInput* Input =
+		rmlui_dynamic_cast<Rml::ElementFormControlInput*>(
+			Element
+		);
+
+	if (!Input)
+		return DefaultValue;
+
+	const Rml::String Value = Input->GetValue();
+
+	if (Value.empty())
+		return DefaultValue;
+
+	char* EndPointer = nullptr;
+
+	const float Result =
+		strtof(
+			Value.c_str(),
+			&EndPointer
+		);
+
+	if (EndPointer == Value.c_str())
+		return DefaultValue;
+
+	return Result;
+}
+
+void RmlUISystem::SetCharacterInputValue(
+	const char* ElementId,
+	const char* ValueElementId,
+	float Value,
+	const char* Format
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	if (ElementId)
+	{
+		Rml::Element* Element =
+			CharacterEditorDocument->GetElementById(
+				ElementId
+			);
+
+		if (Element)
+		{
+			Rml::ElementFormControlInput* Input =
+				rmlui_dynamic_cast<
+					Rml::ElementFormControlInput*
+				>(
+					Element
+				);
+
+			if (Input)
+			{
+				char InputText[64]{};
+
+				sprintf_s(
+					InputText,
+					"%.4f",
+					Value
+				);
+
+				Input->SetValue(
+					Rml::String(InputText)
+				);
+			}
+		}
+	}
+
+	if (ValueElementId)
+	{
+		char ValueText[64]{};
+
+		sprintf_s(
+			ValueText,
+			Format ? Format : "%.2f",
+			Value
+		);
+
+		SetCharacterText(
+			ValueElementId,
+			ValueText
+		);
+	}
+}
+
+void RmlUISystem::SetCharacterInputRange(
+	const char* ElementId,
+	float Minimum,
+	float Maximum,
+	float Step
+)
+{
+	if (!CharacterEditorDocument || !ElementId)
+		return;
+
+	Rml::Element* Element =
+		CharacterEditorDocument->GetElementById(ElementId);
+
+	if (!Element)
+	{
+		r3dOutToLog(
+			"[RmlUI] Character range element missing: %s\n",
+			ElementId
+		);
+
+		return;
+	}
+
+	Rml::ElementFormControlInput* Input =
+		rmlui_dynamic_cast<Rml::ElementFormControlInput*>(
+			Element
+		);
+
+	if (!Input)
+	{
+		r3dOutToLog(
+			"[RmlUI] Character element is not input: %s\n",
+			ElementId
+		);
+
+		return;
+	}
+
+	/*
+		Передаём именно float.
+
+		Не передаём char[] или временные строки.
+		InputTypeRange ожидает min/max/step как числовые значения.
+	*/
+	Element->SetAttribute("min", Minimum);
+	Element->SetAttribute("max", Maximum);
+	Element->SetAttribute("step", Step);
 }

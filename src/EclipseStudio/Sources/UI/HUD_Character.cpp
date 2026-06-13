@@ -6,19 +6,90 @@
 #include "ObjectsCode/AI/AI_Player.h"
 #include "ObjectsCode/AI/AI_PlayerAnim.h"
 #include "UI/Hud_Character.h"
+#include "../../RmlUI/RmlUISystem.h"
 
 #include "../rendering/Deffered/CommonPostFX.h"
 #include "../rendering/Deffered/PostFXChief.h"
 
 extern bool g_bEditMode;
 
-//////////////////////////////////////////////////////////////////////////
+extern void RegisterMsgProc(
+	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
+);
 
-CharacterHUD::CharacterHUD() : FPS_Acceleration(0,0,0), FPS_vViewOrig(0,0,0), FPS_ViewAngle(0,0,0), FPS_vVision(0,0,0), FPS_vRight(0,0,0), 
-FPS_vUp(0,0,0), FPS_vForw(0,0,0), cameraPosition(0,0,0), currentDist(2), m_Player(0),
-paused(true), blendLooped(true), curTime(0), srcTime(0), dstTime(0)
+extern void UnregisterMsgProc(
+	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
+);
+
+extern bool ProcessStudioPendingResize(
+	RmlUISystem* ActiveRmlUI
+);
+
+static RmlUISystem g_CharacterRmlUI;
+
+static bool g_CharacterRmlInputEnabled = false;
+static bool g_CharacterRmlMsgRegistered = false;
+
+static bool CharacterRml_MsgProc(
+	UINT Message,
+	WPARAM WParam,
+	LPARAM LParam
+)
 {
-	
+	if (!g_CharacterRmlInputEnabled)
+		return false;
+
+	if (!g_CharacterRmlUI.IsInitialized())
+		return false;
+
+	if (
+		!g_CharacterRmlUI.IsCharacterEditorVisible()
+	)
+	{
+		return false;
+	}
+
+	LRESULT Result = 0;
+
+	return g_CharacterRmlUI.ProcessWin32Message(
+		win::hWnd,
+		Message,
+		WParam,
+		LParam,
+		&Result
+	);
+}
+
+//////////////////////////////////////////////////////////////////////////
+CharacterHUD::CharacterHUD()
+	: FPS_Acceleration(0, 0, 0)
+	, FPS_vViewOrig(0, 0, 0)
+	, FPS_ViewAngle(0, 0, 0)
+	, FPS_vVision(0, 0, 0)
+	, FPS_vRight(0, 0, 0)
+	, FPS_vUp(0, 0, 0)
+	, FPS_vForw(0, 0, 0)
+	, cameraPosition(0, 0, 0)
+	, currentDist(2.0f)
+	, m_Player(nullptr)
+	, paused(true)
+	, blendLooped(true)
+	, curTime(0.0f)
+	, srcTime(0.0f)
+	, dstTime(0.0f)
+	, bCharacterRmlReady(false)
+	, bCharacterControlsInitialized(false)
+	, bPlayerStatesMode(true)
+	, bShowSkeleton(false)
+	, bShowAnimStack(true)
+	, bShowEquipment(false)
+	, bUiIdleMode(false)
+	, SelectedPlayerState(0)
+	, SelectedMoveDirection(0)
+	, SelectedAnimation(-1)
+	, CachedAnimationCount(-1)
+	, CachedSelectedAnimation(-2)
+{
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -32,6 +103,8 @@ void CharacterHUD :: InitPure()
 	FPS_ViewAngle.Assign(0,0,0);
 	FPS_vVision.Assign(0, 0, 1);
 	m_Player = NULL;
+
+	InitCharacterRmlUI();
 }
 
 void CharacterHUD::CreateCharacter()
@@ -46,10 +119,747 @@ void CharacterHUD::CreateCharacter()
 	}	
 }
 
-void CharacterHUD::DestroyPure ()
+void CharacterHUD::DestroyPure()
 {
+	ShutdownCharacterRmlUI();
 }
 
+void CharacterHUD::InitCharacterRmlUI()
+{
+	bCharacterRmlReady = false;
+	bCharacterControlsInitialized = false;
+
+	if (
+		!r3dRenderer ||
+		!r3dRenderer->pd3ddev ||
+		!win::hWnd
+	)
+	{
+		r3dOutToLog(
+			"[RmlUI] Character editor: "
+			"renderer/device/window unavailable\n"
+		);
+
+		return;
+	}
+
+	if (
+		!g_CharacterRmlUI.Init(
+			win::hWnd,
+			r3dRenderer->pd3ddev,
+			false
+		)
+	)
+	{
+		r3dOutToLog(
+			"[RmlUI] Character editor init failed\n"
+		);
+
+		return;
+	}
+
+	g_CharacterRmlUI.SetCharacterCallback(
+		[this](
+			const char* Action,
+			const char* Value
+		)
+		{
+			HandleCharacterRmlAction(
+				Action,
+				Value
+			);
+		}
+	);
+
+	if (!g_CharacterRmlUI.LoadCharacterEditor())
+	{
+		r3dOutToLog(
+			"[RmlUI] Character document load failed, "
+			"using legacy UI\n"
+		);
+
+		g_CharacterRmlUI.Shutdown();
+		return;
+	}
+
+	g_CharacterRmlUI.ShowCharacterEditor();
+
+	/*
+		Даём RmlUi создать и обновить внутренние элементы
+		input type="range" до первого обращения к ним.
+	*/
+
+	if (!g_CharacterRmlMsgRegistered)
+	{
+		RegisterMsgProc(
+			CharacterRml_MsgProc
+		);
+
+		g_CharacterRmlMsgRegistered = true;
+	}
+
+	g_CharacterRmlInputEnabled = true;
+	bCharacterRmlReady = true;
+
+	r3dOutToLog(
+		"[RmlUI] Character editor enabled\n"
+	);
+}
+
+void CharacterHUD::ShutdownCharacterRmlUI()
+{
+	g_CharacterRmlInputEnabled = false;
+
+	if (g_CharacterRmlMsgRegistered)
+	{
+		UnregisterMsgProc(
+			CharacterRml_MsgProc
+		);
+
+		g_CharacterRmlMsgRegistered = false;
+	}
+
+	if (g_CharacterRmlUI.IsInitialized())
+	{
+		g_CharacterRmlUI.HideCharacterEditor();
+		g_CharacterRmlUI.Shutdown();
+	}
+
+	bCharacterRmlReady = false;
+	bCharacterControlsInitialized = false;
+}
+
+void CharacterHUD::StartCharacterInAir()
+{
+	if (!m_Player || !m_Player->uberAnim_)
+		return;
+
+	int AnimationIndex =
+		m_Player->uberAnim_->data_->
+			GetJumpAnimId(
+				m_Player->uberAnim_->
+					AnimPlayerState,
+				1
+			);
+
+	m_Player->uberAnim_->anim.Stop(
+		m_Player->uberAnim_->jumpTrackID
+	);
+
+	m_Player->uberAnim_->jumpTrackID =
+		m_Player->uberAnim_->anim.StartAnimation(
+			AnimationIndex,
+			ANIMFLAG_Looped,
+			1.0f,
+			1.0f,
+			0.0f
+		);
+
+	m_Player->uberAnim_->jumpState = -1;
+
+	m_Player->uberAnim_->SwitchToState(
+		m_Player->uberAnim_->AnimPlayerState,
+		m_Player->uberAnim_->AnimMoveDir
+	);
+}
+
+void CharacterHUD::HandleCharacterRmlAction(
+	const char* Action,
+	const char* Value
+)
+{
+	if (!Action)
+		return;
+
+	CreateCharacter();
+
+	if (!m_Player || !m_Player->uberAnim_)
+		return;
+
+	r3dAnimation& Animation =
+		m_Player->uberAnim_->anim;
+
+	if (strcmp(Action, "mode") == 0)
+	{
+		bPlayerStatesMode =
+			!Value || atoi(Value) == 0;
+	}
+	else if (strcmp(Action, "state") == 0)
+	{
+		const int StateIndex =
+			Value ? atoi(Value) : 0;
+
+		if (
+			StateIndex >= 0 &&
+			StateIndex < 9
+		)
+		{
+			SelectedPlayerState = StateIndex;
+
+			m_Player->uberAnim_->
+				AnimPlayerState = -1;
+
+			m_Player->PlayerState =
+				StateIndex;
+		}
+	}
+	else if (strcmp(Action, "direction") == 0)
+	{
+		const int DirectionIndex =
+			Value ? atoi(Value) : 0;
+
+		if (
+			DirectionIndex >= 0 &&
+			DirectionIndex < 9
+		)
+		{
+			SelectedMoveDirection =
+				DirectionIndex;
+
+			m_Player->PlayerMoveDir =
+				DirectionIndex;
+		}
+	}
+	else if (strcmp(Action, "ui_idle") == 0)
+	{
+		bUiIdleMode = !bUiIdleMode;
+
+		m_Player->uberAnim_->IsInUI =
+			bUiIdleMode ? 1 : 0;
+
+		m_Player->uberAnim_->
+			AnimPlayerState = -1;
+	}
+	else if (strcmp(Action, "reload") == 0)
+	{
+		m_Player->uberAnim_->
+			scaleReloadAnimTime = false;
+
+		m_Player->uberAnim_->
+			StartReloadAnim();
+	}
+	else if (strcmp(Action, "shoot") == 0)
+	{
+		m_Player->uberAnim_->
+			StartShootAnim();
+	}
+	else if (strcmp(Action, "jump") == 0)
+	{
+		m_Player->StartJump();
+	}
+	else if (strcmp(Action, "jump_anim") == 0)
+	{
+		m_Player->uberAnim_->StartJump();
+	}
+	else if (strcmp(Action, "in_air") == 0)
+	{
+		StartCharacterInAir();
+	}
+	else if (strcmp(Action, "animation") == 0)
+	{
+		const int AnimationIndex =
+			Value ? atoi(Value) : -1;
+
+		if (
+			Animation.GetAnimPool() &&
+			AnimationIndex >= 0 &&
+			AnimationIndex <
+				static_cast<int>(
+					Animation.GetAnimPool()->
+						Anims.size()
+				)
+		)
+		{
+			SelectedAnimation =
+				AnimationIndex;
+
+			curTime = 0.0f;
+
+			const char* AnimationName =
+				Animation.GetAnimPool()->
+					Anims[AnimationIndex]->
+					GetAnimName();
+
+			Animation.StartAnimation(
+				AnimationName,
+				ANIMFLAG_Looped |
+				ANIMFLAG_RemoveOtherNow,
+				0.0f,
+				1.0f,
+				0.0f
+			);
+		}
+	}
+	else if (strcmp(Action, "play_pause") == 0)
+	{
+		paused = !paused;
+	}
+	else if (strcmp(Action, "stop") == 0)
+	{
+		Animation.StopAll();
+		paused = true;
+		curTime = 0.0f;
+	}
+	else if (strcmp(Action, "default_speed") == 0)
+	{
+		if (!Animation.AnimTracks.empty())
+		{
+			Animation.AnimTracks[0].
+				SetSpeed(1.0f);
+
+			g_CharacterRmlUI.
+				SetCharacterInputValue(
+					"char_current_speed",
+					"char_current_speed_value",
+					1.0f,
+					"%.2f"
+				);
+		}
+	}
+	else if (strcmp(Action, "show_skeleton") == 0)
+	{
+		bShowSkeleton = !bShowSkeleton;
+	}
+	else if (strcmp(Action, "show_anim_stack") == 0)
+	{
+		bShowAnimStack = !bShowAnimStack;
+	}
+	else if (strcmp(Action, "show_equipment") == 0)
+	{
+		bShowEquipment = !bShowEquipment;
+	}
+}
+
+void CharacterHUD::InitializeCharacterControls()
+{
+	if (
+		bCharacterControlsInitialized ||
+		!m_Player ||
+		!m_Player->uberAnim_
+	)
+	{
+		return;
+	}
+
+	g_CharacterRmlUI.SetCharacterInputValue(
+		"char_jump_speed",
+		"char_jump_speed_value",
+		m_Player->uberAnim_->jumpAnimSpeed,
+		"%.2f"
+	);
+
+	g_CharacterRmlUI.SetCharacterInputValue(
+		"char_jump_delay",
+		"char_jump_delay_value",
+		m_Player->uberAnim_->jumpStartTime,
+		"%.2f"
+	);
+
+	bUiIdleMode =
+		m_Player->uberAnim_->IsInUI != 0;
+
+	bCharacterControlsInitialized = true;
+}
+
+void CharacterHUD::UpdateCharacterControls()
+{
+	if (
+		!bCharacterRmlReady ||
+		!m_Player ||
+		!m_Player->uberAnim_
+	)
+	{
+		return;
+	}
+
+	InitializeCharacterControls();
+
+	m_Player->uberAnim_->jumpAnimSpeed =
+		g_CharacterRmlUI.
+			GetCharacterInputValue(
+				"char_jump_speed",
+				m_Player->uberAnim_->
+					jumpAnimSpeed
+			);
+
+	m_Player->uberAnim_->jumpStartTime =
+		g_CharacterRmlUI.
+			GetCharacterInputValue(
+				"char_jump_delay",
+				m_Player->uberAnim_->
+					jumpStartTime
+			);
+
+	g_CharacterRmlUI.SetCharacterInputValue(
+		"char_jump_speed",
+		"char_jump_speed_value",
+		m_Player->uberAnim_->jumpAnimSpeed,
+		"%.2f"
+	);
+
+	g_CharacterRmlUI.SetCharacterInputValue(
+		"char_jump_delay",
+		"char_jump_delay_value",
+		m_Player->uberAnim_->jumpStartTime,
+		"%.2f"
+	);
+
+	r3dAnimation& Animation =
+		m_Player->uberAnim_->anim;
+
+	const bool bHaveAnimation =
+		!Animation.AnimTracks.empty();
+
+	g_CharacterRmlUI.SetCharacterVisible(
+		"character_frame_controls",
+		bHaveAnimation && paused
+	);
+
+	g_CharacterRmlUI.SetCharacterVisible(
+		"character_speed_controls",
+		bHaveAnimation && !paused
+	);
+
+	if (!bHaveAnimation)
+		return;
+
+	r3dAnimation::r3dAnimInfo& Info =
+		Animation.AnimTracks[0];
+
+	if (paused)
+	{
+		Info.dwStatus |= ANIMSTATUS_Paused;
+
+		const float MaximumFrame =
+			R3D_MAX(
+				0.0f,
+				static_cast<float>(
+					Info.GetAnim()->
+						GetNumFrames()
+				) - 1.0f
+			);
+
+		g_CharacterRmlUI.SetCharacterInputRange(
+			"char_frame",
+			0.0f,
+			MaximumFrame,
+			1.0f
+		);
+
+		curTime =
+			g_CharacterRmlUI.
+				GetCharacterInputValue(
+					"char_frame",
+					curTime
+				);
+
+		curTime = R3D_CLAMP(
+			curTime,
+			0.0f,
+			MaximumFrame
+		);
+
+		Info.fCurFrame = curTime;
+
+		g_CharacterRmlUI.SetCharacterInputValue(
+			"char_frame",
+			"char_frame_value",
+			curTime,
+			"%.0f"
+		);
+	}
+	else
+	{
+		Info.dwStatus &=
+			~ANIMSTATUS_Paused;
+
+		float Speed =
+			g_CharacterRmlUI.
+				GetCharacterInputValue(
+					"char_current_speed",
+					Info.GetSpeed()
+				);
+
+		Speed = R3D_CLAMP(
+			Speed,
+			0.0f,
+			4.0f
+		);
+
+		Info.SetSpeed(Speed);
+
+		g_CharacterRmlUI.SetCharacterInputValue(
+			"char_current_speed",
+			"char_current_speed_value",
+			Speed,
+			"%.2f"
+		);
+	}
+}
+
+void CharacterHUD::UpdateCharacterRmlDocument()
+{
+	if (
+		!bCharacterRmlReady ||
+		!m_Player ||
+		!m_Player->uberAnim_
+	)
+	{
+		return;
+	}
+
+	g_CharacterRmlUI.SetCharacterMode(
+		bPlayerStatesMode ? 0 : 1
+	);
+
+	g_CharacterRmlUI.SetCharacterSelectedState(
+		SelectedPlayerState
+	);
+
+	g_CharacterRmlUI.SetCharacterSelectedDirection(
+		SelectedMoveDirection
+	);
+
+	g_CharacterRmlUI.SetCharacterToggle(
+		"btn_char_ui_idle",
+		"char_ui_idle_value",
+		bUiIdleMode
+	);
+
+	g_CharacterRmlUI.SetCharacterToggle(
+		"btn_char_show_skeleton",
+		"char_show_skeleton_value",
+		bShowSkeleton
+	);
+
+	g_CharacterRmlUI.SetCharacterToggle(
+		"btn_char_show_anim_stack",
+		"char_show_anim_stack_value",
+		bShowAnimStack
+	);
+
+	g_CharacterRmlUI.SetCharacterToggle(
+		"btn_char_show_equipment",
+		"char_show_equipment_value",
+		bShowEquipment
+	);
+
+	g_CharacterRmlUI.SetCharacterVisible(
+		"character_equipment_panel",
+		bShowEquipment
+	);
+
+	g_CharacterRmlUI.SetCharacterText(
+		"btn_char_play_pause",
+		paused ? "PLAY" : "PAUSE"
+	);
+
+	r3dAnimation& Animation =
+		m_Player->uberAnim_->anim;
+
+	if (Animation.GetAnimPool())
+	{
+		const int AnimationCount =
+			static_cast<int>(
+				Animation.GetAnimPool()->
+					Anims.size()
+			);
+
+		if (
+			AnimationCount !=
+				CachedAnimationCount ||
+			SelectedAnimation !=
+				CachedSelectedAnimation
+		)
+		{
+			std::vector<const char*>
+				AnimationNames;
+
+			AnimationNames.reserve(
+				AnimationCount
+			);
+
+			for (
+				int Index = 0;
+				Index < AnimationCount;
+				++Index
+			)
+			{
+				AnimationNames.push_back(
+					Animation.GetAnimPool()->
+						Anims[Index]->
+						GetAnimName()
+				);
+			}
+
+			g_CharacterRmlUI.
+				SetCharacterAnimationList(
+					AnimationNames.empty()
+						? nullptr
+						: AnimationNames.data(),
+					AnimationCount,
+					SelectedAnimation
+				);
+
+			CachedAnimationCount =
+				AnimationCount;
+
+			CachedSelectedAnimation =
+				SelectedAnimation;
+		}
+	}
+
+	float Length = 0.0f;
+	int Frames = 0;
+	int Tracks = 0;
+	float FrameRate = 0.0f;
+
+	const char* AnimationName = "-";
+	const char* AnimationFile = "-";
+
+	if (
+		!Animation.AnimTracks.empty() &&
+		Animation.AnimTracks[0].pAnim
+	)
+	{
+		const r3dAnimData* Data =
+			Animation.AnimTracks[0].pAnim;
+
+		Frames = Data->GetNumFrames();
+		Tracks = Data->GetNumTracks();
+		FrameRate = Data->GetFrameRate();
+
+		if (FrameRate > 0.0f)
+		{
+			Length =
+				static_cast<float>(Frames) /
+				FrameRate;
+		}
+
+		AnimationName =
+			Data->GetAnimName();
+
+		AnimationFile =
+			Data->GetAnimFileName();
+	}
+
+	g_CharacterRmlUI.SetCharacterAnimationInfo(
+		Length,
+		Frames,
+		Tracks,
+		FrameRate,
+		AnimationName,
+		AnimationFile
+	);
+
+	if (!bShowAnimStack)
+	{
+		g_CharacterRmlUI.
+			SetCharacterAnimationStack(
+				nullptr,
+				nullptr,
+				0
+			);
+
+		return;
+	}
+
+	std::vector<std::string> StackNames;
+	std::vector<std::string> StackData;
+
+	StackNames.reserve(
+		Animation.AnimTracks.size()
+	);
+
+	StackData.reserve(
+		Animation.AnimTracks.size()
+	);
+
+	for (
+		size_t Index = 0;
+		Index < Animation.AnimTracks.size();
+		++Index
+	)
+	{
+		const r3dAnimation::r3dAnimInfo& Info =
+			Animation.AnimTracks[Index];
+
+		const char* Name =
+			Info.pAnim
+				? Info.pAnim->GetAnimName()
+				: "UNKNOWN";
+
+		StackNames.push_back(Name);
+
+		char Status[128]{};
+
+		if (Info.dwStatus & ANIMSTATUS_Playing)
+			strcat_s(Status, "PLAY ");
+
+		if (Info.dwStatus & ANIMSTATUS_Paused)
+			strcat_s(Status, "PAUSE ");
+
+		if (Info.dwStatus & ANIMSTATUS_Finished)
+			strcat_s(Status, "FINISH ");
+
+		if (Info.dwStatus & ANIMSTATUS_Fading)
+			strcat_s(Status, "FADE ");
+
+		if (Info.dwStatus & ANIMSTATUS_Expiring)
+			strcat_s(Status, "EXPIRE ");
+
+		char DataText[256]{};
+
+		sprintf_s(
+			DataText,
+			"INFLUENCE %.2f | FRAME %.1f | %04X | %s",
+			Info.fInfluence,
+			Info.fCurFrame,
+			Info.dwStatus,
+			Status
+		);
+
+		StackData.push_back(DataText);
+	}
+
+	std::vector<const char*> StackNamePointers;
+	std::vector<const char*> StackDataPointers;
+
+	StackNamePointers.reserve(
+		StackNames.size()
+	);
+
+	StackDataPointers.reserve(
+		StackData.size()
+	);
+
+	for (
+		size_t Index = 0;
+		Index < StackNames.size();
+		++Index
+	)
+	{
+		StackNamePointers.push_back(
+			StackNames[Index].c_str()
+		);
+
+		StackDataPointers.push_back(
+			StackData[Index].c_str()
+		);
+	}
+
+	g_CharacterRmlUI.SetCharacterAnimationStack(
+		StackNamePointers.empty()
+			? nullptr
+			: StackNamePointers.data(),
+		StackDataPointers.empty()
+			? nullptr
+			: StackDataPointers.data(),
+		static_cast<int>(
+			StackNamePointers.size()
+		)
+	);
+}
 
 void CharacterHUD :: SetCameraDir (r3dPoint3D vPos )
 {
@@ -114,6 +924,101 @@ void CharacterHUD::Draw()
 {
 	assert(bInited);
 
+	if (!bInited)
+		return;
+
+	CreateCharacter();
+
+	if (
+		!bCharacterRmlReady ||
+		!g_CharacterRmlUI.
+			IsCharacterEditorVisible()
+	)
+	{
+		DrawLegacyUI();
+		return;
+	}
+
+	if (!m_Player || !m_Player->uberAnim_)
+		return;
+
+	r3dAnimation& Animation =
+		m_Player->uberAnim_->anim;
+
+	if (
+		bShowSkeleton &&
+		Animation.GetCurrentSkeleton()
+	)
+	{
+		DrawSkeleton(
+			*Animation.GetCurrentSkeleton()
+		);
+	}
+
+	g_CharacterRmlUI.Update(
+		r3dGetFrameTime()
+	);
+
+	UpdateCharacterControls();
+	UpdateCharacterRmlDocument();
+
+	r3dRenderer->pd3ddev->SetRenderState(
+		D3DRS_ALPHATESTENABLE,
+		FALSE
+	);
+
+	r3dRenderer->SetMaterial(nullptr);
+
+	r3dRenderer->SetRenderingMode(
+		R3D_BLEND_ALPHA |
+		R3D_BLEND_NZ
+	);
+
+	g_CharacterRmlUI.Render();
+
+	/*
+		Пока equipment остаётся старым imgui.
+		Его отдельный перенос сделаем следующим экраном.
+	*/
+	if (bShowEquipment)
+	{
+		imgui_Update();
+
+		extern void ProcessCharacterEditor(
+			obj_Player* Player,
+			float Left,
+			float Top,
+			float Height
+		);
+
+		ProcessCharacterEditor(
+			m_Player,
+			374.0f,
+			r3dRenderer->ScreenH - 274.0f,
+			250.0f
+		);
+	}
+
+	r3dRenderer->pd3ddev->SetRenderState(
+		D3DRS_ALPHATESTENABLE,
+		FALSE
+	);
+
+	r3dRenderer->pd3ddev->SetRenderState(
+		D3DRS_ALPHAREF,
+		1
+	);
+
+	r3dRenderer->SetRenderingMode(
+		R3D_BLEND_ALPHA |
+		R3D_BLEND_NZ
+	);
+}
+
+void CharacterHUD::DrawLegacyUI()
+{
+	assert(bInited);
+
 	if ( !bInited ) return;
 
 	CreateCharacter();
@@ -161,9 +1066,7 @@ void CharacterHUD::Draw()
 	static int showAnimStack = 1;	
 	imgui_Checkbox(ssX, ssY, 200, 30, "Show Anim Stack", &showAnimStack, 1);
 	ssY += 40;
-
-	//ssX = r3dRenderer->ScreenW2 - 100;
-	//ssY = r3dRenderer->ScreenH - 300;
+	
         for(size_t i=0; i<a.AnimTracks.size(); i++) 
         {
           const r3dAnimation::r3dAnimInfo& ai = a.AnimTracks[i];
@@ -247,9 +1150,6 @@ void CharacterHUD::DrawPlayerStates(float& Y)
 	}
 	Y += 170 + 20;
 	
-	//Y += imgui_Value_Slider(0.0f, Y, "BendY", &m_Player->bodyAdjust_y[1], -1.5, 1.5, "%.2f");
-	//Y += imgui_Value_Slider(0.0f, Y, "BendZ", &m_Player->bodyAdjust_x, -1.5, 1.5, "%.2f");
-	
 	static int IsInUI = 0;
 	Y += imgui_Checkbox(0.0f, Y, (int)W, 30, "Toggle UI Idle Mode", &IsInUI, 0x1);
 	if(IsInUI != m_Player->uberAnim_->IsInUI) {
@@ -296,14 +1196,6 @@ void CharacterHUD::DrawPlayerStates(float& Y)
 	}
 	Y += 30;
 	
-//	if(Keyboard->WasPressed(kbs1))
-//		m_Player->uberAnim_->StartGrenadePinPullAnimation();
-//	if(Keyboard->WasPressed(kbs2))
-//		m_Player->uberAnim_->StartGrenadeThrowAnimation();
-//	if(Keyboard->WasPressed(kbs3))
-//		m_Player->uberAnim_->StopGrenadeAnimations();
-		
-	// for JUMPS
 	m_Player->UpdateLocalPlayerMovement();
 }
 
@@ -389,8 +1281,21 @@ void CharacterHUD::DrawAllAnims(float& Y)
 
 
 //----------------------------------------------------------------
-void CharacterHUD :: Process()
+void CharacterHUD::Process()
 {
+	if (bCharacterRmlReady)
+	{
+		ProcessStudioPendingResize(
+			&g_CharacterRmlUI
+		);
+	}
+	else
+	{
+		ProcessStudioPendingResize(
+			nullptr
+		);
+	}
+
 	CreateCharacter();
 
 	FPS_Acceleration.Assign(0, 0, 0);
@@ -473,6 +1378,15 @@ void CharacterHUD :: Process()
 	{
 		StartDefaultAnim();
 		first = false;
+	}
+
+	if (
+		bPlayerStatesMode &&
+		m_Player &&
+		m_Player->uberAnim_
+	)
+	{
+		m_Player->UpdateLocalPlayerMovement();
 	}
 }
 
