@@ -110,4 +110,10 @@ private:
 
 	int CachedAnimationCount;
 	int CachedSelectedAnimation;
+
+	int SelectedEquipmentCategory;
+	int SelectedEquipmentItem;
+
+	int CachedEquipmentCategory;
+	int CachedEquipmentItem;
 };

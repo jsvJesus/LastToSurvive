@@ -156,6 +156,20 @@ public:
 		float Step
 	);
 
+	void SetCharacterEquipmentCategory(
+		int CategoryIndex
+	);
+
+	void SetCharacterEquipmentSelected(
+		const char* ItemName
+	);
+
+	void SetCharacterEquipmentList(
+		const char** ItemNames,
+		int ItemCount,
+		int SelectedIndex
+	);
+
 private:
 	class FAppSelectClickListener final : public Rml::EventListener
 	{

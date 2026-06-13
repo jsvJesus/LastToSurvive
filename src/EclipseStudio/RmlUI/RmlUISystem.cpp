@@ -256,6 +256,56 @@ ProcessEvent(
 			return;
 		}
 
+		const char* EquipmentCategoryPrefix =
+		"btn_char_equipment_category_";
+
+		const char* EquipmentItemPrefix =
+			"char_equipment_item_";
+
+		if (
+			Id.compare(
+				0,
+				strlen(EquipmentCategoryPrefix),
+				EquipmentCategoryPrefix
+			) == 0
+		)
+		{
+			Owner->CharacterCallback(
+				"equipment_category",
+				Id.c_str() +
+					strlen(EquipmentCategoryPrefix)
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				strlen(EquipmentItemPrefix),
+				EquipmentItemPrefix
+			) == 0
+		)
+		{
+			Owner->CharacterCallback(
+				"equipment_item",
+				Id.c_str() +
+					strlen(EquipmentItemPrefix)
+			);
+
+			return;
+		}
+
+		if (Id == "btn_char_equipment_close")
+		{
+			Owner->CharacterCallback(
+				"show_equipment",
+				""
+			);
+
+			return;
+		}
+
 		if (
 			Id.compare(
 				0,
@@ -2240,4 +2290,128 @@ void RmlUISystem::SetCharacterInputRange(
 	Element->SetAttribute("min", Minimum);
 	Element->SetAttribute("max", Maximum);
 	Element->SetAttribute("step", Step);
+}
+
+void RmlUISystem::SetCharacterEquipmentCategory(
+	int CategoryIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	for (int Index = 0; Index < 8; ++Index)
+	{
+		char ElementId[96]{};
+
+		sprintf_s(
+			ElementId,
+			"btn_char_equipment_category_%d",
+			Index
+		);
+
+		Rml::Element* Element =
+			CharacterEditorDocument->GetElementById(
+				ElementId
+			);
+
+		if (Element)
+		{
+			Element->SetClass(
+				"selected",
+				Index == CategoryIndex
+			);
+		}
+	}
+
+	static const char* CategoryNames[] =
+	{
+		"HEAD ARMOR",
+		"ARMOR",
+		"HEAD",
+		"BODY",
+		"LEGS",
+		"HERO",
+		"SECONDARY WEAPON",
+		"PRIMARY WEAPON"
+	};
+
+	if (
+		CategoryIndex >= 0 &&
+		CategoryIndex < 8
+	)
+	{
+		SetCharacterText(
+			"equipment_current",
+			CategoryNames[CategoryIndex]
+		);
+	}
+}
+
+void RmlUISystem::SetCharacterEquipmentSelected(
+	const char* ItemName
+)
+{
+	SetCharacterText(
+		"equipment_selected_value",
+		ItemName && ItemName[0]
+			? ItemName
+			: "EMPTY"
+	);
+}
+
+void RmlUISystem::SetCharacterEquipmentList(
+	const char** ItemNames,
+	int ItemCount,
+	int SelectedIndex
+)
+{
+	if (!CharacterEditorDocument)
+		return;
+
+	Rml::Element* Container =
+		CharacterEditorDocument->GetElementById(
+			"character_equipment_list"
+		);
+
+	if (!Container)
+		return;
+
+	if (!ItemNames || ItemCount <= 0)
+	{
+		Container->SetInnerRML(
+			"<div class=\"empty_text\">"
+			"NO ITEMS"
+			"</div>"
+		);
+
+		return;
+	}
+
+	Rml::String Markup;
+
+	for (int Index = 0; Index < ItemCount; ++Index)
+	{
+		Markup +=
+			"<button id=\"char_equipment_item_";
+
+		Markup += std::to_string(Index);
+
+		Markup +=
+			"\" class=\"equipment_item";
+
+		if (Index == SelectedIndex)
+			Markup += " selected";
+
+		Markup += "\">";
+
+		Markup += EscapeRmlText(
+			ItemNames[Index]
+				? ItemNames[Index]
+				: "UNKNOWN"
+		);
+
+		Markup += "</button>";
+	}
+
+	Container->SetInnerRML(Markup);
 }

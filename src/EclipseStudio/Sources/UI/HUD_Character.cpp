@@ -90,6 +90,10 @@ CharacterHUD::CharacterHUD()
 	, SelectedAnimation(-1)
 	, CachedAnimationCount(-1)
 	, CachedSelectedAnimation(-2)
+	, SelectedEquipmentCategory(0)
+	, SelectedEquipmentItem(0)
+	, CachedEquipmentCategory(-1)
+	, CachedEquipmentItem(-1)
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -446,6 +450,45 @@ void CharacterHUD::HandleCharacterRmlAction(
 	{
 		bShowEquipment = !bShowEquipment;
 	}
+	else if (
+	strcmp(
+		Action,
+		"equipment_category"
+	) == 0
+)
+	{
+		SelectedEquipmentCategory =
+			Value ? atoi(Value) : 0;
+
+		SelectedEquipmentCategory =
+			R3D_CLAMP(
+				SelectedEquipmentCategory,
+				0,
+				7
+			);
+
+		SelectedEquipmentItem = 0;
+
+		CachedEquipmentCategory = -1;
+		CachedEquipmentItem = -1;
+	}
+	else if (
+		strcmp(
+			Action,
+			"equipment_item"
+		) == 0
+	)
+	{
+		SelectedEquipmentItem =
+			Value ? atoi(Value) : 0;
+
+		CachedEquipmentItem = -1;
+
+		/*
+			Здесь будет применение выбранного предмета
+			к m_Player.
+		*/
+	}
 }
 
 void CharacterHUD::InitializeCharacterControls()
@@ -642,6 +685,10 @@ void CharacterHUD::UpdateCharacterRmlDocument()
 		"btn_char_ui_idle",
 		"char_ui_idle_value",
 		bUiIdleMode
+	);
+
+	g_CharacterRmlUI.SetCharacterEquipmentCategory(
+		SelectedEquipmentCategory
 	);
 
 	g_CharacterRmlUI.SetCharacterToggle(
@@ -1008,29 +1055,6 @@ void CharacterHUD::Draw()
 	);
 
 	g_CharacterRmlUI.Render();
-
-	/*
-		Пока equipment остаётся старым imgui.
-		Его отдельный перенос сделаем следующим экраном.
-	*/
-	if (bShowEquipment)
-	{
-		imgui_Update();
-
-		extern void ProcessCharacterEditor(
-			obj_Player* Player,
-			float Left,
-			float Top,
-			float Height
-		);
-
-		ProcessCharacterEditor(
-			m_Player,
-			374.0f,
-			r3dRenderer->ScreenH - 274.0f,
-			250.0f
-		);
-	}
 
 	r3dRenderer->pd3ddev->SetRenderState(
 		D3DRS_ALPHATESTENABLE,
