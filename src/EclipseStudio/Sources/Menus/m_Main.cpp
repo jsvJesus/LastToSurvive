@@ -200,6 +200,9 @@ extern void RegisterMsgProc(bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam
 extern void UnregisterMsgProc(bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam));
 
 static RmlUISystem g_MainRmlUI;
+extern bool ProcessStudioPendingResize(
+	RmlUISystem* ActiveRmlUI
+);
 static bool g_MainRmlInputEnabled = false;
 static int g_MainRmlResult = -1;
 static int g_MainRmlTab = 0;
@@ -582,6 +585,10 @@ int Menu_Main::DoModal()
 				FinalResult = 0;
 				break;
 			}
+
+			ProcessStudioPendingResize(
+				&g_MainRmlUI
+			);
 
 			r3dStartFrame();
 

@@ -78,6 +78,7 @@
 #include "GameCode\UserRewards.h"
 #include "GameCode\UserSettings.h"
 
+#include "../RmlUI/RmlUISystem.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
@@ -125,15 +126,54 @@ extern void UnregisterMsgProc(
 	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
 );
 
-static bool g_StudioWindowSizing = false;
-static bool g_StudioBackBufferResize = false;
+static bool g_StudioResizePending = false;
+static int g_StudioPendingWidth = 0;
+static int g_StudioPendingHeight = 0;
 
-static bool ResizeStudioBackBuffer(int Width, int Height)
+static bool StudioWindowResizeMsgProc(
+	UINT Message,
+	WPARAM WParam,
+	LPARAM LParam
+)
 {
-	if (g_StudioBackBufferResize)
+	if (Message != WM_SIZE)
 		return false;
 
-	if (!r3dRenderer || !r3dRenderer->pd3ddev)
+	if (WParam == SIZE_MINIMIZED)
+		return false;
+
+	const int Width =
+		static_cast<int>(LOWORD(LParam));
+
+	const int Height =
+		static_cast<int>(HIWORD(LParam));
+
+	if (Width <= 0 || Height <= 0)
+		return false;
+
+	g_StudioPendingWidth = Width;
+	g_StudioPendingHeight = Height;
+	g_StudioResizePending = true;
+
+	return false;
+}
+
+bool ProcessStudioPendingResize(
+	RmlUISystem* ActiveRmlUI
+)
+{
+	if (!g_StudioResizePending)
+		return false;
+
+	const int Width = g_StudioPendingWidth;
+	const int Height = g_StudioPendingHeight;
+
+	g_StudioResizePending = false;
+
+	if (!r3dRenderer)
+		return false;
+
+	if (!r3dRenderer->pd3ddev)
 		return false;
 
 	if (!r3dRenderer->d3dpp.Windowed)
@@ -142,30 +182,42 @@ static bool ResizeStudioBackBuffer(int Width, int Height)
 	if (Width <= 0 || Height <= 0)
 		return false;
 
-	if (
+	const int CurrentWidth =
 		static_cast<int>(
 			r3dRenderer->d3dpp.BackBufferWidth
-		) == Width &&
+		);
+
+	const int CurrentHeight =
 		static_cast<int>(
 			r3dRenderer->d3dpp.BackBufferHeight
-		) == Height
+		);
+
+	if (
+		CurrentWidth == Width &&
+		CurrentHeight == Height
 	)
 	{
 		return true;
 	}
 
-	g_StudioBackBufferResize = true;
-
-	const D3DPRESENT_PARAMETERS OldParameters =
-		r3dRenderer->d3dpp;
-
 	r3dOutToLog(
-		"[Studio] Resize DX9 backbuffer: %dx%d -> %dx%d\n",
-		static_cast<int>(OldParameters.BackBufferWidth),
-		static_cast<int>(OldParameters.BackBufferHeight),
+		"[Studio] Resize backbuffer: %dx%d -> %dx%d\n",
+		CurrentWidth,
+		CurrentHeight,
 		Width,
 		Height
 	);
+
+	if (
+		ActiveRmlUI &&
+		ActiveRmlUI->IsInitialized()
+	)
+	{
+		ActiveRmlUI->OnDeviceLost();
+	}
+
+	const D3DPRESENT_PARAMETERS OldParameters =
+		r3dRenderer->d3dpp;
 
 	r3dRenderer->d3dpp.BackBufferWidth =
 		static_cast<UINT>(Width);
@@ -176,28 +228,23 @@ static bool ResizeStudioBackBuffer(int Width, int Height)
 	r3dRenderer->d3dpp.hDeviceWindow =
 		win::hWnd;
 
-	const bool ResetResult =
-		r3dRenderer->Reset();
-
-	if (!ResetResult)
+	if (!r3dRenderer->Reset())
 	{
 		r3dOutToLog(
-			"[Studio] DX9 resize reset failed, restoring old mode\n"
+			"[Studio] Resize failed, restoring old backbuffer\n"
 		);
 
 		r3dRenderer->d3dpp = OldParameters;
+		r3dRenderer->Reset();
 
-		const bool RestoreResult =
-			r3dRenderer->Reset();
-
-		if (!RestoreResult)
+		if (
+			ActiveRmlUI &&
+			ActiveRmlUI->IsInitialized()
+		)
 		{
-			r3dOutToLog(
-				"[Studio] Failed to restore old DX9 backbuffer\n"
-			);
+			ActiveRmlUI->OnDeviceReset();
 		}
 
-		g_StudioBackBufferResize = false;
 		return false;
 	}
 
@@ -212,77 +259,25 @@ static bool ResizeStudioBackBuffer(int Width, int Height)
 		r3dRenderer->ScreenH
 	);
 
+	if (
+		ActiveRmlUI &&
+		ActiveRmlUI->IsInitialized()
+	)
+	{
+		ActiveRmlUI->OnDeviceReset();
+	}
+
 	InvalidateRect(
 		win::hWnd,
 		nullptr,
 		FALSE
 	);
 
-	g_StudioBackBufferResize = false;
+	r3dOutToLog(
+		"[Studio] Backbuffer resized successfully\n"
+	);
+
 	return true;
-}
-
-static bool StudioWindowResizeMsgProc(
-	UINT Message,
-	WPARAM WParam,
-	LPARAM LParam
-)
-{
-	switch (Message)
-	{
-	case WM_ENTERSIZEMOVE:
-		{
-			g_StudioWindowSizing = true;
-			break;
-		}
-
-	case WM_EXITSIZEMOVE:
-		{
-			g_StudioWindowSizing = false;
-
-			RECT ClientRect{};
-
-			if (GetClientRect(win::hWnd, &ClientRect))
-			{
-				const int Width =
-					ClientRect.right - ClientRect.left;
-
-				const int Height =
-					ClientRect.bottom - ClientRect.top;
-
-				ResizeStudioBackBuffer(
-					Width,
-					Height
-				);
-			}
-
-			break;
-		}
-
-	case WM_SIZE:
-		{
-			if (WParam == SIZE_MINIMIZED)
-				break;
-
-			if (g_StudioWindowSizing)
-				break;
-
-			const int Width =
-				static_cast<int>(LOWORD(LParam));
-
-			const int Height =
-				static_cast<int>(HIWORD(LParam));
-
-			ResizeStudioBackBuffer(
-				Width,
-				Height
-			);
-
-			break;
-		}
-	}
-
-	return false;
 }
 
 static void EnableStudioWindowResize(HWND WindowHandle)
