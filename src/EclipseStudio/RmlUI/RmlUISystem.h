@@ -17,6 +17,7 @@ class RmlUISystem final
 {
 public:
 	using FAppSelectCallback = std::function<void(const char* ModeId)>;
+	using FAppMainCallback = std::function<void(const char* Action, const char* Value)>;
 
 	RmlUISystem();
 	~RmlUISystem();
@@ -50,11 +51,37 @@ public:
 	bool IsLoadingScreenReady() const;
 	bool IsLoadingScreenVisible() const;
 
+	void SetAppMainCallback(FAppMainCallback Callback);
+
+	bool LoadAppMain();
+	void ShowAppMain();
+	void HideAppMain();
+
+	void SetAppMainTab(int TabIndex);
+	void SetAppMainMaps(const char** Names, int Count);
+	void SetAppMainSelectedLevel(const char* Name);
+	Rml::String GetAppMainCreateLevelName() const;
+
+	bool IsAppMainReady() const;
+	bool IsAppMainVisible() const;
+
 private:
 	class FAppSelectClickListener final : public Rml::EventListener
 	{
 	public:
 		explicit FAppSelectClickListener(RmlUISystem* InOwner);
+
+		void ProcessEvent(Rml::Event& Event) override;
+		void OnDetach(Rml::Element* Element) override;
+
+	private:
+		RmlUISystem* Owner = nullptr;
+	};
+
+	class FAppMainClickListener final : public Rml::EventListener
+	{
+	public:
+		explicit FAppMainClickListener(RmlUISystem* InOwner);
 
 		void ProcessEvent(Rml::Event& Event) override;
 		void OnDetach(Rml::Element* Element) override;
@@ -72,14 +99,18 @@ private:
 	Rml::Context* Context = nullptr;
 	Rml::ElementDocument* AppSelectDocument = nullptr;
 	Rml::ElementDocument* LoadingScreenDocument = nullptr;
+	Rml::ElementDocument* AppMainDocument = nullptr;
 
 	std::unique_ptr<FAppSelectClickListener> AppSelectClickListener;
+	std::unique_ptr<FAppMainClickListener> AppMainClickListener;
 
 	FAppSelectCallback AppSelectCallback;
+	FAppMainCallback AppMainCallback;
 
 	bool bInitialized = false;
 	bool bAppSelectVisible = false;
 	bool bLoadingScreenVisible = false;
+	bool bAppMainVisible = false;
 	bool bCoreInitializedHere = false;
 
 	float LoadingProgressTarget = 0.0f;
@@ -93,6 +124,8 @@ private:
 	void UpdateClientSize();
 	void AttachAppSelectEvents();
 	void DetachAppSelectEvents();
+	void AttachAppMainEvents();
+	void DetachAppMainEvents();
 
 	static int GetKeyModifiers();
 	static Rml::Input::KeyIdentifier TranslateKey(WPARAM WParam);

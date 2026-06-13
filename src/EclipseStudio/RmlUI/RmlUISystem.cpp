@@ -4,6 +4,7 @@
 #include "RmlUISystem.h"
 
 #include <RmlUi/Core/Element.h>
+#include <RmlUi/Core/Elements/ElementFormControlInput.h>
 
 #include <windowsx.h>
 #include <string>
@@ -100,6 +101,62 @@ void RmlUISystem::FAppSelectClickListener::OnDetach(Rml::Element* Element)
 	(void)Element;
 }
 
+RmlUISystem::FAppMainClickListener::FAppMainClickListener(RmlUISystem* InOwner)
+	: Owner(InOwner)
+{
+}
+
+void RmlUISystem::FAppMainClickListener::ProcessEvent(Rml::Event& Event)
+{
+	if (!Owner || !Owner->AppMainCallback)
+		return;
+
+	Rml::Element* Element = Event.GetCurrentElement();
+
+	if (!Element)
+		Element = Event.GetTargetElement();
+
+	if (!Element)
+		return;
+
+	const Rml::String& Id = Element->GetId();
+
+	if (Id == "btn_appmain_live_maps")
+	{
+		Owner->AppMainCallback("tab", "0");
+	}
+	else if (Id == "btn_appmain_editor_maps")
+	{
+		Owner->AppMainCallback("tab", "1");
+	}
+	else if (Id == "btn_appmain_create_map")
+	{
+		Owner->AppMainCallback("tab", "2");
+	}
+	else if (Id == "btn_appmain_load_level")
+	{
+		Owner->AppMainCallback("load", "");
+	}
+	else if (Id == "btn_appmain_create_level")
+	{
+		Rml::String Name = Owner->GetAppMainCreateLevelName();
+		Owner->AppMainCallback("create", Name.c_str());
+	}
+	else if (Id == "btn_appmain_quit")
+	{
+		Owner->AppMainCallback("quit", "");
+	}
+	else if (Id.compare(0, 12, "appmain_map_") == 0)
+	{
+		Owner->AppMainCallback("select", Id.c_str() + 12);
+	}
+}
+
+void RmlUISystem::FAppMainClickListener::OnDetach(Rml::Element* Element)
+{
+	(void)Element;
+}
+
 RmlUISystem::RmlUISystem()
 {
 }
@@ -179,6 +236,7 @@ bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSel
 	Context->EnableMouseCursor(true);
 
 	AppSelectClickListener = std::make_unique<FAppSelectClickListener>(this);
+	AppMainClickListener = std::make_unique<FAppMainClickListener>(this);
 
 	bInitialized = true;
 
@@ -208,6 +266,13 @@ void RmlUISystem::Shutdown()
 			LoadingScreenDocument = nullptr;
 		}
 
+		if (AppMainDocument)
+		{
+			DetachAppMainEvents();
+			Context->UnloadDocument(AppMainDocument);
+			AppMainDocument = nullptr;
+		}
+
 		Rml::RemoveContext(Context->GetName());
 		Context = nullptr;
 	}
@@ -231,6 +296,7 @@ void RmlUISystem::Shutdown()
 	Hwnd = nullptr;
 	bInitialized = false;
 	bAppSelectVisible = false;
+	bAppMainVisible = false;
 	bLoadingScreenVisible = false;
 
 	OutputDebugStringA("[RmlUI] Shutdown\n");
@@ -486,7 +552,8 @@ void RmlUISystem::Render()
 
 	const bool bHasVisibleDocument =
 		(bAppSelectVisible && AppSelectDocument) ||
-		(bLoadingScreenVisible && LoadingScreenDocument);
+		(bLoadingScreenVisible && LoadingScreenDocument) ||
+		(bAppMainVisible && AppMainDocument);
 
 	if (!bHasVisibleDocument)
 		return;
@@ -635,7 +702,7 @@ bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, 
 	if (OutResult)
 		*OutResult = 0;
 
-	if (!bInitialized || !Context || !bAppSelectVisible)
+	if (!bInitialized || !Context || (!bAppSelectVisible && !bAppMainVisible))
 		return false;
 
 	switch (Message)
@@ -727,4 +794,219 @@ bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, 
 	}
 
 	return false;
+}
+
+bool RmlUISystem::LoadAppMain()
+{
+	if (!bInitialized || !Context)
+		return false;
+
+	if (AppMainDocument)
+		return true;
+
+	AppMainDocument = Context->LoadDocument("Rml/Studio/AppMain.rml");
+
+	if (!AppMainDocument)
+	{
+		OutputDebugStringA("[RmlUI] Failed to load Data/Rml/Studio/AppMain.rml\n");
+		return false;
+	}
+
+	AttachAppMainEvents();
+
+	AppMainDocument->Hide();
+	bAppMainVisible = false;
+
+	OutputDebugStringA("[RmlUI] AppMain loaded\n");
+	return true;
+}
+
+void RmlUISystem::ShowAppMain()
+{
+	if (!LoadAppMain())
+		return;
+
+	if (AppMainDocument)
+	{
+		AppMainDocument->Show();
+		bAppMainVisible = true;
+	}
+}
+
+void RmlUISystem::HideAppMain()
+{
+	if (AppMainDocument)
+		AppMainDocument->Hide();
+
+	bAppMainVisible = false;
+}
+
+void RmlUISystem::AttachAppMainEvents()
+{
+	if (!AppMainDocument || !AppMainClickListener)
+		return;
+
+	const char* ButtonIds[] =
+	{
+		"btn_appmain_live_maps",
+		"btn_appmain_editor_maps",
+		"btn_appmain_create_map",
+		"btn_appmain_load_level",
+		"btn_appmain_create_level",
+		"btn_appmain_quit"
+	};
+
+	for (const char* Id : ButtonIds)
+	{
+		Rml::Element* Element = AppMainDocument->GetElementById(Id);
+
+		if (Element)
+			Element->AddEventListener("click", AppMainClickListener.get());
+		else
+		{
+			std::string Text = "[RmlUI] AppMain button missing: ";
+			Text += Id;
+			Text += "\n";
+			OutputDebugStringA(Text.c_str());
+		}
+	}
+}
+
+void RmlUISystem::DetachAppMainEvents()
+{
+	if (!AppMainDocument || !AppMainClickListener)
+		return;
+
+	const char* ButtonIds[] =
+	{
+		"btn_appmain_live_maps",
+		"btn_appmain_editor_maps",
+		"btn_appmain_create_map",
+		"btn_appmain_load_level",
+		"btn_appmain_create_level",
+		"btn_appmain_quit"
+	};
+
+	for (const char* Id : ButtonIds)
+	{
+		Rml::Element* Element = AppMainDocument->GetElementById(Id);
+
+		if (Element)
+			Element->RemoveEventListener("click", AppMainClickListener.get());
+	}
+}
+
+void RmlUISystem::SetAppMainCallback(FAppMainCallback Callback)
+{
+	AppMainCallback = std::move(Callback);
+}
+
+void RmlUISystem::SetAppMainTab(int TabIndex)
+{
+	if (!LoadAppMain())
+		return;
+
+	Rml::Element* MapsPanel = AppMainDocument->GetElementById("appmain_maps_panel");
+	Rml::Element* CreatePanel = AppMainDocument->GetElementById("appmain_create_panel");
+
+	if (MapsPanel)
+		MapsPanel->SetProperty("display", TabIndex == 2 ? "none" : "block");
+
+	if (CreatePanel)
+		CreatePanel->SetProperty("display", TabIndex == 2 ? "block" : "none");
+
+	if (TabIndex == 0)
+		SetElementText(AppMainDocument, "appmain_section_title", "Live Maps");
+	else if (TabIndex == 1)
+		SetElementText(AppMainDocument, "appmain_section_title", "Editor Maps");
+	else
+		SetElementText(AppMainDocument, "appmain_section_title", "");
+}
+
+void RmlUISystem::SetAppMainMaps(const char** Names, int Count)
+{
+	if (!LoadAppMain())
+		return;
+
+	Rml::Element* List = AppMainDocument->GetElementById("appmain_map_list");
+	if (!List)
+		return;
+
+	Rml::String RmlText;
+
+	if (!Names || Count <= 0)
+	{
+		RmlText = "<div id=\"appmain_empty_text\">No maps found</div>";
+		List->SetInnerRML(RmlText);
+		return;
+	}
+
+	for (int i = 0; i < Count; ++i)
+	{
+		if (!Names[i] || !Names[i][0])
+			continue;
+
+		char IdText[64] = {};
+		sprintf_s(IdText, "appmain_map_%d", i);
+
+		RmlText += "<button id=\"";
+		RmlText += IdText;
+		RmlText += "\" class=\"map_item\">";
+		RmlText += EscapeRmlText(Names[i]);
+		RmlText += "</button>";
+	}
+
+	List->SetInnerRML(RmlText);
+
+	for (int i = 0; i < Count; ++i)
+	{
+		char IdText[64] = {};
+		sprintf_s(IdText, "appmain_map_%d", i);
+
+		Rml::Element* Element = AppMainDocument->GetElementById(IdText);
+		if (Element)
+			Element->AddEventListener("click", AppMainClickListener.get());
+	}
+}
+
+void RmlUISystem::SetAppMainSelectedLevel(const char* Name)
+{
+	if (!LoadAppMain())
+		return;
+
+	if (Name && Name[0])
+		SetElementText(AppMainDocument, "appmain_selected_value", Name);
+	else
+		SetElementText(AppMainDocument, "appmain_selected_value", "No map selected");
+}
+
+Rml::String RmlUISystem::GetAppMainCreateLevelName() const
+{
+	if (!AppMainDocument)
+		return "NewLevel";
+
+	Rml::Element* Element = AppMainDocument->GetElementById("appmain_create_name");
+	if (!Element)
+		return "NewLevel";
+
+	Rml::ElementFormControlInput* Input = dynamic_cast<Rml::ElementFormControlInput*>(Element);
+	if (!Input)
+		return "NewLevel";
+
+	Rml::String Value = Input->GetValue();
+
+	if (Value.empty())
+		return "NewLevel";
+
+	return Value;
+}
+
+bool RmlUISystem::IsAppMainReady() const
+{
+	return bInitialized && AppMainDocument != nullptr;
+}
+
+bool RmlUISystem::IsAppMainVisible() const
+{
+	return bInitialized && AppMainDocument != nullptr && bAppMainVisible;
 }

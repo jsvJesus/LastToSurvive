@@ -7,7 +7,8 @@
 #include "m_Main.h"
 
 #include "GameLevel.h"
-#include "..\DiscordPresence.h"
+#include "../DiscordPresence.h"
+#include "../../RmlUI/RmlUISystem.h"
 
 #include "TrueNature2/Terrain2.h"
 
@@ -18,8 +19,6 @@ Menu_Main::Menu_Main()
 Menu_Main::~Menu_Main()
 {
 }
-
-
 
 void Menu_Main::Draw()
 {
@@ -194,6 +193,151 @@ bool CreateNewLevel()
 	return true;
 }
 
+extern void RegisterMsgProc(bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam));
+extern void UnregisterMsgProc(bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam));
+
+static RmlUISystem g_MainRmlUI;
+static bool g_MainRmlInputEnabled = false;
+static int g_MainRmlResult = -1;
+static int g_MainRmlTab = 0;
+
+static char g_MainRmlMaps[256][256];
+static int g_MainRmlMapCount = 0;
+
+static bool MainRml_MsgProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (!g_MainRmlInputEnabled)
+		return false;
+
+	LRESULT Result = 0;
+	return g_MainRmlUI.ProcessWin32Message(win::hWnd, uMsg, wParam, lParam, &Result);
+}
+
+static bool MainRml_IsValidDirectory(const WIN32_FIND_DATAA& Data)
+{
+	if (!(Data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		return false;
+
+	if (strcmp(Data.cFileName, ".") == 0)
+		return false;
+
+	if (strcmp(Data.cFileName, "..") == 0)
+		return false;
+
+	return true;
+}
+
+static void MainRml_RebuildMapList()
+{
+	g_MainRmlMapCount = 0;
+
+	const char* Mask = g_MainRmlTab == 0 ? "Levels\\*" : "Levels\\WorkInProgress\\*";
+
+	WIN32_FIND_DATAA Data;
+	HANDLE Find = FindFirstFileA(Mask, &Data);
+
+	if (Find != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (!MainRml_IsValidDirectory(Data))
+				continue;
+
+			if (g_MainRmlTab == 0 && stricmp(Data.cFileName, "WorkInProgress") == 0)
+				continue;
+
+			if (g_MainRmlMapCount >= 256)
+				break;
+
+			r3dscpy(g_MainRmlMaps[g_MainRmlMapCount], Data.cFileName);
+			g_MainRmlMapCount++;
+		}
+		while (FindNextFileA(Find, &Data));
+
+		FindClose(Find);
+	}
+
+	const char* Names[256] = {};
+
+	for (int i = 0; i < g_MainRmlMapCount; ++i)
+		Names[i] = g_MainRmlMaps[i];
+
+	g_MainRmlUI.SetAppMainTab(g_MainRmlTab);
+	g_MainRmlUI.SetAppMainMaps(Names, g_MainRmlMapCount);
+	g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
+}
+
+static void MainRml_SelectMapByIndex(int Index)
+{
+	if (Index < 0 || Index >= g_MainRmlMapCount)
+		return;
+
+	if (g_MainRmlTab == 0)
+	{
+		r3dscpy(LevelEditName, g_MainRmlMaps[Index]);
+	}
+	else
+	{
+		sprintf(LevelEditName, "WorkInProgress\\%s", g_MainRmlMaps[Index]);
+	}
+
+	g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
+	DiscordPresence_SetEditor("Level Editor", LevelEditName);
+}
+
+static void MainRml_OnAction(const char* Action, const char* Value)
+{
+	if (!Action)
+		return;
+
+	if (strcmp(Action, "tab") == 0)
+	{
+		g_MainRmlTab = Value ? atoi(Value) : 0;
+
+		if (g_MainRmlTab < 0)
+			g_MainRmlTab = 0;
+
+		if (g_MainRmlTab > 2)
+			g_MainRmlTab = 2;
+
+		if (g_MainRmlTab == 2)
+		{
+			r3dscpy(LevelEditName, "NewLevel");
+			g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
+			g_MainRmlUI.SetAppMainTab(g_MainRmlTab);
+		}
+		else
+		{
+			LevelEditName[0] = 0;
+			MainRml_RebuildMapList();
+		}
+	}
+	else if (strcmp(Action, "select") == 0)
+	{
+		MainRml_SelectMapByIndex(Value ? atoi(Value) : -1);
+	}
+	else if (strcmp(Action, "load") == 0)
+	{
+		if (LevelEditName[0])
+			g_MainRmlResult = Menu_Main::bEditor;
+	}
+	else if (strcmp(Action, "create") == 0)
+	{
+		const char* NewLevelName = Value && Value[0] ? Value : "NewLevel";
+
+		r3dscpy(LevelEditName, NewLevelName);
+
+		__CreateTerrain = 0;
+		__CreateTerrain2 = 0;
+
+		if (CreateNewLevel())
+			g_MainRmlResult = Menu_Main::bEditor;
+	}
+	else if (strcmp(Action, "quit") == 0)
+	{
+		g_MainRmlResult = 0;
+	}
+}
 
 void ClearFullScreen_Menu();
 
@@ -204,6 +348,100 @@ int Menu_Main::DoModal()
  char tempName[256] = {0};
  char discordLevelName[256] = {0};
  DiscordPresence_SetEditor("Level Editor", "No map selected");
+
+	g_MainRmlResult = -1;
+	g_MainRmlTab = 0;
+	g_MainRmlInputEnabled = false;
+
+	bool bUseRmlUI = false;
+	bool bRmlMsgProcRegistered = false;
+
+	if (r3dRenderer && r3dRenderer->pd3ddev && win::hWnd)
+	{
+		if (g_MainRmlUI.Init(win::hWnd, r3dRenderer->pd3ddev, false))
+		{
+			g_MainRmlUI.SetAppMainCallback(MainRml_OnAction);
+
+			if (g_MainRmlUI.LoadAppMain())
+			{
+				g_MainRmlUI.ShowAppMain();
+				g_MainRmlUI.SetAppMainTab(0);
+				g_MainRmlUI.SetAppMainSelectedLevel("");
+
+				MainRml_RebuildMapList();
+
+				RegisterMsgProc(MainRml_MsgProc);
+				bRmlMsgProcRegistered = true;
+				g_MainRmlInputEnabled = true;
+
+				bUseRmlUI = true;
+
+				r3dOutToLog("[RmlUI] AppMain enabled\n");
+			}
+			else
+			{
+				r3dOutToLog("[RmlUI] AppMain load failed, fallback to old imgui m_Main\n");
+			}
+		}
+		else
+		{
+			r3dOutToLog("[RmlUI] AppMain init failed, fallback to old imgui m_Main\n");
+		}
+	}
+
+	if (bUseRmlUI)
+	{
+		int FinalResult = 0;
+
+		while (1)
+		{
+			if (g_bExit)
+			{
+				FinalResult = 0;
+				break;
+			}
+
+			r3dStartFrame();
+
+			ClearFullScreen_Menu();
+
+			mUpdate();
+			DiscordPresence_Tick();
+
+			mDrawStart();
+
+			r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+			r3dSetFiltering(R3D_POINT);
+
+			g_MainRmlUI.Update(r3dGetFrameTime());
+			g_MainRmlUI.Render();
+
+			mDrawEnd();
+			r3dEndFrame();
+
+			if (g_MainRmlResult != -1)
+			{
+				FinalResult = g_MainRmlResult;
+				break;
+			}
+		}
+
+		g_MainRmlInputEnabled = false;
+
+		if (bRmlMsgProcRegistered)
+		{
+			UnregisterMsgProc(MainRml_MsgProc);
+			bRmlMsgProcRegistered = false;
+		}
+
+		if (g_MainRmlUI.IsInitialized())
+		{
+			g_MainRmlUI.HideAppMain();
+			g_MainRmlUI.Shutdown();
+		}
+
+		return FinalResult;
+	}
 
   while(1)
   {
