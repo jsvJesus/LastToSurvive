@@ -643,6 +643,80 @@ bool RmlRenderDX9::CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Wi
 	return true;
 }
 
+static bool PremultiplyTextureAlpha(
+	IDirect3DTexture9* Texture
+)
+{
+	if (!Texture)
+		return false;
+
+	D3DSURFACE_DESC Description{};
+
+	HRESULT Result = Texture->GetLevelDesc(
+		0,
+		&Description
+	);
+
+	if (FAILED(Result))
+		return false;
+
+	if (Description.Format != D3DFMT_A8R8G8B8)
+		return false;
+
+	D3DLOCKED_RECT LockedRectangle{};
+
+	Result = Texture->LockRect(
+		0,
+		&LockedRectangle,
+		nullptr,
+		0
+	);
+
+	if (FAILED(Result) || !LockedRectangle.pBits)
+		return false;
+
+	for (UINT Y = 0; Y < Description.Height; ++Y)
+	{
+		DWORD* Pixels = reinterpret_cast<DWORD*>(
+			reinterpret_cast<unsigned char*>(
+				LockedRectangle.pBits
+			) +
+			LockedRectangle.Pitch * Y
+		);
+
+		for (UINT X = 0; X < Description.Width; ++X)
+		{
+			const DWORD Pixel = Pixels[X];
+
+			const unsigned int Alpha =
+				(Pixel >> 24) & 0xFF;
+
+			unsigned int Red =
+				(Pixel >> 16) & 0xFF;
+
+			unsigned int Green =
+				(Pixel >> 8) & 0xFF;
+
+			unsigned int Blue =
+				Pixel & 0xFF;
+
+			Red = (Red * Alpha + 127) / 255;
+			Green = (Green * Alpha + 127) / 255;
+			Blue = (Blue * Alpha + 127) / 255;
+
+			Pixels[X] = D3DCOLOR_ARGB(
+				Alpha,
+				Red,
+				Green,
+				Blue
+			);
+		}
+	}
+
+	Texture->UnlockRect(0);
+	return true;
+}
+
 bool RmlRenderDX9::LoadTextureD3DX(
 	const std::wstring& Filename,
 	Rml::Vector2i& OutDimensions,
@@ -653,79 +727,81 @@ bool RmlRenderDX9::LoadTextureD3DX(
 		return false;
 
 	*OutTexture = nullptr;
-	OutDimensions.x = 0;
-	OutDimensions.y = 0;
+	OutDimensions = Rml::Vector2i(0, 0);
 
-	if (!RmlFileExistsW(Filename))
-	{
-		wchar_t DebugText[2048]{};
-
-		_snwprintf_s(
-			DebugText,
-			_countof(DebugText),
-			_TRUNCATE,
-			L"[RmlUI][DX9] Texture file does not exist: %ls\n",
-			Filename.c_str()
-		);
-
-		OutputDebugStringW(DebugText);
-		return false;
-	}
-
-	D3DXIMAGE_INFO Info{};
+	D3DXIMAGE_INFO Information{};
 	IDirect3DTexture9* Texture = nullptr;
 
-	const HRESULT Result = D3DXCreateTextureFromFileExW(
-		Device,
-		Filename.c_str(),
-		D3DX_DEFAULT,
-		D3DX_DEFAULT,
-		1,
-		0,
-		D3DFMT_A8R8G8B8,
-		D3DPOOL_MANAGED,
-		D3DX_FILTER_LINEAR,
-		D3DX_FILTER_LINEAR,
-		0,
-		&Info,
-		nullptr,
-		&Texture
-	);
+	const HRESULT Result =
+		D3DXCreateTextureFromFileExW(
+			Device,
+			Filename.c_str(),
+			D3DX_DEFAULT,
+			D3DX_DEFAULT,
+			1,
+			0,
+			D3DFMT_A8R8G8B8,
+			D3DPOOL_MANAGED,
+			D3DX_FILTER_LINEAR,
+			D3DX_FILTER_LINEAR,
+			0,
+			&Information,
+			nullptr,
+			&Texture
+		);
 
 	if (FAILED(Result) || !Texture)
 	{
-		wchar_t DebugText[2048]{};
+		wchar_t Text[2048]{};
 
 		_snwprintf_s(
-			DebugText,
-			_countof(DebugText),
+			Text,
+			_countof(Text),
 			_TRUNCATE,
-			L"[RmlUI][DX9] D3DXCreateTextureFromFileExW failed. HRESULT=0x%08X Path='%ls'\n",
+			L"[RmlUI][DX9] Texture load failed: 0x%08X | %ls\n",
 			static_cast<unsigned int>(Result),
 			Filename.c_str()
 		);
 
-		OutputDebugStringW(DebugText);
+		OutputDebugStringW(Text);
 
 		if (Texture)
-		{
 			Texture->Release();
-			Texture = nullptr;
-		}
 
 		return false;
 	}
 
-	OutDimensions.x = static_cast<int>(Info.Width);
-	OutDimensions.y = static_cast<int>(Info.Height);
+	if (!PremultiplyTextureAlpha(Texture))
+	{
+		wchar_t Text[2048]{};
+
+		_snwprintf_s(
+			Text,
+			_countof(Text),
+			_TRUNCATE,
+			L"[RmlUI][DX9] Texture premultiply failed: %ls\n",
+			Filename.c_str()
+		);
+
+		OutputDebugStringW(Text);
+
+		Texture->Release();
+		return false;
+	}
+
+	OutDimensions.x =
+		static_cast<int>(Information.Width);
+
+	OutDimensions.y =
+		static_cast<int>(Information.Height);
 
 	*OutTexture = Texture;
 
-	wchar_t DebugText[2048]{};
+	wchar_t Text[2048]{};
 
 	_snwprintf_s(
-		DebugText,
-		_countof(DebugText),
+		Text,
+		_countof(Text),
 		_TRUNCATE,
 		L"[RmlUI][DX9] Texture loaded: %ls (%dx%d)\n",
 		Filename.c_str(),
@@ -733,7 +809,7 @@ bool RmlRenderDX9::LoadTextureD3DX(
 		OutDimensions.y
 	);
 
-	OutputDebugStringW(DebugText);
+	OutputDebugStringW(Text);
 
 	return true;
 }
