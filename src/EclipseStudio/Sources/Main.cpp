@@ -117,6 +117,40 @@ void CursorModeCallback( int oldI, float oldF )
 	}
 }
 
+static void EnableStudioWindowResize(HWND WindowHandle)
+{
+	if (!WindowHandle)
+		return;
+
+	LONG_PTR WindowStyle = GetWindowLongPtr(
+		WindowHandle,
+		GWL_STYLE
+	);
+
+	WindowStyle |= WS_THICKFRAME;
+	WindowStyle |= WS_MAXIMIZEBOX;
+
+	SetWindowLongPtr(
+		WindowHandle,
+		GWL_STYLE,
+		WindowStyle
+	);
+
+	SetWindowPos(
+		WindowHandle,
+		nullptr,
+		0,
+		0,
+		0,
+		0,
+		SWP_NOMOVE |
+		SWP_NOSIZE |
+		SWP_NOZORDER |
+		SWP_NOACTIVATE |
+		SWP_FRAMECHANGED
+	);
+}
+
 static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 {
 	if (!WindowHandle)
@@ -263,8 +297,11 @@ void InitRender(int bUseSet = 0)
 		}
 	}
 
+	EnableStudioWindowResize(win::hWnd);
 	ApplyStudioDarkTitleBar(win::hWnd);
+
 	ShowWindow(win::hWnd, TRUE);
+	UpdateWindow(win::hWnd);
 
 	r3dInitShaders();
 
