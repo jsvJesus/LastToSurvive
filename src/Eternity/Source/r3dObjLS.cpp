@@ -76,6 +76,49 @@ static bool r3dIsSrtMeshFile( const char* fname )
 }
 
 #if R3D_SPEEDTREE_SRT_ENABLED
+static float r3dClampSrtFinite( float value, float fallback )
+{
+	if( !_finite( value ) )
+		return fallback;
+
+	return value;
+}
+
+static r3dPoint3D r3dNormalizeSrtVector( const r3dPoint3D& value, const r3dPoint3D& fallback )
+{
+	r3dPoint3D result(
+		r3dClampSrtFinite( value.x, fallback.x ),
+		r3dClampSrtFinite( value.y, fallback.y ),
+		r3dClampSrtFinite( value.z, fallback.z )
+	);
+
+	const float lenSq = result.LengthSq();
+	if( lenSq < 0.000001f || !_finite( lenSq ) )
+		return fallback;
+
+	result *= 1.0f / sqrtf( lenSq );
+
+	result.x = R3D_CLAMP( result.x, -1.0f, 1.0f );
+	result.y = R3D_CLAMP( result.y, -1.0f, 1.0f );
+	result.z = R3D_CLAMP( result.z, -1.0f, 1.0f );
+
+	return result;
+}
+
+static r3dPoint3D r3dConvertSrtPointToR3d( float x, float y, float z )
+{
+	return r3dPoint3D(
+		r3dClampSrtFinite( x, 0.0f ),
+		r3dClampSrtFinite( z, 0.0f ),
+		r3dClampSrtFinite( y, 0.0f )
+	);
+}
+
+static r3dPoint3D r3dConvertSrtVectorToR3d( float x, float y, float z, const r3dPoint3D& fallback )
+{
+	return r3dNormalizeSrtVector( r3dConvertSrtPointToR3d( x, y, z ), fallback );
+}
+
 static void r3dGetFileDir( char* outDir, int outDirSize, const char* fname )
 {
 	r3dscpy_s( outDir, outDirSize, fname );
@@ -333,12 +376,12 @@ static bool r3dLoadSpeedTreeSrtIntoMesh( r3dMesh& mesh, const char* srtPath, boo
 			const int dstIdx = vertexBase + vertIdx;
 
 			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_POSITION, vertIdx, values ) )
-				mesh.VertexPositions[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+				mesh.VertexPositions[ dstIdx ] = r3dConvertSrtPointToR3d( values[ 0 ], values[ 1 ], values[ 2 ] );
 			else
 				mesh.VertexPositions[ dstIdx ] = r3dPoint3D( 0, 0, 0 );
 
 			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_NORMAL, vertIdx, values ) )
-				mesh.VertexNormals[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+				mesh.VertexNormals[ dstIdx ] = r3dConvertSrtVectorToR3d( values[ 0 ], values[ 1 ], values[ 2 ], r3dPoint3D( 0, 1, 0 ) );
 			else
 				mesh.VertexNormals[ dstIdx ] = r3dPoint3D( 0, 1, 0 );
 
@@ -349,7 +392,7 @@ static bool r3dLoadSpeedTreeSrtIntoMesh( r3dMesh& mesh, const char* srtPath, boo
 
 			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_TANGENT, vertIdx, values ) )
 			{
-				mesh.VertexTangents[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+				mesh.VertexTangents[ dstIdx ] = r3dConvertSrtVectorToR3d( values[ 0 ], values[ 1 ], values[ 2 ], r3dPoint3D( 1, 0, 0 ) );
 				mesh.VertexTangentWs[ dstIdx ] = char( 255 );
 			}
 			else

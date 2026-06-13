@@ -7725,6 +7725,56 @@ catlist  ObjectCategories;
 stringlist_t 	CatNames;
 float			CatOffset = 0.0f;
 
+static bool ShouldSkipDepotObjectFile( const char* fileName )
+{
+	return !fileName ||
+		strstr(fileName, "_collision.sco") ||
+		strstr(fileName, "_Collision.sco");
+}
+
+static void FillCatFromDirRecursive( CategoryStruct& cat, const char* clazz, const char* basePath, const char* relPath, const char* filePattern )
+{
+	char searchPath[ 512 ];
+	char nextRelPath[ 512 ];
+	char objectName[ 512 ];
+
+	sprintf( searchPath, "%s%s*.*", basePath, relPath ? relPath : "" );
+
+	WIN32_FIND_DATA ffblk;
+	HANDLE h = FindFirstFile( searchPath, &ffblk );
+
+	if( h == INVALID_HANDLE_VALUE )
+		return;
+
+	const char* extension = strrchr( filePattern, '.' );
+
+	do
+	{
+		if( ffblk.cFileName[ 0 ] == '.' )
+			continue;
+
+		if( ffblk.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+		{
+			sprintf( nextRelPath, "%s%s\\", relPath ? relPath : "", ffblk.cFileName );
+			FillCatFromDirRecursive( cat, clazz, basePath, nextRelPath, filePattern );
+			continue;
+		}
+
+		if( !extension || stricmp( ffblk.cFileName + R3D_MAX( 0, (int)strlen( ffblk.cFileName ) - (int)strlen( extension ) ), extension ) )
+			continue;
+
+		if( ShouldSkipDepotObjectFile( ffblk.cFileName ) )
+			continue;
+
+		sprintf( objectName, "%s%s", relPath ? relPath : "", ffblk.cFileName );
+		cat.NumObjects++;
+		cat.ObjectsNames.push_back( objectName );
+		cat.ObjectsClasses.push_back( clazz );
+	} while( FindNextFile( h, &ffblk ) != 0 );
+
+	FindClose( h );
+}
+
 void FillCatFromDir( CategoryStruct& cat, const char* clazz, const char* path, const char *filePattern = "%s*.sco")
 {
 	char CatPath[ 256 ];
@@ -7749,6 +7799,14 @@ void FillCatFromDir( CategoryStruct& cat, const char* clazz, const char* path, c
 	if( !strcmp( filePattern, "%s*.sco" ) )
 		patterns[ 1 ] = "%s*.srt";
 
+	if( !strcmp( path, "SpeedTree" ) )
+	{
+		for( int patternIdx = 0; patternIdx < _countof( patterns ) && patterns[ patternIdx ]; ++patternIdx )
+			FillCatFromDirRecursive( cat, clazz, CatPath, "", patterns[ patternIdx ] );
+
+		return;
+	}
+
 	for( int patternIdx = 0; patternIdx < _countof( patterns ) && patterns[ patternIdx ]; ++patternIdx )
 	{
 		sprintf ( TempS, patterns[ patternIdx ], CatPath); // ptumik: parse only text meshes
@@ -7759,7 +7817,7 @@ void FillCatFromDir( CategoryStruct& cat, const char* clazz, const char* path, c
 			{
 				if (ffblk.cFileName[0] != '.')
 				{
-					if(strstr(ffblk.cFileName, "_collision.sco") || strstr(ffblk.cFileName, "_Collision.sco"))
+					if( ShouldSkipDepotObjectFile( ffblk.cFileName ) )
 						continue;
 				
 					cat.NumObjects ++;

@@ -69,7 +69,10 @@ void RmlUISystem::FAppSelectClickListener::ProcessEvent(Rml::Event& Event)
 	if (!Owner || !Owner->AppSelectCallback)
 		return;
 
-	Rml::Element* Element = Event.GetTargetElement();
+	Rml::Element* Element = Event.GetCurrentElement();
+
+	if (!Element)
+		Element = Event.GetTargetElement();
 
 	if (!Element)
 		return;
@@ -88,6 +91,8 @@ void RmlUISystem::FAppSelectClickListener::ProcessEvent(Rml::Event& Event)
 		Owner->AppSelectCallback("physics_editor");
 	else if (Id == "btn_character_editor")
 		Owner->AppSelectCallback("character_editor");
+	else if (Id == "btn_exit")
+		Owner->AppSelectCallback("exit");
 }
 
 void RmlUISystem::FAppSelectClickListener::OnDetach(Rml::Element* Element)
@@ -293,7 +298,8 @@ void RmlUISystem::AttachAppSelectEvents()
 		"btn_level_editor",
 		"btn_particle_editor",
 		"btn_physics_editor",
-		"btn_character_editor"
+		"btn_character_editor",
+		"btn_exit"
 	};
 
 	for (const char* Id : ButtonIds)
@@ -324,7 +330,8 @@ void RmlUISystem::DetachAppSelectEvents()
 		"btn_level_editor",
 		"btn_particle_editor",
 		"btn_physics_editor",
-		"btn_character_editor"
+		"btn_character_editor",
+		"btn_exit"
 	};
 
 	for (const char* Id : ButtonIds)
@@ -388,6 +395,7 @@ void RmlUISystem::ShowLoadingScreen()
 	{
 		LoadingScreenDocument->Show();
 		bLoadingScreenVisible = true;
+		ApplyLoadingScreenProgress(LoadingProgressVisual);
 	}
 }
 
@@ -419,6 +427,19 @@ void RmlUISystem::SetLoadingScreenProgress(float Progress)
 	else if (Progress > 1.0f)
 		Progress = 1.0f;
 
+	LoadingProgressTarget = Progress;
+}
+
+void RmlUISystem::ApplyLoadingScreenProgress(float Progress)
+{
+	if (!LoadingScreenDocument)
+		return;
+
+	if (Progress < 0.0f)
+		Progress = 0.0f;
+	else if (Progress > 1.0f)
+		Progress = 1.0f;
+
 	char PercentText[32] = {};
 	sprintf_s(PercentText, "%.0f%%", Progress * 100.0f);
 	SetElementText(LoadingScreenDocument, "loading_percent", PercentText);
@@ -434,12 +455,27 @@ void RmlUISystem::SetLoadingScreenProgress(float Progress)
 
 void RmlUISystem::Update(float DeltaSeconds)
 {
-	(void)DeltaSeconds;
-
 	if (!bInitialized || !Context)
 		return;
 
 	UpdateClientSize();
+
+	if (bLoadingScreenVisible && LoadingScreenDocument)
+	{
+		if (DeltaSeconds <= 0.0f)
+			DeltaSeconds = 0.016f;
+
+		const float Speed = 8.0f;
+		const float Alpha = R3D_CLAMP(DeltaSeconds * Speed, 0.0f, 1.0f);
+
+		LoadingProgressVisual += (LoadingProgressTarget - LoadingProgressVisual) * Alpha;
+
+		if (fabsf(LoadingProgressTarget - LoadingProgressVisual) < 0.001f)
+			LoadingProgressVisual = LoadingProgressTarget;
+
+		ApplyLoadingScreenProgress(LoadingProgressVisual);
+	}
+
 	Context->Update();
 }
 

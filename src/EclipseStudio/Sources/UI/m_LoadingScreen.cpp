@@ -14,9 +14,20 @@
 
 static const char* DEFAULT_LOADING_TEXTURE = "Data\\Menu\\Screen.png";
 
-static volatile float	gProgress;
+static volatile LONG gProgressValue = 0;
 static LoadingScreen*	gLoadingScreen;
 static RmlUISystem		g_LoadingRmlUI;
+
+static float LoadingProgressFromLong()
+{
+	return (float)gProgressValue / 10000.0f;
+}
+
+static LONG LoadingProgressToLong(float Progress)
+{
+	Progress = R3D_MAX(R3D_MIN(Progress, 1.0f), 0.0f);
+	return (LONG)(Progress * 10000.0f);
+}
 
 static bool EnsureLoadingRmlUI()
 {
@@ -70,7 +81,7 @@ bool LoadingScreen::Initialize()
 	if (EnsureLoadingRmlUI())
 	{
 		g_LoadingRmlUI.ShowLoadingScreen();
-		g_LoadingRmlUI.SetLoadingScreenProgress(gProgress);
+		g_LoadingRmlUI.SetLoadingScreenProgress(LoadingProgressFromLong());
 	}
 
 	return true;
@@ -167,7 +178,7 @@ void LoadingScreen::SetData( const char* ImagePath, const wchar_t* Name, const w
 	{
 		g_LoadingRmlUI.ShowLoadingScreen();
 		g_LoadingRmlUI.SetLoadingScreenData(Name, Message, tip_of_the_day);
-		g_LoadingRmlUI.SetLoadingScreenProgress(gProgress);
+		g_LoadingRmlUI.SetLoadingScreenProgress(LoadingProgressFromLong());
 	}
 
 	r3d_assert(_CrtCheckMemory());
@@ -293,10 +304,11 @@ void StartLoadingScreen()
 	gLoadingScreen->Initialize();
 	gLoadingScreen->SetRenderingDisabled(false);
 }
+
 void DisableLoadingRendering()
 {
 	if(gLoadingScreen)
-		gLoadingScreen->SetRenderingDisabled( false );
+		gLoadingScreen->SetRenderingDisabled(true);
 }
 
 //------------------------------------------------------------------------
@@ -325,23 +337,22 @@ void SetLoadingTexture(const char* ImagePath)
 
 //------------------------------------------------------------------------
 
-void SetLoadingProgress( float progress )
+void SetLoadingProgress(float progress)
 {
-	progress = R3D_MAX( R3D_MIN( progress, 1.f ), 0.f );
-	InterlockedExchange( (volatile long*)&gProgress, (LONG&)progress );
+	InterlockedExchange(&gProgressValue, LoadingProgressToLong(progress));
 }
 
 //------------------------------------------------------------------------
 
-void AdvanceLoadingProgress( float add )
+void AdvanceLoadingProgress(float add)
 {
-	float newVal = R3D_MAX( R3D_MIN( gProgress + add, 1.f ), 0.f );
-	InterlockedExchange( (volatile long*)&gProgress, (LONG&)newVal );
+	float newVal = LoadingProgressFromLong() + add;
+	InterlockedExchange(&gProgressValue, LoadingProgressToLong(newVal));
 }
 
 float GetLoadingProgress()
 {
-	return gProgress;
+	return LoadingProgressFromLong();
 }
 
 //------------------------------------------------------------------------
@@ -398,8 +409,8 @@ int DoLoadingScreen( volatile LONG* Loading, const wchar_t* LevelName, const wch
 			}
 		}
 
+		gLoadingScreen->SetProgress(LoadingProgressFromLong());
 		gLoadingScreen->Update();
-		gLoadingScreen->SetProgress( gProgress );
 	}
 
 	return 1;
@@ -428,8 +439,8 @@ int DoConnectScreen( volatile LONG* Loading, const wchar_t* Message, float TimeO
 			return 0;
 		}
 
+		gLoadingScreen->SetProgress(checkTimeOut ? 1.f - (endWait - r3dGetTime()) / TimeOut : LoadingProgressFromLong());
 		gLoadingScreen->Update();
-		gLoadingScreen->SetProgress( checkTimeOut ? 1.f - ( endWait - r3dGetTime() ) / TimeOut : gProgress );
 		Sleep( 33 );
 	}
 
@@ -469,8 +480,8 @@ int DoConnectScreen( T* Logic, bool (T::*CheckFunc)(), const wchar_t* Message, f
 		// so minor waits will be performed without graphics change
 		if(r3dGetTime() > startWait + 1.0f)
 		{
+			gLoadingScreen->SetProgress(checkTimeOut ? 1.f - (endWait - r3dGetTime()) / TimeOut : LoadingProgressFromLong());
 			gLoadingScreen->Update();
-			gLoadingScreen->SetProgress( checkTimeOut ? 1.f - ( endWait - r3dGetTime() ) / TimeOut : gProgress );
 		}
 
 		Sleep( 33 );

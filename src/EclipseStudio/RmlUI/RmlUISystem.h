@@ -82,6 +82,11 @@ private:
 	bool bLoadingScreenVisible = false;
 	bool bCoreInitializedHere = false;
 
+	float LoadingProgressTarget = 0.0f;
+	float LoadingProgressVisual = 0.0f;
+
+	void ApplyLoadingScreenProgress(float Progress);
+
 	int ClientWidth = 1;
 	int ClientHeight = 1;
 

@@ -316,6 +316,13 @@ const char * g_szApplicationName = "LTS - Last To Survive";
 int32_t	g_nProjectVersionMajor = 1;
 int32_t	g_nProjectVersionMinor = 0;
 
+static const char* GetApplicationWindowTitle()
+{
+	static char Title[128];
+	sprintf(Title, "%s v%d.%d", g_szApplicationName, g_nProjectVersionMajor, g_nProjectVersionMinor);
+	return Title;
+}
+
 extern	char	Login_PassedUser[256];
 extern	char	Login_PassedPwd[256];
 extern	char	Login_PassedAuth[256];
@@ -417,7 +424,7 @@ void game::PreInit()
 	g_HardwareInfo.Grab();
 
 	win::hWinIcon = ::LoadIcon(win::hInstance, MAKEINTRESOURCE(IDI_WARZ));
-	win::szWinName = GetBuildVersionString();
+	win::szWinName = GetApplicationWindowTitle();
 
 #ifdef FINAL_BUILD
 	win::hWinIcon = ::LoadIcon(win::hInstance, MAKEINTRESOURCE(IDI_WARZ));

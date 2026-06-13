@@ -938,6 +938,8 @@ static int FPSCount = 0;
 static float lastFPSTime = 0.0f;
 static float AVGFps = 0.f;
 
+static void r3dUpdateWindowCaption();
+
 void r3dEndFrame()
 {
 #if !DISABLE_PROFILER
@@ -986,6 +988,8 @@ void r3dEndFrame()
 //  {
 // 	  AVGFps = 1.f / r3dGetFrameTime();
 //   }
+
+  r3dUpdateWindowCaption();
 }
 
 void r3dResetFrameTime()
@@ -999,6 +1003,65 @@ void r3dResetFrameTime()
 float r3dGetAvgFPS()
 {
 	return AVGFps;
+}
+
+static const char* r3dGetWindowCaptionConfigName()
+{
+#ifdef FINAL_BUILD
+	return "Final";
+#else
+#ifdef _DEBUG
+	return "Debug";
+#else
+	return "Release";
+#endif
+#endif
+}
+
+static const char* r3dGetWindowCaptionPlatformName()
+{
+#ifdef _WIN64
+	return "x64";
+#else
+	return "Win32";
+#endif
+}
+
+static void r3dUpdateWindowCaption()
+{
+#ifndef WO_SERVER
+	if(!win::hWnd || !win::szWinName)
+		return;
+
+	static float nextUpdateTime = 0.f;
+	static bool detailedCaptionSet = false;
+
+	const bool isWindowed = r3dRenderer && r3dRenderer->d3dpp.Windowed;
+	if(!isWindowed)
+	{
+		if(detailedCaptionSet)
+		{
+			SetWindowTextA(win::hWnd, win::szWinName);
+			detailedCaptionSet = false;
+		}
+		return;
+	}
+
+	const float curTime = r3dGetTime();
+	if(detailedCaptionSet && curTime < nextUpdateTime)
+		return;
+
+	nextUpdateTime = curTime + 0.25f;
+
+	float fps = r3dGetAvgFPS();
+	if(!_finite(fps) || fps < 0.f)
+		fps = 0.f;
+
+	char caption[512];
+	sprintf(caption, "%s | FPS %.1f / %s %s / d3dx9", win::szWinName, fps, r3dGetWindowCaptionConfigName(), r3dGetWindowCaptionPlatformName());
+	SetWindowTextA(win::hWnd, caption);
+	detailedCaptionSet = true;
+#endif
 }
 
 

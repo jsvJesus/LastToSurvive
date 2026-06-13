@@ -221,6 +221,10 @@ int Menu_AppSelect::DoModal()
 				{
 					g_AppSelectRmlResult = Menu_AppSelect::bStartCharacterEditor;
 				}
+				else if (strcmp(ModeId, "exit") == 0)
+				{
+					g_AppSelectRmlResult = Menu_AppSelect::bQuit;
+				}
 			});
 
 			if (g_AppSelectRmlUI.IsAppSelectReady())
@@ -344,7 +348,7 @@ int Menu_AppSelect::DoModal()
 		{
 			if (g_AppSelectRmlResult != -1)
 			{
-				finalResult = g_AppSelectRmlResult;
+				finalResult = g_AppSelectRmlResult == Menu_AppSelect::bQuit ? 0 : g_AppSelectRmlResult;
 				break;
 			}
 		}
