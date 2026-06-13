@@ -514,9 +514,14 @@ void RmlEditorRenderDX9::RenderGeometry(
 			TextureHandle
 		);
 
+	// Direct3D 9 считает центр верхнего левого пикселя координатой 0,0.
+	// RmlUi генерирует геометрию по современному правилу границ пикселей,
+	// поэтому для точного попадания texel -> pixel нужен offset -0.5.
+	constexpr float HalfPixelOffset = -0.5f;
+
 	const D3DMATRIX World = TranslationMatrix(
-		Translation.x,
-		Translation.y,
+		Translation.x + HalfPixelOffset,
+		Translation.y + HalfPixelOffset,
 		0.0f
 	);
 
