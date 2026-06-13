@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eclipse Studio", "Studio.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RakNet", "..\External\RakNet\RakNet.vcxproj", "{143F9B67-C223-4F2D-B8F9-B644CA710CA6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RmlEditor", "..\RmlEditor\RmlEditor.vcxproj", "{4D5E0448-00A9-4579-BC18-6274C6BA27E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -39,6 +41,14 @@ Global
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|Win32.ActiveCfg = Release|Win32
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|Win32.Build.0 = Release|Win32
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|x64.ActiveCfg = Release|x64
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Debug|Win32.Build.0 = Debug|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Final|Win32.ActiveCfg = Debug|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Final|Win32.Build.0 = Debug|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|Win32.ActiveCfg = Release|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|Win32.Build.0 = Release|Win32
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|x64.ActiveCfg = Release|x64
+		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

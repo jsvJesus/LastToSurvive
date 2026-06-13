@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <Filter Include="App">
+      <UniqueIdentifier>
+        {E87F7CB5-C0CF-4EDC-A538-46AA2F535B0B}
+      </UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Rendering">
+      <UniqueIdentifier>
+        {78561E21-9724-4021-84BF-5EF2042F89C1}
+      </UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Rml">
+      <UniqueIdentifier>
+        {56A8231E-5C00-49D4-A52D-2AE5B02582D2}
+      </UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Data">
+      <UniqueIdentifier>
+        {725B2645-A562-4995-861E-C63EFEB3A964}
+      </UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="RmlEditorMain.cpp" />
+
+    <ClCompile Include="App\RmlEditorApplication.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+
+    <ClCompile Include="App\RmlEditorLog.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rendering\RmlEditorRenderDX9.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rml\RmlEditorSystemInterface.cpp">
+      <Filter>Rml</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rml\RmlEditorFileInterface.cpp">
+      <Filter>Rml</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Rml\RmlEditorRmlHost.cpp">
+      <Filter>Rml</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="App\RmlEditorApplication.h">
+      <Filter>App</Filter>
+    </ClInclude>
+
+    <ClInclude Include="App\RmlEditorLog.h">
+      <Filter>App</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rendering\RmlEditorRenderDX9.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rml\RmlEditorSystemInterface.h">
+      <Filter>Rml</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rml\RmlEditorFileInterface.h">
+      <Filter>Rml</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Rml\RmlEditorRmlHost.h">
+      <Filter>Rml</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\bin\Data\RmlEditor\EditorShell.rml">
+      <Filter>Data</Filter>
+    </None>
+
+    <None Include="..\..\bin\Data\RmlEditor\EditorShell.rcss">
+      <Filter>Data</Filter>
+    </None>
+  </ItemGroup>
+
+</Project>
