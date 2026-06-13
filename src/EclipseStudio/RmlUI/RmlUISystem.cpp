@@ -378,14 +378,18 @@ void RmlUISystem::AttachAppSelectEvents()
 		return;
 
 	const char* ButtonIds[] =
-	{
-		"btn_game_public",
-		"btn_game_dev",
-		"btn_level_editor",
-		"btn_particle_editor",
-		"btn_physics_editor",
-		"btn_character_editor",
-		"btn_exit"
+{
+		"btn_appmain_live_maps",
+		"btn_appmain_editor_maps",
+		"btn_appmain_create_map",
+		"btn_appmain_load_level",
+		"btn_appmain_create_level",
+		"btn_appmain_back",
+		"btn_appmain_exit",
+		"btn_appmain_terrain_toggle",
+		"btn_appmain_terrain2_toggle",
+		"btn_appmain_terrain_size",
+		"btn_appmain_splat_size"
 	};
 
 	for (const char* Id : ButtonIds)
