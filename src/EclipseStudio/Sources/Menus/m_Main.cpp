@@ -40,6 +40,8 @@ void Menu_Main::Draw()
 
 char LevelEditName[256];
 bool g_AppMainBackToAppSelect = false;
+static const int APPMAIN_VISIBLE_MAPS = 6;
+static int g_MainRmlMapScroll = 0;
 
 void SaveLevelData( char* Str );
 
@@ -234,6 +236,36 @@ static bool MainRml_IsValidDirectory(const WIN32_FIND_DATAA& Data)
 	return true;
 }
 
+static void MainRml_UpdateVisibleMapList()
+{
+	if (g_MainRmlMapScroll < 0)
+		g_MainRmlMapScroll = 0;
+
+	const int MaxScroll = R3D_MAX(0, g_MainRmlMapCount - APPMAIN_VISIBLE_MAPS);
+
+	if (g_MainRmlMapScroll > MaxScroll)
+		g_MainRmlMapScroll = MaxScroll;
+
+	const char* Names[APPMAIN_VISIBLE_MAPS] = {};
+	int VisibleCount = 0;
+
+	for (int i = 0; i < APPMAIN_VISIBLE_MAPS; ++i)
+	{
+		const int RealIndex = g_MainRmlMapScroll + i;
+
+		if (RealIndex >= g_MainRmlMapCount)
+			break;
+
+		Names[VisibleCount] = g_MainRmlMaps[RealIndex];
+		VisibleCount++;
+	}
+
+	g_MainRmlUI.SetAppMainTab(g_MainRmlTab);
+	g_MainRmlUI.SetAppMainMaps(Names, VisibleCount);
+	g_MainRmlUI.SetAppMainScrollInfo(g_MainRmlMapScroll, APPMAIN_VISIBLE_MAPS, g_MainRmlMapCount);
+	g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
+}
+
 static void MainRml_RebuildMapList()
 {
 	g_MainRmlMapCount = 0;
@@ -264,28 +296,24 @@ static void MainRml_RebuildMapList()
 		FindClose(Find);
 	}
 
-	const char* Names[256] = {};
-
-	for (int i = 0; i < g_MainRmlMapCount; ++i)
-		Names[i] = g_MainRmlMaps[i];
-
-	g_MainRmlUI.SetAppMainTab(g_MainRmlTab);
-	g_MainRmlUI.SetAppMainMaps(Names, g_MainRmlMapCount);
-	g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
+	g_MainRmlMapScroll = 0;
+	MainRml_UpdateVisibleMapList();
 }
 
-static void MainRml_SelectMapByIndex(int Index)
+static void MainRml_SelectMapByIndex(int VisibleIndex)
 {
-	if (Index < 0 || Index >= g_MainRmlMapCount)
+	const int RealIndex = g_MainRmlMapScroll + VisibleIndex;
+
+	if (RealIndex < 0 || RealIndex >= g_MainRmlMapCount)
 		return;
 
 	if (g_MainRmlTab == 0)
 	{
-		r3dscpy(LevelEditName, g_MainRmlMaps[Index]);
+		r3dscpy(LevelEditName, g_MainRmlMaps[RealIndex]);
 	}
 	else
 	{
-		sprintf(LevelEditName, "WorkInProgress\\%s", g_MainRmlMaps[Index]);
+		sprintf(LevelEditName, "WorkInProgress\\%s", g_MainRmlMaps[RealIndex]);
 	}
 
 	g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
@@ -461,6 +489,18 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 			__TerrainSMapSize = 0;
 
 		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
+	}
+	else if (strcmp(Action, "scroll_up") == 0)
+	{
+		g_MainRmlMapScroll--;
+
+		MainRml_UpdateVisibleMapList();
+	}
+	else if (strcmp(Action, "scroll_down") == 0)
+	{
+		g_MainRmlMapScroll++;
+
+		MainRml_UpdateVisibleMapList();
 	}
 }
 

@@ -59,6 +59,7 @@ public:
 
 	void SetAppMainTab(int TabIndex);
 	void SetAppMainMaps(const char** Names, int Count);
+	void SetAppMainScrollInfo(int FirstIndex, int VisibleCount, int TotalCount);
 	void SetAppMainSelectedLevel(const char* Name);
 	Rml::String GetAppMainCreateLevelName() const;
 

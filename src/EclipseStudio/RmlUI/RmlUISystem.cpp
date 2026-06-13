@@ -111,10 +111,34 @@ void RmlUISystem::FAppMainClickListener::ProcessEvent(Rml::Event& Event)
 	if (!Owner || !Owner->AppMainCallback)
 		return;
 
-	Rml::Element* Element = Event.GetCurrentElement();
+	Rml::Element* CurrentElement = Event.GetCurrentElement();
+	Rml::Element* TargetElement = Event.GetTargetElement();
+
+	const char* MapPrefix = "appmain_map_";
+	const size_t MapPrefixLen = strlen(MapPrefix);
+
+	Rml::Element* SearchElement = TargetElement;
+
+	while (SearchElement)
+	{
+		const Rml::String& SearchId = SearchElement->GetId();
+
+		if (SearchId.compare(0, MapPrefixLen, MapPrefix) == 0)
+		{
+			Owner->AppMainCallback("select", SearchId.c_str() + MapPrefixLen);
+			return;
+		}
+
+		if (SearchElement == CurrentElement)
+			break;
+
+		SearchElement = SearchElement->GetParentNode();
+	}
+
+	Rml::Element* Element = CurrentElement;
 
 	if (!Element)
-		Element = Event.GetTargetElement();
+		Element = TargetElement;
 
 	if (!Element)
 		return;
@@ -166,9 +190,13 @@ void RmlUISystem::FAppMainClickListener::ProcessEvent(Rml::Event& Event)
 	{
 		Owner->AppMainCallback("splat_size", "");
 	}
-	else if (Id.compare(0, 12, "appmain_map_") == 0)
+	else if (Id == "btn_appmain_scroll_up")
 	{
-		Owner->AppMainCallback("select", Id.c_str() + 12);
+		Owner->AppMainCallback("scroll_up", "");
+	}
+	else if (Id == "btn_appmain_scroll_down")
+	{
+		Owner->AppMainCallback("scroll_down", "");
 	}
 }
 
@@ -878,7 +906,10 @@ void RmlUISystem::AttachAppMainEvents()
 		"btn_appmain_terrain_toggle",
 		"btn_appmain_terrain2_toggle",
 		"btn_appmain_terrain_size",
-		"btn_appmain_splat_size"
+		"btn_appmain_splat_size",
+		"btn_appmain_scroll_up",
+		"btn_appmain_scroll_down",
+		"appmain_map_list"
 	};
 
 	for (const char* Id : ButtonIds)
@@ -914,7 +945,10 @@ void RmlUISystem::DetachAppMainEvents()
 		"btn_appmain_terrain_toggle",
 		"btn_appmain_terrain2_toggle",
 		"btn_appmain_terrain_size",
-		"btn_appmain_splat_size"
+		"btn_appmain_splat_size",
+		"btn_appmain_scroll_up",
+		"btn_appmain_scroll_down",
+		"appmain_map_list"
 	};
 
 	for (const char* Id : ButtonIds)
@@ -987,16 +1021,6 @@ void RmlUISystem::SetAppMainMaps(const char** Names, int Count)
 	}
 
 	List->SetInnerRML(RmlText);
-
-	for (int i = 0; i < Count; ++i)
-	{
-		char IdText[64] = {};
-		sprintf_s(IdText, "appmain_map_%d", i);
-
-		Rml::Element* Element = AppMainDocument->GetElementById(IdText);
-		if (Element)
-			Element->AddEventListener("click", AppMainClickListener.get());
-	}
 }
 
 void RmlUISystem::SetAppMainSelectedLevel(const char* Name)
@@ -1176,4 +1200,76 @@ bool RmlUISystem::GetAppMainCreateData(
 	OutHeight = RmlGetInputFloat(AppMainDocument, "appmain_height", 100.0f);
 
 	return true;
+}
+
+void RmlUISystem::SetAppMainScrollInfo(int FirstIndex, int VisibleCount, int TotalCount)
+{
+	if (!LoadAppMain())
+		return;
+
+	Rml::Element* Thumb = AppMainDocument->GetElementById("appmain_scroll_thumb");
+	Rml::Element* Track = AppMainDocument->GetElementById("appmain_scroll_track");
+	Rml::Element* Up = AppMainDocument->GetElementById("btn_appmain_scroll_up");
+	Rml::Element* Down = AppMainDocument->GetElementById("btn_appmain_scroll_down");
+
+	if (!Thumb || !Track)
+		return;
+
+	if (VisibleCount < 1)
+		VisibleCount = 1;
+
+	if (TotalCount < 0)
+		TotalCount = 0;
+
+	if (FirstIndex < 0)
+		FirstIndex = 0;
+
+	const int TrackHeight = 190;
+
+	if (TotalCount <= VisibleCount)
+	{
+		Thumb->SetProperty("top", "0px");
+		Thumb->SetProperty("height", "190px");
+
+		if (Up)
+			Up->SetProperty("display", "none");
+
+		if (Down)
+			Down->SetProperty("display", "none");
+
+		Track->SetProperty("display", "block");
+		return;
+	}
+
+	if (Up)
+		Up->SetProperty("display", "block");
+
+	if (Down)
+		Down->SetProperty("display", "block");
+
+	Track->SetProperty("display", "block");
+
+	int ThumbHeight = (TrackHeight * VisibleCount) / TotalCount;
+
+	if (ThumbHeight < 28)
+		ThumbHeight = 28;
+
+	if (ThumbHeight > TrackHeight)
+		ThumbHeight = TrackHeight;
+
+	const int MaxFirst = TotalCount - VisibleCount;
+	const int MaxTop = TrackHeight - ThumbHeight;
+
+	int ThumbTop = 0;
+
+	if (MaxFirst > 0)
+		ThumbTop = (FirstIndex * MaxTop) / MaxFirst;
+
+	char Text[32] = {};
+
+	sprintf_s(Text, "%dpx", ThumbTop);
+	Thumb->SetProperty("top", Text);
+
+	sprintf_s(Text, "%dpx", ThumbHeight);
+	Thumb->SetProperty("height", Text);
 }
