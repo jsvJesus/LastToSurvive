@@ -8,6 +8,56 @@
 #include <windowsx.h>
 #include <string>
 #include <cstring>
+#include <cstdio>
+
+namespace
+{
+	Rml::String WideToUtf8(const wchar_t* Text)
+	{
+		if (!Text || !Text[0])
+			return Rml::String();
+
+		const int Required = WideCharToMultiByte(CP_UTF8, 0, Text, -1, nullptr, 0, nullptr, nullptr);
+		if (Required <= 1)
+			return Rml::String();
+
+		Rml::String Result;
+		Result.resize(Required);
+
+		WideCharToMultiByte(CP_UTF8, 0, Text, -1, &Result[0], Required, nullptr, nullptr);
+		Result.resize(Required - 1);
+		return Result;
+	}
+
+	Rml::String EscapeRmlText(const Rml::String& Text)
+	{
+		Rml::String Result;
+		Result.reserve(Text.size());
+
+		for (char Ch : Text)
+		{
+			switch (Ch)
+			{
+			case '&': Result += "&amp;"; break;
+			case '<': Result += "&lt;"; break;
+			case '>': Result += "&gt;"; break;
+			default: Result += Ch; break;
+			}
+		}
+
+		return Result;
+	}
+
+	void SetElementText(Rml::ElementDocument* Document, const char* ElementId, const Rml::String& Text)
+	{
+		if (!Document || !ElementId)
+			return;
+
+		Rml::Element* Element = Document->GetElementById(ElementId);
+		if (Element)
+			Element->SetInnerRML(EscapeRmlText(Text));
+	}
+}
 
 RmlUISystem::FAppSelectClickListener::FAppSelectClickListener(RmlUISystem* InOwner)
 	: Owner(InOwner)
@@ -68,7 +118,7 @@ std::wstring RmlUISystem::GetStudioDataRoot()
 	return Path + L"\\Data";
 }
 
-bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice)
+bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSelectOnInit)
 {
 	if (bInitialized)
 		return true;
@@ -127,7 +177,7 @@ bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice)
 
 	bInitialized = true;
 
-	if (!LoadAppSelect())
+	if (bLoadAppSelectOnInit && !LoadAppSelect())
 	{
 		OutputDebugStringA("[RmlUI] AppSelect load failed, fallback to old Scaleform UI\n");
 	}
@@ -145,6 +195,12 @@ void RmlUISystem::Shutdown()
 			DetachAppSelectEvents();
 			Context->UnloadDocument(AppSelectDocument);
 			AppSelectDocument = nullptr;
+		}
+
+		if (LoadingScreenDocument)
+		{
+			Context->UnloadDocument(LoadingScreenDocument);
+			LoadingScreenDocument = nullptr;
 		}
 
 		Rml::RemoveContext(Context->GetName());
@@ -170,6 +226,7 @@ void RmlUISystem::Shutdown()
 	Hwnd = nullptr;
 	bInitialized = false;
 	bAppSelectVisible = false;
+	bLoadingScreenVisible = false;
 
 	OutputDebugStringA("[RmlUI] Shutdown\n");
 }
@@ -299,6 +356,82 @@ void RmlUISystem::HideAppSelect()
 	bAppSelectVisible = false;
 }
 
+bool RmlUISystem::LoadLoadingScreen()
+{
+	if (!bInitialized || !Context)
+		return false;
+
+	if (LoadingScreenDocument)
+		return true;
+
+	LoadingScreenDocument = Context->LoadDocument("Rml/Studio/LoadingScreen.rml");
+
+	if (!LoadingScreenDocument)
+	{
+		OutputDebugStringA("[RmlUI] Failed to load Data/Rml/Studio/LoadingScreen.rml\n");
+		return false;
+	}
+
+	LoadingScreenDocument->Hide();
+	bLoadingScreenVisible = false;
+
+	OutputDebugStringA("[RmlUI] LoadingScreen loaded\n");
+	return true;
+}
+
+void RmlUISystem::ShowLoadingScreen()
+{
+	if (!LoadLoadingScreen())
+		return;
+
+	if (LoadingScreenDocument)
+	{
+		LoadingScreenDocument->Show();
+		bLoadingScreenVisible = true;
+	}
+}
+
+void RmlUISystem::HideLoadingScreen()
+{
+	if (LoadingScreenDocument)
+		LoadingScreenDocument->Hide();
+
+	bLoadingScreenVisible = false;
+}
+
+void RmlUISystem::SetLoadingScreenData(const wchar_t* Name, const wchar_t* Description, const wchar_t* Tip)
+{
+	if (!LoadLoadingScreen())
+		return;
+
+	SetElementText(LoadingScreenDocument, "loading_title", WideToUtf8(Name ? Name : L"Loading"));
+	SetElementText(LoadingScreenDocument, "loading_description", WideToUtf8(Description ? Description : L""));
+	SetElementText(LoadingScreenDocument, "loading_tip", WideToUtf8(Tip ? Tip : L""));
+}
+
+void RmlUISystem::SetLoadingScreenProgress(float Progress)
+{
+	if (!LoadLoadingScreen())
+		return;
+
+	if (Progress < 0.0f)
+		Progress = 0.0f;
+	else if (Progress > 1.0f)
+		Progress = 1.0f;
+
+	char PercentText[32] = {};
+	sprintf_s(PercentText, "%.0f%%", Progress * 100.0f);
+	SetElementText(LoadingScreenDocument, "loading_percent", PercentText);
+
+	Rml::Element* Bar = LoadingScreenDocument->GetElementById("loading_bar_fill");
+	if (Bar)
+	{
+		char WidthText[32] = {};
+		sprintf_s(WidthText, "%.2f%%", Progress * 100.0f);
+		Bar->SetProperty("width", WidthText);
+	}
+}
+
 void RmlUISystem::Update(float DeltaSeconds)
 {
 	(void)DeltaSeconds;
@@ -315,7 +448,11 @@ void RmlUISystem::Render()
 	if (!bInitialized || !Context || !RenderInterface)
 		return;
 
-	if (!bAppSelectVisible || !AppSelectDocument)
+	const bool bHasVisibleDocument =
+		(bAppSelectVisible && AppSelectDocument) ||
+		(bLoadingScreenVisible && LoadingScreenDocument);
+
+	if (!bHasVisibleDocument)
 		return;
 
 	RenderInterface->BeginFrame(ClientWidth, ClientHeight);
@@ -355,6 +492,16 @@ bool RmlUISystem::IsAppSelectReady() const
 bool RmlUISystem::IsAppSelectVisible() const
 {
 	return bInitialized && AppSelectDocument != nullptr && bAppSelectVisible;
+}
+
+bool RmlUISystem::IsLoadingScreenReady() const
+{
+	return bInitialized && LoadingScreenDocument != nullptr;
+}
+
+bool RmlUISystem::IsLoadingScreenVisible() const
+{
+	return bInitialized && LoadingScreenDocument != nullptr && bLoadingScreenVisible;
 }
 
 int RmlUISystem::GetKeyModifiers()

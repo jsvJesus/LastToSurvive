@@ -2,6 +2,7 @@
 #include "r3d.h"
 
 #include "m_LoadingScreen.h"
+#include "GameCommon.h"
 #include "GameCode\UserProfile.h"
 
 #include "Multiplayer\MasterServerLogic.h"
@@ -9,8 +10,33 @@
 #include "LangMngr.h"
 
 #include "r3dDeviceQueue.h"
+#include "../../RmlUI/RmlUISystem.h"
 
 static const char* DEFAULT_LOADING_TEXTURE = "Data\\Menu\\Screen.png";
+
+static volatile float	gProgress;
+static LoadingScreen*	gLoadingScreen;
+static RmlUISystem		g_LoadingRmlUI;
+
+static bool EnsureLoadingRmlUI()
+{
+	if (g_LoadingRmlUI.IsInitialized())
+		return true;
+
+	if (!r3dRenderer || !r3dRenderer->pd3ddev || !win::hWnd)
+		return false;
+
+	if (!g_LoadingRmlUI.Init(win::hWnd, r3dRenderer->pd3ddev, false))
+		return false;
+
+	if (!g_LoadingRmlUI.LoadLoadingScreen())
+	{
+		g_LoadingRmlUI.Shutdown();
+		return false;
+	}
+
+	return true;
+}
 
 LoadingScreen::LoadingScreen( const char * movieName ) 
 : UIMenu(movieName) 
@@ -41,8 +67,11 @@ LoadingScreen::~LoadingScreen()
 
 bool LoadingScreen::Initialize()
 {
-#define MAKE_CALLBACK(FUNC) new r3dScaleformMovie::TGFxEICallback<LoadingScreen>(this, &LoadingScreen::FUNC)
-	gfxMovie.RegisterEventHandler("eventRegisterUI", MAKE_CALLBACK(eventRegisterUI));
+	if (EnsureLoadingRmlUI())
+	{
+		g_LoadingRmlUI.ShowLoadingScreen();
+		g_LoadingRmlUI.SetLoadingScreenProgress(gProgress);
+	}
 
 	return true;
 }
@@ -94,9 +123,10 @@ int LoadingScreen::Update()
 		r3dRenderer->SetViewport( (float)oldVp.X, (float)oldVp.Y, (float)oldVp.Width, (float)oldVp.Height );
 		r3dRenderer->pd3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, oldScissor);
 
-		if(!m_RenderingDisabled)
+		if(!m_RenderingDisabled && EnsureLoadingRmlUI())
 		{
-			gfxMovie.UpdateAndDraw();
+			g_LoadingRmlUI.Update(r3dGetFrameTime());
+			g_LoadingRmlUI.Render();
 		}
 
 		r3dRenderer->Flush();  
@@ -132,6 +162,13 @@ void LoadingScreen::SetData( const char* ImagePath, const wchar_t* Name, const w
 
 	if(!m_RenderingDisabled)
 		SetLoadingTexture(ImagePath);
+
+	if (EnsureLoadingRmlUI())
+	{
+		g_LoadingRmlUI.ShowLoadingScreen();
+		g_LoadingRmlUI.SetLoadingScreenData(Name, Message, tip_of_the_day);
+		g_LoadingRmlUI.SetLoadingScreenProgress(gProgress);
+	}
 
 	r3d_assert(_CrtCheckMemory());
 	if(m_GFX_Main.IsUndefined())
@@ -216,6 +253,9 @@ void
 LoadingScreen::SetProgress( float progress )
 {
 	R3D_ENSURE_MAIN_THREAD();
+	if (EnsureLoadingRmlUI())
+		g_LoadingRmlUI.SetLoadingScreenProgress(progress);
+
 	if(!m_GFX_Main.IsUndefined())
 	{
 		Scaleform::GFx::Value tmp, tmp1, tmp2, tmp3, tmp4;
@@ -245,15 +285,11 @@ LoadingScreen::SetProgress( float progress )
 
 //------------------------------------------------------------------------
 
-static volatile float	gProgress;
-static LoadingScreen*	gLoadingScreen;
-
 void StartLoadingScreen()
 {
 	r3d_assert( !gLoadingScreen );
-	gLoadingScreen = new LoadingScreen( "Data\\Menu\\LoadingScreen.swf" );
+	gLoadingScreen = new LoadingScreen( "" );
 
-	gLoadingScreen->Load();
 	gLoadingScreen->Initialize();
 	gLoadingScreen->SetRenderingDisabled(false);
 }
@@ -271,6 +307,12 @@ void StopLoadingScreen()
 	delete gLoadingScreen;
 
 	gLoadingScreen = NULL;
+
+	if (g_LoadingRmlUI.IsInitialized())
+	{
+		g_LoadingRmlUI.HideLoadingScreen();
+		g_LoadingRmlUI.Shutdown();
+	}
 }
 
 void SetLoadingTexture(const char* ImagePath)

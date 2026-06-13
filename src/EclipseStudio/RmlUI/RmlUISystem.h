@@ -21,7 +21,7 @@ public:
 	RmlUISystem();
 	~RmlUISystem();
 
-	bool Init(HWND InHwnd, IDirect3DDevice9* InDevice);
+	bool Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSelectOnInit = true);
 	void Shutdown();
 
 	void Update(float DeltaSeconds);
@@ -38,9 +38,17 @@ public:
 	void ShowAppSelect();
 	void HideAppSelect();
 
+	bool LoadLoadingScreen();
+	void ShowLoadingScreen();
+	void HideLoadingScreen();
+	void SetLoadingScreenData(const wchar_t* Name, const wchar_t* Description, const wchar_t* Tip);
+	void SetLoadingScreenProgress(float Progress);
+
 	bool IsInitialized() const;
 	bool IsAppSelectReady() const;
 	bool IsAppSelectVisible() const;
+	bool IsLoadingScreenReady() const;
+	bool IsLoadingScreenVisible() const;
 
 private:
 	class FAppSelectClickListener final : public Rml::EventListener
@@ -63,6 +71,7 @@ private:
 
 	Rml::Context* Context = nullptr;
 	Rml::ElementDocument* AppSelectDocument = nullptr;
+	Rml::ElementDocument* LoadingScreenDocument = nullptr;
 
 	std::unique_ptr<FAppSelectClickListener> AppSelectClickListener;
 
@@ -70,6 +79,7 @@ private:
 
 	bool bInitialized = false;
 	bool bAppSelectVisible = false;
+	bool bLoadingScreenVisible = false;
 	bool bCoreInitializedHere = false;
 
 	int ClientWidth = 1;
