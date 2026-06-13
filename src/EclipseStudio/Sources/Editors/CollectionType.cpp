@@ -59,7 +59,8 @@ bool CollectionType::InitMeshes(const char *meshName)
 #else
 	uint32_t lodIdx = 0;
 	const uint32_t totalLodsToCheck = 4;
-	const char *const lodSuffixes[totalLodsToCheck] = { "%s.sco", "%s_LOD1.sco", "%s_LOD2.sco", "%s_LOD3.sco" };
+	const bool isSrtMesh = strlen( meshName ) > 4 && !stricmp( meshName + strlen( meshName ) - 4, ".srt" );
+	const char *const lodSuffixes[totalLodsToCheck] = { isSrtMesh ? "%s.srt" : "%s.sco", "%s_LOD1.sco", "%s_LOD2.sco", "%s_LOD3.sco" };
 
 	char filename[MAX_PATH];
 	strcpy_s(filename, _countof(filename), meshName);

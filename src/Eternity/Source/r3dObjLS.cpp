@@ -4,6 +4,15 @@
 
 #include "r3dBackgroundTaskDispatcher.h"
 
+#if defined(_WIN64) && !defined(WO_SERVER)
+#define R3D_SPEEDTREE_SRT_ENABLED 1
+#define ST_EVALUATION_BUILD
+#include "../../../External/SpeedTreeSDK/Include/Core/Core.h"
+#pragma comment(lib, "..\\..\\External\\SpeedTreeSDK\\Lib\\Windows\\VS2015.x64\\SpeedTreeCore_Windows_v7.1_VS2015_MT64_Static.lib")
+#else
+#define R3D_SPEEDTREE_SRT_ENABLED 0
+#endif
+
 static int _r3dFinishObjectLoading(r3dMesh *obj)
 {
 	if(!obj->NumVertices || !obj->NumIndices) {
@@ -59,6 +68,333 @@ void r3dMesh::InitIndexList(int numIndexes)
 
 	return;
 }
+
+static bool r3dIsSrtMeshFile( const char* fname )
+{
+	const char* dot = strrchr( fname, '.' );
+	return dot && !stricmp( dot, ".srt" );
+}
+
+#if R3D_SPEEDTREE_SRT_ENABLED
+static void r3dGetFileDir( char* outDir, int outDirSize, const char* fname )
+{
+	r3dscpy_s( outDir, outDirSize, fname );
+
+	char* slash1 = strrchr( outDir, '\\' );
+	char* slash2 = strrchr( outDir, '/' );
+	char* slash = slash1 > slash2 ? slash1 : slash2;
+
+	if( slash )
+		*( slash + 1 ) = 0;
+	else
+		outDir[ 0 ] = 0;
+}
+
+static const char* r3dGetBaseName( const char* fname )
+{
+	const char* slash1 = strrchr( fname, '\\' );
+	const char* slash2 = strrchr( fname, '/' );
+	const char* slash = slash1 > slash2 ? slash1 : slash2;
+	return slash ? slash + 1 : fname;
+}
+
+static void r3dReplaceExtensionWithDds( char (&path)[ MAX_PATH ] )
+{
+	char* dot = strrchr( path, '.' );
+	if( dot )
+		r3dscpy( dot, ".dds" );
+}
+
+static bool r3dResolveSrtTexturePath( char (&outPath)[ MAX_PATH ], const char* srtPath, const char* textureName )
+{
+	outPath[ 0 ] = 0;
+
+	if( !textureName || !*textureName )
+		return false;
+
+	char fixedTexture[ MAX_PATH ];
+	r3dscpy_s( fixedTexture, _countof( fixedTexture ), textureName );
+	for( char* p = fixedTexture; *p; ++p )
+	{
+		if( *p == '/' )
+			*p = '\\';
+	}
+
+	char srtDir[ MAX_PATH ];
+	r3dGetFileDir( srtDir, _countof( srtDir ), srtPath );
+
+	const char* candidates[ 3 ] =
+	{
+		fixedTexture,
+		0,
+		0
+	};
+
+	char dirRelative[ MAX_PATH ];
+	sprintf( dirRelative, "%s%s", srtDir, fixedTexture );
+	candidates[ 1 ] = dirRelative;
+
+	char dirBaseName[ MAX_PATH ];
+	sprintf( dirBaseName, "%s%s", srtDir, r3dGetBaseName( fixedTexture ) );
+	candidates[ 2 ] = dirBaseName;
+
+	for( int i = 0; i < _countof( candidates ); ++i )
+	{
+		if( !candidates[ i ] || !*candidates[ i ] )
+			continue;
+
+		r3dscpy_s( outPath, _countof( outPath ), candidates[ i ] );
+		if( r3d_access( outPath, 0 ) == 0 )
+			return true;
+
+		r3dReplaceExtensionWithDds( outPath );
+		if( r3d_access( outPath, 0 ) == 0 )
+			return true;
+	}
+
+	outPath[ 0 ] = 0;
+	return false;
+}
+
+static r3dTexture* r3dLoadSrtTexture( const char* resolvedPath )
+{
+	if( !resolvedPath || !*resolvedPath )
+		return 0;
+
+	D3DPOOL pool = r_no_managed_textures->GetInt() ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED;
+	return r3dRenderer->LoadTexture( resolvedPath, D3DFMT_UNKNOWN, false, 1, 1, pool, TexMem );
+}
+
+static r3dMaterial* r3dGetSrtMaterial( const SpeedTree::SRenderState* rs, const char* srtPath, int drawCallIndex, bool useDefaultMaterial )
+{
+	if( useDefaultMaterial || !rs )
+		return r3dMaterialLibrary::GetDefaultMaterial();
+
+	char diffusePath[ MAX_PATH ];
+	char normalPath[ MAX_PATH ];
+	char specPath[ MAX_PATH ];
+	const bool hasDiffuse = r3dResolveSrtTexturePath( diffusePath, srtPath, static_cast< const char* >( rs->m_apTextures[ SpeedTree::TL_DIFFUSE ] ) );
+	const bool hasNormal = r3dResolveSrtTexturePath( normalPath, srtPath, static_cast< const char* >( rs->m_apTextures[ SpeedTree::TL_NORMAL ] ) );
+	const bool hasSpec = r3dResolveSrtTexturePath( specPath, srtPath, static_cast< const char* >( rs->m_apTextures[ SpeedTree::TL_SPECULAR_MASK ] ) );
+
+	if( !hasDiffuse )
+	{
+		r3dOutToLog( "SpeedTreeSRT: missing diffuse texture for '%s' draw %d, using default material\n", srtPath, drawCallIndex );
+		return r3dMaterialLibrary::GetDefaultMaterial();
+	}
+
+	std::string cacheKey = diffusePath;
+	cacheKey += "|";
+	cacheKey += hasNormal ? normalPath : "";
+	cacheKey += "|";
+	cacheKey += hasSpec ? specPath : "";
+	cacheKey += "|";
+	cacheKey += rs->m_bBlending ? "blend" : "opaque";
+	cacheKey += "|";
+	cacheKey += rs->m_eFaceCulling == SpeedTree::CULLTYPE_NONE ? "2sided" : "1sided";
+
+	static std::map< std::string, r3dMaterial* > s_SrtMaterials;
+	std::map< std::string, r3dMaterial* >::iterator it = s_SrtMaterials.find( cacheKey );
+	if( it != s_SrtMaterials.end() )
+		return it->second;
+
+	r3dMaterial* mat = new r3dMaterial();
+
+	char matName[ R3D_MAX_MATERIAL_NAME ];
+	sprintf( matName, "SpeedTreeSRT_%08x", r3dHash::MakeHash( cacheKey.c_str() ) );
+	r3dscpy_s( mat->Name, _countof( mat->Name ), matName );
+	r3dscpy_s( mat->DepotName, _countof( mat->DepotName ), srtPath );
+	r3dGetFileDir( mat->OriginalDir, _countof( mat->OriginalDir ), srtPath );
+
+	mat->DiffuseColor = r3dColor(
+		R3D_CLAMP( int( rs->m_vDiffuseColor.x * rs->m_fDiffuseScalar * 255.0f ), 0, 255 ),
+		R3D_CLAMP( int( rs->m_vDiffuseColor.y * rs->m_fDiffuseScalar * 255.0f ), 0, 255 ),
+		R3D_CLAMP( int( rs->m_vDiffuseColor.z * rs->m_fDiffuseScalar * 255.0f ), 0, 255 ) );
+	mat->SpecularColor = r3dColor(
+		R3D_CLAMP( int( rs->m_vSpecularColor.x * 255.0f ), 0, 255 ),
+		R3D_CLAMP( int( rs->m_vSpecularColor.y * 255.0f ), 0, 255 ),
+		R3D_CLAMP( int( rs->m_vSpecularColor.z * 255.0f ), 0, 255 ) );
+	mat->SpecularPower = rs->m_fShininess;
+
+	if( rs->m_eFaceCulling == SpeedTree::CULLTYPE_NONE )
+		mat->Flags |= R3D_MAT_DOUBLESIDED;
+
+	if( !rs->m_bDiffuseAlphaMaskIsOpaque )
+		mat->Flags |= R3D_MAT_HASALPHA | R3D_MAT_FORCEHASALPHA;
+
+	if( rs->m_bBlending )
+		mat->Flags |= R3D_MAT_TRANSPARENT | R3D_MAT_HASALPHA | R3D_MAT_FORCEHASALPHA;
+
+	mat->Texture = r3dLoadSrtTexture( diffusePath );
+	if( hasNormal )
+		mat->BumpTexture = r3dLoadSrtTexture( normalPath );
+	if( hasSpec )
+		mat->GlossTexture = r3dLoadSrtTexture( specPath );
+
+	if( !mat->Texture )
+	{
+		r3dOutToLog( "SpeedTreeSRT: failed to load diffuse '%s' for '%s', using default material\n", diffusePath, srtPath );
+		delete mat;
+		return r3dMaterialLibrary::GetDefaultMaterial();
+	}
+
+	if( hasNormal && !mat->BumpTexture )
+		r3dOutToLog( "SpeedTreeSRT: failed to load normal '%s' for '%s'\n", normalPath, srtPath );
+	if( hasSpec && !mat->GlossTexture )
+		r3dOutToLog( "SpeedTreeSRT: failed to load specular '%s' for '%s'\n", specPath, srtPath );
+
+	s_SrtMaterials[ cacheKey ] = mat;
+	return mat;
+}
+
+static bool r3dLoadSpeedTreeSrtIntoMesh( r3dMesh& mesh, const char* srtPath, bool useDefaultMaterial )
+{
+	SpeedTree::CCore tree;
+	if( !tree.LoadTree( srtPath ) )
+	{
+		r3dOutToLog( "SpeedTreeSRT: LoadTree failed for '%s': %s\n", srtPath, SpeedTree::CCore::GetError() );
+		return false;
+	}
+
+	const SpeedTree::SGeometry* geom = tree.GetGeometry();
+	if( !geom || geom->m_nNumLods <= 0 || !geom->m_pLods )
+	{
+		r3dOutToLog( "SpeedTreeSRT: no geometry in '%s'\n", srtPath );
+		return false;
+	}
+
+	const SpeedTree::SLod* lod = 0;
+	for( int lodIdx = 0; lodIdx < geom->m_nNumLods; ++lodIdx )
+	{
+		const SpeedTree::SLod& candidate = geom->m_pLods[ lodIdx ];
+		if( candidate.m_nNumDrawCalls > 0 && candidate.m_pDrawCalls )
+		{
+			lod = &candidate;
+			break;
+		}
+	}
+
+	if( !lod )
+	{
+		r3dOutToLog( "SpeedTreeSRT: no LOD draw calls in '%s'\n", srtPath );
+		return false;
+	}
+
+	int numVertices = 0;
+	int numIndices = 0;
+	int numChunks = 0;
+	for( int drawIdx = 0; drawIdx < lod->m_nNumDrawCalls; ++drawIdx )
+	{
+		const SpeedTree::SDrawCall& dc = lod->m_pDrawCalls[ drawIdx ];
+		if( dc.m_nNumVertices <= 0 || dc.m_nNumIndices <= 0 || !dc.m_pVertexData || !dc.m_pIndexData )
+			continue;
+
+		numVertices += dc.m_nNumVertices;
+		numIndices += dc.m_nNumIndices;
+		++numChunks;
+	}
+
+	if( numVertices <= 0 || numIndices <= 0 || numChunks <= 0 )
+	{
+		r3dOutToLog( "SpeedTreeSRT: empty LOD0 geometry in '%s'\n", srtPath );
+		return false;
+	}
+
+	if( numChunks > r3dMesh::ConstNumMatChunks )
+	{
+		r3dOutToLog( "SpeedTreeSRT: too many draw calls (%d) in '%s'\n", numChunks, srtPath );
+		return false;
+	}
+
+	memset( mesh.Name, 0, sizeof( mesh.Name ) );
+	r3dscpy_s( mesh.Name, _countof( mesh.Name ), r3dGetBaseName( srtPath ) );
+	mesh.vPivot = r3dPoint3D( 0, 0, 0 );
+
+	mesh.InitVertsList( numVertices );
+	mesh.InitIndexList( numIndices );
+
+	r3d_assert( mesh.MatChunksNames == 0 );
+	mesh.MatChunksNames = new char*[ 256 ];
+	mesh.NumMatChunks = 0;
+
+	bool hasMissingTangents = false;
+	int vertexBase = 0;
+	int indexBase = 0;
+
+	for( int drawIdx = 0; drawIdx < lod->m_nNumDrawCalls; ++drawIdx )
+	{
+		const SpeedTree::SDrawCall& dc = lod->m_pDrawCalls[ drawIdx ];
+		if( dc.m_nNumVertices <= 0 || dc.m_nNumIndices <= 0 || !dc.m_pVertexData || !dc.m_pIndexData )
+			continue;
+
+		for( int vertIdx = 0; vertIdx < dc.m_nNumVertices; ++vertIdx )
+		{
+			float values[ 4 ] = { 0, 0, 0, 0 };
+			const int dstIdx = vertexBase + vertIdx;
+
+			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_POSITION, vertIdx, values ) )
+				mesh.VertexPositions[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+			else
+				mesh.VertexPositions[ dstIdx ] = r3dPoint3D( 0, 0, 0 );
+
+			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_NORMAL, vertIdx, values ) )
+				mesh.VertexNormals[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+			else
+				mesh.VertexNormals[ dstIdx ] = r3dPoint3D( 0, 1, 0 );
+
+			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_DIFFUSE_TEXCOORDS, vertIdx, values ) )
+				mesh.VertexUVs[ dstIdx ] = r3dPoint2D( values[ 0 ], values[ 1 ] );
+			else
+				mesh.VertexUVs[ dstIdx ] = r3dPoint2D( 0, 0 );
+
+			if( dc.GetProperty( SpeedTree::VERTEX_PROPERTY_TANGENT, vertIdx, values ) )
+			{
+				mesh.VertexTangents[ dstIdx ] = r3dPoint3D( values[ 0 ], values[ 1 ], values[ 2 ] );
+				mesh.VertexTangentWs[ dstIdx ] = char( 255 );
+			}
+			else
+			{
+				mesh.VertexTangents[ dstIdx ] = r3dPoint3D( 1, 0, 0 );
+				mesh.VertexTangentWs[ dstIdx ] = char( 255 );
+				hasMissingTangents = true;
+			}
+		}
+
+		if( dc.m_b32BitIndices )
+		{
+			const SpeedTree::st_uint32* indices = reinterpret_cast< const SpeedTree::st_uint32* >( static_cast< const SpeedTree::st_byte* >( dc.m_pIndexData ) );
+			for( int i = 0; i < dc.m_nNumIndices; ++i )
+				mesh.Indices[ indexBase + i ] = vertexBase + indices[ i ];
+		}
+		else
+		{
+			const SpeedTree::st_uint16* indices = reinterpret_cast< const SpeedTree::st_uint16* >( static_cast< const SpeedTree::st_byte* >( dc.m_pIndexData ) );
+			for( int i = 0; i < dc.m_nNumIndices; ++i )
+				mesh.Indices[ indexBase + i ] = vertexBase + indices[ i ];
+		}
+
+		const int chunkIdx = mesh.NumMatChunks;
+		mesh.MatChunks[ chunkIdx ].StartIndex = indexBase;
+		mesh.MatChunks[ chunkIdx ].EndIndex = indexBase + dc.m_nNumIndices;
+		mesh.MatChunks[ chunkIdx ].Mat = r3dGetSrtMaterial( static_cast< const SpeedTree::SRenderState* >( dc.m_pRenderState ), srtPath, drawIdx, useDefaultMaterial );
+		mesh.MatChunksNames[ chunkIdx ] = new char[ 128 ];
+		sprintf( mesh.MatChunksNames[ chunkIdx ], "SpeedTreeSRT_%02d", drawIdx );
+		++mesh.NumMatChunks;
+
+		vertexBase += dc.m_nNumVertices;
+		indexBase += dc.m_nNumIndices;
+	}
+
+	mesh.SetLoaded();
+
+	if( hasMissingTangents )
+		mesh.RecalcBasisVectors();
+
+	_r3dFinishObjectLoading( &mesh );
+	r3dOutToLog( "SpeedTreeSRT: loaded '%s' as r3dMesh (%d verts, %d indices, %d chunks)\n", srtPath, numVertices, numIndices, mesh.NumMatChunks );
+	return true;
+}
+#endif
 
 bool getFileTimestamp(const char* fname, FILETIME& writeTime)
 {
@@ -161,6 +497,9 @@ static void ToBin( char (&outinFName)[ N ], const char* inFName )
 
 /*static*/ bool r3dMesh::CanLoad( const char* fname )
 {
+	if( r3dIsSrtMeshFile( fname ) )
+		return r3d_access( fname, 0 ) == 0;
+
 	char bin_file[512];
 	r3dscpy(bin_file, fname);
 
@@ -195,6 +534,22 @@ bool r3dMesh::DoLoad( bool use_default_material )
 			r3dArtBugComment( 0 ) ;
 		}		
 	} artBugComment( fname ) ;
+
+	if( r3dIsSrtMeshFile( fname ) )
+	{
+#if R3D_SPEEDTREE_SRT_ENABLED
+		const bool loaded = r3dLoadSpeedTreeSrtIntoMesh( *this, fname, use_default_material );
+		if( loaded )
+		{
+			ResetXForm();
+			FindAlphaTextures();
+		}
+		return loaded;
+#else
+		r3dArtBug( "r3dMesh::Load(): SpeedTree SRT loader is enabled only for x64 client/editor builds: '%s'\n", fname );
+		return false;
+#endif
+	}
 
 	char bin_file[512];
 	ToBin( bin_file, fname ) ;

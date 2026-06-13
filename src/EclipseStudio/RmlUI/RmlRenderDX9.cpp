@@ -7,9 +7,119 @@
 #include <algorithm>
 #include <vector>
 
+#ifdef SetViewport
+#undef SetViewport
+#endif
+
+#ifdef SetTransform
+#undef SetTransform
+#endif
+
+#ifdef SetFVF
+#undef SetFVF
+#endif
+
+#ifdef SetRenderState
+#undef SetRenderState
+#endif
+
+#ifdef SetTextureStageState
+#undef SetTextureStageState
+#endif
+
+#ifdef SetSamplerState
+#undef SetSamplerState
+#endif
+
+#ifdef SetScissorRect
+#undef SetScissorRect
+#endif
+
+#ifdef SetStreamSource
+#undef SetStreamSource
+#endif
+
+#ifdef SetIndices
+#undef SetIndices
+#endif
+
+#ifdef SetTexture
+#undef SetTexture
+#endif
+
+#ifdef DrawIndexedPrimitive
+#undef DrawIndexedPrimitive
+#endif
+
+#ifdef CreateStateBlock
+#undef CreateStateBlock
+#endif
+
+#ifdef CreateVertexBuffer
+#undef CreateVertexBuffer
+#endif
+
+#ifdef CreateIndexBuffer
+#undef CreateIndexBuffer
+#endif
+
+#ifdef D3DRS_CULLMODE
+#undef D3DRS_CULLMODE
+#endif
+
+#ifdef D3DRS_SCISSORTESTENABLE
+#undef D3DRS_SCISSORTESTENABLE
+#endif
+
+#ifdef D3DRS_ALPHATESTENABLE
+#undef D3DRS_ALPHATESTENABLE
+#endif
+
+#ifdef D3DRS_ALPHABLENDENABLE
+#undef D3DRS_ALPHABLENDENABLE
+#endif
+
+#ifdef D3DRS_SRCBLEND
+#undef D3DRS_SRCBLEND
+#endif
+
+#ifdef D3DRS_DESTBLEND
+#undef D3DRS_DESTBLEND
+#endif
+
+#ifdef D3DRS_BLENDOP
+#undef D3DRS_BLENDOP
+#endif
+
+#ifdef D3DRS_ZENABLE
+#undef D3DRS_ZENABLE
+#endif
+
+#ifdef D3DRS_ZWRITEENABLE
+#undef D3DRS_ZWRITEENABLE
+#endif
+
+#ifdef D3DRS_LIGHTING
+#undef D3DRS_LIGHTING
+#endif
+
+#ifdef CreateTexture
+#undef CreateTexture
+#endif
+
 #pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "windowscodecs.lib")
-#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "d3dx9.lib")
+
+static const D3DRENDERSTATETYPE RML_D3DRS_ZENABLE = (D3DRENDERSTATETYPE)7;
+static const D3DRENDERSTATETYPE RML_D3DRS_ZWRITEENABLE = (D3DRENDERSTATETYPE)14;
+static const D3DRENDERSTATETYPE RML_D3DRS_ALPHATESTENABLE = (D3DRENDERSTATETYPE)15;
+static const D3DRENDERSTATETYPE RML_D3DRS_SRCBLEND = (D3DRENDERSTATETYPE)19;
+static const D3DRENDERSTATETYPE RML_D3DRS_DESTBLEND = (D3DRENDERSTATETYPE)20;
+static const D3DRENDERSTATETYPE RML_D3DRS_CULLMODE = (D3DRENDERSTATETYPE)22;
+static const D3DRENDERSTATETYPE RML_D3DRS_ALPHABLENDENABLE = (D3DRENDERSTATETYPE)27;
+static const D3DRENDERSTATETYPE RML_D3DRS_LIGHTING = (D3DRENDERSTATETYPE)137;
+static const D3DRENDERSTATETYPE RML_D3DRS_SCISSORTESTENABLE = (D3DRENDERSTATETYPE)174;
+static const D3DRENDERSTATETYPE RML_D3DRS_BLENDOP = (D3DRENDERSTATETYPE)171;
 
 RmlRenderDX9::RmlRenderDX9()
 {
@@ -36,22 +146,6 @@ bool RmlRenderDX9::Init(IDirect3DDevice9* InDevice, const wchar_t* InDataRoot)
 	while (!DataRoot.empty() && (DataRoot.back() == L'\\' || DataRoot.back() == L'/'))
 		DataRoot.pop_back();
 
-	const HRESULT CoResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	bComInitializedHere = SUCCEEDED(CoResult);
-
-	HRESULT Hr = CoCreateInstance(
-		CLSID_WICImagingFactory,
-		nullptr,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(&WicFactory)
-	);
-
-	if (FAILED(Hr))
-	{
-		OutputDebugStringA("[RmlUI][DX9] Warning: WIC factory failed, external image loading disabled\n");
-		WicFactory = nullptr;
-	}
-
 	OutputDebugStringA("[RmlUI][DX9] Render interface initialized\n");
 	return true;
 }
@@ -62,18 +156,6 @@ void RmlRenderDX9::Shutdown()
 	{
 		StateBlock->Release();
 		StateBlock = nullptr;
-	}
-
-	if (WicFactory)
-	{
-		WicFactory->Release();
-		WicFactory = nullptr;
-	}
-
-	if (bComInitializedHere)
-	{
-		CoUninitialize();
-		bComInitializedHere = false;
 	}
 
 	if (Device)
@@ -209,19 +291,19 @@ void RmlRenderDX9::SetupRenderState()
 
 	Device->SetFVF(VertexFVF);
 
-	Device->SetRenderState(D3DRS_LIGHTING, FALSE);
-	Device->SetRenderState(D3DRS_ZENABLE, FALSE);
-	Device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	(Device->SetRenderState)(RML_D3DRS_LIGHTING, FALSE);
+	(Device->SetRenderState)(RML_D3DRS_ZENABLE, FALSE);
+	(Device->SetRenderState)(RML_D3DRS_ZWRITEENABLE, FALSE);
+	(Device->SetRenderState)(RML_D3DRS_CULLMODE, D3DCULL_NONE);
 
-	Device->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	Device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	(Device->SetRenderState)(RML_D3DRS_ALPHATESTENABLE, FALSE);
+	(Device->SetRenderState)(RML_D3DRS_ALPHABLENDENABLE, TRUE);
 
-	Device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	Device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	(Device->SetRenderState)(RML_D3DRS_SRCBLEND, D3DBLEND_ONE);
+	(Device->SetRenderState)(RML_D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	(Device->SetRenderState)(RML_D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-	Device->SetRenderState(D3DRS_SCISSORTESTENABLE, bScissorEnabled ? TRUE : FALSE);
+	(Device->SetRenderState)(RML_D3DRS_SCISSORTESTENABLE, bScissorEnabled ? TRUE : FALSE);
 
 	if (bScissorEnabled)
 		Device->SetScissorRect(&ScissorRect);
@@ -490,86 +572,41 @@ bool RmlRenderDX9::CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Wi
 	return true;
 }
 
-bool RmlRenderDX9::LoadTextureWIC(const std::wstring& Filename, Rml::Vector2i& OutDimensions, IDirect3DTexture9** OutTexture)
+bool RmlRenderDX9::LoadTextureD3DX(const std::wstring& Filename, Rml::Vector2i& OutDimensions, IDirect3DTexture9** OutTexture)
 {
-	if (!WicFactory || !OutTexture)
+	if (!Device || !OutTexture)
 		return false;
 
 	*OutTexture = nullptr;
 
-	IWICBitmapDecoder* Decoder = nullptr;
-	IWICBitmapFrameDecode* Frame = nullptr;
-	IWICFormatConverter* Converter = nullptr;
+	D3DXIMAGE_INFO Info{};
+	IDirect3DTexture9* Texture = nullptr;
 
-	HRESULT Hr = WicFactory->CreateDecoderFromFilename(
+	HRESULT Hr = D3DXCreateTextureFromFileExW(
+		Device,
 		Filename.c_str(),
+		D3DX_DEFAULT,
+		D3DX_DEFAULT,
+		1,
+		0,
+		D3DFMT_A8R8G8B8,
+		D3DPOOL_MANAGED,
+		D3DX_FILTER_LINEAR,
+		D3DX_FILTER_LINEAR,
+		0,
+		&Info,
 		nullptr,
-		GENERIC_READ,
-		WICDecodeMetadataCacheOnLoad,
-		&Decoder
+		&Texture
 	);
 
-	if (FAILED(Hr))
-		goto Fail;
+	if (FAILED(Hr) || !Texture)
+		return false;
 
-	Hr = Decoder->GetFrame(0, &Frame);
-	if (FAILED(Hr))
-		goto Fail;
+	OutDimensions.x = (int)Info.Width;
+	OutDimensions.y = (int)Info.Height;
 
-	UINT Width = 0;
-	UINT Height = 0;
-
-	Hr = Frame->GetSize(&Width, &Height);
-	if (FAILED(Hr) || Width == 0 || Height == 0)
-		goto Fail;
-
-	Hr = WicFactory->CreateFormatConverter(&Converter);
-	if (FAILED(Hr))
-		goto Fail;
-
-	Hr = Converter->Initialize(
-		Frame,
-		GUID_WICPixelFormat32bppRGBA,
-		WICBitmapDitherTypeNone,
-		nullptr,
-		0.0,
-		WICBitmapPaletteTypeCustom
-	);
-
-	if (FAILED(Hr))
-		goto Fail;
-
-	std::vector<unsigned char> Pixels;
-	Pixels.resize(static_cast<size_t>(Width) * static_cast<size_t>(Height) * 4);
-
-	Hr = Converter->CopyPixels(
-		nullptr,
-		Width * 4,
-		static_cast<UINT>(Pixels.size()),
-		Pixels.data()
-	);
-
-	if (FAILED(Hr))
-		goto Fail;
-
-	if (!CreateTextureFromRGBA(Pixels.data(), static_cast<int>(Width), static_cast<int>(Height), OutTexture))
-		goto Fail;
-
-	OutDimensions.x = static_cast<int>(Width);
-	OutDimensions.y = static_cast<int>(Height);
-
-	if (Converter) Converter->Release();
-	if (Frame) Frame->Release();
-	if (Decoder) Decoder->Release();
-
+	*OutTexture = Texture;
 	return true;
-
-Fail:
-	if (Converter) Converter->Release();
-	if (Frame) Frame->Release();
-	if (Decoder) Decoder->Release();
-
-	return false;
 }
 
 Rml::TextureHandle RmlRenderDX9::LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source)
@@ -578,7 +615,7 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(Rml::Vector2i& texture_dimensions, 
 
 	IDirect3DTexture9* Texture = nullptr;
 
-	if (!LoadTextureWIC(FullPath, texture_dimensions, &Texture))
+	if (!LoadTextureD3DX(FullPath, texture_dimensions, &Texture))
 	{
 		std::string Text = "[RmlUI][DX9] Failed to load texture: ";
 		Text += source;
@@ -625,7 +662,7 @@ void RmlRenderDX9::EnableScissorRegion(bool enable)
 	bScissorEnabled = enable;
 
 	if (Device)
-		Device->SetRenderState(D3DRS_SCISSORTESTENABLE, enable ? TRUE : FALSE);
+		(Device->SetRenderState)(RML_D3DRS_SCISSORTESTENABLE, enable ? TRUE : FALSE);
 }
 
 void RmlRenderDX9::SetScissorRegion(Rml::Rectanglei region)

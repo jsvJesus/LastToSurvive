@@ -72,7 +72,7 @@ Rml::FileHandle RmlFileInterface::Open(const Rml::String& path)
 		Text += path;
 		Text += "\n";
 		OutputDebugStringA(Text.c_str());
-		return nullptr;
+		return 0;
 	}
 
 	return reinterpret_cast<Rml::FileHandle>(File);

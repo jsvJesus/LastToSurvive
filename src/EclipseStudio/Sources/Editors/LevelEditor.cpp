@@ -7732,7 +7732,6 @@ void FillCatFromDir( CategoryStruct& cat, const char* clazz, const char* path, c
 
 	sprintf( CatPath, "Data\\ObjectsDepot\\%s\\", path );
 
-	sprintf ( TempS, filePattern, CatPath); // ptumik: parse only text meshes
 	WIN32_FIND_DATA ffblk;
 	HANDLE h;
 	cat.NumObjects = 0;
@@ -7746,22 +7745,30 @@ void FillCatFromDir( CategoryStruct& cat, const char* clazz, const char* path, c
 		LoadSkelConfig( &cat.SkelConfig, CatPath, SKEL_CFG_FILE_NAME );
 	}
 
-	h = FindFirstFile(TempS, &ffblk);
-	if(h != INVALID_HANDLE_VALUE)
+	const char* patterns[ 2 ] = { filePattern, 0 };
+	if( !strcmp( filePattern, "%s*.sco" ) )
+		patterns[ 1 ] = "%s*.srt";
+
+	for( int patternIdx = 0; patternIdx < _countof( patterns ) && patterns[ patternIdx ]; ++patternIdx )
 	{
-		do 
+		sprintf ( TempS, patterns[ patternIdx ], CatPath); // ptumik: parse only text meshes
+		h = FindFirstFile(TempS, &ffblk);
+		if(h != INVALID_HANDLE_VALUE)
 		{
-			if (ffblk.cFileName[0] != '.')
+			do 
 			{
-				if(strstr(ffblk.cFileName, "_collision.sco") || strstr(ffblk.cFileName, "_Collision.sco"))
-					continue;
-			
-				cat.NumObjects ++;
-				cat.ObjectsNames.push_back(ffblk.cFileName);
-				cat.ObjectsClasses.push_back( clazz );
-			}
-		} while(FindNextFile(h, &ffblk) != 0);
-		FindClose(h);
+				if (ffblk.cFileName[0] != '.')
+				{
+					if(strstr(ffblk.cFileName, "_collision.sco") || strstr(ffblk.cFileName, "_Collision.sco"))
+						continue;
+				
+					cat.NumObjects ++;
+					cat.ObjectsNames.push_back(ffblk.cFileName);
+					cat.ObjectsClasses.push_back( clazz );
+				}
+			} while(FindNextFile(h, &ffblk) != 0);
+			FindClose(h);
+		}
 	}
 }
 
@@ -14077,9 +14084,9 @@ void Editor_Level::ProcessAssets()
 
 	static const char* rootDir = "Data/ObjectsDepot/";
 	
-	static const char* extList[] = { ".sco", ".dds", ".tga", ".mat" };
+	static const char* extList[] = { ".sco", ".srt", ".dds", ".tga", ".mat" };
 	const int nExtNum = sizeof( extList ) / sizeof( extList[ 0 ] );
-	static const char* ExtFilter = ".sco|.mat|.dds|.tga";
+	static const char* ExtFilter = ".sco|.srt|.mat|.dds|.tga";
 	
 	static int nIndex = 0;	
 	static float fOffset = 0;
@@ -14106,7 +14113,7 @@ void Editor_Level::ProcessAssets()
 
 	if ( nDragIndex >= 0 )
 	{
-		if ( nIndex == 0 )
+		if ( nIndex == 0 || nIndex == 1 )
 		{
 			Hud->ProcessPick();
 			if ( ( UI_TargetPos - Hud->FPS_Position ).LengthSq() > R3D_EPSILON )
@@ -14144,7 +14151,7 @@ void Editor_Level::ProcessAssets()
 				}
 			}
 		}
-		else if ( nIndex == 4 )
+		else if ( nIndex == nExtNum )
 		{
 			if ( imgui_lbr )
 				srv_CreateGameObject( "obj_ParticleSystem", fileName, UI_TerraTargetPos );
@@ -14196,7 +14203,7 @@ void Editor_Level::ProcessAssets()
 			fileName[ 0 ] = 0;
 		else
 			r3dscpy( fileName, cat.ObjectsNames[ selIdx ].c_str() );
-		nIndex = 4;
+		nIndex = nExtNum;
 
 		nSelectIndex = selIdx ;
 	} 
@@ -14246,7 +14253,7 @@ void Editor_Level::ProcessAssets()
 			}
 		}
 
-		if ( bDragPreview && nIndex != 4 && !bNeedObjPrev )
+		if ( bDragPreview && nIndex != nExtNum && !bNeedObjPrev )
 		{
 			bDragPreview = false;
 			if ( !bShowPreview )
@@ -14268,7 +14275,7 @@ void Editor_Level::ProcessAssets()
 				fY = fBottomY - g_EditorPreviewSize - fPreviewHalfSize / 2;
 		}
 
-		if ( nIndex == 0 )
+		if ( nIndex == 0 || nIndex == 1 )
 		{
 			static r3dTexture* pMeshTex = NULL;
 			if ( bNewSelect )
@@ -14368,7 +14375,7 @@ void Editor_Level::ProcessAssets()
 			r3dDrawBox2D( fX, fY, fSize, fSize, r3dColor::white, pMeshTex );
 			r3dRenderer->SetRenderingMode(R3D_BLEND_POP);
 		}
-		else if ( nIndex == 1 || nIndex == 2 )
+		else if ( nIndex == 2 || nIndex == 3 )
 		{
 			static r3dTexture* pTex = NULL;
 			if ( bNewSelect )
@@ -14426,7 +14433,7 @@ void Editor_Level::ProcessAssets()
 				}
 			}
 		}
-		else if ( nIndex == 3 )
+		else if ( nIndex == 4 )
 		{
 			static r3dTexture* pMatTex = NULL;
 
@@ -14476,7 +14483,7 @@ void Editor_Level::ProcessAssets()
 			r3dDrawBox2D( fX, fY, fSize, fSize, r3dColor::white, pMatTex );
 			r3dRenderer->SetRenderingMode(R3D_BLEND_POP);
 		}
-		else if ( nIndex == 4 )
+		else if ( nIndex == nExtNum )
 		{
 			static r3dParticleSystem* pPartSys = NULL;
 			

@@ -186,8 +186,14 @@ void RmlUISystem::UpdateClientSize()
 	RECT Rc{};
 	GetClientRect(Hwnd, &Rc);
 
-	ClientWidth = std::max(1, Rc.right - Rc.left);
-	ClientHeight = std::max(1, Rc.bottom - Rc.top);
+	ClientWidth = (int)(Rc.right - Rc.left);
+	ClientHeight = (int)(Rc.bottom - Rc.top);
+
+	if (ClientWidth < 1)
+		ClientWidth = 1;
+
+	if (ClientHeight < 1)
+		ClientHeight = 1;
 
 	if (Context)
 		Context->SetDimensions(Rml::Vector2i(ClientWidth, ClientHeight));
@@ -456,13 +462,13 @@ bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, 
 		return false;
 
 	case WM_MOUSEMOVE:
-	{
-		const int X = GET_X_LPARAM(LParam);
-		const int Y = GET_Y_LPARAM(LParam);
+		{
+			const int X = GET_X_LPARAM(LParam);
+			const int Y = GET_Y_LPARAM(LParam);
 
-		Context->ProcessMouseMove(X, Y, GetKeyModifiers());
-		return Context->IsMouseInteracting();
-	}
+			Context->ProcessMouseMove(X, Y, GetKeyModifiers());
+			return true;
+		}
 
 	case WM_MOUSELEAVE:
 	{

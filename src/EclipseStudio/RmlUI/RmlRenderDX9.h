@@ -2,7 +2,7 @@
 
 #include <RmlUi/Core/RenderInterface.h>
 #include <d3d9.h>
-#include <wincodec.h>
+#include <d3dx9tex.h>
 #include <string>
 
 class RmlRenderDX9 final : public Rml::RenderInterface
@@ -61,9 +61,6 @@ private:
 	bool bScissorEnabled = false;
 	RECT ScissorRect{ 0, 0, 1, 1 };
 
-	bool bComInitializedHere = false;
-	IWICImagingFactory* WicFactory = nullptr;
-
 	std::wstring DataRoot;
 
 	static constexpr DWORD VertexFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
@@ -75,7 +72,7 @@ private:
 
 	std::wstring ResolvePathW(const Rml::String& path) const;
 	bool CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Width, int Height, IDirect3DTexture9** OutTexture);
-	bool LoadTextureWIC(const std::wstring& Filename, Rml::Vector2i& OutDimensions, IDirect3DTexture9** OutTexture);
+	bool LoadTextureD3DX(const std::wstring& Filename, Rml::Vector2i& OutDimensions, IDirect3DTexture9** OutTexture);
 
 	void SetupRenderState();
 };
