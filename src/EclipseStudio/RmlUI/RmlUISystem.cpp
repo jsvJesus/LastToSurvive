@@ -268,8 +268,8 @@ bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSel
 
 	bCoreInitializedHere = true;
 
-	Rml::LoadFontFace("Rml/Fonts/NotoSans-Regular.ttf");
-	Rml::LoadFontFace("Rml/Fonts/Roboto-Regular.ttf");
+	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/NotoSans-Regular.ttf");
+	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/Roboto-Regular.ttf");
 	Rml::LoadFontFace("C:/Windows/Fonts/arial.ttf");
 
 	Context = Rml::CreateContext("Studio", Rml::Vector2i(ClientWidth, ClientHeight));

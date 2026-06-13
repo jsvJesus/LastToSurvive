@@ -158,9 +158,10 @@ void RmlEditorRmlHost::LoadFonts()
 {
 	const char* FontPaths[] =
 	{
-		"Rml/Fonts/NotoSans-Regular.ttf",
-		"Rml/Fonts/Roboto-Regular.ttf",
-		"C:/Windows/Fonts/arial.ttf"
+		"Z:/WarZ/External/RmlUI/Fonts/NotoSans-Regular.ttf",
+		"Z:/WarZ/External/RmlUI/Fonts/Roboto-Regular.ttf",
+		"C:/Windows/Fonts/arial.ttf",
+		"C:/Windows/Fonts/consola.ttf"
 	};
 
 	bool AnyFontLoaded = false;
