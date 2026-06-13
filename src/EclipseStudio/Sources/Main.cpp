@@ -117,6 +117,174 @@ void CursorModeCallback( int oldI, float oldF )
 	}
 }
 
+extern void RegisterMsgProc(
+	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
+);
+
+extern void UnregisterMsgProc(
+	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
+);
+
+static bool g_StudioWindowSizing = false;
+static bool g_StudioBackBufferResize = false;
+
+static bool ResizeStudioBackBuffer(int Width, int Height)
+{
+	if (g_StudioBackBufferResize)
+		return false;
+
+	if (!r3dRenderer || !r3dRenderer->pd3ddev)
+		return false;
+
+	if (!r3dRenderer->d3dpp.Windowed)
+		return false;
+
+	if (Width <= 0 || Height <= 0)
+		return false;
+
+	if (
+		static_cast<int>(
+			r3dRenderer->d3dpp.BackBufferWidth
+		) == Width &&
+		static_cast<int>(
+			r3dRenderer->d3dpp.BackBufferHeight
+		) == Height
+	)
+	{
+		return true;
+	}
+
+	g_StudioBackBufferResize = true;
+
+	const D3DPRESENT_PARAMETERS OldParameters =
+		r3dRenderer->d3dpp;
+
+	r3dOutToLog(
+		"[Studio] Resize DX9 backbuffer: %dx%d -> %dx%d\n",
+		static_cast<int>(OldParameters.BackBufferWidth),
+		static_cast<int>(OldParameters.BackBufferHeight),
+		Width,
+		Height
+	);
+
+	r3dRenderer->d3dpp.BackBufferWidth =
+		static_cast<UINT>(Width);
+
+	r3dRenderer->d3dpp.BackBufferHeight =
+		static_cast<UINT>(Height);
+
+	r3dRenderer->d3dpp.hDeviceWindow =
+		win::hWnd;
+
+	const bool ResetResult =
+		r3dRenderer->Reset();
+
+	if (!ResetResult)
+	{
+		r3dOutToLog(
+			"[Studio] DX9 resize reset failed, restoring old mode\n"
+		);
+
+		r3dRenderer->d3dpp = OldParameters;
+
+		const bool RestoreResult =
+			r3dRenderer->Reset();
+
+		if (!RestoreResult)
+		{
+			r3dOutToLog(
+				"[Studio] Failed to restore old DX9 backbuffer\n"
+			);
+		}
+
+		g_StudioBackBufferResize = false;
+		return false;
+	}
+
+	r3dRenderer->UpdateDimmensions();
+	r3dRenderer->ResetViewport();
+
+	r_width->SetInt(Width);
+	r_height->SetInt(Height);
+
+	Desktop().SetViewSize(
+		r3dRenderer->ScreenW,
+		r3dRenderer->ScreenH
+	);
+
+	InvalidateRect(
+		win::hWnd,
+		nullptr,
+		FALSE
+	);
+
+	g_StudioBackBufferResize = false;
+	return true;
+}
+
+static bool StudioWindowResizeMsgProc(
+	UINT Message,
+	WPARAM WParam,
+	LPARAM LParam
+)
+{
+	switch (Message)
+	{
+	case WM_ENTERSIZEMOVE:
+		{
+			g_StudioWindowSizing = true;
+			break;
+		}
+
+	case WM_EXITSIZEMOVE:
+		{
+			g_StudioWindowSizing = false;
+
+			RECT ClientRect{};
+
+			if (GetClientRect(win::hWnd, &ClientRect))
+			{
+				const int Width =
+					ClientRect.right - ClientRect.left;
+
+				const int Height =
+					ClientRect.bottom - ClientRect.top;
+
+				ResizeStudioBackBuffer(
+					Width,
+					Height
+				);
+			}
+
+			break;
+		}
+
+	case WM_SIZE:
+		{
+			if (WParam == SIZE_MINIMIZED)
+				break;
+
+			if (g_StudioWindowSizing)
+				break;
+
+			const int Width =
+				static_cast<int>(LOWORD(LParam));
+
+			const int Height =
+				static_cast<int>(HIWORD(LParam));
+
+			ResizeStudioBackBuffer(
+				Width,
+				Height
+			);
+
+			break;
+		}
+	}
+
+	return false;
+}
+
 static void EnableStudioWindowResize(HWND WindowHandle)
 {
 	if (!WindowHandle)
@@ -1606,6 +1774,10 @@ void game::MainLoop()
 
 	InitDesktopSystem();
 
+	RegisterMsgProc(
+		StudioWindowResizeMsgProc
+	);
+
 	InitPostFX();
 	InitPointLightsRendererV2();
 
@@ -1808,6 +1980,10 @@ void game::MainLoop()
 	g_pDefaultConsole = NULL;
 
 	ReleaseDesktopSystem();
+
+	UnregisterMsgProc(
+		StudioWindowResizeMsgProc
+	);
 
 	DoneDrawCollections();
 
