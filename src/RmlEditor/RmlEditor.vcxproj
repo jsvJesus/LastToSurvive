@@ -45,7 +45,7 @@
   <PropertyGroup Label="UserMacros" />
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\bin\</OutDir>
+    <OutDir>Z:\WarZ\bin\</OutDir>
     <IntDir>$(SolutionDir)..\build\RmlEditor\$(Configuration)\</IntDir>
     <TargetName>RmlEditor</TargetName>
     <TargetExt>.exe</TargetExt>
@@ -71,6 +71,8 @@
         NDEBUG;
         UNICODE;
         _UNICODE;
+        WIN32_LEAN_AND_MEAN;
+        NOMINMAX;
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
 

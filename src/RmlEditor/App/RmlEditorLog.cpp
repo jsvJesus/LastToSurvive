@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include <cstdarg>
+#include <cstring>
 #include <cstdio>
 #include <mutex>
 #include <string>

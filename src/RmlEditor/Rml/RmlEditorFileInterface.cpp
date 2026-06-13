@@ -99,7 +99,7 @@ Rml::FileHandle RmlEditorFileInterface::Open(const Rml::String& Path)
 			Path.c_str()
 		);
 
-		return nullptr;
+		return Rml::FileHandle{};
 	}
 
 	return reinterpret_cast<Rml::FileHandle>(File);
