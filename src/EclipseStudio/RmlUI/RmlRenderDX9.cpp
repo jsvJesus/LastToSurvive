@@ -421,8 +421,18 @@ void RmlRenderDX9::RenderGeometry(Rml::CompiledGeometryHandle geometry, Rml::Vec
 
 	FCompiledGeometry* Geometry = reinterpret_cast<FCompiledGeometry*>(geometry);
 	IDirect3DTexture9* Texture = reinterpret_cast<IDirect3DTexture9*>(texture);
+	
+	// Direct3D 9 считает центр верхнего левого пикселя координатой 0,0.
+	// RmlUi генерирует геометрию по современному правилу границ пикселей,
+	// поэтому для точного попадания texel -> pixel нужен offset -0.5.
+	constexpr float HalfPixelOffset = -0.5f;
 
-	const D3DMATRIX World = MakeTranslation(translation.x, translation.y, 0.0f);
+	const D3DMATRIX World = MakeTranslation(
+		translation.x + HalfPixelOffset,
+		translation.y + HalfPixelOffset,
+		0.0f
+	);
+	
 	Device->SetTransform(D3DTS_WORLD, &World);
 
 	Device->SetStreamSource(0, Geometry->VertexBuffer, 0, sizeof(FDx9Vertex));
