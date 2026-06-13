@@ -121,6 +121,19 @@ static const D3DRENDERSTATETYPE RML_D3DRS_LIGHTING = (D3DRENDERSTATETYPE)137;
 static const D3DRENDERSTATETYPE RML_D3DRS_SCISSORTESTENABLE = (D3DRENDERSTATETYPE)174;
 static const D3DRENDERSTATETYPE RML_D3DRS_BLENDOP = (D3DRENDERSTATETYPE)171;
 
+static bool RmlFileExistsW(const std::wstring& Path)
+{
+	if (Path.empty())
+		return false;
+
+	const DWORD Attributes = GetFileAttributesW(Path.c_str());
+
+	if (Attributes == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	return (Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
 RmlRenderDX9::RmlRenderDX9()
 {
 }
@@ -499,32 +512,80 @@ std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
 	if (path.empty())
 		return std::wstring();
 
-	int Required = MultiByteToWideChar(CP_UTF8, 0, path.c_str(), static_cast<int>(path.size()), nullptr, 0);
+	const int Required = MultiByteToWideChar(
+		CP_UTF8,
+		0,
+		path.c_str(),
+		static_cast<int>(path.size()),
+		nullptr,
+		0
+	);
+
 	if (Required <= 0)
-		return std::wstring();
-
-	std::wstring WidePath;
-	WidePath.resize(Required);
-
-	MultiByteToWideChar(CP_UTF8, 0, path.c_str(), static_cast<int>(path.size()), &WidePath[0], Required);
-
-	for (wchar_t& Ch : WidePath)
 	{
-		if (Ch == L'/')
-			Ch = L'\\';
+		OutputDebugStringA(
+			"[RmlUI][DX9] ResolvePathW failed: UTF-8 conversion failed\n"
+		);
+
+		return std::wstring();
 	}
 
-	const bool bAbsolute =
-		(WidePath.size() >= 2 && WidePath[1] == L':') ||
-		(!WidePath.empty() && (WidePath[0] == L'\\' || WidePath[0] == L'/'));
+	std::wstring WidePath;
+	WidePath.resize(static_cast<size_t>(Required));
 
-	if (bAbsolute)
+	MultiByteToWideChar(
+		CP_UTF8,
+		0,
+		path.c_str(),
+		static_cast<int>(path.size()),
+		&WidePath[0],
+		Required
+	);
+
+	for (wchar_t& Character : WidePath)
+	{
+		if (Character == L'/')
+			Character = L'\\';
+	}
+
+	const bool IsAbsolute =
+		(WidePath.size() >= 2 && WidePath[1] == L':') ||
+		(!WidePath.empty() &&
+			(WidePath[0] == L'\\' || WidePath[0] == L'/'));
+
+	if (IsAbsolute)
 		return WidePath;
 
 	if (DataRoot.empty())
 		return WidePath;
+	
+	const std::wstring DataPath =
+		DataRoot + L"\\" + WidePath;
 
-	return DataRoot + L"\\" + WidePath;
+	if (RmlFileExistsW(DataPath))
+		return DataPath;
+	
+	const std::wstring StudioPath =
+		DataRoot + L"\\Rml\\Assets\\" + WidePath;
+
+	if (RmlFileExistsW(StudioPath))
+		return StudioPath;
+
+	wchar_t DebugText[2048]{};
+
+	_snwprintf_s(
+		DebugText,
+		_countof(DebugText),
+		_TRUNCATE,
+		L"[RmlUI][DX9] Texture path not found. Source='%ls' Data='%ls' Studio='%ls'\n",
+		WidePath.c_str(),
+		DataPath.c_str(),
+		StudioPath.c_str()
+	);
+
+	OutputDebugStringW(DebugText);
+	
+	return DataPath;
 }
 
 bool RmlRenderDX9::CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Width, int Height, IDirect3DTexture9** OutTexture)
@@ -582,17 +643,39 @@ bool RmlRenderDX9::CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Wi
 	return true;
 }
 
-bool RmlRenderDX9::LoadTextureD3DX(const std::wstring& Filename, Rml::Vector2i& OutDimensions, IDirect3DTexture9** OutTexture)
+bool RmlRenderDX9::LoadTextureD3DX(
+	const std::wstring& Filename,
+	Rml::Vector2i& OutDimensions,
+	IDirect3DTexture9** OutTexture
+)
 {
-	if (!Device || !OutTexture)
+	if (!Device || !OutTexture || Filename.empty())
 		return false;
 
 	*OutTexture = nullptr;
+	OutDimensions.x = 0;
+	OutDimensions.y = 0;
+
+	if (!RmlFileExistsW(Filename))
+	{
+		wchar_t DebugText[2048]{};
+
+		_snwprintf_s(
+			DebugText,
+			_countof(DebugText),
+			_TRUNCATE,
+			L"[RmlUI][DX9] Texture file does not exist: %ls\n",
+			Filename.c_str()
+		);
+
+		OutputDebugStringW(DebugText);
+		return false;
+	}
 
 	D3DXIMAGE_INFO Info{};
 	IDirect3DTexture9* Texture = nullptr;
 
-	HRESULT Hr = D3DXCreateTextureFromFileExW(
+	const HRESULT Result = D3DXCreateTextureFromFileExW(
 		Device,
 		Filename.c_str(),
 		D3DX_DEFAULT,
@@ -609,28 +692,107 @@ bool RmlRenderDX9::LoadTextureD3DX(const std::wstring& Filename, Rml::Vector2i& 
 		&Texture
 	);
 
-	if (FAILED(Hr) || !Texture)
-		return false;
+	if (FAILED(Result) || !Texture)
+	{
+		wchar_t DebugText[2048]{};
 
-	OutDimensions.x = (int)Info.Width;
-	OutDimensions.y = (int)Info.Height;
+		_snwprintf_s(
+			DebugText,
+			_countof(DebugText),
+			_TRUNCATE,
+			L"[RmlUI][DX9] D3DXCreateTextureFromFileExW failed. HRESULT=0x%08X Path='%ls'\n",
+			static_cast<unsigned int>(Result),
+			Filename.c_str()
+		);
+
+		OutputDebugStringW(DebugText);
+
+		if (Texture)
+		{
+			Texture->Release();
+			Texture = nullptr;
+		}
+
+		return false;
+	}
+
+	OutDimensions.x = static_cast<int>(Info.Width);
+	OutDimensions.y = static_cast<int>(Info.Height);
 
 	*OutTexture = Texture;
+
+	wchar_t DebugText[2048]{};
+
+	_snwprintf_s(
+		DebugText,
+		_countof(DebugText),
+		_TRUNCATE,
+		L"[RmlUI][DX9] Texture loaded: %ls (%dx%d)\n",
+		Filename.c_str(),
+		OutDimensions.x,
+		OutDimensions.y
+	);
+
+	OutputDebugStringW(DebugText);
+
 	return true;
 }
 
-Rml::TextureHandle RmlRenderDX9::LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source)
+Rml::TextureHandle RmlRenderDX9::LoadTexture(
+	Rml::Vector2i& texture_dimensions,
+	const Rml::String& source
+)
 {
+	texture_dimensions.x = 0;
+	texture_dimensions.y = 0;
+
+	if (!Device)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] LoadTexture failed: D3D9 device is null\n"
+		);
+
+		return 0;
+	}
+
+	if (source.empty())
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] LoadTexture failed: source is empty\n"
+		);
+
+		return 0;
+	}
+
 	const std::wstring FullPath = ResolvePathW(source);
+
+	if (FullPath.empty())
+	{
+		std::string DebugText =
+			"[RmlUI][DX9] LoadTexture failed to resolve: ";
+
+		DebugText += source;
+		DebugText += "\n";
+
+		OutputDebugStringA(DebugText.c_str());
+		return 0;
+	}
 
 	IDirect3DTexture9* Texture = nullptr;
 
-	if (!LoadTextureD3DX(FullPath, texture_dimensions, &Texture))
+	if (!LoadTextureD3DX(
+			FullPath,
+			texture_dimensions,
+			&Texture
+		))
 	{
-		std::string Text = "[RmlUI][DX9] Failed to load texture: ";
-		Text += source;
-		Text += "\n";
-		OutputDebugStringA(Text.c_str());
+		std::string DebugText =
+			"[RmlUI][DX9] Failed to load texture source: ";
+
+		DebugText += source;
+		DebugText += "\n";
+
+		OutputDebugStringA(DebugText.c_str());
 		return 0;
 	}
 
