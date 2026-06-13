@@ -861,6 +861,7 @@ bool RmlUISystem::LoadAppMain()
 	}
 
 	AttachAppMainEvents();
+	SetAppMainTab(0);
 
 	AppMainDocument->Hide();
 	bAppMainVisible = false;
@@ -970,21 +971,92 @@ void RmlUISystem::SetAppMainTab(int TabIndex)
 	if (!LoadAppMain())
 		return;
 
-	Rml::Element* MapsPanel = AppMainDocument->GetElementById("appmain_maps_panel");
-	Rml::Element* CreatePanel = AppMainDocument->GetElementById("appmain_create_panel");
+	if (TabIndex < 0 || TabIndex > 2)
+		TabIndex = 0;
+
+	Rml::Element* LiveMapsButton =
+		AppMainDocument->GetElementById(
+			"btn_appmain_live_maps"
+		);
+
+	Rml::Element* EditorMapsButton =
+		AppMainDocument->GetElementById(
+			"btn_appmain_editor_maps"
+		);
+
+	Rml::Element* CreateMapButton =
+		AppMainDocument->GetElementById(
+			"btn_appmain_create_map"
+		);
+
+	if (LiveMapsButton)
+		LiveMapsButton->SetClass(
+			"selected",
+			TabIndex == 0
+		);
+
+	if (EditorMapsButton)
+		EditorMapsButton->SetClass(
+			"selected",
+			TabIndex == 1
+		);
+
+	if (CreateMapButton)
+		CreateMapButton->SetClass(
+			"selected",
+			TabIndex == 2
+		);
+
+	Rml::Element* MapsPanel =
+		AppMainDocument->GetElementById(
+			"appmain_maps_panel"
+		);
+
+	Rml::Element* CreatePanel =
+		AppMainDocument->GetElementById(
+			"appmain_create_panel"
+		);
 
 	if (MapsPanel)
-		MapsPanel->SetProperty("display", TabIndex == 2 ? "none" : "block");
+	{
+		MapsPanel->SetProperty(
+			"display",
+			TabIndex == 2 ? "none" : "block"
+		);
+	}
 
 	if (CreatePanel)
-		CreatePanel->SetProperty("display", TabIndex == 2 ? "block" : "none");
+	{
+		CreatePanel->SetProperty(
+			"display",
+			TabIndex == 2 ? "block" : "none"
+		);
+	}
 
 	if (TabIndex == 0)
-		SetElementText(AppMainDocument, "appmain_section_title", "Live Maps");
+	{
+		SetElementText(
+			AppMainDocument,
+			"appmain_section_title",
+			"LIVE MAPS"
+		);
+	}
 	else if (TabIndex == 1)
-		SetElementText(AppMainDocument, "appmain_section_title", "Editor Maps");
+	{
+		SetElementText(
+			AppMainDocument,
+			"appmain_section_title",
+			"EDITOR MAPS"
+		);
+	}
 	else
-		SetElementText(AppMainDocument, "appmain_section_title", "");
+	{
+		SetElementText(
+			AppMainDocument,
+			"appmain_section_title",
+			"CREATE MAP"
+		);
+	}
 }
 
 void RmlUISystem::SetAppMainMaps(const char** Names, int Count)
