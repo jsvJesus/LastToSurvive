@@ -3,8 +3,8 @@
 #include <windows.h>
 
 #include <cstdarg>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 #include <mutex>
 #include <string>
 
@@ -42,20 +42,37 @@ namespace
 
 bool RmlEditorLog::Initialize()
 {
-    std::lock_guard<std::mutex> Lock(GLogMutex);
-
-    if (GLogFile)
-        return true;
-
-    const std::wstring LogPath = GetLogPath();
-
-    if (_wfopen_s(&GLogFile, LogPath.c_str(), L"wb") != 0 || !GLogFile)
     {
-        OutputDebugStringA("[RmlEditor] Failed to create RmlEditor.log\n");
-        return false;
+        std::lock_guard<std::mutex> Lock(GLogMutex);
+
+        if (GLogFile)
+            return true;
+
+        const std::wstring LogPath = GetLogPath();
+
+        FILE* NewLogFile = nullptr;
+
+        const errno_t OpenResult = _wfopen_s(
+            &NewLogFile,
+            LogPath.c_str(),
+            L"wb"
+        );
+
+        if (OpenResult != 0 || !NewLogFile)
+        {
+            OutputDebugStringA(
+                "[RmlEditor] Failed to create RmlEditor.log\n"
+            );
+
+            return false;
+        }
+
+        GLogFile = NewLogFile;
     }
 
+    // Важно: вызывается после освобождения GLogMutex.
     Write("[RmlEditor] Log initialized");
+
     return true;
 }
 
@@ -68,6 +85,7 @@ void RmlEditorLog::Shutdown()
 
     fflush(GLogFile);
     fclose(GLogFile);
+
     GLogFile = nullptr;
 }
 
@@ -105,9 +123,15 @@ void RmlEditorLog::Write(const char* Format, ...)
 
     std::lock_guard<std::mutex> Lock(GLogMutex);
 
-    if (GLogFile)
-    {
-        fwrite(Output, 1, strlen(Output), GLogFile);
-        fflush(GLogFile);
-    }
+    if (!GLogFile)
+        return;
+
+    fwrite(
+        Output,
+        1,
+        strlen(Output),
+        GLogFile
+    );
+
+    fflush(GLogFile);
 }
