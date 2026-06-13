@@ -94,6 +94,7 @@ private:
 	float dstTime;
 
 	bool bCharacterRmlReady;
+	bool bCharacterRmlInitAttempted;
 	bool bCharacterControlsInitialized;
 
 	bool bPlayerStatesMode;

@@ -78,6 +78,7 @@ CharacterHUD::CharacterHUD()
 	, srcTime(0.0f)
 	, dstTime(0.0f)
 	, bCharacterRmlReady(false)
+	, bCharacterRmlInitAttempted(false)
 	, bCharacterControlsInitialized(false)
 	, bPlayerStatesMode(true)
 	, bShowSkeleton(false)
@@ -93,18 +94,21 @@ CharacterHUD::CharacterHUD()
 }
 //////////////////////////////////////////////////////////////////////////
 
-void CharacterHUD :: InitPure()
+void CharacterHUD::InitPure()
 {
-	cameraPosition.Assign(0,1,5);
-	FPS_Position.Assign(0,20,-20);
+	cameraPosition.Assign(0, 1, 5);
+	FPS_Position.Assign(0, 20, -20);
 
-	FPS_Acceleration.Assign(0,0,0);
-	FPS_vViewOrig.Assign(0,-25,0);
-	FPS_ViewAngle.Assign(0,0,0);
+	FPS_Acceleration.Assign(0, 0, 0);
+	FPS_vViewOrig.Assign(0, -25, 0);
+	FPS_ViewAngle.Assign(0, 0, 0);
 	FPS_vVision.Assign(0, 0, 1);
-	m_Player = NULL;
 
-	InitCharacterRmlUI();
+	m_Player = nullptr;
+
+	bCharacterRmlReady = false;
+	bCharacterRmlInitAttempted = false;
+	bCharacterControlsInitialized = false;
 }
 
 void CharacterHUD::CreateCharacter()
@@ -124,8 +128,22 @@ void CharacterHUD::DestroyPure()
 	ShutdownCharacterRmlUI();
 }
 
+extern DWORD gMainThreadID;
 void CharacterHUD::InitCharacterRmlUI()
 {
+	if (bCharacterRmlReady)
+		return;
+
+	if (GetCurrentThreadId() != gMainThreadID)
+	{
+		r3dOutToLog(
+			"[RmlUI] Character init postponed: "
+			"not running on main thread\n"
+		);
+
+		return;
+	}
+
 	bCharacterRmlReady = false;
 	bCharacterControlsInitialized = false;
 
@@ -923,9 +941,24 @@ void CharacterHUD::StartDefaultAnim()
 void CharacterHUD::Draw()
 {
 	assert(bInited);
-
+	
 	if (!bInited)
 		return;
+	
+	if (!bCharacterRmlReady && !bCharacterRmlInitAttempted)
+	{
+		bCharacterRmlInitAttempted = true;
+
+		InitCharacterRmlUI();
+
+		if (!bCharacterRmlReady)
+		{
+			r3dOutToLog(
+				"[RmlUI] Character editor init failed, "
+				"legacy UI will be used\n"
+			);
+		}
+	}
 
 	CreateCharacter();
 
@@ -956,7 +989,7 @@ void CharacterHUD::Draw()
 	}
 
 	g_CharacterRmlUI.Update(
-		r3dGetFrameTime()
+	r3dGetFrameTime()
 	);
 
 	UpdateCharacterControls();

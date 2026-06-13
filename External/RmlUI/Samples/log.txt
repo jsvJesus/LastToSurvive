@@ -1,0 +1,10 @@
+--- (0.00): Lottie plugin initialised.
+--- (0.00): SVG plugin initialised.
+--- (0.00): Loaded font face 'rmlui-debugger-font' [regular] from 'memory'.
+--- (0.00): Loaded font face 'rmlui-debugger-font' [italic] from 'memory'.
+--- (0.00): Loaded font face 'LatoLatin' [regular] from 'assets/LatoLatin-Regular.ttf'.
+--- (0.00): Loaded font face 'LatoLatin' [italic] from 'assets/LatoLatin-Italic.ttf'.
+--- (0.00): Loaded font face 'LatoLatin' [bold] from 'assets/LatoLatin-Bold.ttf'.
+--- (0.00): Loaded font face 'LatoLatin' [italic, bold] from 'assets/LatoLatin-BoldItalic.ttf'.
+--- (0.00): Loaded font face 'Noto Emoji' [regular] from 'assets/NotoEmoji-Regular.ttf'.
+-*- (0.00): Unable to open file assets/invalid.rml.
