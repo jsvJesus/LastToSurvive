@@ -142,9 +142,29 @@ void RmlUISystem::FAppMainClickListener::ProcessEvent(Rml::Event& Event)
 		Rml::String Name = Owner->GetAppMainCreateLevelName();
 		Owner->AppMainCallback("create", Name.c_str());
 	}
-	else if (Id == "btn_appmain_quit")
+	else if (Id == "btn_appmain_back")
 	{
-		Owner->AppMainCallback("quit", "");
+		Owner->AppMainCallback("back", "");
+	}
+	else if (Id == "btn_appmain_exit")
+	{
+		Owner->AppMainCallback("exit", "");
+	}
+	else if (Id == "btn_appmain_terrain_toggle")
+	{
+		Owner->AppMainCallback("terrain_toggle", "");
+	}
+	else if (Id == "btn_appmain_terrain2_toggle")
+	{
+		Owner->AppMainCallback("terrain2_toggle", "");
+	}
+	else if (Id == "btn_appmain_terrain_size")
+	{
+		Owner->AppMainCallback("terrain_size", "");
+	}
+	else if (Id == "btn_appmain_splat_size")
+	{
+		Owner->AppMainCallback("splat_size", "");
 	}
 	else if (Id.compare(0, 12, "appmain_map_") == 0)
 	{
@@ -853,7 +873,12 @@ void RmlUISystem::AttachAppMainEvents()
 		"btn_appmain_create_map",
 		"btn_appmain_load_level",
 		"btn_appmain_create_level",
-		"btn_appmain_quit"
+		"btn_appmain_back",
+		"btn_appmain_exit",
+		"btn_appmain_terrain_toggle",
+		"btn_appmain_terrain2_toggle",
+		"btn_appmain_terrain_size",
+		"btn_appmain_splat_size"
 	};
 
 	for (const char* Id : ButtonIds)
@@ -1009,4 +1034,141 @@ bool RmlUISystem::IsAppMainReady() const
 bool RmlUISystem::IsAppMainVisible() const
 {
 	return bInitialized && AppMainDocument != nullptr && bAppMainVisible;
+}
+
+static float RmlGetInputFloat(Rml::ElementDocument* Document, const char* Id, float DefaultValue)
+{
+	if (!Document || !Id)
+		return DefaultValue;
+
+	Rml::Element* Element = Document->GetElementById(Id);
+	if (!Element)
+		return DefaultValue;
+
+	Rml::ElementFormControlInput* Input = dynamic_cast<Rml::ElementFormControlInput*>(Element);
+	if (!Input)
+		return DefaultValue;
+
+	Rml::String Value = Input->GetValue();
+	if (Value.empty())
+		return DefaultValue;
+
+	return (float)atof(Value.c_str());
+}
+
+static void RmlGetInputText(Rml::ElementDocument* Document, const char* Id, char* OutText, int OutTextSize, const char* DefaultValue)
+{
+	if (!OutText || OutTextSize <= 0)
+		return;
+
+	OutText[0] = 0;
+
+	if (!Document || !Id)
+	{
+		r3dscpy(OutText, DefaultValue ? DefaultValue : "");
+		return;
+	}
+
+	Rml::Element* Element = Document->GetElementById(Id);
+	if (!Element)
+	{
+		r3dscpy(OutText, DefaultValue ? DefaultValue : "");
+		return;
+	}
+
+	Rml::ElementFormControlInput* Input = dynamic_cast<Rml::ElementFormControlInput*>(Element);
+	if (!Input)
+	{
+		r3dscpy(OutText, DefaultValue ? DefaultValue : "");
+		return;
+	}
+
+	Rml::String Value = Input->GetValue();
+	if (Value.empty())
+		r3dscpy(OutText, DefaultValue ? DefaultValue : "");
+	else
+		r3dscpy(OutText, Value.c_str());
+}
+
+void RmlUISystem::SetAppMainCreateOptions(
+	bool bHaveTerrain,
+	bool bTerrainV2,
+	int TerrainSizeIndex,
+	int SplatSizeIndex,
+	float CellSize,
+	float Height
+)
+{
+	if (!LoadAppMain())
+		return;
+
+	if (TerrainSizeIndex < 0)
+		TerrainSizeIndex = 0;
+
+	if (TerrainSizeIndex > 4)
+		TerrainSizeIndex = 4;
+
+	if (SplatSizeIndex < 0)
+		SplatSizeIndex = 0;
+
+	if (SplatSizeIndex > TerrainSizeIndex)
+		SplatSizeIndex = TerrainSizeIndex;
+
+	const int SizeValues[5] = { 256, 512, 1024, 2048, 4096 };
+
+	char Text[128] = {};
+
+	sprintf_s(Text, "Terrain: %s", bHaveTerrain ? "ON" : "OFF");
+	SetElementText(AppMainDocument, "btn_appmain_terrain_toggle", Text);
+
+	sprintf_s(Text, "Terrain V2: %s", bTerrainV2 ? "ON" : "OFF");
+	SetElementText(AppMainDocument, "btn_appmain_terrain2_toggle", Text);
+
+	sprintf_s(Text, "Terrain Size: %d", SizeValues[TerrainSizeIndex]);
+	SetElementText(AppMainDocument, "btn_appmain_terrain_size", Text);
+
+	sprintf_s(Text, "Splat Size: %d", SizeValues[SplatSizeIndex]);
+	SetElementText(AppMainDocument, "btn_appmain_splat_size", Text);
+
+	Rml::Element* Cell = AppMainDocument->GetElementById("appmain_cell_size");
+	if (Cell)
+	{
+		sprintf_s(Text, "%.2f", CellSize);
+		Cell->SetAttribute("value", Text);
+	}
+
+	Rml::Element* HeightElement = AppMainDocument->GetElementById("appmain_height");
+	if (HeightElement)
+	{
+		sprintf_s(Text, "%.2f", Height);
+		HeightElement->SetAttribute("value", Text);
+	}
+}
+
+bool RmlUISystem::GetAppMainCreateData(
+	char* OutName,
+	int OutNameSize,
+	bool& bOutHaveTerrain,
+	bool& bOutTerrainV2,
+	int& OutTerrainSizeIndex,
+	int& OutSplatSizeIndex,
+	float& OutCellSize,
+	float& OutHeight
+) const
+{
+	if (!AppMainDocument)
+		return false;
+
+	RmlGetInputText(AppMainDocument, "appmain_create_name", OutName, OutNameSize, "NewLevel");
+
+	bOutHaveTerrain = false;
+	bOutTerrainV2 = false;
+
+	OutTerrainSizeIndex = 0;
+	OutSplatSizeIndex = 0;
+
+	OutCellSize = RmlGetInputFloat(AppMainDocument, "appmain_cell_size", 1.0f);
+	OutHeight = RmlGetInputFloat(AppMainDocument, "appmain_height", 100.0f);
+
+	return true;
 }

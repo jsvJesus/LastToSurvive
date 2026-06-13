@@ -65,6 +65,26 @@ public:
 	bool IsAppMainReady() const;
 	bool IsAppMainVisible() const;
 
+	void SetAppMainCreateOptions(
+		bool bHaveTerrain,
+		bool bTerrainV2,
+		int TerrainSizeIndex,
+		int SplatSizeIndex,
+		float CellSize,
+		float Height
+	);
+
+	bool GetAppMainCreateData(
+		char* OutName,
+		int OutNameSize,
+		bool& bOutHaveTerrain,
+		bool& bOutTerrainV2,
+		int& OutTerrainSizeIndex,
+		int& OutSplatSizeIndex,
+		float& OutCellSize,
+		float& OutHeight
+	) const;
+
 private:
 	class FAppSelectClickListener final : public Rml::EventListener
 	{

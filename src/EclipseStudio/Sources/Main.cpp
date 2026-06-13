@@ -1457,6 +1457,10 @@ void 	ExecuteFXCreator()
 void UpdateDB(const char* api_addr, const char* out_xml);
 #endif
 
+#ifndef FINAL_BUILD
+extern bool g_AppMainBackToAppSelect;
+#endif
+
 void ExecuteNetworkGame();
 void ExecuteLevelEditor();
 void ExecuteCharacterEditor();
@@ -1556,6 +1560,10 @@ void game::MainLoop()
 	// for editors, do not lock mouse. when we start game, in ExecuteNetworkGame we will set that var to true
 	d_mouse_window_lock->SetBool(false);
 
+#ifndef FINAL_BUILD
+	AppSelectAgain:
+#endif
+	
 	switch (m_ret)
 	{
 #ifndef FINAL_BUILD
@@ -1584,10 +1592,36 @@ void game::MainLoop()
 		ExecuteNetworkGame();
 		break;
 #ifndef FINAL_BUILD
+		
 	case	Menu_AppSelect::bStartLevelEditor:
 		DiscordPresence_SetEditor("Level Editor", LevelEditName);
-		g_pVisibilityGrid = new VisibiltyGrid ;
+		g_pVisibilityGrid = new VisibiltyGrid;
+
+#ifndef FINAL_BUILD
+		g_AppMainBackToAppSelect = false;
+#endif
+
 		ExecuteLevelEditor();
+
+#ifndef FINAL_BUILD
+		if (g_AppMainBackToAppSelect)
+		{
+			g_AppMainBackToAppSelect = false;
+
+			SAFE_DELETE(g_pVisibilityGrid);
+
+			LevelEditName[0] = 0;
+			DiscordPresence_SetMenu();
+
+			CALL_MENU(Menu_AppSelect);
+
+			g_bEditMode = true;
+			g_bStartedAsParticleEditor = false;
+
+			goto AppSelectAgain;
+		}
+#endif
+
 		break;
 
 	case	Menu_AppSelect::bStartParticleEditor:

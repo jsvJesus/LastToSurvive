@@ -8,6 +8,7 @@ class Menu_Main : public MenuLayer
   public:
 	START_MENU_ENUMS
 		bEditor,
+		bBackToAppSelect,
 		bQuit
 	};
 

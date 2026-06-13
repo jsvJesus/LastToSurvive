@@ -39,6 +39,7 @@ void Menu_Main::Draw()
 				  static char HMeshName[64];
 
 char LevelEditName[256];
+bool g_AppMainBackToAppSelect = false;
 
 void SaveLevelData( char* Str );
 
@@ -305,6 +306,15 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 			r3dscpy(LevelEditName, "NewLevel");
 			g_MainRmlUI.SetAppMainSelectedLevel(LevelEditName);
 			g_MainRmlUI.SetAppMainTab(g_MainRmlTab);
+
+			g_MainRmlUI.SetAppMainCreateOptions(
+				__CreateTerrain != 0,
+				__CreateTerrain2 != 0,
+				__TerrainSize,
+				__TerrainSMapSize,
+				__TerrainSizeCell,
+				__TerrainSizeHeight
+			);
 		}
 		else
 		{
@@ -323,19 +333,80 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 	}
 	else if (strcmp(Action, "create") == 0)
 	{
-		const char* NewLevelName = Value && Value[0] ? Value : "NewLevel";
+		char NewLevelName[256] = {};
+
+		bool bHaveTerrain = false;
+		bool bTerrainV2 = false;
+		int TerrainSizeIndex = 0;
+		int SplatSizeIndex = 0;
+		float CellSize = 1.0f;
+		float Height = 100.0f;
+
+		g_MainRmlUI.GetAppMainCreateData(
+			NewLevelName,
+			sizeof(NewLevelName),
+			bHaveTerrain,
+			bTerrainV2,
+			TerrainSizeIndex,
+			SplatSizeIndex,
+			CellSize,
+			Height
+		);
+
+		if (!NewLevelName[0])
+			r3dscpy(NewLevelName, "NewLevel");
 
 		r3dscpy(LevelEditName, NewLevelName);
 
-		__CreateTerrain = 0;
-		__CreateTerrain2 = 0;
+		__CreateTerrain = bHaveTerrain ? 1 : 0;
+		__CreateTerrain2 = bTerrainV2 ? 1 : 0;
+		__TerrainSize = TerrainSizeIndex;
+		__TerrainSMapSize = SplatSizeIndex;
+		__TerrainSizeCell = CellSize;
+		__TerrainSizeHeight = Height;
 
 		if (CreateNewLevel())
 			g_MainRmlResult = Menu_Main::bEditor;
 	}
-	else if (strcmp(Action, "quit") == 0)
+	else if (strcmp(Action, "back") == 0)
 	{
-		g_MainRmlResult = 0;
+		g_AppMainBackToAppSelect = true;
+		g_MainRmlResult = Menu_Main::bBackToAppSelect;
+	}
+	else if (strcmp(Action, "exit") == 0)
+	{
+		g_MainRmlResult = Menu_Main::bQuit;
+	}
+	else if (strcmp(Action, "terrain_toggle") == 0)
+	{
+		__CreateTerrain = !__CreateTerrain;
+		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
+	}
+	else if (strcmp(Action, "terrain2_toggle") == 0)
+	{
+		__CreateTerrain2 = !__CreateTerrain2;
+		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
+	}
+	else if (strcmp(Action, "terrain_size") == 0)
+	{
+		__TerrainSize++;
+
+		if (__TerrainSize > 4)
+			__TerrainSize = 0;
+
+		if (__TerrainSMapSize > __TerrainSize)
+			__TerrainSMapSize = __TerrainSize;
+
+		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
+	}
+	else if (strcmp(Action, "splat_size") == 0)
+	{
+		__TerrainSMapSize++;
+
+		if (__TerrainSMapSize > __TerrainSize)
+			__TerrainSMapSize = 0;
+
+		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
 	}
 }
 
