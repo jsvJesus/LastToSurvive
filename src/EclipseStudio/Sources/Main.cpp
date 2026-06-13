@@ -78,6 +78,8 @@
 #include "GameCode\UserRewards.h"
 #include "GameCode\UserSettings.h"
 
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
 
 extern bool g_bEditMode;
 extern bool g_bStartedAsParticleEditor;
@@ -113,6 +115,78 @@ void CursorModeCallback( int oldI, float oldF )
 	{
 		r3dMouse::Show( true ) ;
 	}
+}
+
+static void ApplyStudioDarkTitleBar(HWND WindowHandle)
+{
+	if (!WindowHandle)
+		return;
+
+	// Атрибуты DWM.
+	const DWORD ImmersiveDarkModeAttribute = 20;
+	const DWORD LegacyImmersiveDarkModeAttribute = 19;
+	const DWORD BorderColorAttribute = 34;
+	const DWORD CaptionColorAttribute = 35;
+	const DWORD TextColorAttribute = 36;
+
+	const BOOL EnableDarkMode = TRUE;
+
+	HRESULT Result = DwmSetWindowAttribute(
+		WindowHandle,
+		ImmersiveDarkModeAttribute,
+		&EnableDarkMode,
+		sizeof(EnableDarkMode)
+	);
+
+	// Fallback для некоторых старых сборок Windows 10.
+	if (FAILED(Result))
+	{
+		DwmSetWindowAttribute(
+			WindowHandle,
+			LegacyImmersiveDarkModeAttribute,
+			&EnableDarkMode,
+			sizeof(EnableDarkMode)
+		);
+	}
+
+	const COLORREF CaptionColor = RGB(0, 0, 0);
+	const COLORREF TextColor = RGB(255, 255, 255);
+	const COLORREF BorderColor = RGB(18, 18, 18);
+
+	DwmSetWindowAttribute(
+		WindowHandle,
+		CaptionColorAttribute,
+		&CaptionColor,
+		sizeof(CaptionColor)
+	);
+
+	DwmSetWindowAttribute(
+		WindowHandle,
+		TextColorAttribute,
+		&TextColor,
+		sizeof(TextColor)
+	);
+
+	DwmSetWindowAttribute(
+		WindowHandle,
+		BorderColorAttribute,
+		&BorderColor,
+		sizeof(BorderColor)
+	);
+
+	SetWindowPos(
+		WindowHandle,
+		nullptr,
+		0,
+		0,
+		0,
+		0,
+		SWP_NOMOVE |
+		SWP_NOSIZE |
+		SWP_NOZORDER |
+		SWP_NOACTIVATE |
+		SWP_FRAMECHANGED
+	);
 }
 
 void InitRender(int bUseSet = 0)
@@ -189,6 +263,7 @@ void InitRender(int bUseSet = 0)
 		}
 	}
 
+	ApplyStudioDarkTitleBar(win::hWnd);
 	ShowWindow(win::hWnd, TRUE);
 
 	r3dInitShaders();
