@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Data.SqlClient;
 using WarZ.Api.Data;
 using WarZ.Api.Endpoints;
@@ -8,6 +9,23 @@ string connectionString =
     builder.Configuration.GetConnectionString("LTS")
     ?? throw new InvalidOperationException(
         "Connection string 'LTS' was not configured.");
+
+long maxRequestBodySize =
+    (builder.Configuration.GetValue<int?>("Legacy:MaxRequestBodySizeMb") ?? 256)
+    * 1024L
+    * 1024L;
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = maxRequestBodySize;
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = maxRequestBodySize;
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = 64 * 1024;
+});
 
 builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
