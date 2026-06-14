@@ -10,6 +10,7 @@
 
 #include "../rendering/Deffered/CommonPostFX.h"
 #include "../rendering/Deffered/PostFXChief.h"
+#include "ObjectsCode/weapons/WeaponArmory.h"
 
 extern bool g_bEditMode;
 
@@ -96,6 +97,469 @@ CharacterHUD::CharacterHUD()
 	, CachedEquipmentItem(-1)
 {
 }
+//////////////////////////////////////////////////////////////////////////
+
+static void SetCharacterLoadoutItem(
+	wiInventoryItem& Item,
+	uint32_t ItemId
+)
+{
+	Item.Reset();
+
+	if (ItemId == 0)
+		return;
+
+	Item.itemID = ItemId;
+	Item.quantity = 1;
+	Item.Var1 = -1;
+	Item.Var2 = -1;
+}
+
+int CharacterHUD::FindCurrentCharacterEquipmentIndex() const
+{
+	if (!m_Player)
+		return -1;
+
+	uint32_t CurrentValue = 0;
+
+	const wiCharDataFull& Loadout =
+		m_Player->CurLoadout;
+
+	switch (SelectedEquipmentCategory)
+	{
+	case 0:
+		CurrentValue =
+			Loadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_HEADGEAR
+			].itemID;
+		break;
+
+	case 1:
+		CurrentValue =
+			Loadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_ARMOR
+			].itemID;
+		break;
+
+	case 2:
+		CurrentValue =
+			static_cast<uint32_t>(
+				Loadout.HeadIdx
+			);
+		break;
+
+	case 3:
+		CurrentValue =
+			static_cast<uint32_t>(
+				Loadout.BodyIdx
+			);
+		break;
+
+	case 4:
+		CurrentValue =
+			static_cast<uint32_t>(
+				Loadout.LegsIdx
+			);
+		break;
+
+	case 5:
+		CurrentValue =
+			Loadout.HeroItemID;
+		break;
+
+	case 6:
+		CurrentValue =
+			Loadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_WEAPON2
+			].itemID;
+		break;
+
+	case 7:
+		CurrentValue =
+			Loadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_WEAPON1
+			].itemID;
+		break;
+
+	default:
+		return -1;
+	}
+
+	for (
+		size_t Index = 0;
+		Index < CharacterEquipmentValues.size();
+		++Index
+	)
+	{
+		if (
+			CharacterEquipmentValues[Index] ==
+			CurrentValue
+		)
+		{
+			return static_cast<int>(Index);
+		}
+	}
+
+	return -1;
+}
+
+void CharacterHUD::RebuildCharacterEquipmentList()
+{
+	CharacterEquipmentValues.clear();
+	CharacterEquipmentNames.clear();
+
+	if (!m_Player || !g_pWeaponArmory)
+		return;
+
+	const wiCharDataFull& Loadout =
+		m_Player->CurLoadout;
+
+	/*
+		HEAD / BODY / LEGS являются индексами
+		вариантов текущего героя.
+	*/
+	if (
+		SelectedEquipmentCategory >= 2 &&
+		SelectedEquipmentCategory <= 4
+	)
+	{
+		const HeroConfig* Hero =
+			g_pWeaponArmory->getHeroConfig(
+				Loadout.HeroItemID
+			);
+
+		if (!Hero)
+		{
+			g_CharacterRmlUI.SetCharacterEquipmentList(
+				nullptr,
+				0,
+				-1
+			);
+
+			g_CharacterRmlUI.SetCharacterEquipmentSelected(
+				"NO HERO SELECTED"
+			);
+
+			return;
+		}
+
+		size_t Count = 0;
+		const char* Prefix = "";
+
+		switch (SelectedEquipmentCategory)
+		{
+		case 2:
+			Count = Hero->getNumHeads();
+			Prefix = "HEAD";
+			break;
+
+		case 3:
+			Count = Hero->getNumBodys();
+			Prefix = "BODY";
+			break;
+
+		case 4:
+			Count = Hero->getNumLegs();
+			Prefix = "LEGS";
+			break;
+		}
+
+		for (size_t Index = 0; Index < Count; ++Index)
+		{
+			char Name[64]{};
+
+			sprintf_s(
+				Name,
+				"%s %u",
+				Prefix,
+				static_cast<unsigned int>(
+					Index + 1
+				)
+			);
+
+			CharacterEquipmentValues.push_back(
+				static_cast<uint32_t>(Index)
+			);
+
+			CharacterEquipmentNames.push_back(Name);
+		}
+	}
+	else
+	{
+		/*
+			Для брони, шлема и оружия разрешаем
+			снять текущий предмет.
+		Для HERO пустой вариант не добавляем.
+		*/
+		if (SelectedEquipmentCategory != 5)
+		{
+			CharacterEquipmentValues.push_back(0);
+			CharacterEquipmentNames.push_back("EMPTY");
+		}
+
+		g_pWeaponArmory->startItemSearch();
+
+		while (g_pWeaponArmory->searchNextItem())
+		{
+			const uint32_t ItemId =
+				g_pWeaponArmory->
+					getCurrentSearchItemID();
+
+			const BaseItemConfig* Config =
+				g_pWeaponArmory->getConfig(
+					ItemId
+				);
+
+			if (!Config)
+				continue;
+
+			bool bAddItem = false;
+
+			switch (SelectedEquipmentCategory)
+			{
+			case 0:
+				bAddItem =
+					Config->category ==
+					storecat_Helmet;
+				break;
+
+			case 1:
+				bAddItem =
+					Config->category ==
+					storecat_Armor;
+				break;
+
+			case 5:
+				bAddItem =
+					Config->category ==
+					storecat_HeroPackage &&
+					g_pWeaponArmory->
+						getHeroConfig(ItemId) != nullptr;
+				break;
+
+			case 6:
+			case 7:
+				bAddItem =
+					g_pWeaponArmory->
+						getWeaponConfig(ItemId) != nullptr;
+				break;
+			}
+
+			if (!bAddItem)
+				continue;
+
+			CharacterEquipmentValues.push_back(
+				ItemId
+			);
+
+			CharacterEquipmentNames.push_back(
+				Config->m_StoreName
+					? Config->m_StoreName
+					: "UNKNOWN"
+			);
+		}
+	}
+
+	std::vector<const char*> NamePointers;
+
+	NamePointers.reserve(
+		CharacterEquipmentNames.size()
+	);
+
+	for (
+		const std::string& Name :
+		CharacterEquipmentNames
+	)
+	{
+		NamePointers.push_back(
+			Name.c_str()
+		);
+	}
+
+	SelectedEquipmentItem =
+		FindCurrentCharacterEquipmentIndex();
+
+	g_CharacterRmlUI.SetCharacterEquipmentList(
+		NamePointers.empty()
+			? nullptr
+			: NamePointers.data(),
+		static_cast<int>(
+			NamePointers.size()
+		),
+		SelectedEquipmentItem
+	);
+
+	if (
+		SelectedEquipmentItem >= 0 &&
+		SelectedEquipmentItem <
+			static_cast<int>(
+				CharacterEquipmentNames.size()
+			)
+	)
+	{
+		g_CharacterRmlUI.SetCharacterEquipmentSelected(
+			CharacterEquipmentNames[
+				SelectedEquipmentItem
+			].c_str()
+		);
+	}
+	else
+	{
+		g_CharacterRmlUI.SetCharacterEquipmentSelected(
+			"EMPTY"
+		);
+	}
+
+	CachedEquipmentCategory =
+		SelectedEquipmentCategory;
+
+	CachedEquipmentItem =
+		SelectedEquipmentItem;
+}
+
+void CharacterHUD::ApplyCharacterEquipmentItem(
+	int ListIndex
+)
+{
+	if (!m_Player)
+		return;
+
+	if (
+		ListIndex < 0 ||
+		ListIndex >=
+			static_cast<int>(
+				CharacterEquipmentValues.size()
+			)
+	)
+	{
+		return;
+	}
+
+	const uint32_t Value =
+		CharacterEquipmentValues[ListIndex];
+
+	wiCharDataFull NewLoadout =
+		m_Player->CurLoadout;
+
+	switch (SelectedEquipmentCategory)
+	{
+	case 0:
+		SetCharacterLoadoutItem(
+			NewLoadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_HEADGEAR
+			],
+			Value
+		);
+		break;
+
+	case 1:
+		SetCharacterLoadoutItem(
+			NewLoadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_ARMOR
+			],
+			Value
+		);
+		break;
+
+	case 2:
+		NewLoadout.HeadIdx =
+			static_cast<int>(Value);
+		break;
+
+	case 3:
+		NewLoadout.BodyIdx =
+			static_cast<int>(Value);
+		break;
+
+	case 4:
+		NewLoadout.LegsIdx =
+			static_cast<int>(Value);
+		break;
+
+	case 5:
+	{
+		NewLoadout.HeroItemID = Value;
+
+		const HeroConfig* Hero =
+			g_pWeaponArmory->getHeroConfig(Value);
+
+		if (Hero)
+		{
+			if (
+				NewLoadout.HeadIdx < 0 ||
+				NewLoadout.HeadIdx >=
+					static_cast<int>(
+						Hero->getNumHeads()
+					)
+			)
+			{
+				NewLoadout.HeadIdx = 0;
+			}
+
+			if (
+				NewLoadout.BodyIdx < 0 ||
+				NewLoadout.BodyIdx >=
+					static_cast<int>(
+						Hero->getNumBodys()
+					)
+			)
+			{
+				NewLoadout.BodyIdx = 0;
+			}
+
+			if (
+				NewLoadout.LegsIdx < 0 ||
+				NewLoadout.LegsIdx >=
+					static_cast<int>(
+						Hero->getNumLegs()
+					)
+			)
+			{
+				NewLoadout.LegsIdx = 0;
+			}
+		}
+
+		break;
+	}
+
+	case 6:
+		SetCharacterLoadoutItem(
+			NewLoadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_WEAPON2
+			],
+			Value
+		);
+		break;
+
+	case 7:
+		SetCharacterLoadoutItem(
+			NewLoadout.Items[
+				wiCharDataFull::CHAR_LOADOUT_WEAPON1
+			],
+			Value
+		);
+		break;
+
+	default:
+		return;
+	}
+
+	/*
+		Это единственное место, где применяем loadout.
+		Не вызывать каждый кадр.
+	*/
+	m_Player->UpdateLoadoutSlot(
+		NewLoadout
+	);
+
+	SelectedEquipmentItem = ListIndex;
+
+	CachedEquipmentCategory = -1;
+	CachedEquipmentItem = -1;
+
+	RebuildCharacterEquipmentList();
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 void CharacterHUD::InitPure()
@@ -467,10 +931,10 @@ void CharacterHUD::HandleCharacterRmlAction(
 				7
 			);
 
-		SelectedEquipmentItem = 0;
-
 		CachedEquipmentCategory = -1;
 		CachedEquipmentItem = -1;
+
+		RebuildCharacterEquipmentList();
 	}
 	else if (
 		strcmp(
@@ -479,15 +943,12 @@ void CharacterHUD::HandleCharacterRmlAction(
 		) == 0
 	)
 	{
-		SelectedEquipmentItem =
-			Value ? atoi(Value) : 0;
+		const int ListIndex =
+			Value ? atoi(Value) : -1;
 
-		CachedEquipmentItem = -1;
-
-		/*
-			Здесь будет применение выбранного предмета
-			к m_Player.
-		*/
+		ApplyCharacterEquipmentItem(
+			ListIndex
+		);
 	}
 }
 
@@ -680,6 +1141,23 @@ void CharacterHUD::UpdateCharacterRmlDocument()
 	g_CharacterRmlUI.SetCharacterSelectedDirection(
 		SelectedMoveDirection
 	);
+
+	g_CharacterRmlUI.SetCharacterEquipmentCategory(
+		SelectedEquipmentCategory
+	);
+
+	if (
+		bShowEquipment &&
+		(
+			CachedEquipmentCategory !=
+				SelectedEquipmentCategory ||
+			CachedEquipmentItem !=
+				SelectedEquipmentItem
+		)
+	)
+	{
+		RebuildCharacterEquipmentList();
+	}
 
 	g_CharacterRmlUI.SetCharacterToggle(
 		"btn_char_ui_idle",

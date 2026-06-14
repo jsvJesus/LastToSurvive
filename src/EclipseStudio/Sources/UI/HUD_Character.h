@@ -116,4 +116,12 @@ private:
 
 	int CachedEquipmentCategory;
 	int CachedEquipmentItem;
+
+	std::vector<uint32_t> CharacterEquipmentValues;
+	std::vector<std::string> CharacterEquipmentNames;
+
+	void RebuildCharacterEquipmentList();
+	void ApplyCharacterEquipmentItem(int ListIndex);
+
+	int FindCurrentCharacterEquipmentIndex() const;
 };
