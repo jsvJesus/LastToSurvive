@@ -22,9 +22,7 @@ app.MapGet("/", () => Results.Text(
 app.MapMethods(
     "/api_Test.aspx",
     legacyMethods,
-    () => Results.Text(
-        "WO_0",
-        "text/plain; charset=utf-8"));
+    () => Results.Text("WO_0", "text/plain; charset=utf-8"));
 
 app.MapMethods(
     "/api_DbTest.aspx",
@@ -56,18 +54,10 @@ app.MapMethods(
                 await command.ExecuteReaderAsync(cancellationToken);
 
             if (!await reader.ReadAsync(cancellationToken))
-            {
-                return Results.Text(
-                    "WO_5 Database returned no result",
-                    "text/plain; charset=utf-8");
-            }
+                return Results.Text("WO_5 Database returned no result", "text/plain; charset=utf-8");
 
-            string databaseName = reader.IsDBNull(0)
-                ? "UNKNOWN"
-                : reader.GetString(0);
-
-            bool hasLoginProcedure =
-                !reader.IsDBNull(1) && reader.GetInt32(1) == 1;
+            string databaseName = reader.IsDBNull(0) ? "UNKNOWN" : reader.GetString(0);
+            bool hasLoginProcedure = !reader.IsDBNull(1) && reader.GetInt32(1) == 1;
 
             if (!hasLoginProcedure)
             {
@@ -83,9 +73,7 @@ app.MapMethods(
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to connect to the LTS database.");
-            return Results.Text(
-                "WO_5 SQL connection failed",
-                "text/plain; charset=utf-8");
+            return Results.Text("WO_5 SQL connection failed", "text/plain; charset=utf-8");
         }
     });
 
@@ -121,5 +109,9 @@ app.MapMethods("/api_SrvAddLogInfo.aspx", legacyMethods, ServerLogInfoEndpoint.E
 app.MapMethods("/APS/api_SrvAddLogInfo.aspx", legacyMethods, ServerLogInfoEndpoint.ExecuteAsync);
 app.MapMethods("/api_SrvAddWeaponStats.aspx", legacyMethods, ServerWeaponStatsEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_SrvAddWeaponStats.aspx", legacyMethods, ServerWeaponStatsEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvCharUpdate.aspx", legacyMethods, ServerCharacterUpdateEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvCharUpdate.aspx", legacyMethods, ServerCharacterUpdateEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvUploadLogFile.aspx", legacyMethods, ServerUploadLogEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvUploadLogFile.aspx", legacyMethods, ServerUploadLogEndpoint.ExecuteAsync);
 
 app.Run();
