@@ -13,24 +13,22 @@ builder.Services.AddSingleton(
     new SqlConnectionFactory(connectionString));
 
 var app = builder.Build();
+string[] legacyMethods = { "GET", "POST" };
 
-app.MapGet("/", () =>
-{
-    return Results.Text(
-        "LastToSurvive API is running",
-        "text/plain; charset=utf-8");
-});
+app.MapGet("/", () => Results.Text(
+    "LastToSurvive API is running",
+    "text/plain; charset=utf-8"));
 
 app.MapMethods(
     "/api_Test.aspx",
-    new[] { "GET", "POST" },
+    legacyMethods,
     () => Results.Text(
         "WO_0",
         "text/plain; charset=utf-8"));
 
 app.MapMethods(
     "/api_DbTest.aspx",
-    new[] { "GET", "POST" },
+    legacyMethods,
     async (
         SqlConnectionFactory connections,
         ILoggerFactory loggerFactory,
@@ -98,31 +96,28 @@ app.MapMethods(
         }
     });
 
-MapLegacyEndpoint(app, "api_Login.aspx", LoginEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_LoginSessionPoller.aspx", LoginSessionPollerEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_GetProfile1.aspx", GetProfileEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_CharSlots.aspx", CharSlotsEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_CharBackpack.aspx", CharBackpackEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_GetItemsInfo.aspx", ItemsInfoEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_GetShop1.aspx", GetShopEndpoint.ExecuteAsync);
-MapLegacyEndpoint(app, "api_BuyItem3.aspx", BuyItemEndpoint.ExecuteAsync);
+app.MapMethods("/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_CharSlots.aspx", legacyMethods, CharSlotsEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_CharSlots.aspx", legacyMethods, CharSlotsEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_CharBackpack.aspx", legacyMethods, CharBackpackEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_CharBackpack.aspx", legacyMethods, CharBackpackEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_GetItemsInfo.aspx", legacyMethods, ItemsInfoEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_GetItemsInfo.aspx", legacyMethods, ItemsInfoEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync);
+
+app.MapMethods("/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
 
 app.Run();
-
-static void MapLegacyEndpoint(
-    WebApplication app,
-    string fileName,
-    Delegate handler)
-{
-    string[] methods = { "GET", "POST" };
-
-    app.MapMethods(
-        $"/{fileName}",
-        methods,
-        handler);
-
-    app.MapMethods(
-        $"/APS/{fileName}",
-        methods,
-        handler);
-}
