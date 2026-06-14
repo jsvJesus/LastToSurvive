@@ -2,6 +2,7 @@
 #include "r3d.h"
 
 #include "RmlUISystem.h"
+#include "RmlRuntime.h"
 
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/Elements/ElementFormControl.h>
@@ -523,115 +524,159 @@ std::wstring RmlUISystem::GetStudioDataRoot()
 	return Path + L"\\Data";
 }
 
-bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSelectOnInit)
+bool RmlUISystem::Init(
+	HWND InHwnd,
+	IDirect3DDevice9* InDevice,
+	bool bLoadAppSelectOnInit
+)
 {
 	if (bInitialized)
 		return true;
 
 	if (!InHwnd || !InDevice)
 	{
-		OutputDebugStringA("[RmlUI] Init failed: invalid HWND or D3D9 device\n");
+		OutputDebugStringA(
+			"[RmlUI] Init failed: invalid HWND or D3D9 device\n"
+		);
+
 		return false;
 	}
 
 	Hwnd = InHwnd;
+
 	UpdateClientSize();
 
-	const std::wstring DataRoot = GetStudioDataRoot();
+	RmlRuntime& Runtime =
+		RmlRuntime::Get();
 
-	SystemInterface = std::make_unique<RmlSystemInterface>();
-	FileInterface = std::make_unique<RmlFileInterface>(DataRoot.c_str());
-	RenderInterface = std::make_unique<RmlRenderDX9>();
-
-	if (!RenderInterface->Init(InDevice, DataRoot.c_str()))
+	if (!Runtime.Acquire(
+		InHwnd,
+		InDevice
+	))
 	{
-		OutputDebugStringA("[RmlUI] Init failed: DX9 render interface failed\n");
-		Shutdown();
-		return false;
-	}
+		OutputDebugStringA(
+			"[RmlUI] Shared runtime initialization failed\n"
+		);
 
-	Rml::SetSystemInterface(SystemInterface.get());
-	Rml::SetFileInterface(FileInterface.get());
-	Rml::SetRenderInterface(RenderInterface.get());
-
-	if (!Rml::Initialise())
-	{
-		OutputDebugStringA("[RmlUI] Rml::Initialise failed\n");
-		Shutdown();
+		Hwnd = nullptr;
 		return false;
 	}
 
 	bCoreInitializedHere = true;
 
-	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/NotoSans-Regular.ttf");
-	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/Roboto-Regular.ttf");
-	Rml::LoadFontFace("C:/Windows/Fonts/arial.ttf");
-
-	Context = Rml::CreateContext("Studio", Rml::Vector2i(ClientWidth, ClientHeight));
+	Context = Runtime.CreateContext(
+		"Studio",
+		Rml::Vector2i(
+			ClientWidth,
+			ClientHeight
+		)
+	);
 
 	if (!Context)
 	{
-		OutputDebugStringA("[RmlUI] CreateContext failed\n");
-		Shutdown();
+		Runtime.Release();
+
+		bCoreInitializedHere = false;
+		Hwnd = nullptr;
+
+		OutputDebugStringA(
+			"[RmlUI] CreateContext failed\n"
+		);
+
 		return false;
 	}
 
 	Context->EnableMouseCursor(true);
 
-	if (Rml::Debugger::Initialise(Context))
+	bDebuggerInitialized =
+		Runtime.EnsureDebugger(Context);
+
+	if (bDebuggerInitialized)
 	{
-		Rml::Debugger::SetContext(Context);
-		Rml::Debugger::SetVisible(false);
-		bDebuggerInitialized = true;
-		OutputDebugStringA("[RmlUI] Debugger initialized. Press F10 to toggle.\n");
+		OutputDebugStringA(
+			"[RmlUI] Debugger initialized. Press F10 to toggle.\n"
+		);
 	}
 	else
 	{
-		OutputDebugStringA("[RmlUI] Debugger initialization failed\n");
+		OutputDebugStringA(
+			"[RmlUI] Debugger initialization failed\n"
+		);
 	}
 
-	AppSelectClickListener = std::make_unique<FAppSelectClickListener>(this);
-	AppMainClickListener = std::make_unique<FAppMainClickListener>(this);
-	CharacterClickListener = std::make_unique<FCharacterClickListener>(this);
+	AppSelectClickListener =
+		std::make_unique<FAppSelectClickListener>(
+			this
+		);
+
+	AppMainClickListener =
+		std::make_unique<FAppMainClickListener>(
+			this
+		);
+
+	CharacterClickListener =
+		std::make_unique<FCharacterClickListener>(
+			this
+		);
 
 	bInitialized = true;
 
-	if (bLoadAppSelectOnInit && !LoadAppSelect())
+	if (
+		bLoadAppSelectOnInit &&
+		!LoadAppSelect()
+	)
 	{
-		OutputDebugStringA("[RmlUI] AppSelect load failed, fallback to old Scaleform UI\n");
+		OutputDebugStringA(
+			"[RmlUI] AppSelect load failed, fallback to old UI\n"
+		);
 	}
 
-	OutputDebugStringA("[RmlUI] Initialized\n");
+	OutputDebugStringA(
+		"[RmlUI] Initialized through shared runtime\n"
+	);
+
 	return true;
 }
 
 void RmlUISystem::Shutdown()
 {
+	RmlRuntime& Runtime =
+		RmlRuntime::Get();
+
+	Runtime.ClearActiveContext(
+		Context
+	);
+
 	if (Context)
 	{
-		if (bDebuggerInitialized)
-		{
-			Rml::Debugger::Shutdown();
-			bDebuggerInitialized = false;
-		}
-
 		if (AppSelectDocument)
 		{
 			DetachAppSelectEvents();
-			Context->UnloadDocument(AppSelectDocument);
+
+			Context->UnloadDocument(
+				AppSelectDocument
+			);
+
 			AppSelectDocument = nullptr;
 		}
 
 		if (LoadingScreenDocument)
 		{
-			Context->UnloadDocument(LoadingScreenDocument);
+			Context->UnloadDocument(
+				LoadingScreenDocument
+			);
+
 			LoadingScreenDocument = nullptr;
 		}
 
 		if (AppMainDocument)
 		{
 			DetachAppMainEvents();
-			Context->UnloadDocument(AppMainDocument);
+
+			Context->UnloadDocument(
+				AppMainDocument
+			);
+
 			AppMainDocument = nullptr;
 		}
 
@@ -646,30 +691,31 @@ void RmlUISystem::Shutdown()
 			CharacterEditorDocument = nullptr;
 		}
 
-		Rml::RemoveContext(Context->GetName());
-		Context = nullptr;
+		SelectedLiveElement = nullptr;
+
+		Runtime.DestroyContext(
+			Context
+		);
 	}
 
 	if (bCoreInitializedHere)
 	{
-		Rml::Shutdown();
+		Runtime.Release();
 		bCoreInitializedHere = false;
 	}
 
-	if (RenderInterface)
-	{
-		RenderInterface->Shutdown();
-		RenderInterface.reset();
-	}
-
+	RenderInterface.reset();
 	FileInterface.reset();
 	SystemInterface.reset();
+
 	AppSelectClickListener.reset();
 	AppMainClickListener.reset();
 	CharacterClickListener.reset();
+
 	CharacterCallback = nullptr;
 
 	Hwnd = nullptr;
+
 	bInitialized = false;
 	bAppSelectVisible = false;
 	bAppMainVisible = false;
@@ -677,9 +723,12 @@ void RmlUISystem::Shutdown()
 	bCharacterEditorVisible = false;
 	bDebuggerInitialized = false;
 	bLiveEditorVisible = false;
+
 	SelectedLiveElement = nullptr;
 
-	OutputDebugStringA("[RmlUI] Shutdown\n");
+	OutputDebugStringA(
+		"[RmlUI] Shutdown\n"
+	);
 }
 
 void RmlUISystem::UpdateClientSize()
@@ -727,6 +776,10 @@ bool RmlUISystem::LoadAppSelect()
 
 	AppSelectDocument->Show();
 	bAppSelectVisible = true;
+
+	RmlRuntime::Get().SetActiveContext(
+			Context
+		);
 
 	OutputDebugStringA("[RmlUI] AppSelect loaded\n");
 	return true;
@@ -807,6 +860,18 @@ void RmlUISystem::HideAppSelect()
 		AppSelectDocument->Hide();
 
 	bAppSelectVisible = false;
+
+	if (
+		!bAppMainVisible &&
+		!bCharacterEditorVisible &&
+		!bLiveEditorVisible &&
+		!IsDebuggerVisible()
+	)
+	{
+		RmlRuntime::Get().ClearActiveContext(
+			Context
+		);
+	}
 }
 
 bool RmlUISystem::LoadLoadingScreen()
@@ -899,71 +964,136 @@ void RmlUISystem::ApplyLoadingScreenProgress(float Progress)
 	}
 }
 
-void RmlUISystem::Update(float DeltaSeconds)
+void RmlUISystem::Update(
+	float DeltaSeconds
+)
 {
 	if (!bInitialized || !Context)
 		return;
 
 	UpdateClientSize();
 
-	if (bLoadingScreenVisible && LoadingScreenDocument)
+	const bool bWantsInput =
+		bAppSelectVisible ||
+		bAppMainVisible ||
+		bCharacterEditorVisible ||
+		bLiveEditorVisible ||
+		IsDebuggerVisible();
+
+	if (bWantsInput)
+	{
+		RmlRuntime::Get().SetActiveContext(
+			Context
+		);
+	}
+	else
+	{
+		RmlRuntime::Get().ClearActiveContext(
+			Context
+		);
+	}
+
+	if (
+		bLoadingScreenVisible &&
+		LoadingScreenDocument
+	)
 	{
 		if (DeltaSeconds <= 0.0f)
 			DeltaSeconds = 0.016f;
 
 		const float Speed = 8.0f;
-		const float Alpha = R3D_CLAMP(DeltaSeconds * Speed, 0.0f, 1.0f);
 
-		LoadingProgressVisual += (LoadingProgressTarget - LoadingProgressVisual) * Alpha;
+		const float Alpha =
+			R3D_CLAMP(
+				DeltaSeconds * Speed,
+				0.0f,
+				1.0f
+			);
 
-		if (fabsf(LoadingProgressTarget - LoadingProgressVisual) < 0.001f)
-			LoadingProgressVisual = LoadingProgressTarget;
+		LoadingProgressVisual +=
+			(
+				LoadingProgressTarget -
+				LoadingProgressVisual
+			) * Alpha;
 
-		ApplyLoadingScreenProgress(LoadingProgressVisual);
+		if (
+			fabsf(
+				LoadingProgressTarget -
+				LoadingProgressVisual
+			) < 0.001f
+		)
+		{
+			LoadingProgressVisual =
+				LoadingProgressTarget;
+		}
+
+		ApplyLoadingScreenProgress(
+			LoadingProgressVisual
+		);
 	}
 
-	if (bLiveEditorVisible && LiveEditorDocument)
+	if (
+		bLiveEditorVisible &&
+		LiveEditorDocument
+	)
+	{
 		UpdateLiveEditorHighlight();
+	}
 
 	Context->Update();
 }
 
 void RmlUISystem::Render()
 {
-	if (!bInitialized || !Context || !RenderInterface)
+	if (!bInitialized || !Context)
 		return;
 
 	const bool bHasVisibleDocument =
-	(bAppSelectVisible && AppSelectDocument) ||
-	(bLoadingScreenVisible && LoadingScreenDocument) ||
-	(bAppMainVisible && AppMainDocument) ||
-	(
-		bCharacterEditorVisible &&
-		CharacterEditorDocument
-	) ||
-	(bLiveEditorVisible && LiveEditorDocument) ||
-	IsDebuggerVisible();
+		(
+			bAppSelectVisible &&
+			AppSelectDocument
+		) ||
+		(
+			bLoadingScreenVisible &&
+			LoadingScreenDocument
+		) ||
+		(
+			bAppMainVisible &&
+			AppMainDocument
+		) ||
+		(
+			bCharacterEditorVisible &&
+			CharacterEditorDocument
+		) ||
+		(
+			bLiveEditorVisible &&
+			LiveEditorDocument
+		) ||
+		IsDebuggerVisible();
 
 	if (!bHasVisibleDocument)
 		return;
 
-	RenderInterface->BeginFrame(ClientWidth, ClientHeight);
-	Context->Render();
-	RenderInterface->EndFrame();
+	RmlRuntime::Get().RenderContext(
+		Context,
+		ClientWidth,
+		ClientHeight
+	);
 }
 
 void RmlUISystem::OnDeviceLost()
 {
-	if (RenderInterface)
-		RenderInterface->OnDeviceLost();
+	RmlRuntime::Get().OnDeviceLost();
 }
 
 void RmlUISystem::OnDeviceReset()
 {
 	UpdateClientSize();
 
-	if (RenderInterface)
-		RenderInterface->OnDeviceReset(ClientWidth, ClientHeight);
+	RmlRuntime::Get().OnDeviceReset(
+		ClientWidth,
+		ClientHeight
+	);
 }
 
 void RmlUISystem::SetAppSelectCallback(FAppSelectCallback Callback)
@@ -978,22 +1108,71 @@ bool RmlUISystem::IsInitialized() const
 
 void RmlUISystem::ToggleDebugger()
 {
-	SetDebuggerVisible(!IsDebuggerVisible());
+	SetDebuggerVisible(
+		!IsDebuggerVisible()
+	);
 }
 
-void RmlUISystem::SetDebuggerVisible(bool bVisible)
+void RmlUISystem::SetDebuggerVisible(
+	bool bVisible
+)
 {
-	if (!bInitialized || !bDebuggerInitialized)
+	if (
+		!bInitialized ||
+		!Context ||
+		!bDebuggerInitialized
+	)
+	{
 		return;
+	}
 
-	Rml::Debugger::SetContext(Context);
-	Rml::Debugger::SetVisible(bVisible);
-	OutputDebugStringA(bVisible ? "[RmlUI] Debugger shown\n" : "[RmlUI] Debugger hidden\n");
+	RmlRuntime& Runtime =
+		RmlRuntime::Get();
+
+	Runtime.SetDebuggerVisible(
+		Context,
+		bVisible
+	);
+
+	if (bVisible)
+	{
+		Runtime.SetActiveContext(
+			Context
+		);
+	}
+	else if (
+		!bAppSelectVisible &&
+		!bAppMainVisible &&
+		!bCharacterEditorVisible &&
+		!bLiveEditorVisible
+	)
+	{
+		Runtime.ClearActiveContext(
+			Context
+		);
+	}
+
+	OutputDebugStringA(
+		bVisible
+		? "[RmlUI] Debugger shown\n"
+		: "[RmlUI] Debugger hidden\n"
+	);
 }
 
 bool RmlUISystem::IsDebuggerVisible() const
 {
-	return bInitialized && bDebuggerInitialized && Rml::Debugger::IsVisible();
+	if (
+		!bInitialized ||
+		!Context ||
+		!bDebuggerInitialized
+	)
+	{
+		return false;
+	}
+
+	return RmlRuntime::Get().IsDebuggerVisible(
+		Context
+	);
 }
 
 void RmlUISystem::ReloadStyleSheets()
@@ -1075,10 +1254,12 @@ void RmlUISystem::ReloadVisibleDocuments()
 	if (bWasLoadingScreenVisible)
 		ApplyLoadingScreenProgress(LoadingProgressVisual);
 
-	if (bWasDebuggerVisible && bDebuggerInitialized)
+	if (
+		bWasDebuggerVisible &&
+		bDebuggerInitialized
+	)
 	{
-		Rml::Debugger::SetContext(Context);
-		Rml::Debugger::SetVisible(true);
+		SetDebuggerVisible(true);
 	}
 
 	OutputDebugStringA("[RmlUI] Visible documents reloaded\n");
@@ -1408,6 +1589,15 @@ bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, 
 		return false;
 	}
 
+	if (
+		!RmlRuntime::Get().IsActiveContext(
+			Context
+		)
+	)
+	{
+		return false;
+	}
+
 	switch (Message)
 	{
 	case WM_SIZE:
@@ -1564,6 +1754,10 @@ void RmlUISystem::ShowAppMain()
 	{
 		AppMainDocument->Show();
 		bAppMainVisible = true;
+
+		RmlRuntime::Get().SetActiveContext(
+			Context
+		);
 	}
 }
 
@@ -1573,6 +1767,18 @@ void RmlUISystem::HideAppMain()
 		AppMainDocument->Hide();
 
 	bAppMainVisible = false;
+
+	if (
+		!bAppSelectVisible &&
+		!bCharacterEditorVisible &&
+		!bLiveEditorVisible &&
+		!IsDebuggerVisible()
+	)
+	{
+		RmlRuntime::Get().ClearActiveContext(
+			Context
+		);
+	}
 }
 
 void RmlUISystem::AttachAppMainEvents()
@@ -2080,6 +2286,10 @@ void RmlUISystem::ShowCharacterEditor()
 
 	CharacterEditorDocument->Show();
 	bCharacterEditorVisible = true;
+
+	RmlRuntime::Get().SetActiveContext(
+		Context
+	);
 }
 
 void RmlUISystem::HideCharacterEditor()
@@ -2088,6 +2298,18 @@ void RmlUISystem::HideCharacterEditor()
 		CharacterEditorDocument->Hide();
 
 	bCharacterEditorVisible = false;
+
+	if (
+		!bAppSelectVisible &&
+		!bAppMainVisible &&
+		!bLiveEditorVisible &&
+		!IsDebuggerVisible()
+	)
+	{
+		RmlRuntime::Get().ClearActiveContext(
+			Context
+		);
+	}
 }
 
 bool RmlUISystem::IsCharacterEditorReady() const

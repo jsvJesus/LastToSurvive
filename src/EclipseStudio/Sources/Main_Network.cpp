@@ -35,7 +35,7 @@
 #include "UI\m_LoadingScreen.h"
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
-#include "../RmlUI/FrontEnd/RmlFrontEndSystem.h"
+#include "../RmlUI/FrontEnd/RmlFrontEndContext.h"
 #endif
 
 #include "Editors/CollectionsManager.h"
@@ -132,71 +132,9 @@ void* MainMenuSoundEvent = 0;
 
 static FrontendWarZ* frontend = NULL; // static to prevent extern
 
-#if defined(_WIN64) && !defined(FINAL_BUILD)
-
-
-
-static bool EnsureRmlFrontEndContext()
-{
-	if (g_RmlFrontEndSystem.IsInitialized())
-		return true;
-
-	if (
-		!r3dRenderer ||
-		!r3dRenderer->pd3ddev ||
-		!win::hWnd
-	)
-	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd][Fallback] Invalid renderer, "
-			"device or window\n"
-		);
-
-		return false;
-	}
-
-	if (!g_RmlFrontEndSystem.Init(
-		win::hWnd,
-		r3dRenderer->pd3ddev
-	))
-	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd][Fallback] Empty context failed; "
-			"using legacy FrontEnd.swf\n"
-		);
-
-		return false;
-	}
-
-	return true;
-}
-
-class RmlFrontEndLifetime final
-{
-public:
-	RmlFrontEndLifetime()
-	{
-		EnsureRmlFrontEndContext();
-	}
-
-	~RmlFrontEndLifetime()
-	{
-		g_RmlFrontEndSystem.Shutdown();
-	}
-};
-
-#endif
-
 void loadFrontend()
 {
 	r3d_assert(frontend == NULL);
-
-#if defined(_WIN64) && !defined(FINAL_BUILD)
-	EnsureRmlFrontEndContext();
-#endif
-
-	// Этап 1:
-	// Legacy Scaleform остаётся основным FrontEnd.
 	frontend =
 		new FrontendWarZ(
 			"data\\menu\\Frontend.swf"
@@ -226,7 +164,25 @@ void ExecuteNetworkGame()
 	CLoginSessionHolder loginholder;
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
-	RmlFrontEndLifetime RmlFrontEndScope;
+	RmlFrontEndContext RmlFrontEndStage1;
+
+	if (
+		r3dRenderer &&
+		r3dRenderer->pd3ddev &&
+		win::hWnd
+	)
+	{
+		if (!RmlFrontEndStage1.Init(
+			win::hWnd,
+			r3dRenderer->pd3ddev
+		))
+		{
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Fallback] "
+				"Legacy FrontEnd.swf remains active\n"
+			);
+		}
+	}
 #endif
 
 	{
@@ -267,10 +223,7 @@ repeat_the_login:
 			DiscordPresence_Tick();
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
-			DiscordPresence_Tick();
-			g_RmlFrontEndSystem.Update(
-				r3dGetFrameTime()
-			);
+			RmlFrontEndStage1.Update();
 #endif
 
 			res = frontend->Update();
@@ -294,10 +247,7 @@ repeat_the_menu:
 			DiscordPresence_Tick();
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
-			DiscordPresence_Tick();
-			g_RmlFrontEndSystem.Update(
-				r3dGetFrameTime()
-			);
+			RmlFrontEndStage1.Update();
 #endif
 
 			res = frontend->Update();
