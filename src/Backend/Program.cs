@@ -1,9 +1,10 @@
 using Microsoft.Data.SqlClient;
 using WarZ.Api.Data;
+using WarZ.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString =
+string connectionString =
     builder.Configuration.GetConnectionString("LTS")
     ?? throw new InvalidOperationException(
         "Connection string 'LTS' was not configured.");
@@ -38,7 +39,8 @@ app.MapMethods(
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken) =>
     {
-        var logger = loggerFactory.CreateLogger("DatabaseTest");
+        ILogger logger =
+            loggerFactory.CreateLogger("DatabaseTest");
 
         try
         {
@@ -62,15 +64,14 @@ app.MapMethods(
             await using var command =
                 new SqlCommand(sql, connection);
 
-            await using var reader =
+            await using SqlDataReader reader =
                 await command.ExecuteReaderAsync(cancellationToken);
 
             if (!await reader.ReadAsync(cancellationToken))
             {
                 return Results.Text(
                     "WO_5 Database returned no result",
-                    "text/plain; charset=utf-8",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                    "text/plain; charset=utf-8");
             }
 
             string databaseName =
@@ -84,13 +85,9 @@ app.MapMethods(
 
             if (!hasLoginProcedure)
             {
-                logger.LogError(
-                    "Stored procedure dbo.WZ_ACCOUNT_LOGIN was not found.");
-
                 return Results.Text(
                     $"WO_5 Database={databaseName}; Missing dbo.WZ_ACCOUNT_LOGIN",
-                    "text/plain; charset=utf-8",
-                    statusCode: StatusCodes.Status500InternalServerError);
+                    "text/plain; charset=utf-8");
             }
 
             return Results.Text(
@@ -105,9 +102,34 @@ app.MapMethods(
 
             return Results.Text(
                 "WO_5 SQL connection failed",
-                "text/plain; charset=utf-8",
-                statusCode: StatusCodes.Status500InternalServerError);
+                "text/plain; charset=utf-8");
         }
     });
+
+/*
+ * Оставляем оба адреса:
+ *
+ * /api_Login.aspx     — удобно тестировать вручную.
+ * /APS/api_Login.aspx — именно этот адрес использует игровой клиент.
+ */
+app.MapMethods(
+    "/api_Login.aspx",
+    new[] { "GET", "POST" },
+    LoginEndpoint.ExecuteAsync);
+
+app.MapMethods(
+    "/APS/api_Login.aspx",
+    new[] { "GET", "POST" },
+    LoginEndpoint.ExecuteAsync);
+
+app.MapMethods(
+    "/api_LoginSessionPoller.aspx",
+    new[] { "GET", "POST" },
+    LoginSessionPollerEndpoint.ExecuteAsync);
+
+app.MapMethods(
+    "/APS/api_LoginSessionPoller.aspx",
+    new[] { "GET", "POST" },
+    LoginSessionPollerEndpoint.ExecuteAsync);
 
 app.Run();
