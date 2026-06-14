@@ -38,18 +38,14 @@ app.MapMethods(
 
         try
         {
-            await using SqlConnection connection =
-                connections.CreateConnection();
-
+            await using SqlConnection connection = connections.CreateConnection();
             await connection.OpenAsync(cancellationToken);
 
             const string sql = """
                 SELECT
                     DB_NAME() AS DatabaseName,
                     CASE
-                        WHEN OBJECT_ID(
-                            N'dbo.WZ_ACCOUNT_LOGIN',
-                            N'P') IS NOT NULL
+                        WHEN OBJECT_ID(N'dbo.WZ_ACCOUNT_LOGIN', N'P') IS NOT NULL
                         THEN 1
                         ELSE 0
                     END AS HasLoginProcedure;
@@ -86,10 +82,7 @@ app.MapMethods(
         }
         catch (Exception exception)
         {
-            logger.LogError(
-                exception,
-                "Failed to connect to the LTS database.");
-
+            logger.LogError(exception, "Failed to connect to the LTS database.");
             return Results.Text(
                 "WO_5 SQL connection failed",
                 "text/plain; charset=utf-8");
@@ -98,26 +91,35 @@ app.MapMethods(
 
 app.MapMethods("/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_CharSlots.aspx", legacyMethods, CharSlotsEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_CharSlots.aspx", legacyMethods, CharSlotsEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_CharBackpack.aspx", legacyMethods, CharBackpackEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_CharBackpack.aspx", legacyMethods, CharBackpackEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_GetItemsInfo.aspx", legacyMethods, ItemsInfoEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetItemsInfo.aspx", legacyMethods, ItemsInfoEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync);
-
 app.MapMethods("/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
+app.MapMethods("/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.ExecuteAsync);
+app.MapMethods("/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvNotes.aspx", legacyMethods, ServerNotesEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvNotes.aspx", legacyMethods, ServerNotesEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvUserJoinedGame.aspx", legacyMethods, ServerUserJoinedEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvUserJoinedGame.aspx", legacyMethods, ServerUserJoinedEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvUserLeftGame.aspx", legacyMethods, ServerUserLeftEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvUserLeftGame.aspx", legacyMethods, ServerUserLeftEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvAddCheatAttempts.aspx", legacyMethods, ServerCheatAttemptEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvAddCheatAttempts.aspx", legacyMethods, ServerCheatAttemptEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvAddLogInfo.aspx", legacyMethods, ServerLogInfoEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvAddLogInfo.aspx", legacyMethods, ServerLogInfoEndpoint.ExecuteAsync);
+app.MapMethods("/api_SrvAddWeaponStats.aspx", legacyMethods, ServerWeaponStatsEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_SrvAddWeaponStats.aspx", legacyMethods, ServerWeaponStatsEndpoint.ExecuteAsync);
 
 app.Run();
