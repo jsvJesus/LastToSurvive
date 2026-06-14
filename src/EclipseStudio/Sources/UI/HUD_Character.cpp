@@ -330,12 +330,22 @@ void CharacterHUD::RebuildCharacterEquipmentList()
 				break;
 
 			case 5:
-				bAddItem =
-					Config->category ==
-					storecat_HeroPackage &&
-					g_pWeaponArmory->
-						getHeroConfig(ItemId) != nullptr;
-				break;
+				{
+					const HeroConfig* Hero =
+						g_pWeaponArmory->getHeroConfig(
+							ItemId
+						);
+
+					bAddItem =
+						Config->category ==
+							storecat_HeroPackage &&
+						Hero != nullptr &&
+						Hero->getNumHeads() > 0 &&
+						Hero->getNumBodys() > 0 &&
+						Hero->getNumLegs() > 0;
+
+					break;
+				}
 
 			case 6:
 			case 7:
@@ -477,14 +487,27 @@ void CharacterHUD::ApplyCharacterEquipmentItem(
 		break;
 
 	case 5:
-	{
-		NewLoadout.HeroItemID = Value;
-
-		const HeroConfig* Hero =
-			g_pWeaponArmory->getHeroConfig(Value);
-
-		if (Hero)
 		{
+			const HeroConfig* Hero =
+				g_pWeaponArmory->getHeroConfig(Value);
+
+			if (
+				!Hero ||
+				Hero->getNumHeads() == 0 ||
+				Hero->getNumBodys() == 0 ||
+				Hero->getNumLegs() == 0
+			)
+			{
+				r3dOutToLog(
+					"[CharacterEditor] Invalid hero: %u\n",
+					Value
+				);
+
+				return;
+			}
+
+			NewLoadout.HeroItemID = Value;
+
 			if (
 				NewLoadout.HeadIdx < 0 ||
 				NewLoadout.HeadIdx >=
@@ -517,10 +540,9 @@ void CharacterHUD::ApplyCharacterEquipmentItem(
 			{
 				NewLoadout.LegsIdx = 0;
 			}
-		}
 
-		break;
-	}
+			break;
+		}
 
 	case 6:
 		SetCharacterLoadoutItem(
@@ -581,14 +603,35 @@ void CharacterHUD::InitPure()
 
 void CharacterHUD::CreateCharacter()
 {
-	if(!m_Player)
+	if (m_Player)
+		return;
+
+	m_Player = static_cast<obj_Player*>(
+		srv_CreateGameObject(
+			"obj_Player",
+			"RespawnPlayer",
+			r3dPoint3D(0, 0, 0)
+		)
+	);
+
+	if (!m_Player)
 	{
-		m_Player = (obj_Player *)srv_CreateGameObject("obj_Player", "RespawnPlayer", r3dPoint3D(0,0,0));
-		m_Player->NetworkLocal = true;
-		m_Player->PlayerState = PLAYER_IDLE;
-		m_Player->bDead = 0;
-		m_Player->OnCreate();
-	}	
+		r3dOutToLog(
+			"[CharacterEditor] Failed to create player\n"
+		);
+
+		return;
+	}
+
+	m_Player->NetworkLocal = true;
+	m_Player->PlayerState = PLAYER_IDLE;
+	m_Player->PlayerMoveDir = CUberData::ANIMDIR_Stand;
+	m_Player->bDead = 0;
+	m_Player->m_enableRendering = true;
+
+	m_Player->OnCreate();
+
+	EnsureDefaultCharacterLoadout();
 }
 
 void CharacterHUD::DestroyPure()
@@ -746,6 +789,88 @@ void CharacterHUD::StartCharacterInAir()
 	m_Player->uberAnim_->SwitchToState(
 		m_Player->uberAnim_->AnimPlayerState,
 		m_Player->uberAnim_->AnimMoveDir
+	);
+}
+
+void CharacterHUD::EnsureDefaultCharacterLoadout()
+{
+	if (!m_Player || !g_pWeaponArmory)
+		return;
+
+	const HeroConfig* CurrentHero =
+		g_pWeaponArmory->getHeroConfig(
+			m_Player->CurLoadout.HeroItemID
+		);
+
+	const bool HasValidCurrentHero =
+		CurrentHero &&
+		CurrentHero->getNumHeads() > 0 &&
+		CurrentHero->getNumBodys() > 0 &&
+		CurrentHero->getNumLegs() > 0;
+
+	if (HasValidCurrentHero)
+	{
+		m_Player->m_enableRendering = true;
+		return;
+	}
+
+	uint32_t DefaultHeroId = 0;
+
+	g_pWeaponArmory->startItemSearch();
+
+	while (g_pWeaponArmory->searchNextItem())
+	{
+		const uint32_t ItemId =
+			g_pWeaponArmory->getCurrentSearchItemID();
+
+		const HeroConfig* Hero =
+			g_pWeaponArmory->getHeroConfig(ItemId);
+
+		if (!Hero)
+			continue;
+
+		if (
+			Hero->getNumHeads() == 0 ||
+			Hero->getNumBodys() == 0 ||
+			Hero->getNumLegs() == 0
+		)
+		{
+			continue;
+		}
+
+		DefaultHeroId = ItemId;
+		break;
+	}
+
+	if (DefaultHeroId == 0)
+	{
+		r3dOutToLog(
+			"[CharacterEditor] No valid hero found\n"
+		);
+
+		return;
+	}
+
+	wiCharDataFull Loadout =
+		m_Player->CurLoadout;
+
+	Loadout.HeroItemID = DefaultHeroId;
+	Loadout.HeadIdx = 0;
+	Loadout.BodyIdx = 0;
+	Loadout.LegsIdx = 0;
+
+	m_Player->UpdateLoadoutSlot(Loadout);
+
+	m_Player->m_enableRendering = true;
+	m_Player->setSkipOcclusionCheck(true);
+
+	m_Player->ObjFlags |=
+		OBJFLAG_ForceSceneBoxBBox |
+		OBJFLAG_AlwaysDraw;
+
+	r3dOutToLog(
+		"[CharacterEditor] Default hero selected: %u\n",
+		DefaultHeroId
 	);
 }
 

@@ -96,6 +96,7 @@ private:
 	bool bCharacterRmlReady;
 	bool bCharacterRmlInitAttempted;
 	bool bCharacterControlsInitialized;
+	void EnsureDefaultCharacterLoadout();
 
 	bool bPlayerStatesMode;
 
