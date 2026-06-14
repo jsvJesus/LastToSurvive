@@ -145,7 +145,7 @@ public static class ServerCharacterUpdateEndpoint
         CancellationToken cancellationToken)
     {
         await using SqlTransaction transaction =
-            await connection.BeginTransactionAsync(cancellationToken);
+            (SqlTransaction)await connection.BeginTransactionAsync(cancellationToken);
 
         try
         {
