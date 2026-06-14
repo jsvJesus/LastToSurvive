@@ -24,12 +24,9 @@ app.MapGet("/", () =>
 app.MapMethods(
     "/api_Test.aspx",
     new[] { "GET", "POST" },
-    () =>
-    {
-        return Results.Text(
-            "WO_0",
-            "text/plain; charset=utf-8");
-    });
+    () => Results.Text(
+        "WO_0",
+        "text/plain; charset=utf-8"));
 
 app.MapMethods(
     "/api_DbTest.aspx",
@@ -39,8 +36,7 @@ app.MapMethods(
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken) =>
     {
-        ILogger logger =
-            loggerFactory.CreateLogger("DatabaseTest");
+        ILogger logger = loggerFactory.CreateLogger("DatabaseTest");
 
         try
         {
@@ -61,9 +57,7 @@ app.MapMethods(
                     END AS HasLoginProcedure;
                 """;
 
-            await using var command =
-                new SqlCommand(sql, connection);
-
+            await using var command = new SqlCommand(sql, connection);
             await using SqlDataReader reader =
                 await command.ExecuteReaderAsync(cancellationToken);
 
@@ -74,14 +68,12 @@ app.MapMethods(
                     "text/plain; charset=utf-8");
             }
 
-            string databaseName =
-                reader.IsDBNull(0)
-                    ? "UNKNOWN"
-                    : reader.GetString(0);
+            string databaseName = reader.IsDBNull(0)
+                ? "UNKNOWN"
+                : reader.GetString(0);
 
             bool hasLoginProcedure =
-                !reader.IsDBNull(1) &&
-                reader.GetInt32(1) == 1;
+                !reader.IsDBNull(1) && reader.GetInt32(1) == 1;
 
             if (!hasLoginProcedure)
             {
@@ -106,40 +98,47 @@ app.MapMethods(
         }
     });
 
-/*
- * Оставляем оба адреса:
- *
- * /api_Login.aspx     — удобно тестировать вручную.
- * /APS/api_Login.aspx — именно этот адрес использует игровой клиент.
- */
-app.MapMethods(
-    "/api_Login.aspx",
-    new[] { "GET", "POST" },
+MapLegacyEndpoint(
+    app,
+    "api_Login.aspx",
     LoginEndpoint.ExecuteAsync);
 
-app.MapMethods(
-    "/APS/api_Login.aspx",
-    new[] { "GET", "POST" },
-    LoginEndpoint.ExecuteAsync);
-
-app.MapMethods(
-    "/api_LoginSessionPoller.aspx",
-    new[] { "GET", "POST" },
+MapLegacyEndpoint(
+    app,
+    "api_LoginSessionPoller.aspx",
     LoginSessionPollerEndpoint.ExecuteAsync);
 
-app.MapMethods(
-    "/APS/api_LoginSessionPoller.aspx",
-    new[] { "GET", "POST" },
-    LoginSessionPollerEndpoint.ExecuteAsync);
-
-app.MapMethods(
-    "/api_GetProfile1.aspx",
-    new[] { "GET", "POST" },
+MapLegacyEndpoint(
+    app,
+    "api_GetProfile1.aspx",
     GetProfileEndpoint.ExecuteAsync);
 
-app.MapMethods(
-    "/APS/api_GetProfile1.aspx",
-    new[] { "GET", "POST" },
-    GetProfileEndpoint.ExecuteAsync);
+MapLegacyEndpoint(
+    app,
+    "api_CharSlots.aspx",
+    CharSlotsEndpoint.ExecuteAsync);
+
+MapLegacyEndpoint(
+    app,
+    "api_CharBackpack.aspx",
+    CharBackpackEndpoint.ExecuteAsync);
 
 app.Run();
+
+static void MapLegacyEndpoint(
+    WebApplication app,
+    string fileName,
+    Delegate handler)
+{
+    string[] methods = { "GET", "POST" };
+
+    app.MapMethods(
+        $"/{fileName}",
+        methods,
+        handler);
+
+    app.MapMethods(
+        $"/APS/{fileName}",
+        methods,
+        handler);
+}
