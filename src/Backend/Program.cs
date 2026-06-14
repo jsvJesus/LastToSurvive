@@ -9,8 +9,7 @@ string connectionString =
     ?? throw new InvalidOperationException(
         "Connection string 'LTS' was not configured.");
 
-builder.Services.AddSingleton(
-    new SqlConnectionFactory(connectionString));
+builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
 var app = builder.Build();
 string[] legacyMethods = { "GET", "POST" };
@@ -81,6 +80,12 @@ app.MapMethods("/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_Login.aspx", legacyMethods, LoginEndpoint.ExecuteAsync);
 app.MapMethods("/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_LoginSessionPoller.aspx", legacyMethods, LoginSessionPollerEndpoint.ExecuteAsync);
+app.MapMethods("/api_AccRegister.aspx", legacyMethods, AccountRegisterEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_AccRegister.aspx", legacyMethods, AccountRegisterEndpoint.ExecuteAsync);
+app.MapMethods("/api_AccCheckKey.aspx", legacyMethods, AccountCheckKeyEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_AccCheckKey.aspx", legacyMethods, AccountCheckKeyEndpoint.ExecuteAsync);
+app.MapMethods("/api_AccApplyKey.aspx", legacyMethods, AccountApplyKeyEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_AccApplyKey.aspx", legacyMethods, AccountApplyKeyEndpoint.ExecuteAsync);
 app.MapMethods("/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetProfile1.aspx", legacyMethods, GetProfileEndpoint.ExecuteAsync);
 app.MapMethods("/api_CharSlots.aspx", legacyMethods, CharSlotsEndpoint.ExecuteAsync);
@@ -93,10 +98,24 @@ app.MapMethods("/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync
 app.MapMethods("/APS/api_GetShop1.aspx", legacyMethods, GetShopEndpoint.ExecuteAsync);
 app.MapMethods("/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_BuyItem3.aspx", legacyMethods, BuyItemEndpoint.ExecuteAsync);
+app.MapMethods("/api_Friends.aspx", legacyMethods, FriendsEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_Friends.aspx", legacyMethods, FriendsEndpoint.ExecuteAsync);
 app.MapMethods("/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.ExecuteAsync);
 app.MapMethods("/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanCreate.aspx", legacyMethods, ClanCreateEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanCreate.aspx", legacyMethods, ClanCreateEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanApply.aspx", legacyMethods, ClanApplyEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanApply.aspx", legacyMethods, ClanApplyEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanInvites.aspx", legacyMethods, ClanInvitesEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanInvites.aspx", legacyMethods, ClanInvitesEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanGetInfo.aspx", legacyMethods, ClanInfoEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanGetInfo.aspx", legacyMethods, ClanInfoEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanGetStatus.aspx", legacyMethods, ClanStatusEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanGetStatus.aspx", legacyMethods, ClanStatusEndpoint.ExecuteAsync);
+app.MapMethods("/api_ClanMgr.aspx", legacyMethods, ClanManagerEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_ClanMgr.aspx", legacyMethods, ClanManagerEndpoint.ExecuteAsync);
 app.MapMethods("/api_SrvNotes.aspx", legacyMethods, ServerNotesEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_SrvNotes.aspx", legacyMethods, ServerNotesEndpoint.ExecuteAsync);
 app.MapMethods("/api_SrvUserJoinedGame.aspx", legacyMethods, ServerUserJoinedEndpoint.ExecuteAsync);
