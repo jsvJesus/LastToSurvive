@@ -34,6 +34,10 @@
 #include "UI\FrontEndWarZ.h"
 #include "UI\m_LoadingScreen.h"
 
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+#include "../RmlUI/FrontEnd/RmlFrontEndSystem.h"
+#endif
+
 #include "Editors/CollectionsManager.h"
 
 	char		_p2p_masterHost[MAX_PATH] = ""; // master server ip
@@ -128,14 +132,84 @@ void* MainMenuSoundEvent = 0;
 
 static FrontendWarZ* frontend = NULL; // static to prevent extern
 
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+
+static RmlFrontEndSystem g_RmlFrontEndSystem;
+
+static bool EnsureRmlFrontEndContext()
+{
+	if (g_RmlFrontEndSystem.IsInitialized())
+		return true;
+
+	if (
+		!r3dRenderer ||
+		!r3dRenderer->pd3ddev ||
+		!win::hWnd
+	)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Fallback] Invalid renderer, "
+			"device or window\n"
+		);
+
+		return false;
+	}
+
+	if (!g_RmlFrontEndSystem.Init(
+		win::hWnd,
+		r3dRenderer->pd3ddev
+	))
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Fallback] Empty context failed; "
+			"using legacy FrontEnd.swf\n"
+		);
+
+		return false;
+	}
+
+	return true;
+}
+
+class RmlFrontEndLifetime final
+{
+public:
+	RmlFrontEndLifetime()
+	{
+		EnsureRmlFrontEndContext();
+	}
+
+	~RmlFrontEndLifetime()
+	{
+		g_RmlFrontEndSystem.Shutdown();
+	}
+};
+
+#endif
+
 void loadFrontend()
 {
 	r3d_assert(frontend == NULL);
 
-	frontend = new FrontendWarZ("data\\menu\\Frontend.swf");
-	r3dSetAsyncLoading( 0 ) ;
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+	EnsureRmlFrontEndContext();
+#endif
+
+	// Этап 1:
+	// Legacy Scaleform остаётся основным FrontEnd.
+	frontend =
+		new FrontendWarZ(
+			"data\\menu\\Frontend.swf"
+		);
+
+	r3dSetAsyncLoading(0);
+
 	frontend->Load();
 	frontend->Initialize();
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd][Fallback] Legacy FrontEnd.swf active\n"
+	);
 }
 
 void ExecuteNetworkGame()
@@ -151,6 +225,9 @@ void ExecuteNetworkGame()
 	};
 	CLoginSessionHolder loginholder;
 
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+	RmlFrontEndLifetime RmlFrontEndScope;
+#endif
 
 	{
 		r3dPoint3D soundPos(0,0,0), soundDir(0,0,1), soundUp(0,1,0);
@@ -185,8 +262,17 @@ repeat_the_login:
 	{
 		int res = 0;
 		frontend->initLoginStep(showLoginErrorMsg);
-		while(res == 0) {
+		while (res == 0)
+		{
 			DiscordPresence_Tick();
+
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+			DiscordPresence_Tick();
+			g_RmlFrontEndSystem.Update(
+				r3dGetFrameTime()
+			);
+#endif
+
 			res = frontend->Update();
 		}
 		showLoginErrorMsg = 0;
@@ -203,9 +289,19 @@ repeat_the_menu:
 	{
 		int res=0;
 		frontend->postLoginStepInit(gameResult);
-		while(res == 0) {
+		while (res == 0)
+		{
 			DiscordPresence_Tick();
+
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+			DiscordPresence_Tick();
+			g_RmlFrontEndSystem.Update(
+				r3dGetFrameTime()
+			);
+#endif
+
 			res = frontend->Update();
+
 			FileTrackDoWork();
 		}
 
