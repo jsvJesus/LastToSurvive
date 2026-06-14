@@ -509,159 +509,202 @@ RmlUISystem::~RmlUISystem()
 	Shutdown();
 }
 
-bool RmlUISystem::Init(
-	HWND InHwnd,
-	IDirect3DDevice9* InDevice,
-	bool bLoadAppSelectOnInit
-)
+std::wstring RmlUISystem::GetStudioDataRoot()
+{
+	wchar_t ModulePath[MAX_PATH]{};
+	GetModuleFileNameW(nullptr, ModulePath, MAX_PATH);
+
+	std::wstring Path = ModulePath;
+
+	const size_t Slash = Path.find_last_of(L"\\/");
+	if (Slash != std::wstring::npos)
+		Path.resize(Slash);
+
+	return Path + L"\\Data";
+}
+
+bool RmlUISystem::Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSelectOnInit)
 {
 	if (bInitialized)
 		return true;
 
-	if (!ContextHost.Init(
-		InHwnd,
-		InDevice,
-		"StudioUI"
-	))
+	if (!InHwnd || !InDevice)
 	{
-		r3dOutToLog(
-			"[RmlUI][Studio][Init] Context host failed\n"
-		);
-
+		OutputDebugStringA("[RmlUI] Init failed: invalid HWND or D3D9 device\n");
 		return false;
 	}
 
-	Context = ContextHost.GetContext();
+	Hwnd = InHwnd;
+	UpdateClientSize();
+
+	const std::wstring DataRoot = GetStudioDataRoot();
+
+	SystemInterface = std::make_unique<RmlSystemInterface>();
+	FileInterface = std::make_unique<RmlFileInterface>(DataRoot.c_str());
+	RenderInterface = std::make_unique<RmlRenderDX9>();
+
+	if (!RenderInterface->Init(InDevice, DataRoot.c_str()))
+	{
+		OutputDebugStringA("[RmlUI] Init failed: DX9 render interface failed\n");
+		Shutdown();
+		return false;
+	}
+
+	Rml::SetSystemInterface(SystemInterface.get());
+	Rml::SetFileInterface(FileInterface.get());
+	Rml::SetRenderInterface(RenderInterface.get());
+
+	if (!Rml::Initialise())
+	{
+		OutputDebugStringA("[RmlUI] Rml::Initialise failed\n");
+		Shutdown();
+		return false;
+	}
+
+	bCoreInitializedHere = true;
+
+	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/NotoSans-Regular.ttf");
+	Rml::LoadFontFace("Z:/WarZ/External/RmlUI/Fonts/Roboto-Regular.ttf");
+	Rml::LoadFontFace("C:/Windows/Fonts/arial.ttf");
+
+	Context = Rml::CreateContext("Studio", Rml::Vector2i(ClientWidth, ClientHeight));
 
 	if (!Context)
 	{
-		ContextHost.Shutdown();
-
-		r3dOutToLog(
-			"[RmlUI][Studio][Init] Context is null\n"
-		);
-
+		OutputDebugStringA("[RmlUI] CreateContext failed\n");
+		Shutdown();
 		return false;
 	}
 
-	AppSelectClickListener =
-		std::make_unique<FAppSelectClickListener>(
-			this
-		);
+	Context->EnableMouseCursor(true);
 
-	AppMainClickListener =
-		std::make_unique<FAppMainClickListener>(
-			this
-		);
+	if (Rml::Debugger::Initialise(Context))
+	{
+		Rml::Debugger::SetContext(Context);
+		Rml::Debugger::SetVisible(false);
+		bDebuggerInitialized = true;
+		OutputDebugStringA("[RmlUI] Debugger initialized. Press F10 to toggle.\n");
+	}
+	else
+	{
+		OutputDebugStringA("[RmlUI] Debugger initialization failed\n");
+	}
 
-	UpdateClientSize();
+	AppSelectClickListener = std::make_unique<FAppSelectClickListener>(this);
+	AppMainClickListener = std::make_unique<FAppMainClickListener>(this);
+	CharacterClickListener = std::make_unique<FCharacterClickListener>(this);
 
 	bInitialized = true;
 
-	if (
-		bLoadAppSelectOnInit &&
-		!LoadAppSelect()
-	)
+	if (bLoadAppSelectOnInit && !LoadAppSelect())
 	{
-		r3dOutToLog(
-			"[RmlUI][Studio][Init] AppSelect load failed; "
-			"legacy fallback remains available\n"
-		);
+		OutputDebugStringA("[RmlUI] AppSelect load failed, fallback to old Scaleform UI\n");
 	}
 
-	r3dOutToLog(
-		"[RmlUI][Studio][Init] Initialized: %s\n",
-		Context->GetName().c_str()
-	);
-
+	OutputDebugStringA("[RmlUI] Initialized\n");
 	return true;
 }
 
 void RmlUISystem::Shutdown()
 {
-	ContextHost.SetInputEnabled(false);
-	ContextHost.SetRenderEnabled(false);
-
 	if (Context)
 	{
+		if (bDebuggerInitialized)
+		{
+			Rml::Debugger::Shutdown();
+			bDebuggerInitialized = false;
+		}
+
 		if (AppSelectDocument)
 		{
 			DetachAppSelectEvents();
-
-			Context->UnloadDocument(
-				AppSelectDocument
-			);
-
+			Context->UnloadDocument(AppSelectDocument);
 			AppSelectDocument = nullptr;
 		}
 
 		if (LoadingScreenDocument)
 		{
-			Context->UnloadDocument(
-				LoadingScreenDocument
-			);
-
+			Context->UnloadDocument(LoadingScreenDocument);
 			LoadingScreenDocument = nullptr;
 		}
 
 		if (AppMainDocument)
 		{
 			DetachAppMainEvents();
-
-			Context->UnloadDocument(
-				AppMainDocument
-			);
-
+			Context->UnloadDocument(AppMainDocument);
 			AppMainDocument = nullptr;
 		}
+
+		if (CharacterEditorDocument)
+		{
+			DetachCharacterEvents();
+
+			Context->UnloadDocument(
+				CharacterEditorDocument
+			);
+
+			CharacterEditorDocument = nullptr;
+		}
+
+		Rml::RemoveContext(Context->GetName());
+		Context = nullptr;
 	}
 
+	if (bCoreInitializedHere)
+	{
+		Rml::Shutdown();
+		bCoreInitializedHere = false;
+	}
+
+	if (RenderInterface)
+	{
+		RenderInterface->Shutdown();
+		RenderInterface.reset();
+	}
+
+	FileInterface.reset();
+	SystemInterface.reset();
 	AppSelectClickListener.reset();
 	AppMainClickListener.reset();
+	CharacterClickListener.reset();
+	CharacterCallback = nullptr;
 
-	AppSelectCallback = FAppSelectCallback();
-	AppMainCallback = FAppMainCallback();
-
-	ContextHost.Shutdown();
-
-	Context = nullptr;
-
-	ClientWidth = 1;
-	ClientHeight = 1;
-
-	LoadingProgressTarget = 0.0f;
-	LoadingProgressVisual = 0.0f;
-
+	Hwnd = nullptr;
 	bInitialized = false;
 	bAppSelectVisible = false;
-	bLoadingScreenVisible = false;
 	bAppMainVisible = false;
+	bLoadingScreenVisible = false;
+	bCharacterEditorVisible = false;
+	bDebuggerInitialized = false;
+	bLiveEditorVisible = false;
+	SelectedLiveElement = nullptr;
 
-	r3dOutToLog(
-		"[RmlUI][Studio][Shutdown] Complete\n"
-	);
+	OutputDebugStringA("[RmlUI] Shutdown\n");
 }
 
 void RmlUISystem::UpdateClientSize()
 {
-	ContextHost.RefreshDimensions();
+	if (!Hwnd)
+	{
+		ClientWidth = 1;
+		ClientHeight = 1;
+		return;
+	}
 
-	ClientWidth =
-		ContextHost.GetWidth();
+	RECT Rc{};
+	GetClientRect(Hwnd, &Rc);
 
-	ClientHeight =
-		ContextHost.GetHeight();
-}
+	ClientWidth = (int)(Rc.right - Rc.left);
+	ClientHeight = (int)(Rc.bottom - Rc.top);
 
-void RmlUISystem::RefreshInputState()
-{
-	const bool bInteractiveDocumentVisible =
-		(bAppSelectVisible && AppSelectDocument) ||
-		(bAppMainVisible && AppMainDocument);
+	if (ClientWidth < 1)
+		ClientWidth = 1;
 
-	ContextHost.SetInputEnabled(
-		bInteractiveDocumentVisible
-	);
+	if (ClientHeight < 1)
+		ClientHeight = 1;
+
+	if (Context)
+		Context->SetDimensions(Rml::Vector2i(ClientWidth, ClientHeight));
 }
 
 bool RmlUISystem::LoadAppSelect()
@@ -756,8 +799,6 @@ void RmlUISystem::ShowAppSelect()
 		AppSelectDocument->Show();
 		bAppSelectVisible = true;
 	}
-
-	RefreshInputState();
 }
 
 void RmlUISystem::HideAppSelect()
@@ -766,8 +807,6 @@ void RmlUISystem::HideAppSelect()
 		AppSelectDocument->Hide();
 
 	bAppSelectVisible = false;
-
-	RefreshInputState();
 }
 
 bool RmlUISystem::LoadLoadingScreen()
@@ -860,90 +899,71 @@ void RmlUISystem::ApplyLoadingScreenProgress(float Progress)
 	}
 }
 
-void RmlUISystem::Update(
-	float DeltaSeconds
-)
+void RmlUISystem::Update(float DeltaSeconds)
 {
 	if (!bInitialized || !Context)
 		return;
 
 	UpdateClientSize();
 
-	if (
-		bLoadingScreenVisible &&
-		LoadingScreenDocument
-	)
+	if (bLoadingScreenVisible && LoadingScreenDocument)
 	{
 		if (DeltaSeconds <= 0.0f)
 			DeltaSeconds = 0.016f;
 
 		const float Speed = 8.0f;
+		const float Alpha = R3D_CLAMP(DeltaSeconds * Speed, 0.0f, 1.0f);
 
-		const float Alpha =
-			R3D_CLAMP(
-				DeltaSeconds * Speed,
-				0.0f,
-				1.0f
-			);
+		LoadingProgressVisual += (LoadingProgressTarget - LoadingProgressVisual) * Alpha;
 
-		LoadingProgressVisual +=
-			(
-				LoadingProgressTarget -
-				LoadingProgressVisual
-			) * Alpha;
+		if (fabsf(LoadingProgressTarget - LoadingProgressVisual) < 0.001f)
+			LoadingProgressVisual = LoadingProgressTarget;
 
-		if (
-			fabsf(
-				LoadingProgressTarget -
-				LoadingProgressVisual
-			) < 0.001f
-		)
-		{
-			LoadingProgressVisual =
-				LoadingProgressTarget;
-		}
-
-		ApplyLoadingScreenProgress(
-			LoadingProgressVisual
-		);
+		ApplyLoadingScreenProgress(LoadingProgressVisual);
 	}
 
-	ContextHost.Update(
-		DeltaSeconds
-	);
+	if (bLiveEditorVisible && LiveEditorDocument)
+		UpdateLiveEditorHighlight();
+
+	Context->Update();
 }
 
 void RmlUISystem::Render()
 {
-	if (!bInitialized || !Context)
+	if (!bInitialized || !Context || !RenderInterface)
 		return;
 
 	const bool bHasVisibleDocument =
-		(bAppSelectVisible && AppSelectDocument) ||
-		(bLoadingScreenVisible && LoadingScreenDocument) ||
-		(bAppMainVisible && AppMainDocument);
+	(bAppSelectVisible && AppSelectDocument) ||
+	(bLoadingScreenVisible && LoadingScreenDocument) ||
+	(bAppMainVisible && AppMainDocument) ||
+	(
+		bCharacterEditorVisible &&
+		CharacterEditorDocument
+	) ||
+	(bLiveEditorVisible && LiveEditorDocument) ||
+	IsDebuggerVisible();
 
-	ContextHost.SetRenderEnabled(
-		bHasVisibleDocument
-	);
+	if (!bHasVisibleDocument)
+		return;
 
-	ContextHost.Render();
+	RenderInterface->BeginFrame(ClientWidth, ClientHeight);
+	Context->Render();
+	RenderInterface->EndFrame();
 }
 
 void RmlUISystem::OnDeviceLost()
 {
-	ContextHost.OnDeviceLost();
+	if (RenderInterface)
+		RenderInterface->OnDeviceLost();
 }
 
 void RmlUISystem::OnDeviceReset()
 {
 	UpdateClientSize();
-	ContextHost.OnDeviceReset();
-}
 
-Rml::Context* RmlUISystem::GetContext() const
-{
-	return Context;
+	if (RenderInterface)
+		RenderInterface->OnDeviceReset(ClientWidth, ClientHeight);
 }
 
 void RmlUISystem::SetAppSelectCallback(FAppSelectCallback Callback)
@@ -1278,29 +1298,235 @@ bool RmlUISystem::IsLoadingScreenVisible() const
 	return bInitialized && LoadingScreenDocument != nullptr && bLoadingScreenVisible;
 }
 
-bool RmlUISystem::ProcessWin32Message(
-	HWND InHwnd,
-	UINT Message,
-	WPARAM WParam,
-	LPARAM LParam,
-	LRESULT* OutResult
-)
+int RmlUISystem::GetKeyModifiers()
+{
+	int Modifiers = 0;
+
+	if (GetKeyState(VK_CONTROL) & 0x8000)
+		Modifiers |= Rml::Input::KM_CTRL;
+
+	if (GetKeyState(VK_SHIFT) & 0x8000)
+		Modifiers |= Rml::Input::KM_SHIFT;
+
+	if (GetKeyState(VK_MENU) & 0x8000)
+		Modifiers |= Rml::Input::KM_ALT;
+
+	if ((GetKeyState(VK_CAPITAL) & 0x0001) != 0)
+		Modifiers |= Rml::Input::KM_CAPSLOCK;
+
+	if ((GetKeyState(VK_NUMLOCK) & 0x0001) != 0)
+		Modifiers |= Rml::Input::KM_NUMLOCK;
+
+	if ((GetKeyState(VK_SCROLL) & 0x0001) != 0)
+		Modifiers |= Rml::Input::KM_SCROLLLOCK;
+
+	return Modifiers;
+}
+
+Rml::Input::KeyIdentifier RmlUISystem::TranslateKey(WPARAM WParam)
+{
+	if (WParam >= 'A' && WParam <= 'Z')
+		return static_cast<Rml::Input::KeyIdentifier>(Rml::Input::KI_A + (WParam - 'A'));
+
+	if (WParam >= '0' && WParam <= '9')
+		return static_cast<Rml::Input::KeyIdentifier>(Rml::Input::KI_0 + (WParam - '0'));
+
+	if (WParam >= VK_F1 && WParam <= VK_F12)
+		return static_cast<Rml::Input::KeyIdentifier>(Rml::Input::KI_F1 + (WParam - VK_F1));
+
+	switch (WParam)
+	{
+	case VK_SPACE: return Rml::Input::KI_SPACE;
+	case VK_BACK: return Rml::Input::KI_BACK;
+	case VK_TAB: return Rml::Input::KI_TAB;
+	case VK_RETURN: return Rml::Input::KI_RETURN;
+	case VK_ESCAPE: return Rml::Input::KI_ESCAPE;
+	case VK_PRIOR: return Rml::Input::KI_PRIOR;
+	case VK_NEXT: return Rml::Input::KI_NEXT;
+	case VK_END: return Rml::Input::KI_END;
+	case VK_HOME: return Rml::Input::KI_HOME;
+	case VK_LEFT: return Rml::Input::KI_LEFT;
+	case VK_UP: return Rml::Input::KI_UP;
+	case VK_RIGHT: return Rml::Input::KI_RIGHT;
+	case VK_DOWN: return Rml::Input::KI_DOWN;
+	case VK_INSERT: return Rml::Input::KI_INSERT;
+	case VK_DELETE: return Rml::Input::KI_DELETE;
+	case VK_SHIFT: return Rml::Input::KI_LSHIFT;
+	case VK_CONTROL: return Rml::Input::KI_LCONTROL;
+	case VK_MENU: return Rml::Input::KI_LMENU;
+	case VK_OEM_PLUS: return Rml::Input::KI_OEM_PLUS;
+	case VK_OEM_MINUS: return Rml::Input::KI_OEM_MINUS;
+	case VK_OEM_COMMA: return Rml::Input::KI_OEM_COMMA;
+	case VK_OEM_PERIOD: return Rml::Input::KI_OEM_PERIOD;
+	default: break;
+	}
+
+	return Rml::Input::KI_UNKNOWN;
+}
+
+int RmlUISystem::TranslateMouseButton(UINT Message)
+{
+	switch (Message)
+	{
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_LBUTTONDBLCLK:
+		return 0;
+
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_RBUTTONDBLCLK:
+		return 1;
+
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MBUTTONDBLCLK:
+		return 2;
+
+	default:
+		return 0;
+	}
+}
+
+bool RmlUISystem::ProcessWin32Message(HWND InHwnd, UINT Message, WPARAM WParam, LPARAM LParam, LRESULT* OutResult)
 {
 	if (OutResult)
 		*OutResult = 0;
 
-	if (!bInitialized || !Context)
+	if (
+		!bInitialized ||
+		!Context ||
+		(
+			!bAppSelectVisible &&
+			!bAppMainVisible &&
+			!bCharacterEditorVisible &&
+			!bLiveEditorVisible &&
+			!IsDebuggerVisible()
+		)
+	)
+	{
+		return false;
+	}
+
+	switch (Message)
+	{
+	case WM_SIZE:
+		UpdateClientSize();
 		return false;
 
-	RefreshInputState();
+	case WM_MOUSEMOVE:
+		{
+			const int X = GET_X_LPARAM(LParam);
+			const int Y = GET_Y_LPARAM(LParam);
 
-	return ContextHost.ProcessWin32Message(
-		InHwnd,
-		Message,
-		WParam,
-		LParam,
-		OutResult
-	);
+			Context->ProcessMouseMove(X, Y, GetKeyModifiers());
+			return true;
+		}
+
+	case WM_MOUSELEAVE:
+	{
+		Context->ProcessMouseLeave();
+		return false;
+	}
+
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	{
+		if (
+			Message == WM_LBUTTONDOWN &&
+			bLiveEditorVisible &&
+			(GetKeyState(VK_CONTROL) & 0x8000) &&
+			(GetKeyState(VK_MENU) & 0x8000)
+		)
+		{
+			const int X = GET_X_LPARAM(LParam);
+			const int Y = GET_Y_LPARAM(LParam);
+
+			SelectLiveElementAt(X, Y);
+			return true;
+		}
+
+		SetCapture(InHwnd);
+
+		const int Button = TranslateMouseButton(Message);
+		Context->ProcessMouseButtonDown(Button, GetKeyModifiers());
+
+		return true;
+	}
+
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	{
+		ReleaseCapture();
+
+		const int Button = TranslateMouseButton(Message);
+		Context->ProcessMouseButtonUp(Button, GetKeyModifiers());
+
+		return true;
+	}
+
+	case WM_MOUSEWHEEL:
+	{
+		const short Wheel = GET_WHEEL_DELTA_WPARAM(WParam);
+		const float Delta = -static_cast<float>(Wheel) / static_cast<float>(WHEEL_DELTA);
+
+		Context->ProcessMouseWheel(Rml::Vector2f(0.0f, Delta), GetKeyModifiers());
+		return true;
+	}
+
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+	{
+		if (WParam == VK_F10)
+		{
+			ToggleDebugger();
+			return true;
+		}
+
+		if (WParam == VK_F5)
+		{
+			if (GetKeyState(VK_CONTROL) & 0x8000)
+				ReloadStyleSheets();
+			else
+				ReloadVisibleDocuments();
+
+			return true;
+		}
+
+		const Rml::Input::KeyIdentifier Key = TranslateKey(WParam);
+
+		if (Key != Rml::Input::KI_UNKNOWN)
+			Context->ProcessKeyDown(Key, GetKeyModifiers());
+
+		return true;
+	}
+
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+	{
+		const Rml::Input::KeyIdentifier Key = TranslateKey(WParam);
+
+		if (Key != Rml::Input::KI_UNKNOWN)
+			Context->ProcessKeyUp(Key, GetKeyModifiers());
+
+		return true;
+	}
+
+	case WM_CHAR:
+	{
+		if (WParam >= 32)
+			Context->ProcessTextInput(static_cast<Rml::Character>(WParam));
+
+		return true;
+	}
+
+	default:
+		break;
+	}
+
+	return false;
 }
 
 bool RmlUISystem::LoadAppMain()
@@ -1339,8 +1565,6 @@ void RmlUISystem::ShowAppMain()
 		AppMainDocument->Show();
 		bAppMainVisible = true;
 	}
-
-	RefreshInputState();
 }
 
 void RmlUISystem::HideAppMain()
@@ -1349,8 +1573,6 @@ void RmlUISystem::HideAppMain()
 		AppMainDocument->Hide();
 
 	bAppMainVisible = false;
-
-	RefreshInputState();
 }
 
 void RmlUISystem::AttachAppMainEvents()
