@@ -365,7 +365,7 @@ void SystemAddress::SetBinaryAddress(const char *str, char portDelineator)
 	{
 
 #if defined(_WIN32)
-		if (_strnicmp(str,"localhost", 9)==0)
+		if (_strnicmp(str,"26.163.92.76", 9)==0)
 #else
 		if (strncasecmp(str,"localhost", 9)==0)
 #endif

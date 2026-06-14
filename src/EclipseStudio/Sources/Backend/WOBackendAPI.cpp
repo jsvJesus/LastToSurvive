@@ -7,9 +7,9 @@
 
 #include "WOBackendAPI.h"
 
-	const char*	gDomainBaseUrl= "/WarZ/api/";
-	int		gDomainPort   = 443; // PAX_BUILD - change to 80 and no SSL
-	bool		gDomainUseSSL = true;
+	const char*	gDomainBaseUrl= "/APS/";
+	int		gDomainPort   = 80; // PAX_BUILD - change to 80 and no SSL
+	bool		gDomainUseSSL = false;
 	
 CWOBackendReq::CWOBackendReq(const char* url)
 {
@@ -25,16 +25,6 @@ CWOBackendReq::CWOBackendReq(const CUserProfile* prof, const char* url)
 
 void CWOBackendReq::Init(const char* url)
 {
-//#ifndef FINAL_BUILD
-//	// automatically switch to local site version 
-//	if(stricmp(g_api_ip->GetString(), "localhost") == 0)
-//	{
-//		gDomainBaseUrl= "/Site/";
-//		gDomainPort   = 56016;
-//		gDomainUseSSL = false;
-//	}
-//#endif
-
 	resp_       = NULL;
 	
 	savedUrl_   = url;

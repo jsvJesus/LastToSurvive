@@ -1846,7 +1846,7 @@ void game::MainLoop()
 #ifndef FINAL_BUILD
 	case	Menu_AppSelect::bUpdateDB:
 		g_bEditMode = false;
-		UpdateDB("localhost", "Data/Weapons/itemsDB.xml");
+		UpdateDB("26.163.92.76", "Data/Weapons/itemsDB.xml");
 		MessageBox(0, "Successfully updated English DB!", "Result", MB_OK);
 		break;
 #endif
@@ -1861,7 +1861,7 @@ void game::MainLoop()
 		}
 
 		// override API settings
-		//g_api_ip->SetString("localhost");
+		//g_api_ip->SetString("26.163.92.76");
 	case	Menu_AppSelect::bStartGameSVN:
 		if(m_ret == Menu_AppSelect::bStartGameSVN)
 			DiscordPresence_SetGame("Game (DEV Server)", r3dGameLevel::GetHomeDir());
@@ -2009,7 +2009,7 @@ void UpdateDB(const char* api_addr, const char* out_xml)
 	{
 		CkHttpRequest req;
 		req.put_HttpVerb("POST");
-		req.put_Path("/WarZ/api/php/api_getItemsDB.php");
+		req.put_Path("/APS/php/api_getItemsDB.php");
 		req.AddParam("serverkey", "8B1E58D9-1D8A-4942-A2AB-B6809F0A4CDF");
 
 		CkHttpResponse *resp = 0;
