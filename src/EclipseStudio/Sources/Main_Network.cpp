@@ -134,7 +134,7 @@ static FrontendWarZ* frontend = NULL; // static to prevent extern
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
 
-static RmlFrontEndSystem g_RmlFrontEndSystem;
+
 
 static bool EnsureRmlFrontEndContext()
 {
