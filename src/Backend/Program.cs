@@ -98,30 +98,14 @@ app.MapMethods(
         }
     });
 
-MapLegacyEndpoint(
-    app,
-    "api_Login.aspx",
-    LoginEndpoint.ExecuteAsync);
-
-MapLegacyEndpoint(
-    app,
-    "api_LoginSessionPoller.aspx",
-    LoginSessionPollerEndpoint.ExecuteAsync);
-
-MapLegacyEndpoint(
-    app,
-    "api_GetProfile1.aspx",
-    GetProfileEndpoint.ExecuteAsync);
-
-MapLegacyEndpoint(
-    app,
-    "api_CharSlots.aspx",
-    CharSlotsEndpoint.ExecuteAsync);
-
-MapLegacyEndpoint(
-    app,
-    "api_CharBackpack.aspx",
-    CharBackpackEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_Login.aspx", LoginEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_LoginSessionPoller.aspx", LoginSessionPollerEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_GetProfile1.aspx", GetProfileEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_CharSlots.aspx", CharSlotsEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_CharBackpack.aspx", CharBackpackEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_GetItemsInfo.aspx", ItemsInfoEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_GetShop1.aspx", GetShopEndpoint.ExecuteAsync);
+MapLegacyEndpoint(app, "api_BuyItem3.aspx", BuyItemEndpoint.ExecuteAsync);
 
 app.Run();
 
