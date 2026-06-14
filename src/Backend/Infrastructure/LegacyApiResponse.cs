@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace WarZ.Api.Infrastructure;
 
 public static class LegacyApiResponse
@@ -9,8 +11,13 @@ public static class LegacyApiResponse
 
     public static IResult Error(int resultCode, string message = "")
     {
-        string separator = string.IsNullOrEmpty(message) ? "" : " ";
-        return Text($"WO_{resultCode}{separator}{message}");
+        string separator =
+            string.IsNullOrEmpty(message)
+                ? ""
+                : " ";
+
+        return Text(
+            $"WO_{resultCode}{separator}{message}");
     }
 
     public static IResult InternalError(string message)
@@ -18,13 +25,21 @@ public static class LegacyApiResponse
         return Error(5, message);
     }
 
+    public static IResult Xml(string xml)
+    {
+        return Results.Text(
+            xml,
+            "text/xml; charset=utf-8",
+            Encoding.UTF8,
+            StatusCodes.Status200OK);
+    }
+
     private static IResult Text(string body)
     {
-        // Старый клиент требует HTTP 200 даже для WO_5 и других ошибок.
         return Results.Text(
             body,
             "text/plain; charset=utf-8",
-            System.Text.Encoding.UTF8,
+            Encoding.UTF8,
             StatusCodes.Status200OK);
     }
 }

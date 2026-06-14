@@ -132,4 +132,14 @@ app.MapMethods(
     new[] { "GET", "POST" },
     LoginSessionPollerEndpoint.ExecuteAsync);
 
+app.MapMethods(
+    "/api_GetProfile1.aspx",
+    new[] { "GET", "POST" },
+    GetProfileEndpoint.ExecuteAsync);
+
+app.MapMethods(
+    "/APS/api_GetProfile1.aspx",
+    new[] { "GET", "POST" },
+    GetProfileEndpoint.ExecuteAsync);
+
 app.Run();
