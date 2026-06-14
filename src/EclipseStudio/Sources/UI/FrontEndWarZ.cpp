@@ -516,68 +516,6 @@ static bool ActualGetProfileData(FrontendWarZ* UI)
 		}
 	}
 
-
-	// send HW report if necessary
-	/*SetLoadStage("HWReport");
-	if(FrontendWarZ::frontendFirstTimeInit)
-	{
-		if(NeedUploadReport(g_HardwareInfo))
-		{
-			CWOBackendReq req(&gUserProfile, "api_ReportHWInfo_Customer.aspx");
-			char buf[1024];
-			sprintf(buf, "%I64d", g_HardwareInfo.uniqueId);
-			req.AddParam("r00", buf);
-			req.AddParam("r10", g_HardwareInfo.CPUString);
-			req.AddParam("r11", g_HardwareInfo.CPUBrandString);
-			sprintf(buf, "%d", g_HardwareInfo.CPUFreq);
-			req.AddParam("r12", buf);
-			sprintf(buf, "%d", g_HardwareInfo.TotalMemory);
-			req.AddParam("r13", buf);
-
-			sprintf(buf, "%d", g_HardwareInfo.DisplayW);
-			req.AddParam("r20", buf);
-			sprintf(buf, "%d", g_HardwareInfo.DisplayH);
-			req.AddParam("r21", buf);
-			sprintf(buf, "%d", g_HardwareInfo.gfxErrors);
-			req.AddParam("r22", buf);
-			sprintf(buf, "%d", g_HardwareInfo.gfxVendorId);
-			req.AddParam("r23", buf);
-			sprintf(buf, "%d", g_HardwareInfo.gfxDeviceId);
-			req.AddParam("r24", buf);
-			req.AddParam("r25", g_HardwareInfo.gfxDescription);
-
-			req.AddParam("r30", g_HardwareInfo.OSVersion);
-
-			if(!req.Issue())
-			{
-				r3dOutToLog("Failed to upload HW Info\n");
-			}
-			else
-			{
-				// mark that we reported it
-				HKEY hKey;
-				int hr;
-				hr = RegCreateKeyEx(HKEY_CURRENT_USER, 
-					"Software\\Arktos Entertainment Group\\TheWarZ", 
-					0, 
-					NULL,
-					REG_OPTION_NON_VOLATILE, 
-					KEY_ALL_ACCESS,
-					NULL,
-					&hKey,
-					NULL);
-				if(hr == ERROR_SUCCESS)
-				{
-					__int64 repTime = _time64(NULL);
-					DWORD size = sizeof(repTime);
-
-					hr = RegSetValueEx(hKey, "UpdaterTime2", NULL, REG_QWORD, (BYTE*)&repTime, size);
-					RegCloseKey(hKey);
-				}
-			}
-		}
-	}*/
-
 	SetLoadStage(NULL);
 	return true;
 }

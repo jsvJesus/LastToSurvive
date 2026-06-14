@@ -119,6 +119,7 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClCompile Include="Inspector\RmlInspectorModel.cpp" />
     <ClCompile Include="RmlEditorMain.cpp" />
 
     <ClCompile Include="App\RmlEditorApplication.cpp" />
@@ -132,6 +133,7 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
     <ClCompile Include="Rml\RmlEditorSystemInterface.cpp" />
     <ClCompile Include="Rml\RmlEditorFileInterface.cpp" />
     <ClCompile Include="Rml\RmlDocumentSession.cpp" />
+    <ClCompile Include="Rml\RmlElementPicker.cpp" />
     <ClCompile Include="Rml\RmlPreviewController.cpp" />
     <ClCompile Include="Rml\RmlEditorRmlHost.cpp" />
   </ItemGroup>
@@ -139,6 +141,7 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
   <ItemGroup>
     <ClInclude Include="App\RmlEditorApplication.h" />
     <ClInclude Include="App\RmlEditorLog.h" />
+    <ClInclude Include="Inspector\RmlInspectorModel.h" />
 
     <ClInclude Include="Rendering\RmlEditorRenderDX9.h" />
     <ClInclude Include="Rendering\RmlEditorViewport.h" />
@@ -148,6 +151,7 @@ for %%F in ("$(SolutionDir)..\..\External\RmlUI\Bin-Dynamic\Release\*freetype*.d
     <ClInclude Include="Rml\RmlEditorSystemInterface.h" />
     <ClInclude Include="Rml\RmlEditorFileInterface.h" />
     <ClInclude Include="Rml\RmlDocumentSession.h" />
+    <ClInclude Include="Rml\RmlElementPicker.h" />
     <ClInclude Include="Rml\RmlPreviewController.h" />
     <ClInclude Include="Rml\RmlEditorRmlHost.h" />
   </ItemGroup>

@@ -534,15 +534,15 @@ LRESULT RmlEditorApplication::HandleWindowMessage(
 		return 1;
 
 	case WM_GETMINMAXINFO:
-	{
-		MINMAXINFO* MinMaxInformation =
-			reinterpret_cast<MINMAXINFO*>(LParam);
+		{
+			MINMAXINFO* MinMaxInformation =
+				reinterpret_cast<MINMAXINFO*>(LParam);
 
-		MinMaxInformation->ptMinTrackSize.x = 960;
-		MinMaxInformation->ptMinTrackSize.y = 640;
+			MinMaxInformation->ptMinTrackSize.x = 1200;
+			MinMaxInformation->ptMinTrackSize.y = 700;
 
-		return 0;
-	}
+			return 0;
+		}
 
 	case WM_ENTERSIZEMOVE:
 		InSizeMove = true;
