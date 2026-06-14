@@ -8,7 +8,7 @@
 #include "WOBackendAPI.h"
 
 	const char*	gDomainBaseUrl= "/APS/";
-	int		gDomainPort   = 80; // PAX_BUILD - change to 80 and no SSL
+	int		gDomainPort   = 8080; // PAX_BUILD - change to 80 and no SSL
 	bool		gDomainUseSSL = false;
 	
 CWOBackendReq::CWOBackendReq(const char* url)
@@ -81,9 +81,19 @@ int CWOBackendReq::ParseResult(CkHttpResponse* resp)
 		return 8;
 	}
 
-	if(resp->get_StatusCode() != 200)
+	if (resp->get_StatusCode() != 200)
 	{
-		r3dOutToLog("WO_API: returned http%d\n", resp->get_StatusCode());
+		CkBinData ErrorBodyData;
+		CkByteData ErrorBodyBytes;
+
+		resp->GetBodyBd(ErrorBodyData);
+		ErrorBodyData.GetBinary(ErrorBodyBytes);
+		ErrorBodyBytes.appendChar(0);
+
+		r3dOutToLog(
+			"WO_API: returned HTTP %d for %s\n"
+		);
+
 		return 8;
 	}
 	

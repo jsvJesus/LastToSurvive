@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eclipse Studio", "Studio.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RakNet", "..\External\RakNet\RakNet.vcxproj", "{143F9B67-C223-4F2D-B8F9-B644CA710CA6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RmlEditor", "..\RmlEditor\RmlEditor.vcxproj", "{4D5E0448-00A9-4579-BC18-6274C6BA27E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "..\Backend\Api.csproj", "{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,14 +41,14 @@ Global
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|Win32.ActiveCfg = Release|Win32
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|Win32.Build.0 = Release|Win32
 		{143F9B67-C223-4F2D-B8F9-B644CA710CA6}.Release|x64.ActiveCfg = Release|x64
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Debug|Win32.Build.0 = Debug|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Final|Win32.ActiveCfg = Debug|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Final|Win32.Build.0 = Debug|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|Win32.ActiveCfg = Release|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|Win32.Build.0 = Release|Win32
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|x64.ActiveCfg = Release|x64
-		{4D5E0448-00A9-4579-BC18-6274C6BA27E4}.Release|x64.Build.0 = Release|x64
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Debug|Win32.Build.0 = Debug|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Final|Win32.ActiveCfg = Debug|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Final|Win32.Build.0 = Debug|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Release|Win32.ActiveCfg = Release|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Release|Win32.Build.0 = Release|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E1CBDE3-DE8C-4928-93AC-614D4ED12286}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
