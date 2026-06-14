@@ -25,6 +25,11 @@ public static class LegacyApiResponse
         return Error(5, message);
     }
 
+    public static IResult Raw(string body)
+    {
+        return Text(body);
+    }
+
     public static IResult Xml(string xml)
     {
         return Results.Text(
