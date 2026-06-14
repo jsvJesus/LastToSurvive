@@ -20,8 +20,7 @@ public static class LegacyPayloadResponse
         {
             return Results.Bytes(
                 payload,
-                "application/octet-stream",
-                statusCode: StatusCodes.Status200OK);
+                "application/octet-stream");
         }
 
         byte[] compressed;
@@ -43,8 +42,7 @@ public static class LegacyPayloadResponse
         {
             return Results.Bytes(
                 payload,
-                "application/octet-stream",
-                statusCode: StatusCodes.Status200OK);
+                "application/octet-stream");
         }
 
         byte[] framed = new byte[compressed.Length + 2];
@@ -59,7 +57,6 @@ public static class LegacyPayloadResponse
 
         return Results.Bytes(
             framed,
-            "application/octet-stream",
-            statusCode: StatusCodes.Status200OK);
+            "application/octet-stream");
     }
 }
