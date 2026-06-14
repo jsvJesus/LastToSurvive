@@ -130,6 +130,551 @@ static void MasterServerQuckJoin()
 
 void* MainMenuSoundEvent = 0;
 
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+
+class RmlUISystem;
+
+extern bool g_bExit;
+
+extern void RegisterMsgProc(
+	bool (*Proc)(
+		UINT Message,
+		WPARAM WParam,
+		LPARAM LParam
+	)
+);
+
+extern void UnregisterMsgProc(
+	bool (*Proc)(
+		UINT Message,
+		WPARAM WParam,
+		LPARAM LParam
+	)
+);
+
+extern bool ProcessStudioPendingResize(
+	RmlUISystem* ActiveRmlUI
+);
+
+void ClearFullScreen_Menu();
+
+extern bool g_bDisableP2PSendToHost;
+
+static RmlFrontEndContext*
+	g_ActiveNetworkRmlFrontEnd = nullptr;
+
+static bool NetworkRmlFrontEndMsgProc(
+	UINT Message,
+	WPARAM WParam,
+	LPARAM LParam
+)
+{
+	if (!g_ActiveNetworkRmlFrontEnd)
+		return false;
+
+	LRESULT Result = 0;
+
+	return
+		g_ActiveNetworkRmlFrontEnd->
+			ProcessWin32Message(
+				win::hWnd,
+				Message,
+				WParam,
+				LParam,
+				&Result
+			);
+}
+
+static ERmlFrontEndResult
+RunRmlFrontEndLoop(
+	RmlFrontEndContext& FrontEnd
+)
+{
+	while (!g_bExit)
+	{
+		r3dProcessWindowMessages();
+
+		ProcessStudioPendingResize(
+			nullptr
+		);
+
+		DiscordPresence_Tick();
+		FileTrackDoWork();
+
+		r3dMouse::Show();
+
+		r3dStartFrame();
+
+		if (
+			r3dRenderer &&
+			r3dRenderer->DeviceAvailable
+		)
+		{
+			r3dRenderer->StartRender(1);
+			r3dRenderer->StartFrame();
+
+			r3dRenderer->SetRenderingMode(
+				R3D_BLEND_ALPHA |
+				R3D_BLEND_NZ
+			);
+
+			ClearFullScreen_Menu();
+
+			FrontEnd.Update();
+			FrontEnd.Render();
+
+			r3dRenderer->Flush();
+			r3dRenderer->EndFrame();
+			r3dRenderer->EndRender(true);
+		}
+		else
+		{
+			FrontEnd.Update();
+		}
+
+		r3dEndFrame();
+
+		const ERmlFrontEndResult Result =
+			FrontEnd.ConsumeResult();
+
+		if (
+			Result !=
+			ERmlFrontEndResult::None
+		)
+		{
+			return Result;
+		}
+	}
+
+	return ERmlFrontEndResult::Exit;
+}
+
+enum class ERmlGameRoute
+{
+	MainMenu = 0,
+	Login,
+	Exit
+};
+
+struct FRmlGameFlowResult
+{
+	ERmlGameRoute Route =
+		ERmlGameRoute::MainMenu;
+
+	const wchar_t* Message = nullptr;
+
+	bool bRefreshProfile = false;
+};
+
+static FRmlGameFlowResult
+RunRmlSelectedGame()
+{
+	FRmlGameFlowResult FlowResult;
+
+	StartLoadingScreen();
+	MasterServerQuckJoin();
+	StopLoadingScreen();
+
+	r3dEnsureDeviceAvailable();
+
+	StartLoadingScreen();
+
+	if (!ConnectToGameServer())
+	{
+		gClientLogic().Disconnect();
+
+		StopLoadingScreen();
+
+		FlowResult.Route =
+			ERmlGameRoute::Login;
+
+		FlowResult.Message =
+			gLangMngr.getString(
+				"LoginMenu_CannotConnectServer"
+			);
+
+		return FlowResult;
+	}
+
+	r3dEnsureDeviceAvailable();
+
+	if (
+		gClientLogic().
+			ValidateServerVersion(
+				_p2p_gameSessionId
+			) == 0
+	)
+	{
+		gClientLogic().Disconnect();
+
+		StopLoadingScreen();
+
+		if (
+			gClientLogic().
+				serverVersionStatus_ == 0
+		)
+		{
+			FlowResult.Route =
+				ERmlGameRoute::MainMenu;
+
+			FlowResult.Message =
+				gLangMngr.getString(
+					"LoginMenu_Disconnected"
+				);
+		}
+		else
+		{
+			FlowResult.Route =
+				ERmlGameRoute::Login;
+
+			FlowResult.Message =
+				gLangMngr.getString(
+					"LoginMenu_ClientUpdateRequired"
+				);
+		}
+
+		return FlowResult;
+	}
+
+	r3dEnsureDeviceAvailable();
+
+	if (
+		!gClientLogic().
+			RequestToJoinGame()
+	)
+	{
+		gClientLogic().Disconnect();
+
+		StopLoadingScreen();
+
+		FlowResult.Route =
+			ERmlGameRoute::MainMenu;
+
+		FlowResult.Message =
+			L"Unable to join the selected game.";
+
+		return FlowResult;
+	}
+
+	gLoginSessionPoller.ForceTick();
+
+	switch (
+		gClientLogic().m_gameInfo.mapId
+	)
+	{
+	default:
+		r3dError(
+			"invalid map id\n"
+		);
+
+	case GBGameInfo::MAPID_Editor_Particles:
+		r3dGameLevel::SetHomeDir(
+			"WorkInProgress\\Editor_Particles"
+		);
+		break;
+
+	case GBGameInfo::MAPID_ServerTest:
+		r3dGameLevel::SetHomeDir(
+			"WorkInProgress\\ServerTest"
+		);
+		break;
+
+	case GBGameInfo::MAPID_WZ_Colorado:
+		r3dGameLevel::SetHomeDir(
+			"WZ_Colorado"
+		);
+		break;
+	}
+
+	DiscordPresence_SetGame(
+		nullptr,
+		r3dGameLevel::GetHomeDir()
+	);
+
+	const EGameResult GameResult =
+		PlayNetworkGame();
+
+	if (
+		GameResult == GRESULT_Exit ||
+		GameResult == GRESULT_Disconnect ||
+		GameResult == GRESULT_Finished
+	)
+	{
+		r3dRenderer->ChangeForceAspect(
+			16.0f / 9.0f
+		);
+	}
+
+	StopLoadingScreen();
+
+	gLoginSessionPoller.ForceTick();
+
+	if (
+		GameResult ==
+		GRESULT_DoubleLogin
+	)
+	{
+		FlowResult.Route =
+			ERmlGameRoute::Login;
+
+		FlowResult.Message =
+			gLangMngr.getString(
+				"LoginMenu_DoubleLogin"
+			);
+
+		return FlowResult;
+	}
+
+	if (
+		GameResult ==
+		GRESULT_Unsync
+	)
+	{
+		FlowResult.Route =
+			ERmlGameRoute::Login;
+
+		FlowResult.Message =
+			gLangMngr.getString(
+				"ClientMustBeUpdated"
+			);
+
+		return FlowResult;
+	}
+
+	if (
+		GameResult ==
+		GRESULT_Exit
+	)
+	{
+		FlowResult.Route =
+			ERmlGameRoute::Exit;
+
+		return FlowResult;
+	}
+
+	FlowResult.Route =
+		ERmlGameRoute::MainMenu;
+
+	FlowResult.bRefreshProfile = true;
+
+	return FlowResult;
+}
+
+static void EnsureRmlMainMenuMusic()
+{
+	if (MainMenuSoundEvent)
+		return;
+
+	const int MainMenuTheme =
+		SoundSys.GetEventIDByPath(
+			"Sounds/MainMenu GUI/UI_MENU_MUSIC"
+		);
+
+	MainMenuSoundEvent =
+		SoundSys.Play(
+			MainMenuTheme,
+			r3dPoint3D(
+				0,
+				0,
+				0
+			)
+		);
+}
+
+static void ExecuteRmlNetworkGame()
+{
+	class CLoginSessionHolder
+	{
+	public:
+		CLoginSessionHolder()
+		{
+		}
+
+		~CLoginSessionHolder()
+		{
+			gLoginSessionPoller.Stop();
+		}
+	};
+
+	CLoginSessionHolder LoginSessionHolder;
+
+	r3dPoint3D SoundPosition(
+		0,
+		0,
+		0
+	);
+
+	r3dPoint3D SoundDirection(
+		0,
+		0,
+		1
+	);
+
+	r3dPoint3D SoundUp(
+		0,
+		1,
+		0
+	);
+
+	SoundSys.Update(
+		SoundPosition,
+		SoundDirection,
+		SoundUp
+	);
+
+	EnsureRmlMainMenuMusic();
+
+	r3dscpy(
+		_p2p_masterHost,
+		g_serverip->GetString()
+	);
+
+	g_trees->SetBool(true);
+	d_mouse_window_lock->SetBool(true);
+
+	g_bDisableP2PSendToHost = true;
+
+	RmlFrontEndContext FrontEnd;
+
+	if (
+		!r3dRenderer ||
+		!r3dRenderer->pd3ddev ||
+		!win::hWnd ||
+		!FrontEnd.Init(
+			win::hWnd,
+			r3dRenderer->pd3ddev
+		)
+	)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Initialization failed. "
+			"Scaleform frontend will not be started on x64.\n"
+		);
+
+		return;
+	}
+
+	g_ActiveNetworkRmlFrontEnd =
+		&FrontEnd;
+
+	RegisterMsgProc(
+		NetworkRmlFrontEndMsgProc
+	);
+
+	bool bSessionPollerStarted = false;
+	bool bExitFrontend = false;
+
+	while (
+		!bExitFrontend &&
+		!g_bExit
+	)
+	{
+		DiscordPresence_SetMenu();
+		EnsureRmlMainMenuMusic();
+
+		const ERmlFrontEndResult Result =
+			RunRmlFrontEndLoop(
+				FrontEnd
+			);
+
+		if (
+			Result ==
+			ERmlFrontEndResult::Exit
+		)
+		{
+			break;
+		}
+
+		if (
+			Result !=
+			ERmlFrontEndResult::JoinGame
+		)
+		{
+			continue;
+		}
+
+		if (!bSessionPollerStarted)
+		{
+			gLoginSessionPoller.Start(
+				gUserProfile.CustomerID,
+				gUserProfile.SessionID
+			);
+
+			bSessionPollerStarted = true;
+		}
+
+		const FRmlGameFlowResult FlowResult =
+			RunRmlSelectedGame();
+
+		g_bDisableP2PSendToHost = true;
+
+		switch (FlowResult.Route)
+		{
+		case ERmlGameRoute::Exit:
+			bExitFrontend = true;
+			break;
+
+		case ERmlGameRoute::Login:
+			if (bSessionPollerStarted)
+			{
+				gLoginSessionPoller.Stop();
+				bSessionPollerStarted = false;
+			}
+
+			gUserProfile.CustomerID = 0;
+			gUserProfile.SessionID = 0;
+			gUserProfile.AccountStatus = 0;
+
+			FrontEnd.ShowLoginMessage(
+				FlowResult.Message
+			);
+			break;
+
+		case ERmlGameRoute::MainMenu:
+		default:
+			if (FlowResult.bRefreshProfile)
+			{
+				FrontEnd.RefreshProfile();
+			}
+			else
+			{
+				FrontEnd.ShowMainMenuMessage(
+					FlowResult.Message
+				);
+			}
+			break;
+		}
+	}
+
+	UnregisterMsgProc(
+		NetworkRmlFrontEndMsgProc
+	);
+
+	g_ActiveNetworkRmlFrontEnd =
+		nullptr;
+
+	FrontEnd.Shutdown();
+
+	gMasterServerLogic.Disconnect();
+
+	g_bDisableP2PSendToHost = false;
+
+	if (MainMenuSoundEvent)
+	{
+		SoundSys.Stop(
+			MainMenuSoundEvent
+		);
+
+		SoundSys.Release(
+			MainMenuSoundEvent
+		);
+
+		MainMenuSoundEvent = nullptr;
+	}
+}
+
+#endif
+
 static FrontendWarZ* frontend = NULL; // static to prevent extern
 
 void loadFrontend()
@@ -152,6 +697,11 @@ void loadFrontend()
 
 void ExecuteNetworkGame()
 {
+#if defined(_WIN64) && !defined(FINAL_BUILD)
+	ExecuteRmlNetworkGame();
+	return;
+#endif
+	
 	// make sure that our login session poller will be terminated on function exit
 	class CLoginSessionHolder
 	{
@@ -161,30 +711,8 @@ void ExecuteNetworkGame()
 			gLoginSessionPoller.Stop(); 
 		}
 	};
+	
 	CLoginSessionHolder loginholder;
-
-#if defined(_WIN64) && !defined(FINAL_BUILD)
-	RmlFrontEndContext RmlFrontEndStage1;
-
-	if (
-		r3dRenderer &&
-		r3dRenderer->pd3ddev &&
-		win::hWnd
-	)
-	{
-		if (!RmlFrontEndStage1.Init(
-			win::hWnd,
-			r3dRenderer->pd3ddev
-		))
-		{
-			r3dOutToLog(
-				"[RmlUI][FrontEnd][Fallback] "
-				"Legacy FrontEnd.swf remains active\n"
-			);
-		}
-	}
-#endif
-
 	{
 		r3dPoint3D soundPos(0,0,0), soundDir(0,0,1), soundUp(0,1,0);
 		SoundSys.Update(soundPos, soundDir, soundUp);
@@ -221,11 +749,6 @@ repeat_the_login:
 		while (res == 0)
 		{
 			DiscordPresence_Tick();
-
-#if defined(_WIN64) && !defined(FINAL_BUILD)
-			RmlFrontEndStage1.Update();
-#endif
-
 			res = frontend->Update();
 		}
 		showLoginErrorMsg = 0;
@@ -245,10 +768,6 @@ repeat_the_menu:
 		while (res == 0)
 		{
 			DiscordPresence_Tick();
-
-#if defined(_WIN64) && !defined(FINAL_BUILD)
-			RmlFrontEndStage1.Update();
-#endif
 
 			res = frontend->Update();
 

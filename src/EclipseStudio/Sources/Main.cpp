@@ -79,6 +79,7 @@
 #include "GameCode\UserSettings.h"
 
 #include "../RmlUI/RmlUISystem.h"
+#include "../RmlUI/RmlRuntime.h"
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
@@ -208,12 +209,19 @@ bool ProcessStudioPendingResize(
 		Height
 	);
 
-	if (
+	if (RmlRuntime::Get().IsInitialized())
+	{
+		RmlRuntime::Get().OnDeviceReset(
+			Width,
+			Height
+		);
+	}
+	else if (
 		ActiveRmlUI &&
 		ActiveRmlUI->IsInitialized()
 	)
 	{
-		ActiveRmlUI->OnDeviceLost();
+		ActiveRmlUI->OnDeviceReset();
 	}
 
 	const D3DPRESENT_PARAMETERS OldParameters =
@@ -237,7 +245,18 @@ bool ProcessStudioPendingResize(
 		r3dRenderer->d3dpp = OldParameters;
 		r3dRenderer->Reset();
 
-		if (
+		if (RmlRuntime::Get().IsInitialized())
+		{
+			RmlRuntime::Get().OnDeviceReset(
+				static_cast<int>(
+					r3dRenderer->d3dpp.BackBufferWidth
+				),
+				static_cast<int>(
+					r3dRenderer->d3dpp.BackBufferHeight
+				)
+			);
+		}
+		else if (
 			ActiveRmlUI &&
 			ActiveRmlUI->IsInitialized()
 		)

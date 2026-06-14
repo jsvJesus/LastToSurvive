@@ -4,7 +4,7 @@
 	{
 		$db_user   = "sa";
 		$db_pass   = "NEWyorkEMPIRE";
-		$db_dbname = "WarZ";
+		$db_dbname = "LTS";
 
 		$db_serverName     = "26.163.92.76,1433";
 		$db_connectionInfo = array(
