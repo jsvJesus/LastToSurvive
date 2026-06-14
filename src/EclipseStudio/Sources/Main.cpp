@@ -692,8 +692,6 @@ CHWInfo g_HardwareInfo;
 // This function called by engine before main app window created, before any IO initialized. 
 void game::PreInit()
 {
-	//@FOR STEAM- SetCurrentDirectory("Z:\\tsg\\WarOnline\\bin\\");
-
 	u_srand(GetTickCount());
 
 	g_HardwareInfo.Grab();
