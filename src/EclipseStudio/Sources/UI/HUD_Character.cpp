@@ -892,8 +892,15 @@ void CharacterHUD::HandleCharacterRmlAction(
 
 	if (strcmp(Action, "mode") == 0)
 	{
+		const int ModeIndex =
+			Value ? atoi(Value) : 0;
+
 		bPlayerStatesMode =
-			!Value || atoi(Value) == 0;
+			ModeIndex == 0;
+
+		g_CharacterRmlUI.SetCharacterMode(
+			ModeIndex
+		);
 	}
 	else if (strcmp(Action, "state") == 0)
 	{
@@ -907,11 +914,15 @@ void CharacterHUD::HandleCharacterRmlAction(
 		{
 			SelectedPlayerState = StateIndex;
 
+			g_CharacterRmlUI.SetCharacterSelectedState(
+				SelectedPlayerState
+			);
+
 			m_Player->uberAnim_->
 				AnimPlayerState = -1;
 
 			m_Player->PlayerState =
-				StateIndex;
+				SelectedPlayerState;
 		}
 	}
 	else if (strcmp(Action, "direction") == 0)
@@ -927,8 +938,13 @@ void CharacterHUD::HandleCharacterRmlAction(
 			SelectedMoveDirection =
 				DirectionIndex;
 
+			g_CharacterRmlUI.
+				SetCharacterSelectedDirection(
+					SelectedMoveDirection
+				);
+
 			m_Player->PlayerMoveDir =
-				DirectionIndex;
+				SelectedMoveDirection;
 		}
 	}
 	else if (strcmp(Action, "ui_idle") == 0)
@@ -1040,11 +1056,11 @@ void CharacterHUD::HandleCharacterRmlAction(
 		bShowEquipment = !bShowEquipment;
 	}
 	else if (
-	strcmp(
-		Action,
-		"equipment_category"
-	) == 0
-)
+		strcmp(
+			Action,
+			"equipment_category"
+		) == 0
+	)
 	{
 		SelectedEquipmentCategory =
 			Value ? atoi(Value) : 0;
@@ -1054,6 +1070,11 @@ void CharacterHUD::HandleCharacterRmlAction(
 				SelectedEquipmentCategory,
 				0,
 				7
+			);
+
+		g_CharacterRmlUI.
+			SetCharacterEquipmentCategory(
+				SelectedEquipmentCategory
 			);
 
 		CachedEquipmentCategory = -1;
@@ -1267,10 +1288,6 @@ void CharacterHUD::UpdateCharacterRmlDocument()
 		SelectedMoveDirection
 	);
 
-	g_CharacterRmlUI.SetCharacterEquipmentCategory(
-		SelectedEquipmentCategory
-	);
-
 	if (
 		bShowEquipment &&
 		(
@@ -1310,6 +1327,11 @@ void CharacterHUD::UpdateCharacterRmlDocument()
 		"btn_char_show_equipment",
 		"char_show_equipment_value",
 		bShowEquipment
+	);
+
+	g_CharacterRmlUI.SetCharacterVisible(
+		"characters_left_panel",
+		!bShowEquipment
 	);
 
 	g_CharacterRmlUI.SetCharacterVisible(

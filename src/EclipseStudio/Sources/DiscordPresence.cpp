@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <string>
 
 static const char* DISCORD_DEFAULT_APP_ID = "1515111956263211049";
 static const char* DISCORD_LARGE_IMAGE_KEY = "lts_logo";
@@ -24,11 +25,15 @@ static bool gDiscordPresenceDirty = false;
 static bool gDiscordReady = false;
 static bool gDiscordStarted = false;
 static bool gDiscordLoggedDisabled = false;
+static bool gDiscordUseIpc = true;
 static float gDiscordNextStatusLog = 0.0f;
+static float gDiscordNextIpcConnect = 0.0f;
 static __int64 gDiscordStartTime = 0;
 
 #if defined(_WIN64)
 static Discord_Client gDiscordClient;
+static HANDLE gDiscordIpcPipe = INVALID_HANDLE_VALUE;
+static int gDiscordIpcNonce = 1;
 #endif
 
 static void DiscordPresence_Copy(char* dst, size_t dstSize, const char* src)
@@ -64,6 +69,166 @@ static uint64_t DiscordPresence_GetAppId()
 }
 
 #if defined(_WIN64)
+static std::string DiscordPresence_JsonEscape(const char* str)
+{
+	std::string out;
+	if(!str)
+		return out;
+
+	for(const unsigned char* p = (const unsigned char*)str; *p; ++p)
+	{
+		switch(*p)
+		{
+		case '\\': out += "\\\\"; break;
+		case '"': out += "\\\""; break;
+		case '\b': out += "\\b"; break;
+		case '\f': out += "\\f"; break;
+		case '\n': out += "\\n"; break;
+		case '\r': out += "\\r"; break;
+		case '\t': out += "\\t"; break;
+		default:
+			if(*p < 32)
+			{
+				char tmp[8];
+				sprintf(tmp, "\\u%04x", (unsigned int)*p);
+				out += tmp;
+			}
+			else
+			{
+				out += (char)*p;
+			}
+			break;
+		}
+	}
+
+	return out;
+}
+
+static bool DiscordPresence_IpcWrite(uint32_t op, const std::string& json)
+{
+	if(gDiscordIpcPipe == INVALID_HANDLE_VALUE)
+		return false;
+
+	uint32_t header[2] = { op, (uint32_t)json.size() };
+	DWORD written = 0;
+
+	if(!WriteFile(gDiscordIpcPipe, header, sizeof(header), &written, NULL) || written != sizeof(header))
+		return false;
+
+	if(!json.empty() && (!WriteFile(gDiscordIpcPipe, json.c_str(), (DWORD)json.size(), &written, NULL) || written != json.size()))
+		return false;
+
+	return true;
+}
+
+static void DiscordPresence_IpcClose()
+{
+	if(gDiscordIpcPipe != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(gDiscordIpcPipe);
+		gDiscordIpcPipe = INVALID_HANDLE_VALUE;
+	}
+	gDiscordReady = false;
+}
+
+static bool DiscordPresence_IpcConnect()
+{
+	if(gDiscordIpcPipe != INVALID_HANDLE_VALUE)
+		return true;
+
+	if(r3dGetTime() < gDiscordNextIpcConnect)
+		return false;
+
+	gDiscordNextIpcConnect = r3dGetTime() + 5.0f;
+
+	for(int i = 0; i < 10; ++i)
+	{
+		char pipeName[64];
+		sprintf(pipeName, "\\\\.\\pipe\\discord-ipc-%d", i);
+
+		HANDLE pipe = CreateFileA(pipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		if(pipe == INVALID_HANDLE_VALUE)
+			continue;
+
+		gDiscordIpcPipe = pipe;
+
+		std::string handshake = "{\"v\":1,\"client_id\":\"";
+		handshake += DiscordPresence_JsonEscape(d_discord_app_id ? d_discord_app_id->GetString() : DISCORD_DEFAULT_APP_ID);
+		handshake += "\"}";
+
+		if(!DiscordPresence_IpcWrite(0, handshake))
+		{
+			DiscordPresence_IpcClose();
+			continue;
+		}
+
+		gDiscordReady = true;
+		gDiscordPresenceDirty = true;
+		r3dOutToLog("DiscordPresence: connected via local IPC %s\n", pipeName);
+		return true;
+	}
+
+	return false;
+}
+
+static bool DiscordPresence_IpcSendActivity(bool clearPresence)
+{
+	if(!DiscordPresence_IpcConnect())
+		return false;
+
+	char nonce[64];
+	sprintf(nonce, "lts-%d", gDiscordIpcNonce++);
+
+	std::string json = "{\"cmd\":\"SET_ACTIVITY\",\"args\":{\"pid\":";
+	char pid[32];
+	sprintf(pid, "%u", (unsigned int)GetCurrentProcessId());
+	json += pid;
+	json += ",\"activity\":";
+
+	if(clearPresence)
+	{
+		json += "null";
+	}
+	else
+	{
+		char startTime[64];
+		sprintf(startTime, "%I64d", gDiscordStartTime);
+
+		json += "{\"type\":0";
+		json += ",\"name\":\"Eclipse Studio\"";
+		json += ",\"details\":\"" + DiscordPresence_JsonEscape(gDiscordDetails) + "\"";
+		json += ",\"state\":\"" + DiscordPresence_JsonEscape(gDiscordState) + "\"";
+		json += ",\"timestamps\":{\"start\":";
+		json += startTime;
+		json += "}";
+		json += ",\"assets\":{\"large_image\":\"";
+		json += DiscordPresence_JsonEscape(DISCORD_LARGE_IMAGE_KEY);
+		json += "\",\"large_text\":\"";
+		json += DiscordPresence_JsonEscape(gDiscordLargeText);
+		json += "\",\"small_text\":\"";
+		json += DiscordPresence_JsonEscape(gDiscordSmallText);
+		json += "\"}";
+		json += "}";
+	}
+
+	json += "},\"nonce\":\"";
+	json += nonce;
+	json += "\"}";
+
+	if(!DiscordPresence_IpcWrite(1, json))
+	{
+		r3dOutToLog("DiscordPresence: IPC write failed, reconnecting\n");
+		DiscordPresence_IpcClose();
+		gDiscordPresenceDirty = true;
+		return false;
+	}
+
+	if(!clearPresence)
+		r3dOutToLog("DiscordPresence: IPC activity sent: %s | %s | image=%s\n", gDiscordDetails, gDiscordState, DISCORD_LARGE_IMAGE_KEY);
+
+	return true;
+}
+
 static Discord_String DiscordPresence_String(const char* str)
 {
 	Discord_String s;
@@ -115,12 +280,28 @@ static void DiscordPresence_StatusChanged(Discord_Client_Status status, Discord_
 	else if(error != Discord_Client_Error_None)
 	{
 		r3dOutToLog("DiscordPresence: status=%d error=%d detail=%d\n", (int)status, (int)error, (int)errorDetail);
+		if(errorDetail == 4004)
+		{
+			gDiscordUseIpc = true;
+			gDiscordPresenceDirty = true;
+			r3dOutToLog("DiscordPresence: Social SDK auth failed, switching to local IPC\n");
+		}
 	}
 }
 
 static void DiscordPresence_Send()
 {
 	if(!gDiscordStarted || !gDiscordPresenceDirty)
+		return;
+
+	if(gDiscordUseIpc)
+	{
+		if(DiscordPresence_IpcSendActivity(false))
+			gDiscordPresenceDirty = false;
+		return;
+	}
+
+	if(!gDiscordReady)
 		return;
 
 	Discord_Activity activity;
@@ -188,6 +369,16 @@ void DiscordPresence_Init()
 	}
 
 	gDiscordStartTime = _time64(NULL);
+
+	// Rich Presence only needs Discord desktop IPC. This avoids the Social SDK
+	// gateway auth flow, which can reject non-social apps with close code 4004.
+	gDiscordUseIpc = true;
+	gDiscordStarted = true;
+	gDiscordPresenceDirty = true;
+	DiscordPresence_IpcConnect();
+	r3dOutToLog("DiscordPresence: using local IPC appId=%I64u\n", appId);
+	return;
+
 	Discord_SetFreeThreaded();
 	Discord_Client_Init(&gDiscordClient);
 	Discord_Client_SetApplicationId(&gDiscordClient, appId);
@@ -210,10 +401,23 @@ void DiscordPresence_Shutdown()
 	if(!gDiscordStarted)
 		return;
 
-	Discord_Client_ClearRichPresence(&gDiscordClient);
-	Discord_Client_Disconnect(&gDiscordClient);
-	Discord_Client_Drop(&gDiscordClient);
-	Discord_ResetCallbacks();
+	if(gDiscordUseIpc)
+	{
+		DiscordPresence_IpcSendActivity(true);
+		DiscordPresence_IpcClose();
+	}
+	else
+	{
+		Discord_Client_ClearRichPresence(&gDiscordClient);
+		Discord_Client_Disconnect(&gDiscordClient);
+		for(int i = 0; i < 8; ++i)
+		{
+			Discord_RunCallbacks();
+			Sleep(10);
+		}
+		Discord_Client_Drop(&gDiscordClient);
+		Discord_ResetCallbacks();
+	}
 
 	gDiscordStarted = false;
 	gDiscordReady = false;
@@ -227,11 +431,16 @@ void DiscordPresence_Tick()
 	if(!gDiscordStarted)
 		return;
 
-	Discord_RunCallbacks();
+	if(!gDiscordUseIpc)
+		Discord_RunCallbacks();
+
 	if(!gDiscordReady && r3dGetTime() >= gDiscordNextStatusLog)
 	{
 		gDiscordNextStatusLog = r3dGetTime() + 5.0f;
-		r3dOutToLog("DiscordPresence: waiting, status=%d\n", (int)Discord_Client_GetStatus(&gDiscordClient));
+		if(gDiscordUseIpc)
+			r3dOutToLog("DiscordPresence: waiting for Discord IPC\n");
+		else
+			r3dOutToLog("DiscordPresence: waiting, status=%d\n", (int)Discord_Client_GetStatus(&gDiscordClient));
 	}
 	DiscordPresence_Send();
 #endif
