@@ -57,14 +57,16 @@ private:
 	enum class EScreen
 	{
 		Login = 0,
-		MainMenu
+		MainMenu,
+		CharacterCreate
 	};
 
 	enum EAsyncOperation : LONG
 	{
 		AsyncOperation_None = 0,
 		AsyncOperation_Login,
-		AsyncOperation_Profile
+		AsyncOperation_Profile,
+		AsyncOperation_CreateCharacter
 	};
 
 	enum EAsyncResult : LONG
@@ -110,12 +112,22 @@ private:
 
 	void ShowLogin();
 	void ShowMainMenu();
+	void ShowCharacterCreate();
 
 	void HandleClick(
 		Rml::Element* Element
 	);
 
 	void RequestLogin();
+	void RequestCreateCharacter();
+
+	void ResetCharacterCreate();
+
+	void AdjustCharacterAppearance(
+		const Rml::String& ControlId
+	);
+
+	void RefreshCharacterCreateAppearance();
 
 	void BeginProfileLoad();
 
@@ -141,6 +153,10 @@ private:
 		EAsyncResult Result
 	);
 
+	void HandleCreateCharacterResult(
+		EAsyncResult Result
+	);
+
 	void BuildMainMenu();
 
 	void SelectCharacter(
@@ -156,6 +172,10 @@ private:
 	);
 
 	void SetMainMenuControlsEnabled(
+		bool bEnabled
+	);
+
+	void SetCharacterCreateControlsEnabled(
 		bool bEnabled
 	);
 
@@ -190,6 +210,10 @@ private:
 		const Rml::String& Text
 	);
 
+	void SetCharacterCreateStatus(
+		const Rml::String& Text
+	);
+
 	bool IsBusy() const;
 
 	static Rml::String WideToUtf8(
@@ -207,6 +231,7 @@ private:
 
 	Rml::ElementDocument* LoginDocument = nullptr;
 	Rml::ElementDocument* MainMenuDocument = nullptr;
+	Rml::ElementDocument* CharacterCreateDocument = nullptr;
 
 	std::unique_ptr<FClickListener> ClickListener;
 
@@ -214,9 +239,18 @@ private:
 
 	volatile LONG AsyncOperation = AsyncOperation_None;
 	volatile LONG AsyncResult = AsyncResult_Idle;
+	volatile LONG AsyncApiCode = 0;
 
 	char LoginUser[256]{};
 	char LoginPassword[256]{};
+	char CreateGamertag[64]{};
+
+	int CreateHeroItemID = 20201;
+	int CreateHardcore = 0;
+
+	int CreateHeadIndex = 0;
+	int CreateBodyIndex = 0;
+	int CreateLegsIndex = 0;
 
 	int Width = 1;
 	int Height = 1;

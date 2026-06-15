@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <cctype>
 
 #include "r3dDebug.h"
 
@@ -30,6 +31,57 @@ namespace
 
 	const size_t CharacterButtonPrefixLength =
 		strlen(CharacterButtonPrefix);
+
+	const char* ForbiddenCharacterNameSymbols =
+		"!@#$%^&*()-=+_<>,./?'\":;|{}[]";
+
+	constexpr int DefaultHeroItemID =
+		20201;
+
+	constexpr int AppearanceVariantCount =
+		4;
+
+	std::string TrimAscii(
+		const Rml::String& Value
+	)
+	{
+		std::string Result =
+			Value;
+
+		size_t Begin = 0;
+
+		while (
+			Begin < Result.length() &&
+			std::isspace(
+				static_cast<unsigned char>(
+					Result[Begin]
+				)
+			)
+		)
+		{
+			++Begin;
+		}
+
+		size_t End =
+			Result.length();
+
+		while (
+			End > Begin &&
+			std::isspace(
+				static_cast<unsigned char>(
+					Result[End - 1]
+				)
+			)
+		)
+		{
+			--End;
+		}
+
+		return Result.substr(
+			Begin,
+			End - Begin
+		);
+	}
 }
 
 RmlFrontEndContext::FClickListener::FClickListener(
@@ -266,8 +318,24 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
+	CharacterCreateDocument =
+		Context->LoadDocument(
+			"Rml/FrontEnd/CharacterCreate.rml"
+		);
+
+	if (!CharacterCreateDocument)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/CharacterCreate.rml\n"
+		);
+
+		return false;
+	}
+
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
+	CharacterCreateDocument->Hide();
 
 	return true;
 }
@@ -294,6 +362,15 @@ void RmlFrontEndContext::UnloadDocuments()
 
 		MainMenuDocument = nullptr;
 	}
+
+	if (CharacterCreateDocument)
+	{
+		Context->UnloadDocument(
+			CharacterCreateDocument
+		);
+
+		CharacterCreateDocument = nullptr;
+	}
 }
 
 void RmlFrontEndContext::AttachEvents()
@@ -316,6 +393,14 @@ void RmlFrontEndContext::AttachEvents()
 			ClickListener.get()
 		);
 	}
+
+	if (CharacterCreateDocument)
+	{
+		CharacterCreateDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
 }
 
 void RmlFrontEndContext::DetachEvents()
@@ -334,6 +419,14 @@ void RmlFrontEndContext::DetachEvents()
 	if (MainMenuDocument)
 	{
 		MainMenuDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (CharacterCreateDocument)
+	{
+		CharacterCreateDocument->RemoveEventListener(
 			"click",
 			ClickListener.get()
 		);
@@ -384,11 +477,30 @@ bool RmlFrontEndContext::ProcessWin32Message(
 	if (
 		Message == WM_KEYDOWN &&
 		WParam == VK_RETURN &&
-		CurrentScreen == EScreen::Login &&
 		!IsBusy()
 	)
 	{
-		RequestLogin();
+		if (CurrentScreen == EScreen::Login)
+		{
+			RequestLogin();
+			return true;
+		}
+
+		if (CurrentScreen == EScreen::CharacterCreate)
+		{
+			RequestCreateCharacter();
+			return true;
+		}
+	}
+
+	if (
+		Message == WM_KEYDOWN &&
+		WParam == VK_ESCAPE &&
+		CurrentScreen == EScreen::CharacterCreate &&
+		!IsBusy()
+	)
+	{
+		ShowMainMenu();
 		return true;
 	}
 
@@ -420,13 +532,21 @@ ERmlFrontEndResult RmlFrontEndContext::ConsumeResult()
 
 void RmlFrontEndContext::ShowLogin()
 {
-	if (!LoginDocument || !MainMenuDocument)
+	if (
+		!LoginDocument ||
+		!MainMenuDocument ||
+		!CharacterCreateDocument
+	)
+	{
 		return;
+	}
 
 	MainMenuDocument->Hide();
+	CharacterCreateDocument->Hide();
 	LoginDocument->Show();
 
-	CurrentScreen = EScreen::Login;
+	CurrentScreen =
+		EScreen::Login;
 
 	SetLoginControlsEnabled(
 		!IsBusy()
@@ -439,16 +559,65 @@ void RmlFrontEndContext::ShowLogin()
 
 void RmlFrontEndContext::ShowMainMenu()
 {
-	if (!LoginDocument || !MainMenuDocument)
+	if (
+		!LoginDocument ||
+		!MainMenuDocument ||
+		!CharacterCreateDocument
+	)
+	{
 		return;
+	}
 
 	LoginDocument->Hide();
+	CharacterCreateDocument->Hide();
 	MainMenuDocument->Show();
 
-	CurrentScreen = EScreen::MainMenu;
+	CurrentScreen =
+		EScreen::MainMenu;
 
 	SetMainMenuControlsEnabled(
 		!IsBusy()
+	);
+
+	RmlRuntime::Get().SetActiveContext(
+		Context
+	);
+}
+
+void RmlFrontEndContext::ShowCharacterCreate()
+{
+	if (
+		!CharacterCreateDocument ||
+		!bProfileLoaded ||
+		IsBusy()
+	)
+	{
+		return;
+	}
+
+	if (
+		gUserProfile.ProfileData.NumSlots >=
+		wiUserProfile::MAX_LOADOUT_SLOTS
+	)
+	{
+		SetMainMenuStatus(
+			"Maximum character count reached."
+		);
+
+		return;
+	}
+
+	LoginDocument->Hide();
+	MainMenuDocument->Hide();
+	CharacterCreateDocument->Show();
+
+	CurrentScreen =
+		EScreen::CharacterCreate;
+
+	ResetCharacterCreate();
+
+	SetCharacterCreateControlsEnabled(
+		true
 	);
 
 	RmlRuntime::Get().SetActiveContext(
@@ -570,10 +739,7 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_create_character")
 		{
-			SetMainMenuStatus(
-				"Character creation is the next frontend stage."
-			);
-
+			ShowCharacterCreate();
 			return;
 		}
 
@@ -583,6 +749,41 @@ void RmlFrontEndContext::HandleClick(
 			{
 				PendingResult =
 					ERmlFrontEndResult::Exit;
+			}
+
+			return;
+		}
+
+		if (Id == "btn_create_character_confirm")
+		{
+			RequestCreateCharacter();
+			return;
+		}
+
+		if (Id == "btn_create_character_cancel")
+		{
+			if (!IsBusy())
+			{
+				ShowMainMenu();
+			}
+
+			return;
+		}
+
+		if (
+			Id == "btn_create_head_prev" ||
+			Id == "btn_create_head_next" ||
+			Id == "btn_create_body_prev" ||
+			Id == "btn_create_body_next" ||
+			Id == "btn_create_legs_prev" ||
+			Id == "btn_create_legs_next"
+		)
+		{
+			if (!IsBusy())
+			{
+				AdjustCharacterAppearance(
+					Id
+				);
 			}
 
 			return;
@@ -611,7 +812,8 @@ void RmlFrontEndContext::HandleClick(
 
 		if (
 			Current == LoginDocument ||
-			Current == MainMenuDocument
+			Current == MainMenuDocument ||
+			Current == CharacterCreateDocument
 		)
 		{
 			break;
@@ -619,6 +821,238 @@ void RmlFrontEndContext::HandleClick(
 
 		Current =
 			Current->GetParentNode();
+	}
+}
+
+void RmlFrontEndContext::ResetCharacterCreate()
+{
+	CreateGamertag[0] = 0;
+
+	CreateHeroItemID =
+		DefaultHeroItemID;
+
+	CreateHardcore = 0;
+
+	CreateHeadIndex = 0;
+	CreateBodyIndex = 0;
+	CreateLegsIndex = 0;
+
+	SetInputValue(
+		CharacterCreateDocument,
+		"create_character_name",
+		""
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_hero_name",
+		"ASIAN MALE"
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_hero_item",
+		"20201"
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_game_mode",
+		"NORMAL"
+	);
+
+	SetCharacterCreateStatus(
+		"Configure your survivor and enter a name."
+	);
+
+	RefreshCharacterCreateAppearance();
+}
+
+void RmlFrontEndContext::AdjustCharacterAppearance(
+	const Rml::String& ControlId
+)
+{
+	if (ControlId == "btn_create_head_prev")
+	{
+		if (CreateHeadIndex > 0)
+			--CreateHeadIndex;
+	}
+	else if (ControlId == "btn_create_head_next")
+	{
+		if (
+			CreateHeadIndex <
+			AppearanceVariantCount - 1
+		)
+		{
+			++CreateHeadIndex;
+		}
+	}
+	else if (ControlId == "btn_create_body_prev")
+	{
+		if (CreateBodyIndex > 0)
+			--CreateBodyIndex;
+	}
+	else if (ControlId == "btn_create_body_next")
+	{
+		if (
+			CreateBodyIndex <
+			AppearanceVariantCount - 1
+		)
+		{
+			++CreateBodyIndex;
+		}
+	}
+	else if (ControlId == "btn_create_legs_prev")
+	{
+		if (CreateLegsIndex > 0)
+			--CreateLegsIndex;
+	}
+	else if (ControlId == "btn_create_legs_next")
+	{
+		if (
+			CreateLegsIndex <
+			AppearanceVariantCount - 1
+		)
+		{
+			++CreateLegsIndex;
+		}
+	}
+
+	RefreshCharacterCreateAppearance();
+}
+
+void RmlFrontEndContext::RefreshCharacterCreateAppearance()
+{
+	char Text[32]{};
+
+	sprintf_s(
+		Text,
+		"%d / %d",
+		CreateHeadIndex + 1,
+		AppearanceVariantCount
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_head_value",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d / %d",
+		CreateBodyIndex + 1,
+		AppearanceVariantCount
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_body_value",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d / %d",
+		CreateLegsIndex + 1,
+		AppearanceVariantCount
+	);
+
+	SetElementText(
+		CharacterCreateDocument,
+		"create_legs_value",
+		Text
+	);
+}
+
+void RmlFrontEndContext::RequestCreateCharacter()
+{
+	if (
+		CurrentScreen != EScreen::CharacterCreate ||
+		IsBusy() ||
+		!bProfileLoaded
+	)
+	{
+		return;
+	}
+
+	if (
+		gUserProfile.ProfileData.NumSlots >=
+		wiUserProfile::MAX_LOADOUT_SLOTS
+	)
+	{
+		SetCharacterCreateStatus(
+			"Maximum character count reached."
+		);
+
+		return;
+	}
+
+	const std::string Gamertag =
+		TrimAscii(
+			GetInputValue(
+				CharacterCreateDocument,
+				"create_character_name"
+			)
+		);
+
+	if (Gamertag.length() < 4)
+	{
+		SetCharacterCreateStatus(
+			"Character name must contain at least 4 characters."
+		);
+
+		return;
+	}
+
+	if (Gamertag.length() > 16)
+	{
+		SetCharacterCreateStatus(
+			"Character name cannot exceed 16 characters."
+		);
+
+		return;
+	}
+
+	if (
+		Gamertag.find_first_of(
+			ForbiddenCharacterNameSymbols
+		) != std::string::npos
+	)
+	{
+		SetCharacterCreateStatus(
+			"Character name contains forbidden symbols."
+		);
+
+		return;
+	}
+
+	strncpy_s(
+		CreateGamertag,
+		sizeof(CreateGamertag),
+		Gamertag.c_str(),
+		_TRUNCATE
+	);
+
+	SetCharacterCreateControlsEnabled(
+		false
+	);
+
+	SetCharacterCreateStatus(
+		"Creating survivor..."
+	);
+
+	if (!StartAsyncOperation(
+		AsyncOperation_CreateCharacter
+	))
+	{
+		SetCharacterCreateControlsEnabled(
+			true
+		);
+
+		SetCharacterCreateStatus(
+			"Unable to start character creation."
+		);
 	}
 }
 
@@ -744,6 +1178,11 @@ bool RmlFrontEndContext::StartAsyncOperation(
 	InterlockedExchange(
 		&AsyncResult,
 		AsyncResult_Working
+	);
+
+	InterlockedExchange(
+		&AsyncApiCode,
+		0
 	);
 
 	unsigned int ThreadId = 0;
@@ -937,6 +1376,48 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 				? AsyncResult_Success
 				: AsyncResult_Error;
 	}
+	else if (
+		Operation ==
+		AsyncOperation_CreateCharacter
+	)
+	{
+		const int ApiCode =
+			gUserProfile.ApiCharCreate(
+				CreateGamertag,
+				CreateHardcore,
+				CreateHeroItemID,
+				CreateHeadIndex,
+				CreateBodyIndex,
+				CreateLegsIndex
+			);
+
+		InterlockedExchange(
+			&AsyncApiCode,
+			ApiCode
+		);
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][CharacterCreate] "
+			"ApiCharCreate result=%d\n",
+			ApiCode
+		);
+
+		if (ApiCode == 0)
+		{
+			Result =
+				AsyncResult_Success;
+		}
+		else if (ApiCode == 8)
+		{
+			Result =
+				AsyncResult_Timeout;
+		}
+		else
+		{
+			Result =
+				AsyncResult_Error;
+		}
+	}
 
 	InterlockedExchange(
 		&AsyncResult,
@@ -1011,6 +1492,123 @@ void RmlFrontEndContext::PollAsyncOperation()
 			CompletedResult
 		);
 	}
+	else if (
+		Operation ==
+		AsyncOperation_CreateCharacter
+	)
+	{
+		HandleCreateCharacterResult(
+			CompletedResult
+		);
+	}
+}
+
+void RmlFrontEndContext::HandleCreateCharacterResult(
+	EAsyncResult Result
+)
+{
+	const int ApiCode =
+		static_cast<int>(
+			InterlockedCompareExchange(
+				&AsyncApiCode,
+				0,
+				0
+			)
+		);
+
+	if (Result == AsyncResult_Success)
+	{
+		const int CharacterCount =
+			gUserProfile.ProfileData.NumSlots;
+
+		if (CharacterCount <= 0)
+		{
+			SetCharacterCreateControlsEnabled(
+				true
+			);
+
+			SetCharacterCreateStatus(
+				"Character was created, but the profile was not refreshed."
+			);
+
+			return;
+		}
+
+		SelectedCharacterIndex =
+			CharacterCount - 1;
+
+		gUserProfile.SelectedCharID =
+			SelectedCharacterIndex;
+
+		bProfileLoaded = true;
+
+		BuildMainMenu();
+		ShowMainMenu();
+
+		SetMainMenuStatus(
+			"Character created and selected."
+		);
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][CharacterCreate] "
+			"Created character index=%d\n",
+			SelectedCharacterIndex
+		);
+
+		return;
+	}
+
+	SetCharacterCreateControlsEnabled(
+		true
+	);
+
+	if (Result == AsyncResult_Timeout)
+	{
+		SetCharacterCreateStatus(
+			"Character creation request timed out."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 9)
+	{
+		SetCharacterCreateStatus(
+			"This character name is already in use or was rejected."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 6)
+	{
+		SetCharacterCreateStatus(
+			"Character creation was rejected. Check the character limit."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 1)
+	{
+		ShowLoginMessage(
+			L"Your login session is no longer valid."
+		);
+
+		return;
+	}
+
+	char ErrorText[128]{};
+
+	sprintf_s(
+		ErrorText,
+		"Character creation failed. Backend code: %d",
+		ApiCode
+	);
+
+	SetCharacterCreateStatus(
+		ErrorText
+	);
 }
 
 void RmlFrontEndContext::StopAsyncOperation()
@@ -1037,6 +1635,11 @@ void RmlFrontEndContext::StopAsyncOperation()
 	InterlockedExchange(
 		&AsyncResult,
 		AsyncResult_Idle
+	);
+
+	InterlockedExchange(
+		&AsyncApiCode,
+		0
 	);
 }
 
@@ -1452,6 +2055,12 @@ void RmlFrontEndContext::SetMainMenuControlsEnabled(
 		bProfileLoaded &&
 		gUserProfile.ProfileData.NumSlots > 0;
 
+	const bool bCanCreate =
+		bEnabled &&
+		bProfileLoaded &&
+		gUserProfile.ProfileData.NumSlots <
+			wiUserProfile::MAX_LOADOUT_SLOTS;
+
 	SetElementEnabled(
 		MainMenuDocument,
 		"btn_quick_join",
@@ -1467,13 +2076,83 @@ void RmlFrontEndContext::SetMainMenuControlsEnabled(
 	SetElementEnabled(
 		MainMenuDocument,
 		"btn_create_character",
-		bEnabled
+		bCanCreate
 	);
 
 	SetElementEnabled(
 		MainMenuDocument,
 		"btn_frontend_exit",
 		bEnabled
+	);
+}
+
+void RmlFrontEndContext::SetCharacterCreateControlsEnabled(
+	bool bEnabled
+)
+{
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"create_character_name",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_head_prev",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_head_next",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_body_prev",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_body_next",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_legs_prev",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_legs_next",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_character_confirm",
+		bEnabled
+	);
+
+	SetElementEnabled(
+		CharacterCreateDocument,
+		"btn_create_character_cancel",
+		bEnabled
+	);
+}
+
+void RmlFrontEndContext::SetCharacterCreateStatus(
+	const Rml::String& Text
+)
+{
+	SetElementText(
+		CharacterCreateDocument,
+		"create_character_status",
+		Text
 	);
 }
 
