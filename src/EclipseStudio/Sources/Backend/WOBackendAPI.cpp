@@ -25,31 +25,46 @@ CWOBackendReq::CWOBackendReq(const CUserProfile* prof, const char* url)
 
 void CWOBackendReq::Init(const char* url)
 {
-	resp_       = NULL;
-	
-	savedUrl_   = url;
+	resp_ = NULL;
+
+	savedUrl_ = url;
 	resultCode_ = 0;
-	bodyStr_    = "";
-	bodyLen_    = 0;
-	
-	int success;
+	bodyStr_ = "";
+	bodyLen_ = 0;
+
 	http.put_ConnectTimeout(30);
 	http.put_ReadTimeout(60);
+	http.put_FollowRedirects(true);
 
-	// create request
-	char fullUrl[512];
-	if(url[0] != '/')
-	  sprintf(fullUrl, "%s%s", gDomainBaseUrl, url);
-	else 
-	  sprintf(fullUrl, "%s", url);
+	char fullUrl[512] = {};
+
+	if (
+		url &&
+		url[0] != '/'
+	)
+	{
+		sprintf_s(
+			fullUrl,
+			sizeof(fullUrl),
+			"%s%s",
+			gDomainBaseUrl,
+			url
+		);
+	}
+	else
+	{
+		sprintf_s(
+			fullUrl,
+			sizeof(fullUrl),
+			"%s",
+			url
+				? url
+				: ""
+		);
+	}
 
 	req.put_HttpVerb("POST");
 
-	/*
-	 * Обязательно для ASP.NET Core.
-	 * Без этого Request.HasFormContentType == false,
-	 * поэтому backend не видит username, password, s_id и остальные параметры.
-	 */
 	req.put_ContentType(
 		"application/x-www-form-urlencoded"
 	);
@@ -85,9 +100,12 @@ void CWOBackendReq::AddParam(const char* name, int val)
 
 int CWOBackendReq::ParseResult(CkHttpResponse* resp)
 {
-	if(resp == NULL)
+	if (resp == NULL)
 	{
-		r3dOutToLog("WO_API: http timeout\n");
+		r3dOutToLog(
+			"[Backend] ParseResult received NULL response\n"
+		);
+
 		return 8;
 	}
 
@@ -96,8 +114,14 @@ int CWOBackendReq::ParseResult(CkHttpResponse* resp)
 		CkBinData ErrorBodyData;
 		CkByteData ErrorBodyBytes;
 
-		resp->GetBodyBd(ErrorBodyData);
-		ErrorBodyData.GetBinary(ErrorBodyBytes);
+		resp->GetBodyBd(
+			ErrorBodyData
+		);
+
+		ErrorBodyData.GetBinary(
+			ErrorBodyBytes
+		);
+
 		ErrorBodyBytes.appendChar(0);
 
 		r3dOutToLog(
@@ -106,6 +130,15 @@ int CWOBackendReq::ParseResult(CkHttpResponse* resp)
 			savedUrl_
 				? savedUrl_
 				: "<unknown>"
+		);
+
+		r3dOutToLog(
+			"[Backend] HTTP response body: %s\n",
+			ErrorBodyBytes.getSize() > 1
+				? reinterpret_cast<const char*>(
+					ErrorBodyBytes.getData()
+				)
+				: "<empty>"
 		);
 
 		return 8;
@@ -240,6 +273,12 @@ bool CWOBackendReq::Issue()
 		RequestPath
 	);
 
+	r3dOutToLog(
+		"[Backend] Chilkat timeouts: connect=%ld sec, read=%ld sec\n",
+		http.get_ConnectTimeout(),
+		http.get_ReadTimeout()
+	);
+
 	const float RequestStartTime =
 		r3dGetTime();
 
@@ -255,17 +294,44 @@ bool CWOBackendReq::Issue()
 		r3dGetTime() -
 		RequestStartTime;
 
+	if (!resp_)
+	{
+		const char* ErrorText =
+			http.lastErrorText();
+
+		r3dOutToLog(
+			"[Backend] Request %s returned no HTTP response "
+			"after %.3f sec\n",
+			savedUrl_
+				? savedUrl_
+				: "<unknown>",
+			RequestTime
+		);
+
+		r3dOutToLog(
+			"[Backend] Chilkat error:\n%s\n",
+			ErrorText && ErrorText[0]
+				? ErrorText
+				: "<no error text>"
+		);
+
+		resultCode_ = 8;
+		return false;
+	}
+
 	resultCode_ =
 		ParseResult(
 			resp_
 		);
 
 	r3dOutToLog(
-		"[Backend] Request %s completed in %.3f sec, result=%d\n",
+		"[Backend] Request %s completed in %.3f sec, "
+		"HTTP=%d, result=%d\n",
 		savedUrl_
 			? savedUrl_
 			: "<unknown>",
 		RequestTime,
+		resp_->get_StatusCode(),
 		resultCode_
 	);
 
