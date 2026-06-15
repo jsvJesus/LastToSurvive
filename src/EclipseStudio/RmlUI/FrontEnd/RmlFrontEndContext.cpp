@@ -808,7 +808,10 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 	LONG Result =
 		AsyncResult_Error;
 
-	if (Operation == AsyncOperation_Login)
+	if (
+		Operation ==
+		AsyncOperation_Login
+	)
 	{
 		gUserProfile.CustomerID = 0;
 		gUserProfile.SessionID = 0;
@@ -831,25 +834,26 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 		if (!Request.Issue())
 		{
 			r3dOutToLog(
-				"[RmlUI][FrontEnd][Login] Request failed: %d\n",
+				"[RmlUI][FrontEnd][Login] "
+				"Backend request failed: %d\n",
 				Request.resultCode_
 			);
 
 			Result =
 				Request.resultCode_ == 8
-				? AsyncResult_Timeout
-				: AsyncResult_Error;
+					? AsyncResult_Timeout
+					: AsyncResult_Error;
 		}
 		else
 		{
-			unsigned int CustomerId = 0;
-			unsigned int SessionId = 0;
+			int CustomerId = 0;
+			int SessionId = 0;
 			int AccountStatus = 0;
 
 			const int Parsed =
-				sscanf(
+				sscanf_s(
 					Request.bodyStr_,
-					"%u %u %d",
+					"%d %d %d",
 					&CustomerId,
 					&SessionId,
 					&AccountStatus
@@ -858,7 +862,11 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 			if (Parsed != 3)
 			{
 				r3dOutToLog(
-					"[RmlUI][FrontEnd][Login] Invalid backend response\n"
+					"[RmlUI][FrontEnd][Login] "
+					"Invalid backend response: %s\n",
+					Request.bodyStr_
+						? Request.bodyStr_
+						: "<null>"
 				);
 
 				Result =
@@ -871,6 +879,10 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 						CustomerId
 					);
 
+				/*
+				 * SQL SessionID является signed int.
+				 * Приведение к DWORD сохраняет те же 32 бита.
+				 */
 				gUserProfile.SessionID =
 					static_cast<DWORD>(
 						SessionId
@@ -879,14 +891,21 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 				gUserProfile.AccountStatus =
 					AccountStatus;
 
-				if (!gUserProfile.CustomerID)
+				r3dOutToLog(
+					"[RmlUI][FrontEnd][Login] "
+					"CustomerID=%d, SessionID=%d, "
+					"AccountStatus=%d\n",
+					CustomerId,
+					SessionId,
+					AccountStatus
+				);
+
+				if (CustomerId == 0)
 				{
 					Result =
 						AsyncResult_BadPassword;
 				}
-				else if (
-					gUserProfile.AccountStatus >= 200
-				)
+				else if (AccountStatus >= 200)
 				{
 					Result =
 						AsyncResult_Frozen;
@@ -900,16 +919,23 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 		}
 	}
 	else if (
-		Operation == AsyncOperation_Profile
+		Operation ==
+		AsyncOperation_Profile
 	)
 	{
 		const int ProfileResult =
 			gUserProfile.GetProfile();
 
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Profile] "
+			"GetProfile result=%d\n",
+			ProfileResult
+		);
+
 		Result =
 			ProfileResult == 0
-			? AsyncResult_Success
-			: AsyncResult_Error;
+				? AsyncResult_Success
+				: AsyncResult_Error;
 	}
 
 	InterlockedExchange(
@@ -925,7 +951,7 @@ void RmlFrontEndContext::PollAsyncOperation()
 	if (!WorkerThread)
 		return;
 
-	const LONG Result =
+	LONG Result =
 		InterlockedCompareExchange(
 			&AsyncResult,
 			0,
@@ -970,21 +996,130 @@ void RmlFrontEndContext::PollAsyncOperation()
 
 	if (Operation == AsyncOperation_Login)
 	{
-		HandleLoginResult(
-			static_cast<EAsyncResult>(
-				Result
-			)
+		gUserProfile.CustomerID = 0;
+		gUserProfile.SessionID = 0;
+		gUserProfile.AccountStatus = 0;
+
+		CWOBackendReq Request(
+			"api_Login.aspx"
 		);
+
+		Request.AddParam(
+			"username",
+			LoginUser
+		);
+
+		Request.AddParam(
+			"password",
+			LoginPassword
+		);
+
+		if (!Request.Issue())
+		{
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Login] "
+				"Backend request failed: %d\n",
+				Request.resultCode_
+			);
+
+			Result =
+				Request.resultCode_ == 8
+					? AsyncResult_Timeout
+					: AsyncResult_Error;
+		}
+		else
+		{
+			int CustomerId = 0;
+			int SessionId = 0;
+			int AccountStatus = 0;
+
+			const int Parsed =
+				sscanf_s(
+					Request.bodyStr_,
+					"%d %d %d",
+					&CustomerId,
+					&SessionId,
+					&AccountStatus
+				);
+
+			if (Parsed != 3)
+			{
+				r3dOutToLog(
+					"[RmlUI][FrontEnd][Login] "
+					"Invalid backend response: %s\n",
+					Request.bodyStr_
+						? Request.bodyStr_
+						: "<null>"
+				);
+
+				Result =
+					AsyncResult_Error;
+			}
+			else
+			{
+				gUserProfile.CustomerID =
+					static_cast<DWORD>(
+						CustomerId
+					);
+
+				/*
+				 * SessionID приходит из SQL как signed int.
+				 * Приведение к DWORD сохраняет те же 32 бита.
+				 * При следующем запросе AddSessionInfo()
+				 * снова передаст его как signed int.
+				 */
+				gUserProfile.SessionID =
+					static_cast<DWORD>(
+						SessionId
+					);
+
+				gUserProfile.AccountStatus =
+					AccountStatus;
+
+				r3dOutToLog(
+					"[RmlUI][FrontEnd][Login] "
+					"CustomerID=%d, SessionID=%d, Status=%d\n",
+					CustomerId,
+					SessionId,
+					AccountStatus
+				);
+
+				if (CustomerId == 0)
+				{
+					Result =
+						AsyncResult_BadPassword;
+				}
+				else if (AccountStatus >= 200)
+				{
+					Result =
+						AsyncResult_Frozen;
+				}
+				else
+				{
+					Result =
+						AsyncResult_Success;
+				}
+			}
+		}
 	}
 	else if (
-		Operation == AsyncOperation_Profile
+		Operation ==
+		AsyncOperation_Profile
 	)
 	{
-		HandleProfileResult(
-			static_cast<EAsyncResult>(
-				Result
-			)
+		const int ProfileResult =
+			gUserProfile.GetProfile();
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Profile] "
+			"GetProfile result=%d\n",
+			ProfileResult
 		);
+
+		Result =
+			ProfileResult == 0
+				? AsyncResult_Success
+				: AsyncResult_Error;
 	}
 }
 

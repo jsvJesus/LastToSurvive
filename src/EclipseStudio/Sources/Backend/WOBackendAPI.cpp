@@ -7,9 +7,9 @@
 
 #include "WOBackendAPI.h"
 
-	const char*	gDomainBaseUrl= "/APS/";
-	int		gDomainPort   = 8080; // PAX_BUILD - change to 80 and no SSL
-	bool		gDomainUseSSL = false;
+const char*	gDomainBaseUrl= "/APS/";
+int		gDomainPort   = 8080; // PAX_BUILD - change to 80 and no SSL
+bool		gDomainUseSSL = false;
 	
 CWOBackendReq::CWOBackendReq(const char* url)
 {
@@ -44,6 +44,16 @@ void CWOBackendReq::Init(const char* url)
 	  sprintf(fullUrl, "%s", url);
 
 	req.put_HttpVerb("POST");
+
+	/*
+	 * Обязательно для ASP.NET Core.
+	 * Без этого Request.HasFormContentType == false,
+	 * поэтому backend не видит username, password, s_id и остальные параметры.
+	 */
+	req.put_ContentType(
+		"application/x-www-form-urlencoded"
+	);
+
 	req.put_Path(fullUrl);
 	req.put_Utf8(true);
 }
@@ -91,7 +101,11 @@ int CWOBackendReq::ParseResult(CkHttpResponse* resp)
 		ErrorBodyBytes.appendChar(0);
 
 		r3dOutToLog(
-			"WO_API: returned HTTP %d for %s\n"
+			"[Backend] HTTP %d returned for %s\n",
+			resp->get_StatusCode(),
+			savedUrl_
+				? savedUrl_
+				: "<unknown>"
 		);
 
 		return 8;
@@ -171,16 +185,92 @@ bool CWOBackendReq::Issue()
 {
 	SAFE_DELETE(resp_);
 
-	float t1 = r3dGetTime();
-	resp_ = http.SynchronousRequest(g_api_ip->GetString(), gDomainPort, gDomainUseSSL, req);
-	#ifndef FINAL_BUILD
-	//r3dOutToLog("WOApi: %s NETWORK time: %.4f\n", savedUrl_, r3dGetTime()-t1);
-	#endif
+	const char* ApiHost =
+		g_api_ip
+			? g_api_ip->GetString()
+			: NULL;
 
-	resultCode_ = ParseResult(resp_);
+	if (
+		!ApiHost ||
+		!ApiHost[0]
+	)
+	{
+		r3dOutToLog(
+			"[Backend] g_api_ip is empty\n"
+		);
+
+		resultCode_ = 8;
+		return false;
+	}
+
+	char RequestPath[512] = {};
+
+	if (
+		savedUrl_ &&
+		savedUrl_[0] == '/'
+	)
+	{
+		sprintf_s(
+			RequestPath,
+			sizeof(RequestPath),
+			"%s",
+			savedUrl_
+		);
+	}
+	else
+	{
+		sprintf_s(
+			RequestPath,
+			sizeof(RequestPath),
+			"%s%s",
+			gDomainBaseUrl,
+			savedUrl_
+				? savedUrl_
+				: ""
+		);
+	}
+
+	r3dOutToLog(
+		"[Backend] POST %s://%s:%d%s\n",
+		gDomainUseSSL
+			? "https"
+			: "http",
+		ApiHost,
+		gDomainPort,
+		RequestPath
+	);
+
+	const float RequestStartTime =
+		r3dGetTime();
+
+	resp_ =
+		http.SynchronousRequest(
+			ApiHost,
+			gDomainPort,
+			gDomainUseSSL,
+			req
+		);
+
+	const float RequestTime =
+		r3dGetTime() -
+		RequestStartTime;
+
+	resultCode_ =
+		ParseResult(
+			resp_
+		);
+
+	r3dOutToLog(
+		"[Backend] Request %s completed in %.3f sec, result=%d\n",
+		savedUrl_
+			? savedUrl_
+			: "<unknown>",
+		RequestTime,
+		resultCode_
+	);
+
 	return resultCode_ == 0;
 }
-
 
 void CWOBackendReq::ParseXML(pugi::xml_document& xmlFile)
 {
