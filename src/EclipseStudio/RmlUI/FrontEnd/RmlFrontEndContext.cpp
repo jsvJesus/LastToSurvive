@@ -22,6 +22,7 @@
 #include <cstring>
 #include <string>
 #include <cctype>
+#include <windowsx.h>
 
 #include "r3dDebug.h"
 
@@ -109,6 +110,144 @@ namespace
 		);
 
 		return Text;
+	}
+
+	struct FFrontendLevelProgress
+	{
+		int Level = 1;
+		int TotalExperience = 0;
+		int NextLevelExperience = 100;
+		float Percent = 0.0f;
+	};
+
+	FFrontendLevelProgress
+	CalculateFrontendLevelProgress(
+		int TotalExperience
+	)
+	{
+		FFrontendLevelProgress Result;
+
+		Result.TotalExperience =
+			std::max(
+				0,
+				TotalExperience
+			);
+
+		/*
+		 * Временная frontend-кривая:
+		 * каждые 100 XP повышают отображаемый уровень.
+		 *
+		 * Когда появится отдельная серверная таблица уровней,
+		 * менять нужно будет только эту функцию.
+		 */
+		Result.Level =
+			Result.TotalExperience / 100 + 1;
+
+		const int CurrentLevelStart =
+			(Result.Level - 1) * 100;
+
+		Result.NextLevelExperience =
+			Result.Level * 100;
+
+		const int ExperienceInsideLevel =
+			Result.TotalExperience -
+			CurrentLevelStart;
+
+		Result.Percent =
+			static_cast<float>(
+				ExperienceInsideLevel
+			);
+
+		Result.Percent =
+			std::clamp(
+				Result.Percent,
+				0.0f,
+				100.0f
+			);
+
+		return Result;
+	}
+
+	std::string FormatGroupedNumber(
+		long long Value
+	)
+	{
+		const bool bNegative =
+			Value < 0;
+
+		unsigned long long AbsoluteValue =
+			bNegative
+				? static_cast<unsigned long long>(
+					-Value
+				)
+				: static_cast<unsigned long long>(
+					Value
+				);
+
+		std::string Result =
+			std::to_string(
+				AbsoluteValue
+			);
+
+		for (
+			int Position =
+				static_cast<int>(
+					Result.length()
+				) - 3;
+			Position > 0;
+			Position -= 3
+		)
+		{
+			Result.insert(
+				static_cast<size_t>(
+					Position
+				),
+				" "
+			);
+		}
+
+		if (bNegative)
+		{
+			Result.insert(
+				Result.begin(),
+				'-'
+			);
+		}
+
+		return Result;
+	}
+
+	const char* GetExperienceTitle(
+		int Level
+	)
+	{
+		if (Level >= 50)
+			return "VETERAN";
+
+		if (Level >= 25)
+			return "EXPERIENCED";
+
+		if (Level >= 10)
+			return "SEASONED";
+
+		if (Level >= 5)
+			return "SURVIVOR";
+
+		return "RECRUIT";
+	}
+
+	const char* GetCharacterRole(
+		uint32_t HeroItemID
+	)
+	{
+		switch (HeroItemID)
+		{
+		case 20174:
+			return "EX MILITARY";
+
+		default:
+			return "SURVIVOR";
+		}
 	}
 }
 
@@ -261,6 +400,7 @@ bool RmlFrontEndContext::Init(
 void RmlFrontEndContext::Shutdown()
 {
 	StopAsyncOperation();
+	CancelPreviewDrag();
 
 	if (CharacterPreview)
 	{
@@ -555,7 +695,10 @@ bool RmlFrontEndContext::ProcessWin32Message(
 			return true;
 		}
 
-		if (CurrentScreen == EScreen::CharacterCreate)
+		if (
+			CurrentScreen ==
+			EScreen::CharacterCreate
+		)
 		{
 			RequestCreateCharacter();
 			return true;
@@ -565,7 +708,8 @@ bool RmlFrontEndContext::ProcessWin32Message(
 	if (
 		Message == WM_KEYDOWN &&
 		WParam == VK_ESCAPE &&
-		CurrentScreen == EScreen::CharacterCreate &&
+		CurrentScreen ==
+			EScreen::CharacterCreate &&
 		!IsBusy()
 	)
 	{
@@ -573,13 +717,384 @@ bool RmlFrontEndContext::ProcessWin32Message(
 		return true;
 	}
 
-	return RmlRuntime::Get().ProcessWin32Message(
-		Context,
-		WindowHandle,
-		Message,
-		WParam,
-		LParam,
-		OutResult
+	const bool bRmlHandled =
+		RmlRuntime::Get().
+			ProcessWin32Message(
+				Context,
+				WindowHandle,
+				Message,
+				WParam,
+				LParam,
+				OutResult
+			);
+
+	if (
+		CurrentScreen !=
+			EScreen::MainMenu ||
+		!CharacterPreview ||
+		!CharacterPreview->
+			IsInitialized()
+	)
+	{
+		return bRmlHandled;
+	}
+
+	if (
+		Message == WM_KEYDOWN &&
+		WParam == 'R' &&
+		IsPointerOverMainMenuElement(
+			"character_preview_stage"
+		)
+	)
+	{
+		CharacterPreview->ResetView();
+		return true;
+	}
+
+	switch (Message)
+	{
+	case WM_LBUTTONDOWN:
+		if (
+			IsPointerOverMainMenuElement(
+				"character_preview_stage"
+			)
+		)
+		{
+			PreviewDragMode =
+				EPreviewDragMode::Rotate;
+
+			PreviewDragLastPoint.x =
+				GET_X_LPARAM(
+					LParam
+				);
+
+			PreviewDragLastPoint.y =
+				GET_Y_LPARAM(
+					LParam
+				);
+
+			SetCapture(
+				WindowHandle
+			);
+
+			return true;
+		}
+		break;
+
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+		if (
+			IsPointerOverMainMenuElement(
+				"character_preview_stage"
+			)
+		)
+		{
+			PreviewDragMode =
+				EPreviewDragMode::Move;
+
+			PreviewDragLastPoint.x =
+				GET_X_LPARAM(
+					LParam
+				);
+
+			PreviewDragLastPoint.y =
+				GET_Y_LPARAM(
+					LParam
+				);
+
+			SetCapture(
+				WindowHandle
+			);
+
+			return true;
+		}
+		break;
+
+	case WM_MOUSEMOVE:
+		if (
+			PreviewDragMode !=
+				EPreviewDragMode::None
+		)
+		{
+			const POINT CurrentPoint
+			{
+				GET_X_LPARAM(
+					LParam
+				),
+				GET_Y_LPARAM(
+					LParam
+				)
+			};
+
+			const float DeltaX =
+				static_cast<float>(
+					CurrentPoint.x -
+					PreviewDragLastPoint.x
+				);
+
+			const float DeltaY =
+				static_cast<float>(
+					CurrentPoint.y -
+					PreviewDragLastPoint.y
+				);
+
+			PreviewDragLastPoint =
+				CurrentPoint;
+
+			if (
+				PreviewDragMode ==
+				EPreviewDragMode::Rotate
+			)
+			{
+				if (!(WParam & MK_LBUTTON))
+				{
+					CancelPreviewDrag();
+					break;
+				}
+
+				CharacterPreview->Rotate(
+					DeltaX,
+					DeltaY
+				);
+			}
+			else
+			{
+				if (
+					!(WParam & MK_RBUTTON) &&
+					!(WParam & MK_MBUTTON)
+				)
+				{
+					CancelPreviewDrag();
+					break;
+				}
+
+				CharacterPreview->Move(
+					DeltaX,
+					DeltaY
+				);
+			}
+
+			return true;
+		}
+		break;
+
+	case WM_LBUTTONUP:
+		if (
+			PreviewDragMode ==
+			EPreviewDragMode::Rotate
+		)
+		{
+			CancelPreviewDrag();
+			return true;
+		}
+		break;
+
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+		if (
+			PreviewDragMode ==
+			EPreviewDragMode::Move
+		)
+		{
+			CancelPreviewDrag();
+			return true;
+		}
+		break;
+
+	case WM_MOUSEWHEEL:
+		if (
+			IsPointerOverMainMenuElement(
+				"character_preview_stage"
+			)
+		)
+		{
+			const float WheelSteps =
+				static_cast<float>(
+					GET_WHEEL_DELTA_WPARAM(
+						WParam
+					)
+				) /
+				static_cast<float>(
+					WHEEL_DELTA
+				);
+
+			CharacterPreview->Zoom(
+				WheelSteps
+			);
+
+			return true;
+		}
+		break;
+
+	case WM_CAPTURECHANGED:
+	case WM_CANCELMODE:
+	case WM_KILLFOCUS:
+		CancelPreviewDrag();
+		break;
+
+	default:
+		break;
+	}
+
+	return bRmlHandled;
+}
+
+bool RmlFrontEndContext::IsElementOrChildOfId(
+	Rml::Element* Element,
+	const char* ParentId
+) const
+{
+	if (!Element || !ParentId)
+		return false;
+
+	Rml::Element* Current =
+		Element;
+
+	while (Current)
+	{
+		if (
+			Current->GetId() ==
+			ParentId
+		)
+		{
+			return true;
+		}
+
+		if (
+			Current ==
+			MainMenuDocument
+		)
+		{
+			break;
+		}
+
+		Current =
+			Current->GetParentNode();
+	}
+
+	return false;
+}
+
+bool RmlFrontEndContext::
+IsPointerOverMainMenuElement(
+	const char* ElementId
+) const
+{
+	if (
+		!Context ||
+		!MainMenuDocument ||
+		!ElementId
+	)
+	{
+		return false;
+	}
+
+	return IsElementOrChildOfId(
+		Context->GetHoverElement(),
+		ElementId
+	);
+}
+
+void RmlFrontEndContext::CancelPreviewDrag()
+{
+	PreviewDragMode =
+		EPreviewDragMode::None;
+
+	if (
+		Hwnd &&
+		GetCapture() == Hwnd
+	)
+	{
+		ReleaseCapture();
+	}
+}
+
+void RmlFrontEndContext::SetElementProperty(
+	Rml::ElementDocument* Document,
+	const char* ElementId,
+	const char* PropertyName,
+	const Rml::String& Value
+)
+{
+	if (
+		!Document ||
+		!ElementId ||
+		!PropertyName
+	)
+	{
+		return;
+	}
+
+	Rml::Element* Element =
+		Document->GetElementById(
+			ElementId
+		);
+
+	if (!Element)
+		return;
+
+	Element->SetProperty(
+		PropertyName,
+		Value
+	);
+}
+
+void RmlFrontEndContext::SetElementClass(
+	Rml::ElementDocument* Document,
+	const char* ElementId,
+	const char* ClassName,
+	bool bEnabled
+)
+{
+	if (
+		!Document ||
+		!ElementId ||
+		!ClassName
+	)
+	{
+		return;
+	}
+
+	Rml::Element* Element =
+		Document->GetElementById(
+			ElementId
+		);
+
+	if (!Element)
+		return;
+
+	Element->SetClass(
+		ClassName,
+		bEnabled
+	);
+}
+
+void RmlFrontEndContext::SetElementPercent(
+	Rml::ElementDocument* Document,
+	const char* ElementId,
+	float Percent
+)
+{
+	Percent =
+		std::clamp(
+			Percent,
+			0.0f,
+			100.0f
+		);
+
+	char Value[32]{};
+
+	sprintf_s(
+		Value,
+		"%.2f%%",
+		Percent
+	);
+
+	SetElementProperty(
+		Document,
+		ElementId,
+		"width",
+		Value
 	);
 }
 
@@ -831,10 +1346,25 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
+		if (Id == "btn_reset_preview")
+		{
+			if (CharacterPreview)
+			{
+				CharacterPreview->
+					ResetView();
+			}
+
+			SetMainMenuStatus(
+				"Character preview reset."
+			);
+
+			return;
+		}
+
 		if (Id == "nav_survivor")
 		{
 			SetMainMenuStatus(
-				"Survivor screen active."
+				"Survivor profile active."
 			);
 
 			return;
@@ -843,7 +1373,7 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "nav_shop")
 		{
 			SetMainMenuStatus(
-				"Shop will be connected in the next stage."
+				"Shop screen is not connected yet."
 			);
 
 			return;
@@ -852,7 +1382,43 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "nav_community")
 		{
 			SetMainMenuStatus(
-				"Community will be connected later."
+				"Community screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "nav_skills")
+		{
+			SetMainMenuStatus(
+				"Skills screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "nav_equipment")
+		{
+			SetMainMenuStatus(
+				"Equipment screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "nav_clan")
+		{
+			SetMainMenuStatus(
+				"Clan screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "nav_awards")
+		{
+			SetMainMenuStatus(
+				"Awards screen is not connected yet."
 			);
 
 			return;
@@ -861,7 +1427,7 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "btn_global_inventory")
 		{
 			SetMainMenuStatus(
-				"Global Inventory will be connected next."
+				"Global Inventory is not connected yet."
 			);
 
 			return;
@@ -870,7 +1436,7 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "btn_skill_tree")
 		{
 			SetMainMenuStatus(
-				"Skill Tree is not implemented yet."
+				"Skill Tree is not connected yet."
 			);
 
 			return;
@@ -879,16 +1445,46 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "btn_customize_character")
 		{
 			SetMainMenuStatus(
-				"Character body customization is the next stage."
+				"Character customization is not connected yet."
 			);
 
 			return;
 		}
 
-		if (Id == "btn_options")
+		if (Id == "btn_view_rewards")
 		{
 			SetMainMenuStatus(
-				"Options will be connected later."
+				"Rewards screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (
+			Id == "btn_options" ||
+			Id == "btn_settings"
+		)
+		{
+			SetMainMenuStatus(
+				"Options screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_social")
+		{
+			SetMainMenuStatus(
+				"Social panel is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_messages")
+		{
+			SetMainMenuStatus(
+				"Messages panel is not connected yet."
 			);
 
 			return;
@@ -927,9 +1523,12 @@ void RmlFrontEndContext::HandleClick(
 		}
 
 		if (
-			Current == LoginDocument ||
-			Current == MainMenuDocument ||
-			Current == CharacterCreateDocument
+			Current ==
+				LoginDocument ||
+			Current ==
+				MainMenuDocument ||
+			Current ==
+				CharacterCreateDocument
 		)
 		{
 			break;
@@ -2152,42 +2751,42 @@ void RmlFrontEndContext::BuildMainMenu()
 	if (!MainMenuDocument)
 		return;
 
-	char Text[256]{};
+	const std::string GcText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GamePoints
+		);
 
-	/*
-	 * Текущий GamePoints используем как GC.
-	 * LTC появится в профиле позже.
-	 */
-	sprintf_s(
-		Text,
-		"%d",
-		gUserProfile.ProfileData.
-			GamePoints
-	);
+	const std::string GdText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GameDollars
+		);
 
 	SetElementText(
 		MainMenuDocument,
 		"balance_gc",
-		Text
-	);
-
-	sprintf_s(
-		Text,
-		"%d",
-		gUserProfile.ProfileData.
-			GameDollars
+		GcText
 	);
 
 	SetElementText(
 		MainMenuDocument,
 		"balance_gd",
-		Text
+		GdText
 	);
 
 	SetElementText(
 		MainMenuDocument,
 		"balance_ltc",
 		"0"
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"account_name",
+		LoginUser[0]
+			? LoginUser
+			: "SURVIVOR"
 	);
 
 	const int CharacterCount =
@@ -2199,6 +2798,39 @@ void RmlFrontEndContext::BuildMainMenu()
 		SelectedCharacterIndex =
 			-1;
 
+		gUserProfile.SelectedCharID =
+			0;
+
+		SetElementText(
+			MainMenuDocument,
+			"top_survivor_name",
+			"NO SURVIVOR"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"top_survivor_role",
+			"EMPTY SLOT"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"top_level_value",
+			"0"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"top_level_xp_text",
+			"0 / 100"
+		);
+
+		SetElementPercent(
+			MainMenuDocument,
+			"top_level_xp_fill",
+			0.0f
+		);
+
 		SetElementText(
 			MainMenuDocument,
 			"survivor_nickname",
@@ -2207,8 +2839,107 @@ void RmlFrontEndContext::BuildMainMenu()
 
 		SetElementText(
 			MainMenuDocument,
+			"survivor_class",
+			"EMPTY SLOT"
+		);
+
+		SetElementText(
+			MainMenuDocument,
 			"survivor_state",
-			"PROFILE ERROR"
+			"UNAVAILABLE"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_player_kills",
+			"0"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_zombie_kills",
+			"0"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_time_played",
+			"0d 00h 00m"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_health",
+			"0%"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_reputation",
+			"0"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"stat_rank",
+			"UNRANKED"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"survivor_level_value",
+			"0"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"survivor_level_xp_text",
+			"0 / 100"
+		);
+
+		SetElementPercent(
+			MainMenuDocument,
+			"survivor_level_xp_fill",
+			0.0f
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"reward_rank_title",
+			"RECRUIT"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"reward_xp_text",
+			"0 / 100"
+		);
+
+		SetElementPercent(
+			MainMenuDocument,
+			"reward_xp_fill",
+			0.0f
+		);
+
+		SetElementClass(
+			MainMenuDocument,
+			"survivor_state",
+			"ready",
+			false
+		);
+
+		SetElementClass(
+			MainMenuDocument,
+			"survivor_state",
+			"wounded",
+			false
+		);
+
+		SetElementClass(
+			MainMenuDocument,
+			"survivor_state",
+			"dead",
+			true
 		);
 
 		SetMainMenuStatus(
@@ -2222,15 +2953,81 @@ void RmlFrontEndContext::BuildMainMenu()
 		return;
 	}
 
-	SelectedCharacterIndex =
-		0;
+	if (
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >=
+			CharacterCount
+	)
+	{
+		SelectedCharacterIndex =
+			0;
+	}
 
 	gUserProfile.SelectedCharID =
-		0;
+		SelectedCharacterIndex;
 
 	const wiCharDataFull& Character =
 		gUserProfile.ProfileData.
-			ArmorySlots[0];
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
+
+	const char* CharacterRole =
+		GetCharacterRole(
+			Character.HeroItemID
+		);
+
+	const FFrontendLevelProgress Level =
+		CalculateFrontendLevelProgress(
+			Character.Stats.XP
+		);
+
+	const std::string ExperienceText =
+		FormatGroupedNumber(
+			Level.TotalExperience
+		) +
+		" / " +
+		FormatGroupedNumber(
+			Level.NextLevelExperience
+		);
+
+	char Text[256]{};
+
+	sprintf_s(
+		Text,
+		"%d",
+		Level.Level
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"top_level_value",
+		Text
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"top_level_xp_text",
+		ExperienceText
+	);
+
+	SetElementPercent(
+		MainMenuDocument,
+		"top_level_xp_fill",
+		Level.Percent
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"top_survivor_name",
+		Character.Gamertag
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"top_survivor_role",
+		CharacterRole
+	);
 
 	SetElementText(
 		MainMenuDocument,
@@ -2241,35 +3038,72 @@ void RmlFrontEndContext::BuildMainMenu()
 	SetElementText(
 		MainMenuDocument,
 		"survivor_class",
-		"EX MILITARY"
+		CharacterRole
 	);
 
-	switch (Character.Alive)
+	SetElementText(
+		MainMenuDocument,
+		"selected_character",
+		Character.Gamertag
+	);
+
+	const bool bDead =
+		Character.Alive == 0 ||
+		Character.Health <= 0.0f;
+
+	const bool bReady =
+		!bDead &&
+		Character.Health >= 99.5f;
+
+	const bool bWounded =
+		!bDead &&
+		!bReady;
+
+	if (bDead)
 	{
-	case 0:
 		SetElementText(
 			MainMenuDocument,
 			"survivor_state",
 			"DEAD"
 		);
-		break;
-
-	case 3:
+	}
+	else if (bReady)
+	{
 		SetElementText(
 			MainMenuDocument,
 			"survivor_state",
 			"READY"
 		);
-		break;
-
-	default:
+	}
+	else
+	{
 		SetElementText(
 			MainMenuDocument,
 			"survivor_state",
-			"ALIVE"
+			"WOUNDED"
 		);
-		break;
 	}
+
+	SetElementClass(
+		MainMenuDocument,
+		"survivor_state",
+		"ready",
+		bReady
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"survivor_state",
+		"wounded",
+		bWounded
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"survivor_state",
+		"dead",
+		bDead
+	);
 
 	const int PlayerKills =
 		Character.Stats.
@@ -2311,12 +3145,19 @@ void RmlFrontEndContext::BuildMainMenu()
 		)
 	);
 
+	const int Health =
+		static_cast<int>(
+			std::clamp(
+				Character.Health,
+				0.0f,
+				100.0f
+			)
+		);
+
 	sprintf_s(
 		Text,
 		"%d%%",
-		static_cast<int>(
-			Character.Health
-		)
+		Health
 	);
 
 	SetElementText(
@@ -2344,20 +3185,80 @@ void RmlFrontEndContext::BuildMainMenu()
 		"UNRANKED"
 	);
 
+	sprintf_s(
+		Text,
+		"%d",
+		Level.Level
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"survivor_level_value",
+		Text
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"survivor_level_xp_text",
+		ExperienceText
+	);
+
+	SetElementPercent(
+		MainMenuDocument,
+		"survivor_level_xp_fill",
+		Level.Percent
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"reward_rank_title",
+		GetExperienceTitle(
+			Level.Level
+		)
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"reward_xp_text",
+		ExperienceText
+	);
+
+	SetElementPercent(
+		MainMenuDocument,
+		"reward_xp_fill",
+		Level.Percent
+	);
+
 	SetInputValue(
 		MainMenuDocument,
 		"rename_character_name",
 		Character.Gamertag
 	);
 
-	SetMainMenuStatus(
-		"Survivor profile ready."
+	SetElementText(
+		MainMenuDocument,
+		"footer_region",
+		"AUTO"
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"footer_server",
+		g_serverip &&
+		g_serverip->GetString() &&
+		g_serverip->GetString()[0]
+			? g_serverip->GetString()
+			: "OFFLINE"
 	);
 
 	EnsureCharacterPreview();
 
 	SetMainMenuControlsEnabled(
 		true
+	);
+
+	SetMainMenuStatus(
+		"Survivor profile ready."
 	);
 }
 
@@ -2366,11 +3267,13 @@ void RmlFrontEndContext::SelectCharacter(
 )
 {
 	const int CharacterCount =
-		gUserProfile.ProfileData.NumSlots;
+		gUserProfile.ProfileData.
+			NumSlots;
 
 	if (
 		CharacterIndex < 0 ||
-		CharacterIndex >= CharacterCount
+		CharacterIndex >=
+			CharacterCount
 	)
 	{
 		return;
@@ -2382,28 +3285,8 @@ void RmlFrontEndContext::SelectCharacter(
 	gUserProfile.SelectedCharID =
 		CharacterIndex;
 
-	if (CharacterPreview)
-	{
-		CharacterPreview->SetCharacter(
-			gUserProfile.ProfileData.
-				ArmorySlots[
-					CharacterIndex
-				]
-		);
-	}
-
+	BuildMainMenu();
 	RefreshCharacterSelection();
-
-	const wiCharDataFull& Character =
-		gUserProfile.ProfileData.ArmorySlots[
-			CharacterIndex
-		];
-
-	SetElementText(
-		MainMenuDocument,
-		"selected_character",
-		Character.Gamertag
-	);
 
 	SetMainMenuStatus(
 		"Character selected."
@@ -2550,77 +3433,60 @@ SetMainMenuControlsEnabled(
 		gUserProfile.ProfileData.
 			NumSlots > 0;
 
-	SetElementEnabled(
-		MainMenuDocument,
+	const char* CharacterControls[] =
+	{
 		"btn_quick_join",
-		bEnabled &&
-		bHasCharacter
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"btn_global_inventory",
-		bEnabled &&
-		bHasCharacter
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"btn_skill_tree",
-		bEnabled &&
-		bHasCharacter
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
-		"rename_character_name",
-		bEnabled &&
-		bHasCharacter
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
-		"btn_rename_character",
-		bEnabled &&
-		bHasCharacter
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"btn_customize_character",
-		bEnabled &&
-		bHasCharacter
-	);
+		"rename_character_name",
+		"btn_rename_character",
+		"btn_view_rewards"
+	};
 
-	SetElementEnabled(
-		MainMenuDocument,
+	for (
+		const char* ElementId :
+		CharacterControls
+	)
+	{
+		SetElementEnabled(
+			MainMenuDocument,
+			ElementId,
+			bEnabled &&
+			bHasCharacter
+		);
+	}
+
+	const char* CommonControls[] =
+	{
 		"nav_survivor",
-		bEnabled
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"nav_shop",
-		bEnabled
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"nav_community",
-		bEnabled
-	);
+		"nav_skills",
+		"nav_equipment",
+		"nav_clan",
+		"nav_awards",
 
-	SetElementEnabled(
-		MainMenuDocument,
+		"btn_social",
+		"btn_messages",
+		"btn_settings",
 		"btn_options",
-		bEnabled
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
 		"btn_frontend_exit",
-		bEnabled
-	);
+
+		"btn_reset_preview"
+	};
+
+	for (
+		const char* ElementId :
+		CommonControls
+	)
+	{
+		SetElementEnabled(
+			MainMenuDocument,
+			ElementId,
+			bEnabled
+		);
+	}
 }
 
 void RmlFrontEndContext::SetCharacterCreateControlsEnabled(
@@ -2899,32 +3765,47 @@ EnsureCharacterPreview()
 	if (
 		!CharacterPreview ||
 		!bProfileLoaded ||
-		gUserProfile.
-			ProfileData.NumSlots <= 0
+		gUserProfile.ProfileData.
+			NumSlots <= 0
 	)
 	{
 		return false;
 	}
 
-	gUserProfile.SelectedCharID =
-		0;
+	const int CharacterCount =
+		gUserProfile.ProfileData.
+			NumSlots;
 
-	SelectedCharacterIndex =
-		0;
+	if (
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >=
+			CharacterCount
+	)
+	{
+		SelectedCharacterIndex =
+			0;
+	}
+
+	gUserProfile.SelectedCharID =
+		SelectedCharacterIndex;
 
 	const wiCharDataFull& Character =
 		gUserProfile.ProfileData.
-			ArmorySlots[0];
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
 
 	if (
 		!CharacterPreview->
 			IsInitialized()
 	)
 	{
-		if (!CharacterPreview->
-			Initialize(
-				Character
-			))
+		if (
+			!CharacterPreview->
+				Initialize(
+					Character
+				)
+		)
 		{
 			SetMainMenuStatus(
 				"Unable to initialize character preview."

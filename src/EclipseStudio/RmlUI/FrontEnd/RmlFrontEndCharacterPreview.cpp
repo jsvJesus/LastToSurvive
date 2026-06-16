@@ -1,6 +1,9 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "RmlFrontEndCharacterPreview.h"
 
 #include "../RmlRuntime.h"
@@ -266,28 +269,48 @@ void RmlFrontEndCharacterPreview::Shutdown()
 void RmlFrontEndCharacterPreview::
 ApplyFullBodyCamera()
 {
-	if (!Player)
+	if (!Player || !r3dRenderer)
 		return;
 
 	const r3dPoint3D CharacterSize =
 		Player->GetBBoxLocal().Size;
 
-	const float Distance =
+	const r3dPoint3D PlayerPosition =
+		Player->GetPosition();
+
+	float Distance =
 		GetOptimalDist(
 			CharacterSize,
-			22.5f
+			24.0f
 		);
 
-	const r3dPoint3D CameraPosition(
-		0.0f,
-		CharacterSize.y,
-		Distance
-	);
+	Distance *=
+		ViewDistanceScale;
+
+	const float TargetX =
+		PlayerPosition.x +
+		ViewHorizontalOffset;
+
+	const float TargetY =
+		PlayerPosition.y +
+		CharacterSize.y * 0.50f +
+		ViewVerticalOffset;
+
+	const float TargetZ =
+		PlayerPosition.z;
 
 	const r3dPoint3D CameraTarget(
-		0.0f,
-		1.0f,
-		0.0f
+		TargetX,
+		TargetY,
+		TargetZ
+	);
+
+	const r3dPoint3D CameraPosition(
+		TargetX,
+		TargetY +
+			CharacterSize.y * 0.035f,
+		TargetZ +
+			Distance
 	);
 
 	gCam =
@@ -300,11 +323,11 @@ ApplyFullBodyCamera()
 		).NormalizeTo();
 
 	gCam.FOV =
-		45.0f;
+		42.0f;
 
 	gCam.SetPlanes(
 		0.01f,
-		200.0f
+		250.0f
 	);
 
 	r3dRenderer->SetCamera(
@@ -316,7 +339,7 @@ ApplyFullBodyCamera()
 void RmlFrontEndCharacterPreview::
 ApplyPortraitCamera()
 {
-	if (!Player)
+	if (!Player || !r3dRenderer)
 		return;
 
 	const r3dPoint3D CharacterSize =
@@ -325,33 +348,31 @@ ApplyPortraitCamera()
 	const r3dPoint3D PlayerPosition =
 		Player->GetPosition();
 
-	/*
-	 * Точка примерно между грудью и лицом.
-	 */
-	const float PortraitTargetY =
+	const float TargetY =
 		PlayerPosition.y +
-		CharacterSize.y * 0.78f;
+		CharacterSize.y * 0.79f;
 
-	float PortraitDistance =
-		CharacterSize.y * 0.65f;
+	float Distance =
+		CharacterSize.y * 0.58f;
 
-	if (PortraitDistance < 0.9f)
-	{
-		PortraitDistance =
-			0.9f;
-	}
-
-	const r3dPoint3D CameraPosition(
-		0.0f,
-		PortraitTargetY +
-			CharacterSize.y * 0.015f,
-		PortraitDistance
-	);
+	Distance =
+		std::max(
+			Distance,
+			0.82f
+		);
 
 	const r3dPoint3D CameraTarget(
-		0.0f,
-		PortraitTargetY,
-		0.0f
+		PlayerPosition.x,
+		TargetY,
+		PlayerPosition.z
+	);
+
+	const r3dPoint3D CameraPosition(
+		PlayerPosition.x,
+		TargetY +
+			CharacterSize.y * 0.015f,
+		PlayerPosition.z +
+			Distance
 	);
 
 	gCam =
@@ -364,11 +385,11 @@ ApplyPortraitCamera()
 		).NormalizeTo();
 
 	gCam.FOV =
-		34.0f;
+		31.0f;
 
 	gCam.SetPlanes(
 		0.01f,
-		50.0f
+		60.0f
 	);
 
 	r3dRenderer->SetCamera(
@@ -448,15 +469,11 @@ void RmlFrontEndCharacterPreview::SetCharacter(
 		Character
 	);
 
-	Player->m_fPlayerRotationTarget =
-		0.0f;
-
-	Player->m_fPlayerRotation =
-		0.0f;
-
 	Player->SyncAnimation(
 		true
 	);
+
+	ResetView();
 
 	r3dOutToLog(
 		"[RmlUI][FrontEnd][Preview] "
@@ -467,6 +484,101 @@ void RmlFrontEndCharacterPreview::SetCharacter(
 		Character.BodyIdx,
 		Character.LegsIdx
 	);
+}
+
+void RmlFrontEndCharacterPreview::Rotate(
+	float DeltaPixelsX,
+	float DeltaPixelsY
+)
+{
+	ViewYawDegrees +=
+		DeltaPixelsX * 0.32f;
+
+	if (ViewYawDegrees > 360.0f)
+	{
+		ViewYawDegrees =
+			std::fmod(
+				ViewYawDegrees,
+				360.0f
+			);
+	}
+	else if (ViewYawDegrees < -360.0f)
+	{
+		ViewYawDegrees =
+			std::fmod(
+				ViewYawDegrees,
+				360.0f
+			);
+	}
+
+	ViewVerticalOffset -=
+		DeltaPixelsY * 0.0022f;
+
+	ViewVerticalOffset =
+		std::clamp(
+			ViewVerticalOffset,
+			-0.32f,
+			0.32f
+		);
+}
+
+void RmlFrontEndCharacterPreview::Move(
+	float DeltaPixelsX,
+	float DeltaPixelsY
+)
+{
+	ViewHorizontalOffset +=
+		DeltaPixelsX * 0.0022f;
+
+	ViewVerticalOffset -=
+		DeltaPixelsY * 0.0022f;
+
+	ViewHorizontalOffset =
+		std::clamp(
+			ViewHorizontalOffset,
+			-0.42f,
+			0.42f
+		);
+
+	ViewVerticalOffset =
+		std::clamp(
+			ViewVerticalOffset,
+			-0.32f,
+			0.32f
+		);
+}
+
+void RmlFrontEndCharacterPreview::Zoom(
+	float WheelSteps
+)
+{
+	ViewDistanceScale -=
+		WheelSteps * 0.08f;
+
+	ViewDistanceScale =
+		std::clamp(
+			ViewDistanceScale,
+			0.62f,
+			1.55f
+		);
+}
+
+void RmlFrontEndCharacterPreview::ResetView()
+{
+	ViewYawDegrees = 0.0f;
+	ViewDistanceScale = 1.0f;
+
+	ViewHorizontalOffset = 0.0f;
+	ViewVerticalOffset = 0.0f;
+
+	if (Player)
+	{
+		Player->m_fPlayerRotationTarget =
+			ViewYawDegrees;
+
+		Player->m_fPlayerRotation =
+			ViewYawDegrees;
+	}
 }
 
 void RmlFrontEndCharacterPreview::PrepareFrame()
@@ -495,10 +607,10 @@ void RmlFrontEndCharacterPreview::PrepareFrame()
 	);
 
 	Player->m_fPlayerRotationTarget =
-		0.0f;
+		ViewYawDegrees;
 
 	Player->m_fPlayerRotation =
-		0.0f;
+		ViewYawDegrees;
 
 	Player->UpdateTransform();
 
@@ -678,17 +790,11 @@ RenderCharacterToTarget(
 		);
 
 	float PortraitScaleY =
-		0.20f;
+		0.30f;
 
 	float PortraitScaleX =
-		0.20f;
+		0.30f;
 
-	/*
-	 * Сохраняем квадратные пропорции области:
-	 *
-	 * pixel width  = SourceWidth  * ScaleX
-	 * pixel height = SourceHeight * ScaleY
-	 */
 	if (
 		FullCharacterTarget &&
 		FullCharacterTarget->Width > 1.0f &&
@@ -703,11 +809,12 @@ RenderCharacterToTarget(
 			);
 	}
 
-	if (PortraitScaleX < 0.10f)
-		PortraitScaleX = 0.10f;
-
-	if (PortraitScaleX > 0.50f)
-		PortraitScaleX = 0.50f;
+	PortraitScaleX =
+		std::clamp(
+			PortraitScaleX,
+			0.12f,
+			0.50f
+		);
 
 	PFX_Copy::Settings PortraitCopySettings;
 
@@ -717,9 +824,6 @@ RenderCharacterToTarget(
 	PortraitCopySettings.TexScaleY =
 		PortraitScaleY;
 
-	/*
-	 * Персонаж находится по центру кадра.
-	 */
 	PortraitCopySettings.TexOffsetX =
 		(
 			1.0f -
@@ -727,11 +831,11 @@ RenderCharacterToTarget(
 		) * 0.5f;
 
 	/*
-	 * Верхняя часть полного кадра:
-	 * голова, плечи и часть груди.
+	 * Верхняя центральная область полного кадра.
+	 * Голова и плечи находятся по центру портретной рамки.
 	 */
 	PortraitCopySettings.TexOffsetY =
-		0.0f; // Поднять/Опустить камеру, чем выше значение тем больше опускает или наоборт
+		0.055f;
 
 	PortraitCopySettings.ForceFiltering =
 		true;

@@ -234,6 +234,44 @@ private:
 		const Rml::String& Text
 	);
 
+	enum class EPreviewDragMode
+	{
+		None = 0,
+		Rotate,
+		Move
+	};
+
+	bool IsElementOrChildOfId(
+		Rml::Element* Element,
+		const char* ParentId
+	) const;
+
+	bool IsPointerOverMainMenuElement(
+		const char* ElementId
+	) const;
+
+	void CancelPreviewDrag();
+
+	void SetElementProperty(
+		Rml::ElementDocument* Document,
+		const char* ElementId,
+		const char* PropertyName,
+		const Rml::String& Value
+	);
+
+	void SetElementClass(
+		Rml::ElementDocument* Document,
+		const char* ElementId,
+		const char* ClassName,
+		bool bEnabled
+	);
+
+	void SetElementPercent(
+		Rml::ElementDocument* Document,
+		const char* ElementId,
+		float Percent
+	);
+
 private:
 	HWND Hwnd = nullptr;
 
@@ -275,4 +313,9 @@ private:
 	bool bInitialized = false;
 	bool bRuntimeAcquired = false;
 	bool bProfileLoaded = false;
+
+	EPreviewDragMode PreviewDragMode =
+		EPreviewDragMode::None;
+
+	POINT PreviewDragLastPoint{};
 };

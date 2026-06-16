@@ -25,6 +25,22 @@ public:
     void PrepareFrame();
     void RenderFrame();
 
+    void Rotate(
+        float DeltaPixelsX,
+        float DeltaPixelsY
+    );
+
+    void Move(
+        float DeltaPixelsX,
+        float DeltaPixelsY
+    );
+
+    void Zoom(
+        float WheelSteps
+    );
+
+    void ResetView();
+
     bool IsInitialized() const;
 
 private:
@@ -41,14 +57,16 @@ private:
     void FinishPreparedFrame();
 
 private:
-    obj_Player* Player =
-        nullptr;
+    obj_Player* Player = nullptr;
 
     r3dCamera PreviousCamera;
 
-    bool bInitialized =
-        false;
+    float ViewYawDegrees = 0.0f;
+    float ViewDistanceScale = 1.0f;
 
-    bool bFramePrepared =
-        false;
+    float ViewHorizontalOffset = 0.0f;
+    float ViewVerticalOffset = 0.0f;
+
+    bool bInitialized = false;
+    bool bFramePrepared = false;
 };
