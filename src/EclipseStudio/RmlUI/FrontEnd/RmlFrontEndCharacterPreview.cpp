@@ -523,23 +523,16 @@ void RmlFrontEndCharacterPreview::RenderFrame()
 	}
 
 	/*
-	 * Первый проход:
-	 * полный персонаж для центра.
+	 * Мир и персонаж рендерятся строго один раз.
+	 *
+	 * Внутри RenderCharacterToTarget():
+	 * 1. создаётся полный центральный RenderTarget;
+	 * 2. из него вырезается портрет в отдельный 512x512 RT.
 	 */
 	ApplyFullBodyCamera();
 
 	RenderCharacterToTarget(
 		false
-	);
-
-	/*
-	 * Второй проход:
-	 * отдельная камера на голову и плечи.
-	 */
-	ApplyPortraitCamera();
-
-	RenderCharacterToTarget(
-		true
 	);
 
 	r3dScreenBuffer* CharacterBuffer =
@@ -576,6 +569,12 @@ RenderCharacterToTarget(
 	bool bPortrait
 )
 {
+	/*
+	 * Параметр оставлен, чтобы пока не менять header.
+	 * Отдельного второго render-pass больше нет.
+	 */
+	(void)bPortrait;
+
 	if (
 		!g_pPostFXChief ||
 		!CurRenderPipeline
@@ -584,10 +583,16 @@ RenderCharacterToTarget(
 		return;
 	}
 
+	/*
+	 * Единственный рендер мира в этом кадре.
+	 */
 	CurRenderPipeline->PreRender();
 	CurRenderPipeline->Render();
 	CurRenderPipeline->AppendPostFXes();
 
+	/*
+	 * Заполняем alpha.
+	 */
 	PFX_Fill::Settings FillSettings;
 
 	FillSettings.ColorWriteMask =
@@ -605,6 +610,9 @@ RenderCharacterToTarget(
 			RTT_DIFFUSE_32BIT
 	);
 
+	/*
+	 * Маска персонажа.
+	 */
 	PFX_StencilToMask::Settings MaskSettings;
 
 	MaskSettings.Value =
@@ -625,58 +633,124 @@ RenderCharacterToTarget(
 			RTT_PINGPONG_LAST
 	);
 
-	PFX_Copy::Settings CopySettings;
+	/*
+	 * Полная сцена для центрального окна.
+	 */
+	PFX_Copy::Settings FullCopySettings;
 
-	if (bPortrait)
-	{
-		/*
-		 * Исходный экран широкий.
-		 * Вырезаем центральную квадратную область,
-		 * чтобы лицо не растягивалось.
-		 */
-		CopySettings.TexScaleX =
-			0.5625f;
+	FullCopySettings.TexScaleX =
+		1.0f;
 
-		CopySettings.TexScaleY =
-			1.0f;
+	FullCopySettings.TexScaleY =
+		1.0f;
 
-		CopySettings.TexOffsetX =
-			0.21875f;
+	FullCopySettings.TexOffsetX =
+		0.0f;
 
-		CopySettings.TexOffsetY =
-			0.0f;
+	FullCopySettings.TexOffsetY =
+		0.0f;
 
-		CopySettings.ForceFiltering =
-			true;
-	}
-	else
-	{
-		CopySettings.TexScaleX =
-			1.0f;
-
-		CopySettings.TexScaleY =
-			1.0f;
-
-		CopySettings.TexOffsetX =
-			0.0f;
-
-		CopySettings.TexOffsetY =
-			0.0f;
-	}
+	FullCopySettings.ForceFiltering =
+		false;
 
 	gPFX_Copy.PushSettings(
-		CopySettings
+		FullCopySettings
 	);
 
 	g_pPostFXChief->AddFX(
 		gPFX_Copy,
-		bPortrait
-			? PostFXChief::
-				RTT_UI_CHARACTER_PORTRAIT_32BIT
-			: PostFXChief::
-				RTT_UI_CHARACTER_32BIT
+		PostFXChief::
+			RTT_UI_CHARACTER_32BIT,
+		PostFXChief::
+			RTT_PINGPONG_LAST
 	);
 
+	/*
+	 * Отдельный 512x512 портрет.
+	 *
+	 * Источник — уже готовый центральный RenderTarget.
+	 * Мир повторно не рендерится.
+	 */
+	r3dScreenBuffer* FullCharacterTarget =
+		g_pPostFXChief->GetBuffer(
+			PostFXChief::
+				RTT_UI_CHARACTER_32BIT
+		);
+
+	float PortraitScaleY =
+		0.20f;
+
+	float PortraitScaleX =
+		0.20f;
+
+	/*
+	 * Сохраняем квадратные пропорции области:
+	 *
+	 * pixel width  = SourceWidth  * ScaleX
+	 * pixel height = SourceHeight * ScaleY
+	 */
+	if (
+		FullCharacterTarget &&
+		FullCharacterTarget->Width > 1.0f &&
+		FullCharacterTarget->Height > 1.0f
+	)
+	{
+		PortraitScaleX =
+			PortraitScaleY *
+			(
+				FullCharacterTarget->Height /
+				FullCharacterTarget->Width
+			);
+	}
+
+	if (PortraitScaleX < 0.10f)
+		PortraitScaleX = 0.10f;
+
+	if (PortraitScaleX > 0.50f)
+		PortraitScaleX = 0.50f;
+
+	PFX_Copy::Settings PortraitCopySettings;
+
+	PortraitCopySettings.TexScaleX =
+		PortraitScaleX;
+
+	PortraitCopySettings.TexScaleY =
+		PortraitScaleY;
+
+	/*
+	 * Персонаж находится по центру кадра.
+	 */
+	PortraitCopySettings.TexOffsetX =
+		(
+			1.0f -
+			PortraitScaleX
+		) * 0.5f;
+
+	/*
+	 * Верхняя часть полного кадра:
+	 * голова, плечи и часть груди.
+	 */
+	PortraitCopySettings.TexOffsetY =
+		0.0f; // Поднять/Опустить камеру, чем выше значение тем больше опускает или наоборт
+
+	PortraitCopySettings.ForceFiltering =
+		true;
+
+	gPFX_Copy.PushSettings(
+		PortraitCopySettings
+	);
+
+	g_pPostFXChief->AddFX(
+		gPFX_Copy,
+		PostFXChief::
+			RTT_UI_CHARACTER_PORTRAIT_32BIT,
+		PostFXChief::
+			RTT_UI_CHARACTER_32BIT
+	);
+
+	/*
+	 * Выполняем оба копирования одним PostFX-проходом.
+	 */
 	g_pPostFXChief->Execute(
 		false,
 		true
