@@ -165,6 +165,10 @@ bool RmlRenderDX9::Init(IDirect3DDevice9* InDevice, const wchar_t* InDataRoot)
 
 void RmlRenderDX9::Shutdown()
 {
+	SetCharacterPortraitTexture(
+		nullptr
+	);
+	
 	SetCharacterPreviewTexture(
 		nullptr
 	);
@@ -236,6 +240,60 @@ SetCharacterPreviewTexture(
 	}
 }
 
+void RmlRenderDX9::
+SetCharacterPortraitTexture(
+	IDirect3DTexture9* Texture
+)
+{
+	if (
+		CharacterPortraitTexture ==
+		Texture
+	)
+	{
+		return;
+	}
+
+	if (Texture)
+	{
+		Texture->AddRef();
+	}
+
+	if (CharacterPortraitTexture)
+	{
+		CharacterPortraitTexture->
+			Release();
+	}
+
+	CharacterPortraitTexture =
+		Texture;
+
+	if (CharacterPortraitTexture)
+	{
+		D3DSURFACE_DESC Description{};
+
+		if (
+			SUCCEEDED(
+				CharacterPortraitTexture->
+					GetLevelDesc(
+						0,
+						&Description
+					)
+			)
+		)
+		{
+			r3dOutToLog(
+				"[RmlUI][DX9] Character portrait "
+				"texture bound: %ux%u, format=%d\n",
+				Description.Width,
+				Description.Height,
+				static_cast<int>(
+					Description.Format
+				)
+			);
+		}
+	}
+}
+
 void RmlRenderDX9::BeginFrame(int Width, int Height)
 {
 	if (!Device)
@@ -272,6 +330,10 @@ void RmlRenderDX9::EndFrame()
 void RmlRenderDX9::OnDeviceLost()
 {
 	SetCharacterPreviewTexture(
+		nullptr
+	);
+
+	SetCharacterPortraitTexture(
 		nullptr
 	);
 
@@ -518,19 +580,38 @@ void RmlRenderDX9::RenderGeometry(
 	IDirect3DTexture9* Texture =
 		nullptr;
 
-	bool bCharacterPreview =
-		false;
+	bool bExternalCharacterTexture =
+	false;
 
 	if (TextureData)
 	{
-		bCharacterPreview =
+		if (
 			TextureData->
-				bExternalCharacterPreview;
+				bExternalCharacterPortrait
+		)
+		{
+			Texture =
+				CharacterPortraitTexture;
 
-		Texture =
-			bCharacterPreview
-				? CharacterPreviewTexture
-				: TextureData->Texture;
+			bExternalCharacterTexture =
+				true;
+		}
+		else if (
+			TextureData->
+				bExternalCharacterPreview
+		)
+		{
+			Texture =
+				CharacterPreviewTexture;
+
+			bExternalCharacterTexture =
+				true;
+		}
+		else
+		{
+			Texture =
+				TextureData->Texture;
+		}
 	}
 
 	constexpr float HalfPixelOffset =
@@ -640,7 +721,7 @@ void RmlRenderDX9::RenderGeometry(
 		);
 	}
 
-	if (bCharacterPreview)
+	if (bExternalCharacterTexture)
 	{
 		Device->SetRenderState(
 			D3DRS_SRCBLEND,
@@ -671,7 +752,7 @@ void RmlRenderDX9::RenderGeometry(
 		PrimitiveCount
 	);
 
-	if (bCharacterPreview)
+	if (bExternalCharacterTexture)
 	{
 		Device->SetRenderState(
 			D3DRS_SRCBLEND,
@@ -1020,6 +1101,38 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 	if (!Device)
 		return 0;
 
+	const bool bCharacterPortraitSource =
+	Source == "rml://character-portrait" ||
+	Source == "rml:/character-portrait";
+
+	if (bCharacterPortraitSource)
+	{
+		TextureDimensions.x =
+			512;
+
+		TextureDimensions.y =
+			512;
+
+		FTextureHandle* Handle =
+			new FTextureHandle();
+
+		Handle->
+			bExternalCharacterPortrait =
+				true;
+
+		r3dOutToLog(
+			"[RmlUI][DX9] Registered character "
+			"portrait texture source: %s\n",
+			Source.c_str()
+		);
+
+		return reinterpret_cast<
+			Rml::TextureHandle
+		>(
+			Handle
+		);
+	}
+
 	const bool bCharacterPreviewSource =
 	Source == "rml://character-preview" ||
 	Source == "rml:/character-preview";
@@ -1161,6 +1274,8 @@ void RmlRenderDX9::ReleaseTexture(
 	if (
 		!Handle->
 			bExternalCharacterPreview &&
+		!Handle->
+			bExternalCharacterPortrait &&
 		Handle->Texture
 	)
 	{

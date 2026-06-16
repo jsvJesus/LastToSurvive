@@ -45,6 +45,8 @@ extern r3dScreenBuffer* PrevSSAOBuffer ;
 extern r3dScreenBuffer* CurrentSSAOBuffer ;
 
 PostFXChief* g_pPostFXChief = 0;
+r3dScreenBuffer* g_RmlCharacterPortraitRT =
+	nullptr;
 
 static PFX_Copy gPFX_AuxiliaryCopy( R3D_BLEND_NOALPHA, PostFXChief::DEFAULT_COLOR_WRITE_MASK ) ;
 
@@ -435,6 +437,7 @@ PostFXChief::ResetBuffers()
 	mScreenBuffers[ RTT_FLASHBANG_MULTIFRAME_16BIT	]	= gFlashbang_Multiframe;
 	mScreenBuffers[ RTT_DISTORTION_32BIT			]	= DistortionBuffer;
 	mScreenBuffers[ RTT_UI_CHARACTER_32BIT			]	= Scaleform_RenderToTextureRT ;
+	mScreenBuffers[ RTT_UI_CHARACTER_PORTRAIT_32BIT ]	= g_RmlCharacterPortraitRT;
 
 	mScreenBuffers[ RTT_PREV_FRAME_DEPTH		]	= PrevDepthBuffer ;
 	mScreenBuffers[ RTT_PREV_FRAME_SSAO			]	= PrevSSAOBuffer ;

@@ -3,6 +3,7 @@
 #include "r3d.h"
 
 struct wiCharDataFull;
+
 class obj_Player;
 
 class RmlFrontEndCharacterPreview final
@@ -27,14 +28,27 @@ public:
     bool IsInitialized() const;
 
 private:
-    void RenderCharacterToTarget();
+    bool CreatePortraitTarget();
+    void ReleasePortraitTarget();
+
+    void ApplyFullBodyCamera();
+    void ApplyPortraitCamera();
+
+    void RenderCharacterToTarget(
+        bool bPortrait
+    );
+
     void FinishPreparedFrame();
 
 private:
-    obj_Player* Player = nullptr;
+    obj_Player* Player =
+        nullptr;
 
     r3dCamera PreviousCamera;
 
-    bool bInitialized = false;
-    bool bFramePrepared = false;
+    bool bInitialized =
+        false;
+
+    bool bFramePrepared =
+        false;
 };

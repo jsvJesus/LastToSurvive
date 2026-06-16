@@ -39,6 +39,10 @@ public:
 		IDirect3DTexture9* Texture
 	);
 
+	void SetCharacterPortraitTexture(
+		IDirect3DTexture9* Texture
+	);
+
 	Rml::CompiledGeometryHandle CompileGeometry(
 		Rml::Span<const Rml::Vertex> Vertices,
 		Rml::Span<const int> Indices
@@ -110,6 +114,9 @@ private:
 
 		bool bExternalCharacterPreview =
 			false;
+
+		bool bExternalCharacterPortrait =
+			false;
 	};
 
 private:
@@ -119,6 +126,9 @@ private:
 		nullptr;
 
 	IDirect3DTexture9* CharacterPreviewTexture =
+		nullptr;
+
+	IDirect3DTexture9* CharacterPortraitTexture =
 		nullptr;
 
 	int ViewWidth = 1;

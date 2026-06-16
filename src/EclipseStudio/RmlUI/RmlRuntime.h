@@ -67,6 +67,10 @@ public:
 		IDirect3DTexture9* Texture
 	);
 
+	void SetCharacterPortraitTexture(
+		IDirect3DTexture9* Texture
+	);
+
 	void OnDeviceLost();
 
 	void OnDeviceReset(

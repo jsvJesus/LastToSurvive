@@ -652,6 +652,20 @@ SetCharacterPreviewTexture(
 		);
 }
 
+void RmlRuntime::
+SetCharacterPortraitTexture(
+	IDirect3DTexture9* Texture
+)
+{
+	if (!RenderInterface)
+		return;
+
+	RenderInterface->
+		SetCharacterPortraitTexture(
+			Texture
+		);
+}
+
 void RmlRuntime::OnDeviceLost()
 {
 	if (!bInitialized || !RenderInterface)

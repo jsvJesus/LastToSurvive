@@ -30,6 +30,7 @@ extern void DoLoadGame(
 	bool UnloadPrevious,
 	bool IsMenuLevel
 );
+extern r3dScreenBuffer* g_RmlCharacterPortraitRT;
 
 RmlFrontEndCharacterPreview::
 RmlFrontEndCharacterPreview()
@@ -159,6 +160,25 @@ bool RmlFrontEndCharacterPreview::Initialize(
 
 		InitGame_Finish();
 
+		if (!CreatePortraitTarget())
+		{
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Preview] "
+				"Unable to create portrait RenderTarget\n"
+			);
+
+			GameWorld().DeleteObject(
+				Player
+			);
+
+			Player =
+				nullptr;
+
+			DestroyGame();
+
+			return false;
+		}
+
 		bInitialized = true;
 
 		r3dOutToLog(
@@ -212,13 +232,21 @@ void RmlFrontEndCharacterPreview::Shutdown()
 			nullptr
 		);
 
+	RmlRuntime::Get().
+		SetCharacterPortraitTexture(
+			nullptr
+		);
+
+	ReleasePortraitTarget();
+
 	if (Player)
 	{
 		GameWorld().DeleteObject(
 			Player
 		);
 
-		Player = nullptr;
+		Player =
+			nullptr;
 	}
 
 	if (bInitialized)
@@ -226,10 +254,180 @@ void RmlFrontEndCharacterPreview::Shutdown()
 		DestroyGame();
 	}
 
-	bInitialized = false;
+	bInitialized =
+		false;
 
 	r3dOutToLog(
-		"[RmlUI][FrontEnd][Preview] Shutdown complete\n"
+		"[RmlUI][FrontEnd][Preview] "
+		"Shutdown complete\n"
+	);
+}
+
+void RmlFrontEndCharacterPreview::
+ApplyFullBodyCamera()
+{
+	if (!Player)
+		return;
+
+	const r3dPoint3D CharacterSize =
+		Player->GetBBoxLocal().Size;
+
+	const float Distance =
+		GetOptimalDist(
+			CharacterSize,
+			22.5f
+		);
+
+	const r3dPoint3D CameraPosition(
+		0.0f,
+		CharacterSize.y,
+		Distance
+	);
+
+	const r3dPoint3D CameraTarget(
+		0.0f,
+		1.0f,
+		0.0f
+	);
+
+	gCam =
+		CameraPosition;
+
+	gCam.vPointTo =
+		(
+			CameraTarget -
+			CameraPosition
+		).NormalizeTo();
+
+	gCam.FOV =
+		45.0f;
+
+	gCam.SetPlanes(
+		0.01f,
+		200.0f
+	);
+
+	r3dRenderer->SetCamera(
+		gCam,
+		true
+	);
+}
+
+void RmlFrontEndCharacterPreview::
+ApplyPortraitCamera()
+{
+	if (!Player)
+		return;
+
+	const r3dPoint3D CharacterSize =
+		Player->GetBBoxLocal().Size;
+
+	const r3dPoint3D PlayerPosition =
+		Player->GetPosition();
+
+	/*
+	 * Точка примерно между грудью и лицом.
+	 */
+	const float PortraitTargetY =
+		PlayerPosition.y +
+		CharacterSize.y * 0.78f;
+
+	float PortraitDistance =
+		CharacterSize.y * 0.65f;
+
+	if (PortraitDistance < 0.9f)
+	{
+		PortraitDistance =
+			0.9f;
+	}
+
+	const r3dPoint3D CameraPosition(
+		0.0f,
+		PortraitTargetY +
+			CharacterSize.y * 0.015f,
+		PortraitDistance
+	);
+
+	const r3dPoint3D CameraTarget(
+		0.0f,
+		PortraitTargetY,
+		0.0f
+	);
+
+	gCam =
+		CameraPosition;
+
+	gCam.vPointTo =
+		(
+			CameraTarget -
+			CameraPosition
+		).NormalizeTo();
+
+	gCam.FOV =
+		34.0f;
+
+	gCam.SetPlanes(
+		0.01f,
+		50.0f
+	);
+
+	r3dRenderer->SetCamera(
+		gCam,
+		true
+	);
+}
+
+bool RmlFrontEndCharacterPreview::
+CreatePortraitTarget()
+{
+	if (g_RmlCharacterPortraitRT)
+		return true;
+
+	g_RmlCharacterPortraitRT =
+		r3dScreenBuffer::CreateClass(
+			"RmlCharacterPortraitRT",
+			512.0f,
+			512.0f,
+			D3DFMT_A8R8G8B8,
+			r3dScreenBuffer::Z_NO_Z
+		);
+
+	if (
+		!g_RmlCharacterPortraitRT ||
+		g_RmlCharacterPortraitRT->
+			IsNull()
+	)
+	{
+		delete g_RmlCharacterPortraitRT;
+
+		g_RmlCharacterPortraitRT =
+			nullptr;
+
+		return false;
+	}
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd][Preview] "
+		"Portrait RenderTarget created: 512x512\n"
+	);
+
+	return true;
+}
+
+void RmlFrontEndCharacterPreview::
+ReleasePortraitTarget()
+{
+	if (!g_RmlCharacterPortraitRT)
+		return;
+
+	delete g_RmlCharacterPortraitRT;
+
+	g_RmlCharacterPortraitRT =
+		nullptr;
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd][Preview] "
+		"Portrait RenderTarget released\n"
 	);
 }
 
@@ -285,46 +483,8 @@ void RmlFrontEndCharacterPreview::PrepareFrame()
 
 	FinishPreparedFrame();
 
-	Player->UpdateTransform();
-
-	const r3dPoint3D CharacterSize =
-		Player->GetBBoxLocal().Size;
-
-	const float Distance =
-		GetOptimalDist(
-			CharacterSize,
-			22.5f
-		);
-
-	const r3dPoint3D CameraPosition(
-		0.0f,
-		CharacterSize.y,
-		Distance
-	);
-
 	PreviousCamera =
 		gCam;
-
-	gCam =
-		CameraPosition;
-
-	gCam.vPointTo =
-		(
-			r3dPoint3D(
-				0.0f,
-				1.0f,
-				0.0f
-			) -
-			gCam
-		).NormalizeTo();
-
-	gCam.FOV =
-		45.0f;
-
-	gCam.SetPlanes(
-		0.01f,
-		200.0f
-	);
 
 	Player->SetPosition(
 		r3dPoint3D(
@@ -340,16 +500,15 @@ void RmlFrontEndCharacterPreview::PrepareFrame()
 	Player->m_fPlayerRotation =
 		0.0f;
 
+	Player->UpdateTransform();
+
+	ApplyFullBodyCamera();
+
 	GameWorld().StartFrame();
-
-	r3dRenderer->SetCamera(
-		gCam,
-		true
-	);
-
 	GameWorld().Update();
 
-	bFramePrepared = true;
+	bFramePrepared =
+		true;
 }
 
 void RmlFrontEndCharacterPreview::RenderFrame()
@@ -363,12 +522,36 @@ void RmlFrontEndCharacterPreview::RenderFrame()
 		return;
 	}
 
-	RenderCharacterToTarget();
+	/*
+	 * Первый проход:
+	 * полный персонаж для центра.
+	 */
+	ApplyFullBodyCamera();
+
+	RenderCharacterToTarget(
+		false
+	);
+
+	/*
+	 * Второй проход:
+	 * отдельная камера на голову и плечи.
+	 */
+	ApplyPortraitCamera();
+
+	RenderCharacterToTarget(
+		true
+	);
 
 	r3dScreenBuffer* CharacterBuffer =
 		g_pPostFXChief->GetBuffer(
 			PostFXChief::
 				RTT_UI_CHARACTER_32BIT
+		);
+
+	r3dScreenBuffer* PortraitBuffer =
+		g_pPostFXChief->GetBuffer(
+			PostFXChief::
+				RTT_UI_CHARACTER_PORTRAIT_32BIT
 		);
 
 	RmlRuntime::Get().
@@ -378,20 +561,32 @@ void RmlFrontEndCharacterPreview::RenderFrame()
 				: nullptr
 		);
 
+	RmlRuntime::Get().
+		SetCharacterPortraitTexture(
+			PortraitBuffer
+				? PortraitBuffer->AsTex2D()
+				: nullptr
+		);
+
 	FinishPreparedFrame();
 }
 
 void RmlFrontEndCharacterPreview::
-RenderCharacterToTarget()
+RenderCharacterToTarget(
+	bool bPortrait
+)
 {
-	if (!g_pPostFXChief)
+	if (
+		!g_pPostFXChief ||
+		!CurRenderPipeline
+	)
+	{
 		return;
+	}
 
 	CurRenderPipeline->PreRender();
 	CurRenderPipeline->Render();
-
-	CurRenderPipeline->
-		AppendPostFXes();
+	CurRenderPipeline->AppendPostFXes();
 
 	PFX_Fill::Settings FillSettings;
 
@@ -432,17 +627,42 @@ RenderCharacterToTarget()
 
 	PFX_Copy::Settings CopySettings;
 
-	CopySettings.TexScaleX =
-		1.0f;
+	if (bPortrait)
+	{
+		/*
+		 * Исходный экран широкий.
+		 * Вырезаем центральную квадратную область,
+		 * чтобы лицо не растягивалось.
+		 */
+		CopySettings.TexScaleX =
+			0.5625f;
 
-	CopySettings.TexScaleY =
-		1.0f;
+		CopySettings.TexScaleY =
+			1.0f;
 
-	CopySettings.TexOffsetX =
-		0.0f;
+		CopySettings.TexOffsetX =
+			0.21875f;
 
-	CopySettings.TexOffsetY =
-		0.0f;
+		CopySettings.TexOffsetY =
+			0.0f;
+
+		CopySettings.ForceFiltering =
+			true;
+	}
+	else
+	{
+		CopySettings.TexScaleX =
+			1.0f;
+
+		CopySettings.TexScaleY =
+			1.0f;
+
+		CopySettings.TexOffsetX =
+			0.0f;
+
+		CopySettings.TexOffsetY =
+			0.0f;
+	}
 
 	gPFX_Copy.PushSettings(
 		CopySettings
@@ -450,8 +670,11 @@ RenderCharacterToTarget()
 
 	g_pPostFXChief->AddFX(
 		gPFX_Copy,
-		PostFXChief::
-			RTT_UI_CHARACTER_32BIT
+		bPortrait
+			? PostFXChief::
+				RTT_UI_CHARACTER_PORTRAIT_32BIT
+			: PostFXChief::
+				RTT_UI_CHARACTER_32BIT
 	);
 
 	g_pPostFXChief->Execute(
