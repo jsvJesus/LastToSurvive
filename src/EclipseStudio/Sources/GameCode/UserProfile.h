@@ -334,6 +334,7 @@ class CClientUserProfile : public CUserProfile
 	int		ApiBuyItem(int itemId, int buyIdx, __int64* out_InventoryID);
 
 	int		ApiCharCreate(const char* Gamertag, int Hardcore, int HeroItemID, int HeadIdx, int BodyIdx, int LegsIdx);
+	int		ApiCharRename(const char* Gamertag);
 	int		ApiCharDelete();
 	int		ApiCharRevive();
 

@@ -66,6 +66,7 @@ private:
 		AsyncOperation_None = 0,
 		AsyncOperation_Login,
 		AsyncOperation_Profile,
+		AsyncOperation_RenameCharacter,
 		AsyncOperation_CreateCharacter
 	};
 
@@ -119,6 +120,7 @@ private:
 	);
 
 	void RequestLogin();
+	void RequestRenameCharacter();
 	void RequestCreateCharacter();
 
 	void ResetCharacterCreate();
@@ -150,6 +152,10 @@ private:
 	);
 
 	void HandleProfileResult(
+		EAsyncResult Result
+	);
+
+	void HandleRenameCharacterResult(
 		EAsyncResult Result
 	);
 
@@ -243,6 +249,7 @@ private:
 
 	char LoginUser[256]{};
 	char LoginPassword[256]{};
+	char RenameGamertag[64]{};
 	char CreateGamertag[64]{};
 
 	int CreateHeroItemID = 20201;

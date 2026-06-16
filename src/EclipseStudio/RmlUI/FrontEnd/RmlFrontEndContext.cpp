@@ -731,15 +731,15 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
-		if (Id == "btn_refresh_profile")
+		if (Id == "btn_rename_character")
 		{
-			RefreshProfile();
+			RequestRenameCharacter();
 			return;
 		}
 
-		if (Id == "btn_create_character")
+		if (Id == "btn_refresh_profile")
 		{
-			ShowCharacterCreate();
+			RefreshProfile();
 			return;
 		}
 
@@ -749,41 +749,6 @@ void RmlFrontEndContext::HandleClick(
 			{
 				PendingResult =
 					ERmlFrontEndResult::Exit;
-			}
-
-			return;
-		}
-
-		if (Id == "btn_create_character_confirm")
-		{
-			RequestCreateCharacter();
-			return;
-		}
-
-		if (Id == "btn_create_character_cancel")
-		{
-			if (!IsBusy())
-			{
-				ShowMainMenu();
-			}
-
-			return;
-		}
-
-		if (
-			Id == "btn_create_head_prev" ||
-			Id == "btn_create_head_next" ||
-			Id == "btn_create_body_prev" ||
-			Id == "btn_create_body_next" ||
-			Id == "btn_create_legs_prev" ||
-			Id == "btn_create_legs_next"
-		)
-		{
-			if (!IsBusy())
-			{
-				AdjustCharacterAppearance(
-					Id
-				);
 			}
 
 			return;
@@ -1122,6 +1087,129 @@ void RmlFrontEndContext::RequestLogin()
 	}
 }
 
+bool IsValidAsciiGamertag(
+	const std::string& Value
+)
+{
+	if (
+		Value.length() < 4 ||
+		Value.length() > 16
+	)
+	{
+		return false;
+	}
+
+	for (const unsigned char Character : Value)
+	{
+		const bool bLetter =
+			(
+				Character >= 'A' &&
+				Character <= 'Z'
+			)
+			||
+			(
+				Character >= 'a' &&
+				Character <= 'z'
+			);
+
+		const bool bDigit =
+			Character >= '0' &&
+			Character <= '9';
+
+		if (!bLetter && !bDigit)
+			return false;
+	}
+
+	return true;
+}
+
+void RmlFrontEndContext::RequestRenameCharacter()
+{
+	if (
+		CurrentScreen != EScreen::MainMenu ||
+		IsBusy() ||
+		!bProfileLoaded
+	)
+	{
+		return;
+	}
+
+	if (
+		gUserProfile.ProfileData.NumSlots <= 0
+	)
+	{
+		SetMainMenuStatus(
+			"Account has no permanent survivor."
+		);
+
+		return;
+	}
+
+	const std::string Gamertag =
+		TrimAscii(
+			GetInputValue(
+				MainMenuDocument,
+				"rename_character_name"
+			)
+		);
+
+	if (!IsValidAsciiGamertag(
+		Gamertag
+	))
+	{
+		SetMainMenuStatus(
+			"Nickname must contain 4-16 letters or digits."
+		);
+
+		return;
+	}
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.ArmorySlots[0];
+
+	if (
+		_stricmp(
+			Character.Gamertag,
+			Gamertag.c_str()
+		) == 0
+	)
+	{
+		SetMainMenuStatus(
+			"This is already your current nickname."
+		);
+
+		return;
+	}
+
+	strncpy_s(
+		RenameGamertag,
+		sizeof(RenameGamertag),
+		Gamertag.c_str(),
+		_TRUNCATE
+	);
+
+	SetMainMenuControlsEnabled(
+		false
+	);
+
+	SetMainMenuStatus(
+		"Changing survivor nickname..."
+	);
+
+	if (!StartAsyncOperation(
+		AsyncOperation_RenameCharacter
+	))
+	{
+		SetMainMenuControlsEnabled(
+			true
+		);
+
+		SetMainMenuStatus(
+			"Unable to start nickname change."
+		);
+	}
+}
+
 void RmlFrontEndContext::BeginProfileLoad()
 {
 	SetLoginControlsEnabled(false);
@@ -1378,6 +1466,42 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 	}
 	else if (
 		Operation ==
+		AsyncOperation_RenameCharacter)
+	{
+		const int ApiCode =
+			gUserProfile.ApiCharRename(
+				RenameGamertag
+			);
+
+		InterlockedExchange(
+			&AsyncApiCode,
+			ApiCode
+		);
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Rename] "
+			"ApiCharRename result=%d\n",
+			ApiCode
+		);
+
+		if (ApiCode == 0)
+		{
+			Result =
+				AsyncResult_Success;
+		}
+		else if (ApiCode == 8)
+		{
+			Result =
+				AsyncResult_Timeout;
+		}
+		else
+		{
+			Result =
+				AsyncResult_Error;
+		}
+	}
+	else if (
+		Operation ==
 		AsyncOperation_CreateCharacter
 	)
 	{
@@ -1489,6 +1613,14 @@ void RmlFrontEndContext::PollAsyncOperation()
 	else if (Operation == AsyncOperation_Profile)
 	{
 		HandleProfileResult(
+			CompletedResult
+		);
+	}
+	else if (
+		Operation ==
+		AsyncOperation_RenameCharacter)
+	{
+		HandleRenameCharacterResult(
 			CompletedResult
 		);
 	}
@@ -1704,6 +1836,93 @@ void RmlFrontEndContext::HandleLoginResult(
 	}
 }
 
+void RmlFrontEndContext::HandleRenameCharacterResult(
+	EAsyncResult Result
+)
+{
+	const int ApiCode =
+		static_cast<int>(
+			InterlockedCompareExchange(
+				&AsyncApiCode,
+				0,
+				0
+			)
+		);
+
+	if (Result == AsyncResult_Success)
+	{
+		SelectedCharacterIndex = 0;
+		gUserProfile.SelectedCharID = 0;
+
+		BuildMainMenu();
+		ShowMainMenu();
+
+		SetMainMenuStatus(
+			"Survivor nickname changed."
+		);
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Rename] "
+			"Nickname changed to %s\n",
+			RenameGamertag
+		);
+
+		return;
+	}
+
+	SetMainMenuControlsEnabled(
+		true
+	);
+
+	if (Result == AsyncResult_Timeout)
+	{
+		SetMainMenuStatus(
+			"Nickname change request timed out."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 9)
+	{
+		SetMainMenuStatus(
+			"Nickname is invalid or already in use."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 6)
+	{
+		SetMainMenuStatus(
+			"Permanent survivor was not found."
+		);
+
+		return;
+	}
+
+	if (ApiCode == 1)
+	{
+		ShowLoginMessage(
+			L"Your login session is no longer valid."
+		);
+
+		return;
+	}
+
+	char ErrorText[128]{};
+
+	sprintf_s(
+		ErrorText,
+		"Nickname change failed. Backend code: %d",
+		ApiCode
+	);
+
+	SetMainMenuStatus(
+		ErrorText
+	);
+}
+
 void RmlFrontEndContext::HandleProfileResult(
 	EAsyncResult Result
 )
@@ -1712,7 +1931,9 @@ void RmlFrontEndContext::HandleProfileResult(
 	{
 		if (CurrentScreen == EScreen::MainMenu)
 		{
-			SetMainMenuControlsEnabled(true);
+			SetMainMenuControlsEnabled(
+				true
+			);
 
 			SetMainMenuStatus(
 				"Unable to refresh account profile."
@@ -1720,7 +1941,9 @@ void RmlFrontEndContext::HandleProfileResult(
 		}
 		else
 		{
-			SetLoginControlsEnabled(true);
+			SetLoginControlsEnabled(
+				true
+			);
 
 			SetLoginStatus(
 				"Login succeeded, but the profile could not be loaded."
@@ -1732,12 +1955,44 @@ void RmlFrontEndContext::HandleProfileResult(
 
 	bProfileLoaded = true;
 
+	const int CharacterCount =
+		gUserProfile.ProfileData.NumSlots;
+
+	if (CharacterCount > 0)
+	{
+		SelectedCharacterIndex = 0;
+		gUserProfile.SelectedCharID = 0;
+	}
+	else
+	{
+		SelectedCharacterIndex = -1;
+		gUserProfile.SelectedCharID = 0;
+	}
+
 	BuildMainMenu();
 	ShowMainMenu();
 
+	if (CharacterCount <= 0)
+	{
+		SetMainMenuStatus(
+			"Account has no permanent survivor. Check registration data."
+		);
+	}
+
+	if (CharacterCount > 1)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Profile] "
+			"Warning: account contains %d characters. "
+			"Only slot 0 is used.\n",
+			CharacterCount
+		);
+	}
+
 	r3dOutToLog(
-		"[RmlUI][FrontEnd][Profile] Loaded. Characters=%d\n",
-		gUserProfile.ProfileData.NumSlots
+		"[RmlUI][FrontEnd][Profile] "
+		"Loaded. Characters=%d, Selected=0\n",
+		CharacterCount
 	);
 }
 
@@ -1781,100 +2036,122 @@ void RmlFrontEndContext::BuildMainMenu()
 	if (!CharacterList)
 		return;
 
-	Rml::String Markup;
-
 	const int CharacterCount =
 		gUserProfile.ProfileData.NumSlots;
 
 	if (CharacterCount <= 0)
 	{
-		Markup =
+		CharacterList->SetInnerRML(
 			"<div class=\"empty_character\">"
-			"<div class=\"empty_title\">NO CHARACTERS</div>"
-			"<div class=\"empty_text\">"
-			"Create your first character before joining a server."
+				"<div class=\"empty_title\">"
+					"PERMANENT SURVIVOR MISSING"
+				"</div>"
+				"<div class=\"empty_text\">"
+					"This account was not registered correctly."
+				"</div>"
 			"</div>"
-			"</div>";
+		);
 
 		SelectedCharacterIndex = -1;
 
 		SetElementText(
 			MainMenuDocument,
 			"selected_character",
-			"NO CHARACTER SELECTED"
+			"NO SURVIVOR"
+		);
+
+		SetInputValue(
+			MainMenuDocument,
+			"rename_character_name",
+			""
 		);
 
 		SetMainMenuStatus(
-			"Character creation will be added in the next stage."
+			"Account has no permanent survivor."
 		);
+
+		SetMainMenuControlsEnabled(
+			true
+		);
+
+		return;
+	}
+
+	SelectedCharacterIndex = 0;
+	gUserProfile.SelectedCharID = 0;
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.ArmorySlots[0];
+
+	Rml::String Markup;
+
+	Markup +=
+		"<button "
+		"id=\"char_slot_0\" "
+		"class=\"character_slot selected\">";
+
+	Markup +=
+		"<div class=\"character_name\">";
+
+	Markup +=
+		EscapeRmlText(
+			Character.Gamertag
+		);
+
+	Markup +=
+		"</div>";
+
+	Markup +=
+		"<div class=\"character_state\">";
+
+	if (Character.Alive == 1)
+	{
+		Markup += "ALIVE";
+	}
+	else if (Character.Alive == 3)
+	{
+		Markup += "READY";
 	}
 	else
 	{
-		if (
-			gUserProfile.SelectedCharID < 0 ||
-			gUserProfile.SelectedCharID >= CharacterCount
-		)
-		{
-			gUserProfile.SelectedCharID = 0;
-		}
-
-		SelectedCharacterIndex =
-			gUserProfile.SelectedCharID;
-
-		for (
-			int Index = 0;
-			Index < CharacterCount;
-			++Index
-		)
-		{
-			const wiCharDataFull& Character =
-				gUserProfile.ProfileData.ArmorySlots[Index];
-
-			Markup += "<button id=\"char_slot_";
-			Markup += std::to_string(Index);
-			Markup += "\" class=\"character_slot";
-
-			if (Index == SelectedCharacterIndex)
-				Markup += " selected";
-
-			Markup += "\">";
-
-			Markup +=
-				"<div class=\"character_name\">";
-
-			Markup +=
-				EscapeRmlText(
-					Character.Gamertag
-				);
-
-			Markup += "</div>";
-
-			Markup +=
-				"<div class=\"character_state\">";
-
-			if (Character.Alive == 1)
-				Markup += "ALIVE";
-			else if (Character.Alive == 3)
-				Markup += "NEW CHARACTER";
-			else
-				Markup += "DEAD";
-
-			Markup += "</div>";
-
-			Markup += "</button>";
-		}
-
-		SetMainMenuStatus(
-			"Select a character and press QUICK JOIN."
-		);
+		Markup += "DEAD";
 	}
+
+	Markup +=
+		"</div>";
+
+	Markup +=
+		"<div class=\"character_type\">"
+			"EX MILITARY"
+		"</div>";
+
+	Markup +=
+		"</button>";
 
 	CharacterList->SetInnerRML(
 		Markup
 	);
 
+	SetElementText(
+		MainMenuDocument,
+		"selected_character",
+		Character.Gamertag
+	);
+
+	SetInputValue(
+		MainMenuDocument,
+		"rename_character_name",
+		Character.Gamertag
+	);
+
+	SetMainMenuStatus(
+		"Permanent survivor selected."
+	);
+
 	RefreshCharacterSelection();
-	SetMainMenuControlsEnabled(true);
+	SetMainMenuControlsEnabled(
+		true
+	);
 }
 
 void RmlFrontEndContext::SelectCharacter(
@@ -2050,33 +2327,35 @@ void RmlFrontEndContext::SetMainMenuControlsEnabled(
 	bool bEnabled
 )
 {
-	const bool bCanJoin =
-		bEnabled &&
+	const bool bHasCharacter =
 		bProfileLoaded &&
 		gUserProfile.ProfileData.NumSlots > 0;
-
-	const bool bCanCreate =
-		bEnabled &&
-		bProfileLoaded &&
-		gUserProfile.ProfileData.NumSlots <
-			wiUserProfile::MAX_LOADOUT_SLOTS;
 
 	SetElementEnabled(
 		MainMenuDocument,
 		"btn_quick_join",
-		bCanJoin
+		bEnabled &&
+		bHasCharacter
+	);
+
+	SetElementEnabled(
+		MainMenuDocument,
+		"rename_character_name",
+		bEnabled &&
+		bHasCharacter
+	);
+
+	SetElementEnabled(
+		MainMenuDocument,
+		"btn_rename_character",
+		bEnabled &&
+		bHasCharacter
 	);
 
 	SetElementEnabled(
 		MainMenuDocument,
 		"btn_refresh_profile",
 		bEnabled
-	);
-
-	SetElementEnabled(
-		MainMenuDocument,
-		"btn_create_character",
-		bCanCreate
 	);
 
 	SetElementEnabled(

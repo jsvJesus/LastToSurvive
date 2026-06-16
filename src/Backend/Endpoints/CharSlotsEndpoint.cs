@@ -67,14 +67,17 @@ public static class CharSlotsEndpoint
 
             return function switch
             {
-                "create" => await CreateCharacterAsync(
-                    connection,
-                    parameters,
-                    customerId,
-                    logger,
-                    cancellationToken),
+                "create" =>
+                    LegacyApiResponse.Error(
+                        7,
+                        "Additional character creation is disabled"),
 
-                "delete" => await DeleteCharacterAsync(
+                "delete" =>
+                    LegacyApiResponse.Error(
+                        7,
+                        "Permanent survivor cannot be deleted"),
+
+                "rename" => await RenameCharacterAsync(
                     connection,
                     parameters,
                     customerId,
@@ -128,6 +131,106 @@ public static class CharSlotsEndpoint
             return LegacyApiResponse.InternalError(
                 "internal server error");
         }
+    }
+    
+    private static async Task<IResult> RenameCharacterAsync(
+        SqlConnection connection,
+        LegacyRequestParameters parameters,
+        int customerId,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        int charId =
+            parameters.GetRequiredInt32(
+                "CharID");
+
+        string gamertag =
+            parameters
+                .GetRequired("Gamertag")
+                .Trim();
+
+        if (gamertag.Length is < 4 or > 16)
+        {
+            return LegacyApiResponse.Error(
+                9,
+                "Nickname must contain between 4 and 16 characters");
+        }
+
+        foreach (char character in gamertag)
+        {
+            bool isLetter =
+                character is >= 'A' and <= 'Z'
+                ||
+                character is >= 'a' and <= 'z';
+
+            bool isDigit =
+                character is >= '0' and <= '9';
+
+            if (!isLetter && !isDigit)
+            {
+                return LegacyApiResponse.Error(
+                    9,
+                    "Nickname contains invalid characters");
+            }
+        }
+
+        await using var command =
+            new SqlCommand(
+                "dbo.WZ_CharRename",
+                connection)
+            {
+                CommandType =
+                    CommandType.StoredProcedure,
+
+                CommandTimeout = 30
+            };
+
+        command.Parameters.Add(
+            "@in_CustomerID",
+            SqlDbType.Int
+        ).Value = customerId;
+
+        command.Parameters.Add(
+            "@in_CharID",
+            SqlDbType.Int
+        ).Value = charId;
+
+        command.Parameters.Add(
+            "@in_Gamertag",
+            SqlDbType.NVarChar,
+            64
+        ).Value = gamertag;
+
+        await using SqlDataReader reader =
+            await command.ExecuteReaderAsync(
+                cancellationToken);
+
+        ProcedureResult procedureResult =
+            await ReadProcedureResultAsync(
+                reader,
+                cancellationToken);
+
+        if (procedureResult.Code != 0)
+        {
+            logger.LogWarning(
+                "Character rename failed. CustomerID={CustomerID}, CharID={CharID}, ResultCode={ResultCode}, Message={Message}",
+                customerId,
+                charId,
+                procedureResult.Code,
+                procedureResult.Message);
+
+            return LegacyApiResponse.Error(
+                procedureResult.Code,
+                procedureResult.Message);
+        }
+
+        logger.LogInformation(
+            "Character renamed. CustomerID={CustomerID}, CharID={CharID}, Gamertag={Gamertag}",
+            customerId,
+            charId,
+            gamertag);
+
+        return LegacyApiResponse.Success();
     }
 
     private static async Task<IResult> CreateCharacterAsync(

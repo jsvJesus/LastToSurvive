@@ -623,6 +623,79 @@ int CClientUserProfile::ApiCharCreate(const char* Gamertag, int Hardcore, int He
 	return 0;
 }
 
+int CClientUserProfile::ApiCharRename(
+	const char* Gamertag
+)
+{
+	if (
+		!Gamertag ||
+		!Gamertag[0]
+	)
+	{
+		return 9;
+	}
+
+	r3d_assert(
+		SelectedCharID >= 0 &&
+		SelectedCharID <
+			wiUserProfile::MAX_LOADOUT_SLOTS
+	);
+
+	wiCharDataFull& Character =
+		ProfileData.ArmorySlots[
+			SelectedCharID
+		];
+
+	r3d_assert(
+		Character.LoadoutID > 0
+	);
+
+	CWOBackendReq Request(
+		this,
+		"api_CharSlots.aspx"
+	);
+
+	Request.AddParam(
+		"func",
+		"rename"
+	);
+
+	Request.AddParam(
+		"CharID",
+		Character.LoadoutID
+	);
+
+	Request.AddParam(
+		"Gamertag",
+		Gamertag
+	);
+
+	if (!Request.Issue())
+	{
+		r3dOutToLog(
+			"ApiCharRename failed: %d\n",
+			Request.resultCode_
+		);
+
+		return Request.resultCode_;
+	}
+
+	const int ProfileResult =
+		GetProfile();
+
+	if (ProfileResult != 0)
+	{
+		r3dOutToLog(
+			"ApiCharRename profile refresh failed: %d\n",
+			ProfileResult
+		);
+
+		return ProfileResult;
+	}
+
+	return 0;
+}
+
 int CClientUserProfile::ApiCharDelete()
 {
 	r3d_assert(SelectedCharID >= 0 && SelectedCharID < wiUserProfile::MAX_LOADOUT_SLOTS);
