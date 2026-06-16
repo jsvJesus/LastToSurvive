@@ -208,6 +208,32 @@ SetCharacterPreviewTexture(
 
 	CharacterPreviewTexture =
 		Texture;
+
+	if (CharacterPreviewTexture)
+	{
+		D3DSURFACE_DESC Description{};
+
+		if (
+			SUCCEEDED(
+				CharacterPreviewTexture->
+					GetLevelDesc(
+						0,
+						&Description
+					)
+			)
+		)
+		{
+			r3dOutToLog(
+				"[RmlUI][DX9] Character preview "
+				"texture bound: %ux%u, format=%d\n",
+				Description.Width,
+				Description.Height,
+				static_cast<int>(
+					Description.Format
+				)
+			);
+		}
+	}
 }
 
 void RmlRenderDX9::BeginFrame(int Width, int Height)
@@ -994,10 +1020,11 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 	if (!Device)
 		return 0;
 
-	if (
-		Source ==
-		"rml://character-preview"
-	)
+	const bool bCharacterPreviewSource =
+	Source == "rml://character-preview" ||
+	Source == "rml:/character-preview";
+
+	if (bCharacterPreviewSource)
 	{
 		TextureDimensions.x =
 			ViewWidth;
@@ -1011,6 +1038,12 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 		Handle->
 			bExternalCharacterPreview =
 				true;
+
+		r3dOutToLog(
+			"[RmlUI][DX9] Registered character "
+			"preview texture source: %s\n",
+			Source.c_str()
+		);
 
 		return reinterpret_cast<
 			Rml::TextureHandle

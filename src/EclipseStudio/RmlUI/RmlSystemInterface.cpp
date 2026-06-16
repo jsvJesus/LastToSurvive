@@ -48,13 +48,50 @@ bool RmlSystemInterface::LogMessage(Rml::Log::Type type, const Rml::String& mess
     return true;
 }
 
-bool RmlSystemInterface::IsAbsolutePath(const Rml::String& path)
+bool RmlSystemInterface::IsAbsolutePath(
+    const Rml::String& Path
+)
 {
-    if (path.size() >= 2 && path[1] == ':')
-        return true;
+    if (Path.empty())
+        return false;
 
-    if (!path.empty() && (path[0] == '/' || path[0] == '\\'))
+    /*
+     * Пользовательские и стандартные URI:
+     *
+     * rml://character-preview
+     * http://...
+     * https://...
+     */
+    if (
+        Path.find("://") !=
+        Rml::String::npos
+    )
+    {
         return true;
+    }
+
+    /*
+     * Windows:
+     * C:\Folder\File
+     */
+    if (
+        Path.size() >= 2 &&
+        Path[1] == ':'
+    )
+    {
+        return true;
+    }
+
+    /*
+     * Абсолютный путь от корня.
+     */
+    if (
+        Path[0] == '/' ||
+        Path[0] == '\\'
+    )
+    {
+        return true;
+    }
 
     return false;
 }
