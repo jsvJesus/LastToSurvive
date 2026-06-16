@@ -63,6 +63,10 @@ public:
 		int Height
 	);
 
+	void SetCharacterPreviewTexture(
+		IDirect3DTexture9* Texture
+	);
+
 	void OnDeviceLost();
 
 	void OnDeviceReset(

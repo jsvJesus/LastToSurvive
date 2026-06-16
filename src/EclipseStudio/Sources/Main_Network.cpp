@@ -203,6 +203,20 @@ RunRmlFrontEndLoop(
 
 		r3dMouse::Show();
 
+		/*
+		 * Async profile и загрузка preview-level
+		 * выполняются до открытия render frame.
+		 */
+		FrontEnd.Update();
+
+		if (
+			r3dRenderer &&
+			r3dRenderer->DeviceAvailable
+		)
+		{
+			FrontEnd.PrepareRender();
+		}
+
 		r3dStartFrame();
 
 		if (
@@ -210,26 +224,27 @@ RunRmlFrontEndLoop(
 			r3dRenderer->DeviceAvailable
 		)
 		{
-			r3dRenderer->StartRender(1);
-			r3dRenderer->StartFrame();
+			r3dRenderer->
+				StartRender(1);
 
-			r3dRenderer->SetRenderingMode(
-				R3D_BLEND_ALPHA |
-				R3D_BLEND_NZ
-			);
+			r3dRenderer->
+				StartFrame();
+
+			r3dRenderer->
+				SetRenderingMode(
+					R3D_BLEND_ALPHA |
+					R3D_BLEND_NZ
+				);
 
 			ClearFullScreen_Menu();
 
-			FrontEnd.Update();
 			FrontEnd.Render();
 
 			r3dRenderer->Flush();
 			r3dRenderer->EndFrame();
-			r3dRenderer->EndRender(true);
-		}
-		else
-		{
-			FrontEnd.Update();
+			r3dRenderer->EndRender(
+				true
+			);
 		}
 
 		r3dEndFrame();

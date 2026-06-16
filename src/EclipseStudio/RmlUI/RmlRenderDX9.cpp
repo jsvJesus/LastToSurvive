@@ -165,6 +165,10 @@ bool RmlRenderDX9::Init(IDirect3DDevice9* InDevice, const wchar_t* InDataRoot)
 
 void RmlRenderDX9::Shutdown()
 {
+	SetCharacterPreviewTexture(
+		nullptr
+	);
+
 	if (StateBlock)
 	{
 		StateBlock->Release();
@@ -176,6 +180,34 @@ void RmlRenderDX9::Shutdown()
 		Device->Release();
 		Device = nullptr;
 	}
+}
+
+void RmlRenderDX9::
+SetCharacterPreviewTexture(
+	IDirect3DTexture9* Texture
+)
+{
+	if (
+		CharacterPreviewTexture ==
+		Texture
+	)
+	{
+		return;
+	}
+
+	if (Texture)
+	{
+		Texture->AddRef();
+	}
+
+	if (CharacterPreviewTexture)
+	{
+		CharacterPreviewTexture->
+			Release();
+	}
+
+	CharacterPreviewTexture =
+		Texture;
 }
 
 void RmlRenderDX9::BeginFrame(int Width, int Height)
@@ -213,13 +245,19 @@ void RmlRenderDX9::EndFrame()
 
 void RmlRenderDX9::OnDeviceLost()
 {
+	SetCharacterPreviewTexture(
+		nullptr
+	);
+
 	if (StateBlock)
 	{
 		StateBlock->Release();
 		StateBlock = nullptr;
 	}
 
-	OutputDebugStringA("[RmlUI][DX9] Device lost\n");
+	OutputDebugStringA(
+		"[RmlUI][DX9] Device lost\n"
+	);
 }
 
 void RmlRenderDX9::OnDeviceReset(int Width, int Height)
@@ -427,62 +465,193 @@ Rml::CompiledGeometryHandle RmlRenderDX9::CompileGeometry(Rml::Span<const Rml::V
 	return reinterpret_cast<Rml::CompiledGeometryHandle>(Geometry);
 }
 
-void RmlRenderDX9::RenderGeometry(Rml::CompiledGeometryHandle geometry, Rml::Vector2f translation, Rml::TextureHandle texture)
+void RmlRenderDX9::RenderGeometry(
+	Rml::CompiledGeometryHandle GeometryHandle,
+	Rml::Vector2f Translation,
+	Rml::TextureHandle TextureHandle
+)
 {
-	if (!Device || !geometry)
+	if (
+		!Device ||
+		!GeometryHandle
+	)
+	{
 		return;
+	}
 
-	FCompiledGeometry* Geometry = reinterpret_cast<FCompiledGeometry*>(geometry);
-	IDirect3DTexture9* Texture = reinterpret_cast<IDirect3DTexture9*>(texture);
-	
-	// Direct3D 9 считает центр верхнего левого пикселя координатой 0,0.
-	// RmlUi генерирует геометрию по современному правилу границ пикселей,
-	// поэтому для точного попадания texel -> pixel нужен offset -0.5.
-	constexpr float HalfPixelOffset = -0.5f;
+	FCompiledGeometry* Geometry =
+		reinterpret_cast<FCompiledGeometry*>(
+			GeometryHandle
+		);
 
-	const D3DMATRIX World = MakeTranslation(
-		translation.x + HalfPixelOffset,
-		translation.y + HalfPixelOffset,
-		0.0f
+	FTextureHandle* TextureData =
+		reinterpret_cast<FTextureHandle*>(
+			TextureHandle
+		);
+
+	IDirect3DTexture9* Texture =
+		nullptr;
+
+	bool bCharacterPreview =
+		false;
+
+	if (TextureData)
+	{
+		bCharacterPreview =
+			TextureData->
+				bExternalCharacterPreview;
+
+		Texture =
+			bCharacterPreview
+				? CharacterPreviewTexture
+				: TextureData->Texture;
+	}
+
+	constexpr float HalfPixelOffset =
+		-0.5f;
+
+	const D3DMATRIX World =
+		MakeTranslation(
+			Translation.x +
+				HalfPixelOffset,
+			Translation.y +
+				HalfPixelOffset,
+			0.0f
+		);
+
+	Device->SetTransform(
+		D3DTS_WORLD,
+		&World
 	);
-	
-	Device->SetTransform(D3DTS_WORLD, &World);
 
-	Device->SetStreamSource(0, Geometry->VertexBuffer, 0, sizeof(FDx9Vertex));
-	Device->SetIndices(Geometry->IndexBuffer);
-	Device->SetFVF(VertexFVF);
+	Device->SetStreamSource(
+		0,
+		Geometry->VertexBuffer,
+		0,
+		sizeof(FDx9Vertex)
+	);
+
+	Device->SetIndices(
+		Geometry->IndexBuffer
+	);
+
+	Device->SetFVF(
+		VertexFVF
+	);
 
 	if (Texture)
 	{
-		Device->SetTexture(0, Texture);
+		Device->SetTexture(
+			0,
+			Texture
+		);
 
-		Device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-		Device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-		Device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-		Device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-		Device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-		Device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLOROP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLORARG1,
+			D3DTA_TEXTURE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLORARG2,
+			D3DTA_DIFFUSE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAOP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAARG1,
+			D3DTA_TEXTURE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAARG2,
+			D3DTA_DIFFUSE
+		);
 	}
 	else
 	{
-		Device->SetTexture(0, nullptr);
+		Device->SetTexture(
+			0,
+			nullptr
+		);
 
-		Device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-		Device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-		Device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-		Device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLOROP,
+			D3DTOP_SELECTARG1
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLORARG1,
+			D3DTA_DIFFUSE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAOP,
+			D3DTOP_SELECTARG1
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAARG1,
+			D3DTA_DIFFUSE
+		);
 	}
 
-	const UINT PrimitiveCount = static_cast<UINT>(Geometry->NumIndices / 3);
+	if (bCharacterPreview)
+	{
+		Device->SetRenderState(
+			D3DRS_SRCBLEND,
+			D3DBLEND_SRCALPHA
+		);
+	}
+	else
+	{
+		Device->SetRenderState(
+			D3DRS_SRCBLEND,
+			D3DBLEND_ONE
+		);
+	}
+
+	const UINT PrimitiveCount =
+		static_cast<UINT>(
+			Geometry->NumIndices / 3
+		);
 
 	Device->DrawIndexedPrimitive(
 		D3DPT_TRIANGLELIST,
 		0,
 		0,
-		static_cast<UINT>(Geometry->NumVertices),
+		static_cast<UINT>(
+			Geometry->NumVertices
+		),
 		0,
 		PrimitiveCount
 	);
+
+	if (bCharacterPreview)
+	{
+		Device->SetRenderState(
+			D3DRS_SRCBLEND,
+			D3DBLEND_ONE
+		);
+	}
 }
 
 void RmlRenderDX9::ReleaseGeometry(Rml::CompiledGeometryHandle geometry)
@@ -815,94 +984,158 @@ bool RmlRenderDX9::LoadTextureD3DX(
 }
 
 Rml::TextureHandle RmlRenderDX9::LoadTexture(
-	Rml::Vector2i& texture_dimensions,
-	const Rml::String& source
+	Rml::Vector2i& TextureDimensions,
+	const Rml::String& Source
 )
 {
-	texture_dimensions.x = 0;
-	texture_dimensions.y = 0;
+	TextureDimensions.x = 0;
+	TextureDimensions.y = 0;
 
 	if (!Device)
-	{
-		OutputDebugStringA(
-			"[RmlUI][DX9] LoadTexture failed: D3D9 device is null\n"
-		);
-
 		return 0;
+
+	if (
+		Source ==
+		"rml://character-preview"
+	)
+	{
+		TextureDimensions.x =
+			ViewWidth;
+
+		TextureDimensions.y =
+			ViewHeight;
+
+		FTextureHandle* Handle =
+			new FTextureHandle();
+
+		Handle->
+			bExternalCharacterPreview =
+				true;
+
+		return reinterpret_cast<
+			Rml::TextureHandle
+		>(
+			Handle
+		);
 	}
 
-	if (source.empty())
-	{
-		OutputDebugStringA(
-			"[RmlUI][DX9] LoadTexture failed: source is empty\n"
-		);
-
+	if (Source.empty())
 		return 0;
-	}
 
-	const std::wstring FullPath = ResolvePathW(source);
+	const std::wstring FullPath =
+		ResolvePathW(
+			Source
+		);
 
 	if (FullPath.empty())
-	{
-		std::string DebugText =
-			"[RmlUI][DX9] LoadTexture failed to resolve: ";
-
-		DebugText += source;
-		DebugText += "\n";
-
-		OutputDebugStringA(DebugText.c_str());
 		return 0;
-	}
 
-	IDirect3DTexture9* Texture = nullptr;
+	IDirect3DTexture9* Texture =
+		nullptr;
 
 	if (!LoadTextureD3DX(
-			FullPath,
-			texture_dimensions,
-			&Texture
-		))
+		FullPath,
+		TextureDimensions,
+		&Texture
+	))
 	{
 		std::string DebugText =
 			"[RmlUI][DX9] Failed to load texture source: ";
 
-		DebugText += source;
+		DebugText += Source;
 		DebugText += "\n";
 
-		OutputDebugStringA(DebugText.c_str());
+		OutputDebugStringA(
+			DebugText.c_str()
+		);
+
 		return 0;
 	}
 
-	return reinterpret_cast<Rml::TextureHandle>(Texture);
+	FTextureHandle* Handle =
+		new FTextureHandle();
+
+	Handle->Texture =
+		Texture;
+
+	return reinterpret_cast<
+		Rml::TextureHandle
+	>(
+		Handle
+	);
 }
 
-Rml::TextureHandle RmlRenderDX9::GenerateTexture(Rml::Span<const Rml::byte> source, Rml::Vector2i source_dimensions)
+Rml::TextureHandle RmlRenderDX9::GenerateTexture(
+	Rml::Span<const Rml::byte> Source,
+	Rml::Vector2i SourceDimensions
+)
 {
-	if (source.empty() || source_dimensions.x <= 0 || source_dimensions.y <= 0)
+	if (
+		Source.empty() ||
+		SourceDimensions.x <= 0 ||
+		SourceDimensions.y <= 0
+	)
+	{
 		return 0;
+	}
 
-	IDirect3DTexture9* Texture = nullptr;
+	IDirect3DTexture9* Texture =
+		nullptr;
 
 	if (!CreateTextureFromRGBA(
-		reinterpret_cast<const unsigned char*>(source.data()),
-		source_dimensions.x,
-		source_dimensions.y,
+		reinterpret_cast<
+			const unsigned char*
+		>(
+			Source.data()
+		),
+		SourceDimensions.x,
+		SourceDimensions.y,
 		&Texture
 	))
 	{
-		OutputDebugStringA("[RmlUI][DX9] GenerateTexture failed\n");
+		OutputDebugStringA(
+			"[RmlUI][DX9] GenerateTexture failed\n"
+		);
+
 		return 0;
 	}
 
-	return reinterpret_cast<Rml::TextureHandle>(Texture);
+	FTextureHandle* Handle =
+		new FTextureHandle();
+
+	Handle->Texture =
+		Texture;
+
+	return reinterpret_cast<
+		Rml::TextureHandle
+	>(
+		Handle
+	);
 }
 
-void RmlRenderDX9::ReleaseTexture(Rml::TextureHandle texture)
+void RmlRenderDX9::ReleaseTexture(
+	Rml::TextureHandle TextureHandle
+)
 {
-	if (!texture)
+	if (!TextureHandle)
 		return;
 
-	IDirect3DTexture9* Texture = reinterpret_cast<IDirect3DTexture9*>(texture);
-	Texture->Release();
+	FTextureHandle* Handle =
+		reinterpret_cast<FTextureHandle*>(
+			TextureHandle
+		);
+
+	if (
+		!Handle->
+			bExternalCharacterPreview &&
+		Handle->Texture
+	)
+	{
+		Handle->Texture->Release();
+		Handle->Texture = nullptr;
+	}
+
+	delete Handle;
 }
 
 void RmlRenderDX9::EnableScissorRegion(bool enable)

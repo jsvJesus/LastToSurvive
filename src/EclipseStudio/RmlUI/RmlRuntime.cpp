@@ -638,6 +638,20 @@ void RmlRuntime::RenderContext(
 	bRenderFrameOpen = false;
 }
 
+void RmlRuntime::
+SetCharacterPreviewTexture(
+	IDirect3DTexture9* Texture
+)
+{
+	if (!RenderInterface)
+		return;
+
+	RenderInterface->
+		SetCharacterPreviewTexture(
+			Texture
+		);
+}
+
 void RmlRuntime::OnDeviceLost()
 {
 	if (!bInitialized || !RenderInterface)

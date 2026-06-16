@@ -8,6 +8,8 @@
 
 #include <memory>
 
+class RmlFrontEndCharacterPreview;
+
 enum class ERmlFrontEndResult
 {
 	None = 0,
@@ -30,6 +32,7 @@ public:
 
 	void Update();
 	void Render();
+	void PrepareRender();
 
 	bool ProcessWin32Message(
 		HWND WindowHandle,
@@ -110,6 +113,7 @@ private:
 	void DetachEvents();
 
 	void RefreshDimensions();
+	bool EnsureCharacterPreview();
 
 	void ShowLogin();
 	void ShowMainMenu();
@@ -240,6 +244,7 @@ private:
 	Rml::ElementDocument* CharacterCreateDocument = nullptr;
 
 	std::unique_ptr<FClickListener> ClickListener;
+	std::unique_ptr<RmlFrontEndCharacterPreview> CharacterPreview;
 
 	HANDLE WorkerThread = nullptr;
 
