@@ -62,7 +62,7 @@ public:
 		int Width,
 		int Height
 	);
-
+//ebana v rot
 	void SetCharacterPreviewTexture(
 		IDirect3DTexture9* Texture
 	);
