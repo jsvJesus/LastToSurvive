@@ -491,6 +491,8 @@ void RmlFrontEndCharacterPreview::Rotate(
 	float DeltaPixelsY
 )
 {
+	(void)DeltaPixelsY;
+
 	ViewYawDegrees +=
 		DeltaPixelsX * 0.32f;
 
@@ -510,16 +512,6 @@ void RmlFrontEndCharacterPreview::Rotate(
 				360.0f
 			);
 	}
-
-	ViewVerticalOffset -=
-		DeltaPixelsY * 0.0022f;
-
-	ViewVerticalOffset =
-		std::clamp(
-			ViewVerticalOffset,
-			-0.32f,
-			0.32f
-		);
 }
 
 void RmlFrontEndCharacterPreview::Move(
