@@ -138,11 +138,22 @@ static const D3DRENDERSTATETYPE RML_D3DRS_STENCILMASK = static_cast<D3DRENDERSTA
 static const D3DRENDERSTATETYPE RML_D3DRS_STENCILWRITEMASK = static_cast<D3DRENDERSTATETYPE>(59);
 static const D3DRENDERSTATETYPE RML_D3DRS_TEXTUREFACTOR = static_cast<D3DRENDERSTATETYPE>(60);
 static const D3DRENDERSTATETYPE RML_D3DRS_COLORWRITEENABLE = static_cast<D3DRENDERSTATETYPE>(168);
+
 static const DWORD RML_COLOR_WRITE_ALL =
 	D3DCOLORWRITEENABLE_RED |
 	D3DCOLORWRITEENABLE_GREEN |
 	D3DCOLORWRITEENABLE_BLUE |
 	D3DCOLORWRITEENABLE_ALPHA;
+
+static const D3DRENDERSTATETYPE RML_D3DRS_TWOSIDEDSTENCILMODE =
+	static_cast<D3DRENDERSTATETYPE>(
+		185
+	);
+
+static const D3DRENDERSTATETYPE  RML_D3DRS_SEPARATEALPHABLENDENABLE =
+	static_cast<D3DRENDERSTATETYPE>(
+		206
+	);
 
 static const char* RmlDx9BlurShaderSource =
 R"RMLSHADER(
@@ -296,6 +307,7 @@ void RmlRenderDX9::Shutdown()
 
 	ReleaseLayerResources();
 	ReleaseSharedDepthStencil();
+	ReleaseLayerCompositeScratch();
 
 	if (BaseRenderTarget)
 	{
@@ -546,6 +558,55 @@ void RmlRenderDX9::ReleasePostProcessTargets()
 	}
 }
 
+void RmlRenderDX9::ReleaseLayerCompositeScratch()
+{
+	ReleasePostProcessTarget(
+		LayerCompositeScratch
+	);
+}
+
+bool RmlRenderDX9::EnsureLayerCompositeScratch()
+{
+	if (!Device)
+		return false;
+
+	if (
+		LayerCompositeScratch.Texture &&
+		LayerCompositeScratch.Surface &&
+		LayerCompositeScratch.Width ==
+			ViewWidth &&
+		LayerCompositeScratch.Height ==
+			ViewHeight
+	)
+	{
+		return true;
+	}
+
+	ReleaseLayerCompositeScratch();
+
+	if (!CreateRenderTargetTexture(
+		ViewWidth,
+		ViewHeight,
+		&LayerCompositeScratch.Texture,
+		&LayerCompositeScratch.Surface
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Layer composite "
+			"scratch target creation failed\n"
+		);
+
+		return false;
+	}
+
+	LayerCompositeScratch.Width =
+		ViewWidth;
+
+	LayerCompositeScratch.Height =
+		ViewHeight;
+
+	return true;
+}
 
 bool RmlRenderDX9::EnsurePostProcessTargets()
 {
@@ -1338,6 +1399,7 @@ void RmlRenderDX9::BeginFrame(
 {
 	if (
 		!Device ||
+		!r3dRenderer ||
 		bFrameOpen
 	)
 	{
@@ -1429,6 +1491,18 @@ void RmlRenderDX9::BeginFrame(
 
 	bFrameOpen =
 		true;
+
+	bScissorEnabled =
+	false;
+
+	bClipMaskEnabled =
+		false;
+
+	ClipMaskReference =
+		0;
+
+	CurrentTransform =
+		MakeIdentity();
 
 	bClipMaskEnabled =
 		false;
@@ -1533,6 +1607,7 @@ void RmlRenderDX9::OnDeviceLost()
 
 	ReleaseLayerResources();
 	ReleaseSharedDepthStencil();
+	ReleaseLayerCompositeScratch();
 	ReleasePostProcessTargets();
 	ReleaseFilterShaders();
 
@@ -1553,6 +1628,7 @@ void RmlRenderDX9::OnDeviceReset(int Width, int Height)
 	ViewHeight = std::max(1, Height);
 
 	ReleasePostProcessTargets();
+	ReleaseLayerCompositeScratch();
 
 	EnsurePostProcessTargets();
 	CreateFilterShaders();
@@ -1670,62 +1746,251 @@ void RmlRenderDX9::SetupRenderState()
 		return;
 
 	D3DVIEWPORT9 Viewport{};
-	Viewport.X = 0;
-	Viewport.Y = 0;
-	Viewport.Width = static_cast<DWORD>(ViewWidth);
-	Viewport.Height = static_cast<DWORD>(ViewHeight);
-	Viewport.MinZ = 0.0f;
-	Viewport.MaxZ = 1.0f;
 
-	Device->SetViewport(&Viewport);
+	Viewport.X =
+		0;
 
-	const D3DMATRIX World = MakeIdentity();
-	const D3DMATRIX View = MakeIdentity();
-	const D3DMATRIX Projection = MakeOrthoOffCenterLH(
-		0.0f,
-		static_cast<float>(ViewWidth),
-		static_cast<float>(ViewHeight),
-		0.0f,
-		-1.0f,
-		1.0f
+	Viewport.Y =
+		0;
+
+	Viewport.Width =
+		static_cast<DWORD>(
+			ViewWidth
+		);
+
+	Viewport.Height =
+		static_cast<DWORD>(
+			ViewHeight
+		);
+
+	Viewport.MinZ =
+		0.0f;
+
+	Viewport.MaxZ =
+		1.0f;
+
+	Device->SetViewport(
+		&Viewport
 	);
 
-	Device->SetTransform(D3DTS_WORLD, &World);
-	Device->SetTransform(D3DTS_VIEW, &View);
-	Device->SetTransform(D3DTS_PROJECTION, &Projection);
+	const D3DMATRIX World =
+		MakeIdentity();
 
-	Device->SetFVF(VertexFVF);
+	const D3DMATRIX View =
+		MakeIdentity();
 
-	(Device->SetRenderState)(RML_D3DRS_LIGHTING, FALSE);
-	(Device->SetRenderState)(RML_D3DRS_ZENABLE, FALSE);
-	(Device->SetRenderState)(RML_D3DRS_ZWRITEENABLE, FALSE);
-	(Device->SetRenderState)(RML_D3DRS_CULLMODE, D3DCULL_NONE);
+	const D3DMATRIX Projection =
+		MakeOrthoOffCenterLH(
+			0.0f,
+			static_cast<float>(
+				ViewWidth
+			),
+			static_cast<float>(
+				ViewHeight
+			),
+			0.0f,
+			-1.0f,
+			1.0f
+		);
 
-	(Device->SetRenderState)(RML_D3DRS_ALPHATESTENABLE, FALSE);
-	(Device->SetRenderState)(RML_D3DRS_ALPHABLENDENABLE, TRUE);
+	Device->SetTransform(
+		D3DTS_WORLD,
+		&World
+	);
 
-	(Device->SetRenderState)(RML_D3DRS_SRCBLEND, D3DBLEND_ONE);
-	(Device->SetRenderState)(RML_D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	(Device->SetRenderState)(RML_D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	Device->SetTransform(
+		D3DTS_VIEW,
+		&View
+	);
 
-	(Device->SetRenderState)(RML_D3DRS_SCISSORTESTENABLE, bScissorEnabled ? TRUE : FALSE);
+	Device->SetTransform(
+		D3DTS_PROJECTION,
+		&Projection
+	);
+
+	Device->SetVertexShader(
+		nullptr
+	);
+
+	Device->SetPixelShader(
+		nullptr
+	);
+
+	Device->SetFVF(
+		VertexFVF
+	);
+
+	for (
+		DWORD Stage = 0;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+	}
+
+	(Device->SetRenderState)(
+		RML_D3DRS_LIGHTING,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZWRITEENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_CULLMODE,
+		D3DCULL_NONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHATESTENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		TRUE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SEPARATEALPHABLENDENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SRCBLEND,
+		D3DBLEND_ONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_DESTBLEND,
+		D3DBLEND_INVSRCALPHA
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_BLENDOP,
+		D3DBLENDOP_ADD
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_TWOSIDEDSTENCILMODE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SCISSORTESTENABLE,
+		bScissorEnabled
+			? TRUE
+			: FALSE
+	);
 
 	if (bScissorEnabled)
-		Device->SetScissorRect(&ScissorRect);
+	{
+		Device->SetScissorRect(
+			&ScissorRect
+		);
+	}
 
-	Device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	Device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	Device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-	Device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-	Device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	Device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLOROP,
+		D3DTOP_MODULATE
+	);
 
-	Device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	Device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	Device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLORARG1,
+		D3DTA_TEXTURE
+	);
 
-	Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLORARG2,
+		D3DTA_DIFFUSE
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAOP,
+		D3DTOP_MODULATE
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAARG1,
+		D3DTA_TEXTURE
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAARG2,
+		D3DTA_DIFFUSE
+	);
+
+	for (
+		DWORD Stage = 1;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_DISABLE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_DISABLE
+		);
+	}
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MINFILTER,
+		D3DTEXF_LINEAR
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MAGFILTER,
+		D3DTEXF_LINEAR
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MIPFILTER,
+		D3DTEXF_NONE
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_ADDRESSU,
+		D3DTADDRESS_CLAMP
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_ADDRESSV,
+		D3DTADDRESS_CLAMP
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_TEXTUREFACTOR,
+		0xFFFFFFFF
+	);
+
 	(Device->SetRenderState)(
 		RML_D3DRS_COLORWRITEENABLE,
 		RML_COLOR_WRITE_ALL
@@ -3219,6 +3484,23 @@ void RmlRenderDX9::BindLayer(
 	if (!Surface)
 		return;
 
+	/*
+	 * Нельзя устанавливать поверхность как render target,
+	 * пока соответствующая texture всё ещё может быть
+	 * привязана к sampler stage.
+	 */
+	for (
+		DWORD Stage = 0;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+	}
+
 	r3dRenderer->SetRT(
 		0,
 		Surface
@@ -3235,9 +3517,23 @@ Rml::LayerHandle RmlRenderDX9::PushLayer()
 {
 	if (
 		!Device ||
+		!r3dRenderer ||
 		!bFrameOpen
 	)
 	{
+		return 0;
+	}
+
+	if (
+		!SharedDepthStencil &&
+		!EnsureSharedDepthStencil()
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] PushLayer failed: "
+			"stencil surface unavailable\n"
+		);
+
 		return 0;
 	}
 
@@ -3252,7 +3548,12 @@ Rml::LayerHandle RmlRenderDX9::PushLayer()
 		PoolIndex
 	))
 	{
-		return GetTopLayerHandle();
+		OutputDebugStringA(
+			"[RmlUI][DX9] PushLayer failed: "
+			"render target unavailable\n"
+		);
+
+		return 0;
 	}
 
 	++ActiveLayerCount;
@@ -3263,6 +3564,11 @@ Rml::LayerHandle RmlRenderDX9::PushLayer()
 		)
 	);
 
+	/*
+	 * Слой переиспользуется между кадрами,
+	 * поэтому перед использованием полностью
+	 * очищаем его до transparent black.
+	 */
 	(Device->SetRenderState)(
 		RML_D3DRS_SCISSORTESTENABLE,
 		FALSE
@@ -3648,11 +3954,19 @@ void RmlRenderDX9::CompositeLayers(
 	Rml::LayerHandle Source,
 	Rml::LayerHandle Destination,
 	Rml::BlendMode BlendMode,
-	Rml::Span<const Rml::CompiledFilterHandle> Filters
+	Rml::Span<
+		const Rml::CompiledFilterHandle
+	> Filters
 )
 {
-	if (!Device)
+	if (
+		!Device ||
+		!r3dRenderer ||
+		!bFrameOpen
+	)
+	{
 		return;
+	}
 
 	IDirect3DTexture9* CurrentTexture =
 		GetLayerTexture(
@@ -3662,6 +3976,109 @@ void RmlRenderDX9::CompositeLayers(
 	if (!CurrentTexture)
 		return;
 
+	if (!GetLayerSurface(
+		Destination
+	))
+	{
+		return;
+	}
+
+	const Rml::LayerHandle TopLayer =
+		GetTopLayerHandle();
+
+	/*
+	 * Основной путь этапа 2:
+	 * layers без opacity/blur/drop-shadow/mask-image.
+	 *
+	 * Здесь не требуется ни один pixel shader
+	 * и не требуется создание трёх filter targets.
+	 */
+	if (Filters.empty())
+	{
+		/*
+		 * RmlUi разрешает Source == Destination.
+		 * Нельзя одновременно читать texture и писать
+		 * в её render-target surface, поэтому сначала
+		 * переносим изображение в отдельный scratch RT.
+		 */
+		if (Source == Destination)
+		{
+			if (!EnsureLayerCompositeScratch())
+				return;
+
+			for (
+				DWORD Stage = 0;
+				Stage < 4;
+				++Stage
+			)
+			{
+				Device->SetTexture(
+					Stage,
+					nullptr
+				);
+			}
+
+			const bool SavedScissorEnabled =
+				bScissorEnabled;
+
+			/*
+			 * Scratch должен получить весь source layer,
+			 * а не только текущий scissor rectangle.
+			 */
+			bScissorEnabled =
+				false;
+
+			DrawPostProcessQuad(
+				CurrentTexture,
+				LayerCompositeScratch.Surface,
+				nullptr,
+				0.0f,
+				0.0f,
+				1.0f,
+				false,
+				true
+			);
+
+			bScissorEnabled =
+				SavedScissorEnabled;
+
+			CurrentTexture =
+				LayerCompositeScratch.Texture;
+		}
+
+		BindLayer(
+			Destination
+		);
+
+		SetupRenderState();
+
+		DrawLayerTexture(
+			CurrentTexture,
+			nullptr,
+			1.0f,
+			BlendMode !=
+				Rml::BlendMode::Replace
+		);
+
+		if (
+			Destination !=
+			TopLayer
+		)
+		{
+			BindLayer(
+				TopLayer
+			);
+		}
+
+		SetupRenderState();
+		return;
+	}
+
+	/*
+	 * Filter path пока оставляем отдельно.
+	 * Его проверка начинается только на следующем этапе
+	 * с opacity.
+	 */
 	if (
 		!CreateFilterShaders() ||
 		!EnsurePostProcessTargets()
@@ -3783,11 +4200,6 @@ void RmlRenderDX9::CompositeLayers(
 				1
 			);
 
-			/*
-			 * Сначала рисуем размытую альфу,
-			 * окрашенную цветом тени и смещённую
-			 * на Offset.
-			 */
 			DrawPostProcessQuad(
 				BlurredTexture,
 				PostProcessTargets[
@@ -3801,10 +4213,6 @@ void RmlRenderDX9::CompositeLayers(
 				true
 			);
 
-			/*
-			 * Затем поверх тени рисуем
-			 * исходный элемент.
-			 */
 			DrawPostProcessQuad(
 				CurrentTexture,
 				PostProcessTargets[
@@ -3841,9 +4249,6 @@ void RmlRenderDX9::CompositeLayers(
 			break;
 		}
 	}
-
-	const Rml::LayerHandle TopLayer =
-		GetTopLayerHandle();
 
 	BindLayer(
 		Destination

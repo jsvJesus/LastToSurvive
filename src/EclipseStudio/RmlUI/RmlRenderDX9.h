@@ -262,6 +262,7 @@ private:
 		0;
 
 	FPostProcessTarget PostProcessTargets[3];
+	FPostProcessTarget LayerCompositeScratch;
 
 	IDirect3DPixelShader9* BlurPixelShader =
 		nullptr;
@@ -400,6 +401,8 @@ private:
 
 	bool EnsurePostProcessTargets();
 	void ReleasePostProcessTargets();
+	bool EnsureLayerCompositeScratch();
+	void ReleaseLayerCompositeScratch();
 
 	int FindPostProcessTarget(
 		int ExcludeA,
