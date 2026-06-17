@@ -278,7 +278,6 @@ bool RmlRenderDX9::Init(IDirect3DDevice9* InDevice, const wchar_t* InDataRoot)
 
 	Device = InDevice;
 	Device->AddRef();
-	CreateFilterShaders();
 
 	DataRoot = InDataRoot ? InDataRoot : L"";
 
@@ -469,42 +468,53 @@ bool RmlRenderDX9::CreatePixelShader(
 }
 
 
-bool RmlRenderDX9::CreateFilterShaders()
+bool RmlRenderDX9::EnsureBlurShader()
 {
-	if (
-		BlurPixelShader &&
-		ShadowPixelShader
-	)
-	{
+	if (BlurPixelShader)
 		return true;
-	}
-
-	ReleaseFilterShaders();
 
 	if (!CreatePixelShader(
 		RmlDx9BlurShaderSource,
 		&BlurPixelShader
 	))
 	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Blur shader creation failed\n"
+		);
+
 		return false;
 	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Blur shader created\n"
+	);
+
+	return true;
+}
+
+bool RmlRenderDX9::EnsureShadowShader()
+{
+	if (ShadowPixelShader)
+		return true;
 
 	if (!CreatePixelShader(
 		RmlDx9ShadowShaderSource,
 		&ShadowPixelShader
 	))
 	{
-		ReleaseFilterShaders();
+		OutputDebugStringA(
+			"[RmlUI][DX9] Drop-shadow shader creation failed\n"
+		);
+
 		return false;
 	}
 
 	OutputDebugStringA(
-		"[RmlUI][DX9] Blur and drop-shadow shaders created\n"
+		"[RmlUI][DX9] Drop-shadow shader created\n"
 	);
 
 	return true;
 }
-
 
 void RmlRenderDX9::ReleaseFilterShaders()
 {
@@ -750,6 +760,7 @@ void RmlRenderDX9::DrawPostProcessQuad(
 {
 	if (
 		!Device ||
+		!r3dRenderer ||
 		!SourceTexture ||
 		!DestinationSurface
 	)
@@ -1056,6 +1067,7 @@ void RmlRenderDX9::RenderBlurPass(
 {
 	if (
 		!Device ||
+		!r3dRenderer ||
 		!BlurPixelShader ||
 		!SourceTexture ||
 		!DestinationSurface
@@ -1152,58 +1164,120 @@ bool RmlRenderDX9::ApplyGaussianBlur(
 		SourcePostProcessIndex;
 
 	if (
-		!SourceTexture ||
-		Sigma < 0.1f
+		!Device ||
+		!r3dRenderer ||
+		!SourceTexture
 	)
 	{
-		return true;
+		return false;
 	}
 
+	if (Sigma < 0.1f)
+		return true;
+
 	if (
-		!CreateFilterShaders() ||
+		!EnsureBlurShader() ||
 		!EnsurePostProcessTargets()
 	)
 	{
 		return false;
 	}
 
-	const int HorizontalTargetIndex =
+	/*
+	 * Ограничиваем максимальный blur текущей
+	 * реализации. Более крупные значения позже
+	 * можно оптимизировать downsampling-проходами.
+	 */
+	Sigma =
+		std::max(
+			0.1f,
+			std::min(
+				16.0f,
+				Sigma
+			)
+		);
+
+	/*
+	 * Первый target используется как чистая staging-копия.
+	 * Это не позволяет содержимому соседних элементов
+	 * проникнуть в blur через края filter-region.
+	 */
+	const int StagingTargetIndex =
 		FindPostProcessTarget(
 			SourcePostProcessIndex
 		);
 
-	const int VerticalTargetIndex =
+	const int WorkTargetIndex =
 		FindPostProcessTarget(
 			SourcePostProcessIndex,
-			HorizontalTargetIndex
+			StagingTargetIndex
 		);
 
 	if (
-		HorizontalTargetIndex < 0 ||
-		VerticalTargetIndex < 0
+		StagingTargetIndex < 0 ||
+		WorkTargetIndex < 0
 	)
 	{
 		return false;
 	}
 
-	Sigma =
-		std::min(
-			Sigma,
-			16.0f
+	const bool SavedScissorEnabled =
+		bScissorEnabled;
+
+	/*
+	 * Destination полностью очищается, но source
+	 * копируется только внутрь текущего scissor.
+	 *
+	 * За пределами filter-region staging texture
+	 * остаётся прозрачной.
+	 */
+	DrawPostProcessQuad(
+		SourceTexture,
+		PostProcessTargets[
+			StagingTargetIndex
+		].Surface,
+		nullptr,
+		0.0f,
+		0.0f,
+		1.0f,
+		false,
+		true
+	);
+
+	bScissorEnabled =
+		SavedScissorEnabled;
+
+	/*
+	 * Радиус текущего kernel равен четырём пикселям
+	 * в каждую сторону. Для больших sigma выполняем
+	 * несколько нормализованных проходов.
+	 *
+	 * Дисперсии Gaussian blur складываются:
+	 *
+	 * sigma_total² =
+	 *     sigma_pass² * pass_count.
+	 */
+	constexpr float MaxSinglePassSigma =
+		3.0f;
+
+	const float RequiredPasses =
+		(
+			Sigma *
+			Sigma
+		) /
+		(
+			MaxSinglePassSigma *
+			MaxSinglePassSigma
 		);
 
 	const int PassCount =
 		std::max(
 			1,
 			std::min(
-				4,
+				32,
 				static_cast<int>(
 					std::ceil(
-						(
-							Sigma *
-							Sigma
-						) /
-						9.0f
+						RequiredPasses
 					)
 				)
 			)
@@ -1218,7 +1292,9 @@ bool RmlRenderDX9::ApplyGaussianBlur(
 		);
 
 	IDirect3DTexture9* CurrentTexture =
-		SourceTexture;
+		PostProcessTargets[
+			StagingTargetIndex
+		].Texture;
 
 	for (
 		int PassIndex = 0;
@@ -1226,21 +1302,32 @@ bool RmlRenderDX9::ApplyGaussianBlur(
 		++PassIndex
 	)
 	{
+		/*
+		 * Horizontal:
+		 * staging/current -> work.
+		 */
 		RenderBlurPass(
 			CurrentTexture,
 			PostProcessTargets[
-				HorizontalTargetIndex
+				WorkTargetIndex
 			].Surface,
 			PassSigma,
 			true
 		);
 
+		/*
+		 * Vertical:
+		 * work -> staging.
+		 *
+		 * После вертикального прохода staging снова
+		 * становится текущим результатом.
+		 */
 		RenderBlurPass(
 			PostProcessTargets[
-				HorizontalTargetIndex
+				WorkTargetIndex
 			].Texture,
 			PostProcessTargets[
-				VerticalTargetIndex
+				StagingTargetIndex
 			].Surface,
 			PassSigma,
 			false
@@ -1248,7 +1335,7 @@ bool RmlRenderDX9::ApplyGaussianBlur(
 
 		CurrentTexture =
 			PostProcessTargets[
-				VerticalTargetIndex
+				StagingTargetIndex
 			].Texture;
 	}
 
@@ -1256,7 +1343,7 @@ bool RmlRenderDX9::ApplyGaussianBlur(
 		CurrentTexture;
 
 	OutPostProcessIndex =
-		VerticalTargetIndex;
+		StagingTargetIndex;
 
 	return true;
 }
@@ -1417,16 +1504,6 @@ void RmlRenderDX9::BeginFrame(
 			1,
 			Height
 		);
-
-	EnsurePostProcessTargets();
-
-	if (
-		!BlurPixelShader ||
-		!ShadowPixelShader
-	)
-	{
-		CreateFilterShaders();
-	}
 
 	if (StateBlock)
 	{
@@ -1622,18 +1699,34 @@ void RmlRenderDX9::OnDeviceLost()
 	);
 }
 
-void RmlRenderDX9::OnDeviceReset(int Width, int Height)
+void RmlRenderDX9::OnDeviceReset(
+	int Width,
+	int Height
+)
 {
-	ViewWidth = std::max(1, Width);
-	ViewHeight = std::max(1, Height);
+	ViewWidth =
+		std::max(
+			1,
+			Width
+		);
+
+	ViewHeight =
+		std::max(
+			1,
+			Height
+		);
 
 	ReleasePostProcessTargets();
 	ReleaseLayerCompositeScratch();
 
-	EnsurePostProcessTargets();
-	CreateFilterShaders();
-
-	OutputDebugStringA("[RmlUI][DX9] Device reset\n");
+	/*
+	 * Default-pool render targets будут
+	 * лениво восстановлены при первом blur
+	 * или self-composite.
+	 */
+	OutputDebugStringA(
+		"[RmlUI][DX9] Device reset\n"
+	);
 }
 
 DWORD RmlRenderDX9::ConvertColor(const Rml::ColourbPremultiplied& Color)
@@ -4131,24 +4224,6 @@ void RmlRenderDX9::CompositeLayers(
 		return;
 	}
 
-	/*
-	 * Медленный filter path.
-	 *
-	 * Сейчас оставляем его без функциональных изменений.
-	 * Он понадобится на следующих этапах:
-	 *
-	 * - blur;
-	 * - drop-shadow;
-	 * - mask-image.
-	 */
-	if (
-		!CreateFilterShaders() ||
-		!EnsurePostProcessTargets()
-	)
-	{
-		return;
-	}
-
 	int CurrentPostProcessIndex =
 		-1;
 
@@ -4210,12 +4285,15 @@ void RmlRenderDX9::CompositeLayers(
 		}
 
 		case ECompiledFilterType::DropShadow:
-		{
-			IDirect3DTexture9* BlurredTexture =
-				nullptr;
+			{
+				if (!EnsureShadowShader())
+					break;
 
-			int BlurredTargetIndex =
-				-1;
+				IDirect3DTexture9* BlurredTexture =
+					nullptr;
+
+				int BlurredTargetIndex =
+					-1;
 
 			if (!ApplyGaussianBlur(
 				CurrentTexture,
@@ -4539,13 +4617,19 @@ RmlRenderDX9::CompileFilter(
 		Filter->Type =
 			ECompiledFilterType::Blur;
 
+		const float BlurSigma =
+			Rml::Get(
+				Parameters,
+				"sigma",
+				1.0f
+			);
+
 		Filter->Sigma =
 			std::max(
 				0.0f,
-				Rml::Get(
-					Parameters,
-					"sigma",
-					1.0f
+				std::min(
+					16.0f,
+					BlurSigma
 				)
 			);
 	}

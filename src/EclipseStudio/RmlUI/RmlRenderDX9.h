@@ -390,7 +390,8 @@ private:
 		IDirect3DTexture9** OutTexture
 	);
 
-	bool CreateFilterShaders();
+	bool EnsureBlurShader();
+	bool EnsureShadowShader();
 
 	bool CreatePixelShader(
 		const char* SourceCode,
