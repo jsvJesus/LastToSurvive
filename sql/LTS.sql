@@ -11,7 +11,7 @@ Target Server Type    : SQL Server
 Target Server Version : 110000
 File Encoding         : 65001
 
-Date: 2026-06-15 00:09:31
+Date: 2026-06-18 00:53:31
 */
 
 
@@ -40,7 +40,7 @@ GO
 -- ----------------------------
 SET IDENTITY_INSERT [dbo].[Accounts] ON
 GO
-INSERT INTO [dbo].[Accounts] ([CustomerID], [email], [MD5Password], [dateregistered], [ReferralID], [AccountStatus], [IsDeveloper], [lastlogindate], [lastloginIP]) VALUES (N'1000000', N'test@gmail.com', N'f58e5dca65a955d170ab0d5f34ed32a1', N'2026-06-15 00:01:07.320', N'0', N'100', N'126', N'2026-06-15 00:01:07.320', N'');
+INSERT INTO [dbo].[Accounts] ([CustomerID], [email], [MD5Password], [dateregistered], [ReferralID], [AccountStatus], [IsDeveloper], [lastlogindate], [lastloginIP]) VALUES (N'1000000', N'test@gmail.com', N'f58e5dca65a955d170ab0d5f34ed32a1', N'2026-06-15 00:01:07.320', N'0', N'100', N'126', N'2026-06-17 03:10:36.590', N'26.163.92.76');
 GO
 SET IDENTITY_INSERT [dbo].[Accounts] OFF
 GO
@@ -2153,11 +2153,195 @@ CREATE TABLE [dbo].[Logins] (
 
 
 GO
+DBCC CHECKIDENT(N'[dbo].[Logins]', RESEED, 91)
+GO
 
 -- ----------------------------
 -- Records of Logins
 -- ----------------------------
 SET IDENTITY_INSERT [dbo].[Logins] ON
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'1', N'1000000', N'2026-06-15 01:36:32.617', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'2', N'1000000', N'2026-06-15 02:59:20.233', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'3', N'1000000', N'2026-06-15 02:59:20.303', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'4', N'1000000', N'2026-06-15 03:01:39.457', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'5', N'1000000', N'2026-06-15 03:01:39.463', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'6', N'1000000', N'2026-06-15 03:05:04.570', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'7', N'1000000', N'2026-06-15 03:05:04.623', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'8', N'1000000', N'2026-06-15 03:19:18.867', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'9', N'1000000', N'2026-06-15 03:24:30.550', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'10', N'1000000', N'2026-06-15 03:25:34.797', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'11', N'1000000', N'2026-06-15 03:29:32.387', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'12', N'1000000', N'2026-06-15 03:35:36.350', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'13', N'1000000', N'2026-06-15 03:48:00.587', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'14', N'1000000', N'2026-06-16 17:32:50.437', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'15', N'1000000', N'2026-06-16 18:19:10.287', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'16', N'1000000', N'2026-06-16 18:21:02.740', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'17', N'1000000', N'2026-06-16 18:24:19.217', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'18', N'1000000', N'2026-06-16 18:25:46.607', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'19', N'1000000', N'2026-06-16 18:26:04.790', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'20', N'1000000', N'2026-06-16 18:30:40.950', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'21', N'1000000', N'2026-06-16 18:31:49.247', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'22', N'1000000', N'2026-06-16 18:32:20.723', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'23', N'1000000', N'2026-06-16 18:33:53.483', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'24', N'1000000', N'2026-06-16 18:35:17.657', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'25', N'1000000', N'2026-06-16 18:37:05.307', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'26', N'1000000', N'2026-06-16 18:39:43.563', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'27', N'1000000', N'2026-06-16 18:40:09.700', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'28', N'1000000', N'2026-06-16 18:41:20.207', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'29', N'1000000', N'2026-06-16 18:54:15.210', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'30', N'1000000', N'2026-06-16 18:56:11.300', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'31', N'1000000', N'2026-06-16 18:59:27.143', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'32', N'1000000', N'2026-06-16 19:00:20.273', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'33', N'1000000', N'2026-06-16 19:01:40.620', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'34', N'1000000', N'2026-06-16 19:02:05.560', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'35', N'1000000', N'2026-06-16 19:03:38.570', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'36', N'1000000', N'2026-06-16 19:04:11.403', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'37', N'1000000', N'2026-06-16 19:07:10.310', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'38', N'1000000', N'2026-06-16 19:20:00.250', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'39', N'1000000', N'2026-06-16 19:21:46.590', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'40', N'1000000', N'2026-06-16 19:23:38.763', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'41', N'1000000', N'2026-06-16 19:24:05.700', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'42', N'1000000', N'2026-06-16 19:30:23.370', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'43', N'1000000', N'2026-06-16 19:34:10.900', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'44', N'1000000', N'2026-06-16 19:36:22.200', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'45', N'1000000', N'2026-06-16 19:41:05.770', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'46', N'1000000', N'2026-06-16 19:44:01.290', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'47', N'1000000', N'2026-06-16 19:44:45.217', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'48', N'1000000', N'2026-06-16 19:45:16.690', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'49', N'1000000', N'2026-06-16 20:01:03.767', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'50', N'1000000', N'2026-06-17 01:10:11.397', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'51', N'1000000', N'2026-06-17 01:13:12.817', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'52', N'1000000', N'2026-06-17 01:16:23.557', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'53', N'1000000', N'2026-06-17 01:18:07.833', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'54', N'1000000', N'2026-06-17 01:23:30.100', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'55', N'1000000', N'2026-06-17 01:26:50.850', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'56', N'1000000', N'2026-06-17 01:28:09.410', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'57', N'1000000', N'2026-06-17 01:30:05.837', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'58', N'1000000', N'2026-06-17 01:49:38.957', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'59', N'1000000', N'2026-06-17 01:50:54.430', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'60', N'1000000', N'2026-06-17 01:57:00.630', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'61', N'1000000', N'2026-06-17 02:04:04.993', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'62', N'1000000', N'2026-06-17 02:05:11.240', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'63', N'1000000', N'2026-06-17 02:06:15.563', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'64', N'1000000', N'2026-06-17 02:07:18.130', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'65', N'1000000', N'2026-06-17 02:13:29.487', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'66', N'1000000', N'2026-06-17 02:15:08.590', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'67', N'1000000', N'2026-06-17 02:19:23.500', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'68', N'1000000', N'2026-06-17 02:19:40.400', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'69', N'1000000', N'2026-06-17 02:21:26.770', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'70', N'1000000', N'2026-06-17 02:21:47.353', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'71', N'1000000', N'2026-06-17 02:22:16.880', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'72', N'1000000', N'2026-06-17 02:25:12.190', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'73', N'1000000', N'2026-06-17 02:26:33.360', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'74', N'1000000', N'2026-06-17 02:29:20.390', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'75', N'1000000', N'2026-06-17 02:31:39.660', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'76', N'1000000', N'2026-06-17 02:34:33.713', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'77', N'1000000', N'2026-06-17 02:35:03.913', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'78', N'1000000', N'2026-06-17 02:36:05.427', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'79', N'1000000', N'2026-06-17 02:36:48.233', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'80', N'1000000', N'2026-06-17 02:46:31.450', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'81', N'1000000', N'2026-06-17 02:46:53.273', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'82', N'1000000', N'2026-06-17 02:48:27.770', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'83', N'1000000', N'2026-06-17 02:49:08.717', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'84', N'1000000', N'2026-06-17 02:49:56.330', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'85', N'1000000', N'2026-06-17 02:52:54.150', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'86', N'1000000', N'2026-06-17 02:54:04.230', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'87', N'1000000', N'2026-06-17 02:56:19.403', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'88', N'1000000', N'2026-06-17 02:58:51.530', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'89', N'1000000', N'2026-06-17 03:03:12.473', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'90', N'1000000', N'2026-06-17 03:09:47.370', N'26.163.92.76', N'0');
+GO
+INSERT INTO [dbo].[Logins] ([LoginID], [CustomerID], [LoginTime], [IP], [LoginSource]) VALUES (N'91', N'1000000', N'2026-06-17 03:10:36.590', N'26.163.92.76', N'0');
 GO
 SET IDENTITY_INSERT [dbo].[Logins] OFF
 GO
@@ -2183,6 +2367,8 @@ GO
 -- ----------------------------
 -- Records of LoginSessions
 -- ----------------------------
+INSERT INTO [dbo].[LoginSessions] ([CustomerID], [SessionKey], [SessionID], [LoginIP], [TimeLogged], [TimeUpdated], [GameSessionID]) VALUES (N'1000000', N'4ABA4BF4-820F-43BC-B4D2-D5BB89FE8041', N'837463057', N'26.163.92.76', N'2026-06-17 03:10:36.590', N'2026-06-17 03:10:36.597', N'0');
+GO
 
 -- ----------------------------
 -- Table structure for [dbo].[MasterServerInfo]
@@ -2305,11 +2491,15 @@ CREATE TABLE [dbo].[UsersChars] (
 
 
 GO
+DBCC CHECKIDENT(N'[dbo].[UsersChars]', RESEED, 3)
+GO
 
 -- ----------------------------
 -- Records of UsersChars
 -- ----------------------------
 SET IDENTITY_INSERT [dbo].[UsersChars] ON
+GO
+INSERT INTO [dbo].[UsersChars] ([CharID], [CustomerID], [Hardcore], [Gamertag], [HeroItemID], [HeadIdx], [BodyIdx], [LegsIdx], [Alive], [DeathUtcTime], [XP], [TimePlayed], [GameMapId], [GameServerId], [GamePos], [GameFlags], [Health], [Food], [Water], [Toxic], [Reputation], [BackpackID], [BackpackSize], [Attachment1], [Attachment2], [Stat00], [Stat01], [Stat02], [Stat03], [Stat04], [Stat05], [LastUpdateDate], [CreateDate], [ClanID], [ClanRank], [ClanContributedXP], [ClanContributedGP]) VALUES (N'3', N'1000000', N'0', N'ES3N1N', N'20174', N'0', N'0', N'0', N'3', N'1973-01-01 00:00:00.000', N'0', N'0', N'0', N'0', N'', N'1', N'100', N'0', N'0', N'0', N'0', N'20176', N'12', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', null, N'2026-06-16 17:32:07.130', N'0', N'99', N'0', N'0');
 GO
 SET IDENTITY_INSERT [dbo].[UsersChars] OFF
 GO
@@ -2347,7 +2537,7 @@ GO
 -- ----------------------------
 -- Records of UsersData
 -- ----------------------------
-INSERT INTO [dbo].[UsersData] ([CustomerID], [IsDeveloper], [AccountType], [AccountStatus], [GamePoints], [GameDollars], [dateregistered], [lastjoineddate], [lastgamedate], [ClanID], [ClanRank], [GameServerId], [CharsCreated], [TimePlayed], [DateActiveUntil], [BanTime], [BanReason], [BanCount], [BanExpireDate]) VALUES (N'1000000', N'126', N'0', N'100', N'4260', N'0', N'2026-06-15 00:01:07.320', N'1973-01-01 00:00:00.000', N'1973-01-01 00:00:00.000', N'0', N'99', null, N'0', N'0', N'2030-01-01 00:00:00.000', null, null, N'0', null);
+INSERT INTO [dbo].[UsersData] ([CustomerID], [IsDeveloper], [AccountType], [AccountStatus], [GamePoints], [GameDollars], [dateregistered], [lastjoineddate], [lastgamedate], [ClanID], [ClanRank], [GameServerId], [CharsCreated], [TimePlayed], [DateActiveUntil], [BanTime], [BanReason], [BanCount], [BanExpireDate]) VALUES (N'1000000', N'126', N'0', N'100', N'4260', N'0', N'2026-06-15 00:01:07.320', N'1973-01-01 00:00:00.000', N'1973-01-01 00:00:00.000', N'0', N'99', null, N'1', N'0', N'2030-01-01 00:00:00.000', null, null, N'0', null);
 GO
 
 -- ----------------------------
@@ -2369,7 +2559,7 @@ CREATE TABLE [dbo].[UsersInventory] (
 
 
 GO
-DBCC CHECKIDENT(N'[dbo].[UsersInventory]', RESEED, 3)
+DBCC CHECKIDENT(N'[dbo].[UsersInventory]', RESEED, 15)
 GO
 
 -- ----------------------------
@@ -2377,11 +2567,13 @@ GO
 -- ----------------------------
 SET IDENTITY_INSERT [dbo].[UsersInventory] ON
 GO
-INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'1', N'1000000', N'0', N'0', N'20174', N'2031-12-06 00:01:07.327', N'1', N'-1', N'-1');
+INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'12', N'1000000', N'3', N'1', N'101306', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1');
 GO
-INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'2', N'1000000', N'0', N'0', N'20182', N'2031-12-06 00:01:07.330', N'1', N'-1', N'-1');
+INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'13', N'1000000', N'3', N'2', N'101261', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1');
 GO
-INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'3', N'1000000', N'0', N'0', N'20184', N'2031-12-06 00:01:07.340', N'1', N'-1', N'-1');
+INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'14', N'1000000', N'3', N'3', N'101296', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1');
+GO
+INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'15', N'1000000', N'3', N'4', N'101289', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1');
 GO
 SET IDENTITY_INSERT [dbo].[UsersInventory] OFF
 GO
@@ -3536,140 +3728,458 @@ GO
 DROP PROCEDURE [dbo].[WZ_ACCOUNT_CREATE]
 GO
 
--- ----------------------------
--- Procedure structure for [WZ_ACCOUNT_CREATE]
--- ----------------------------
 
 CREATE PROCEDURE [dbo].[WZ_ACCOUNT_CREATE]
-	@in_IP varchar(64),
-	@in_Email varchar(128),
-	@in_Password varchar(64),
-	@in_ReferralID int,
-	@in_SerialKey varchar(128),
-	@in_SerialEmail varchar(128)
+    @in_IP varchar(64),
+    @in_Email varchar(128),
+    @in_NickName nvarchar(64),
+    @in_Password varchar(64),
+    @in_ReferralID int = 0
 AS
 BEGIN
-	SET NOCOUNT ON;
-	
-	--
-	-- NOTE: add new ResultCodes to updater CUpdater::CreateAccThreadEntry
-	--
-	
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
--- check for serial key
-	--declare @keyResultCode int = 99
-	--declare @keyCustomerID int = 99
-	--declare @keySerialType int = 99
-	--exec [BreezeNet].[dbo].[BN_WarZ_SerialGetInfo]
-		--	@in_SerialKey,
-		--	@in_SerialEmail,
-		--	@keyResultCode out,
-		--	@keyCustomerID out,
-		--	@keySerialType out
-								
-	--if(@keyResultCode <> 0 or @keyCustomerID > 0) begin
-	--	select 3 as ResultCode, 'Serial not valid' as ResultMsg;
-	--	return
-	--end
-	declare @keySerialType int = 0 -- Legend Package
+    SET @in_Email =
+        LTRIM(
+            RTRIM(
+                @in_Email
+            )
+        );
 
--- check if that account was created and refunded before (status 999)
-	declare @RefundCustomerID int = 0
-	select @RefundCustomerID=CustomerID from Accounts WHERE email=@in_Email and AccountStatus=999
-	if(@RefundCustomerID > 0) begin
-		-- change email to some unique one so it can be used again.
-		declare @dateTime varchar(128)
-		set @dateTime = REPLACE(CONVERT(VARCHAR, GETDATE(),111),'/','') + REPLACE(CONVERT(VARCHAR, GETDATE(),108),':','')
-		declare @refundedEmail varchar(128) = '(' + @dateTime + ') ' + @in_Email
-		update Accounts set email=@refundedEmail where CustomerID=@RefundCustomerID
-	end
-	
--- validate that email is unique
-	if exists (SELECT CustomerID from Accounts WHERE email=@in_Email) begin
-		select 2 as ResultCode, 'Email already in use' as ResultMsg;
-		return;
-	end
-	
--- create user
-	declare @MD5FromPwd varchar(100)
-	exec FN_CreateMD5Password @in_Password, @MD5FromPwd OUTPUT
-	INSERT INTO Accounts ( 
-		email,
-		MD5Password,
-		dateregistered,
-		ReferralID,
-		lastlogindate,
-		lastloginIP
-	) VALUES (
-		@in_EMail,
-		@MD5FromPwd,
-		GETDATE(),
-		@in_ReferralID,
-		GETDATE(),
-		@in_IP
-	)
+    SET @in_NickName =
+        LTRIM(
+            RTRIM(
+                @in_NickName
+            )
+        );
 
-	-- get new CustomerID
-	declare @CustomerID int
-	SELECT @CustomerID=CustomerID from Accounts where email=@in_Email
+    /* --------------------------------------------------------
+       Email
+       -------------------------------------------------------- */
 
--- create all needed user tables
-	INSERT INTO UsersData (
-		CustomerID,
-		AccountType,
-		dateregistered
-	) VALUES (
-		@CustomerID,
-		@keySerialType,
-		GETDATE()
-	)
-	
-	-- guest accounts have 48hrs play time (sync with WZ_ACCOUNT_APPLYKEY also)
-	if(@keySerialType = 3) begin
-		declare @DateActiveUntil datetime = DATEADD(hour, 48, GETDATE())
-		update UsersData set DateActiveUntil=@DateActiveUntil where CustomerID=@CustomerID
-	end
-	
--- register CustomerID in BreezeNet
-	exec [BreezeNet].[dbo].[BN_WarZ_SerialSetCustomerID] @in_SerialKey, @CustomerID
+    IF LEN(@in_Email) < 5 OR LEN(@in_Email) > 128
+    BEGIN
+        SELECT
+            2 AS ResultCode,
+            'Invalid email address' AS ResultMsg;
 
--- default items and bonuses for account types
+        RETURN;
+    END;
 
-	exec FN_AddItemToUser @CustomerID, 20174, 2000 -- hero: regular guy
+    IF CHARINDEX('@', @in_Email) <= 1
+    BEGIN
+        SELECT
+            2 AS ResultCode,
+            'Invalid email address' AS ResultMsg;
 
-	-- CBT TEST HEROES
-	exec FN_AddItemToUser @CustomerID, 20182, 2000
-	exec FN_AddItemToUser @CustomerID, 20184, 2000
+        RETURN;
+    END;
 
-	-- 10 of each
-	--declare @i int = 0
-	--while(@i < 10) begin
-	--	set @i = @i + 1
+    /* --------------------------------------------------------
+       NickName
+       -------------------------------------------------------- */
 
-	--	exec FN_AddItemToUser @CustomerID, 101306, 2000 -- Flashlight
-	--	exec FN_AddItemToUser @CustomerID, 101261, 2000 -- Bandages
-	--	exec FN_AddItemToUser @CustomerID, 101296, 2000 -- Can of Soda
-	--	exec FN_AddItemToUser @CustomerID, 101289, 2000 -- Granola Bar
-	--end
+    IF LEN(@in_NickName) < 4 OR LEN(@in_NickName) > 16
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname must contain between 4 and 16 characters'
+                AS ResultMsg;
 
--- BONUSES for packages - do not forget to sync them with [WZ_ACCOUNT_APPLYKEY]
-	if(@keySerialType = 0) begin
-		-- legend package, 30$ 1GC=142
-		update UsersData set GamePoints=(GamePoints+4260) where CustomerID=@CustomerID
-	end
+        RETURN;
+    END;
 
-	if(@keySerialType = 1) begin
-		-- pioneer package, 15$ 1GC=142
-		update UsersData set GamePoints=(GamePoints+2139) where CustomerID=@CustomerID
-	end
-	
-	-- success
-	select 0 as ResultCode
-	select @CustomerID as CustomerID, @keySerialType as 'AccountType'
+    /*
+        Разрешены только:
+        A-Z
+        a-z
+        0-9
+    */
+    IF @in_NickName COLLATE Latin1_General_100_BIN2
+        LIKE '%[^A-Za-z0-9]%'
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname contains invalid characters'
+                AS ResultMsg;
 
-	return
-END
+        RETURN;
+    END;
 
+    IF LOWER(@in_NickName) IN
+    (
+        'admin',
+        'administrator',
+        'moderator',
+        'developer',
+        'server',
+        'system',
+        'support'
+    )
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname is reserved'
+                AS ResultMsg;
+
+        RETURN;
+    END;
+
+    IF LEN(@in_Password) < 6 OR LEN(@in_Password) > 64
+    BEGIN
+        SELECT
+            4 AS ResultCode,
+            'Password must contain between 6 and 64 characters'
+                AS ResultMsg;
+
+        RETURN;
+    END;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        /* ----------------------------------------------------
+           Старый refunded аккаунт освобождает Email
+           ---------------------------------------------------- */
+
+        DECLARE @RefundCustomerID int = 0;
+
+        SELECT
+            @RefundCustomerID = CustomerID
+        FROM dbo.Accounts WITH
+        (
+            UPDLOCK,
+            HOLDLOCK
+        )
+        WHERE
+            email = @in_Email
+            AND AccountStatus = 999;
+
+        IF @RefundCustomerID > 0
+        BEGIN
+            DECLARE @DateText varchar(32);
+
+            SET @DateText =
+                REPLACE(
+                    CONVERT(
+                        varchar(10),
+                        GETDATE(),
+                        112
+                    ),
+                    '/',
+                    ''
+                )
+                +
+                REPLACE(
+                    CONVERT(
+                        varchar(8),
+                        GETDATE(),
+                        108
+                    ),
+                    ':',
+                    ''
+                );
+
+            UPDATE dbo.Accounts
+            SET email =
+                CONCAT(
+                    '(',
+                    @DateText,
+                    ')',
+                    CustomerID,
+                    '_',
+                    email
+                )
+            WHERE CustomerID = @RefundCustomerID;
+        END;
+
+        /* ----------------------------------------------------
+           Email уже используется
+           ---------------------------------------------------- */
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM dbo.Accounts WITH
+            (
+                UPDLOCK,
+                HOLDLOCK
+            )
+            WHERE email = @in_Email
+        )
+        BEGIN
+            ROLLBACK TRANSACTION;
+
+            SELECT
+                2 AS ResultCode,
+                'Email already in use'
+                    AS ResultMsg;
+
+            RETURN;
+        END;
+
+        /* ----------------------------------------------------
+           NickName уже используется
+           ---------------------------------------------------- */
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM dbo.UsersChars WITH
+            (
+                UPDLOCK,
+                HOLDLOCK
+            )
+            WHERE Gamertag = @in_NickName
+        )
+        BEGIN
+            ROLLBACK TRANSACTION;
+
+            SELECT
+                9 AS ResultCode,
+                'Nickname already exists'
+                    AS ResultMsg;
+
+            RETURN;
+        END;
+
+        /* ----------------------------------------------------
+           Пароль
+           ---------------------------------------------------- */
+
+        DECLARE @MD5Password varchar(100);
+
+        EXEC dbo.FN_CreateMD5Password
+            @in_Password,
+            @MD5Password OUTPUT;
+
+        /* ----------------------------------------------------
+           Accounts
+           ---------------------------------------------------- */
+
+        INSERT INTO dbo.Accounts
+        (
+            email,
+            MD5Password,
+            dateregistered,
+            ReferralID,
+            AccountStatus,
+            IsDeveloper,
+            lastlogindate,
+            lastloginIP
+        )
+        VALUES
+        (
+            @in_Email,
+            @MD5Password,
+            GETDATE(),
+            @in_ReferralID,
+            100,
+            0,
+            GETDATE(),
+            LEFT(
+                ISNULL(
+                    @in_IP,
+                    '0.0.0.0'
+                ),
+                16
+            )
+        );
+
+        DECLARE @CustomerID int =
+            CONVERT(
+                int,
+                SCOPE_IDENTITY()
+            );
+
+        /* ----------------------------------------------------
+           UsersData
+           ---------------------------------------------------- */
+
+        INSERT INTO dbo.UsersData
+        (
+            CustomerID,
+            AccountType,
+            AccountStatus,
+            GamePoints,
+            GameDollars,
+            dateregistered,
+            CharsCreated
+        )
+        VALUES
+        (
+            @CustomerID,
+            0,
+            100,
+            4260,
+            0,
+            GETDATE(),
+            1
+        );
+
+        /* ----------------------------------------------------
+           Постоянный стартовый персонаж
+
+           HeroItemID: 20174
+           Name: Ex Military
+           FNAME: RegularGuy
+           ---------------------------------------------------- */
+
+        INSERT INTO dbo.UsersChars
+        (
+            CustomerID,
+            Hardcore,
+            Gamertag,
+            HeroItemID,
+            HeadIdx,
+            BodyIdx,
+            LegsIdx,
+            Alive,
+            GameFlags,
+            CreateDate
+        )
+        VALUES
+        (
+            @CustomerID,
+            0,
+            @in_NickName,
+            20174,
+            0,
+            0,
+            0,
+            3,
+            1,
+            GETDATE()
+        );
+
+        DECLARE @CharID int =
+            CONVERT(
+                int,
+                SCOPE_IDENTITY()
+            );
+
+        /* ----------------------------------------------------
+           Стартовые предметы персонажа
+           ---------------------------------------------------- */
+
+        INSERT INTO dbo.UsersInventory
+        (
+            CustomerID,
+            CharID,
+            BackpackSlot,
+            ItemID,
+            LeasedUntil,
+            Quantity,
+            Var1,
+            Var2
+        )
+        VALUES
+        (
+            @CustomerID,
+            @CharID,
+            1,
+            101306,
+            '2020-01-01',
+            1,
+            -1,
+            -1
+        );
+
+        INSERT INTO dbo.UsersInventory
+        (
+            CustomerID,
+            CharID,
+            BackpackSlot,
+            ItemID,
+            LeasedUntil,
+            Quantity,
+            Var1,
+            Var2
+        )
+        VALUES
+        (
+            @CustomerID,
+            @CharID,
+            2,
+            101261,
+            '2020-01-01',
+            1,
+            -1,
+            -1
+        );
+
+        INSERT INTO dbo.UsersInventory
+        (
+            CustomerID,
+            CharID,
+            BackpackSlot,
+            ItemID,
+            LeasedUntil,
+            Quantity,
+            Var1,
+            Var2
+        )
+        VALUES
+        (
+            @CustomerID,
+            @CharID,
+            3,
+            101296,
+            '2020-01-01',
+            1,
+            -1,
+            -1
+        );
+
+        INSERT INTO dbo.UsersInventory
+        (
+            CustomerID,
+            CharID,
+            BackpackSlot,
+            ItemID,
+            LeasedUntil,
+            Quantity,
+            Var1,
+            Var2
+        )
+        VALUES
+        (
+            @CustomerID,
+            @CharID,
+            4,
+            101289,
+            '2020-01-01',
+            1,
+            -1,
+            -1
+        );
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            0 AS ResultCode;
+
+        SELECT
+            @CustomerID AS CustomerID,
+            @CharID AS CharID,
+            0 AS AccountType;
+
+        RETURN;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END;
+
+        SELECT
+            5 AS ResultCode,
+            ERROR_MESSAGE() AS ResultMsg;
+
+        RETURN;
+    END CATCH;
+END;
 
 GO
 
@@ -5051,98 +5561,24 @@ GO
 DROP PROCEDURE [dbo].[WZ_CharCreate]
 GO
 
--- ----------------------------
--- Procedure structure for [WZ_CharCreate]
--- ----------------------------
 
-CREATE PROCEDURE [dbo].[WZ_CharCreate] 
-	@in_CustomerID int,
-	@in_Hardcore int,
-	@in_Gamertag nvarchar(64),
-	@in_HeroItemID int,
-	@in_HeadIdx int,
-	@in_BodyIdx int,
-	@in_LegsIdx int
+CREATE PROCEDURE [dbo].[WZ_CharCreate]
+    @in_CustomerID int,
+    @in_Hardcore int,
+    @in_Gamertag nvarchar(64),
+    @in_HeroItemID int,
+    @in_HeadIdx int,
+    @in_BodyIdx int,
+    @in_LegsIdx int
 AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-	if(@in_Gamertag like '%sergey%titov%') begin
-		select 9 as ResultCode, 'no impersonation' as ResultMsg
-		return
-	end
-
-	if(@in_Gamertag like '%titov%sergey%') begin
-		select 9 as ResultCode, 'no impersonation' as ResultMsg
-		return
-	end
-	
-	if(@in_Gamertag like '%\[dev\]%' escape '\') begin
-		select 9 as ResultCode, 'no dev' as ResultMsg
-		return
-	end
-	
-	-- check if gamertag is unique
-	if exists (select CharID from UsersChars where Gamertag=@in_Gamertag)
-	begin
-		select 9 as ResultCode, 'Gamertag already exists' as ResultMsg
-		return
-	end
-
-	-- we can't have more that 5 survivors
-	declare @NumChars int = 0
-	select @NumChars=COUNT(*) from UsersChars where CustomerID=@in_CustomerID
-	if(@NumChars >= 5) begin
-		select 6 as ResultCode, 'too many created chars' as ResultMsg
-		return
-	end
-
-	insert into UsersChars (
-		CustomerID,
-		Gamertag,
-		Alive,
-		Hardcore,
-		HeroItemID,
-		HeadIdx,
-		BodyIdx,
-		LegsIdx,
-		CreateDate
-	) values (
-		@in_CustomerID,
-		@in_Gamertag,
-		3,
-		@in_Hardcore,
-		@in_HeroItemID,
-		@in_HeadIdx,
-		@in_BodyIdx,
-		@in_LegsIdx,
-		GETDATE()
-	)
-	declare @CharID int = SCOPE_IDENTITY()
-	
-	-- give basic items for first few survivors
-	declare @CharsCreated int = 0
-	update UsersData set CharsCreated=(CharsCreated+1) where CustomerID=@in_CustomerID
-	select @CharsCreated=CharsCreated from UsersData where CustomerID=@in_CustomerID
-	if(@CharsCreated <= 5) begin
-		-- add some default items - BE ULTRA CAREFUL with BackpackSlot number
-		insert into UsersInventory (CustomerID, CharID, BackpackSlot, ItemID, LeasedUntil, Quantity)
-			values (@in_CustomerID, @CharID, 1, 101306, '2020-1-1', 1) -- Flashlight
-		insert into UsersInventory (CustomerID, CharID, BackpackSlot, ItemID, LeasedUntil, Quantity)
-			values (@in_CustomerID, @CharID, 2, 101261, '2020-1-1', 1) -- Bandages
-		insert into UsersInventory (CustomerID, CharID, BackpackSlot, ItemID, LeasedUntil, Quantity)
-			values (@in_CustomerID, @CharID, 3, 101296, '2020-1-1', 1) -- Can of Soda
-		insert into UsersInventory (CustomerID, CharID, BackpackSlot, ItemID, LeasedUntil, Quantity)
-			values (@in_CustomerID, @CharID, 4, 101289, '2020-1-1', 1) -- Granola Bar
-	end
-	
-	-- allow to use postbox on newly created survivors
-	update UsersChars set GameFlags=1 where CharID=@CharID
-	
-	select 0 as ResultCode
-	select @CharID as 'CharID'
-END
-
+    SELECT
+        7 AS ResultCode,
+        'Additional character creation is disabled'
+            AS ResultMsg;
+END;
 
 GO
 
@@ -5152,60 +5588,177 @@ GO
 DROP PROCEDURE [dbo].[WZ_CharDelete]
 GO
 
--- ----------------------------
--- Procedure structure for [WZ_CharDelete]
--- ----------------------------
 
-CREATE PROCEDURE [dbo].[WZ_CharDelete] 
-	@in_CustomerID int,
-	@in_CharID int
+CREATE PROCEDURE [dbo].[WZ_CharDelete]
+    @in_CustomerID int,
+    @in_CharID int
 AS
 BEGIN
-	SET NOCOUNT ON;
-	
-	-- validate CharID/CustomerID pair
-	declare @CustomerID int = 0
-	select @CustomerID=CustomerID from UsersChars where CharID=@in_CharID
-	if(@@ROWCOUNT = 0 or @CustomerID <> @in_CustomerID) begin
-		select 6 as ResultCode, 'bad charid' as ResultMsg
-		return
-	end
+    SET NOCOUNT ON;
 
-	-- remove from clan
-	declare @ClanID int = 0
-	declare @ClanRank int = 0
-	select @ClanID=ClanID, @ClanRank=ClanRank from UsersChars where CharID=@in_CharID
-	if(@ClanID > 0)
-	begin
-		-- if leader is leaving
-		if(@ClanRank = 0)
-		begin
-			-- check if there is people left in clan
-			declare @NumClanMembers int
-			select @NumClanMembers=COUNT(*) from UsersChars where ClanID=@ClanID
-			if(@NumClanMembers > 1) begin
-				select 7 as ResultCode, 'still members in clan'
-				return
-			end
+    IF NOT EXISTS
+    (
+        SELECT 1
+        FROM dbo.UsersChars
+        WHERE
+            CustomerID = @in_CustomerID
+            AND CharID = @in_CharID
+    )
+    BEGIN
+        SELECT
+            6 AS ResultCode,
+            'Bad character ID'
+                AS ResultMsg;
 
-			-- delete clan
-			exec WZ_ClanFN_DeleteClan @ClanID
-		end
-		else
-		begin
-			-- not leader, just leave clan
-			update ClanData set NumClanMembers=(NumClanMembers - 1) where ClanID=@ClanID
-		end
-	end
-	
-	delete from UsersChars where CharID=@in_CharID
-	delete from UsersInventory where CharID=@in_CharID
+        RETURN;
+    END;
 
-	-- success
-	select 0 as ResultCode
-	
-END
+    SELECT
+        7 AS ResultCode,
+        'Permanent survivor cannot be deleted'
+            AS ResultMsg;
+END;
 
+GO
+
+-- ----------------------------
+-- Procedure structure for [dbo].[WZ_CharRename]
+-- ----------------------------
+DROP PROCEDURE [dbo].[WZ_CharRename]
+GO
+
+
+CREATE PROCEDURE [dbo].[WZ_CharRename]
+    @in_CustomerID int,
+    @in_CharID int,
+    @in_Gamertag nvarchar(64)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    SET @in_Gamertag =
+        LTRIM(
+            RTRIM(
+                @in_Gamertag
+            )
+        );
+
+    IF LEN(@in_Gamertag) < 4 OR LEN(@in_Gamertag) > 16
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname must contain between 4 and 16 characters'
+                AS ResultMsg;
+
+        RETURN;
+    END;
+
+    IF @in_Gamertag COLLATE Latin1_General_100_BIN2
+        LIKE '%[^A-Za-z0-9]%'
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname contains invalid characters'
+                AS ResultMsg;
+
+        RETURN;
+    END;
+
+    IF LOWER(@in_Gamertag) IN
+    (
+        'admin',
+        'administrator',
+        'moderator',
+        'developer',
+        'server',
+        'system',
+        'support'
+    )
+    BEGIN
+        SELECT
+            9 AS ResultCode,
+            'Nickname is reserved'
+                AS ResultMsg;
+
+        RETURN;
+    END;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS
+        (
+            SELECT 1
+            FROM dbo.UsersChars WITH
+            (
+                UPDLOCK,
+                HOLDLOCK
+            )
+            WHERE
+                CustomerID = @in_CustomerID
+                AND CharID = @in_CharID
+        )
+        BEGIN
+            ROLLBACK TRANSACTION;
+
+            SELECT
+                6 AS ResultCode,
+                'Bad character ID'
+                    AS ResultMsg;
+
+            RETURN;
+        END;
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM dbo.UsersChars WITH
+            (
+                UPDLOCK,
+                HOLDLOCK
+            )
+            WHERE
+                Gamertag = @in_Gamertag
+                AND CharID <> @in_CharID
+        )
+        BEGIN
+            ROLLBACK TRANSACTION;
+
+            SELECT
+                9 AS ResultCode,
+                'Nickname already exists'
+                    AS ResultMsg;
+
+            RETURN;
+        END;
+
+        UPDATE dbo.UsersChars
+        SET Gamertag = @in_Gamertag
+        WHERE
+            CustomerID = @in_CustomerID
+            AND CharID = @in_CharID;
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            0 AS ResultCode;
+
+        RETURN;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END;
+
+        SELECT
+            5 AS ResultCode,
+            ERROR_MESSAGE() AS ResultMsg;
+
+        RETURN;
+    END CATCH;
+END;
 
 GO
 
@@ -7797,6 +8350,9 @@ GO
 CREATE UNIQUE INDEX [IX_Accounts_email] ON [dbo].[Accounts]
 ([email] ASC) 
 GO
+CREATE UNIQUE INDEX [UX_Accounts_Email] ON [dbo].[Accounts]
+([email] ASC) 
+GO
 
 -- ----------------------------
 -- Primary Key structure for table [dbo].[Accounts]
@@ -8145,6 +8701,9 @@ CREATE INDEX [IX_UsersChars_Gamertag] ON [dbo].[UsersChars]
 GO
 CREATE INDEX [IX_Profile_Loadouts2_CustomerID] ON [dbo].[UsersChars]
 ([CustomerID] ASC) 
+GO
+CREATE UNIQUE INDEX [UX_UsersChars_Gamertag] ON [dbo].[UsersChars]
+([Gamertag] ASC) 
 GO
 
 -- ----------------------------
