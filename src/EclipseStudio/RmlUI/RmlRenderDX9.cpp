@@ -53,10 +53,6 @@
 #undef SetTexture
 #endif
 
-#ifdef DrawIndexedPrimitive
-#undef DrawIndexedPrimitive
-#endif
-
 #ifdef CreateStateBlock
 #undef CreateStateBlock
 #endif
@@ -1837,6 +1833,7 @@ void RmlRenderDX9::RenderGeometry(
 {
 	if (
 		!Device ||
+		!r3dRenderer ||
 		!GeometryHandle
 	)
 	{
@@ -1848,6 +1845,16 @@ void RmlRenderDX9::RenderGeometry(
 			GeometryHandle
 		);
 
+	if (
+		!Geometry->VertexBuffer ||
+		!Geometry->IndexBuffer ||
+		Geometry->NumVertices <= 0 ||
+		Geometry->NumIndices < 3
+	)
+	{
+		return;
+	}
+
 	FTextureHandle* TextureData =
 		reinterpret_cast<FTextureHandle*>(
 			TextureHandle
@@ -1857,7 +1864,7 @@ void RmlRenderDX9::RenderGeometry(
 		nullptr;
 
 	bool bExternalCharacterTexture =
-	false;
+		false;
 
 	if (TextureData)
 	{
@@ -1894,13 +1901,13 @@ void RmlRenderDX9::RenderGeometry(
 		-0.5f;
 
 	const D3DMATRIX TranslationMatrix =
-	MakeTranslation(
-		Translation.x +
-			HalfPixelOffset,
-		Translation.y +
-			HalfPixelOffset,
-		0.0f
-	);
+		MakeTranslation(
+			Translation.x +
+				HalfPixelOffset,
+			Translation.y +
+				HalfPixelOffset,
+			0.0f
+		);
 
 	D3DMATRIX World{};
 
@@ -2031,7 +2038,7 @@ void RmlRenderDX9::RenderGeometry(
 			Geometry->NumIndices / 3
 		);
 
-	Device->DrawIndexedPrimitive(
+	r3dRenderer->DrawIndexed(
 		D3DPT_TRIANGLELIST,
 		0,
 		0,
