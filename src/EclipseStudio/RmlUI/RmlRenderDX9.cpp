@@ -3,7 +3,9 @@
 
 #include "RmlRenderDX9.h"
 #include <RmlUi/Core/Core.h>
+#include <RmlUi/Core/DecorationTypes.h>
 #include <RmlUi/Core/Log.h>
+#include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/Types.h>
 
 #include <windows.h>
@@ -296,6 +298,291 @@ R"RMLSHADER(
 			SourceColor.a;
 
 		return Result;
+	}
+)RMLSHADER";
+
+static const char* RmlDx9GradientShaderSource =
+R"RMLSHADER(
+	#define MAX_NUM_STOPS 16
+	#define LINEAR 0
+	#define RADIAL 1
+	#define CONIC 2
+	#define REPEATING_LINEAR 3
+	#define REPEATING_RADIAL 4
+	#define REPEATING_CONIC 5
+	#define PI 3.14159265
+
+	float4 GradientParams : register(c0);
+	float4 GradientP : register(c1);
+	float4 GradientV : register(c2);
+	float4 StopColors[MAX_NUM_STOPS] : register(c3);
+	float4 StopPositions0123 : register(c19);
+	float4 StopPositions4567 : register(c20);
+	float4 StopPositions891011 : register(c21);
+	float4 StopPositions12131415 : register(c22);
+
+	float GetStopPosition(int Index)
+	{
+		if (Index == 0) return StopPositions0123.x;
+		if (Index == 1) return StopPositions0123.y;
+		if (Index == 2) return StopPositions0123.z;
+		if (Index == 3) return StopPositions0123.w;
+		if (Index == 4) return StopPositions4567.x;
+		if (Index == 5) return StopPositions4567.y;
+		if (Index == 6) return StopPositions4567.z;
+		if (Index == 7) return StopPositions4567.w;
+		if (Index == 8) return StopPositions891011.x;
+		if (Index == 9) return StopPositions891011.y;
+		if (Index == 10) return StopPositions891011.z;
+		if (Index == 11) return StopPositions891011.w;
+		if (Index == 12) return StopPositions12131415.x;
+		if (Index == 13) return StopPositions12131415.y;
+		if (Index == 14) return StopPositions12131415.z;
+		return StopPositions12131415.w;
+	}
+
+	float4 MixStopColors(float T, int NumStops)
+	{
+		float4 Color = StopColors[0];
+
+		for (int Index = 1; Index < MAX_NUM_STOPS; ++Index)
+		{
+			if (Index < NumStops)
+			{
+				const float Previous =
+					GetStopPosition(
+						Index - 1
+					);
+
+				const float Current =
+					GetStopPosition(
+						Index
+					);
+
+				Color =
+					lerp(
+						Color,
+						StopColors[Index],
+						smoothstep(
+							Previous,
+							Current,
+							T
+						)
+					);
+			}
+		}
+
+		return Color;
+	}
+
+	float4 main(float2 UV : TEXCOORD0, float4 Diffuse : COLOR0) : COLOR0
+	{
+		const int Function =
+			(int)GradientParams.x;
+
+		const int NumStops =
+			(int)GradientParams.y;
+
+		float T =
+			0.0;
+
+		if (
+			Function == LINEAR ||
+			Function == REPEATING_LINEAR
+		)
+		{
+			const float2 V =
+				GradientV.xy;
+
+			const float DistSquare =
+				max(
+					dot(
+						V,
+						V
+					),
+					0.000001
+				);
+
+			T =
+				dot(
+					V,
+					UV - GradientP.xy
+				) /
+				DistSquare;
+		}
+		else if (
+			Function == RADIAL ||
+			Function == REPEATING_RADIAL
+		)
+		{
+			T =
+				length(
+					GradientV.xy *
+					(UV - GradientP.xy)
+				);
+		}
+		else if (
+			Function == CONIC ||
+			Function == REPEATING_CONIC
+		)
+		{
+			const float2 Direction =
+				GradientV.xy;
+
+			const float2 Delta =
+				UV - GradientP.xy;
+
+			const float2 Rotated =
+				float2(
+					Direction.x * Delta.x -
+						Direction.y * Delta.y,
+					Direction.y * Delta.x +
+						Direction.x * Delta.y
+				);
+
+			T =
+				0.5 +
+				atan2(
+					-Rotated.x,
+					Rotated.y
+				) /
+				(2.0 * PI);
+		}
+
+		if (
+			Function == REPEATING_LINEAR ||
+			Function == REPEATING_RADIAL ||
+			Function == REPEATING_CONIC
+		)
+		{
+			const float T0 =
+				GetStopPosition(
+					0
+				);
+
+			const float T1 =
+				GetStopPosition(
+					max(
+						NumStops - 1,
+						0
+					)
+				);
+
+			const float Span =
+				max(
+					T1 - T0,
+					0.000001
+				);
+
+			T =
+				T0 +
+				fmod(
+					fmod(
+						T - T0,
+						Span
+					) +
+					Span,
+					Span
+				);
+		}
+
+		return
+			Diffuse *
+			MixStopColors(
+				T,
+				NumStops
+			);
+	}
+)RMLSHADER";
+
+static const char* RmlDx9CreationShaderSource =
+R"RMLSHADER(
+	float4 CreationParams : register(c0);
+
+	float4 main(float2 UV : TEXCOORD0, float4 Diffuse : COLOR0) : COLOR0
+	{
+		const float Time =
+			CreationParams.x;
+
+		const float2 Dimensions =
+			max(
+				CreationParams.yz,
+				float2(
+					1.0,
+					1.0
+				)
+			);
+
+		float3 Color =
+			float3(
+				0.0,
+				0.0,
+				0.0
+			);
+
+		float LengthValue =
+			1.0;
+
+		for (int Index = 0; Index < 3; ++Index)
+		{
+			float2 P =
+				UV;
+
+			float2 LocalUV =
+				P;
+
+			P -=
+				0.5;
+
+			P.x *=
+				Dimensions.x /
+				Dimensions.y;
+
+			const float Z =
+				Time +
+				(float)Index *
+				0.07;
+
+			LengthValue =
+				max(
+					length(
+						P
+					),
+					0.0001
+				);
+
+			LocalUV +=
+				P /
+				LengthValue *
+				(sin(Z) + 1.0) *
+				abs(
+					sin(
+						LengthValue * 9.0 -
+						Z -
+						Z
+					)
+				);
+
+			Color[Index] =
+				0.01 /
+				max(
+					length(
+						fmod(
+							LocalUV,
+							1.0
+						) -
+						0.5
+					),
+					0.0001
+				);
+		}
+
+		return
+			float4(
+				Color /
+					LengthValue,
+				Diffuse.a
+			);
 	}
 )RMLSHADER";
 
@@ -615,6 +902,54 @@ bool RmlRenderDX9::EnsureColorMatrixShader()
 	return true;
 }
 
+bool RmlRenderDX9::EnsureGradientShader()
+{
+	if (GradientPixelShader)
+		return true;
+
+	if (!CreatePixelShader(
+		RmlDx9GradientShaderSource,
+		&GradientPixelShader
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Gradient shader creation failed\n"
+		);
+
+		return false;
+	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Gradient shader created\n"
+	);
+
+	return true;
+}
+
+bool RmlRenderDX9::EnsureCreationShader()
+{
+	if (CreationPixelShader)
+		return true;
+
+	if (!CreatePixelShader(
+		RmlDx9CreationShaderSource,
+		&CreationPixelShader
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Creation shader creation failed\n"
+		);
+
+		return false;
+	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Creation shader created\n"
+	);
+
+	return true;
+}
+
 void RmlRenderDX9::ReleaseFilterShaders()
 {
 	if (BlurPixelShader)
@@ -633,6 +968,18 @@ void RmlRenderDX9::ReleaseFilterShaders()
 	{
 		ColorMatrixPixelShader->Release();
 		ColorMatrixPixelShader = nullptr;
+	}
+
+	if (GradientPixelShader)
+	{
+		GradientPixelShader->Release();
+		GradientPixelShader = nullptr;
+	}
+
+	if (CreationPixelShader)
+	{
+		CreationPixelShader->Release();
+		CreationPixelShader = nullptr;
 	}
 }
 
@@ -2922,6 +3269,135 @@ void RmlRenderDX9::RenderGeometry(
 			D3DBLEND_ONE
 		);
 	}
+}
+
+void RmlRenderDX9::RenderGeometryWithPixelShader(
+	const FCompiledGeometry* Geometry,
+	Rml::Vector2f Translation,
+	IDirect3DPixelShader9* PixelShader
+)
+{
+	if (
+		!Device ||
+		!r3dRenderer ||
+		!Geometry ||
+		!Geometry->VertexBuffer ||
+		!Geometry->IndexBuffer ||
+		Geometry->NumVertices <= 0 ||
+		Geometry->NumIndices < 3 ||
+		!PixelShader
+	)
+	{
+		return;
+	}
+
+	constexpr float HalfPixelOffset =
+		-0.5f;
+
+	const D3DMATRIX TranslationMatrix =
+		MakeTranslation(
+			Translation.x +
+				HalfPixelOffset,
+			Translation.y +
+				HalfPixelOffset,
+			0.0f
+		);
+
+	D3DMATRIX World{};
+
+	D3DXMatrixMultiply(
+		reinterpret_cast<D3DXMATRIX*>(
+			&World
+		),
+		reinterpret_cast<const D3DXMATRIX*>(
+			&TranslationMatrix
+		),
+		reinterpret_cast<const D3DXMATRIX*>(
+			&CurrentTransform
+		)
+	);
+
+	Device->SetTransform(
+		D3DTS_WORLD,
+		&World
+	);
+
+	Device->SetStreamSource(
+		0,
+		Geometry->VertexBuffer,
+		0,
+		sizeof(FDx9Vertex)
+	);
+
+	Device->SetIndices(
+		Geometry->IndexBuffer
+	);
+
+	Device->SetVertexShader(
+		nullptr
+	);
+
+	Device->SetPixelShader(
+		PixelShader
+	);
+
+	Device->SetFVF(
+		VertexFVF
+	);
+
+	for (
+		DWORD Stage = 0;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_DISABLE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_DISABLE
+		);
+	}
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SRCBLEND,
+		D3DBLEND_ONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_DESTBLEND,
+		D3DBLEND_INVSRCALPHA
+	);
+
+	const UINT PrimitiveCount =
+		static_cast<UINT>(
+			Geometry->NumIndices / 3
+		);
+
+	r3dRenderer->DrawIndexed(
+		D3DPT_TRIANGLELIST,
+		0,
+		0,
+		static_cast<UINT>(
+			Geometry->NumVertices
+		),
+		0,
+		PrimitiveCount
+	);
+
+	Device->SetPixelShader(
+		nullptr
+	);
 }
 
 void RmlRenderDX9::ReleaseGeometry(Rml::CompiledGeometryHandle geometry)
@@ -5790,4 +6266,458 @@ void RmlRenderDX9::ReleaseFilter(
 	}
 
 	delete Filter;
+}
+
+Rml::CompiledShaderHandle RmlRenderDX9::CompileShader(
+	const Rml::String& Name,
+	const Rml::Dictionary& Parameters
+)
+{
+	FCompiledShader* Shader =
+		new FCompiledShader();
+
+	if (Name == "linear-gradient")
+	{
+		Shader->Type =
+			ECompiledShaderType::Gradient;
+
+		const bool bRepeating =
+			Rml::Get(
+				Parameters,
+				"repeating",
+				false
+			);
+
+		Shader->GradientFunction =
+			bRepeating
+			? EGradientFunction::RepeatingLinear
+			: EGradientFunction::Linear;
+
+		Shader->P =
+			Rml::Get(
+				Parameters,
+				"p0",
+				Rml::Vector2f(
+					0.0f
+				)
+			);
+
+		Shader->V =
+			Rml::Get(
+				Parameters,
+				"p1",
+				Rml::Vector2f(
+					0.0f
+				)
+			) -
+			Shader->P;
+	}
+	else if (Name == "radial-gradient")
+	{
+		Shader->Type =
+			ECompiledShaderType::Gradient;
+
+		const bool bRepeating =
+			Rml::Get(
+				Parameters,
+				"repeating",
+				false
+			);
+
+		Shader->GradientFunction =
+			bRepeating
+			? EGradientFunction::RepeatingRadial
+			: EGradientFunction::Radial;
+
+		Shader->P =
+			Rml::Get(
+				Parameters,
+				"center",
+				Rml::Vector2f(
+					0.0f
+				)
+			);
+
+		const Rml::Vector2f Radius =
+			Rml::Get(
+				Parameters,
+				"radius",
+				Rml::Vector2f(
+					1.0f
+				)
+			);
+
+		Shader->V =
+			Rml::Vector2f(
+				Radius.x != 0.0f
+					? 1.0f / Radius.x
+					: 1.0f,
+				Radius.y != 0.0f
+					? 1.0f / Radius.y
+					: 1.0f
+			);
+	}
+	else if (Name == "conic-gradient")
+	{
+		Shader->Type =
+			ECompiledShaderType::Gradient;
+
+		const bool bRepeating =
+			Rml::Get(
+				Parameters,
+				"repeating",
+				false
+			);
+
+		Shader->GradientFunction =
+			bRepeating
+			? EGradientFunction::RepeatingConic
+			: EGradientFunction::Conic;
+
+		Shader->P =
+			Rml::Get(
+				Parameters,
+				"center",
+				Rml::Vector2f(
+					0.0f
+				)
+			);
+
+		const float Angle =
+			Rml::Get(
+				Parameters,
+				"angle",
+				0.0f
+			);
+
+		Shader->V =
+			Rml::Vector2f(
+				std::cos(
+					Angle
+				),
+				std::sin(
+					Angle
+				)
+			);
+	}
+	else if (Name == "shader")
+	{
+		const Rml::String Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				Rml::String()
+			);
+
+		if (Value == "creation")
+		{
+			Shader->Type =
+				ECompiledShaderType::Creation;
+
+			Shader->Dimensions =
+				Rml::Get(
+					Parameters,
+					"dimensions",
+					Rml::Vector2f(
+						0.0f
+					)
+				);
+		}
+	}
+
+	if (
+		Shader->Type ==
+		ECompiledShaderType::Gradient
+	)
+	{
+		const Rml::ColorStopList ColorStops =
+			Rml::Get(
+				Parameters,
+				"color_stop_list",
+				Rml::ColorStopList()
+			);
+
+		const size_t StopCount =
+			std::min<size_t>(
+				ColorStops.size(),
+				16
+			);
+
+		Shader->StopPositions.reserve(
+			StopCount
+		);
+
+		Shader->StopColors.reserve(
+			StopCount
+		);
+
+		for (
+			size_t Index = 0;
+			Index < StopCount;
+			++Index
+		)
+		{
+			Shader->StopPositions.push_back(
+				ColorStops[Index].
+					position.
+					number
+			);
+
+			Shader->StopColors.push_back(
+				ColorStops[Index].
+					color
+			);
+		}
+
+		if (Shader->StopPositions.empty())
+		{
+			delete Shader;
+			return 0;
+		}
+	}
+
+	if (
+		Shader->Type !=
+		ECompiledShaderType::Invalid
+	)
+	{
+		return reinterpret_cast<
+			Rml::CompiledShaderHandle
+		>(
+			Shader
+		);
+	}
+
+	Rml::Log::Message(
+		Rml::Log::LT_WARNING,
+		"DX9 backend: unsupported shader '%s'.",
+		Name.c_str()
+	);
+
+	delete Shader;
+	return 0;
+}
+
+void RmlRenderDX9::RenderShader(
+	Rml::CompiledShaderHandle ShaderHandle,
+	Rml::CompiledGeometryHandle GeometryHandle,
+	Rml::Vector2f Translation,
+	Rml::TextureHandle
+)
+{
+	if (
+		!ShaderHandle ||
+		!GeometryHandle
+	)
+	{
+		return;
+	}
+
+	const FCompiledShader* Shader =
+		reinterpret_cast<
+			const FCompiledShader*
+		>(
+			ShaderHandle
+		);
+
+	const FCompiledGeometry* Geometry =
+		reinterpret_cast<
+			const FCompiledGeometry*
+		>(
+			GeometryHandle
+		);
+
+	switch (Shader->Type)
+	{
+	case ECompiledShaderType::Gradient:
+	{
+		if (!EnsureGradientShader())
+			return;
+
+		const int StopCount =
+			static_cast<int>(
+				std::min<size_t>(
+					Shader->StopPositions.size(),
+					16
+				)
+			);
+
+		if (StopCount <= 0)
+			return;
+
+		float GradientParams[4] =
+		{
+			static_cast<float>(
+				Shader->GradientFunction
+			),
+			static_cast<float>(
+				StopCount
+			),
+			0.0f,
+			0.0f
+		};
+
+		float GradientP[4] =
+		{
+			Shader->P.x,
+			Shader->P.y,
+			0.0f,
+			0.0f
+		};
+
+		float GradientV[4] =
+		{
+			Shader->V.x,
+			Shader->V.y,
+			0.0f,
+			0.0f
+		};
+
+		float StopColorConstants[16][4] = {};
+		float StopPositionConstants[4][4] = {};
+
+		for (
+			int Index = 0;
+			Index < StopCount;
+			++Index
+		)
+		{
+			const Rml::ColourbPremultiplied& Color =
+				Shader->StopColors[
+					static_cast<size_t>(
+						Index
+					)
+				];
+
+			StopColorConstants[Index][0] =
+				static_cast<float>(
+					Color.red
+				) /
+				255.0f;
+
+			StopColorConstants[Index][1] =
+				static_cast<float>(
+					Color.green
+				) /
+				255.0f;
+
+			StopColorConstants[Index][2] =
+				static_cast<float>(
+					Color.blue
+				) /
+				255.0f;
+
+			StopColorConstants[Index][3] =
+				static_cast<float>(
+					Color.alpha
+				) /
+				255.0f;
+
+			StopPositionConstants[Index / 4][Index % 4] =
+				Shader->StopPositions[
+					static_cast<size_t>(
+						Index
+					)
+				];
+		}
+
+		Device->SetPixelShaderConstantF(
+			0,
+			GradientParams,
+			1
+		);
+
+		Device->SetPixelShaderConstantF(
+			1,
+			GradientP,
+			1
+		);
+
+		Device->SetPixelShaderConstantF(
+			2,
+			GradientV,
+			1
+		);
+
+		Device->SetPixelShaderConstantF(
+			3,
+			&StopColorConstants[0][0],
+			16
+		);
+
+		Device->SetPixelShaderConstantF(
+			19,
+			&StopPositionConstants[0][0],
+			4
+		);
+
+		RenderGeometryWithPixelShader(
+			Geometry,
+			Translation,
+			GradientPixelShader
+		);
+
+		break;
+	}
+
+	case ECompiledShaderType::Creation:
+	{
+		if (!EnsureCreationShader())
+			return;
+
+		Rml::SystemInterface* SystemInterface =
+			Rml::GetSystemInterface();
+
+		const float Time =
+			SystemInterface
+			? static_cast<float>(
+				SystemInterface->GetElapsedTime()
+			)
+			: 0.0f;
+
+		const float CreationParams[4] =
+		{
+			Time,
+			Shader->Dimensions.x,
+			Shader->Dimensions.y,
+			0.0f
+		};
+
+		Device->SetPixelShaderConstantF(
+			0,
+			CreationParams,
+			1
+		);
+
+		RenderGeometryWithPixelShader(
+			Geometry,
+			Translation,
+			CreationPixelShader
+		);
+
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	SetupRenderState();
+}
+
+void RmlRenderDX9::ReleaseShader(
+	Rml::CompiledShaderHandle ShaderHandle
+)
+{
+	if (!ShaderHandle)
+		return;
+
+	FCompiledShader* Shader =
+		reinterpret_cast<
+			FCompiledShader*
+		>(
+			ShaderHandle
+		);
+
+	delete Shader;
 }

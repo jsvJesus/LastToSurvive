@@ -117,6 +117,22 @@ public:
 		Rml::CompiledFilterHandle Filter
 	) override;
 
+	Rml::CompiledShaderHandle CompileShader(
+		const Rml::String& Name,
+		const Rml::Dictionary& Parameters
+	) override;
+
+	void RenderShader(
+		Rml::CompiledShaderHandle Shader,
+		Rml::CompiledGeometryHandle Geometry,
+		Rml::Vector2f Translation,
+		Rml::TextureHandle Texture
+	) override;
+
+	void ReleaseShader(
+		Rml::CompiledShaderHandle Shader
+	) override;
+
 private:
 	struct FDx9Vertex
 	{
@@ -189,6 +205,23 @@ private:
 		MaskImage
 	};
 
+	enum class ECompiledShaderType
+	{
+		Invalid = 0,
+		Gradient,
+		Creation
+	};
+
+	enum class EGradientFunction
+	{
+		Linear = 0,
+		Radial,
+		Conic,
+		RepeatingLinear,
+		RepeatingRadial,
+		RepeatingConic
+	};
+
 	struct FCompiledFilter
 	{
 		ECompiledFilterType Type =
@@ -224,6 +257,36 @@ private:
 
 		IDirect3DTexture9* MaskTexture =
 			nullptr;
+	};
+
+	struct FCompiledShader
+	{
+		ECompiledShaderType Type =
+			ECompiledShaderType::Invalid;
+
+		EGradientFunction GradientFunction =
+			EGradientFunction::Linear;
+
+		Rml::Vector2f P =
+			Rml::Vector2f(
+				0.0f,
+				0.0f
+			);
+
+		Rml::Vector2f V =
+			Rml::Vector2f(
+				0.0f,
+				0.0f
+			);
+
+		std::vector<float> StopPositions;
+		std::vector<Rml::ColourbPremultiplied> StopColors;
+
+		Rml::Vector2f Dimensions =
+			Rml::Vector2f(
+				0.0f,
+				0.0f
+			);
 	};
 
 	struct FPostProcessTarget
@@ -286,6 +349,12 @@ private:
 		nullptr;
 
 	IDirect3DPixelShader9* ColorMatrixPixelShader =
+		nullptr;
+
+	IDirect3DPixelShader9* GradientPixelShader =
+		nullptr;
+
+	IDirect3DPixelShader9* CreationPixelShader =
 		nullptr;
 
 	int ViewWidth = 1;
@@ -411,6 +480,8 @@ private:
 	bool EnsureBlurShader();
 	bool EnsureShadowShader();
 	bool EnsureColorMatrixShader();
+	bool EnsureGradientShader();
+	bool EnsureCreationShader();
 
 	bool CreatePixelShader(
 		const char* SourceCode,
@@ -456,6 +527,12 @@ private:
 		IDirect3DSurface9* DestinationSurface,
 		float Sigma,
 		bool bHorizontal
+	);
+
+	void RenderGeometryWithPixelShader(
+		const FCompiledGeometry* Geometry,
+		Rml::Vector2f Translation,
+		IDirect3DPixelShader9* PixelShader
 	);
 
 	bool ApplyGaussianBlur(

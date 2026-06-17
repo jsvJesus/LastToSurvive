@@ -8,13 +8,156 @@
 #include "RmlFileInterface.h"
 
 #include <RmlUi/Core/Context.h>
+#include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Debugger.h>
 
+#include <imm.h>
 #include <windowsx.h>
 
 #include <algorithm>
 #include <string>
 #include <vector>
+
+#pragma comment(lib, "imm32.lib")
+
+#ifndef WM_UNICHAR
+#define WM_UNICHAR 0x0109
+#endif
+
+#ifndef UNICODE_NOCHAR
+#define UNICODE_NOCHAR 0xFFFF
+#endif
+
+namespace
+{
+	Rml::String RmlRuntimeConvertToUTF8(
+		const std::wstring& Text
+	)
+	{
+		if (Text.empty())
+			return Rml::String();
+
+		const int Required =
+			WideCharToMultiByte(
+				CP_UTF8,
+				0,
+				Text.data(),
+				static_cast<int>(
+					Text.size()
+				),
+				nullptr,
+				0,
+				nullptr,
+				nullptr
+			);
+
+		if (Required <= 0)
+			return Rml::String();
+
+		Rml::String Result;
+		Result.resize(
+			static_cast<size_t>(
+				Required
+			)
+		);
+
+		WideCharToMultiByte(
+			CP_UTF8,
+			0,
+			Text.data(),
+			static_cast<int>(
+				Text.size()
+			),
+			&Result[0],
+			Required,
+			nullptr,
+			nullptr
+		);
+
+		return Result;
+	}
+
+	int RmlRuntimeIMEGetCursorPosition(
+		HIMC Context
+	)
+	{
+		return ImmGetCompositionString(
+			Context,
+			GCS_CURSORPOS,
+			nullptr,
+			0
+		);
+	}
+
+	std::wstring RmlRuntimeIMEGetCompositionString(
+		HIMC Context,
+		bool bFinalize
+	)
+	{
+		const DWORD Type =
+			bFinalize
+			? GCS_RESULTSTR
+			: GCS_COMPSTR;
+
+		const LONG ByteCount =
+			ImmGetCompositionStringW(
+				Context,
+				Type,
+				nullptr,
+				0
+			);
+
+		if (ByteCount <= 0)
+			return std::wstring();
+
+		const int CharacterCount =
+			static_cast<int>(
+				ByteCount /
+				sizeof(wchar_t)
+			);
+
+		std::wstring Result;
+		Result.resize(
+			static_cast<size_t>(
+				CharacterCount
+			)
+		);
+
+		ImmGetCompositionStringW(
+			Context,
+			Type,
+			&Result[0],
+			ByteCount
+		);
+
+		return Result;
+	}
+
+	void RmlRuntimeCompleteIMEComposition(
+		HWND WindowHandle
+	)
+	{
+		HIMC Context =
+			ImmGetContext(
+				WindowHandle
+			);
+
+		if (!Context)
+			return;
+
+		ImmNotifyIME(
+			Context,
+			NI_COMPOSITIONSTR,
+			CPS_COMPLETE,
+			0
+		);
+
+		ImmReleaseContext(
+			WindowHandle,
+			Context
+		);
+	}
+}
 
 RmlRuntime& RmlRuntime::Get()
 {
@@ -114,6 +257,10 @@ bool RmlRuntime::InitializeCore(
 	SystemInterface =
 		std::make_unique<RmlSystemInterface>();
 
+	SystemInterface->SetWindow(
+		WindowHandle
+	);
+
 	FileInterface =
 		std::make_unique<RmlFileInterface>(
 			DataRoot.c_str()
@@ -143,6 +290,10 @@ bool RmlRuntime::InitializeCore(
 	}
 
 	Rml::SetSystemInterface(
+		SystemInterface.get()
+	);
+
+	Rml::SetTextInputHandler(
 		SystemInterface.get()
 	);
 
@@ -247,6 +398,16 @@ void RmlRuntime::ShutdownCore()
 
 	if (bCoreInitialized)
 	{
+		if (
+			Rml::GetTextInputHandler() ==
+			SystemInterface.get()
+		)
+		{
+			Rml::SetTextInputHandler(
+				nullptr
+			);
+		}
+
 		Rml::Shutdown();
 		bCoreInitialized = false;
 	}
@@ -464,6 +625,18 @@ bool RmlRuntime::ProcessWin32Message(
 		return false;
 	}
 
+	if (
+		SystemInterface &&
+		SystemInterface->IsComposing() &&
+		Message >= WM_LBUTTONDOWN &&
+		Message <= WM_MBUTTONDBLCLK
+	)
+	{
+		RmlRuntimeCompleteIMEComposition(
+			WindowHandle
+		);
+	}
+
 	switch (Message)
 	{
 	case WM_MOUSEMOVE:
@@ -580,17 +753,243 @@ bool RmlRuntime::ProcessWin32Message(
 
 	case WM_CHAR:
 	{
-		if (WParam >= 32)
+		static wchar_t FirstU16CodeUnit =
+			0;
+
+		const wchar_t Character16 =
+			static_cast<wchar_t>(
+				WParam
+			);
+
+		if (
+			Character16 >= 0xD800 &&
+			Character16 < 0xDC00
+		)
+		{
+			FirstU16CodeUnit =
+				Character16;
+
+			return true;
+		}
+
+		if (
+			Character16 >= 0xDC00 &&
+			Character16 < 0xE000 &&
+			FirstU16CodeUnit != 0
+		)
+		{
+			const Rml::String Text =
+				RmlRuntimeConvertToUTF8(
+					std::wstring{
+						FirstU16CodeUnit,
+						Character16
+					}
+				);
+
+			FirstU16CodeUnit =
+				0;
+
+			if (!Text.empty())
+			{
+				Context->ProcessTextInput(
+					Text
+				);
+			}
+
+			return true;
+		}
+
+		FirstU16CodeUnit =
+			0;
+
+		Rml::Character Character =
+			static_cast<Rml::Character>(
+				Character16
+			);
+
+		if (Character16 == L'\r')
+		{
+			Character =
+				static_cast<Rml::Character>(
+					'\n'
+				);
+		}
+
+		if (
+			(
+				static_cast<char32_t>(
+					Character
+				) >= 32 ||
+				Character ==
+					static_cast<Rml::Character>(
+						'\n'
+					)
+			) &&
+			Character !=
+				static_cast<Rml::Character>(
+					127
+				)
+		)
 		{
 			Context->ProcessTextInput(
-				static_cast<Rml::Character>(
-					WParam
-				)
+				Character
 			);
 		}
 
 		return true;
 	}
+
+	case WM_UNICHAR:
+	{
+		if (WParam == UNICODE_NOCHAR)
+		{
+			if (OutResult)
+				*OutResult = TRUE;
+
+			return true;
+		}
+
+		Context->ProcessTextInput(
+			static_cast<Rml::Character>(
+				WParam
+			)
+		);
+
+		return true;
+	}
+
+	case WM_IME_STARTCOMPOSITION:
+	{
+		if (SystemInterface)
+			SystemInterface->StartComposition();
+
+		return true;
+	}
+
+	case WM_IME_ENDCOMPOSITION:
+	{
+		if (
+			SystemInterface &&
+			SystemInterface->IsComposing()
+		)
+		{
+			SystemInterface->ConfirmComposition(
+				Rml::StringView()
+			);
+		}
+
+		return true;
+	}
+
+	case WM_IME_COMPOSITION:
+	{
+		if (!SystemInterface)
+			return false;
+
+		HIMC IMEContext =
+			ImmGetContext(
+				WindowHandle
+			);
+
+		if (!IMEContext)
+			return false;
+
+		if (!SystemInterface->IsComposing())
+			SystemInterface->StartComposition();
+
+		if (LParam & GCS_CURSORPOS)
+		{
+			int CursorPosition =
+				RmlRuntimeIMEGetCursorPosition(
+					IMEContext
+				);
+
+			const std::wstring Composition =
+				RmlRuntimeIMEGetCompositionString(
+					IMEContext,
+					false
+				);
+
+			const Rml::String Prefix =
+				RmlRuntimeConvertToUTF8(
+					Composition.substr(
+						0,
+						static_cast<size_t>(
+							std::max(
+								0,
+								CursorPosition
+							)
+						)
+					)
+				);
+
+			CursorPosition =
+				static_cast<int>(
+					Rml::StringUtilities::LengthUTF8(
+						Prefix
+					)
+				);
+
+			SystemInterface->SetCompositionCursorPosition(
+				CursorPosition,
+				true
+			);
+		}
+
+		if (LParam & CS_NOMOVECARET)
+		{
+			SystemInterface->SetCompositionCursorPosition(
+				-1,
+				false
+			);
+		}
+
+		if (LParam & GCS_RESULTSTR)
+		{
+			const std::wstring Composition =
+				RmlRuntimeIMEGetCompositionString(
+					IMEContext,
+					true
+				);
+
+			SystemInterface->ConfirmComposition(
+				RmlRuntimeConvertToUTF8(
+					Composition
+				)
+			);
+		}
+
+		if (LParam & GCS_COMPSTR)
+		{
+			const std::wstring Composition =
+				RmlRuntimeIMEGetCompositionString(
+					IMEContext,
+					false
+				);
+
+			SystemInterface->SetComposition(
+				RmlRuntimeConvertToUTF8(
+					Composition
+				)
+			);
+		}
+
+		if (LParam == 0)
+		{
+			SystemInterface->CancelComposition();
+		}
+
+		ImmReleaseContext(
+			WindowHandle,
+			IMEContext
+		);
+
+		return true;
+	}
+
+	case WM_IME_CHAR:
+	case WM_IME_REQUEST:
+		return true;
 
 	default:
 		break;
