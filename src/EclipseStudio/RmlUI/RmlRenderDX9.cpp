@@ -4224,11 +4224,34 @@ void RmlRenderDX9::CompositeLayers(
 		return;
 	}
 
-	int CurrentPostProcessIndex =
-		-1;
+	if (!EnsurePostProcessTargets())
+		return;
 
-	float FinalOpacity =
-		1.0f;
+	int CurrentPostProcessIndex =
+		FindPostProcessTarget(
+			-1
+		);
+
+	if (CurrentPostProcessIndex < 0)
+		return;
+
+	DrawPostProcessQuad(
+		CurrentTexture,
+		PostProcessTargets[
+			CurrentPostProcessIndex
+		].Surface,
+		nullptr,
+		0.0f,
+		0.0f,
+		1.0f,
+		false,
+		true
+	);
+
+	CurrentTexture =
+		PostProcessTargets[
+			CurrentPostProcessIndex
+		].Texture;
 
 	IDirect3DTexture9* MaskTexture =
 		nullptr;
@@ -4252,8 +4275,45 @@ void RmlRenderDX9::CompositeLayers(
 		{
 		case ECompiledFilterType::Opacity:
 		{
-			FinalOpacity *=
-				Filter->Opacity;
+			/*
+			 * В opacity-only режиме используется быстрый
+			 * fixed-function путь выше.
+			 *
+			 * Здесь opacity является частью смешанной
+			 * цепочки и должен применяться на своём месте,
+			 * до или после drop-shadow согласно RCSS.
+			 */
+			if (Filter->Opacity >= 0.9999f)
+				break;
+
+			const int OpacityTargetIndex =
+				FindPostProcessTarget(
+					CurrentPostProcessIndex
+				);
+
+			if (OpacityTargetIndex < 0)
+				break;
+
+			DrawPostProcessQuad(
+				CurrentTexture,
+				PostProcessTargets[
+					OpacityTargetIndex
+				].Surface,
+				nullptr,
+				0.0f,
+				0.0f,
+				Filter->Opacity,
+				false,
+				true
+			);
+
+			CurrentTexture =
+				PostProcessTargets[
+					OpacityTargetIndex
+				].Texture;
+
+			CurrentPostProcessIndex =
+				OpacityTargetIndex;
 
 			break;
 		}
@@ -4285,15 +4345,28 @@ void RmlRenderDX9::CompositeLayers(
 		}
 
 		case ECompiledFilterType::DropShadow:
-			{
-				if (!EnsureShadowShader())
-					break;
+		{
+			/*
+			 * Полностью прозрачная тень является
+			 * identity-фильтром.
+			 */
+			if (Filter->Color.alpha == 0)
+				break;
 
-				IDirect3DTexture9* BlurredTexture =
-					nullptr;
+			if (!EnsureShadowShader())
+				break;
 
-				int BlurredTargetIndex =
-					-1;
+			/*
+			 * Размываем копию текущего изображения.
+			 * CurrentTexture при этом сохраняется,
+			 * поскольку оригинал должен быть наложен
+			 * поверх сформированной тени.
+			 */
+			IDirect3DTexture9* BlurredTexture =
+				nullptr;
+
+			int BlurredTargetIndex =
+				-1;
 
 			if (!ApplyGaussianBlur(
 				CurrentTexture,
@@ -4306,6 +4379,14 @@ void RmlRenderDX9::CompositeLayers(
 				break;
 			}
 
+			/*
+			 * Composition target не должен совпадать
+			 * ни с оригиналом, ни с blurred texture.
+			 *
+			 * При sigma == 0 оба индекса одинаковые,
+			 * но третий target всё равно корректно
+			 * находится.
+			 */
 			const int CompositionTargetIndex =
 				FindPostProcessTarget(
 					CurrentPostProcessIndex,
@@ -4315,6 +4396,13 @@ void RmlRenderDX9::CompositeLayers(
 			if (CompositionTargetIndex < 0)
 				break;
 
+			/*
+			 * Color хранится в premultiplied формате.
+			 *
+			 * Shadow shader умножает все четыре
+			 * компонента цвета на alpha размытого
+			 * исходного изображения.
+			 */
 			const float ShadowColor[4] =
 			{
 				static_cast<float>(
@@ -4340,6 +4428,14 @@ void RmlRenderDX9::CompositeLayers(
 				1
 			);
 
+			/*
+			 * Первый проход:
+			 *
+			 * blurred alpha -> coloured shadow
+			 * с указанным offset.
+			 *
+			 * Destination очищается полностью.
+			 */
 			DrawPostProcessQuad(
 				BlurredTexture,
 				PostProcessTargets[
@@ -4353,6 +4449,14 @@ void RmlRenderDX9::CompositeLayers(
 				true
 			);
 
+			/*
+			 * Второй проход:
+			 *
+			 * исходное текущее изображение накладывается
+			 * поверх тени через premultiplied-alpha blend.
+			 *
+			 * Сам исходный элемент не размывается.
+			 */
 			DrawPostProcessQuad(
 				CurrentTexture,
 				PostProcessTargets[
@@ -4379,6 +4483,12 @@ void RmlRenderDX9::CompositeLayers(
 
 		case ECompiledFilterType::MaskImage:
 		{
+			/*
+			 * Полная последовательная mask-композиция
+			 * будет сделана на этапе nested masks/layers.
+			 *
+			 * Пока сохраняем уже существующее поведение.
+			 */
 			MaskTexture =
 				Filter->MaskTexture;
 
@@ -4390,15 +4500,6 @@ void RmlRenderDX9::CompositeLayers(
 		}
 	}
 
-	FinalOpacity =
-		std::max(
-			0.0f,
-			std::min(
-				1.0f,
-				FinalOpacity
-			)
-		);
-
 	BindLayer(
 		Destination
 	);
@@ -4408,7 +4509,7 @@ void RmlRenderDX9::CompositeLayers(
 	DrawLayerTexture(
 		CurrentTexture,
 		MaskTexture,
-		FinalOpacity,
+		1.0f,
 		BlendMode !=
 			Rml::BlendMode::Replace
 	);
@@ -4638,13 +4739,19 @@ RmlRenderDX9::CompileFilter(
 		Filter->Type =
 			ECompiledFilterType::DropShadow;
 
+		const float ShadowSigma =
+			Rml::Get(
+				Parameters,
+				"sigma",
+				0.0f
+			);
+
 		Filter->Sigma =
 			std::max(
 				0.0f,
-				Rml::Get(
-					Parameters,
-					"sigma",
-					0.0f
+				std::min(
+					16.0f,
+					ShadowSigma
 				)
 			);
 
