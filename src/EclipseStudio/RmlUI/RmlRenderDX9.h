@@ -425,6 +425,13 @@ private:
 		bool bClearDestination
 	);
 
+	void DrawMaskedPostProcessQuad(
+		IDirect3DTexture9* SourceTexture,
+		IDirect3DTexture9* MaskTexture,
+		IDirect3DSurface9* DestinationSurface,
+		bool bClearDestination
+	);
+
 	void RenderBlurPass(
 		IDirect3DTexture9* SourceTexture,
 		IDirect3DSurface9* DestinationSurface,

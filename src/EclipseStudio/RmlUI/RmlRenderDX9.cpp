@@ -1058,6 +1058,409 @@ void RmlRenderDX9::DrawPostProcessQuad(
 	);
 }
 
+void RmlRenderDX9::DrawMaskedPostProcessQuad(
+	IDirect3DTexture9* SourceTexture,
+	IDirect3DTexture9* MaskTexture,
+	IDirect3DSurface9* DestinationSurface,
+	bool bClearDestination
+)
+{
+	if (
+		!Device ||
+		!r3dRenderer ||
+		!SourceTexture ||
+		!MaskTexture ||
+		!DestinationSurface
+	)
+	{
+		return;
+	}
+
+	/*
+	 * Destination texture не должна оставаться
+	 * привязанной ни к одному sampler stage.
+	 */
+	for (
+		DWORD Stage = 0;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+	}
+
+	r3dRenderer->SetRT(
+		0,
+		DestinationSurface
+	);
+
+	r3dRenderer->SetDSS(
+		nullptr
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_TWOSIDEDSTENCILMODE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_COLORWRITEENABLE,
+		RML_COLOR_WRITE_ALL
+	);
+
+	if (bClearDestination)
+	{
+		/*
+		 * Очищаем весь post-process target,
+		 * независимо от текущего scissor.
+		 */
+		(Device->SetRenderState)(
+			RML_D3DRS_SCISSORTESTENABLE,
+			FALSE
+		);
+
+		Device->Clear(
+			0,
+			nullptr,
+			D3DCLEAR_TARGET,
+			0x00000000,
+			1.0f,
+			0
+		);
+	}
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SCISSORTESTENABLE,
+		bScissorEnabled
+			? TRUE
+			: FALSE
+	);
+
+	if (bScissorEnabled)
+	{
+		Device->SetScissorRect(
+			&ScissorRect
+		);
+	}
+
+	const float Left =
+		-0.5f;
+
+	const float Top =
+		-0.5f;
+
+	const float Right =
+		static_cast<float>(
+			ViewWidth
+		) -
+		0.5f;
+
+	const float Bottom =
+		static_cast<float>(
+			ViewHeight
+		) -
+		0.5f;
+
+	const DWORD White =
+		D3DCOLOR_ARGB(
+			255,
+			255,
+			255,
+			255
+		);
+
+	const FScreenVertex Vertices[4] =
+	{
+		{
+			Left,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			0.0f
+		},
+		{
+			Right,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			0.0f
+		},
+		{
+			Left,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			1.0f
+		},
+		{
+			Right,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			1.0f
+		}
+	};
+
+	Device->SetVertexShader(
+		nullptr
+	);
+
+	Device->SetPixelShader(
+		nullptr
+	);
+
+	Device->SetFVF(
+		ScreenVertexFVF
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZWRITEENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_CULLMODE,
+		D3DCULL_NONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHATESTENABLE,
+		FALSE
+	);
+
+	/*
+	 * Это replace-pass в отдельный target.
+	 * Смешивание здесь не требуется.
+	 */
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SEPARATEALPHABLENDENABLE,
+		FALSE
+	);
+
+	Device->SetTexture(
+		0,
+		SourceTexture
+	);
+
+	Device->SetTexture(
+		1,
+		MaskTexture
+	);
+
+	for (
+		DWORD Sampler = 0;
+		Sampler < 2;
+		++Sampler
+	)
+	{
+		Device->SetSamplerState(
+			Sampler,
+			D3DSAMP_MINFILTER,
+			D3DTEXF_LINEAR
+		);
+
+		Device->SetSamplerState(
+			Sampler,
+			D3DSAMP_MAGFILTER,
+			D3DTEXF_LINEAR
+		);
+
+		Device->SetSamplerState(
+			Sampler,
+			D3DSAMP_MIPFILTER,
+			D3DTEXF_NONE
+		);
+
+		Device->SetSamplerState(
+			Sampler,
+			D3DSAMP_ADDRESSU,
+			D3DTADDRESS_CLAMP
+		);
+
+		Device->SetSamplerState(
+			Sampler,
+			D3DSAMP_ADDRESSV,
+			D3DTADDRESS_CLAMP
+		);
+	}
+
+	/*
+	 * Stage 0:
+	 *
+	 * Current = Source RGBA.
+	 */
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_TEXCOORDINDEX,
+		0
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLOROP,
+		D3DTOP_SELECTARG1
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLORARG1,
+		D3DTA_TEXTURE
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAOP,
+		D3DTOP_SELECTARG1
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAARG1,
+		D3DTA_TEXTURE
+	);
+
+	/*
+	 * Stage 1:
+	 *
+	 * Result.rgb = Source.rgb * Mask.a
+	 * Result.a   = Source.a   * Mask.a
+	 *
+	 * Source является premultiplied RGBA, поэтому
+	 * обязательно умножаем и RGB, и alpha.
+	 */
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_TEXCOORDINDEX,
+		0
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_COLOROP,
+		D3DTOP_MODULATE
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_COLORARG1,
+		D3DTA_CURRENT
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_COLORARG2,
+		D3DTA_TEXTURE |
+			D3DTA_ALPHAREPLICATE
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_ALPHAOP,
+		D3DTOP_MODULATE
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_ALPHAARG1,
+		D3DTA_CURRENT
+	);
+
+	Device->SetTextureStageState(
+		1,
+		D3DTSS_ALPHAARG2,
+		D3DTA_TEXTURE
+	);
+
+	for (
+		DWORD Stage = 2;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_DISABLE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_DISABLE
+		);
+	}
+
+	r3dRenderer->DrawUP(
+		D3DPT_TRIANGLESTRIP,
+		2,
+		Vertices,
+		sizeof(
+			FScreenVertex
+		)
+	);
+
+	for (
+		DWORD Stage = 0;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+	}
+
+	for (
+		DWORD Stage = 1;
+		Stage < 4;
+		++Stage
+	)
+	{
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_DISABLE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_DISABLE
+		);
+	}
+
+	Device->SetPixelShader(
+		nullptr
+	);
+}
+
 void RmlRenderDX9::RenderBlurPass(
 	IDirect3DTexture9* SourceTexture,
 	IDirect3DSurface9* DestinationSurface,
@@ -3987,6 +4390,42 @@ void RmlRenderDX9::DrawLayerTexture(
 		);
 
 		Device->SetTextureStageState(
+	Stage,
+	D3DTSS_TEXCOORDINDEX,
+	0
+);
+
+		Device->SetSamplerState(
+			Stage,
+			D3DSAMP_MINFILTER,
+			D3DTEXF_LINEAR
+		);
+
+		Device->SetSamplerState(
+			Stage,
+			D3DSAMP_MAGFILTER,
+			D3DTEXF_LINEAR
+		);
+
+		Device->SetSamplerState(
+			Stage,
+			D3DSAMP_MIPFILTER,
+			D3DTEXF_NONE
+		);
+
+		Device->SetSamplerState(
+			Stage,
+			D3DSAMP_ADDRESSU,
+			D3DTADDRESS_CLAMP
+		);
+
+		Device->SetSamplerState(
+			Stage,
+			D3DSAMP_ADDRESSV,
+			D3DTADDRESS_CLAMP
+		);
+
+		Device->SetTextureStageState(
 			Stage,
 			D3DTSS_ALPHAOP,
 			D3DTOP_MODULATE
@@ -4253,9 +4692,6 @@ void RmlRenderDX9::CompositeLayers(
 			CurrentPostProcessIndex
 		].Texture;
 
-	IDirect3DTexture9* MaskTexture =
-		nullptr;
-
 	for (
 		const Rml::CompiledFilterHandle FilterHandle :
 		Filters
@@ -4482,18 +4918,50 @@ void RmlRenderDX9::CompositeLayers(
 		}
 
 		case ECompiledFilterType::MaskImage:
-		{
-			/*
-			 * Полная последовательная mask-композиция
-			 * будет сделана на этапе nested masks/layers.
-			 *
-			 * Пока сохраняем уже существующее поведение.
-			 */
-			MaskTexture =
-				Filter->MaskTexture;
+			{
+				if (!Filter->MaskTexture)
+					break;
 
-			break;
-		}
+				/*
+				 * Маска является полноценным последовательным
+				 * фильтром, а не отложенным параметром финального
+				 * DrawLayerTexture.
+				 *
+				 * Благодаря этому корректно работают:
+				 *
+				 * - несколько mask-image подряд;
+				 * - mask -> blur;
+				 * - blur -> mask;
+				 * - дочерняя маска внутри родительской;
+				 * - mask + opacity + drop-shadow.
+				 */
+				const int MaskTargetIndex =
+					FindPostProcessTarget(
+						CurrentPostProcessIndex
+					);
+
+				if (MaskTargetIndex < 0)
+					break;
+
+				DrawMaskedPostProcessQuad(
+					CurrentTexture,
+					Filter->MaskTexture,
+					PostProcessTargets[
+						MaskTargetIndex
+					].Surface,
+					true
+				);
+
+				CurrentTexture =
+					PostProcessTargets[
+						MaskTargetIndex
+					].Texture;
+
+				CurrentPostProcessIndex =
+					MaskTargetIndex;
+
+				break;
+			}
 
 		default:
 			break;
@@ -4508,7 +4976,7 @@ void RmlRenderDX9::CompositeLayers(
 
 	DrawLayerTexture(
 		CurrentTexture,
-		MaskTexture,
+		nullptr,
 		1.0f,
 		BlendMode !=
 			Rml::BlendMode::Replace
@@ -4624,48 +5092,77 @@ RmlRenderDX9::SaveLayerAsMaskImage()
 {
 	if (
 		!Device ||
-		ActiveLayerCount == 0
+		!r3dRenderer ||
+		!bFrameOpen ||
+		ActiveLayerCount <= 1
 	)
 	{
 		return 0;
 	}
 
-	IDirect3DTexture9* Texture =
+	const Rml::LayerHandle TopLayer =
+		GetTopLayerHandle();
+
+	IDirect3DTexture9* SourceTexture =
+		GetLayerTexture(
+			TopLayer
+		);
+
+	if (!SourceTexture)
+		return 0;
+
+	IDirect3DTexture9* MaskTexture =
 		nullptr;
 
-	IDirect3DSurface9* Surface =
+	IDirect3DSurface9* MaskSurface =
 		nullptr;
 
 	if (!CreateRenderTargetTexture(
 		ViewWidth,
 		ViewHeight,
-		&Texture,
-		&Surface
+		&MaskTexture,
+		&MaskSurface
 	))
 	{
 		return 0;
 	}
 
-	IDirect3DSurface9* SourceSurface =
-		GetLayerSurface(
-			GetTopLayerHandle()
-		);
+	/*
+	 * Mask layer уже содержит результат всех
+	 * mask decorators, clip-mask и текущего scissor.
+	 *
+	 * Destination полностью очищается, после чего
+	 * копируется только активная filter-region.
+	 */
+	DrawPostProcessQuad(
+		SourceTexture,
+		MaskSurface,
+		nullptr,
+		0.0f,
+		0.0f,
+		1.0f,
+		false,
+		true
+	);
 
-	const bool bCopied =
-		CopySurface(
-			SourceSurface,
-			Surface,
-			nullptr,
-			nullptr
-		);
+	/*
+	 * DrawPostProcessQuad переключил RT и отключил DSS.
+	 * До возврата в RmlUi обязательно восстанавливаем:
+	 *
+	 * - текущий верхний layer;
+	 * - shared depth-stencil;
+	 * - clip-mask;
+	 * - scissor;
+	 * - fixed-function state.
+	 */
+	BindLayer(
+		TopLayer
+	);
 
-	Surface->Release();
+	SetupRenderState();
 
-	if (!bCopied)
-	{
-		Texture->Release();
-		return 0;
-	}
+	MaskSurface->Release();
+	MaskSurface = nullptr;
 
 	FCompiledFilter* Filter =
 		new FCompiledFilter();
@@ -4674,7 +5171,7 @@ RmlRenderDX9::SaveLayerAsMaskImage()
 		ECompiledFilterType::MaskImage;
 
 	Filter->MaskTexture =
-		Texture;
+		MaskTexture;
 
 	return reinterpret_cast<
 		Rml::CompiledFilterHandle
