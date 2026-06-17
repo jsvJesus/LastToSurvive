@@ -116,6 +116,12 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")
 
+// Device->SetRenderTarget					=>	r3dRenderer->SetRT
+// Device->SetDepthStencilSurface			=>	r3dRenderer->SetDSS
+// Device->GetRenderTarget					=>	r3dRenderer->GetRT
+// Device->GetDepthStencilSurface			=>	r3dRenderer->GetDSS
+// Device->DrawPrimitiveUP					=>	r3dRenderer->DrawUP
+
 static const D3DRENDERSTATETYPE RML_D3DRS_ZENABLE = (D3DRENDERSTATETYPE)7;
 static const D3DRENDERSTATETYPE RML_D3DRS_ZWRITEENABLE = (D3DRENDERSTATETYPE)14;
 static const D3DRENDERSTATETYPE RML_D3DRS_ALPHATESTENABLE = (D3DRENDERSTATETYPE)15;
@@ -642,13 +648,13 @@ void RmlRenderDX9::CalculateGaussianWeights(
 		TotalWeight +=
 			Index == 0
 			? OutWeights[Index]
-			: OutWeights[Index] *
-				2.0f;
+			: OutWeights[Index] * 2.0f;
 	}
 
 	if (TotalWeight <= 0.0f)
 	{
-		OutWeights[0] = 1.0f;
+		OutWeights[0] =
+			1.0f;
 
 		for (
 			int Index = 1;
@@ -664,11 +670,12 @@ void RmlRenderDX9::CalculateGaussianWeights(
 	}
 
 	for (
-		float& Weight :
-		OutWeights
+		int Index = 0;
+		Index < 5;
+		++Index
 	)
 	{
-		Weight /=
+		OutWeights[Index] /=
 			TotalWeight;
 	}
 }
@@ -693,12 +700,12 @@ void RmlRenderDX9::DrawPostProcessQuad(
 		return;
 	}
 
-	Device->SetRenderTarget(
+	r3dRenderer->SetRT(
 		0,
 		DestinationSurface
 	);
 
-	Device->SetDepthStencilSurface(
+	r3dRenderer->SetDSS(
 		nullptr
 	);
 
@@ -964,12 +971,12 @@ void RmlRenderDX9::DrawPostProcessQuad(
 		);
 	}
 
-	Device->DrawPrimitiveUP(
+	r3dRenderer->DrawUP(
 		D3DPT_TRIANGLESTRIP,
 		2,
 		Vertices,
 		sizeof(
-			FScreenVertex
+		FScreenVertex
 		)
 	);
 
@@ -1394,12 +1401,12 @@ void RmlRenderDX9::BeginFrame(
 		OriginalDepthStencil = nullptr;
 	}
 
-	Device->GetRenderTarget(
+	r3dRenderer->GetRT(
 		0,
 		&BaseRenderTarget
 	);
 
-	Device->GetDepthStencilSurface(
+	r3dRenderer->GetDSS(
 		&OriginalDepthStencil
 	);
 
@@ -1407,7 +1414,7 @@ void RmlRenderDX9::BeginFrame(
 
 	if (SharedDepthStencil)
 	{
-		Device->SetDepthStencilSurface(
+		r3dRenderer->SetDSS(
 			SharedDepthStencil
 		);
 
@@ -1463,13 +1470,13 @@ void RmlRenderDX9::EndFrame()
 
 	if (BaseRenderTarget)
 	{
-		Device->SetRenderTarget(
+		r3dRenderer->SetRT(
 			0,
 			BaseRenderTarget
 		);
 	}
 
-	Device->SetDepthStencilSurface(
+	r3dRenderer->SetDSS(
 		OriginalDepthStencil
 	);
 
@@ -3189,8 +3196,13 @@ void RmlRenderDX9::BindLayer(
 	Rml::LayerHandle Layer
 )
 {
-	if (!Device)
+	if (
+		!Device ||
+		!r3dRenderer
+	)
+	{
 		return;
+	}
 
 	IDirect3DSurface9* Surface =
 		GetLayerSurface(
@@ -3200,12 +3212,12 @@ void RmlRenderDX9::BindLayer(
 	if (!Surface)
 		return;
 
-	Device->SetRenderTarget(
+	r3dRenderer->SetRT(
 		0,
 		Surface
 	);
 
-	Device->SetDepthStencilSurface(
+	r3dRenderer->SetDSS(
 		SharedDepthStencil
 	);
 
@@ -3601,11 +3613,13 @@ void RmlRenderDX9::DrawLayerTexture(
 		D3DTOP_DISABLE
 	);
 
-	Device->DrawPrimitiveUP(
+	r3dRenderer->DrawUP(
 		D3DPT_TRIANGLESTRIP,
 		2,
 		Vertices,
-		sizeof(FScreenVertex)
+		sizeof(
+			FScreenVertex
+		)
 	);
 
 	for (
