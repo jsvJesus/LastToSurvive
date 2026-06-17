@@ -3,9 +3,10 @@
 #include <RmlUi/Core/RenderInterface.h>
 
 #include <d3d9.h>
-#include <d3dx9tex.h>
+#include <d3dx9.h>
 
 #include <string>
+#include <vector>
 
 class RmlRenderDX9 final :
 	public Rml::RenderInterface
@@ -27,7 +28,6 @@ public:
 	);
 
 	void EndFrame();
-
 	void OnDeviceLost();
 
 	void OnDeviceReset(
@@ -80,8 +80,41 @@ public:
 		Rml::Rectanglei Region
 	) override;
 
+	void EnableClipMask(
+		bool Enable
+	) override;
+
+	void RenderToClipMask(
+		Rml::ClipMaskOperation Operation,
+		Rml::CompiledGeometryHandle Geometry,
+		Rml::Vector2f Translation
+	) override;
+
 	void SetTransform(
 		const Rml::Matrix4f* Transform
+	) override;
+
+	Rml::LayerHandle PushLayer() override;
+
+	void CompositeLayers(
+		Rml::LayerHandle Source,
+		Rml::LayerHandle Destination,
+		Rml::BlendMode BlendMode,
+		Rml::Span<const Rml::CompiledFilterHandle> Filters
+	) override;
+
+	void PopLayer() override;
+
+	Rml::TextureHandle SaveLayerAsTexture() override;
+	Rml::CompiledFilterHandle SaveLayerAsMaskImage() override;
+
+	Rml::CompiledFilterHandle CompileFilter(
+		const Rml::String& Name,
+		const Rml::Dictionary& Parameters
+	) override;
+
+	void ReleaseFilter(
+		Rml::CompiledFilterHandle Filter
 	) override;
 
 private:
@@ -90,7 +123,22 @@ private:
 		float X;
 		float Y;
 		float Z;
+
 		DWORD Color;
+
+		float U;
+		float V;
+	};
+
+	struct FScreenVertex
+	{
+		float X;
+		float Y;
+		float Z;
+		float RHW;
+
+		DWORD Color;
+
 		float U;
 		float V;
 	};
@@ -119,10 +167,62 @@ private:
 			false;
 	};
 
+	struct FRenderLayer
+	{
+		IDirect3DTexture9* Texture =
+			nullptr;
+
+		IDirect3DSurface9* Surface =
+			nullptr;
+
+		int Width = 0;
+		int Height = 0;
+	};
+
+	enum class ECompiledFilterType
+	{
+		Invalid = 0,
+		Opacity,
+		MaskImage
+	};
+
+	struct FCompiledFilter
+	{
+		ECompiledFilterType Type =
+			ECompiledFilterType::Invalid;
+
+		float Opacity =
+			1.0f;
+
+		IDirect3DTexture9* MaskTexture =
+			nullptr;
+	};
+
 private:
-	IDirect3DDevice9* Device = nullptr;
+	static constexpr DWORD VertexFVF =
+		D3DFVF_XYZ |
+		D3DFVF_DIFFUSE |
+		D3DFVF_TEX1;
+
+	static constexpr DWORD ScreenVertexFVF =
+		D3DFVF_XYZRHW |
+		D3DFVF_DIFFUSE |
+		D3DFVF_TEX1;
+
+private:
+	IDirect3DDevice9* Device =
+		nullptr;
 
 	IDirect3DStateBlock9* StateBlock =
+		nullptr;
+
+	IDirect3DSurface9* BaseRenderTarget =
+		nullptr;
+
+	IDirect3DSurface9* OriginalDepthStencil =
+		nullptr;
+
+	IDirect3DSurface9* SharedDepthStencil =
 		nullptr;
 
 	IDirect3DTexture9* CharacterPreviewTexture =
@@ -131,10 +231,25 @@ private:
 	IDirect3DTexture9* CharacterPortraitTexture =
 		nullptr;
 
+	std::vector<FRenderLayer> LayerPool;
+
+	size_t ActiveLayerCount =
+		0;
+
 	int ViewWidth = 1;
 	int ViewHeight = 1;
 
-	bool bScissorEnabled = false;
+	bool bFrameOpen =
+		false;
+
+	bool bScissorEnabled =
+		false;
+
+	bool bClipMaskEnabled =
+		false;
+
+	unsigned int ClipMaskReference =
+		0;
 
 	RECT ScissorRect{
 		0,
@@ -143,13 +258,11 @@ private:
 		1
 	};
 
+	D3DMATRIX CurrentTransform{};
+
 	std::wstring DataRoot;
 
-	static constexpr DWORD VertexFVF =
-		D3DFVF_XYZ |
-		D3DFVF_DIFFUSE |
-		D3DFVF_TEX1;
-
+private:
 	static DWORD ConvertColor(
 		const Rml::ColourbPremultiplied& Color
 	);
@@ -171,6 +284,61 @@ private:
 		float Z
 	);
 
+	static D3DMATRIX ConvertTransform(
+		const Rml::Matrix4f& Transform
+	);
+
+	void SetupRenderState();
+	void ApplyClipMaskState();
+
+	void BindLayer(
+		Rml::LayerHandle Layer
+	);
+
+	Rml::LayerHandle GetTopLayerHandle() const;
+
+	IDirect3DSurface9* GetLayerSurface(
+		Rml::LayerHandle Layer
+	) const;
+
+	IDirect3DTexture9* GetLayerTexture(
+		Rml::LayerHandle Layer
+	) const;
+
+	bool EnsureLayer(
+		size_t LayerIndex
+	);
+
+	bool EnsureSharedDepthStencil();
+
+	void ReleaseLayer(
+		FRenderLayer& Layer
+	);
+
+	void ReleaseLayerResources();
+	void ReleaseSharedDepthStencil();
+
+	bool CreateRenderTargetTexture(
+		int Width,
+		int Height,
+		IDirect3DTexture9** OutTexture,
+		IDirect3DSurface9** OutSurface
+	);
+
+	bool CopySurface(
+		IDirect3DSurface9* Source,
+		IDirect3DSurface9* Destination,
+		const RECT* SourceRectangle,
+		const RECT* DestinationRectangle
+	);
+
+	void DrawLayerTexture(
+		IDirect3DTexture9* SourceTexture,
+		IDirect3DTexture9* MaskTexture,
+		float Opacity,
+		bool bEnableBlend
+	);
+
 	std::wstring ResolvePathW(
 		const Rml::String& Path
 	) const;
@@ -187,6 +355,4 @@ private:
 		Rml::Vector2i& OutDimensions,
 		IDirect3DTexture9** OutTexture
 	);
-
-	void SetupRenderState();
 };

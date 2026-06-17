@@ -7,6 +7,12 @@
 #include <algorithm>
 #include <vector>
 
+#include <RmlUi/Core/Log.h>
+#include <RmlUi/Core/Types.h>
+
+#include <cstring>
+#include <type_traits>
+
 #ifdef SetViewport
 #undef SetViewport
 #endif
@@ -120,6 +126,21 @@ static const D3DRENDERSTATETYPE RML_D3DRS_ALPHABLENDENABLE = (D3DRENDERSTATETYPE
 static const D3DRENDERSTATETYPE RML_D3DRS_LIGHTING = (D3DRENDERSTATETYPE)137;
 static const D3DRENDERSTATETYPE RML_D3DRS_SCISSORTESTENABLE = (D3DRENDERSTATETYPE)174;
 static const D3DRENDERSTATETYPE RML_D3DRS_BLENDOP = (D3DRENDERSTATETYPE)171;
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILENABLE = static_cast<D3DRENDERSTATETYPE>(52);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILFAIL = static_cast<D3DRENDERSTATETYPE>(53);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILZFAIL = static_cast<D3DRENDERSTATETYPE>(54);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILPASS = static_cast<D3DRENDERSTATETYPE>(55);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILFUNC = static_cast<D3DRENDERSTATETYPE>(56);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILREF = static_cast<D3DRENDERSTATETYPE>(57);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILMASK = static_cast<D3DRENDERSTATETYPE>(58);
+static const D3DRENDERSTATETYPE RML_D3DRS_STENCILWRITEMASK = static_cast<D3DRENDERSTATETYPE>(59);
+static const D3DRENDERSTATETYPE RML_D3DRS_TEXTUREFACTOR = static_cast<D3DRENDERSTATETYPE>(60);
+static const D3DRENDERSTATETYPE RML_D3DRS_COLORWRITEENABLE = static_cast<D3DRENDERSTATETYPE>(168);
+static const DWORD RML_COLOR_WRITE_ALL =
+	D3DCOLORWRITEENABLE_RED |
+	D3DCOLORWRITEENABLE_GREEN |
+	D3DCOLORWRITEENABLE_BLUE |
+	D3DCOLORWRITEENABLE_ALPHA;
 
 static bool RmlFileExistsW(const std::wstring& Path)
 {
@@ -136,6 +157,8 @@ static bool RmlFileExistsW(const std::wstring& Path)
 
 RmlRenderDX9::RmlRenderDX9()
 {
+	CurrentTransform =
+		MakeIdentity();
 }
 
 RmlRenderDX9::~RmlRenderDX9()
@@ -177,6 +200,21 @@ void RmlRenderDX9::Shutdown()
 	{
 		StateBlock->Release();
 		StateBlock = nullptr;
+	}
+
+	ReleaseLayerResources();
+	ReleaseSharedDepthStencil();
+
+	if (BaseRenderTarget)
+	{
+		BaseRenderTarget->Release();
+		BaseRenderTarget = nullptr;
+	}
+
+	if (OriginalDepthStencil)
+	{
+		OriginalDepthStencil->Release();
+		OriginalDepthStencil = nullptr;
 	}
 
 	if (Device)
@@ -294,13 +332,30 @@ SetCharacterPortraitTexture(
 	}
 }
 
-void RmlRenderDX9::BeginFrame(int Width, int Height)
+void RmlRenderDX9::BeginFrame(
+	int Width,
+	int Height
+)
 {
-	if (!Device)
+	if (
+		!Device ||
+		bFrameOpen
+	)
+	{
 		return;
+	}
 
-	ViewWidth = std::max(1, Width);
-	ViewHeight = std::max(1, Height);
+	ViewWidth =
+		std::max(
+			1,
+			Width
+		);
+
+	ViewHeight =
+		std::max(
+			1,
+			Height
+		);
 
 	if (StateBlock)
 	{
@@ -308,16 +363,113 @@ void RmlRenderDX9::BeginFrame(int Width, int Height)
 		StateBlock = nullptr;
 	}
 
-	if (SUCCEEDED(Device->CreateStateBlock(D3DSBT_ALL, &StateBlock)) && StateBlock)
+	if (
+		SUCCEEDED(
+			Device->CreateStateBlock(
+				D3DSBT_ALL,
+				&StateBlock
+			)
+		) &&
+		StateBlock
+	)
+	{
 		StateBlock->Capture();
+	}
+
+	if (BaseRenderTarget)
+	{
+		BaseRenderTarget->Release();
+		BaseRenderTarget = nullptr;
+	}
+
+	if (OriginalDepthStencil)
+	{
+		OriginalDepthStencil->Release();
+		OriginalDepthStencil = nullptr;
+	}
+
+	Device->GetRenderTarget(
+		0,
+		&BaseRenderTarget
+	);
+
+	Device->GetDepthStencilSurface(
+		&OriginalDepthStencil
+	);
+
+	EnsureSharedDepthStencil();
+
+	if (SharedDepthStencil)
+	{
+		Device->SetDepthStencilSurface(
+			SharedDepthStencil
+		);
+
+		Device->Clear(
+			0,
+			nullptr,
+			D3DCLEAR_STENCIL,
+			0,
+			1.0f,
+			0
+		);
+	}
+
+	ActiveLayerCount =
+		1;
+
+	bFrameOpen =
+		true;
+
+	bClipMaskEnabled =
+		false;
+
+	ClipMaskReference =
+		0;
+
+	ScissorRect.left =
+		0;
+
+	ScissorRect.top =
+		0;
+
+	ScissorRect.right =
+		ViewWidth;
+
+	ScissorRect.bottom =
+		ViewHeight;
 
 	SetupRenderState();
 }
 
 void RmlRenderDX9::EndFrame()
 {
-	if (!Device)
+	if (
+		!Device ||
+		!bFrameOpen
+	)
+	{
 		return;
+	}
+
+	ActiveLayerCount =
+		1;
+
+	if (BaseRenderTarget)
+	{
+		Device->SetRenderTarget(
+			0,
+			BaseRenderTarget
+		);
+	}
+
+	Device->SetDepthStencilSurface(
+		OriginalDepthStencil
+	);
+
+	Device->SetPixelShader(
+		nullptr
+	);
 
 	if (StateBlock)
 	{
@@ -325,6 +477,21 @@ void RmlRenderDX9::EndFrame()
 		StateBlock->Release();
 		StateBlock = nullptr;
 	}
+
+	if (BaseRenderTarget)
+	{
+		BaseRenderTarget->Release();
+		BaseRenderTarget = nullptr;
+	}
+
+	if (OriginalDepthStencil)
+	{
+		OriginalDepthStencil->Release();
+		OriginalDepthStencil = nullptr;
+	}
+
+	bFrameOpen =
+		false;
 }
 
 void RmlRenderDX9::OnDeviceLost()
@@ -343,6 +510,27 @@ void RmlRenderDX9::OnDeviceLost()
 		StateBlock = nullptr;
 	}
 
+	if (BaseRenderTarget)
+	{
+		BaseRenderTarget->Release();
+		BaseRenderTarget = nullptr;
+	}
+
+	if (OriginalDepthStencil)
+	{
+		OriginalDepthStencil->Release();
+		OriginalDepthStencil = nullptr;
+	}
+
+	ReleaseLayerResources();
+	ReleaseSharedDepthStencil();
+
+	ActiveLayerCount =
+		0;
+
+	bFrameOpen =
+		false;
+
 	OutputDebugStringA(
 		"[RmlUI][DX9] Device lost\n"
 	);
@@ -359,6 +547,68 @@ void RmlRenderDX9::OnDeviceReset(int Width, int Height)
 DWORD RmlRenderDX9::ConvertColor(const Rml::ColourbPremultiplied& Color)
 {
 	return D3DCOLOR_ARGB(Color.alpha, Color.red, Color.green, Color.blue);
+}
+
+D3DMATRIX RmlRenderDX9::ConvertTransform(
+	const Rml::Matrix4f& Transform
+)
+{
+	D3DMATRIX Result{};
+
+	const float* Source =
+		Transform.data();
+
+	float* Destination =
+		reinterpret_cast<float*>(
+			&Result
+		);
+
+	const bool bRowMajor =
+		std::is_same<
+			Rml::Matrix4f,
+			Rml::RowMajorMatrix4f
+		>::value;
+
+	if (!bRowMajor)
+	{
+		/*
+		 * RmlUi по умолчанию хранит column-major matrix.
+		 * Для D3D9 row-vector pipeline её линейное представление
+		 * уже соответствует транспонированной D3D-матрице.
+		 */
+		std::memcpy(
+			Destination,
+			Source,
+			sizeof(D3DMATRIX)
+		);
+	}
+	else
+	{
+		for (
+			int Row = 0;
+			Row < 4;
+			++Row
+		)
+		{
+			for (
+				int Column = 0;
+				Column < 4;
+				++Column
+			)
+			{
+				Destination[
+					Row * 4 +
+					Column
+				] =
+					Source[
+						Column * 4 +
+						Row
+					];
+			}
+		}
+	}
+
+	return Result;
 }
 
 D3DMATRIX RmlRenderDX9::MakeIdentity()
@@ -460,6 +710,12 @@ void RmlRenderDX9::SetupRenderState()
 
 	Device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 	Device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	(Device->SetRenderState)(
+		RML_D3DRS_COLORWRITEENABLE,
+		RML_COLOR_WRITE_ALL
+	);
+
+	ApplyClipMaskState();
 }
 
 Rml::CompiledGeometryHandle RmlRenderDX9::CompileGeometry(Rml::Span<const Rml::Vertex> vertices, Rml::Span<const int> indices)
@@ -617,14 +873,28 @@ void RmlRenderDX9::RenderGeometry(
 	constexpr float HalfPixelOffset =
 		-0.5f;
 
-	const D3DMATRIX World =
-		MakeTranslation(
-			Translation.x +
-				HalfPixelOffset,
-			Translation.y +
-				HalfPixelOffset,
-			0.0f
-		);
+	const D3DMATRIX TranslationMatrix =
+	MakeTranslation(
+		Translation.x +
+			HalfPixelOffset,
+		Translation.y +
+			HalfPixelOffset,
+		0.0f
+	);
+
+	D3DMATRIX World{};
+
+	D3DXMatrixMultiply(
+		reinterpret_cast<D3DXMATRIX*>(
+			&World
+		),
+		reinterpret_cast<const D3DXMATRIX*>(
+			&TranslationMatrix
+		),
+		reinterpret_cast<const D3DXMATRIX*>(
+			&CurrentTransform
+		)
+	);
 
 	Device->SetTransform(
 		D3DTS_WORLD,
@@ -1311,10 +1581,1334 @@ void RmlRenderDX9::SetScissorRegion(Rml::Rectanglei region)
 		Device->SetScissorRect(&ScissorRect);
 }
 
-void RmlRenderDX9::SetTransform(const Rml::Matrix4f* transform)
+void RmlRenderDX9::SetTransform(
+	const Rml::Matrix4f* Transform
+)
 {
-	// Для первого Studio AppSelect CSS transform не нужен.
-	// Метод оставлен, чтобы RmlUI не падал при элементах без advanced transform.
-	// Если позже понадобятся анимации transform/rotate/scale — сюда добавляется конвертация Matrix4f -> D3DMATRIX.
-	(void)transform;
+	if (Transform)
+	{
+		CurrentTransform =
+			ConvertTransform(
+				*Transform
+			);
+	}
+	else
+	{
+		CurrentTransform =
+			MakeIdentity();
+	}
+}
+
+void RmlRenderDX9::ApplyClipMaskState()
+{
+	if (!Device)
+		return;
+
+	if (
+		bClipMaskEnabled &&
+		ClipMaskReference > 0
+	)
+	{
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILENABLE,
+			TRUE
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILFUNC,
+			D3DCMP_EQUAL
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILREF,
+			ClipMaskReference
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILMASK,
+			0xFF
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILWRITEMASK,
+			0x00
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILFAIL,
+			D3DSTENCILOP_KEEP
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILZFAIL,
+			D3DSTENCILOP_KEEP
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILPASS,
+			D3DSTENCILOP_KEEP
+		);
+	}
+	else
+	{
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILENABLE,
+			FALSE
+		);
+	}
+}
+
+void RmlRenderDX9::EnableClipMask(
+	bool Enable
+)
+{
+	bClipMaskEnabled =
+		Enable;
+
+	ApplyClipMaskState();
+}
+
+void RmlRenderDX9::RenderToClipMask(
+	Rml::ClipMaskOperation Operation,
+	Rml::CompiledGeometryHandle Geometry,
+	Rml::Vector2f Translation
+)
+{
+	if (
+		!Device ||
+		!Geometry ||
+		!SharedDepthStencil
+	)
+	{
+		return;
+	}
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILENABLE,
+		TRUE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILMASK,
+		0xFF
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILWRITEMASK,
+		0xFF
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILFAIL,
+		D3DSTENCILOP_KEEP
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILZFAIL,
+		D3DSTENCILOP_KEEP
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_COLORWRITEENABLE,
+		0
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		FALSE
+	);
+
+	switch (Operation)
+	{
+	case Rml::ClipMaskOperation::Set:
+	{
+		Device->Clear(
+			0,
+			nullptr,
+			D3DCLEAR_STENCIL,
+			0,
+			1.0f,
+			0
+		);
+
+		ClipMaskReference =
+			1;
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILFUNC,
+			D3DCMP_ALWAYS
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILREF,
+			ClipMaskReference
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILPASS,
+			D3DSTENCILOP_REPLACE
+		);
+
+		break;
+	}
+
+	case Rml::ClipMaskOperation::SetInverse:
+	{
+		Device->Clear(
+			0,
+			nullptr,
+			D3DCLEAR_STENCIL,
+			0,
+			1.0f,
+			1
+		);
+
+		ClipMaskReference =
+			1;
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILFUNC,
+			D3DCMP_ALWAYS
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILREF,
+			0
+		);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_STENCILPASS,
+			D3DSTENCILOP_ZERO
+		);
+
+		break;
+	}
+
+	case Rml::ClipMaskOperation::Intersect:
+	{
+		if (ClipMaskReference == 0)
+		{
+			ClipMaskReference =
+				1;
+
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILFUNC,
+				D3DCMP_ALWAYS
+			);
+
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILREF,
+				ClipMaskReference
+			);
+
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILPASS,
+				D3DSTENCILOP_REPLACE
+			);
+		}
+		else
+		{
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILFUNC,
+				D3DCMP_EQUAL
+			);
+
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILREF,
+				ClipMaskReference
+			);
+
+			(Device->SetRenderState)(
+				RML_D3DRS_STENCILPASS,
+				D3DSTENCILOP_INCRSAT
+			);
+
+			++ClipMaskReference;
+
+			if (ClipMaskReference > 255)
+			{
+				ClipMaskReference =
+					255;
+			}
+		}
+
+		break;
+	}
+	}
+
+	RenderGeometry(
+		Geometry,
+		Translation,
+		0
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_COLORWRITEENABLE,
+		RML_COLOR_WRITE_ALL
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		TRUE
+	);
+
+	ApplyClipMaskState();
+}
+
+bool RmlRenderDX9::CreateRenderTargetTexture(
+	int Width,
+	int Height,
+	IDirect3DTexture9** OutTexture,
+	IDirect3DSurface9** OutSurface
+)
+{
+	if (
+		!Device ||
+		Width <= 0 ||
+		Height <= 0 ||
+		!OutTexture ||
+		!OutSurface
+	)
+	{
+		return false;
+	}
+
+	*OutTexture =
+		nullptr;
+
+	*OutSurface =
+		nullptr;
+
+	IDirect3DTexture9* Texture =
+		nullptr;
+
+	HRESULT Result =
+		Device->CreateTexture(
+			static_cast<UINT>(
+				Width
+			),
+			static_cast<UINT>(
+				Height
+			),
+			1,
+			D3DUSAGE_RENDERTARGET,
+			D3DFMT_A8R8G8B8,
+			D3DPOOL_DEFAULT,
+			&Texture,
+			nullptr
+		);
+
+	if (
+		FAILED(Result) ||
+		!Texture
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Create render-target texture failed\n"
+		);
+
+		return false;
+	}
+
+	IDirect3DSurface9* Surface =
+		nullptr;
+
+	Result =
+		Texture->GetSurfaceLevel(
+			0,
+			&Surface
+		);
+
+	if (
+		FAILED(Result) ||
+		!Surface
+	)
+	{
+		Texture->Release();
+
+		OutputDebugStringA(
+			"[RmlUI][DX9] Get render-target surface failed\n"
+		);
+
+		return false;
+	}
+
+	*OutTexture =
+		Texture;
+
+	*OutSurface =
+		Surface;
+
+	return true;
+}
+
+void RmlRenderDX9::ReleaseLayer(
+	FRenderLayer& Layer
+)
+{
+	if (Layer.Surface)
+	{
+		Layer.Surface->Release();
+		Layer.Surface = nullptr;
+	}
+
+	if (Layer.Texture)
+	{
+		Layer.Texture->Release();
+		Layer.Texture = nullptr;
+	}
+
+	Layer.Width =
+		0;
+
+	Layer.Height =
+		0;
+}
+
+void RmlRenderDX9::ReleaseLayerResources()
+{
+	for (
+		FRenderLayer& Layer :
+		LayerPool
+	)
+	{
+		ReleaseLayer(
+			Layer
+		);
+	}
+
+	LayerPool.clear();
+}
+
+void RmlRenderDX9::ReleaseSharedDepthStencil()
+{
+	if (SharedDepthStencil)
+	{
+		SharedDepthStencil->Release();
+		SharedDepthStencil = nullptr;
+	}
+}
+
+bool RmlRenderDX9::EnsureSharedDepthStencil()
+{
+	if (!Device)
+		return false;
+
+	if (SharedDepthStencil)
+	{
+		D3DSURFACE_DESC Description{};
+
+		if (
+			SUCCEEDED(
+				SharedDepthStencil->
+					GetDesc(
+						&Description
+					)
+			) &&
+			static_cast<int>(
+				Description.Width
+			) == ViewWidth &&
+			static_cast<int>(
+				Description.Height
+			) == ViewHeight
+		)
+		{
+			return true;
+		}
+
+		ReleaseSharedDepthStencil();
+	}
+
+	HRESULT Result =
+		Device->CreateDepthStencilSurface(
+			static_cast<UINT>(
+				ViewWidth
+			),
+			static_cast<UINT>(
+				ViewHeight
+			),
+			D3DFMT_D24S8,
+			D3DMULTISAMPLE_NONE,
+			0,
+			TRUE,
+			&SharedDepthStencil,
+			nullptr
+		);
+
+	if (
+		FAILED(Result) ||
+		!SharedDepthStencil
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] D24S8 stencil surface creation failed\n"
+		);
+
+		return false;
+	}
+
+	return true;
+}
+
+bool RmlRenderDX9::EnsureLayer(
+	size_t LayerIndex
+)
+{
+	if (!Device)
+		return false;
+
+	while (
+		LayerPool.size() <=
+		LayerIndex
+	)
+	{
+		LayerPool.emplace_back();
+	}
+
+	FRenderLayer& Layer =
+		LayerPool[
+			LayerIndex
+		];
+
+	if (
+		Layer.Texture &&
+		Layer.Surface &&
+		Layer.Width == ViewWidth &&
+		Layer.Height == ViewHeight
+	)
+	{
+		return true;
+	}
+
+	ReleaseLayer(
+		Layer
+	);
+
+	if (!CreateRenderTargetTexture(
+		ViewWidth,
+		ViewHeight,
+		&Layer.Texture,
+		&Layer.Surface
+	))
+	{
+		return false;
+	}
+
+	Layer.Width =
+		ViewWidth;
+
+	Layer.Height =
+		ViewHeight;
+
+	return true;
+}
+
+Rml::LayerHandle RmlRenderDX9::GetTopLayerHandle() const
+{
+	if (ActiveLayerCount == 0)
+		return 0;
+
+	return static_cast<Rml::LayerHandle>(
+		ActiveLayerCount -
+		1
+	);
+}
+
+IDirect3DSurface9* RmlRenderDX9::GetLayerSurface(
+	Rml::LayerHandle Layer
+) const
+{
+	const size_t LayerIndex =
+		static_cast<size_t>(
+			Layer
+		);
+
+	if (LayerIndex == 0)
+		return BaseRenderTarget;
+
+	const size_t PoolIndex =
+		LayerIndex -
+		1;
+
+	if (
+		PoolIndex >=
+		LayerPool.size()
+	)
+	{
+		return nullptr;
+	}
+
+	return LayerPool[
+		PoolIndex
+	].Surface;
+}
+
+IDirect3DTexture9* RmlRenderDX9::GetLayerTexture(
+	Rml::LayerHandle Layer
+) const
+{
+	const size_t LayerIndex =
+		static_cast<size_t>(
+			Layer
+		);
+
+	if (LayerIndex == 0)
+		return nullptr;
+
+	const size_t PoolIndex =
+		LayerIndex -
+		1;
+
+	if (
+		PoolIndex >=
+		LayerPool.size()
+	)
+	{
+		return nullptr;
+	}
+
+	return LayerPool[
+		PoolIndex
+	].Texture;
+}
+
+void RmlRenderDX9::BindLayer(
+	Rml::LayerHandle Layer
+)
+{
+	if (!Device)
+		return;
+
+	IDirect3DSurface9* Surface =
+		GetLayerSurface(
+			Layer
+		);
+
+	if (!Surface)
+		return;
+
+	Device->SetRenderTarget(
+		0,
+		Surface
+	);
+
+	Device->SetDepthStencilSurface(
+		SharedDepthStencil
+	);
+
+	ApplyClipMaskState();
+}
+
+Rml::LayerHandle RmlRenderDX9::PushLayer()
+{
+	if (
+		!Device ||
+		!bFrameOpen
+	)
+	{
+		return 0;
+	}
+
+	const size_t NewLayerHandle =
+		ActiveLayerCount;
+
+	const size_t PoolIndex =
+		NewLayerHandle -
+		1;
+
+	if (!EnsureLayer(
+		PoolIndex
+	))
+	{
+		return GetTopLayerHandle();
+	}
+
+	++ActiveLayerCount;
+
+	BindLayer(
+		static_cast<Rml::LayerHandle>(
+			NewLayerHandle
+		)
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SCISSORTESTENABLE,
+		FALSE
+	);
+
+	Device->Clear(
+		0,
+		nullptr,
+		D3DCLEAR_TARGET,
+		0x00000000,
+		1.0f,
+		0
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SCISSORTESTENABLE,
+		bScissorEnabled
+			? TRUE
+			: FALSE
+	);
+
+	if (bScissorEnabled)
+	{
+		Device->SetScissorRect(
+			&ScissorRect
+		);
+	}
+
+	return static_cast<Rml::LayerHandle>(
+		NewLayerHandle
+	);
+}
+
+void RmlRenderDX9::PopLayer()
+{
+	if (
+		!Device ||
+		ActiveLayerCount <= 1
+	)
+	{
+		return;
+	}
+
+	--ActiveLayerCount;
+
+	BindLayer(
+		GetTopLayerHandle()
+	);
+}
+
+bool RmlRenderDX9::CopySurface(
+	IDirect3DSurface9* Source,
+	IDirect3DSurface9* Destination,
+	const RECT* SourceRectangle,
+	const RECT* DestinationRectangle
+)
+{
+	if (
+		!Device ||
+		!Source ||
+		!Destination
+	)
+	{
+		return false;
+	}
+
+	const HRESULT Result =
+		Device->StretchRect(
+			Source,
+			SourceRectangle,
+			Destination,
+			DestinationRectangle,
+			D3DTEXF_NONE
+		);
+
+	return SUCCEEDED(
+		Result
+	);
+}
+
+void RmlRenderDX9::DrawLayerTexture(
+	IDirect3DTexture9* SourceTexture,
+	IDirect3DTexture9* MaskTexture,
+	float Opacity,
+	bool bEnableBlend
+)
+{
+	if (
+		!Device ||
+		!SourceTexture
+	)
+	{
+		return;
+	}
+
+	const float Left =
+		-0.5f;
+
+	const float Top =
+		-0.5f;
+
+	const float Right =
+		static_cast<float>(
+			ViewWidth
+		) -
+		0.5f;
+
+	const float Bottom =
+		static_cast<float>(
+			ViewHeight
+		) -
+		0.5f;
+
+	const DWORD White =
+		0xFFFFFFFF;
+
+	const FScreenVertex Vertices[4] =
+	{
+		{
+			Left,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			0.0f
+		},
+		{
+			Right,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			0.0f
+		},
+		{
+			Left,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			1.0f
+		},
+		{
+			Right,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			1.0f
+		}
+	};
+
+	Device->SetPixelShader(
+		nullptr
+	);
+
+	Device->SetFVF(
+		ScreenVertexFVF
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZWRITEENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		bEnableBlend
+			? TRUE
+			: FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SRCBLEND,
+		D3DBLEND_ONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_DESTBLEND,
+		D3DBLEND_INVSRCALPHA
+	);
+
+	Device->SetTexture(
+		0,
+		SourceTexture
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLOROP,
+		D3DTOP_SELECTARG1
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_COLORARG1,
+		D3DTA_TEXTURE
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAOP,
+		D3DTOP_SELECTARG1
+	);
+
+	Device->SetTextureStageState(
+		0,
+		D3DTSS_ALPHAARG1,
+		D3DTA_TEXTURE
+	);
+
+	DWORD Stage =
+		1;
+
+	Opacity =
+		std::max(
+			0.0f,
+			std::min(
+				1.0f,
+				Opacity
+			)
+		);
+
+	if (Opacity < 0.9999f)
+	{
+		const DWORD OpacityByte =
+			static_cast<DWORD>(
+				Opacity *
+				255.0f +
+				0.5f
+			);
+
+		const DWORD TextureFactor =
+			D3DCOLOR_ARGB(
+				OpacityByte,
+				OpacityByte,
+				OpacityByte,
+				OpacityByte
+			);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_TEXTUREFACTOR,
+			TextureFactor
+		);
+
+		Device->SetTexture(
+			Stage,
+			nullptr
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLORARG1,
+			D3DTA_CURRENT
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLORARG2,
+			D3DTA_TFACTOR
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAARG1,
+			D3DTA_CURRENT
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAARG2,
+			D3DTA_TFACTOR
+		);
+
+		++Stage;
+	}
+
+	if (MaskTexture)
+	{
+		Device->SetTexture(
+			Stage,
+			MaskTexture
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLOROP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLORARG1,
+			D3DTA_CURRENT
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_COLORARG2,
+			D3DTA_TEXTURE |
+				D3DTA_ALPHAREPLICATE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAOP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAARG1,
+			D3DTA_CURRENT
+		);
+
+		Device->SetTextureStageState(
+			Stage,
+			D3DTSS_ALPHAARG2,
+			D3DTA_TEXTURE
+		);
+
+		++Stage;
+	}
+
+	Device->SetTextureStageState(
+		Stage,
+		D3DTSS_COLOROP,
+		D3DTOP_DISABLE
+	);
+
+	Device->SetTextureStageState(
+		Stage,
+		D3DTSS_ALPHAOP,
+		D3DTOP_DISABLE
+	);
+
+	Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLESTRIP,
+		2,
+		Vertices,
+		sizeof(FScreenVertex)
+	);
+
+	for (
+		DWORD TextureStage = 0;
+		TextureStage < 4;
+		++TextureStage
+	)
+	{
+		Device->SetTexture(
+			TextureStage,
+			nullptr
+		);
+	}
+
+	SetupRenderState();
+}
+
+void RmlRenderDX9::CompositeLayers(
+	Rml::LayerHandle Source,
+	Rml::LayerHandle Destination,
+	Rml::BlendMode BlendMode,
+	Rml::Span<const Rml::CompiledFilterHandle> Filters
+)
+{
+	IDirect3DTexture9* SourceTexture =
+		GetLayerTexture(
+			Source
+		);
+
+	if (
+		!Device ||
+		!SourceTexture
+	)
+	{
+		return;
+	}
+
+	float Opacity =
+		1.0f;
+
+	IDirect3DTexture9* MaskTexture =
+		nullptr;
+
+	for (
+		Rml::CompiledFilterHandle FilterHandle :
+		Filters
+	)
+	{
+		if (!FilterHandle)
+			continue;
+
+		const FCompiledFilter* Filter =
+			reinterpret_cast<
+				const FCompiledFilter*
+			>(
+				FilterHandle
+			);
+
+		switch (Filter->Type)
+		{
+		case ECompiledFilterType::Opacity:
+			Opacity *=
+				Filter->Opacity;
+			break;
+
+		case ECompiledFilterType::MaskImage:
+			MaskTexture =
+				Filter->MaskTexture;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	const Rml::LayerHandle TopLayer =
+		GetTopLayerHandle();
+
+	BindLayer(
+		Destination
+	);
+
+	const bool bEnableBlend =
+		BlendMode !=
+		Rml::BlendMode::Replace;
+
+	DrawLayerTexture(
+		SourceTexture,
+		MaskTexture,
+		Opacity,
+		bEnableBlend
+	);
+
+	if (
+		Destination !=
+		TopLayer
+	)
+	{
+		BindLayer(
+			TopLayer
+		);
+	}
+}
+
+Rml::TextureHandle RmlRenderDX9::SaveLayerAsTexture()
+{
+	if (
+		!Device ||
+		ActiveLayerCount == 0
+	)
+	{
+		return 0;
+	}
+
+	const int Width =
+		ScissorRect.right -
+		ScissorRect.left;
+
+	const int Height =
+		ScissorRect.bottom -
+		ScissorRect.top;
+
+	if (
+		Width <= 0 ||
+		Height <= 0
+	)
+	{
+		return 0;
+	}
+
+	IDirect3DTexture9* Texture =
+		nullptr;
+
+	IDirect3DSurface9* Surface =
+		nullptr;
+
+	if (!CreateRenderTargetTexture(
+		Width,
+		Height,
+		&Texture,
+		&Surface
+	))
+	{
+		return 0;
+	}
+
+	const RECT SourceRectangle =
+	{
+		ScissorRect.left,
+		ScissorRect.top,
+		ScissorRect.right,
+		ScissorRect.bottom
+	};
+
+	const RECT DestinationRectangle =
+	{
+		0,
+		0,
+		Width,
+		Height
+	};
+
+	IDirect3DSurface9* SourceSurface =
+		GetLayerSurface(
+			GetTopLayerHandle()
+		);
+
+	const bool bCopied =
+		CopySurface(
+			SourceSurface,
+			Surface,
+			&SourceRectangle,
+			&DestinationRectangle
+		);
+
+	Surface->Release();
+
+	if (!bCopied)
+	{
+		Texture->Release();
+		return 0;
+	}
+
+	FTextureHandle* Handle =
+		new FTextureHandle();
+
+	Handle->Texture =
+		Texture;
+
+	return reinterpret_cast<
+		Rml::TextureHandle
+	>(
+		Handle
+	);
+}
+
+Rml::CompiledFilterHandle
+RmlRenderDX9::SaveLayerAsMaskImage()
+{
+	if (
+		!Device ||
+		ActiveLayerCount == 0
+	)
+	{
+		return 0;
+	}
+
+	IDirect3DTexture9* Texture =
+		nullptr;
+
+	IDirect3DSurface9* Surface =
+		nullptr;
+
+	if (!CreateRenderTargetTexture(
+		ViewWidth,
+		ViewHeight,
+		&Texture,
+		&Surface
+	))
+	{
+		return 0;
+	}
+
+	IDirect3DSurface9* SourceSurface =
+		GetLayerSurface(
+			GetTopLayerHandle()
+		);
+
+	const bool bCopied =
+		CopySurface(
+			SourceSurface,
+			Surface,
+			nullptr,
+			nullptr
+		);
+
+	Surface->Release();
+
+	if (!bCopied)
+	{
+		Texture->Release();
+		return 0;
+	}
+
+	FCompiledFilter* Filter =
+		new FCompiledFilter();
+
+	Filter->Type =
+		ECompiledFilterType::MaskImage;
+
+	Filter->MaskTexture =
+		Texture;
+
+	return reinterpret_cast<
+		Rml::CompiledFilterHandle
+	>(
+		Filter
+	);
+}
+
+Rml::CompiledFilterHandle
+RmlRenderDX9::CompileFilter(
+	const Rml::String& Name,
+	const Rml::Dictionary& Parameters
+)
+{
+	if (Name == "opacity")
+	{
+		FCompiledFilter* Filter =
+			new FCompiledFilter();
+
+		Filter->Type =
+			ECompiledFilterType::Opacity;
+
+		Filter->Opacity =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		return reinterpret_cast<
+			Rml::CompiledFilterHandle
+		>(
+			Filter
+		);
+	}
+
+	Rml::Log::Message(
+		Rml::Log::LT_WARNING,
+		"DX9 backend: unsupported filter '%s'.",
+		Name.c_str()
+	);
+
+	return 0;
+}
+
+void RmlRenderDX9::ReleaseFilter(
+	Rml::CompiledFilterHandle FilterHandle
+)
+{
+	if (!FilterHandle)
+		return;
+
+	FCompiledFilter* Filter =
+		reinterpret_cast<
+			FCompiledFilter*
+		>(
+			FilterHandle
+		);
+
+	if (Filter->MaskTexture)
+	{
+		Filter->MaskTexture->Release();
+		Filter->MaskTexture = nullptr;
+	}
+
+	delete Filter;
 }
