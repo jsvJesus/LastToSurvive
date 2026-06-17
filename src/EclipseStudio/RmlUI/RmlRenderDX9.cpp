@@ -3987,19 +3987,71 @@ void RmlRenderDX9::CompositeLayers(
 		GetTopLayerHandle();
 
 	/*
-	 * Основной путь этапа 2:
-	 * layers без opacity/blur/drop-shadow/mask-image.
+	 * Быстрый fixed-function путь:
 	 *
-	 * Здесь не требуется ни один pixel shader
-	 * и не требуется создание трёх filter targets.
+	 * - композиция без фильтров;
+	 * - один opacity;
+	 * - несколько последовательных opacity.
+	 *
+	 * Для opacity не нужны pixel shaders
+	 * и post-process render targets.
 	 */
-	if (Filters.empty())
+	bool bOpacityOnly =
+		true;
+
+	float LayerOpacity =
+		1.0f;
+
+	for (
+		const Rml::CompiledFilterHandle FilterHandle :
+		Filters
+	)
+	{
+		if (!FilterHandle)
+			continue;
+
+		const FCompiledFilter* Filter =
+			reinterpret_cast<
+				const FCompiledFilter*
+			>(
+				FilterHandle
+			);
+
+		if (
+			Filter->Type !=
+			ECompiledFilterType::Opacity
+		)
+		{
+			bOpacityOnly =
+				false;
+
+			break;
+		}
+
+		LayerOpacity *=
+			Filter->Opacity;
+	}
+
+	LayerOpacity =
+		std::max(
+			0.0f,
+			std::min(
+				1.0f,
+				LayerOpacity
+			)
+		);
+
+	if (bOpacityOnly)
 	{
 		/*
 		 * RmlUi разрешает Source == Destination.
-		 * Нельзя одновременно читать texture и писать
-		 * в её render-target surface, поэтому сначала
-		 * переносим изображение в отдельный scratch RT.
+		 *
+		 * DX9 не разрешает читать texture,
+		 * соответствующая surface которой в этот
+		 * момент установлена как render target.
+		 *
+		 * Используем уже проверенный scratch target
+		 * из этапа layers + clip-mask.
 		 */
 		if (Source == Destination)
 		{
@@ -4022,8 +4074,9 @@ void RmlRenderDX9::CompositeLayers(
 				bScissorEnabled;
 
 			/*
-			 * Scratch должен получить весь source layer,
-			 * а не только текущий scissor rectangle.
+			 * В scratch копируется весь source layer.
+			 * Текущий scissor применяется только при
+			 * последующей композиции в Destination.
 			 */
 			bScissorEnabled =
 				false;
@@ -4052,10 +4105,14 @@ void RmlRenderDX9::CompositeLayers(
 
 		SetupRenderState();
 
+		/*
+		 * DrawLayerTexture масштабирует все четыре
+		 * premultiplied-компонента: R, G, B и A.
+		 */
 		DrawLayerTexture(
 			CurrentTexture,
 			nullptr,
-			1.0f,
+			LayerOpacity,
 			BlendMode !=
 				Rml::BlendMode::Replace
 		);
@@ -4075,9 +4132,14 @@ void RmlRenderDX9::CompositeLayers(
 	}
 
 	/*
-	 * Filter path пока оставляем отдельно.
-	 * Его проверка начинается только на следующем этапе
-	 * с opacity.
+	 * Медленный filter path.
+	 *
+	 * Сейчас оставляем его без функциональных изменений.
+	 * Он понадобится на следующих этапах:
+	 *
+	 * - blur;
+	 * - drop-shadow;
+	 * - mask-image.
 	 */
 	if (
 		!CreateFilterShaders() ||
@@ -4249,6 +4311,15 @@ void RmlRenderDX9::CompositeLayers(
 			break;
 		}
 	}
+
+	FinalOpacity =
+		std::max(
+			0.0f,
+			std::min(
+				1.0f,
+				FinalOpacity
+			)
+		);
 
 	BindLayer(
 		Destination
@@ -4447,11 +4518,20 @@ RmlRenderDX9::CompileFilter(
 		Filter->Type =
 			ECompiledFilterType::Opacity;
 
-		Filter->Opacity =
+		const float OpacityValue =
 			Rml::Get(
 				Parameters,
 				"value",
 				1.0f
+			);
+
+		Filter->Opacity =
+			std::max(
+				0.0f,
+				std::min(
+					1.0f,
+					OpacityValue
+				)
 			);
 	}
 	else if (Name == "blur")
