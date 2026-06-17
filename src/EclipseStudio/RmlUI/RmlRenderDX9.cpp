@@ -244,6 +244,81 @@ R"RMLSHADER(
 	}
 )RMLSHADER";
 
+static const char* RmlDx9ColorMatrixShaderSource =
+R"RMLSHADER(
+	sampler2D SourceSampler : register(s0);
+
+	float4 ColorMatrixRow0 : register(c0);
+	float4 ColorMatrixRow1 : register(c1);
+	float4 ColorMatrixRow2 : register(c2);
+
+	float4 main(float2 UV : TEXCOORD0) : COLOR0
+	{
+		/*
+		 * Source texture уже premultiplied RGBA.
+		 *
+		 * Так как эти CSS-фильтры не меняют alpha,
+		 * преобразование можно выполнять непосредственно
+		 * в premultiplied-пространстве.
+		 *
+		 * Четвёртая компонента SourceColor — alpha,
+		 * поэтому constant term матрицы автоматически
+		 * умножается на alpha. На полностью прозрачных
+		 * пикселях не появляется цветной фон.
+		 */
+		float4 SourceColor =
+			tex2D(
+				SourceSampler,
+				UV
+			);
+
+		float4 Result;
+
+		Result.r =
+			dot(
+				ColorMatrixRow0,
+				SourceColor
+			);
+
+		Result.g =
+			dot(
+				ColorMatrixRow1,
+				SourceColor
+			);
+
+		Result.b =
+			dot(
+				ColorMatrixRow2,
+				SourceColor
+			);
+
+		Result.a =
+			SourceColor.a;
+
+		return Result;
+	}
+)RMLSHADER";
+
+static void RmlCopyColorMatrix(
+	float Destination[16],
+	const float Source[16]
+)
+{
+	if (
+		!Destination ||
+		!Source
+	)
+	{
+		return;
+	}
+
+	std::memcpy(
+		Destination,
+		Source,
+		sizeof(float) * 16
+	);
+}
+
 static bool RmlFileExistsW(const std::wstring& Path)
 {
 	if (Path.empty())
@@ -516,6 +591,30 @@ bool RmlRenderDX9::EnsureShadowShader()
 	return true;
 }
 
+bool RmlRenderDX9::EnsureColorMatrixShader()
+{
+	if (ColorMatrixPixelShader)
+		return true;
+
+	if (!CreatePixelShader(
+		RmlDx9ColorMatrixShaderSource,
+		&ColorMatrixPixelShader
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Color-matrix shader creation failed\n"
+		);
+
+		return false;
+	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Color-matrix shader created\n"
+	);
+
+	return true;
+}
+
 void RmlRenderDX9::ReleaseFilterShaders()
 {
 	if (BlurPixelShader)
@@ -528,6 +627,12 @@ void RmlRenderDX9::ReleaseFilterShaders()
 	{
 		ShadowPixelShader->Release();
 		ShadowPixelShader = nullptr;
+	}
+
+	if (ColorMatrixPixelShader)
+	{
+		ColorMatrixPixelShader->Release();
+		ColorMatrixPixelShader = nullptr;
 	}
 }
 
@@ -4917,6 +5022,55 @@ void RmlRenderDX9::CompositeLayers(
 			break;
 		}
 
+		case ECompiledFilterType::ColorMatrix:
+			{
+				if (!EnsureColorMatrixShader())
+					break;
+
+				const int ColorMatrixTargetIndex =
+					FindPostProcessTarget(
+						CurrentPostProcessIndex
+					);
+
+				if (ColorMatrixTargetIndex < 0)
+					break;
+
+				/*
+				 * Три первых float4 — строки RGB-преобразования.
+				 *
+				 * Четвёртая строка не передаётся, поскольку
+				 * shader сохраняет исходную alpha напрямую.
+				 */
+				Device->SetPixelShaderConstantF(
+					0,
+					Filter->ColorMatrix,
+					3
+				);
+
+				DrawPostProcessQuad(
+					CurrentTexture,
+					PostProcessTargets[
+						ColorMatrixTargetIndex
+					].Surface,
+					ColorMatrixPixelShader,
+					0.0f,
+					0.0f,
+					1.0f,
+					false,
+					true
+				);
+
+				CurrentTexture =
+					PostProcessTargets[
+						ColorMatrixTargetIndex
+					].Texture;
+
+				CurrentPostProcessIndex =
+					ColorMatrixTargetIndex;
+
+				break;
+			}
+
 		case ECompiledFilterType::MaskImage:
 			{
 				if (!Filter->MaskTexture)
@@ -5258,6 +5412,339 @@ RmlRenderDX9::CompileFilter(
 				"color",
 				Rml::Colourb()
 			).ToPremultiplied();
+	}
+	else if (Name == "brightness")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float Matrix[16] =
+		{
+			Value, 0.0f,  0.0f,  0.0f,
+			0.0f,  Value, 0.0f,  0.0f,
+			0.0f,  0.0f,  Value, 0.0f,
+			0.0f,  0.0f,  0.0f,  1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "contrast")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float Grayness =
+			0.5f -
+			0.5f *
+			Value;
+
+		const float Matrix[16] =
+		{
+			Value, 0.0f,  0.0f,  Grayness,
+			0.0f,  Value, 0.0f,  Grayness,
+			0.0f,  0.0f,  Value, Grayness,
+			0.0f,  0.0f,  0.0f,  1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "invert")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float RequestedValue =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float Value =
+			std::max(
+				0.0f,
+				std::min(
+					1.0f,
+					RequestedValue
+				)
+			);
+
+		const float Inverted =
+			1.0f -
+			2.0f *
+			Value;
+
+		const float Matrix[16] =
+		{
+			Inverted, 0.0f,     0.0f,     Value,
+			0.0f,     Inverted, 0.0f,     Value,
+			0.0f,     0.0f,     Inverted, Value,
+			0.0f,     0.0f,     0.0f,     1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "grayscale")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float ReverseValue =
+			1.0f -
+			Value;
+
+		const float GrayRed =
+			Value *
+			0.2126f;
+
+		const float GrayGreen =
+			Value *
+			0.7152f;
+
+		const float GrayBlue =
+			Value *
+			0.0722f;
+
+		const float Matrix[16] =
+		{
+			GrayRed + ReverseValue,
+			GrayGreen,
+			GrayBlue,
+			0.0f,
+
+			GrayRed,
+			GrayGreen + ReverseValue,
+			GrayBlue,
+			0.0f,
+
+			GrayRed,
+			GrayGreen,
+			GrayBlue + ReverseValue,
+			0.0f,
+
+			0.0f,
+			0.0f,
+			0.0f,
+			1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "sepia")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float ReverseValue =
+			1.0f -
+			Value;
+
+		const float Matrix[16] =
+		{
+			Value * 0.393f + ReverseValue,
+			Value * 0.769f,
+			Value * 0.189f,
+			0.0f,
+
+			Value * 0.349f,
+			Value * 0.686f + ReverseValue,
+			Value * 0.168f,
+			0.0f,
+
+			Value * 0.272f,
+			Value * 0.534f,
+			Value * 0.131f + ReverseValue,
+			0.0f,
+
+			0.0f,
+			0.0f,
+			0.0f,
+			1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "hue-rotate")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		/*
+		 * RmlUi передаёт hue-rotate value
+		 * уже преобразованным в радианы.
+		 */
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float Sine =
+			std::sin(
+				Value
+			);
+
+		const float Cosine =
+			std::cos(
+				Value
+			);
+
+		const float Matrix[16] =
+		{
+			0.213f +
+				0.787f * Cosine -
+				0.213f * Sine,
+
+			0.715f -
+				0.715f * Cosine -
+				0.715f * Sine,
+
+			0.072f -
+				0.072f * Cosine +
+				0.928f * Sine,
+
+			0.0f,
+
+			0.213f -
+				0.213f * Cosine +
+				0.143f * Sine,
+
+			0.715f +
+				0.285f * Cosine +
+				0.140f * Sine,
+
+			0.072f -
+				0.072f * Cosine -
+				0.283f * Sine,
+
+			0.0f,
+
+			0.213f -
+				0.213f * Cosine -
+				0.787f * Sine,
+
+			0.715f -
+				0.715f * Cosine +
+				0.715f * Sine,
+
+			0.072f +
+				0.928f * Cosine +
+				0.072f * Sine,
+
+			0.0f,
+
+			0.0f,
+			0.0f,
+			0.0f,
+			1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
+	}
+	else if (Name == "saturate")
+	{
+		Filter->Type =
+			ECompiledFilterType::ColorMatrix;
+
+		const float Value =
+			Rml::Get(
+				Parameters,
+				"value",
+				1.0f
+			);
+
+		const float Matrix[16] =
+		{
+			0.213f +
+				0.787f * Value,
+
+			0.715f -
+				0.715f * Value,
+
+			0.072f -
+				0.072f * Value,
+
+			0.0f,
+
+			0.213f -
+				0.213f * Value,
+
+			0.715f +
+				0.285f * Value,
+
+			0.072f -
+				0.072f * Value,
+
+			0.0f,
+
+			0.213f -
+				0.213f * Value,
+
+			0.715f -
+				0.715f * Value,
+
+			0.072f +
+				0.928f * Value,
+
+			0.0f,
+
+			0.0f,
+			0.0f,
+			0.0f,
+			1.0f
+		};
+
+		RmlCopyColorMatrix(
+			Filter->ColorMatrix,
+			Matrix
+		);
 	}
 	else
 	{

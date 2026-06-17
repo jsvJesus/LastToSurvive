@@ -185,6 +185,7 @@ private:
 		Opacity,
 		Blur,
 		DropShadow,
+		ColorMatrix,
 		MaskImage
 	};
 
@@ -206,6 +207,20 @@ private:
 			);
 
 		Rml::ColourbPremultiplied Color{};
+
+		/*
+		 * Row-major 4x4 RGBA color matrix.
+		 *
+		 * Первые три строки преобразуют RGB.
+		 * Последняя строка оставляет alpha без изменений.
+		 */
+		float ColorMatrix[16] =
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
 
 		IDirect3DTexture9* MaskTexture =
 			nullptr;
@@ -268,6 +283,9 @@ private:
 		nullptr;
 
 	IDirect3DPixelShader9* ShadowPixelShader =
+		nullptr;
+
+	IDirect3DPixelShader9* ColorMatrixPixelShader =
 		nullptr;
 
 	int ViewWidth = 1;
@@ -392,6 +410,7 @@ private:
 
 	bool EnsureBlurShader();
 	bool EnsureShadowShader();
+	bool EnsureColorMatrixShader();
 
 	bool CreatePixelShader(
 		const char* SourceCode,
