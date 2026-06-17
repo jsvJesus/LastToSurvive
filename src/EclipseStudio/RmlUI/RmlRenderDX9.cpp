@@ -5144,17 +5144,7 @@ RmlRenderDX9::SaveLayerAsMaskImage()
 		false,
 		true
 	);
-
-	/*
-	 * DrawPostProcessQuad переключил RT и отключил DSS.
-	 * До возврата в RmlUi обязательно восстанавливаем:
-	 *
-	 * - текущий верхний layer;
-	 * - shared depth-stencil;
-	 * - clip-mask;
-	 * - scissor;
-	 * - fixed-function state.
-	 */
+	
 	BindLayer(
 		TopLayer
 	);
