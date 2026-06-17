@@ -2,14 +2,14 @@
 #include "r3d.h"
 
 #include "RmlRenderDX9.h"
+#include <RmlUi/Core/Core.h>
+#include <RmlUi/Core/Log.h>
+#include <RmlUi/Core/Types.h>
 
 #include <windows.h>
 #include <algorithm>
 #include <vector>
-
-#include <RmlUi/Core/Log.h>
-#include <RmlUi/Core/Types.h>
-
+#include <cmath>
 #include <cstring>
 #include <type_traits>
 
@@ -142,6 +142,95 @@ static const DWORD RML_COLOR_WRITE_ALL =
 	D3DCOLORWRITEENABLE_BLUE |
 	D3DCOLORWRITEENABLE_ALPHA;
 
+static const char* RmlDx9BlurShaderSource =
+R"RMLSHADER(
+	sampler2D SourceSampler : register(s0);
+
+	float4 TexelStep : register(c0);
+	float4 Weights0123 : register(c1);
+	float4 Weight4 : register(c2);
+
+	float4 main(float2 UV : TEXCOORD0) : COLOR0
+	{
+		float2 Step = TexelStep.xy;
+
+		float4 Result =
+			tex2D(
+				SourceSampler,
+				UV
+			) * Weights0123.x;
+
+		Result +=
+			(
+				tex2D(
+					SourceSampler,
+					UV + Step
+				) +
+				tex2D(
+					SourceSampler,
+					UV - Step
+				)
+			) * Weights0123.y;
+
+		Result +=
+			(
+				tex2D(
+					SourceSampler,
+					UV + Step * 2.0
+				) +
+				tex2D(
+					SourceSampler,
+					UV - Step * 2.0
+				)
+			) * Weights0123.z;
+
+		Result +=
+			(
+				tex2D(
+					SourceSampler,
+					UV + Step * 3.0
+				) +
+				tex2D(
+					SourceSampler,
+					UV - Step * 3.0
+				)
+			) * Weights0123.w;
+
+		Result +=
+			(
+				tex2D(
+					SourceSampler,
+					UV + Step * 4.0
+				) +
+				tex2D(
+					SourceSampler,
+					UV - Step * 4.0
+				)
+			) * Weight4.x;
+
+		return Result;
+	}
+)RMLSHADER";
+
+
+static const char* RmlDx9ShadowShaderSource =
+R"RMLSHADER(
+	sampler2D SourceSampler : register(s0);
+
+	float4 ShadowColor : register(c0);
+
+	float4 main(float2 UV : TEXCOORD0) : COLOR0
+	{
+		float SourceAlpha =
+			tex2D(
+				SourceSampler,
+				UV
+			).a;
+
+		return ShadowColor * SourceAlpha;
+	}
+)RMLSHADER";
+
 static bool RmlFileExistsW(const std::wstring& Path)
 {
 	if (Path.empty())
@@ -176,6 +265,7 @@ bool RmlRenderDX9::Init(IDirect3DDevice9* InDevice, const wchar_t* InDataRoot)
 
 	Device = InDevice;
 	Device->AddRef();
+	CreateFilterShaders();
 
 	DataRoot = InDataRoot ? InDataRoot : L"";
 
@@ -217,11 +307,917 @@ void RmlRenderDX9::Shutdown()
 		OriginalDepthStencil = nullptr;
 	}
 
+	ReleasePostProcessTargets();
+	ReleaseFilterShaders();
+
 	if (Device)
 	{
 		Device->Release();
 		Device = nullptr;
 	}
+}
+
+bool RmlRenderDX9::CreatePixelShader(
+	const char* SourceCode,
+	IDirect3DPixelShader9** OutShader
+)
+{
+	if (
+		!Device ||
+		!SourceCode ||
+		!OutShader
+	)
+	{
+		return false;
+	}
+
+	*OutShader =
+		nullptr;
+
+	D3DCAPS9 Capabilities{};
+
+	if (
+		FAILED(
+			Device->GetDeviceCaps(
+				&Capabilities
+			)
+		)
+	)
+	{
+		return false;
+	}
+
+	if (
+		Capabilities.PixelShaderVersion <
+		D3DPS_VERSION(
+			2,
+			0
+		)
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Pixel Shader 2.0 is not supported\n"
+		);
+
+		return false;
+	}
+
+	const char* ShaderProfile =
+		Capabilities.PixelShaderVersion >=
+			D3DPS_VERSION(
+				3,
+				0
+			)
+		? "ps_3_0"
+		: "ps_2_0";
+
+	ID3DXBuffer* CompiledCode =
+		nullptr;
+
+	ID3DXBuffer* ErrorMessages =
+		nullptr;
+
+	const HRESULT CompileResult =
+		D3DXCompileShader(
+			SourceCode,
+			static_cast<UINT>(
+				std::strlen(
+					SourceCode
+				)
+			),
+			nullptr,
+			nullptr,
+			"main",
+			ShaderProfile,
+			D3DXSHADER_OPTIMIZATION_LEVEL3,
+			&CompiledCode,
+			&ErrorMessages,
+			nullptr
+		);
+
+	if (ErrorMessages)
+	{
+		OutputDebugStringA(
+			reinterpret_cast<const char*>(
+				ErrorMessages->
+					GetBufferPointer()
+			)
+		);
+
+		ErrorMessages->Release();
+		ErrorMessages = nullptr;
+	}
+
+	if (
+		FAILED(
+			CompileResult
+		) ||
+		!CompiledCode
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Pixel shader compilation failed\n"
+		);
+
+		if (CompiledCode)
+			CompiledCode->Release();
+
+		return false;
+	}
+
+	const HRESULT CreateResult =
+		Device->CreatePixelShader(
+			reinterpret_cast<const DWORD*>(
+				CompiledCode->
+					GetBufferPointer()
+			),
+			OutShader
+		);
+
+	CompiledCode->Release();
+	CompiledCode = nullptr;
+
+	if (
+		FAILED(
+			CreateResult
+		) ||
+		!*OutShader
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] CreatePixelShader failed\n"
+		);
+
+		return false;
+	}
+
+	return true;
+}
+
+
+bool RmlRenderDX9::CreateFilterShaders()
+{
+	if (
+		BlurPixelShader &&
+		ShadowPixelShader
+	)
+	{
+		return true;
+	}
+
+	ReleaseFilterShaders();
+
+	if (!CreatePixelShader(
+		RmlDx9BlurShaderSource,
+		&BlurPixelShader
+	))
+	{
+		return false;
+	}
+
+	if (!CreatePixelShader(
+		RmlDx9ShadowShaderSource,
+		&ShadowPixelShader
+	))
+	{
+		ReleaseFilterShaders();
+		return false;
+	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Blur and drop-shadow shaders created\n"
+	);
+
+	return true;
+}
+
+
+void RmlRenderDX9::ReleaseFilterShaders()
+{
+	if (BlurPixelShader)
+	{
+		BlurPixelShader->Release();
+		BlurPixelShader = nullptr;
+	}
+
+	if (ShadowPixelShader)
+	{
+		ShadowPixelShader->Release();
+		ShadowPixelShader = nullptr;
+	}
+}
+
+void RmlRenderDX9::ReleasePostProcessTarget(
+	FPostProcessTarget& Target
+)
+{
+	if (Target.Surface)
+	{
+		Target.Surface->Release();
+		Target.Surface = nullptr;
+	}
+
+	if (Target.Texture)
+	{
+		Target.Texture->Release();
+		Target.Texture = nullptr;
+	}
+
+	Target.Width =
+		0;
+
+	Target.Height =
+		0;
+}
+
+
+void RmlRenderDX9::ReleasePostProcessTargets()
+{
+	for (
+		FPostProcessTarget& Target :
+		PostProcessTargets
+	)
+	{
+		ReleasePostProcessTarget(
+			Target
+		);
+	}
+}
+
+
+bool RmlRenderDX9::EnsurePostProcessTargets()
+{
+	if (!Device)
+		return false;
+
+	for (
+		FPostProcessTarget& Target :
+		PostProcessTargets
+	)
+	{
+		if (
+			Target.Texture &&
+			Target.Surface &&
+			Target.Width == ViewWidth &&
+			Target.Height == ViewHeight
+		)
+		{
+			continue;
+		}
+
+		ReleasePostProcessTarget(
+			Target
+		);
+
+		if (!CreateRenderTargetTexture(
+			ViewWidth,
+			ViewHeight,
+			&Target.Texture,
+			&Target.Surface
+		))
+		{
+			ReleasePostProcessTargets();
+
+			OutputDebugStringA(
+				"[RmlUI][DX9] Post-process render target creation failed\n"
+			);
+
+			return false;
+		}
+
+		Target.Width =
+			ViewWidth;
+
+		Target.Height =
+			ViewHeight;
+	}
+
+	return true;
+}
+
+void RmlRenderDX9::CalculateGaussianWeights(
+	float Sigma,
+	float OutWeights[5]
+)
+{
+	if (!OutWeights)
+		return;
+
+	Sigma =
+		std::max(
+			0.1f,
+			Sigma
+		);
+
+	const float SigmaSquared =
+		Sigma *
+		Sigma;
+
+	float TotalWeight =
+		0.0f;
+
+	for (
+		int Index = 0;
+		Index < 5;
+		++Index
+	)
+	{
+		const float Distance =
+			static_cast<float>(
+				Index
+			);
+
+		OutWeights[Index] =
+			std::exp(
+				-(
+					Distance *
+					Distance
+				) /
+				(
+					2.0f *
+					SigmaSquared
+				)
+			);
+
+		TotalWeight +=
+			Index == 0
+			? OutWeights[Index]
+			: OutWeights[Index] *
+				2.0f;
+	}
+
+	if (TotalWeight <= 0.0f)
+	{
+		OutWeights[0] = 1.0f;
+
+		for (
+			int Index = 1;
+			Index < 5;
+			++Index
+		)
+		{
+			OutWeights[Index] =
+				0.0f;
+		}
+
+		return;
+	}
+
+	for (
+		float& Weight :
+		OutWeights
+	)
+	{
+		Weight /=
+			TotalWeight;
+	}
+}
+
+void RmlRenderDX9::DrawPostProcessQuad(
+	IDirect3DTexture9* SourceTexture,
+	IDirect3DSurface9* DestinationSurface,
+	IDirect3DPixelShader9* PixelShader,
+	float OffsetX,
+	float OffsetY,
+	float Opacity,
+	bool bEnableBlend,
+	bool bClearDestination
+)
+{
+	if (
+		!Device ||
+		!SourceTexture ||
+		!DestinationSurface
+	)
+	{
+		return;
+	}
+
+	Device->SetRenderTarget(
+		0,
+		DestinationSurface
+	);
+
+	Device->SetDepthStencilSurface(
+		nullptr
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_STENCILENABLE,
+		FALSE
+	);
+
+	if (bClearDestination)
+	{
+		(Device->SetRenderState)(
+			RML_D3DRS_SCISSORTESTENABLE,
+			FALSE
+		);
+
+		Device->Clear(
+			0,
+			nullptr,
+			D3DCLEAR_TARGET,
+			0x00000000,
+			1.0f,
+			0
+		);
+	}
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SCISSORTESTENABLE,
+		bScissorEnabled
+			? TRUE
+			: FALSE
+	);
+
+	if (bScissorEnabled)
+	{
+		Device->SetScissorRect(
+			&ScissorRect
+		);
+	}
+
+	const float Left =
+		-0.5f +
+		OffsetX;
+
+	const float Top =
+		-0.5f +
+		OffsetY;
+
+	const float Right =
+		static_cast<float>(
+			ViewWidth
+		) -
+		0.5f +
+		OffsetX;
+
+	const float Bottom =
+		static_cast<float>(
+			ViewHeight
+		) -
+		0.5f +
+		OffsetY;
+
+	const DWORD White =
+		D3DCOLOR_ARGB(
+			255,
+			255,
+			255,
+			255
+		);
+
+	const FScreenVertex Vertices[4] =
+	{
+		{
+			Left,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			0.0f
+		},
+		{
+			Right,
+			Top,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			0.0f
+		},
+		{
+			Left,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			0.0f,
+			1.0f
+		},
+		{
+			Right,
+			Bottom,
+			0.0f,
+			1.0f,
+			White,
+			1.0f,
+			1.0f
+		}
+	};
+
+	Device->SetVertexShader(
+		nullptr
+	);
+
+	Device->SetPixelShader(
+		PixelShader
+	);
+
+	Device->SetFVF(
+		ScreenVertexFVF
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ZWRITEENABLE,
+		FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_CULLMODE,
+		D3DCULL_NONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_ALPHABLENDENABLE,
+		bEnableBlend
+			? TRUE
+			: FALSE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_SRCBLEND,
+		D3DBLEND_ONE
+	);
+
+	(Device->SetRenderState)(
+		RML_D3DRS_DESTBLEND,
+		D3DBLEND_INVSRCALPHA
+	);
+
+	Device->SetTexture(
+		0,
+		SourceTexture
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MINFILTER,
+		D3DTEXF_LINEAR
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MAGFILTER,
+		D3DTEXF_LINEAR
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_MIPFILTER,
+		D3DTEXF_NONE
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_ADDRESSU,
+		D3DTADDRESS_CLAMP
+	);
+
+	Device->SetSamplerState(
+		0,
+		D3DSAMP_ADDRESSV,
+		D3DTADDRESS_CLAMP
+	);
+
+	if (!PixelShader)
+	{
+		Opacity =
+			std::max(
+				0.0f,
+				std::min(
+					1.0f,
+					Opacity
+				)
+			);
+
+		const DWORD OpacityByte =
+			static_cast<DWORD>(
+				Opacity *
+				255.0f +
+				0.5f
+			);
+
+		(Device->SetRenderState)(
+			RML_D3DRS_TEXTUREFACTOR,
+			D3DCOLOR_ARGB(
+				OpacityByte,
+				OpacityByte,
+				OpacityByte,
+				OpacityByte
+			)
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLOROP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLORARG1,
+			D3DTA_TEXTURE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_COLORARG2,
+			D3DTA_TFACTOR
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAOP,
+			D3DTOP_MODULATE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAARG1,
+			D3DTA_TEXTURE
+		);
+
+		Device->SetTextureStageState(
+			0,
+			D3DTSS_ALPHAARG2,
+			D3DTA_TFACTOR
+		);
+
+		Device->SetTextureStageState(
+			1,
+			D3DTSS_COLOROP,
+			D3DTOP_DISABLE
+		);
+
+		Device->SetTextureStageState(
+			1,
+			D3DTSS_ALPHAOP,
+			D3DTOP_DISABLE
+		);
+	}
+
+	Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLESTRIP,
+		2,
+		Vertices,
+		sizeof(
+			FScreenVertex
+		)
+	);
+
+	Device->SetTexture(
+		0,
+		nullptr
+	);
+
+	Device->SetPixelShader(
+		nullptr
+	);
+}
+
+void RmlRenderDX9::RenderBlurPass(
+	IDirect3DTexture9* SourceTexture,
+	IDirect3DSurface9* DestinationSurface,
+	float Sigma,
+	bool bHorizontal
+)
+{
+	if (
+		!Device ||
+		!BlurPixelShader ||
+		!SourceTexture ||
+		!DestinationSurface
+	)
+	{
+		return;
+	}
+
+	float Weights[5]{};
+
+	CalculateGaussianWeights(
+		Sigma,
+		Weights
+	);
+
+	const float TexelStep[4] =
+	{
+		bHorizontal
+			? 1.0f /
+				static_cast<float>(
+					ViewWidth
+				)
+			: 0.0f,
+
+		bHorizontal
+			? 0.0f
+			: 1.0f /
+				static_cast<float>(
+					ViewHeight
+				),
+
+		0.0f,
+		0.0f
+	};
+
+	const float Weights0123[4] =
+	{
+		Weights[0],
+		Weights[1],
+		Weights[2],
+		Weights[3]
+	};
+
+	const float Weight4[4] =
+	{
+		Weights[4],
+		0.0f,
+		0.0f,
+		0.0f
+	};
+
+	Device->SetPixelShaderConstantF(
+		0,
+		TexelStep,
+		1
+	);
+
+	Device->SetPixelShaderConstantF(
+		1,
+		Weights0123,
+		1
+	);
+
+	Device->SetPixelShaderConstantF(
+		2,
+		Weight4,
+		1
+	);
+
+	DrawPostProcessQuad(
+		SourceTexture,
+		DestinationSurface,
+		BlurPixelShader,
+		0.0f,
+		0.0f,
+		1.0f,
+		false,
+		true
+	);
+}
+
+bool RmlRenderDX9::ApplyGaussianBlur(
+	IDirect3DTexture9* SourceTexture,
+	int SourcePostProcessIndex,
+	float Sigma,
+	IDirect3DTexture9*& OutTexture,
+	int& OutPostProcessIndex
+)
+{
+	OutTexture =
+		SourceTexture;
+
+	OutPostProcessIndex =
+		SourcePostProcessIndex;
+
+	if (
+		!SourceTexture ||
+		Sigma < 0.1f
+	)
+	{
+		return true;
+	}
+
+	if (
+		!CreateFilterShaders() ||
+		!EnsurePostProcessTargets()
+	)
+	{
+		return false;
+	}
+
+	const int HorizontalTargetIndex =
+		FindPostProcessTarget(
+			SourcePostProcessIndex
+		);
+
+	const int VerticalTargetIndex =
+		FindPostProcessTarget(
+			SourcePostProcessIndex,
+			HorizontalTargetIndex
+		);
+
+	if (
+		HorizontalTargetIndex < 0 ||
+		VerticalTargetIndex < 0
+	)
+	{
+		return false;
+	}
+
+	Sigma =
+		std::min(
+			Sigma,
+			16.0f
+		);
+
+	const int PassCount =
+		std::max(
+			1,
+			std::min(
+				4,
+				static_cast<int>(
+					std::ceil(
+						(
+							Sigma *
+							Sigma
+						) /
+						9.0f
+					)
+				)
+			)
+		);
+
+	const float PassSigma =
+		Sigma /
+		std::sqrt(
+			static_cast<float>(
+				PassCount
+			)
+		);
+
+	IDirect3DTexture9* CurrentTexture =
+		SourceTexture;
+
+	for (
+		int PassIndex = 0;
+		PassIndex < PassCount;
+		++PassIndex
+	)
+	{
+		RenderBlurPass(
+			CurrentTexture,
+			PostProcessTargets[
+				HorizontalTargetIndex
+			].Surface,
+			PassSigma,
+			true
+		);
+
+		RenderBlurPass(
+			PostProcessTargets[
+				HorizontalTargetIndex
+			].Texture,
+			PostProcessTargets[
+				VerticalTargetIndex
+			].Surface,
+			PassSigma,
+			false
+		);
+
+		CurrentTexture =
+			PostProcessTargets[
+				VerticalTargetIndex
+			].Texture;
+	}
+
+	OutTexture =
+		CurrentTexture;
+
+	OutPostProcessIndex =
+		VerticalTargetIndex;
+
+	return true;
+}
+
+int RmlRenderDX9::FindPostProcessTarget(
+	int ExcludeA,
+	int ExcludeB
+) const
+{
+	for (
+		int Index = 0;
+		Index < 3;
+		++Index
+	)
+	{
+		if (
+			Index != ExcludeA &&
+			Index != ExcludeB
+		)
+		{
+			return Index;
+		}
+	}
+
+	return -1;
 }
 
 void RmlRenderDX9::
@@ -356,6 +1352,16 @@ void RmlRenderDX9::BeginFrame(
 			1,
 			Height
 		);
+
+	EnsurePostProcessTargets();
+
+	if (
+		!BlurPixelShader ||
+		!ShadowPixelShader
+	)
+	{
+		CreateFilterShaders();
+	}
 
 	if (StateBlock)
 	{
@@ -524,6 +1530,8 @@ void RmlRenderDX9::OnDeviceLost()
 
 	ReleaseLayerResources();
 	ReleaseSharedDepthStencil();
+	ReleasePostProcessTargets();
+	ReleaseFilterShaders();
 
 	ActiveLayerCount =
 		0;
@@ -540,6 +1548,11 @@ void RmlRenderDX9::OnDeviceReset(int Width, int Height)
 {
 	ViewWidth = std::max(1, Width);
 	ViewHeight = std::max(1, Height);
+
+	ReleasePostProcessTargets();
+
+	EnsurePostProcessTargets();
+	CreateFilterShaders();
 
 	OutputDebugStringA("[RmlUI][DX9] Device reset\n");
 }
@@ -2617,27 +3630,36 @@ void RmlRenderDX9::CompositeLayers(
 	Rml::Span<const Rml::CompiledFilterHandle> Filters
 )
 {
-	IDirect3DTexture9* SourceTexture =
+	if (!Device)
+		return;
+
+	IDirect3DTexture9* CurrentTexture =
 		GetLayerTexture(
 			Source
 		);
 
+	if (!CurrentTexture)
+		return;
+
 	if (
-		!Device ||
-		!SourceTexture
+		!CreateFilterShaders() ||
+		!EnsurePostProcessTargets()
 	)
 	{
 		return;
 	}
 
-	float Opacity =
+	int CurrentPostProcessIndex =
+		-1;
+
+	float FinalOpacity =
 		1.0f;
 
 	IDirect3DTexture9* MaskTexture =
 		nullptr;
 
 	for (
-		Rml::CompiledFilterHandle FilterHandle :
+		const Rml::CompiledFilterHandle FilterHandle :
 		Filters
 	)
 	{
@@ -2654,14 +3676,145 @@ void RmlRenderDX9::CompositeLayers(
 		switch (Filter->Type)
 		{
 		case ECompiledFilterType::Opacity:
-			Opacity *=
+		{
+			FinalOpacity *=
 				Filter->Opacity;
+
 			break;
+		}
+
+		case ECompiledFilterType::Blur:
+		{
+			IDirect3DTexture9* BlurredTexture =
+				nullptr;
+
+			int BlurredTargetIndex =
+				-1;
+
+			if (ApplyGaussianBlur(
+				CurrentTexture,
+				CurrentPostProcessIndex,
+				Filter->Sigma,
+				BlurredTexture,
+				BlurredTargetIndex
+			))
+			{
+				CurrentTexture =
+					BlurredTexture;
+
+				CurrentPostProcessIndex =
+					BlurredTargetIndex;
+			}
+
+			break;
+		}
+
+		case ECompiledFilterType::DropShadow:
+		{
+			IDirect3DTexture9* BlurredTexture =
+				nullptr;
+
+			int BlurredTargetIndex =
+				-1;
+
+			if (!ApplyGaussianBlur(
+				CurrentTexture,
+				CurrentPostProcessIndex,
+				Filter->Sigma,
+				BlurredTexture,
+				BlurredTargetIndex
+			))
+			{
+				break;
+			}
+
+			const int CompositionTargetIndex =
+				FindPostProcessTarget(
+					CurrentPostProcessIndex,
+					BlurredTargetIndex
+				);
+
+			if (CompositionTargetIndex < 0)
+				break;
+
+			const float ShadowColor[4] =
+			{
+				static_cast<float>(
+					Filter->Color.red
+				) / 255.0f,
+
+				static_cast<float>(
+					Filter->Color.green
+				) / 255.0f,
+
+				static_cast<float>(
+					Filter->Color.blue
+				) / 255.0f,
+
+				static_cast<float>(
+					Filter->Color.alpha
+				) / 255.0f
+			};
+
+			Device->SetPixelShaderConstantF(
+				0,
+				ShadowColor,
+				1
+			);
+
+			/*
+			 * Сначала рисуем размытую альфу,
+			 * окрашенную цветом тени и смещённую
+			 * на Offset.
+			 */
+			DrawPostProcessQuad(
+				BlurredTexture,
+				PostProcessTargets[
+					CompositionTargetIndex
+				].Surface,
+				ShadowPixelShader,
+				Filter->Offset.x,
+				Filter->Offset.y,
+				1.0f,
+				false,
+				true
+			);
+
+			/*
+			 * Затем поверх тени рисуем
+			 * исходный элемент.
+			 */
+			DrawPostProcessQuad(
+				CurrentTexture,
+				PostProcessTargets[
+					CompositionTargetIndex
+				].Surface,
+				nullptr,
+				0.0f,
+				0.0f,
+				1.0f,
+				true,
+				false
+			);
+
+			CurrentTexture =
+				PostProcessTargets[
+					CompositionTargetIndex
+				].Texture;
+
+			CurrentPostProcessIndex =
+				CompositionTargetIndex;
+
+			break;
+		}
 
 		case ECompiledFilterType::MaskImage:
+		{
 			MaskTexture =
 				Filter->MaskTexture;
+
 			break;
+		}
 
 		default:
 			break;
@@ -2675,15 +3828,14 @@ void RmlRenderDX9::CompositeLayers(
 		Destination
 	);
 
-	const bool bEnableBlend =
-		BlendMode !=
-		Rml::BlendMode::Replace;
+	SetupRenderState();
 
 	DrawLayerTexture(
-		SourceTexture,
+		CurrentTexture,
 		MaskTexture,
-		Opacity,
-		bEnableBlend
+		FinalOpacity,
+		BlendMode !=
+			Rml::BlendMode::Replace
 	);
 
 	if (
@@ -2695,6 +3847,8 @@ void RmlRenderDX9::CompositeLayers(
 			TopLayer
 		);
 	}
+
+	SetupRenderState();
 }
 
 Rml::TextureHandle RmlRenderDX9::SaveLayerAsTexture()
@@ -2859,11 +4013,11 @@ RmlRenderDX9::CompileFilter(
 	const Rml::Dictionary& Parameters
 )
 {
+	FCompiledFilter* Filter =
+		new FCompiledFilter();
+
 	if (Name == "opacity")
 	{
-		FCompiledFilter* Filter =
-			new FCompiledFilter();
-
 		Filter->Type =
 			ECompiledFilterType::Opacity;
 
@@ -2873,21 +4027,71 @@ RmlRenderDX9::CompileFilter(
 				"value",
 				1.0f
 			);
+	}
+	else if (Name == "blur")
+	{
+		Filter->Type =
+			ECompiledFilterType::Blur;
 
-		return reinterpret_cast<
-			Rml::CompiledFilterHandle
-		>(
-			Filter
+		Filter->Sigma =
+			std::max(
+				0.0f,
+				Rml::Get(
+					Parameters,
+					"sigma",
+					1.0f
+				)
+			);
+	}
+	else if (Name == "drop-shadow")
+	{
+		Filter->Type =
+			ECompiledFilterType::DropShadow;
+
+		Filter->Sigma =
+			std::max(
+				0.0f,
+				Rml::Get(
+					Parameters,
+					"sigma",
+					0.0f
+				)
+			);
+
+		Filter->Offset =
+			Rml::Get(
+				Parameters,
+				"offset",
+				Rml::Vector2f(
+					0.0f,
+					0.0f
+				)
+			);
+
+		Filter->Color =
+			Rml::Get(
+				Parameters,
+				"color",
+				Rml::Colourb()
+			).ToPremultiplied();
+	}
+	else
+	{
+		Rml::Log::Message(
+			Rml::Log::LT_WARNING,
+			"DX9 backend: unsupported filter '%s'.",
+			Name.c_str()
 		);
+
+		delete Filter;
+		return 0;
 	}
 
-	Rml::Log::Message(
-		Rml::Log::LT_WARNING,
-		"DX9 backend: unsupported filter '%s'.",
-		Name.c_str()
+	return reinterpret_cast<
+		Rml::CompiledFilterHandle
+	>(
+		Filter
 	);
-
-	return 0;
 }
 
 void RmlRenderDX9::ReleaseFilter(
@@ -2904,7 +4108,11 @@ void RmlRenderDX9::ReleaseFilter(
 			FilterHandle
 		);
 
-	if (Filter->MaskTexture)
+	if (
+		Filter->Type ==
+			ECompiledFilterType::MaskImage &&
+		Filter->MaskTexture
+	)
 	{
 		Filter->MaskTexture->Release();
 		Filter->MaskTexture = nullptr;

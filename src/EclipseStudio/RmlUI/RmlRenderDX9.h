@@ -183,6 +183,8 @@ private:
 	{
 		Invalid = 0,
 		Opacity,
+		Blur,
+		DropShadow,
 		MaskImage
 	};
 
@@ -194,8 +196,31 @@ private:
 		float Opacity =
 			1.0f;
 
+		float Sigma =
+			0.0f;
+
+		Rml::Vector2f Offset =
+			Rml::Vector2f(
+				0.0f,
+				0.0f
+			);
+
+		Rml::ColourbPremultiplied Color{};
+
 		IDirect3DTexture9* MaskTexture =
 			nullptr;
+	};
+
+	struct FPostProcessTarget
+	{
+		IDirect3DTexture9* Texture =
+			nullptr;
+
+		IDirect3DSurface9* Surface =
+			nullptr;
+
+		int Width = 0;
+		int Height = 0;
 	};
 
 private:
@@ -235,6 +260,14 @@ private:
 
 	size_t ActiveLayerCount =
 		0;
+
+	FPostProcessTarget PostProcessTargets[3];
+
+	IDirect3DPixelShader9* BlurPixelShader =
+		nullptr;
+
+	IDirect3DPixelShader9* ShadowPixelShader =
+		nullptr;
 
 	int ViewWidth = 1;
 	int ViewHeight = 1;
@@ -354,5 +387,57 @@ private:
 		const std::wstring& Filename,
 		Rml::Vector2i& OutDimensions,
 		IDirect3DTexture9** OutTexture
+	);
+
+	bool CreateFilterShaders();
+
+	bool CreatePixelShader(
+		const char* SourceCode,
+		IDirect3DPixelShader9** OutShader
+	);
+
+	void ReleaseFilterShaders();
+
+	bool EnsurePostProcessTargets();
+	void ReleasePostProcessTargets();
+
+	int FindPostProcessTarget(
+		int ExcludeA,
+		int ExcludeB = -1
+	) const;
+
+	void ReleasePostProcessTarget(
+		FPostProcessTarget& Target
+	);
+
+	void DrawPostProcessQuad(
+		IDirect3DTexture9* SourceTexture,
+		IDirect3DSurface9* DestinationSurface,
+		IDirect3DPixelShader9* PixelShader,
+		float OffsetX,
+		float OffsetY,
+		float Opacity,
+		bool bEnableBlend,
+		bool bClearDestination
+	);
+
+	void RenderBlurPass(
+		IDirect3DTexture9* SourceTexture,
+		IDirect3DSurface9* DestinationSurface,
+		float Sigma,
+		bool bHorizontal
+	);
+
+	bool ApplyGaussianBlur(
+		IDirect3DTexture9* SourceTexture,
+		int SourcePostProcessIndex,
+		float Sigma,
+		IDirect3DTexture9*& OutTexture,
+		int& OutPostProcessIndex
+	);
+
+	static void CalculateGaussianWeights(
+		float Sigma,
+		float OutWeights[5]
 	);
 };
