@@ -1775,7 +1775,7 @@ void RmlFrontEndContext::ShowSkills()
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
 		!SkillsDocument ||
-		ShopDocument
+		!ShopDocument
 	)
 	{
 		return;
@@ -2151,19 +2151,37 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
-		if (Id == "btn_social")
+		if (Id == "btn_change_name")
 		{
 			SetMainMenuStatus(
-				"Social panel is not connected yet."
+				"Change name screen is not connected yet."
 			);
 
 			return;
 		}
 
-		if (Id == "btn_messages")
+		if (Id == "btn_change_character")
 		{
 			SetMainMenuStatus(
-				"Messages panel is not connected yet."
+				"Character selection screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_find_friend")
+		{
+			SetMainMenuStatus(
+				"Friend search screen is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_rewards")
+		{
+			SetMainMenuStatus(
+				"Awards screen is not connected yet."
 			);
 
 			return;
