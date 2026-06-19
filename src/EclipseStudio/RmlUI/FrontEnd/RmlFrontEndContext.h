@@ -62,7 +62,8 @@ private:
 		Login = 0,
 		MainMenu,
 		CharacterCreate,
-		Skills
+		Skills,
+		Shop
 	};
 
 	enum EAsyncOperation : LONG
@@ -120,6 +121,7 @@ private:
 	void ShowMainMenu();
 	void ShowCharacterCreate();
 	void ShowSkills();
+	void ShowShop();
 
 	void HandleClick(
 		Rml::Element* Element
@@ -186,6 +188,22 @@ private:
 	);
 
 	void SetSkillsStatus(
+		const Rml::String& Text
+	);
+
+	void BuildShop();
+
+	void SelectShopItem(
+		const Rml::String& ShopItemId
+	);
+
+	void RefreshShopSelection();
+
+	void SetShopControlsEnabled(
+		bool bEnabled
+	);
+
+	void SetShopStatus(
 		const Rml::String& Text
 	);
 
@@ -301,6 +319,7 @@ private:
 	Rml::ElementDocument* MainMenuDocument = nullptr;
 	Rml::ElementDocument* CharacterCreateDocument = nullptr;
 	Rml::ElementDocument* SkillsDocument = nullptr;
+	Rml::ElementDocument* ShopDocument = nullptr;
 
 	std::unique_ptr<FClickListener> ClickListener;
 	std::unique_ptr<RmlFrontEndCharacterPreview> CharacterPreview;
@@ -328,10 +347,11 @@ private:
 
 	int SelectedCharacterIndex = -1;
 
-	Rml::String SelectedSkillElementId =
-	"skill_node_vitality_1";
-
+	Rml::String SelectedSkillElementId = "skill_node_vitality_1";
 	int SelectedSkillBackendId = 0;
+
+	Rml::String SelectedShopItemElementId = "shop_item_0";
+	int SelectedShopBackendItemId = 0;
 
 	EScreen CurrentScreen = EScreen::Login;
 	ERmlFrontEndResult PendingResult = ERmlFrontEndResult::None;

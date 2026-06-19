@@ -381,6 +381,168 @@ namespace
 		}
 	}
 
+	const char* ShopItemButtonPrefix =
+	"shop_item_";
+
+	const size_t ShopItemButtonPrefixLength =
+		strlen(ShopItemButtonPrefix);
+
+	struct FFrontendShopItem
+	{
+		const char* ElementId;
+		int BackendItemId;
+
+		const char* CategoryId;
+		const char* CategoryName;
+
+		const char* DisplayName;
+		const char* TypeName;
+		const char* Description;
+
+		const char* IconText;
+		const char* BadgeText;
+
+		const char* GcPriceText;
+		const char* GdPriceText;
+
+		int Damage;
+		int Range;
+		int Recoil;
+		int Weight;
+	};
+
+	const FFrontendShopItem FrontendShopItems[] =
+	{
+		{
+			"shop_item_0",
+			101001,
+			"featured",
+			"FEATURED ITEM",
+			"AK-74M",
+			"ASSAULT RIFLE",
+			"Reliable military assault rifle with solid damage, controllable recoil and good field durability.",
+			"AK",
+			"FEATURED ITEM",
+			"195",
+			"15 000",
+			72,
+			64,
+			48,
+			38
+		},
+		{
+			"shop_item_1",
+			20015,
+			"gear",
+			"BODY ARMOR",
+			"Custom Guerilla",
+			"BODY ARMOR",
+			"Custom designed guerilla field gear and body armor for fast moving survival operations.",
+			"AR",
+			"NEW ITEM",
+			"115",
+			"8 500",
+			25,
+			30,
+			15,
+			40
+		},
+		{
+			"shop_item_2",
+			20006,
+			"gear",
+			"HELMET",
+			"K. Style Helmet",
+			"HELMET",
+			"Compact tactical helmet with basic head protection for hostile environments.",
+			"HL",
+			"LEVEL LOCKED",
+			"200",
+			"LOCKED",
+			30,
+			20,
+			10,
+			30
+		},
+		{
+			"shop_item_3",
+			301003,
+			"backpacks",
+			"BACKPACK",
+			"Medium Backpack",
+			"BACKPACK",
+			"Medium storage backpack for carrying additional weapons, supplies and loot.",
+			"BP",
+			"SALE ITEM",
+			"90",
+			"6 000",
+			0,
+			0,
+			0,
+			55
+		},
+		{
+			"shop_item_4",
+			400004,
+			"consumables",
+			"CONSUMABLE",
+			"Medkit",
+			"CONSUMABLE",
+			"Medical survival kit used to restore health during raids and emergency encounters.",
+			"MD",
+			"MEDICAL",
+			"25",
+			"1 500",
+			0,
+			0,
+			0,
+			12
+		},
+		{
+			"shop_item_5",
+			500005,
+			"crates",
+			"LOOT CRATE",
+			"Survivor Crate",
+			"LOOT CRATE",
+			"Randomized survivor supply crate. Contents are controlled by backend rules.",
+			"CR",
+			"RANDOM BOX",
+			"75",
+			"RANDOM",
+			0,
+			0,
+			0,
+			20
+		}
+	};
+
+	const size_t FrontendShopItemCount =
+		sizeof(FrontendShopItems) /
+		sizeof(FrontendShopItems[0]);
+
+	const FFrontendShopItem* FindFrontendShopItem(
+		const Rml::String& ElementId
+	)
+	{
+		for (
+			size_t Index = 0;
+			Index < FrontendShopItemCount;
+			++Index
+		)
+		{
+			if (
+				ElementId ==
+				FrontendShopItems[Index].ElementId
+			)
+			{
+				return &FrontendShopItems[Index];
+			}
+		}
+
+		return nullptr;
+	}
+
 	std::string FormatPlayedTime(int TotalSeconds)
 	{
 		if (TotalSeconds < 0)
@@ -736,10 +898,11 @@ void RmlFrontEndContext::Shutdown()
 
 	SelectedCharacterIndex = -1;
 
-	SelectedSkillElementId =
-	"skill_node_vitality_1";
-
+	SelectedSkillElementId = "skill_node_vitality_1";
 	SelectedSkillBackendId = 0;
+
+	SelectedShopItemElementId = "shop_item_0";
+	SelectedShopBackendItemId = 0;
 
 	CurrentScreen = EScreen::Login;
 	PendingResult = ERmlFrontEndResult::None;
@@ -820,10 +983,26 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
+	ShopDocument =
+	Context->LoadDocument(
+		"Rml/FrontEnd/Shop.rml"
+	);
+
+	if (!ShopDocument)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/Shop.rml\n"
+		);
+
+		return false;
+	}
+
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
 	SkillsDocument->Hide();
+	ShopDocument->Hide();
 
 	return true;
 }
@@ -868,6 +1047,15 @@ void RmlFrontEndContext::UnloadDocuments()
 
 		SkillsDocument = nullptr;
 	}
+
+	if (ShopDocument)
+	{
+		Context->UnloadDocument(
+			ShopDocument
+		);
+
+		ShopDocument = nullptr;
+	}
 }
 
 void RmlFrontEndContext::AttachEvents()
@@ -902,6 +1090,14 @@ void RmlFrontEndContext::AttachEvents()
 	if (SkillsDocument)
 	{
 		SkillsDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (ShopDocument)
+	{
+		ShopDocument->AddEventListener(
 			"click",
 			ClickListener.get()
 		);
@@ -944,6 +1140,14 @@ void RmlFrontEndContext::DetachEvents()
 			ClickListener.get()
 		);
 	}
+
+	if (ShopDocument)
+	{
+		ShopDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
 }
 
 void RmlFrontEndContext::Update()
@@ -973,9 +1177,9 @@ void RmlFrontEndContext::Render()
 
 	if (
 		CharacterPreview &&
-		CurrentScreen ==
-			EScreen::MainMenu ||
-			CurrentScreen == EScreen::Skills
+		CurrentScreen == EScreen::MainMenu ||
+		CurrentScreen == EScreen::Skills ||
+		CurrentScreen == EScreen::Shop
 	)
 	{
 		CharacterPreview->
@@ -1001,9 +1205,9 @@ void RmlFrontEndContext::PrepareRender()
 	}
 
 	if (
-		CurrentScreen !=
-			EScreen::MainMenu &&
-			CurrentScreen != EScreen::Skills
+		CurrentScreen != EScreen::MainMenu &&
+		CurrentScreen != EScreen::Skills &&
+		CurrentScreen != EScreen::Shop
 	)
 	{
 		return;
@@ -1074,6 +1278,17 @@ bool RmlFrontEndContext::ProcessWin32Message(
 
 	if (
 		Message == WM_KEYDOWN &&
+		WParam == VK_ESCAPE &&
+		CurrentScreen == EScreen::Shop &&
+		!IsBusy()
+	)
+	{
+		ShowMainMenu();
+		return true;
+	}
+
+	if (
+		Message == WM_KEYDOWN &&
 		WParam == VK_RETURN &&
 		CurrentScreen == EScreen::Skills &&
 		!IsBusy()
@@ -1097,7 +1312,8 @@ bool RmlFrontEndContext::ProcessWin32Message(
 	if (
 	(
 		CurrentScreen != EScreen::MainMenu &&
-		CurrentScreen != EScreen::Skills
+		CurrentScreen != EScreen::Skills &&
+		CurrentScreen != EScreen::Shop
 	) ||
 		!CharacterPreview ||
 		!CharacterPreview->
@@ -1496,7 +1712,9 @@ void RmlFrontEndContext::ShowLogin()
 	if (
 		!LoginDocument ||
 		!MainMenuDocument ||
-		!CharacterCreateDocument
+		!CharacterCreateDocument ||
+		SkillsDocument ||
+		!ShopDocument
 	)
 	{
 		return;
@@ -1505,6 +1723,8 @@ void RmlFrontEndContext::ShowLogin()
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
 	LoginDocument->Show();
+	SkillsDocument->Hide();
+	ShopDocument->Hide();
 
 	CurrentScreen =
 		EScreen::Login;
@@ -1524,7 +1744,8 @@ void RmlFrontEndContext::ShowMainMenu()
 		!LoginDocument ||
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
-		!SkillsDocument
+		!SkillsDocument ||
+		!ShopDocument
 	)
 	{
 		return;
@@ -1532,8 +1753,9 @@ void RmlFrontEndContext::ShowMainMenu()
 
 	LoginDocument->Hide();
 	CharacterCreateDocument->Hide();
-	MainMenuDocument->Show();
 	SkillsDocument->Hide();
+	ShopDocument->Hide();
+	MainMenuDocument->Show();
 
 	CurrentScreen =
 		EScreen::MainMenu;
@@ -1558,7 +1780,8 @@ void RmlFrontEndContext::ShowSkills()
 		!LoginDocument ||
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
-		!SkillsDocument
+		!SkillsDocument ||
+		ShopDocument
 	)
 	{
 		return;
@@ -1579,6 +1802,7 @@ void RmlFrontEndContext::ShowSkills()
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
+	ShopDocument->Hide();
 	SkillsDocument->Show();
 
 	CurrentScreen =
@@ -1587,6 +1811,59 @@ void RmlFrontEndContext::ShowSkills()
 	BuildSkills();
 
 	SetSkillsControlsEnabled(
+		true
+	);
+
+	if (
+		bProfileLoaded &&
+		gUserProfile.ProfileData.NumSlots > 0
+	)
+	{
+		EnsureCharacterPreview();
+	}
+
+	RmlRuntime::Get().SetActiveContext(
+		Context
+	);
+}
+
+void RmlFrontEndContext::ShowShop()
+{
+	if (
+		!LoginDocument ||
+		!MainMenuDocument ||
+		!CharacterCreateDocument ||
+		!SkillsDocument ||
+		!ShopDocument
+	)
+	{
+		return;
+	}
+
+	if (
+		!bProfileLoaded ||
+		IsBusy()
+	)
+	{
+		SetMainMenuStatus(
+			"Profile is not ready for Shop screen."
+		);
+
+		return;
+	}
+
+	LoginDocument->Hide();
+	MainMenuDocument->Hide();
+	CharacterCreateDocument->Hide();
+	SkillsDocument->Hide();
+	ShopDocument->Show();
+
+	CurrentScreen =
+		EScreen::Shop;
+
+	BuildShop();
+
+	SetShopControlsEnabled(
 		true
 	);
 
@@ -1629,6 +1906,7 @@ void RmlFrontEndContext::ShowCharacterCreate()
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	SkillsDocument->Hide();
+	ShopDocument->Hide();
 	CharacterCreateDocument->Show();
 
 	CurrentScreen =
@@ -1785,7 +2063,10 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "nav_survivor")
 		{
-			if (CurrentScreen == EScreen::Skills)
+			if (
+				CurrentScreen == EScreen::Skills ||
+				CurrentScreen == EScreen::Shop
+			)
 			{
 				ShowMainMenu();
 			}
@@ -1801,10 +2082,7 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "nav_shop")
 		{
-			SetMainMenuStatus(
-				"Shop screen is not connected yet."
-			);
-
+			ShowShop();
 			return;
 		}
 
@@ -1924,6 +2202,89 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
+		if (Id == "btn_shop_buy_selected")
+		{
+			SetShopStatus(
+				"Shop purchase backend is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_shop_preview_item")
+		{
+			SetShopStatus(
+				"Item preview is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_shop_sort")
+		{
+			SetShopStatus(
+				"Shop sorting is visual only."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_shop_refresh")
+		{
+			BuildShop();
+
+			SetShopStatus(
+				"Shop visual data refreshed."
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				ShopItemButtonPrefixLength,
+				ShopItemButtonPrefix
+			) == 0
+		)
+		{
+			SelectShopItem(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_category_featured" ||
+			Id == "shop_category_weapons" ||
+			Id == "shop_category_gear" ||
+			Id == "shop_category_backpacks" ||
+			Id == "shop_category_consumables" ||
+			Id == "shop_category_crates"
+		)
+		{
+			SetShopStatus(
+				"Shop category selected. Backend filtering is not connected yet."
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_tab_hot" ||
+			Id == "shop_tab_new" ||
+			Id == "shop_tab_sale" ||
+			Id == "shop_tab_owned"
+		)
+		{
+			SetShopStatus(
+				"Shop tab selected. Backend filtering is not connected yet."
+			);
+
+			return;
+		}
+
 		if (Id == "btn_learn_selected_skill")
 		{
 			RequestLearnSelectedSkill();
@@ -1989,15 +2350,11 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
-		if (
-			Current ==
-				LoginDocument ||
-			Current ==
-				MainMenuDocument ||
-			Current ==
-				CharacterCreateDocument ||
-				Current ==
-				SkillsDocument
+		if (Current == LoginDocument ||
+			Current == MainMenuDocument ||
+			Current == CharacterCreateDocument ||
+			Current == SkillsDocument ||
+			Current == ShopDocument
 		)
 		{
 			break;
@@ -4072,6 +4429,444 @@ void RmlFrontEndContext::BuildSkills()
 
 	SetSkillsStatus(
 		"Skills loaded."
+	);
+}
+
+void RmlFrontEndContext::BuildShop()
+{
+	if (!ShopDocument)
+		return;
+
+	const std::string GcText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GamePoints
+		);
+
+	const std::string GdText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GameDollars
+		);
+
+	SetElementText(
+		ShopDocument,
+		"balance_gc",
+		GcText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"balance_gd",
+		GdText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"balance_ltc",
+		"0"
+	);
+
+	SetElementText(
+		ShopDocument,
+		"account_name",
+		LoginUser[0]
+			? LoginUser
+			: "ACCOUNT"
+	);
+
+	const int CharacterCount =
+		gUserProfile.ProfileData.
+			NumSlots;
+
+	if (
+		CharacterCount <= 0 ||
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >= CharacterCount
+	)
+	{
+		SetElementText(
+			ShopDocument,
+			"top_survivor_name",
+			"NO SURVIVOR"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"top_survivor_role",
+			"EMPTY SLOT"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"top_level_value",
+			"0"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"top_level_xp_text",
+			"0 / 100"
+		);
+
+		SetElementPercent(
+			ShopDocument,
+			"top_level_xp_fill",
+			0.0f
+		);
+
+		SetElementText(
+			ShopDocument,
+			"footer_region",
+			"AUTO"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"footer_server",
+			"OFFLINE"
+		);
+
+		SetShopControlsEnabled(
+			false
+		);
+
+		SetShopStatus(
+			"No survivor selected."
+		);
+
+		return;
+	}
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
+
+	const char* CharacterRole =
+		GetCharacterRole(
+			Character.HeroItemID
+		);
+
+	const FFrontendLevelProgress Level =
+		CalculateFrontendLevelProgress(
+			Character.Stats.XP
+		);
+
+	const std::string ExperienceText =
+		FormatGroupedNumber(
+			Level.TotalExperience
+		) +
+		" / " +
+		FormatGroupedNumber(
+			Level.NextLevelExperience
+		);
+
+	char Text[256]{};
+
+	sprintf_s(
+		Text,
+		"%d",
+		Level.Level
+	);
+
+	SetElementText(
+		ShopDocument,
+		"top_level_value",
+		Text
+	);
+
+	SetElementText(
+		ShopDocument,
+		"top_level_xp_text",
+		ExperienceText
+	);
+
+	SetElementPercent(
+		ShopDocument,
+		"top_level_xp_fill",
+		Level.Percent
+	);
+
+	SetElementText(
+		ShopDocument,
+		"top_survivor_name",
+		Character.Gamertag
+	);
+
+	SetElementText(
+		ShopDocument,
+		"top_survivor_role",
+		CharacterRole
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_character",
+		Character.Gamertag
+	);
+
+	SetElementText(
+		ShopDocument,
+		"footer_region",
+		"AUTO"
+	);
+
+	SetElementText(
+		ShopDocument,
+		"footer_server",
+		g_serverip &&
+		g_serverip->GetString() &&
+		g_serverip->GetString()[0]
+			? g_serverip->GetString()
+			: "OFFLINE"
+	);
+
+	if (
+		SelectedShopItemElementId.empty() ||
+		!FindFrontendShopItem(
+			SelectedShopItemElementId
+		)
+	)
+	{
+		SelectedShopItemElementId =
+			"shop_item_0";
+	}
+
+	SelectShopItem(
+		SelectedShopItemElementId
+	);
+
+	SetShopControlsEnabled(
+		true
+	);
+
+	SetShopStatus(
+		"Shop visual screen loaded."
+	);
+}
+
+void RmlFrontEndContext::SelectShopItem(
+	const Rml::String& ShopItemId
+)
+{
+	if (!ShopDocument)
+		return;
+
+	const FFrontendShopItem* Item =
+		FindFrontendShopItem(
+			ShopItemId
+		);
+
+	if (!Item)
+		return;
+
+	SelectedShopItemElementId =
+		Item->ElementId;
+
+	SelectedShopBackendItemId =
+		Item->BackendItemId;
+
+	RefreshShopSelection();
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_icon",
+		Item->IconText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_badge",
+		Item->BadgeText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_name",
+		Item->DisplayName
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_category",
+		Item->TypeName
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_description",
+		Item->Description
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_gc_price",
+		Item->GcPriceText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_gd_price",
+		Item->GdPriceText
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_shop_item_id",
+		Item->ElementId
+	);
+
+	char Text[64]{};
+
+	sprintf_s(
+		Text,
+		"%d",
+		Item->BackendItemId
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_shop_backend_item_id",
+		Text
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_shop_category_id",
+		Item->CategoryId
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Item->Damage
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_damage_value",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Item->Range
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_range_value",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Item->Recoil
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_recoil_value",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Item->Weight
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_weight_value",
+		Text
+	);
+
+	SetShopStatus(
+		"Shop item selected."
+	);
+}
+
+void RmlFrontEndContext::RefreshShopSelection()
+{
+	if (!ShopDocument)
+		return;
+
+	for (
+		size_t Index = 0;
+		Index < FrontendShopItemCount;
+		++Index
+	)
+	{
+		const FFrontendShopItem& Item =
+			FrontendShopItems[Index];
+
+		SetElementClass(
+			ShopDocument,
+			Item.ElementId,
+			"selected",
+			SelectedShopItemElementId ==
+				Item.ElementId
+		);
+	}
+}
+
+void RmlFrontEndContext::SetShopControlsEnabled(
+	bool bEnabled
+)
+{
+	const bool bHasCharacter =
+		bProfileLoaded &&
+		gUserProfile.ProfileData.
+			NumSlots > 0;
+
+	const bool bAllow =
+		bEnabled &&
+		bHasCharacter;
+
+	SetElementEnabled(
+		ShopDocument,
+		"btn_shop_buy_selected",
+		bAllow
+	);
+
+	SetElementEnabled(
+		ShopDocument,
+		"btn_shop_preview_item",
+		bAllow
+	);
+
+	SetElementEnabled(
+		ShopDocument,
+		"btn_shop_sort",
+		bAllow
+	);
+
+	SetElementEnabled(
+		ShopDocument,
+		"btn_shop_refresh",
+		bAllow
+	);
+}
+
+void RmlFrontEndContext::SetShopStatus(
+	const Rml::String& Text
+)
+{
+	SetElementText(
+		ShopDocument,
+		"shop_details_status",
+		Text
+	);
+
+	SetElementText(
+		ShopDocument,
+		"main_menu_status",
+		Text
 	);
 }
 
