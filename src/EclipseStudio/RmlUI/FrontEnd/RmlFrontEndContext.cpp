@@ -1177,9 +1177,7 @@ void RmlFrontEndContext::Render()
 
 	if (
 		CharacterPreview &&
-		CurrentScreen == EScreen::MainMenu ||
-		CurrentScreen == EScreen::Skills ||
-		CurrentScreen == EScreen::Shop
+		CurrentScreen == EScreen::MainMenu
 	)
 	{
 		CharacterPreview->
@@ -1205,9 +1203,7 @@ void RmlFrontEndContext::PrepareRender()
 	}
 
 	if (
-		CurrentScreen != EScreen::MainMenu &&
-		CurrentScreen != EScreen::Skills &&
-		CurrentScreen != EScreen::Shop
+		CurrentScreen != EScreen::MainMenu
 	)
 	{
 		return;
@@ -1311,9 +1307,7 @@ bool RmlFrontEndContext::ProcessWin32Message(
 
 	if (
 	(
-		CurrentScreen != EScreen::MainMenu &&
-		CurrentScreen != EScreen::Skills &&
-		CurrentScreen != EScreen::Shop
+		CurrentScreen != EScreen::MainMenu
 	) ||
 		!CharacterPreview ||
 		!CharacterPreview->
@@ -1713,7 +1707,7 @@ void RmlFrontEndContext::ShowLogin()
 		!LoginDocument ||
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
-		SkillsDocument ||
+		!SkillsDocument ||
 		!ShopDocument
 	)
 	{
@@ -1814,14 +1808,6 @@ void RmlFrontEndContext::ShowSkills()
 		true
 	);
 
-	if (
-		bProfileLoaded &&
-		gUserProfile.ProfileData.NumSlots > 0
-	)
-	{
-		EnsureCharacterPreview();
-	}
-
 	RmlRuntime::Get().SetActiveContext(
 		Context
 	);
@@ -1866,14 +1852,6 @@ void RmlFrontEndContext::ShowShop()
 	SetShopControlsEnabled(
 		true
 	);
-
-	if (
-		bProfileLoaded &&
-		gUserProfile.ProfileData.NumSlots > 0
-	)
-	{
-		EnsureCharacterPreview();
-	}
 
 	RmlRuntime::Get().SetActiveContext(
 		Context
