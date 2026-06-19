@@ -61,7 +61,8 @@ private:
 	{
 		Login = 0,
 		MainMenu,
-		CharacterCreate
+		CharacterCreate,
+		Skills
 	};
 
 	enum EAsyncOperation : LONG
@@ -118,6 +119,7 @@ private:
 	void ShowLogin();
 	void ShowMainMenu();
 	void ShowCharacterCreate();
+	void ShowSkills();
 
 	void HandleClick(
 		Rml::Element* Element
@@ -168,6 +170,24 @@ private:
 	);
 
 	void BuildMainMenu();
+
+	void BuildSkills();
+
+	void SelectSkillNode(
+		const Rml::String& SkillNodeId
+	);
+
+	void RefreshSkillSelection();
+
+	void RequestLearnSelectedSkill();
+
+	void SetSkillsControlsEnabled(
+		bool bEnabled
+	);
+
+	void SetSkillsStatus(
+		const Rml::String& Text
+	);
 
 	void SelectCharacter(
 		int CharacterIndex
@@ -280,6 +300,7 @@ private:
 	Rml::ElementDocument* LoginDocument = nullptr;
 	Rml::ElementDocument* MainMenuDocument = nullptr;
 	Rml::ElementDocument* CharacterCreateDocument = nullptr;
+	Rml::ElementDocument* SkillsDocument = nullptr;
 
 	std::unique_ptr<FClickListener> ClickListener;
 	std::unique_ptr<RmlFrontEndCharacterPreview> CharacterPreview;
@@ -306,6 +327,11 @@ private:
 	int Height = 1;
 
 	int SelectedCharacterIndex = -1;
+
+	Rml::String SelectedSkillElementId =
+	"skill_node_vitality_1";
+
+	int SelectedSkillBackendId = 0;
 
 	EScreen CurrentScreen = EScreen::Login;
 	ERmlFrontEndResult PendingResult = ERmlFrontEndResult::None;

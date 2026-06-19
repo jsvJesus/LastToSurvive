@@ -85,6 +85,302 @@ namespace
 		);
 	}
 
+	const char* SkillNodeButtonPrefix =
+	"skill_node_";
+
+	const size_t SkillNodeButtonPrefixLength =
+		strlen(SkillNodeButtonPrefix);
+
+	enum class EFrontendSkillState
+	{
+		Learned = 0,
+		Available,
+		Locked
+	};
+
+	struct FFrontendSkillNode
+	{
+		const char* ElementId;
+		int BackendSkillId;
+
+		const char* CategoryId;
+		const char* CategoryName;
+
+		const char* DisplayName;
+		const char* Description;
+
+		const char* RankText;
+		const char* LevelText;
+		const char* BonusText;
+
+		int Cost;
+		int RequiredLevel;
+
+		EFrontendSkillState State;
+
+		const char* RequirementA;
+		const char* RequirementB;
+	};
+
+	const FFrontendSkillNode FrontendSkillNodes[] =
+	{
+		{
+			"skill_node_endurance_1",
+			101,
+			"survival",
+			"SURVIVAL SKILL",
+			"ENDURANCE",
+			"Increases stamina capacity and improves movement endurance during long raids.",
+			"I",
+			"1 / 5",
+			"+2% STAMINA",
+			0,
+			1,
+			EFrontendSkillState::Learned,
+			"Base survival training completed",
+			"Survivor Level 1 reached"
+		},
+		{
+			"skill_node_vitality_1",
+			102,
+			"survival",
+			"SURVIVAL SKILL",
+			"VITALITY",
+			"Increases maximum health and improves survivability during long raids.",
+			"II",
+			"0 / 5",
+			"+2% MAX HEALTH",
+			1,
+			2,
+			EFrontendSkillState::Available,
+			"Endurance Level 1 learned",
+			"Survivor Level 2 reached"
+		},
+		{
+			"skill_node_resistance_1",
+			103,
+			"survival",
+			"SURVIVAL SKILL",
+			"RESISTANCE",
+			"Improves resistance against toxic damage, bleeding and infection effects.",
+			"III",
+			"0 / 5",
+			"+2% RESISTANCE",
+			2,
+			5,
+			EFrontendSkillState::Locked,
+			"Vitality Level 1 learned",
+			"Survivor Level 5 reached"
+		},
+
+		{
+			"skill_node_recoil_1",
+			201,
+			"combat",
+			"COMBAT SKILL",
+			"RECOIL CONTROL",
+			"Improves weapon stability while firing automatic and semi-automatic weapons.",
+			"I",
+			"1 / 5",
+			"-2% RECOIL",
+			0,
+			1,
+			EFrontendSkillState::Learned,
+			"Base combat training completed",
+			"Survivor Level 1 reached"
+		},
+		{
+			"skill_node_reload_1",
+			202,
+			"combat",
+			"COMBAT SKILL",
+			"FAST RELOAD",
+			"Reduces reload time for rifles, handguns and shotguns.",
+			"II",
+			"0 / 5",
+			"+2% RELOAD SPEED",
+			1,
+			2,
+			EFrontendSkillState::Available,
+			"Recoil Control Level 1 learned",
+			"Survivor Level 2 reached"
+		},
+		{
+			"skill_node_marksman_1",
+			203,
+			"combat",
+			"COMBAT SKILL",
+			"MARKSMAN",
+			"Improves weapon accuracy and long range handling.",
+			"III",
+			"0 / 5",
+			"+2% ACCURACY",
+			2,
+			5,
+			EFrontendSkillState::Locked,
+			"Fast Reload Level 1 learned",
+			"Survivor Level 5 reached"
+		},
+
+		{
+			"skill_node_scavenger_1",
+			301,
+			"support",
+			"SUPPORT SKILL",
+			"SCAVENGER",
+			"Improves looting efficiency and survival resource awareness.",
+			"I",
+			"0 / 5",
+			"+2% LOOT BONUS",
+			1,
+			1,
+			EFrontendSkillState::Available,
+			"Base support training available",
+			"Survivor Level 1 reached"
+		},
+		{
+			"skill_node_medtech_1",
+			302,
+			"support",
+			"SUPPORT SKILL",
+			"MED TECH",
+			"Improves medical item efficiency and treatment speed.",
+			"II",
+			"0 / 5",
+			"+2% MEDICAL EFFECT",
+			1,
+			3,
+			EFrontendSkillState::Locked,
+			"Scavenger Level 1 learned",
+			"Survivor Level 3 reached"
+		},
+		{
+			"skill_node_repair_1",
+			303,
+			"support",
+			"SUPPORT SKILL",
+			"FIELD REPAIR",
+			"Improves field repair and item maintenance.",
+			"III",
+			"0 / 5",
+			"+2% REPAIR QUALITY",
+			2,
+			5,
+			EFrontendSkillState::Locked,
+			"Med Tech Level 1 learned",
+			"Survivor Level 5 reached"
+		},
+
+		{
+			"skill_node_crafting_1",
+			401,
+			"crafting",
+			"CRAFTING SKILL",
+			"BASIC CRAFT",
+			"Unlocks basic crafting improvements and simple recipe efficiency.",
+			"I",
+			"0 / 5",
+			"+2% CRAFT SPEED",
+			1,
+			1,
+			EFrontendSkillState::Available,
+			"Base crafting available",
+			"Survivor Level 1 reached"
+		},
+		{
+			"skill_node_trader_1",
+			402,
+			"crafting",
+			"CRAFTING SKILL",
+			"TRADER",
+			"Improves trade efficiency and marketplace knowledge.",
+			"II",
+			"0 / 5",
+			"+2% TRADE BONUS",
+			1,
+			3,
+			EFrontendSkillState::Locked,
+			"Basic Craft Level 1 learned",
+			"Survivor Level 3 reached"
+		},
+		{
+			"skill_node_engineer_1",
+			403,
+			"crafting",
+			"CRAFTING SKILL",
+			"ENGINEER",
+			"Improves engineering, advanced crafting and technical work.",
+			"III",
+			"0 / 5",
+			"+2% ENGINEERING",
+			2,
+			5,
+			EFrontendSkillState::Locked,
+			"Trader Level 1 learned",
+			"Survivor Level 5 reached"
+		}
+	};
+
+	const size_t FrontendSkillNodeCount =
+		sizeof(FrontendSkillNodes) /
+		sizeof(FrontendSkillNodes[0]);
+
+	const FFrontendSkillNode* FindFrontendSkillNode(
+		const Rml::String& ElementId
+	)
+	{
+		for (
+			size_t Index = 0;
+			Index < FrontendSkillNodeCount;
+			++Index
+		)
+		{
+			if (
+				ElementId ==
+				FrontendSkillNodes[Index].ElementId
+			)
+			{
+				return &FrontendSkillNodes[Index];
+			}
+		}
+
+		return nullptr;
+	}
+
+	const char* GetFrontendSkillStateText(
+		EFrontendSkillState State
+	)
+	{
+		switch (State)
+		{
+		case EFrontendSkillState::Learned:
+			return "LEARNED";
+
+		case EFrontendSkillState::Available:
+			return "AVAILABLE";
+
+		default:
+			return "LOCKED";
+		}
+	}
+
+	const char* GetFrontendSkillStateClass(
+		EFrontendSkillState State
+	)
+	{
+		switch (State)
+		{
+		case EFrontendSkillState::Learned:
+			return "learned";
+
+		case EFrontendSkillState::Available:
+			return "available";
+
+		default:
+			return "locked";
+		}
+	}
+
 	std::string FormatPlayedTime(int TotalSeconds)
 	{
 		if (TotalSeconds < 0)
@@ -440,6 +736,11 @@ void RmlFrontEndContext::Shutdown()
 
 	SelectedCharacterIndex = -1;
 
+	SelectedSkillElementId =
+	"skill_node_vitality_1";
+
+	SelectedSkillBackendId = 0;
+
 	CurrentScreen = EScreen::Login;
 	PendingResult = ERmlFrontEndResult::None;
 
@@ -504,9 +805,25 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
+	SkillsDocument =
+	Context->LoadDocument(
+		"Rml/FrontEnd/Skills.rml"
+	);
+
+	if (!SkillsDocument)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/Skills.rml\n"
+		);
+
+		return false;
+	}
+
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
+	SkillsDocument->Hide();
 
 	return true;
 }
@@ -542,6 +859,15 @@ void RmlFrontEndContext::UnloadDocuments()
 
 		CharacterCreateDocument = nullptr;
 	}
+
+	if (SkillsDocument)
+	{
+		Context->UnloadDocument(
+			SkillsDocument
+		);
+
+		SkillsDocument = nullptr;
+	}
 }
 
 void RmlFrontEndContext::AttachEvents()
@@ -568,6 +894,14 @@ void RmlFrontEndContext::AttachEvents()
 	if (CharacterCreateDocument)
 	{
 		CharacterCreateDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (SkillsDocument)
+	{
+		SkillsDocument->AddEventListener(
 			"click",
 			ClickListener.get()
 		);
@@ -602,6 +936,14 @@ void RmlFrontEndContext::DetachEvents()
 			ClickListener.get()
 		);
 	}
+
+	if (SkillsDocument)
+	{
+		SkillsDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
 }
 
 void RmlFrontEndContext::Update()
@@ -632,7 +974,8 @@ void RmlFrontEndContext::Render()
 	if (
 		CharacterPreview &&
 		CurrentScreen ==
-			EScreen::MainMenu
+			EScreen::MainMenu ||
+			CurrentScreen == EScreen::Skills
 	)
 	{
 		CharacterPreview->
@@ -659,7 +1002,8 @@ void RmlFrontEndContext::PrepareRender()
 
 	if (
 		CurrentScreen !=
-			EScreen::MainMenu
+			EScreen::MainMenu &&
+			CurrentScreen != EScreen::Skills
 	)
 	{
 		return;
@@ -717,6 +1061,28 @@ bool RmlFrontEndContext::ProcessWin32Message(
 		return true;
 	}
 
+	if (
+		Message == WM_KEYDOWN &&
+		WParam == VK_ESCAPE &&
+		CurrentScreen == EScreen::Skills &&
+		!IsBusy()
+	)
+	{
+		ShowMainMenu();
+		return true;
+	}
+
+	if (
+		Message == WM_KEYDOWN &&
+		WParam == VK_RETURN &&
+		CurrentScreen == EScreen::Skills &&
+		!IsBusy()
+	)
+	{
+		RequestLearnSelectedSkill();
+		return true;
+	}
+
 	const bool bRmlHandled =
 		RmlRuntime::Get().
 			ProcessWin32Message(
@@ -729,8 +1095,10 @@ bool RmlFrontEndContext::ProcessWin32Message(
 			);
 
 	if (
-		CurrentScreen !=
-			EScreen::MainMenu ||
+	(
+		CurrentScreen != EScreen::MainMenu &&
+		CurrentScreen != EScreen::Skills
+	) ||
 		!CharacterPreview ||
 		!CharacterPreview->
 			IsInitialized()
@@ -1155,7 +1523,8 @@ void RmlFrontEndContext::ShowMainMenu()
 	if (
 		!LoginDocument ||
 		!MainMenuDocument ||
-		!CharacterCreateDocument
+		!CharacterCreateDocument ||
+		!SkillsDocument
 	)
 	{
 		return;
@@ -1164,6 +1533,7 @@ void RmlFrontEndContext::ShowMainMenu()
 	LoginDocument->Hide();
 	CharacterCreateDocument->Hide();
 	MainMenuDocument->Show();
+	SkillsDocument->Hide();
 
 	CurrentScreen =
 		EScreen::MainMenu;
@@ -1173,6 +1543,57 @@ void RmlFrontEndContext::ShowMainMenu()
 	);
 
 	if (bProfileLoaded && gUserProfile.ProfileData.NumSlots > 0)
+	{
+		EnsureCharacterPreview();
+	}
+
+	RmlRuntime::Get().SetActiveContext(
+		Context
+	);
+}
+
+void RmlFrontEndContext::ShowSkills()
+{
+	if (
+		!LoginDocument ||
+		!MainMenuDocument ||
+		!CharacterCreateDocument ||
+		!SkillsDocument
+	)
+	{
+		return;
+	}
+
+	if (
+		!bProfileLoaded ||
+		IsBusy()
+	)
+	{
+		SetMainMenuStatus(
+			"Profile is not ready for Skills screen."
+		);
+
+		return;
+	}
+
+	LoginDocument->Hide();
+	MainMenuDocument->Hide();
+	CharacterCreateDocument->Hide();
+	SkillsDocument->Show();
+
+	CurrentScreen =
+		EScreen::Skills;
+
+	BuildSkills();
+
+	SetSkillsControlsEnabled(
+		true
+	);
+
+	if (
+		bProfileLoaded &&
+		gUserProfile.ProfileData.NumSlots > 0
+	)
 	{
 		EnsureCharacterPreview();
 	}
@@ -1207,6 +1628,7 @@ void RmlFrontEndContext::ShowCharacterCreate()
 
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
+	SkillsDocument->Hide();
 	CharacterCreateDocument->Show();
 
 	CurrentScreen =
@@ -1363,9 +1785,16 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "nav_survivor")
 		{
-			SetMainMenuStatus(
-				"Survivor profile active."
-			);
+			if (CurrentScreen == EScreen::Skills)
+			{
+				ShowMainMenu();
+			}
+			else
+			{
+				SetMainMenuStatus(
+					"Survivor profile active."
+				);
+			}
 
 			return;
 		}
@@ -1390,10 +1819,7 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "nav_skills")
 		{
-			SetMainMenuStatus(
-				"Skills screen is not connected yet."
-			);
-
+			ShowSkills();
 			return;
 		}
 
@@ -1435,10 +1861,7 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_skill_tree")
 		{
-			SetMainMenuStatus(
-				"Skill Tree is not connected yet."
-			);
-
+			ShowSkills();
 			return;
 		}
 
@@ -1501,6 +1924,50 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
+		if (Id == "btn_learn_selected_skill")
+		{
+			RequestLearnSelectedSkill();
+			return;
+		}
+
+		if (Id == "btn_reset_skills")
+		{
+			SetSkillsStatus(
+				"Skill reset is not connected to backend yet."
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				SkillNodeButtonPrefixLength,
+				SkillNodeButtonPrefix
+			) == 0
+		)
+		{
+			SelectSkillNode(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "skill_category_survival" ||
+			Id == "skill_category_combat" ||
+			Id == "skill_category_support" ||
+			Id == "skill_category_crafting"
+		)
+		{
+			SetSkillsStatus(
+				"Skill category selected."
+			);
+
+			return;
+		}
+
 		if (
 			Id.compare(
 				0,
@@ -1528,7 +1995,9 @@ void RmlFrontEndContext::HandleClick(
 			Current ==
 				MainMenuDocument ||
 			Current ==
-				CharacterCreateDocument
+				CharacterCreateDocument ||
+				Current ==
+				SkillsDocument
 		)
 		{
 			break;
@@ -3259,6 +3728,772 @@ void RmlFrontEndContext::BuildMainMenu()
 
 	SetMainMenuStatus(
 		"Survivor profile ready."
+	);
+}
+
+void RmlFrontEndContext::BuildSkills()
+{
+	if (!SkillsDocument)
+		return;
+
+	const std::string GcText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GamePoints
+		);
+
+	const std::string GdText =
+		FormatGroupedNumber(
+			gUserProfile.ProfileData.
+				GameDollars
+		);
+
+	SetElementText(
+		SkillsDocument,
+		"balance_gc",
+		GcText
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"balance_gd",
+		GdText
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"balance_ltc",
+		"0"
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"account_name",
+		LoginUser[0]
+			? LoginUser
+			: "ACCOUNT"
+	);
+
+	const int CharacterCount =
+		gUserProfile.ProfileData.
+			NumSlots;
+
+	if (
+		CharacterCount <= 0 ||
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >= CharacterCount
+	)
+	{
+		SetElementText(
+			SkillsDocument,
+			"top_survivor_name",
+			"NO SURVIVOR"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"top_survivor_role",
+			"EMPTY SLOT"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"top_level_value",
+			"0"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"top_level_xp_text",
+			"0 / 100"
+		);
+
+		SetElementPercent(
+			SkillsDocument,
+			"top_level_xp_fill",
+			0.0f
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"skill_points_value",
+			"0"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"skills_survivor_level_value",
+			"0"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"skills_survivor_name",
+			"NO SURVIVOR"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"skills_survivor_class",
+			"EMPTY SLOT"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"skills_xp_text",
+			"0 / 100 XP"
+		);
+
+		SetElementPercent(
+			SkillsDocument,
+			"skills_xp_fill",
+			0.0f
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"footer_region",
+			"AUTO"
+		);
+
+		SetElementText(
+			SkillsDocument,
+			"footer_server",
+			"OFFLINE"
+		);
+
+		SetSkillsControlsEnabled(
+			false
+		);
+
+		SetSkillsStatus(
+			"No survivor selected."
+		);
+
+		return;
+	}
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
+
+	const char* CharacterRole =
+		GetCharacterRole(
+			Character.HeroItemID
+		);
+
+	const FFrontendLevelProgress Level =
+		CalculateFrontendLevelProgress(
+			Character.Stats.XP
+		);
+
+	const std::string ExperienceText =
+		FormatGroupedNumber(
+			Level.TotalExperience
+		) +
+		" / " +
+		FormatGroupedNumber(
+			Level.NextLevelExperience
+		);
+
+	char Text[256]{};
+
+	sprintf_s(
+		Text,
+		"%d",
+		Level.Level
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"top_level_value",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"top_level_xp_text",
+		ExperienceText
+	);
+
+	SetElementPercent(
+		SkillsDocument,
+		"top_level_xp_fill",
+		Level.Percent
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"top_survivor_name",
+		Character.Gamertag
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"top_survivor_role",
+		CharacterRole
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skills_survivor_name",
+		Character.Gamertag
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skills_survivor_class",
+		CharacterRole
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_character",
+		Character.Gamertag
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Level.Level
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skills_survivor_level_value",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skills_xp_text",
+		ExperienceText + " XP"
+	);
+
+	SetElementPercent(
+		SkillsDocument,
+		"skills_xp_fill",
+		Level.Percent
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		std::max(
+			0,
+			Character.Stats.SkillXPPool
+		)
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skill_points_value",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skill_points_available",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"skill_points_spent",
+		"0"
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"footer_region",
+		"AUTO"
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"footer_server",
+		g_serverip &&
+		g_serverip->GetString() &&
+		g_serverip->GetString()[0]
+			? g_serverip->GetString()
+			: "OFFLINE"
+	);
+
+	for (
+		size_t Index = 0;
+		Index < FrontendSkillNodeCount;
+		++Index
+	)
+	{
+		const FFrontendSkillNode& Node =
+			FrontendSkillNodes[Index];
+
+		SetElementClass(
+			SkillsDocument,
+			Node.ElementId,
+			"learned",
+			Node.State ==
+				EFrontendSkillState::Learned
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			Node.ElementId,
+			"available",
+			Node.State ==
+				EFrontendSkillState::Available
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			Node.ElementId,
+			"locked",
+			Node.State ==
+				EFrontendSkillState::Locked
+		);
+	}
+
+	if (
+		SelectedSkillElementId.empty() ||
+		!FindFrontendSkillNode(
+			SelectedSkillElementId
+		)
+	)
+	{
+		SelectedSkillElementId =
+			"skill_node_vitality_1";
+	}
+
+	SelectSkillNode(
+		SelectedSkillElementId
+	);
+
+	SetSkillsStatus(
+		"Skills loaded."
+	);
+}
+
+void RmlFrontEndContext::SelectSkillNode(
+	const Rml::String& SkillNodeId
+)
+{
+	if (!SkillsDocument)
+		return;
+
+	const FFrontendSkillNode* Node =
+		FindFrontendSkillNode(
+			SkillNodeId
+		);
+
+	if (!Node)
+		return;
+
+	SelectedSkillElementId =
+		Node->ElementId;
+
+	SelectedSkillBackendId =
+		Node->BackendSkillId;
+
+	RefreshSkillSelection();
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_name",
+		Node->DisplayName
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_category",
+		Node->CategoryName
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_description",
+		Node->Description
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_level",
+		Node->LevelText
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_bonus",
+		Node->BonusText
+	);
+
+	char Text[64]{};
+
+	sprintf_s(
+		Text,
+		"%d SP",
+		Node->Cost
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_cost",
+		Text
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Node->RequiredLevel
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_required_level",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_state",
+		GetFrontendSkillStateText(
+			Node->State
+		)
+	);
+
+	SetElementClass(
+		SkillsDocument,
+		"selected_skill_state",
+		"learned",
+		Node->State ==
+			EFrontendSkillState::Learned
+	);
+
+	SetElementClass(
+		SkillsDocument,
+		"selected_skill_state",
+		"available",
+		Node->State ==
+			EFrontendSkillState::Available
+	);
+
+	SetElementClass(
+		SkillsDocument,
+		"selected_skill_state",
+		"locked",
+		Node->State ==
+			EFrontendSkillState::Locked
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_requirement_1",
+		Node->RequirementA
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_requirement_2",
+		Node->RequirementB
+	);
+
+	const int CharacterCount =
+		gUserProfile.ProfileData.NumSlots;
+
+	int SkillPoints = 0;
+
+	if (
+		CharacterCount > 0 &&
+		SelectedCharacterIndex >= 0 &&
+		SelectedCharacterIndex < CharacterCount
+	)
+	{
+		const wiCharDataFull& Character =
+			gUserProfile.ProfileData.
+				ArmorySlots[
+					SelectedCharacterIndex
+				];
+
+		SkillPoints =
+			std::max(
+				0,
+				Character.Stats.SkillXPPool
+			);
+	}
+
+	if (SkillPoints >= Node->Cost)
+	{
+		SetElementText(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"Enough Skill Points"
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"passed",
+			true
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"failed",
+			false
+		);
+	}
+	else
+	{
+		SetElementText(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"Need more Skill Points"
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"passed",
+			false
+		);
+
+		SetElementClass(
+			SkillsDocument,
+			"selected_skill_requirement_3",
+			"failed",
+			true
+		);
+	}
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_id",
+		Node->ElementId
+	);
+
+	sprintf_s(
+		Text,
+		"%d",
+		Node->BackendSkillId
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_backend_id",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"selected_skill_category_id",
+		Node->CategoryId
+	);
+
+	const bool bCanLearn =
+		Node->State ==
+			EFrontendSkillState::Available &&
+		SkillPoints >= Node->Cost;
+
+	SetElementEnabled(
+		SkillsDocument,
+		"btn_learn_selected_skill",
+		bCanLearn
+	);
+
+	if (bCanLearn)
+	{
+		SetSkillsStatus(
+			"Selected skill is ready to learn."
+		);
+	}
+	else if (
+		Node->State ==
+		EFrontendSkillState::Learned
+	)
+	{
+		SetSkillsStatus(
+			"Selected skill is already learned."
+		);
+	}
+	else if (
+		Node->State ==
+		EFrontendSkillState::Locked
+	)
+	{
+		SetSkillsStatus(
+			"Selected skill is locked."
+		);
+	}
+	else
+	{
+		SetSkillsStatus(
+			"Not enough Skill Points."
+		);
+	}
+}
+
+void RmlFrontEndContext::RefreshSkillSelection()
+{
+	if (!SkillsDocument)
+		return;
+
+	for (
+		size_t Index = 0;
+		Index < FrontendSkillNodeCount;
+		++Index
+	)
+	{
+		const FFrontendSkillNode& Node =
+			FrontendSkillNodes[Index];
+
+		SetElementClass(
+			SkillsDocument,
+			Node.ElementId,
+			"selected",
+			SelectedSkillElementId ==
+				Node.ElementId
+		);
+	}
+}
+
+void RmlFrontEndContext::RequestLearnSelectedSkill()
+{
+	if (
+		CurrentScreen != EScreen::Skills ||
+		IsBusy() ||
+		!bProfileLoaded
+	)
+	{
+		return;
+	}
+
+	const FFrontendSkillNode* Node =
+		FindFrontendSkillNode(
+			SelectedSkillElementId
+		);
+
+	if (!Node)
+	{
+		SetSkillsStatus(
+			"No skill node selected."
+		);
+
+		return;
+	}
+
+	if (
+		Node->State ==
+		EFrontendSkillState::Learned
+	)
+	{
+		SetSkillsStatus(
+			"Skill is already learned."
+		);
+
+		return;
+	}
+
+	if (
+		Node->State ==
+		EFrontendSkillState::Locked
+	)
+	{
+		SetSkillsStatus(
+			"Skill is locked by requirements."
+		);
+
+		return;
+	}
+
+	const int CharacterCount =
+		gUserProfile.ProfileData.NumSlots;
+
+	if (
+		CharacterCount <= 0 ||
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >= CharacterCount
+	)
+	{
+		SetSkillsStatus(
+			"Select a survivor first."
+		);
+
+		return;
+	}
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
+
+	const int SkillPoints =
+		std::max(
+			0,
+			Character.Stats.SkillXPPool
+		);
+
+	if (SkillPoints < Node->Cost)
+	{
+		SetSkillsStatus(
+			"Not enough Skill Points."
+		);
+
+		return;
+	}
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd][Skills] "
+		"Learn skill requested. Node=%s BackendId=%d\n",
+		Node->ElementId,
+		Node->BackendSkillId
+	);
+
+	SetSkillsStatus(
+		"Skill backend API is not connected yet."
+	);
+}
+
+void RmlFrontEndContext::SetSkillsControlsEnabled(
+	bool bEnabled
+)
+{
+	const bool bHasCharacter =
+		bProfileLoaded &&
+		gUserProfile.ProfileData.
+			NumSlots > 0;
+
+	SetElementEnabled(
+		SkillsDocument,
+		"btn_learn_selected_skill",
+		bEnabled &&
+		bHasCharacter
+	);
+
+	SetElementEnabled(
+		SkillsDocument,
+		"btn_reset_skills",
+		bEnabled &&
+		bHasCharacter
+	);
+}
+
+void RmlFrontEndContext::SetSkillsStatus(
+	const Rml::String& Text
+)
+{
+	SetElementText(
+		SkillsDocument,
+		"skill_details_status",
+		Text
+	);
+
+	SetElementText(
+		SkillsDocument,
+		"main_menu_status",
+		Text
 	);
 }
 
