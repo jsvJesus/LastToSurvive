@@ -1429,21 +1429,14 @@ bool RmlFrontEndContext::LoadDocuments()
 
 	LoginDocument =
 		Context->LoadDocument(
-			"Rml/Studio/Login.rml"
+			"Rml/FrontEnd/Login.rml"
 		);
 
 	if (!LoginDocument)
 	{
-		LoginDocument =
-			Context->LoadDocument(
-				"Rml/Studio/Login.rml"
-			);
-	}
-
-	if (!LoginDocument)
-	{
 		r3dOutToLog(
-			"[RmlUI][FrontEnd] Failed to load Login.rml\n"
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/Login.rml\n"
 		);
 
 		return false;
@@ -1456,16 +1449,9 @@ bool RmlFrontEndContext::LoadDocuments()
 
 	if (!MainMenuDocument)
 	{
-		MainMenuDocument =
-			Context->LoadDocument(
-				"Rml/FrontEnd/MainMenu.rml"
-			);
-	}
-
-	if (!MainMenuDocument)
-	{
 		r3dOutToLog(
-			"[RmlUI][FrontEnd] Failed to load MainMenu.rml\n"
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/MainMenu.rml\n"
 		);
 
 		return false;
@@ -1478,16 +1464,9 @@ bool RmlFrontEndContext::LoadDocuments()
 
 	if (!CharacterCreateDocument)
 	{
-		CharacterCreateDocument =
-			Context->LoadDocument(
-				"Rml/FrontEnd/CharacterCreate.rml"
-			);
-	}
-
-	if (!CharacterCreateDocument)
-	{
 		r3dOutToLog(
-			"[RmlUI][FrontEnd] Failed to load CharacterCreate.rml\n"
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/CharacterCreate.rml\n"
 		);
 
 		return false;
@@ -1505,7 +1484,8 @@ bool RmlFrontEndContext::LoadDocuments()
 	if (!SkillsScreen->Load(Context))
 	{
 		r3dOutToLog(
-			"[RmlUI][FrontEnd] Failed to load Skills screen\n"
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/Skills.rml\n"
 		);
 
 		return false;
@@ -1526,7 +1506,8 @@ bool RmlFrontEndContext::LoadDocuments()
 	if (!ShopScreen->Load(Context))
 	{
 		r3dOutToLog(
-			"[RmlUI][FrontEnd] Failed to load Shop screen\n"
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/Shop.rml\n"
 		);
 
 		return false;
