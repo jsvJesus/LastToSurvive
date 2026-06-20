@@ -23,9 +23,9 @@ public:
 	void Shutdown();
 	bool Resize(int width, int height);
 
-	void BeginGBuffer();
+	void BeginGBuffer(bool clearDepth = true);
 	void EndGBuffer();
-	void ClearGBuffer();
+	void ClearGBuffer(bool clearDepth = true);
 
 	r3dDX11RenderTarget& GetColor();
 	r3dDX11RenderTarget& GetNormal();

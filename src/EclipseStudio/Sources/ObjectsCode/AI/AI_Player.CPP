@@ -57,6 +57,8 @@ extern 	PlayerStateVars_s CurrentRig;
 
 extern bool g_bEditMode;
 
+extern bool StudioDX11WorldHybridEnabled();
+
 extern void TPSGameHud_UnlockAchievement( int achievementID );
 
 extern float getWaterDepthAtPos(const r3dPoint3D& pos);
@@ -5448,7 +5450,7 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 
 				render_arrays[ firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer ].PushBack( rend );
 
-				if( r_dx11_boot->GetBool() )
+				if( r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled() )
 				{
 					bool drawWeaponDX11 = true;
 					const Weapon* wpn = m_Weapons[m_SelectedWeapon];

@@ -3,6 +3,7 @@
 #include "RENDERING/DX11/RenderDX11Mesh.h"
 
 #include "RENDERING/DX11/RenderDX11Draw.h"
+#include "RENDERING/DX11/RenderDX11DepthOnlyPass.h"
 #include "RENDERING/DX11/RenderDX11GBufferPass.h"
 
 #include <algorithm>
@@ -140,6 +141,13 @@ void r3dDX11MeshResource::DrawBatch(r3dDX11DrawContext& drawContext, unsigned in
 
 	Bind(drawContext);
 	drawContext.DrawIndexed(batch->IndexCount, batch->StartIndex);
+}
+
+void r3dDX11MeshResource::DrawBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex)
+{
+	const r3dDX11MeshBatch* batch = GetBatch(batchIndex);
+	if (batch)
+		pass.DrawMesh(VertexBuffer, IndexBuffer, batch->IndexCount, batch->StartIndex);
 }
 
 void r3dDX11MeshResource::DrawBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex)

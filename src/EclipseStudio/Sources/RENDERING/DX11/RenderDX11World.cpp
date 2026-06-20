@@ -218,6 +218,44 @@ namespace
 			}
 		}
 	}
+
+	void DrawDX11DepthOnlyQueue(
+		r3dDX11Renderer& renderer,
+		r3dDX11DepthOnlyPass& pass,
+		eRenderStageID queueId,
+		const D3DXMATRIX& viewProj,
+		r3dDX11WorldRenderStats& stats
+	)
+	{
+		RenderArray& queue = g_render_arrays[queueId];
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+
+			MeshDeferredRenderable* meshRenderable = r3dGetMeshDeferredRenderable(&renderable);
+			if (!meshRenderable)
+				continue;
+
+			if (!meshRenderable->Mesh || meshRenderable->BatchIdx < 0)
+				continue;
+
+			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
+
+			if (r3dDX11DrawMeshDepthOnlyBatch(
+					renderer.GetDevice().GetDevice(),
+					renderer.GetTextureLibrary(),
+					pass,
+					*meshRenderable->Mesh,
+					static_cast<unsigned int>(meshRenderable->BatchIdx),
+					world,
+					viewProj,
+					meshRenderable->DX11Skeleton))
+			{
+				++stats.DepthDrawnMeshes;
+			}
+		}
+	}
 }
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
@@ -226,6 +264,7 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 
 	stats.TotalRenderables = 0;
 	stats.MeshRenderables = 0;
+	stats.DepthDrawnMeshes = 0;
 	stats.DrawnMeshes = 0;
 	stats.SkippedUnsupported = 0;
 	stats.SkippedFailed = 0;
@@ -242,17 +281,26 @@ bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camer
 	if (!renderer.IsInitialized())
 		return false;
 
+	r3dDX11DepthOnlyPass& depthPass = renderer.GetDepthOnlyPass();
 	r3dDX11GBufferPass& pass = renderer.GetGBufferPass();
 	r3dDX11GBufferResources& gbuffer = renderer.GetGBufferResources();
 
-	if (!pass.Begin(gbuffer))
-		return false;
-
 	const D3DXMATRIX viewProj = BuildDX11ViewProjectionMatrix(renderer, camera, true);
-	DrawDX11GBufferQueue(renderer, pass, rsFillGBuffer, viewProj, *stats);
-
 	const r3dCamera firstPersonCamera = BuildDX11FirstPersonCamera(camera);
 	const D3DXMATRIX firstPersonViewProj = BuildDX11ViewProjectionMatrix(renderer, firstPersonCamera, false);
+
+	if (!depthPass.Begin(gbuffer))
+		return false;
+
+	DrawDX11DepthOnlyQueue(renderer, depthPass, rsFillGBuffer, viewProj, *stats);
+	DrawDX11DepthOnlyQueue(renderer, depthPass, rsFillGBufferFirstPerson, firstPersonViewProj, *stats);
+
+	depthPass.End(gbuffer);
+
+	if (!pass.Begin(gbuffer, false))
+		return false;
+
+	DrawDX11GBufferQueue(renderer, pass, rsFillGBuffer, viewProj, *stats);
 	DrawDX11GBufferQueue(renderer, pass, rsFillGBufferFirstPerson, firstPersonViewProj, *stats);
 
 	pass.End(gbuffer);

@@ -3,6 +3,7 @@
 
 #include "RENDERING/DX11/RenderDX11MeshRenderData.h"
 
+#include "RENDERING/DX11/RenderDX11DepthOnlyPass.h"
 #include "RENDERING/DX11/RenderDX11MaterialAdapter.h"
 #include "RENDERING/DX11/RenderDX11MeshAdapter.h"
 #include "RENDERING/DX11/RenderDX11Texture.h"
@@ -73,6 +74,19 @@ void r3dDX11MeshRenderData::DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned 
 	if (MeshResource.IsSkinned() && !pass.SetSkinningBones(skeleton))
 		return;
 	if (!pass.SetMaterial(Materials[batchIndex], objectColorPacked))
+		return;
+	MeshResource.DrawBatch(pass, batchIndex);
+}
+
+void r3dDX11MeshRenderData::DrawDepthOnlyBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, const r3dSkeleton* skeleton)
+{
+	if (!IsValid() || batchIndex >= GetBatchCount())
+		return;
+
+	const r3dDX11MeshConstants scaledConstants = ApplyMeshScales(constants);
+	pass.SetMeshConstants(scaledConstants);
+	pass.SetSkinnedMeshMode(MeshResource.IsSkinned());
+	if (MeshResource.IsSkinned() && !pass.SetSkinningBones(skeleton))
 		return;
 	MeshResource.DrawBatch(pass, batchIndex);
 }

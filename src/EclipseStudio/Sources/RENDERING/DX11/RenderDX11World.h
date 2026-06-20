@@ -7,6 +7,7 @@ struct r3dDX11WorldRenderStats
 {
 	unsigned int TotalRenderables;
 	unsigned int MeshRenderables;
+	unsigned int DepthDrawnMeshes;
 	unsigned int DrawnMeshes;
 	unsigned int SkippedUnsupported;
 	unsigned int SkippedFailed;

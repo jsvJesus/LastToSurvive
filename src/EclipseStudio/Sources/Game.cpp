@@ -67,6 +67,8 @@
 const int NUM_HUDS = 6;
 BaseHUD* HudArray[NUM_HUDS] = {0};
 
+extern void StudioDX11WorldHybridTick();
+
 BaseHUD* editor_GetHudByIndex(int index)
 {
 	return HudArray[index];
@@ -958,6 +960,8 @@ void GameStateGameLoop()
 	R3DPROFILE_END("EndRender");
 
 	UpdateD3DAntiCheatPostPresent();
+
+	StudioDX11WorldHybridTick();
 
 	if( r3dRenderer->DeviceAvailable )
 	{

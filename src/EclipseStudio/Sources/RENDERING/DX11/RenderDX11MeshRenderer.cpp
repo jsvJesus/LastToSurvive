@@ -3,6 +3,7 @@
 
 #include "RENDERING/DX11/RenderDX11MeshRenderer.h"
 
+#include "RENDERING/DX11/RenderDX11DepthOnlyPass.h"
 #include "RENDERING/DX11/RenderDX11MeshRenderData.h"
 #include "RENDERING/DX11/RenderDX11Texture.h"
 
@@ -25,6 +26,21 @@ bool r3dDX11PrepareMeshConstants(r3dDX11MeshConstants& outConstants, const D3DXM
 	outConstants.TexcoordScale[2] = 0.0f;
 	outConstants.TexcoordScale[3] = 0.0f;
 
+	return true;
+}
+
+bool r3dDX11DrawMeshDepthOnlyBatch(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11DepthOnlyPass& pass, r3dMesh& mesh, unsigned int batchIndex, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, const r3dSkeleton* skeleton)
+{
+	if (!device || !pass.IsInitialized() || !mesh.IsLoaded())
+		return false;
+
+	r3dDX11MeshRenderData* renderData = r3dDX11GetOrCreateMeshRenderData(device, textureLibrary, mesh, mesh.Name);
+	if (!renderData || !renderData->IsValid() || batchIndex >= renderData->GetBatchCount())
+		return false;
+
+	r3dDX11MeshConstants constants;
+	r3dDX11PrepareMeshConstants(constants, world, viewProj);
+	renderData->DrawDepthOnlyBatch(pass, batchIndex, constants, skeleton);
 	return true;
 }
 

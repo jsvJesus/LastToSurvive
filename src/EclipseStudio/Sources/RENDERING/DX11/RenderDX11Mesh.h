@@ -5,6 +5,7 @@
 #include <vector>
 
 class r3dDX11DrawContext;
+class r3dDX11DepthOnlyPass;
 class r3dDX11GBufferPass;
 
 struct r3dDX11MeshBatch
@@ -66,6 +67,7 @@ public:
 	void Bind(r3dDX11DrawContext& drawContext);
 	void Draw(r3dDX11DrawContext& drawContext);
 	void DrawBatch(r3dDX11DrawContext& drawContext, unsigned int batchIndex);
+	void DrawBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex);
 	void DrawBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex);
 
 	const r3dDX11MeshBatch* GetBatch(unsigned int batchIndex) const;

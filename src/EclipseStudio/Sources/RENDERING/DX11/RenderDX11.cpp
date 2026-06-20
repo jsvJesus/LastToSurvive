@@ -121,6 +121,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!DepthOnlyPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	{
+		r3dOutToLog("[DX11] Depth-only pass initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
 	if (!GBufferPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
 	{
 		r3dOutToLog("[DX11] GBuffer pass initialization failed\n");
@@ -150,6 +157,7 @@ void r3dDX11Renderer::Shutdown()
 		bRmlRuntimeAcquired = false;
 	}
 
+	DepthOnlyPass.Shutdown();
 	GBufferPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
@@ -266,6 +274,11 @@ r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources()
 	return FrameResources;
 }
 
+r3dDX11DepthOnlyPass& r3dDX11Renderer::GetDepthOnlyPass()
+{
+	return DepthOnlyPass;
+}
+
 r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass()
 {
 	return GBufferPass;
@@ -304,6 +317,11 @@ const r3dDX11DrawContext& r3dDX11Renderer::GetDrawContext() const
 const r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources() const
 {
 	return FrameResources;
+}
+
+const r3dDX11DepthOnlyPass& r3dDX11Renderer::GetDepthOnlyPass() const
+{
+	return DepthOnlyPass;
 }
 
 const r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass() const

@@ -7,6 +7,7 @@
 #include <vector>
 
 class r3dMesh;
+class r3dDX11DepthOnlyPass;
 class r3dDX11TextureLibrary;
 class r3dSkeleton;
 
@@ -21,6 +22,7 @@ public:
 
 	void DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
 	void DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
+	void DrawDepthOnlyBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, const r3dSkeleton* skeleton = nullptr);
 
 	r3dDX11MeshResource& GetMeshResource();
 	const r3dDX11MeshResource& GetMeshResource() const;

@@ -151,6 +151,11 @@ static bool IsDX11BootActive()
 	return g_DX11Renderer && g_DX11Renderer->IsInitialized();
 }
 
+bool StudioDX11WorldHybridEnabled()
+{
+	return g_StudioCmdLineDX11World;
+}
+
 static void ShutdownDX11SmokeRml()
 {
 	RmlRuntime& Runtime = RmlRuntime::Get();
@@ -234,6 +239,85 @@ static bool InitDX11SmokeRml()
 	);
 
 	return true;
+}
+
+void StudioDX11WorldHybridInit()
+{
+	if (!g_StudioCmdLineDX11World || g_DX11Renderer)
+		return;
+
+	g_DX11Renderer = new r3dDX11Renderer;
+	if (!g_DX11Renderer->Init(
+			win::hWnd,
+			r_width->GetInt(),
+			r_height->GetInt(),
+			r_fullscreen->GetBool(),
+#ifndef FINAL_BUILD
+			true
+#else
+			false
+#endif
+		))
+	{
+		SAFE_DELETE(g_DX11Renderer);
+		r3dOutToLog("[DX11][World] Hybrid renderer init failed\n");
+		return;
+	}
+
+	r3dOutToLog("[DX11][World] Hybrid renderer initialized\n");
+}
+
+void StudioDX11WorldHybridShutdown()
+{
+	if (!g_StudioCmdLineDX11World || !g_DX11Renderer)
+		return;
+
+	g_DX11Renderer->Shutdown();
+	SAFE_DELETE(g_DX11Renderer);
+	r3dOutToLog("[DX11][World] Hybrid renderer shutdown\n");
+}
+
+void StudioDX11WorldHybridTick()
+{
+	if (!g_StudioCmdLineDX11World || !g_DX11Renderer || !g_DX11Renderer->IsInitialized())
+		return;
+
+	static DWORD LastWorldStatsLog = 0;
+
+	g_DX11Renderer->BeginFrame(
+		0.010f,
+		0.012f,
+		0.011f,
+		1.0f
+	);
+
+	r3dDX11WorldRenderStats WorldStats;
+	r3dDX11ResetWorldRenderStats(WorldStats);
+
+	const bool bWorldRendered =
+		g_DX11Renderer->RenderWorldGBuffer(
+			gCam,
+			&WorldStats
+		);
+
+	g_DX11Renderer->EndFrame(false, nullptr);
+
+	const DWORD Now = GetTickCount();
+	if (Now - LastWorldStatsLog >= 1000)
+	{
+		r3dOutToLog(
+			"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u\n",
+			bWorldRendered ? 1 : 0,
+			WorldStats.TotalRenderables,
+			WorldStats.MeshRenderables,
+			WorldStats.DepthDrawnMeshes,
+			WorldStats.DrawnMeshes,
+			WorldStats.SkippedUnsupported,
+			WorldStats.SkippedFailed
+		);
+
+		LastWorldStatsLog = Now;
+	}
 }
 
 static bool StudioWindowResizeMsgProc(
@@ -639,10 +723,11 @@ static void ExecuteDX11SmokeLoop()
 			if (Now - LastWorldStatsLog >= 1000)
 			{
 				r3dOutToLog(
-					"[DX11][World] ok=%d total=%u mesh=%u drawn=%u unsupported=%u failed=%u\n",
+					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u\n",
 					bWorldRendered ? 1 : 0,
 					WorldStats.TotalRenderables,
 					WorldStats.MeshRenderables,
+					WorldStats.DepthDrawnMeshes,
 					WorldStats.DrawnMeshes,
 					WorldStats.SkippedUnsupported,
 					WorldStats.SkippedFailed
@@ -849,8 +934,10 @@ void CloseRender()
 	{
 		g_DX11Renderer->Shutdown();
 		SAFE_DELETE(g_DX11Renderer);
-		return;
 	}
+
+	if (!r3dRenderer)
+		return;
 
 	ReleaseCheatScreenshot();
 
@@ -1065,7 +1152,6 @@ void game::PreInit()
 
 		if(strcmp(argv[i], "-dx11world") == 0)
 		{
-			g_StudioCmdLineDX11Boot = true;
 			g_StudioCmdLineDX11World = true;
 			continue;
 		}
@@ -2090,6 +2176,11 @@ void game::MainLoop()
 	}
 	
 
+	if (g_StudioCmdLineDX11World && r_dx11_boot)
+	{
+		r_dx11_boot->SetBool(false);
+	}
+
 	InitRender(1);
 
 	if (IsDX11BootActive())
@@ -2104,6 +2195,8 @@ void game::MainLoop()
 		CloseRender();
 		return;
 	}
+
+	StudioDX11WorldHybridInit();
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();
@@ -2334,6 +2427,8 @@ void game::MainLoop()
 	SAFE_DELETE(CurRenderPipeline);
 	
 	r3dMaterialLibrary::Destroy();
+
+	StudioDX11WorldHybridShutdown();
 
 	CloseRender();
 

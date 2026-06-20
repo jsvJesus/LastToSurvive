@@ -148,7 +148,7 @@ bool r3dDX11GBufferResources::Resize(int width, int height)
 	return true;
 }
 
-void r3dDX11GBufferResources::BeginGBuffer()
+void r3dDX11GBufferResources::BeginGBuffer(bool clearDepth)
 {
 	if (!bInitialized || !Context)
 		return;
@@ -170,7 +170,7 @@ void r3dDX11GBufferResources::BeginGBuffer()
 	viewport.MaxDepth = 1.0f;
 	Context->RSSetViewports(1, &viewport);
 
-	ClearGBuffer();
+	ClearGBuffer(clearDepth);
 }
 
 void r3dDX11GBufferResources::EndGBuffer()
@@ -182,7 +182,7 @@ void r3dDX11GBufferResources::EndGBuffer()
 	Context->OMSetRenderTargets(_countof(nullViews), nullViews, nullptr);
 }
 
-void r3dDX11GBufferResources::ClearGBuffer()
+void r3dDX11GBufferResources::ClearGBuffer(bool clearDepth)
 {
 	if (!Context)
 		return;
@@ -195,7 +195,7 @@ void r3dDX11GBufferResources::ClearGBuffer()
 	ClearTarget(Context, LinearDepth, clearDepthValue);
 	ClearTarget(Context, Aux, clearColor);
 
-	if (DepthStencil.GetDSV())
+	if (clearDepth && DepthStencil.GetDSV())
 		Context->ClearDepthStencilView(DepthStencil.GetDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 

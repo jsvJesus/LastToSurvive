@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RENDERING/DX11/RenderDX11Device.h"
+#include "RENDERING/DX11/RenderDX11DepthOnlyPass.h"
 #include "RENDERING/DX11/RenderDX11Draw.h"
 #include "RENDERING/DX11/RenderDX11FrameResources.h"
 #include "RENDERING/DX11/RenderDX11GBufferPass.h"
@@ -42,6 +43,7 @@ public:
 	r3dDX11Device& GetDevice();
 	r3dDX11DrawContext& GetDrawContext();
 	r3dDX11FrameResources& GetFrameResources();
+	r3dDX11DepthOnlyPass& GetDepthOnlyPass();
 	r3dDX11GBufferPass& GetGBufferPass();
 	r3dDX11GBufferResources& GetGBufferResources();
 	r3dDX11CommonStates& GetCommonStates();
@@ -50,6 +52,7 @@ public:
 	const r3dDX11Device& GetDevice() const;
 	const r3dDX11DrawContext& GetDrawContext() const;
 	const r3dDX11FrameResources& GetFrameResources() const;
+	const r3dDX11DepthOnlyPass& GetDepthOnlyPass() const;
 	const r3dDX11GBufferPass& GetGBufferPass() const;
 	const r3dDX11GBufferResources& GetGBufferResources() const;
 	const r3dDX11CommonStates& GetCommonStates() const;
@@ -67,6 +70,7 @@ private:
 	r3dDX11CommonStates CommonStates;
 	r3dDX11TextureLibrary TextureLibrary;
 	r3dDX11FrameResources FrameResources;
+	r3dDX11DepthOnlyPass DepthOnlyPass;
 	r3dDX11GBufferPass GBufferPass;
 	r3dDX11GBufferResources GBufferResources;
 	HWND WindowHandle = nullptr;
