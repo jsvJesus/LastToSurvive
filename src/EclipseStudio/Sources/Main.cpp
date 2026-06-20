@@ -44,7 +44,9 @@
 #include "RENDERING\Deffered\VisibilityGrid.h"
 #include "rendering\Deffered\D3DMiscFunctions.h"
 #include "rendering\Probes\ProbeMaster.h"
+
 #include "RENDERING\DX11\RenderDX11.h"
+#include "RENDERING\DX11\RenderDX11World.h"
 
 #include "ObjectsCode/weapons/ClientWeaponArmory.h"
 
@@ -134,6 +136,7 @@ static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
 static r3dDX11Renderer* g_DX11Renderer = nullptr;
 static bool g_StudioCmdLineDX11Boot = false;
+static bool g_StudioCmdLineDX11World = false;
 
 static bool IsDX11BootActive()
 {
@@ -449,8 +452,11 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 static void ExecuteDX11SmokeLoop()
 {
 	r3dOutToLog(
-		"[DX11] Entering experimental smoke loop. Close the window to exit.\n"
+		"[DX11] Entering experimental smoke loop. Close the window to exit. world=%d\n",
+		g_StudioCmdLineDX11World ? 1 : 0
 	);
+
+	DWORD LastWorldStatsLog = 0;
 
 	while (!g_bExit)
 	{
@@ -479,11 +485,39 @@ static void ExecuteDX11SmokeLoop()
 		ProcessStudioPendingResize(nullptr);
 
 		g_DX11Renderer->BeginFrame(
-			0.015f,
-			0.020f,
-			0.018f,
+			0.010f,
+			0.012f,
+			0.011f,
 			1.0f
 		);
+
+		if (g_StudioCmdLineDX11World)
+		{
+			r3dDX11WorldRenderStats WorldStats;
+			r3dDX11ResetWorldRenderStats(WorldStats);
+
+			const bool bWorldRendered =
+				g_DX11Renderer->RenderWorldGBuffer(
+					gCam,
+					&WorldStats
+				);
+
+			const DWORD Now = GetTickCount();
+			if (Now - LastWorldStatsLog >= 1000)
+			{
+				r3dOutToLog(
+					"[DX11][World] ok=%d total=%u mesh=%u drawn=%u unsupported=%u failed=%u\n",
+					bWorldRendered ? 1 : 0,
+					WorldStats.TotalRenderables,
+					WorldStats.MeshRenderables,
+					WorldStats.DrawnMeshes,
+					WorldStats.SkippedUnsupported,
+					WorldStats.SkippedFailed
+				);
+
+				LastWorldStatsLog = Now;
+			}
+		}
 
 		g_DX11Renderer->EndFrame(
 			r_vsync_enabled->GetBool()
@@ -890,6 +924,13 @@ void game::PreInit()
 		if(strcmp(argv[i], "-dx11") == 0)
 		{
 			g_StudioCmdLineDX11Boot = true;
+			continue;
+		}
+
+		if(strcmp(argv[i], "-dx11world") == 0)
+		{
+			g_StudioCmdLineDX11Boot = true;
+			g_StudioCmdLineDX11World = true;
 			continue;
 		}
 
