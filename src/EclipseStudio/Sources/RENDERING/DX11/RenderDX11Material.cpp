@@ -17,9 +17,14 @@ namespace
 	}
 }
 
-r3dDX11MaterialTextures::r3dDX11MaterialTextures()
+r3dDX11MaterialDesc::r3dDX11MaterialDesc()
+	: Flags(R3D_DX11_MATERIAL_DRAW_GBUFFER)
+	, Domain(R3D_DX11_MATERIAL_MESH)
 {
-	SetConstants(r3dDX11MaterialConstants());
+	for (unsigned int i = 0; i < 8; ++i)
+		TexturePaths[i] = nullptr;
+
+	Constants = r3dDX11MaterialConstants();
 	Constants.MaterialParams[2] = 0.5f;
 	Constants.MaterialParams[3] = 1.0f;
 	Constants.MatDiffuse[0] = 1.0f;
@@ -31,6 +36,12 @@ r3dDX11MaterialTextures::r3dDX11MaterialTextures()
 	Constants.MatGlow[2] = 1.0f;
 	Constants.Options[1] = 0.15f;
 	Constants.Options[3] = 1.0f;
+}
+
+r3dDX11MaterialTextures::r3dDX11MaterialTextures()
+{
+	r3dDX11MaterialDesc desc;
+	SetConstants(desc.Constants);
 }
 
 bool r3dDX11MaterialTextures::Load(
@@ -67,6 +78,30 @@ void r3dDX11MaterialTextures::SetFallbacks(r3dDX11TextureLibrary& textureLibrary
 	DetailNormal = textureLibrary.GetFlatNormalTexture();
 	SSS = textureLibrary.GetBlackTexture();
 	SpecularPower = textureLibrary.GetWhiteTexture();
+}
+
+bool r3dDX11MaterialTextures::ApplyDesc(r3dDX11TextureLibrary& textureLibrary, const r3dDX11MaterialDesc& desc)
+{
+	const bool loaded = Load(
+		textureLibrary,
+		desc.TexturePaths[0],
+		desc.TexturePaths[1],
+		desc.TexturePaths[2],
+		desc.TexturePaths[3],
+		desc.TexturePaths[4],
+		desc.TexturePaths[5],
+		desc.TexturePaths[6],
+		desc.TexturePaths[7]
+	);
+
+	SetConstants(desc.Constants);
+	SetDomain(desc.Domain);
+	SetDrawInGBuffer((desc.Flags & R3D_DX11_MATERIAL_DRAW_GBUFFER) != 0);
+	SetAlphaCut((desc.Flags & R3D_DX11_MATERIAL_ALPHA_CUT) != 0);
+	SetDoubleSided((desc.Flags & R3D_DX11_MATERIAL_DOUBLE_SIDED) != 0);
+	SetTransparent((desc.Flags & R3D_DX11_MATERIAL_TRANSPARENT) != 0);
+	SetSkipDraw((desc.Flags & R3D_DX11_MATERIAL_SKIP_DRAW) != 0);
+	return loaded;
 }
 
 void r3dDX11MaterialTextures::Bind(r3dDX11DrawContext& drawContext, unsigned int baseSlot) const
@@ -110,6 +145,11 @@ r3dDX11MaterialConstants r3dDX11MaterialTextures::BuildConstants(unsigned int ob
 	return constants;
 }
 
+void r3dDX11MaterialTextures::SetDomain(r3dDX11MaterialDomain domain)
+{
+	Domain = domain;
+}
+
 void r3dDX11MaterialTextures::SetDrawInGBuffer(bool drawInGBuffer)
 {
 	bDrawInGBuffer = drawInGBuffer;
@@ -125,14 +165,44 @@ void r3dDX11MaterialTextures::SetDoubleSided(bool doubleSided)
 	bDoubleSided = doubleSided;
 }
 
+void r3dDX11MaterialTextures::SetTransparent(bool transparent)
+{
+	bTransparent = transparent;
+}
+
+void r3dDX11MaterialTextures::SetSkipDraw(bool skipDraw)
+{
+	bSkipDraw = skipDraw;
+}
+
+r3dDX11MaterialDomain r3dDX11MaterialTextures::GetDomain() const
+{
+	return Domain;
+}
+
 bool r3dDX11MaterialTextures::ShouldDrawInGBuffer() const
 {
-	return bDrawInGBuffer;
+	return bDrawInGBuffer && !bTransparent && !bSkipDraw;
 }
 
 bool r3dDX11MaterialTextures::IsDoubleSided() const
 {
 	return bDoubleSided;
+}
+
+bool r3dDX11MaterialTextures::IsAlphaCut() const
+{
+	return bAlphaCut;
+}
+
+bool r3dDX11MaterialTextures::IsTransparent() const
+{
+	return bTransparent;
+}
+
+bool r3dDX11MaterialTextures::IsSkipDraw() const
+{
+	return bSkipDraw;
 }
 
 r3dDX11Texture* r3dDX11MaterialTextures::GetDiffuse() const
