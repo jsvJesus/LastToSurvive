@@ -809,8 +809,8 @@ namespace
 	}
 
 	std::string GetShopIconPath(
-		const BaseItemConfig* Config
-	)
+	const BaseItemConfig* Config
+)
 	{
 		if (
 			Config &&
@@ -867,18 +867,50 @@ namespace
 					Path;
 			}
 
-			if (
-				Path.length() < 4 ||
-				Path.substr(Path.length() - 4) != ".dds"
-			)
+			const size_t SlashPosition =
+				Path.find_last_of('/');
+
+			const size_t DotPosition =
+				Path.find_last_of('.');
+
+			const bool bHasExtension =
+				DotPosition != std::string::npos &&
+				(
+					SlashPosition == std::string::npos ||
+					DotPosition > SlashPosition
+				);
+
+			if (!bHasExtension)
 			{
 				Path += ".dds";
+			}
+
+			/*
+			 * Shop.rml лежит тут:
+			 * Data/Rml/FrontEnd/Shop.rml
+			 *
+			 * А store icons лежат тут:
+			 * Data/Weapons/StoreIcons/*.dds
+			 *
+			 * Поэтому из Rml/FrontEnd нужно выйти на два уровня назад.
+			 */
+			if (
+				Path.compare(
+					0,
+					6,
+					"../../"
+				) != 0
+			)
+			{
+				Path =
+					std::string("../../") +
+					Path;
 			}
 
 			return Path;
 		}
 
-		return "Weapons/no_icon.dds";
+		return "../../Weapons/no_icon.dds";
 	}
 
 	uint32_t GetShopLowestPrice(

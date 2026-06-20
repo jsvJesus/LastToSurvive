@@ -1298,6 +1298,8 @@ void FrontendWarZ::initFrontend()
 
 	gfxMovie.Invoke("_root.api.setLanguage", g_user_language->GetString());
 
+	//gfxMovie.SetVariable("_root.api.Main.Marketplace.Marketplace.Tab7.visible", true); // fix for show weapon tab
+
 	// init clan icons
 	// important: DO NOT CHANGE THE ORDER OF ICONS!!! EVER!
 	{
