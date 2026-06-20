@@ -1,7 +1,7 @@
 #pragma once
 
 #include "r3d.h"
-#include "APIScaleformGfx.h"
+#include "HUDLegacyTypes.h"
 
 class HUDDisplay
 {
@@ -19,6 +19,7 @@ public:
 
 	void setVisibility(float percent) { (void)percent; }
 	void setHearing(float percent) { (void)percent; }
+
 	void setLifeParams(int food, int water, int health, int toxicity, int stamina)
 	{
 		(void)food;
@@ -35,7 +36,10 @@ public:
 		(void)firemode;
 	}
 
-	void showWeaponInfo(int state) { (void)state; }
+	void showWeaponInfo(int state)
+	{
+		(void)state;
+	}
 
 	void setSlotInfo(int slotID, const char* name, int quantity, const char* icon)
 	{
@@ -51,11 +55,25 @@ public:
 		(void)quantity;
 	}
 
-	void showSlots(bool state) { (void)state; }
-	void setActiveSlot(int slotID) { (void)slotID; }
-	void setActivatedSlot(int slotID) { (void)slotID; }
+	void showSlots(bool state)
+	{
+		(void)state;
+	}
 
-	void showMessage(const wchar_t* text) { (void)text; }
+	void setActiveSlot(int slotID)
+	{
+		(void)slotID;
+	}
+
+	void setActivatedSlot(int slotID)
+	{
+		(void)slotID;
+	}
+
+	void showMessage(const wchar_t* text)
+	{
+		(void)text;
+	}
 
 	void showChat(bool showChat, bool force = false)
 	{
@@ -63,7 +81,10 @@ public:
 		(void)force;
 	}
 
-	void showChatInput() {}
+	void showChatInput()
+	{
+	}
+
 	void addChatMessage(int tabIndex, const char* user, const char* text, uint32_t flags)
 	{
 		(void)tabIndex;
@@ -72,14 +93,33 @@ public:
 		(void)flags;
 	}
 
-	bool isChatInputActive() const { return false; }
-	bool isChatVisible() const { return false; }
+	bool isChatInputActive() const
+	{
+		return false;
+	}
 
-	void setChatTransparency(float alpha) { (void)alpha; }
-	void setChatChannel(int index) { (void)index; }
-	void enableClanChannel() {}
+	bool isChatVisible() const
+	{
+		return false;
+	}
 
-	void clearPlayersList() {}
+	void setChatTransparency(float alpha)
+	{
+		(void)alpha;
+	}
+
+	void setChatChannel(int index)
+	{
+		(void)index;
+	}
+
+	void enableClanChannel()
+	{
+	}
+
+	void clearPlayersList()
+	{
+	}
 
 	void addPlayerToList(
 		int num,
@@ -100,18 +140,47 @@ public:
 		(void)isInvitePending;
 	}
 
-	void showPlayersList(int flag) { (void)flag; }
-	int isPlayersListVisible() const { return 0; }
+	void showPlayersList(int flag)
+	{
+		(void)flag;
+	}
 
-	bool canShowWriteNote() const { return false; }
-	void showWriteNote(int slotIDFrom) { (void)slotIDFrom; }
-	void showReadNote(const char* msg) { (void)msg; }
+	int isPlayersListVisible() const
+	{
+		return 0;
+	}
 
-	void showRangeFinderUI(bool set) { (void)set; }
-	void showYouAreDead(const char* killedBy) { (void)killedBy; }
-	void showSafeZoneWarning(bool flag) { (void)flag; }
+	bool canShowWriteNote() const
+	{
+		return false;
+	}
 
-	void addCharTag(const char* name, int reputation, bool isSameClan, Scaleform::GFx::Value& result)
+	void showWriteNote(int slotIDFrom)
+	{
+		(void)slotIDFrom;
+	}
+
+	void showReadNote(const char* msg)
+	{
+		(void)msg;
+	}
+
+	void showRangeFinderUI(bool set)
+	{
+		(void)set;
+	}
+
+	void showYouAreDead(const char* killedBy)
+	{
+		(void)killedBy;
+	}
+
+	void showSafeZoneWarning(bool flag)
+	{
+		(void)flag;
+	}
+
+	void addCharTag(const char* name, int reputation, bool isSameClan, HUDNullValue& result)
 	{
 		(void)name;
 		(void)reputation;
@@ -120,7 +189,7 @@ public:
 	}
 
 	void moveUserIcon(
-		Scaleform::GFx::Value& icon,
+		HUDNullValue& icon,
 		const r3dPoint3D& pos,
 		bool alwaysShow,
 		bool force_invisible = false,
@@ -134,14 +203,14 @@ public:
 		(void)pos_in_screen_space;
 	}
 
-	void setCharTagTextVisible(Scaleform::GFx::Value& icon, bool isShowName, bool isSameGroup)
+	void setCharTagTextVisible(HUDNullValue& icon, bool isShowName, bool isSameGroup)
 	{
 		(void)icon;
 		(void)isShowName;
 		(void)isSameGroup;
 	}
 
-	void removeUserIcon(Scaleform::GFx::Value& icon)
+	void removeUserIcon(HUDNullValue& icon)
 	{
 		icon.SetUndefined();
 	}
@@ -150,8 +219,15 @@ public:
 class HUDPause
 {
 public:
-	HUDPause() : isActive_(false), isInit_(false) {}
-	~HUDPause() {}
+	HUDPause()
+		: isActive_(false)
+		, isInit_(false)
+	{
+	}
+
+	~HUDPause()
+	{
+	}
 
 	bool Init()
 	{
@@ -166,20 +242,54 @@ public:
 		return true;
 	}
 
-	bool IsInited() const { return isInit_; }
+	bool IsInited() const
+	{
+		return isInit_;
+	}
 
-	void Update() {}
-	void Draw() {}
+	void Update()
+	{
+	}
 
-	bool isActive() const { return isActive_; }
-	void Activate() { isActive_ = true; }
-	void Deactivate() { isActive_ = false; }
+	void Draw()
+	{
+	}
 
-	void showInventory() {}
-	void showMap() {}
-	void setTime(__int64 utcTime) { (void)utcTime; }
-	void reloadBackpackInfo() {}
-	void updateSurvivorTotalWeight() {}
+	bool isActive() const
+	{
+		return isActive_;
+	}
+
+	void Activate()
+	{
+		isActive_ = true;
+	}
+
+	void Deactivate()
+	{
+		isActive_ = false;
+	}
+
+	void showInventory()
+	{
+	}
+
+	void showMap()
+	{
+	}
+
+	void setTime(__int64 utcTime)
+	{
+		(void)utcTime;
+	}
+
+	void reloadBackpackInfo()
+	{
+	}
+
+	void updateSurvivorTotalWeight()
+	{
+	}
 
 private:
 	bool isActive_;
@@ -189,8 +299,15 @@ private:
 class HUDAttachments
 {
 public:
-	HUDAttachments() : isActive_(false), isInit_(false) {}
-	~HUDAttachments() {}
+	HUDAttachments()
+		: isActive_(false)
+		, isInit_(false)
+	{
+	}
+
+	~HUDAttachments()
+	{
+	}
 
 	bool Init()
 	{
@@ -205,14 +322,33 @@ public:
 		return true;
 	}
 
-	bool IsInited() const { return isInit_; }
+	bool IsInited() const
+	{
+		return isInit_;
+	}
 
-	void Update() {}
-	void Draw() {}
+	void Update()
+	{
+	}
 
-	bool isActive() const { return isActive_; }
-	void Activate() { isActive_ = true; }
-	void Deactivate() { isActive_ = false; }
+	void Draw()
+	{
+	}
+
+	bool isActive() const
+	{
+		return isActive_;
+	}
+
+	void Activate()
+	{
+		isActive_ = true;
+	}
+
+	void Deactivate()
+	{
+		isActive_ = false;
+	}
 
 private:
 	bool isActive_;
@@ -222,8 +358,15 @@ private:
 class HUDActionUI
 {
 public:
-	HUDActionUI() : isActive_(false), isInit_(false) {}
-	~HUDActionUI() {}
+	HUDActionUI()
+		: isActive_(false)
+		, isInit_(false)
+	{
+	}
+
+	~HUDActionUI()
+	{
+	}
 
 	bool Init()
 	{
@@ -238,10 +381,18 @@ public:
 		return true;
 	}
 
-	bool IsInited() const { return isInit_; }
+	bool IsInited() const
+	{
+		return isInit_;
+	}
 
-	void Update() {}
-	void Draw() {}
+	void Update()
+	{
+	}
+
+	void Draw()
+	{
+	}
 
 	void setScreenPos(int x, int y)
 	{
@@ -249,9 +400,20 @@ public:
 		(void)y;
 	}
 
-	bool isActive() const { return isActive_; }
-	void Activate() { isActive_ = true; }
-	void Deactivate() { isActive_ = false; }
+	bool isActive() const
+	{
+		return isActive_;
+	}
+
+	void Activate()
+	{
+		isActive_ = true;
+	}
+
+	void Deactivate()
+	{
+		isActive_ = false;
+	}
 
 	void setText(const wchar_t* title, const wchar_t* msg, const char* letter)
 	{
@@ -260,9 +422,18 @@ public:
 		(void)letter;
 	}
 
-	void enableRegularBlock() {}
-	void enableProgressBlock() {}
-	void setProgress(int value) { (void)value; }
+	void enableRegularBlock()
+	{
+	}
+
+	void enableProgressBlock()
+	{
+	}
+
+	void setProgress(int value)
+	{
+		(void)value;
+	}
 
 private:
 	bool isActive_;
@@ -272,8 +443,15 @@ private:
 class HUDGeneralStore
 {
 public:
-	HUDGeneralStore() : isActive_(false), isInit_(false) {}
-	~HUDGeneralStore() {}
+	HUDGeneralStore()
+		: isActive_(false)
+		, isInit_(false)
+	{
+	}
+
+	~HUDGeneralStore()
+	{
+	}
 
 	bool Init()
 	{
@@ -288,14 +466,33 @@ public:
 		return true;
 	}
 
-	bool IsInited() const { return isInit_; }
+	bool IsInited() const
+	{
+		return isInit_;
+	}
 
-	void Update() {}
-	void Draw() {}
+	void Update()
+	{
+	}
 
-	bool isActive() const { return isActive_; }
-	void Activate() { isActive_ = true; }
-	void Deactivate() { isActive_ = false; }
+	void Draw()
+	{
+	}
+
+	bool isActive() const
+	{
+		return isActive_;
+	}
+
+	void Activate()
+	{
+		isActive_ = true;
+	}
+
+	void Deactivate()
+	{
+		isActive_ = false;
+	}
 
 private:
 	bool isActive_;
@@ -305,8 +502,15 @@ private:
 class HUDVault
 {
 public:
-	HUDVault() : isActive_(false), isInit_(false) {}
-	~HUDVault() {}
+	HUDVault()
+		: isActive_(false)
+		, isInit_(false)
+	{
+	}
+
+	~HUDVault()
+	{
+	}
 
 	bool Init()
 	{
@@ -321,14 +525,33 @@ public:
 		return true;
 	}
 
-	bool IsInited() const { return isInit_; }
+	bool IsInited() const
+	{
+		return isInit_;
+	}
 
-	void Update() {}
-	void Draw() {}
+	void Update()
+	{
+	}
 
-	bool isActive() const { return isActive_; }
-	void Activate() { isActive_ = true; }
-	void Deactivate() { isActive_ = false; }
+	void Draw()
+	{
+	}
+
+	bool isActive() const
+	{
+		return isActive_;
+	}
+
+	void Activate()
+	{
+		isActive_ = true;
+	}
+
+	void Deactivate()
+	{
+		isActive_ = false;
+	}
 
 private:
 	bool isActive_;

@@ -3,7 +3,6 @@
 
 #include "FrontEndShared.h"
 #include "../ObjectsCode/weapons/Weapon.h"
-#include "APIScaleformGfx.h"
 
 #include "../ObjectsCode/weapons/WeaponArmory.h"
 #include "../ObjectsCode/weapons/Weapon.h"

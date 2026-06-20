@@ -666,7 +666,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\VersionNo.cpp"/>
     <ClCompile Include="Sources\XMLHelpers.cpp"/>
     <ClCompile Include="Sources\DiscordPresence.cpp"/>
-    <ClCompile Include="..\GameEngine\APIScaleformGfx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\bin\Data\Shaders\DX9_P1\SYSTEM\LibSM\shadow_config.h"/>
@@ -921,6 +920,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\UI\FrontEndWarZ.h"/>
     <ClInclude Include="Sources\UI\HUDCameraEffects.h"/>
     <ClInclude Include="Sources\UI\HUDLegacyNull.h" />
+    <ClInclude Include="Sources\UI\HUDLegacyTypes.h" />
     <ClInclude Include="Sources\UI\HUD_Base.h"/>
     <ClInclude Include="Sources\UI\HUD_Character.h"/>
     <ClInclude Include="Sources\UI\HUD_EditorGame.h"/>
@@ -929,11 +929,9 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\UI\HUD_Spectator.h"/>
     <ClInclude Include="Sources\UI\HUD_TPSGame.h"/>
     <ClInclude Include="Sources\UI\m_LoadingScreen.h"/>
-    <ClInclude Include="Sources\UI\HUDLegacyNull.h" />
     <ClInclude Include="Sources\VersionNo.h"/>
     <ClInclude Include="Sources\XMLHelpers.h"/>
     <ClInclude Include="Sources\DiscordPresence.h"/>
-    <ClInclude Include="..\GameEngine\APIScaleformGfx.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Sources\resource.rc"/>

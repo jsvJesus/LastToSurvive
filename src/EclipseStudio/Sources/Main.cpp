@@ -13,7 +13,6 @@
 #include "cvar.h"
 #include "fmod/soundsys.h"
 
-#include "APIScaleformGFX.h"
 #include "GameCommon.h"
 #include "GameLevel.h"
 
@@ -35,7 +34,6 @@
 #include "Menus\m_Main.h"
 
 #include "UI\m_LoadingScreen.h"
-#include "UI\FrontendShared.h"
 #include "DiscordPresence.h"
 
 #include "UI/HUDCameraEffects.h"
@@ -448,7 +446,7 @@ void InitRender(int bUseSet = 0)
 		r_texture_quality->SetInt( 1 ) ;
 
 		void applyGraphicOptionsSoft( uint32_t ) ;
-		applyGraphicOptionsSoft( FrontEndShared::SC_TEXTURE_QUALITY ) ;
+		applyGraphicOptionsSoft( 1 << 1 );
 
 		void writeGameOptionsFile();
 		writeGameOptionsFile();
@@ -542,7 +540,6 @@ void InitRender(int bUseSet = 0)
 		Font_Editor->CreateSystemFont();
 	}
 
-	r3dScaleformGfxCreate();
 #if ENABLE_WEB_BROWSER
 	g_pBrowserManager = new EternityWebBrowser();
 #endif
@@ -590,8 +587,6 @@ void CloseRender()
 #if APEX_ENABLED
 	DestroyApexUserRenderer();
 #endif
-
-	r3dScaleformGfxDestroy();
 
 	r3dCloseMaterials();
 

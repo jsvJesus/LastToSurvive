@@ -7,7 +7,7 @@
 #include "multiplayer/NetCellMover.h"
 #include "ObjectsCode/AI/AI_PlayerAnim.H"
 #include "../../../../src/GameEngine/CamouflageDataManager.h"
-#include "APIScaleformGfx.h"
+#include "../../UI/HUDLegacyTypes.h"
 #include "AI_PlayerSenses.h"
 
 class Weapon;
@@ -74,7 +74,7 @@ public:
 	int		ClanTagColor;
 	char		ClanTag[5*2];
 
-	Scaleform::GFx::Value m_CharIcon;
+	HUDNullValue m_CharIcon;
 
 	wiCharDataFull	CurLoadout;
 	float		m_GearWeight;

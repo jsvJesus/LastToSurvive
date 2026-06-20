@@ -2,7 +2,6 @@
 
 #include "GameCommon.h"
 #include "Ammo.h"
-#include "APIScaleformGfx.h"
 
 // data driven class. It is created by Ammo class, for bullets that are not immediate action, for example rockets.
 class obj_ChemLight : public AmmoShared

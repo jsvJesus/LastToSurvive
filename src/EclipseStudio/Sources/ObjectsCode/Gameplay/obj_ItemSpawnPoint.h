@@ -3,8 +3,6 @@
 #include "GameCommon.h"
 #include "BaseItemSpawnPoint.h"
 
-#include "APIScaleformGfx.h"
-
 class obj_ItemSpawnPoint : public BaseItemSpawnPoint
 {
 	DECLARE_CLASS(obj_ItemSpawnPoint, BaseItemSpawnPoint)
