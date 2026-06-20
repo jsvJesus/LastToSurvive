@@ -31,6 +31,8 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	DrawContext.Init(Device.GetContext());
+
 	if (!ShaderLibrary.Init(Device.GetDevice()))
 	{
 		r3dOutToLog("[DX11] Shader library initialization failed\n");
@@ -42,6 +44,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		ShaderLibrary.AddPixelShader("PS_COPY", "copy_ps.hls") < 0)
 	{
 		r3dOutToLog("[DX11] Built-in shader registration failed: %s\n", ShaderLibrary.GetLastError().c_str());
+		Shutdown();
+		return false;
+	}
+
+	if (!CommonStates.Init(Device.GetDevice()))
+	{
+		r3dOutToLog("[DX11] Common state initialization failed\n");
 		Shutdown();
 		return false;
 	}
@@ -85,7 +94,9 @@ void r3dDX11Renderer::Shutdown()
 
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
+	CommonStates.Shutdown();
 	ShaderLibrary.Shutdown();
+	DrawContext.Shutdown();
 	Device.Shutdown();
 
 	WindowHandle = nullptr;
@@ -177,6 +188,11 @@ r3dDX11Device& r3dDX11Renderer::GetDevice()
 	return Device;
 }
 
+r3dDX11DrawContext& r3dDX11Renderer::GetDrawContext()
+{
+	return DrawContext;
+}
+
 r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources()
 {
 	return FrameResources;
@@ -185,6 +201,11 @@ r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources()
 r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources()
 {
 	return GBufferResources;
+}
+
+r3dDX11CommonStates& r3dDX11Renderer::GetCommonStates()
+{
+	return CommonStates;
 }
 
 r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary()
@@ -197,6 +218,11 @@ const r3dDX11Device& r3dDX11Renderer::GetDevice() const
 	return Device;
 }
 
+const r3dDX11DrawContext& r3dDX11Renderer::GetDrawContext() const
+{
+	return DrawContext;
+}
+
 const r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources() const
 {
 	return FrameResources;
@@ -205,6 +231,11 @@ const r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources() const
 const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const
 {
 	return GBufferResources;
+}
+
+const r3dDX11CommonStates& r3dDX11Renderer::GetCommonStates() const
+{
+	return CommonStates;
 }
 
 const r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary() const

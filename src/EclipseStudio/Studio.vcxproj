@@ -653,10 +653,12 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\DX9\RenderDX9.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Device.cpp"/>
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Draw.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11FrameResources.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Fullscreen.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11GBufferResources.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Resources.cpp"/>
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11States.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\ShaderDX11.cpp"/>
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp"/>
     <ClCompile Include="Sources\SteamHelper.cpp"/>
@@ -923,10 +925,12 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\DX9\DrawWorld.hpp"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Device.h"/>
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Draw.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11FrameResources.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Fullscreen.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11GBufferResources.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Resources.h"/>
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11States.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\ShaderDX11.h"/>
     <ClInclude Include="Sources\RENDERING\DX9\RenderDX9.h"/>
     <ClInclude Include="Sources\RENDERING\Probes\ProbeMaster.h"/>

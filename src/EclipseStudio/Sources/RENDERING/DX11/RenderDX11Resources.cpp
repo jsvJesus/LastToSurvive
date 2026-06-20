@@ -5,6 +5,7 @@
 #include <d3d11_1.h>
 
 #include <algorithm>
+#include <cstring>
 
 namespace
 {
@@ -299,3 +300,337 @@ bool r3dDX11RenderTarget::IsValid() const
 	return ColorTexture.IsValid() && ColorTexture.GetRTV() && ColorTexture.GetSRV();
 }
 
+r3dDX11ConstantBuffer::r3dDX11ConstantBuffer()
+{
+}
+
+r3dDX11ConstantBuffer::~r3dDX11ConstantBuffer()
+{
+	Shutdown();
+}
+
+bool r3dDX11ConstantBuffer::Create(ID3D11Device* device, size_t byteSize, const char* debugName)
+{
+	Shutdown();
+
+	if (!device || byteSize == 0)
+		return false;
+
+	ByteSize = (byteSize + 15) & ~static_cast<size_t>(15);
+
+	D3D11_BUFFER_DESC desc{};
+	desc.ByteWidth = static_cast<UINT>(ByteSize);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	HRESULT result = device->CreateBuffer(&desc, nullptr, &Buffer);
+	if (FAILED(result) || !Buffer)
+	{
+		Shutdown();
+		return false;
+	}
+
+	SetDebugName(Buffer, debugName);
+	return true;
+}
+
+void r3dDX11ConstantBuffer::Shutdown()
+{
+	SafeReleaseDX11(Buffer);
+	ByteSize = 0;
+}
+
+bool r3dDX11ConstantBuffer::Update(ID3D11DeviceContext* context, const void* data, size_t byteSize)
+{
+	if (!context || !Buffer || !data || byteSize > ByteSize)
+		return false;
+
+	D3D11_MAPPED_SUBRESOURCE mapped{};
+	HRESULT result = context->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	if (FAILED(result) || !mapped.pData)
+		return false;
+
+	memcpy(mapped.pData, data, byteSize);
+	context->Unmap(Buffer, 0);
+	return true;
+}
+
+void r3dDX11ConstantBuffer::BindVS(ID3D11DeviceContext* context, unsigned int slot)
+{
+	if (context && Buffer)
+		context->VSSetConstantBuffers(slot, 1, &Buffer);
+}
+
+void r3dDX11ConstantBuffer::BindPS(ID3D11DeviceContext* context, unsigned int slot)
+{
+	if (context && Buffer)
+		context->PSSetConstantBuffers(slot, 1, &Buffer);
+}
+
+void r3dDX11ConstantBuffer::BindVSPS(ID3D11DeviceContext* context, unsigned int slot)
+{
+	BindVS(context, slot);
+	BindPS(context, slot);
+}
+
+ID3D11Buffer* r3dDX11ConstantBuffer::GetBuffer() const
+{
+	return Buffer;
+}
+
+size_t r3dDX11ConstantBuffer::GetByteSize() const
+{
+	return ByteSize;
+}
+
+bool r3dDX11ConstantBuffer::IsValid() const
+{
+	return Buffer != nullptr;
+}
+
+namespace
+{
+	D3D11_USAGE ToD3DUsage(r3dDX11BufferUsage usage)
+	{
+		switch (usage)
+		{
+		case R3D_DX11_BUFFER_IMMUTABLE:
+			return D3D11_USAGE_IMMUTABLE;
+		case R3D_DX11_BUFFER_DYNAMIC:
+			return D3D11_USAGE_DYNAMIC;
+		default:
+			return D3D11_USAGE_DEFAULT;
+		}
+	}
+
+	UINT ToCPUAccessFlags(r3dDX11BufferUsage usage)
+	{
+		return usage == R3D_DX11_BUFFER_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
+	}
+
+	bool CreateDX11Buffer(
+		ID3D11Device* device,
+		ID3D11Buffer** buffer,
+		size_t byteSize,
+		UINT bindFlags,
+		const void* initialData,
+		r3dDX11BufferUsage usage,
+		const char* debugName
+	)
+	{
+		if (!device || !buffer || byteSize == 0)
+			return false;
+
+		*buffer = nullptr;
+
+		D3D11_BUFFER_DESC desc{};
+		desc.ByteWidth = static_cast<UINT>(byteSize);
+		desc.Usage = ToD3DUsage(usage);
+		desc.BindFlags = bindFlags;
+		desc.CPUAccessFlags = ToCPUAccessFlags(usage);
+
+		D3D11_SUBRESOURCE_DATA initData{};
+		initData.pSysMem = initialData;
+
+		HRESULT result = device->CreateBuffer(&desc, initialData ? &initData : nullptr, buffer);
+		if (FAILED(result) || !*buffer)
+			return false;
+
+		SetDebugName(*buffer, debugName);
+		return true;
+	}
+
+	bool UpdateDynamicBuffer(ID3D11DeviceContext* context, ID3D11Buffer* buffer, size_t capacity, const void* data, size_t byteSize)
+	{
+		if (!context || !buffer || !data || byteSize > capacity)
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE mapped{};
+		HRESULT result = context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+		if (FAILED(result) || !mapped.pData)
+			return false;
+
+		memcpy(mapped.pData, data, byteSize);
+		context->Unmap(buffer, 0);
+		return true;
+	}
+}
+
+r3dDX11VertexBuffer::r3dDX11VertexBuffer()
+{
+}
+
+r3dDX11VertexBuffer::~r3dDX11VertexBuffer()
+{
+	Shutdown();
+}
+
+bool r3dDX11VertexBuffer::Create(ID3D11Device* device, size_t byteSize, unsigned int stride, const void* initialData, r3dDX11BufferUsage usage, const char* debugName)
+{
+	Shutdown();
+
+	if (stride == 0)
+		return false;
+
+	if (!CreateDX11Buffer(device, &Buffer, byteSize, D3D11_BIND_VERTEX_BUFFER, initialData, usage, debugName))
+		return false;
+
+	ByteSize = byteSize;
+	Stride = stride;
+	Usage = usage;
+	return true;
+}
+
+void r3dDX11VertexBuffer::Shutdown()
+{
+	SafeReleaseDX11(Buffer);
+	ByteSize = 0;
+	Stride = 0;
+	Usage = R3D_DX11_BUFFER_DEFAULT;
+}
+
+bool r3dDX11VertexBuffer::Update(ID3D11DeviceContext* context, const void* data, size_t byteSize)
+{
+	return Usage == R3D_DX11_BUFFER_DYNAMIC && UpdateDynamicBuffer(context, Buffer, ByteSize, data, byteSize);
+}
+
+void r3dDX11VertexBuffer::Bind(ID3D11DeviceContext* context, unsigned int slot, unsigned int offset)
+{
+	if (!context || !Buffer)
+		return;
+
+	ID3D11Buffer* buffer = Buffer;
+	UINT stride = Stride;
+	UINT bindOffset = offset;
+	context->IASetVertexBuffers(slot, 1, &buffer, &stride, &bindOffset);
+}
+
+ID3D11Buffer* r3dDX11VertexBuffer::GetBuffer() const
+{
+	return Buffer;
+}
+
+size_t r3dDX11VertexBuffer::GetByteSize() const
+{
+	return ByteSize;
+}
+
+unsigned int r3dDX11VertexBuffer::GetStride() const
+{
+	return Stride;
+}
+
+bool r3dDX11VertexBuffer::IsValid() const
+{
+	return Buffer != nullptr;
+}
+
+r3dDX11IndexBuffer::r3dDX11IndexBuffer()
+{
+}
+
+r3dDX11IndexBuffer::~r3dDX11IndexBuffer()
+{
+	Shutdown();
+}
+
+bool r3dDX11IndexBuffer::Create(ID3D11Device* device, size_t byteSize, DXGI_FORMAT format, const void* initialData, r3dDX11BufferUsage usage, const char* debugName)
+{
+	Shutdown();
+
+	if (format != DXGI_FORMAT_R16_UINT && format != DXGI_FORMAT_R32_UINT)
+		return false;
+
+	if (!CreateDX11Buffer(device, &Buffer, byteSize, D3D11_BIND_INDEX_BUFFER, initialData, usage, debugName))
+		return false;
+
+	ByteSize = byteSize;
+	Format = format;
+	Usage = usage;
+	return true;
+}
+
+void r3dDX11IndexBuffer::Shutdown()
+{
+	SafeReleaseDX11(Buffer);
+	ByteSize = 0;
+	Format = DXGI_FORMAT_UNKNOWN;
+	Usage = R3D_DX11_BUFFER_DEFAULT;
+}
+
+bool r3dDX11IndexBuffer::Update(ID3D11DeviceContext* context, const void* data, size_t byteSize)
+{
+	return Usage == R3D_DX11_BUFFER_DYNAMIC && UpdateDynamicBuffer(context, Buffer, ByteSize, data, byteSize);
+}
+
+void r3dDX11IndexBuffer::Bind(ID3D11DeviceContext* context, unsigned int offset)
+{
+	if (context && Buffer)
+		context->IASetIndexBuffer(Buffer, Format, offset);
+}
+
+ID3D11Buffer* r3dDX11IndexBuffer::GetBuffer() const
+{
+	return Buffer;
+}
+
+size_t r3dDX11IndexBuffer::GetByteSize() const
+{
+	return ByteSize;
+}
+
+DXGI_FORMAT r3dDX11IndexBuffer::GetFormat() const
+{
+	return Format;
+}
+
+bool r3dDX11IndexBuffer::IsValid() const
+{
+	return Buffer != nullptr;
+}
+
+r3dDX11InputLayout::r3dDX11InputLayout()
+{
+}
+
+r3dDX11InputLayout::~r3dDX11InputLayout()
+{
+	Shutdown();
+}
+
+bool r3dDX11InputLayout::Create(ID3D11Device* device, const D3D11_INPUT_ELEMENT_DESC* elements, unsigned int elementCount, const void* vertexShaderBytecode, size_t bytecodeSize, const char* debugName)
+{
+	Shutdown();
+
+	if (!device || !elements || elementCount == 0 || !vertexShaderBytecode || bytecodeSize == 0)
+		return false;
+
+	HRESULT result = device->CreateInputLayout(elements, elementCount, vertexShaderBytecode, bytecodeSize, &Layout);
+	if (FAILED(result) || !Layout)
+		return false;
+
+	SetDebugName(Layout, debugName);
+	return true;
+}
+
+void r3dDX11InputLayout::Shutdown()
+{
+	SafeReleaseDX11(Layout);
+}
+
+void r3dDX11InputLayout::Bind(ID3D11DeviceContext* context)
+{
+	if (context && Layout)
+		context->IASetInputLayout(Layout);
+}
+
+ID3D11InputLayout* r3dDX11InputLayout::GetLayout() const
+{
+	return Layout;
+}
+
+bool r3dDX11InputLayout::IsValid() const
+{
+	return Layout != nullptr;
+}
