@@ -100,6 +100,27 @@ void r3dDX11DrawContext::SetShaders(r3dDX11VertexShader* vertexShader, r3dDX11Pi
 	Context->PSSetShader(pixelShader ? pixelShader->GetShader() : nullptr, nullptr, 0);
 }
 
+void r3dDX11DrawContext::SetRasterizerState(ID3D11RasterizerState* state)
+{
+	if (Context)
+		Context->RSSetState(state);
+}
+
+void r3dDX11DrawContext::SetBlendState(ID3D11BlendState* state)
+{
+	if (!Context)
+		return;
+
+	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	Context->OMSetBlendState(state, blendFactor, 0xffffffff);
+}
+
+void r3dDX11DrawContext::SetDepthStencilState(ID3D11DepthStencilState* state, unsigned int stencilRef)
+{
+	if (Context)
+		Context->OMSetDepthStencilState(state, stencilRef);
+}
+
 void r3dDX11DrawContext::SetShaderResource(unsigned int slot, ID3D11ShaderResourceView* resource)
 {
 	if (Context)

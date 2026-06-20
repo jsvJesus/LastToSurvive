@@ -55,7 +55,7 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
-	if (!FrameResources.Init(Device.GetDevice(), Device.GetContext(), width, height))
+	if (!FrameResources.Init(Device.GetDevice(), Device.GetContext(), &DrawContext, &ShaderLibrary, &CommonStates, width, height))
 	{
 		r3dOutToLog("[DX11] Frame resources initialization failed\n");
 		Shutdown();
@@ -66,6 +66,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 	if (!GBufferResources.Init(Device.GetDevice(), Device.GetContext(), width, height, gbufferDesc))
 	{
 		r3dOutToLog("[DX11] GBuffer resources initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	if (!GBufferPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	{
+		r3dOutToLog("[DX11] GBuffer pass initialization failed\n");
 		Shutdown();
 		return false;
 	}
@@ -92,6 +99,7 @@ void r3dDX11Renderer::Shutdown()
 		bRmlRuntimeAcquired = false;
 	}
 
+	GBufferPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
 	CommonStates.Shutdown();
@@ -198,6 +206,11 @@ r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources()
 	return FrameResources;
 }
 
+r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass()
+{
+	return GBufferPass;
+}
+
 r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources()
 {
 	return GBufferResources;
@@ -226,6 +239,11 @@ const r3dDX11DrawContext& r3dDX11Renderer::GetDrawContext() const
 const r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources() const
 {
 	return FrameResources;
+}
+
+const r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass() const
+{
+	return GBufferPass;
 }
 
 const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const

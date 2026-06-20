@@ -7,6 +7,9 @@ struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D11DepthStencilView;
 struct ID3D11RenderTargetView;
+class r3dDX11CommonStates;
+class r3dDX11DrawContext;
+class r3dDX11ShaderLibrary;
 
 class r3dDX11FrameResources final
 {
@@ -14,7 +17,7 @@ public:
 	r3dDX11FrameResources();
 	~r3dDX11FrameResources();
 
-	bool Init(ID3D11Device* device, ID3D11DeviceContext* context, int width, int height);
+	bool Init(ID3D11Device* device, ID3D11DeviceContext* context, r3dDX11DrawContext* drawContext, r3dDX11ShaderLibrary* shaderLibrary, r3dDX11CommonStates* commonStates, int width, int height);
 	void Shutdown();
 	bool Resize(int width, int height);
 
@@ -42,6 +45,9 @@ private:
 private:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* Context = nullptr;
+	r3dDX11DrawContext* DrawContext = nullptr;
+	r3dDX11ShaderLibrary* ShaderLibrary = nullptr;
+	r3dDX11CommonStates* CommonStates = nullptr;
 
 	r3dDX11RenderTarget SceneColor;
 	r3dDX11RenderTarget TempColor;
@@ -52,4 +58,3 @@ private:
 	int Height = 0;
 	bool bInitialized = false;
 };
-

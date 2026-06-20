@@ -1,20 +1,18 @@
 #pragma once
 
-struct ID3D11BlendState;
-struct ID3D11Buffer;
-struct ID3D11DepthStencilState;
 struct ID3D11DepthStencilView;
 struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct ID3D11InputLayout;
-struct ID3D11PixelShader;
-struct ID3D11RasterizerState;
 struct ID3D11RenderTargetView;
-struct ID3D11SamplerState;
 struct ID3D11ShaderResourceView;
-struct ID3D11VertexShader;
 
+class r3dDX11CommonStates;
+class r3dDX11DrawContext;
+class r3dDX11InputLayout;
+class r3dDX11PixelShader;
 class r3dDX11RenderTarget;
+class r3dDX11ShaderLibrary;
+class r3dDX11VertexBuffer;
+class r3dDX11VertexShader;
 
 class r3dDX11FullscreenPass final
 {
@@ -22,7 +20,7 @@ public:
 	r3dDX11FullscreenPass();
 	~r3dDX11FullscreenPass();
 
-	bool Init(ID3D11Device* device, ID3D11DeviceContext* context);
+	bool Init(ID3D11Device* device, r3dDX11DrawContext* drawContext, r3dDX11ShaderLibrary* shaderLibrary, r3dDX11CommonStates* commonStates);
 	void Shutdown();
 
 	bool Copy(
@@ -38,20 +36,16 @@ public:
 	bool IsInitialized() const;
 
 private:
-	bool CreateShaders(ID3D11Device* device);
+	bool CreateShadersAndLayout(ID3D11Device* device);
 	bool CreateGeometry(ID3D11Device* device);
-	bool CreateStates(ID3D11Device* device);
 
 private:
-	ID3D11DeviceContext* Context = nullptr;
-	ID3D11VertexShader* CopyVS = nullptr;
-	ID3D11PixelShader* CopyPS = nullptr;
-	ID3D11InputLayout* InputLayout = nullptr;
-	ID3D11Buffer* VertexBuffer = nullptr;
-	ID3D11SamplerState* SamplerState = nullptr;
-	ID3D11RasterizerState* RasterizerState = nullptr;
-	ID3D11DepthStencilState* DepthStencilState = nullptr;
-	ID3D11BlendState* BlendState = nullptr;
+	r3dDX11DrawContext* DrawContext = nullptr;
+	r3dDX11ShaderLibrary* ShaderLibrary = nullptr;
+	r3dDX11CommonStates* CommonStates = nullptr;
+	r3dDX11VertexShader* CopyVS = nullptr;
+	r3dDX11PixelShader* CopyPS = nullptr;
+	r3dDX11InputLayout* InputLayout = nullptr;
+	r3dDX11VertexBuffer* VertexBuffer = nullptr;
 	bool bInitialized = false;
 };
-

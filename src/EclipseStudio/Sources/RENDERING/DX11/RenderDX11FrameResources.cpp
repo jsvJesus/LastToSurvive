@@ -15,20 +15,23 @@ r3dDX11FrameResources::~r3dDX11FrameResources()
 	Shutdown();
 }
 
-bool r3dDX11FrameResources::Init(ID3D11Device* device, ID3D11DeviceContext* context, int width, int height)
+bool r3dDX11FrameResources::Init(ID3D11Device* device, ID3D11DeviceContext* context, r3dDX11DrawContext* drawContext, r3dDX11ShaderLibrary* shaderLibrary, r3dDX11CommonStates* commonStates, int width, int height)
 {
 	if (bInitialized)
 		return true;
 
-	if (!device || !context || width <= 0 || height <= 0)
+	if (!device || !context || !drawContext || !shaderLibrary || !commonStates || width <= 0 || height <= 0)
 		return false;
 
 	Device = device;
 	Context = context;
+	DrawContext = drawContext;
+	ShaderLibrary = shaderLibrary;
+	CommonStates = commonStates;
 	Width = std::max(1, width);
 	Height = std::max(1, height);
 
-	if (!CreateTargets() || !FullscreenPass.Init(Device, Context))
+	if (!CreateTargets() || !FullscreenPass.Init(Device, DrawContext, ShaderLibrary, CommonStates))
 	{
 		Shutdown();
 		return false;
@@ -47,6 +50,9 @@ void r3dDX11FrameResources::Shutdown()
 
 	Device = nullptr;
 	Context = nullptr;
+	DrawContext = nullptr;
+	ShaderLibrary = nullptr;
+	CommonStates = nullptr;
 	Width = 0;
 	Height = 0;
 	bInitialized = false;
@@ -186,4 +192,3 @@ bool r3dDX11FrameResources::CreateTargets()
 
 	return true;
 }
-

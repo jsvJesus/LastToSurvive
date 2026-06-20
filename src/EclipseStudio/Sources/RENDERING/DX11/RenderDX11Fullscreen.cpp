@@ -2,7 +2,9 @@
 
 #include "RENDERING/DX11/RenderDX11Fullscreen.h"
 
+#include "RENDERING/DX11/RenderDX11Draw.h"
 #include "RENDERING/DX11/RenderDX11Resources.h"
+#include "RENDERING/DX11/RenderDX11States.h"
 #include "RENDERING/DX11/ShaderDX11.h"
 
 #include <d3d11_1.h>
@@ -11,16 +13,6 @@
 
 namespace
 {
-	template <typename T>
-	void SafeReleaseDX11(T*& value)
-	{
-		if (value)
-		{
-			value->Release();
-			value = nullptr;
-		}
-	}
-
 	struct FullscreenVertex
 	{
 		float Position[3];
@@ -37,17 +29,19 @@ r3dDX11FullscreenPass::~r3dDX11FullscreenPass()
 	Shutdown();
 }
 
-bool r3dDX11FullscreenPass::Init(ID3D11Device* device, ID3D11DeviceContext* context)
+bool r3dDX11FullscreenPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawContext, r3dDX11ShaderLibrary* shaderLibrary, r3dDX11CommonStates* commonStates)
 {
 	if (bInitialized)
 		return true;
 
-	if (!device || !context)
+	if (!device || !drawContext || !shaderLibrary || !commonStates)
 		return false;
 
-	Context = context;
+	DrawContext = drawContext;
+	ShaderLibrary = shaderLibrary;
+	CommonStates = commonStates;
 
-	if (!CreateShaders(device) || !CreateGeometry(device) || !CreateStates(device))
+	if (!CreateShadersAndLayout(device) || !CreateGeometry(device))
 	{
 		Shutdown();
 		return false;
@@ -59,16 +53,17 @@ bool r3dDX11FullscreenPass::Init(ID3D11Device* device, ID3D11DeviceContext* cont
 
 void r3dDX11FullscreenPass::Shutdown()
 {
-	SafeReleaseDX11(BlendState);
-	SafeReleaseDX11(DepthStencilState);
-	SafeReleaseDX11(RasterizerState);
-	SafeReleaseDX11(SamplerState);
-	SafeReleaseDX11(VertexBuffer);
-	SafeReleaseDX11(InputLayout);
-	SafeReleaseDX11(CopyPS);
-	SafeReleaseDX11(CopyVS);
+	delete VertexBuffer;
+	VertexBuffer = nullptr;
 
-	Context = nullptr;
+	delete InputLayout;
+	InputLayout = nullptr;
+
+	CopyPS = nullptr;
+	CopyVS = nullptr;
+	CommonStates = nullptr;
+	ShaderLibrary = nullptr;
+	DrawContext = nullptr;
 	bInitialized = false;
 }
 
@@ -80,40 +75,24 @@ bool r3dDX11FullscreenPass::Copy(
 	int height
 )
 {
-	if (!bInitialized || !Context || !source || !destination || width <= 0 || height <= 0)
+	if (!bInitialized || !DrawContext || !source || !destination || width <= 0 || height <= 0)
 		return false;
 
-	D3D11_VIEWPORT viewport{};
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.Width = static_cast<float>(width);
-	viewport.Height = static_cast<float>(height);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	const UINT stride = sizeof(FullscreenVertex);
-	const UINT offset = 0;
-	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-	Context->OMSetRenderTargets(1, &destination, depthStencil);
-	Context->RSSetViewports(1, &viewport);
-	Context->RSSetState(RasterizerState);
-	Context->OMSetDepthStencilState(DepthStencilState, 0);
-	Context->OMSetBlendState(BlendState, blendFactor, 0xffffffff);
-
-	Context->IASetInputLayout(InputLayout);
-	Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	Context->IASetVertexBuffers(0, 1, &VertexBuffer, &stride, &offset);
-
-	Context->VSSetShader(CopyVS, nullptr, 0);
-	Context->PSSetShader(CopyPS, nullptr, 0);
-	Context->PSSetSamplers(0, 1, &SamplerState);
-	Context->PSSetShaderResources(0, 1, &source);
-
-	Context->Draw(3, 0);
+	DrawContext->SetRenderTarget(destination, depthStencil);
+	DrawContext->SetViewport(width, height);
+	DrawContext->SetRasterizerState(CommonStates->GetCullNoneRasterizer());
+	DrawContext->SetDepthStencilState(CommonStates->GetDepthDisabledState());
+	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
+	DrawContext->SetInputLayout(InputLayout);
+	DrawContext->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DrawContext->SetVertexBuffer(VertexBuffer);
+	DrawContext->SetShaders(CopyVS, CopyPS);
+	DrawContext->SetSampler(0, CommonStates->GetLinearClampSampler());
+	DrawContext->SetShaderResource(0, source);
+	DrawContext->Draw(3);
 
 	ID3D11ShaderResourceView* nullSRV = nullptr;
-	Context->PSSetShaderResources(0, 1, &nullSRV);
+	DrawContext->SetShaderResource(0, nullSRV);
 	return true;
 }
 
@@ -127,37 +106,17 @@ bool r3dDX11FullscreenPass::IsInitialized() const
 	return bInitialized;
 }
 
-bool r3dDX11FullscreenPass::CreateShaders(ID3D11Device* device)
+bool r3dDX11FullscreenPass::CreateShadersAndLayout(ID3D11Device* device)
 {
-	r3dDX11ShaderCompiler compiler;
-
-	ID3DBlob* vsBlob = nullptr;
-	ID3DBlob* psBlob = nullptr;
-
-	if (!compiler.CompileVertexShader("Fullscreen_vs.hls", "main", nullptr, &vsBlob))
+	const int vsIndex = ShaderLibrary->AddVertexShader("VS_FULLSCREEN", "Fullscreen_vs.hls");
+	const int psIndex = ShaderLibrary->AddPixelShader("PS_COPY", "copy_ps.hls");
+	if (vsIndex < 0 || psIndex < 0)
 		return false;
 
-	if (!compiler.CompilePixelShader("copy_ps.hls", "main", nullptr, &psBlob))
-	{
-		SafeReleaseDX11(vsBlob);
+	CopyVS = ShaderLibrary->GetVertexShader(vsIndex);
+	CopyPS = ShaderLibrary->GetPixelShader(psIndex);
+	if (!CopyVS || !CopyPS || !CopyVS->IsValid() || !CopyPS->IsValid())
 		return false;
-	}
-
-	HRESULT result = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &CopyVS);
-	if (FAILED(result) || !CopyVS)
-	{
-		SafeReleaseDX11(psBlob);
-		SafeReleaseDX11(vsBlob);
-		return false;
-	}
-
-	result = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &CopyPS);
-	if (FAILED(result) || !CopyPS)
-	{
-		SafeReleaseDX11(psBlob);
-		SafeReleaseDX11(vsBlob);
-		return false;
-	}
 
 	const D3D11_INPUT_ELEMENT_DESC inputElements[] =
 	{
@@ -165,18 +124,15 @@ bool r3dDX11FullscreenPass::CreateShaders(ID3D11Device* device)
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FullscreenVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	result = device->CreateInputLayout(
-		inputElements,
-		static_cast<UINT>(_countof(inputElements)),
-		vsBlob->GetBufferPointer(),
-		vsBlob->GetBufferSize(),
-		&InputLayout
-	);
+	InputLayout = new r3dDX11InputLayout();
+	if (!InputLayout->Create(device, inputElements, static_cast<unsigned int>(_countof(inputElements)), CopyVS->GetBytecode(), CopyVS->GetBytecodeSize(), "DX11.Fullscreen.InputLayout"))
+	{
+		delete InputLayout;
+		InputLayout = nullptr;
+		return false;
+	}
 
-	SafeReleaseDX11(psBlob);
-	SafeReleaseDX11(vsBlob);
-
-	return SUCCEEDED(result) && InputLayout != nullptr;
+	return true;
 }
 
 bool r3dDX11FullscreenPass::CreateGeometry(ID3D11Device* device)
@@ -188,56 +144,13 @@ bool r3dDX11FullscreenPass::CreateGeometry(ID3D11Device* device)
 		{ {  3.0f, -1.0f, 0.0f }, { 2.0f, 1.0f } }
 	};
 
-	D3D11_BUFFER_DESC desc{};
-	desc.ByteWidth = sizeof(vertices);
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertexBuffer = new r3dDX11VertexBuffer();
+	if (!VertexBuffer->Create(device, sizeof(vertices), sizeof(FullscreenVertex), vertices, R3D_DX11_BUFFER_IMMUTABLE, "DX11.Fullscreen.VertexBuffer"))
+	{
+		delete VertexBuffer;
+		VertexBuffer = nullptr;
+		return false;
+	}
 
-	D3D11_SUBRESOURCE_DATA init{};
-	init.pSysMem = vertices;
-
-	HRESULT result = device->CreateBuffer(&desc, &init, &VertexBuffer);
-	return SUCCEEDED(result) && VertexBuffer != nullptr;
+	return true;
 }
-
-bool r3dDX11FullscreenPass::CreateStates(ID3D11Device* device)
-{
-	D3D11_SAMPLER_DESC samplerDesc{};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = 0.0f;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	HRESULT result = device->CreateSamplerState(&samplerDesc, &SamplerState);
-	if (FAILED(result) || !SamplerState)
-		return false;
-
-	D3D11_RASTERIZER_DESC rasterDesc{};
-	rasterDesc.FillMode = D3D11_FILL_SOLID;
-	rasterDesc.CullMode = D3D11_CULL_NONE;
-	rasterDesc.DepthClipEnable = TRUE;
-
-	result = device->CreateRasterizerState(&rasterDesc, &RasterizerState);
-	if (FAILED(result) || !RasterizerState)
-		return false;
-
-	D3D11_DEPTH_STENCIL_DESC depthDesc{};
-	depthDesc.DepthEnable = FALSE;
-	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	depthDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-
-	result = device->CreateDepthStencilState(&depthDesc, &DepthStencilState);
-	if (FAILED(result) || !DepthStencilState)
-		return false;
-
-	D3D11_BLEND_DESC blendDesc{};
-	blendDesc.RenderTarget[0].BlendEnable = FALSE;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	result = device->CreateBlendState(&blendDesc, &BlendState);
-	return SUCCEEDED(result) && BlendState != nullptr;
-}
-

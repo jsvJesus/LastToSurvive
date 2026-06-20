@@ -28,6 +28,9 @@ public:
 	void SetIndexBuffer(r3dDX11IndexBuffer* indexBuffer, unsigned int offset = 0);
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 	void SetShaders(r3dDX11VertexShader* vertexShader, r3dDX11PixelShader* pixelShader);
+	void SetRasterizerState(ID3D11RasterizerState* state);
+	void SetBlendState(ID3D11BlendState* state);
+	void SetDepthStencilState(ID3D11DepthStencilState* state, unsigned int stencilRef = 0);
 	void SetShaderResource(unsigned int slot, ID3D11ShaderResourceView* resource);
 	void SetSampler(unsigned int slot, ID3D11SamplerState* sampler);
 
