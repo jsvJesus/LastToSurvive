@@ -228,6 +228,24 @@ R"RMLSHADER(
 	}
 )RMLSHADER";
 
+static const char* RmlDx9StraightAlphaShaderSource =
+R"RMLSHADER(
+	sampler2D SourceSampler : register(s0);
+
+	float4 main(float2 UV : TEXCOORD0) : COLOR0
+	{
+		float4 Color =
+			tex2D(
+				SourceSampler,
+				UV
+			);
+
+		return float4(
+			Color.rgb * Color.a,
+			Color.a
+		);
+	}
+)RMLSHADER";
 
 static const char* RmlDx9ShadowShaderSource =
 R"RMLSHADER(
@@ -929,6 +947,38 @@ bool RmlRenderDX9::EnsureBlurShader()
 	return true;
 }
 
+bool RmlRenderDX9::EnsureStraightAlphaShader()
+{
+	if (StraightAlphaPixelShader)
+		return true;
+
+	if (!CreatePixelShader(
+		RmlDx9StraightAlphaShaderSource,
+		&StraightAlphaPixelShader
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI][DX9] Straight-alpha shader creation failed\n"
+		);
+
+		r3dOutToLog(
+			"[RmlUI][DX9] Straight-alpha shader creation failed\n"
+		);
+
+		return false;
+	}
+
+	OutputDebugStringA(
+		"[RmlUI][DX9] Straight-alpha shader created\n"
+	);
+
+	r3dOutToLog(
+		"[RmlUI][DX9] Straight-alpha shader created\n"
+	);
+
+	return true;
+}
+
 bool RmlRenderDX9::EnsureShadowShader()
 {
 	if (ShadowPixelShader)
@@ -1031,6 +1081,12 @@ void RmlRenderDX9::ReleaseFilterShaders()
 	{
 		BlurPixelShader->Release();
 		BlurPixelShader = nullptr;
+	}
+
+	if (StraightAlphaPixelShader)
+	{
+		StraightAlphaPixelShader->Release();
+		StraightAlphaPixelShader = nullptr;
 	}
 
 	if (ShadowPixelShader)
@@ -4043,6 +4099,45 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 		OutputDebugStringA(
 			DebugText.c_str()
 		);
+
+		r3dOutToLog(
+			"%s",
+			DebugText.c_str()
+		);
+
+		static const unsigned char TransparentPixels[16] =
+		{
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0
+		};
+
+		if (
+			CreateTextureFromRGBA(
+				TransparentPixels,
+				2,
+				2,
+				&Texture
+			)
+		)
+		{
+			TextureDimensions.x = 2;
+			TextureDimensions.y = 2;
+
+			FTextureHandle* Handle =
+				new FTextureHandle();
+
+			Handle->Texture =
+				Texture;
+
+			Handle->bStraightAlphaTexture =
+				false;
+
+			return reinterpret_cast<Rml::TextureHandle>(
+				Handle
+			);
+		}
 
 		return 0;
 	}

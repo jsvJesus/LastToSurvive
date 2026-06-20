@@ -345,35 +345,19 @@ private:
 	FPostProcessTarget PostProcessTargets[3];
 	FPostProcessTarget LayerCompositeScratch;
 
-	IDirect3DPixelShader9* BlurPixelShader =
-		nullptr;
-
-	IDirect3DPixelShader9* ShadowPixelShader =
-		nullptr;
-
-	IDirect3DPixelShader9* ColorMatrixPixelShader =
-		nullptr;
-
-	IDirect3DPixelShader9* GradientPixelShader =
-		nullptr;
-
-	IDirect3DPixelShader9* CreationPixelShader =
-		nullptr;
+	IDirect3DPixelShader9* BlurPixelShader = nullptr;
+	IDirect3DPixelShader9* StraightAlphaPixelShader = nullptr;
+	IDirect3DPixelShader9* ShadowPixelShader = nullptr;
+	IDirect3DPixelShader9* ColorMatrixPixelShader = nullptr;
+	IDirect3DPixelShader9* GradientPixelShader = nullptr;
+	IDirect3DPixelShader9* CreationPixelShader = nullptr;
 
 	int ViewWidth = 1;
 	int ViewHeight = 1;
-
-	bool bFrameOpen =
-		false;
-
-	bool bScissorEnabled =
-		false;
-
-	bool bClipMaskEnabled =
-		false;
-
-	unsigned int ClipMaskReference =
-		0;
+	bool bFrameOpen = false;
+	bool bScissorEnabled = false;
+	bool bClipMaskEnabled = false;
+	unsigned int ClipMaskReference = 0;
 
 	RECT ScissorRect{
 		0,
@@ -482,6 +466,7 @@ private:
 	);
 
 	bool EnsureBlurShader();
+	bool EnsureStraightAlphaShader();
 	bool EnsureShadowShader();
 	bool EnsureColorMatrixShader();
 	bool EnsureGradientShader();
