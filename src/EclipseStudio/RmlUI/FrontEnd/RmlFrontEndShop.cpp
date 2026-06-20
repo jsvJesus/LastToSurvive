@@ -63,6 +63,19 @@ bool RmlFrontEndShop::HandleClickId(
 		return true;
 	}
 
+	if (Id == "nav_skills")
+	{
+		if (Callbacks.ShowSkills)
+			Callbacks.ShowSkills();
+
+		return true;
+	}
+
+	if (Id == "nav_shop")
+	{
+		return true;
+	}
+
 	if (Id == "btn_shop_buy_selected")
 	{
 		if (Callbacks.RequestBuySelectedShopItem)

@@ -12,11 +12,12 @@
 #include "r3dDeviceQueue.h"
 #include "../../RmlUI/RmlUISystem.h"
 
-static const char* DEFAULT_LOADING_TEXTURE = "Data\\Menu\\Screen.png";
+static const char* DEFAULT_LOADING_TEXTURE =
+	"Data\\Menu\\Screen.png";
 
 static volatile LONG gProgressValue = 0;
-static LoadingScreen*	gLoadingScreen;
-static RmlUISystem		g_LoadingRmlUI;
+static LoadingScreen* gLoadingScreen = NULL;
+static RmlUISystem g_LoadingRmlUI;
 
 static float LoadingProgressFromLong()
 {
@@ -25,8 +26,34 @@ static float LoadingProgressFromLong()
 
 static LONG LoadingProgressToLong(float Progress)
 {
-	Progress = R3D_MAX(R3D_MIN(Progress, 1.0f), 0.0f);
+	Progress = R3D_MAX(
+		R3D_MIN(
+			Progress,
+			1.0f
+		),
+		0.0f
+	);
+
 	return (LONG)(Progress * 10000.0f);
+}
+
+static void CopyWideString(
+	wchar_t*& Destination,
+	const wchar_t* Source
+)
+{
+	SAFE_DELETE_ARRAY(Destination);
+
+	if (!Source)
+		return;
+
+	Destination =
+		new wchar_t[wcslen(Source) + 1];
+
+	r3dscpy(
+		Destination,
+		Source
+	);
 }
 
 static bool EnsureLoadingRmlUI()
@@ -34,11 +61,25 @@ static bool EnsureLoadingRmlUI()
 	if (g_LoadingRmlUI.IsInitialized())
 		return true;
 
-	if (!r3dRenderer || !r3dRenderer->pd3ddev || !win::hWnd)
+	if (
+		!r3dRenderer ||
+		!r3dRenderer->pd3ddev ||
+		!win::hWnd
+	)
+	{
 		return false;
+	}
 
-	if (!g_LoadingRmlUI.Init(win::hWnd, r3dRenderer->pd3ddev, false))
+	if (
+		!g_LoadingRmlUI.Init(
+			win::hWnd,
+			r3dRenderer->pd3ddev,
+			false
+		)
+	)
+	{
 		return false;
+	}
 
 	if (!g_LoadingRmlUI.LoadLoadingScreen())
 	{
@@ -49,50 +90,65 @@ static bool EnsureLoadingRmlUI()
 	return true;
 }
 
-LoadingScreen::LoadingScreen( const char * movieName ) 
-: UIMenu(movieName) 
-,m_MapName(NULL)
-,m_MapDesc(NULL)
-,m_TipOfTheDay(NULL)
+LoadingScreen::LoadingScreen(
+	const char* movieName
+)
+	: m_pBackgroundTex(NULL)
+	, m_RenderingDisabled(false)
+	, m_MapName(NULL)
+	, m_MapDesc(NULL)
+	, m_TipOfTheDay(NULL)
 {
-	m_pBackgroundTex = 0;
-	m_RenderingDisabled = false;
+	(void)movieName;
 }
-
-//------------------------------------------------------------------------
 
 LoadingScreen::~LoadingScreen()
 {
-	if(m_pBackgroundTex)
-		r3dRenderer->DeleteTexture(m_pBackgroundTex);
-	m_pBackgroundTex = 0;
+	if (m_pBackgroundTex)
+	{
+		r3dRenderer->DeleteTexture(
+			m_pBackgroundTex
+		);
+	}
 
-	m_GFX_Main.SetUndefined();
+	m_pBackgroundTex = NULL;
 
 	SAFE_DELETE_ARRAY(m_MapName);
 	SAFE_DELETE_ARRAY(m_MapDesc);
 	SAFE_DELETE_ARRAY(m_TipOfTheDay);
 }
 
-//------------------------------------------------------------------------
-
 bool LoadingScreen::Initialize()
 {
 	if (EnsureLoadingRmlUI())
 	{
 		g_LoadingRmlUI.ShowLoadingScreen();
-		g_LoadingRmlUI.SetLoadingScreenProgress(LoadingProgressFromLong());
+		g_LoadingRmlUI.SetLoadingScreenProgress(
+			LoadingProgressFromLong()
+		);
+
+		ApplyStoredLoadingText();
 	}
 
 	return true;
 }
 
-void LoadingScreen::eventRegisterUI(r3dScaleformMovie* pMovie, const Scaleform::GFx::Value* args, unsigned argCount)
+void LoadingScreen::ApplyStoredLoadingText()
 {
-	m_GFX_Main = args[0];
+	if (!EnsureLoadingRmlUI())
+		return;
 
-	if(m_MapName)
-		updateUIDataText(m_MapName, m_MapDesc, m_TipOfTheDay);
+	g_LoadingRmlUI.ShowLoadingScreen();
+
+	g_LoadingRmlUI.SetLoadingScreenData(
+		m_MapName ? m_MapName : L"Loading",
+		m_MapDesc ? m_MapDesc : L"",
+		m_TipOfTheDay
+	);
+
+	g_LoadingRmlUI.SetLoadingScreenProgress(
+		LoadingProgressFromLong()
+	);
 }
 
 void ClearFullScreen_Menu();
@@ -104,220 +160,229 @@ int LoadingScreen::Update()
 	r3dMouse::Show();
 	r3dStartFrame();
 
-	if( r3dRenderer->DeviceAvailable )
+	if (r3dRenderer->DeviceAvailable)
 	{
 		r3dRenderer->StartRender(1);
 		r3dRenderer->StartFrame();
 
-		r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+		r3dRenderer->SetRenderingMode(
+			R3D_BLEND_ALPHA |
+			R3D_BLEND_NZ
+		);
 
 		ClearFullScreen_Menu();
 
-		// for now just draw a static picture in background, later on will be a video
-		r3d_assert(m_pBackgroundTex);
-
-		float x, y, w, h;
-		r3dRenderer->GetBackBufferViewport(&x, &y, &w, &h);
-		D3DVIEWPORT9 oldVp, newVp;
-
-		r3dRenderer->DoGetViewport(&oldVp);
-		newVp = oldVp;
-		newVp.X = 0;
-		newVp.Y = 0;
-		newVp.Width = r3dRenderer->d3dpp.BackBufferWidth;
-		newVp.Height = r3dRenderer->d3dpp.BackBufferHeight;
-		r3dRenderer->SetViewport( (float)newVp.X, (float)newVp.Y, (float)newVp.Width, (float)newVp.Height );
-		DWORD oldScissor = 0;
-		r3dRenderer->pd3ddev->GetRenderState(D3DRS_SCISSORTESTENABLE, &oldScissor);
-		r3dRenderer->pd3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-		r3dDrawBox2D(x, y, w, h, r3dColor24::white, m_pBackgroundTex);
-		r3dRenderer->SetViewport( (float)oldVp.X, (float)oldVp.Y, (float)oldVp.Width, (float)oldVp.Height );
-		r3dRenderer->pd3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, oldScissor);
-
-		if(!m_RenderingDisabled && EnsureLoadingRmlUI())
+		if (m_pBackgroundTex)
 		{
-			g_LoadingRmlUI.Update(r3dGetFrameTime());
+			float x;
+			float y;
+			float w;
+			float h;
+
+			r3dRenderer->GetBackBufferViewport(
+				&x,
+				&y,
+				&w,
+				&h
+			);
+
+			D3DVIEWPORT9 oldVp;
+			D3DVIEWPORT9 newVp;
+
+			r3dRenderer->DoGetViewport(
+				&oldVp
+			);
+
+			newVp = oldVp;
+			newVp.X = 0;
+			newVp.Y = 0;
+			newVp.Width =
+				r3dRenderer->d3dpp.BackBufferWidth;
+			newVp.Height =
+				r3dRenderer->d3dpp.BackBufferHeight;
+
+			r3dRenderer->SetViewport(
+				(float)newVp.X,
+				(float)newVp.Y,
+				(float)newVp.Width,
+				(float)newVp.Height
+			);
+
+			DWORD oldScissor = 0;
+
+			r3dRenderer->pd3ddev->GetRenderState(
+				D3DRS_SCISSORTESTENABLE,
+				&oldScissor
+			);
+
+			r3dRenderer->pd3ddev->SetRenderState(
+				D3DRS_SCISSORTESTENABLE,
+				FALSE
+			);
+
+			r3dDrawBox2D(
+				x,
+				y,
+				w,
+				h,
+				r3dColor24::white,
+				m_pBackgroundTex
+			);
+
+			r3dRenderer->SetViewport(
+				(float)oldVp.X,
+				(float)oldVp.Y,
+				(float)oldVp.Width,
+				(float)oldVp.Height
+			);
+
+			r3dRenderer->pd3ddev->SetRenderState(
+				D3DRS_SCISSORTESTENABLE,
+				oldScissor
+			);
+		}
+
+		if (
+			!m_RenderingDisabled &&
+			EnsureLoadingRmlUI()
+		)
+		{
+			g_LoadingRmlUI.Update(
+				r3dGetFrameTime()
+			);
+
 			g_LoadingRmlUI.Render();
 		}
 
-		r3dRenderer->Flush();  
+		r3dRenderer->Flush();
 		r3dRenderer->EndFrame();
 	}
 
-	r3dRenderer->EndRender( true );
+	r3dRenderer->EndRender(true);
 	r3dEndFrame();
 
 	return 0;
 }
 
-//------------------------------------------------------------------------
-void LoadingScreen::SetLoadingTexture(const char* ImagePath)
+void LoadingScreen::SetLoadingTexture(
+	const char* ImagePath
+)
 {
 	R3D_ENSURE_MAIN_THREAD();
 
-	if(m_pBackgroundTex)
-		r3dRenderer->DeleteTexture(m_pBackgroundTex);
+	if (m_pBackgroundTex)
+	{
+		r3dRenderer->DeleteTexture(
+			m_pBackgroundTex
+		);
 
-	const char* texturePath = (ImagePath && r3d_access(ImagePath, 0) == 0) ? ImagePath : DEFAULT_LOADING_TEXTURE;
-	m_pBackgroundTex = r3dRenderer->LoadTexture(texturePath);
-	r3d_assert(m_pBackgroundTex);
+		m_pBackgroundTex = NULL;
+	}
+
+	const char* TexturePath =
+		(
+			ImagePath &&
+			r3d_access(ImagePath, 0) == 0
+		)
+			? ImagePath
+			: DEFAULT_LOADING_TEXTURE;
+
+	m_pBackgroundTex =
+		r3dRenderer->LoadTexture(
+			TexturePath
+		);
+
+	r3d_assert(
+		m_pBackgroundTex
+	);
 }
 
-void LoadingScreen::SetData( const char* ImagePath, const wchar_t* Name, const wchar_t* Message, const wchar_t* tip_of_the_day )
+void LoadingScreen::SetData(
+	const char* ImagePath,
+	const wchar_t* Name,
+	const wchar_t* Message,
+	const wchar_t* tip_of_the_day
+)
 {
 	R3D_ENSURE_MAIN_THREAD();
 
-	SAFE_DELETE_ARRAY(m_MapName);
-	SAFE_DELETE_ARRAY(m_MapDesc);
-	SAFE_DELETE_ARRAY(m_TipOfTheDay);
+	CopyWideString(
+		m_MapName,
+		Name
+	);
 
-	if(!m_RenderingDisabled)
-		SetLoadingTexture(ImagePath);
+	CopyWideString(
+		m_MapDesc,
+		Message
+	);
+
+	CopyWideString(
+		m_TipOfTheDay,
+		tip_of_the_day
+	);
+
+	if (!m_RenderingDisabled)
+	{
+		SetLoadingTexture(
+			ImagePath
+		);
+	}
+
+	ApplyStoredLoadingText();
+
+	r3d_assert(
+		_CrtCheckMemory()
+	);
+}
+
+void LoadingScreen::SetProgress(
+	float progress
+)
+{
+	R3D_ENSURE_MAIN_THREAD();
 
 	if (EnsureLoadingRmlUI())
 	{
-		g_LoadingRmlUI.ShowLoadingScreen();
-		g_LoadingRmlUI.SetLoadingScreenData(Name, Message, tip_of_the_day);
-		g_LoadingRmlUI.SetLoadingScreenProgress(LoadingProgressFromLong());
+		g_LoadingRmlUI.SetLoadingScreenProgress(
+			progress
+		);
 	}
-
-	r3d_assert(_CrtCheckMemory());
-	if(m_GFX_Main.IsUndefined())
-	{
-		if(Name)
-		{
-			m_MapName = new wchar_t[wcslen(Name)+1];
-			r3dscpy(m_MapName, Name);
-		}
-		if(Message)
-		{
-			m_MapDesc = new wchar_t[wcslen(Message)+1];
-			r3dscpy(m_MapDesc, Message);
-		}
-		if(tip_of_the_day)
-		{
-			m_TipOfTheDay = new wchar_t[wcslen(tip_of_the_day)+1];
-			r3dscpy(m_TipOfTheDay, tip_of_the_day);
-		}
-	}
-	else
-		updateUIDataText(Name, Message, tip_of_the_day);
-	r3d_assert(_CrtCheckMemory());
 }
-
-void LoadingScreen::updateUIDataText(const wchar_t* name, const wchar_t* desc, const wchar_t* tip)
-{
-	r3d_assert(_CrtCheckMemory());
-	/*if(g_num_matches_played->GetInt() == 1 && g_num_game_executed2->GetInt()==1) // first time launch of the game, show keyboard schematic
-	{
-		Scaleform::GFx::Value::DisplayInfo dinfo;
-		dinfo.SetVisible(true);
-		m_GFX_Main2.SetDisplayInfo(dinfo);
-		dinfo.SetVisible(false);
-		m_GFX_Main.SetDisplayInfo(dinfo);
-	}
-	else*/
-	{
-		Scaleform::GFx::Value::DisplayInfo dinfo;
-		dinfo.SetVisible(true);
-		m_GFX_Main.SetDisplayInfo(dinfo);
-	}
-
-	Scaleform::GFx::Value tmp, tmp2, tmp3;
-	/*m_GFX_Main2.GetMember("Name", &tmp);
-	tmp.GetMember("Name", &tmp2);
-	tmp2.GetMember("Text", &tmp3);
-	tmp3.SetText(name);*/
-	m_GFX_Main.GetMember("Name", &tmp);
-	tmp.GetMember("Name", &tmp2);
-	tmp2.GetMember("Text", &tmp3);
-	tmp3.SetText(name);
-
-	/*m_GFX_Main2.GetMember("Desc", &tmp);
-	tmp.GetMember("Text", &tmp2);
-	tmp2.GetMember("Text", &tmp3);
-	tmp3.SetText(desc);*/
-	m_GFX_Main.GetMember("Desc", &tmp);
-	tmp.GetMember("Text", &tmp2);
-	tmp2.GetMember("Text", &tmp3);
-	tmp3.SetText(desc);
-
-	m_GFX_Main.GetMember("Tip", &tmp);
-	Scaleform::GFx::Value::DisplayInfo dinfo;
-	dinfo.SetVisible(tip!=NULL);
-	tmp.SetDisplayInfo(dinfo);
-	if(tip)
-	{
-		tmp.GetMember("Tip", &tmp2);
-		tmp2.GetMember("Text", &tmp3);
-		tmp3.SetText(tip);
-
-		tmp2.GetMember("Caption", &tmp3);
-		tmp3.SetText(gLangMngr.getString("TipOfTheDay"));
-	}
-	r3d_assert(_CrtCheckMemory());
-}
-
-//------------------------------------------------------------------------
-
-void
-LoadingScreen::SetProgress( float progress )
-{
-	R3D_ENSURE_MAIN_THREAD();
-	if (EnsureLoadingRmlUI())
-		g_LoadingRmlUI.SetLoadingScreenProgress(progress);
-
-	if(!m_GFX_Main.IsUndefined())
-	{
-		Scaleform::GFx::Value tmp, tmp1, tmp2, tmp3, tmp4;
-		m_GFX_Main.GetMember("Bar", &tmp);
-		tmp.GetMember("RankBar", &tmp1);
-		tmp1.GetMember("Bar", &tmp2);
-		float baseWidth = 1510;
-		tmp2.GetMember("width", &tmp4);
-		tmp4.SetNumber(baseWidth*R3D_CLAMP(progress, 0.01f, 1.0f));
-		tmp2.SetMember("width", tmp4);
-
-		/*m_GFX_Main2.GetMember("Bar", &tmp);
-		tmp.GetMember("RankBar", &tmp1);
-		tmp1.GetMember("Bar", &tmp2);
-		tmp1.GetMember("Scale", &tmp3);
-		tmp3.GetMember("width", &tmp4);
-		baseWidth = (float)tmp4.GetNumber();
-		tmp2.GetMember("width", &tmp4);
-		tmp4.SetNumber(baseWidth*R3D_CLAMP(progress, 0.01f, 1.0f));
-		tmp2.SetMember("width", tmp4);*/
-
-//		Bar._width = Math.round(Scale._width*_global.LocalPercent/100)-5;
-
-	}
-	//gfxMovie.SetVariable("_global.LoadedPercent", progress*100);
-}
-
-//------------------------------------------------------------------------
 
 void StartLoadingScreen()
 {
-	r3d_assert( !gLoadingScreen );
-	gLoadingScreen = new LoadingScreen( "" );
+	r3d_assert(
+		!gLoadingScreen
+	);
+
+	gLoadingScreen =
+		new LoadingScreen(
+			""
+		);
 
 	gLoadingScreen->Initialize();
-	gLoadingScreen->SetRenderingDisabled(false);
+	gLoadingScreen->SetRenderingDisabled(
+		false
+	);
 }
 
 void DisableLoadingRendering()
 {
-	if(gLoadingScreen)
-		gLoadingScreen->SetRenderingDisabled(true);
+	if (gLoadingScreen)
+	{
+		gLoadingScreen->SetRenderingDisabled(
+			true
+		);
+	}
 }
-
-//------------------------------------------------------------------------
 
 void StopLoadingScreen()
 {
-	r3d_assert( gLoadingScreen );
-	delete gLoadingScreen;
+	r3d_assert(
+		gLoadingScreen
+	);
 
+	delete gLoadingScreen;
 	gLoadingScreen = NULL;
 
 	if (g_LoadingRmlUI.IsInitialized())
@@ -327,27 +392,44 @@ void StopLoadingScreen()
 	}
 }
 
-void SetLoadingTexture(const char* ImagePath)
+void SetLoadingTexture(
+	const char* ImagePath
+)
 {
-	if(gLoadingScreen)
+	if (gLoadingScreen)
 	{
-		gLoadingScreen->SetLoadingTexture(ImagePath);
+		gLoadingScreen->SetLoadingTexture(
+			ImagePath
+		);
 	}
 }
 
-//------------------------------------------------------------------------
-
-void SetLoadingProgress(float progress)
+void SetLoadingProgress(
+	float progress
+)
 {
-	InterlockedExchange(&gProgressValue, LoadingProgressToLong(progress));
+	InterlockedExchange(
+		&gProgressValue,
+		LoadingProgressToLong(
+			progress
+		)
+	);
 }
 
-//------------------------------------------------------------------------
-
-void AdvanceLoadingProgress(float add)
+void AdvanceLoadingProgress(
+	float add
+)
 {
-	float newVal = LoadingProgressFromLong() + add;
-	InterlockedExchange(&gProgressValue, LoadingProgressToLong(newVal));
+	const float NewValue =
+		LoadingProgressFromLong() +
+		add;
+
+	InterlockedExchange(
+		&gProgressValue,
+		LoadingProgressToLong(
+			NewValue
+		)
+	);
 }
 
 float GetLoadingProgress()
@@ -355,143 +437,276 @@ float GetLoadingProgress()
 	return LoadingProgressFromLong();
 }
 
-//------------------------------------------------------------------------
-
-void SetLoadingPhase( const char* Phase )
+void SetLoadingPhase(
+	const char* Phase
+)
 {
-	Phase;
+	(void)Phase;
 }
 
-//------------------------------------------------------------------------
-
-int DoLoadingScreen( volatile LONG* Loading, const wchar_t* LevelName, const wchar_t* LevelDescription, const char* LevelFolder, float TimeOut, int gameMode )
+int DoLoadingScreen(
+	volatile LONG* Loading,
+	const wchar_t* LevelName,
+	const wchar_t* LevelDescription,
+	const char* LevelFolder,
+	float TimeOut,
+	int gameMode
+)
 {
-	r3d_assert( gLoadingScreen );
+	(void)gameMode;
+
+	r3d_assert(
+		gLoadingScreen
+	);
 
 	char sFullPath[512];
-	sprintf( sFullPath, "%s\\%s", LevelFolder, "LoadingScreen.dds" );
 
-	if(r3d_access(sFullPath, 0) != 0)
+	sprintf(
+		sFullPath,
+		"%s\\%s",
+		LevelFolder,
+		"LoadingScreen.dds"
+	);
+
+	if (r3d_access(sFullPath, 0) != 0)
 	{
-		int sel = rand()%3;
-		sprintf( sFullPath, "%s\\LoadingScreen%d.dds", LevelFolder, sel );
+		const int Selected =
+			rand() % 3;
+
+		sprintf(
+			sFullPath,
+			"%s\\LoadingScreen%d.dds",
+			LevelFolder,
+			Selected
+		);
 	}
 
-	if(r3d_access(sFullPath, 0) != 0)
-		r3dscpy(sFullPath, DEFAULT_LOADING_TEXTURE);
-
-	char tempStr[32];
-	sprintf(tempStr, "TipOfTheDay%d", int(floorf(u_GetRandom(0.0f, 12.99f))));
-	gLoadingScreen->SetData( sFullPath, LevelName, LevelDescription, gLangMngr.getString(tempStr));
-
-	bool checkTimeOut = TimeOut != 0.f;
-
-	float endWait = r3dGetTime() + TimeOut;
-
-	while( *Loading )
+	if (r3d_access(sFullPath, 0) != 0)
 	{
-		if( checkTimeOut && r3dGetTime() > endWait ) 
+		r3dscpy(
+			sFullPath,
+			DEFAULT_LOADING_TEXTURE
+		);
+	}
+
+	char TipKey[32];
+
+	sprintf(
+		TipKey,
+		"TipOfTheDay%d",
+		int(
+			floorf(
+				u_GetRandom(
+					0.0f,
+					12.99f
+				)
+			)
+		)
+	);
+
+	gLoadingScreen->SetData(
+		sFullPath,
+		LevelName,
+		LevelDescription,
+		gLangMngr.getString(
+			TipKey
+		)
+	);
+
+	const bool CheckTimeOut =
+		TimeOut != 0.0f;
+
+	const float EndWait =
+		r3dGetTime() +
+		TimeOut;
+
+	while (*Loading)
+	{
+		if (
+			CheckTimeOut &&
+			r3dGetTime() > EndWait
+		)
 		{
 			return 0;
 		}
 
 		r3dProcessWindowMessages();
 
-		if( r3dRenderer->DeviceAvailable )
+		if (r3dRenderer->DeviceAvailable)
 		{
-			float timeStart = r3dGetTime();
+			const float TimeStart =
+				r3dGetTime();
 
-			float MaxRenderTime = 0.033f;
+			float MaxRenderTime =
+				0.033f;
 
-			for( ; r3dGetTime() - timeStart < 0.033f ; )
+			for (
+				;
+				r3dGetTime() - TimeStart < 0.033f;
+			)
 			{
-				ProcessDeviceQueue( timeStart, MaxRenderTime ) ;
+				ProcessDeviceQueue(
+					TimeStart,
+					MaxRenderTime
+				);
 			}
 		}
 
-		gLoadingScreen->SetProgress(LoadingProgressFromLong());
+		gLoadingScreen->SetProgress(
+			LoadingProgressFromLong()
+		);
+
 		gLoadingScreen->Update();
 	}
 
 	return 1;
 }
 
-//------------------------------------------------------------------------
 bool IsNeedExit();
-int DoConnectScreen( volatile LONG* Loading, const wchar_t* Message, float TimeOut )
+
+int DoConnectScreen(
+	volatile LONG* Loading,
+	const wchar_t* Message,
+	float TimeOut
+)
 {
-	r3d_assert( gLoadingScreen );
+	r3d_assert(
+		gLoadingScreen
+	);
 
-	gLoadingScreen->SetData( "Data\\Menu\\ConnectScreen.dds", gLangMngr.getString("Connecting"), Message, NULL );
+	gLoadingScreen->SetData(
+		"Data\\Menu\\ConnectScreen.dds",
+		gLangMngr.getString(
+			"Connecting"
+		),
+		Message,
+		NULL
+	);
 
-	bool checkTimeOut = TimeOut != 0.f;
+	const bool CheckTimeOut =
+		TimeOut != 0.0f;
 
-	float endWait = r3dGetTime() + TimeOut;
+	const float EndWait =
+		r3dGetTime() +
+		TimeOut;
 
-	while( *Loading )
+	while (*Loading)
 	{
 		r3dProcessWindowMessages();
 
-		if(IsNeedExit())
+		if (IsNeedExit())
 			return 0;
-		if( checkTimeOut && r3dGetTime() > endWait ) 
+
+		if (
+			CheckTimeOut &&
+			r3dGetTime() > EndWait
+		)
 		{
 			return 0;
 		}
 
-		gLoadingScreen->SetProgress(checkTimeOut ? 1.f - (endWait - r3dGetTime()) / TimeOut : LoadingProgressFromLong());
+		gLoadingScreen->SetProgress(
+			CheckTimeOut
+				? 1.0f -
+					(
+						EndWait -
+						r3dGetTime()
+					) /
+					TimeOut
+				: LoadingProgressFromLong()
+		);
+
 		gLoadingScreen->Update();
-		Sleep( 33 );
+
+		Sleep(33);
 	}
 
 	return 1;
 }
 
-//------------------------------------------------------------------------
-
 template <typename T>
-int DoConnectScreen( T* Logic, bool (T::*CheckFunc)(), const wchar_t* Message, float TimeOut )
+int DoConnectScreen(
+	T* Logic,
+	bool (T::*CheckFunc)(),
+	const wchar_t* Message,
+	float TimeOut
+)
 {
-	r3d_assert( gLoadingScreen );
+	r3d_assert(
+		gLoadingScreen
+	);
 
-	gLoadingScreen->SetData( "Data\\Menu\\ConnectScreen.dds", gLangMngr.getString("Connecting"), Message, NULL );
+	gLoadingScreen->SetData(
+		"Data\\Menu\\ConnectScreen.dds",
+		gLangMngr.getString(
+			"Connecting"
+		),
+		Message,
+		NULL
+	);
 
-	bool checkTimeOut = TimeOut != 0.f;
+	const bool CheckTimeOut =
+		TimeOut != 0.0f;
 
-	const float startWait = r3dGetTime();
-	const float endWait = startWait + TimeOut;
+	const float StartWait =
+		r3dGetTime();
 
-	for(;;)
+	const float EndWait =
+		StartWait +
+		TimeOut;
+
+	for (;;)
 	{
 		extern void tempDoMsgLoop();
+
 		tempDoMsgLoop();
 
-		if( (Logic->*CheckFunc)() )
+		if ((Logic->*CheckFunc)())
 			break;
 
-		if(IsNeedExit())
+		if (IsNeedExit())
 			return 0;
-		if( checkTimeOut && r3dGetTime() > endWait ) 
+
+		if (
+			CheckTimeOut &&
+			r3dGetTime() > EndWait
+		)
 		{
 			return 0;
 		}
 
-		// draw loaing screen only after some time
-		// so minor waits will be performed without graphics change
-		if(r3dGetTime() > startWait + 1.0f)
+		if (r3dGetTime() > StartWait + 1.0f)
 		{
-			gLoadingScreen->SetProgress(checkTimeOut ? 1.f - (endWait - r3dGetTime()) / TimeOut : LoadingProgressFromLong());
+			gLoadingScreen->SetProgress(
+				CheckTimeOut
+					? 1.0f -
+						(
+							EndWait -
+							r3dGetTime()
+						) /
+						TimeOut
+					: LoadingProgressFromLong()
+			);
+
 			gLoadingScreen->Update();
 		}
 
-		Sleep( 33 );
+		Sleep(33);
 	}
 
 	return 1;
 }
 
-template int DoConnectScreen( ClientGameLogic* Logic, bool (ClientGameLogic::*CheckFunc)(), const wchar_t* Message, float TimeOut );
-template int DoConnectScreen( MasterServerLogic* Logic, bool (MasterServerLogic::*CheckFunc)(), const wchar_t* Message, float TimeOut );
+template int DoConnectScreen(
+	ClientGameLogic* Logic,
+	bool (ClientGameLogic::*CheckFunc)(),
+	const wchar_t* Message,
+	float TimeOut
+);
 
-//------------------------------------------------------------------------
-
+template int DoConnectScreen(
+	MasterServerLogic* Logic,
+	bool (MasterServerLogic::*CheckFunc)(),
+	const wchar_t* Message,
+	float TimeOut
+);

@@ -1526,6 +1526,11 @@ bool RmlFrontEndContext::LoadDocuments()
 
 			[this]()
 			{
+				ShowShop();
+			},
+
+			[this]()
+			{
 				BuildSkills();
 			},
 
@@ -1572,6 +1577,11 @@ bool RmlFrontEndContext::LoadDocuments()
 			[this]()
 			{
 				ShowMainMenu();
+			},
+
+			[this]()
+			{
+				ShowSkills();
 			},
 
 			[this]()

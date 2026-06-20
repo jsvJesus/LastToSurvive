@@ -14,7 +14,6 @@
 #include "cvar.h"
 #include "fmod/soundsys.h"
 
-#include "APIScaleformGFX.h"
 #include "GameCommon.h"
 #include "GameLevel.h"
 #include "DiscordPresence.h"
@@ -31,7 +30,6 @@
 #include "ObjectsCode/Gameplay/BasePlayerSpawnPoint.h"
 #include "ObjectsCode/Gameplay/BaseItemSpawnPoint.h"
 
-#include "UI\FrontEndWarZ.h"
 #include "UI\m_LoadingScreen.h"
 
 #if defined(_WIN64) && !defined(FINAL_BUILD)
@@ -690,236 +688,17 @@ static void ExecuteRmlNetworkGame()
 
 #endif
 
-static FrontendWarZ* frontend = NULL; // static to prevent extern
-
-void loadFrontend()
-{
-	r3d_assert(frontend == NULL);
-	frontend =
-		new FrontendWarZ(
-			"data\\menu\\Frontend.swf"
-		);
-
-	r3dSetAsyncLoading(0);
-
-	frontend->Load();
-	frontend->Initialize();
-
-	r3dOutToLog(
-		"[RmlUI][FrontEnd][Fallback] Legacy FrontEnd.swf active\n"
-	);
-}
-
 void ExecuteNetworkGame()
 {
 #if defined(_WIN64) && !defined(FINAL_BUILD)
 	ExecuteRmlNetworkGame();
 	return;
+#else
+	r3dError(
+		"Scaleform FrontEnd was removed. "
+		"Use Studio x64 Release with RmlUI FrontEnd.\n"
+	);
 #endif
-	
-	// make sure that our login session poller will be terminated on function exit
-	class CLoginSessionHolder
-	{
-	  public:
-		CLoginSessionHolder() {};
-		~CLoginSessionHolder() { 
-			gLoginSessionPoller.Stop(); 
-		}
-	};
-	
-	CLoginSessionHolder loginholder;
-	{
-		r3dPoint3D soundPos(0,0,0), soundDir(0,0,1), soundUp(0,1,0);
-		SoundSys.Update(soundPos, soundDir, soundUp);
-	}
-
-	int mainmenuTheme = -1;
-	mainmenuTheme = SoundSys.GetEventIDByPath("Sounds/MainMenu GUI/UI_MENU_MUSIC");
-	MainMenuSoundEvent = SoundSys.Play(mainmenuTheme, r3dPoint3D(0,0,0));
-
-	r3dscpy(_p2p_masterHost, g_serverip->GetString());
-
-	bool quickGameJoin = false;
-	/*  
-	if(IDYES == MessageBox(NULL, "frontend?", "", MB_YESNO))
-	quickGameJoin = false;
-	*/    
-
-	g_trees->SetBool(true);
-	d_mouse_window_lock->SetBool(true);
-
-	const wchar_t* showLoginErrorMsg = 0;
-
-	EGameResult gameResult = GRESULT_Unknown;
-
-repeat_the_login:
-	if(!frontend && !quickGameJoin)
-		loadFrontend();
-	gLoginSessionPoller.Stop();
-
-	if(!quickGameJoin)
-	{
-		int res = 0;
-		frontend->initLoginStep(showLoginErrorMsg);
-		while (res == 0)
-		{
-			DiscordPresence_Tick();
-			res = frontend->Update();
-		}
-		showLoginErrorMsg = 0;
-		if(res == FrontEndShared::RET_Exit)
-			return;
-
-		gLoginSessionPoller.Start(gUserProfile.CustomerID, gUserProfile.SessionID);
-	}
-
-repeat_the_menu:
-	if(!frontend)
-		loadFrontend();
-	if(!quickGameJoin)
-	{
-		int res=0;
-		frontend->postLoginStepInit(gameResult);
-		while (res == 0)
-		{
-			DiscordPresence_Tick();
-
-			res = frontend->Update();
-
-			FileTrackDoWork();
-		}
-
-		frontend->Unload();
-		SAFE_DELETE(frontend);
-
-		gMasterServerLogic.Disconnect();
-
-		if(res == FrontEndShared::RET_Exit || res == 0)
-			return;
-		if( res == FrontEndShared::RET_Diconnected)
-		{
-			showLoginErrorMsg = gLangMngr.getString("LoginMenu_Disconnected");
-			goto repeat_the_login;
-		}
-		else if( res == FrontEndShared::RET_Banned)
-		{
-			showLoginErrorMsg = gLangMngr.getString("LoginMenu_AccountFrozen");
-			goto repeat_the_login;
-		}
-		else if( res == FrontEndShared::RET_DoubleLogin)
-		{
-			showLoginErrorMsg = gLangMngr.getString("LoginMenu_DoubleLogin");
-			goto repeat_the_login;
-		}
-		r3d_assert(res == FrontEndShared::RET_JoinGame);
-		gMasterServerLogic.GetJoinedGameServer(_p2p_gameHost, &_p2p_gamePort, &_p2p_gameSessionId);
-	}
-	else
-	{
-#ifndef FINAL_BUILD
-		FrontendWarZ_LoginProcessThread(frontend);
-		if(gUserProfile.CustomerID == 0)
-			r3dError("bad login");
-
-		if(gUserProfile.GetProfile() != 0)
-			r3dError("unable to get profile");
-		gUserProfile.SelectedCharID = 0;
-
-		StartLoadingScreen();
-		MasterServerQuckJoin();
-		StopLoadingScreen();
-#endif		
-	}
-
-	r3dEnsureDeviceAvailable();
-
-	StartLoadingScreen();
-
-	if(!ConnectToGameServer())
-	{
-		gClientLogic().Disconnect();
-		StopLoadingScreen();
-		showLoginErrorMsg = gLangMngr.getString("LoginMenu_CannotConnectServer");
-		goto repeat_the_login;
-	}
-
-	r3dEnsureDeviceAvailable();
-
-	if(gClientLogic().ValidateServerVersion(_p2p_gameSessionId) == 0)
-	{
-		gClientLogic().Disconnect();
-
-		StopLoadingScreen();
-		if(gClientLogic().serverVersionStatus_ == 0) // timeout on validating version
-		{
-			gameResult = GRESULT_Disconnect;
-			goto repeat_the_menu;
-		}
-		else
-		{
-			showLoginErrorMsg = gLangMngr.getString("LoginMenu_ClientUpdateRequired");
-			goto repeat_the_login;
-		}
-	}
-
-	r3dEnsureDeviceAvailable();
-
-	if(!gClientLogic().RequestToJoinGame())
-	{
-		gClientLogic().Disconnect();
-
-		StopLoadingScreen();
-		gameResult = GRESULT_Disconnect;
-		goto repeat_the_menu;
-	}
-
-	gLoginSessionPoller.ForceTick(); // force to update that we joined the game
-
-	switch(gClientLogic().m_gameInfo.mapId) 
-	{
-	default: 
-		r3dError("invalid map id\n");
-	case GBGameInfo::MAPID_Editor_Particles: 
-		r3dGameLevel::SetHomeDir("WorkInProgress\\Editor_Particles"); 
-		break;
-	case GBGameInfo::MAPID_ServerTest:
-		r3dGameLevel::SetHomeDir("WorkInProgress\\ServerTest");
-		break;
-	case GBGameInfo::MAPID_WZ_Colorado: 
-		r3dGameLevel::SetHomeDir("WZ_Colorado"); 
-		break;
-	}
-	DiscordPresence_SetGame(NULL, r3dGameLevel::GetHomeDir());
-
-	// start the game
-	gameResult = PlayNetworkGame();
-	
-	if
-	(
-		gameResult == GRESULT_Exit ||
-		gameResult == GRESULT_Disconnect ||
-		gameResult == GRESULT_Finished
-	)
-	{
-		r3dRenderer->ChangeForceAspect(16.0f / 9);
-	}
-
-	StopLoadingScreen();
-
-	gLoginSessionPoller.ForceTick(); // force to update that we left the game
-	
-	if(gameResult == GRESULT_DoubleLogin) {
-		showLoginErrorMsg = gLangMngr.getString("LoginMenu_DoubleLogin");
-		goto repeat_the_login;
-	}
-	if(gameResult == GRESULT_Unsync) {
-		showLoginErrorMsg = gLangMngr.getString("ClientMustBeUpdated");
-		goto repeat_the_login;
-	}
-
-	if(gameResult != GRESULT_Exit)
-		goto repeat_the_menu;
-
 }
 
 static EGameResult PlayNetworkGame()

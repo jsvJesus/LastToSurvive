@@ -7,6 +7,7 @@
 struct FRmlFrontEndShopCallbacks
 {
     std::function<void()> ShowMainMenu;
+    std::function<void()> ShowSkills;
     std::function<void()> BuildShop;
     std::function<void()> RequestBuySelectedShopItem;
     std::function<void()> RefreshShopFromBackend;

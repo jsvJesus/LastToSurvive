@@ -63,6 +63,19 @@ bool RmlFrontEndSkills::HandleClickId(
         return true;
     }
 
+    if (Id == "nav_shop")
+    {
+        if (Callbacks.ShowShop)
+            Callbacks.ShowShop();
+
+        return true;
+    }
+
+    if (Id == "nav_skills")
+    {
+        return true;
+    }
+
     if (Id == "btn_learn_selected_skill")
     {
         if (Callbacks.RequestLearnSelectedSkill)

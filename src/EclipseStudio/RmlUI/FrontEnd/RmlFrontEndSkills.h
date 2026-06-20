@@ -7,6 +7,7 @@
 struct FRmlFrontEndSkillsCallbacks
 {
     std::function<void()> ShowMainMenu;
+    std::function<void()> ShowShop;
     std::function<void()> BuildSkills;
     std::function<void()> RequestLearnSelectedSkill;
     std::function<void()> ResetSkills;
