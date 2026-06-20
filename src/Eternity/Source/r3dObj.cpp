@@ -18,6 +18,13 @@ r3dVertexBuffer * r3dMesh::pInstancesVB = NULL;
 int	r3dMesh::numInstancesInVB = 0;
 INT64 RENDERABLE_EMITTER_USER_SORT_VALUE = 15 * RENDERABLE_USER_SORT_VALUE;
 
+namespace
+{
+	static const unsigned int DX11_RENDERABLE_WORLD_MATRIX_COUNT = 32768;
+	D3DXMATRIX g_DX11RenderableWorldMatrices[DX11_RENDERABLE_WORLD_MATRIX_COUNT];
+	unsigned int g_DX11RenderableWorldMatrixCursor = 0;
+}
+
 
 LPDIRECT3DVERTEXDECLARATION9 r3dSkinnedMeshVertex::pDecl = 0;
 const D3DVERTEXELEMENT9 r3dSkinnedMeshVertex::VBDecl[] = 
@@ -1556,9 +1563,33 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 void
 MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
 {
+	DrawFunc = Draw;
 	DX11Signature = DX11SignatureValue;
-	DX11WorldTransform = worldTransform;
+	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
 	DX11Skeleton = skeleton;
+}
+
+void
+r3dResetMeshDeferredDX11WorldMatrices()
+{
+	g_DX11RenderableWorldMatrixCursor = 0;
+}
+
+const D3DXMATRIX*
+r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform )
+{
+	if( g_DX11RenderableWorldMatrixCursor >= DX11_RENDERABLE_WORLD_MATRIX_COUNT )
+	{
+		r3dOutToLog(
+			"[DX11][World] mesh renderable world matrix pool overflow (%u), wrapping\n",
+			DX11_RENDERABLE_WORLD_MATRIX_COUNT
+		);
+		g_DX11RenderableWorldMatrixCursor = 0;
+	}
+
+	D3DXMATRIX* result = &g_DX11RenderableWorldMatrices[ g_DX11RenderableWorldMatrixCursor++ ];
+	*result = worldTransform;
+	return result;
 }
 
 MeshDeferredRenderable*
@@ -1575,6 +1606,30 @@ const MeshDeferredRenderable*
 r3dGetMeshDeferredRenderable( const Renderable* renderable )
 {
 	return r3dGetMeshDeferredRenderable( const_cast< Renderable* >( renderable ) );
+}
+
+void
+r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3dColor& color, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
+{
+	if( !mesh || !mesh->IsDrawable() )
+		return;
+
+	for( int i = 0; i < mesh->NumMatChunks; ++i )
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[ i ];
+		if( ( batch.Mat->Flags & R3D_MAT_TRANSPARENT ) != 0 )
+			continue;
+
+		MeshDeferredRenderable rend;
+
+		rend.BatchIdx		= i;
+		rend.Color			= color.GetPacked();
+		rend.Mesh			= mesh;
+		rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) mesh->buffers.VBId << 16;
+		rend.InitDX11( worldTransform, skeleton );
+
+		oArr.PushBack( rend );
+	}
 }
 
 //------------------------------------------------------------------------

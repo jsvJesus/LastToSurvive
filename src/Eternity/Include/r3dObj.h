@@ -89,6 +89,9 @@ struct MeshDeferredRenderable : Renderable
 
 MeshDeferredRenderable* r3dGetMeshDeferredRenderable( Renderable* renderable );
 const MeshDeferredRenderable* r3dGetMeshDeferredRenderable( const Renderable* renderable );
+void r3dResetMeshDeferredDX11WorldMatrices();
+const D3DXMATRIX* r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform );
+void r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3dColor& color, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton );
 
 struct MeshDeferredHighlightRenderable : Renderable
 {

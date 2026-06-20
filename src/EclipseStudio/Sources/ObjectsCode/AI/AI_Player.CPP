@@ -5447,6 +5447,24 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 				rend.FirstPerson = firstPerson ;
 
 				render_arrays[ firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer ].PushBack( rend );
+
+				if( r_dx11_boot->GetBool() )
+				{
+					bool drawWeaponDX11 = true;
+					const Weapon* wpn = m_Weapons[m_SelectedWeapon];
+					if(wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
+						drawWeaponDX11 = false;
+					if(bDead || forcedEmptyHands)
+						drawWeaponDX11 = false;
+
+					uberEquip_->AppendDeferredRenderables(
+						render_arrays[firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer],
+						GetSkeleton(),
+						DrawFullMatrix_Localized,
+						drawWeaponDX11,
+						firstPerson ? true : false
+					);
+				}
 			}
 			
 			if ( transparentCamo )

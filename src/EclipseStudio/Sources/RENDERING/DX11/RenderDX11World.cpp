@@ -144,9 +144,9 @@ namespace
 		}
 	}
 
-	D3DXMATRIX BuildDX11ViewProjectionMatrix(const r3dDX11Renderer& renderer, const r3dCamera& camera)
+	D3DXMATRIX BuildDX11ViewProjectionMatrix(const r3dDX11Renderer& renderer, const r3dCamera& camera, bool allowRendererMatrix)
 	{
-		if (r3dRenderer)
+		if (allowRendererMatrix && r3dRenderer)
 			return r3dRenderer->ViewProjMatrix;
 
 		D3DXMATRIX view;
@@ -157,10 +157,73 @@ namespace
 
 		return view * projection;
 	}
+
+	r3dCamera BuildDX11FirstPersonCamera(const r3dCamera& camera)
+	{
+		r3dCamera firstPersonCamera = camera;
+		firstPersonCamera.NearClip = r_first_person_render_z_start->GetFloat();
+		firstPersonCamera.FarClip = r_first_person_render_z_end->GetFloat();
+		firstPersonCamera.FOV = r_first_person_fov->GetFloat();
+		return firstPersonCamera;
+	}
+
+	void DrawDX11GBufferQueue(
+		r3dDX11Renderer& renderer,
+		r3dDX11GBufferPass& pass,
+		eRenderStageID queueId,
+		const D3DXMATRIX& viewProj,
+		r3dDX11WorldRenderStats& stats
+	)
+	{
+		RenderArray& queue = g_render_arrays[queueId];
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+			++stats.TotalRenderables;
+
+			MeshDeferredRenderable* meshRenderable = r3dGetMeshDeferredRenderable(&renderable);
+			if (!meshRenderable)
+			{
+				++stats.SkippedUnsupported;
+				continue;
+			}
+
+			++stats.MeshRenderables;
+
+			if (!meshRenderable->Mesh || meshRenderable->BatchIdx < 0)
+			{
+				++stats.SkippedFailed;
+				continue;
+			}
+
+			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
+
+			if (r3dDX11DrawMeshGBufferBatch(
+					renderer.GetDevice().GetDevice(),
+					renderer.GetTextureLibrary(),
+					pass,
+					*meshRenderable->Mesh,
+					static_cast<unsigned int>(meshRenderable->BatchIdx),
+					world,
+					viewProj,
+					meshRenderable->Color,
+					meshRenderable->DX11Skeleton))
+			{
+				++stats.DrawnMeshes;
+			}
+			else
+			{
+				++stats.SkippedFailed;
+			}
+		}
+	}
 }
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 {
+	r3dResetMeshDeferredDX11WorldMatrices();
+
 	stats.TotalRenderables = 0;
 	stats.MeshRenderables = 0;
 	stats.DrawnMeshes = 0;
@@ -185,49 +248,12 @@ bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camer
 	if (!pass.Begin(gbuffer))
 		return false;
 
-	RenderArray& queue = g_render_arrays[rsFillGBuffer];
-	const D3DXMATRIX viewProj = BuildDX11ViewProjectionMatrix(renderer, camera);
+	const D3DXMATRIX viewProj = BuildDX11ViewProjectionMatrix(renderer, camera, true);
+	DrawDX11GBufferQueue(renderer, pass, rsFillGBuffer, viewProj, *stats);
 
-	for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
-	{
-		Renderable& renderable = queue[i];
-		++stats->TotalRenderables;
-
-		MeshDeferredRenderable* meshRenderable = r3dGetMeshDeferredRenderable(&renderable);
-		if (!meshRenderable)
-		{
-			++stats->SkippedUnsupported;
-			continue;
-		}
-
-		++stats->MeshRenderables;
-
-		if (!meshRenderable->Mesh || meshRenderable->BatchIdx < 0)
-		{
-			++stats->SkippedFailed;
-			continue;
-		}
-
-		const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
-
-		if (r3dDX11DrawMeshGBufferBatch(
-				renderer.GetDevice().GetDevice(),
-				renderer.GetTextureLibrary(),
-				pass,
-				*meshRenderable->Mesh,
-				static_cast<unsigned int>(meshRenderable->BatchIdx),
-				world,
-				viewProj,
-				meshRenderable->Color,
-				meshRenderable->DX11Skeleton))
-		{
-			++stats->DrawnMeshes;
-		}
-		else
-		{
-			++stats->SkippedFailed;
-		}
-	}
+	const r3dCamera firstPersonCamera = BuildDX11FirstPersonCamera(camera);
+	const D3DXMATRIX firstPersonViewProj = BuildDX11ViewProjectionMatrix(renderer, firstPersonCamera, false);
+	DrawDX11GBufferQueue(renderer, pass, rsFillGBufferFirstPerson, firstPersonViewProj, *stats);
 
 	pass.End(gbuffer);
 

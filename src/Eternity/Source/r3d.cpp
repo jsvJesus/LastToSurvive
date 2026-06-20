@@ -1058,7 +1058,7 @@ static void r3dUpdateWindowCaption()
 		fps = 0.f;
 
 	char caption[512];
-	sprintf(caption, "%s | FPS %.1f / %s %s / d3dx9", win::szWinName, fps, r3dGetWindowCaptionConfigName(), r3dGetWindowCaptionPlatformName());
+	sprintf(caption, "%s | FPS %.1f / %s %s / D3DX11", win::szWinName, fps, r3dGetWindowCaptionConfigName(), r3dGetWindowCaptionPlatformName());
 	SetWindowTextA(win::hWnd, caption);
 	detailedCaptionSet = true;
 #endif
