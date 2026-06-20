@@ -6,7 +6,7 @@ using WarZ.Api.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 string connectionString =
-    builder.Configuration.GetConnectionString("LTS")
+    builder.Configuration.GetConnectionString("LTS") // Big Dick
     ?? throw new InvalidOperationException(
         "Connection string 'LTS' was not configured.");
 
