@@ -13,6 +13,7 @@
 #include "ObjectsCode/AI/AI_PlayerAnim.h"
 #include "ObjectsCode/Gameplay/BasePlayerSpawnPoint.h"
 #include "ObjectsCode/weapons/WeaponArmory.h"
+#include "ObjectsCode/weapons/Weapon.h"
 
 #include "multiplayer/ClientGameLogic.h"
 
@@ -1441,7 +1442,7 @@ void ProcessPlayerMovement(obj_Player* pl, bool editor_debug )
 		if (LerpValue < 1.0f)
 		{
 			float lerpMOD = 1.0f;
-			STORE_CATEGORIES equippedItemCat = wpn ? wpn->getCategory() : storecat_INVALID;;
+			STORE_CATEGORIES equippedItemCat = wpn ? wpn->getCategory() : storecat_INVALID;
 			if(TargetRig.allowScope) // slow down aiming for those categories
 				if(equippedItemCat == storecat_MG)
 					lerpMOD = 0.5f;

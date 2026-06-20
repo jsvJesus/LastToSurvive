@@ -133,7 +133,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;libjpeg.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\Studio.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\lib;../External/dbghelp/lib;../External/CrashRpt/Lib;../External/fmod;../External/PhysX/lib/Win32;../External/Chilkat/Libs;../External/jpeg-6b/lib/Win32/Msvc80/Release_Static;../External/VMProtect;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -188,7 +188,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex64_vc.lib;fmod_event64.lib;fmod_event_net64.lib;libjpeg.lib;ChilkatRel_x64.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;Recast.lib;Detour.lib;DetourCrowd.lib;DetourTileCache.lib;DebugUtils.lib;SLikeNetLibStatic.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies);discord_partner_sdk.lib;rmlui.lib;rmlui_debugger.lib</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex64_vc.lib;fmod_event64.lib;fmod_event_net64.lib;ChilkatRel_x64.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;Recast.lib;Detour.lib;DetourCrowd.lib;DetourTileCache.lib;DebugUtils.lib;SLikeNetLibStatic.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies);discord_partner_sdk.lib;rmlui.lib;rmlui_debugger.lib</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\Studio.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\x64Lib;..\External\dbghelp\lib\amd64;..\..\External\fmod;..\..\External\PhysX\physx\bin\win.x86_64.vc143.mt\release;..\..\External\chilkat-x86_64-vc2022\libs;..\..\External\recastnavigation\build\vs2022-x64\Recast\Release;..\..\External\recastnavigation\build\vs2022-x64\Detour\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourCrowd\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourTileCache\Release;..\..\External\recastnavigation\build\vs2022-x64\DebugUtils\Release;..\..\External\SLikeNet\build\vs2022-x64\Lib\LibStatic\Release;..\External\VMProtect;%(AdditionalLibraryDirectories);..\..\External\discord_social_sdk\lib\release;..\..\External\RmlUI\Bin-Dynamic\Release;</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -289,7 +289,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;libjpeg.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\WarZ.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\lib;../External/dbghelp/lib;../External/CrashRpt/Lib;../External/fmod;../External/PhysX/lib/Win32;../External/Chilkat/Libs;../External/jpeg-6b/lib/Win32/Msvc80/Release_Static;../External/VMProtect;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
