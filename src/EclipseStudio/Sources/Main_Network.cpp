@@ -38,11 +38,11 @@
 
 #include "Editors/CollectionsManager.h"
 
-	char		_p2p_masterHost[MAX_PATH] = ""; // master server ip
-	int		_p2p_masterPort = GBNET_CLIENT_PORT;
-static	char		_p2p_gameHost[MAX_PATH] = "";	// game server ip
-static	int		_p2p_gamePort           = 0;	// game server port
-static	__int64		_p2p_gameSessionId	= 0;
+char					_p2p_masterHost[MAX_PATH] = ""; // master server ip
+int						_p2p_masterPort = GBNET_CLIENT_PORT;
+static	char			_p2p_gameHost[MAX_PATH] = "";	// game server ip
+static	int				_p2p_gamePort           = 0;	// game server port
+static	__int64			_p2p_gameSessionId	= 0;
 
 // temporary externals from game.cpp
 extern void GameStateGameLoop();
@@ -52,8 +52,21 @@ extern void GameFrameStart();
 
 extern bool IsNeedExit();
 extern void InputUpdate();
-
-extern EGameResult PlayNetworkGame();
+enum EGameResult
+{
+	GRESULT_Unknown,
+	GRESULT_Playing,
+	GRESULT_Finished,
+	GRESULT_Exit,
+	GRESULT_Disconnect,
+	GRESULT_DoubleLogin,
+	GRESULT_Failed_To_Join_Game,
+	GRESULT_ShownWelcomePackage,
+	GRESULT_Timeout,
+	GRESULT_Unsync,
+	GRESULT_StillInGame
+};
+static EGameResult PlayNetworkGame();
 
 void tempDoMsgLoop()
 {
