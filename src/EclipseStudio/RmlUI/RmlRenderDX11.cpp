@@ -5,8 +5,7 @@
 
 #include <RmlUi/Core/Core.h>
 
-#include <d3d11_1.h>
-#include <d3dcompiler.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 #include <wincodec.h>
 
 #include <algorithm>

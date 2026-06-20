@@ -31,7 +31,14 @@
 // since the game project is compiled for precompiled headers and this pch
 // is everywhere, ensures that the winsock header part of windows.h
 // is included.
-#define _WIN32_WINNT 0x0500
+#ifndef _WIN32_WINNT
+	#if defined(_WIN64)
+		#define _WIN32_WINNT 0x0601
+	#else
+		#define _WIN32_WINNT 0x0500
+	#endif
+#endif
+
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_
 #endif

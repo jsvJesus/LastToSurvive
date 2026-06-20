@@ -6,8 +6,7 @@
 #include "RENDERING/DX11/RenderDX11Resources.h"
 #include "RENDERING/DX11/RenderDX11States.h"
 #include "RENDERING/DX11/ShaderDX11.h"
-
-#include <d3d11_1.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 
 #pragma comment(lib, "d3d11.lib")
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <d3d11_1.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 
 class r3dDX11CommonStates final
 {

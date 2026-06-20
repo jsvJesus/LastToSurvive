@@ -1,8 +1,7 @@
 #pragma once
 
 #include "RENDERING/DX11/RenderDX11Resources.h"
-
-#include <d3d11_1.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 
 struct r3dDX11GBufferDesc
 {

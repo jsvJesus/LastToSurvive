@@ -13,7 +13,7 @@
 #include <RmlUi/Debugger.h>
 
 #include <imm.h>
-#include <d3d11_1.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 #include <windowsx.h>
 
 #include <algorithm>

@@ -1,8 +1,7 @@
 #include "r3dPCH.h"
 
 #include "RENDERING/DX11/RenderDX11FrameResources.h"
-
-#include <d3d11_1.h>
+#include "RENDERING/DX11/RenderDX11Platform.h"
 
 #include <algorithm>
 
