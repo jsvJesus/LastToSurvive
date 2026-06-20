@@ -1,0 +1,228 @@
+#include "r3dPCH.h"
+#include "r3d.h"
+
+#include "RENDERING/DX11/RenderDX11.h"
+
+#include "../../../RmlUI/RmlRuntime.h"
+
+r3dDX11Renderer::r3dDX11Renderer()
+{
+}
+
+r3dDX11Renderer::~r3dDX11Renderer()
+{
+	Shutdown();
+}
+
+bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullscreen, bool enableDebug)
+{
+	if (bInitialized)
+		return true;
+
+	if (!windowHandle || width <= 0 || height <= 0)
+		return false;
+
+	WindowHandle = windowHandle;
+
+	if (!Device.Init(windowHandle, width, height, fullscreen, enableDebug))
+	{
+		r3dOutToLog("[DX11] Device initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	if (!ShaderLibrary.Init(Device.GetDevice()))
+	{
+		r3dOutToLog("[DX11] Shader library initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	if (ShaderLibrary.AddVertexShader("VS_FULLSCREEN", "Fullscreen_vs.hls") < 0 ||
+		ShaderLibrary.AddPixelShader("PS_COPY", "copy_ps.hls") < 0)
+	{
+		r3dOutToLog("[DX11] Built-in shader registration failed: %s\n", ShaderLibrary.GetLastError().c_str());
+		Shutdown();
+		return false;
+	}
+
+	if (!FrameResources.Init(Device.GetDevice(), Device.GetContext(), width, height))
+	{
+		r3dOutToLog("[DX11] Frame resources initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	r3dDX11GBufferDesc gbufferDesc;
+	if (!GBufferResources.Init(Device.GetDevice(), Device.GetContext(), width, height, gbufferDesc))
+	{
+		r3dOutToLog("[DX11] GBuffer resources initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	if (!RmlRuntime::Get().Acquire(windowHandle, Device.GetDevice(), Device.GetContext()))
+	{
+		r3dOutToLog("[DX11] Rml runtime initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	bRmlRuntimeAcquired = true;
+	bInitialized = true;
+
+	r3dOutToLog("[DX11] Renderer initialized %dx%d\n", width, height);
+	return true;
+}
+
+void r3dDX11Renderer::Shutdown()
+{
+	if (bRmlRuntimeAcquired)
+	{
+		RmlRuntime::Get().Release();
+		bRmlRuntimeAcquired = false;
+	}
+
+	GBufferResources.Shutdown();
+	FrameResources.Shutdown();
+	ShaderLibrary.Shutdown();
+	Device.Shutdown();
+
+	WindowHandle = nullptr;
+	bInitialized = false;
+}
+
+bool r3dDX11Renderer::Resize(int width, int height)
+{
+	if (!bInitialized || width <= 0 || height <= 0)
+		return false;
+
+	if (!Device.Resize(width, height))
+	{
+		r3dOutToLog("[DX11] Device resize failed: %dx%d\n", width, height);
+		return false;
+	}
+
+	if (!FrameResources.Resize(width, height))
+	{
+		r3dOutToLog("[DX11] Frame resources resize failed: %dx%d\n", width, height);
+		return false;
+	}
+
+	if (!GBufferResources.Resize(width, height))
+	{
+		r3dOutToLog("[DX11] GBuffer resources resize failed: %dx%d\n", width, height);
+		return false;
+	}
+
+	RmlRuntime::Get().OnDeviceResetDX11(width, height);
+	return true;
+}
+
+void r3dDX11Renderer::BeginFrame(float clearR, float clearG, float clearB, float clearA)
+{
+	if (!bInitialized)
+		return;
+
+	FrameResources.BeginScene(clearR, clearG, clearB, clearA);
+}
+
+bool r3dDX11Renderer::ResolveSceneToBackBuffer()
+{
+	if (!bInitialized)
+		return false;
+
+	return FrameResources.CopySceneToBackBuffer(
+		Device.GetBackBufferRTV(),
+		Device.GetDepthStencilView()
+	);
+}
+
+void r3dDX11Renderer::RenderRmlContext(Rml::Context* context)
+{
+	if (!bInitialized || !context)
+		return;
+
+	RmlRuntime::Get().RenderContextDX11(
+		context,
+		Device.GetBackBufferRTV(),
+		Device.GetDepthStencilView(),
+		Device.GetWidth(),
+		Device.GetHeight()
+	);
+}
+
+void r3dDX11Renderer::Present(bool vsync)
+{
+	if (bInitialized)
+		Device.Present(vsync);
+}
+
+bool r3dDX11Renderer::EndFrame(bool vsync, Rml::Context* rmlContext)
+{
+	if (!bInitialized)
+		return false;
+
+	const bool resolved = ResolveSceneToBackBuffer();
+
+	if (rmlContext)
+		RenderRmlContext(rmlContext);
+
+	Present(vsync);
+	return resolved;
+}
+
+r3dDX11Device& r3dDX11Renderer::GetDevice()
+{
+	return Device;
+}
+
+r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources()
+{
+	return FrameResources;
+}
+
+r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources()
+{
+	return GBufferResources;
+}
+
+r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary()
+{
+	return ShaderLibrary;
+}
+
+const r3dDX11Device& r3dDX11Renderer::GetDevice() const
+{
+	return Device;
+}
+
+const r3dDX11FrameResources& r3dDX11Renderer::GetFrameResources() const
+{
+	return FrameResources;
+}
+
+const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const
+{
+	return GBufferResources;
+}
+
+const r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary() const
+{
+	return ShaderLibrary;
+}
+
+int r3dDX11Renderer::GetWidth() const
+{
+	return Device.GetWidth();
+}
+
+int r3dDX11Renderer::GetHeight() const
+{
+	return Device.GetHeight();
+}
+
+bool r3dDX11Renderer::IsInitialized() const
+{
+	return bInitialized;
+}
