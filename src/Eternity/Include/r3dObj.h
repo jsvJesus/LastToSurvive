@@ -105,14 +105,23 @@ struct MeshDeferredHighlightRenderable : Renderable
 
 struct MeshShadowRenderable : Renderable
 {
+	static const DWORD DX11SignatureValue = 0xD3115A0D;
+
 	static void DrawSingleBatch( Renderable* RThis, const r3dCamera& Cam );
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
+	void InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton = NULL );
 
 	void (*SubDrawFunc)( Renderable* This, const r3dCamera& Cam );
 
 	r3dMesh*				Mesh;
 	int						BatchIdx;
+	DWORD					DX11Signature;
+	const D3DXMATRIX*		DX11WorldTransform;
+	const r3dSkeleton*		DX11Skeleton;
 };
+
+MeshShadowRenderable* r3dGetMeshShadowRenderable( Renderable* renderable );
+const MeshShadowRenderable* r3dGetMeshShadowRenderable( const Renderable* renderable );
 
 class MeshTextureDensityVisualizer;
 

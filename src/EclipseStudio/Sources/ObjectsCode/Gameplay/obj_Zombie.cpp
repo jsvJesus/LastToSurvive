@@ -194,6 +194,8 @@ void obj_Zombie::AppendRenderables(RenderArray ( & render_arrays  )[ rsCount ], 
 
 void obj_Zombie::AppendShadowRenderables(RenderArray &rarr, const r3dCamera& cam)
 {
+	COMPILE_ASSERT( sizeof(ZombieMeshesShadowRenderable) <= MAX_RENDERABLE_SIZE );
+
 	float distSq = (gCam - GetPosition()).LengthSq();
 	float dist = sqrtf( distSq );
 	UINT32 idist = (UINT32) R3D_MIN( dist * 64.f, (float)0x3fffffff );
@@ -214,6 +216,7 @@ void obj_Zombie::AppendShadowRenderables(RenderArray &rarr, const r3dCamera& cam
 			ZombieMeshesShadowRenderable& rend = static_cast<ZombieMeshesShadowRenderable&>( rarr[ i ] );
 
 			rend.Init() ;
+			rend.InitDX11( NULL, anim_.GetCurrentSkeleton() );
 			rend.SortValue |= idist;
 			rend.Parent = this ;
 		}

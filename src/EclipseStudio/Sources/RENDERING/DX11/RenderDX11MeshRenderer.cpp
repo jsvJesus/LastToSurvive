@@ -29,6 +29,20 @@ bool r3dDX11PrepareMeshConstants(r3dDX11MeshConstants& outConstants, const D3DXM
 	return true;
 }
 
+bool r3dDX11DrawMeshDepthOnly(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11DepthOnlyPass& pass, r3dMesh& mesh, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, const r3dSkeleton* skeleton)
+{
+	if (!device || !pass.IsInitialized() || !mesh.IsLoaded())
+		return false;
+
+	r3dDX11MeshRenderData* renderData = r3dDX11GetOrCreateMeshRenderData(device, textureLibrary, mesh, mesh.Name);
+	if (!renderData || !renderData->IsValid())
+		return false;
+
+	r3dDX11MeshConstants constants;
+	r3dDX11PrepareMeshConstants(constants, world, viewProj);
+	return renderData->DrawDepthOnly(pass, constants, skeleton);
+}
+
 bool r3dDX11DrawMeshDepthOnlyBatch(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11DepthOnlyPass& pass, r3dMesh& mesh, unsigned int batchIndex, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, const r3dSkeleton* skeleton)
 {
 	if (!device || !pass.IsInitialized() || !mesh.IsLoaded())
@@ -40,8 +54,7 @@ bool r3dDX11DrawMeshDepthOnlyBatch(ID3D11Device* device, r3dDX11TextureLibrary& 
 
 	r3dDX11MeshConstants constants;
 	r3dDX11PrepareMeshConstants(constants, world, viewProj);
-	renderData->DrawDepthOnlyBatch(pass, batchIndex, constants, skeleton);
-	return true;
+	return renderData->DrawDepthOnlyBatch(pass, batchIndex, constants, skeleton);
 }
 
 bool r3dDX11DrawMeshGBuffer(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11GBufferPass& pass, r3dMesh& mesh, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, unsigned int objectColorPacked, const r3dSkeleton* skeleton)

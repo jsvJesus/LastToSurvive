@@ -28,6 +28,8 @@ struct ShadowSlice
 		}
 };
 
+extern ShadowSlice ShadowSlices[NumShadowSlices];
+
 struct TCloudsShadowParams
 {
 	float fTiling;

@@ -1570,6 +1570,14 @@ MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSke
 }
 
 void
+MeshShadowRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
+{
+	DX11Signature = DX11SignatureValue;
+	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
+	DX11Skeleton = skeleton;
+}
+
+void
 r3dResetMeshDeferredDX11WorldMatrices()
 {
 	g_DX11RenderableWorldMatrixCursor = 0;
@@ -1606,6 +1614,22 @@ const MeshDeferredRenderable*
 r3dGetMeshDeferredRenderable( const Renderable* renderable )
 {
 	return r3dGetMeshDeferredRenderable( const_cast< Renderable* >( renderable ) );
+}
+
+MeshShadowRenderable*
+r3dGetMeshShadowRenderable( Renderable* renderable )
+{
+	if( !renderable )
+		return NULL;
+
+	MeshShadowRenderable* meshRenderable = static_cast< MeshShadowRenderable* >( renderable );
+	return meshRenderable->DX11Signature == MeshShadowRenderable::DX11SignatureValue ? meshRenderable : NULL;
+}
+
+const MeshShadowRenderable*
+r3dGetMeshShadowRenderable( const Renderable* renderable )
+{
+	return r3dGetMeshShadowRenderable( const_cast< Renderable* >( renderable ) );
 }
 
 void
@@ -1723,6 +1747,7 @@ r3dMesh::AppendShadowRenderables( RenderArray& oArr )
 			rend.BatchIdx		= i;
 			rend.Mesh			= this;
 			rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) buffers.VB.Get();
+			rend.InitDX11( NULL, NULL );
 
 			oArr.PushBack( rend );
 		}
@@ -1734,7 +1759,9 @@ r3dMesh::AppendShadowRenderables( RenderArray& oArr )
 		rend.SubDrawFunc = MeshShadowRenderable::DrawSingleBatch;
 
 		rend.Mesh		= this;
+		rend.BatchIdx	= -1;
 		rend.SortValue	= (UINT64) buffers.VB.Get() << 32;
+		rend.InitDX11( NULL, NULL );
 
 		oArr.PushBack( rend );
 	}

@@ -109,6 +109,89 @@ bool r3dDX11MeshResource::Create(ID3D11Device* device, const r3dDX11MeshBuildDes
 	return true;
 }
 
+bool r3dDX11MeshResource::CreateFromPacked(
+	ID3D11Device* device,
+	const void* vertices,
+	unsigned int vertexStride,
+	unsigned int numVertices,
+	const unsigned int* indices,
+	unsigned int numIndices,
+	const r3dDX11MeshBatch* batches,
+	unsigned int numBatches,
+	bool skinned,
+	const float* positionScale,
+	const float* texcoordScale,
+	const char* debugName
+)
+{
+	Shutdown();
+
+	if (!device || !vertices || !indices || numVertices == 0 || numIndices == 0 || vertexStride == 0)
+		return false;
+
+	PositionScale[0] = SafeScale(positionScale ? positionScale[0] : 1.0f);
+	PositionScale[1] = SafeScale(positionScale ? positionScale[1] : 1.0f);
+	PositionScale[2] = SafeScale(positionScale ? positionScale[2] : 1.0f);
+	TexcoordScale[0] = SafeScale(texcoordScale ? texcoordScale[0] : 1.0f);
+	TexcoordScale[1] = SafeScale(texcoordScale ? texcoordScale[1] : 1.0f);
+	bSkinned = skinned;
+
+	const unsigned char* sourceVertices = static_cast<const unsigned char*>(vertices);
+	if (bSkinned)
+	{
+		if (vertexStride < sizeof(r3dDX11PackedSkinnedMeshVertex))
+			return false;
+
+		std::vector<r3dDX11PackedSkinnedMeshVertex> packedVertices;
+		packedVertices.resize(numVertices);
+		for (unsigned int i = 0; i < numVertices; ++i)
+			memcpy(&packedVertices[i], sourceVertices + i * vertexStride, sizeof(packedVertices[i]));
+
+		if (!VertexBuffer.Create(device, packedVertices.size() * sizeof(packedVertices[0]), sizeof(packedVertices[0]), &packedVertices[0], R3D_DX11_BUFFER_IMMUTABLE, debugName ? debugName : "DX11.SkinnedMesh.VB"))
+		{
+			Shutdown();
+			return false;
+		}
+	}
+	else
+	{
+		if (vertexStride < sizeof(r3dDX11PackedMeshVertex))
+			return false;
+
+		std::vector<r3dDX11PackedMeshVertex> packedVertices;
+		packedVertices.resize(numVertices);
+		for (unsigned int i = 0; i < numVertices; ++i)
+			memcpy(&packedVertices[i], sourceVertices + i * vertexStride, sizeof(packedVertices[i]));
+
+		if (!VertexBuffer.Create(device, packedVertices.size() * sizeof(packedVertices[0]), sizeof(packedVertices[0]), &packedVertices[0], R3D_DX11_BUFFER_IMMUTABLE, debugName ? debugName : "DX11.Mesh.VB"))
+		{
+			Shutdown();
+			return false;
+		}
+	}
+
+	if (!IndexBuffer.Create(device, numIndices * sizeof(indices[0]), DXGI_FORMAT_R32_UINT, indices, R3D_DX11_BUFFER_IMMUTABLE, debugName ? debugName : "DX11.Mesh.IB"))
+	{
+		Shutdown();
+		return false;
+	}
+
+	if (numBatches && batches)
+		Batches.assign(batches, batches + numBatches);
+	else
+	{
+		r3dDX11MeshBatch batch;
+		batch.StartIndex = 0;
+		batch.IndexCount = numIndices;
+		batch.MaterialIndex = 0;
+		Batches.push_back(batch);
+	}
+
+	VertexCount = numVertices;
+	IndexCount = numIndices;
+	return true;
+}
+
 void r3dDX11MeshResource::Shutdown()
 {
 	IndexBuffer.Shutdown();

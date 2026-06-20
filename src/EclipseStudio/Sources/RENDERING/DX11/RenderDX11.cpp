@@ -38,7 +38,7 @@ r3dDX11Renderer::~r3dDX11Renderer()
 	Shutdown();
 }
 
-bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullscreen, bool enableDebug)
+bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullscreen, bool enableDebug, bool acquireRmlRuntime)
 {
 	if (bInitialized)
 		return true;
@@ -135,14 +135,14 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
-	if (!RmlRuntime::Get().Acquire(windowHandle, Device.GetDevice(), Device.GetContext()))
+	if (acquireRmlRuntime && !RmlRuntime::Get().Acquire(windowHandle, Device.GetDevice(), Device.GetContext()))
 	{
 		r3dOutToLog("[DX11] Rml runtime initialization failed\n");
 		Shutdown();
 		return false;
 	}
 
-	bRmlRuntimeAcquired = true;
+	bRmlRuntimeAcquired = acquireRmlRuntime;
 	bInitialized = true;
 
 	r3dOutToLog("[DX11] Renderer initialized %dx%d\n", width, height);

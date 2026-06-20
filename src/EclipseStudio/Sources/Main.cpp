@@ -257,6 +257,8 @@ void StudioDX11WorldHybridInit()
 #else
 			false
 #endif
+			,
+			false
 		))
 	{
 		SAFE_DELETE(g_DX11Renderer);
@@ -306,14 +308,21 @@ void StudioDX11WorldHybridTick()
 	if (Now - LastWorldStatsLog >= 1000)
 	{
 		r3dOutToLog(
-			"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u\n",
+			"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
 			bWorldRendered ? 1 : 0,
 			WorldStats.TotalRenderables,
 			WorldStats.MeshRenderables,
 			WorldStats.DepthDrawnMeshes,
 			WorldStats.DrawnMeshes,
 			WorldStats.SkippedUnsupported,
-			WorldStats.SkippedFailed
+			WorldStats.SkippedFailed,
+			WorldStats.ShadowRenderables,
+			WorldStats.ShadowMeshRenderables,
+			WorldStats.ShadowDrawnMeshes,
+			WorldStats.ShadowAlphaTested,
+			WorldStats.ShadowSlicesRendered,
+			WorldStats.ShadowSkippedUnsupported,
+			WorldStats.ShadowSkippedFailed
 		);
 
 		LastWorldStatsLog = Now;
@@ -723,14 +732,21 @@ static void ExecuteDX11SmokeLoop()
 			if (Now - LastWorldStatsLog >= 1000)
 			{
 				r3dOutToLog(
-					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u\n",
+					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
 					bWorldRendered ? 1 : 0,
 					WorldStats.TotalRenderables,
 					WorldStats.MeshRenderables,
 					WorldStats.DepthDrawnMeshes,
 					WorldStats.DrawnMeshes,
 					WorldStats.SkippedUnsupported,
-					WorldStats.SkippedFailed
+					WorldStats.SkippedFailed,
+					WorldStats.ShadowRenderables,
+					WorldStats.ShadowMeshRenderables,
+					WorldStats.ShadowDrawnMeshes,
+					WorldStats.ShadowAlphaTested,
+					WorldStats.ShadowSlicesRendered,
+					WorldStats.ShadowSkippedUnsupported,
+					WorldStats.ShadowSkippedFailed
 				);
 
 				LastWorldStatsLog = Now;

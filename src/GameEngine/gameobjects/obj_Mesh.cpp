@@ -1356,6 +1356,8 @@ struct MeshObjShadowRenderable : MeshShadowRenderableBase
 void
 MeshGameObject::AppendShadowRenderables( RenderArray& rarr, const r3dCamera& Cam ) /*OVERRIDE*/
 {
+	COMPILE_ASSERT( sizeof(MeshObjShadowRenderable) <= MAX_RENDERABLE_SIZE );
+
 #ifndef FINAL_BUILD
 	if(!g_bEditMode || g_bForceQualitySelectionInEditor)
 #endif
@@ -1402,6 +1404,7 @@ MeshGameObject::AppendShadowRenderables( RenderArray& rarr, const r3dCamera& Cam
 
 		rend.SortValue |= idist ;
 		rend.Init() ;
+		rend.InitDX11( &GetTransformMatrix(), NULL );
 		rend.Parent = this ;
 	}
 }

@@ -29,7 +29,7 @@ public:
 	r3dDX11Renderer();
 	~r3dDX11Renderer();
 
-	bool Init(HWND windowHandle, int width, int height, bool fullscreen, bool enableDebug);
+	bool Init(HWND windowHandle, int width, int height, bool fullscreen, bool enableDebug, bool acquireRmlRuntime = true);
 	void Shutdown();
 	bool Resize(int width, int height);
 

@@ -5,14 +5,35 @@
 #include "RENDERING/DX11/RenderDX11World.h"
 
 #include "GameObjects/GameObj.h"
+#include "RENDERING/Deffered/RenderDeffered.h"
 #include "RENDERING/DX11/RenderDX11.h"
 #include "RENDERING/DX11/RenderDX11MeshRenderer.h"
+#include "r3dMat.h"
+
+#include <algorithm>
 
 extern RenderArray g_render_arrays[rsCount];
 
 namespace
 {
+	r3dDX11Texture2D g_DX11ShadowDepthTargets[NumShadowSlices];
+	int g_DX11ShadowDepthSizes[NumShadowSlices] = {};
+
 	const D3DXMATRIX& GetRenderableWorldMatrix(const MeshDeferredRenderable& renderable)
+	{
+		static D3DXMATRIX identity;
+		static bool identityInitialized = false;
+
+		if (!identityInitialized)
+		{
+			D3DXMatrixIdentity(&identity);
+			identityInitialized = true;
+		}
+
+		return renderable.DX11WorldTransform ? *renderable.DX11WorldTransform : identity;
+	}
+
+	const D3DXMATRIX& GetRenderableWorldMatrix(const MeshShadowRenderable& renderable)
 	{
 		static D3DXMATRIX identity;
 		static bool identityInitialized = false;
@@ -167,6 +188,51 @@ namespace
 		return firstPersonCamera;
 	}
 
+	bool EnsureDX11ShadowDepthTarget(r3dDX11Renderer& renderer, int sliceIndex)
+	{
+		if (sliceIndex < 0 || sliceIndex >= NumShadowSlices)
+			return false;
+
+		int size = static_cast<int>(ShadowSlices[sliceIndex].shadowMapSize);
+		if (size <= 0 && r_dir_sm_size)
+			size = r_dir_sm_size->GetInt();
+		size = std::max(64, std::min(size, 8192));
+
+		if (g_DX11ShadowDepthTargets[sliceIndex].IsValid() && g_DX11ShadowDepthSizes[sliceIndex] == size)
+			return true;
+
+		char debugName[64];
+		sprintf(debugName, "DX11.ShadowDepth.%d", sliceIndex);
+		if (!g_DX11ShadowDepthTargets[sliceIndex].Create(
+				renderer.GetDevice().GetDevice(),
+				size,
+				size,
+				DXGI_FORMAT_D24_UNORM_S8_UINT,
+				R3D_DX11_BIND_DEPTH_STENCIL,
+				debugName))
+		{
+			g_DX11ShadowDepthSizes[sliceIndex] = 0;
+			return false;
+		}
+
+		g_DX11ShadowDepthSizes[sliceIndex] = size;
+		return true;
+	}
+
+	bool IsAlphaTestedShadowRenderable(const MeshShadowRenderable& renderable)
+	{
+		if (!renderable.Mesh)
+			return false;
+
+		if (renderable.BatchIdx >= 0 && renderable.BatchIdx < renderable.Mesh->NumMatChunks)
+		{
+			const r3dMaterial* material = renderable.Mesh->MatChunks[renderable.BatchIdx].Mat;
+			return material && (material->Flags & R3D_MAT_HASALPHA) != 0;
+		}
+
+		return renderable.Mesh->HasAlphaTextures != 0;
+	}
+
 	void DrawDX11GBufferQueue(
 		r3dDX11Renderer& renderer,
 		r3dDX11GBufferPass& pass,
@@ -256,6 +322,100 @@ namespace
 			}
 		}
 	}
+
+	void DrawDX11ShadowQueue(
+		r3dDX11Renderer& renderer,
+		r3dDX11DepthOnlyPass& pass,
+		eRenderStageID queueId,
+		const D3DXMATRIX& viewProj,
+		r3dDX11WorldRenderStats& stats
+	)
+	{
+		RenderArray& queue = g_render_arrays[queueId];
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+			++stats.ShadowRenderables;
+
+			MeshShadowRenderable* meshRenderable = r3dGetMeshShadowRenderable(&renderable);
+			if (!meshRenderable)
+			{
+				++stats.ShadowSkippedUnsupported;
+				continue;
+			}
+
+			++stats.ShadowMeshRenderables;
+
+			if (!meshRenderable->Mesh)
+			{
+				++stats.ShadowSkippedFailed;
+				continue;
+			}
+
+			if (IsAlphaTestedShadowRenderable(*meshRenderable))
+				++stats.ShadowAlphaTested;
+
+			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
+			bool drawn = false;
+
+			if (meshRenderable->BatchIdx >= 0)
+			{
+				drawn = r3dDX11DrawMeshDepthOnlyBatch(
+					renderer.GetDevice().GetDevice(),
+					renderer.GetTextureLibrary(),
+					pass,
+					*meshRenderable->Mesh,
+					static_cast<unsigned int>(meshRenderable->BatchIdx),
+					world,
+					viewProj,
+					meshRenderable->DX11Skeleton);
+			}
+			else
+			{
+				drawn = r3dDX11DrawMeshDepthOnly(
+					renderer.GetDevice().GetDevice(),
+					renderer.GetTextureLibrary(),
+					pass,
+					*meshRenderable->Mesh,
+					world,
+					viewProj,
+					meshRenderable->DX11Skeleton);
+			}
+
+			if (drawn)
+				++stats.ShadowDrawnMeshes;
+			else
+				++stats.ShadowSkippedFailed;
+		}
+	}
+
+	void RenderDX11ShadowQueues(r3dDX11Renderer& renderer, r3dDX11DepthOnlyPass& pass, r3dDX11WorldRenderStats& stats)
+	{
+		int activeSlices = r_active_shadow_slices ? r_active_shadow_slices->GetInt() : NumShadowSlices;
+		activeSlices = std::max(0, std::min(activeSlices, static_cast<int>(NumShadowSlices)));
+
+		for (int i = 0; i < activeSlices; ++i)
+		{
+			if (!EnsureDX11ShadowDepthTarget(renderer, i))
+			{
+				++stats.ShadowSkippedFailed;
+				continue;
+			}
+
+			r3dDX11Texture2D& shadowDepth = g_DX11ShadowDepthTargets[i];
+			if (!pass.BeginDepthTarget(shadowDepth.GetDSV(), shadowDepth.GetWidth(), shadowDepth.GetHeight(), true))
+			{
+				++stats.ShadowSkippedFailed;
+				continue;
+			}
+
+			const D3DXMATRIX viewProj = ShadowSlices[i].lightView * ShadowSlices[i].lightProj;
+			DrawDX11ShadowQueue(renderer, pass, static_cast<eRenderStageID>(rsCreateSM + i), viewProj, stats);
+			pass.EndDepthTarget();
+			++stats.ShadowSlicesRendered;
+		}
+	}
 }
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
@@ -268,6 +428,13 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.DrawnMeshes = 0;
 	stats.SkippedUnsupported = 0;
 	stats.SkippedFailed = 0;
+	stats.ShadowRenderables = 0;
+	stats.ShadowMeshRenderables = 0;
+	stats.ShadowDrawnMeshes = 0;
+	stats.ShadowAlphaTested = 0;
+	stats.ShadowSkippedUnsupported = 0;
+	stats.ShadowSkippedFailed = 0;
+	stats.ShadowSlicesRendered = 0;
 }
 
 bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camera, r3dDX11WorldRenderStats* stats)
@@ -288,6 +455,8 @@ bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camer
 	const D3DXMATRIX viewProj = BuildDX11ViewProjectionMatrix(renderer, camera, true);
 	const r3dCamera firstPersonCamera = BuildDX11FirstPersonCamera(camera);
 	const D3DXMATRIX firstPersonViewProj = BuildDX11ViewProjectionMatrix(renderer, firstPersonCamera, false);
+
+	RenderDX11ShadowQueues(renderer, depthPass, *stats);
 
 	if (!depthPass.Begin(gbuffer))
 		return false;

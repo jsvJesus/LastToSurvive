@@ -62,6 +62,20 @@ public:
 	~r3dDX11MeshResource();
 
 	bool Create(ID3D11Device* device, const r3dDX11MeshBuildDesc& desc, const char* debugName = nullptr);
+	bool CreateFromPacked(
+		ID3D11Device* device,
+		const void* vertices,
+		unsigned int vertexStride,
+		unsigned int numVertices,
+		const unsigned int* indices,
+		unsigned int numIndices,
+		const r3dDX11MeshBatch* batches,
+		unsigned int numBatches,
+		bool skinned,
+		const float* positionScale,
+		const float* texcoordScale,
+		const char* debugName = nullptr
+	);
 	void Shutdown();
 
 	void Bind(r3dDX11DrawContext& drawContext);

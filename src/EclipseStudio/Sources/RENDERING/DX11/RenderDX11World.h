@@ -11,6 +11,13 @@ struct r3dDX11WorldRenderStats
 	unsigned int DrawnMeshes;
 	unsigned int SkippedUnsupported;
 	unsigned int SkippedFailed;
+	unsigned int ShadowRenderables;
+	unsigned int ShadowMeshRenderables;
+	unsigned int ShadowDrawnMeshes;
+	unsigned int ShadowAlphaTested;
+	unsigned int ShadowSkippedUnsupported;
+	unsigned int ShadowSkippedFailed;
+	unsigned int ShadowSlicesRendered;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);
