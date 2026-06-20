@@ -13,6 +13,7 @@ class r3dDX11ShaderLibrary;
 class r3dDX11VertexBuffer;
 class r3dDX11VertexShader;
 struct ID3D11Device;
+struct r3dDX11MaterialConstants;
 
 struct r3dDX11MeshConstants
 {
@@ -34,7 +35,7 @@ public:
 	bool Begin(r3dDX11GBufferResources& gbuffer);
 	void End(r3dDX11GBufferResources& gbuffer);
 	bool SetMeshConstants(const r3dDX11MeshConstants& constants);
-	void SetMaterial(const r3dDX11MaterialTextures& material);
+	bool SetMaterial(const r3dDX11MaterialTextures& material, unsigned int objectColorPacked = 0xffffffff);
 	void DrawMesh(r3dDX11VertexBuffer& vertexBuffer, r3dDX11IndexBuffer& indexBuffer, unsigned int indexCount, unsigned int startIndex = 0, int baseVertex = 0);
 
 	bool IsInitialized() const;
@@ -50,5 +51,6 @@ private:
 	r3dDX11PixelShader* FillPS = nullptr;
 	r3dDX11InputLayout* MeshLayout = nullptr;
 	r3dDX11ConstantBuffer MeshConstants;
+	r3dDX11ConstantBuffer MaterialConstants;
 	bool bInitialized = false;
 };

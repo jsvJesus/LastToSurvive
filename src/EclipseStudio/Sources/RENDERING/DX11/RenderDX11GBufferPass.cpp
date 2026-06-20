@@ -30,7 +30,9 @@ bool r3dDX11GBufferPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawCont
 	ShaderLibrary = shaderLibrary;
 	CommonStates = commonStates;
 
-	if (!CreateShadersAndLayout(device) || !MeshConstants.Create(device, sizeof(r3dDX11MeshConstants), "DX11.GBuffer.MeshConstants"))
+	if (!CreateShadersAndLayout(device) ||
+		!MeshConstants.Create(device, sizeof(r3dDX11MeshConstants), "DX11.GBuffer.MeshConstants") ||
+		!MaterialConstants.Create(device, sizeof(r3dDX11MaterialConstants), "DX11.GBuffer.MaterialConstants"))
 	{
 		Shutdown();
 		return false;
@@ -42,6 +44,7 @@ bool r3dDX11GBufferPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawCont
 
 void r3dDX11GBufferPass::Shutdown()
 {
+	MaterialConstants.Shutdown();
 	MeshConstants.Shutdown();
 
 	delete MeshLayout;
@@ -70,6 +73,7 @@ bool r3dDX11GBufferPass::Begin(r3dDX11GBufferResources& gbuffer)
 	DrawContext->SetShaders(FillVS, FillPS);
 	DrawContext->SetSampler(0, CommonStates->GetLinearWrapSampler());
 	MeshConstants.BindVS(DrawContext->GetContext(), 0);
+	MaterialConstants.BindPS(DrawContext->GetContext(), 0);
 	return true;
 }
 
@@ -86,10 +90,19 @@ bool r3dDX11GBufferPass::SetMeshConstants(const r3dDX11MeshConstants& constants)
 	return MeshConstants.Update(DrawContext->GetContext(), &constants, sizeof(constants));
 }
 
-void r3dDX11GBufferPass::SetMaterial(const r3dDX11MaterialTextures& material)
+bool r3dDX11GBufferPass::SetMaterial(const r3dDX11MaterialTextures& material, unsigned int objectColorPacked)
 {
-	if (bInitialized && DrawContext)
-		material.Bind(*DrawContext, 0);
+	if (!bInitialized || !DrawContext || !material.ShouldDrawInGBuffer())
+		return false;
+
+	const r3dDX11MaterialConstants constants = material.BuildConstants(objectColorPacked);
+	if (!MaterialConstants.Update(DrawContext->GetContext(), &constants, sizeof(constants)))
+		return false;
+
+	MaterialConstants.BindPS(DrawContext->GetContext(), 0);
+	DrawContext->SetRasterizerState(material.IsDoubleSided() ? CommonStates->GetCullNoneRasterizer() : CommonStates->GetCullBackRasterizer());
+	material.Bind(*DrawContext, 0);
+	return true;
 }
 
 void r3dDX11GBufferPass::DrawMesh(r3dDX11VertexBuffer& vertexBuffer, r3dDX11IndexBuffer& indexBuffer, unsigned int indexCount, unsigned int startIndex, int baseVertex)

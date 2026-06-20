@@ -56,20 +56,21 @@ void r3dDX11MeshRenderData::Shutdown()
 	MeshResource.Shutdown();
 }
 
-void r3dDX11MeshRenderData::DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants)
+void r3dDX11MeshRenderData::DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked)
 {
 	for (unsigned int i = 0; i < GetBatchCount(); ++i)
-		DrawGBufferBatch(pass, i, constants);
+		DrawGBufferBatch(pass, i, constants, objectColorPacked);
 }
 
-void r3dDX11MeshRenderData::DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants)
+void r3dDX11MeshRenderData::DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked)
 {
 	if (!IsValid() || batchIndex >= Materials.size())
 		return;
 
 	const r3dDX11MeshConstants scaledConstants = ApplyMeshScales(constants);
 	pass.SetMeshConstants(scaledConstants);
-	pass.SetMaterial(Materials[batchIndex]);
+	if (!pass.SetMaterial(Materials[batchIndex], objectColorPacked))
+		return;
 	MeshResource.DrawBatch(pass, batchIndex);
 }
 

@@ -28,7 +28,7 @@ bool r3dDX11PrepareMeshConstants(r3dDX11MeshConstants& outConstants, const D3DXM
 	return true;
 }
 
-bool r3dDX11DrawMeshGBuffer(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11GBufferPass& pass, r3dMesh& mesh, const D3DXMATRIX& world, const D3DXMATRIX& viewProj)
+bool r3dDX11DrawMeshGBuffer(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11GBufferPass& pass, r3dMesh& mesh, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, unsigned int objectColorPacked)
 {
 	if (!device || !pass.IsInitialized() || !mesh.IsLoaded())
 		return false;
@@ -39,11 +39,11 @@ bool r3dDX11DrawMeshGBuffer(ID3D11Device* device, r3dDX11TextureLibrary& texture
 
 	r3dDX11MeshConstants constants;
 	r3dDX11PrepareMeshConstants(constants, world, viewProj);
-	renderData->DrawGBuffer(pass, constants);
+	renderData->DrawGBuffer(pass, constants, objectColorPacked);
 	return true;
 }
 
-bool r3dDX11DrawMeshGBufferBatch(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11GBufferPass& pass, r3dMesh& mesh, unsigned int batchIndex, const D3DXMATRIX& world, const D3DXMATRIX& viewProj)
+bool r3dDX11DrawMeshGBufferBatch(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, r3dDX11GBufferPass& pass, r3dMesh& mesh, unsigned int batchIndex, const D3DXMATRIX& world, const D3DXMATRIX& viewProj, unsigned int objectColorPacked)
 {
 	if (!device || !pass.IsInitialized() || !mesh.IsLoaded())
 		return false;
@@ -54,6 +54,6 @@ bool r3dDX11DrawMeshGBufferBatch(ID3D11Device* device, r3dDX11TextureLibrary& te
 
 	r3dDX11MeshConstants constants;
 	r3dDX11PrepareMeshConstants(constants, world, viewProj);
-	renderData->DrawGBufferBatch(pass, batchIndex, constants);
+	renderData->DrawGBufferBatch(pass, batchIndex, constants, objectColorPacked);
 	return true;
 }
