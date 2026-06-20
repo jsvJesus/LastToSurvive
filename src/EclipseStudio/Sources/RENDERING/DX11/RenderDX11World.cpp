@@ -182,9 +182,35 @@ namespace
 	r3dCamera BuildDX11FirstPersonCamera(const r3dCamera& camera)
 	{
 		r3dCamera firstPersonCamera = camera;
-		firstPersonCamera.NearClip = r_first_person_render_z_start->GetFloat();
-		firstPersonCamera.FarClip = r_first_person_render_z_end->GetFloat();
-		firstPersonCamera.FOV = r_first_person_fov->GetFloat();
+
+		float nearClip = r_first_person_render_z_start
+			? r_first_person_render_z_start->GetFloat()
+			: 0.025f;
+
+		float farClip = r_first_person_render_z_end
+			? r_first_person_render_z_end->GetFloat()
+			: 4.0f;
+
+		float fov = r_first_person_fov
+			? r_first_person_fov->GetFloat()
+			: camera.FOV;
+
+		if (nearClip <= 0.0f)
+			nearClip = 0.025f;
+
+		if (farClip <= nearClip + 0.001f)
+			farClip = nearClip + 4.0f;
+
+		if (fov < 1.0f || fov > 179.0f)
+			fov = camera.FOV;
+
+		if (fov < 1.0f || fov > 179.0f)
+			fov = 60.0f;
+
+		firstPersonCamera.NearClip = nearClip;
+		firstPersonCamera.FarClip = farClip;
+		firstPersonCamera.FOV = fov;
+
 		return firstPersonCamera;
 	}
 
@@ -227,6 +253,25 @@ namespace
 		if (renderable.BatchIdx >= 0 && renderable.BatchIdx < renderable.Mesh->NumMatChunks)
 		{
 			const r3dMaterial* material = renderable.Mesh->MatChunks[renderable.BatchIdx].Mat;
+			return material && (material->Flags & R3D_MAT_HASALPHA) != 0;
+		}
+
+		return renderable.Mesh->HasAlphaTextures != 0;
+	}
+
+	bool IsAlphaTestedDeferredRenderable(const MeshDeferredRenderable& renderable)
+	{
+		if (!renderable.Mesh)
+			return false;
+
+		if (
+			renderable.BatchIdx >= 0 &&
+			renderable.BatchIdx < renderable.Mesh->NumMatChunks
+		)
+		{
+			const r3dMaterial* material =
+				renderable.Mesh->MatChunks[renderable.BatchIdx].Mat;
+
 			return material && (material->Flags & R3D_MAT_HASALPHA) != 0;
 		}
 
@@ -312,6 +357,7 @@ namespace
 		r3dDX11DepthOnlyPass& pass,
 		eRenderStageID queueId,
 		const D3DXMATRIX& viewProj,
+		bool firstPersonDepth,
 		r3dDX11WorldRenderStats& stats
 	)
 	{
@@ -321,14 +367,38 @@ namespace
 		{
 			Renderable& renderable = queue[i];
 
-			MeshDeferredRenderable* meshRenderable = r3dGetMeshDeferredRenderable(&renderable);
+			++stats.DepthTotalRenderables;
+
+			MeshDeferredRenderable* meshRenderable =
+				r3dGetMeshDeferredRenderable(&renderable);
+
 			if (!meshRenderable)
+			{
+				++stats.DepthSkippedUnsupported;
 				continue;
+			}
+
+			++stats.DepthMeshRenderables;
+
+			if (firstPersonDepth)
+				++stats.DepthFirstPersonMeshes;
 
 			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh) || meshRenderable->BatchIdx < 0)
+			{
+				++stats.DepthSkippedFailed;
 				continue;
+			}
 
-			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
+			if (meshRenderable->DX11Skeleton)
+				++stats.DepthSkinnedMeshes;
+			else
+				++stats.DepthStaticMeshes;
+
+			if (IsAlphaTestedDeferredRenderable(*meshRenderable))
+				++stats.DepthAlphaTestedMeshes;
+
+			const D3DXMATRIX& world =
+				GetRenderableWorldMatrix(*meshRenderable);
 
 			if (r3dDX11DrawMeshDepthOnlyBatch(
 					renderer.GetDevice().GetDevice(),
@@ -341,6 +411,10 @@ namespace
 					meshRenderable->DX11Skeleton))
 			{
 				++stats.DepthDrawnMeshes;
+			}
+			else
+			{
+				++stats.DepthSkippedFailed;
 			}
 		}
 	}
@@ -446,10 +520,21 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 
 	stats.TotalRenderables = 0;
 	stats.MeshRenderables = 0;
+
+	stats.DepthTotalRenderables = 0;
+	stats.DepthMeshRenderables = 0;
+	stats.DepthStaticMeshes = 0;
+	stats.DepthSkinnedMeshes = 0;
+	stats.DepthAlphaTestedMeshes = 0;
+	stats.DepthFirstPersonMeshes = 0;
 	stats.DepthDrawnMeshes = 0;
+	stats.DepthSkippedUnsupported = 0;
+	stats.DepthSkippedFailed = 0;
+
 	stats.DrawnMeshes = 0;
 	stats.SkippedUnsupported = 0;
 	stats.SkippedFailed = 0;
+
 	stats.ShadowRenderables = 0;
 	stats.ShadowMeshRenderables = 0;
 	stats.ShadowDrawnMeshes = 0;
@@ -459,9 +544,108 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.ShadowSlicesRendered = 0;
 }
 
-bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camera, r3dDX11WorldRenderStats* stats)
+static bool r3dDX11RenderWorldDepthOnlyInternal(
+	r3dDX11Renderer& renderer,
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats& stats,
+	bool clearDepth
+)
+{
+	if (!renderer.IsInitialized())
+		return false;
+
+	r3dDX11DepthOnlyPass& depthPass =
+		renderer.GetDepthOnlyPass();
+
+	r3dDX11GBufferResources& gbuffer =
+		renderer.GetGBufferResources();
+
+	if (!depthPass.IsInitialized())
+	{
+		++stats.DepthSkippedFailed;
+		return false;
+	}
+
+	const D3DXMATRIX viewProj =
+		BuildDX11ViewProjectionMatrix(
+			renderer,
+			camera,
+			true
+		);
+
+	const r3dCamera firstPersonCamera =
+		BuildDX11FirstPersonCamera(
+			camera
+		);
+
+	const D3DXMATRIX firstPersonViewProj =
+		BuildDX11ViewProjectionMatrix(
+			renderer,
+			firstPersonCamera,
+			false
+		);
+
+	if (!depthPass.Begin(gbuffer, clearDepth))
+	{
+		++stats.DepthSkippedFailed;
+		return false;
+	}
+
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsFillGBuffer,
+		viewProj,
+		false,
+		stats
+	);
+
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsFillGBufferFirstPerson,
+		firstPersonViewProj,
+		true,
+		stats
+	);
+
+	depthPass.End(gbuffer);
+
+	return
+		stats.DepthDrawnMeshes > 0 ||
+		stats.DepthTotalRenderables == 0;
+}
+
+bool r3dDX11RenderWorldDepthOnly(
+	r3dDX11Renderer& renderer,
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats* stats,
+	bool clearDepth
+)
 {
 	r3dDX11WorldRenderStats localStats;
+
+	if (!stats)
+		stats = &localStats;
+
+	r3dDX11ResetWorldRenderStats(*stats);
+
+	return r3dDX11RenderWorldDepthOnlyInternal(
+		renderer,
+		camera,
+		*stats,
+		clearDepth
+	);
+}
+
+bool r3dDX11RenderWorldGBuffer(
+	r3dDX11Renderer& renderer,
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats* stats
+)
+{
+	r3dDX11WorldRenderStats localStats;
+
 	if (!stats)
 		stats = &localStats;
 
@@ -470,31 +654,74 @@ bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camer
 	if (!renderer.IsInitialized())
 		return false;
 
-	r3dDX11DepthOnlyPass& depthPass = renderer.GetDepthOnlyPass();
-	r3dDX11GBufferPass& pass = renderer.GetGBufferPass();
-	r3dDX11GBufferResources& gbuffer = renderer.GetGBufferResources();
+	r3dDX11DepthOnlyPass& depthPass =
+		renderer.GetDepthOnlyPass();
 
-	const D3DXMATRIX viewProj = BuildDX11ViewProjectionMatrix(renderer, camera, true);
-	const r3dCamera firstPersonCamera = BuildDX11FirstPersonCamera(camera);
-	const D3DXMATRIX firstPersonViewProj = BuildDX11ViewProjectionMatrix(renderer, firstPersonCamera, false);
+	r3dDX11GBufferPass& pass =
+		renderer.GetGBufferPass();
 
-	RenderDX11ShadowQueues(renderer, depthPass, *stats);
+	r3dDX11GBufferResources& gbuffer =
+		renderer.GetGBufferResources();
 
-	if (!depthPass.Begin(gbuffer))
+	const D3DXMATRIX viewProj =
+		BuildDX11ViewProjectionMatrix(
+			renderer,
+			camera,
+			true
+		);
+
+	const r3dCamera firstPersonCamera =
+		BuildDX11FirstPersonCamera(
+			camera
+		);
+
+	const D3DXMATRIX firstPersonViewProj =
+		BuildDX11ViewProjectionMatrix(
+			renderer,
+			firstPersonCamera,
+			false
+		);
+
+	RenderDX11ShadowQueues(
+		renderer,
+		depthPass,
+		*stats
+	);
+
+	const bool depthReady =
+		r3dDX11RenderWorldDepthOnlyInternal(
+			renderer,
+			camera,
+			*stats,
+			true
+		);
+
+	if (!depthReady)
 		return false;
-
-	DrawDX11DepthOnlyQueue(renderer, depthPass, rsFillGBuffer, viewProj, *stats);
-	DrawDX11DepthOnlyQueue(renderer, depthPass, rsFillGBufferFirstPerson, firstPersonViewProj, *stats);
-
-	depthPass.End(gbuffer);
 
 	if (!pass.Begin(gbuffer, false))
 		return false;
 
-	DrawDX11GBufferQueue(renderer, pass, rsFillGBuffer, viewProj, *stats);
-	DrawDX11GBufferQueue(renderer, pass, rsFillGBufferFirstPerson, firstPersonViewProj, *stats);
+	DrawDX11GBufferQueue(
+		renderer,
+		pass,
+		rsFillGBuffer,
+		viewProj,
+		*stats
+	);
+
+	DrawDX11GBufferQueue(
+		renderer,
+		pass,
+		rsFillGBufferFirstPerson,
+		firstPersonViewProj,
+		*stats
+	);
 
 	pass.End(gbuffer);
 
-	return stats->DrawnMeshes > 0 || stats->TotalRenderables == 0;
+	return
+		stats->DrawnMeshes > 0 ||
+		stats->DepthDrawnMeshes > 0 ||
+		stats->TotalRenderables == 0;
 }

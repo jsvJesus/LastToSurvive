@@ -308,14 +308,28 @@ void StudioDX11WorldHybridTick()
 	if (Now - LastWorldStatsLog >= 1000)
 	{
 		r3dOutToLog(
-			"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
+			"[DX11][World] ok=%d total=%u mesh=%u "
+			"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
+			"gbuffer_drawn=%u unsupported=%u failed=%u "
+			"shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
 			bWorldRendered ? 1 : 0,
 			WorldStats.TotalRenderables,
 			WorldStats.MeshRenderables,
+
+			WorldStats.DepthTotalRenderables,
+			WorldStats.DepthMeshRenderables,
+			WorldStats.DepthStaticMeshes,
+			WorldStats.DepthSkinnedMeshes,
+			WorldStats.DepthAlphaTestedMeshes,
+			WorldStats.DepthFirstPersonMeshes,
 			WorldStats.DepthDrawnMeshes,
+			WorldStats.DepthSkippedUnsupported,
+			WorldStats.DepthSkippedFailed,
+
 			WorldStats.DrawnMeshes,
 			WorldStats.SkippedUnsupported,
 			WorldStats.SkippedFailed,
+
 			WorldStats.ShadowRenderables,
 			WorldStats.ShadowMeshRenderables,
 			WorldStats.ShadowDrawnMeshes,

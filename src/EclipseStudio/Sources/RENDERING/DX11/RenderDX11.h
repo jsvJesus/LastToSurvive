@@ -35,6 +35,7 @@ public:
 
 	void BeginFrame(float clearR, float clearG, float clearB, float clearA);
 	bool RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr);
+	bool RenderWorldDepthOnly(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr, bool clearDepth = true);
 	bool ResolveSceneToBackBuffer();
 	void RenderRmlContext(Rml::Context* context);
 	void Present(bool vsync);

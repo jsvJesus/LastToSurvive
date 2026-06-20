@@ -214,6 +214,23 @@ bool r3dDX11Renderer::RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRe
 	return r3dDX11RenderWorldGBuffer(*this, camera, stats);
 }
 
+bool r3dDX11Renderer::RenderWorldDepthOnly(
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats* stats,
+	bool clearDepth
+)
+{
+	if (!bInitialized)
+		return false;
+
+	return r3dDX11RenderWorldDepthOnly(
+		*this,
+		camera,
+		stats,
+		clearDepth
+	);
+}
+
 bool r3dDX11Renderer::ResolveSceneToBackBuffer()
 {
 	if (!bInitialized)

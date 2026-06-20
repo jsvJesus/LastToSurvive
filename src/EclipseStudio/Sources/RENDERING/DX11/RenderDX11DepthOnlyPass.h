@@ -25,7 +25,7 @@ public:
 	bool Init(ID3D11Device* device, r3dDX11DrawContext* drawContext, r3dDX11ShaderLibrary* shaderLibrary, r3dDX11CommonStates* commonStates);
 	void Shutdown();
 
-	bool Begin(r3dDX11GBufferResources& gbuffer);
+	bool Begin(r3dDX11GBufferResources& gbuffer, bool clearDepth = true);
 	bool BeginDepthTarget(ID3D11DepthStencilView* depthStencilView, int width, int height, bool clearDepth = true);
 	void End(r3dDX11GBufferResources& gbuffer);
 	void EndDepthTarget();

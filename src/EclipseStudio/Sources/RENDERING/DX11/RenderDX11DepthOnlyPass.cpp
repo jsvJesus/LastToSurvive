@@ -68,12 +68,17 @@ void r3dDX11DepthOnlyPass::Shutdown()
 	bAlphaTestMode = false;
 }
 
-bool r3dDX11DepthOnlyPass::Begin(r3dDX11GBufferResources& gbuffer)
+bool r3dDX11DepthOnlyPass::Begin(r3dDX11GBufferResources& gbuffer, bool clearDepth)
 {
 	if (!bInitialized || !DrawContext || !gbuffer.IsInitialized())
 		return false;
 
-	return BeginDepthTarget(gbuffer.GetDepthStencilView(), gbuffer.GetWidth(), gbuffer.GetHeight(), true);
+	return BeginDepthTarget(
+		gbuffer.GetDepthStencilView(),
+		gbuffer.GetWidth(),
+		gbuffer.GetHeight(),
+		clearDepth
+	);
 }
 
 bool r3dDX11DepthOnlyPass::BeginDepthTarget(ID3D11DepthStencilView* depthStencilView, int width, int height, bool clearDepth)
