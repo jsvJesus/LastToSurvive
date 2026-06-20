@@ -4,7 +4,7 @@
 #include "APIScaleformGfx.h"
 
 //
-// Scaleform removed.
+// Scaleform removed
 //
 // All implementation is inline in APIScaleformGfx.h.
 // This translation unit intentionally contains no Scaleform SDK calls.
