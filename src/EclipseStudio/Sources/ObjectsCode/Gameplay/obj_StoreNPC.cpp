@@ -3,7 +3,7 @@
 
 #include "GameCommon.h"
 #include "obj_StoreNPC.h"
-#include "UI\HUDGeneralStore.h"
+#include "UI\HUDLegacyNull.h"
 
 IMPLEMENT_CLASS(obj_StoreNPC, "obj_StoreNPC", "Object");
 AUTOREGISTER_CLASS(obj_StoreNPC);

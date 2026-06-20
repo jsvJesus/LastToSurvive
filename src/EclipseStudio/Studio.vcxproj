@@ -468,6 +468,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndContext.cpp"/>
     <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndScreen.cpp"/>
     <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndShop.cpp"/>
+    <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndSkills.cpp"/>
     <ClCompile Include="RmlUI\RmlFileInterface.cpp"/>
     <ClCompile Include="RmlUI\RmlRenderDX9.cpp"/>
     <ClCompile Include="RmlUI\RmlRuntime.cpp"/>
@@ -652,6 +653,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp"/>
     <ClCompile Include="Sources\SteamHelper.cpp"/>
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp"/>
+    <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
     <ClCompile Include="Sources\UI\HUDCameraEffects.cpp"/>
     <ClCompile Include="Sources\UI\HUD_Base.cpp"/>
     <ClCompile Include="Sources\UI\HUD_Character.cpp"/>
@@ -661,6 +663,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\UI\HUD_Spectator.cpp"/>
     <ClCompile Include="Sources\UI\HUD_TPSGame.cpp"/>
     <ClCompile Include="Sources\UI\m_LoadingScreen.cpp"/>
+    <ClCompile Include="Sources\UI\ScaleformProfilerNull.cpp" />
     <ClCompile Include="Sources\VersionNo.cpp"/>
     <ClCompile Include="Sources\XMLHelpers.cpp"/>
     <ClCompile Include="Sources\DiscordPresence.cpp"/>
@@ -924,6 +927,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\UI\HUD_PhysicsEditor.h"/>
     <ClInclude Include="Sources\UI\HUD_Spectator.h"/>
     <ClInclude Include="Sources\UI\HUD_TPSGame.h"/>
+    <ClInclude Include="Sources\UI\FrontEndShared.h"/>
     <ClInclude Include="Sources\UI\m_LoadingScreen.h"/>
     <ClInclude Include="Sources\VersionNo.h"/>
     <ClInclude Include="Sources\XMLHelpers.h"/>
