@@ -3,6 +3,9 @@
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/EventListener.h>
 
+#include "RmlFrontEndShop.h"
+#include "RmlFrontEndSkills.h"
+
 #include <d3d9.h>
 #include <windows.h>
 
@@ -338,8 +341,11 @@ private:
 	Rml::ElementDocument* LoginDocument = nullptr;
 	Rml::ElementDocument* MainMenuDocument = nullptr;
 	Rml::ElementDocument* CharacterCreateDocument = nullptr;
-	Rml::ElementDocument* SkillsDocument = nullptr;
-	Rml::ElementDocument* ShopDocument = nullptr;
+	Rml::ElementDocument* SkillsDocument = nullptr; // borrowed from SkillsScreen
+	Rml::ElementDocument* ShopDocument = nullptr;   // borrowed from ShopScreen
+
+	std::unique_ptr<RmlFrontEndSkills> SkillsScreen;
+	std::unique_ptr<RmlFrontEndShop> ShopScreen;
 
 	std::unique_ptr<FClickListener> ClickListener;
 	std::unique_ptr<RmlFrontEndCharacterPreview> CharacterPreview;
