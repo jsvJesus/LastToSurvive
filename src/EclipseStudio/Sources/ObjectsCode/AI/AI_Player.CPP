@@ -1,7 +1,6 @@
 #include "r3dpch.h"
 #include "r3d.h"
 
-#include "APIScaleformGfx.h"
 #include "AI_Player.h"
 #include "AI_PlayerAnim.h"
 
@@ -44,14 +43,8 @@
 #include "../SF/CmdProcessor/CmdProcessor.h"
 #include "../SF/CmdProcessor/CmdConsole.h"
 
-#include "..\..\ui\HUDDisplay.h"
+#include "..\..\ui\HUDLegacyNull.h"
 #include "..\..\ui\HUD_EditorGame.h"
-#include "..\..\ui\FrontEndShared.h"
-#include "..\..\ui\HUDPause.h"
-#include "..\..\ui\HUDActionUI.h"
-#include "..\..\ui\HUDAttachments.h"
-#include "..\..\ui\HUDGeneralStore.h"
-#include "..\..\ui\HUDVault.h"
 
 extern HUDDisplay*	hudMain;
 extern HUDPause*	hudPause;

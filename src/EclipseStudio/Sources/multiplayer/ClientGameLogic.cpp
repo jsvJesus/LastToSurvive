@@ -27,7 +27,7 @@
 #include "GameLevel.h"
 
 #include "ui/m_LoadingScreen.h"
-#include "ui/HUDDisplay.h"
+#include "ui/HUDLegacyNull.h"
 
 #include "GameObjects/obj_Vehicle.h"
 

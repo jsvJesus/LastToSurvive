@@ -654,13 +654,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp"/>
     <ClCompile Include="Sources\UI\FrontEndShared.cpp"/>
     <ClCompile Include="Sources\UI\FrontEndWarZ.cpp"/>
-    <ClCompile Include="Sources\UI\HUDActionUI.cpp"/>
-    <ClCompile Include="Sources\UI\HUDAttachments.cpp"/>
     <ClCompile Include="Sources\UI\HUDCameraEffects.cpp"/>
-    <ClCompile Include="Sources\UI\HUDDisplay.cpp"/>
-    <ClCompile Include="Sources\UI\HUDGeneralStore.cpp"/>
-    <ClCompile Include="Sources\UI\HUDPause.cpp"/>
-    <ClCompile Include="Sources\UI\HUDVault.cpp"/>
     <ClCompile Include="Sources\UI\HUD_Base.cpp"/>
     <ClCompile Include="Sources\UI\HUD_Character.cpp"/>
     <ClCompile Include="Sources\UI\HUD_EditorGame.cpp"/>
@@ -669,12 +663,10 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\UI\HUD_Spectator.cpp"/>
     <ClCompile Include="Sources\UI\HUD_TPSGame.cpp"/>
     <ClCompile Include="Sources\UI\m_LoadingScreen.cpp"/>
-    <ClCompile Include="Sources\UI\UIItemInventory.cpp"/>
-    <ClCompile Include="Sources\UI\UIMarket.cpp"/>
-    <ClCompile Include="Sources\UI\UIMenu.cpp"/>
     <ClCompile Include="Sources\VersionNo.cpp"/>
     <ClCompile Include="Sources\XMLHelpers.cpp"/>
     <ClCompile Include="Sources\DiscordPresence.cpp"/>
+    <ClCompile Include="..\GameEngine\APIScaleformGfx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\bin\Data\Shaders\DX9_P1\SYSTEM\LibSM\shadow_config.h"/>
@@ -927,13 +919,8 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\UIFilters\NightVisionController.h"/>
     <ClInclude Include="Sources\UI\FrontEndShared.h"/>
     <ClInclude Include="Sources\UI\FrontEndWarZ.h"/>
-    <ClInclude Include="Sources\UI\HUDActionUI.h"/>
-    <ClInclude Include="Sources\UI\HUDAttachments.h"/>
     <ClInclude Include="Sources\UI\HUDCameraEffects.h"/>
-    <ClInclude Include="Sources\UI\HUDDisplay.h"/>
-    <ClInclude Include="Sources\UI\HUDGeneralStore.h"/>
-    <ClInclude Include="Sources\UI\HUDPause.h"/>
-    <ClInclude Include="Sources\UI\HUDVault.h"/>
+    <ClInclude Include="Sources\UI\HUDLegacyNull.h" />
     <ClInclude Include="Sources\UI\HUD_Base.h"/>
     <ClInclude Include="Sources\UI\HUD_Character.h"/>
     <ClInclude Include="Sources\UI\HUD_EditorGame.h"/>
@@ -942,13 +929,11 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\UI\HUD_Spectator.h"/>
     <ClInclude Include="Sources\UI\HUD_TPSGame.h"/>
     <ClInclude Include="Sources\UI\m_LoadingScreen.h"/>
-    <ClInclude Include="Sources\UI\UIAsync.h"/>
-    <ClInclude Include="Sources\UI\UIItemInventory.h"/>
-    <ClInclude Include="Sources\UI\UIMarket.h"/>
-    <ClInclude Include="Sources\UI\UIMenu.h"/>
+    <ClInclude Include="Sources\UI\HUDLegacyNull.h" />
     <ClInclude Include="Sources\VersionNo.h"/>
     <ClInclude Include="Sources\XMLHelpers.h"/>
     <ClInclude Include="Sources\DiscordPresence.h"/>
+    <ClInclude Include="..\GameEngine\APIScaleformGfx.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Sources\resource.rc"/>

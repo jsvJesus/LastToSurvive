@@ -1,7 +1,7 @@
 #include "r3dPCH.h"
 #include "r3dProtect.h"
 
-#include "HUDDisplay.h"
+#include "HUDLegacyNull.h"
 
 #include "ObjectsCode/Gameplay/BasePlayerSpawnPoint.h"
 #include "../multiplayer/clientgamelogic.h"

@@ -3,7 +3,7 @@
 
 #include "GameCommon.h"
 #include "obj_VaultNPC.h"
-#include "UI\HUDVault.h"
+#include "UI\HUDLegacyNull.h"
 
 IMPLEMENT_CLASS(obj_VaultNPC, "obj_VaultNPC", "Object");
 AUTOREGISTER_CLASS(obj_VaultNPC);

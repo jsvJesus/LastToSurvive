@@ -3,7 +3,7 @@
 
 #include "../../../Eternity/sf/Console/config.h"
 #include "HUDPause.h"
-#include "HUDDisplay.h"
+#include "HUDLegacyNull.h"
 #include "HUDAttachments.h"
 #include "LangMngr.h"
 

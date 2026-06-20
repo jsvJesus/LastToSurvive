@@ -14,18 +14,11 @@
 #include "ObjectsCode/Gameplay/BasePlayerSpawnPoint.h"
 #include "ObjectsCode/weapons/WeaponArmory.h"
 
-#include "APIScaleformGfx.h"
-
 #include "multiplayer/ClientGameLogic.h"
 
 #include "HUDCameraEffects.h"
 
-#include "UI\HUDDisplay.h"
-#include "UI\HUDPause.h"
-#include "UI\HUDAttachments.h"
-#include "UI\HUDActionUI.h"
-#include "UI\HUDGeneralStore.h"
-#include "UI\HUDVault.h"
+#include "UI\HUDLegacyNull.h"
 
 #include "..\GameEngine\gameobjects\obj_Vehicle.h"
 

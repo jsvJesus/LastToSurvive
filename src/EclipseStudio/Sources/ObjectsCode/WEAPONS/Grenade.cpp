@@ -16,7 +16,7 @@
 #include "WeaponConfig.h"
 #include "Weapon.h"
 
-#include "..\..\ui\HUDDisplay.h"
+#include "..\..\ui\HUDLegacyNull.h"
 extern HUDDisplay*	hudMain;
 
 IMPLEMENT_CLASS(obj_Grenade, "obj_Grenade", "Object");

@@ -14,7 +14,7 @@
 
 #include "Editors/ObjectManipulator3d.h"
 
-#include "..\..\ui\HUDDisplay.h"
+#include "..\..\ui\HUDLegacyNull.h"
 extern HUDDisplay*	hudMain;
 
 IMPLEMENT_CLASS(obj_PlayerSpawnPoint, "obj_PlayerSpawnPoint", "Object");
