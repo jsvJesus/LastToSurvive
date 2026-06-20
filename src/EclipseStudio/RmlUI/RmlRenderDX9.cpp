@@ -3694,14 +3694,11 @@ bool RmlRenderDX9::LoadTextureD3DX(
 			Text,
 			_countof(Text),
 			_TRUNCATE,
-			L"[RmlUI][DX9] Texture premultiply failed: %ls\n",
+			L"[RmlUI][DX9] Texture premultiply skipped: %ls\n",
 			Filename.c_str()
 		);
 
 		OutputDebugStringW(Text);
-
-		Texture->Release();
-		return false;
 	}
 
 	OutDimensions.x =

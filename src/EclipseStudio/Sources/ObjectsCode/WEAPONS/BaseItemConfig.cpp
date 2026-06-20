@@ -16,7 +16,25 @@ bool BaseItemConfig::loadBaseFromXml(pugi::xml_node& xmlItem)
 
 	m_Weight = xmlItem.attribute("Weight").as_float()/1000.0f; // convert from grams into kg
 
-	m_StoreIcon = strdup(xmlItem.child("Store").attribute("icon").value());
+	pugi::xml_node xmlStore =
+		xmlItem.child("Store");
+
+	m_StoreIcon = strdup(xmlStore.attribute("icon").value());
+	m_StoreSlotWidth = xmlStore.attribute("slotW")
+		? xmlStore.attribute("slotW").as_int()
+		: 0;
+	m_StoreSlotHeight = xmlStore.attribute("slotH")
+		? xmlStore.attribute("slotH").as_int()
+		: 0;
+	m_StoreCategoryOverride = xmlStore.attribute("shopCategory")
+		? xmlStore.attribute("shopCategory").as_int()
+		: 0;
+	m_StoreSortOrder = xmlStore.attribute("sort")
+		? xmlStore.attribute("sort").as_int()
+		: 0;
+	m_StoreFeatured = xmlStore.attribute("featured")
+		? xmlStore.attribute("featured").as_int() != 0
+		: false;
 
 #ifndef WO_SERVER
 	char tmpStr[64];

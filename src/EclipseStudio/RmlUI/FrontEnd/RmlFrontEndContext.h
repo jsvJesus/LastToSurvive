@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <vector>
 
 class RmlFrontEndCharacterPreview;
 
@@ -193,9 +194,21 @@ private:
 
 	void BuildShop();
 
+	void BuildShopItemList();
+
 	void SelectShopItem(
 		const Rml::String& ShopItemId
 	);
+
+	void SelectShopCategory(
+		const Rml::String& CategoryId
+	);
+
+	void SelectShopCurrency(
+		const Rml::String& CurrencyId
+	);
+
+	void RequestBuySelectedShopItem();
 
 	void RefreshShopSelection();
 
@@ -297,6 +310,13 @@ private:
 		const Rml::String& Value
 	);
 
+	void SetElementAttribute(
+		Rml::ElementDocument* Document,
+		const char* ElementId,
+		const char* AttributeName,
+		const Rml::String& Value
+	);
+
 	void SetElementClass(
 		Rml::ElementDocument* Document,
 		const char* ElementId,
@@ -352,6 +372,12 @@ private:
 
 	Rml::String SelectedShopItemElementId = "shop_item_0";
 	int SelectedShopBackendItemId = 0;
+	int SelectedShopStoreIndex = -1;
+	int SelectedShopBuyIndex = 4;
+	Rml::String SelectedShopCategoryId = "shop_category_featured";
+	Rml::String SelectedShopCurrencyId = "shop_currency_gc";
+	Rml::String SelectedShopSortId = "shop_tab_hot";
+	std::vector<int> ShopVisibleItemIndices;
 
 	EScreen CurrentScreen = EScreen::Login;
 	ERmlFrontEndResult PendingResult = ERmlFrontEndResult::None;

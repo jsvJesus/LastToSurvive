@@ -8,6 +8,7 @@
 #include "cvar.h"
 #include "GameCode/UserProfile.h"
 #include "backend/WOBackendAPI.h"
+#include "ObjectsCode/weapons/WeaponArmory.h"
 
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
@@ -22,6 +23,7 @@
 #include <cstring>
 #include <string>
 #include <cctype>
+#include <vector>
 #include <windowsx.h>
 
 #include "r3dDebug.h"
@@ -387,160 +389,619 @@ namespace
 	const size_t ShopItemButtonPrefixLength =
 		strlen(ShopItemButtonPrefix);
 
-	struct FFrontendShopItem
+	constexpr int ShopCategoryPlaceable =
+		28;
+
+	constexpr int ShopCategoryMedicine =
+		31;
+
+	constexpr int ShopCategoryUsable =
+		32;
+
+	constexpr int ShopGridColumns =
+		12;
+
+	constexpr int ShopGridCellSize =
+		64;
+
+	struct FShopGridSize
 	{
-		const char* ElementId;
-		int BackendItemId;
-
-		const char* CategoryId;
-		const char* CategoryName;
-
-		const char* DisplayName;
-		const char* TypeName;
-		const char* Description;
-
-		const char* IconText;
-		const char* BadgeText;
-
-		const char* GcPriceText;
-		const char* GdPriceText;
-
-		int Damage;
-		int Range;
-		int Recoil;
-		int Weight;
+		int Width = 1;
+		int Height = 1;
 	};
 
-	const FFrontendShopItem FrontendShopItems[] =
-	{
-		{
-			"shop_item_0",
-			101001,
-			"featured",
-			"FEATURED ITEM",
-			"AK-74M",
-			"ASSAULT RIFLE",
-			"Reliable military assault rifle with solid damage, controllable recoil and good field durability.",
-			"AK",
-			"FEATURED ITEM",
-			"195",
-			"15 000",
-			72,
-			64,
-			48,
-			38
-		},
-		{
-			"shop_item_1",
-			20015,
-			"gear",
-			"BODY ARMOR",
-			"Custom Guerilla",
-			"BODY ARMOR",
-			"Custom designed guerilla field gear and body armor for fast moving survival operations.",
-			"AR",
-			"NEW ITEM",
-			"115",
-			"8 500",
-			25,
-			30,
-			15,
-			40
-		},
-		{
-			"shop_item_2",
-			20006,
-			"gear",
-			"HELMET",
-			"K. Style Helmet",
-			"HELMET",
-			"Compact tactical helmet with basic head protection for hostile environments.",
-			"HL",
-			"LEVEL LOCKED",
-			"200",
-			"LOCKED",
-			30,
-			20,
-			10,
-			30
-		},
-		{
-			"shop_item_3",
-			301003,
-			"backpacks",
-			"BACKPACK",
-			"Medium Backpack",
-			"BACKPACK",
-			"Medium storage backpack for carrying additional weapons, supplies and loot.",
-			"BP",
-			"SALE ITEM",
-			"90",
-			"6 000",
-			0,
-			0,
-			0,
-			55
-		},
-		{
-			"shop_item_4",
-			400004,
-			"consumables",
-			"CONSUMABLE",
-			"Medkit",
-			"CONSUMABLE",
-			"Medical survival kit used to restore health during raids and emergency encounters.",
-			"MD",
-			"MEDICAL",
-			"25",
-			"1 500",
-			0,
-			0,
-			0,
-			12
-		},
-		{
-			"shop_item_5",
-			500005,
-			"crates",
-			"LOOT CRATE",
-			"Survivor Crate",
-			"LOOT CRATE",
-			"Randomized survivor supply crate. Contents are controlled by backend rules.",
-			"CR",
-			"RANDOM BOX",
-			"75",
-			"RANDOM",
-			0,
-			0,
-			0,
-			20
-		}
-	};
-
-	const size_t FrontendShopItemCount =
-		sizeof(FrontendShopItems) /
-		sizeof(FrontendShopItems[0]);
-
-	const FFrontendShopItem* FindFrontendShopItem(
-		const Rml::String& ElementId
+	bool IsOneOfItemIds(
+		uint32_t ItemId,
+		const uint32_t* ItemIds,
+		size_t ItemCount
 	)
 	{
+		for (size_t Index = 0; Index < ItemCount; ++Index)
+		{
+			if (ItemIds[Index] == ItemId)
+				return true;
+		}
+
+		return false;
+	}
+
+	bool IsShopMedicineItem(
+		uint32_t ItemId
+	)
+	{
+		static const uint32_t MedicineItemIds[] =
+		{
+			101256,
+			101261,
+			101262,
+			101300,
+			101301,
+			101302,
+			101303,
+			101304
+		};
+
+		return IsOneOfItemIds(
+			ItemId,
+			MedicineItemIds,
+			sizeof(MedicineItemIds) /
+				sizeof(MedicineItemIds[0])
+		);
+	}
+
+	bool IsShopHandUsableItem(
+		uint32_t ItemId
+	)
+	{
+		static const uint32_t UsableItemIds[] =
+		{
+			101315,
+			101319,
+			101323
+		};
+
+		return IsOneOfItemIds(
+			ItemId,
+			UsableItemIds,
+			sizeof(UsableItemIds) /
+				sizeof(UsableItemIds[0])
+		);
+	}
+
+	bool IsShopPlaceableItem(
+		uint32_t ItemId
+	)
+	{
+		static const uint32_t PlaceableItemIds[] =
+		{
+			101305,
+			101316,
+			101317,
+			101318,
+			101324,
+			101348,
+			101352,
+			101353,
+			101354,
+			101355,
+			101356,
+			101357,
+			101358,
+			101359,
+			101360,
+			101361,
+			101362,
+			101363,
+			101364,
+			101365,
+			101366,
+			101367,
+			101368,
+			101369,
+			101370,
+			101371,
+			101372,
+			101373,
+			101374,
+			101375,
+			101376,
+			101377,
+			101378,
+			101379,
+			101380
+		};
+
+		return IsOneOfItemIds(
+			ItemId,
+			PlaceableItemIds,
+			sizeof(PlaceableItemIds) /
+				sizeof(PlaceableItemIds[0])
+		);
+	}
+
+	int GetShopRuntimeCategory(
+		const BaseItemConfig* Config
+	)
+	{
+		if (!Config)
+			return storecat_INVALID;
+
+		const int Category =
+			static_cast<int>(
+				Config->category
+			);
+
+		if (Config->m_StoreCategoryOverride > 0)
+			return Config->m_StoreCategoryOverride;
+
+		if (Category == storecat_UsableItem)
+		{
+			if (IsShopMedicineItem(Config->m_itemID))
+				return ShopCategoryMedicine;
+
+			if (IsShopPlaceableItem(Config->m_itemID))
+				return ShopCategoryPlaceable;
+
+			if (IsShopHandUsableItem(Config->m_itemID))
+				return ShopCategoryUsable;
+
+			return ShopCategoryUsable;
+		}
+
+		return Category;
+	}
+
+	bool IsShopRuntimeCategoryAllowed(
+		int Category
+	)
+	{
+		return
+			Category != storecat_INVALID &&
+			Category != storecat_Account &&
+			Category != storecat_Boost &&
+			Category != storecat_LootBox &&
+			Category != storecat_HeroPackage;
+	}
+
+	const char* GetShopCategoryLabel(
+		int Category
+	)
+	{
+		switch (Category)
+		{
+			case storecat_Account:
+				return "ACCOUNT";
+			case storecat_Boost:
+				return "BOOST";
+			case storecat_LootBox:
+				return "CRATE";
+			case storecat_Armor:
+				return "ARMOR";
+			case storecat_Backpack:
+				return "BACKPACK";
+			case storecat_Helmet:
+				return "HELMET";
+			case storecat_HeroPackage:
+				return "SURVIVOR";
+			case storecat_FPSAttachment:
+				return "ATTACHMENT";
+			case storecat_ASR:
+				return "ASSAULT RIFLE";
+			case storecat_SNP:
+				return "SNIPER RIFLE";
+			case storecat_SHTG:
+				return "SHOTGUN";
+			case storecat_MG:
+				return "MACHINE GUN";
+			case storecat_HG:
+				return "HANDGUN";
+			case storecat_SMG:
+				return "SUBMACHINE GUN";
+			case storecat_GRENADE:
+				return "EXPLOSIVE";
+			case storecat_UsableItem:
+				return "PLACEABLE";
+			case storecat_MELEE:
+				return "MELEE";
+			case storecat_Food:
+				return "FOOD";
+			case ShopCategoryMedicine:
+				return "MEDICINE";
+			case ShopCategoryUsable:
+				return "USABLE";
+			case storecat_Water:
+				return "WATER";
+			default:
+				return "ITEM";
+		}
+	}
+
+	bool IsShopCategoryMatch(
+		const Rml::String& CategoryId,
+		int Category
+	)
+	{
+		if (
+			CategoryId.empty() ||
+			CategoryId == "shop_category_featured"
+		)
+		{
+			return IsShopRuntimeCategoryAllowed(
+				Category
+			);
+		}
+
+		if (CategoryId == "shop_category_weapons")
+		{
+			return
+				Category == storecat_ASR ||
+				Category == storecat_SNP ||
+				Category == storecat_SHTG ||
+				Category == storecat_MG ||
+				Category == storecat_HG ||
+				Category == storecat_SMG ||
+				Category == storecat_GRENADE ||
+				Category == storecat_MELEE;
+		}
+
+		if (CategoryId == "shop_category_body_armor")
+			return Category == storecat_Armor;
+
+		if (CategoryId == "shop_category_helmets")
+			return Category == storecat_Helmet;
+
+		if (CategoryId == "shop_category_backpacks")
+			return Category == storecat_Backpack;
+
+		if (CategoryId == "shop_category_attachments")
+			return Category == storecat_FPSAttachment;
+
+		if (CategoryId == "shop_category_placeable")
+			return Category == ShopCategoryPlaceable;
+
+		if (CategoryId == "shop_category_food")
+			return Category == storecat_Food;
+
+		if (CategoryId == "shop_category_medicine")
+			return Category == ShopCategoryMedicine;
+
+		if (CategoryId == "shop_category_usable")
+			return Category == ShopCategoryUsable;
+
+		if (CategoryId == "shop_category_water")
+			return Category == storecat_Water;
+
+		return true;
+	}
+
+	FShopGridSize GetDefaultShopGridSize(
+		int Category,
+		uint32_t ItemId
+	)
+	{
+		switch (Category)
+		{
+			case storecat_ASR:
+			case storecat_SNP:
+			case storecat_SHTG:
+			case storecat_MG:
+			case storecat_SMG:
+				return { 4, 2 };
+			case storecat_Armor:
+				return { 2, 3 };
+			case storecat_Backpack:
+			case storecat_Helmet:
+			case storecat_HG:
+			case storecat_MELEE:
+			case ShopCategoryPlaceable:
+				return { 2, 2 };
+			case storecat_FPSAttachment:
+				return ItemId % 2
+					? FShopGridSize { 1, 2 }
+					: FShopGridSize { 2, 1 };
+			case storecat_GRENADE:
+			case storecat_Food:
+			case ShopCategoryMedicine:
+			case ShopCategoryUsable:
+			case storecat_Water:
+				return { 1, 1 };
+			default:
+				return { 1, 1 };
+		}
+	}
+
+	FShopGridSize GetShopGridSize(
+		const BaseItemConfig* Config,
+		int Category
+	)
+	{
+		FShopGridSize Size =
+			GetDefaultShopGridSize(
+				Category,
+				Config
+					? Config->m_itemID
+					: 0
+			);
+
+		if (
+			Config &&
+			Config->m_StoreSlotWidth > 0 &&
+			Config->m_StoreSlotHeight > 0
+		)
+		{
+			Size.Width =
+				Config->m_StoreSlotWidth;
+
+			Size.Height =
+				Config->m_StoreSlotHeight;
+		}
+
+		Size.Width = std::max(
+			1,
+			std::min(
+				ShopGridColumns,
+				Size.Width
+			)
+		);
+
+		Size.Height = std::max(
+			1,
+			std::min(
+				6,
+				Size.Height
+			)
+		);
+
+		return Size;
+	}
+
+	const char* GetShopItemSizeClass(
+		const FShopGridSize& Size
+	)
+	{
+		if (Size.Width == 4 && Size.Height == 2)
+			return "item_size_4x2";
+
+		if (Size.Width == 2 && Size.Height == 3)
+			return "item_size_2x3";
+
+		if (Size.Width == 2 && Size.Height == 2)
+			return "item_size_2x2";
+
+		if (Size.Width == 2 && Size.Height == 1)
+			return "item_size_2x1";
+
+		if (Size.Width == 1 && Size.Height == 2)
+			return "item_size_1x2";
+
+		return "item_size_1x1";
+	}
+
+	int GetShopQuantity(
+		uint32_t ItemId
+	)
+	{
+		int Quantity = 1;
+
+		if (g_pWeaponArmory)
+		{
+			const WeaponConfig* Weapon =
+				g_pWeaponArmory->getWeaponConfig(
+					ItemId
+				);
+
+			if (Weapon)
+				Quantity = Weapon->m_ShopStackSize;
+
+			const FoodConfig* Food =
+				g_pWeaponArmory->getFoodConfig(
+					ItemId
+				);
+
+			if (Food)
+				Quantity = Food->m_ShopStackSize;
+		}
+
+		return std::max(
+			1,
+			Quantity
+		);
+	}
+
+	std::string GetShopIconPath(
+		const BaseItemConfig* Config
+	)
+	{
+		if (
+			Config &&
+			Config->m_StoreIcon &&
+			Config->m_StoreIcon[0]
+		)
+		{
+			std::string Path =
+				Config->m_StoreIcon;
+
+			std::replace(
+				Path.begin(),
+				Path.end(),
+				'\\',
+				'/'
+			);
+
+			const std::string DataPrefix =
+				"$Data/";
+
+			if (
+				Path.compare(
+					0,
+					DataPrefix.length(),
+					DataPrefix
+				) == 0
+			)
+			{
+				Path.erase(
+					0,
+					DataPrefix.length()
+				);
+			}
+			else if (
+				Path.compare(
+					0,
+					5,
+					"Data/"
+				) == 0
+			)
+			{
+				Path.erase(
+					0,
+					5
+				);
+			}
+
+			if (Path.find('/') == std::string::npos)
+			{
+				Path =
+					std::string(
+						"Weapons/StoreIcons/"
+					) +
+					Path;
+			}
+
+			if (
+				Path.length() < 4 ||
+				Path.substr(Path.length() - 4) != ".dds"
+			)
+			{
+				Path += ".dds";
+			}
+
+			return Path;
+		}
+
+		return "Weapons/no_icon.dds";
+	}
+
+	uint32_t GetShopLowestPrice(
+		const wiStoreItem& StoreItem
+	)
+	{
+		if (
+			StoreItem.pricePerm > 0 &&
+			StoreItem.gd_pricePerm > 0
+		)
+		{
+			return std::min(
+				StoreItem.pricePerm,
+				StoreItem.gd_pricePerm
+			);
+		}
+
+		if (StoreItem.pricePerm > 0)
+			return StoreItem.pricePerm;
+
+		return StoreItem.gd_pricePerm;
+	}
+
+	bool IsShopItemOwned(
+		uint32_t ItemId
+	)
+	{
+		const wiUserProfile& Profile =
+			gUserProfile.ProfileData;
+
 		for (
-			size_t Index = 0;
-			Index < FrontendShopItemCount;
+			uint32_t Index = 0;
+			Index < Profile.NumItems;
 			++Index
 		)
 		{
 			if (
-				ElementId ==
-				FrontendShopItems[Index].ElementId
+				Profile.Inventory[Index].itemID ==
+				ItemId
 			)
 			{
-				return &FrontendShopItems[Index];
+				return true;
 			}
 		}
 
-		return nullptr;
+		return false;
+	}
+
+	bool IsShopFeaturedItem(
+		const wiStoreItem& StoreItem,
+		const BaseItemConfig* Config
+	)
+	{
+		return
+			StoreItem.isNew ||
+			(Config && Config->m_StoreFeatured);
+	}
+
+	bool DoesShopSortFilterMatch(
+		const Rml::String& SortId,
+		const wiStoreItem& StoreItem,
+		const BaseItemConfig* Config
+	)
+	{
+		if (SortId == "shop_tab_new")
+			return StoreItem.isNew;
+
+		if (SortId == "shop_tab_owned")
+			return IsShopItemOwned(
+				StoreItem.itemID
+			);
+
+		return true;
+	}
+
+	std::string FormatShopPrice(
+		uint32_t Price
+	)
+	{
+		if (Price == 0)
+			return "-";
+
+		char Buffer[64]{};
+
+		sprintf_s(
+			Buffer,
+			"%u",
+			Price
+		);
+
+		std::string Raw =
+			Buffer;
+
+		std::string Result;
+		int Counter = 0;
+
+		for (
+			int Index =
+				static_cast<int>(Raw.size()) - 1;
+			Index >= 0;
+			--Index
+		)
+		{
+			if (Counter == 3)
+			{
+				Result.insert(
+					Result.begin(),
+					' '
+				);
+				Counter = 0;
+			}
+
+			Result.insert(
+				Result.begin(),
+				Raw[
+					static_cast<size_t>(Index)
+				]
+			);
+
+			++Counter;
+		}
+
+		return Result;
 	}
 
 	std::string FormatPlayedTime(int TotalSeconds)
@@ -903,6 +1364,12 @@ void RmlFrontEndContext::Shutdown()
 
 	SelectedShopItemElementId = "shop_item_0";
 	SelectedShopBackendItemId = 0;
+	SelectedShopStoreIndex = -1;
+	SelectedShopBuyIndex = 4;
+	SelectedShopCategoryId = "shop_category_featured";
+	SelectedShopCurrencyId = "shop_currency_gc";
+	SelectedShopSortId = "shop_tab_hot";
+	ShopVisibleItemIndices.clear();
 
 	CurrentScreen = EScreen::Login;
 	PendingResult = ERmlFrontEndResult::None;
@@ -1617,6 +2084,36 @@ void RmlFrontEndContext::SetElementProperty(
 	);
 }
 
+void RmlFrontEndContext::SetElementAttribute(
+	Rml::ElementDocument* Document,
+	const char* ElementId,
+	const char* AttributeName,
+	const Rml::String& Value
+)
+{
+	if (
+		!Document ||
+		!ElementId ||
+		!AttributeName
+	)
+	{
+		return;
+	}
+
+	Rml::Element* Element =
+		Document->GetElementById(
+			ElementId
+		);
+
+	if (!Element)
+		return;
+
+	Element->SetAttribute(
+		AttributeName,
+		Value
+	);
+}
+
 void RmlFrontEndContext::SetElementClass(
 	Rml::ElementDocument* Document,
 	const char* ElementId,
@@ -1848,10 +2345,6 @@ void RmlFrontEndContext::ShowShop()
 		EScreen::Shop;
 
 	BuildShop();
-
-	SetShopControlsEnabled(
-		true
-	);
 
 	RmlRuntime::Get().SetActiveContext(
 		Context
@@ -2200,10 +2693,7 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_shop_buy_selected")
 		{
-			SetShopStatus(
-				"Shop purchase backend is not connected yet."
-			);
-
+			RequestBuySelectedShopItem();
 			return;
 		}
 
@@ -2218,8 +2708,19 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_shop_sort")
 		{
+			if (SelectedShopSortId == "shop_tab_hot")
+				SelectedShopSortId = "shop_tab_new";
+			else if (SelectedShopSortId == "shop_tab_new")
+				SelectedShopSortId = "shop_tab_sale";
+			else if (SelectedShopSortId == "shop_tab_sale")
+				SelectedShopSortId = "shop_tab_owned";
+			else
+				SelectedShopSortId = "shop_tab_hot";
+
+			BuildShop();
+
 			SetShopStatus(
-				"Shop sorting is visual only."
+				"Shop sort changed."
 			);
 
 			return;
@@ -2227,10 +2728,15 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_shop_refresh")
 		{
+			const int ApiCode =
+				gUserProfile.ApiGetShopData();
+
 			BuildShop();
 
 			SetShopStatus(
-				"Shop visual data refreshed."
+				ApiCode == 0
+					? "Shop data refreshed."
+					: "Shop refresh failed."
 			);
 
 			return;
@@ -2254,14 +2760,31 @@ void RmlFrontEndContext::HandleClick(
 		if (
 			Id == "shop_category_featured" ||
 			Id == "shop_category_weapons" ||
-			Id == "shop_category_gear" ||
+			Id == "shop_category_body_armor" ||
+			Id == "shop_category_helmets" ||
 			Id == "shop_category_backpacks" ||
-			Id == "shop_category_consumables" ||
-			Id == "shop_category_crates"
+			Id == "shop_category_attachments" ||
+			Id == "shop_category_placeable" ||
+			Id == "shop_category_food" ||
+			Id == "shop_category_medicine" ||
+			Id == "shop_category_usable" ||
+			Id == "shop_category_water"
 		)
 		{
-			SetShopStatus(
-				"Shop category selected. Backend filtering is not connected yet."
+			SelectShopCategory(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_currency_gc" ||
+			Id == "shop_currency_gd"
+		)
+		{
+			SelectShopCurrency(
+				Id
 			);
 
 			return;
@@ -2274,8 +2797,13 @@ void RmlFrontEndContext::HandleClick(
 			Id == "shop_tab_owned"
 		)
 		{
+			SelectedShopSortId =
+				Id;
+
+			BuildShop();
+
 			SetShopStatus(
-				"Shop tab selected. Backend filtering is not connected yet."
+				"Shop sort changed."
 			);
 
 			return;
@@ -3031,10 +3559,28 @@ unsigned int RmlFrontEndContext::RunAsyncOperation()
 			ProfileResult
 		);
 
-		Result =
-			ProfileResult == 0
-				? AsyncResult_Success
-				: AsyncResult_Error;
+		if (ProfileResult == 0)
+		{
+			const int ShopResult =
+				gUserProfile.ApiGetShopData();
+
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Profile] "
+				"ApiGetShopData result=%d Items=%u\n",
+				ShopResult,
+				g_NumStoreItems
+			);
+
+			Result =
+				ShopResult == 0
+					? AsyncResult_Success
+					: AsyncResult_Error;
+		}
+		else
+		{
+			Result =
+				AsyncResult_Error;
+		}
 	}
 	else if (
 		Operation ==
@@ -4619,16 +5165,77 @@ void RmlFrontEndContext::BuildShop()
 			: "OFFLINE"
 	);
 
-	if (
-		SelectedShopItemElementId.empty() ||
-		!FindFrontendShopItem(
-			SelectedShopItemElementId
-		)
-	)
+	BuildShopItemList();
+
+	if (ShopVisibleItemIndices.empty())
 	{
-		SelectedShopItemElementId =
-			"shop_item_0";
+		SelectedShopStoreIndex = -1;
+		SelectedShopBackendItemId = 0;
+
+		SetElementText(
+			ShopDocument,
+			"selected_item_name",
+			"NO ITEMS"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"selected_item_description",
+			"No shop items are available for this category."
+		);
+
+		SetElementAttribute(
+			ShopDocument,
+			"selected_item_store_icon",
+			"src",
+			"Weapons/no_icon.dds"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"selected_item_gc_price",
+			"-"
+		);
+
+		SetElementText(
+			ShopDocument,
+			"selected_item_gd_price",
+			"-"
+		);
+
+		SetShopControlsEnabled(
+			false
+		);
+
+		SetShopStatus(
+			"No shop items available."
+		);
+
+		return;
 	}
+
+	bool bSelectionVisible = false;
+
+	for (int StoreIndex : ShopVisibleItemIndices)
+	{
+		if (StoreIndex == SelectedShopStoreIndex)
+		{
+			bSelectionVisible = true;
+			break;
+		}
+	}
+
+	if (!bSelectionVisible)
+	{
+		SelectedShopStoreIndex =
+			ShopVisibleItemIndices.front();
+	}
+
+	SelectedShopItemElementId =
+		"shop_item_" +
+		std::to_string(
+			SelectedShopStoreIndex
+		);
 
 	SelectShopItem(
 		SelectedShopItemElementId
@@ -4643,6 +5250,578 @@ void RmlFrontEndContext::BuildShop()
 	);
 }
 
+void RmlFrontEndContext::BuildShopItemList()
+{
+	ShopVisibleItemIndices.clear();
+
+	if (!ShopDocument)
+		return;
+
+	Rml::Element* Container =
+		ShopDocument->GetElementById(
+			"shop_items_grid"
+		);
+
+	if (!Container)
+		return;
+
+	for (uint32_t Index = 0; Index < g_NumStoreItems; ++Index)
+	{
+		const wiStoreItem& StoreItem =
+			g_StoreItems[Index];
+
+		if (
+			StoreItem.pricePerm == 0 &&
+			StoreItem.gd_pricePerm == 0
+		)
+		{
+			continue;
+		}
+
+		if (
+			StoreItem.itemID >= 301151 &&
+			StoreItem.itemID <= 301157
+		)
+		{
+			continue;
+		}
+
+		const BaseItemConfig* Config =
+			g_pWeaponArmory
+				? g_pWeaponArmory->getConfig(
+					StoreItem.itemID
+				)
+				: nullptr;
+
+		if (!Config)
+			continue;
+
+		const int RuntimeCategory =
+			GetShopRuntimeCategory(
+				Config
+			);
+
+		if (
+			!IsShopRuntimeCategoryAllowed(
+				RuntimeCategory
+			)
+		)
+		{
+			continue;
+		}
+
+		if (
+			SelectedShopCategoryId ==
+			"shop_category_featured" &&
+			!IsShopFeaturedItem(
+				StoreItem,
+				Config
+			)
+		)
+		{
+			continue;
+		}
+
+		if (
+			!IsShopCategoryMatch(
+				SelectedShopCategoryId,
+				RuntimeCategory
+			)
+		)
+		{
+			continue;
+		}
+
+		ShopVisibleItemIndices.push_back(
+			static_cast<int>(Index)
+		);
+	}
+
+	std::sort(
+		ShopVisibleItemIndices.begin(),
+		ShopVisibleItemIndices.end(),
+		[this](
+			int LeftIndex,
+			int RightIndex
+		)
+		{
+			const wiStoreItem& LeftStore =
+				g_StoreItems[LeftIndex];
+
+			const wiStoreItem& RightStore =
+				g_StoreItems[RightIndex];
+
+			const BaseItemConfig* LeftConfig =
+				g_pWeaponArmory
+					? g_pWeaponArmory->getConfig(
+						LeftStore.itemID
+					)
+					: nullptr;
+
+			const BaseItemConfig* RightConfig =
+				g_pWeaponArmory
+					? g_pWeaponArmory->getConfig(
+						RightStore.itemID
+					)
+					: nullptr;
+
+			const char* LeftName =
+				LeftConfig &&
+				LeftConfig->m_StoreName
+					? LeftConfig->m_StoreName
+					: "";
+
+			const char* RightName =
+				RightConfig &&
+				RightConfig->m_StoreName
+					? RightConfig->m_StoreName
+					: "";
+
+			if (SelectedShopSortId == "shop_tab_new")
+			{
+				if (LeftStore.isNew != RightStore.isNew)
+					return LeftStore.isNew;
+			}
+			else if (SelectedShopSortId == "shop_tab_sale")
+			{
+				const uint32_t LeftPrice =
+					GetShopLowestPrice(
+						LeftStore
+					);
+
+				const uint32_t RightPrice =
+					GetShopLowestPrice(
+						RightStore
+					);
+
+				if (LeftPrice != RightPrice)
+					return LeftPrice < RightPrice;
+			}
+			else if (SelectedShopSortId == "shop_tab_owned")
+			{
+				const bool bLeftOwned =
+					IsShopItemOwned(
+						LeftStore.itemID
+					);
+
+				const bool bRightOwned =
+					IsShopItemOwned(
+						RightStore.itemID
+					);
+
+				if (bLeftOwned != bRightOwned)
+					return bLeftOwned;
+			}
+			else
+			{
+				const bool bLeftFeatured =
+					IsShopFeaturedItem(
+						LeftStore,
+						LeftConfig
+					);
+
+				const bool bRightFeatured =
+					IsShopFeaturedItem(
+						RightStore,
+						RightConfig
+					);
+
+				if (bLeftFeatured != bRightFeatured)
+					return bLeftFeatured;
+			}
+
+			const int LeftSort =
+				LeftConfig
+					? LeftConfig->m_StoreSortOrder
+					: 0;
+
+			const int RightSort =
+				RightConfig
+					? RightConfig->m_StoreSortOrder
+					: 0;
+
+			if (LeftSort != RightSort)
+				return LeftSort < RightSort;
+
+			const int NameCompare =
+				_stricmp(
+					LeftName,
+					RightName
+				);
+
+			if (NameCompare != 0)
+				return NameCompare < 0;
+
+			return LeftStore.itemID <
+				RightStore.itemID;
+		}
+	);
+
+	Rml::String ItemsMarkup;
+	std::vector<unsigned char> GridOccupancy;
+	int GridRows = 0;
+
+	auto EnsureRows =
+		[&GridOccupancy, &GridRows](
+			int RequiredRows
+		)
+		{
+			if (RequiredRows <= GridRows)
+				return;
+
+			GridOccupancy.resize(
+				static_cast<size_t>(
+					RequiredRows *
+					ShopGridColumns
+				),
+				0
+			);
+
+			GridRows =
+				RequiredRows;
+		};
+
+	auto CanPlace =
+		[&GridOccupancy, &EnsureRows](
+			int Column,
+			int Row,
+			const FShopGridSize& Size
+		)
+		{
+			if (
+				Column < 0 ||
+				Column + Size.Width >
+					ShopGridColumns
+			)
+			{
+				return false;
+			}
+
+			EnsureRows(
+				Row + Size.Height
+			);
+
+			for (int Y = 0; Y < Size.Height; ++Y)
+			{
+				for (int X = 0; X < Size.Width; ++X)
+				{
+					const int Offset =
+						(Row + Y) *
+						ShopGridColumns +
+						Column + X;
+
+					if (
+						GridOccupancy[
+							static_cast<size_t>(
+								Offset
+							)
+						]
+					)
+					{
+						return false;
+					}
+				}
+			}
+
+			return true;
+		};
+
+	auto MarkPlaced =
+		[&GridOccupancy](
+			int Column,
+			int Row,
+			const FShopGridSize& Size
+		)
+		{
+			for (int Y = 0; Y < Size.Height; ++Y)
+			{
+				for (int X = 0; X < Size.Width; ++X)
+				{
+					const int Offset =
+						(Row + Y) *
+						ShopGridColumns +
+						Column + X;
+
+					GridOccupancy[
+						static_cast<size_t>(
+							Offset
+						)
+					] = 1;
+				}
+			}
+		};
+
+	int UsedRows = 0;
+
+	for (int StoreIndex : ShopVisibleItemIndices)
+	{
+		const uint32_t Index =
+			static_cast<uint32_t>(
+				StoreIndex
+			);
+
+		const wiStoreItem& StoreItem =
+			g_StoreItems[Index];
+
+		const BaseItemConfig* Config =
+			g_pWeaponArmory
+				? g_pWeaponArmory->getConfig(
+					StoreItem.itemID
+				)
+				: nullptr;
+
+		if (!Config)
+			continue;
+
+		const int RuntimeCategory =
+			GetShopRuntimeCategory(
+				Config
+			);
+
+		const FShopGridSize GridSize =
+			GetShopGridSize(
+				Config,
+				RuntimeCategory
+			);
+
+		int ItemColumn = 0;
+		int ItemRow = 0;
+		bool bPlaced = false;
+
+		for (
+			ItemRow = 0;
+			!bPlaced;
+			++ItemRow
+		)
+		{
+			for (
+				ItemColumn = 0;
+				ItemColumn <=
+					ShopGridColumns -
+					GridSize.Width;
+				++ItemColumn
+			)
+			{
+				if (
+					CanPlace(
+						ItemColumn,
+						ItemRow,
+						GridSize
+					)
+				)
+				{
+					MarkPlaced(
+						ItemColumn,
+						ItemRow,
+						GridSize
+					);
+
+					bPlaced = true;
+					break;
+				}
+			}
+		}
+
+		--ItemRow;
+
+		UsedRows = std::max(
+			UsedRows,
+			ItemRow + GridSize.Height
+		);
+
+		const bool bSelected =
+			static_cast<int>(Index) ==
+			SelectedShopStoreIndex;
+
+		const std::string ElementId =
+			"shop_item_" +
+			std::to_string(Index);
+
+		const char* Name =
+			Config->m_StoreName &&
+			Config->m_StoreName[0]
+				? Config->m_StoreName
+				: "UNKNOWN ITEM";
+
+		const char* Category =
+			GetShopCategoryLabel(
+				RuntimeCategory
+			);
+
+		std::string PriceText;
+
+		if (StoreItem.pricePerm > 0)
+		{
+			PriceText +=
+				FormatShopPrice(
+					StoreItem.pricePerm
+				);
+			PriceText += " GC";
+		}
+
+		if (StoreItem.gd_pricePerm > 0)
+		{
+			if (!PriceText.empty())
+				PriceText += " / ";
+
+			PriceText +=
+				FormatShopPrice(
+					StoreItem.gd_pricePerm
+				);
+			PriceText += " GD";
+		}
+
+		const int Quantity =
+			GetShopQuantity(
+				StoreItem.itemID
+			);
+
+		ItemsMarkup += "<button id=\"";
+		ItemsMarkup += ElementId;
+		ItemsMarkup += "\" class=\"shop_item_card ";
+		ItemsMarkup += GetShopItemSizeClass(
+			GridSize
+		);
+
+		if (bSelected)
+			ItemsMarkup += " selected";
+
+		ItemsMarkup += "\" style=\"left: ";
+		ItemsMarkup += std::to_string(
+			ItemColumn * ShopGridCellSize
+		);
+		ItemsMarkup += "px; top: ";
+		ItemsMarkup += std::to_string(
+			ItemRow * ShopGridCellSize
+		);
+		ItemsMarkup += "px; width: ";
+		ItemsMarkup += std::to_string(
+			GridSize.Width * ShopGridCellSize
+		);
+		ItemsMarkup += "px; height: ";
+		ItemsMarkup += std::to_string(
+			GridSize.Height * ShopGridCellSize
+		);
+		ItemsMarkup += "px;\">";
+
+		ItemsMarkup += "<div class=\"shop_item_badge\">";
+		ItemsMarkup += StoreItem.isNew
+			? "NEW"
+			: Category;
+		ItemsMarkup += "</div>";
+
+		ItemsMarkup += "<img class=\"shop_item_image\" src=\"";
+		ItemsMarkup += GetShopIconPath(
+			Config
+		);
+		ItemsMarkup += "\"/>";
+
+		if (Quantity > 1)
+		{
+			ItemsMarkup += "<div class=\"shop_item_stack\">x";
+			ItemsMarkup += std::to_string(
+				Quantity
+			);
+			ItemsMarkup += "</div>";
+		}
+
+		ItemsMarkup += "<div class=\"shop_item_name\">";
+		ItemsMarkup += EscapeRmlText(
+			Name
+		);
+		ItemsMarkup += "</div>";
+
+		ItemsMarkup += "<div class=\"shop_item_type\">";
+		ItemsMarkup += Category;
+		ItemsMarkup += "</div>";
+
+		ItemsMarkup += "<div class=\"shop_item_price\">";
+		ItemsMarkup += EscapeRmlText(
+			PriceText
+		);
+		ItemsMarkup += "</div>";
+
+		ItemsMarkup += "</button>";
+	}
+
+	Rml::String Markup;
+
+	if (ShopVisibleItemIndices.empty())
+	{
+		Markup =
+			"<div class=\"shop_empty_text\">"
+			"NO ITEMS IN THIS CATEGORY"
+			"</div>";
+	}
+	else
+	{
+		const int ContentHeight =
+			std::max(
+				UsedRows * ShopGridCellSize,
+				ShopGridCellSize
+			);
+
+		Markup += "<div class=\"shop_grid_spacer\" style=\"width: ";
+		Markup += std::to_string(
+			ShopGridColumns *
+			ShopGridCellSize
+		);
+		Markup += "px; height: ";
+		Markup += std::to_string(
+			ContentHeight
+		);
+		Markup += "px;\"></div>";
+		Markup += ItemsMarkup;
+	}
+
+	Container->SetInnerRML(
+		Markup
+	);
+
+	const char* CategoryButtons[] =
+	{
+		"shop_category_featured",
+		"shop_category_weapons",
+		"shop_category_body_armor",
+		"shop_category_helmets",
+		"shop_category_backpacks",
+		"shop_category_attachments",
+		"shop_category_placeable",
+		"shop_category_food",
+		"shop_category_medicine",
+		"shop_category_usable",
+		"shop_category_water"
+	};
+
+	for (const char* ElementId : CategoryButtons)
+	{
+		SetElementClass(
+			ShopDocument,
+			ElementId,
+			"selected",
+			SelectedShopCategoryId == ElementId
+		);
+	}
+
+	const char* SortButtons[] =
+	{
+		"shop_tab_hot",
+		"shop_tab_new",
+		"shop_tab_sale",
+		"shop_tab_owned"
+	};
+
+	for (const char* ElementId : SortButtons)
+	{
+		SetElementClass(
+			ShopDocument,
+			ElementId,
+			"selected",
+			SelectedShopSortId == ElementId
+		);
+	}
+}
+
 void RmlFrontEndContext::SelectShopItem(
 	const Rml::String& ShopItemId
 )
@@ -4650,68 +5829,184 @@ void RmlFrontEndContext::SelectShopItem(
 	if (!ShopDocument)
 		return;
 
-	const FFrontendShopItem* Item =
-		FindFrontendShopItem(
-			ShopItemId
+	if (
+		ShopItemId.compare(
+			0,
+			ShopItemButtonPrefixLength,
+			ShopItemButtonPrefix
+		) != 0
+	)
+	{
+		return;
+	}
+
+	const int StoreIndex =
+		atoi(
+			ShopItemId.c_str() +
+			ShopItemButtonPrefixLength
 		);
 
-	if (!Item)
+	if (
+		StoreIndex < 0 ||
+		static_cast<uint32_t>(StoreIndex) >=
+			g_NumStoreItems
+	)
+	{
+		return;
+	}
+
+	const wiStoreItem& StoreItem =
+		g_StoreItems[StoreIndex];
+
+	const BaseItemConfig* Config =
+		g_pWeaponArmory
+			? g_pWeaponArmory->getConfig(
+				StoreItem.itemID
+			)
+			: nullptr;
+
+	if (!Config)
 		return;
 
 	SelectedShopItemElementId =
-		Item->ElementId;
+		ShopItemId;
 
 	SelectedShopBackendItemId =
-		Item->BackendItemId;
+		static_cast<int>(
+			StoreItem.itemID
+		);
+
+	SelectedShopStoreIndex =
+		StoreIndex;
+
+	if (
+		SelectedShopCurrencyId == "shop_currency_gc" &&
+		StoreItem.pricePerm == 0 &&
+		StoreItem.gd_pricePerm > 0
+	)
+	{
+		SelectedShopCurrencyId =
+			"shop_currency_gd";
+	}
+	else if (
+		SelectedShopCurrencyId == "shop_currency_gd" &&
+		StoreItem.gd_pricePerm == 0 &&
+		StoreItem.pricePerm > 0
+	)
+	{
+		SelectedShopCurrencyId =
+			"shop_currency_gc";
+	}
 
 	RefreshShopSelection();
+
+	const char* Name =
+		Config->m_StoreName &&
+		Config->m_StoreName[0]
+			? Config->m_StoreName
+			: "UNKNOWN ITEM";
+
+	const char* Description =
+		Config->m_Description &&
+		Config->m_Description[0]
+			? Config->m_Description
+			: "No description available.";
+
+	const char* Category =
+		GetShopCategoryLabel(
+			GetShopRuntimeCategory(
+				Config
+			)
+		);
+
+	char IconText[4]{};
+	IconText[0] = Name[0]
+		? static_cast<char>(
+			toupper(
+				static_cast<unsigned char>(
+					Name[0]
+				)
+			)
+		)
+		: 'I';
+	IconText[1] = Name[1]
+		? static_cast<char>(
+			toupper(
+				static_cast<unsigned char>(
+					Name[1]
+				)
+			)
+		)
+		: 'T';
+	IconText[2] = '\0';
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_icon",
-		Item->IconText
+		IconText
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_badge",
-		Item->BadgeText
+		StoreItem.isNew
+			? "NEW ITEM"
+			: Category
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_name",
-		Item->DisplayName
+		Name
+	);
+
+	SetElementText(
+		ShopDocument,
+		"selected_item_preview_name",
+		Name
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_category",
-		Item->TypeName
+		Category
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_description",
-		Item->Description
+		Description
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_gc_price",
-		Item->GcPriceText
+		FormatShopPrice(
+			StoreItem.pricePerm
+		)
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_item_gd_price",
-		Item->GdPriceText
+		FormatShopPrice(
+			StoreItem.gd_pricePerm
+		)
+	);
+
+	SetElementAttribute(
+		ShopDocument,
+		"selected_item_store_icon",
+		"src",
+		GetShopIconPath(
+			Config
+		)
 	);
 
 	SetElementText(
 		ShopDocument,
 		"selected_shop_item_id",
-		Item->ElementId
+		ShopItemId
 	);
 
 	char Text[64]{};
@@ -4719,7 +6014,7 @@ void RmlFrontEndContext::SelectShopItem(
 	sprintf_s(
 		Text,
 		"%d",
-		Item->BackendItemId
+		StoreItem.itemID
 	);
 
 	SetElementText(
@@ -4731,14 +6026,47 @@ void RmlFrontEndContext::SelectShopItem(
 	SetElementText(
 		ShopDocument,
 		"selected_shop_category_id",
-		Item->CategoryId
+		Category
 	);
 
-	sprintf_s(
-		Text,
-		"%d",
-		Item->Damage
-	);
+	const WeaponConfig* Weapon =
+		g_pWeaponArmory
+			? g_pWeaponArmory->getWeaponConfig(
+				StoreItem.itemID
+			)
+			: nullptr;
+
+	const GearConfig* Gear =
+		g_pWeaponArmory
+			? g_pWeaponArmory->getGearConfig(
+				StoreItem.itemID
+			)
+			: nullptr;
+
+	if (Weapon)
+	{
+		sprintf_s(
+			Text,
+			"%.0f",
+			Weapon->m_AmmoDamage
+		);
+	}
+	else if (Gear)
+	{
+		sprintf_s(
+			Text,
+			"%.0f%%",
+			Gear->m_damagePerc * 100.0f
+		);
+	}
+	else
+	{
+		sprintf_s(
+			Text,
+			"%u",
+			StoreItem.itemID
+		);
+	}
 
 	SetElementText(
 		ShopDocument,
@@ -4746,11 +6074,32 @@ void RmlFrontEndContext::SelectShopItem(
 		Text
 	);
 
-	sprintf_s(
-		Text,
-		"%d",
-		Item->Range
-	);
+	if (Weapon)
+	{
+		sprintf_s(
+			Text,
+			"%.0f",
+			Weapon->m_AmmoSpeed
+		);
+	}
+	else if (Gear)
+	{
+		sprintf_s(
+			Text,
+			"%.0f",
+			Gear->m_damageMax
+		);
+	}
+	else
+	{
+		sprintf_s(
+			Text,
+			"%d",
+			GetShopQuantity(
+				StoreItem.itemID
+			)
+		);
+	}
 
 	SetElementText(
 		ShopDocument,
@@ -4758,11 +6107,26 @@ void RmlFrontEndContext::SelectShopItem(
 		Text
 	);
 
-	sprintf_s(
-		Text,
-		"%d",
-		Item->Recoil
-	);
+	if (Weapon)
+	{
+		sprintf_s(
+			Text,
+			"%.2f",
+			static_cast<double>(
+				static_cast<float>(
+					Weapon->m_recoil
+				)
+			)
+		);
+	}
+	else
+	{
+		sprintf_s(
+			Text,
+			"%.1f",
+			Config->m_Weight
+		);
+	}
 
 	SetElementText(
 		ShopDocument,
@@ -4772,8 +6136,8 @@ void RmlFrontEndContext::SelectShopItem(
 
 	sprintf_s(
 		Text,
-		"%d",
-		Item->Weight
+		"%.1f",
+		Config->m_Weight
 	);
 
 	SetElementText(
@@ -4787,28 +6151,217 @@ void RmlFrontEndContext::SelectShopItem(
 	);
 }
 
+void RmlFrontEndContext::SelectShopCategory(
+	const Rml::String& CategoryId
+)
+{
+	SelectedShopCategoryId =
+		CategoryId;
+
+	BuildShop();
+
+	SetShopStatus(
+		"Shop category selected."
+	);
+}
+
+void RmlFrontEndContext::SelectShopCurrency(
+	const Rml::String& CurrencyId
+)
+{
+	Rml::String ResolvedCurrencyId =
+		CurrencyId;
+
+	bool bCanBuyForGc = true;
+	bool bCanBuyForGd = true;
+
+	if (
+		SelectedShopStoreIndex >= 0 &&
+		static_cast<uint32_t>(SelectedShopStoreIndex) <
+			g_NumStoreItems
+	)
+	{
+		const wiStoreItem& StoreItem =
+			g_StoreItems[
+				SelectedShopStoreIndex
+			];
+
+		bCanBuyForGc =
+			StoreItem.pricePerm > 0;
+
+		bCanBuyForGd =
+			StoreItem.gd_pricePerm > 0;
+
+		if (
+			ResolvedCurrencyId == "shop_currency_gd" &&
+			!bCanBuyForGd &&
+			bCanBuyForGc
+		)
+		{
+			ResolvedCurrencyId =
+				"shop_currency_gc";
+		}
+		else if (
+			ResolvedCurrencyId == "shop_currency_gc" &&
+			!bCanBuyForGc &&
+			bCanBuyForGd
+		)
+		{
+			ResolvedCurrencyId =
+				"shop_currency_gd";
+		}
+	}
+
+	SelectedShopCurrencyId =
+		ResolvedCurrencyId;
+
+	if (SelectedShopCurrencyId == "shop_currency_gd")
+		SelectedShopBuyIndex = 8;
+	else
+		SelectedShopBuyIndex = 4;
+
+	SetElementEnabled(
+		ShopDocument,
+		"shop_currency_gc",
+		bCanBuyForGc
+	);
+
+	SetElementEnabled(
+		ShopDocument,
+		"shop_currency_gd",
+		bCanBuyForGd
+	);
+
+	SetElementClass(
+		ShopDocument,
+		"shop_currency_gc",
+		"selected",
+		SelectedShopCurrencyId == "shop_currency_gc"
+	);
+
+	SetElementClass(
+		ShopDocument,
+		"shop_currency_gd",
+		"selected",
+		SelectedShopCurrencyId == "shop_currency_gd"
+	);
+}
+
+void RmlFrontEndContext::RequestBuySelectedShopItem()
+{
+	if (
+		IsBusy() ||
+		SelectedShopBackendItemId <= 0 ||
+		SelectedShopStoreIndex < 0 ||
+		static_cast<uint32_t>(SelectedShopStoreIndex) >=
+			g_NumStoreItems
+	)
+	{
+		return;
+	}
+
+	const wiStoreItem& StoreItem =
+		g_StoreItems[
+			SelectedShopStoreIndex
+		];
+
+	if (
+		SelectedShopCurrencyId == "shop_currency_gc" &&
+		StoreItem.pricePerm <= 0
+	)
+	{
+		SetShopStatus(
+			"Selected item cannot be bought for GC."
+		);
+		return;
+	}
+
+	if (
+		SelectedShopCurrencyId == "shop_currency_gd" &&
+		StoreItem.gd_pricePerm <= 0
+	)
+	{
+		SetShopStatus(
+			"Selected item cannot be bought for GD."
+		);
+		return;
+	}
+
+	if (
+		SelectedShopCurrencyId == "shop_currency_gc" &&
+		gUserProfile.ProfileData.GamePoints <
+			static_cast<int>(StoreItem.pricePerm)
+	)
+	{
+		SetShopStatus(
+			"Not enough GC."
+		);
+		return;
+	}
+
+	if (
+		SelectedShopCurrencyId == "shop_currency_gd" &&
+		gUserProfile.ProfileData.GameDollars <
+			static_cast<int>(StoreItem.gd_pricePerm)
+	)
+	{
+		SetShopStatus(
+			"Not enough GD."
+		);
+		return;
+	}
+
+	__int64 InventoryId = 0;
+
+	const int ApiCode =
+		gUserProfile.ApiBuyItem(
+			SelectedShopBackendItemId,
+			SelectedShopBuyIndex,
+			&InventoryId
+		);
+
+	if (ApiCode != 0)
+	{
+		SetShopStatus(
+			"Buy item failed."
+		);
+		return;
+	}
+
+	gUserProfile.GetProfile();
+
+	BuildShop();
+
+	SetShopStatus(
+		"Item bought."
+	);
+}
+
 void RmlFrontEndContext::RefreshShopSelection()
 {
 	if (!ShopDocument)
 		return;
 
-	for (
-		size_t Index = 0;
-		Index < FrontendShopItemCount;
-		++Index
-	)
+	for (int StoreIndex : ShopVisibleItemIndices)
 	{
-		const FFrontendShopItem& Item =
-			FrontendShopItems[Index];
+		const std::string ElementId =
+			"shop_item_" +
+			std::to_string(
+				StoreIndex
+			);
 
 		SetElementClass(
 			ShopDocument,
-			Item.ElementId,
+			ElementId.c_str(),
 			"selected",
-			SelectedShopItemElementId ==
-				Item.ElementId
+			StoreIndex ==
+				SelectedShopStoreIndex
 		);
 	}
+
+	SelectShopCurrency(
+		SelectedShopCurrencyId
+	);
 }
 
 void RmlFrontEndContext::SetShopControlsEnabled(

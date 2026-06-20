@@ -19,6 +19,11 @@ public:
 	wchar_t* m_DescriptionW;
 
 	float	m_Weight; // in kg
+	int		m_StoreSlotWidth;
+	int		m_StoreSlotHeight;
+	int		m_StoreCategoryOverride;
+	int		m_StoreSortOrder;
+	bool	m_StoreFeatured;
 
 private:	
 	// make copy constructor and assignment operator inaccessible
@@ -36,6 +41,11 @@ public:
 		m_StoreNameW = NULL;
 		m_DescriptionW = NULL;
 		m_Weight = 0.0f;
+		m_StoreSlotWidth = 0;
+		m_StoreSlotHeight = 0;
+		m_StoreCategoryOverride = 0;
+		m_StoreSortOrder = 0;
+		m_StoreFeatured = false;
 	}
 	virtual ~BaseItemConfig() 
 	{
