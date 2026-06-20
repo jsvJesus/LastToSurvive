@@ -79,6 +79,8 @@
 #include "../RmlUI/RmlUISystem.h"
 #include "../RmlUI/RmlRuntime.h"
 #include <dwmapi.h>
+
+#include "ui/FrontendShared.h"
 #pragma comment(lib, "dwmapi.lib")
 
 extern bool g_bEditMode;
