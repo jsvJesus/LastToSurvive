@@ -10,8 +10,15 @@
 #include <unordered_set>
 
 class RmlRenderDX9;
+class RmlRenderDX11;
 class RmlSystemInterface;
 class RmlFileInterface;
+
+struct ID3D11DepthStencilView;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11RenderTargetView;
+struct ID3D11ShaderResourceView;
 
 class RmlRuntime final
 {
@@ -23,6 +30,12 @@ public:
 	bool Acquire(
 		HWND WindowHandle,
 		IDirect3DDevice9* Device
+	);
+
+	bool Acquire(
+		HWND WindowHandle,
+		ID3D11Device* Device,
+		ID3D11DeviceContext* Context
 	);
 
 	void Release();
@@ -62,6 +75,14 @@ public:
 		int Width,
 		int Height
 	);
+
+	void RenderContextDX11(
+		Rml::Context* Context,
+		ID3D11RenderTargetView* RenderTarget,
+		ID3D11DepthStencilView* DepthStencil,
+		int Width,
+		int Height
+	);
 //ebana v rot
 	void SetCharacterPreviewTexture(
 		IDirect3DTexture9* Texture
@@ -71,9 +92,26 @@ public:
 		IDirect3DTexture9* Texture
 	);
 
+	void SetCharacterPreviewTextureDX11(
+		ID3D11ShaderResourceView* Texture,
+		int Width,
+		int Height
+	);
+
+	void SetCharacterPortraitTextureDX11(
+		ID3D11ShaderResourceView* Texture,
+		int Width,
+		int Height
+	);
+
 	void OnDeviceLost();
 
 	void OnDeviceReset(
+		int Width,
+		int Height
+	);
+
+	void OnDeviceResetDX11(
 		int Width,
 		int Height
 	);
@@ -107,6 +145,12 @@ private:
 		IDirect3DDevice9* Device
 	);
 
+	bool InitializeCore(
+		HWND WindowHandle,
+		ID3D11Device* Device,
+		ID3D11DeviceContext* Context
+	);
+
 	void ShutdownCore();
 
 	bool IsRegisteredContext(
@@ -128,10 +172,13 @@ private:
 private:
 	HWND Hwnd = nullptr;
 	IDirect3DDevice9* Device = nullptr;
+	ID3D11Device* Device11 = nullptr;
+	ID3D11DeviceContext* Context11 = nullptr;
 
 	std::unique_ptr<RmlSystemInterface> SystemInterface;
 	std::unique_ptr<RmlFileInterface> FileInterface;
 	std::unique_ptr<RmlRenderDX9> RenderInterface;
+	std::unique_ptr<RmlRenderDX11> RenderInterface11;
 
 	std::unordered_set<Rml::Context*> Contexts;
 

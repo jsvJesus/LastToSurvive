@@ -58,6 +58,7 @@ REG_VAR( d_show_browser,			false,			0 );
 REG_VAR( d_job_chief_idle_events,	true,			0 );
 
 REG_VAR( r_bpp,						32,				0 );		// color bpp
+REG_VAR( r_dx11_boot,				false,			0 );		// experimental DX11 boot path smoke test
 
 REG_VAR( r_near_plane,				1.f,			0 );
 REG_VAR( r_far_plane,				32000.f,		0 );

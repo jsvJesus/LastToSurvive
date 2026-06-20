@@ -44,6 +44,7 @@
 #include "RENDERING\Deffered\VisibilityGrid.h"
 #include "rendering\Deffered\D3DMiscFunctions.h"
 #include "rendering\Probes\ProbeMaster.h"
+#include "RENDERING\DX11\RenderDX11.h"
 
 #include "ObjectsCode/weapons/ClientWeaponArmory.h"
 
@@ -85,6 +86,7 @@
 
 extern bool g_bEditMode;
 extern bool g_bStartedAsParticleEditor;
+extern bool g_bExit;
 
 #include "Gameplay_Params.h"
 	const CGamePlayParams* GPP = new CGamePlayParams();
@@ -130,6 +132,12 @@ extern void UnregisterMsgProc(
 static bool g_StudioResizePending = false;
 static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
+static r3dDX11Renderer* g_DX11Renderer = nullptr;
+
+static bool IsDX11BootActive()
+{
+	return g_DX11Renderer && g_DX11Renderer->IsInitialized();
+}
 
 static bool StudioWindowResizeMsgProc(
 	UINT Message,
@@ -170,6 +178,38 @@ bool ProcessStudioPendingResize(
 	const int Height = g_StudioPendingHeight;
 
 	g_StudioResizePending = false;
+
+	if (IsDX11BootActive())
+	{
+		if (Width <= 0 || Height <= 0)
+			return false;
+
+		r3dOutToLog(
+			"[Studio][DX11] Resize backbuffer: %dx%d\n",
+			Width,
+			Height
+		);
+
+		const bool bResized =
+			g_DX11Renderer->Resize(
+				Width,
+				Height
+			);
+
+		if (bResized)
+		{
+			r_width->SetInt(Width);
+			r_height->SetInt(Height);
+
+			InvalidateRect(
+				win::hWnd,
+				nullptr,
+				FALSE
+			);
+		}
+
+		return bResized;
+	}
 
 	if (!r3dRenderer)
 		return false;
@@ -405,6 +445,59 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 	);
 }
 
+static void ExecuteDX11SmokeLoop()
+{
+	r3dOutToLog(
+		"[DX11] Entering experimental smoke loop. Close the window to exit.\n"
+	);
+
+	while (!g_bExit)
+	{
+		MSG Message;
+		while (PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
+		{
+			if (Message.message == WM_QUIT)
+			{
+				g_bExit = true;
+				break;
+			}
+
+			TranslateMessage(&Message);
+			DispatchMessage(&Message);
+		}
+
+		if (g_bExit)
+			break;
+
+		if (win::ProcessSuspended())
+		{
+			Sleep(10);
+			continue;
+		}
+
+		ProcessStudioPendingResize(nullptr);
+
+		const float Pulse =
+			static_cast<float>(GetTickCount() & 2047) /
+			2047.0f;
+
+		g_DX11Renderer->BeginFrame(
+			0.02f,
+			0.04f + 0.08f * Pulse,
+			0.08f,
+			1.0f
+		);
+
+		g_DX11Renderer->EndFrame(
+			r_vsync_enabled->GetBool()
+		);
+
+		Sleep(1);
+	}
+
+	r3dOutToLog("[DX11] Leaving experimental smoke loop\n");
+}
+
 void InitRender(int bUseSet = 0)
 {
 	r_out_of_vmem_encountered->SetChangeCallback( &SaveSettingsCallback ) ;
@@ -423,6 +516,41 @@ void InitRender(int bUseSet = 0)
 		Flags |= R3DSetMode_Windowed;
 
 	MoveWindow(win::hWnd, 0, 0, r_width->GetInt(), r_height->GetInt(), 0);
+
+	if (r_dx11_boot->GetBool())
+	{
+		r3dOutToLog(
+			"[DX11] Experimental boot requested: %dx%d fullscreen=%d\n",
+			r_width->GetInt(),
+			r_height->GetInt(),
+			r_fullscreen->GetBool() ? 1 : 0
+		);
+
+		g_DX11Renderer = new r3dDX11Renderer;
+
+		if (!g_DX11Renderer->Init(
+			win::hWnd,
+			r_width->GetInt(),
+			r_height->GetInt(),
+			r_fullscreen->GetBool(),
+#ifndef FINAL_BUILD
+			true
+#else
+			false
+#endif
+		))
+		{
+			SAFE_DELETE(g_DX11Renderer);
+			r3dError("Failed to init DX11 renderer!\n");
+		}
+
+		EnableStudioWindowResize(win::hWnd);
+		ApplyStudioDarkTitleBar(win::hWnd);
+
+		ShowWindow(win::hWnd, TRUE);
+		UpdateWindow(win::hWnd);
+		return;
+	}
 
 	r3dRenderer = new r3dRenderLayer;
 
@@ -550,6 +678,13 @@ void InitRender(int bUseSet = 0)
 
 void CloseRender()
 {
+	if (g_DX11Renderer)
+	{
+		g_DX11Renderer->Shutdown();
+		SAFE_DELETE(g_DX11Renderer);
+		return;
+	}
+
 	ReleaseCheatScreenshot();
 
 	delete Font_Label;
@@ -752,6 +887,12 @@ void game::PreInit()
 		if(strcmp(argv[i], "-steam") == 0)
 		{
 			gSteam.IS_ENABLED = true;
+			continue;
+		}
+
+		if(strcmp(argv[i], "-dx11") == 0)
+		{
+			r_dx11_boot->SetBool(true);
 			continue;
 		}
 
@@ -1771,6 +1912,19 @@ void game::MainLoop()
 	
 
 	InitRender(1);
+
+	if (IsDX11BootActive())
+	{
+		ExecuteDX11SmokeLoop();
+
+		if(gSteam.inited_) {
+			gUserProfile.DeregisterSteamCallbacks();
+			gSteam.Shutdown();
+		}
+
+		CloseRender();
+		return;
+	}
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();

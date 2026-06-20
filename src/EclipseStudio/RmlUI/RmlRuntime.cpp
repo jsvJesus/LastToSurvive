@@ -3,6 +3,7 @@
 
 #include "RmlRuntime.h"
 
+#include "RmlRenderDX11.h"
 #include "RmlRenderDX9.h"
 #include "RmlSystemInterface.h"
 #include "RmlFileInterface.h"
@@ -12,6 +13,7 @@
 #include <RmlUi/Debugger.h>
 
 #include <imm.h>
+#include <d3d11_1.h>
 #include <windowsx.h>
 
 #include <algorithm>
@@ -229,6 +231,65 @@ bool RmlRuntime::Acquire(
 	return true;
 }
 
+bool RmlRuntime::Acquire(
+	HWND WindowHandle,
+	ID3D11Device* InDevice,
+	ID3D11DeviceContext* InContext
+)
+{
+	if (!WindowHandle || !InDevice || !InContext)
+	{
+		r3dOutToLog(
+			"[RmlUI][Runtime][Init] Invalid window or D3D11 device/context\n"
+		);
+
+		return false;
+	}
+
+	if (bInitialized)
+	{
+		if (
+			Hwnd != WindowHandle ||
+			Device11 != InDevice ||
+			Context11 != InContext
+		)
+		{
+			r3dOutToLog(
+				"[RmlUI][Runtime][Init] Runtime already uses "
+				"another window or D3D11 device\n"
+			);
+
+			return false;
+		}
+
+		++ReferenceCount;
+
+		r3dOutToLog(
+			"[RmlUI][Runtime][Init] Reused DX11, references=%d\n",
+			ReferenceCount
+		);
+
+		return true;
+	}
+
+	if (!InitializeCore(
+		WindowHandle,
+		InDevice,
+		InContext
+	))
+	{
+		return false;
+	}
+
+	ReferenceCount = 1;
+
+	r3dOutToLog(
+		"[RmlUI][Runtime][Init] Ready DX11, references=1\n"
+	);
+
+	return true;
+}
+
 void RmlRuntime::Release()
 {
 	if (ReferenceCount <= 0)
@@ -351,6 +412,117 @@ bool RmlRuntime::InitializeCore(
 	return true;
 }
 
+bool RmlRuntime::InitializeCore(
+	HWND WindowHandle,
+	ID3D11Device* InDevice,
+	ID3D11DeviceContext* InContext
+)
+{
+	Hwnd = WindowHandle;
+	Device11 = InDevice;
+	Context11 = InContext;
+	DataRoot = BuildDataRoot();
+
+	SystemInterface =
+		std::make_unique<RmlSystemInterface>();
+
+	SystemInterface->SetWindow(
+		WindowHandle
+	);
+
+	FileInterface =
+		std::make_unique<RmlFileInterface>(
+			DataRoot.c_str()
+		);
+
+	RenderInterface11 =
+		std::make_unique<RmlRenderDX11>();
+
+	if (!RenderInterface11->Init(
+		InDevice,
+		InContext,
+		DataRoot.c_str()
+	))
+	{
+		r3dOutToLog(
+			"[RmlUI][Runtime][Init] DX11 renderer initialization failed\n"
+		);
+
+		RenderInterface11.reset();
+		FileInterface.reset();
+		SystemInterface.reset();
+
+		Hwnd = nullptr;
+		Device11 = nullptr;
+		Context11 = nullptr;
+		DataRoot.clear();
+
+		return false;
+	}
+
+	Rml::SetSystemInterface(
+		SystemInterface.get()
+	);
+
+	Rml::SetTextInputHandler(
+		SystemInterface.get()
+	);
+
+	Rml::SetFileInterface(
+		FileInterface.get()
+	);
+
+	Rml::SetRenderInterface(
+		RenderInterface11.get()
+	);
+
+	if (!Rml::Initialise())
+	{
+		r3dOutToLog(
+			"[RmlUI][Runtime][Init] Rml::Initialise failed\n"
+		);
+
+		RenderInterface11->Shutdown();
+
+		RenderInterface11.reset();
+		FileInterface.reset();
+		SystemInterface.reset();
+
+		Hwnd = nullptr;
+		Device11 = nullptr;
+		Context11 = nullptr;
+		DataRoot.clear();
+
+		return false;
+	}
+
+	bCoreInitialized = true;
+	bInitialized = true;
+
+	Rml::LoadFontFace(
+		"Z:/WarZ/External/RmlUI/Fonts/NotoSans-Regular.ttf"
+	);
+
+	Rml::LoadFontFace(
+		"Z:/WarZ/External/RmlUI/Fonts/NotoSans-Bold.ttf"
+	);
+
+	Rml::LoadFontFace(
+		"Z:/WarZ/External/RmlUI/Fonts/Roboto-Regular.ttf"
+	);
+
+	Rml::LoadFontFace(
+		"C:/Windows/Fonts/arial.ttf"
+	);
+
+	r3dOutToLog(
+		"[RmlUI][Runtime][Init] Core initialized on DX11. DataRoot=%ls\n",
+		DataRoot.c_str()
+	);
+
+	return true;
+}
+
 void RmlRuntime::ShutdownCore()
 {
 	ActiveContext = nullptr;
@@ -418,11 +590,19 @@ void RmlRuntime::ShutdownCore()
 		RenderInterface.reset();
 	}
 
+	if (RenderInterface11)
+	{
+		RenderInterface11->Shutdown();
+		RenderInterface11.reset();
+	}
+
 	FileInterface.reset();
 	SystemInterface.reset();
 
 	Hwnd = nullptr;
 	Device = nullptr;
+	Device11 = nullptr;
+	Context11 = nullptr;
 
 	DataRoot.clear();
 
@@ -1037,6 +1217,50 @@ void RmlRuntime::RenderContext(
 	bRenderFrameOpen = false;
 }
 
+void RmlRuntime::RenderContextDX11(
+	Rml::Context* Context,
+	ID3D11RenderTargetView* RenderTarget,
+	ID3D11DepthStencilView* DepthStencil,
+	int Width,
+	int Height
+)
+{
+	if (
+		!bInitialized ||
+		!RenderInterface11 ||
+		!Context ||
+		!IsRegisteredContext(Context) ||
+		!RenderTarget
+	)
+	{
+		return;
+	}
+
+	if (bRenderFrameOpen)
+	{
+		r3dOutToLog(
+			"[RmlUI][Runtime][Render] Nested DX11 rendering rejected\n"
+		);
+
+		return;
+	}
+
+	bRenderFrameOpen = true;
+
+	RenderInterface11->BeginFrame(
+		RenderTarget,
+		DepthStencil,
+		std::max(1, Width),
+		std::max(1, Height)
+	);
+
+	Context->Render();
+
+	RenderInterface11->EndFrame();
+
+	bRenderFrameOpen = false;
+}
+
 void RmlRuntime::
 SetCharacterPreviewTexture(
 	IDirect3DTexture9* Texture
@@ -1065,10 +1289,51 @@ SetCharacterPortraitTexture(
 		);
 }
 
+void RmlRuntime::
+SetCharacterPreviewTextureDX11(
+	ID3D11ShaderResourceView* Texture,
+	int Width,
+	int Height
+)
+{
+	if (!RenderInterface11)
+		return;
+
+	RenderInterface11->
+		SetCharacterPreviewTexture(
+			Texture,
+			Width,
+			Height
+		);
+}
+
+void RmlRuntime::
+SetCharacterPortraitTextureDX11(
+	ID3D11ShaderResourceView* Texture,
+	int Width,
+	int Height
+)
+{
+	if (!RenderInterface11)
+		return;
+
+	RenderInterface11->
+		SetCharacterPortraitTexture(
+			Texture,
+			Width,
+			Height
+		);
+}
+
 void RmlRuntime::OnDeviceLost()
 {
 	if (!bInitialized || !RenderInterface)
+	{
+		if (RenderInterface11)
+			bRenderFrameOpen = false;
+
 		return;
+	}
 
 	bRenderFrameOpen = false;
 
@@ -1087,6 +1352,26 @@ void RmlRuntime::OnDeviceReset(
 		std::max(1, Width),
 		std::max(1, Height)
 	);
+}
+
+void RmlRuntime::OnDeviceResetDX11(
+	int Width,
+	int Height
+)
+{
+	if (!bInitialized || !RenderInterface11)
+		return;
+
+	const Rml::Vector2i SafeDimensions(
+		std::max(1, Width),
+		std::max(1, Height)
+	);
+
+	for (Rml::Context* Context : Contexts)
+	{
+		if (Context)
+			Context->SetDimensions(SafeDimensions);
+	}
 }
 
 bool RmlRuntime::EnsureDebugger(
