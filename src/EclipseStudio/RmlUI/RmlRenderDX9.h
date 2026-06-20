@@ -181,8 +181,11 @@ private:
 
 		bool bExternalCharacterPortrait =
 			false;
-	};
 
+		bool bStraightAlphaTexture =
+			false;
+	};
+	
 	struct FRenderLayer
 	{
 		IDirect3DTexture9* Texture =
@@ -474,7 +477,8 @@ private:
 	bool LoadTextureD3DX(
 		const std::wstring& Filename,
 		Rml::Vector2i& OutDimensions,
-		IDirect3DTexture9** OutTexture
+		IDirect3DTexture9** OutTexture,
+		bool* OutStraightAlphaTexture
 	);
 
 	bool EnsureBlurShader();

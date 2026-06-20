@@ -3148,11 +3148,9 @@ void RmlRenderDX9::RenderGeometry(
 			TextureHandle
 		);
 
-	IDirect3DTexture9* Texture =
-		nullptr;
-
-	bool bExternalCharacterTexture =
-		false;
+	IDirect3DTexture9* Texture = nullptr;
+	bool bExternalCharacterTexture = false;
+	bool bStraightAlphaTexture = false;
 
 	if (TextureData)
 	{
@@ -3180,8 +3178,8 @@ void RmlRenderDX9::RenderGeometry(
 		}
 		else
 		{
-			Texture =
-				TextureData->Texture;
+			Texture = TextureData->Texture;
+			bStraightAlphaTexture = TextureData->bStraightAlphaTexture;
 		}
 	}
 
@@ -3306,7 +3304,10 @@ void RmlRenderDX9::RenderGeometry(
 		);
 	}
 
-	if (bExternalCharacterTexture)
+	if (
+		bExternalCharacterTexture ||
+		bStraightAlphaTexture
+	)
 	{
 		Device->SetRenderState(
 			D3DRS_SRCBLEND,
@@ -3337,7 +3338,10 @@ void RmlRenderDX9::RenderGeometry(
 		PrimitiveCount
 	);
 
-	if (bExternalCharacterTexture)
+	if (
+		bExternalCharacterTexture ||
+		bStraightAlphaTexture
+	)
 	{
 		Device->SetRenderState(
 			D3DRS_SRCBLEND,
@@ -3706,13 +3710,20 @@ static bool PremultiplyTextureAlpha(
 bool RmlRenderDX9::LoadTextureD3DX(
 	const std::wstring& Filename,
 	Rml::Vector2i& OutDimensions,
-	IDirect3DTexture9** OutTexture
+	IDirect3DTexture9** OutTexture,
+	bool* OutStraightAlphaTexture
 )
 {
 	if (!Device || !OutTexture || Filename.empty())
 		return false;
 
 	*OutTexture = nullptr;
+
+	if (OutStraightAlphaTexture)
+	{
+		*OutStraightAlphaTexture =
+			false;
+	}
 
 	OutDimensions =
 		Rml::Vector2i(
@@ -3765,80 +3776,48 @@ bool RmlRenderDX9::LoadTextureD3DX(
 	if (bIsDds)
 	{
 		/*
-		 * Старые WarZ DDS могут быть DXT1/DXT3/DXT5.
+		 * DDS НЕ переводим вручную в A8R8G8B8.
 		 *
-		 * Для RmlUI нам нужен обычный A8R8G8B8, потому что
-		 * backend рисует premultiplied alpha.
+		 * Старые StoreIcons могут быть DXT1/DXT3/DXT5.
+		 * Если их принудительно перегнать через Surface,
+		 * alpha может потеряться и будет белый квадрат.
 		 *
-		 * Поэтому DDS грузим не как compressed texture,
-		 * а распаковываем через D3DXLoadSurfaceFromFileW
-		 * в A8R8G8B8 texture.
+		 * Поэтому грузим DDS как native texture.
+		 * Рендерить будем как straight alpha через SRCALPHA.
 		 */
-		const UINT Width =
-			std::max<UINT>(
-				1,
-				Information.Width
-			);
-
-		const UINT Height =
-			std::max<UINT>(
-				1,
-				Information.Height
-			);
-
 		Result =
-			Device->CreateTexture(
-				Width,
-				Height,
-				1,
+			D3DXCreateTextureFromFileExW(
+				Device,
+				Filename.c_str(),
+				D3DX_DEFAULT_NONPOW2,
+				D3DX_DEFAULT_NONPOW2,
+				D3DX_DEFAULT,
 				0,
-				D3DFMT_A8R8G8B8,
+				D3DFMT_UNKNOWN,
 				D3DPOOL_MANAGED,
-				&Texture,
-				nullptr
+				D3DX_FILTER_LINEAR,
+				D3DX_FILTER_LINEAR,
+				0,
+				&Information,
+				nullptr,
+				&Texture
 			);
 
-		if (SUCCEEDED(Result) && Texture)
+		if (
+			SUCCEEDED(Result) &&
+			Texture &&
+			OutStraightAlphaTexture
+		)
 		{
-			IDirect3DSurface9* Surface =
-				nullptr;
-
-			Result =
-				Texture->GetSurfaceLevel(
-					0,
-					&Surface
-				);
-
-			if (SUCCEEDED(Result) && Surface)
-			{
-				Result =
-					D3DXLoadSurfaceFromFileW(
-						Surface,
-						nullptr,
-						nullptr,
-						Filename.c_str(),
-						nullptr,
-						D3DX_FILTER_NONE,
-						0,
-						nullptr
-					);
-			}
-
-			if (Surface)
-			{
-				Surface->Release();
-				Surface = nullptr;
-			}
-
-			if (FAILED(Result))
-			{
-				Texture->Release();
-				Texture = nullptr;
-			}
+			*OutStraightAlphaTexture =
+				true;
 		}
 	}
 	else
 	{
+		/*
+		 * PNG/JPG/TGA оставляем как premultiplied alpha.
+		 */
 		Result =
 			D3DXCreateTextureFromFileExW(
 				Device,
@@ -3886,21 +3865,24 @@ bool RmlRenderDX9::LoadTextureD3DX(
 		return false;
 	}
 
-	if (!PremultiplyTextureAlpha(Texture))
+	if (!bIsDds)
 	{
-		wchar_t Text[2048]{};
+		if (!PremultiplyTextureAlpha(Texture))
+		{
+			wchar_t Text[2048]{};
 
-		_snwprintf_s(
-			Text,
-			_countof(Text),
-			_TRUNCATE,
-			L"[RmlUI][DX9] Texture premultiply skipped: %ls\n",
-			Filename.c_str()
-		);
+			_snwprintf_s(
+				Text,
+				_countof(Text),
+				_TRUNCATE,
+				L"[RmlUI][DX9] Texture premultiply skipped: %ls\n",
+				Filename.c_str()
+			);
 
-		OutputDebugStringW(
-			Text
-		);
+			OutputDebugStringW(
+				Text
+			);
+		}
 	}
 
 	OutDimensions.x =
@@ -3916,24 +3898,39 @@ bool RmlRenderDX9::LoadTextureD3DX(
 	*OutTexture =
 		Texture;
 
-	wchar_t Text[2048]{};
+	D3DSURFACE_DESC Description{};
 
-	_snwprintf_s(
-		Text,
-		_countof(Text),
-		_TRUNCATE,
-		L"[RmlUI][DX9] Texture loaded: %ls (%dx%d)%ls\n",
-		Filename.c_str(),
-		OutDimensions.x,
-		OutDimensions.y,
-		bIsDds
-			? L" [DDS]"
-			: L""
-	);
+	if (
+		SUCCEEDED(
+			Texture->GetLevelDesc(
+				0,
+				&Description
+			)
+		)
+	)
+	{
+		wchar_t Text[2048]{};
 
-	OutputDebugStringW(
-		Text
-	);
+		_snwprintf_s(
+			Text,
+			_countof(Text),
+			_TRUNCATE,
+			L"[RmlUI][DX9] Texture loaded: %ls (%dx%d), format=%d%s\n",
+			Filename.c_str(),
+			OutDimensions.x,
+			OutDimensions.y,
+			static_cast<int>(
+				Description.Format
+			),
+			bIsDds
+				? L" [DDS STRAIGHT ALPHA]"
+				: L" [PREMULTIPLIED]"
+		);
+
+		OutputDebugStringW(
+			Text
+		);
+	}
 
 	return true;
 }
@@ -4027,10 +4024,14 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 	IDirect3DTexture9* Texture =
 		nullptr;
 
+	bool bStraightAlphaTexture =
+	false;
+
 	if (!LoadTextureD3DX(
 		FullPath,
 		TextureDimensions,
-		&Texture
+		&Texture,
+		&bStraightAlphaTexture
 	))
 	{
 		std::string DebugText =
@@ -4046,17 +4047,10 @@ Rml::TextureHandle RmlRenderDX9::LoadTexture(
 		return 0;
 	}
 
-	FTextureHandle* Handle =
-		new FTextureHandle();
-
-	Handle->Texture =
-		Texture;
-
-	return reinterpret_cast<
-		Rml::TextureHandle
-	>(
-		Handle
-	);
+	FTextureHandle* Handle = new FTextureHandle();
+	Handle->Texture = Texture;
+	Handle->bStraightAlphaTexture = bStraightAlphaTexture;
+	return reinterpret_cast<Rml::TextureHandle>(Handle);
 }
 
 Rml::TextureHandle RmlRenderDX9::GenerateTexture(
