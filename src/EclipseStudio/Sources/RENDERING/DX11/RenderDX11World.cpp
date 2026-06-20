@@ -233,6 +233,28 @@ namespace
 		return renderable.Mesh->HasAlphaTextures != 0;
 	}
 
+	bool IsDX11MeshPointerUsable(const r3dMesh* mesh)
+	{
+		if (!mesh)
+			return false;
+
+		__try
+		{
+			if (!mesh->IsLoaded())
+				return false;
+
+			if (mesh->NumMatChunks < 0 || mesh->NumMatChunks > r3dMesh::ConstNumMatChunks)
+				return false;
+
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	void DrawDX11GBufferQueue(
 		r3dDX11Renderer& renderer,
 		r3dDX11GBufferPass& pass,
@@ -257,7 +279,7 @@ namespace
 
 			++stats.MeshRenderables;
 
-			if (!meshRenderable->Mesh || meshRenderable->BatchIdx < 0)
+			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh) || meshRenderable->BatchIdx < 0)
 			{
 				++stats.SkippedFailed;
 				continue;
@@ -303,7 +325,7 @@ namespace
 			if (!meshRenderable)
 				continue;
 
-			if (!meshRenderable->Mesh || meshRenderable->BatchIdx < 0)
+			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh) || meshRenderable->BatchIdx < 0)
 				continue;
 
 			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
@@ -347,7 +369,7 @@ namespace
 
 			++stats.ShadowMeshRenderables;
 
-			if (!meshRenderable->Mesh)
+			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh))
 			{
 				++stats.ShadowSkippedFailed;
 				continue;
