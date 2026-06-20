@@ -133,6 +133,7 @@ static bool g_StudioResizePending = false;
 static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
 static r3dDX11Renderer* g_DX11Renderer = nullptr;
+static bool g_StudioCmdLineDX11Boot = false;
 
 static bool IsDX11BootActive()
 {
@@ -477,14 +478,10 @@ static void ExecuteDX11SmokeLoop()
 
 		ProcessStudioPendingResize(nullptr);
 
-		const float Pulse =
-			static_cast<float>(GetTickCount() & 2047) /
-			2047.0f;
-
 		g_DX11Renderer->BeginFrame(
-			0.02f,
-			0.04f + 0.08f * Pulse,
-			0.08f,
+			0.015f,
+			0.020f,
+			0.018f,
 			1.0f
 		);
 
@@ -892,7 +889,7 @@ void game::PreInit()
 
 		if(strcmp(argv[i], "-dx11") == 0)
 		{
-			r_dx11_boot->SetBool(true);
+			g_StudioCmdLineDX11Boot = true;
 			continue;
 		}
 
@@ -1795,6 +1792,11 @@ void game::Init()
 	r3dFileManager_OpenArchive("wz");
 
 	RegisterAllVars();
+	
+	if (g_StudioCmdLineDX11Boot && r_dx11_boot)
+	{
+		r_dx11_boot->SetBool(true);
+	}
 #ifndef FINAL_BUILD
 	RegisterHUDCommands();
 #endif
