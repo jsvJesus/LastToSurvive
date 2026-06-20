@@ -1213,6 +1213,7 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 		rend.Init() ;
 		rend.SortValue |= idist ;
 		rend.Parent = this ;
+		rend.DX11WorldTransform = &GetTransformMatrix();
 	}
 
 	for( uint32_t i = prevTranspCount, e = render_arrays[rsDrawTransparents].Count(); i < e; i ++ )
@@ -1220,6 +1221,7 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 		MeshObjDeferredRenderable& rend = static_cast<MeshObjDeferredRenderable&>( render_arrays[rsDrawTransparents][ i ] ) ;
 		rend.Init() ;
 		rend.Parent = this ;
+		rend.DX11WorldTransform = &GetTransformMatrix();
 	}
 
 	// collision meshes

@@ -4,6 +4,7 @@
 #include "RENDERING/DX11/RenderDX11.h"
 
 #include "../../../RmlUI/RmlRuntime.h"
+#include "RENDERING/DX11/RenderDX11World.h"
 
 namespace
 {
@@ -195,6 +196,14 @@ void r3dDX11Renderer::BeginFrame(float clearR, float clearG, float clearB, float
 		return;
 
 	FrameResources.BeginScene(clearR, clearG, clearB, clearA);
+}
+
+bool r3dDX11Renderer::RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRenderStats* stats)
+{
+	if (!bInitialized)
+		return false;
+
+	return r3dDX11RenderWorldGBuffer(*this, camera, stats);
 }
 
 bool r3dDX11Renderer::ResolveSceneToBackBuffer()

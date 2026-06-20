@@ -19,6 +19,9 @@ namespace Rml
 	class Context;
 }
 
+class r3dCamera;
+struct r3dDX11WorldRenderStats;
+
 class r3dDX11Renderer final
 {
 public:
@@ -30,6 +33,7 @@ public:
 	bool Resize(int width, int height);
 
 	void BeginFrame(float clearR, float clearG, float clearB, float clearA);
+	bool RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr);
 	bool ResolveSceneToBackBuffer();
 	void RenderRmlContext(Rml::Context* context);
 	void Present(bool vsync);

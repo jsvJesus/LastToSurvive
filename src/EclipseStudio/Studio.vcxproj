@@ -668,6 +668,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11States.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Texture.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.cpp"/>
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11World.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\ShaderDX11.cpp"/>
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp"/>
     <ClCompile Include="Sources\SteamHelper.cpp"/>
@@ -949,6 +950,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11States.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Texture.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.h"/>
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11World.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\ShaderDX11.h"/>
     <ClInclude Include="Sources\RENDERING\DX9\RenderDX9.h"/>
     <ClInclude Include="Sources\RENDERING\Probes\ProbeMaster.h"/>

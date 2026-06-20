@@ -1553,6 +1553,29 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 	Mesh->DrawMeshEnd();
 }
 
+void
+MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform )
+{
+	DX11Signature = DX11SignatureValue;
+	DX11WorldTransform = worldTransform;
+}
+
+MeshDeferredRenderable*
+r3dGetMeshDeferredRenderable( Renderable* renderable )
+{
+	if( !renderable )
+		return NULL;
+
+	MeshDeferredRenderable* meshRenderable = static_cast< MeshDeferredRenderable* >( renderable );
+	return meshRenderable->DX11Signature == MeshDeferredRenderable::DX11SignatureValue ? meshRenderable : NULL;
+}
+
+const MeshDeferredRenderable*
+r3dGetMeshDeferredRenderable( const Renderable* renderable )
+{
+	return r3dGetMeshDeferredRenderable( const_cast< Renderable* >( renderable ) );
+}
+
 //------------------------------------------------------------------------
 
 void MeshDeferredHighlightRenderable::DoDraw( Renderable* RThis, float distance, const r3dCamera& Cam )
@@ -1680,6 +1703,7 @@ r3dMesh::AppendRenderablesDeferred( RenderArray& oArr, const r3dColor& color )
 			rend.Color			= color.GetPacked();
 			rend.Mesh			= this;
 			rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) buffers.VBId << 16;
+			rend.InitDX11( NULL );
 
 			oArr.PushBack( rend );
 		}
@@ -1708,6 +1732,7 @@ r3dMesh::AppendTransparentRenderables( RenderArray& oArr, const r3dColor& color,
 			rend.Color			= color.GetPacked();
 			rend.Mesh			= this;
 			rend.SortValue		= RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
+			rend.InitDX11( NULL );
 
 			oArr.PushBack( rend );
 		}

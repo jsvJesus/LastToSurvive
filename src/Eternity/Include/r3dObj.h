@@ -73,12 +73,20 @@ struct PrecalculatedMeshVSConsts
 
 struct MeshDeferredRenderable : Renderable
 {
+	static const DWORD DX11SignatureValue = 0xD311F11B;
+
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
+	void InitDX11( const D3DXMATRIX* worldTransform );
 
 	int						BatchIdx;
 	DWORD					Color;
 	r3dMesh*				Mesh;
+	DWORD					DX11Signature;
+	const D3DXMATRIX*		DX11WorldTransform;
 };
+
+MeshDeferredRenderable* r3dGetMeshDeferredRenderable( Renderable* renderable );
+const MeshDeferredRenderable* r3dGetMeshDeferredRenderable( const Renderable* renderable );
 
 struct MeshDeferredHighlightRenderable : Renderable
 {
