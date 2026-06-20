@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstring>
 #include <type_traits>
+#include <wchar.h>
 
 #ifdef SetViewport
 #undef SetViewport
@@ -617,6 +618,80 @@ static bool RmlFileExistsW(const std::wstring& Path)
 		return false;
 
 	return (Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
+static bool RmlStartsWithNoCaseW(
+	const std::wstring& Text,
+	const wchar_t* Prefix
+)
+{
+	if (!Prefix)
+		return false;
+
+	const size_t PrefixLength =
+		wcslen(Prefix);
+
+	if (Text.length() < PrefixLength)
+		return false;
+
+	return _wcsnicmp(
+		Text.c_str(),
+		Prefix,
+		PrefixLength
+	) == 0;
+}
+
+static bool RmlHasExtensionNoCaseW(
+	const std::wstring& Filename,
+	const wchar_t* Extension
+)
+{
+	if (!Extension)
+		return false;
+
+	const size_t ExtensionLength =
+		wcslen(Extension);
+
+	if (Filename.length() < ExtensionLength)
+		return false;
+
+	return _wcsicmp(
+		Filename.c_str() +
+			Filename.length() -
+			ExtensionLength,
+		Extension
+	) == 0;
+}
+
+static void RmlStripDataPrefixW(
+	std::wstring& Path
+)
+{
+	for (wchar_t& Character : Path)
+	{
+		if (Character == L'/')
+			Character = L'\\';
+	}
+
+	if (RmlStartsWithNoCaseW(Path, L"$Data\\"))
+	{
+		Path.erase(
+			0,
+			wcslen(L"$Data\\")
+		);
+
+		return;
+	}
+
+	if (RmlStartsWithNoCaseW(Path, L"Data\\"))
+	{
+		Path.erase(
+			0,
+			wcslen(L"Data\\")
+		);
+
+		return;
+	}
 }
 
 RmlRenderDX9::RmlRenderDX9()
@@ -3457,11 +3532,7 @@ std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
 		Required
 	);
 
-	for (wchar_t& Character : WidePath)
-	{
-		if (Character == L'/')
-			Character = L'\\';
-	}
+	RmlStripDataPrefixW(WidePath);
 
 	const bool IsAbsolute =
 		(WidePath.size() >= 2 && WidePath[1] == L':') ||
@@ -3642,28 +3713,150 @@ bool RmlRenderDX9::LoadTextureD3DX(
 		return false;
 
 	*OutTexture = nullptr;
-	OutDimensions = Rml::Vector2i(0, 0);
+
+	OutDimensions =
+		Rml::Vector2i(
+			0,
+			0
+		);
 
 	D3DXIMAGE_INFO Information{};
-	IDirect3DTexture9* Texture = nullptr;
 
-	const HRESULT Result =
-		D3DXCreateTextureFromFileExW(
-			Device,
+	const HRESULT InfoResult =
+		D3DXGetImageInfoFromFileW(
 			Filename.c_str(),
-			D3DX_DEFAULT,
-			D3DX_DEFAULT,
-			1,
-			0,
-			D3DFMT_A8R8G8B8,
-			D3DPOOL_MANAGED,
-			D3DX_FILTER_LINEAR,
-			D3DX_FILTER_LINEAR,
-			0,
-			&Information,
-			nullptr,
-			&Texture
+			&Information
 		);
+
+	if (FAILED(InfoResult))
+	{
+		wchar_t Text[2048]{};
+
+		_snwprintf_s(
+			Text,
+			_countof(Text),
+			_TRUNCATE,
+			L"[RmlUI][DX9] Texture info failed: 0x%08X | %ls\n",
+			static_cast<unsigned int>(
+				InfoResult
+			),
+			Filename.c_str()
+		);
+
+		OutputDebugStringW(
+			Text
+		);
+
+		return false;
+	}
+
+	const bool bIsDds =
+		RmlHasExtensionNoCaseW(
+			Filename,
+			L".dds"
+		);
+
+	IDirect3DTexture9* Texture =
+		nullptr;
+
+	HRESULT Result =
+		E_FAIL;
+
+	if (bIsDds)
+	{
+		/*
+		 * Старые WarZ DDS могут быть DXT1/DXT3/DXT5.
+		 *
+		 * Для RmlUI нам нужен обычный A8R8G8B8, потому что
+		 * backend рисует premultiplied alpha.
+		 *
+		 * Поэтому DDS грузим не как compressed texture,
+		 * а распаковываем через D3DXLoadSurfaceFromFileW
+		 * в A8R8G8B8 texture.
+		 */
+		const UINT Width =
+			std::max<UINT>(
+				1,
+				Information.Width
+			);
+
+		const UINT Height =
+			std::max<UINT>(
+				1,
+				Information.Height
+			);
+
+		Result =
+			Device->CreateTexture(
+				Width,
+				Height,
+				1,
+				0,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_MANAGED,
+				&Texture,
+				nullptr
+			);
+
+		if (SUCCEEDED(Result) && Texture)
+		{
+			IDirect3DSurface9* Surface =
+				nullptr;
+
+			Result =
+				Texture->GetSurfaceLevel(
+					0,
+					&Surface
+				);
+
+			if (SUCCEEDED(Result) && Surface)
+			{
+				Result =
+					D3DXLoadSurfaceFromFileW(
+						Surface,
+						nullptr,
+						nullptr,
+						Filename.c_str(),
+						nullptr,
+						D3DX_FILTER_NONE,
+						0,
+						nullptr
+					);
+			}
+
+			if (Surface)
+			{
+				Surface->Release();
+				Surface = nullptr;
+			}
+
+			if (FAILED(Result))
+			{
+				Texture->Release();
+				Texture = nullptr;
+			}
+		}
+	}
+	else
+	{
+		Result =
+			D3DXCreateTextureFromFileExW(
+				Device,
+				Filename.c_str(),
+				D3DX_DEFAULT_NONPOW2,
+				D3DX_DEFAULT_NONPOW2,
+				1,
+				0,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_MANAGED,
+				D3DX_FILTER_LINEAR,
+				D3DX_FILTER_LINEAR,
+				0,
+				&Information,
+				nullptr,
+				&Texture
+			);
+	}
 
 	if (FAILED(Result) || !Texture)
 	{
@@ -3674,14 +3867,21 @@ bool RmlRenderDX9::LoadTextureD3DX(
 			_countof(Text),
 			_TRUNCATE,
 			L"[RmlUI][DX9] Texture load failed: 0x%08X | %ls\n",
-			static_cast<unsigned int>(Result),
+			static_cast<unsigned int>(
+				Result
+			),
 			Filename.c_str()
 		);
 
-		OutputDebugStringW(Text);
+		OutputDebugStringW(
+			Text
+		);
 
 		if (Texture)
+		{
 			Texture->Release();
+			Texture = nullptr;
+		}
 
 		return false;
 	}
@@ -3698,16 +3898,23 @@ bool RmlRenderDX9::LoadTextureD3DX(
 			Filename.c_str()
 		);
 
-		OutputDebugStringW(Text);
+		OutputDebugStringW(
+			Text
+		);
 	}
 
 	OutDimensions.x =
-		static_cast<int>(Information.Width);
+		static_cast<int>(
+			Information.Width
+		);
 
 	OutDimensions.y =
-		static_cast<int>(Information.Height);
+		static_cast<int>(
+			Information.Height
+		);
 
-	*OutTexture = Texture;
+	*OutTexture =
+		Texture;
 
 	wchar_t Text[2048]{};
 
@@ -3715,13 +3922,18 @@ bool RmlRenderDX9::LoadTextureD3DX(
 		Text,
 		_countof(Text),
 		_TRUNCATE,
-		L"[RmlUI][DX9] Texture loaded: %ls (%dx%d)\n",
+		L"[RmlUI][DX9] Texture loaded: %ls (%dx%d)%ls\n",
 		Filename.c_str(),
 		OutDimensions.x,
-		OutDimensions.y
+		OutDimensions.y,
+		bIsDds
+			? L" [DDS]"
+			: L""
 	);
 
-	OutputDebugStringW(Text);
+	OutputDebugStringW(
+		Text
+	);
 
 	return true;
 }
