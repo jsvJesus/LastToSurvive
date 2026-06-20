@@ -9,6 +9,7 @@
 #define R3D_ALLOW_ASYNC_MESH_LOADING 1
 
 class r3dVertexBuffer;
+class r3dDX11MeshRenderData;
 
 #pragma pack(push)
 #pragma pack(1)
@@ -119,6 +120,8 @@ private:
 	static int					numInstancesInVB;
 	volatile LONG				m_Loaded ;
 	volatile LONG				m_Drawable ;
+	r3dDX11MeshRenderData*		DX11RenderData;
+	void						( *DX11RenderDataDestroy )( r3dDX11MeshRenderData* );
 
 public:
 
@@ -213,6 +216,10 @@ public:
 	void		SetLoaded() ;
 
 	void		Unload();
+
+	r3dDX11MeshRenderData*		GetDX11RenderData() const;
+	void						SetDX11RenderData( r3dDX11MeshRenderData* renderData, void ( *destroyFn )( r3dDX11MeshRenderData* ) );
+	void						ReleaseDX11RenderData();
 
 
 	// I/O functions

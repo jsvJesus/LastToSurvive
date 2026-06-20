@@ -185,6 +185,8 @@ r3dMesh::r3dMesh( int UsePreciseVertices )
 
 	m_Loaded = 0 ;
 	m_Drawable = 0 ;
+	DX11RenderData = NULL;
+	DX11RenderDataDestroy = NULL;
 
 	numInstancesInArray = 0;
 
@@ -246,6 +248,8 @@ void r3dMesh::Unload()
 
 	if(!IsLoaded())
 		return;
+
+	ReleaseDX11RenderData();
 
 	if( Flags & obfPlayerMesh )
 	{
@@ -323,6 +327,33 @@ void r3dMesh::Unload()
 	m_Loaded = 0 ;
 
 	return;
+}
+
+r3dDX11MeshRenderData*
+r3dMesh::GetDX11RenderData() const
+{
+	return DX11RenderData;
+}
+
+void
+r3dMesh::SetDX11RenderData( r3dDX11MeshRenderData* renderData, void ( *destroyFn )( r3dDX11MeshRenderData* ) )
+{
+	ReleaseDX11RenderData();
+
+	DX11RenderData = renderData;
+	DX11RenderDataDestroy = destroyFn;
+}
+
+void
+r3dMesh::ReleaseDX11RenderData()
+{
+	if( DX11RenderData && DX11RenderDataDestroy )
+	{
+		DX11RenderDataDestroy( DX11RenderData );
+	}
+
+	DX11RenderData = NULL;
+	DX11RenderDataDestroy = NULL;
 }
 
 void

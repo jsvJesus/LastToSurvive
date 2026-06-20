@@ -7,6 +7,7 @@ class r3dDX11DrawContext;
 class r3dDX11GBufferResources;
 class r3dDX11InputLayout;
 class r3dDX11IndexBuffer;
+class r3dDX11MaterialTextures;
 class r3dDX11PixelShader;
 class r3dDX11ShaderLibrary;
 class r3dDX11VertexBuffer;
@@ -17,6 +18,8 @@ struct r3dDX11MeshConstants
 {
 	float WorldViewProj[16];
 	float World[16];
+	float PositionScale[4];
+	float TexcoordScale[4];
 };
 
 class r3dDX11GBufferPass final
@@ -31,6 +34,7 @@ public:
 	bool Begin(r3dDX11GBufferResources& gbuffer);
 	void End(r3dDX11GBufferResources& gbuffer);
 	bool SetMeshConstants(const r3dDX11MeshConstants& constants);
+	void SetMaterial(const r3dDX11MaterialTextures& material);
 	void DrawMesh(r3dDX11VertexBuffer& vertexBuffer, r3dDX11IndexBuffer& indexBuffer, unsigned int indexCount, unsigned int startIndex = 0, int baseVertex = 0);
 
 	bool IsInitialized() const;

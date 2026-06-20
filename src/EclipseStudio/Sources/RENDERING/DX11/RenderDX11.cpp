@@ -5,6 +5,29 @@
 
 #include "../../../RmlUI/RmlRuntime.h"
 
+namespace
+{
+	const char* FindExistingTextureSmokePath()
+	{
+		static const char* candidates[] =
+		{
+			"Data\\Shaders\\Texture\\MissingTexture.dds",
+			"bin\\Data\\Shaders\\Texture\\MissingTexture.dds",
+			"Data\\Shaders\\Texture\\White.dds",
+			"bin\\Data\\Shaders\\Texture\\White.dds"
+		};
+
+		for (int i = 0; i < _countof(candidates); ++i)
+		{
+			const DWORD attributes = GetFileAttributesA(candidates[i]);
+			if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+				return candidates[i];
+		}
+
+		return nullptr;
+	}
+}
+
 r3dDX11Renderer::r3dDX11Renderer()
 {
 }
@@ -55,6 +78,33 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!TextureLibrary.Init(Device.GetDevice()))
+	{
+		r3dOutToLog("[DX11] Texture library initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
+	if (const char* textureSmokePath = FindExistingTextureSmokePath())
+	{
+		r3dDX11Texture* textureSmoke = TextureLibrary.LoadTexture(textureSmokePath);
+		if (textureSmoke)
+		{
+			r3dOutToLog(
+				"[DX11] Texture smoke loaded '%s' %dx%d mips=%d format=%d\n",
+				textureSmokePath,
+				textureSmoke->GetWidth(),
+				textureSmoke->GetHeight(),
+				textureSmoke->GetMipCount(),
+				static_cast<int>(textureSmoke->GetFormat())
+			);
+		}
+		else
+		{
+			r3dOutToLog("[DX11] Texture smoke failed '%s': %s\n", textureSmokePath, TextureLibrary.GetLastError().c_str());
+		}
+	}
+
 	if (!FrameResources.Init(Device.GetDevice(), Device.GetContext(), &DrawContext, &ShaderLibrary, &CommonStates, width, height))
 	{
 		r3dOutToLog("[DX11] Frame resources initialization failed\n");
@@ -102,6 +152,7 @@ void r3dDX11Renderer::Shutdown()
 	GBufferPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
+	TextureLibrary.Shutdown();
 	CommonStates.Shutdown();
 	ShaderLibrary.Shutdown();
 	DrawContext.Shutdown();
@@ -221,6 +272,11 @@ r3dDX11CommonStates& r3dDX11Renderer::GetCommonStates()
 	return CommonStates;
 }
 
+r3dDX11TextureLibrary& r3dDX11Renderer::GetTextureLibrary()
+{
+	return TextureLibrary;
+}
+
 r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary()
 {
 	return ShaderLibrary;
@@ -254,6 +310,11 @@ const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const
 const r3dDX11CommonStates& r3dDX11Renderer::GetCommonStates() const
 {
 	return CommonStates;
+}
+
+const r3dDX11TextureLibrary& r3dDX11Renderer::GetTextureLibrary() const
+{
+	return TextureLibrary;
 }
 
 const r3dDX11ShaderLibrary& r3dDX11Renderer::GetShaderLibrary() const

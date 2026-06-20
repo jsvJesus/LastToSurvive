@@ -4,6 +4,7 @@
 
 #include "RENDERING/DX11/RenderDX11Draw.h"
 #include "RENDERING/DX11/RenderDX11GBufferResources.h"
+#include "RENDERING/DX11/RenderDX11Material.h"
 #include "RENDERING/DX11/RenderDX11States.h"
 #include "RENDERING/DX11/RenderDX11VertexLayouts.h"
 #include "RENDERING/DX11/ShaderDX11.h"
@@ -67,6 +68,7 @@ bool r3dDX11GBufferPass::Begin(r3dDX11GBufferResources& gbuffer)
 	DrawContext->SetInputLayout(MeshLayout);
 	DrawContext->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DrawContext->SetShaders(FillVS, FillPS);
+	DrawContext->SetSampler(0, CommonStates->GetLinearWrapSampler());
 	MeshConstants.BindVS(DrawContext->GetContext(), 0);
 	return true;
 }
@@ -82,6 +84,12 @@ bool r3dDX11GBufferPass::SetMeshConstants(const r3dDX11MeshConstants& constants)
 		return false;
 
 	return MeshConstants.Update(DrawContext->GetContext(), &constants, sizeof(constants));
+}
+
+void r3dDX11GBufferPass::SetMaterial(const r3dDX11MaterialTextures& material)
+{
+	if (bInitialized && DrawContext)
+		material.Bind(*DrawContext, 0);
 }
 
 void r3dDX11GBufferPass::DrawMesh(r3dDX11VertexBuffer& vertexBuffer, r3dDX11IndexBuffer& indexBuffer, unsigned int indexCount, unsigned int startIndex, int baseVertex)

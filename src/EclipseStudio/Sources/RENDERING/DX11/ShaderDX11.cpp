@@ -16,7 +16,7 @@
 
 namespace
 {
-	const char ShaderCacheSignature[] = "DX11CSO1";
+	const char ShaderCacheSignature[] = "DX11CSO2";
 
 	template <typename T>
 	void SafeReleaseDX11(T*& value)
@@ -365,7 +365,7 @@ bool r3dDX11ShaderCompiler::CompileFromFile(
 	std::vector<D3D_SHADER_MACRO> d3dMacros;
 	BuildD3DMacros(macros, d3dMacros);
 
-	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_PACK_MATRIX_ROW_MAJOR;
 #ifndef FINAL_BUILD
 	flags |= D3DCOMPILE_DEBUG;
 #else
