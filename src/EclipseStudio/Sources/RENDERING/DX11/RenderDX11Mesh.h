@@ -20,7 +20,12 @@ struct r3dDX11MeshBuildDesc
 	const float* NormalsXYZ = nullptr;
 	const float* TexcoordsUV = nullptr;
 	const float* TangentsXYZ = nullptr;
+	const char* TangentSigns = nullptr;
 	const unsigned int* Indices = nullptr;
+	const unsigned char* BlendIndices = nullptr;
+	const float* BlendWeights = nullptr;
+	unsigned int BlendIndexStride = 0;
+	unsigned int BlendWeightStride = 0;
 	unsigned int NumVertices = 0;
 	unsigned int NumIndices = 0;
 	const r3dDX11MeshBatch* Batches = nullptr;
@@ -36,6 +41,16 @@ struct r3dDX11PackedMeshVertex
 	short TexCoord[2];
 	unsigned char Normal[4];
 	unsigned char Tangent[4];
+};
+
+struct r3dDX11PackedSkinnedMeshVertex
+{
+	short Position[4];
+	short TexCoord[2];
+	unsigned char Normal[4];
+	unsigned char Tangent[4];
+	short BlendWeights[4];
+	unsigned char BlendIndices[4];
 };
 #pragma pack(pop)
 
@@ -59,10 +74,12 @@ public:
 	unsigned int GetIndexCount() const;
 	const float* GetPositionScale() const;
 	const float* GetTexcoordScale() const;
+	bool IsSkinned() const;
 	bool IsValid() const;
 
 private:
 	static r3dDX11PackedMeshVertex PackVertex(const r3dDX11MeshBuildDesc& desc, unsigned int index);
+	static r3dDX11PackedSkinnedMeshVertex PackSkinnedVertex(const r3dDX11MeshBuildDesc& desc, unsigned int index);
 
 private:
 	r3dDX11VertexBuffer VertexBuffer;
@@ -72,4 +89,5 @@ private:
 	unsigned int IndexCount = 0;
 	float PositionScale[3] = { 1.0f, 1.0f, 1.0f };
 	float TexcoordScale[2] = { 1.0f, 1.0f };
+	bool bSkinned = false;
 };

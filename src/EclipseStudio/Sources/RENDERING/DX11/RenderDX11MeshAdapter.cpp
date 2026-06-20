@@ -34,6 +34,7 @@ bool r3dDX11CreateMeshResourceFromR3DMesh(ID3D11Device* device, const r3dMesh& m
 	desc.NormalsXYZ = reinterpret_cast<const float*>(mesh.VertexNormals);
 	desc.TexcoordsUV = reinterpret_cast<const float*>(mesh.VertexUVs);
 	desc.TangentsXYZ = reinterpret_cast<const float*>(mesh.VertexTangents);
+	desc.TangentSigns = mesh.VertexTangentWs;
 	desc.Indices = mesh.Indices;
 	desc.NumVertices = static_cast<unsigned int>(mesh.NumVertices);
 	desc.NumIndices = static_cast<unsigned int>(mesh.NumIndices);
@@ -44,6 +45,13 @@ bool r3dDX11CreateMeshResourceFromR3DMesh(ID3D11Device* device, const r3dMesh& m
 	desc.PositionScale[2] = mesh.unpackScale.z;
 	desc.TexcoordScale[0] = mesh.texcUnpackScale.x;
 	desc.TexcoordScale[1] = mesh.texcUnpackScale.y;
+	if (mesh.pWeights)
+	{
+		desc.BlendIndices = reinterpret_cast<const unsigned char*>(&mesh.pWeights[0].BoneID[0]);
+		desc.BlendWeights = reinterpret_cast<const float*>(&mesh.pWeights[0].Weight[0]);
+		desc.BlendIndexStride = sizeof(mesh.pWeights[0]);
+		desc.BlendWeightStride = sizeof(mesh.pWeights[0]);
+	}
 
 	return outResource.Create(device, desc, debugName ? debugName : mesh.FileName.c_str());
 }

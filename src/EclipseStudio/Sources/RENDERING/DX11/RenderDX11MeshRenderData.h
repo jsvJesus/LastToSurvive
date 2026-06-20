@@ -8,6 +8,7 @@
 
 class r3dMesh;
 class r3dDX11TextureLibrary;
+class r3dSkeleton;
 
 class r3dDX11MeshRenderData final
 {
@@ -18,8 +19,8 @@ public:
 	bool CreateFromR3DMesh(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, const r3dMesh& mesh, const char* debugName = nullptr);
 	void Shutdown();
 
-	void DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff);
-	void DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff);
+	void DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
+	void DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
 
 	r3dDX11MeshResource& GetMeshResource();
 	const r3dDX11MeshResource& GetMeshResource() const;

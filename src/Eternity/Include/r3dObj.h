@@ -10,6 +10,7 @@
 
 class r3dVertexBuffer;
 class r3dDX11MeshRenderData;
+class r3dSkeleton;
 
 #pragma pack(push)
 #pragma pack(1)
@@ -76,13 +77,14 @@ struct MeshDeferredRenderable : Renderable
 	static const DWORD DX11SignatureValue = 0xD311F11B;
 
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
-	void InitDX11( const D3DXMATRIX* worldTransform );
+	void InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton = NULL );
 
 	int						BatchIdx;
 	DWORD					Color;
 	r3dMesh*				Mesh;
 	DWORD					DX11Signature;
 	const D3DXMATRIX*		DX11WorldTransform;
+	const r3dSkeleton*		DX11Skeleton;
 };
 
 MeshDeferredRenderable* r3dGetMeshDeferredRenderable( Renderable* renderable );

@@ -83,7 +83,8 @@ bool r3dDX11RenderWorldGBuffer(r3dDX11Renderer& renderer, const r3dCamera& camer
 				static_cast<unsigned int>(meshRenderable->BatchIdx),
 				world,
 				viewProj,
-				meshRenderable->Color))
+				meshRenderable->Color,
+				meshRenderable->DX11Skeleton))
 		{
 			++stats->DrawnMeshes;
 		}

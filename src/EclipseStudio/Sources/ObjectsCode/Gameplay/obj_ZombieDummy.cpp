@@ -262,6 +262,7 @@ void obj_ZombieDummy::AppendRenderables(RenderArray ( & render_arrays  )[ rsCoun
 
 			rend.Init();
 			rend.Parent = this;
+			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
 		}
 	}
 }

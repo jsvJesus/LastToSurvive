@@ -1554,10 +1554,11 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 }
 
 void
-MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform )
+MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
 {
 	DX11Signature = DX11SignatureValue;
 	DX11WorldTransform = worldTransform;
+	DX11Skeleton = skeleton;
 }
 
 MeshDeferredRenderable*
