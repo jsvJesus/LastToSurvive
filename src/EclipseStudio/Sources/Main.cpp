@@ -81,6 +81,10 @@
 
 #include "../RmlUI/RmlUISystem.h"
 #include "../RmlUI/RmlRuntime.h"
+
+#include <RmlUi/Core/Context.h>
+#include <RmlUi/Core/ElementDocument.h>
+
 #include <dwmapi.h>
 
 #include "ui/FrontendShared.h"
@@ -138,9 +142,98 @@ static r3dDX11Renderer* g_DX11Renderer = nullptr;
 static bool g_StudioCmdLineDX11Boot = false;
 static bool g_StudioCmdLineDX11World = false;
 
+static Rml::Context* g_DX11SmokeRmlContext = nullptr;
+static Rml::ElementDocument* g_DX11SmokeRmlDocument = nullptr;
+static bool g_DX11SmokeRmlReady = false;
+
 static bool IsDX11BootActive()
 {
 	return g_DX11Renderer && g_DX11Renderer->IsInitialized();
+}
+
+static void ShutdownDX11SmokeRml()
+{
+	RmlRuntime& Runtime = RmlRuntime::Get();
+
+	if (g_DX11SmokeRmlContext)
+	{
+		Runtime.ClearActiveContext(g_DX11SmokeRmlContext);
+
+		if (g_DX11SmokeRmlDocument)
+		{
+			g_DX11SmokeRmlContext->UnloadDocument(g_DX11SmokeRmlDocument);
+			g_DX11SmokeRmlDocument = nullptr;
+		}
+
+		Runtime.DestroyContext(g_DX11SmokeRmlContext);
+	}
+
+	g_DX11SmokeRmlReady = false;
+}
+
+static bool InitDX11SmokeRml()
+{
+	if (g_DX11SmokeRmlReady)
+		return true;
+
+	if (!g_DX11Renderer || !g_DX11Renderer->IsInitialized())
+	{
+		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: DX11 renderer is not ready\n");
+		return false;
+	}
+
+	RmlRuntime& Runtime = RmlRuntime::Get();
+
+	g_DX11SmokeRmlContext = Runtime.CreateContext(
+		"DX11Smoke",
+		Rml::Vector2i(
+			g_DX11Renderer->GetWidth(),
+			g_DX11Renderer->GetHeight()
+		)
+	);
+
+	if (!g_DX11SmokeRmlContext)
+	{
+		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: CreateContext failed\n");
+		return false;
+	}
+
+	g_DX11SmokeRmlDocument =
+		g_DX11SmokeRmlContext->LoadDocument("Rml/Studio/DX11Smoke.rml");
+
+	if (!g_DX11SmokeRmlDocument)
+	{
+		r3dOutToLog("[DX11][RmlUI] Failed to load Data/Rml/Studio/DX11Smoke.rml\n");
+		r3dOutToLog("[DX11][RmlUI] Trying fallback Data/Rml/Studio/AppSelect.rml\n");
+
+		g_DX11SmokeRmlDocument =
+			g_DX11SmokeRmlContext->LoadDocument("Rml/Studio/AppSelect.rml");
+	}
+
+	if (!g_DX11SmokeRmlDocument)
+	{
+		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: no document loaded\n");
+
+		Runtime.DestroyContext(g_DX11SmokeRmlContext);
+		g_DX11SmokeRmlContext = nullptr;
+
+		return false;
+	}
+
+	g_DX11SmokeRmlDocument->Show();
+
+	Runtime.SetActiveContext(g_DX11SmokeRmlContext);
+
+	g_DX11SmokeRmlReady = true;
+
+	r3dOutToLog(
+		"[DX11][RmlUI] Smoke document loaded. context=%s size=%dx%d\n",
+		g_DX11SmokeRmlContext->GetName().c_str(),
+		g_DX11Renderer->GetWidth(),
+		g_DX11Renderer->GetHeight()
+	);
+
+	return true;
 }
 
 static bool StudioWindowResizeMsgProc(
@@ -456,6 +549,15 @@ static void ExecuteDX11SmokeLoop()
 		g_StudioCmdLineDX11World ? 1 : 0
 	);
 
+	const bool bRmlReady = InitDX11SmokeRml();
+
+	if (!bRmlReady)
+	{
+		r3dOutToLog(
+			"[DX11][RmlUI] RML smoke screen is not ready. DX11 will continue with clear screen only.\n"
+		);
+	}
+
 	DWORD LastWorldStatsLog = 0;
 
 	while (!g_bExit)
@@ -467,6 +569,20 @@ static void ExecuteDX11SmokeLoop()
 			{
 				g_bExit = true;
 				break;
+			}
+
+			if (g_DX11SmokeRmlContext)
+			{
+				LRESULT RmlResult = 0;
+
+				RmlRuntime::Get().ProcessWin32Message(
+					g_DX11SmokeRmlContext,
+					win::hWnd,
+					Message.message,
+					Message.wParam,
+					Message.lParam,
+					&RmlResult
+				);
 			}
 
 			TranslateMessage(&Message);
@@ -483,6 +599,22 @@ static void ExecuteDX11SmokeLoop()
 		}
 
 		ProcessStudioPendingResize(nullptr);
+
+		if (g_DX11SmokeRmlContext)
+		{
+			g_DX11SmokeRmlContext->SetDimensions(
+				Rml::Vector2i(
+					g_DX11Renderer->GetWidth(),
+					g_DX11Renderer->GetHeight()
+				)
+			);
+
+			RmlRuntime::Get().SetActiveContext(
+				g_DX11SmokeRmlContext
+			);
+
+			g_DX11SmokeRmlContext->Update();
+		}
 
 		g_DX11Renderer->BeginFrame(
 			0.010f,
@@ -503,6 +635,7 @@ static void ExecuteDX11SmokeLoop()
 				);
 
 			const DWORD Now = GetTickCount();
+
 			if (Now - LastWorldStatsLog >= 1000)
 			{
 				r3dOutToLog(
@@ -520,11 +653,14 @@ static void ExecuteDX11SmokeLoop()
 		}
 
 		g_DX11Renderer->EndFrame(
-			r_vsync_enabled->GetBool()
+			r_vsync_enabled->GetBool(),
+			g_DX11SmokeRmlContext
 		);
 
 		Sleep(1);
 	}
+
+	ShutdownDX11SmokeRml();
 
 	r3dOutToLog("[DX11] Leaving experimental smoke loop\n");
 }
