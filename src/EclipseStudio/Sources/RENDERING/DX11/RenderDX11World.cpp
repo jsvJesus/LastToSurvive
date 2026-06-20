@@ -19,6 +19,9 @@ namespace
 	r3dDX11Texture2D g_DX11ShadowDepthTargets[NumShadowSlices];
 	int g_DX11ShadowDepthSizes[NumShadowSlices] = {};
 
+	r3dDX11Texture2D g_DX11TransparentShadowDepthTarget;
+	int g_DX11TransparentShadowDepthSize = 0;
+
 	const D3DXMATRIX& GetRenderableWorldMatrix(const MeshDeferredRenderable& renderable)
 	{
 		static D3DXMATRIX identity;
@@ -245,6 +248,39 @@ namespace
 		return true;
 	}
 
+	bool EnsureDX11TransparentShadowDepthTarget(r3dDX11Renderer& renderer)
+	{
+		int size = 1024;
+
+		if (r_dir_sm_size)
+			size = r_dir_sm_size->GetInt();
+
+		size = std::max(64, std::min(size, 8192));
+
+		if (
+			g_DX11TransparentShadowDepthTarget.IsValid() &&
+			g_DX11TransparentShadowDepthSize == size
+		)
+		{
+			return true;
+		}
+
+		if (!g_DX11TransparentShadowDepthTarget.Create(
+				renderer.GetDevice().GetDevice(),
+				size,
+				size,
+				DXGI_FORMAT_D24_UNORM_S8_UINT,
+				R3D_DX11_BIND_DEPTH_STENCIL,
+				"DX11.TransparentShadowDepth"))
+		{
+			g_DX11TransparentShadowDepthSize = 0;
+			return false;
+		}
+
+		g_DX11TransparentShadowDepthSize = size;
+		return true;
+	}
+
 	bool IsAlphaTestedShadowRenderable(const MeshShadowRenderable& renderable)
 	{
 		if (!renderable.Mesh)
@@ -424,6 +460,7 @@ namespace
 		r3dDX11DepthOnlyPass& pass,
 		eRenderStageID queueId,
 		const D3DXMATRIX& viewProj,
+		bool transparentShadowCase,
 		r3dDX11WorldRenderStats& stats
 	)
 	{
@@ -432,27 +469,66 @@ namespace
 		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
 		{
 			Renderable& renderable = queue[i];
-			++stats.ShadowRenderables;
 
-			MeshShadowRenderable* meshRenderable = r3dGetMeshShadowRenderable(&renderable);
+			if (transparentShadowCase)
+				++stats.TransparentShadowRenderables;
+			else
+				++stats.ShadowRenderables;
+
+			MeshShadowRenderable* meshRenderable =
+				r3dGetMeshShadowRenderable(&renderable);
+
 			if (!meshRenderable)
 			{
-				++stats.ShadowSkippedUnsupported;
+				if (transparentShadowCase)
+					++stats.TransparentShadowSkippedUnsupported;
+				else
+					++stats.ShadowSkippedUnsupported;
+
 				continue;
 			}
 
-			++stats.ShadowMeshRenderables;
+			if (transparentShadowCase)
+				++stats.TransparentShadowMeshRenderables;
+			else
+				++stats.ShadowMeshRenderables;
 
 			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh))
 			{
-				++stats.ShadowSkippedFailed;
+				if (transparentShadowCase)
+					++stats.TransparentShadowSkippedFailed;
+				else
+					++stats.ShadowSkippedFailed;
+
 				continue;
 			}
 
-			if (IsAlphaTestedShadowRenderable(*meshRenderable))
-				++stats.ShadowAlphaTested;
+			if (meshRenderable->DX11Skeleton)
+			{
+				if (transparentShadowCase)
+					++stats.TransparentShadowSkinnedMeshes;
+				else
+					++stats.ShadowSkinnedMeshes;
+			}
+			else
+			{
+				if (transparentShadowCase)
+					++stats.TransparentShadowStaticMeshes;
+				else
+					++stats.ShadowStaticMeshes;
+			}
 
-			const D3DXMATRIX& world = GetRenderableWorldMatrix(*meshRenderable);
+			if (IsAlphaTestedShadowRenderable(*meshRenderable))
+			{
+				if (transparentShadowCase)
+					++stats.TransparentShadowAlphaTested;
+				else
+					++stats.ShadowAlphaTested;
+			}
+
+			const D3DXMATRIX& world =
+				GetRenderableWorldMatrix(*meshRenderable);
+
 			bool drawn = false;
 
 			if (meshRenderable->BatchIdx >= 0)
@@ -465,7 +541,8 @@ namespace
 					static_cast<unsigned int>(meshRenderable->BatchIdx),
 					world,
 					viewProj,
-					meshRenderable->DX11Skeleton);
+					meshRenderable->DX11Skeleton
+				);
 			}
 			else
 			{
@@ -476,20 +553,49 @@ namespace
 					*meshRenderable->Mesh,
 					world,
 					viewProj,
-					meshRenderable->DX11Skeleton);
+					meshRenderable->DX11Skeleton
+				);
 			}
 
 			if (drawn)
-				++stats.ShadowDrawnMeshes;
+			{
+				if (transparentShadowCase)
+					++stats.TransparentShadowDrawnMeshes;
+				else
+					++stats.ShadowDrawnMeshes;
+			}
 			else
-				++stats.ShadowSkippedFailed;
+			{
+				if (transparentShadowCase)
+					++stats.TransparentShadowSkippedFailed;
+				else
+					++stats.ShadowSkippedFailed;
+			}
 		}
 	}
 
-	void RenderDX11ShadowQueues(r3dDX11Renderer& renderer, r3dDX11DepthOnlyPass& pass, r3dDX11WorldRenderStats& stats)
+	void RenderDX11ShadowQueues(
+		r3dDX11Renderer& renderer,
+		r3dDX11DepthOnlyPass& pass,
+		r3dDX11WorldRenderStats& stats
+	)
 	{
-		int activeSlices = r_active_shadow_slices ? r_active_shadow_slices->GetInt() : NumShadowSlices;
-		activeSlices = std::max(0, std::min(activeSlices, static_cast<int>(NumShadowSlices)));
+		if (!r_shadows || !r_shadows->GetBool())
+			return;
+
+		int activeSlices =
+			r_active_shadow_slices
+				? r_active_shadow_slices->GetInt()
+				: NumShadowSlices;
+
+		activeSlices =
+			std::max(
+				0,
+				std::min(
+					activeSlices,
+					static_cast<int>(NumShadowSlices)
+				)
+			);
 
 		for (int i = 0; i < activeSlices; ++i)
 		{
@@ -499,17 +605,86 @@ namespace
 				continue;
 			}
 
-			r3dDX11Texture2D& shadowDepth = g_DX11ShadowDepthTargets[i];
-			if (!pass.BeginDepthTarget(shadowDepth.GetDSV(), shadowDepth.GetWidth(), shadowDepth.GetHeight(), true))
+			r3dDX11Texture2D& shadowDepth =
+				g_DX11ShadowDepthTargets[i];
+
+			if (!pass.BeginDepthTarget(
+					shadowDepth.GetDSV(),
+					shadowDepth.GetWidth(),
+					shadowDepth.GetHeight(),
+					true))
 			{
 				++stats.ShadowSkippedFailed;
 				continue;
 			}
 
-			const D3DXMATRIX viewProj = ShadowSlices[i].lightView * ShadowSlices[i].lightProj;
-			DrawDX11ShadowQueue(renderer, pass, static_cast<eRenderStageID>(rsCreateSM + i), viewProj, stats);
+			const D3DXMATRIX viewProj =
+				ShadowSlices[i].lightView *
+				ShadowSlices[i].lightProj;
+
+			DrawDX11ShadowQueue(
+				renderer,
+				pass,
+				static_cast<eRenderStageID>(rsCreateSM + i),
+				viewProj,
+				false,
+				stats
+			);
+
 			pass.EndDepthTarget();
+
 			++stats.ShadowSlicesRendered;
+		}
+
+		// Transparent shadow case:
+		// Старый DX9 path рисует это отдельной очередью rsCreateTransparentSM.
+		// В DX11 пока валидируем отдельный transparent shadow depth target.
+		if (r_particle_shadows && r_particle_shadows->GetBool())
+		{
+			if (!EnsureDX11TransparentShadowDepthTarget(renderer))
+			{
+				++stats.TransparentShadowSkippedFailed;
+				return;
+			}
+
+			r3dDX11Texture2D& transparentDepth =
+				g_DX11TransparentShadowDepthTarget;
+
+			if (!pass.BeginDepthTarget(
+					transparentDepth.GetDSV(),
+					transparentDepth.GetWidth(),
+					transparentDepth.GetHeight(),
+					true))
+			{
+				++stats.TransparentShadowSkippedFailed;
+				return;
+			}
+
+			D3DXMATRIX transparentViewProj;
+
+			if (activeSlices > 0)
+			{
+				transparentViewProj =
+					ShadowSlices[0].lightView *
+					ShadowSlices[0].lightProj;
+			}
+			else
+			{
+				D3DXMatrixIdentity(&transparentViewProj);
+			}
+
+			DrawDX11ShadowQueue(
+				renderer,
+				pass,
+				rsCreateTransparentSM,
+				transparentViewProj,
+				true,
+				stats
+			);
+
+			pass.EndDepthTarget();
+
+			++stats.TransparentShadowCasesRendered;
 		}
 	}
 }
@@ -537,11 +712,23 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 
 	stats.ShadowRenderables = 0;
 	stats.ShadowMeshRenderables = 0;
+	stats.ShadowStaticMeshes = 0;
+	stats.ShadowSkinnedMeshes = 0;
 	stats.ShadowDrawnMeshes = 0;
 	stats.ShadowAlphaTested = 0;
 	stats.ShadowSkippedUnsupported = 0;
 	stats.ShadowSkippedFailed = 0;
 	stats.ShadowSlicesRendered = 0;
+
+	stats.TransparentShadowRenderables = 0;
+	stats.TransparentShadowMeshRenderables = 0;
+	stats.TransparentShadowStaticMeshes = 0;
+	stats.TransparentShadowSkinnedMeshes = 0;
+	stats.TransparentShadowDrawnMeshes = 0;
+	stats.TransparentShadowAlphaTested = 0;
+	stats.TransparentShadowSkippedUnsupported = 0;
+	stats.TransparentShadowSkippedFailed = 0;
+	stats.TransparentShadowCasesRendered = 0;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(

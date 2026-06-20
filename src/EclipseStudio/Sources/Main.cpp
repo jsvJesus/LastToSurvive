@@ -311,7 +311,8 @@ void StudioDX11WorldHybridTick()
 			"[DX11][World] ok=%d total=%u mesh=%u "
 			"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
 			"gbuffer_drawn=%u unsupported=%u failed=%u "
-			"shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
+			"shadow=%u smesh=%u sstatic=%u sskin=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u "
+			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u\n",
 			bWorldRendered ? 1 : 0,
 			WorldStats.TotalRenderables,
 			WorldStats.MeshRenderables,

@@ -24,11 +24,23 @@ struct r3dDX11WorldRenderStats
 
 	unsigned int ShadowRenderables;
 	unsigned int ShadowMeshRenderables;
+	unsigned int ShadowStaticMeshes;
+	unsigned int ShadowSkinnedMeshes;
 	unsigned int ShadowDrawnMeshes;
 	unsigned int ShadowAlphaTested;
 	unsigned int ShadowSkippedUnsupported;
 	unsigned int ShadowSkippedFailed;
 	unsigned int ShadowSlicesRendered;
+
+	unsigned int TransparentShadowRenderables;
+	unsigned int TransparentShadowMeshRenderables;
+	unsigned int TransparentShadowStaticMeshes;
+	unsigned int TransparentShadowSkinnedMeshes;
+	unsigned int TransparentShadowDrawnMeshes;
+	unsigned int TransparentShadowAlphaTested;
+	unsigned int TransparentShadowSkippedUnsupported;
+	unsigned int TransparentShadowSkippedFailed;
+	unsigned int TransparentShadowCasesRendered;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);
