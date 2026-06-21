@@ -756,8 +756,13 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	constants.TerrainLayerParams[3] =
 		static_cast<float>(desc.CellSize);
 
-	constants.TerrainDetailParams[0] = 48.0f;
-	constants.TerrainDetailParams[1] = 0.35f;
+	float terrainDetailAmount =
+	r_dx11_terrain_detail_amount
+		? SaturateFloat(r_dx11_terrain_detail_amount->GetFloat())
+		: 0.08f;
+
+	constants.TerrainDetailParams[0] = 28.0f;
+	constants.TerrainDetailParams[1] = terrainDetailAmount;
 	constants.TerrainDetailParams[2] = 1.0f;
 	constants.TerrainDetailParams[3] = 0.0f;
 
@@ -800,10 +805,20 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	if (!terrainDetailNormalTexture || !terrainDetailNormalTexture->IsValid())
 		terrainDetailNormalTexture = TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
 
+	float terrainTextureBlend =
+	r_dx11_terrain_texture_blend
+		? SaturateFloat(r_dx11_terrain_texture_blend->GetFloat())
+		: 0.18f;
+
+	float terrainNormalBlend =
+		r_dx11_terrain_normal_blend
+			? SaturateFloat(r_dx11_terrain_normal_blend->GetFloat())
+			: 0.10f;
+
 	constants.TerrainDebugParams[0] = gbufferMode ? 1.0f : 0.0f;
-	constants.TerrainDebugParams[1] = hasColorTexture ? 1.0f : 0.0f;
-	constants.TerrainDebugParams[2] = hasNormalTexture ? 1.0f : 0.0f;
-	constants.TerrainDebugParams[3] = hasDetailNormalTexture ? 1.0f : 0.0f;
+	constants.TerrainDebugParams[1] = hasColorTexture ? terrainTextureBlend : 0.0f;
+	constants.TerrainDebugParams[2] = hasNormalTexture ? terrainNormalBlend : 0.0f;
+	constants.TerrainDebugParams[3] = hasDetailNormalTexture ? terrainDetailAmount : 0.0f;
 
 	if (!TerrainConstants.Update(
 			DrawContext->GetContext(),

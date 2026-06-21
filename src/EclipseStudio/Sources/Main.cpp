@@ -142,6 +142,212 @@ static r3dDX11Renderer* g_DX11Renderer = nullptr;
 static bool g_StudioCmdLineDX11Boot = false;
 static bool g_StudioCmdLineDX11World = false;
 
+static bool WasDX11HotkeyPressed(int virtualKey)
+{
+	static bool previousState[256] = {};
+
+	const bool isDown =
+		(GetAsyncKeyState(virtualKey) & 0x8000) != 0;
+
+	const bool pressed =
+		isDown && !previousState[virtualKey];
+
+	previousState[virtualKey] = isDown;
+
+	return pressed;
+}
+
+static void SetDX11DebugView(int mode)
+{
+	if (!r_dx11_debug_view)
+		return;
+
+	r_dx11_debug_view->SetInt(mode);
+
+	const char* name = "final";
+
+	switch (mode)
+	{
+	case 0: name = "final"; break;
+	case 1: name = "albedo"; break;
+	case 2: name = "normal"; break;
+	case 3: name = "depth"; break;
+	case 4: name = "aux"; break;
+	case 5: name = "direct only"; break;
+	case 6: name = "ambient only"; break;
+	default: break;
+	}
+
+	r3dOutToLog(
+		"[DX11][Hotkey] debug_view=%d (%s)\n",
+		mode,
+		name
+	);
+}
+
+template <typename TCmdVar>
+static void CycleDX11FloatCVar(
+	TCmdVar* cvar,
+	const char* name,
+	const float* values,
+	int count
+)
+{
+	if (!cvar || !values || count <= 0)
+		return;
+
+	const float current =
+		cvar->GetFloat();
+
+	int nextIndex = 0;
+
+	for (int i = 0; i < count; ++i)
+	{
+		if (values[i] > current + 0.001f)
+		{
+			nextIndex = i;
+			break;
+		}
+	}
+
+	cvar->SetFloat(
+		values[nextIndex]
+	);
+
+	r3dOutToLog(
+		"[DX11][Hotkey] %s=%.3f\n",
+		name,
+		values[nextIndex]
+	);
+}
+
+static void LogDX11WorldHotkeyHelpOnce()
+{
+	static bool printed = false;
+
+	if (printed)
+		return;
+
+	printed = true;
+
+	r3dOutToLog("[DX11][Hotkey] ===============================================\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 0 = final\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 1 = albedo\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 2 = normals\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 3 = depth\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 4 = aux gloss/spec\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 5 = direct light only\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 6 = ambient only\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 7 = cycle terrain texture blend\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 8 = cycle terrain normal blend\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad 9 = cycle terrain detail amount\n");
+	r3dOutToLog("[DX11][Hotkey] NumPad . = print current DX11 debug settings\n");
+	r3dOutToLog("[DX11][Hotkey] NumLock must be ON\n");
+	r3dOutToLog("[DX11][Hotkey] ===============================================\n");
+}
+
+static void LogDX11WorldDebugSettings()
+{
+	r3dOutToLog(
+		"[DX11][Settings] debug_view=%d terrain_tex=%.3f terrain_normal=%.3f terrain_detail=%.3f\n",
+		r_dx11_debug_view ? r_dx11_debug_view->GetInt() : -1,
+		r_dx11_terrain_texture_blend ? r_dx11_terrain_texture_blend->GetFloat() : -1.0f,
+		r_dx11_terrain_normal_blend ? r_dx11_terrain_normal_blend->GetFloat() : -1.0f,
+		r_dx11_terrain_detail_amount ? r_dx11_terrain_detail_amount->GetFloat() : -1.0f
+	);
+}
+
+static void UpdateDX11WorldHotkeys()
+{
+	LogDX11WorldHotkeyHelpOnce();
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD0))
+		SetDX11DebugView(0);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD1))
+		SetDX11DebugView(1);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD2))
+		SetDX11DebugView(2);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD3))
+		SetDX11DebugView(3);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD4))
+		SetDX11DebugView(4);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD5))
+		SetDX11DebugView(5);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD6))
+		SetDX11DebugView(6);
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD7))
+	{
+		static const float values[] =
+		{
+			0.00f,
+			0.04f,
+			0.08f,
+			0.12f,
+			0.18f,
+			0.25f
+		};
+
+		CycleDX11FloatCVar(
+			r_dx11_terrain_texture_blend,
+			"r_dx11_terrain_texture_blend",
+			values,
+			_countof(values)
+		);
+	}
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD8))
+	{
+		static const float values[] =
+		{
+			0.00f,
+			0.04f,
+			0.08f,
+			0.12f,
+			0.18f,
+			0.25f
+		};
+
+		CycleDX11FloatCVar(
+			r_dx11_terrain_normal_blend,
+			"r_dx11_terrain_normal_blend",
+			values,
+			_countof(values)
+		);
+	}
+
+	if (WasDX11HotkeyPressed(VK_NUMPAD9))
+	{
+		static const float values[] =
+		{
+			0.00f,
+			0.03f,
+			0.05f,
+			0.08f,
+			0.12f,
+			0.18f
+		};
+
+		CycleDX11FloatCVar(
+			r_dx11_terrain_detail_amount,
+			"r_dx11_terrain_detail_amount",
+			values,
+			_countof(values)
+		);
+	}
+
+	if (WasDX11HotkeyPressed(VK_DECIMAL))
+	{
+		LogDX11WorldDebugSettings();
+	}
+}
+
 static Rml::Context* g_DX11SmokeRmlContext = nullptr;
 static Rml::ElementDocument* g_DX11SmokeRmlDocument = nullptr;
 static bool g_DX11SmokeRmlReady = false;
@@ -595,6 +801,7 @@ bool StudioDX11WorldHybridTick()
 
 	static DWORD LastWorldStatsLog = 0;
 	static DWORD LastWorldValidationLog = 0;
+	UpdateDX11WorldHotkeys();
 
 	g_DX11Renderer->BeginFrame(
 		0.010f,
