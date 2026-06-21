@@ -75,7 +75,7 @@ FillBufferVSOutput main(FillBufferSkinVSInput input)
 	output.Tangent = normalize(mul(float4(skinnedTangent, 0.0f), World).xyz);
 	output.Binormal = normalize(cross(output.Normal, output.Tangent) * tangentSample.w);
 	output.WorldPos = worldPos.xyz;
-	output.Depth = output.Position.w;
+	output.Depth = saturate(output.Position.z / max(output.Position.w, 0.00001f));
 
 	return output;
 }

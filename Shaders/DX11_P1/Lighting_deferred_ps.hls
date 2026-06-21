@@ -29,6 +29,11 @@ cbuffer LightingFrameConstants : register(b0)
 	float4 gScreenSize;
 
 	float4 gShadowParams;
+
+	// x = debug mode
+	// y = ambient/probe enabled
+	// z = fog enabled
+	// w = spec/gloss enabled
 	float4 gOptions;
 };
 
@@ -52,46 +57,38 @@ struct PS_INPUT
 	float2 TexCoord : TEXCOORD0;
 };
 
+float3 SafeNormalize(float3 v, float3 fallback)
+{
+	float lenSq = dot(v, v);
+
+	if (lenSq < 0.000001f)
+		return fallback;
+
+	return v * rsqrt(lenSq);
+}
+
 float3 DecodeNormal(float4 packedNormal)
 {
 	float3 normal = packedNormal.xyz * 2.0f - 1.0f;
-
-	float lenSq = dot(normal, normal);
-
-	if (lenSq < 0.0001f)
-		normal = float3(0.0f, 1.0f, 0.0f);
-	else
-		normal = normalize(normal);
-
-	return normal;
+	return SafeNormalize(normal, float3(0.0f, 1.0f, 0.0f));
 }
 
-float DecodeGloss(float4 color, float4 aux)
+float DecodeGloss(float4 aux)
 {
-	float gloss = aux.r;
-
-	if (gloss <= 0.001f)
-		gloss = color.a;
-
-	return saturate(gloss);
+	return saturate(aux.r);
 }
 
 float DecodeSpecular(float4 aux)
 {
-	float specular = aux.g;
-
-	if (specular <= 0.001f)
-		specular = 0.20f;
-
-	return saturate(specular);
+	return saturate(aux.g);
 }
 
-float3 ReconstructWorld(float2 uv, float depth)
+float3 ReconstructWorld(float2 uv, float deviceDepth)
 {
 	float2 ndc = uv * 2.0f - 1.0f;
 	ndc.y = -ndc.y;
 
-	float4 clipPos = float4(ndc, depth, 1.0f);
+	float4 clipPos = float4(ndc, deviceDepth, 1.0f);
 	float4 worldPos = mul(clipPos, gInvViewProj);
 
 	if (abs(worldPos.w) > 0.00001f)
@@ -109,7 +106,7 @@ float3 ApplyDirectionalLight(
 	float shadowFactor
 )
 {
-	float3 lightDir = normalize(-gSunDirection.xyz);
+	float3 lightDir = SafeNormalize(-gSunDirection.xyz, float3(0.0f, 1.0f, 0.0f));
 
 	float ndotl = saturate(dot(normal, lightDir));
 
@@ -120,7 +117,8 @@ float3 ApplyDirectionalLight(
 		ndotl *
 		shadowFactor;
 
-	float3 halfVec = normalize(lightDir + viewDir);
+	float3 halfVec = SafeNormalize(lightDir + viewDir, normal);
+
 	float specPow = lerp(16.0f, 128.0f, gloss);
 
 	float specTerm =
@@ -169,12 +167,13 @@ float3 ApplyPointLight(
 		ndotl *
 		attenuation;
 
-	float3 halfVec = normalize(lightDir + viewDir);
+	float3 halfVec = SafeNormalize(lightDir + viewDir, normal);
 	float specPow = lerp(16.0f, 128.0f, gloss);
 
 	float specTerm =
 		pow(saturate(dot(normal, halfVec)), specPow) *
 		specular *
+		gOptions.w *
 		attenuation *
 		light.ColorIntensity.a;
 
@@ -205,13 +204,14 @@ float3 ApplySpotLight(
 	float distance = sqrt(max(distanceSq, 0.0001f));
 	float3 lightDir = toLight / distance;
 
-	float3 spotDir = normalize(light.DirectionAngles.xyz);
+	float3 spotDir = SafeNormalize(light.DirectionAngles.xyz, float3(0.0f, -1.0f, 0.0f));
 
 	float cosAngle = dot(-lightDir, spotDir);
 	float innerCos = light.DirectionAngles.w;
 	float outerCos = light.Params.y;
 
 	float spotRange = max(innerCos - outerCos, 0.001f);
+
 	float spot = saturate((cosAngle - outerCos) / spotRange);
 	spot = pow(spot, max(light.Params.z, 0.01f));
 
@@ -228,12 +228,13 @@ float3 ApplySpotLight(
 		ndotl *
 		attenuation;
 
-	float3 halfVec = normalize(lightDir + viewDir);
+	float3 halfVec = SafeNormalize(lightDir + viewDir, normal);
 	float specPow = lerp(16.0f, 128.0f, gloss);
 
 	float specTerm =
 		pow(saturate(dot(normal, halfVec)), specPow) *
 		specular *
+		gOptions.w *
 		attenuation *
 		light.ColorIntensity.a *
 		light.Params.w;
@@ -245,7 +246,7 @@ float3 ApplySpotLight(
 	return diffuse + specColor;
 }
 
-float3 ApplyFog(float3 color, float depth)
+float3 ApplyFog(float3 color, float deviceDepth)
 {
 	if (gOptions.z <= 0.0f)
 		return color;
@@ -253,10 +254,74 @@ float3 ApplyFog(float3 color, float depth)
 	float fogStart = gFogParams.x;
 	float fogEnd = max(gFogParams.y, fogStart + 1.0f);
 
-	float fogT = saturate((depth * fogEnd - fogStart) / (fogEnd - fogStart));
+	float fogT = saturate((deviceDepth * fogEnd - fogStart) / (fogEnd - fogStart));
 	fogT = saturate(fogT * gFogColorDensity.a);
 
 	return lerp(color, gFogColorDensity.rgb, fogT);
+}
+
+float3 ApplyLocalLights(
+	float3 worldPos,
+	float3 albedo,
+	float3 normal,
+	float3 viewDir,
+	float specular,
+	float gloss
+)
+{
+	float3 result = 0.0f;
+
+	int lightCount = min((int)gLightCount.x, DX11_MAX_DEFERRED_LIGHTS);
+
+	[loop]
+	for (int i = 0; i < lightCount; ++i)
+	{
+		DX11ShaderLight light = gLights[i];
+
+		if (light.Params.x == DX11_LIGHT_POINT)
+		{
+			result += ApplyPointLight(
+				light,
+				worldPos,
+				albedo,
+				normal,
+				viewDir,
+				specular,
+				gloss
+			);
+		}
+		else if (light.Params.x == DX11_LIGHT_SPOT)
+		{
+			result += ApplySpotLight(
+				light,
+				worldPos,
+				albedo,
+				normal,
+				viewDir,
+				specular,
+				gloss
+			);
+		}
+	}
+
+	return result;
+}
+
+float3 ApplyTemporaryToneMap(float3 color)
+{
+	color = max(color, 0.0f);
+
+	// Временная экспозиция для DX11 world path.
+	// Потом это нужно будет вынести в нормальный post-process.
+	color *= 0.38f;
+
+	// Simple Reinhard tone map.
+	color = color / (1.0f + color);
+
+	// Gamma correction для обычного backbuffer.
+	color = pow(saturate(color), 1.0f / 2.2f);
+
+	return saturate(color);
 }
 
 float4 main(PS_INPUT input) : SV_Target
@@ -271,75 +336,77 @@ float4 main(PS_INPUT input) : SV_Target
 	float3 albedo = saturate(gColor.rgb);
 	float3 normal = DecodeNormal(gNormal);
 
-	float depth = saturate(gDepth.r);
-	float3 worldPos = ReconstructWorld(uv, depth);
+	float deviceDepth = saturate(gDepth.r);
+	float3 worldPos = ReconstructWorld(uv, deviceDepth);
 
-	float3 viewDir = normalize(gCameraPos.xyz - worldPos);
+	float3 viewDir = SafeNormalize(gCameraPos.xyz - worldPos, float3(0.0f, 0.0f, 1.0f));
 
-	float gloss = DecodeGloss(gColor, gAux);
+	float gloss = DecodeGloss(gAux);
 	float specular = DecodeSpecular(gAux);
 
 	float shadowFactor = saturate(gShadowParams.x);
 
-	float3 color = 0.0f;
-
-	if (gOptions.x > 0.0f)
-	{
-		color += albedo *
-			gAmbientColorIntensity.rgb *
-			gAmbientColorIntensity.a;
-	}
+	float3 ambientLight = 0.0f;
 
 	if (gOptions.y > 0.0f)
 	{
-		color += albedo *
+		ambientLight +=
+			albedo *
+			gAmbientColorIntensity.rgb *
+			gAmbientColorIntensity.a;
+
+		ambientLight +=
+			albedo *
 			gProbeColorIntensity.rgb *
 			gProbeColorIntensity.a;
 	}
 
-	color += ApplyDirectionalLight(
-		albedo,
-		normal,
-		viewDir,
-		specular,
-		gloss,
-		shadowFactor
-	);
+	float3 directLight =
+		ApplyDirectionalLight(
+			albedo,
+			normal,
+			viewDir,
+			specular,
+			gloss,
+			shadowFactor
+		);
 
-	int lightCount = min((int)gLightCount.x, DX11_MAX_DEFERRED_LIGHTS);
+	float3 localLights =
+		ApplyLocalLights(
+			worldPos,
+			albedo,
+			normal,
+			viewDir,
+			specular,
+			gloss
+		);
 
-	[loop]
-	for (int i = 0; i < lightCount; ++i)
-	{
-		DX11ShaderLight light = gLights[i];
+	float3 finalColor =
+		ambientLight +
+		directLight +
+		localLights;
 
-		if (light.Params.x == DX11_LIGHT_POINT)
-		{
-			color += ApplyPointLight(
-				light,
-				worldPos,
-				albedo,
-				normal,
-				viewDir,
-				specular,
-				gloss
-			);
-		}
-		else if (light.Params.x == DX11_LIGHT_SPOT)
-		{
-			color += ApplySpotLight(
-				light,
-				worldPos,
-				albedo,
-				normal,
-				viewDir,
-				specular,
-				gloss
-			);
-		}
-	}
+	finalColor = ApplyFog(finalColor, deviceDepth);
 
-	color = ApplyFog(color, depth);
+	int debugMode = (int)(gOptions.x + 0.5f);
 
-	return float4(color, 1.0f);
+	if (debugMode == 1)
+		return float4(albedo, 1.0f);
+
+	if (debugMode == 2)
+		return float4(normal * 0.5f + 0.5f, 1.0f);
+
+	if (debugMode == 3)
+		return float4(deviceDepth.xxx, 1.0f);
+
+	if (debugMode == 4)
+		return float4(gloss, specular, gAux.b, 1.0f);
+
+	if (debugMode == 5)
+		return float4(saturate(directLight + localLights), 1.0f);
+
+	if (debugMode == 6)
+		return float4(saturate(ambientLight), 1.0f);
+
+	return float4(ApplyTemporaryToneMap(finalColor), 1.0f);
 }
