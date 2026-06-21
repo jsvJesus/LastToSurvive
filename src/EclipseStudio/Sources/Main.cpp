@@ -319,7 +319,8 @@ void StudioDX11WorldHybridTick()
 			"gbuffer_drawn=%u unsupported=%u failed=%u "
 			"shadow=%u smesh=%u sstatic=%u sskin=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u "
 			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u "
-			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u"
+			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u "
+			"terrain_g=%u terrain_gtris=%u terrain_d=%u terrain_dtris=%u terrain_s=%u terrain_stris=%u terrain_layers=%u terrain_detail=%u terrain_failed=%u "
 			"\n",
 			bWorldRendered ? 1 : 0,
 			WorldStats.TotalRenderables,
@@ -357,7 +358,17 @@ void StudioDX11WorldHybridTick()
 			WorldStats.LightingFogApplied,
 			WorldStats.LightingAmbientApplied,
 			WorldStats.LightingProbeApplied,
-			WorldStats.LightingSkippedFailed
+			WorldStats.LightingSkippedFailed,
+
+			WorldStats.TerrainGBufferDraws,
+			WorldStats.TerrainGBufferTriangles,
+			WorldStats.TerrainDepthDraws,
+			WorldStats.TerrainDepthTriangles,
+			WorldStats.TerrainShadowDraws,
+			WorldStats.TerrainShadowTriangles,
+			WorldStats.TerrainSplatLayers,
+			WorldStats.TerrainDetailLayers,
+			WorldStats.TerrainSkippedFailed
 		);
 
 		LastWorldStatsLog = Now;

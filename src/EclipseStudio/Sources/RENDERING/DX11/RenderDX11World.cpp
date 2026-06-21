@@ -622,6 +622,14 @@ namespace
 				ShadowSlices[i].lightView *
 				ShadowSlices[i].lightProj;
 
+			renderer.GetTerrainPass().RenderShadow(
+				viewProj,
+				shadowDepth.GetDSV(),
+				shadowDepth.GetWidth(),
+				shadowDepth.GetHeight(),
+				&stats
+			);
+
 			DrawDX11ShadowQueue(
 				renderer,
 				pass,
@@ -741,6 +749,16 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.LightingAmbientApplied = 0;
 	stats.LightingProbeApplied = 0;
 	stats.LightingSkippedFailed = 0;
+
+	stats.TerrainGBufferDraws = 0;
+	stats.TerrainGBufferTriangles = 0;
+	stats.TerrainDepthDraws = 0;
+	stats.TerrainDepthTriangles = 0;
+	stats.TerrainShadowDraws = 0;
+	stats.TerrainShadowTriangles = 0;
+	stats.TerrainSplatLayers = 0;
+	stats.TerrainDetailLayers = 0;
+	stats.TerrainSkippedFailed = 0;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(
@@ -789,6 +807,14 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		++stats.DepthSkippedFailed;
 		return false;
 	}
+
+	renderer.GetTerrainPass().RenderDepth(
+		viewProj,
+		gbuffer.GetDepthStencilView(),
+		gbuffer.GetWidth(),
+		gbuffer.GetHeight(),
+		&stats
+	);
 
 	DrawDX11DepthOnlyQueue(
 		renderer,
@@ -900,6 +926,13 @@ bool r3dDX11RenderWorldGBuffer(
 
 	if (!pass.Begin(gbuffer, false))
 		return false;
+
+	renderer.GetTerrainPass().RenderGBuffer(
+		camera,
+		gbuffer,
+		viewProj,
+		stats
+	);
 
 	DrawDX11GBufferQueue(
 		renderer,

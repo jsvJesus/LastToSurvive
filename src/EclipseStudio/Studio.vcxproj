@@ -651,6 +651,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeffered.cpp"/>
     <ClCompile Include="Sources\RENDERING\Deffered\VisibilityGrid.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11LightingPass.cpp" />
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11TerrainPass.cpp" />
     <ClCompile Include="Sources\RENDERING\DX9\RenderDX9.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Device.cpp"/>
@@ -936,6 +937,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\Deffered\VisibilityGrid.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11LightingPass.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Platform.h" />
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11TerrainPass.h" />
     <ClInclude Include="Sources\RENDERING\DX9\DrawWorld.hpp"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Device.h"/>

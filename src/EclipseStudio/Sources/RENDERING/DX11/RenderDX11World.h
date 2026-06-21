@@ -53,6 +53,16 @@ struct r3dDX11WorldRenderStats
 	unsigned int LightingAmbientApplied;
 	unsigned int LightingProbeApplied;
 	unsigned int LightingSkippedFailed;
+
+	unsigned int TerrainGBufferDraws;
+	unsigned int TerrainGBufferTriangles;
+	unsigned int TerrainDepthDraws;
+	unsigned int TerrainDepthTriangles;
+	unsigned int TerrainShadowDraws;
+	unsigned int TerrainShadowTriangles;
+	unsigned int TerrainSplatLayers;
+	unsigned int TerrainDetailLayers;
+	unsigned int TerrainSkippedFailed;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);

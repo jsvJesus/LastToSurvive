@@ -135,6 +135,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!TerrainPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	{
+		r3dOutToLog("[DX11] Terrain pass initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
 	if (!LightingPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
 	{
 		r3dOutToLog("[DX11] Lighting pass initialization failed\n");
@@ -166,6 +173,7 @@ void r3dDX11Renderer::Shutdown()
 
 	DepthOnlyPass.Shutdown();
 	GBufferPass.Shutdown();
+	TerrainPass.Shutdown();
 	LightingPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
@@ -325,6 +333,11 @@ r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass()
 	return GBufferPass;
 }
 
+r3dDX11TerrainPass& r3dDX11Renderer::GetTerrainPass()
+{
+	return TerrainPass;
+}
+
 r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass()
 {
 	return LightingPass;
@@ -373,6 +386,11 @@ const r3dDX11DepthOnlyPass& r3dDX11Renderer::GetDepthOnlyPass() const
 const r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass() const
 {
 	return GBufferPass;
+}
+
+const r3dDX11TerrainPass& r3dDX11Renderer::GetTerrainPass() const
+{
+	return TerrainPass;
 }
 
 const r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass() const
