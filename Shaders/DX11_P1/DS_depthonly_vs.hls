@@ -1,0 +1,30 @@
+cbuffer MeshConstants : register(b0)
+{
+	float4x4 WorldViewProj;
+	float4x4 World;
+	float4 PositionScale;
+	float4 TexcoordScale;
+};
+
+struct DepthOnlyVSInput
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float4 Normal : NORMAL;
+	float4 Tangent : TANGENT;
+};
+
+struct DepthOnlyVSOutput
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+DepthOnlyVSOutput main(DepthOnlyVSInput input)
+{
+	DepthOnlyVSOutput output;
+	float4 localPos = float4(input.Position.xyz * PositionScale.xyz, 1.0f);
+	output.Position = mul(localPos, WorldViewProj);
+	output.TexCoord = input.TexCoord * TexcoordScale.xy;
+	return output;
+}

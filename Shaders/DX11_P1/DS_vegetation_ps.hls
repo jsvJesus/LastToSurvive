@@ -1,0 +1,75 @@
+Texture2D DiffuseTexture : register(t0);
+Texture2D NormalTexture : register(t1);
+Texture2D GlossTexture : register(t2);
+Texture2D EnvPowerTexture : register(t3);
+Texture2D SelfIllumTexture : register(t4);
+Texture2D DetailNormalTexture : register(t5);
+Texture2D SSSTexture : register(t6);
+Texture2D SpecularPowerTexture : register(t7);
+SamplerState MaterialSampler : register(s0);
+
+cbuffer MaterialConstants : register(b0)
+{
+	float4 Material_Params;
+	float4 Mat_Diffuse;
+	float4 Mat_Specular;
+	float4 Mat_Glow;
+	float4 Mat_Options;
+};
+
+struct VegetationVSOutput
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+	float3 Tangent : TEXCOORD2;
+	float3 Binormal : TEXCOORD3;
+	float3 WorldPos : TEXCOORD4;
+	float Depth : TEXCOORD5;
+	float RandomColor : TEXCOORD6;
+};
+
+struct GBufferOutput
+{
+	float4 Color : SV_TARGET0;
+	float4 Normal : SV_TARGET1;
+	float4 Depth : SV_TARGET2;
+	float4 Aux : SV_TARGET3;
+};
+
+float3 SampleNormal(float2 uv)
+{
+	float3 normalMap = NormalTexture.Sample(MaterialSampler, uv).xyz * 2.0f - 1.0f;
+	float3 detailNormal = DetailNormalTexture.Sample(MaterialSampler, uv * Mat_Glow.z * 5.0f).xyz * 2.0f - 1.0f;
+	normalMap.xy += detailNormal.xy * Mat_Glow.ww * 2.0f;
+	return normalize(normalMap);
+}
+
+GBufferOutput main(VegetationVSOutput input, bool isFrontFace : SV_IsFrontFace)
+{
+	GBufferOutput output;
+
+	float3 geomNormal = normalize(input.Normal);
+	if (!isFrontFace)
+		geomNormal = -geomNormal;
+
+	float4 diffuse = DiffuseTexture.Sample(MaterialSampler, input.TexCoord);
+	clip(diffuse.a - Mat_Options.y);
+	diffuse.rgb *= Mat_Diffuse.rgb * input.RandomColor;
+
+	float4 glossSample = GlossTexture.Sample(MaterialSampler, input.TexCoord);
+	float metalness = glossSample.r;
+	float3 tangentNormal = SampleNormal(input.TexCoord);
+	float3 worldNormal = normalize(mul(tangentNormal, float3x3(normalize(input.Tangent), normalize(input.Binormal), geomNormal)));
+
+	float selfIllum = SelfIllumTexture.Sample(MaterialSampler, input.TexCoord).r;
+	float chromness = EnvPowerTexture.Sample(MaterialSampler, input.TexCoord).r * Material_Params.y;
+	float specularPower = Material_Params.z * SpecularPowerTexture.Sample(MaterialSampler, input.TexCoord).r;
+	float sss = SSSTexture.Sample(MaterialSampler, input.TexCoord).g;
+
+	output.Color = float4(diffuse.rgb, metalness * Material_Params.x);
+	output.Normal = float4(worldNormal * 0.5f + 0.5f, selfIllum * Mat_Glow.x);
+	output.Depth = float4(input.Depth, 0.0f, 0.0f, 0.0f);
+	output.Aux = float4(Mat_Options.w, specularPower, sss, chromness);
+	return output;
+}

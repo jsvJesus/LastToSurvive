@@ -1,0 +1,17 @@
+#ifndef R3D_DX11_COMMON_HLS
+#define R3D_DX11_COMMON_HLS
+
+struct FullscreenVSInput
+{
+	float3 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+struct FullscreenVSOutput
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+#endif
+
