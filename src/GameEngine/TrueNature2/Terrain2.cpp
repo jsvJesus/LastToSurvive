@@ -2856,6 +2856,16 @@ r3dTerrain2::SetLayer( int idx, const r3dTerrainLayer& layer )
 #endif
 }
 
+int r3dTerrain2::GetNumLayers() const
+{
+	return (int)m_Layers.Count() + 1;
+}
+
+int r3dTerrain2::GetNumMasks() const
+{
+	return (int)m_Masks.Count();
+}
+
 //------------------------------------------------------------------------
 
 void

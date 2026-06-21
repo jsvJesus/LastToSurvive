@@ -317,6 +317,8 @@ public:
 
 	const r3dTerrainLayer&	GetLayer( int idx ) const;
 	void					SetLayer( int idx, const r3dTerrainLayer& layer );
+	int						GetNumLayers() const;
+	int						GetNumMasks() const;
 
 	void					UpdateTilesWithLayer( int idx );
 

@@ -24,6 +24,16 @@ extern r3dTerrain2* Terrain2;
 namespace
 {
 	static const int DX11_TERRAIN_GRID_DIM = 192;
+	static const int DX11_TERRAIN_MAX_PAINT_LAYERS = 8;
+	static const int DX11_TERRAIN_MAX_MASKS = 3;
+
+	static const int DX11_TERRAIN_SRV_COLOR_MOD = 0;
+	static const int DX11_TERRAIN_SRV_DETAIL_NORMAL = 1;
+	static const int DX11_TERRAIN_SRV_BASE_DIFFUSE = 2;
+	static const int DX11_TERRAIN_SRV_BASE_NORMAL = 3;
+	static const int DX11_TERRAIN_SRV_MASK0 = 4;
+	static const int DX11_TERRAIN_SRV_LAYER_DIFFUSE0 = 7;
+	static const int DX11_TERRAIN_SRV_LAYER_NORMAL0 = 15;
 
 	struct DX11TerrainVertex
 	{
@@ -41,6 +51,11 @@ namespace
 		float TerrainLayerParams[4];
 		float TerrainDetailParams[4];
 		float TerrainDebugParams[4];
+
+		float TerrainSplatParams[4];
+		float TerrainBaseLayerParams[4];
+		float TerrainPaintLayerParams[DX11_TERRAIN_MAX_PAINT_LAYERS][4];
+		float TerrainPaintLayerMaskParams[DX11_TERRAIN_MAX_PAINT_LAYERS][4];
 	};
 
 	void CopyMatrix(float outMatrix[16], const D3DXMATRIX& matrix)
@@ -176,6 +191,45 @@ namespace
 			location.FileName,
 			generateMips
 		);
+	}
+
+	bool IsValidDX11Texture(const r3dDX11Texture* texture)
+	{
+		return texture && texture->IsValid();
+	}
+
+	float SafeLayerScale(float shaderScale, float fallbackScale, float worldSize)
+	{
+		if (fabsf(shaderScale) > 0.000001f)
+			return shaderScale;
+
+		if (worldSize <= 1.0f)
+			return 0.001f;
+
+		return fallbackScale / worldSize;
+	}
+
+	int FindOrAddTerrainMask(
+		r3dTexture* legacyMask,
+		r3dTexture* legacyMasks[DX11_TERRAIN_MAX_MASKS],
+		int& maskCount
+	)
+	{
+		if (!legacyMask)
+			return -1;
+
+		for (int i = 0; i < maskCount; ++i)
+		{
+			if (legacyMasks[i] == legacyMask)
+				return i;
+		}
+
+		if (maskCount >= DX11_TERRAIN_MAX_MASKS)
+			return -1;
+
+		legacyMasks[maskCount] = legacyMask;
+
+		return maskCount++;
 	}
 }
 
@@ -757,68 +811,311 @@ bool r3dDX11TerrainPass::DrawTerrain(
 		static_cast<float>(desc.CellSize);
 
 	float terrainDetailAmount =
-	r_dx11_terrain_detail_amount
-		? SaturateFloat(r_dx11_terrain_detail_amount->GetFloat())
-		: 0.08f;
+		r_dx11_terrain_detail_amount
+			? SaturateFloat(r_dx11_terrain_detail_amount->GetFloat())
+			: 0.05f;
+
+	float terrainTextureBlend =
+		r_dx11_terrain_texture_blend
+			? SaturateFloat(r_dx11_terrain_texture_blend->GetFloat())
+			: 0.0f;
+
+	float terrainNormalBlend =
+		r_dx11_terrain_normal_blend
+			? SaturateFloat(r_dx11_terrain_normal_blend->GetFloat())
+			: 0.0f;
 
 	constants.TerrainDetailParams[0] = 28.0f;
 	constants.TerrainDetailParams[1] = terrainDetailAmount;
 	constants.TerrainDetailParams[2] = 1.0f;
 	constants.TerrainDetailParams[3] = 0.0f;
 
-	r3dDX11Texture* terrainColorTexture =
-	LoadDX11TextureFromLegacyTexture(
-		TextureLibrary,
-		GetLegacyTerrainColorTexture(),
-		true
-	);
+	r3dDX11Texture* whiteTexture =
+		TextureLibrary ? TextureLibrary->GetWhiteTexture() : nullptr;
 
-	r3dDX11Texture* terrainNormalTexture =
-		LoadDX11TextureFromLegacyTexture(
-			TextureLibrary,
-			GetLegacyTerrainNormalTexture(),
-			true
-		);
+	r3dDX11Texture* blackTexture =
+		TextureLibrary ? TextureLibrary->GetBlackTexture() : nullptr;
 
-	r3dDX11Texture* terrainDetailNormalTexture =
-		LoadDX11TextureFromLegacyTexture(
-			TextureLibrary,
-			GetLegacyTerrainDetailNormalTexture(),
-			true
-		);
+	r3dDX11Texture* flatNormalTexture =
+		TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
 
-	const bool hasColorTexture =
-		terrainColorTexture && terrainColorTexture->IsValid();
+	r3dDX11Texture* colorModTexture =
+		whiteTexture;
 
-	const bool hasNormalTexture =
-		terrainNormalTexture && terrainNormalTexture->IsValid();
+	r3dDX11Texture* detailNormalTexture =
+		flatNormalTexture;
 
-	const bool hasDetailNormalTexture =
-		terrainDetailNormalTexture && terrainDetailNormalTexture->IsValid();
+	r3dDX11Texture* baseDiffuseTexture =
+		whiteTexture;
 
-	if (!terrainColorTexture || !terrainColorTexture->IsValid())
-		terrainColorTexture = TextureLibrary ? TextureLibrary->GetWhiteTexture() : nullptr;
+	r3dDX11Texture* baseNormalTexture =
+		flatNormalTexture;
 
-	if (!terrainNormalTexture || !terrainNormalTexture->IsValid())
-		terrainNormalTexture = TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
+	r3dDX11Texture* maskTextures[DX11_TERRAIN_MAX_MASKS] = {};
+	r3dDX11Texture* layerDiffuseTextures[DX11_TERRAIN_MAX_PAINT_LAYERS] = {};
+	r3dDX11Texture* layerNormalTextures[DX11_TERRAIN_MAX_PAINT_LAYERS] = {};
 
-	if (!terrainDetailNormalTexture || !terrainDetailNormalTexture->IsValid())
-		terrainDetailNormalTexture = TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
+	for (int i = 0; i < DX11_TERRAIN_MAX_MASKS; ++i)
+		maskTextures[i] = blackTexture;
 
-	float terrainTextureBlend =
-	r_dx11_terrain_texture_blend
-		? SaturateFloat(r_dx11_terrain_texture_blend->GetFloat())
-		: 0.18f;
+	for (int i = 0; i < DX11_TERRAIN_MAX_PAINT_LAYERS; ++i)
+	{
+		layerDiffuseTextures[i] = whiteTexture;
+		layerNormalTextures[i] = flatNormalTexture;
+	}
 
-	float terrainNormalBlend =
-		r_dx11_terrain_normal_blend
-			? SaturateFloat(r_dx11_terrain_normal_blend->GetFloat())
-			: 0.10f;
+	bool hasColorModTexture = false;
+	bool hasDetailNormalTexture = false;
+	bool hasRealTerrainLayers = false;
+	bool hasAnyLayerNormalTexture = false;
 
-	constants.TerrainDebugParams[0] = gbufferMode ? 1.0f : 0.0f;
-	constants.TerrainDebugParams[1] = hasColorTexture ? terrainTextureBlend : 0.0f;
-	constants.TerrainDebugParams[2] = hasNormalTexture ? terrainNormalBlend : 0.0f;
-	constants.TerrainDebugParams[3] = hasDetailNormalTexture ? terrainDetailAmount : 0.0f;
+	int terrainLayerCount = 0;
+	int activePaintLayerCount = 0;
+	int activeMaskCount = 0;
+
+	if (gbufferMode && TextureLibrary)
+	{
+		r3dDX11Texture* loadedColorModTexture =
+			LoadDX11TextureFromLegacyTexture(
+				TextureLibrary,
+				GetLegacyTerrainColorTexture(),
+				true
+			);
+
+		if (IsValidDX11Texture(loadedColorModTexture))
+		{
+			colorModTexture = loadedColorModTexture;
+			hasColorModTexture = true;
+		}
+
+		r3dDX11Texture* loadedDetailNormalTexture =
+			LoadDX11TextureFromLegacyTexture(
+				TextureLibrary,
+				GetLegacyTerrainDetailNormalTexture(),
+				true
+			);
+
+		if (IsValidDX11Texture(loadedDetailNormalTexture))
+		{
+			detailNormalTexture = loadedDetailNormalTexture;
+			hasDetailNormalTexture = true;
+		}
+
+		if (Terrain2 && Terrain2->IsLoaded())
+		{
+			terrainLayerCount =
+				std::max(
+					0,
+					Terrain2->GetNumLayers()
+				);
+
+			if (terrainLayerCount > 0)
+			{
+				const r3dTerrainLayer& baseLayer =
+					Terrain2->GetLayer(0);
+
+				r3dDX11Texture* loadedBaseDiffuseTexture =
+					LoadDX11TextureFromLegacyTexture(
+						TextureLibrary,
+						baseLayer.DiffuseTex,
+						true
+					);
+
+				r3dDX11Texture* loadedBaseNormalTexture =
+					LoadDX11TextureFromLegacyTexture(
+						TextureLibrary,
+						baseLayer.NormalTex,
+						true
+					);
+
+				if (IsValidDX11Texture(loadedBaseDiffuseTexture))
+				{
+					baseDiffuseTexture = loadedBaseDiffuseTexture;
+					hasRealTerrainLayers = true;
+				}
+
+				if (IsValidDX11Texture(loadedBaseNormalTexture))
+				{
+					baseNormalTexture = loadedBaseNormalTexture;
+					hasAnyLayerNormalTexture = true;
+				}
+
+				constants.TerrainBaseLayerParams[0] =
+					SafeLayerScale(
+						baseLayer.ShaderScaleU,
+						baseLayer.ScaleU,
+						desc.XSize
+					);
+
+				constants.TerrainBaseLayerParams[1] =
+					SafeLayerScale(
+						baseLayer.ShaderScaleV,
+						baseLayer.ScaleV,
+						desc.ZSize
+					);
+
+				constants.TerrainBaseLayerParams[2] =
+					std::max(
+						1.0f,
+						baseLayer.SpecularPow
+					);
+
+				constants.TerrainBaseLayerParams[3] =
+					IsValidDX11Texture(baseDiffuseTexture) ? 1.0f : 0.0f;
+
+				r3dTexture* legacyMaskTextures[DX11_TERRAIN_MAX_MASKS] = {};
+
+				for (int paintLayerIndex = 0;
+					paintLayerIndex < DX11_TERRAIN_MAX_PAINT_LAYERS;
+					++paintLayerIndex)
+				{
+					const int terrainLayerIndex =
+						paintLayerIndex + 1;
+
+					if (terrainLayerIndex >= terrainLayerCount)
+						break;
+
+					const r3dTerrainLayer& layer =
+						Terrain2->GetLayer(
+							terrainLayerIndex
+						);
+
+					r3dDX11Texture* loadedLayerDiffuseTexture =
+						LoadDX11TextureFromLegacyTexture(
+							TextureLibrary,
+							layer.DiffuseTex,
+							true
+						);
+
+					r3dDX11Texture* loadedLayerNormalTexture =
+						LoadDX11TextureFromLegacyTexture(
+							TextureLibrary,
+							layer.NormalTex,
+							true
+						);
+
+					r3dTexture* legacyMaskTexture =
+						layer.MaskTex;
+
+					if (!legacyMaskTexture)
+					{
+						const int fallbackMaskIndex =
+							paintLayerIndex / r3dTerrain2::LAYERS_PER_MASK;
+
+						if (fallbackMaskIndex < Terrain2->GetNumMasks())
+							legacyMaskTexture = Terrain2->GetLayerMask(fallbackMaskIndex);
+					}
+
+					const int maskSlot =
+						FindOrAddTerrainMask(
+							legacyMaskTexture,
+							legacyMaskTextures,
+							activeMaskCount
+						);
+
+					if (IsValidDX11Texture(loadedLayerDiffuseTexture))
+						layerDiffuseTextures[paintLayerIndex] = loadedLayerDiffuseTexture;
+
+					if (IsValidDX11Texture(loadedLayerNormalTexture))
+					{
+						layerNormalTextures[paintLayerIndex] = loadedLayerNormalTexture;
+						hasAnyLayerNormalTexture = true;
+					}
+
+					const bool layerIsActive =
+						IsValidDX11Texture(layerDiffuseTextures[paintLayerIndex]) &&
+						maskSlot >= 0;
+
+					if (layerIsActive)
+					{
+						activePaintLayerCount =
+							paintLayerIndex + 1;
+
+						hasRealTerrainLayers = true;
+					}
+
+					constants.TerrainPaintLayerParams[paintLayerIndex][0] =
+						SafeLayerScale(
+							layer.ShaderScaleU,
+							layer.ScaleU,
+							desc.XSize
+						);
+
+					constants.TerrainPaintLayerParams[paintLayerIndex][1] =
+						SafeLayerScale(
+							layer.ShaderScaleV,
+							layer.ScaleV,
+							desc.ZSize
+						);
+
+					constants.TerrainPaintLayerParams[paintLayerIndex][2] =
+						std::max(
+							1.0f,
+							layer.SpecularPow
+						);
+
+					constants.TerrainPaintLayerParams[paintLayerIndex][3] =
+						layerIsActive ? 1.0f : 0.0f;
+
+					constants.TerrainPaintLayerMaskParams[paintLayerIndex][0] =
+						static_cast<float>(
+							std::max(0, maskSlot)
+						);
+
+					constants.TerrainPaintLayerMaskParams[paintLayerIndex][1] =
+						static_cast<float>(
+							std::max(
+								0,
+								std::min(2, layer.ChannelIdx)
+							)
+						);
+
+					constants.TerrainPaintLayerMaskParams[paintLayerIndex][2] =
+						layerIsActive ? 1.0f : 0.0f;
+
+					constants.TerrainPaintLayerMaskParams[paintLayerIndex][3] =
+						0.0f;
+				}
+
+				for (int i = 0; i < activeMaskCount; ++i)
+				{
+					r3dDX11Texture* loadedMaskTexture =
+						LoadDX11TextureFromLegacyTexture(
+							TextureLibrary,
+							legacyMaskTextures[i],
+							false
+						);
+
+					if (IsValidDX11Texture(loadedMaskTexture))
+						maskTextures[i] = loadedMaskTexture;
+				}
+			}
+		}
+	}
+
+	constants.TerrainSplatParams[0] =
+		hasRealTerrainLayers ? 1.0f : 0.0f;
+
+	constants.TerrainSplatParams[1] =
+		static_cast<float>(activePaintLayerCount);
+
+	constants.TerrainSplatParams[2] =
+		static_cast<float>(activeMaskCount);
+
+	constants.TerrainSplatParams[3] =
+		0.0f;
+
+	constants.TerrainDebugParams[0] =
+		gbufferMode ? 1.0f : 0.0f;
+
+	constants.TerrainDebugParams[1] =
+		hasColorModTexture ? terrainTextureBlend : 0.0f;
+
+	constants.TerrainDebugParams[2] =
+		hasAnyLayerNormalTexture ? terrainNormalBlend : 0.0f;
+
+	constants.TerrainDebugParams[3] =
+		hasDetailNormalTexture ? terrainDetailAmount : 0.0f;
 
 	if (!TerrainConstants.Update(
 			DrawContext->GetContext(),
@@ -865,9 +1162,9 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	);
 
 	DrawContext->SetShaders(
-	TerrainVS,
-	gbufferMode ? TerrainGBufferPS : nullptr
-);
+		TerrainVS,
+		gbufferMode ? TerrainGBufferPS : nullptr
+	);
 
 	if (gbufferMode)
 	{
@@ -882,19 +1179,45 @@ bool r3dDX11TerrainPass::DrawTerrain(
 		);
 
 		DrawContext->SetShaderResource(
-			0,
-			terrainColorTexture ? terrainColorTexture->GetSRV() : nullptr
+			DX11_TERRAIN_SRV_COLOR_MOD,
+			colorModTexture ? colorModTexture->GetSRV() : nullptr
 		);
 
 		DrawContext->SetShaderResource(
-			1,
-			terrainNormalTexture ? terrainNormalTexture->GetSRV() : nullptr
+			DX11_TERRAIN_SRV_DETAIL_NORMAL,
+			detailNormalTexture ? detailNormalTexture->GetSRV() : nullptr
 		);
 
 		DrawContext->SetShaderResource(
-			2,
-			terrainDetailNormalTexture ? terrainDetailNormalTexture->GetSRV() : nullptr
+			DX11_TERRAIN_SRV_BASE_DIFFUSE,
+			baseDiffuseTexture ? baseDiffuseTexture->GetSRV() : nullptr
 		);
+
+		DrawContext->SetShaderResource(
+			DX11_TERRAIN_SRV_BASE_NORMAL,
+			baseNormalTexture ? baseNormalTexture->GetSRV() : nullptr
+		);
+
+		for (int i = 0; i < DX11_TERRAIN_MAX_MASKS; ++i)
+		{
+			DrawContext->SetShaderResource(
+				DX11_TERRAIN_SRV_MASK0 + i,
+				maskTextures[i] ? maskTextures[i]->GetSRV() : nullptr
+			);
+		}
+
+		for (int i = 0; i < DX11_TERRAIN_MAX_PAINT_LAYERS; ++i)
+		{
+			DrawContext->SetShaderResource(
+				DX11_TERRAIN_SRV_LAYER_DIFFUSE0 + i,
+				layerDiffuseTextures[i] ? layerDiffuseTextures[i]->GetSRV() : nullptr
+			);
+
+			DrawContext->SetShaderResource(
+				DX11_TERRAIN_SRV_LAYER_NORMAL0 + i,
+				layerNormalTextures[i] ? layerNormalTextures[i]->GetSRV() : nullptr
+			);
+		}
 	}
 
 	DrawContext->DrawIndexed(
@@ -905,15 +1228,27 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	{
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 
-		DrawContext->SetShaderResource(0, nullSRV);
-		DrawContext->SetShaderResource(1, nullSRV);
-		DrawContext->SetShaderResource(2, nullSRV);
+		const int lastTerrainSRVSlot =
+			DX11_TERRAIN_SRV_LAYER_NORMAL0 +
+			DX11_TERRAIN_MAX_PAINT_LAYERS;
+
+		for (int slot = 0; slot < lastTerrainSRVSlot; ++slot)
+		{
+			DrawContext->SetShaderResource(
+				slot,
+				nullSRV
+			);
+		}
 	}
 
 	if (stats)
 	{
 		stats->TerrainSplatLayers =
-			static_cast<unsigned int>(std::max(1, desc.LayerCount));
+			static_cast<unsigned int>(
+				hasRealTerrainLayers
+					? std::max(1, terrainLayerCount)
+					: std::max(1, desc.LayerCount)
+			);
 
 		stats->TerrainDetailLayers = 1;
 
