@@ -136,7 +136,7 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
-	if (!TerrainPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	if (!TerrainPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates, &TextureLibrary))
 	{
 		r3dOutToLog("[DX11] Terrain pass initialization failed\n");
 		Shutdown();

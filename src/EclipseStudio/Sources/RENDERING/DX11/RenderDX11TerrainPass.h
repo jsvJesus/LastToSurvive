@@ -11,6 +11,7 @@ class r3dDX11InputLayout;
 class r3dDX11PixelShader;
 class r3dDX11ShaderLibrary;
 class r3dDX11VertexShader;
+class r3dDX11TextureLibrary;
 struct r3dDX11WorldRenderStats;
 struct ID3D11Device;
 struct ID3D11DepthStencilView;
@@ -25,7 +26,8 @@ public:
 		ID3D11Device* device,
 		r3dDX11DrawContext* drawContext,
 		r3dDX11ShaderLibrary* shaderLibrary,
-		r3dDX11CommonStates* commonStates
+		r3dDX11CommonStates* commonStates,
+		r3dDX11TextureLibrary* textureLibrary
 	);
 
 	void Shutdown();
@@ -67,6 +69,7 @@ private:
 	r3dDX11DrawContext* DrawContext = nullptr;
 	r3dDX11ShaderLibrary* ShaderLibrary = nullptr;
 	r3dDX11CommonStates* CommonStates = nullptr;
+	r3dDX11TextureLibrary* TextureLibrary = nullptr;
 
 	r3dDX11VertexShader* TerrainVS = nullptr;
 	r3dDX11PixelShader* TerrainGBufferPS = nullptr;

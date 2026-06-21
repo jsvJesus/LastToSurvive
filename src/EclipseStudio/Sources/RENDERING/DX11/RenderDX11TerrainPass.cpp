@@ -3,6 +3,8 @@
 #include "r3dCam.h"
 
 #include "TrueNature/ITerrain.h"
+#include "TrueNature2/Terrain2.h"
+#include "r3dTex.h"
 
 #include "RENDERING/DX11/RenderDX11TerrainPass.h"
 #include "RENDERING/DX11/RenderDX11Draw.h"
@@ -10,12 +12,14 @@
 #include "RENDERING/DX11/RenderDX11States.h"
 #include "RENDERING/DX11/ShaderDX11.h"
 #include "RENDERING/DX11/RenderDX11World.h"
+#include "RENDERING/DX11/RenderDX11Texture.h"
 
 #include <algorithm>
 #include <vector>
 #include <cstring>
 
 extern r3dITerrain* Terrain;
+extern r3dTerrain2* Terrain2;
 
 namespace
 {
@@ -112,6 +116,67 @@ namespace
 		outLayerData[2] = 1.0f - slope;
 		outLayerData[3] = 1.0f;
 	}
+
+	r3dTexture* GetLegacyTerrainColorTexture()
+	{
+		if (Terrain2 && Terrain2->IsLoaded())
+		{
+			r3dTexture* colorTexture = Terrain2->GetColorTexture();
+
+			if (colorTexture)
+				return colorTexture;
+		}
+
+		if (Terrain)
+		{
+			const r3dTerrainDesc& desc = Terrain->GetDesc();
+
+			if (desc.OrthoDiffuseTex)
+				return desc.OrthoDiffuseTex;
+		}
+
+		return nullptr;
+	}
+
+	r3dTexture* GetLegacyTerrainNormalTexture()
+	{
+		if (Terrain2 && Terrain2->IsLoaded())
+			return Terrain2->GetNormalTexture();
+
+		return nullptr;
+	}
+
+	r3dTexture* GetLegacyTerrainDetailNormalTexture()
+	{
+		if (Terrain2 && Terrain2->IsLoaded())
+			return Terrain2->GetNormalDetailTexture();
+
+		return nullptr;
+	}
+
+	r3dDX11Texture* LoadDX11TextureFromLegacyTexture(
+		r3dDX11TextureLibrary* textureLibrary,
+		r3dTexture* legacyTexture,
+		bool generateMips
+	)
+	{
+		if (!textureLibrary || !legacyTexture)
+			return nullptr;
+
+		if (!legacyTexture->IsLoaded() || legacyTexture->IsMissing())
+			return nullptr;
+
+		const r3dFileLoc& location =
+			legacyTexture->getFileLoc();
+
+		if (!location.FileName[0])
+			return nullptr;
+
+		return textureLibrary->LoadTexture(
+			location.FileName,
+			generateMips
+		);
+	}
 }
 
 r3dDX11TerrainPass::r3dDX11TerrainPass()
@@ -127,7 +192,8 @@ bool r3dDX11TerrainPass::Init(
 	ID3D11Device* device,
 	r3dDX11DrawContext* drawContext,
 	r3dDX11ShaderLibrary* shaderLibrary,
-	r3dDX11CommonStates* commonStates
+	r3dDX11CommonStates* commonStates,
+	r3dDX11TextureLibrary* textureLibrary
 )
 {
 	if (bInitialized)
@@ -140,6 +206,7 @@ bool r3dDX11TerrainPass::Init(
 	DrawContext = drawContext;
 	ShaderLibrary = shaderLibrary;
 	CommonStates = commonStates;
+	TextureLibrary = textureLibrary;
 
 	if (
 		!CreateShadersAndLayout(device) ||
@@ -181,6 +248,7 @@ void r3dDX11TerrainPass::Shutdown()
 	CachedZSize = 0.0f;
 
 	CommonStates = nullptr;
+	TextureLibrary = nullptr;
 	ShaderLibrary = nullptr;
 	DrawContext = nullptr;
 	Device = nullptr;
@@ -693,10 +761,49 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	constants.TerrainDetailParams[2] = 1.0f;
 	constants.TerrainDetailParams[3] = 0.0f;
 
+	r3dDX11Texture* terrainColorTexture =
+	LoadDX11TextureFromLegacyTexture(
+		TextureLibrary,
+		GetLegacyTerrainColorTexture(),
+		true
+	);
+
+	r3dDX11Texture* terrainNormalTexture =
+		LoadDX11TextureFromLegacyTexture(
+			TextureLibrary,
+			GetLegacyTerrainNormalTexture(),
+			true
+		);
+
+	r3dDX11Texture* terrainDetailNormalTexture =
+		LoadDX11TextureFromLegacyTexture(
+			TextureLibrary,
+			GetLegacyTerrainDetailNormalTexture(),
+			true
+		);
+
+	const bool hasColorTexture =
+		terrainColorTexture && terrainColorTexture->IsValid();
+
+	const bool hasNormalTexture =
+		terrainNormalTexture && terrainNormalTexture->IsValid();
+
+	const bool hasDetailNormalTexture =
+		terrainDetailNormalTexture && terrainDetailNormalTexture->IsValid();
+
+	if (!terrainColorTexture || !terrainColorTexture->IsValid())
+		terrainColorTexture = TextureLibrary ? TextureLibrary->GetWhiteTexture() : nullptr;
+
+	if (!terrainNormalTexture || !terrainNormalTexture->IsValid())
+		terrainNormalTexture = TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
+
+	if (!terrainDetailNormalTexture || !terrainDetailNormalTexture->IsValid())
+		terrainDetailNormalTexture = TextureLibrary ? TextureLibrary->GetFlatNormalTexture() : nullptr;
+
 	constants.TerrainDebugParams[0] = gbufferMode ? 1.0f : 0.0f;
-	constants.TerrainDebugParams[1] = 0.0f;
-	constants.TerrainDebugParams[2] = 0.0f;
-	constants.TerrainDebugParams[3] = 0.0f;
+	constants.TerrainDebugParams[1] = hasColorTexture ? 1.0f : 0.0f;
+	constants.TerrainDebugParams[2] = hasNormalTexture ? 1.0f : 0.0f;
+	constants.TerrainDebugParams[3] = hasDetailNormalTexture ? 1.0f : 0.0f;
 
 	if (!TerrainConstants.Update(
 			DrawContext->GetContext(),
@@ -743,13 +850,50 @@ bool r3dDX11TerrainPass::DrawTerrain(
 	);
 
 	DrawContext->SetShaders(
-		TerrainVS,
-		gbufferMode ? TerrainGBufferPS : nullptr
-	);
+	TerrainVS,
+	gbufferMode ? TerrainGBufferPS : nullptr
+);
+
+	if (gbufferMode)
+	{
+		DrawContext->SetSampler(
+			0,
+			CommonStates->GetLinearClampSampler()
+		);
+
+		DrawContext->SetSampler(
+			1,
+			CommonStates->GetLinearWrapSampler()
+		);
+
+		DrawContext->SetShaderResource(
+			0,
+			terrainColorTexture ? terrainColorTexture->GetSRV() : nullptr
+		);
+
+		DrawContext->SetShaderResource(
+			1,
+			terrainNormalTexture ? terrainNormalTexture->GetSRV() : nullptr
+		);
+
+		DrawContext->SetShaderResource(
+			2,
+			terrainDetailNormalTexture ? terrainDetailNormalTexture->GetSRV() : nullptr
+		);
+	}
 
 	DrawContext->DrawIndexed(
 		IndexCount
 	);
+
+	if (gbufferMode)
+	{
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+
+		DrawContext->SetShaderResource(0, nullSRV);
+		DrawContext->SetShaderResource(1, nullSRV);
+		DrawContext->SetShaderResource(2, nullSRV);
+	}
 
 	if (stats)
 	{
