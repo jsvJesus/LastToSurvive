@@ -1,0 +1,26 @@
+#pragma pack_matrix(row_major)
+
+struct VS_INPUT
+{
+	float3 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT main(VS_INPUT input)
+{
+	VS_OUTPUT output;
+
+	// z = 1.0 специально.
+	// Sky pass рисуется с depth <= и проходит только там,
+	// где GBuffer depth остался clear == 1.0.
+	output.Position = float4(input.Position.xy, 1.0f, 1.0f);
+	output.TexCoord = input.TexCoord;
+
+	return output;
+}

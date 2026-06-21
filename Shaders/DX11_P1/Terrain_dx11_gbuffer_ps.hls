@@ -1,5 +1,12 @@
 #pragma pack_matrix(row_major)
 
+Texture2D TerrainColorTexture        : register(t0);
+Texture2D TerrainNormalTexture       : register(t1);
+Texture2D TerrainDetailNormalTexture : register(t2);
+
+SamplerState TerrainClampSampler : register(s0);
+SamplerState TerrainWrapSampler  : register(s1);
+
 cbuffer TerrainConstants : register(b0)
 {
 	float4x4 gWorldViewProj;
@@ -28,6 +35,16 @@ struct PS_OUTPUT
 	float4 Aux         : SV_Target3;
 };
 
+float3 SafeNormalize(float3 v, float3 fallback)
+{
+	float lenSq = dot(v, v);
+
+	if (lenSq < 0.000001f)
+		return fallback;
+
+	return v * rsqrt(lenSq);
+}
+
 float Hash21(float2 p)
 {
 	p = frac(p * float2(123.34f, 456.21f));
@@ -41,9 +58,9 @@ float Noise2(float2 uv)
 	float2 f = frac(uv);
 
 	float a = Hash21(i);
-	float b = Hash21(i + float2(1, 0));
-	float c = Hash21(i + float2(0, 1));
-	float d = Hash21(i + float2(1, 1));
+	float b = Hash21(i + float2(1.0f, 0.0f));
+	float c = Hash21(i + float2(0.0f, 1.0f));
+	float d = Hash21(i + float2(1.0f, 1.0f));
 
 	float2 u = f * f * (3.0f - 2.0f * f);
 
@@ -62,8 +79,8 @@ float4 BuildSplatWeights(float height01, float slope, float noise)
 	float sand = saturate(1.0f - height01 * 4.0f);
 
 	grass *= lerp(0.75f, 1.25f, noise);
-	dirt *= lerp(1.15f, 0.85f, noise);
-	rock *= lerp(0.90f, 1.20f, noise);
+	dirt  *= lerp(1.15f, 0.85f, noise);
+	rock  *= lerp(0.90f, 1.20f, noise);
 
 	float4 w = float4(grass, dirt, rock, sand);
 	w = max(w, 0.001f);
@@ -71,41 +88,8 @@ float4 BuildSplatWeights(float height01, float slope, float noise)
 	return w / dot(w, 1.0f);
 }
 
-float3 ApplyDetailNormal(float3 normal, float2 uv)
+float3 BuildProceduralAlbedo(float4 weights, float2 uv)
 {
-	float detailScale = gTerrainDetailParams.x;
-	float detailAmount = gTerrainDetailParams.y;
-
-	float n0 = Noise2(uv * detailScale);
-	float n1 = Noise2(uv * detailScale + 17.23f);
-
-	float3 detail =
-		normalize(float3(n0 - 0.5f, 1.0f, n1 - 0.5f));
-
-	float3 blended =
-		normalize(lerp(normal, normalize(normal + detail * 0.35f), detailAmount));
-
-	return blended;
-}
-
-PS_OUTPUT main(PS_INPUT input)
-{
-	PS_OUTPUT output;
-
-	float3 normal = normalize(input.Normal);
-
-	float height01 = saturate(input.LayerData.x);
-	float slope = saturate(input.LayerData.y);
-
-	float noise = Noise2(input.TexCoord * 96.0f);
-
-	float4 weights =
-		BuildSplatWeights(
-			height01,
-			slope,
-			noise
-		);
-
 	float3 grassColor = float3(0.20f, 0.28f, 0.16f);
 	float3 dirtColor  = float3(0.30f, 0.24f, 0.18f);
 	float3 rockColor  = float3(0.34f, 0.34f, 0.32f);
@@ -118,9 +102,155 @@ PS_OUTPUT main(PS_INPUT input)
 		sandColor  * weights.w;
 
 	float detail =
-		Noise2(input.TexCoord * gTerrainDetailParams.x * 2.0f);
+		Noise2(uv * gTerrainDetailParams.x * 2.0f);
 
-	albedo *= lerp(0.85f, 1.15f, detail);
+	albedo *= lerp(0.86f, 1.14f, detail);
+
+	return albedo;
+}
+
+float3 ApplyTerrainNormalTexture(float3 normal, float2 uv)
+{
+	if (gTerrainDebugParams.z <= 0.5f)
+		return normal;
+
+	float3 packedNormal =
+		TerrainNormalTexture.Sample(
+			TerrainClampSampler,
+			uv
+		).xyz;
+
+	float3 sampledNormal =
+		packedNormal * 2.0f - 1.0f;
+
+	sampledNormal =
+		SafeNormalize(
+			sampledNormal,
+			normal
+		);
+
+	// Terrain2 normal texture may not be perfect world-space parity yet,
+	// so blend softly instead of replacing normal completely.
+	return SafeNormalize(
+		lerp(normal, sampledNormal, 0.35f),
+		normal
+	);
+}
+
+float3 ApplyDetailNormal(float3 normal, float2 uv)
+{
+	float detailScale =
+		max(gTerrainDetailParams.x, 0.001f);
+
+	float detailAmount =
+		saturate(gTerrainDetailParams.y);
+
+	if (gTerrainDebugParams.w > 0.5f)
+	{
+		float3 detailPacked =
+			TerrainDetailNormalTexture.Sample(
+				TerrainWrapSampler,
+				uv * detailScale
+			).xyz;
+
+		float3 detailNormal =
+			detailPacked * 2.0f - 1.0f;
+
+		// Detail normal is applied as small world XZ perturbation.
+		normal =
+			SafeNormalize(
+				normal +
+				float3(detailNormal.x, 0.0f, detailNormal.y) *
+				detailAmount *
+				0.18f,
+				normal
+			);
+
+		return normal;
+	}
+
+	float n0 = Noise2(uv * detailScale);
+	float n1 = Noise2(uv * detailScale + 17.23f);
+
+	float3 proceduralDetail =
+		SafeNormalize(
+			float3(n0 - 0.5f, 1.0f, n1 - 0.5f),
+			float3(0.0f, 1.0f, 0.0f)
+		);
+
+	return SafeNormalize(
+		lerp(
+			normal,
+			SafeNormalize(normal + proceduralDetail * 0.35f, normal),
+			detailAmount
+		),
+		normal
+	);
+}
+
+PS_OUTPUT main(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float3 normal =
+		SafeNormalize(
+			input.Normal,
+			float3(0.0f, 1.0f, 0.0f)
+		);
+
+	float height01 = saturate(input.LayerData.x);
+	float slope = saturate(input.LayerData.y);
+
+	float noise =
+		Noise2(input.TexCoord * 96.0f);
+
+	float4 weights =
+		BuildSplatWeights(
+			height01,
+			slope,
+			noise
+		);
+
+	float3 proceduralAlbedo =
+		BuildProceduralAlbedo(
+			weights,
+			input.TexCoord
+		);
+
+	float3 textureAlbedo =
+		TerrainColorTexture.Sample(
+			TerrainClampSampler,
+			input.TexCoord
+		).rgb;
+
+	textureAlbedo = saturate(textureAlbedo);
+
+	float useColorTexture =
+		saturate(gTerrainDebugParams.y);
+
+	// v1 parity:
+	// use Terrain2 color texture if available,
+	// but keep some procedural modulation so it does not become flat.
+	float3 albedo =
+		lerp(
+			proceduralAlbedo,
+			textureAlbedo,
+			useColorTexture * 0.92f
+		);
+
+	if (useColorTexture > 0.5f)
+	{
+		float fineNoise =
+			Noise2(input.TexCoord * gTerrainDetailParams.x * 3.0f);
+
+		albedo *= lerp(0.94f, 1.06f, fineNoise);
+	}
+
+	normal =
+		ApplyTerrainNormalTexture(
+			normal,
+			input.TexCoord
+		);
 
 	normal =
 		ApplyDetailNormal(
@@ -129,15 +259,42 @@ PS_OUTPUT main(PS_INPUT input)
 		);
 
 	float gloss =
-		lerp(0.18f, 0.42f, weights.z);
+		lerp(0.16f, 0.40f, weights.z);
 
 	float spec =
-		lerp(0.08f, 0.22f, weights.z);
+		lerp(0.06f, 0.18f, weights.z);
 
-	output.Color = float4(albedo, gloss);
-	output.Normal = float4(normal * 0.5f + 0.5f, 1.0f);
-	output.LinearDepth = float4(input.ClipDepth, input.ClipDepth, input.ClipDepth, 1.0f);
-	output.Aux = float4(gloss, spec, weights.z, 1.0f);
+	// Slightly reduce wet/glossy look for terrain v1.
+	gloss *= 0.85f;
+	spec *= 0.75f;
+
+	output.Color =
+		float4(
+			saturate(albedo),
+			1.0f
+		);
+
+	output.Normal =
+		float4(
+			normal * 0.5f + 0.5f,
+			1.0f
+		);
+
+	output.LinearDepth =
+		float4(
+			saturate(input.ClipDepth),
+			saturate(input.ClipDepth),
+			saturate(input.ClipDepth),
+			1.0f
+		);
+
+	output.Aux =
+		float4(
+			saturate(gloss),
+			saturate(spec),
+			saturate(weights.z),
+			1.0f
+		);
 
 	return output;
 }
