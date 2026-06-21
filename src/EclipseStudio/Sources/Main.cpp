@@ -274,12 +274,11 @@ static void UpdateDX11WorldHotkeys()
 	{
 		static const float values[] =
 		{
-			0.00f,
-			0.04f,
-			0.08f,
-			0.12f,
-			0.18f,
-			0.25f
+			0.00f, // procedural only
+			0.20f, // safe tint
+			0.45f, // visible tint
+			0.70f, // strong tint
+			1.00f  // raw terrain color texture debug
 		};
 
 		CycleDX11FloatCVar(
@@ -295,11 +294,10 @@ static void UpdateDX11WorldHotkeys()
 		static const float values[] =
 		{
 			0.00f,
-			0.04f,
-			0.08f,
-			0.12f,
-			0.18f,
-			0.25f
+			0.10f,
+			0.25f,
+			0.50f,
+			1.00f
 		};
 
 		CycleDX11FloatCVar(
@@ -315,11 +313,10 @@ static void UpdateDX11WorldHotkeys()
 		static const float values[] =
 		{
 			0.00f,
-			0.03f,
 			0.05f,
-			0.08f,
 			0.12f,
-			0.18f
+			0.25f,
+			0.50f
 		};
 
 		CycleDX11FloatCVar(

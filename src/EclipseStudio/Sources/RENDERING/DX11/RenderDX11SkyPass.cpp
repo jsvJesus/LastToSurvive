@@ -292,9 +292,8 @@ bool r3dDX11SkyPass::Render(
 		return false;
 	}
 
-	// В debug GBuffer modes не рисуем sky, чтобы 1/2/3/4/5/6 оставались чистыми.
-	if (r_dx11_debug_view && r_dx11_debug_view->GetInt() != 0)
-		return true;
+	// Sky можно рисовать и в debug modes:
+	// depth state не даст ему залезть поверх terrain/vegetation.
 
 	DX11SkyConstants constants;
 	FillSkyConstants(camera, constants);
