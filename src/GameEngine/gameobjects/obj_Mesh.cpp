@@ -787,6 +787,66 @@ struct MeshObjDeferredRenderable : MeshDeffRenderableBase
 	MeshGameObject* Parent;
 };
 
+static void AppendMeshObjDeferredRenderablesDX11Safe(
+	RenderArray& outArray,
+	r3dMesh* mesh,
+	MeshGameObject* parent,
+	const r3dColor& objectColor,
+	int idist,
+	int newScore
+)
+{
+	if (!mesh || !parent)
+		return;
+
+	if (!mesh->IsDrawable())
+		return;
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		MeshObjDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = objectColor.GetPacked();
+		rend.Mesh = mesh;
+		rend.SortValue =
+			((UINT64)batch.Mat->ID << 32) |
+			((UINT64)mesh->buffers.VBId << 16);
+
+		rend.SortValue |= idist;
+
+		rend.InitDX11(NULL, NULL);
+		rend.Init();
+
+		rend.Parent = parent;
+
+		// Важно:
+		// Не кладём matrix в temporary pool здесь.
+		// Старый код тоже ставил прямой pointer на transform объекта.
+		rend.DX11WorldTransform = &parent->GetTransformMatrix();
+
+		int MatScoreID =
+			(rend.SortValue >> 32) & MAT_FRAME_SCORE_MASK;
+
+		int score = gMatFrameScores[MatScoreID];
+		gMatFrameScores[MatScoreID] = R3D_MAX(score, newScore);
+
+		outArray.PushBack(rend);
+	}
+}
+
 void MeshObjDeferredHighlightRenderable::Init( r3dMesh* mesh, MeshGameObject* parent )
 {
 	ParentType::Init( mesh );
@@ -1196,25 +1256,24 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 	if(!TargetLODSet[ meshLodIndex ]->IsDrawable())
 		return;
 
-	uint32_t prevCount = render_arrays[ m_FillGBufferTarget ].Count();
-	uint32_t prevTranspCount = render_arrays[rsDrawTransparents].Count();
-	TargetLODSet[ meshLodIndex ]->AppendRenderablesDeferred( render_arrays[ m_FillGBufferTarget ], m_ObjectColor );
-	TargetLODSet[ meshLodIndex ]->AppendTransparentRenderables( render_arrays[rsDrawTransparents], m_ObjectColor, dist, 0 );
+	uint32_t prevTranspCount =
+	render_arrays[rsDrawTransparents].Count();
 
-	for( uint32_t i = prevCount, e = render_arrays[ m_FillGBufferTarget ].Count(); i < e; i ++ )
-	{
-		MeshObjDeferredRenderable& rend = static_cast<MeshObjDeferredRenderable&>( render_arrays[ m_FillGBufferTarget ][ i ] ) ;
+	AppendMeshObjDeferredRenderablesDX11Safe(
+		render_arrays[m_FillGBufferTarget],
+		TargetLODSet[meshLodIndex],
+		this,
+		m_ObjectColor,
+		idist,
+		newScore
+	);
 
-		int MatScoreID = ( rend.SortValue >> 32 ) & MAT_FRAME_SCORE_MASK ;
-
-		int score = gMatFrameScores[ MatScoreID ] ;
-		gMatFrameScores[ MatScoreID ] = R3D_MAX( score, newScore ) ;
-
-		rend.Init() ;
-		rend.SortValue |= idist ;
-		rend.Parent = this ;
-		rend.DX11WorldTransform = &GetTransformMatrix();
-	}
+	TargetLODSet[meshLodIndex]->AppendTransparentRenderables(
+		render_arrays[rsDrawTransparents],
+		m_ObjectColor,
+		dist,
+		0
+	);
 
 	for( uint32_t i = prevTranspCount, e = render_arrays[rsDrawTransparents].Count(); i < e; i ++ )
 	{

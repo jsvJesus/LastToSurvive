@@ -1601,13 +1601,72 @@ r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform )
 }
 
 MeshDeferredRenderable*
-r3dGetMeshDeferredRenderable( Renderable* renderable )
+r3dGetMeshDeferredRenderable(Renderable* renderable)
 {
-	if( !renderable )
+	if (!renderable)
 		return NULL;
 
-	MeshDeferredRenderable* meshRenderable = static_cast< MeshDeferredRenderable* >( renderable );
-	return meshRenderable->DX11Signature == MeshDeferredRenderable::DX11SignatureValue ? meshRenderable : NULL;
+	MeshDeferredRenderable* meshRenderable =
+		static_cast<MeshDeferredRenderable*>(renderable);
+
+	if (meshRenderable->DX11Signature != MeshDeferredRenderable::DX11SignatureValue)
+		return NULL;
+
+	if (!meshRenderable->Mesh)
+		return NULL;
+
+	__try
+	{
+		if (!meshRenderable->Mesh->IsLoaded())
+			return NULL;
+
+		if (
+			meshRenderable->Mesh->NumMatChunks < 0 ||
+			meshRenderable->Mesh->NumMatChunks > r3dMesh::ConstNumMatChunks
+		)
+		{
+			return NULL;
+		}
+
+		if (
+			meshRenderable->BatchIdx < 0 ||
+			meshRenderable->BatchIdx >= meshRenderable->Mesh->NumMatChunks
+		)
+		{
+			static int InvalidBatchLogCount = 0;
+
+			if (InvalidBatchLogCount < 64)
+			{
+				++InvalidBatchLogCount;
+
+				r3dOutToLog(
+					"[DX11][RenderableReject][Deferred] invalid BatchIdx mesh='%s' file='%s' batch=%d numChunks=%d sig=%08x\n",
+					meshRenderable->Mesh->Name,
+					meshRenderable->Mesh->FileName.c_str(),
+					meshRenderable->BatchIdx,
+					meshRenderable->Mesh->NumMatChunks,
+					meshRenderable->DX11Signature
+				);
+			}
+
+			return NULL;
+		}
+
+		const r3dTriBatch& batch =
+			meshRenderable->Mesh->MatChunks[meshRenderable->BatchIdx];
+
+		if (!batch.Mat)
+			return NULL;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			return NULL;
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return NULL;
+	}
+
+	return meshRenderable;
 }
 
 const MeshDeferredRenderable*
