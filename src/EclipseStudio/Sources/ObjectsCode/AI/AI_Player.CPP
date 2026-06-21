@@ -5258,31 +5258,65 @@ extern RenderArray	g_render_arrays[ rsCount ];
 void
 obj_Player::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
 {
-	r3d_assert( &rarr - g_render_arrays - rsCreateSM < NumShadowSlices ) ;
+	r3d_assert( &rarr - g_render_arrays - rsCreateSM < NumShadowSlices );
 
-	// HACK: For the moment. 
 #if VEHICLES_ENABLED
-	if ( isInVehicle() ) 
-	{
-		return; 
-	}
+	if (isInVehicle())
+		return;
 #endif
 
-	int firstPerson = g_camera_mode->GetInt() == 2 && NetworkLocal && !bDead;
-
-	if(firstPerson) // do not render our own shadow in FPS mode (same as in BF3)
+	if (gDisableDynamicObjectShadows)
 		return;
 
-	if( !gDisableDynamicObjectShadows && &rarr - g_render_arrays - rsCreateSM != r_active_shadow_slices->GetInt() - 1 )
+	const int shadowSlice =
+		static_cast<int>(&rarr - g_render_arrays - rsCreateSM);
+
+	if (shadowSlice == r_active_shadow_slices->GetInt() - 1)
+		return;
+
+	const bool firstPerson =
+		g_camera_mode->GetInt() == 2 &&
+		NetworkLocal &&
+		!bDead;
+
+	// Старое поведение:
+	// в FPS режиме свой собственный shadow не рисуем, иначе будет тень рук/оружия перед камерой.
+	if (firstPerson)
+		return;
+
+	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
 	{
-		PlayerShadowRenderable rend;
+		bool drawWeaponDX11 = true;
 
-		rend.Init();
-		rend.Parent		= this;
-		rend.SortValue	= RENDERABLE_AI_PLAYER_SORT_VALUE;
+		const Weapon* wpn = m_Weapons[m_SelectedWeapon];
 
-		rarr.PushBack( rend );
+		if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
+			drawWeaponDX11 = false;
+
+		if (bDead || forcedEmptyHands)
+			drawWeaponDX11 = false;
+
+		if (uberEquip_)
+		{
+			uberEquip_->AppendShadowRenderables(
+				rarr,
+				GetSkeleton(),
+				DrawFullMatrix_Localized,
+				drawWeaponDX11,
+				false
+			);
+		}
+
+		return;
 	}
+
+	PlayerShadowRenderable rend;
+
+	rend.Init();
+	rend.Parent = this;
+	rend.SortValue = RENDERABLE_AI_PLAYER_SORT_VALUE;
+
+	rarr.PushBack(rend);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -5449,24 +5483,6 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 				rend.FirstPerson = firstPerson ;
 
 				render_arrays[ firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer ].PushBack( rend );
-
-				if( r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled() )
-				{
-					bool drawWeaponDX11 = true;
-					const Weapon* wpn = m_Weapons[m_SelectedWeapon];
-					if(wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
-						drawWeaponDX11 = false;
-					if(bDead || forcedEmptyHands)
-						drawWeaponDX11 = false;
-
-					uberEquip_->AppendDeferredRenderables(
-						render_arrays[firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer],
-						GetSkeleton(),
-						DrawFullMatrix_Localized,
-						drawWeaponDX11,
-						firstPerson ? true : false
-					);
-				}
 			}
 			
 			if ( transparentCamo )
@@ -5597,6 +5613,43 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 						}
 					}
 				}
+			}
+		}
+	}
+
+	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
+	{
+		const bool canRenderPlayerModel =
+			!NetworkLocal ||
+			(NetworkLocal && (!g_CameraInsidePlayer || firstPerson));
+
+		const bool scopeHidesPlayer =
+			NetworkLocal &&
+			hasScopeMode() &&
+			hasScopeMode_hidePlayerModel() &&
+			CurrentRig.allowScope;
+
+		if (canRenderPlayerModel && !scopeHidesPlayer)
+		{
+			bool drawWeaponDX11 = true;
+
+			const Weapon* wpn = m_Weapons[m_SelectedWeapon];
+
+			if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
+				drawWeaponDX11 = false;
+
+			if (bDead || forcedEmptyHands)
+				drawWeaponDX11 = false;
+
+			if (uberEquip_)
+			{
+				uberEquip_->AppendDeferredRenderables(
+					render_arrays[firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer],
+					GetSkeleton(),
+					DrawFullMatrix_Localized,
+					drawWeaponDX11,
+					firstPerson
+				);
 			}
 		}
 	}

@@ -201,6 +201,8 @@ private:
 	void		DrawSlotMesh(r3dMesh* mesh, const D3DXMATRIX& world, DrawType dt, bool skin);
 	void		AppendSlotRenderables( RenderArray& renderArray, ESlot slotId, const D3DXMATRIX& world, bool skin, bool draw_firstperson, const r3dSkeleton* slotSkeleton, const r3dSkeleton* wpnSkeleton );
 	void		AppendSlotMeshRenderables( RenderArray& renderArray, r3dMesh* mesh, const D3DXMATRIX& world, const r3dSkeleton* skeleton );
+	void		AppendSlotShadowRenderables( RenderArray& renderArray, ESlot slotId, const D3DXMATRIX& world, bool skin, bool draw_firstperson, const r3dSkeleton* slotSkeleton, const r3dSkeleton* wpnSkeleton );
+	void		AppendSlotMeshShadowRenderables( RenderArray& renderArray, r3dMesh* mesh, const D3DXMATRIX& world, const r3dSkeleton* skeleton );
 
 public:
 	CUberEquip(obj_Player* plr);
@@ -217,6 +219,7 @@ public:
 
 	void		Draw(const r3dSkeleton* skel, const D3DXMATRIX& CharMat, bool draw_weapon, DrawType dt, bool first_person );
 	void		AppendDeferredRenderables( RenderArray& renderArray, const r3dSkeleton* skel, const D3DXMATRIX& CharMat, bool draw_weapon, bool first_person );
+	void		AppendShadowRenderables( RenderArray& renderArray, const r3dSkeleton* skel, const D3DXMATRIX& CharMat, bool draw_weapon, bool first_person );
 
 	int			IsLoaded() ;
 };

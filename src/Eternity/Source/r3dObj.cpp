@@ -1772,6 +1772,63 @@ r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3
 	}
 }
 
+void
+r3dAppendMeshShadowRenderablesDX11(
+	RenderArray& oArr,
+	r3dMesh* mesh,
+	const D3DXMATRIX* worldTransform,
+	const r3dSkeleton* skeleton
+)
+{
+	if (!mesh || !mesh->IsDrawable())
+		return;
+
+	const r3dSkeleton* dx11Skeleton =
+		mesh->IsSkeletal() ? skeleton : NULL;
+
+	if (mesh->HasAlphaTextures)
+	{
+		for (int i = 0; i < mesh->NumMatChunks; ++i)
+		{
+			const r3dTriBatch& batch = mesh->MatChunks[i];
+
+			if (!batch.Mat)
+				continue;
+
+			if (batch.EndIndex <= batch.StartIndex)
+				continue;
+
+			MeshShadowRenderable rend;
+			memset(&rend, 0, sizeof(rend));
+
+			rend.SubDrawFunc = MeshShadowRenderable::Draw;
+			rend.BatchIdx = i;
+			rend.Mesh = mesh;
+			rend.SortValue =
+				((UINT64)batch.Mat->ID << 32) |
+				(UINT64)mesh->buffers.VB.Get();
+
+			rend.InitDX11(worldTransform, dx11Skeleton);
+
+			oArr.PushBack(rend);
+		}
+	}
+	else
+	{
+		MeshShadowRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.SubDrawFunc = MeshShadowRenderable::DrawSingleBatch;
+		rend.Mesh = mesh;
+		rend.BatchIdx = -1;
+		rend.SortValue = (UINT64)mesh->buffers.VB.Get() << 32;
+
+		rend.InitDX11(worldTransform, dx11Skeleton);
+
+		oArr.PushBack(rend);
+	}
+}
+
 //------------------------------------------------------------------------
 
 void MeshDeferredHighlightRenderable::DoDraw( Renderable* RThis, float distance, const r3dCamera& Cam )

@@ -891,6 +891,109 @@ void CUberEquip::AppendSlotMeshRenderables( RenderArray& renderArray, r3dMesh* m
 	);
 }
 
+void CUberEquip::AppendSlotMeshShadowRenderables(
+	RenderArray& renderArray,
+	r3dMesh* mesh,
+	const D3DXMATRIX& world,
+	const r3dSkeleton* skeleton
+)
+{
+	if (!mesh || !mesh->IsDrawable())
+		return;
+
+	r3dAppendMeshShadowRenderablesDX11(
+		renderArray,
+		mesh,
+		&world,
+		mesh->IsSkeletal() ? skeleton : NULL
+	);
+}
+
+void CUberEquip::AppendSlotShadowRenderables(
+	RenderArray& renderArray,
+	ESlot slotId,
+	const D3DXMATRIX& world,
+	bool skin,
+	bool draw_firstperson,
+	const r3dSkeleton* slotSkeleton,
+	const r3dSkeleton* wpnSkeleton
+)
+{
+	if (slotId == SLOT_WeaponSide)
+		return;
+
+	if (draw_firstperson)
+	{
+		if (
+			slotId == SLOT_Armor ||
+			slotId == SLOT_LowerBody ||
+			slotId == SLOT_Head ||
+			slotId == SLOT_Helmet ||
+			slotId == SLOT_Backpack
+		)
+		{
+			return;
+		}
+	}
+
+	const bool isFirstPerson =
+		g_camera_mode->GetInt() == 2 &&
+		player &&
+		player->NetworkLocal;
+
+	r3dMesh* mesh = NULL;
+
+	if (slots_[slotId].gear)
+	{
+		mesh = slots_[slotId].gear->getModel(isFirstPerson && draw_firstperson);
+	}
+	else if (slots_[slotId].wpn)
+	{
+		mesh = slots_[slotId].wpn->getModel(true, isFirstPerson && draw_firstperson);
+	}
+	else if (slots_[slotId].mesh)
+	{
+		mesh = slots_[slotId].mesh;
+	}
+
+	AppendSlotMeshShadowRenderables(
+		renderArray,
+		mesh,
+		world,
+		skin ? slotSkeleton : NULL
+	);
+
+	if (slots_[slotId].wpn && wpnSkeleton)
+	{
+		Weapon* wpn = slots_[slotId].wpn;
+
+		for (int i = 0; i < WPN_ATTM_MAX; ++i)
+		{
+			mesh = wpn->getWeaponAttachmentMesh(
+				(WeaponAttachmentTypeEnum)i,
+				player->m_isAiming && (i == WPN_ATTM_UPPER_RAIL)
+			);
+
+			if (mesh && mesh->IsDrawable())
+			{
+				D3DXMATRIX attmWorld;
+				wpnSkeleton->GetBoneWorldTM(
+					WeaponAttachmentBoneNames[i],
+					&attmWorld,
+					world
+				);
+
+				AppendSlotMeshShadowRenderables(
+					renderArray,
+					mesh,
+					attmWorld,
+					NULL
+				);
+			}
+		}
+	}
+}
+
 void CUberEquip::AppendSlotRenderables( RenderArray& renderArray, ESlot slotId, const D3DXMATRIX& world, bool skin, bool draw_firstperson, const r3dSkeleton* slotSkeleton, const r3dSkeleton* wpnSkeleton )
 {
 	if(slotId == SLOT_WeaponSide)
@@ -1029,6 +1132,98 @@ void CUberEquip::AppendDeferredRenderables( RenderArray& renderArray, const r3dS
 			}
 		}
 		AppendSlotRenderables(renderArray, SLOT_Weapon, world, skinned, first_person, wpnSkel, wpnSkel);
+	}
+}
+
+void CUberEquip::AppendShadowRenderables(
+	RenderArray& renderArray,
+	const r3dSkeleton* skel,
+	const D3DXMATRIX& CharMat,
+	bool draw_weapon,
+	bool first_person
+)
+{
+	if (!skel)
+		return;
+
+	for (int i = 0; i <= SLOT_Backpack; ++i)
+	{
+		AppendSlotShadowRenderables(
+			renderArray,
+			(ESlot)i,
+			CharMat,
+			true,
+			first_person,
+			skel,
+			NULL
+		);
+	}
+
+	D3DXMATRIX world = getWeaponBone(skel, CharMat);
+
+	if (!first_person)
+	{
+		if (slots_[SLOT_WeaponBackRight].wpn)
+		{
+			skel->GetBoneWorldTM("Weapon_BackRight", &world, CharMat);
+
+			AppendSlotShadowRenderables(
+				renderArray,
+				SLOT_WeaponBackRight,
+				world,
+				false,
+				first_person,
+				NULL,
+				NULL
+			);
+		}
+
+		if (slots_[SLOT_WeaponSide].wpn)
+		{
+			skel->GetBoneWorldTM("Weapon_Side", &world, CharMat);
+
+			AppendSlotShadowRenderables(
+				renderArray,
+				SLOT_WeaponSide,
+				world,
+				false,
+				first_person,
+				NULL,
+				NULL
+			);
+		}
+	}
+
+	if (draw_weapon)
+	{
+		world = getWeaponBone(skel, CharMat);
+
+		bool skinned = false;
+		r3dSkeleton* wpnSkel = NULL;
+
+		Weapon* wpn = slots_[SLOT_Weapon].wpn;
+
+		if (wpn)
+		{
+			r3dMesh* msh = wpn->getModel(true, first_person);
+
+			if (msh && msh->IsSkeletal() && wpn->getConfig()->getSkeleton())
+			{
+				wpn->getAnimation()->Recalc();
+				wpnSkel = wpn->getAnimation()->pSkeleton;
+				skinned = true;
+			}
+		}
+
+		AppendSlotShadowRenderables(
+			renderArray,
+			SLOT_Weapon,
+			world,
+			skinned,
+			first_person,
+			wpnSkel,
+			wpnSkel
+		);
 	}
 }
 
