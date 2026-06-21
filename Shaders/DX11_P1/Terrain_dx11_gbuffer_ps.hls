@@ -1,8 +1,14 @@
 #pragma pack_matrix(row_major)
 
-Texture2D TerrainColorTexture        : register(t0);
-Texture2D TerrainNormalTexture       : register(t1);
-Texture2D TerrainDetailNormalTexture : register(t2);
+Texture2D TerrainColorModTexture          : register(t0);
+Texture2D TerrainDetailNormalTexture      : register(t1);
+
+Texture2D TerrainBaseDiffuseTexture       : register(t2);
+Texture2D TerrainBaseNormalTexture        : register(t3);
+
+Texture2D TerrainMaskTextures[3]          : register(t4);
+Texture2D TerrainLayerDiffuseTextures[8]  : register(t7);
+Texture2D TerrainLayerNormalTextures[8]   : register(t15);
 
 SamplerState TerrainClampSampler : register(s0);
 SamplerState TerrainWrapSampler  : register(s1);
@@ -15,6 +21,11 @@ cbuffer TerrainConstants : register(b0)
 	float4 gTerrainLayerParams;
 	float4 gTerrainDetailParams;
 	float4 gTerrainDebugParams;
+
+	float4 gTerrainSplatParams;
+	float4 gTerrainBaseLayerParams;
+	float4 gTerrainPaintLayerParams[8];
+	float4 gTerrainPaintLayerMaskParams[8];
 };
 
 struct PS_INPUT
@@ -71,113 +82,88 @@ float3 BuildProceduralAlbedo(float4 weights, float height01, float slope)
 		rockColor  * weights.z +
 		sandColor  * weights.w;
 
-	// Слабая высотная коррекция, без дорогого noise.
 	albedo *= lerp(0.92f, 1.06f, height01);
 	albedo *= lerp(1.00f, 0.88f, slope);
 
 	return saturate(albedo);
 }
 
-float3 ApplyTerrainColorTexture(float3 proceduralAlbedo, float2 uv)
+float3 DecodeNormalOffset(Texture2D normalTex, float2 uv)
+{
+	float3 packedNormal =
+		normalTex.Sample(
+			TerrainWrapSampler,
+			uv
+		).xyz;
+
+	float3 tangentNormal =
+		packedNormal * 2.0f - 1.0f;
+
+	return float3(
+		tangentNormal.x,
+		0.0f,
+		tangentNormal.y
+	);
+}
+
+float GetMaskChannel(float3 maskValue, float channelIdx)
+{
+	if (channelIdx < 0.5f)
+		return maskValue.r;
+
+	if (channelIdx < 1.5f)
+		return maskValue.g;
+
+	return maskValue.b;
+}
+
+float3 SampleMaskRGB(float maskIdx, float2 uv)
+{
+	if (maskIdx < 0.5f)
+		return TerrainMaskTextures[0].Sample(TerrainClampSampler, uv).rgb;
+
+	if (maskIdx < 1.5f)
+		return TerrainMaskTextures[1].Sample(TerrainClampSampler, uv).rgb;
+
+	return TerrainMaskTextures[2].Sample(TerrainClampSampler, uv).rgb;
+}
+
+float3 ApplyColorModTexture(float3 albedo, float2 uv)
 {
 	float textureBlend =
 		saturate(gTerrainDebugParams.y);
 
 	if (textureBlend <= 0.001f)
-		return proceduralAlbedo;
+		return albedo;
 
-	float3 textureAlbedo =
+	float3 colorMod =
 		saturate(
-			TerrainColorTexture.Sample(
+			TerrainColorModTexture.Sample(
 				TerrainClampSampler,
 				uv
 			).rgb
 		);
 
-	// NumPad 7 -> 1.00:
-	// raw texture debug mode.
-	// Если тут земля белая/серая — значит сама Terrain2 color texture такая.
-	if (textureBlend >= 0.999f)
-		return textureAlbedo;
-
-	float textureLuma =
-		dot(
-			textureAlbedo,
-			float3(0.2126f, 0.7152f, 0.0722f)
-		);
-
-	// Бело-серую terrain texture не даём смешивать на 100%,
-	// но теперь режем не так жёстко, чтобы NumPad 7 был заметен.
-	float washedOut =
-		smoothstep(
-			0.62f,
-			0.92f,
-			textureLuma
-		);
-
-	float safeBlend =
-		textureBlend *
-		lerp(
-			1.0f,
-			0.45f,
-			washedOut
-		);
-
-	// Используем texture как tint, а не как полноценный albedo.
 	float3 tint =
 		lerp(
 			float3(1.0f, 1.0f, 1.0f),
-			saturate(textureAlbedo * 1.35f),
+			saturate(colorMod * 1.35f),
 			0.75f
 		);
 
 	float3 tintedAlbedo =
-		saturate(
-			proceduralAlbedo * tint
-		);
+		saturate(albedo * tint);
 
 	return saturate(
 		lerp(
-			proceduralAlbedo,
+			albedo,
 			tintedAlbedo,
-			safeBlend
+			textureBlend
 		)
 	);
 }
 
-float3 ApplyTerrainNormalTexture(float3 normal, float2 uv)
-{
-	float normalBlend = saturate(gTerrainDebugParams.z);
-
-	if (normalBlend <= 0.001f)
-		return normal;
-
-	float3 packedNormal =
-		TerrainNormalTexture.Sample(
-			TerrainClampSampler,
-			uv
-		).xyz;
-
-	float3 sampledNormal =
-		packedNormal * 2.0f - 1.0f;
-
-	sampledNormal =
-		SafeNormalize(
-			sampledNormal,
-			normal
-		);
-
-	return SafeNormalize(
-		lerp(
-			normal,
-			sampledNormal,
-			normalBlend
-		),
-		normal
-	);
-}
-
-float3 ApplyDetailNormal(float3 normal, float2 uv, float3 worldPos)
+float3 ApplyDetailNormal(float3 normal, float3 worldPos)
 {
 	float detailAmount =
 		saturate(gTerrainDebugParams.w);
@@ -191,27 +177,165 @@ float3 ApplyDetailNormal(float3 normal, float2 uv, float3 worldPos)
 	float2 detailUV =
 		worldPos.xz / detailScale;
 
-	float3 detailPacked =
-		TerrainDetailNormalTexture.Sample(
-			TerrainWrapSampler,
+	float3 detailOffset =
+		DecodeNormalOffset(
+			TerrainDetailNormalTexture,
 			detailUV
-		).xyz;
-
-	float3 detailNormal =
-		detailPacked * 2.0f - 1.0f;
+		);
 
 	normal =
 		SafeNormalize(
-			normal +
-			float3(
-				detailNormal.x,
-				0.0f,
-				detailNormal.y
-			) * detailAmount * 0.18f,
+			normal + detailOffset * detailAmount * 0.18f,
 			normal
 		);
 
 	return normal;
+}
+
+void BuildLayeredTerrainMaterial(
+	PS_INPUT input,
+	float3 geometricNormal,
+	out float3 outAlbedo,
+	out float3 outNormal,
+	out float outGloss,
+	out float outSpec
+)
+{
+	float2 baseUV =
+		input.WorldPos.xz *
+		max(gTerrainBaseLayerParams.xy, float2(0.000001f, 0.000001f));
+
+	float3 baseAlbedo =
+		saturate(
+			TerrainBaseDiffuseTexture.Sample(
+				TerrainWrapSampler,
+				baseUV
+			).rgb
+		);
+
+	float baseSpecPow =
+		max(gTerrainBaseLayerParams.z, 1.0f);
+
+	float2 maskUV =
+		saturate(input.TexCoord);
+
+	float layerWeightSum = 0.0f;
+	float3 layerAlbedoSum = float3(0.0f, 0.0f, 0.0f);
+	float3 normalOffsetSum = float3(0.0f, 0.0f, 0.0f);
+	float specPowSum = 0.0f;
+
+	float normalBlend =
+		saturate(gTerrainDebugParams.z);
+
+	float activeLayerCount =
+		max(gTerrainSplatParams.y, 0.0f);
+
+	[unroll]
+	for (int i = 0; i < 8; ++i)
+	{
+		float layerActive =
+			gTerrainPaintLayerParams[i].w *
+			gTerrainPaintLayerMaskParams[i].z;
+
+		if (layerActive > 0.5f && i < activeLayerCount)
+		{
+			float maskIdx =
+				gTerrainPaintLayerMaskParams[i].x;
+
+			float channelIdx =
+				gTerrainPaintLayerMaskParams[i].y;
+
+			float3 maskValue =
+				SampleMaskRGB(
+					maskIdx,
+					maskUV
+				);
+
+			float weight =
+				saturate(
+					GetMaskChannel(
+						maskValue,
+						channelIdx
+					)
+				);
+
+			if (weight > 0.0001f)
+			{
+				float2 layerUV =
+					input.WorldPos.xz *
+					max(gTerrainPaintLayerParams[i].xy, float2(0.000001f, 0.000001f));
+
+				float3 layerAlbedo =
+					saturate(
+						TerrainLayerDiffuseTextures[i].Sample(
+							TerrainWrapSampler,
+							layerUV
+						).rgb
+					);
+
+				layerAlbedoSum += layerAlbedo * weight;
+				layerWeightSum += weight;
+
+				if (normalBlend > 0.001f)
+				{
+					normalOffsetSum +=
+						DecodeNormalOffset(
+							TerrainLayerNormalTextures[i],
+							layerUV
+						) * weight;
+				}
+
+				specPowSum +=
+					max(gTerrainPaintLayerParams[i].z, 1.0f) *
+					weight;
+			}
+		}
+	}
+
+	float baseWeight =
+		saturate(1.0f - layerWeightSum);
+
+	float totalWeight =
+		max(baseWeight + layerWeightSum, 0.0001f);
+
+	outAlbedo =
+		saturate(
+			(baseAlbedo * baseWeight + layerAlbedoSum) /
+			totalWeight
+		);
+
+	float specPow =
+		(baseSpecPow * baseWeight + specPowSum) /
+		totalWeight;
+
+	if (normalBlend > 0.001f)
+	{
+		normalOffsetSum +=
+			DecodeNormalOffset(
+				TerrainBaseNormalTexture,
+				baseUV
+			) * baseWeight;
+
+		outNormal =
+			SafeNormalize(
+				geometricNormal +
+				normalOffsetSum * normalBlend * 0.35f,
+				geometricNormal
+			);
+	}
+	else
+	{
+		outNormal = geometricNormal;
+	}
+
+	float spec01 =
+		saturate(specPow / 128.0f);
+
+	outGloss =
+		lerp(0.12f, 0.65f, spec01);
+
+	outSpec =
+		lerp(0.035f, 0.16f, spec01);
 }
 
 PS_OUTPUT main(PS_INPUT input)
@@ -230,43 +354,54 @@ PS_OUTPUT main(PS_INPUT input)
 	float slope =
 		saturate(input.LayerData.y);
 
-	float4 weights =
-		BuildSplatWeights(
-			height01,
-			slope
-		);
+	float3 albedo;
+	float gloss;
+	float spec;
 
-	float3 albedo =
-		BuildProceduralAlbedo(
-			weights,
-			height01,
-			slope
+	if (gTerrainSplatParams.x > 0.5f)
+	{
+		BuildLayeredTerrainMaterial(
+			input,
+			normal,
+			albedo,
+			normal,
+			gloss,
+			spec
 		);
+	}
+	else
+	{
+		float4 weights =
+			BuildSplatWeights(
+				height01,
+				slope
+			);
+
+		albedo =
+			BuildProceduralAlbedo(
+				weights,
+				height01,
+				slope
+			);
+
+		gloss =
+			lerp(0.12f, 0.30f, weights.z);
+
+		spec =
+			lerp(0.035f, 0.12f, weights.z);
+	}
 
 	albedo =
-		ApplyTerrainColorTexture(
+		ApplyColorModTexture(
 			albedo,
-			input.TexCoord
-		);
-
-	normal =
-		ApplyTerrainNormalTexture(
-			normal,
 			input.TexCoord
 		);
 
 	normal =
 		ApplyDetailNormal(
 			normal,
-			input.TexCoord,
 			input.WorldPos
 		);
-
-	float gloss =
-		lerp(0.12f, 0.30f, weights.z);
-
-	float spec =
-		lerp(0.035f, 0.12f, weights.z);
 
 	output.Color =
 		float4(
@@ -292,7 +427,7 @@ PS_OUTPUT main(PS_INPUT input)
 		float4(
 			saturate(gloss),
 			saturate(spec),
-			saturate(weights.z),
+			saturate(slope),
 			1.0f
 		);
 
