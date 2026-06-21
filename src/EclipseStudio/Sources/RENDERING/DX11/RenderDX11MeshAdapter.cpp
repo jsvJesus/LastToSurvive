@@ -69,31 +69,71 @@ namespace
 		return outResource.Create(device, desc, debugName ? debugName : mesh.FileName.c_str());
 	}
 
-	bool TryCreateFromD3D9PackedBuffers(ID3D11Device* device, const r3dMesh& mesh, r3dDX11MeshResource& outResource, const std::vector<r3dDX11MeshBatch>& batches, const char* debugName)
+	bool TryCreateFromD3D9PackedBuffers(
+		ID3D11Device* device,
+		const r3dMesh& mesh,
+		r3dDX11MeshResource& outResource,
+		const std::vector<r3dDX11MeshBatch>& batches,
+		const char* debugName
+	)
 	{
 		if (mesh.VertexFlags & r3dMesh::vfPrecise)
 		{
 			static bool logged = false;
 			if (!logged)
 			{
-				r3dOutToLog("[DX11][Mesh] precise D3D9 mesh fallback is not implemented yet: %s\n", mesh.FileName.c_str());
+				r3dOutToLog(
+					"[DX11][Mesh] precise D3D9 mesh fallback is not implemented yet: %s\n",
+					mesh.FileName.c_str()
+				);
 				logged = true;
 			}
 			return false;
 		}
 
-		MeshGlobalBuffer::Entry& bufferEntry = const_cast<MeshGlobalBuffer::Entry&>(mesh.buffers);
+		MeshGlobalBuffer::Entry& bufferEntry =
+			const_cast<MeshGlobalBuffer::Entry&>(mesh.buffers);
 
-		if (!bufferEntry.VB.Valid() || !bufferEntry.IB.Valid() || bufferEntry.vCount == 0 || bufferEntry.iCount == 0)
+		if (
+			!bufferEntry.VB.Valid() ||
+			!bufferEntry.IB.Valid() ||
+			bufferEntry.vCount == 0 ||
+			bufferEntry.iCount == 0
+		)
+		{
+			r3dOutToLog(
+				"[DX11][Mesh] packed buffer invalid: mesh='%s' file='%s' vb=%d ib=%d vcount=%u icount=%u\n",
+				mesh.Name,
+				mesh.FileName.c_str(),
+				bufferEntry.VB.Valid() ? 1 : 0,
+				bufferEntry.IB.Valid() ? 1 : 0,
+				bufferEntry.vCount,
+				bufferEntry.iCount
+			);
+
 			return false;
+		}
 
 		void* vertexData = nullptr;
 		void* indexData = nullptr;
 
 		bufferEntry.Lock(vertexData, indexData);
+
+		if (!vertexData || !indexData)
+		{
+			bufferEntry.Unlock();
+
+			r3dOutToLog(
+				"[DX11][Mesh] packed buffer lock failed: mesh='%s' file='%s'\n",
+				mesh.Name,
+				mesh.FileName.c_str()
+			);
+
+			return false;
+		}
+
 		const bool skinned =
-			mesh.pWeights != nullptr ||
-			bufferEntry.vbStride >= sizeof(r3dSkinnedMeshVertex);
+			mesh.IsSkeletal() != 0;
 
 		const float positionScale[3] =
 		{
@@ -124,6 +164,19 @@ namespace
 		);
 
 		bufferEntry.Unlock();
+
+		if (!created)
+		{
+			r3dOutToLog(
+				"[DX11][Mesh] CreateFromPacked failed: mesh='%s' file='%s' stride=%u skeletal=%d batches=%u\n",
+				mesh.Name,
+				mesh.FileName.c_str(),
+				bufferEntry.vbStride,
+				skinned ? 1 : 0,
+				static_cast<unsigned int>(batches.size())
+			);
+		}
+
 		return created;
 	}
 }

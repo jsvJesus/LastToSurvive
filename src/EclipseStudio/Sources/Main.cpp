@@ -279,12 +279,256 @@ void StudioDX11WorldHybridShutdown()
 	r3dOutToLog("[DX11][World] Hybrid renderer shutdown\n");
 }
 
+static const char* DX11CheckState(bool pass, bool warn)
+{
+	if (pass)
+		return "PASS";
+
+	if (warn)
+		return "WARN";
+
+	return "FAIL";
+}
+
+static void LogDX11WorldValidation(
+	const r3dDX11WorldRenderStats& S,
+	bool bWorldRendered,
+	bool bLightingRendered
+)
+{
+	r3dOutToLog("[DX11][Check] ================= World parity check =================\n");
+
+	// 1. Static mesh виден в depth.
+	{
+		const bool pass =
+			bWorldRendered &&
+			S.DepthStaticMeshes > 0 &&
+			S.DepthDrawnMeshes > 0 &&
+			S.DepthSkippedFailed == 0;
+
+		const bool warn =
+			bWorldRendered &&
+			S.DepthStaticMeshes > 0 &&
+			S.DepthDrawnMeshes > 0 &&
+			S.DepthSkippedFailed > 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 01 Static mesh depth: depth_static=%u depth_drawn=%u depth_failed=%u\n",
+			DX11CheckState(pass, warn),
+			S.DepthStaticMeshes,
+			S.DepthDrawnMeshes,
+			S.DepthSkippedFailed
+		);
+	}
+
+	// 2. Skinned zombie/player виден в depth.
+	{
+		const bool pass =
+			bWorldRendered &&
+			S.DepthSkinnedMeshes > 0 &&
+			S.DepthDrawnMeshes > 0;
+
+		const bool warn =
+			bWorldRendered &&
+			S.DepthSkinnedMeshes == 0 &&
+			S.ShadowSkinnedMeshes > 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 02 Skinned depth: depth_skin=%u shadow_skin=%u depth_drawn=%u\n",
+			DX11CheckState(pass, warn),
+			S.DepthSkinnedMeshes,
+			S.ShadowSkinnedMeshes,
+			S.DepthDrawnMeshes
+		);
+	}
+
+	// 3. Alpha-test mesh режется правильно.
+	{
+		const bool pass =
+			bWorldRendered &&
+			S.DepthAlphaTestedMeshes > 0;
+
+		const bool warn =
+			bWorldRendered &&
+			S.DepthAlphaTestedMeshes == 0 &&
+			(S.ShadowAlphaTested > 0 || S.TransparentShadowAlphaTested > 0);
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 03 Alpha-test depth: depth_alpha=%u shadow_alpha=%u transparent_shadow_alpha=%u\n",
+			DX11CheckState(pass, warn),
+			S.DepthAlphaTestedMeshes,
+			S.ShadowAlphaTested,
+			S.TransparentShadowAlphaTested
+		);
+	}
+
+	// 4. First-person weapon не ломает depth range.
+	{
+		const bool pass =
+			bWorldRendered &&
+			S.DepthFirstPersonMeshes > 0;
+
+		const bool warn =
+			bWorldRendered &&
+			S.DepthFirstPersonMeshes == 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 04 First-person depth range: depth_fp=%u depth_failed=%u\n",
+			DX11CheckState(pass, warn),
+			S.DepthFirstPersonMeshes,
+			S.DepthSkippedFailed
+		);
+	}
+
+	// 5. Static/skinned shadows совпадают визуально.
+	{
+		const bool pass =
+			S.ShadowSlicesRendered > 0 &&
+			S.ShadowDrawnMeshes > 0 &&
+			S.ShadowStaticMeshes > 0 &&
+			S.ShadowSkinnedMeshes > 0 &&
+			S.ShadowSkippedFailed == 0;
+
+		const bool warn =
+			S.ShadowSlicesRendered > 0 &&
+			S.ShadowDrawnMeshes > 0 &&
+			S.ShadowStaticMeshes > 0 &&
+			S.ShadowSkippedFailed <= 2;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 05 Static/skinned shadows: slices=%u shadow_drawn=%u static=%u skinned=%u failed=%u\n",
+			DX11CheckState(pass, warn),
+			S.ShadowSlicesRendered,
+			S.ShadowDrawnMeshes,
+			S.ShadowStaticMeshes,
+			S.ShadowSkinnedMeshes,
+			S.ShadowSkippedFailed
+		);
+	}
+
+	// 6. Alpha-tested shadows есть у заборов/листвы/решёток.
+	{
+		const bool pass =
+			S.ShadowSlicesRendered > 0 &&
+			(S.ShadowAlphaTested > 0 || S.TransparentShadowAlphaTested > 0) &&
+			(S.ShadowDrawnMeshes > 0 || S.TransparentShadowDrawnMeshes > 0);
+
+		const bool warn =
+			S.ShadowSlicesRendered > 0 &&
+			S.ShadowAlphaTested == 0 &&
+			S.TransparentShadowAlphaTested == 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 06 Alpha-tested shadows: shadow_alpha=%u tshadow_alpha=%u shadow_drawn=%u tshadow_drawn=%u\n",
+			DX11CheckState(pass, warn),
+			S.ShadowAlphaTested,
+			S.TransparentShadowAlphaTested,
+			S.ShadowDrawnMeshes,
+			S.TransparentShadowDrawnMeshes
+		);
+	}
+
+	// 7. Directional/point/spot lights работают.
+	{
+		const bool pass =
+			bLightingRendered &&
+			S.LightingPasses > 0 &&
+			S.LightingDirectionalLights > 0 &&
+			S.LightingPointLights > 0 &&
+			S.LightingSpotLights > 0;
+
+		const bool warn =
+			bLightingRendered &&
+			S.LightingPasses > 0 &&
+			S.LightingDirectionalLights > 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 07 Lights: passes=%u dir=%u point=%u spot=%u failed=%u\n",
+			DX11CheckState(pass, warn),
+			S.LightingPasses,
+			S.LightingDirectionalLights,
+			S.LightingPointLights,
+			S.LightingSpotLights,
+			S.LightingSkippedFailed
+		);
+	}
+
+	// 8. Spec/gloss похож на DX9.
+	// Автоматом можно проверить только то, что spec/gloss decode включён.
+	// Визуальное совпадение с DX9 проверяется скриншотом.
+	{
+		const bool pass =
+			bLightingRendered &&
+			S.LightingSpecGlossDecoded > 0 &&
+			S.LightingGBufferDecoded > 0;
+
+		const bool warn =
+			bLightingRendered &&
+			S.LightingSpecGlossDecoded == 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 08 Spec/gloss decode: gdecode=%u specgloss=%u -- visual DX9 parity still needs screenshot check\n",
+			DX11CheckState(pass, warn),
+			S.LightingGBufferDecoded,
+			S.LightingSpecGlossDecoded
+		);
+	}
+
+	// 9. Terrain пишет GBuffer.
+	{
+		const bool pass =
+			S.TerrainGBufferDraws > 0 &&
+			S.TerrainSkippedFailed == 0;
+
+		const bool warn =
+			S.TerrainGBufferDraws > 0 &&
+			S.TerrainSkippedFailed > 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 09 Terrain GBuffer: terrain_g=%u tris=%u layers=%u detail=%u failed=%u\n",
+			DX11CheckState(pass, warn),
+			S.TerrainGBufferDraws,
+			S.TerrainGBufferTriangles,
+			S.TerrainSplatLayers,
+			S.TerrainDetailLayers,
+			S.TerrainSkippedFailed
+		);
+	}
+
+	// 10. Terrain получает shadows и lighting.
+	{
+		const bool pass =
+			S.TerrainGBufferDraws > 0 &&
+			S.TerrainShadowDraws > 0 &&
+			bLightingRendered &&
+			S.LightingPasses > 0 &&
+			S.LightingShadowed > 0;
+
+		const bool warn =
+			S.TerrainGBufferDraws > 0 &&
+			bLightingRendered &&
+			S.LightingPasses > 0;
+
+		r3dOutToLog(
+			"[DX11][Check][%s] 10 Terrain shadow/lighting: terrain_g=%u terrain_s=%u lighting=%u lshadow=%u\n",
+			DX11CheckState(pass, warn),
+			S.TerrainGBufferDraws,
+			S.TerrainShadowDraws,
+			S.LightingPasses,
+			S.LightingShadowed
+		);
+	}
+
+	r3dOutToLog("[DX11][Check] =====================================================\n");
+}
+
 void StudioDX11WorldHybridTick()
 {
 	if (!g_StudioCmdLineDX11World || !g_DX11Renderer || !g_DX11Renderer->IsInitialized())
 		return;
 
 	static DWORD LastWorldStatsLog = 0;
+	static DWORD LastWorldValidationLog = 0;
 
 	g_DX11Renderer->BeginFrame(
 		0.010f,
@@ -311,10 +555,11 @@ void StudioDX11WorldHybridTick()
 	g_DX11Renderer->EndFrame(false, nullptr);
 
 	const DWORD Now = GetTickCount();
+
 	if (Now - LastWorldStatsLog >= 1000)
 	{
 		r3dOutToLog(
-			"[DX11][World] ok=%d total=%u mesh=%u "
+			"[DX11][World] ok=%d world_ok=%d light_ok=%d total=%u mesh=%u "
 			"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
 			"gbuffer_drawn=%u unsupported=%u failed=%u "
 			"shadow=%u smesh=%u sstatic=%u sskin=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u "
@@ -322,7 +567,11 @@ void StudioDX11WorldHybridTick()
 			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u "
 			"terrain_g=%u terrain_gtris=%u terrain_d=%u terrain_dtris=%u terrain_s=%u terrain_stris=%u terrain_layers=%u terrain_detail=%u terrain_failed=%u "
 			"\n",
+
+			(bWorldRendered && bLightingRendered) ? 1 : 0,
 			bWorldRendered ? 1 : 0,
+			bLightingRendered ? 1 : 0,
+
 			WorldStats.TotalRenderables,
 			WorldStats.MeshRenderables,
 
@@ -342,11 +591,23 @@ void StudioDX11WorldHybridTick()
 
 			WorldStats.ShadowRenderables,
 			WorldStats.ShadowMeshRenderables,
+			WorldStats.ShadowStaticMeshes,
+			WorldStats.ShadowSkinnedMeshes,
 			WorldStats.ShadowDrawnMeshes,
 			WorldStats.ShadowAlphaTested,
 			WorldStats.ShadowSlicesRendered,
 			WorldStats.ShadowSkippedUnsupported,
 			WorldStats.ShadowSkippedFailed,
+
+			WorldStats.TransparentShadowRenderables,
+			WorldStats.TransparentShadowMeshRenderables,
+			WorldStats.TransparentShadowStaticMeshes,
+			WorldStats.TransparentShadowSkinnedMeshes,
+			WorldStats.TransparentShadowDrawnMeshes,
+			WorldStats.TransparentShadowAlphaTested,
+			WorldStats.TransparentShadowCasesRendered,
+			WorldStats.TransparentShadowSkippedUnsupported,
+			WorldStats.TransparentShadowSkippedFailed,
 
 			WorldStats.LightingPasses,
 			WorldStats.LightingDirectionalLights,
@@ -372,6 +633,17 @@ void StudioDX11WorldHybridTick()
 		);
 
 		LastWorldStatsLog = Now;
+	}
+
+	if (Now - LastWorldValidationLog >= 5000)
+	{
+		LogDX11WorldValidation(
+			WorldStats,
+			bWorldRendered,
+			bLightingRendered
+		);
+
+		LastWorldValidationLog = Now;
 	}
 }
 
