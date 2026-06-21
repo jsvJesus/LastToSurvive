@@ -72,6 +72,25 @@ namespace
 		return value > 1.0f ? value / 255.0f : value;
 	}
 
+	float NormalizeDX11LightIntensity(float value, float fallback, float maxValue)
+	{
+		if (value <= 0.0f)
+			return fallback;
+
+		// В старом DX9 path intensity часто может быть сильно больше 1.
+		// Для DX11 lighting пока нормализуем, иначе HDR улетает в белый экран.
+		if (value > 8.0f)
+			value *= 0.05f;
+
+		if (value > maxValue)
+			value = maxValue;
+
+		if (value < 0.0f)
+			value = 0.0f;
+
+		return value;
+	}
+
 	void NormalizeVector3(float& x, float& y, float& z)
 	{
 		const float lenSq = x * x + y * y + z * z;
@@ -130,7 +149,7 @@ namespace
 		constants.SunColorIntensity[0] = 1.00f;
 		constants.SunColorIntensity[1] = 0.92f;
 		constants.SunColorIntensity[2] = 0.78f;
-		constants.SunColorIntensity[3] = 1.0f;
+		constants.SunColorIntensity[3] = 0.85f;
 	}
 
 	void TryFillDirectionalLightFromWorld(DX11LightingFrameConstants& constants, r3dDX11WorldRenderStats* stats)
@@ -161,7 +180,7 @@ namespace
 			constants.SunColorIntensity[0] = NormalizeColorComponent(light->R);
 			constants.SunColorIntensity[1] = NormalizeColorComponent(light->G);
 			constants.SunColorIntensity[2] = NormalizeColorComponent(light->B);
-			constants.SunColorIntensity[3] = std::max(0.0f, light->Intensity);
+			constants.SunColorIntensity[3] = NormalizeDX11LightIntensity(light->Intensity, 0.85f, 1.35f);
 
 			if (stats)
 				++stats->LightingDirectionalLights;
