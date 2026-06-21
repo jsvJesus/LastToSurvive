@@ -8,6 +8,11 @@ cbuffer TerrainConstants : register(b0)
 	float4 gTerrainLayerParams;
 	float4 gTerrainDetailParams;
 	float4 gTerrainDebugParams;
+
+	float4 gTerrainSplatParams;
+	float4 gTerrainBaseLayerParams;
+	float4 gTerrainPaintLayerParams[8];
+	float4 gTerrainPaintLayerMaskParams[8];
 };
 
 struct VS_INPUT
