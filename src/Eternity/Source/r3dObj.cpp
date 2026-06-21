@@ -1627,23 +1627,6 @@ static bool r3dRepairMeshDeferredRenderableBatch(
 
 		if (batch.Mat->ID == materialId)
 		{
-			static int RepairLogCount = 0;
-
-			if (RepairLogCount < 64)
-			{
-				++RepairLogCount;
-
-				r3dOutToLog(
-					"[DX11][RenderableRepair][Deferred] mesh='%s' file='%s' oldBatch=%d newBatch=%d matId=%u numChunks=%d\n",
-					mesh->Name,
-					mesh->FileName.c_str(),
-					meshRenderable->BatchIdx,
-					i,
-					materialId,
-					mesh->NumMatChunks
-				);
-			}
-
 			meshRenderable->BatchIdx = i;
 			return true;
 		}
@@ -1658,23 +1641,6 @@ static bool r3dRepairMeshDeferredRenderableBatch(
 
 		if (batch.EndIndex <= batch.StartIndex)
 			continue;
-
-		static int FallbackRepairLogCount = 0;
-
-		if (FallbackRepairLogCount < 64)
-		{
-			++FallbackRepairLogCount;
-
-			r3dOutToLog(
-				"[DX11][RenderableRepair][DeferredFallback] mesh='%s' file='%s' oldBatch=%d newBatch=%d matId=%u numChunks=%d\n",
-				mesh->Name,
-				mesh->FileName.c_str(),
-				meshRenderable->BatchIdx,
-				i,
-				materialId,
-				mesh->NumMatChunks
-			);
-		}
 
 		meshRenderable->BatchIdx = i;
 		return true;
