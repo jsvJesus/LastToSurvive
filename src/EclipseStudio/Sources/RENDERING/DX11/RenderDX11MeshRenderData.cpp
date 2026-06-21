@@ -57,25 +57,57 @@ void r3dDX11MeshRenderData::Shutdown()
 	MeshResource.Shutdown();
 }
 
-void r3dDX11MeshRenderData::DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked, const r3dSkeleton* skeleton)
+bool r3dDX11MeshRenderData::DrawGBuffer(
+	r3dDX11GBufferPass& pass,
+	const r3dDX11MeshConstants& constants,
+	unsigned int objectColorPacked,
+	const r3dSkeleton* skeleton
+)
 {
+	bool drewAny = false;
+
 	for (unsigned int i = 0; i < GetBatchCount(); ++i)
-		DrawGBufferBatch(pass, i, constants, objectColorPacked, skeleton);
+	{
+		drewAny =
+			DrawGBufferBatch(
+				pass,
+				i,
+				constants,
+				objectColorPacked,
+				skeleton
+			) || drewAny;
+	}
+
+	return drewAny;
 }
 
-void r3dDX11MeshRenderData::DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked, const r3dSkeleton* skeleton)
+bool r3dDX11MeshRenderData::DrawGBufferBatch(
+	r3dDX11GBufferPass& pass,
+	unsigned int batchIndex,
+	const r3dDX11MeshConstants& constants,
+	unsigned int objectColorPacked,
+	const r3dSkeleton* skeleton
+)
 {
 	if (!IsValid() || batchIndex >= Materials.size())
-		return;
+		return false;
 
-	const r3dDX11MeshConstants scaledConstants = ApplyMeshScales(constants);
+	const r3dDX11MeshConstants scaledConstants =
+		ApplyMeshScales(constants);
+
 	pass.SetMeshConstants(scaledConstants);
+
 	pass.SetSkinnedMeshMode(MeshResource.IsSkinned());
+
 	if (MeshResource.IsSkinned() && !pass.SetSkinningBones(skeleton))
-		return;
+		return false;
+
 	if (!pass.SetMaterial(Materials[batchIndex], objectColorPacked))
-		return;
+		return false;
+
 	MeshResource.DrawBatch(pass, batchIndex);
+
+	return true;
 }
 
 bool r3dDX11MeshRenderData::DrawDepthOnly(r3dDX11DepthOnlyPass& pass, const r3dDX11MeshConstants& constants, const r3dSkeleton* skeleton)

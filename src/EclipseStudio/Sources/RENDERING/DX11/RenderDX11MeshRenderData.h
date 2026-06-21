@@ -20,8 +20,8 @@ public:
 	bool CreateFromR3DMesh(ID3D11Device* device, r3dDX11TextureLibrary& textureLibrary, const r3dMesh& mesh, const char* debugName = nullptr);
 	void Shutdown();
 
-	void DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
-	void DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
+	bool DrawGBuffer(r3dDX11GBufferPass& pass, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
+	bool DrawGBufferBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, unsigned int objectColorPacked = 0xffffffff, const r3dSkeleton* skeleton = nullptr);
 	bool DrawDepthOnly(r3dDX11DepthOnlyPass& pass, const r3dDX11MeshConstants& constants, const r3dSkeleton* skeleton = nullptr);
 	bool DrawDepthOnlyBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex, const r3dDX11MeshConstants& constants, const r3dSkeleton* skeleton = nullptr);
 
