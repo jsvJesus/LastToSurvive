@@ -241,20 +241,8 @@ static void LogDX11WorldHotkeyHelpOnce()
 	r3dOutToLog("[DX11][Hotkey] NumPad 7 = cycle terrain texture blend\n");
 	r3dOutToLog("[DX11][Hotkey] NumPad 8 = cycle terrain normal blend\n");
 	r3dOutToLog("[DX11][Hotkey] NumPad 9 = cycle terrain detail amount\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad . = print current DX11 debug settings\n");
 	r3dOutToLog("[DX11][Hotkey] NumLock must be ON\n");
 	r3dOutToLog("[DX11][Hotkey] ===============================================\n");
-}
-
-static void LogDX11WorldDebugSettings()
-{
-	r3dOutToLog(
-		"[DX11][Settings] debug_view=%d terrain_tex=%.3f terrain_normal=%.3f terrain_detail=%.3f\n",
-		r_dx11_debug_view ? r_dx11_debug_view->GetInt() : -1,
-		r_dx11_terrain_texture_blend ? r_dx11_terrain_texture_blend->GetFloat() : -1.0f,
-		r_dx11_terrain_normal_blend ? r_dx11_terrain_normal_blend->GetFloat() : -1.0f,
-		r_dx11_terrain_detail_amount ? r_dx11_terrain_detail_amount->GetFloat() : -1.0f
-	);
 }
 
 static void UpdateDX11WorldHotkeys()
@@ -340,11 +328,6 @@ static void UpdateDX11WorldHotkeys()
 			values,
 			_countof(values)
 		);
-	}
-
-	if (WasDX11HotkeyPressed(VK_DECIMAL))
-	{
-		LogDX11WorldDebugSettings();
 	}
 }
 
