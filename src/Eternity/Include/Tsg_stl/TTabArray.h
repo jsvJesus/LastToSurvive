@@ -199,11 +199,13 @@ namespace r3dTL
 
 			next.Reserve( newSpace );
 
-			// old ones
+			// old elements
 			Construct( next.mElems, mElems, mCount );
 
-			// new one
-			memcpy( next.mElems + mCount * TAB, &val, size );
+			// new element
+			uint8_t* dst = next.mElems + mCount * TAB;
+			memset( dst, 0, TAB );
+			memcpy( dst, &val, size );
 
 			next.mCount = newCount;
 
@@ -211,7 +213,10 @@ namespace r3dTL
 		}
 		else
 		{
-			memcpy( mElems + mCount * TAB, &val, size );
+			uint8_t* dst = mElems + mCount * TAB;
+			memset( dst, 0, TAB );
+			memcpy( dst, &val, size );
+
 			mCount ++;
 		}
 	}
