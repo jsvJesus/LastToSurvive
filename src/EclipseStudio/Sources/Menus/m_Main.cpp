@@ -203,6 +203,23 @@ static RmlUISystem g_MainRmlUI;
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
+extern bool StudioDX11UIAvailable();
+extern bool StudioDX11InitRmlUI(
+	RmlUISystem* System,
+	bool bLoadAppSelectOnInit
+);
+extern bool StudioDX11BeginUIFrame(
+	float ClearR,
+	float ClearG,
+	float ClearB,
+	float ClearA
+);
+extern void StudioDX11RenderRmlUI(
+	RmlUISystem* System
+);
+extern void StudioDX11EndUIFrame(
+	bool bVSync
+);
 static bool g_MainRmlInputEnabled = false;
 static int g_MainRmlResult = -1;
 static int g_MainRmlTab = 0;
@@ -522,38 +539,70 @@ int Menu_Main::DoModal()
 	g_MainRmlInputEnabled = false;
 
 	bool bUseRmlUI = false;
+	bool bUseDX11RmlUI = false;
 	bool bRmlMsgProcRegistered = false;
 
-	if (r3dRenderer && r3dRenderer->pd3ddev && win::hWnd)
+	bool bRmlInitialized = false;
+
+	if (win::hWnd && StudioDX11UIAvailable())
 	{
-		if (g_MainRmlUI.Init(win::hWnd, r3dRenderer->pd3ddev, false))
+		bRmlInitialized =
+			StudioDX11InitRmlUI(
+				&g_MainRmlUI,
+				false
+			);
+
+		bUseDX11RmlUI = bRmlInitialized;
+	}
+
+	if (
+		!bRmlInitialized &&
+		r3dRenderer &&
+		r3dRenderer->pd3ddev &&
+		win::hWnd
+	)
+	{
+		bRmlInitialized =
+			g_MainRmlUI.Init(
+				win::hWnd,
+				r3dRenderer->pd3ddev,
+				false
+			);
+	}
+
+	if (bRmlInitialized)
+	{
+		g_MainRmlUI.SetAppMainCallback(MainRml_OnAction);
+
+		if (g_MainRmlUI.LoadAppMain())
 		{
-			g_MainRmlUI.SetAppMainCallback(MainRml_OnAction);
+			g_MainRmlUI.ShowAppMain();
+			g_MainRmlUI.SetAppMainTab(0);
+			g_MainRmlUI.SetAppMainSelectedLevel("");
 
-			if (g_MainRmlUI.LoadAppMain())
-			{
-				g_MainRmlUI.ShowAppMain();
-				g_MainRmlUI.SetAppMainTab(0);
-				g_MainRmlUI.SetAppMainSelectedLevel("");
+			MainRml_RebuildMapList();
 
-				MainRml_RebuildMapList();
+			RegisterMsgProc(MainRml_MsgProc);
+			bRmlMsgProcRegistered = true;
+			g_MainRmlInputEnabled = true;
 
-				RegisterMsgProc(MainRml_MsgProc);
-				bRmlMsgProcRegistered = true;
-				g_MainRmlInputEnabled = true;
+			bUseRmlUI = true;
 
-				bUseRmlUI = true;
-
-				r3dOutToLog("[RmlUI] AppMain enabled\n");
-			}
-			else
-			{
-				r3dOutToLog("[RmlUI] AppMain load failed, fallback to old imgui m_Main\n");
-			}
+			r3dOutToLog(
+				bUseDX11RmlUI
+					? "[RmlUI] AppMain enabled on DX11\n"
+					: "[RmlUI] AppMain enabled\n"
+			);
 		}
 		else
 		{
-			r3dOutToLog("[RmlUI] AppMain init failed, fallback to old imgui m_Main\n");
+			r3dOutToLog("[RmlUI] AppMain load failed, fallback to old imgui m_Main\n");
+
+			if (bUseDX11RmlUI)
+			{
+				g_MainRmlUI.Shutdown();
+				bUseDX11RmlUI = false;
+			}
 		}
 	}
 
@@ -590,23 +639,51 @@ int Menu_Main::DoModal()
 				&g_MainRmlUI
 			);
 
-			r3dStartFrame();
-
-			ClearFullScreen_Menu();
+			if (!bUseDX11RmlUI)
+			{
+				r3dStartFrame();
+				ClearFullScreen_Menu();
+			}
 
 			mUpdate();
 			DiscordPresence_Tick();
 
-			mDrawStart();
+			if (!bUseDX11RmlUI)
+				mDrawStart();
 
-			r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
-			r3dSetFiltering(R3D_POINT);
+			if (!bUseDX11RmlUI)
+			{
+				r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+				r3dSetFiltering(R3D_POINT);
+			}
 
 			g_MainRmlUI.Update(r3dGetFrameTime());
-			g_MainRmlUI.Render();
 
-			mDrawEnd();
-			r3dEndFrame();
+			if (bUseDX11RmlUI)
+			{
+				if (
+					StudioDX11BeginUIFrame(
+						0.0f,
+						0.0f,
+						0.0f,
+						1.0f
+					)
+				)
+				{
+					StudioDX11RenderRmlUI(
+						&g_MainRmlUI
+					);
+
+					StudioDX11EndUIFrame(false);
+				}
+			}
+			else
+			{
+				g_MainRmlUI.Render();
+
+				mDrawEnd();
+				r3dEndFrame();
+			}
 
 			if (g_MainRmlResult != -1)
 			{

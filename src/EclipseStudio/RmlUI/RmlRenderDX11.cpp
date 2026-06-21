@@ -86,6 +86,22 @@ namespace
 		MultiByteToWideChar(CP_UTF8, 0, text.c_str(), static_cast<int>(text.size()), &result[0], required);
 		return result;
 	}
+
+	void PremultiplyRGBA(unsigned char* pixels, size_t byteCount)
+	{
+		if (!pixels)
+			return;
+
+		const size_t pixelCount = byteCount / 4;
+		for (size_t i = 0; i < pixelCount; ++i)
+		{
+			unsigned char* pixel = pixels + i * 4;
+			const unsigned int alpha = pixel[3];
+			pixel[0] = static_cast<unsigned char>((static_cast<unsigned int>(pixel[0]) * alpha + 127) / 255);
+			pixel[1] = static_cast<unsigned char>((static_cast<unsigned int>(pixel[1]) * alpha + 127) / 255);
+			pixel[2] = static_cast<unsigned char>((static_cast<unsigned int>(pixel[2]) * alpha + 127) / 255);
+		}
+	}
 }
 
 RmlRenderDX11::RmlRenderDX11()
@@ -123,6 +139,7 @@ bool RmlRenderDX11::Init(ID3D11Device* device, ID3D11DeviceContext* context, con
 
 void RmlRenderDX11::Shutdown()
 {
+	ReleaseStateBackup();
 	ReleaseDeviceObjects();
 
 	SafeReleaseDX11(Context);
@@ -159,8 +176,10 @@ void RmlRenderDX11::BeginFrame(ID3D11RenderTargetView* renderTarget, ID3D11Depth
 	ScissorBottom = ViewHeight;
 	bScissorEnabled = false;
 
+	CaptureState();
+
 	Context->OMSetRenderTargets(1, &ActiveRenderTarget, ActiveDepthStencil);
-	SetupPipeline(false);
+	SetupPipeline(false, false);
 
 	bFrameOpen = true;
 }
@@ -172,6 +191,9 @@ void RmlRenderDX11::EndFrame()
 
 	ID3D11ShaderResourceView* nullSRV = nullptr;
 	Context->PSSetShaderResources(0, 1, &nullSRV);
+
+	RestoreState();
+	ReleaseStateBackup();
 
 	bFrameOpen = false;
 	ActiveRenderTarget = nullptr;
@@ -264,18 +286,28 @@ void RmlRenderDX11::RenderGeometry(Rml::CompiledGeometryHandle geometryHandle, R
 
 	FTextureHandle* texture = reinterpret_cast<FTextureHandle*>(textureHandle);
 	ID3D11ShaderResourceView* srv = nullptr;
+	bool straightAlphaBlend = false;
 
 	if (texture)
 	{
 		if (texture->bExternalCharacterPreview)
+		{
 			srv = CharacterPreviewTexture;
+			straightAlphaBlend = true;
+		}
 		else if (texture->bExternalCharacterPortrait)
+		{
 			srv = CharacterPortraitTexture;
+			straightAlphaBlend = true;
+		}
 		else
+		{
 			srv = texture->SRV;
+			straightAlphaBlend = texture->bStraightAlpha;
+		}
 	}
 
-	SetupPipeline(srv != nullptr);
+	SetupPipeline(srv != nullptr, straightAlphaBlend);
 
 	FConstants constants{};
 
@@ -372,6 +404,14 @@ Rml::TextureHandle RmlRenderDX11::GenerateTexture(Rml::Span<const Rml::byte> sou
 	if (!Device || source.empty() || sourceDimensions.x <= 0 || sourceDimensions.y <= 0)
 		return 0;
 
+	const size_t expectedSize =
+		static_cast<size_t>(sourceDimensions.x) *
+		static_cast<size_t>(sourceDimensions.y) *
+		4;
+
+	if (source.size() < expectedSize)
+		return 0;
+
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = static_cast<UINT>(sourceDimensions.x);
 	desc.Height = static_cast<UINT>(sourceDimensions.y);
@@ -383,7 +423,12 @@ Rml::TextureHandle RmlRenderDX11::GenerateTexture(Rml::Span<const Rml::byte> sou
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
 	D3D11_SUBRESOURCE_DATA init{};
-	init.pSysMem = source.data();
+	std::vector<unsigned char> premultipliedSource;
+	premultipliedSource.resize(expectedSize);
+	std::memcpy(premultipliedSource.data(), source.data(), premultipliedSource.size());
+	PremultiplyRGBA(premultipliedSource.data(), premultipliedSource.size());
+
+	init.pSysMem = premultipliedSource.data();
 	init.SysMemPitch = static_cast<UINT>(sourceDimensions.x * 4);
 
 	ID3D11Texture2D* texture = nullptr;
@@ -466,7 +511,7 @@ bool RmlRenderDX11::CreateDeviceObjects()
 		nullptr,
 		nullptr,
 		"VSMain",
-		"vs_4_0",
+		"vs_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS,
 		0,
 		&vertexShaderBlob,
@@ -485,7 +530,7 @@ bool RmlRenderDX11::CreateDeviceObjects()
 		nullptr,
 		nullptr,
 		"PSMain",
-		"ps_4_0",
+		"ps_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS,
 		0,
 		&pixelShaderBlob,
@@ -573,6 +618,12 @@ bool RmlRenderDX11::CreateDeviceObjects()
 	if (FAILED(result))
 		return false;
 
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	result = Device->CreateBlendState(&blendDesc, &StraightAlphaBlendState);
+	if (FAILED(result))
+		return false;
+
 	D3D11_DEPTH_STENCIL_DESC depthDesc{};
 	depthDesc.DepthEnable = FALSE;
 	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -603,6 +654,7 @@ void RmlRenderDX11::ReleaseDeviceObjects()
 	SafeReleaseDX11(ScissorRasterizerState);
 	SafeReleaseDX11(RasterizerState);
 	SafeReleaseDX11(DepthStencilState);
+	SafeReleaseDX11(StraightAlphaBlendState);
 	SafeReleaseDX11(BlendState);
 	SafeReleaseDX11(SamplerState);
 	SafeReleaseDX11(ConstantBuffer);
@@ -611,7 +663,7 @@ void RmlRenderDX11::ReleaseDeviceObjects()
 	SafeReleaseDX11(VertexShader);
 }
 
-void RmlRenderDX11::SetupPipeline(bool textureEnabled)
+void RmlRenderDX11::SetupPipeline(bool textureEnabled, bool straightAlphaBlend)
 {
 	if (!Context)
 		return;
@@ -623,7 +675,7 @@ void RmlRenderDX11::SetupPipeline(bool textureEnabled)
 	Context->VSSetConstantBuffers(0, 1, &ConstantBuffer);
 	Context->PSSetConstantBuffers(0, 1, &ConstantBuffer);
 	Context->PSSetSamplers(0, 1, &SamplerState);
-	Context->OMSetBlendState(BlendState, blendFactor, 0xFFFFFFFF);
+	Context->OMSetBlendState(straightAlphaBlend ? StraightAlphaBlendState : BlendState, blendFactor, 0xFFFFFFFF);
 	Context->OMSetDepthStencilState(DepthStencilState, 0);
 	D3D11_VIEWPORT viewport{};
 	viewport.TopLeftX = ViewportTopLeftX;
@@ -644,6 +696,85 @@ void RmlRenderDX11::SetupPipeline(bool textureEnabled)
 		ID3D11ShaderResourceView* nullSRV = nullptr;
 		Context->PSSetShaderResources(0, 1, &nullSRV);
 	}
+}
+
+void RmlRenderDX11::CaptureState()
+{
+	if (!Context || bStateCaptured)
+		return;
+
+	ReleaseStateBackup();
+
+	Context->OMGetRenderTargets(1, &StateBackup.RenderTarget, &StateBackup.DepthStencil);
+	Context->IAGetInputLayout(&StateBackup.InputLayout);
+	Context->IAGetPrimitiveTopology(&StateBackup.Topology);
+	Context->IAGetVertexBuffers(0, 1, &StateBackup.VertexBuffer, &StateBackup.VertexStride, &StateBackup.VertexOffset);
+	Context->IAGetIndexBuffer(&StateBackup.IndexBuffer, &StateBackup.IndexFormat, &StateBackup.IndexOffset);
+	Context->VSGetShader(&StateBackup.VertexShader, nullptr, nullptr);
+	Context->PSGetShader(&StateBackup.PixelShader, nullptr, nullptr);
+	Context->VSGetConstantBuffers(0, 1, &StateBackup.VSConstantBuffer);
+	Context->PSGetConstantBuffers(0, 1, &StateBackup.PSConstantBuffer);
+	Context->PSGetShaderResources(0, 1, &StateBackup.PSSRV);
+	Context->PSGetSamplers(0, 1, &StateBackup.PSSampler);
+	Context->OMGetBlendState(&StateBackup.BlendState, StateBackup.BlendFactor, &StateBackup.SampleMask);
+	Context->OMGetDepthStencilState(&StateBackup.DepthStencilState, &StateBackup.StencilRef);
+	Context->RSGetState(&StateBackup.RasterizerState);
+
+	StateBackup.ViewportCount = static_cast<unsigned int>(_countof(StateBackup.Viewports));
+	Context->RSGetViewports(&StateBackup.ViewportCount, StateBackup.Viewports);
+
+	StateBackup.ScissorCount = static_cast<unsigned int>(_countof(StateBackup.ScissorRects));
+	Context->RSGetScissorRects(&StateBackup.ScissorCount, StateBackup.ScissorRects);
+
+	bStateCaptured = true;
+}
+
+void RmlRenderDX11::RestoreState()
+{
+	if (!Context || !bStateCaptured)
+		return;
+
+	Context->OMSetRenderTargets(1, &StateBackup.RenderTarget, StateBackup.DepthStencil);
+	Context->IASetInputLayout(StateBackup.InputLayout);
+	Context->IASetPrimitiveTopology(StateBackup.Topology);
+	Context->IASetVertexBuffers(0, 1, &StateBackup.VertexBuffer, &StateBackup.VertexStride, &StateBackup.VertexOffset);
+	Context->IASetIndexBuffer(StateBackup.IndexBuffer, StateBackup.IndexFormat, StateBackup.IndexOffset);
+	Context->VSSetShader(StateBackup.VertexShader, nullptr, 0);
+	Context->PSSetShader(StateBackup.PixelShader, nullptr, 0);
+	Context->VSSetConstantBuffers(0, 1, &StateBackup.VSConstantBuffer);
+	Context->PSSetConstantBuffers(0, 1, &StateBackup.PSConstantBuffer);
+	Context->PSSetShaderResources(0, 1, &StateBackup.PSSRV);
+	Context->PSSetSamplers(0, 1, &StateBackup.PSSampler);
+	Context->OMSetBlendState(StateBackup.BlendState, StateBackup.BlendFactor, StateBackup.SampleMask);
+	Context->OMSetDepthStencilState(StateBackup.DepthStencilState, StateBackup.StencilRef);
+	Context->RSSetState(StateBackup.RasterizerState);
+
+	if (StateBackup.ViewportCount > 0)
+		Context->RSSetViewports(StateBackup.ViewportCount, StateBackup.Viewports);
+
+	if (StateBackup.ScissorCount > 0)
+		Context->RSSetScissorRects(StateBackup.ScissorCount, StateBackup.ScissorRects);
+}
+
+void RmlRenderDX11::ReleaseStateBackup()
+{
+	SafeReleaseDX11(StateBackup.RenderTarget);
+	SafeReleaseDX11(StateBackup.DepthStencil);
+	SafeReleaseDX11(StateBackup.InputLayout);
+	SafeReleaseDX11(StateBackup.VertexBuffer);
+	SafeReleaseDX11(StateBackup.IndexBuffer);
+	SafeReleaseDX11(StateBackup.VertexShader);
+	SafeReleaseDX11(StateBackup.PixelShader);
+	SafeReleaseDX11(StateBackup.VSConstantBuffer);
+	SafeReleaseDX11(StateBackup.PSConstantBuffer);
+	SafeReleaseDX11(StateBackup.PSSRV);
+	SafeReleaseDX11(StateBackup.PSSampler);
+	SafeReleaseDX11(StateBackup.BlendState);
+	SafeReleaseDX11(StateBackup.DepthStencilState);
+	SafeReleaseDX11(StateBackup.RasterizerState);
+
+	StateBackup = FStateBackup();
+	bStateCaptured = false;
 }
 
 bool RmlRenderDX11::LoadTextureFromFile(const std::wstring& filename, Rml::Vector2i& dimensions, ID3D11ShaderResourceView** outSRV)
@@ -735,6 +866,8 @@ bool RmlRenderDX11::LoadTextureFromFile(const std::wstring& filename, Rml::Vecto
 	result = converter->CopyPixels(nullptr, stride, imageSize, pixels.data());
 	if (FAILED(result))
 		return finish(false);
+
+	PremultiplyRGBA(pixels.data(), pixels.size());
 
 	D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = width;

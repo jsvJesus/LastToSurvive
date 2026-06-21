@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RENDERING/DX11/RenderDX11Platform.h"
+
 #include <RmlUi/Core/RenderInterface.h>
 
 #include <string>
@@ -72,14 +74,48 @@ private:
 		ID3D11ShaderResourceView* SRV = nullptr;
 		bool bExternalCharacterPreview = false;
 		bool bExternalCharacterPortrait = false;
+		bool bStraightAlpha = false;
 		int Width = 0;
 		int Height = 0;
+	};
+
+	struct FStateBackup
+	{
+		ID3D11RenderTargetView* RenderTarget = nullptr;
+		ID3D11DepthStencilView* DepthStencil = nullptr;
+		ID3D11InputLayout* InputLayout = nullptr;
+		ID3D11Buffer* VertexBuffer = nullptr;
+		unsigned int VertexStride = 0;
+		unsigned int VertexOffset = 0;
+		ID3D11Buffer* IndexBuffer = nullptr;
+		DXGI_FORMAT IndexFormat = DXGI_FORMAT_UNKNOWN;
+		unsigned int IndexOffset = 0;
+		D3D11_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+		ID3D11VertexShader* VertexShader = nullptr;
+		ID3D11PixelShader* PixelShader = nullptr;
+		ID3D11Buffer* VSConstantBuffer = nullptr;
+		ID3D11Buffer* PSConstantBuffer = nullptr;
+		ID3D11ShaderResourceView* PSSRV = nullptr;
+		ID3D11SamplerState* PSSampler = nullptr;
+		ID3D11BlendState* BlendState = nullptr;
+		float BlendFactor[4] = {};
+		unsigned int SampleMask = 0xffffffff;
+		ID3D11DepthStencilState* DepthStencilState = nullptr;
+		unsigned int StencilRef = 0;
+		ID3D11RasterizerState* RasterizerState = nullptr;
+		unsigned int ViewportCount = 0;
+		unsigned int ScissorCount = 0;
+		D3D11_VIEWPORT Viewports[16] = {};
+		D3D11_RECT ScissorRects[16] = {};
 	};
 
 private:
 	bool CreateDeviceObjects();
 	void ReleaseDeviceObjects();
-	void SetupPipeline(bool textureEnabled);
+	void SetupPipeline(bool textureEnabled, bool straightAlphaBlend);
+	void CaptureState();
+	void RestoreState();
+	void ReleaseStateBackup();
 
 	bool LoadTextureFromFile(const std::wstring& filename, Rml::Vector2i& dimensions, ID3D11ShaderResourceView** outSRV);
 	std::wstring ResolvePathW(const Rml::String& path) const;
@@ -98,6 +134,7 @@ private:
 	ID3D11Buffer* ConstantBuffer = nullptr;
 	ID3D11SamplerState* SamplerState = nullptr;
 	ID3D11BlendState* BlendState = nullptr;
+	ID3D11BlendState* StraightAlphaBlendState = nullptr;
 	ID3D11DepthStencilState* DepthStencilState = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	ID3D11RasterizerState* ScissorRasterizerState = nullptr;
@@ -122,6 +159,7 @@ private:
 	long ScissorBottom = 1;
 
 	float CurrentTransform[16]{};
+	FStateBackup StateBackup;
 	std::wstring DataRoot;
 
 	int ViewWidth = 1;
@@ -129,4 +167,5 @@ private:
 	bool bInitialized = false;
 	bool bFrameOpen = false;
 	bool bScissorEnabled = false;
+	bool bStateCaptured = false;
 };

@@ -1267,6 +1267,16 @@ bool RmlFrontEndContext::Init(
 	RmlRuntime& Runtime =
 		RmlRuntime::Get();
 
+	if (Runtime.IsUsingDX11())
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Init] DX9 frontend skipped: runtime uses DX11\n"
+		);
+
+		Hwnd = nullptr;
+		return false;
+	}
+
 	if (!Runtime.Acquire(
 		WindowHandle,
 		Device

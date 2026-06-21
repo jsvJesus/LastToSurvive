@@ -191,6 +191,20 @@ bool RmlRuntime::Acquire(
 
 	if (bInitialized)
 	{
+		if (RenderInterface11)
+		{
+			static bool bLoggedDX9AcquireRejected = false;
+			if (!bLoggedDX9AcquireRejected)
+			{
+				r3dOutToLog(
+					"[RmlUI][Runtime][Init] D3D9 acquire rejected: runtime uses DX11\n"
+				);
+				bLoggedDX9AcquireRejected = true;
+			}
+
+			return false;
+		}
+
 		if (
 			Hwnd != WindowHandle ||
 			Device != InDevice
@@ -248,6 +262,15 @@ bool RmlRuntime::Acquire(
 
 	if (bInitialized)
 	{
+		if (RenderInterface)
+		{
+			r3dOutToLog(
+				"[RmlUI][Runtime][Init] D3D11 acquire rejected: runtime uses D3D9\n"
+			);
+
+			return false;
+		}
+
 		if (
 			Hwnd != WindowHandle ||
 			Device11 != InDevice ||
@@ -1457,6 +1480,16 @@ bool RmlRuntime::IsDebuggerVisible(
 bool RmlRuntime::IsInitialized() const
 {
 	return bInitialized;
+}
+
+bool RmlRuntime::IsUsingDX9() const
+{
+	return bInitialized && RenderInterface != nullptr;
+}
+
+bool RmlRuntime::IsUsingDX11() const
+{
+	return bInitialized && RenderInterface11 != nullptr;
 }
 
 int RmlRuntime::GetReferenceCount() const

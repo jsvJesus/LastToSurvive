@@ -18,6 +18,23 @@ static RmlUISystem g_AppSelectRmlUI;
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
+extern bool StudioDX11UIAvailable();
+extern bool StudioDX11InitRmlUI(
+	RmlUISystem* System,
+	bool bLoadAppSelectOnInit
+);
+extern bool StudioDX11BeginUIFrame(
+	float ClearR,
+	float ClearG,
+	float ClearB,
+	float ClearA
+);
+extern void StudioDX11RenderRmlUI(
+	RmlUISystem* System
+);
+extern void StudioDX11EndUIFrame(
+	bool bVSync
+);
 static int g_AppSelectRmlResult = -1;
 static bool g_AppSelectRmlInputEnabled = false;
 
@@ -70,70 +87,107 @@ int Menu_AppSelect::DoModal()
 	g_AppSelectRmlResult = -1;
 	g_AppSelectRmlInputEnabled = false;
 
-	Desktop().SetViewSize(r3dRenderer->ScreenW, r3dRenderer->ScreenH);
+	if (r3dRenderer)
+	{
+		Desktop().SetViewSize(
+			r3dRenderer->ScreenW,
+			r3dRenderer->ScreenH
+		);
+	}
 
 	bool bUseRmlUI = false;
+	bool bUseDX11RmlUI = false;
 	bool bRmlMsgProcRegistered = false;
 
-	if (r3dRenderer && r3dRenderer->pd3ddev && win::hWnd)
+	bool bRmlInitialized = false;
+
+	if (win::hWnd && StudioDX11UIAvailable())
 	{
-		if (g_AppSelectRmlUI.Init(win::hWnd, r3dRenderer->pd3ddev))
+		bRmlInitialized =
+			StudioDX11InitRmlUI(
+				&g_AppSelectRmlUI,
+				true
+			);
+
+		bUseDX11RmlUI = bRmlInitialized;
+	}
+
+	if (
+		!bRmlInitialized &&
+		r3dRenderer &&
+		r3dRenderer->pd3ddev &&
+		win::hWnd
+	)
+	{
+		bRmlInitialized =
+			g_AppSelectRmlUI.Init(
+				win::hWnd,
+				r3dRenderer->pd3ddev
+			);
+	}
+
+	if (bRmlInitialized)
+	{
+		g_AppSelectRmlUI.SetAppSelectCallback([](const char* ModeId)
 		{
-			g_AppSelectRmlUI.SetAppSelectCallback([](const char* ModeId)
+			if (!ModeId)
+				return;
+
+			if (strcmp(ModeId, "game_public") == 0)
 			{
-				if (!ModeId)
-					return;
-
-				if (strcmp(ModeId, "game_public") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartGamePublic;
-				}
-				else if (strcmp(ModeId, "game_dev") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartGameSVN;
-				}
-				else if (strcmp(ModeId, "level_editor") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartLevelEditor;
-				}
-				else if (strcmp(ModeId, "particle_editor") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartParticleEditor;
-				}
-				else if (strcmp(ModeId, "physics_editor") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartPhysicsEditor;
-				}
-				else if (strcmp(ModeId, "character_editor") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bStartCharacterEditor;
-				}
-				else if (strcmp(ModeId, "exit") == 0)
-				{
-					g_AppSelectRmlResult = Menu_AppSelect::bQuit;
-				}
-			});
-
-			if (g_AppSelectRmlUI.IsAppSelectReady())
-			{
-				g_AppSelectRmlUI.ShowAppSelect();
-
-				RegisterMsgProc(AppSelect_RmlMsgProc);
-				bRmlMsgProcRegistered = true;
-				g_AppSelectRmlInputEnabled = true;
-
-				bUseRmlUI = true;
-
-				r3dOutToLog("[RmlUI] AppSelect enabled\n");
+				g_AppSelectRmlResult = Menu_AppSelect::bStartGamePublic;
 			}
-			else
+			else if (strcmp(ModeId, "game_dev") == 0)
 			{
-				r3dOutToLog("[RmlUI] AppSelect document not ready, fallback to old imgui AppSelect\n");
+				g_AppSelectRmlResult = Menu_AppSelect::bStartGameSVN;
 			}
+			else if (strcmp(ModeId, "level_editor") == 0)
+			{
+				g_AppSelectRmlResult = Menu_AppSelect::bStartLevelEditor;
+			}
+			else if (strcmp(ModeId, "particle_editor") == 0)
+			{
+				g_AppSelectRmlResult = Menu_AppSelect::bStartParticleEditor;
+			}
+			else if (strcmp(ModeId, "physics_editor") == 0)
+			{
+				g_AppSelectRmlResult = Menu_AppSelect::bStartPhysicsEditor;
+			}
+			else if (strcmp(ModeId, "character_editor") == 0)
+			{
+				g_AppSelectRmlResult = Menu_AppSelect::bStartCharacterEditor;
+			}
+			else if (strcmp(ModeId, "exit") == 0)
+			{
+				g_AppSelectRmlResult = Menu_AppSelect::bQuit;
+			}
+		});
+
+		if (g_AppSelectRmlUI.IsAppSelectReady())
+		{
+			g_AppSelectRmlUI.ShowAppSelect();
+
+			RegisterMsgProc(AppSelect_RmlMsgProc);
+			bRmlMsgProcRegistered = true;
+			g_AppSelectRmlInputEnabled = true;
+
+			bUseRmlUI = true;
+
+			r3dOutToLog(
+				bUseDX11RmlUI
+					? "[RmlUI] AppSelect enabled on DX11\n"
+					: "[RmlUI] AppSelect enabled\n"
+			);
 		}
 		else
 		{
-			r3dOutToLog("[RmlUI] Init failed, fallback to old imgui AppSelect\n");
+			r3dOutToLog("[RmlUI] AppSelect document not ready, fallback to old imgui AppSelect\n");
+
+			if (bUseDX11RmlUI)
+			{
+				g_AppSelectRmlUI.Shutdown();
+				bUseDX11RmlUI = false;
+			}
 		}
 	}
 	else
@@ -157,7 +211,8 @@ int Menu_AppSelect::DoModal()
 			: nullptr
 		);
 
-		r3dStartFrame();
+		if (!bUseDX11RmlUI)
+			r3dStartFrame();
 
 		mUpdate();
 		DiscordPresence_Tick();
@@ -165,18 +220,44 @@ int Menu_AppSelect::DoModal()
 		if (!bUseRmlUI)
 			imgui_Update();
 
-		mDrawStart();
+		if (!bUseDX11RmlUI)
+			mDrawStart();
 
-		ClearFullScreen_Menu();
+		if (!bUseDX11RmlUI)
+		{
+			ClearFullScreen_Menu();
 
-		r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
-		r3dSetFiltering(R3D_POINT);
-		r3dRenderer->SetMipMapBias(-6.0f, -1);
+			r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+			r3dSetFiltering(R3D_POINT);
+			r3dRenderer->SetMipMapBias(-6.0f, -1);
+		}
 
 		if (bUseRmlUI)
 		{
 			g_AppSelectRmlUI.Update(r3dGetFrameTime());
-			g_AppSelectRmlUI.Render();
+
+			if (bUseDX11RmlUI)
+			{
+				if (
+					StudioDX11BeginUIFrame(
+						0.0f,
+						0.0f,
+						0.0f,
+						1.0f
+					)
+				)
+				{
+					StudioDX11RenderRmlUI(
+						&g_AppSelectRmlUI
+					);
+
+					StudioDX11EndUIFrame(false);
+				}
+			}
+			else
+			{
+				g_AppSelectRmlUI.Render();
+			}
 		}
 		else
 		{
@@ -231,11 +312,14 @@ int Menu_AppSelect::DoModal()
 			}
 		}
 
-		r3dRenderer->pd3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-		r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_NZ);
+		if (!bUseDX11RmlUI)
+		{
+			r3dRenderer->pd3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_NZ);
 
-		mDrawEnd();
-		r3dEndFrame();
+			mDrawEnd();
+			r3dEndFrame();
+		}
 
 		if (bUseRmlUI)
 		{

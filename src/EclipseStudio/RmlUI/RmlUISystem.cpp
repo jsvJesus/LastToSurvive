@@ -11,6 +11,7 @@
 #include <RmlUi/Debugger.h>
 
 #include <windowsx.h>
+#include <algorithm>
 #include <string>
 #include <cstring>
 #include <cstdio>
@@ -549,6 +550,21 @@ bool RmlUISystem::Init(
 	RmlRuntime& Runtime =
 		RmlRuntime::Get();
 
+	if (Runtime.IsUsingDX11())
+	{
+		static bool bLoggedDX11RuntimeSkip = false;
+		if (!bLoggedDX11RuntimeSkip)
+		{
+			r3dOutToLog(
+				"[RmlUI] DX9 init skipped: runtime is already using DX11\n"
+			);
+			bLoggedDX11RuntimeSkip = true;
+		}
+
+		Hwnd = nullptr;
+		return false;
+	}
+
 	if (!Runtime.Acquire(
 		InHwnd,
 		InDevice
@@ -638,6 +654,119 @@ bool RmlUISystem::Init(
 	return true;
 }
 
+bool RmlUISystem::Init(
+	HWND InHwnd,
+	ID3D11Device* InDevice,
+	ID3D11DeviceContext* InContext,
+	bool bLoadAppSelectOnInit
+)
+{
+	if (bInitialized)
+		return true;
+
+	if (!InHwnd || !InDevice || !InContext)
+	{
+		OutputDebugStringA(
+			"[RmlUI] Init DX11 failed: invalid HWND/device/context\n"
+		);
+
+		return false;
+	}
+
+	Hwnd = InHwnd;
+
+	UpdateClientSize();
+
+	RmlRuntime& Runtime =
+		RmlRuntime::Get();
+
+	if (Runtime.IsUsingDX9())
+	{
+		r3dOutToLog(
+			"[RmlUI] DX11 init failed: runtime is already using DX9\n"
+		);
+
+		Hwnd = nullptr;
+		return false;
+	}
+
+	if (!Runtime.Acquire(
+		InHwnd,
+		InDevice,
+		InContext
+	))
+	{
+		OutputDebugStringA(
+			"[RmlUI] Shared DX11 runtime initialization failed\n"
+		);
+
+		Hwnd = nullptr;
+		return false;
+	}
+
+	bCoreInitializedHere = true;
+
+	Context = Runtime.CreateContext(
+		"Studio",
+		Rml::Vector2i(
+			ClientWidth,
+			ClientHeight
+		)
+	);
+
+	if (!Context)
+	{
+		Runtime.Release();
+
+		bCoreInitializedHere = false;
+		Hwnd = nullptr;
+
+		OutputDebugStringA(
+			"[RmlUI] CreateContext DX11 failed\n"
+		);
+
+		return false;
+	}
+
+	Context->EnableMouseCursor(true);
+
+	bDebuggerInitialized =
+		Runtime.EnsureDebugger(Context);
+
+	AppSelectClickListener =
+		std::make_unique<FAppSelectClickListener>(
+			this
+		);
+
+	AppMainClickListener =
+		std::make_unique<FAppMainClickListener>(
+			this
+		);
+
+	CharacterClickListener =
+		std::make_unique<FCharacterClickListener>(
+			this
+		);
+
+	bInitialized = true;
+
+	if (
+		bLoadAppSelectOnInit &&
+		!LoadAppSelect()
+	)
+	{
+		OutputDebugStringA(
+			"[RmlUI] AppSelect DX11 load failed, fallback to old UI\n"
+		);
+	}
+
+	OutputDebugStringA(
+		"[RmlUI] Initialized through shared DX11 runtime\n"
+	);
+
+	return true;
+}
+
 void RmlUISystem::Shutdown()
 {
 	RmlRuntime& Runtime =
@@ -704,7 +833,6 @@ void RmlUISystem::Shutdown()
 		bCoreInitializedHere = false;
 	}
 
-	RenderInterface.reset();
 	FileInterface.reset();
 	SystemInterface.reset();
 
@@ -1048,6 +1176,20 @@ void RmlUISystem::Render()
 	if (!bInitialized || !Context)
 		return;
 
+	if (RmlRuntime::Get().IsUsingDX11())
+	{
+		static bool bLoggedDX11RenderSkip = false;
+		if (!bLoggedDX11RenderSkip)
+		{
+			r3dOutToLog(
+				"[RmlUI] DX9 Render() skipped: use RenderDX11 for DX11 runtime\n"
+			);
+			bLoggedDX11RenderSkip = true;
+		}
+
+		return;
+	}
+
 	const bool bHasVisibleDocument =
 		(
 			bAppSelectVisible &&
@@ -1081,6 +1223,51 @@ void RmlUISystem::Render()
 	);
 }
 
+void RmlUISystem::RenderDX11(
+	ID3D11RenderTargetView* RenderTarget,
+	ID3D11DepthStencilView* DepthStencil,
+	int Width,
+	int Height
+)
+{
+	if (!bInitialized || !Context || !RenderTarget)
+		return;
+
+	const bool bHasVisibleDocument =
+		(
+			bAppSelectVisible &&
+			AppSelectDocument
+		) ||
+		(
+			bLoadingScreenVisible &&
+			LoadingScreenDocument
+		) ||
+		(
+			bAppMainVisible &&
+			AppMainDocument
+		) ||
+		(
+			bCharacterEditorVisible &&
+			CharacterEditorDocument
+		) ||
+		(
+			bLiveEditorVisible &&
+			LiveEditorDocument
+		) ||
+		IsDebuggerVisible();
+
+	if (!bHasVisibleDocument)
+		return;
+
+	RmlRuntime::Get().RenderContextDX11(
+		Context,
+		RenderTarget,
+		DepthStencil,
+		Width,
+		Height
+	);
+}
+
 void RmlUISystem::OnDeviceLost()
 {
 	RmlRuntime::Get().OnDeviceLost();
@@ -1091,6 +1278,28 @@ void RmlUISystem::OnDeviceReset()
 	UpdateClientSize();
 
 	RmlRuntime::Get().OnDeviceReset(
+		ClientWidth,
+		ClientHeight
+	);
+}
+
+void RmlUISystem::OnDeviceResetDX11(
+	int Width,
+	int Height
+)
+{
+	ClientWidth = std::max(1, Width);
+	ClientHeight = std::max(1, Height);
+
+	if (Context)
+		Context->SetDimensions(
+			Rml::Vector2i(
+				ClientWidth,
+				ClientHeight
+			)
+		);
+
+	RmlRuntime::Get().OnDeviceResetDX11(
 		ClientWidth,
 		ClientHeight
 	);

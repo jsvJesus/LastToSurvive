@@ -23,6 +23,7 @@ namespace Rml
 	class Context;
 }
 
+class RmlUISystem;
 class r3dCamera;
 struct r3dDX11WorldRenderStats;
 
@@ -42,6 +43,7 @@ public:
 	bool RenderWorldDepthOnly(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr, bool clearDepth = true);
 	bool ResolveSceneToBackBuffer();
 	void RenderRmlContext(Rml::Context* context);
+	void RenderRmlSystem(RmlUISystem& system);
 	void Present(bool vsync);
 	bool EndFrame(bool vsync, Rml::Context* rmlContext = nullptr);
 

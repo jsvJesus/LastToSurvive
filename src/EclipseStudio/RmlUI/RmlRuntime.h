@@ -2,7 +2,6 @@
 
 #include <RmlUi/Core.h>
 
-#include <d3d9.h>
 #include <windows.h>
 
 #include <memory>
@@ -14,6 +13,7 @@ class RmlRenderDX11;
 class RmlSystemInterface;
 class RmlFileInterface;
 
+struct IDirect3DDevice9;
 struct ID3D11DepthStencilView;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -83,7 +83,7 @@ public:
 		int Width,
 		int Height
 	);
-//ebana v rot
+
 	void SetCharacterPreviewTexture(
 		IDirect3DTexture9* Texture
 	);
@@ -130,6 +130,8 @@ public:
 	) const;
 
 	bool IsInitialized() const;
+	bool IsUsingDX9() const;
+	bool IsUsingDX11() const;
 	int GetReferenceCount() const;
 
 	const std::wstring& GetDataRoot() const;

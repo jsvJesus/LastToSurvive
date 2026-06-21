@@ -156,6 +156,72 @@ bool StudioDX11WorldHybridEnabled()
 	return g_StudioCmdLineDX11World;
 }
 
+bool StudioDX11UIAvailable()
+{
+	return IsDX11BootActive();
+}
+
+bool StudioDX11InitRmlUI(
+	RmlUISystem* System,
+	bool bLoadAppSelectOnInit
+)
+{
+	if (!System || !win::hWnd || !IsDX11BootActive())
+		return false;
+
+	return System->Init(
+		win::hWnd,
+		g_DX11Renderer->GetDevice().GetDevice(),
+		g_DX11Renderer->GetDevice().GetContext(),
+		bLoadAppSelectOnInit
+	);
+}
+
+bool StudioDX11BeginUIFrame(
+	float ClearR,
+	float ClearG,
+	float ClearB,
+	float ClearA
+)
+{
+	if (!IsDX11BootActive())
+		return false;
+
+	g_DX11Renderer->BeginFrame(
+		ClearR,
+		ClearG,
+		ClearB,
+		ClearA
+	);
+
+	return true;
+}
+
+void StudioDX11RenderRmlUI(
+	RmlUISystem* System
+)
+{
+	if (!System || !IsDX11BootActive())
+		return;
+
+	g_DX11Renderer->RenderRmlSystem(
+		*System
+	);
+}
+
+void StudioDX11EndUIFrame(
+	bool bVSync
+)
+{
+	if (!IsDX11BootActive())
+		return;
+
+	g_DX11Renderer->EndFrame(
+		bVSync,
+		nullptr
+	);
+}
+
 static void ShutdownDX11SmokeRml()
 {
 	RmlRuntime& Runtime = RmlRuntime::Get();
@@ -522,10 +588,10 @@ static void LogDX11WorldValidation(
 	r3dOutToLog("[DX11][Check] =====================================================\n");
 }
 
-void StudioDX11WorldHybridTick()
+bool StudioDX11WorldHybridTick()
 {
 	if (!g_StudioCmdLineDX11World || !g_DX11Renderer || !g_DX11Renderer->IsInitialized())
-		return;
+		return false;
 
 	static DWORD LastWorldStatsLog = 0;
 	static DWORD LastWorldValidationLog = 0;
@@ -655,6 +721,8 @@ void StudioDX11WorldHybridTick()
 
 		LastWorldValidationLog = Now;
 	}
+
+	return true;
 }
 
 static bool StudioWindowResizeMsgProc(
@@ -718,6 +786,17 @@ bool ProcessStudioPendingResize(
 		{
 			r_width->SetInt(Width);
 			r_height->SetInt(Height);
+
+			if (
+				ActiveRmlUI &&
+				ActiveRmlUI->IsInitialized()
+			)
+			{
+				ActiveRmlUI->OnDeviceResetDX11(
+					g_DX11Renderer->GetWidth(),
+					g_DX11Renderer->GetHeight()
+				);
+			}
 
 			InvalidateRect(
 				win::hWnd,

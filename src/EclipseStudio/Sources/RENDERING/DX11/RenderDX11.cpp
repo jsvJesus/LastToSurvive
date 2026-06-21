@@ -4,6 +4,7 @@
 #include "RENDERING/DX11/RenderDX11.h"
 
 #include "../../../RmlUI/RmlRuntime.h"
+#include "../../../RmlUI/RmlUISystem.h"
 #include "RENDERING/DX11/RenderDX11World.h"
 
 namespace
@@ -289,6 +290,19 @@ void r3dDX11Renderer::RenderRmlContext(Rml::Context* context)
 
 	RmlRuntime::Get().RenderContextDX11(
 		context,
+		Device.GetBackBufferRTV(),
+		Device.GetDepthStencilView(),
+		Device.GetWidth(),
+		Device.GetHeight()
+	);
+}
+
+void r3dDX11Renderer::RenderRmlSystem(RmlUISystem& system)
+{
+	if (!bInitialized)
+		return;
+
+	system.RenderDX11(
 		Device.GetBackBufferRTV(),
 		Device.GetDepthStencilView(),
 		Device.GetWidth(),

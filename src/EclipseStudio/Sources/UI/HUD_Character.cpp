@@ -25,6 +25,14 @@ extern void UnregisterMsgProc(
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
+extern bool StudioDX11UIAvailable();
+extern bool StudioDX11InitRmlUI(
+	RmlUISystem* System,
+	bool bLoadAppSelectOnInit
+);
+extern void StudioDX11RenderRmlUI(
+	RmlUISystem* System
+);
 
 static RmlUISystem g_CharacterRmlUI;
 
@@ -658,30 +666,37 @@ void CharacterHUD::InitCharacterRmlUI()
 	bCharacterRmlReady = false;
 	bCharacterControlsInitialized = false;
 
-	if (
-		!r3dRenderer ||
-		!r3dRenderer->pd3ddev ||
-		!win::hWnd
-	)
-	{
-		r3dOutToLog(
-			"[RmlUI] Character editor: "
-			"renderer/device/window unavailable\n"
-		);
+	bool bRmlInitialized = false;
 
-		return;
+	if (win::hWnd && StudioDX11UIAvailable())
+	{
+		bRmlInitialized =
+			StudioDX11InitRmlUI(
+				&g_CharacterRmlUI,
+				false
+			);
 	}
 
 	if (
-		!g_CharacterRmlUI.Init(
-			win::hWnd,
-			r3dRenderer->pd3ddev,
-			false
-		)
+		!bRmlInitialized &&
+		r3dRenderer &&
+		r3dRenderer->pd3ddev &&
+		win::hWnd
 	)
 	{
+		bRmlInitialized =
+			g_CharacterRmlUI.Init(
+				win::hWnd,
+				r3dRenderer->pd3ddev,
+				false
+			);
+	}
+
+	if (!bRmlInitialized)
+	{
 		r3dOutToLog(
-			"[RmlUI] Character editor init failed\n"
+			"[RmlUI] Character editor init failed: "
+			"renderer/device/window unavailable\n"
 		);
 
 		return;
@@ -1666,6 +1681,15 @@ void CharacterHUD::Draw()
 
 	UpdateCharacterControls();
 	UpdateCharacterRmlDocument();
+
+	if (StudioDX11UIAvailable())
+	{
+		StudioDX11RenderRmlUI(
+			&g_CharacterRmlUI
+		);
+
+		return;
+	}
 
 	r3dRenderer->pd3ddev->SetRenderState(
 		D3DRS_ALPHATESTENABLE,
