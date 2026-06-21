@@ -476,14 +476,37 @@ bool r3dDX11LightingPass::Render(
 		return false;
 	}
 
-	DrawContext->SetRenderTarget(
-		sceneColor.GetRTV(),
+	ID3D11DeviceContext* dxContext =
+	DrawContext->GetContext();
+
+	if (!dxContext)
+	{
+		if (stats)
+			++stats->LightingSkippedFailed;
+
+		return false;
+	}
+
+	ID3D11RenderTargetView* lightingRTV =
+		sceneColor.GetRTV();
+
+	dxContext->OMSetRenderTargets(
+		1,
+		&lightingRTV,
 		nullptr
 	);
 
-	DrawContext->SetViewport(
-		sceneColor.GetWidth(),
-		sceneColor.GetHeight()
+	D3D11_VIEWPORT lightingViewport{};
+	lightingViewport.TopLeftX = 0.0f;
+	lightingViewport.TopLeftY = 0.0f;
+	lightingViewport.Width = static_cast<float>(sceneColor.GetWidth());
+	lightingViewport.Height = static_cast<float>(sceneColor.GetHeight());
+	lightingViewport.MinDepth = 0.0f;
+	lightingViewport.MaxDepth = 1.0f;
+
+	dxContext->RSSetViewports(
+		1,
+		&lightingViewport
 	);
 
 	DrawContext->SetRasterizerState(
