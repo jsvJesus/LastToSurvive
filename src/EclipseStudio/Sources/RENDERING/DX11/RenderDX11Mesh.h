@@ -44,6 +44,15 @@ struct r3dDX11PackedMeshVertex
 	unsigned char Tangent[4];
 };
 
+struct r3dDX11PackedBendingMeshVertex
+{
+	short Position[4];
+	short TexCoord[2];
+	unsigned char Normal[4];
+	unsigned char Tangent[4];
+	unsigned char Bending[4];
+};
+
 struct r3dDX11PackedSkinnedMeshVertex
 {
 	short Position[4];
@@ -71,6 +80,7 @@ public:
 		unsigned int numIndices,
 		const r3dDX11MeshBatch* batches,
 		unsigned int numBatches,
+		bool bending,
 		bool skinned,
 		const float* positionScale,
 		const float* texcoordScale,
@@ -81,6 +91,7 @@ public:
 	void Bind(r3dDX11DrawContext& drawContext);
 	void Draw(r3dDX11DrawContext& drawContext);
 	void DrawBatch(r3dDX11DrawContext& drawContext, unsigned int batchIndex);
+	void DrawBatchInstanced(r3dDX11DrawContext& drawContext, r3dDX11VertexBuffer& instanceBuffer, unsigned int batchIndex, unsigned int instanceCount, unsigned int startInstance = 0);
 	void DrawBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex);
 	void DrawBatch(r3dDX11GBufferPass& pass, unsigned int batchIndex);
 
@@ -90,6 +101,7 @@ public:
 	unsigned int GetIndexCount() const;
 	const float* GetPositionScale() const;
 	const float* GetTexcoordScale() const;
+	bool IsBending() const;
 	bool IsSkinned() const;
 	bool IsValid() const;
 
@@ -105,5 +117,6 @@ private:
 	unsigned int IndexCount = 0;
 	float PositionScale[3] = { 1.0f, 1.0f, 1.0f };
 	float TexcoordScale[2] = { 1.0f, 1.0f };
+	bool bBending = false;
 	bool bSkinned = false;
 };

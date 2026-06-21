@@ -76,7 +76,42 @@ void r3dDX11DrawContext::SetInputLayout(r3dDX11InputLayout* inputLayout)
 void r3dDX11DrawContext::SetVertexBuffer(r3dDX11VertexBuffer* vertexBuffer, unsigned int slot, unsigned int offset)
 {
 	if (vertexBuffer)
+	{
 		vertexBuffer->Bind(Context, slot, offset);
+	}
+	else if (Context)
+	{
+		ID3D11Buffer* buffer = nullptr;
+		UINT stride = 0;
+		UINT bindOffset = 0;
+		Context->IASetVertexBuffers(slot, 1, &buffer, &stride, &bindOffset);
+	}
+}
+
+void r3dDX11DrawContext::SetVertexBuffers(unsigned int startSlot, unsigned int count, r3dDX11VertexBuffer* const* vertexBuffers, const unsigned int* offsets)
+{
+	if (!Context || !vertexBuffers || count == 0)
+		return;
+
+	ID3D11Buffer* buffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+	UINT strides[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+	UINT bindOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+
+	if (count > D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT)
+		count = D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT;
+
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		if (vertexBuffers[i])
+		{
+			buffers[i] = vertexBuffers[i]->GetBuffer();
+			strides[i] = vertexBuffers[i]->GetStride();
+		}
+
+		bindOffsets[i] = offsets ? offsets[i] : 0;
+	}
+
+	Context->IASetVertexBuffers(startSlot, count, buffers, strides, bindOffsets);
 }
 
 void r3dDX11DrawContext::SetIndexBuffer(r3dDX11IndexBuffer* indexBuffer, unsigned int offset)
@@ -143,6 +178,12 @@ void r3dDX11DrawContext::DrawIndexed(unsigned int indexCount, unsigned int start
 {
 	if (Context && indexCount > 0)
 		Context->DrawIndexed(indexCount, startIndex, baseVertex);
+}
+
+void r3dDX11DrawContext::DrawIndexedInstanced(unsigned int indexCount, unsigned int instanceCount, unsigned int startIndex, int baseVertex, unsigned int startInstance)
+{
+	if (Context && indexCount > 0 && instanceCount > 0)
+		Context->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance);
 }
 
 ID3D11DeviceContext* r3dDX11DrawContext::GetContext() const

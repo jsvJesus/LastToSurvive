@@ -566,6 +566,7 @@ void StudioDX11WorldHybridTick()
 			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u "
 			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u "
 			"terrain_g=%u terrain_gtris=%u terrain_d=%u terrain_dtris=%u terrain_s=%u terrain_stris=%u terrain_layers=%u terrain_detail=%u terrain_failed=%u "
+			"veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u "
 			"\n",
 
 			(bWorldRendered && bLightingRendered) ? 1 : 0,
@@ -629,7 +630,16 @@ void StudioDX11WorldHybridTick()
 			WorldStats.TerrainShadowTriangles,
 			WorldStats.TerrainSplatLayers,
 			WorldStats.TerrainDetailLayers,
-			WorldStats.TerrainSkippedFailed
+			WorldStats.TerrainSkippedFailed,
+
+			WorldStats.VegetationGBufferInstances,
+			WorldStats.VegetationGBufferDraws,
+			WorldStats.VegetationDepthInstances,
+			WorldStats.VegetationDepthDraws,
+			WorldStats.VegetationShadowInstances,
+			WorldStats.VegetationShadowDraws,
+			WorldStats.VegetationBendingDraws,
+			WorldStats.VegetationSkippedFailed
 		);
 
 		LastWorldStatsLog = Now;
@@ -1050,7 +1060,7 @@ static void ExecuteDX11SmokeLoop()
 			if (Now - LastWorldStatsLog >= 1000)
 			{
 				r3dOutToLog(
-					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u\n",
+					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u\n",
 					bWorldRendered ? 1 : 0,
 					WorldStats.TotalRenderables,
 					WorldStats.MeshRenderables,
@@ -1064,7 +1074,15 @@ static void ExecuteDX11SmokeLoop()
 					WorldStats.ShadowAlphaTested,
 					WorldStats.ShadowSlicesRendered,
 					WorldStats.ShadowSkippedUnsupported,
-					WorldStats.ShadowSkippedFailed
+					WorldStats.ShadowSkippedFailed,
+					WorldStats.VegetationGBufferInstances,
+					WorldStats.VegetationGBufferDraws,
+					WorldStats.VegetationDepthInstances,
+					WorldStats.VegetationDepthDraws,
+					WorldStats.VegetationShadowInstances,
+					WorldStats.VegetationShadowDraws,
+					WorldStats.VegetationBendingDraws,
+					WorldStats.VegetationSkippedFailed
 				);
 
 				LastWorldStatsLog = Now;

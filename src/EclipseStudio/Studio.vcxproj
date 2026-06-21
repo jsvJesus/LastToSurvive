@@ -670,6 +670,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Resources.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11States.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Texture.cpp"/>
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11VegetationPass.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11World.cpp"/>
     <ClCompile Include="Sources\RENDERING\DX11\ShaderDX11.cpp"/>
@@ -956,6 +957,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Resources.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11States.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Texture.h"/>
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11VegetationPass.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11World.h"/>
     <ClInclude Include="Sources\RENDERING\DX11\ShaderDX11.h"/>

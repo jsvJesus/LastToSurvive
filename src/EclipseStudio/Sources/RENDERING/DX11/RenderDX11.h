@@ -11,6 +11,7 @@
 #include "RENDERING/DX11/ShaderDX11.h"
 #include "RENDERING/DX11/RenderDX11LightingPass.h"
 #include "RENDERING/DX11/RenderDX11TerrainPass.h"
+#include "RENDERING/DX11/RenderDX11VegetationPass.h"
 
 #ifndef _WINDEF_
 struct HWND__;
@@ -50,6 +51,7 @@ public:
 	r3dDX11DepthOnlyPass& GetDepthOnlyPass();
 	r3dDX11GBufferPass& GetGBufferPass();
 	r3dDX11TerrainPass& GetTerrainPass();
+	r3dDX11VegetationPass& GetVegetationPass();
 	r3dDX11LightingPass& GetLightingPass();
 	r3dDX11GBufferResources& GetGBufferResources();
 	r3dDX11CommonStates& GetCommonStates();
@@ -62,6 +64,7 @@ public:
 	const r3dDX11DepthOnlyPass& GetDepthOnlyPass() const;
 	const r3dDX11GBufferPass& GetGBufferPass() const;
 	const r3dDX11TerrainPass& GetTerrainPass() const;
+	const r3dDX11VegetationPass& GetVegetationPass() const;
 	const r3dDX11LightingPass& GetLightingPass() const;
 	const r3dDX11GBufferResources& GetGBufferResources() const;
 	const r3dDX11CommonStates& GetCommonStates() const;
@@ -82,6 +85,7 @@ private:
 	r3dDX11DepthOnlyPass DepthOnlyPass;
 	r3dDX11GBufferPass GBufferPass;
 	r3dDX11TerrainPass TerrainPass;
+	r3dDX11VegetationPass VegetationPass;
 	r3dDX11LightingPass LightingPass;
 	r3dDX11GBufferResources GBufferResources;
 	HWND WindowHandle = nullptr;

@@ -63,6 +63,15 @@ struct r3dDX11WorldRenderStats
 	unsigned int TerrainSplatLayers;
 	unsigned int TerrainDetailLayers;
 	unsigned int TerrainSkippedFailed;
+
+	unsigned int VegetationGBufferInstances;
+	unsigned int VegetationGBufferDraws;
+	unsigned int VegetationDepthInstances;
+	unsigned int VegetationDepthDraws;
+	unsigned int VegetationShadowInstances;
+	unsigned int VegetationShadowDraws;
+	unsigned int VegetationBendingDraws;
+	unsigned int VegetationSkippedFailed;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);

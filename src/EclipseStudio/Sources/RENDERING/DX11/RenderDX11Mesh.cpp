@@ -57,6 +57,7 @@ bool r3dDX11MeshResource::Create(ID3D11Device* device, const r3dDX11MeshBuildDes
 	TexcoordScale[0] = SafeScale(desc.TexcoordScale[0]);
 	TexcoordScale[1] = SafeScale(desc.TexcoordScale[1]);
 	bSkinned = desc.BlendWeights && desc.BlendIndices;
+	bBending = false;
 
 	if (bSkinned)
 	{
@@ -118,6 +119,7 @@ bool r3dDX11MeshResource::CreateFromPacked(
 	unsigned int numIndices,
 	const r3dDX11MeshBatch* batches,
 	unsigned int numBatches,
+	bool bending,
 	bool skinned,
 	const float* positionScale,
 	const float* texcoordScale,
@@ -135,6 +137,7 @@ bool r3dDX11MeshResource::CreateFromPacked(
 	TexcoordScale[0] = SafeScale(texcoordScale ? texcoordScale[0] : 1.0f);
 	TexcoordScale[1] = SafeScale(texcoordScale ? texcoordScale[1] : 1.0f);
 	bSkinned = skinned;
+	bBending = bending && !skinned;
 
 	const unsigned char* sourceVertices = static_cast<const unsigned char*>(vertices);
 	if (bSkinned)
@@ -148,6 +151,22 @@ bool r3dDX11MeshResource::CreateFromPacked(
 			memcpy(&packedVertices[i], sourceVertices + i * vertexStride, sizeof(packedVertices[i]));
 
 		if (!VertexBuffer.Create(device, packedVertices.size() * sizeof(packedVertices[0]), sizeof(packedVertices[0]), &packedVertices[0], R3D_DX11_BUFFER_IMMUTABLE, debugName ? debugName : "DX11.SkinnedMesh.VB"))
+		{
+			Shutdown();
+			return false;
+		}
+	}
+	else if (bBending)
+	{
+		if (vertexStride < sizeof(r3dDX11PackedBendingMeshVertex))
+			return false;
+
+		std::vector<r3dDX11PackedBendingMeshVertex> packedVertices;
+		packedVertices.resize(numVertices);
+		for (unsigned int i = 0; i < numVertices; ++i)
+			memcpy(&packedVertices[i], sourceVertices + i * vertexStride, sizeof(packedVertices[i]));
+
+		if (!VertexBuffer.Create(device, packedVertices.size() * sizeof(packedVertices[0]), sizeof(packedVertices[0]), &packedVertices[0], R3D_DX11_BUFFER_IMMUTABLE, debugName ? debugName : "DX11.BendingMesh.VB"))
 		{
 			Shutdown();
 			return false;
@@ -201,6 +220,7 @@ void r3dDX11MeshResource::Shutdown()
 	IndexCount = 0;
 	PositionScale[0] = PositionScale[1] = PositionScale[2] = 1.0f;
 	TexcoordScale[0] = TexcoordScale[1] = 1.0f;
+	bBending = false;
 	bSkinned = false;
 }
 
@@ -224,6 +244,18 @@ void r3dDX11MeshResource::DrawBatch(r3dDX11DrawContext& drawContext, unsigned in
 
 	Bind(drawContext);
 	drawContext.DrawIndexed(batch->IndexCount, batch->StartIndex);
+}
+
+void r3dDX11MeshResource::DrawBatchInstanced(r3dDX11DrawContext& drawContext, r3dDX11VertexBuffer& instanceBuffer, unsigned int batchIndex, unsigned int instanceCount, unsigned int startInstance)
+{
+	const r3dDX11MeshBatch* batch = GetBatch(batchIndex);
+	if (!batch || instanceCount == 0)
+		return;
+
+	r3dDX11VertexBuffer* vertexBuffers[2] = { &VertexBuffer, &instanceBuffer };
+	drawContext.SetVertexBuffers(0, 2, vertexBuffers);
+	drawContext.SetIndexBuffer(&IndexBuffer);
+	drawContext.DrawIndexedInstanced(batch->IndexCount, instanceCount, batch->StartIndex, 0, startInstance);
 }
 
 void r3dDX11MeshResource::DrawBatch(r3dDX11DepthOnlyPass& pass, unsigned int batchIndex)
@@ -271,6 +303,11 @@ const float* r3dDX11MeshResource::GetPositionScale() const
 const float* r3dDX11MeshResource::GetTexcoordScale() const
 {
 	return TexcoordScale;
+}
+
+bool r3dDX11MeshResource::IsBending() const
+{
+	return bBending;
 }
 
 bool r3dDX11MeshResource::IsSkinned() const

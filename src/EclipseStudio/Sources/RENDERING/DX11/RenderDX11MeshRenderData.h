@@ -27,6 +27,7 @@ public:
 
 	r3dDX11MeshResource& GetMeshResource();
 	const r3dDX11MeshResource& GetMeshResource() const;
+	const r3dDX11MaterialTextures* GetMaterialTextures(unsigned int batchIndex) const;
 	unsigned int GetBatchCount() const;
 	bool IsValid() const;
 

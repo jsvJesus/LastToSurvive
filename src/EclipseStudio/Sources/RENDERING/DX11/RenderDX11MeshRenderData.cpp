@@ -144,6 +144,14 @@ const r3dDX11MeshResource& r3dDX11MeshRenderData::GetMeshResource() const
 	return MeshResource;
 }
 
+const r3dDX11MaterialTextures* r3dDX11MeshRenderData::GetMaterialTextures(unsigned int batchIndex) const
+{
+	if (batchIndex >= Materials.size())
+		return nullptr;
+
+	return &Materials[batchIndex];
+}
+
 unsigned int r3dDX11MeshRenderData::GetBatchCount() const
 {
 	return MeshResource.GetBatchCount();

@@ -24,6 +24,9 @@ enum CollectionsDrawModeEnum
 	R3D_IDME_DEPTH
 };
 
+class r3dDX11Renderer;
+struct r3dDX11WorldRenderStats;
+
 //////////////////////////////////////////////////////////////////////////
 
 class CollectionsManager
@@ -109,6 +112,7 @@ public:
 	void GetUsedMaterials(std::vector<r3dMaterial*>& materials);
 
 	void Render(CollectionsDrawModeEnum drawMode);
+	void RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats);
 	void DEBUG_Draw();
 #endif
 };

@@ -25,6 +25,7 @@ public:
 
 	void SetInputLayout(r3dDX11InputLayout* inputLayout);
 	void SetVertexBuffer(r3dDX11VertexBuffer* vertexBuffer, unsigned int slot = 0, unsigned int offset = 0);
+	void SetVertexBuffers(unsigned int startSlot, unsigned int count, r3dDX11VertexBuffer* const* vertexBuffers, const unsigned int* offsets = nullptr);
 	void SetIndexBuffer(r3dDX11IndexBuffer* indexBuffer, unsigned int offset = 0);
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY topology);
 	void SetShaders(r3dDX11VertexShader* vertexShader, r3dDX11PixelShader* pixelShader);
@@ -36,6 +37,7 @@ public:
 
 	void Draw(unsigned int vertexCount, unsigned int startVertex = 0);
 	void DrawIndexed(unsigned int indexCount, unsigned int startIndex = 0, int baseVertex = 0);
+	void DrawIndexedInstanced(unsigned int indexCount, unsigned int instanceCount, unsigned int startIndex = 0, int baseVertex = 0, unsigned int startInstance = 0);
 
 	ID3D11DeviceContext* GetContext() const;
 	bool IsValid() const;

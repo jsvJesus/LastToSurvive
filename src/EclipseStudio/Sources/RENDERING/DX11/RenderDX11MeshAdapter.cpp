@@ -134,6 +134,8 @@ namespace
 
 		const bool skinned =
 			mesh.IsSkeletal() != 0;
+		const bool bending =
+			(mesh.VertexFlags & r3dMesh::vfBending) != 0;
 
 		const float positionScale[3] =
 		{
@@ -157,6 +159,7 @@ namespace
 			bufferEntry.iCount,
 			batches.empty() ? nullptr : &batches[0],
 			static_cast<unsigned int>(batches.size()),
+			bending,
 			skinned,
 			positionScale,
 			texcoordScale,

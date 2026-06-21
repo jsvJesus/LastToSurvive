@@ -51,6 +51,19 @@ namespace
 		{ "TEXCOORD", 6, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	};
 
+	const D3D11_INPUT_ELEMENT_DESC InstancedBendingMeshLayout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R16G16B16A16_SNORM, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R16G16_SNORM,       0, 8,  D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 12, D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "TANGENT",  0, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 16, D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R8G8B8A8_UNORM,     0, 20, D3D11_INPUT_PER_VERTEX_DATA,   0 },
+		{ "TEXCOORD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "TEXCOORD", 4, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "TEXCOORD", 5, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "TEXCOORD", 6, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+	};
+
 	const D3D11_INPUT_ELEMENT_DESC InstancedSkinnedMeshLayout[] =
 	{
 		{ "POSITION",     0, DXGI_FORMAT_R16G16B16A16_SNORM, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA,   0 },
@@ -96,6 +109,11 @@ const D3D11_INPUT_ELEMENT_DESC* r3dDX11VertexLayouts::SkinnedMesh(unsigned int* 
 const D3D11_INPUT_ELEMENT_DESC* r3dDX11VertexLayouts::InstancedMesh(unsigned int* count)
 {
 	return ReturnLayout(InstancedMeshLayout, static_cast<unsigned int>(_countof(InstancedMeshLayout)), count);
+}
+
+const D3D11_INPUT_ELEMENT_DESC* r3dDX11VertexLayouts::InstancedBendingMesh(unsigned int* count)
+{
+	return ReturnLayout(InstancedBendingMeshLayout, static_cast<unsigned int>(_countof(InstancedBendingMeshLayout)), count);
 }
 
 const D3D11_INPUT_ELEMENT_DESC* r3dDX11VertexLayouts::InstancedSkinnedMesh(unsigned int* count)

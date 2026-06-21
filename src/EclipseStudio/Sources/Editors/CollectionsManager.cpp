@@ -11,6 +11,10 @@
 #include "../XMLHelpers.h"
 #include "../../../gameengine/TrueNature/ITerrain.h"
 #include "../ObjectsCode/Nature/wind.h"
+#include "RENDERING/DX11/RenderDX11.h"
+#include "RENDERING/DX11/RenderDX11MeshRenderData.h"
+#include "RENDERING/DX11/RenderDX11VegetationPass.h"
+#include "RENDERING/DX11/RenderDX11World.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -259,6 +263,57 @@ namespace
 		D3D_V( r3dRenderer->pd3ddev->SetSamplerState( D3DVERTEXTEXTURESAMPLER0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP ) ) ;
 
 		r3dSetFiltering( R3D_BILINEAR, D3DVERTEXTEXTURESAMPLER0 );
+	}
+
+	void BuildDX11VegetationWindConstants(CollectionType& parms, r3dDX11VegetationWindConstants& outConstants)
+	{
+		memset(&outConstants, 0, sizeof(outConstants));
+
+		if (!g_pWind)
+			return;
+
+		r3dPoint3D windDir = g_pWind->GetWindDir();
+		windDir.Normalize();
+
+		outConstants.Params[0][0] = windDir.x * parms.AnimLayers[0].Scale;
+		outConstants.Params[0][1] = windDir.z * parms.AnimLayers[0].Scale;
+		outConstants.Params[0][2] = parms.BendPow;
+		outConstants.Params[0][3] = float(parms.LeafMotionRandomness * M_PI);
+
+		for (int i = 1, e = CollectionType::MAX_ANIM_LAYERS; i < e; ++i)
+		{
+			const CollectionType::AnimLayer& layer = parms.AnimLayers[i];
+			outConstants.Params[i][0] = windDir.x * layer.Freq;
+			outConstants.Params[i][1] = windDir.z * layer.Freq;
+			outConstants.Params[i][2] = windDir.x * layer.Scale;
+			outConstants.Params[i][3] = windDir.z * layer.Scale;
+		}
+
+		const float t = r3dGetTime();
+		outConstants.Params[3][0] = parms.AnimLayers[0].Speed * t;
+		outConstants.Params[3][1] = parms.AnimLayers[1].Speed * t;
+		outConstants.Params[3][2] = parms.AnimLayers[2].Speed * t;
+
+		D3DXVECTOR4 texcXfm = g_pWind->GetTexcXfm();
+		outConstants.Params[4][0] = texcXfm.x;
+		outConstants.Params[4][1] = texcXfm.y;
+		outConstants.Params[4][2] = texcXfm.z;
+		outConstants.Params[4][3] = texcXfm.w;
+	}
+
+	bool IsDX11CollectionMeshLoaded(r3dMesh* mesh)
+	{
+		if (!mesh)
+			return false;
+
+		__try
+		{
+			return mesh->IsLoaded() != FALSE;
+		}
+		__except(EXCEPTION_EXECUTE_HANDLER)
+		{
+			return false;
+		}
 	}
 #endif
 
@@ -1179,6 +1234,192 @@ void CollectionsManager::Render(CollectionsDrawModeEnum drawMode)
 	d3dc._SetDecl( R3D_MESH_VERTEX::getDecl() ); 
 
 	D3DPERF_EndEvent();
+}
+
+void CollectionsManager::RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats)
+{
+	if (!g_trees->GetInt() || !quadTree || !renderer.IsInitialized())
+		return;
+
+	const bool bShadowMap = drawMode == R3D_IDME_SHADOW;
+	const bool bDepthOnly = drawMode == R3D_IDME_DEPTH || drawMode == R3D_IDME_SHADOW;
+
+	if (!gCollectionsCastShadows && bShadowMap)
+		return;
+
+	ComputeVisibility(bShadowMap, false);
+
+	if (!visibleObjects.Count())
+		return;
+
+	r3dDX11VegetationPass& pass = renderer.GetVegetationPass();
+	if (!pass.IsInitialized())
+	{
+		if (stats)
+			++stats->VegetationSkippedFailed;
+		return;
+	}
+
+	if (bDepthOnly)
+	{
+		if (!pass.BeginDepth())
+		{
+			if (stats)
+				++stats->VegetationSkippedFailed;
+			return;
+		}
+	}
+	else
+	{
+		if (!pass.BeginGBuffer())
+		{
+			if (stats)
+				++stats->VegetationSkippedFailed;
+			return;
+		}
+	}
+
+	const unsigned int maxInstancesPerDraw = 512;
+	r3dDX11VegetationInstance instances[maxInstancesPerDraw];
+
+	uint32_t numObjects = visibleObjects.Count();
+	uint32_t i = 0;
+
+	while (i < numObjects)
+	{
+		CollectionElement& ce = elements[visibleObjects[i]];
+		CollectionType& ct = types[ce.typeIndex];
+		r3dMesh* pMesh = ct.meshLOD[ce.curLod];
+
+		if (!IsDX11CollectionMeshLoaded(pMesh))
+		{
+			++i;
+			if (stats)
+				++stats->VegetationSkippedFailed;
+			continue;
+		}
+
+		bool animated = false;
+#if R3D_ENABLE_TREE_WIND
+		animated =
+			(pMesh->VertexFlags & r3dMesh::vfBending) &&
+			ct.hasAnimation &&
+			(!r_shadows_quality || r_shadows_quality->GetInt() > 1);
+#endif
+
+		r3dDX11VegetationWindConstants windConstants;
+		BuildDX11VegetationWindConstants(ct, windConstants);
+		pass.SetWindConstants(windConstants);
+
+		r3dDX11MeshRenderData* renderData =
+			r3dDX11GetOrCreateMeshRenderData(
+				renderer.GetDevice().GetDevice(),
+				renderer.GetTextureLibrary(),
+				*pMesh,
+				pMesh->Name
+			);
+
+		if (!renderData || !renderData->IsValid())
+		{
+			++i;
+			if (stats)
+				++stats->VegetationSkippedFailed;
+			continue;
+		}
+
+		unsigned int instanceCount = 0;
+
+		const auto flushInstances = [&]()
+		{
+			if (instanceCount == 0)
+				return;
+
+			bool anyDrawn = false;
+			for (unsigned int batchIndex = 0; batchIndex < renderData->GetBatchCount(); ++batchIndex)
+			{
+				const bool drawn = pass.DrawBatch(*renderData, batchIndex, viewProj, instances, instanceCount, bDepthOnly);
+				if (drawn)
+				{
+					anyDrawn = true;
+
+					if (stats)
+					{
+						if (bShadowMap)
+							++stats->VegetationShadowDraws;
+						else if (bDepthOnly)
+							++stats->VegetationDepthDraws;
+						else
+							++stats->VegetationGBufferDraws;
+
+						if (animated)
+							++stats->VegetationBendingDraws;
+					}
+				}
+				else if (stats)
+				{
+					++stats->VegetationSkippedFailed;
+				}
+			}
+
+			if (stats && anyDrawn)
+			{
+				if (bShadowMap)
+					stats->VegetationShadowInstances += instanceCount;
+				else if (bDepthOnly)
+					stats->VegetationDepthInstances += instanceCount;
+				else
+					stats->VegetationGBufferInstances += instanceCount;
+			}
+
+			instanceCount = 0;
+		};
+
+		while (
+			i < numObjects &&
+			elements[visibleObjects[i]].curLod == ce.curLod &&
+			elements[visibleObjects[i]].typeIndex == ce.typeIndex)
+		{
+			CollectionElement& newEl = elements[visibleObjects[i++]];
+			r3dDX11VegetationInstance& instance = instances[instanceCount++];
+
+			instance.PositionAngle[0] = newEl.pos.x;
+			instance.PositionAngle[1] = newEl.pos.y;
+			instance.PositionAngle[2] = newEl.pos.z;
+			instance.PositionAngle[3] = R3D_DEG2RAD(newEl.angle);
+
+			instance.ScaleRandom[0] = newEl.scale;
+			instance.ScaleRandom[1] = newEl.scale;
+			instance.ScaleRandom[2] = newEl.scale;
+			instance.ScaleRandom[3] = bDepthOnly ? 1.0f : float(newEl.randomColor) / 255.0f;
+
+			if (animated)
+			{
+				instance.Anim[0] = newEl.bendVal;
+				instance.Anim[1] = newEl.bendVal * 255.0f - int(newEl.bendVal * 255.0f);
+				instance.Anim[2] = newEl.windPower;
+				instance.Anim[3] = 1.0f;
+			}
+			else
+			{
+				instance.Anim[0] = 0.0f;
+				instance.Anim[1] = 0.0f;
+				instance.Anim[2] = 0.0f;
+				instance.Anim[3] = 0.0f;
+			}
+
+			instance.Options[0] = animated ? 1.0f : 0.0f;
+			instance.Options[1] = 0.0f;
+			instance.Options[2] = 0.0f;
+			instance.Options[3] = 0.0f;
+
+			if (instanceCount == maxInstancesPerDraw)
+				flushInstances();
+		}
+
+		flushInstances();
+	}
+
+	pass.End();
 }
 #endif
 //////////////////////////////////////////////////////////////////////////

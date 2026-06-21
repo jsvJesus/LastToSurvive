@@ -5,6 +5,7 @@
 #include "RENDERING/DX11/RenderDX11World.h"
 
 #include "GameObjects/GameObj.h"
+#include "Editors/CollectionsManager.h"
 #include "RENDERING/Deffered/RenderDeffered.h"
 #include "RENDERING/DX11/RenderDX11.h"
 #include "RENDERING/DX11/RenderDX11MeshRenderer.h"
@@ -630,6 +631,13 @@ namespace
 				&stats
 			);
 
+			gCollectionsManager.RenderDX11(
+				R3D_IDME_SHADOW,
+				renderer,
+				viewProj,
+				&stats
+			);
+
 			DrawDX11ShadowQueue(
 				renderer,
 				pass,
@@ -759,6 +767,15 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.TerrainSplatLayers = 0;
 	stats.TerrainDetailLayers = 0;
 	stats.TerrainSkippedFailed = 0;
+
+	stats.VegetationGBufferInstances = 0;
+	stats.VegetationGBufferDraws = 0;
+	stats.VegetationDepthInstances = 0;
+	stats.VegetationDepthDraws = 0;
+	stats.VegetationShadowInstances = 0;
+	stats.VegetationShadowDraws = 0;
+	stats.VegetationBendingDraws = 0;
+	stats.VegetationSkippedFailed = 0;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(
@@ -813,6 +830,13 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		gbuffer.GetDepthStencilView(),
 		gbuffer.GetWidth(),
 		gbuffer.GetHeight(),
+		&stats
+	);
+
+	gCollectionsManager.RenderDX11(
+		R3D_IDME_DEPTH,
+		renderer,
+		viewProj,
 		&stats
 	);
 
@@ -930,6 +954,13 @@ bool r3dDX11RenderWorldGBuffer(
 	renderer.GetTerrainPass().RenderGBuffer(
 		camera,
 		gbuffer,
+		viewProj,
+		stats
+	);
+
+	gCollectionsManager.RenderDX11(
+		R3D_IDME_NORMAL,
+		renderer,
 		viewProj,
 		stats
 	);
