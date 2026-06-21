@@ -59,6 +59,7 @@ REG_VAR( d_job_chief_idle_events,	true,			0 );
 
 REG_VAR( r_bpp,						32,				0 );		// color bpp
 REG_VAR( r_dx11_boot,				false,			0 );		// experimental DX11 boot path smoke test
+REG_VAR( r_dx11_debug_view,			0,				0 );		// DX11 lighting debug: 0 final, 1 albedo, 2 normal, 3 depth, 4 aux, 5 direct, 6 ambient
 
 REG_VAR( r_near_plane,				1.f,			0 );
 REG_VAR( r_far_plane,				32000.f,		0 );

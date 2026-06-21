@@ -221,10 +221,28 @@ namespace
 		constants.ShadowParams[2] = stats ? static_cast<float>(stats->ShadowAlphaTested) : 0.0f;
 		constants.ShadowParams[3] = stats ? static_cast<float>(stats->TransparentShadowCasesRendered) : 0.0f;
 
-		constants.Options[0] = 1.0f; // ambient
-		constants.Options[1] = 1.0f; // probes
-		constants.Options[2] = 1.0f; // fog
-		constants.Options[3] = 1.0f; // spec/gloss
+		int dx11DebugView = 0;
+
+		if (r_dx11_debug_view)
+		{
+			dx11DebugView = r_dx11_debug_view->GetInt();
+
+			if (dx11DebugView < 0)
+				dx11DebugView = 0;
+
+			if (dx11DebugView > 6)
+				dx11DebugView = 6;
+		}
+
+		// Options contract:
+		// x = debug view mode
+		// y = ambient/probe enabled
+		// z = fog enabled
+		// w = spec/gloss enabled
+		constants.Options[0] = 0.0f;
+		constants.Options[1] = 1.0f;
+		constants.Options[2] = 1.0f;
+		constants.Options[3] = 1.0f;
 
 		if (stats)
 		{
