@@ -729,6 +729,18 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.TransparentShadowSkippedUnsupported = 0;
 	stats.TransparentShadowSkippedFailed = 0;
 	stats.TransparentShadowCasesRendered = 0;
+
+	stats.LightingPasses = 0;
+	stats.LightingDirectionalLights = 0;
+	stats.LightingPointLights = 0;
+	stats.LightingSpotLights = 0;
+	stats.LightingShadowed = 0;
+	stats.LightingGBufferDecoded = 0;
+	stats.LightingSpecGlossDecoded = 0;
+	stats.LightingFogApplied = 0;
+	stats.LightingAmbientApplied = 0;
+	stats.LightingProbeApplied = 0;
+	stats.LightingSkippedFailed = 0;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(

@@ -135,6 +135,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!LightingPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	{
+		r3dOutToLog("[DX11] Lighting pass initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
 	if (acquireRmlRuntime && !RmlRuntime::Get().Acquire(windowHandle, Device.GetDevice(), Device.GetContext()))
 	{
 		r3dOutToLog("[DX11] Rml runtime initialization failed\n");
@@ -159,6 +166,7 @@ void r3dDX11Renderer::Shutdown()
 
 	DepthOnlyPass.Shutdown();
 	GBufferPass.Shutdown();
+	LightingPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
 	TextureLibrary.Shutdown();
@@ -212,6 +220,22 @@ bool r3dDX11Renderer::RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRe
 		return false;
 
 	return r3dDX11RenderWorldGBuffer(*this, camera, stats);
+}
+
+bool r3dDX11Renderer::RenderWorldLighting(
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats* stats
+)
+{
+	if (!bInitialized)
+		return false;
+
+	return LightingPass.Render(
+		camera,
+		GBufferResources,
+		FrameResources.GetSceneColor(),
+		stats
+	);
 }
 
 bool r3dDX11Renderer::RenderWorldDepthOnly(
@@ -301,6 +325,11 @@ r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass()
 	return GBufferPass;
 }
 
+r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass()
+{
+	return LightingPass;
+}
+
 r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources()
 {
 	return GBufferResources;
@@ -344,6 +373,11 @@ const r3dDX11DepthOnlyPass& r3dDX11Renderer::GetDepthOnlyPass() const
 const r3dDX11GBufferPass& r3dDX11Renderer::GetGBufferPass() const
 {
 	return GBufferPass;
+}
+
+const r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass() const
+{
+	return LightingPass;
 }
 
 const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const

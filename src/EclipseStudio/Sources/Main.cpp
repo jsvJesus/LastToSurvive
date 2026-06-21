@@ -302,6 +302,12 @@ void StudioDX11WorldHybridTick()
 			&WorldStats
 		);
 
+	const bool bLightingRendered =
+		g_DX11Renderer->RenderWorldLighting(
+			gCam,
+			&WorldStats
+		);
+
 	g_DX11Renderer->EndFrame(false, nullptr);
 
 	const DWORD Now = GetTickCount();
@@ -312,7 +318,9 @@ void StudioDX11WorldHybridTick()
 			"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
 			"gbuffer_drawn=%u unsupported=%u failed=%u "
 			"shadow=%u smesh=%u sstatic=%u sskin=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u "
-			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u\n",
+			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u "
+			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u"
+			"\n",
 			bWorldRendered ? 1 : 0,
 			WorldStats.TotalRenderables,
 			WorldStats.MeshRenderables,
@@ -337,7 +345,19 @@ void StudioDX11WorldHybridTick()
 			WorldStats.ShadowAlphaTested,
 			WorldStats.ShadowSlicesRendered,
 			WorldStats.ShadowSkippedUnsupported,
-			WorldStats.ShadowSkippedFailed
+			WorldStats.ShadowSkippedFailed,
+
+			WorldStats.LightingPasses,
+			WorldStats.LightingDirectionalLights,
+			WorldStats.LightingPointLights,
+			WorldStats.LightingSpotLights,
+			WorldStats.LightingShadowed,
+			WorldStats.LightingGBufferDecoded,
+			WorldStats.LightingSpecGlossDecoded,
+			WorldStats.LightingFogApplied,
+			WorldStats.LightingAmbientApplied,
+			WorldStats.LightingProbeApplied,
+			WorldStats.LightingSkippedFailed
 		);
 
 		LastWorldStatsLog = Now;

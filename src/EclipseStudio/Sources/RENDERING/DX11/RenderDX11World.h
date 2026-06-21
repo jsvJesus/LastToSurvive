@@ -41,6 +41,18 @@ struct r3dDX11WorldRenderStats
 	unsigned int TransparentShadowSkippedUnsupported;
 	unsigned int TransparentShadowSkippedFailed;
 	unsigned int TransparentShadowCasesRendered;
+
+	unsigned int LightingPasses;
+	unsigned int LightingDirectionalLights;
+	unsigned int LightingPointLights;
+	unsigned int LightingSpotLights;
+	unsigned int LightingShadowed;
+	unsigned int LightingGBufferDecoded;
+	unsigned int LightingSpecGlossDecoded;
+	unsigned int LightingFogApplied;
+	unsigned int LightingAmbientApplied;
+	unsigned int LightingProbeApplied;
+	unsigned int LightingSkippedFailed;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);
