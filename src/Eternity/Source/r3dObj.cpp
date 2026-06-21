@@ -1600,6 +1600,89 @@ r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform )
 	return result;
 }
 
+static bool r3dRepairMeshDeferredRenderableBatch(
+	MeshDeferredRenderable* meshRenderable
+)
+{
+	if (!meshRenderable || !meshRenderable->Mesh)
+		return false;
+
+	r3dMesh* mesh = meshRenderable->Mesh;
+
+	if (meshRenderable->BatchIdx >= 0 && meshRenderable->BatchIdx < mesh->NumMatChunks)
+		return true;
+
+	const DWORD materialId =
+		static_cast<DWORD>((static_cast<UINT64>(meshRenderable->SortValue) >> 32) & 0xffffffff);
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		if (batch.Mat->ID == materialId)
+		{
+			static int RepairLogCount = 0;
+
+			if (RepairLogCount < 64)
+			{
+				++RepairLogCount;
+
+				r3dOutToLog(
+					"[DX11][RenderableRepair][Deferred] mesh='%s' file='%s' oldBatch=%d newBatch=%d matId=%u numChunks=%d\n",
+					mesh->Name,
+					mesh->FileName.c_str(),
+					meshRenderable->BatchIdx,
+					i,
+					materialId,
+					mesh->NumMatChunks
+				);
+			}
+
+			meshRenderable->BatchIdx = i;
+			return true;
+		}
+	}
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		static int FallbackRepairLogCount = 0;
+
+		if (FallbackRepairLogCount < 64)
+		{
+			++FallbackRepairLogCount;
+
+			r3dOutToLog(
+				"[DX11][RenderableRepair][DeferredFallback] mesh='%s' file='%s' oldBatch=%d newBatch=%d matId=%u numChunks=%d\n",
+				mesh->Name,
+				mesh->FileName.c_str(),
+				meshRenderable->BatchIdx,
+				i,
+				materialId,
+				mesh->NumMatChunks
+			);
+		}
+
+		meshRenderable->BatchIdx = i;
+		return true;
+	}
+
+	return false;
+}
+
 MeshDeferredRenderable*
 r3dGetMeshDeferredRenderable(Renderable* renderable)
 {
@@ -1628,28 +1711,29 @@ r3dGetMeshDeferredRenderable(Renderable* renderable)
 			return NULL;
 		}
 
-		if (
-			meshRenderable->BatchIdx < 0 ||
-			meshRenderable->BatchIdx >= meshRenderable->Mesh->NumMatChunks
-		)
+		if (meshRenderable->BatchIdx < 0 || meshRenderable->BatchIdx >= meshRenderable->Mesh->NumMatChunks)
 		{
-			static int InvalidBatchLogCount = 0;
-
-			if (InvalidBatchLogCount < 64)
+			if (!r3dRepairMeshDeferredRenderableBatch(meshRenderable))
 			{
-				++InvalidBatchLogCount;
+				static int InvalidBatchLogCount = 0;
 
-				r3dOutToLog(
-					"[DX11][RenderableReject][Deferred] invalid BatchIdx mesh='%s' file='%s' batch=%d numChunks=%d sig=%08x\n",
-					meshRenderable->Mesh->Name,
-					meshRenderable->Mesh->FileName.c_str(),
-					meshRenderable->BatchIdx,
-					meshRenderable->Mesh->NumMatChunks,
-					meshRenderable->DX11Signature
-				);
+				if (InvalidBatchLogCount < 64)
+				{
+					++InvalidBatchLogCount;
+
+					r3dOutToLog(
+						"[DX11][RenderableReject][Deferred] invalid BatchIdx mesh='%s' file='%s' batch=%d numChunks=%d sig=%08x sort=%I64u\n",
+						meshRenderable->Mesh->Name,
+						meshRenderable->Mesh->FileName.c_str(),
+						meshRenderable->BatchIdx,
+						meshRenderable->Mesh->NumMatChunks,
+						meshRenderable->DX11Signature,
+						static_cast<UINT64>(meshRenderable->SortValue)
+					);
+				}
+
+				return NULL;
 			}
-
-			return NULL;
 		}
 
 		const r3dTriBatch& batch =
@@ -1704,8 +1788,15 @@ r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3
 			continue;
 
 		MeshDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
 
-		rend.BatchIdx		= i;
+		rend.BatchIdx = i;
+		rend.Color = color.GetPacked();
+		rend.Mesh = mesh;
+		rend.SortValue = (UINT64)batch.Mat->ID << 32 | (UINT64)mesh->buffers.VBId << 16;
+		rend.InitDX11(worldTransform, skeleton);
+
+		oArr.PushBack(rend);
 		rend.Color			= color.GetPacked();
 		rend.Mesh			= mesh;
 		rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) mesh->buffers.VBId << 16;
@@ -1840,8 +1931,15 @@ r3dMesh::AppendRenderablesDeferred( RenderArray& oArr, const r3dColor& color )
 		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) == 0)
 		{
 			MeshDeferredRenderable rend;
+			memset(&rend, 0, sizeof(rend));
 
-			rend.BatchIdx		= i;
+			rend.BatchIdx = i;
+			rend.Color = color.GetPacked();
+			rend.Mesh = this;
+			rend.SortValue = (UINT64)batch.Mat->ID << 32 | (UINT64)buffers.VBId << 16;
+			rend.InitDX11(NULL);
+
+			oArr.PushBack(rend);
 			rend.Color			= color.GetPacked();
 			rend.Mesh			= this;
 			rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) buffers.VBId << 16;
@@ -1869,8 +1967,15 @@ r3dMesh::AppendTransparentRenderables( RenderArray& oArr, const r3dColor& color,
 		if ( ( batch.Mat->Flags & R3D_MAT_TRANSPARENT ) || forceAll )
 		{
 			MeshDeferredRenderable rend;
+			memset(&rend, 0, sizeof(rend));
 
-			rend.BatchIdx		= i;
+			rend.BatchIdx = i;
+			rend.Color = color.GetPacked();
+			rend.Mesh = this;
+			rend.SortValue = RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
+			rend.InitDX11(NULL);
+
+			oArr.PushBack(rend);
 			rend.Color			= color.GetPacked();
 			rend.Mesh			= this;
 			rend.SortValue		= RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
