@@ -56,7 +56,7 @@ VegetationVSOutput main(VegetationVSInput input)
 	output.Tangent = tangent;
 	output.Binormal = normalize(cross(output.Normal, output.Tangent) * (input.Tangent.w * 2.0f - 1.0f));
 	output.WorldPos = worldPos;
-	output.Depth = output.Position.w;
+	output.Depth = saturate(output.Position.z / max(output.Position.w, 0.00001f));
 	output.RandomColor = input.InstanceScaleRandom.w;
 	return output;
 }
