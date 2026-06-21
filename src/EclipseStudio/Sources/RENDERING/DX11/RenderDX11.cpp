@@ -157,6 +157,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!SkyPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
+	{
+		r3dOutToLog("[DX11] Sky pass initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
 	if (acquireRmlRuntime && !RmlRuntime::Get().Acquire(windowHandle, Device.GetDevice(), Device.GetContext()))
 	{
 		r3dOutToLog("[DX11] Rml runtime initialization failed\n");
@@ -184,6 +191,7 @@ void r3dDX11Renderer::Shutdown()
 	TerrainPass.Shutdown();
 	VegetationPass.Shutdown();
 	LightingPass.Shutdown();
+	SkyPass.Shutdown();
 	GBufferResources.Shutdown();
 	FrameResources.Shutdown();
 	TextureLibrary.Shutdown();
@@ -252,6 +260,21 @@ bool r3dDX11Renderer::RenderWorldLighting(
 		GBufferResources,
 		FrameResources.GetSceneColor(),
 		stats
+	);
+}
+
+bool r3dDX11Renderer::RenderWorldSky(
+	const r3dCamera& camera,
+	r3dDX11WorldRenderStats* stats
+)
+{
+	if (!bInitialized)
+		return false;
+
+	return SkyPass.Render(
+		camera,
+		GBufferResources,
+		FrameResources.GetSceneColor()
 	);
 }
 
@@ -370,6 +393,11 @@ r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass()
 	return LightingPass;
 }
 
+r3dDX11SkyPass& r3dDX11Renderer::GetSkyPass()
+{
+	return SkyPass;
+}
+
 r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources()
 {
 	return GBufferResources;
@@ -428,6 +456,11 @@ const r3dDX11VegetationPass& r3dDX11Renderer::GetVegetationPass() const
 const r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass() const
 {
 	return LightingPass;
+}
+
+const r3dDX11SkyPass& r3dDX11Renderer::GetSkyPass() const
+{
+	return SkyPass;
 }
 
 const r3dDX11GBufferResources& r3dDX11Renderer::GetGBufferResources() const

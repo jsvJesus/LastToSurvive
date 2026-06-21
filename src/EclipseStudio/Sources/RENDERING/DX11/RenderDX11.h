@@ -12,6 +12,7 @@
 #include "RENDERING/DX11/RenderDX11LightingPass.h"
 #include "RENDERING/DX11/RenderDX11TerrainPass.h"
 #include "RENDERING/DX11/RenderDX11VegetationPass.h"
+#include "RENDERING/DX11/RenderDX11SkyPass.h"
 
 #ifndef _WINDEF_
 struct HWND__;
@@ -40,6 +41,7 @@ public:
 	void BeginFrame(float clearR, float clearG, float clearB, float clearA);
 	bool RenderWorldGBuffer(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr);
 	bool RenderWorldLighting(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr);
+	bool RenderWorldSky(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr);
 	bool RenderWorldDepthOnly(const r3dCamera& camera, r3dDX11WorldRenderStats* stats = nullptr, bool clearDepth = true);
 	bool ResolveSceneToBackBuffer();
 	void RenderRmlContext(Rml::Context* context);
@@ -55,6 +57,7 @@ public:
 	r3dDX11TerrainPass& GetTerrainPass();
 	r3dDX11VegetationPass& GetVegetationPass();
 	r3dDX11LightingPass& GetLightingPass();
+	r3dDX11SkyPass& GetSkyPass();
 	r3dDX11GBufferResources& GetGBufferResources();
 	r3dDX11CommonStates& GetCommonStates();
 	r3dDX11TextureLibrary& GetTextureLibrary();
@@ -68,6 +71,7 @@ public:
 	const r3dDX11TerrainPass& GetTerrainPass() const;
 	const r3dDX11VegetationPass& GetVegetationPass() const;
 	const r3dDX11LightingPass& GetLightingPass() const;
+	const r3dDX11SkyPass& GetSkyPass() const;
 	const r3dDX11GBufferResources& GetGBufferResources() const;
 	const r3dDX11CommonStates& GetCommonStates() const;
 	const r3dDX11TextureLibrary& GetTextureLibrary() const;
@@ -89,6 +93,7 @@ private:
 	r3dDX11TerrainPass TerrainPass;
 	r3dDX11VegetationPass VegetationPass;
 	r3dDX11LightingPass LightingPass;
+	r3dDX11SkyPass SkyPass;
 	r3dDX11GBufferResources GBufferResources;
 	HWND WindowHandle = nullptr;
 	bool bInitialized = false;

@@ -618,6 +618,12 @@ bool StudioDX11WorldHybridTick()
 			&WorldStats
 		);
 
+	const bool bSkyRendered =
+		g_DX11Renderer->RenderWorldSky(
+			gCam,
+			&WorldStats
+		);
+
 	g_DX11Renderer->EndFrame(false, nullptr);
 
 	const DWORD Now = GetTickCount();
@@ -635,7 +641,7 @@ bool StudioDX11WorldHybridTick()
 			"veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u "
 			"\n",
 
-			(bWorldRendered && bLightingRendered) ? 1 : 0,
+			(bWorldRendered && bLightingRendered && bSkyRendered) ? 1 : 0,
 			bWorldRendered ? 1 : 0,
 			bLightingRendered ? 1 : 0,
 
@@ -1117,9 +1123,9 @@ static void ExecuteDX11SmokeLoop()
 		}
 
 		g_DX11Renderer->BeginFrame(
-			0.010f,
-			0.012f,
-			0.011f,
+			0.025f,
+			0.032f,
+			0.040f,
 			1.0f
 		);
 
