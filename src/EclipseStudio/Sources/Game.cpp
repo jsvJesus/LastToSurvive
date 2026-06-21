@@ -67,7 +67,9 @@
 const int NUM_HUDS = 6;
 BaseHUD* HudArray[NUM_HUDS] = {0};
 
-extern void StudioDX11WorldHybridTick();
+extern bool StudioDX11WorldHybridEnabled();
+extern bool StudioDX11WorldHybridTick();
+extern int gRenderFrameCounter;
 
 BaseHUD* editor_GetHudByIndex(int index)
 {
@@ -954,14 +956,36 @@ void GameStateGameLoop()
 	R3DPROFILE_START("EndRender");
 	r3dRenderer->EndFrame();
 
-	UpdateD3DAntiCheatPrePresent();
+	const bool bDX11WorldOwnsPresent =
+		StudioDX11WorldHybridEnabled();
 
-	r3dRenderer->EndRender( true );
-	R3DPROFILE_END("EndRender");
+	if (bDX11WorldOwnsPresent)
+	{
+		r3dRenderer->EndRender(false);
+		R3DPROFILE_END("EndRender");
 
-	UpdateD3DAntiCheatPostPresent();
+		if (StudioDX11WorldHybridTick())
+		{
+			gRenderFrameCounter++;
+		}
+		else
+		{
+			UpdateD3DAntiCheatPrePresent();
+			r3dRenderer->EndRender(true);
+			UpdateD3DAntiCheatPostPresent();
+		}
+	}
+	else
+	{
+		UpdateD3DAntiCheatPrePresent();
 
-	StudioDX11WorldHybridTick();
+		r3dRenderer->EndRender(true);
+		R3DPROFILE_END("EndRender");
+
+		UpdateD3DAntiCheatPostPresent();
+
+		StudioDX11WorldHybridTick();
+	}
 
 	if( r3dRenderer->DeviceAvailable )
 	{
