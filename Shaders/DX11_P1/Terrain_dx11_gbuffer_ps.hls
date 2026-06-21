@@ -1,0 +1,143 @@
+#pragma pack_matrix(row_major)
+
+cbuffer TerrainConstants : register(b0)
+{
+	float4x4 gWorldViewProj;
+
+	float4 gTerrainParams;
+	float4 gTerrainLayerParams;
+	float4 gTerrainDetailParams;
+	float4 gTerrainDebugParams;
+};
+
+struct PS_INPUT
+{
+	float4 Position  : SV_POSITION;
+	float3 WorldPos  : TEXCOORD0;
+	float3 Normal    : TEXCOORD1;
+	float2 TexCoord  : TEXCOORD2;
+	float4 LayerData : TEXCOORD3;
+	float  ClipDepth : TEXCOORD4;
+};
+
+struct PS_OUTPUT
+{
+	float4 Color       : SV_Target0;
+	float4 Normal      : SV_Target1;
+	float4 LinearDepth : SV_Target2;
+	float4 Aux         : SV_Target3;
+};
+
+float Hash21(float2 p)
+{
+	p = frac(p * float2(123.34f, 456.21f));
+	p += dot(p, p + 45.32f);
+	return frac(p.x * p.y);
+}
+
+float Noise2(float2 uv)
+{
+	float2 i = floor(uv);
+	float2 f = frac(uv);
+
+	float a = Hash21(i);
+	float b = Hash21(i + float2(1, 0));
+	float c = Hash21(i + float2(0, 1));
+	float d = Hash21(i + float2(1, 1));
+
+	float2 u = f * f * (3.0f - 2.0f * f);
+
+	return lerp(
+		lerp(a, b, u.x),
+		lerp(c, d, u.x),
+		u.y
+	);
+}
+
+float4 BuildSplatWeights(float height01, float slope, float noise)
+{
+	float grass = saturate(1.0f - slope * 2.0f);
+	float rock = saturate(slope * 2.5f);
+	float dirt = saturate(1.0f - abs(height01 - 0.45f) * 2.0f);
+	float sand = saturate(1.0f - height01 * 4.0f);
+
+	grass *= lerp(0.75f, 1.25f, noise);
+	dirt *= lerp(1.15f, 0.85f, noise);
+	rock *= lerp(0.90f, 1.20f, noise);
+
+	float4 w = float4(grass, dirt, rock, sand);
+	w = max(w, 0.001f);
+
+	return w / dot(w, 1.0f);
+}
+
+float3 ApplyDetailNormal(float3 normal, float2 uv)
+{
+	float detailScale = gTerrainDetailParams.x;
+	float detailAmount = gTerrainDetailParams.y;
+
+	float n0 = Noise2(uv * detailScale);
+	float n1 = Noise2(uv * detailScale + 17.23f);
+
+	float3 detail =
+		normalize(float3(n0 - 0.5f, 1.0f, n1 - 0.5f));
+
+	float3 blended =
+		normalize(lerp(normal, normalize(normal + detail * 0.35f), detailAmount));
+
+	return blended;
+}
+
+PS_OUTPUT main(PS_INPUT input)
+{
+	PS_OUTPUT output;
+
+	float3 normal = normalize(input.Normal);
+
+	float height01 = saturate(input.LayerData.x);
+	float slope = saturate(input.LayerData.y);
+
+	float noise = Noise2(input.TexCoord * 96.0f);
+
+	float4 weights =
+		BuildSplatWeights(
+			height01,
+			slope,
+			noise
+		);
+
+	float3 grassColor = float3(0.20f, 0.28f, 0.16f);
+	float3 dirtColor  = float3(0.30f, 0.24f, 0.18f);
+	float3 rockColor  = float3(0.34f, 0.34f, 0.32f);
+	float3 sandColor  = float3(0.42f, 0.36f, 0.24f);
+
+	float3 albedo =
+		grassColor * weights.x +
+		dirtColor  * weights.y +
+		rockColor  * weights.z +
+		sandColor  * weights.w;
+
+	float detail =
+		Noise2(input.TexCoord * gTerrainDetailParams.x * 2.0f);
+
+	albedo *= lerp(0.85f, 1.15f, detail);
+
+	normal =
+		ApplyDetailNormal(
+			normal,
+			input.TexCoord
+		);
+
+	float gloss =
+		lerp(0.18f, 0.42f, weights.z);
+
+	float spec =
+		lerp(0.08f, 0.22f, weights.z);
+
+	output.Color = float4(albedo, gloss);
+	output.Normal = float4(normal * 0.5f + 0.5f, 1.0f);
+	output.LinearDepth = float4(input.ClipDepth, input.ClipDepth, input.ClipDepth, 1.0f);
+	output.Aux = float4(gloss, spec, weights.z, 1.0f);
+
+	return output;
+}

@@ -1,0 +1,83 @@
+#include "SYSTEM/Common.hls"
+
+cbuffer MeshConstants : register(b0)
+{
+	float4x4 WorldViewProj;
+	float4x4 World;
+	float4 PositionScale;
+	float4 TexcoordScale;
+};
+
+cbuffer VegetationWindConstants : register(b2)
+{
+	float4 WindParams[5];
+};
+
+struct VegetationBendingVSInput
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float4 Normal : NORMAL;
+	float4 Tangent : TANGENT;
+	float4 Bend : TEXCOORD1;
+	float4 InstancePosAngle : TEXCOORD3;
+	float4 InstanceScaleRandom : TEXCOORD4;
+	float4 InstanceAnim : TEXCOORD5;
+	float4 InstanceOptions : TEXCOORD6;
+};
+
+struct VegetationVSOutput
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+	float3 Tangent : TEXCOORD2;
+	float3 Binormal : TEXCOORD3;
+	float3 WorldPos : TEXCOORD4;
+	float Depth : TEXCOORD5;
+	float RandomColor : TEXCOORD6;
+};
+
+float3 RotateY(float3 v, float angle)
+{
+	float s = sin(angle);
+	float c = cos(angle);
+	return float3(v.x * c + v.z * s, v.y, -v.x * s + v.z * c);
+}
+
+float2 BuildWindOffset(float3 worldPos, float bendMask, float windPower)
+{
+	float2 baseDir = normalize(WindParams[0].xy + float2(0.0001f, 0.0f));
+	float trunkBend = WindParams[0].z;
+	float phase0 = dot(worldPos.xz, WindParams[1].xy) + WindParams[3].x;
+	float phase1 = dot(worldPos.xz, WindParams[2].xy) + WindParams[3].y;
+	float wave = sin(phase0) * WindParams[1].z + sin(phase1) * WindParams[2].z;
+	return baseDir * wave * trunkBend * bendMask * windPower;
+}
+
+VegetationVSOutput main(VegetationBendingVSInput input)
+{
+	VegetationVSOutput output;
+
+	float3 localPos = input.Position.xyz * PositionScale.xyz;
+	localPos *= input.InstanceScaleRandom.xyz;
+	float3 worldPos = RotateY(localPos, input.InstancePosAngle.w) + input.InstancePosAngle.xyz;
+
+	float bendMask = saturate(input.Bend.x);
+	float windPower = saturate(input.InstanceAnim.z);
+	float2 windOffset = BuildWindOffset(worldPos, bendMask, windPower);
+	worldPos.xz += windOffset;
+
+	float3 normal = normalize(RotateY(input.Normal.xyz * 2.0f - 1.0f, input.InstancePosAngle.w));
+	float3 tangent = normalize(RotateY(input.Tangent.xyz * 2.0f - 1.0f, input.InstancePosAngle.w));
+
+	output.Position = mul(float4(worldPos, 1.0f), WorldViewProj);
+	output.TexCoord = input.TexCoord * TexcoordScale.xy;
+	output.Normal = normal;
+	output.Tangent = tangent;
+	output.Binormal = normalize(cross(output.Normal, output.Tangent) * (input.Tangent.w * 2.0f - 1.0f));
+	output.WorldPos = worldPos;
+	output.Depth = output.Position.w;
+	output.RandomColor = input.InstanceScaleRandom.w;
+	return output;
+}
