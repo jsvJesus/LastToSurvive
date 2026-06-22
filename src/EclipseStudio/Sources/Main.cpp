@@ -140,7 +140,7 @@ static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
 static r3dDX11Renderer* g_DX11Renderer = nullptr;
 static bool g_StudioCmdLineDX11Boot = false;
-static bool g_StudioCmdLineDX11World = false;
+static bool g_StudioCmdLineDX11World = true;
 
 static bool WasDX11HotkeyPressed(int virtualKey)
 {

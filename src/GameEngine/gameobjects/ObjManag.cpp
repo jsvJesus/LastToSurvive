@@ -1363,45 +1363,45 @@ static const char* DX11World_GetSpecialObjectTypeName(const GameObject* obj)
 static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
 {
 	if (!obj)
-		return "null";
-
-	if (obj->isObjType(OBJTYPE_Road))
-		return "runtime: explicit DX11 GBuffer road mesh path";
-
-	if (obj->isObjType(OBJTYPE_Particle))
-		return "runtime: DX11 particle mesh path only; sprite particles must not enter DX11 world as old DX9 renderables";
+		return "ERROR: null object";
 
 	if (obj->isObjType(OBJTYPE_Trees))
-		return "runtime: rendered by DX11 vegetation/collections path outside RenderArray";
+		return "OK: DX11 vegetation/collections path renders trees outside old RenderArray";
 
-	if (obj->isObjType(OBJTYPE_SharedUsableItem))
-		return "runtime: MeshGameObject derived, must use MeshDeferredRenderable/MeshShadowRenderable";
-
-	if (obj->isObjType(OBJTYPE_GameplayItem))
-		return "runtime/helper: render only if mesh-backed; pure gameplay helpers should append nothing";
-
-	if (obj->isObjType(OBJTYPE_Zombie))
-		return "runtime: custom skinned mesh object, must provide DX11 skeleton renderables";
-
-	if (obj->isObjType(OBJTYPE_NPC))
-		return "runtime: SharedUsableItem + animated skeleton, must provide DX11 skeleton renderables";
+	if (obj->isObjType(OBJTYPE_Road))
+		return "OK: explicit DX11 road GBuffer mesh path";
 
 	if (obj->isObjType(OBJTYPE_Building))
-		return "runtime: static buildings use MeshGameObject path; animated buildings need explicit DX11 renderables";
+		return "OK: static building uses MeshGameObject DX11 path; NEED_CHECK only if animated/skinned building";
+
+	if (obj->isObjType(OBJTYPE_Particle))
+		return "OK_PARTIAL: DX11 mesh-particle path only; old sprite particles intentionally skipped";
+
+	if (obj->isObjType(OBJTYPE_SharedUsableItem))
+		return "OK_EXPECTED: MeshGameObject-derived shared usable item should use DX11 mesh renderables";
+
+	if (obj->isObjType(OBJTYPE_GameplayItem))
+		return "NEED_CHECK: gameplay item must be mesh-backed or append no renderables";
+
+	if (obj->isObjType(OBJTYPE_Zombie))
+		return "NEED_CHECK: zombie must push DX11 skinned mesh renderables with skeleton";
+
+	if (obj->isObjType(OBJTYPE_NPC))
+		return "NEED_CHECK: NPC must push DX11 skinned mesh renderables with skeleton";
 
 	if (obj->isObjType(OBJTYPE_ApexDestructible))
-		return "runtime: destructible object must be mesh-backed or explicitly skipped";
+		return "NEED_CHECK: Apex destructible must be converted to DX11 mesh path or skipped";
 
 	if (obj->isObjType(OBJTYPE_DecalProxy))
-		return "editor/legacy: do not push old decal proxy renderables into DX11 world";
+		return "SKIP_EDITOR_LEGACY: decal proxy must not push old DX9 renderables into DX11 world";
 
 	if (obj->isObjType(OBJTYPE_Sprite))
-		return "editor/helper: do not push old sprite renderables into DX11 world";
+		return "SKIP_EDITOR_HELPER: sprite/helper must not push old DX9 renderables into DX11 world";
 
 	if (obj->isObjType(OBJTYPE_AnimMesh))
-		return "legacy/editor: no blind DX9 renderables allowed in DX11 world";
+		return "NEED_CHECK: legacy anim mesh must not push blind DX9 renderables into DX11 world";
 
-	return "not tracked";
+	return "UNKNOWN";
 }
 
 static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookName)
