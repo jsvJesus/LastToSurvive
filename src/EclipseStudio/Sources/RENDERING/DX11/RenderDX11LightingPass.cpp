@@ -37,6 +37,7 @@ namespace
 		float InvViewProj[16];
 
 		float CameraPos[4];
+		float CameraForward[4];
 
 		float SunDirection[4];
 		float SunColorIntensity[4];
@@ -49,7 +50,28 @@ namespace
 
 		float ScreenSize[4];
 
+		// x = opaque shadow enabled
+		// y = opaque cascade count
+		// z = transparent shadow enabled
+		// w = opaque shadow strength
 		float ShadowParams[4];
+
+		float ShadowViewProj[R3D_DX11_MAX_SHADOW_SLICES][16];
+
+		// x = split near
+		// y = split far
+		// z = compare bias
+		// w = shadow texel size
+		float ShadowCascadeParams[R3D_DX11_MAX_SHADOW_SLICES][4];
+
+		float TransparentShadowViewProj[16];
+
+		// x = compare bias
+		// y = texel size
+		// z = strength
+		// w = enabled
+		float TransparentShadowParams[4];
+
 		float Options[4];
 	};
 
@@ -113,6 +135,112 @@ namespace
 	void CopyMatrix(float outMatrix[16], const D3DXMATRIX& matrix)
 	{
 		memcpy(outMatrix, &matrix, sizeof(float) * 16);
+	}
+
+	void SetIdentityMatrix(float outMatrix[16])
+	{
+		memset(outMatrix, 0, sizeof(float) * 16);
+
+		outMatrix[0] = 1.0f;
+		outMatrix[5] = 1.0f;
+		outMatrix[10] = 1.0f;
+		outMatrix[15] = 1.0f;
+	}
+
+	void CopyFloatMatrix(float outMatrix[16], const float inMatrix[16])
+	{
+		memcpy(
+			outMatrix,
+			inMatrix,
+			sizeof(float) * 16
+		);
+	}
+
+	void FillShadowConstants(DX11LightingFrameConstants& constants)
+	{
+		for (unsigned int i = 0; i < R3D_DX11_MAX_SHADOW_SLICES; ++i)
+		{
+			SetIdentityMatrix(constants.ShadowViewProj[i]);
+
+			constants.ShadowCascadeParams[i][0] = 0.0f;
+			constants.ShadowCascadeParams[i][1] = 0.0f;
+			constants.ShadowCascadeParams[i][2] = 0.00005f;
+			constants.ShadowCascadeParams[i][3] = 1.0f / 2048.0f;
+		}
+
+		SetIdentityMatrix(constants.TransparentShadowViewProj);
+
+		constants.ShadowParams[0] = 0.0f;
+		constants.ShadowParams[1] = 0.0f;
+		constants.ShadowParams[2] = 0.0f;
+		constants.ShadowParams[3] = 0.82f;
+
+		constants.TransparentShadowParams[0] = 0.00005f;
+		constants.TransparentShadowParams[1] = 1.0f / 512.0f;
+		constants.TransparentShadowParams[2] = 0.42f;
+		constants.TransparentShadowParams[3] = 0.0f;
+
+		int cascadeCount = 0;
+
+		for (unsigned int i = 0; i < R3D_DX11_MAX_SHADOW_SLICES; ++i)
+		{
+			r3dDX11ShadowSliceInfo shadowInfo;
+
+			if (!r3dDX11GetShadowSliceInfo(static_cast<int>(i), shadowInfo))
+				continue;
+
+			CopyFloatMatrix(
+				constants.ShadowViewProj[cascadeCount],
+				shadowInfo.ViewProj
+			);
+
+			constants.ShadowCascadeParams[cascadeCount][0] =
+				shadowInfo.SplitNear;
+
+			constants.ShadowCascadeParams[cascadeCount][1] =
+				shadowInfo.SplitFar;
+
+			constants.ShadowCascadeParams[cascadeCount][2] =
+				shadowInfo.DepthBias;
+
+			constants.ShadowCascadeParams[cascadeCount][3] =
+				shadowInfo.TexelSize;
+
+			constants.ShadowParams[3] =
+				shadowInfo.Strength;
+
+			++cascadeCount;
+		}
+
+		constants.ShadowParams[0] =
+			cascadeCount > 0 ? 1.0f : 0.0f;
+
+		constants.ShadowParams[1] =
+			static_cast<float>(cascadeCount);
+
+		r3dDX11TransparentShadowInfo transparentInfo;
+
+		if (r3dDX11GetTransparentShadowInfo(transparentInfo))
+		{
+			CopyFloatMatrix(
+				constants.TransparentShadowViewProj,
+				transparentInfo.ViewProj
+			);
+
+			constants.TransparentShadowParams[0] =
+				transparentInfo.DepthBias;
+
+			constants.TransparentShadowParams[1] =
+				transparentInfo.TexelSize;
+
+			constants.TransparentShadowParams[2] =
+				transparentInfo.Strength;
+
+			constants.TransparentShadowParams[3] =
+				transparentInfo.Enabled;
+
+			constants.ShadowParams[2] = 1.0f;
+		}
 	}
 
 	void BuildInverseViewProj(float outMatrix[16])
@@ -208,6 +336,21 @@ namespace
 		constants.CameraPos[2] = camera.Z;
 		constants.CameraPos[3] = 1.0f;
 
+		float forwardX = camera.vPointTo.x;
+		float forwardY = camera.vPointTo.y;
+		float forwardZ = camera.vPointTo.z;
+
+		NormalizeVector3(
+			forwardX,
+			forwardY,
+			forwardZ
+		);
+
+		constants.CameraForward[0] = forwardX;
+		constants.CameraForward[1] = forwardY;
+		constants.CameraForward[2] = forwardZ;
+		constants.CameraForward[3] = 0.0f;
+
 		TryFillDirectionalLightFromWorld(constants, stats);
 
 		constants.AmbientColorIntensity[0] = 0.055f;
@@ -235,10 +378,7 @@ namespace
 		constants.ScreenSize[2] = gbuffer.GetWidth() > 0 ? 1.0f / static_cast<float>(gbuffer.GetWidth()) : 1.0f;
 		constants.ScreenSize[3] = gbuffer.GetHeight() > 0 ? 1.0f / static_cast<float>(gbuffer.GetHeight()) : 1.0f;
 
-		constants.ShadowParams[0] = stats && stats->ShadowSlicesRendered > 0 ? 0.82f : 1.0f;
-		constants.ShadowParams[1] = stats ? static_cast<float>(stats->ShadowSlicesRendered) : 0.0f;
-		constants.ShadowParams[2] = stats ? static_cast<float>(stats->ShadowAlphaTested) : 0.0f;
-		constants.ShadowParams[3] = stats ? static_cast<float>(stats->TransparentShadowCasesRendered) : 0.0f;
+		FillShadowConstants(constants);
 
 		int dx11DebugView = 0;
 
@@ -249,8 +389,8 @@ namespace
 			if (dx11DebugView < 0)
 				dx11DebugView = 0;
 
-			if (dx11DebugView > 6)
-				dx11DebugView = 6;
+			if (dx11DebugView > 7)
+				dx11DebugView = 7;
 		}
 
 		// Options contract:
@@ -258,7 +398,7 @@ namespace
 		// y = ambient/probe enabled
 		// z = fog enabled
 		// w = spec/gloss enabled
-		constants.Options[0] = 0.0f;
+		constants.Options[0] = static_cast<float>(dx11DebugView);
 		constants.Options[1] = 1.0f;
 		constants.Options[2] = 1.0f;
 		constants.Options[3] = 1.0f;
@@ -610,11 +750,40 @@ bool r3dDX11LightingPass::Render(
 		gbuffer.GetAux().GetSRV()
 	);
 
+	DrawContext->SetSampler(
+		1,
+		CommonStates->GetLinearClampSampler()
+	);
+
+	for (unsigned int i = 0; i < R3D_DX11_MAX_SHADOW_SLICES; ++i)
+	{
+		r3dDX11ShadowSliceInfo shadowInfo;
+
+		ID3D11ShaderResourceView* shadowSRV =
+			r3dDX11GetShadowSliceInfo(static_cast<int>(i), shadowInfo)
+				? shadowInfo.SRV
+				: nullptr;
+
+		DrawContext->SetShaderResource(
+			4 + i,
+			shadowSRV
+		);
+	}
+
+	r3dDX11TransparentShadowInfo transparentShadowInfo;
+
+	DrawContext->SetShaderResource(
+		8,
+		r3dDX11GetTransparentShadowInfo(transparentShadowInfo)
+			? transparentShadowInfo.SRV
+			: nullptr
+	);
+
 	DrawContext->Draw(3);
 
 	ID3D11ShaderResourceView* nullSRV = nullptr;
 
-	for (unsigned int i = 0; i < 8; ++i)
+	for (unsigned int i = 0; i < 9; ++i)
 		DrawContext->SetShaderResource(i, nullSRV);
 
 	if (stats)

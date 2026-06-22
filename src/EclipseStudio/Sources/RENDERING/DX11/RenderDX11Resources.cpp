@@ -153,23 +153,86 @@ bool r3dDX11Texture2D::IsValid() const
 
 bool r3dDX11Texture2D::CreateViews(ID3D11Device* device, unsigned int bindFlags)
 {
+	if (!device || !Texture)
+		return false;
+
+	const bool isDepthTypeless =
+		Format == DXGI_FORMAT_R24G8_TYPELESS;
+
 	if ((bindFlags & R3D_DX11_BIND_SHADER_RESOURCE) != 0)
 	{
-		HRESULT result = device->CreateShaderResourceView(Texture, nullptr, &SRV);
+		HRESULT result = E_FAIL;
+
+		if (isDepthTypeless)
+		{
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+			srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.Texture2D.MipLevels = 1;
+
+			result =
+				device->CreateShaderResourceView(
+					Texture,
+					&srvDesc,
+					&SRV
+				);
+		}
+		else
+		{
+			result =
+				device->CreateShaderResourceView(
+					Texture,
+					nullptr,
+					&SRV
+				);
+		}
+
 		if (FAILED(result) || !SRV)
 			return false;
 	}
 
 	if ((bindFlags & R3D_DX11_BIND_RENDER_TARGET) != 0)
 	{
-		HRESULT result = device->CreateRenderTargetView(Texture, nullptr, &RTV);
+		HRESULT result =
+			device->CreateRenderTargetView(
+				Texture,
+				nullptr,
+				&RTV
+			);
+
 		if (FAILED(result) || !RTV)
 			return false;
 	}
 
 	if ((bindFlags & R3D_DX11_BIND_DEPTH_STENCIL) != 0)
 	{
-		HRESULT result = device->CreateDepthStencilView(Texture, nullptr, &DSV);
+		HRESULT result = E_FAIL;
+
+		if (isDepthTypeless)
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+			dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			dsvDesc.Texture2D.MipSlice = 0;
+
+			result =
+				device->CreateDepthStencilView(
+					Texture,
+					&dsvDesc,
+					&DSV
+				);
+		}
+		else
+		{
+			result =
+				device->CreateDepthStencilView(
+					Texture,
+					nullptr,
+					&DSV
+				);
+		}
+
 		if (FAILED(result) || !DSV)
 			return false;
 	}

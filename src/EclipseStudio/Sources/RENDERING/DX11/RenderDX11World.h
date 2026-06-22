@@ -2,6 +2,42 @@
 
 class r3dCamera;
 class r3dDX11Renderer;
+struct ID3D11ShaderResourceView;
+
+static const unsigned int R3D_DX11_MAX_SHADOW_SLICES = 4;
+
+struct r3dDX11ShadowSliceInfo
+{
+	float ViewProj[16];
+
+	float SplitNear;
+	float SplitFar;
+	float DepthBias;
+	float TexelSize;
+
+	float Strength;
+	float Padding0;
+	float Padding1;
+	float Padding2;
+
+	ID3D11ShaderResourceView* SRV;
+};
+
+struct r3dDX11TransparentShadowInfo
+{
+	float ViewProj[16];
+
+	float DepthBias;
+	float TexelSize;
+	float Strength;
+	float Enabled;
+
+	ID3D11ShaderResourceView* SRV;
+};
+
+int r3dDX11GetShadowSliceCount();
+bool r3dDX11GetShadowSliceInfo(int sliceIndex, r3dDX11ShadowSliceInfo& outInfo);
+bool r3dDX11GetTransparentShadowInfo(r3dDX11TransparentShadowInfo& outInfo);
 
 struct r3dDX11WorldRenderStats
 {
