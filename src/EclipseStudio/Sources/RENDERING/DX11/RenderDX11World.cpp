@@ -1606,6 +1606,8 @@ bool r3dDX11RenderWorldDepthOnly(
 
 	r3dDX11ResetWorldRenderStats(*stats);
 
+	SanitizeDX11WorldRenderQueuesForFrame();
+
 	return r3dDX11RenderWorldDepthOnlyInternal(
 		renderer,
 		camera,

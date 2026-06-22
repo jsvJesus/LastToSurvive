@@ -15,6 +15,19 @@
 extern bool g_bEditMode;
 extern int g_bForceQualitySelectionInEditor;
 
+#ifndef WO_SERVER
+extern bool StudioDX11WorldHybridEnabled();
+#endif
+
+static bool MeshGameObject_UseDX11WorldPath()
+{
+#ifndef WO_SERVER
+	return StudioDX11WorldHybridEnabled();
+#else
+	return false;
+#endif
+}
+
 int		g_DrawCollisionMeshes = 0;
 int		g_DrawPlayerOnlyCollisionMeshes = 0;
 
@@ -847,6 +860,57 @@ static void AppendMeshObjDeferredRenderablesDX11Safe(
 	}
 }
 
+static void AppendMeshObjDepthRenderablesDX11Safe(
+	RenderArray& outArray,
+	r3dMesh* mesh,
+	MeshGameObject* parent,
+	const r3dColor& objectColor,
+	UINT64 baseSortValue
+)
+{
+	if (!mesh || !parent)
+		return;
+
+	if (!mesh->IsDrawable())
+		return;
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		// DX11 depth/prepass here is opaque mesh depth only.
+		// Transparent masked/camo depth is handled by rsDrawTransparents /
+		// rsDrawDistortion through DrawDX11TransparentDepthPrepassQueue().
+		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
+			continue;
+
+		MeshObjDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = objectColor.GetPacked();
+		rend.Mesh = mesh;
+		rend.SortValue =
+			baseSortValue |
+			((UINT64)batch.Mat->ID << 32) |
+			((UINT64)mesh->buffers.VBId << 16);
+
+		rend.InitDX11(NULL, NULL);
+		rend.Init();
+
+		rend.Parent = parent;
+		rend.DX11WorldTransform = &parent->GetTransformMatrix();
+
+		outArray.PushBack(rend);
+	}
+}
+
 void MeshObjDeferredHighlightRenderable::Init( r3dMesh* mesh, MeshGameObject* parent )
 {
 	ParentType::Init( mesh );
@@ -1296,16 +1360,29 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 	}
 #endif
 
-	if( r_depth_mode->GetInt() )
+	if (r_depth_mode->GetInt())
 	{
-		DepthMeshRenderable rend ;
-		rend.Init() ;		
+		if (MeshGameObject_UseDX11WorldPath())
+		{
+			AppendMeshObjDepthRenderablesDX11Safe(
+				render_arrays[rsDrawDepth],
+				TargetLODSet[meshLodIndex],
+				this,
+				m_ObjectColor,
+				RENDERABLE_PHYSICS_MESHES_SORT_VALUE
+			);
+		}
+		else
+		{
+			DepthMeshRenderable rend;
+			rend.Init();
 
-		rend.Parent		= this ;
-		rend.SortValue	= RENDERABLE_PHYSICS_MESHES_SORT_VALUE;
-		rend.Mesh		= TargetLODSet[ meshLodIndex ] ;
+			rend.Parent = this;
+			rend.SortValue = RENDERABLE_PHYSICS_MESHES_SORT_VALUE;
+			rend.Mesh = TargetLODSet[meshLodIndex];
 
-		render_arrays[ rsDrawDepth ].PushBack( rend );
+			render_arrays[rsDrawDepth].PushBack(rend);
+		}
 	}
 
 	int need_append = 0 ;
@@ -1339,32 +1416,46 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 		}
 	}
 
-	if( need_append && !( ObjFlags & OBJFLAG_PlayerCollisionOnly ) )
+	if (need_append && !(ObjFlags & OBJFLAG_PlayerCollisionOnly))
 	{
-		r3dMesh* mesh = TargetLODSet[ meshLodIndex ] ;
-		if( !mesh->HasAlphaTextures )
+		r3dMesh* mesh = TargetLODSet[meshLodIndex];
+
+		if (!mesh->HasAlphaTextures)
 		{
-			DepthPrepassMeshRenderable dprend ;
+			if (MeshGameObject_UseDX11WorldPath())
+			{
+				AppendMeshObjDepthRenderablesDX11Safe(
+					render_arrays[rsDepthPrepass],
+					mesh,
+					this,
+					m_ObjectColor,
+					0
+				);
+			}
+			else
+			{
+				DepthPrepassMeshRenderable dprend;
 
-			dprend.Init() ;
+				dprend.Init();
 
-			dprend.Parent		= this ;
-			dprend.SortValue	= 0 ;
-			dprend.Mesh			= mesh ;
+				dprend.Parent = this;
+				dprend.SortValue = 0;
+				dprend.Mesh = mesh;
 
-			render_arrays[ rsDepthPrepass ].PushBack( dprend ) ;
+				render_arrays[rsDepthPrepass].PushBack(dprend);
+			}
 
 #ifndef FINAL_BUILD
-			if( r_highlight_prepass->GetInt() )
+			if (r_highlight_prepass->GetInt())
 			{
-				HighlightMeshRenderable	rend ;
-				rend.Init() ;
+				HighlightMeshRenderable rend;
+				rend.Init();
 
-				rend.Parent		= this ;
-				rend.SortValue	= RENDERABLE_HIGHLIGHT_SORT_VALUE ;
-				rend.Mesh		= mesh ;
+				rend.Parent = this;
+				rend.SortValue = RENDERABLE_HIGHLIGHT_SORT_VALUE;
+				rend.Mesh = mesh;
 
-				render_arrays[ rsDrawDebugData ].PushBack( rend ) ;
+				render_arrays[rsDrawDebugData].PushBack(rend);
 			}
 #endif
 		}
