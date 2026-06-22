@@ -762,7 +762,8 @@ namespace
 					static_cast<unsigned int>(meshRenderable->BatchIdx),
 					world,
 					viewProj,
-					meshRenderable->DX11Skeleton
+					meshRenderable->DX11Skeleton,
+					transparentShadowCase
 				);
 			}
 			else
@@ -774,7 +775,8 @@ namespace
 					*meshRenderable->Mesh,
 					world,
 					viewProj,
-					meshRenderable->DX11Skeleton
+					meshRenderable->DX11Skeleton,
+					transparentShadowCase
 				);
 			}
 
@@ -1029,6 +1031,155 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.TransparentDepthCamouflageMeshes = 0;
 	stats.TransparentDepthSkippedUnsupported = 0;
 	stats.TransparentDepthSkippedFailed = 0;
+}
+
+int r3dDX11GetShadowSliceCount()
+{
+	int activeSlices =
+		r_active_shadow_slices
+			? r_active_shadow_slices->GetInt()
+			: NumShadowSlices;
+
+	activeSlices =
+		std::max(
+			0,
+			std::min(
+				activeSlices,
+				static_cast<int>(NumShadowSlices)
+			)
+		);
+
+	activeSlices =
+		std::min(
+			activeSlices,
+			static_cast<int>(R3D_DX11_MAX_SHADOW_SLICES)
+		);
+
+	return activeSlices;
+}
+
+bool r3dDX11GetShadowSliceInfo(int sliceIndex, r3dDX11ShadowSliceInfo& outInfo)
+{
+	memset(&outInfo, 0, sizeof(outInfo));
+
+	if (
+		sliceIndex < 0 ||
+		sliceIndex >= r3dDX11GetShadowSliceCount() ||
+		sliceIndex >= NumShadowSlices
+	)
+	{
+		return false;
+	}
+
+	r3dDX11Texture2D& shadowDepth =
+		g_DX11ShadowDepthTargets[sliceIndex];
+
+	if (
+		!shadowDepth.IsValid() ||
+		!shadowDepth.GetSRV() ||
+		g_DX11ShadowDepthSizes[sliceIndex] <= 0
+	)
+	{
+		return false;
+	}
+
+	const D3DXMATRIX viewProj =
+		ShadowSlices[sliceIndex].lightView *
+		ShadowSlices[sliceIndex].lightProj;
+
+	memcpy(
+		outInfo.ViewProj,
+		&viewProj,
+		sizeof(outInfo.ViewProj)
+	);
+
+	if (ShadowSplitDistancesOpaque)
+	{
+		outInfo.SplitNear =
+			ShadowSplitDistancesOpaque[sliceIndex];
+
+		outInfo.SplitFar =
+			ShadowSplitDistancesOpaque[sliceIndex + 1];
+	}
+	else
+	{
+		outInfo.SplitNear = 0.0f;
+		outInfo.SplitFar = MAX_DIR_SHADOW_LENGTH;
+	}
+
+	if (outInfo.SplitFar <= outInfo.SplitNear + 0.001f)
+	{
+		outInfo.SplitNear = 0.0f;
+		outInfo.SplitFar = MAX_DIR_SHADOW_LENGTH;
+	}
+
+	outInfo.DepthBias =
+		std::max(
+			ShadowSlices[sliceIndex].depthBias,
+			0.00005f
+		);
+
+	outInfo.TexelSize =
+		1.0f /
+		static_cast<float>(
+			std::max(
+				1,
+				g_DX11ShadowDepthSizes[sliceIndex]
+			)
+		);
+
+	outInfo.Strength = 0.82f;
+	outInfo.SRV = shadowDepth.GetSRV();
+
+	return true;
+}
+
+bool r3dDX11GetTransparentShadowInfo(r3dDX11TransparentShadowInfo& outInfo)
+{
+	memset(&outInfo, 0, sizeof(outInfo));
+
+	if (
+		!g_DX11TransparentShadowDepthTarget.IsValid() ||
+		!g_DX11TransparentShadowDepthTarget.GetSRV() ||
+		g_DX11TransparentShadowDepthSize <= 0 ||
+		!r_particle_shadows ||
+		!r_particle_shadows->GetBool()
+	)
+	{
+		return false;
+	}
+
+	const D3DXMATRIX viewProj =
+		TransparentShadowSlice.lightView *
+		TransparentShadowSlice.lightProj;
+
+	memcpy(
+		outInfo.ViewProj,
+		&viewProj,
+		sizeof(outInfo.ViewProj)
+	);
+
+	outInfo.DepthBias =
+		std::max(
+			TransparentShadowSlice.depthBias,
+			0.00005f
+		);
+
+	outInfo.TexelSize =
+		1.0f /
+		static_cast<float>(
+			std::max(
+				1,
+				g_DX11TransparentShadowDepthSize
+			)
+		);
+
+	// Transparent/camo shadows должны быть мягче opaque shadows.
+	outInfo.Strength = 0.42f;
+	outInfo.Enabled = 1.0f;
+	outInfo.SRV = g_DX11TransparentShadowDepthTarget.GetSRV();
+
+	return true;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(
