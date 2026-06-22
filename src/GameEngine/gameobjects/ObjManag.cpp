@@ -1406,7 +1406,22 @@ static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
 
 static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookName)
 {
-	if (!StudioDX11WorldHybridEnabled())
+	static bool sAuditStartedLogged = false;
+
+	const bool dx11WorldEnabled = StudioDX11WorldHybridEnabled();
+
+	if (!sAuditStartedLogged)
+	{
+		sAuditStartedLogged = true;
+
+		r3dOutToLog(
+			"[DX11World][Stage9] audit entered: dx11world=%d hook=%s\n",
+			dx11WorldEnabled ? 1 : 0,
+			hookName ? hookName : "<null>"
+		);
+	}
+
+	if (!dx11WorldEnabled)
 		return;
 
 	if (!obj)
@@ -1431,18 +1446,18 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 
 	bool* logged = NULL;
 
-	if (obj->isObjType(OBJTYPE_SharedUsableItem))	logged = &sLoggedSharedUsableItem;
-	else if (obj->isObjType(OBJTYPE_GameplayItem))	logged = &sLoggedGameplayItem;
-	else if (obj->isObjType(OBJTYPE_Zombie))		logged = &sLoggedZombie;
-	else if (obj->isObjType(OBJTYPE_NPC))			logged = &sLoggedNPC;
-	else if (obj->isObjType(OBJTYPE_Building))		logged = &sLoggedBuilding;
-	else if (obj->isObjType(OBJTYPE_Road))			logged = &sLoggedRoad;
-	else if (obj->isObjType(OBJTYPE_Particle))		logged = &sLoggedParticle;
-	else if (obj->isObjType(OBJTYPE_Trees))			logged = &sLoggedTrees;
-	else if (obj->isObjType(OBJTYPE_ApexDestructible)) logged = &sLoggedApex;
-	else if (obj->isObjType(OBJTYPE_AnimMesh))		logged = &sLoggedAnimMesh;
-	else if (obj->isObjType(OBJTYPE_DecalProxy))	logged = &sLoggedDecalProxy;
-	else if (obj->isObjType(OBJTYPE_Sprite))		logged = &sLoggedSprite;
+	if (obj->isObjType(OBJTYPE_SharedUsableItem))			logged = &sLoggedSharedUsableItem;
+	else if (obj->isObjType(OBJTYPE_GameplayItem))			logged = &sLoggedGameplayItem;
+	else if (obj->isObjType(OBJTYPE_Zombie))				logged = &sLoggedZombie;
+	else if (obj->isObjType(OBJTYPE_NPC))					logged = &sLoggedNPC;
+	else if (obj->isObjType(OBJTYPE_Building))				logged = &sLoggedBuilding;
+	else if (obj->isObjType(OBJTYPE_Road))					logged = &sLoggedRoad;
+	else if (obj->isObjType(OBJTYPE_Particle))				logged = &sLoggedParticle;
+	else if (obj->isObjType(OBJTYPE_Trees))					logged = &sLoggedTrees;
+	else if (obj->isObjType(OBJTYPE_ApexDestructible))		logged = &sLoggedApex;
+	else if (obj->isObjType(OBJTYPE_AnimMesh))				logged = &sLoggedAnimMesh;
+	else if (obj->isObjType(OBJTYPE_DecalProxy))			logged = &sLoggedDecalProxy;
+	else if (obj->isObjType(OBJTYPE_Sprite))				logged = &sLoggedSprite;
 
 	if (!logged || *logged)
 		return;
