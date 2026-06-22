@@ -72,6 +72,14 @@ struct r3dDX11WorldRenderStats
 	unsigned int VegetationShadowDraws;
 	unsigned int VegetationBendingDraws;
 	unsigned int VegetationSkippedFailed;
+
+	unsigned int TransparentDepthRenderables;
+	unsigned int TransparentDepthMeshRenderables;
+	unsigned int TransparentDepthDrawnMeshes;
+	unsigned int TransparentDepthAlphaTestedMeshes;
+	unsigned int TransparentDepthCamouflageMeshes;
+	unsigned int TransparentDepthSkippedUnsupported;
+	unsigned int TransparentDepthSkippedFailed;
 };
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats);

@@ -181,21 +181,42 @@ void r3dDX11DepthOnlyPass::SetSkinnedMeshMode(bool skinned)
 	ApplyShaders();
 }
 
-bool r3dDX11DepthOnlyPass::SetMaterial(const r3dDX11MaterialTextures& material)
+bool r3dDX11DepthOnlyPass::SetMaterial(const r3dDX11MaterialTextures& material, bool allowTransparentDepthPrepass)
 {
-	if (!bInitialized || !DrawContext || material.IsTransparent() || material.IsSkipDraw())
+	if (!bInitialized || !DrawContext || material.IsSkipDraw())
 		return false;
 
+	if (material.IsTransparent())
+	{
+		if (!allowTransparentDepthPrepass)
+			return false;
+
+		// Plain alpha-blended glass/water/etc must not write full depth.
+		// For transparent depth prepass we allow:
+		// - alpha-cut transparent materials;
+		// - camouflage materials, because they still need an occlusion silhouette.
+		if (!material.IsAlphaCut() && !material.IsCamouflage())
+			return false;
+	}
+
 	const r3dDX11MaterialConstants constants = material.BuildConstants();
+
 	if (!MaterialConstants.Update(DrawContext->GetContext(), &constants, sizeof(constants)))
 		return false;
 
 	MaterialConstants.BindPS(DrawContext->GetContext(), 0);
-	DrawContext->SetRasterizerState(material.IsDoubleSided() ? CommonStates->GetCullNoneRasterizer() : CommonStates->GetCullBackRasterizer());
+
+	DrawContext->SetRasterizerState(
+		material.IsDoubleSided()
+			? CommonStates->GetCullNoneRasterizer()
+			: CommonStates->GetCullBackRasterizer()
+	);
+
 	if (material.IsAlphaCut())
 		material.Bind(*DrawContext, 0);
 
 	const bool alphaTestMode = material.IsAlphaCut();
+
 	if (bAlphaTestMode != alphaTestMode)
 	{
 		bAlphaTestMode = alphaTestMode;

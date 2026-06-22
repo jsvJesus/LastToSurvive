@@ -17,7 +17,8 @@ enum r3dDX11MaterialFlag
 	R3D_DX11_MATERIAL_ALPHA_CUT = 1 << 1,
 	R3D_DX11_MATERIAL_DOUBLE_SIDED = 1 << 2,
 	R3D_DX11_MATERIAL_TRANSPARENT = 1 << 3,
-	R3D_DX11_MATERIAL_SKIP_DRAW = 1 << 4
+	R3D_DX11_MATERIAL_SKIP_DRAW = 1 << 4,
+	R3D_DX11_MATERIAL_CAMOUFLAGE = 1 << 5
 };
 
 struct r3dDX11MaterialConstants
@@ -68,6 +69,8 @@ public:
 	void SetDoubleSided(bool doubleSided);
 	void SetTransparent(bool transparent);
 	void SetSkipDraw(bool skipDraw);
+	void SetCamouflage(bool camouflage);
+	bool IsCamouflage() const;
 	r3dDX11MaterialDomain GetDomain() const;
 	bool ShouldDrawInGBuffer() const;
 	bool IsDoubleSided() const;
@@ -100,4 +103,5 @@ private:
 	bool bDoubleSided = false;
 	bool bTransparent = false;
 	bool bSkipDraw = false;
+	bool bCamouflage = false;
 };

@@ -101,6 +101,7 @@ bool r3dDX11MaterialTextures::ApplyDesc(r3dDX11TextureLibrary& textureLibrary, c
 	SetDoubleSided((desc.Flags & R3D_DX11_MATERIAL_DOUBLE_SIDED) != 0);
 	SetTransparent((desc.Flags & R3D_DX11_MATERIAL_TRANSPARENT) != 0);
 	SetSkipDraw((desc.Flags & R3D_DX11_MATERIAL_SKIP_DRAW) != 0);
+	SetCamouflage((desc.Flags & R3D_DX11_MATERIAL_CAMOUFLAGE) != 0);
 	return loaded;
 }
 
@@ -175,6 +176,11 @@ void r3dDX11MaterialTextures::SetSkipDraw(bool skipDraw)
 	bSkipDraw = skipDraw;
 }
 
+void r3dDX11MaterialTextures::SetCamouflage(bool camouflage)
+{
+	bCamouflage = camouflage;
+}
+
 r3dDX11MaterialDomain r3dDX11MaterialTextures::GetDomain() const
 {
 	return Domain;
@@ -203,6 +209,11 @@ bool r3dDX11MaterialTextures::IsTransparent() const
 bool r3dDX11MaterialTextures::IsSkipDraw() const
 {
 	return bSkipDraw;
+}
+
+bool r3dDX11MaterialTextures::IsCamouflage() const
+{
+	return bCamouflage;
 }
 
 r3dDX11Texture* r3dDX11MaterialTextures::GetDiffuse() const

@@ -78,15 +78,39 @@ namespace
 		desc.Constants.Emissive[2] = material.EmissiveColor.B / 255.0f;
 		desc.Constants.Emissive[3] = material.TransparencyMultiplier;
 
-		if (material.Flags & R3D_MAT_HASALPHA)
+		const bool hasAlpha =
+			(material.Flags & (R3D_MAT_HASALPHA | R3D_MAT_FORCEHASALPHA)) != 0;
+
+		const bool isTransparent =
+			(material.Flags & (
+				R3D_MAT_TRANSPARENT |
+				R3D_MAT_TRANSPARENT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMO_FP
+			)) != 0;
+
+		const bool isCamouflage =
+			(material.Flags & (
+				R3D_MAT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMO_FP
+			)) != 0;
+
+		if (hasAlpha)
 			desc.Flags |= R3D_DX11_MATERIAL_ALPHA_CUT;
+
 		if (material.Flags & R3D_MAT_DOUBLESIDED)
 			desc.Flags |= R3D_DX11_MATERIAL_DOUBLE_SIDED;
-		if (material.Flags & R3D_MAT_TRANSPARENT)
+
+		if (isTransparent)
 			desc.Flags |= R3D_DX11_MATERIAL_TRANSPARENT;
+
+		if (isCamouflage)
+			desc.Flags |= R3D_DX11_MATERIAL_CAMOUFLAGE;
+
 		if (material.Flags & R3D_MAT_SKIP_DRAW)
 			desc.Flags |= R3D_DX11_MATERIAL_SKIP_DRAW;
-		if (material.Flags & (R3D_MAT_TRANSPARENT | R3D_MAT_SKIP_DRAW))
+
+		if (isTransparent || (material.Flags & R3D_MAT_SKIP_DRAW))
 			desc.Flags &= ~R3D_DX11_MATERIAL_DRAW_GBUFFER;
 
 		return desc;

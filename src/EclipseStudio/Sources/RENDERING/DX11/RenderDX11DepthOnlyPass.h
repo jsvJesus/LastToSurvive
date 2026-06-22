@@ -32,7 +32,7 @@ public:
 	bool SetMeshConstants(const r3dDX11MeshConstants& constants);
 	bool SetSkinningBones(const r3dSkeleton* skeleton);
 	void SetSkinnedMeshMode(bool skinned);
-	bool SetMaterial(const r3dDX11MaterialTextures& material);
+	bool SetMaterial(const r3dDX11MaterialTextures& material, bool allowTransparentDepthPrepass = false);
 	void DrawMesh(r3dDX11VertexBuffer& vertexBuffer, r3dDX11IndexBuffer& indexBuffer, unsigned int indexCount, unsigned int startIndex = 0, int baseVertex = 0);
 
 	bool IsInitialized() const;

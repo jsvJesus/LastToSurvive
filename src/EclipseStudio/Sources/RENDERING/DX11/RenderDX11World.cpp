@@ -315,6 +315,85 @@ namespace
 		return renderable.Mesh->HasAlphaTextures != 0;
 	}
 
+	bool IsTransparentDepthPrepassMaterial(const r3dMaterial* material)
+	{
+		if (!material)
+			return false;
+
+		if (material->Flags & R3D_MAT_SKIP_DRAW)
+			return false;
+
+		const bool isTransparent =
+			(material->Flags & (
+				R3D_MAT_TRANSPARENT |
+				R3D_MAT_TRANSPARENT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMO_FP
+			)) != 0;
+
+		const bool isCamouflage =
+			(material->Flags & (
+				R3D_MAT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMO_FP
+			)) != 0;
+
+		const bool hasAlphaCut =
+			(material->Flags & (
+				R3D_MAT_HASALPHA |
+				R3D_MAT_FORCEHASALPHA
+			)) != 0;
+
+		// Не пишем depth для обычного alpha-blended glass/water.
+		// Пишем depth для masked transparent и camo silhouettes.
+		return
+			isCamouflage ||
+			(isTransparent && hasAlphaCut);
+	}
+
+	bool IsTransparentDepthPrepassRenderable(const MeshDeferredRenderable& renderable)
+	{
+		if (!renderable.Mesh)
+			return false;
+
+		if (
+			renderable.BatchIdx < 0 ||
+			renderable.BatchIdx >= renderable.Mesh->NumMatChunks
+		)
+		{
+			return false;
+		}
+
+		const r3dMaterial* material =
+			renderable.Mesh->MatChunks[renderable.BatchIdx].Mat;
+
+		return IsTransparentDepthPrepassMaterial(material);
+	}
+
+	bool IsCamouflageDepthPrepassRenderable(const MeshDeferredRenderable& renderable)
+	{
+		if (
+			!renderable.Mesh ||
+			renderable.BatchIdx < 0 ||
+			renderable.BatchIdx >= renderable.Mesh->NumMatChunks
+		)
+		{
+			return false;
+		}
+
+		const r3dMaterial* material =
+			renderable.Mesh->MatChunks[renderable.BatchIdx].Mat;
+
+		if (!material)
+			return false;
+
+		return
+			(material->Flags & (
+				R3D_MAT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMOUFLAGE |
+				R3D_MAT_TRANSPARENT_CAMO_FP
+			)) != 0;
+	}
+
 	bool IsDX11MeshPointerUsable(const r3dMesh* mesh)
 	{
 		if (!mesh)
@@ -452,6 +531,75 @@ namespace
 			else
 			{
 				++stats.DepthSkippedFailed;
+			}
+		}
+	}
+
+	void DrawDX11TransparentDepthPrepassQueue(
+		r3dDX11Renderer& renderer,
+		r3dDX11DepthOnlyPass& pass,
+		eRenderStageID queueId,
+		const D3DXMATRIX& viewProj,
+		r3dDX11WorldRenderStats& stats
+	)
+	{
+		RenderArray& queue = g_render_arrays[queueId];
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+
+			++stats.TransparentDepthRenderables;
+
+			MeshDeferredRenderable* meshRenderable =
+				r3dGetMeshDeferredRenderable(&renderable);
+
+			if (!meshRenderable)
+			{
+				++stats.TransparentDepthSkippedUnsupported;
+				continue;
+			}
+
+			++stats.TransparentDepthMeshRenderables;
+
+			if (
+				!IsDX11MeshPointerUsable(meshRenderable->Mesh) ||
+				meshRenderable->BatchIdx < 0
+			)
+			{
+				++stats.TransparentDepthSkippedFailed;
+				continue;
+			}
+
+			if (!IsTransparentDepthPrepassRenderable(*meshRenderable))
+				continue;
+
+			if (IsAlphaTestedDeferredRenderable(*meshRenderable))
+				++stats.TransparentDepthAlphaTestedMeshes;
+
+			if (IsCamouflageDepthPrepassRenderable(*meshRenderable))
+				++stats.TransparentDepthCamouflageMeshes;
+
+			const D3DXMATRIX& world =
+				GetRenderableWorldMatrix(*meshRenderable);
+
+			if (r3dDX11DrawMeshDepthOnlyBatch(
+					renderer.GetDevice().GetDevice(),
+					renderer.GetTextureLibrary(),
+					pass,
+					*meshRenderable->Mesh,
+					static_cast<unsigned int>(meshRenderable->BatchIdx),
+					world,
+					viewProj,
+					meshRenderable->DX11Skeleton,
+					true))
+			{
+				++stats.TransparentDepthDrawnMeshes;
+				++stats.DepthDrawnMeshes;
+			}
+			else
+			{
+				++stats.TransparentDepthSkippedFailed;
 			}
 		}
 	}
@@ -776,6 +924,14 @@ void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 	stats.VegetationShadowDraws = 0;
 	stats.VegetationBendingDraws = 0;
 	stats.VegetationSkippedFailed = 0;
+
+	stats.TransparentDepthRenderables = 0;
+	stats.TransparentDepthMeshRenderables = 0;
+	stats.TransparentDepthDrawnMeshes = 0;
+	stats.TransparentDepthAlphaTestedMeshes = 0;
+	stats.TransparentDepthCamouflageMeshes = 0;
+	stats.TransparentDepthSkippedUnsupported = 0;
+	stats.TransparentDepthSkippedFailed = 0;
 }
 
 static bool r3dDX11RenderWorldDepthOnlyInternal(
@@ -848,6 +1004,33 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		false,
 		stats
 	);
+
+	if (r_dx11_transparent_depth_prepass && r_dx11_transparent_depth_prepass->GetBool())
+	{
+		DrawDX11TransparentDepthPrepassQueue(
+			renderer,
+			depthPass,
+			rsDrawTransparents,
+			viewProj,
+			stats
+		);
+
+		DrawDX11TransparentDepthPrepassQueue(
+			renderer,
+			depthPass,
+			rsDrawDistortion,
+			viewProj,
+			stats
+		);
+
+		DrawDX11TransparentDepthPrepassQueue(
+			renderer,
+			depthPass,
+			rsDrawDepthEffect,
+			viewProj,
+			stats
+		);
+	}
 
 	DrawDX11DepthOnlyQueue(
 		renderer,

@@ -84,7 +84,8 @@ bool r3dDX11DrawMeshDepthOnly(
 	r3dMesh& mesh,
 	const D3DXMATRIX& world,
 	const D3DXMATRIX& viewProj,
-	const r3dSkeleton* skeleton
+	const r3dSkeleton* skeleton,
+	bool allowTransparentDepthPrepass
 )
 {
 	if (!device)
@@ -132,7 +133,8 @@ bool r3dDX11DrawMeshDepthOnly(
 		renderData->DrawDepthOnly(
 			pass,
 			constants,
-			skeleton
+			skeleton,
+			allowTransparentDepthPrepass
 		);
 
 	if (!drawn)
@@ -151,7 +153,8 @@ bool r3dDX11DrawMeshDepthOnlyBatch(
 	unsigned int batchIndex,
 	const D3DXMATRIX& world,
 	const D3DXMATRIX& viewProj,
-	const r3dSkeleton* skeleton
+	const r3dSkeleton* skeleton,
+	bool allowTransparentDepthPrepass
 )
 {
 	if (!device)
@@ -206,7 +209,8 @@ bool r3dDX11DrawMeshDepthOnlyBatch(
 			pass,
 			batchIndex,
 			constants,
-			skeleton
+			skeleton,
+			allowTransparentDepthPrepass
 		);
 
 	if (!drawn)
