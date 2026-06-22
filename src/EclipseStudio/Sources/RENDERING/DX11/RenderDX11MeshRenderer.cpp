@@ -13,7 +13,7 @@ namespace
 {
 	bool IsMeshLoadedSafe(r3dMesh& mesh)
 	{
-		__try
+		__try // batch
 		{
 			if (!mesh.IsLoaded())
 				return false;
