@@ -15,6 +15,7 @@ class r3dDX11TextureLibrary;
 struct r3dDX11WorldRenderStats;
 struct ID3D11Device;
 struct ID3D11DepthStencilView;
+struct ID3D11RasterizerState;
 
 class r3dDX11TerrainPass final
 {
@@ -44,7 +45,9 @@ public:
 		ID3D11DepthStencilView* depthStencil,
 		int width,
 		int height,
-		r3dDX11WorldRenderStats* stats
+		r3dDX11WorldRenderStats* stats,
+		float depthBias = 0.0f,
+		float slopeScaledDepthBias = 0.0f
 	);
 
 	bool RenderShadow(
@@ -52,7 +55,9 @@ public:
 		ID3D11DepthStencilView* depthStencil,
 		int width,
 		int height,
-		r3dDX11WorldRenderStats* stats
+		r3dDX11WorldRenderStats* stats,
+		float depthBias = 0.0f,
+		float slopeScaledDepthBias = 0.0f
 	);
 
 	bool IsInitialized() const;
@@ -62,7 +67,9 @@ private:
 	bool CreateConstantBuffers(ID3D11Device* device);
 	bool BuildTerrainMesh(ID3D11Device* device);
 	bool EnsureTerrainMesh(ID3D11Device* device);
-	bool DrawTerrain(const D3DXMATRIX& viewProj, bool gbufferMode, r3dDX11WorldRenderStats* stats);
+	bool DrawTerrain(const D3DXMATRIX& viewProj, bool gbufferMode, r3dDX11WorldRenderStats* stats, float depthBias, float slopeScaledDepthBias);
+	bool ApplyRasterizerState(float depthBias, float slopeScaledDepthBias);
+	bool CreateBiasedRasterizer(float depthBias, float slopeScaledDepthBias);
 
 private:
 	ID3D11Device* Device = nullptr;
@@ -80,6 +87,10 @@ private:
 	r3dDX11IndexBuffer IndexBuffer;
 
 	r3dDX11ConstantBuffer TerrainConstants;
+	ID3D11RasterizerState* BiasedCullBackRasterizer = nullptr;
+	float CurrentDepthBias = 0.0f;
+	float CurrentSlopeScaledDepthBias = 0.0f;
+	bool bUseDepthBias = false;
 
 	unsigned int VertexCount = 0;
 	unsigned int IndexCount = 0;

@@ -2212,35 +2212,17 @@ ObjectManager::AddToTransparentShadowCasters( GameObject* obj )
 void
 ObjectManager::RemoveFromTransparentShadowCasters( GameObject* obj )
 {
-	if( obj->IsTransparentShadowCaster() )
-	{
-		r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
+	r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
 
-		for( int i = 0, e = TransparentShadowCasterCount ; i < e ; i ++ )
+	for( int i = 0, e = TransparentShadowCasterCount ; i < e ; i ++ )
+	{
+		if( TransparentShadowCasters[ i ] == obj )
 		{
-			if( TransparentShadowCasters[ i ] == obj )
-			{
-				TransparentShadowCasters.Move( i, i + 1, TransparentShadowCasterCount - i - 1 ) ;
-				TransparentShadowCasterCount -- ;
-				break ;
-			}
+			TransparentShadowCasters.Move( i, i + 1, TransparentShadowCasterCount - i - 1 ) ;
+			TransparentShadowCasterCount -- ;
+			break ;
 		}
 	}
-#ifdef _DEBUG
-	else
-	{
-		r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
-
-		// search anyway...
-		for( int i = 0, e = TransparentShadowCasterCount ; i < e ; i ++ )
-		{
-			if( TransparentShadowCasters[ i ] == obj )
-			{
-				r3dError( "Object with transparent shadow caster flag not set, found among transparent shadow casters array!" ) ;
-			}
-		}
-	}
-#endif
 }
 
 int ObjectManager::SendEvent_to_ObjClass(const char* name, int event, void *data)

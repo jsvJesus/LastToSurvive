@@ -11,6 +11,7 @@ class r3dDX11PixelShader;
 class r3dDX11ShaderLibrary;
 class r3dDX11VertexShader;
 struct ID3D11Device;
+struct ID3D11RasterizerState;
 
 struct r3dDX11VegetationInstance
 {
@@ -36,6 +37,7 @@ public:
 
 	bool BeginGBuffer();
 	bool BeginDepth();
+	bool SetDepthBias(float depthBias, float slopeScaledDepthBias = 0.0f);
 	void End();
 
 	bool SetWindConstants(const r3dDX11VegetationWindConstants& constants);
@@ -53,6 +55,8 @@ public:
 private:
 	bool CreateShadersAndLayouts(ID3D11Device* device);
 	bool EnsureInstanceCapacity(ID3D11Device* device, unsigned int instanceCount);
+	bool ApplyRasterizerState(bool doubleSided);
+	bool CreateBiasedRasterizers(float depthBias, float slopeScaledDepthBias);
 	void ApplyLayoutAndShaders(bool bending, bool depthOnly);
 
 private:
@@ -70,7 +74,12 @@ private:
 	r3dDX11ConstantBuffer MaterialConstants;
 	r3dDX11ConstantBuffer WindConstants;
 	r3dDX11VertexBuffer InstanceBuffer;
+	ID3D11RasterizerState* BiasedCullBackRasterizer = nullptr;
+	ID3D11RasterizerState* BiasedCullNoneRasterizer = nullptr;
+	float CurrentDepthBias = 0.0f;
+	float CurrentSlopeScaledDepthBias = 0.0f;
 	unsigned int InstanceCapacity = 0;
+	bool bUseDepthBias = false;
 	bool bInitialized = false;
 	bool bBendingMode = false;
 	bool bDepthMode = false;

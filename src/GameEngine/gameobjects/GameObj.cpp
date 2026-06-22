@@ -957,9 +957,9 @@ GameObject::SetTransparentShadowCasting( bool enabled )
 	}
 	else
 	{
-		// first provoke removal, then clear flag
-		GameWorld().UpdateTransparentShadowCaster( this ) ;
+		// first clear flag, then provoke removal
 		PrivateFlags &= ~PRIVFLAG_TransparentShadowCaster ;
+		GameWorld().UpdateTransparentShadowCaster( this ) ;
 	}
 }
 

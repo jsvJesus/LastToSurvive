@@ -112,7 +112,7 @@ public:
 	void GetUsedMaterials(std::vector<r3dMaterial*>& materials);
 
 	void Render(CollectionsDrawModeEnum drawMode);
-	void RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats);
+	void RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats, float depthBias = 0.0f, float slopeScaledDepthBias = 0.0f);
 	void DEBUG_Draw();
 #endif
 };

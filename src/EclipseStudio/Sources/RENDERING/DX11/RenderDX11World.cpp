@@ -5,15 +5,31 @@
 #include "RENDERING/DX11/RenderDX11World.h"
 
 #include "GameObjects/GameObj.h"
+#include "GameObjects/ObjManag.h"
 #include "Editors/CollectionsManager.h"
 #include "RENDERING/Deffered/RenderDeffered.h"
 #include "RENDERING/DX11/RenderDX11.h"
 #include "RENDERING/DX11/RenderDX11MeshRenderer.h"
 #include "r3dMat.h"
+#include "r3dAtmosphere.h"
 
 #include <algorithm>
 
 extern RenderArray g_render_arrays[rsCount];
+extern ShadowSlice TransparentShadowSlice;
+extern r3dVector SunVector;
+
+void FillSliceForSplitDistances(
+	ShadowSlice* ioSlice,
+	float* shadowSplitDistances,
+	ShadowMapOptimizationData* optimizationData,
+	r3dPoint3D* oLightSource,
+	r3dPoint3D* oLightTarget,
+	float fNear,
+	float fFar,
+	bool allow_optimize,
+	float border
+);
 
 namespace
 {
@@ -251,10 +267,10 @@ namespace
 
 	bool EnsureDX11TransparentShadowDepthTarget(r3dDX11Renderer& renderer)
 	{
-		int size = 1024;
+		int size = 512;
 
-		if (r_dir_sm_size)
-			size = r_dir_sm_size->GetInt();
+		if (r_transp_shadowmap_size)
+			size = r_transp_shadowmap_size->GetInt();
 
 		size = std::max(64, std::min(size, 8192));
 
@@ -279,6 +295,63 @@ namespace
 		}
 
 		g_DX11TransparentShadowDepthSize = size;
+		TransparentShadowSlice.shadowMapSize = static_cast<float>(size);
+		return true;
+	}
+
+	bool PrepareDX11TransparentShadowQueue(D3DXMATRIX& outViewProj)
+	{
+		if (!r3dRenderer || !ShadowSplitDistancesTransparent)
+			return false;
+
+		const D3DXMATRIX oldView = r3dRenderer->ViewMatrix;
+		const D3DXMATRIX oldProj = r3dRenderer->ProjMatrix;
+		const float oldNear = r3dRenderer->NearClip;
+		const float oldFar = r3dRenderer->FarClip;
+
+		SunVector = GetEnvLightDir();
+
+		ShadowSlice& slice = TransparentShadowSlice;
+		const float fNear = ShadowSplitDistancesTransparent[slice.index];
+		const float fFar = ShadowSplitDistancesTransparent[slice.index + 1];
+		const float fade = r_transp_shadowmap_fade ? r_transp_shadowmap_fade->GetFloat() : 32.0f;
+		const float border = fade > 0.0001f ? 1.0f / fade : 0.0f;
+
+		r3dPoint3D lightSource;
+		r3dPoint3D lightTarget;
+		FillSliceForSplitDistances(
+			&slice,
+			ShadowSplitDistancesTransparent,
+			nullptr,
+			&lightSource,
+			&lightTarget,
+			fNear,
+			fFar,
+			true,
+			border
+		);
+
+		slice.camPos = lightSource;
+
+		const float shadowNear = 0.1f;
+		const float shadowFar = 10000.0f;
+		r3dRenderer->SetCameraEx(slice.lightView, slice.lightProj, shadowNear, shadowFar, false);
+
+		r3dCamera shadowCam;
+		shadowCam.FOV = 90.0f;
+		shadowCam.SetPosition(lightSource);
+		shadowCam.PointTo(lightTarget);
+		shadowCam.NearClip = shadowNear;
+		shadowCam.FarClip = shadowFar;
+		shadowCam.SetOrtho(slice.sphereRadius * 2.0f, slice.sphereRadius * 2.0f);
+
+		g_render_arrays[rsCreateTransparentSM].Clear();
+		GameWorld().PrepareTransparentShadowsInterm(shadowCam);
+		GameWorld().RecalcIntermObjectMatrices();
+
+		r3dRenderer->SetCameraEx(oldView, oldProj, oldNear, oldFar, false);
+
+		outViewProj = slice.lightView * slice.lightProj;
 		return true;
 	}
 
@@ -726,6 +799,7 @@ namespace
 	void RenderDX11ShadowQueues(
 		r3dDX11Renderer& renderer,
 		r3dDX11DepthOnlyPass& pass,
+		const r3dCamera& camera,
 		r3dDX11WorldRenderStats& stats
 	)
 	{
@@ -767,6 +841,13 @@ namespace
 				continue;
 			}
 
+			if (!pass.SetDepthBias(ShadowSlices[i].depthBias_HW))
+			{
+				pass.EndDepthTarget();
+				++stats.ShadowSkippedFailed;
+				continue;
+			}
+
 			const D3DXMATRIX viewProj =
 				ShadowSlices[i].lightView *
 				ShadowSlices[i].lightProj;
@@ -776,15 +857,24 @@ namespace
 				shadowDepth.GetDSV(),
 				shadowDepth.GetWidth(),
 				shadowDepth.GetHeight(),
-				&stats
+				&stats,
+				ShadowSlices[i].depthBias_HW
 			);
 
 			gCollectionsManager.RenderDX11(
 				R3D_IDME_SHADOW,
 				renderer,
 				viewProj,
-				&stats
+				&stats,
+				ShadowSlices[i].depthBias_HW
 			);
+
+			if (!pass.SetDepthBias(ShadowSlices[i].depthBias_HW))
+			{
+				pass.EndDepthTarget();
+				++stats.ShadowSkippedFailed;
+				continue;
+			}
 
 			DrawDX11ShadowQueue(
 				renderer,
@@ -800,9 +890,9 @@ namespace
 			++stats.ShadowSlicesRendered;
 		}
 
-		// Transparent shadow case:
-		// Старый DX9 path рисует это отдельной очередью rsCreateTransparentSM.
-		// В DX11 пока валидируем отдельный transparent shadow depth target.
+		// Transparent shadow case mirrors the DX9 rsCreateTransparentSM path:
+		// rebuild TransparentShadowSlice, prepare the transparent-shadow queue,
+		// then render it into its own depth target.
 		if (r_particle_shadows && r_particle_shadows->GetBool())
 		{
 			if (!EnsureDX11TransparentShadowDepthTarget(renderer))
@@ -825,16 +915,22 @@ namespace
 			}
 
 			D3DXMATRIX transparentViewProj;
-
-			if (activeSlices > 0)
+			if (!PrepareDX11TransparentShadowQueue(transparentViewProj))
 			{
-				transparentViewProj =
-					ShadowSlices[0].lightView *
-					ShadowSlices[0].lightProj;
+				pass.EndDepthTarget();
+				if (r3dRenderer)
+					r3dRenderer->SetCamera(camera, false);
+				++stats.TransparentShadowSkippedFailed;
+				return;
 			}
-			else
+
+			if (!pass.SetDepthBias(TransparentShadowSlice.depthBias_HW))
 			{
-				D3DXMatrixIdentity(&transparentViewProj);
+				pass.EndDepthTarget();
+				if (r3dRenderer)
+					r3dRenderer->SetCamera(camera, false);
+				++stats.TransparentShadowSkippedFailed;
+				return;
 			}
 
 			DrawDX11ShadowQueue(
@@ -847,6 +943,8 @@ namespace
 			);
 
 			pass.EndDepthTarget();
+			if (r3dRenderer)
+				r3dRenderer->SetCamera(camera, false);
 
 			++stats.TransparentShadowCasesRendered;
 		}
@@ -1117,6 +1215,7 @@ bool r3dDX11RenderWorldGBuffer(
 	RenderDX11ShadowQueues(
 		renderer,
 		depthPass,
+		camera,
 		*stats
 	);
 

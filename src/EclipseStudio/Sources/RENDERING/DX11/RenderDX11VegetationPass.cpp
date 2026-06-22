@@ -12,6 +12,19 @@
 
 #include <cstring>
 
+namespace
+{
+	int ConvertDepthBiasToD24Units(float depthBias)
+	{
+		const double scaledBias = static_cast<double>(depthBias) * 16777216.0;
+		if (scaledBias > 2147483647.0)
+			return 2147483647;
+		if (scaledBias < -2147483648.0)
+			return static_cast<int>(-2147483647 - 1);
+		return static_cast<int>(scaledBias);
+	}
+}
+
 r3dDX11VegetationPass::r3dDX11VegetationPass()
 {
 }
@@ -49,6 +62,9 @@ bool r3dDX11VegetationPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawC
 
 void r3dDX11VegetationPass::Shutdown()
 {
+	r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
 	InstanceBuffer.Shutdown();
 	WindConstants.Shutdown();
 	MaterialConstants.Shutdown();
@@ -69,6 +85,9 @@ void r3dDX11VegetationPass::Shutdown()
 	DrawContext = nullptr;
 	Device = nullptr;
 	InstanceCapacity = 0;
+	CurrentDepthBias = 0.0f;
+	CurrentSlopeScaledDepthBias = 0.0f;
+	bUseDepthBias = false;
 	bInitialized = false;
 	bBendingMode = false;
 	bDepthMode = false;
@@ -79,7 +98,9 @@ bool r3dDX11VegetationPass::BeginGBuffer()
 	if (!bInitialized || !DrawContext)
 		return false;
 
-	DrawContext->SetRasterizerState(CommonStates->GetCullNoneRasterizer());
+	if (!SetDepthBias(0.0f, 0.0f))
+		return false;
+
 	DrawContext->SetDepthStencilState(CommonStates->GetDepthReadWriteState());
 	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
 	DrawContext->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -98,7 +119,9 @@ bool r3dDX11VegetationPass::BeginDepth()
 	if (!bInitialized || !DrawContext)
 		return false;
 
-	DrawContext->SetRasterizerState(CommonStates->GetCullNoneRasterizer());
+	if (!SetDepthBias(0.0f, 0.0f))
+		return false;
+
 	DrawContext->SetDepthStencilState(CommonStates->GetDepthReadWriteState());
 	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
 	DrawContext->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -110,6 +133,36 @@ bool r3dDX11VegetationPass::BeginDepth()
 	bDepthMode = false;
 	ApplyLayoutAndShaders(false, true);
 	return true;
+}
+
+bool r3dDX11VegetationPass::SetDepthBias(float depthBias, float slopeScaledDepthBias)
+{
+	if (!bInitialized || !Device || !DrawContext || !CommonStates)
+		return false;
+
+	if (depthBias == 0.0f && slopeScaledDepthBias == 0.0f)
+	{
+		CurrentDepthBias = 0.0f;
+		CurrentSlopeScaledDepthBias = 0.0f;
+		bUseDepthBias = false;
+		return ApplyRasterizerState(true);
+	}
+
+	if (
+		!bUseDepthBias ||
+		CurrentDepthBias != depthBias ||
+		CurrentSlopeScaledDepthBias != slopeScaledDepthBias
+	)
+	{
+		if (!CreateBiasedRasterizers(depthBias, slopeScaledDepthBias))
+			return false;
+
+		CurrentDepthBias = depthBias;
+		CurrentSlopeScaledDepthBias = slopeScaledDepthBias;
+		bUseDepthBias = true;
+	}
+
+	return ApplyRasterizerState(true);
 }
 
 void r3dDX11VegetationPass::End()
@@ -245,6 +298,58 @@ bool r3dDX11VegetationPass::EnsureInstanceCapacity(ID3D11Device* device, unsigne
 	}
 
 	InstanceCapacity = newCapacity;
+	return true;
+}
+
+bool r3dDX11VegetationPass::ApplyRasterizerState(bool doubleSided)
+{
+	if (!DrawContext || !CommonStates)
+		return false;
+
+	ID3D11RasterizerState* state = nullptr;
+	if (bUseDepthBias)
+		state = doubleSided ? BiasedCullNoneRasterizer : BiasedCullBackRasterizer;
+	else
+		state = doubleSided ? CommonStates->GetCullNoneRasterizer() : CommonStates->GetCullBackRasterizer();
+
+	if (!state)
+		return false;
+
+	DrawContext->SetRasterizerState(state);
+	return true;
+}
+
+bool r3dDX11VegetationPass::CreateBiasedRasterizers(float depthBias, float slopeScaledDepthBias)
+{
+	if (!Device)
+		return false;
+
+	r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthClipEnable = TRUE;
+	rasterDesc.DepthBias = ConvertDepthBiasToD24Units(depthBias);
+	rasterDesc.SlopeScaledDepthBias = slopeScaledDepthBias;
+
+	if (FAILED(Device->CreateRasterizerState(&rasterDesc, &BiasedCullBackRasterizer)))
+	{
+		r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+		return false;
+	}
+
+	rasterDesc.CullMode = D3D11_CULL_NONE;
+	if (FAILED(Device->CreateRasterizerState(&rasterDesc, &BiasedCullNoneRasterizer)))
+	{
+		r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+		r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+		return false;
+	}
+
+	r3dDX11::SetDebugName(BiasedCullBackRasterizer, "DX11.Vegetation.BiasedCullBack");
+	r3dDX11::SetDebugName(BiasedCullNoneRasterizer, "DX11.Vegetation.BiasedCullNone");
 	return true;
 }
 

@@ -1204,6 +1204,8 @@ BOOL obj_Player::OnCreate()
 
 BOOL obj_Player::OnDestroy()
 {
+	SetTransparentShadowCasting(false);
+
 	//wchar_t tempStr[64];
 	//char plrUserName[64]; GetUserName(plrUserName);
 	//swprintf(tempStr, 64, gLangMngr.getString("$HUD_Msg_LeftGame"), utf8ToWide(plrUserName));
@@ -3100,6 +3102,9 @@ BOOL obj_Player::Update()
 		parent::Update();
 
 	camoTimeLine.Update();
+	const bool castsTransparentShadow = camoTimeLine.camoMasterTransparency < 1.0f;
+	if (!!IsTransparentShadowCaster() != castsTransparentShadow)
+		SetTransparentShadowCasting(castsTransparentShadow);
 
 	// show pending rewards, even if game finished.
 	if(NetworkLocal)
@@ -5254,6 +5259,63 @@ struct PlayerDebugRenderable : Renderable
 #define	RENDERABLE_AI_PLAYER_SORT_VALUE (2*RENDERABLE_USER_SORT_VALUE)
 
 extern RenderArray	g_render_arrays[ rsCount ];
+
+void
+obj_Player::AppendTransparentShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
+{
+#if VEHICLES_ENABLED
+	if (isInVehicle())
+		return;
+#endif
+
+	if (gDisableDynamicObjectShadows)
+		return;
+
+	if (camoTimeLine.camoMasterTransparency >= 1.0f)
+		return;
+
+	const bool firstPerson =
+		g_camera_mode->GetInt() == 2 &&
+		NetworkLocal &&
+		!bDead;
+
+	if (firstPerson)
+		return;
+
+	bool drawWeaponDX11 = true;
+
+	const Weapon* wpn = m_Weapons[m_SelectedWeapon];
+
+	if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
+		drawWeaponDX11 = false;
+
+	if (bDead || forcedEmptyHands)
+		drawWeaponDX11 = false;
+
+	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
+	{
+		if (uberEquip_)
+		{
+			uberEquip_->AppendShadowRenderables(
+				rarr,
+				GetSkeleton(),
+				DrawFullMatrix_Localized,
+				drawWeaponDX11,
+				false
+			);
+		}
+
+		return;
+	}
+
+	PlayerShadowRenderable rend;
+
+	rend.Init();
+	rend.Parent = this;
+	rend.SortValue = RENDERABLE_AI_PLAYER_SORT_VALUE;
+
+	rarr.PushBack(rend);
+}
 
 void
 obj_Player::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )

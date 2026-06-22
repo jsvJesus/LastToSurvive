@@ -11,6 +11,19 @@
 #include "RENDERING/DX11/ShaderDX11.h"
 #include "r3dSkeleton.h"
 
+namespace
+{
+	int ConvertDepthBiasToD24Units(float depthBias)
+	{
+		const double scaledBias = static_cast<double>(depthBias) * 16777216.0;
+		if (scaledBias > 2147483647.0)
+			return 2147483647;
+		if (scaledBias < -2147483648.0)
+			return static_cast<int>(-2147483647 - 1);
+		return static_cast<int>(scaledBias);
+	}
+}
+
 r3dDX11DepthOnlyPass::r3dDX11DepthOnlyPass()
 {
 }
@@ -31,6 +44,7 @@ bool r3dDX11DepthOnlyPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawCo
 	DrawContext = drawContext;
 	ShaderLibrary = shaderLibrary;
 	CommonStates = commonStates;
+	Device = device;
 
 	if (!CreateShadersAndLayout(device) ||
 		!MeshConstants.Create(device, sizeof(r3dDX11MeshConstants), "DX11.DepthOnly.MeshConstants") ||
@@ -47,6 +61,9 @@ bool r3dDX11DepthOnlyPass::Init(ID3D11Device* device, r3dDX11DrawContext* drawCo
 
 void r3dDX11DepthOnlyPass::Shutdown()
 {
+	r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
 	SkinningConstants.Shutdown();
 	MaterialConstants.Shutdown();
 	MeshConstants.Shutdown();
@@ -63,6 +80,10 @@ void r3dDX11DepthOnlyPass::Shutdown()
 	CommonStates = nullptr;
 	ShaderLibrary = nullptr;
 	DrawContext = nullptr;
+	Device = nullptr;
+	CurrentDepthBias = 0.0f;
+	CurrentSlopeScaledDepthBias = 0.0f;
+	bUseDepthBias = false;
 	bInitialized = false;
 	bSkinnedMode = false;
 	bAlphaTestMode = false;
@@ -97,7 +118,9 @@ bool r3dDX11DepthOnlyPass::BeginDepthTarget(ID3D11DepthStencilView* depthStencil
 	if (clearDepth)
 		DrawContext->ClearDepth(depthStencilView, 1.0f, 0);
 
-	DrawContext->SetRasterizerState(CommonStates->GetCullBackRasterizer());
+	if (!SetDepthBias(0.0f, 0.0f))
+		return false;
+
 	DrawContext->SetDepthStencilState(CommonStates->GetDepthReadWriteState());
 	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
 	DrawContext->SetInputLayout(MeshLayout);
@@ -110,6 +133,36 @@ bool r3dDX11DepthOnlyPass::BeginDepthTarget(ID3D11DepthStencilView* depthStencil
 	bSkinnedMode = false;
 	bAlphaTestMode = false;
 	return true;
+}
+
+bool r3dDX11DepthOnlyPass::SetDepthBias(float depthBias, float slopeScaledDepthBias)
+{
+	if (!bInitialized || !Device || !DrawContext || !CommonStates)
+		return false;
+
+	if (depthBias == 0.0f && slopeScaledDepthBias == 0.0f)
+	{
+		CurrentDepthBias = 0.0f;
+		CurrentSlopeScaledDepthBias = 0.0f;
+		bUseDepthBias = false;
+		return ApplyRasterizerState(false);
+	}
+
+	if (
+		!bUseDepthBias ||
+		CurrentDepthBias != depthBias ||
+		CurrentSlopeScaledDepthBias != slopeScaledDepthBias
+	)
+	{
+		if (!CreateBiasedRasterizers(depthBias, slopeScaledDepthBias))
+			return false;
+
+		CurrentDepthBias = depthBias;
+		CurrentSlopeScaledDepthBias = slopeScaledDepthBias;
+		bUseDepthBias = true;
+	}
+
+	return ApplyRasterizerState(false);
 }
 
 void r3dDX11DepthOnlyPass::End(r3dDX11GBufferResources&)
@@ -206,11 +259,8 @@ bool r3dDX11DepthOnlyPass::SetMaterial(const r3dDX11MaterialTextures& material, 
 
 	MaterialConstants.BindPS(DrawContext->GetContext(), 0);
 
-	DrawContext->SetRasterizerState(
-		material.IsDoubleSided()
-			? CommonStates->GetCullNoneRasterizer()
-			: CommonStates->GetCullBackRasterizer()
-	);
+	if (!ApplyRasterizerState(material.IsDoubleSided()))
+		return false;
 
 	if (material.IsAlphaCut())
 		material.Bind(*DrawContext, 0);
@@ -286,4 +336,56 @@ void r3dDX11DepthOnlyPass::ApplyShaders()
 		return;
 
 	DrawContext->SetShaders(bSkinnedMode ? SkinDepthVS : DepthVS, bAlphaTestMode ? AlphaTestPS : nullptr);
+}
+
+bool r3dDX11DepthOnlyPass::ApplyRasterizerState(bool doubleSided)
+{
+	if (!DrawContext || !CommonStates)
+		return false;
+
+	ID3D11RasterizerState* state = nullptr;
+	if (bUseDepthBias)
+		state = doubleSided ? BiasedCullNoneRasterizer : BiasedCullBackRasterizer;
+	else
+		state = doubleSided ? CommonStates->GetCullNoneRasterizer() : CommonStates->GetCullBackRasterizer();
+
+	if (!state)
+		return false;
+
+	DrawContext->SetRasterizerState(state);
+	return true;
+}
+
+bool r3dDX11DepthOnlyPass::CreateBiasedRasterizers(float depthBias, float slopeScaledDepthBias)
+{
+	if (!Device)
+		return false;
+
+	r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthClipEnable = TRUE;
+	rasterDesc.DepthBias = ConvertDepthBiasToD24Units(depthBias);
+	rasterDesc.SlopeScaledDepthBias = slopeScaledDepthBias;
+
+	if (FAILED(Device->CreateRasterizerState(&rasterDesc, &BiasedCullBackRasterizer)))
+	{
+		r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+		return false;
+	}
+
+	rasterDesc.CullMode = D3D11_CULL_NONE;
+	if (FAILED(Device->CreateRasterizerState(&rasterDesc, &BiasedCullNoneRasterizer)))
+	{
+		r3dDX11::SafeRelease(BiasedCullNoneRasterizer);
+		r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+		return false;
+	}
+
+	r3dDX11::SetDebugName(BiasedCullBackRasterizer, "DX11.DepthOnly.BiasedCullBack");
+	r3dDX11::SetDebugName(BiasedCullNoneRasterizer, "DX11.DepthOnly.BiasedCullNone");
+	return true;
 }

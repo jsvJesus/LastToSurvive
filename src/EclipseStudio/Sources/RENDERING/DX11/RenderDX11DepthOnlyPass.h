@@ -15,6 +15,7 @@ class r3dDX11VertexShader;
 class r3dSkeleton;
 struct ID3D11Device;
 struct ID3D11DepthStencilView;
+struct ID3D11RasterizerState;
 
 class r3dDX11DepthOnlyPass final
 {
@@ -29,6 +30,7 @@ public:
 	bool BeginDepthTarget(ID3D11DepthStencilView* depthStencilView, int width, int height, bool clearDepth = true);
 	void End(r3dDX11GBufferResources& gbuffer);
 	void EndDepthTarget();
+	bool SetDepthBias(float depthBias, float slopeScaledDepthBias = 0.0f);
 	bool SetMeshConstants(const r3dDX11MeshConstants& constants);
 	bool SetSkinningBones(const r3dSkeleton* skeleton);
 	void SetSkinnedMeshMode(bool skinned);
@@ -40,8 +42,11 @@ public:
 private:
 	bool CreateShadersAndLayout(ID3D11Device* device);
 	void ApplyShaders();
+	bool ApplyRasterizerState(bool doubleSided);
+	bool CreateBiasedRasterizers(float depthBias, float slopeScaledDepthBias);
 
 private:
+	ID3D11Device* Device = nullptr;
 	r3dDX11DrawContext* DrawContext = nullptr;
 	r3dDX11ShaderLibrary* ShaderLibrary = nullptr;
 	r3dDX11CommonStates* CommonStates = nullptr;
@@ -53,6 +58,11 @@ private:
 	r3dDX11ConstantBuffer MeshConstants;
 	r3dDX11ConstantBuffer MaterialConstants;
 	r3dDX11ConstantBuffer SkinningConstants;
+	ID3D11RasterizerState* BiasedCullBackRasterizer = nullptr;
+	ID3D11RasterizerState* BiasedCullNoneRasterizer = nullptr;
+	float CurrentDepthBias = 0.0f;
+	float CurrentSlopeScaledDepthBias = 0.0f;
+	bool bUseDepthBias = false;
 	bool bInitialized = false;
 	bool bSkinnedMode = false;
 	bool bAlphaTestMode = false;

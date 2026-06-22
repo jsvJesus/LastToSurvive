@@ -1236,7 +1236,7 @@ void CollectionsManager::Render(CollectionsDrawModeEnum drawMode)
 	D3DPERF_EndEvent();
 }
 
-void CollectionsManager::RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats)
+void CollectionsManager::RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Renderer& renderer, const D3DXMATRIX& viewProj, r3dDX11WorldRenderStats* stats, float depthBias, float slopeScaledDepthBias)
 {
 	if (!g_trees->GetInt() || !quadTree || !renderer.IsInitialized())
 		return;
@@ -1264,6 +1264,14 @@ void CollectionsManager::RenderDX11(CollectionsDrawModeEnum drawMode, r3dDX11Ren
 	{
 		if (!pass.BeginDepth())
 		{
+			if (stats)
+				++stats->VegetationSkippedFailed;
+			return;
+		}
+
+		if (bShadowMap && !pass.SetDepthBias(depthBias, slopeScaledDepthBias))
+		{
+			pass.End();
 			if (stats)
 				++stats->VegetationSkippedFailed;
 			return;

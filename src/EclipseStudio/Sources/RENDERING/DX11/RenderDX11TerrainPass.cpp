@@ -23,6 +23,16 @@ extern r3dTerrain2* Terrain2;
 
 namespace
 {
+	int ConvertDepthBiasToD24Units(float depthBias)
+	{
+		const double scaledBias = static_cast<double>(depthBias) * 16777216.0;
+		if (scaledBias > 2147483647.0)
+			return 2147483647;
+		if (scaledBias < -2147483648.0)
+			return static_cast<int>(-2147483647 - 1);
+		return static_cast<int>(scaledBias);
+	}
+
 	static const int DX11_TERRAIN_GRID_DIM = 192;
 	static const int DX11_TERRAIN_MAX_PAINT_LAYERS = 8;
 	static const int DX11_TERRAIN_MAX_MASKS = 3;
@@ -278,8 +288,69 @@ bool r3dDX11TerrainPass::Init(
 	return true;
 }
 
+bool r3dDX11TerrainPass::ApplyRasterizerState(float depthBias, float slopeScaledDepthBias)
+{
+	if (!DrawContext || !CommonStates)
+		return false;
+
+	if (depthBias == 0.0f && slopeScaledDepthBias == 0.0f)
+	{
+		CurrentDepthBias = 0.0f;
+		CurrentSlopeScaledDepthBias = 0.0f;
+		bUseDepthBias = false;
+		DrawContext->SetRasterizerState(CommonStates->GetCullBackRasterizer());
+		return true;
+	}
+
+	if (
+		!bUseDepthBias ||
+		CurrentDepthBias != depthBias ||
+		CurrentSlopeScaledDepthBias != slopeScaledDepthBias
+	)
+	{
+		if (!CreateBiasedRasterizer(depthBias, slopeScaledDepthBias))
+			return false;
+
+		CurrentDepthBias = depthBias;
+		CurrentSlopeScaledDepthBias = slopeScaledDepthBias;
+		bUseDepthBias = true;
+	}
+
+	if (!BiasedCullBackRasterizer)
+		return false;
+
+	DrawContext->SetRasterizerState(BiasedCullBackRasterizer);
+	return true;
+}
+
+bool r3dDX11TerrainPass::CreateBiasedRasterizer(float depthBias, float slopeScaledDepthBias)
+{
+	if (!Device)
+		return false;
+
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
+	D3D11_RASTERIZER_DESC rasterDesc = {};
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.CullMode = D3D11_CULL_BACK;
+	rasterDesc.DepthClipEnable = TRUE;
+	rasterDesc.DepthBias = ConvertDepthBiasToD24Units(depthBias);
+	rasterDesc.SlopeScaledDepthBias = slopeScaledDepthBias;
+
+	if (FAILED(Device->CreateRasterizerState(&rasterDesc, &BiasedCullBackRasterizer)))
+	{
+		r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+		return false;
+	}
+
+	r3dDX11::SetDebugName(BiasedCullBackRasterizer, "DX11.Terrain.BiasedCullBack");
+	return true;
+}
+
 void r3dDX11TerrainPass::Shutdown()
 {
+	r3dDX11::SafeRelease(BiasedCullBackRasterizer);
+
 	TerrainConstants.Shutdown();
 
 	IndexBuffer.Shutdown();
@@ -306,6 +377,9 @@ void r3dDX11TerrainPass::Shutdown()
 	ShaderLibrary = nullptr;
 	DrawContext = nullptr;
 	Device = nullptr;
+	CurrentDepthBias = 0.0f;
+	CurrentSlopeScaledDepthBias = 0.0f;
+	bUseDepthBias = false;
 
 	bInitialized = false;
 }
@@ -365,7 +439,9 @@ bool r3dDX11TerrainPass::RenderGBuffer(
 	return DrawTerrain(
 		viewProj,
 		true,
-		stats
+		stats,
+		0.0f,
+		0.0f
 	);
 }
 
@@ -374,7 +450,9 @@ bool r3dDX11TerrainPass::RenderDepth(
 	ID3D11DepthStencilView* depthStencil,
 	int width,
 	int height,
-	r3dDX11WorldRenderStats* stats
+	r3dDX11WorldRenderStats* stats,
+	float depthBias,
+	float slopeScaledDepthBias
 )
 {
 	if (!bInitialized || !DrawContext || !depthStencil || width <= 0 || height <= 0)
@@ -417,7 +495,9 @@ bool r3dDX11TerrainPass::RenderDepth(
 	return DrawTerrain(
 		viewProj,
 		false,
-		stats
+		stats,
+		depthBias,
+		slopeScaledDepthBias
 	);
 }
 
@@ -426,7 +506,9 @@ bool r3dDX11TerrainPass::RenderShadow(
 	ID3D11DepthStencilView* depthStencil,
 	int width,
 	int height,
-	r3dDX11WorldRenderStats* stats
+	r3dDX11WorldRenderStats* stats,
+	float depthBias,
+	float slopeScaledDepthBias
 )
 {
 	const bool result =
@@ -435,7 +517,9 @@ bool r3dDX11TerrainPass::RenderShadow(
 			depthStencil,
 			width,
 			height,
-			stats
+			stats,
+			depthBias,
+			slopeScaledDepthBias
 		);
 
 	if (result && stats)
@@ -766,7 +850,9 @@ bool r3dDX11TerrainPass::EnsureTerrainMesh(ID3D11Device* device)
 bool r3dDX11TerrainPass::DrawTerrain(
 	const D3DXMATRIX& viewProj,
 	bool gbufferMode,
-	r3dDX11WorldRenderStats* stats
+	r3dDX11WorldRenderStats* stats,
+	float depthBias,
+	float slopeScaledDepthBias
 )
 {
 	if (
@@ -1133,9 +1219,8 @@ bool r3dDX11TerrainPass::DrawTerrain(
 		0
 	);
 
-	DrawContext->SetRasterizerState(
-		CommonStates->GetCullBackRasterizer()
-	);
+	if (!ApplyRasterizerState(depthBias, slopeScaledDepthBias))
+		return false;
 
 	DrawContext->SetDepthStencilState(
 		CommonStates->GetDepthReadWriteState()

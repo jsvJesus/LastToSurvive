@@ -323,6 +323,7 @@ public:
 
 	void				UpdateLocalPlayerMovement();
 
+	virtual void		AppendTransparentShadowRenderables( RenderArray & rarr, const r3dCamera& Cam ) OVERRIDE;
 	virtual void		AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam ) OVERRIDE;
 	virtual void		AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam )  OVERRIDE;
 
