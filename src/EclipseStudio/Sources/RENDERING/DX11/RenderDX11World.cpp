@@ -488,6 +488,117 @@ namespace
 		return true;
 	}
 
+	void CopyDX11RenderableToQueue(RenderArray& outQueue, const Renderable& renderable)
+	{
+		// RenderArray хранит MAX_RENDERABLE_SIZE байт на элемент.
+		// Нельзя делать обычный PushBack(renderable), иначе скопируются только поля base Renderable.
+		outQueue.PushBack(renderable, RenderArray::TAB_SIZE);
+	}
+
+	void FilterDX11QueueForDeferred(RenderArray& queue, bool transparentDepthOnly)
+	{
+		if (!queue.Count())
+			return;
+
+		RenderArray filtered;
+		filtered.Reserve(queue.Count());
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+
+			MeshDeferredRenderable* meshRenderable =
+				r3dGetMeshDeferredRenderable(&renderable);
+
+			if (!meshRenderable)
+				continue;
+
+			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh))
+				continue;
+
+			if (meshRenderable->BatchIdx < 0)
+				continue;
+
+			if (transparentDepthOnly && !IsTransparentDepthPrepassRenderable(*meshRenderable))
+				continue;
+
+			CopyDX11RenderableToQueue(filtered, renderable);
+		}
+
+		queue.Swap(filtered);
+	}
+
+	void FilterDX11QueueForShadow(RenderArray& queue)
+	{
+		if (!queue.Count())
+			return;
+
+		RenderArray filtered;
+		filtered.Reserve(queue.Count());
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			Renderable& renderable = queue[i];
+
+			MeshShadowRenderable* meshRenderable =
+				r3dGetMeshShadowRenderable(&renderable);
+
+			if (!meshRenderable)
+				continue;
+
+			if (!IsDX11MeshPointerUsable(meshRenderable->Mesh))
+				continue;
+
+			CopyDX11RenderableToQueue(filtered, renderable);
+		}
+
+		queue.Swap(filtered);
+	}
+
+	void ClearDX11RuntimeUnsupportedQueue(eRenderStageID queueId)
+	{
+		g_render_arrays[queueId].Clear();
+	}
+
+	void SanitizeDX11WorldRenderQueuesForFrame()
+	{
+		// Opaque / GBuffer queues.
+		// Тут оставляем только MeshDeferredRenderable.
+		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBuffer], false);
+		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferEffects], false);
+		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferAfterEffects], false);
+		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferFirstPerson], false);
+
+		// Shadow queues.
+		// Тут оставляем только MeshShadowRenderable.
+		for (int i = 0; i < NumShadowSlices; ++i)
+		{
+			FilterDX11QueueForShadow(
+				g_render_arrays[static_cast<eRenderStageID>(rsCreateSM + i)]
+			);
+		}
+
+		FilterDX11QueueForShadow(g_render_arrays[rsCreateTransparentSM]);
+
+		// Transparent queues пока не имеют полноценного DX11 forward pass.
+		// Для depth prepass оставляем только masked/camo MeshDeferredRenderable.
+		FilterDX11QueueForDeferred(g_render_arrays[rsDrawTransparents], true);
+		FilterDX11QueueForDeferred(g_render_arrays[rsDrawDistortion], true);
+
+		// Эти очереди сейчас содержат DX9-style special renderables.
+		// В DX11 world runtime их нельзя blindly прогонять через GBuffer/Depth.
+		ClearDX11RuntimeUnsupportedQueue(rsDrawDepthEffect);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawComposite1);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawComposite2);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawBloomGlow);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawDebugData);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawBoundBox);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawFlashUI);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawDepth);
+		ClearDX11RuntimeUnsupportedQueue(rsDepthPrepass);
+		ClearDX11RuntimeUnsupportedQueue(rsDrawPhysicsMeshes);
+	}
+
 	void DrawDX11GBufferQueue(
 		r3dDX11Renderer& renderer,
 		r3dDX11GBufferPass& pass,
@@ -877,10 +988,17 @@ namespace
 				continue;
 			}
 
+			const eRenderStageID shadowQueueId =
+				static_cast<eRenderStageID>(rsCreateSM + i);
+
+			FilterDX11QueueForShadow(
+				g_render_arrays[shadowQueueId]
+			);
+
 			DrawDX11ShadowQueue(
 				renderer,
 				pass,
-				static_cast<eRenderStageID>(rsCreateSM + i),
+				shadowQueueId,
 				viewProj,
 				false,
 				stats
@@ -924,6 +1042,10 @@ namespace
 				++stats.TransparentShadowSkippedFailed;
 				return;
 			}
+
+			FilterDX11QueueForShadow(
+				g_render_arrays[rsCreateTransparentSM]
+			);
 
 			if (!pass.SetDepthBias(TransparentShadowSlice.depthBias_HW))
 			{
@@ -1340,6 +1462,7 @@ bool r3dDX11RenderWorldGBuffer(
 		stats = &localStats;
 
 	r3dDX11ResetWorldRenderStats(*stats);
+	SanitizeDX11WorldRenderQueuesForFrame();
 
 	if (!renderer.IsInitialized())
 		return false;
