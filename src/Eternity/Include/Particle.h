@@ -193,8 +193,8 @@ class r3dParticleSystem
 	void		Update(float CurTime, bool bUpdate=true);
 
 	void		Draw( const r3dCamera &cam, bool bShadowMap );
-
 	void		DrawDefferedMeshes(const r3dCamera &Cam, bool bShadowMap);
+	void		AppendDX11DeferredMeshRenderables(RenderArray* gbufferArray, RenderArray* shadowArray);
 
 	void		ClearParticlesOfType( BYTE type );
 

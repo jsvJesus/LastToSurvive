@@ -18,6 +18,10 @@ AUTOREGISTER_CLASS(obj_ParticleSystem);
 
 extern bool g_bEditMode;
 extern int g_bForceQualitySelectionInEditor;
+static bool IsDX11WorldCommandLine()
+{
+	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+}
 
 static r3dTexture *ParticleIcon = NULL;
 //-----------------------------------------------------------------------
@@ -223,17 +227,17 @@ obj_ParticleSystem::AppendTransparentShadowRenderables( RenderArray & rarr, cons
 		return ;
 #endif
 
-	// particles
-	{
-		ParticleShadowRenderable rend;
+	if (IsDX11WorldCommandLine())
+		return;
 
-		rend.Init();
+	ParticleShadowRenderable rend;
 
-		rend.Parent		= this;
-		rend.SortValue	= RENDERABLE_EMITTER_USER_SORT_VALUE ;
+	rend.Init();
 
-		rarr.PushBack( rend );
-	}
+	rend.Parent		= this;
+	rend.SortValue	= RENDERABLE_EMITTER_USER_SORT_VALUE ;
+
+	rarr.PushBack( rend );
 }
 
 /*virtual*/
@@ -255,7 +259,15 @@ obj_ParticleSystem::AppendShadowRenderables( RenderArray & rarr, const r3dCamera
 
 	if (!bRender) return;
 	r3dVector V = Cam - GetPosition();
-	if (V.Length() > 2600 ) return; 
+	if (V.Length() > 2600 ) return;
+
+	if (IsDX11WorldCommandLine())
+	{
+		if (Torch)
+			Torch->AppendDX11DeferredMeshRenderables(NULL, &rarr);
+
+		return;
+	}
 
 	ParticleMeshRenderable rend;
 
@@ -314,7 +326,15 @@ obj_ParticleSystem::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount
 	r3dVector V = Cam - GetPosition();
 	float len = V.Length();
 	if (len > 2600 )
-		return; 
+		return;
+
+	if (IsDX11WorldCommandLine())
+	{
+		if (Torch)
+			Torch->AppendDX11DeferredMeshRenderables(&render_arrays[rsFillGBuffer], NULL);
+
+		return;
+	}
 
 	int idist = GetRevIDist( len ) ;
 

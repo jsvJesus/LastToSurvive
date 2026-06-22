@@ -23,6 +23,11 @@ AUTOREGISTER_CLASS(obj_Tree);
 
 extern GameObject*	TreeObject;
 
+static bool IsDX11WorldCommandLine()
+{
+	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+}
+
 obj_Tree::obj_Tree()
 {
 	r3d_assert(TreeObject == 0);
@@ -155,6 +160,9 @@ obj_Tree::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam ) /*
 	if ( ! g_trees->GetBool() )
 		return;
 
+	if (IsDX11WorldCommandLine())
+		return;
+
 	TreeShadowRenderable rend;
 
 	rend.Init();
@@ -209,6 +217,9 @@ void
 obj_Tree::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam ) /*OVERRIDE*/
 {
 	if ( ! g_trees->GetBool() )
+		return;
+
+	if (IsDX11WorldCommandLine())
 		return;
 
 	TreeRenderable rend;

@@ -131,6 +131,10 @@ extern float terra_GetH(const r3dPoint3D &vPos);
 
 //static 
 r3dTL::TArray<obj_WaterPlane*> obj_WaterPlane::m_dWaterPlanes;
+static bool IsDX11WorldCommandLine()
+{
+	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -310,12 +314,13 @@ struct WaterDepthRenderable : Renderable
 void
 obj_WaterPlane::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam ) /*OVERRIDE*/
 {
-	if(!m_Plane||!m_Plane->IsValid())
+	if(!m_Plane || !m_Plane->IsValid())
 		return;
 
 #define RENDERABLE_WATER_SORT_VALUE (19*RENDERABLE_USER_SORT_VALUE)
 
-	// composite
+	// Water НЕ кладём в opaque GBuffer.
+	// Старый water composite остаётся в composite queue.
 	{
 		WaterRenderable rend;
 
@@ -327,7 +332,10 @@ obj_WaterPlane::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], 
 		render_arrays[ rsDrawComposite2 ].PushBack( rend );
 	}
 
-	// depth
+	// В DX11 world этот depth-effect renderer сейчас пустой:
+	// obj_WaterPlane::DoDrawDepth() просто return.
+	// Поэтому не кладём его в rsDrawDepthEffect, чтобы не получать depth_unsupported.
+	if (!IsDX11WorldCommandLine())
 	{
 		WaterDepthRenderable rend;
 
@@ -338,8 +346,6 @@ obj_WaterPlane::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], 
 
 		render_arrays[ rsDrawDepthEffect ].PushBack( rend );
 	}
-
-
 }
 
 extern float RIPPLES_AREA_SIZE;

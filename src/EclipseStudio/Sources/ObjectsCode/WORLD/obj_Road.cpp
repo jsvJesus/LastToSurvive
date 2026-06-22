@@ -21,6 +21,53 @@ extern int PS_CLEAR_FLOAT_ID;
 
 const char*	obj_Road::BaseMaterialDir = "data/objectsdepot/_roads/materials";
 
+static bool IsDX11WorldCommandLine()
+{
+	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+}
+
+static void AppendRoadDX11GBufferRenderables(
+	RenderArray& outArray,
+	r3dMesh* mesh,
+	INT64 sortBase
+)
+{
+	if (!mesh || !mesh->IsDrawable())
+		return;
+
+	D3DXMATRIX identity;
+	D3DXMatrixIdentity(&identity);
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		if (batch.Mat->Flags & R3D_MAT_SKIP_DRAW)
+			continue;
+
+		MeshDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = r3dColor::white.GetPacked();
+		rend.Mesh = mesh;
+		rend.SortValue =
+			sortBase |
+			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
+			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
+
+		rend.InitDX11(&identity, NULL);
+
+		outArray.PushBack(rend);
+	}
+}
+
 //
 //
 // 	class for Building Object, as you may guess..
@@ -685,11 +732,25 @@ struct RoadRenderable : Renderable
 void
 obj_Road::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam ) /*OVERRIDE*/
 {
+	const INT64 sortValue =
+		static_cast<INT64>((8 + drawPriority) * RENDERABLE_USER_SORT_VALUE);
+
+	if (IsDX11WorldCommandLine())
+	{
+		AppendRoadDX11GBufferRenderables(
+			render_arrays[rsFillGBuffer],
+			mesh_,
+			sortValue
+		);
+
+		return;
+	}
+
 	RoadRenderable rend;
 
 	rend.Init();
 	rend.Parent		= this;
-	rend.SortValue	= ( 8 + drawPriority ) * RENDERABLE_USER_SORT_VALUE ;
+	rend.SortValue	= sortValue;
 
 	render_arrays[ rsFillGBuffer ].PushBack( rend );
 }

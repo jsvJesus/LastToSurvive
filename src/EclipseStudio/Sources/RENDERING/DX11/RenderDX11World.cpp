@@ -1253,6 +1253,24 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		stats
 	);
 
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsFillGBufferEffects,
+		viewProj,
+		false,
+		stats
+	);
+
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsFillGBufferAfterEffects,
+		viewProj,
+		false,
+		stats
+	);
+
 	if (r_dx11_transparent_depth_prepass && r_dx11_transparent_depth_prepass->GetBool())
 	{
 		DrawDX11TransparentDepthPrepassQueue(
@@ -1267,14 +1285,6 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 			renderer,
 			depthPass,
 			rsDrawDistortion,
-			viewProj,
-			stats
-		);
-
-		DrawDX11TransparentDepthPrepassQueue(
-			renderer,
-			depthPass,
-			rsDrawDepthEffect,
 			viewProj,
 			stats
 		);
@@ -1401,6 +1411,22 @@ bool r3dDX11RenderWorldGBuffer(
 		renderer,
 		pass,
 		rsFillGBuffer,
+		viewProj,
+		*stats
+	);
+
+	DrawDX11GBufferQueue(
+		renderer,
+		pass,
+		rsFillGBufferEffects,
+		viewProj,
+		*stats
+	);
+
+	DrawDX11GBufferQueue(
+		renderer,
+		pass,
+		rsFillGBufferAfterEffects,
 		viewProj,
 		*stats
 	);

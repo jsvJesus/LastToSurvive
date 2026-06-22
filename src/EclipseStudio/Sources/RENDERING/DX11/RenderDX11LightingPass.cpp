@@ -472,11 +472,29 @@ namespace
 
 		NormalizeVector3(dirX, dirY, dirZ);
 
+		float innerAngle = light.SpotAngleInner;
+		float outerAngle = light.SpotAngleOuter;
+
+		if (outerAngle <= 0.0f)
+			outerAngle = 45.0f;
+
+		if (innerAngle <= 0.0f)
+			innerAngle = outerAngle * 0.75f;
+
+		if (innerAngle > outerAngle)
+			std::swap(innerAngle, outerAngle);
+
+		innerAngle = std::max(0.1f, std::min(innerAngle, 178.0f));
+		outerAngle = std::max(innerAngle + 0.1f, std::min(outerAngle, 179.0f));
+
 		const float innerCos =
-			cosf(D3DXToRadian(light.SpotAngleInner));
+			cosf(D3DXToRadian(innerAngle));
 
 		const float outerCos =
-			cosf(D3DXToRadian(light.SpotAngleOuter));
+			cosf(D3DXToRadian(outerAngle));
+
+		const float spotRange =
+			std::max(0.001f, innerCos - outerCos);
 
 		outLight.PositionRadius[0] = light.X;
 		outLight.PositionRadius[1] = light.Y;
@@ -486,7 +504,12 @@ namespace
 		outLight.ColorIntensity[0] = NormalizeColorComponent(light.R);
 		outLight.ColorIntensity[1] = NormalizeColorComponent(light.G);
 		outLight.ColorIntensity[2] = NormalizeColorComponent(light.B);
-		outLight.ColorIntensity[3] = std::max(0.0f, light.Intensity);
+		outLight.ColorIntensity[3] =
+			NormalizeDX11LightIntensity(
+				light.Intensity,
+				1.0f,
+				8.0f
+			);
 
 		outLight.DirectionAngles[0] = dirX;
 		outLight.DirectionAngles[1] = dirY;
@@ -495,7 +518,11 @@ namespace
 
 		outLight.Params[0] = static_cast<float>(DX11_LIGHT_SPOT);
 		outLight.Params[1] = outerCos;
-		outLight.Params[2] = std::max(0.01f, light.SpotAngleFalloffPow);
+		outLight.Params[2] =
+			std::max(
+				0.01f,
+				light.SpotAngleFalloffPow
+			) / spotRange;
 		outLight.Params[3] = light.bAffectSpecular ? 1.0f : 0.0f;
 
 		if (stats)
