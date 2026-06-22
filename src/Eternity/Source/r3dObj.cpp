@@ -2019,7 +2019,7 @@ r3dMesh::AppendTransparentRenderables(
 			continue;
 
 		const bool isTransparent =
-			(batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0;
+			(batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0;//
 
 		if (!isTransparent && !forceAll)
 			continue;
