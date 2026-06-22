@@ -1332,21 +1332,70 @@ static void ExecuteDX11SmokeLoop()
 			if (Now - LastWorldStatsLog >= 1000)
 			{
 				r3dOutToLog(
-					"[DX11][World] ok=%d total=%u mesh=%u depth=%u drawn=%u unsupported=%u failed=%u shadow=%u smesh=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u\n",
+					"[DX11][World] "
+					"ok=%d "
+					"gbuf_total=%u gbuf_mesh=%u gbuf_drawn=%u gbuf_unsupported=%u gbuf_failed=%u "
+					"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
+					"transp_depth_total=%u transp_depth_mesh=%u transp_depth_drawn=%u transp_depth_alpha=%u transp_depth_camo=%u transp_depth_unsupported=%u transp_depth_failed=%u "
+					"shadow_total=%u shadow_mesh=%u shadow_static=%u shadow_skin=%u shadow_drawn=%u shadow_alpha=%u shadow_slices=%u shadow_unsupported=%u shadow_failed=%u "
+					"tshadow_total=%u tshadow_mesh=%u tshadow_static=%u tshadow_skin=%u tshadow_drawn=%u tshadow_alpha=%u tshadow_cases=%u tshadow_unsupported=%u tshadow_failed=%u "
+					"terrain_g=%u terrain_gt=%u terrain_d=%u terrain_dt=%u terrain_s=%u terrain_st=%u terrain_failed=%u "
+					"veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u\n",
+
 					bWorldRendered ? 1 : 0,
+
 					WorldStats.TotalRenderables,
 					WorldStats.MeshRenderables,
-					WorldStats.DepthDrawnMeshes,
 					WorldStats.DrawnMeshes,
 					WorldStats.SkippedUnsupported,
 					WorldStats.SkippedFailed,
+
+					WorldStats.DepthTotalRenderables,
+					WorldStats.DepthMeshRenderables,
+					WorldStats.DepthStaticMeshes,
+					WorldStats.DepthSkinnedMeshes,
+					WorldStats.DepthAlphaTestedMeshes,
+					WorldStats.DepthFirstPersonMeshes,
+					WorldStats.DepthDrawnMeshes,
+					WorldStats.DepthSkippedUnsupported,
+					WorldStats.DepthSkippedFailed,
+
+					WorldStats.TransparentDepthRenderables,
+					WorldStats.TransparentDepthMeshRenderables,
+					WorldStats.TransparentDepthDrawnMeshes,
+					WorldStats.TransparentDepthAlphaTestedMeshes,
+					WorldStats.TransparentDepthCamouflageMeshes,
+					WorldStats.TransparentDepthSkippedUnsupported,
+					WorldStats.TransparentDepthSkippedFailed,
+
 					WorldStats.ShadowRenderables,
 					WorldStats.ShadowMeshRenderables,
+					WorldStats.ShadowStaticMeshes,
+					WorldStats.ShadowSkinnedMeshes,
 					WorldStats.ShadowDrawnMeshes,
 					WorldStats.ShadowAlphaTested,
 					WorldStats.ShadowSlicesRendered,
 					WorldStats.ShadowSkippedUnsupported,
 					WorldStats.ShadowSkippedFailed,
+
+					WorldStats.TransparentShadowRenderables,
+					WorldStats.TransparentShadowMeshRenderables,
+					WorldStats.TransparentShadowStaticMeshes,
+					WorldStats.TransparentShadowSkinnedMeshes,
+					WorldStats.TransparentShadowDrawnMeshes,
+					WorldStats.TransparentShadowAlphaTested,
+					WorldStats.TransparentShadowCasesRendered,
+					WorldStats.TransparentShadowSkippedUnsupported,
+					WorldStats.TransparentShadowSkippedFailed,
+
+					WorldStats.TerrainGBufferDraws,
+					WorldStats.TerrainGBufferTriangles,
+					WorldStats.TerrainDepthDraws,
+					WorldStats.TerrainDepthTriangles,
+					WorldStats.TerrainShadowDraws,
+					WorldStats.TerrainShadowTriangles,
+					WorldStats.TerrainSkippedFailed,
+
 					WorldStats.VegetationGBufferInstances,
 					WorldStats.VegetationGBufferDraws,
 					WorldStats.VegetationDepthInstances,
