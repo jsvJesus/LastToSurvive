@@ -574,16 +574,23 @@ static void LogDX11WorldValidation(
 	}
 
 	// 2. Skinned zombie/player виден в depth.
+	// Важно: отсутствие skinned mesh в текущем кадре не является ошибкой.
+	// До спавна игрока / зомби / оружия depth_skin=0 и shadow_skin=0 — это нормально.
 	{
+		const bool hasSkinnedThisFrame =
+			S.DepthSkinnedMeshes > 0 ||
+			S.ShadowSkinnedMeshes > 0;
+
 		const bool pass =
 			bWorldRendered &&
 			S.DepthSkinnedMeshes > 0 &&
-			S.DepthDrawnMeshes > 0;
+			S.DepthDrawnMeshes > 0 &&
+			S.DepthSkippedFailed == 0;
 
 		const bool warn =
 			bWorldRendered &&
-			S.DepthSkinnedMeshes == 0 &&
-			S.ShadowSkinnedMeshes > 0;
+			!hasSkinnedThisFrame &&
+			S.DepthSkippedFailed == 0;
 
 		r3dOutToLog(
 			"[DX11][Check][%s] 02 Skinned depth: depth_skin=%u shadow_skin=%u depth_drawn=%u\n",
@@ -632,20 +639,25 @@ static void LogDX11WorldValidation(
 		);
 	}
 
-	// 5. Static/skinned shadows совпадают визуально.
+	// 5. Static/skinned shadows.
+	// Для Этапа 1 достаточно, чтобы static shadows рисовались без failed.
+	// Skinned shadows проверяются как PASS только когда skinned mesh реально есть в кадре.
 	{
+		const bool hasSkinnedShadowThisFrame =
+			S.ShadowSkinnedMeshes > 0;
+
 		const bool pass =
 			S.ShadowSlicesRendered > 0 &&
 			S.ShadowDrawnMeshes > 0 &&
 			S.ShadowStaticMeshes > 0 &&
-			S.ShadowSkinnedMeshes > 0 &&
+			hasSkinnedShadowThisFrame &&
 			S.ShadowSkippedFailed == 0;
 
 		const bool warn =
 			S.ShadowSlicesRendered > 0 &&
 			S.ShadowDrawnMeshes > 0 &&
 			S.ShadowStaticMeshes > 0 &&
-			S.ShadowSkippedFailed <= 2;
+			S.ShadowSkippedFailed == 0;
 
 		r3dOutToLog(
 			"[DX11][Check][%s] 05 Static/skinned shadows: slices=%u shadow_drawn=%u static=%u skinned=%u failed=%u\n",
