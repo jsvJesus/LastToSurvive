@@ -1585,22 +1585,18 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 }
 
 void
-MeshDeferredRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
+MeshDeferredRenderable::InitDX11(
+	const D3DXMATRIX* worldTransform,
+	const r3dSkeleton* skeleton,
+	UINT matFlags
+)
 {
 	DrawFunc = Draw;
-	DX11Signature = DX11SignatureValue;
-	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
-	DX11Skeleton = skeleton;
-}
 
-void
-MeshShadowRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
-{
-	// Важно:
-	// DX11 shadow path читает MeshShadowRenderable напрямую,
-	// но старый DX9 RenderShadowMap всё ещё вызывает Renderable::DrawFunc через DoPreparedDraw.
-	// Поэтому DrawFunc обязан быть валидным, иначе будет DEP crash на 0x00000000
-	DrawFunc = SubDrawFunc ? SubDrawFunc : MeshShadowRenderable::DrawSingleBatch;
+	if( matFlags )
+	{
+		Color = r3dEncodeMeshDeferredRenderableColorFlags( Color, matFlags );
+	}
 
 	DX11Signature = DX11SignatureValue;
 	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
