@@ -18,9 +18,18 @@ AUTOREGISTER_CLASS(obj_ParticleSystem);
 
 extern bool g_bEditMode;
 extern int g_bForceQualitySelectionInEditor;
-static bool IsDX11WorldCommandLine()
+
+#ifndef WO_SERVER
+extern bool StudioDX11WorldHybridEnabled();
+#endif
+
+static bool Particle_UseDX11WorldPath()
 {
-	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+#ifndef WO_SERVER
+	return StudioDX11WorldHybridEnabled();
+#else
+	return false;
+#endif
 }
 
 static r3dTexture *ParticleIcon = NULL;
@@ -227,7 +236,7 @@ obj_ParticleSystem::AppendTransparentShadowRenderables( RenderArray & rarr, cons
 		return ;
 #endif
 
-	if (IsDX11WorldCommandLine())
+	if (Particle_UseDX11WorldPath())
 		return;
 
 	ParticleShadowRenderable rend;
@@ -261,7 +270,7 @@ obj_ParticleSystem::AppendShadowRenderables( RenderArray & rarr, const r3dCamera
 	r3dVector V = Cam - GetPosition();
 	if (V.Length() > 2600 ) return;
 
-	if (IsDX11WorldCommandLine())
+	if (Particle_UseDX11WorldPath())
 	{
 		if (Torch)
 			Torch->AppendDX11DeferredMeshRenderables(NULL, &rarr);
@@ -328,7 +337,7 @@ obj_ParticleSystem::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount
 	if (len > 2600 )
 		return;
 
-	if (IsDX11WorldCommandLine())
+	if (Particle_UseDX11WorldPath())
 	{
 		if (Torch)
 			Torch->AppendDX11DeferredMeshRenderables(&render_arrays[rsFillGBuffer], NULL);

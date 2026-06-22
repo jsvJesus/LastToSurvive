@@ -172,6 +172,7 @@ void obj_Zombie::AppendRenderables(RenderArray ( & render_arrays  )[ rsCount ], 
 			ZombieMeshesDeferredRenderable& rend = static_cast<ZombieMeshesDeferredRenderable&>( render_arrays[ rsFillGBuffer ][ i ] ) ;
 
 			rend.Init();
+			rend.InitDX11(NULL, anim_.GetCurrentSkeleton());
 			rend.Parent = this;
 			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
 		}

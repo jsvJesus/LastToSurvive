@@ -20,6 +20,9 @@ public:
 
 	virtual void OnAction() = 0; // event for when NPC is interacted with
 
+	virtual void AppendRenderables(RenderArray (&render_arrays)[rsCount], const r3dCamera& Cam) OVERRIDE;
+	virtual void AppendShadowRenderables(RenderArray& rarr, const r3dCamera& Cam) OVERRIDE;
+
 private:
 	bool LoadSkeleton(const std::string& meshFilename);
 

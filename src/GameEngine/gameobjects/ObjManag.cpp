@@ -1335,6 +1335,131 @@ uint8_t getShadowSliceBit(GameObject* userObject, const r3dCamera& Cam )
 
 GameObject* TreeObject = 0; // declare it here because of server
 
+#ifndef WO_SERVER
+extern bool StudioDX11WorldHybridEnabled();
+
+static const char* DX11World_GetSpecialObjectTypeName(const GameObject* obj)
+{
+	if (!obj)
+		return NULL;
+
+	// Более конкретные типы сначала.
+	if (obj->isObjType(OBJTYPE_SharedUsableItem))	return "OBJTYPE_SharedUsableItem";
+	if (obj->isObjType(OBJTYPE_GameplayItem))		return "OBJTYPE_GameplayItem";
+	if (obj->isObjType(OBJTYPE_Zombie))				return "OBJTYPE_Zombie";
+	if (obj->isObjType(OBJTYPE_NPC))					return "OBJTYPE_NPC";
+	if (obj->isObjType(OBJTYPE_Building))			return "OBJTYPE_Building";
+	if (obj->isObjType(OBJTYPE_Road))				return "OBJTYPE_Road";
+	if (obj->isObjType(OBJTYPE_Particle))			return "OBJTYPE_Particle";
+	if (obj->isObjType(OBJTYPE_Trees))				return "OBJTYPE_Trees";
+	if (obj->isObjType(OBJTYPE_ApexDestructible))	return "OBJTYPE_ApexDestructible";
+	if (obj->isObjType(OBJTYPE_AnimMesh))			return "OBJTYPE_AnimMesh";
+	if (obj->isObjType(OBJTYPE_DecalProxy))			return "OBJTYPE_DecalProxy";
+	if (obj->isObjType(OBJTYPE_Sprite))				return "OBJTYPE_Sprite";
+
+	return NULL;
+}
+
+static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
+{
+	if (!obj)
+		return "null";
+
+	if (obj->isObjType(OBJTYPE_Road))
+		return "runtime: explicit DX11 GBuffer road mesh path";
+
+	if (obj->isObjType(OBJTYPE_Particle))
+		return "runtime: DX11 particle mesh path only; sprite particles must not enter DX11 world as old DX9 renderables";
+
+	if (obj->isObjType(OBJTYPE_Trees))
+		return "runtime: rendered by DX11 vegetation/collections path outside RenderArray";
+
+	if (obj->isObjType(OBJTYPE_SharedUsableItem))
+		return "runtime: MeshGameObject derived, must use MeshDeferredRenderable/MeshShadowRenderable";
+
+	if (obj->isObjType(OBJTYPE_GameplayItem))
+		return "runtime/helper: render only if mesh-backed; pure gameplay helpers should append nothing";
+
+	if (obj->isObjType(OBJTYPE_Zombie))
+		return "runtime: custom skinned mesh object, must provide DX11 skeleton renderables";
+
+	if (obj->isObjType(OBJTYPE_NPC))
+		return "runtime: SharedUsableItem + animated skeleton, must provide DX11 skeleton renderables";
+
+	if (obj->isObjType(OBJTYPE_Building))
+		return "runtime: static buildings use MeshGameObject path; animated buildings need explicit DX11 renderables";
+
+	if (obj->isObjType(OBJTYPE_ApexDestructible))
+		return "runtime: destructible object must be mesh-backed or explicitly skipped";
+
+	if (obj->isObjType(OBJTYPE_DecalProxy))
+		return "editor/legacy: do not push old decal proxy renderables into DX11 world";
+
+	if (obj->isObjType(OBJTYPE_Sprite))
+		return "editor/helper: do not push old sprite renderables into DX11 world";
+
+	if (obj->isObjType(OBJTYPE_AnimMesh))
+		return "legacy/editor: no blind DX9 renderables allowed in DX11 world";
+
+	return "not tracked";
+}
+
+static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookName)
+{
+	if (!StudioDX11WorldHybridEnabled())
+		return;
+
+	if (!obj)
+		return;
+
+	const char* typeName = DX11World_GetSpecialObjectTypeName(obj);
+	if (!typeName)
+		return;
+
+	static bool sLoggedRoad = false;
+	static bool sLoggedParticle = false;
+	static bool sLoggedTrees = false;
+	static bool sLoggedDecalProxy = false;
+	static bool sLoggedSprite = false;
+	static bool sLoggedApex = false;
+	static bool sLoggedGameplayItem = false;
+	static bool sLoggedZombie = false;
+	static bool sLoggedNPC = false;
+	static bool sLoggedAnimMesh = false;
+	static bool sLoggedBuilding = false;
+	static bool sLoggedSharedUsableItem = false;
+
+	bool* logged = NULL;
+
+	if (obj->isObjType(OBJTYPE_SharedUsableItem))	logged = &sLoggedSharedUsableItem;
+	else if (obj->isObjType(OBJTYPE_GameplayItem))	logged = &sLoggedGameplayItem;
+	else if (obj->isObjType(OBJTYPE_Zombie))		logged = &sLoggedZombie;
+	else if (obj->isObjType(OBJTYPE_NPC))			logged = &sLoggedNPC;
+	else if (obj->isObjType(OBJTYPE_Building))		logged = &sLoggedBuilding;
+	else if (obj->isObjType(OBJTYPE_Road))			logged = &sLoggedRoad;
+	else if (obj->isObjType(OBJTYPE_Particle))		logged = &sLoggedParticle;
+	else if (obj->isObjType(OBJTYPE_Trees))			logged = &sLoggedTrees;
+	else if (obj->isObjType(OBJTYPE_ApexDestructible)) logged = &sLoggedApex;
+	else if (obj->isObjType(OBJTYPE_AnimMesh))		logged = &sLoggedAnimMesh;
+	else if (obj->isObjType(OBJTYPE_DecalProxy))	logged = &sLoggedDecalProxy;
+	else if (obj->isObjType(OBJTYPE_Sprite))		logged = &sLoggedSprite;
+
+	if (!logged || *logged)
+		return;
+
+	*logged = true;
+
+	r3dOutToLog(
+		"[DX11World][Stage9] special object seen: type=%s class=%s name=%s hook=%s status=%s\n",
+		typeName,
+		obj->Class ? obj->Class->Name.c_str() : "<null>",
+		obj->Name.c_str(),
+		hookName ? hookName : "<null>",
+		DX11World_GetSpecialObjectDX11Status(obj)
+	);
+}
+#endif
+
 void ObjectManager::DrawDebug(const r3dCamera& Cam)
 {
 	r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_ZC);
@@ -1705,7 +1830,11 @@ ObjectManager::PrepareSlicedShadowsInterm( const r3dCamera& Cam, D3DXPLANE (&mai
 		{
 			int inMainFrustum = CheckDirShadowVisibility( obj, newRecalcShadowExData | obj->ShadowExDirty, r3dRenderer->ViewMatrix, MAX_DIR_SHADOW_LENGTH, mainFrustumPlanes ) ;
 
-			draw_interm[ i ].obj->AppendSlicedShadowRenderables( g_render_arrays, !shadowCull || inMainFrustum, Cam );
+#ifndef WO_SERVER
+			DX11World_AuditSpecialObjectOnce(draw_interm[i].obj, "AppendSlicedShadowRenderables");
+#endif
+
+			draw_interm[i].obj->AppendSlicedShadowRenderables(g_render_arrays, !shadowCull || inMainFrustum, Cam);
 
 			if( shadowCull )
 				obj->ShadowExDirty = false ;
@@ -1738,7 +1867,11 @@ ObjectManager::PrepareShadowsInterm( const r3dCamera& Cam )
 
 		if( !( obj->ObjFlags & DISABLE_SHADOWS_FLAGS ) )
 		{
-			obj->AppendShadowRenderables( g_render_arrays[ rsCreateSM ], Cam );
+#ifndef WO_SERVER
+			DX11World_AuditSpecialObjectOnce(obj, "AppendShadowRenderables");
+#endif
+
+			obj->AppendShadowRenderables(g_render_arrays[rsCreateSM], Cam);
 		}
 	}
 
@@ -1772,7 +1905,11 @@ ObjectManager::PrepareTransparentShadowsInterm( const r3dCamera& Cam )
 		ds.distSq = 0.f ;
 		ds.shadow_slice = 0 ;
 
-		obj->AppendTransparentShadowRenderables( g_render_arrays[ rsCreateTransparentSM ], Cam ) ;
+#ifndef WO_SERVER
+		DX11World_AuditSpecialObjectOnce(obj, "AppendTransparentShadowRenderables");
+#endif
+
+		obj->AppendTransparentShadowRenderables(g_render_arrays[rsCreateTransparentSM], Cam);
 	}
 
 	PrepCamInterm = Cam;
@@ -1883,7 +2020,11 @@ void AppendSkippOcclusionCheckRenderables( const r3dCamera& Cam )
 				prevDrawOrderIdx	= g_render_arrays[ rsFillGBuffer ].Count();
 			}
 
-			draw[ i ].obj->AppendRenderables( g_render_arrays, Cam );
+#ifndef WO_SERVER
+			DX11World_AuditSpecialObjectOnce(draw[i].obj, "AppendRenderables/SkipOcclusion");
+#endif
+
+			draw[i].obj->AppendRenderables(g_render_arrays, Cam);
 		}
 	}
 	n_draw = 0;
@@ -1994,7 +2135,11 @@ ObjectManager::Prepare( const r3dCamera& Cam )
 				prevDrawOrderIdx	= g_render_arrays[ rsFillGBuffer ].Count();
 			}
 
-			draw[ i ].obj->AppendRenderables( g_render_arrays, Cam );
+#ifndef WO_SERVER
+			DX11World_AuditSpecialObjectOnce(draw[i].obj, "AppendRenderables");
+#endif
+
+			draw[i].obj->AppendRenderables(g_render_arrays, Cam);
 		}
 
 		if( g_render_arrays[ rsFillGBufferEffects ].Count() )

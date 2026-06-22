@@ -11,6 +11,19 @@
 
 #include "DamageLib.h"
 
+#ifndef WO_SERVER
+extern bool StudioDX11WorldHybridEnabled();
+#endif
+
+static bool Building_UseDX11WorldPath()
+{
+#ifndef WO_SERVER
+	return StudioDX11WorldHybridEnabled();
+#else
+	return false;
+#endif
+}
+
 IMPLEMENT_CLASS(obj_Building, "obj_Building", "Object");
 AUTOREGISTER_CLASS(obj_Building);
 obj_Building::obj_Building() 
@@ -549,53 +562,182 @@ struct BuildingAniDebugRenderable : Renderable
 
 #define	RENDERABLE_BUILDING_SORT_VALUE (31*RENDERABLE_USER_SORT_VALUE)
 
-void obj_Building::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
+struct BuildingAniDX11DeferredRenderable : MeshDeferredRenderable
 {
-	// [from MeshGameObject code] always use main camera to determine shadow LOD
-	if(!NeedDrawAnimated(gCam))
+	void Init()
+	{
+		DrawFunc = Draw;
+	}
+
+	static void Draw(Renderable* RThis, const r3dCamera& Cam)
+	{
+		BuildingAniDX11DeferredRenderable* This = static_cast<BuildingAniDX11DeferredRenderable*>(RThis);
+
+		// Fallback draw path. DX11 world renderer will normally consume this as MeshDeferredRenderable.
+		This->Parent->DrawAnimated(Cam, false);
+	}
+
+	obj_Building* Parent;
+};
+
+struct BuildingAniDX11ShadowRenderable : MeshShadowRenderable
+{
+	void Init()
+	{
+		DrawFunc = Draw;
+	}
+
+	static void Draw(Renderable* RThis, const r3dCamera& Cam)
+	{
+		BuildingAniDX11ShadowRenderable* This = static_cast<BuildingAniDX11ShadowRenderable*>(RThis);
+
+		This->Parent->DrawAnimated(Cam, true);
+	}
+
+	obj_Building* Parent;
+};
+
+static void AppendBuildingAnimatedDX11DeferredRenderables(
+	RenderArray& outArray,
+	obj_Building* parent,
+	r3dMesh* mesh,
+	INT64 sortBase
+)
+{
+	if (!parent || !mesh || !mesh->IsDrawable())
+		return;
+
+	if (!parent->m_Animation.pSkeleton)
+		return;
+
+	parent->m_Animation.Recalc();
+
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
+	{
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		if (batch.Mat->Flags & R3D_MAT_SKIP_DRAW)
+			continue;
+
+		if (batch.Mat->Flags & R3D_MAT_TRANSPARENT)
+			continue;
+
+		BuildingAniDX11DeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = parent->m_ObjectColor.GetPacked();
+		rend.Mesh = mesh;
+		rend.SortValue =
+			sortBase |
+			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
+			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
+
+		rend.InitDX11(&parent->GetTransformMatrix(), parent->m_Animation.pSkeleton);
+		rend.Init();
+
+		rend.Parent = parent;
+		rend.DX11WorldTransform = &parent->GetTransformMatrix();
+		rend.DX11Skeleton = parent->m_Animation.pSkeleton;
+
+		outArray.PushBack(rend);
+	}
+}
+
+static void AppendBuildingAnimatedDX11ShadowRenderables(
+	RenderArray& outArray,
+	obj_Building* parent,
+	r3dMesh* mesh
+)
+{
+	if (!parent || !mesh || !mesh->IsDrawable())
+		return;
+
+	if (!parent->m_Animation.pSkeleton)
+		return;
+
+	parent->m_Animation.Recalc();
+
+	const float distSq = (gCam - parent->GetPosition()).LengthSq();
+	const float dist = sqrtf(distSq);
+	const UINT32 idist = (UINT32)R3D_MIN(dist * 64.0f, (float)0x3fffffff);
+
+	const uint32_t prevCount = outArray.Count();
+
+	mesh->AppendShadowRenderables(outArray);
+
+	for (uint32_t i = prevCount, e = outArray.Count(); i < e; ++i)
+	{
+		BuildingAniDX11ShadowRenderable& rend =
+			static_cast<BuildingAniDX11ShadowRenderable&>(outArray[i]);
+
+		rend.Init();
+		rend.InitDX11(&parent->GetTransformMatrix(), parent->m_Animation.pSkeleton);
+		rend.Parent = parent;
+		rend.SortValue |= idist;
+	}
+}
+
+void obj_Building::AppendShadowRenderables(RenderArray& rarr, const r3dCamera& Cam)
+{
+	// Static building path: обычный MeshGameObject уже имеет DX11-safe renderables.
+	if (!NeedDrawAnimated(gCam))
 	{
 		parent::AppendShadowRenderables(rarr, Cam);
 		return;
 	}
 
-	if( !gDisableDynamicObjectShadows )
-	{
-		BuildingAniShadowRenderable rend;
-		rend.Init();
-		rend.Parent	= this;
-		rend.SortValue	= RENDERABLE_BUILDING_SORT_VALUE;
+	if (gDisableDynamicObjectShadows)
+		return;
 
-		rarr.PushBack( rend );
+	if (Building_UseDX11WorldPath())
+	{
+		AppendBuildingAnimatedDX11ShadowRenderables(rarr, this, MeshLOD[0]);
+		return;
 	}
+
+	BuildingAniShadowRenderable rend;
+	rend.Init();
+	rend.Parent = this;
+	rend.SortValue = RENDERABLE_BUILDING_SORT_VALUE;
+
+	rarr.PushBack(rend);
 }
 
-void obj_Building::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam )
+void obj_Building::AppendRenderables(RenderArray (&render_arrays)[rsCount], const r3dCamera& Cam)
 {
-	if(!NeedDrawAnimated(Cam))
+	// Static building path: обычный MeshGameObject уже имеет DX11-safe renderables.
+	if (!NeedDrawAnimated(Cam))
 	{
 		parent::AppendRenderables(render_arrays, Cam);
 		return;
 	}
 
-	// deferred
+	if (Building_UseDX11WorldPath())
 	{
-		BuildingAniDeferredRenderable rend;
-		rend.Init();
-		rend.Parent	= this;
-		rend.SortValue	= RENDERABLE_BUILDING_SORT_VALUE;
+		AppendBuildingAnimatedDX11DeferredRenderables(
+			render_arrays[rsFillGBuffer],
+			this,
+			MeshLOD[0],
+			RENDERABLE_BUILDING_SORT_VALUE
+		);
 
-		render_arrays[ rsFillGBuffer ].PushBack( rend );
+		return;
 	}
 
-	/*// skeleton draw
-	{
-		BuildingAniDebugRenderable rend;
-		rend.Init();
-		rend.Parent	= this;
-		rend.SortValue	= RENDERABLE_BUILDING_SORT_VALUE;
+	// Старый DX9 fallback.
+	BuildingAniDeferredRenderable rend;
+	rend.Init();
+	rend.Parent = this;
+	rend.SortValue = RENDERABLE_BUILDING_SORT_VALUE;
 
-		render_arrays[ rsDrawComposite1 ].PushBack( rend );
-	}*/
+	render_arrays[rsFillGBuffer].PushBack(rend);
 }
 
 

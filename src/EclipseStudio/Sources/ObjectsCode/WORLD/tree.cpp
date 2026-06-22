@@ -23,9 +23,17 @@ AUTOREGISTER_CLASS(obj_Tree);
 
 extern GameObject*	TreeObject;
 
-static bool IsDX11WorldCommandLine()
+#ifndef WO_SERVER
+extern bool StudioDX11WorldHybridEnabled();
+#endif
+
+static bool Tree_UseDX11WorldPath()
 {
-	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
+#ifndef WO_SERVER
+	return StudioDX11WorldHybridEnabled();
+#else
+	return false;
+#endif
 }
 
 obj_Tree::obj_Tree()
@@ -160,7 +168,7 @@ obj_Tree::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam ) /*
 	if ( ! g_trees->GetBool() )
 		return;
 
-	if (IsDX11WorldCommandLine())
+	if (Tree_UseDX11WorldPath())
 		return;
 
 	TreeShadowRenderable rend;
@@ -219,7 +227,7 @@ obj_Tree::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const 
 	if ( ! g_trees->GetBool() )
 		return;
 
-	if (IsDX11WorldCommandLine())
+	if (Tree_UseDX11WorldPath())
 		return;
 
 	TreeRenderable rend;
