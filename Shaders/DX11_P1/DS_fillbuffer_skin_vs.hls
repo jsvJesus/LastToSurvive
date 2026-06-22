@@ -6,6 +6,11 @@ cbuffer MeshConstants : register(b0)
 	float4x4 World;
 	float4 PositionScale;
 	float4 TexcoordScale;
+
+	// x = positive device-depth bias for special mesh paths.
+	// y = 1.0 when road path is active.
+	// z/w reserved.
+	float4 PathParams;
 };
 
 cbuffer SkinningConstants : register(b1)
@@ -65,11 +70,21 @@ FillBufferVSOutput main(FillBufferSkinVSInput input)
 
 	float4 skinnedPos = SkinPosition(localPos, input.BlendIndices, input.BlendWeights);
 	skinnedPos.w = 1.0f;
+
 	float3 skinnedNormal = normalize(SkinVector(localNormal, input.BlendIndices, input.BlendWeights));
 	float3 skinnedTangent = normalize(SkinVector(localTangent, input.BlendIndices, input.BlendWeights));
+
 	float4 worldPos = mul(skinnedPos, World);
 
 	output.Position = mul(skinnedPos, WorldViewProj);
+
+	// На практике дороги static, но cbuffer должен совпадать с C++ struct.
+	// Оставляем такую же поддержку path bias, чтобы layout не разъехался.
+	if (PathParams.y > 0.5f)
+	{
+		output.Position.z -= PathParams.x * output.Position.w;
+	}
+
 	output.TexCoord = input.TexCoord * TexcoordScale.xy;
 	output.Normal = normalize(mul(float4(skinnedNormal, 0.0f), World).xyz);
 	output.Tangent = normalize(mul(float4(skinnedTangent, 0.0f), World).xyz);

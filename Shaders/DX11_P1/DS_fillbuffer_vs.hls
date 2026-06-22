@@ -7,6 +7,11 @@ cbuffer MeshConstants : register(b0)
 	float4x4 World;
 	float4 PositionScale;
 	float4 TexcoordScale;
+
+	// x = positive device-depth bias for special mesh paths.
+	// y = 1.0 when road path is active.
+	// z/w reserved.
+	float4 PathParams;
 };
 
 struct FillBufferVSInput
@@ -38,6 +43,16 @@ FillBufferVSOutput main(FillBufferVSInput input)
 	float4 worldPos = mul(localPos, World);
 
 	output.Position = mul(localPos, WorldViewProj);
+
+	// Road path:
+	// Старый DX9 road path двигал depth через MC_DDEPTH.
+	// В DX11 не двигаем world position, двигаем только clip/depth,
+	// чтобы дорога не мерцала с terrain.
+	if (PathParams.y > 0.5f)
+	{
+		output.Position.z -= PathParams.x * output.Position.w;
+	}
+
 	output.TexCoord = input.TexCoord * TexcoordScale.xy;
 	output.Normal = normalize(mul(float4(input.Normal.xyz * 2.0f - 1.0f, 0.0f), World).xyz);
 	output.Tangent = normalize(mul(float4(input.Tangent.xyz * 2.0f - 1.0f, 0.0f), World).xyz);
