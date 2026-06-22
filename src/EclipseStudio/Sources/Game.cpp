@@ -71,6 +71,10 @@ extern bool StudioDX11WorldHybridEnabled();
 extern bool StudioDX11WorldHybridTick();
 extern int gRenderFrameCounter;
 
+#ifndef WO_SERVER
+extern void DX11World_Stage9DumpSpecialObjectSummary();
+#endif
+
 BaseHUD* editor_GetHudByIndex(int index)
 {
 	return HudArray[index];
@@ -289,6 +293,13 @@ void DoLoadGame(const char* LevelName, int MaxPlayers, bool unloadPrev, bool isM
 	//LoadAIMesh(r3dGameLevel::GetHomeDir());
 
 	r3dOutToLog ("World loaded\n");
+
+#ifndef WO_SERVER
+	if (StudioDX11WorldHybridEnabled())
+	{
+		DX11World_Stage9DumpSpecialObjectSummary();
+	}
+#endif
 
 	InterlockedExchange( &gGameLoadActive, 0 );
 

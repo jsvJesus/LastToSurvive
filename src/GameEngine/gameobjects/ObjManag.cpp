@@ -1472,6 +1472,84 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 }
 #endif
 
+void DX11World_Stage9DumpSpecialObjectSummary()
+{
+#ifndef WO_SERVER
+	if (!StudioDX11WorldHybridEnabled())
+		return;
+
+	static bool sDumped = false;
+	if (sDumped)
+		return;
+
+	sDumped = true;
+
+	struct Stage9TypeStat
+	{
+		DWORD Flag;
+		const char* Name;
+		int Count;
+		const char* FirstClass;
+		const char* FirstObject;
+	};
+
+	Stage9TypeStat Stats[] =
+	{
+		{ OBJTYPE_Road,             "OBJTYPE_Road",             0, NULL, NULL },
+		{ OBJTYPE_Particle,         "OBJTYPE_Particle",         0, NULL, NULL },
+		{ OBJTYPE_Trees,            "OBJTYPE_Trees",            0, NULL, NULL },
+		{ OBJTYPE_DecalProxy,       "OBJTYPE_DecalProxy",       0, NULL, NULL },
+		{ OBJTYPE_Sprite,           "OBJTYPE_Sprite",           0, NULL, NULL },
+		{ OBJTYPE_ApexDestructible, "OBJTYPE_ApexDestructible", 0, NULL, NULL },
+		{ OBJTYPE_GameplayItem,     "OBJTYPE_GameplayItem",     0, NULL, NULL },
+		{ OBJTYPE_Zombie,           "OBJTYPE_Zombie",           0, NULL, NULL },
+		{ OBJTYPE_NPC,              "OBJTYPE_NPC",              0, NULL, NULL },
+		{ OBJTYPE_AnimMesh,         "OBJTYPE_AnimMesh",         0, NULL, NULL },
+		{ OBJTYPE_Building,         "OBJTYPE_Building",         0, NULL, NULL },
+		{ OBJTYPE_SharedUsableItem, "OBJTYPE_SharedUsableItem", 0, NULL, NULL },
+	};
+
+	r3dOutToLog("[DX11World][Stage9][WorldScan] ================= special object summary =================\n");
+
+	for (ObjectIterator iter = GameWorld().GetFirstOfAllObjects(); iter.current; iter = GameWorld().GetNextOfAllObjects(iter))
+	{
+		GameObject* obj = iter.current;
+		if (!obj)
+			continue;
+
+		for (int i = 0; i < _countof(Stats); ++i)
+		{
+			if (!obj->isObjType(Stats[i].Flag))
+				continue;
+
+			Stats[i].Count++;
+
+			if (!Stats[i].FirstClass)
+			{
+				Stats[i].FirstClass =
+					obj->Class ? obj->Class->Name.c_str() : "<null>";
+
+				Stats[i].FirstObject =
+					obj->Name.c_str();
+			}
+		}
+	}
+
+	for (int i = 0; i < _countof(Stats); ++i)
+	{
+		r3dOutToLog(
+			"[DX11World][Stage9][WorldScan] %-27s count=%d first_class=%s first_name=%s\n",
+			Stats[i].Name,
+			Stats[i].Count,
+			Stats[i].FirstClass ? Stats[i].FirstClass : "<none>",
+			Stats[i].FirstObject ? Stats[i].FirstObject : "<none>"
+		);
+	}
+
+	r3dOutToLog("[DX11World][Stage9][WorldScan] =================================================================\n");
+#endif
+}
+
 void ObjectManager::DrawDebug(const r3dCamera& Cam)
 {
 	r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_ZC);
