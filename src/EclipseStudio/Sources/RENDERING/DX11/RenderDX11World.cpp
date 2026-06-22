@@ -763,7 +763,8 @@ namespace
 					world,
 					viewProj,
 					meshRenderable->Color,
-					meshRenderable->DX11Skeleton))
+					meshRenderable->DX11Skeleton,
+					r3dDecodeMeshDeferredRenderableMatFlags(meshRenderable->Color)))
 			{
 				++stats.DrawnMeshes;
 			}

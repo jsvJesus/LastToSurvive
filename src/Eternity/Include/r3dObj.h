@@ -77,7 +77,12 @@ struct MeshDeferredRenderable : Renderable
 	static const DWORD DX11SignatureValue = 0xD311F11B;
 
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
-	void InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton = NULL );
+
+	void InitDX11(
+		const D3DXMATRIX* worldTransform,
+		const r3dSkeleton* skeleton = NULL,
+		UINT matFlags = 0
+	);
 
 	int						BatchIdx;
 	DWORD					Color;
@@ -89,6 +94,8 @@ struct MeshDeferredRenderable : Renderable
 
 MeshDeferredRenderable* r3dGetMeshDeferredRenderable( Renderable* renderable );
 const MeshDeferredRenderable* r3dGetMeshDeferredRenderable( const Renderable* renderable );
+DWORD r3dEncodeMeshDeferredRenderableColorFlags( DWORD color, UINT matFlags );
+UINT r3dDecodeMeshDeferredRenderableMatFlags( DWORD color );
 void r3dResetMeshDeferredDX11WorldMatrices();
 const D3DXMATRIX* r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform );
 void r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3dColor& color, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton );

@@ -26,6 +26,39 @@ namespace
 		}
 	}
 
+	float BuildDX11RoadDepthBias()
+	{
+		const float roadDisplace =
+			r_roads_zdisplace ? r_roads_zdisplace->GetFloat() : 1.0f;
+
+		if (roadDisplace <= 0.0f)
+			return 0.0f;
+
+		// DX9 road path писал MC_DDEPTH через r_roads_zdisplace.
+		// В DX11 двигаем только device depth, не world position.
+		// Маленький bias убирает z-fighting с terrain, но не ломает GBuffer.
+		const float bias = roadDisplace * 0.00005f;
+
+		return R3D_MIN(bias, 0.001f);
+	}
+
+	void ApplyDX11MeshPathFlags(
+		r3dDX11MeshConstants& constants,
+		unsigned int matFlags
+	)
+	{
+		constants.PathParams[0] = 0.0f;
+		constants.PathParams[1] = 0.0f;
+		constants.PathParams[2] = 0.0f;
+		constants.PathParams[3] = 0.0f;
+
+		if (matFlags & R3D_MATF_ROAD)
+		{
+			constants.PathParams[0] = BuildDX11RoadDepthBias();
+			constants.PathParams[1] = 1.0f;
+		}
+	}
+
 	void LogDX11MeshDrawFailure(
 		const char* passName,
 		const char* reason,
@@ -73,6 +106,11 @@ bool r3dDX11PrepareMeshConstants(r3dDX11MeshConstants& outConstants, const D3DXM
 	outConstants.TexcoordScale[1] = 1.0f;
 	outConstants.TexcoordScale[2] = 0.0f;
 	outConstants.TexcoordScale[3] = 0.0f;
+
+	outConstants.PathParams[0] = 0.0f;
+	outConstants.PathParams[1] = 0.0f;
+	outConstants.PathParams[2] = 0.0f;
+	outConstants.PathParams[3] = 0.0f;
 
 	return true;
 }
@@ -229,7 +267,8 @@ bool r3dDX11DrawMeshGBuffer(
 	const D3DXMATRIX& world,
 	const D3DXMATRIX& viewProj,
 	unsigned int objectColorPacked,
-	const r3dSkeleton* skeleton
+	const r3dSkeleton* skeleton,
+	unsigned int matFlags
 )
 {
 	if (!device)
@@ -272,6 +311,7 @@ bool r3dDX11DrawMeshGBuffer(
 
 	r3dDX11MeshConstants constants;
 	r3dDX11PrepareMeshConstants(constants, world, viewProj);
+	ApplyDX11MeshPathFlags(constants, matFlags);
 
 	const bool drawn =
 		renderData->DrawGBuffer(
@@ -298,7 +338,8 @@ bool r3dDX11DrawMeshGBufferBatch(
 	const D3DXMATRIX& world,
 	const D3DXMATRIX& viewProj,
 	unsigned int objectColorPacked,
-	const r3dSkeleton* skeleton
+	const r3dSkeleton* skeleton,
+	unsigned int matFlags
 )
 {
 	if (!device)
@@ -347,6 +388,7 @@ bool r3dDX11DrawMeshGBufferBatch(
 
 	r3dDX11MeshConstants constants;
 	r3dDX11PrepareMeshConstants(constants, world, viewProj);
+	ApplyDX11MeshPathFlags(constants, matFlags);
 
 	const bool drawn =
 		renderData->DrawGBufferBatch(

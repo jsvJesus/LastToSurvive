@@ -22,6 +22,11 @@ struct r3dDX11MeshConstants
 	float World[16];
 	float PositionScale[4];
 	float TexcoordScale[4];
+
+	// x = device-depth bias for special mesh paths.
+	// y = 1.0 when road path is active.
+	// z/w reserved.
+	float PathParams[4];
 };
 
 struct r3dDX11SkinningConstants

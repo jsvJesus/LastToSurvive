@@ -1542,6 +1542,31 @@ void r3dMesh::DrawMeshInstanced(const D3DXMATRIX* world, int ShadowMap, bool for
 
 //-----------------------------------------------------------------------
 
+static const DWORD R3D_MESH_DEFERRED_COLOR_FLAG_MASK = 0xff000000;
+static const DWORD R3D_MESH_DEFERRED_COLOR_FLAG_NONE = 0xff000000;
+static const DWORD R3D_MESH_DEFERRED_COLOR_FLAG_ROAD = 0xfe000000;
+
+DWORD r3dEncodeMeshDeferredRenderableColorFlags( DWORD color, UINT matFlags )
+{
+	// RGB оставляем как есть. Alpha-байт используем как маленький path marker.
+	color &= 0x00ffffff;
+
+	if( matFlags & R3D_MATF_ROAD )
+		return color | R3D_MESH_DEFERRED_COLOR_FLAG_ROAD;
+
+	return color | R3D_MESH_DEFERRED_COLOR_FLAG_NONE;
+}
+
+UINT r3dDecodeMeshDeferredRenderableMatFlags( DWORD color )
+{
+	const DWORD flag = color & R3D_MESH_DEFERRED_COLOR_FLAG_MASK;
+
+	if( flag == R3D_MESH_DEFERRED_COLOR_FLAG_ROAD )
+		return R3D_MATF_ROAD;
+
+	return 0;
+}
+
 /*static*/
 void
 MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
@@ -1550,13 +1575,12 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 	r3dMesh* Mesh = This->Mesh;
 
 	r3dColor color;
+	color.SetPacked( This->Color | 0xff000000 );
 
-	color.SetPacked( This->Color );
+	const UINT matFlags = r3dDecodeMeshDeferredRenderableMatFlags( This->Color );
 
 	Mesh->DrawMeshStart( &color );
-
-	Mesh->DrawMeshDeferredBatch( This->BatchIdx, 0 );
-
+	Mesh->DrawMeshDeferredBatch( This->BatchIdx, matFlags );
 	Mesh->DrawMeshEnd();
 }
 
