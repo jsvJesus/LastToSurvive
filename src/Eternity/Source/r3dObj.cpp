@@ -1604,6 +1604,19 @@ MeshDeferredRenderable::InitDX11(
 }
 
 void
+MeshShadowRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
+{
+	// DX11 shadow path читает MeshShadowRenderable напрямую,
+	// но старый DX9/общий RenderArray всё ещё может вызвать DrawFunc.
+	// Поэтому DrawFunc обязан быть валидным.
+	DrawFunc = SubDrawFunc ? SubDrawFunc : MeshShadowRenderable::DrawSingleBatch;
+
+	DX11Signature = DX11SignatureValue;
+	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
+	DX11Skeleton = skeleton;
+}
+
+void
 r3dResetMeshDeferredDX11WorldMatrices()
 {
 	g_DX11RenderableWorldMatrixCursor = 0;
