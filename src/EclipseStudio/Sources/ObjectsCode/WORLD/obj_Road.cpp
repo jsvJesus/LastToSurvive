@@ -69,17 +69,14 @@ static void AppendRoadDX11GBufferRenderables(
 		memset(&rend, 0, sizeof(rend));
 
 		rend.BatchIdx = i;
-		rend.Color = r3dEncodeMeshDeferredRenderableColorFlags(
-			r3dColor::white.GetPacked(),
-			R3D_MATF_ROAD
-		);
+		rend.Color = r3dColor::white.GetPacked();
 		rend.Mesh = mesh;
 		rend.SortValue =
 			sortBase |
 			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
 			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
 
-		rend.InitDX11(&identity, NULL);
+		rend.InitDX11(&identity, NULL, R3D_MATF_ROAD);
 
 		outArray.PushBack(rend);
 	}
