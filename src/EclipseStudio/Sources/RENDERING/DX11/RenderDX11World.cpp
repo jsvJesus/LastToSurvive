@@ -674,43 +674,78 @@ namespace
 	}
 
 	void SanitizeDX11WorldRenderQueuesForFrame()
+{
+	//
+	// DX11 world path rule:
+	//
+	// Runtime world queues may contain only:
+	// - MeshDeferredRenderable for GBuffer / depth-only mesh rendering
+	// - MeshShadowRenderable for shadow rendering
+	// - DX11 terrain path, rendered outside RenderArray
+	// - DX11 vegetation / collections path, rendered outside RenderArray
+	//
+	// Old DX9-style Renderable objects must not blindly enter DX11 world passes.
+	// Editor/debug/special queues are dropped here until they get explicit DX11 pass code.
+	//
+
+	// ---------------------------------------------------------
+	// Opaque / GBuffer queues.
+	// Keep only MeshDeferredRenderable.
+	// Do NOT allow old special renderables into opaque GBuffer.
+	// ---------------------------------------------------------
+	FilterDX11QueueForDeferred(g_render_arrays[rsFillGBuffer], false);
+	FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferEffects], false);
+	FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferAfterEffects], false);
+	FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferFirstPerson], false);
+
+	// ---------------------------------------------------------
+	// Transparent queues.
+	// DX11 forward transparent pass is not ready here.
+	// Only masked/camo transparent meshes may be kept for depth prepass.
+	// They are NOT drawn into opaque GBuffer.
+	// ---------------------------------------------------------
+	FilterDX11QueueForDeferred(g_render_arrays[rsDrawTransparents], true);
+	FilterDX11QueueForDeferred(g_render_arrays[rsDrawDistortion], true);
+
+	// ---------------------------------------------------------
+	// Runtime depth queues.
+	// Old DepthMeshRenderable / DepthPrepassMeshRenderable are DX9 renderables.
+	// If a runtime object wants to survive here in DX11, it must be represented
+	// as MeshDeferredRenderable and will be drawn by DrawDX11DepthOnlyQueue().
+	// ---------------------------------------------------------
+	FilterDX11QueueForDeferred(g_render_arrays[rsDrawDepth], false);
+	FilterDX11QueueForDeferred(g_render_arrays[rsDepthPrepass], false);
+
+	// ---------------------------------------------------------
+	// Shadow queues.
+	// Keep only MeshShadowRenderable.
+	// ---------------------------------------------------------
+	for (int i = 0; i < NumShadowSlices; ++i)
 	{
-		// Opaque / GBuffer queues.
-		// Тут оставляем только MeshDeferredRenderable.
-		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBuffer], false);
-		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferEffects], false);
-		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferAfterEffects], false);
-		FilterDX11QueueForDeferred(g_render_arrays[rsFillGBufferFirstPerson], false);
-
-		// Shadow queues.
-		// Тут оставляем только MeshShadowRenderable.
-		for (int i = 0; i < NumShadowSlices; ++i)
-		{
-			FilterDX11QueueForShadow(
-				g_render_arrays[static_cast<eRenderStageID>(rsCreateSM + i)]
-			);
-		}
-
-		FilterDX11QueueForShadow(g_render_arrays[rsCreateTransparentSM]);
-
-		// Transparent queues пока не имеют полноценного DX11 forward pass.
-		// Для depth prepass оставляем только masked/camo MeshDeferredRenderable.
-		FilterDX11QueueForDeferred(g_render_arrays[rsDrawTransparents], true);
-		FilterDX11QueueForDeferred(g_render_arrays[rsDrawDistortion], true);
-
-		// Эти очереди сейчас содержат DX9-style special renderables.
-		// В DX11 world runtime их нельзя blindly прогонять через GBuffer/Depth.
-		ClearDX11RuntimeUnsupportedQueue(rsDrawDepthEffect);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawComposite1);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawComposite2);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawBloomGlow);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawDebugData);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawBoundBox);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawFlashUI);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawDepth);
-		ClearDX11RuntimeUnsupportedQueue(rsDepthPrepass);
-		ClearDX11RuntimeUnsupportedQueue(rsDrawPhysicsMeshes);
+		FilterDX11QueueForShadow(
+			g_render_arrays[static_cast<eRenderStageID>(rsCreateSM + i)]
+		);
 	}
+
+	FilterDX11QueueForShadow(g_render_arrays[rsCreateTransparentSM]);
+
+	// ---------------------------------------------------------
+	// Special / editor / debug queues.
+	// These are not runtime DX11 world mesh paths yet.
+	// Do not let them inflate unsupported counters.
+	// Do not push them into opaque GBuffer.
+	// ---------------------------------------------------------
+	ClearDX11RuntimeUnsupportedQueue(rsDrawDepthEffect);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawComposite1);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawComposite2);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawBloomGlow);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawDebugData);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawBoundBox);
+	ClearDX11RuntimeUnsupportedQueue(rsDrawFlashUI);
+
+	// Explicit editor-only queue.
+	ClearDX11RuntimeUnsupportedQueue(rsDrawPhysicsMeshes);
+}
 
 	void DrawDX11GBufferQueue(
 		r3dDX11Renderer& renderer,
@@ -1121,10 +1156,7 @@ namespace
 
 			++stats.ShadowSlicesRendered;
 		}
-
-		// Transparent shadow case mirrors the DX9 rsCreateTransparentSM path:
-		// rebuild TransparentShadowSlice, prepare the transparent-shadow queue,
-		// then render it into its own depth target.
+		
 		if (r_particle_shadows && r_particle_shadows->GetBool())
 		{
 			if (!EnsureDX11TransparentShadowDepthTarget(renderer))
@@ -1484,6 +1516,24 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		renderer,
 		depthPass,
 		rsFillGBuffer,
+		viewProj,
+		false,
+		stats
+	);
+	
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsDrawDepth,
+		viewProj,
+		false,
+		stats
+	);
+	
+	DrawDX11DepthOnlyQueue(
+		renderer,
+		depthPass,
+		rsDepthPrepass,
 		viewProj,
 		false,
 		stats

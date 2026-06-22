@@ -1748,15 +1748,28 @@ r3dGetMeshShadowRenderable( const Renderable* renderable )
 }
 
 void
-r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3dColor& color, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
+r3dAppendMeshDeferredRenderablesDX11(
+	RenderArray& oArr,
+	r3dMesh* mesh,
+	const r3dColor& color,
+	const D3DXMATRIX* worldTransform,
+	const r3dSkeleton* skeleton
+)
 {
-	if( !mesh || !mesh->IsDrawable() )
+	if (!mesh || !mesh->IsDrawable())
 		return;
 
-	for( int i = 0; i < mesh->NumMatChunks; ++i )
+	for (int i = 0; i < mesh->NumMatChunks; ++i)
 	{
-		const r3dTriBatch& batch = mesh->MatChunks[ i ];
-		if( ( batch.Mat->Flags & R3D_MAT_TRANSPARENT ) != 0 )
+		const r3dTriBatch& batch = mesh->MatChunks[i];
+
+		if (!batch.Mat)
+			continue;
+
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
+
+		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
 			continue;
 
 		MeshDeferredRenderable rend;
@@ -1765,16 +1778,13 @@ r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3
 		rend.BatchIdx = i;
 		rend.Color = color.GetPacked();
 		rend.Mesh = mesh;
-		rend.SortValue = (UINT64)batch.Mat->ID << 32 | (UINT64)mesh->buffers.VBId << 16;
+		rend.SortValue =
+			((UINT64)batch.Mat->ID << 32) |
+			((UINT64)mesh->buffers.VBId << 16);
+
 		rend.InitDX11(worldTransform, skeleton);
 
 		oArr.PushBack(rend);
-		rend.Color			= color.GetPacked();
-		rend.Mesh			= mesh;
-		rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) mesh->buffers.VBId << 16;
-		rend.InitDX11( worldTransform, skeleton );
-
-		oArr.PushBack( rend );
 	}
 }
 
@@ -1949,71 +1959,83 @@ r3dMesh::AppendShadowRenderables( RenderArray& oArr )
 //------------------------------------------------------------------------
 
 void
-r3dMesh::AppendRenderablesDeferred( RenderArray& oArr, const r3dColor& color )
+r3dMesh::AppendRenderablesDeferred(RenderArray& oArr, const r3dColor& color)
 {
-	if(!IsDrawable())
+	if (!IsDrawable())
 		return;
 
-	for (int i=0;i<NumMatChunks;i++)
+	for (int i = 0; i < NumMatChunks; ++i)
 	{
-		const r3dTriBatch& batch = MatChunks[ i ];
-		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) == 0)
-		{
-			MeshDeferredRenderable rend;
-			memset(&rend, 0, sizeof(rend));
+		const r3dTriBatch& batch = MatChunks[i];
 
-			rend.BatchIdx = i;
-			rend.Color = color.GetPacked();
-			rend.Mesh = this;
-			rend.SortValue = (UINT64)batch.Mat->ID << 32 | (UINT64)buffers.VBId << 16;
-			rend.InitDX11(NULL);
+		if (!batch.Mat)
+			continue;
 
-			oArr.PushBack(rend);
-			rend.Color			= color.GetPacked();
-			rend.Mesh			= this;
-			rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) buffers.VBId << 16;
-			rend.InitDX11( NULL );
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
 
-			oArr.PushBack( rend );
-		}
+		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
+			continue;
 
-	}	
+		MeshDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = color.GetPacked();
+		rend.Mesh = this;
+		rend.SortValue =
+			((UINT64)batch.Mat->ID << 32) |
+			((UINT64)buffers.VBId << 16);
+
+		rend.InitDX11(NULL);
+
+		oArr.PushBack(rend);
+	}
 }
 
 //------------------------------------------------------------------------
 
 void
-r3dMesh::AppendTransparentRenderables( RenderArray& oArr, const r3dColor& color, float dist, int forceAll )
+r3dMesh::AppendTransparentRenderables(
+	RenderArray& oArr,
+	const r3dColor& color,
+	float dist,
+	int forceAll
+)
 {
 	if (!IsDrawable())
 		return;
 
-	int idist = GetRevIDist(dist);
+	const int idist = GetRevIDist(dist);
 
 	for (int i = 0; i < NumMatChunks; ++i)
 	{
-		const r3dTriBatch& batch = MatChunks[ i ];
-		if ( ( batch.Mat->Flags & R3D_MAT_TRANSPARENT ) || forceAll )
-		{
-			MeshDeferredRenderable rend;
-			memset(&rend, 0, sizeof(rend));
+		const r3dTriBatch& batch = MatChunks[i];
 
-			rend.BatchIdx = i;
-			rend.Color = color.GetPacked();
-			rend.Mesh = this;
-			rend.SortValue = RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
-			rend.InitDX11(NULL);
+		if (!batch.Mat)
+			continue;
 
-			oArr.PushBack(rend);
-			rend.Color			= color.GetPacked();
-			rend.Mesh			= this;
-			rend.SortValue		= RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
-			rend.InitDX11( NULL );
+		if (batch.EndIndex <= batch.StartIndex)
+			continue;
 
-			oArr.PushBack( rend );
-		}
+		const bool isTransparent =
+			(batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0;
 
-	}	
+		if (!isTransparent && !forceAll)
+			continue;
+
+		MeshDeferredRenderable rend;
+		memset(&rend, 0, sizeof(rend));
+
+		rend.BatchIdx = i;
+		rend.Color = color.GetPacked();
+		rend.Mesh = this;
+		rend.SortValue = RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
+
+		rend.InitDX11(NULL);
+
+		oArr.PushBack(rend);
+	}
 }
 
 //------------------------------------------------------------------------
