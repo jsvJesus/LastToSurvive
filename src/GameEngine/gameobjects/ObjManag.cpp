@@ -1431,43 +1431,40 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 	if (!typeName)
 		return;
 
-	static bool sLoggedRoad = false;
-	static bool sLoggedParticle = false;
-	static bool sLoggedTrees = false;
-	static bool sLoggedDecalProxy = false;
-	static bool sLoggedSprite = false;
-	static bool sLoggedApex = false;
-	static bool sLoggedGameplayItem = false;
-	static bool sLoggedZombie = false;
-	static bool sLoggedNPC = false;
-	static bool sLoggedAnimMesh = false;
-	static bool sLoggedBuilding = false;
-	static bool sLoggedSharedUsableItem = false;
+	struct LoggedSpecialObject
+	{
+		const char* TypeName;
+		const char* ClassName;
+	};
 
-	bool* logged = NULL;
+	static LoggedSpecialObject sLogged[128];
+	static int sLoggedCount = 0;
 
-	if (obj->isObjType(OBJTYPE_SharedUsableItem))			logged = &sLoggedSharedUsableItem;
-	else if (obj->isObjType(OBJTYPE_GameplayItem))			logged = &sLoggedGameplayItem;
-	else if (obj->isObjType(OBJTYPE_Zombie))				logged = &sLoggedZombie;
-	else if (obj->isObjType(OBJTYPE_NPC))					logged = &sLoggedNPC;
-	else if (obj->isObjType(OBJTYPE_Building))				logged = &sLoggedBuilding;
-	else if (obj->isObjType(OBJTYPE_Road))					logged = &sLoggedRoad;
-	else if (obj->isObjType(OBJTYPE_Particle))				logged = &sLoggedParticle;
-	else if (obj->isObjType(OBJTYPE_Trees))					logged = &sLoggedTrees;
-	else if (obj->isObjType(OBJTYPE_ApexDestructible))		logged = &sLoggedApex;
-	else if (obj->isObjType(OBJTYPE_AnimMesh))				logged = &sLoggedAnimMesh;
-	else if (obj->isObjType(OBJTYPE_DecalProxy))			logged = &sLoggedDecalProxy;
-	else if (obj->isObjType(OBJTYPE_Sprite))				logged = &sLoggedSprite;
+	const char* className =
+		obj->Class ? obj->Class->Name.c_str() : "<null>";
 
-	if (!logged || *logged)
-		return;
+	for (int i = 0; i < sLoggedCount; ++i)
+	{
+		if (
+			strcmp(sLogged[i].TypeName, typeName) == 0 &&
+			strcmp(sLogged[i].ClassName, className) == 0
+		)
+		{
+			return;
+		}
+	}
 
-	*logged = true;
+	if (sLoggedCount < _countof(sLogged))
+	{
+		sLogged[sLoggedCount].TypeName = typeName;
+		sLogged[sLoggedCount].ClassName = className;
+		++sLoggedCount;
+	}
 
 	r3dOutToLog(
 		"[DX11World][Stage9] special object seen: type=%s class=%s name=%s hook=%s status=%s\n",
 		typeName,
-		obj->Class ? obj->Class->Name.c_str() : "<null>",
+		className,
 		obj->Name.c_str(),
 		hookName ? hookName : "<null>",
 		DX11World_GetSpecialObjectDX11Status(obj)
