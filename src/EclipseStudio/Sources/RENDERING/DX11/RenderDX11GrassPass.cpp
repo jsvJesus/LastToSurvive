@@ -76,6 +76,59 @@ namespace
 		return nullptr;
 	}
 
+	struct GrassBatchKey
+	{
+		int TypeIdx;
+		unsigned int ChunkIdx;
+		int Variation;
+		ID3D11ShaderResourceView* DiffuseSRV;
+		ID3D11ShaderResourceView* HeightSRV;
+		ID3D11ShaderResourceView* MaskSRV;
+
+		bool operator < (const GrassBatchKey& rhs) const
+		{
+			if (TypeIdx != rhs.TypeIdx)
+				return TypeIdx < rhs.TypeIdx;
+
+			if (ChunkIdx != rhs.ChunkIdx)
+				return ChunkIdx < rhs.ChunkIdx;
+
+			if (Variation != rhs.Variation)
+				return Variation < rhs.Variation;
+
+			if (DiffuseSRV != rhs.DiffuseSRV)
+				return DiffuseSRV < rhs.DiffuseSRV;
+
+			if (HeightSRV != rhs.HeightSRV)
+				return HeightSRV < rhs.HeightSRV;
+
+			return MaskSRV < rhs.MaskSRV;
+		}
+	};
+
+	struct GrassBatch
+	{
+		r3dDX11GrassPass::ChunkGpu* Gpu;
+		r3dDX11VertexBuffer* VertexBuffer;
+		ID3D11ShaderResourceView* DiffuseSRV;
+		ID3D11ShaderResourceView* HeightSRV;
+		ID3D11ShaderResourceView* MaskSRV;
+		unsigned int IndexCount;
+		std::vector<r3dDX11GrassInstance> Instances;
+
+		GrassBatch()
+			: Gpu(NULL)
+			, VertexBuffer(NULL)
+			, DiffuseSRV(NULL)
+			, HeightSRV(NULL)
+			, MaskSRV(NULL)
+			, IndexCount(0)
+		{
+		}
+	};
+
+	typedef std::map<GrassBatchKey, GrassBatch> GrassBatchMap;
+
 	std::map<const GrassTextureCell*, r3dDX11GrassPass::TextureGpu*> g_DX11GrassHeightTextures;
 	std::map<const GrassMaskTextureEntry*, r3dDX11GrassPass::TextureGpu*> g_DX11GrassMaskTextures;
 
@@ -698,7 +751,9 @@ bool r3dDX11GrassPass::DrawInternal(
 
 	r3dDX11GrassConstants constants;
 	memset(&constants, 0, sizeof(constants));
+
 	memcpy(constants.ViewProj, &viewProj, sizeof(constants.ViewProj));
+
 	const float timeValue = GetGrassRuntimeTime();
 	const r3dPoint3D chunkScale = GetGrassChunkScale();
 	const r3dPoint3D halfChunkScale = chunkScale * 0.5f;
@@ -709,6 +764,7 @@ bool r3dDX11GrassPass::DrawInternal(
 	constants.CameraPos_Time[1] = camera.y;
 	constants.CameraPos_Time[2] = camera.z;
 	constants.CameraPos_Time[3] = timeValue;
+
 	constants.Params[0] = visRadius;
 	constants.Params[1] = 0.04f;
 	constants.Params[2] = 0.0f;
@@ -717,11 +773,15 @@ bool r3dDX11GrassPass::DrawInternal(
 	if (!GrassConstants.Update(DrawContext->GetContext(), &constants, sizeof(constants)))
 		return false;
 
-	std::vector<r3dDX11GrassInstance> instances;
-	instances.reserve(512);
-
 	const float cellSize = g_pGrassMap->GetCellSize();
 	const int cellsPerTextureCell = g_pGrassMap->GetCellsPerTextureCell();
+
+	if (cellsPerTextureCell <= 0)
+		return true;
+
+	const float visRadiusSq = visRadius * visRadius;
+
+	GrassBatchMap batches;
 
 	for (int z = 0, ze = cells.Height(); z < ze; ++z)
 	{
@@ -736,11 +796,11 @@ bool r3dDX11GrassPass::DrawInternal(
 				cell.Position +
 				r3dPoint3D(cellSize * 0.5f, 0.0f, cellSize * 0.5f);
 
-			const float distSq =
-				(cellCenter.x - camera.x) * (cellCenter.x - camera.x) +
-				(cellCenter.z - camera.z) * (cellCenter.z - camera.z);
+			const float dx = cellCenter.x - camera.x;
+			const float dz = cellCenter.z - camera.z;
+			const float distSq = dx * dx + dz * dz;
 
-			if (distSq > visRadius * visRadius)
+			if (distSq > visRadiusSq)
 				continue;
 
 			const int texCellX = x / cellsPerTextureCell;
@@ -758,10 +818,6 @@ bool r3dDX11GrassPass::DrawInternal(
 			if (!EnsureHeightTextureGpu(texCell, &heightGpu) || !heightGpu || !heightGpu->SRV)
 				continue;
 
-			ID3D11DeviceContext* context = DrawContext->GetContext();
-			if (context)
-				context->VSSetShaderResources(1, 1, &heightGpu->SRV);
-
 			for (uint32_t entryIndex = 0, entryCount = cell.Entries.Count(); entryIndex < entryCount; ++entryIndex)
 			{
 				const GrassCellEntry& cellEntry = cell.Entries[entryIndex];
@@ -771,9 +827,13 @@ bool r3dDX11GrassPass::DrawInternal(
 
 				const GrassLibEntry& libEntry = g_pGrassLib->GetEntry(cellEntry.TypeIdx);
 
-				const r3dPoint3D toCam = cellCenter - r3dPoint3D(camera.x, camera.y, camera.z);
 				const float typeFadeRadius = libEntry.FadeDistance * visRadius + cellSize;
-				if (toCam.Length() > typeFadeRadius)
+				const float typeFadeRadiusSq = typeFadeRadius * typeFadeRadius;
+
+				const float dy = cellCenter.y - camera.y;
+				const float dist3Sq = dx * dx + dy * dy + dz * dz;
+
+				if (dist3Sq > typeFadeRadiusSq)
 					continue;
 
 				const GrassMaskTextureEntry* maskEntry = FindMaskForType(texCell, cellEntry.TypeIdx);
@@ -782,8 +842,6 @@ bool r3dDX11GrassPass::DrawInternal(
 				if (!EnsureMaskTextureGpu(maskEntry, &maskGpu) || !maskGpu || !maskGpu->SRV)
 					continue;
 
-				DrawContext->SetShaderResource(2, maskGpu->SRV);
-
 				for (uint32_t chunkIdx = 0, chunkCount = libEntry.Chunks.Count(); chunkIdx < chunkCount; ++chunkIdx)
 				{
 					const GrassChunk& chunk = libEntry.Chunks[chunkIdx];
@@ -791,7 +849,7 @@ bool r3dDX11GrassPass::DrawInternal(
 					if (!chunk.NumVariations || !chunk.IndexBuffer)
 						continue;
 
-					ChunkGpu* gpu = nullptr;
+					ChunkGpu* gpu = NULL;
 					if (!EnsureChunkGpu(cellEntry.TypeIdx, chunkIdx, &gpu) || !gpu)
 					{
 						if (stats)
@@ -808,7 +866,36 @@ bool r3dDX11GrassPass::DrawInternal(
 					if (!gpu->VertexBuffers[variation].IsValid() || !gpu->IndexBuffer.IsValid())
 						continue;
 
-					instances.clear();
+					r3dDX11Texture* dx11Texture = NULL;
+
+					if (chunk.Texture && chunk.Texture->getFileLoc().FileName[0])
+						dx11Texture = TextureLibrary->LoadTexture(chunk.Texture->getFileLoc().FileName, false);
+
+					if (!dx11Texture)
+						dx11Texture = TextureLibrary->GetWhiteTexture();
+
+					ID3D11ShaderResourceView* diffuseSRV = dx11Texture ? dx11Texture->GetSRV() : NULL;
+
+					GrassBatchKey key;
+					key.TypeIdx = cellEntry.TypeIdx;
+					key.ChunkIdx = chunkIdx;
+					key.Variation = variation;
+					key.DiffuseSRV = diffuseSRV;
+					key.HeightSRV = heightGpu->SRV;
+					key.MaskSRV = maskGpu->SRV;
+
+					GrassBatch& batch = batches[key];
+
+					if (!batch.Gpu)
+					{
+						batch.Gpu = gpu;
+						batch.VertexBuffer = &gpu->VertexBuffers[variation];
+						batch.DiffuseSRV = diffuseSRV;
+						batch.HeightSRV = heightGpu->SRV;
+						batch.MaskSRV = maskGpu->SRV;
+						batch.IndexCount = gpu->IndexCount;
+						batch.Instances.reserve(64);
+					}
 
 					r3dDX11GrassInstance instance;
 					memset(&instance, 0, sizeof(instance));
@@ -834,75 +921,83 @@ bool r3dDX11GrassPass::DrawInternal(
 					instance.CellParams[0] = static_cast<float>(localCellX);
 					instance.CellParams[1] = static_cast<float>(localCellZ);
 					instance.CellParams[2] = cellSize;
-					instance.CellParams[3] = cellsPerTextureCell > 0 ? 1.0f / static_cast<float>(cellsPerTextureCell) : 1.0f;
+					instance.CellParams[3] = 1.0f / static_cast<float>(cellsPerTextureCell);
 
-					instances.push_back(instance);
-
-					if (!EnsureInstanceCapacity(static_cast<unsigned int>(instances.size())))
-						continue;
-
-					if (!InstanceBuffer.Update(
-							DrawContext->GetContext(),
-							&instances[0],
-							sizeof(r3dDX11GrassInstance) * instances.size()))
-					{
-						continue;
-					}
-
-					r3dDX11VertexBuffer* buffers[2] =
-					{
-						&gpu->VertexBuffers[variation],
-						&InstanceBuffer
-					};
-
-					DrawContext->SetVertexBuffers(0, 2, buffers);
-					DrawContext->SetIndexBuffer(&gpu->IndexBuffer);
-
-					r3dDX11Texture* dx11Texture = nullptr;
-
-					if (chunk.Texture && chunk.Texture->getFileLoc().FileName[0])
-						dx11Texture = TextureLibrary->LoadTexture(chunk.Texture->getFileLoc().FileName, false);
-
-					if (!dx11Texture)
-						dx11Texture = TextureLibrary->GetWhiteTexture();
-
-					if (dx11Texture)
-						DrawContext->SetShaderResource(0, dx11Texture->GetSRV());
-
-					DrawContext->DrawIndexedInstanced(
-						gpu->IndexCount,
-						static_cast<unsigned int>(instances.size())
-					);
-
-					if (stats)
-					{
-						if (depthOnly)
-						{
-							++stats->VegetationDepthDraws;
-							stats->VegetationDepthInstances += static_cast<unsigned int>(instances.size());
-						}
-						else
-						{
-							++stats->VegetationGBufferDraws;
-							stats->VegetationGBufferInstances += static_cast<unsigned int>(instances.size());
-						}
-
-						++stats->VegetationBendingDraws;
-					}
+					batch.Instances.push_back(instance);
 				}
 			}
 		}
 	}
 
-	DrawContext->SetVertexBuffer(nullptr, 0);
-	DrawContext->SetVertexBuffer(nullptr, 1);
+	ID3D11DeviceContext* context = DrawContext->GetContext();
+
+	for (GrassBatchMap::iterator it = batches.begin(); it != batches.end(); ++it)
+	{
+		GrassBatch& batch = it->second;
+
+		if (!batch.Gpu || !batch.VertexBuffer || !batch.VertexBuffer->IsValid() || !batch.Gpu->IndexBuffer.IsValid())
+			continue;
+
+		if (!batch.Instances.size())
+			continue;
+
+		if (!EnsureInstanceCapacity(static_cast<unsigned int>(batch.Instances.size())))
+			continue;
+
+		if (!InstanceBuffer.Update(
+				context,
+				&batch.Instances[0],
+				sizeof(r3dDX11GrassInstance) * batch.Instances.size()))
+		{
+			continue;
+		}
+
+		if (context)
+			context->VSSetShaderResources(1, 1, &batch.HeightSRV);
+
+		DrawContext->SetShaderResource(0, batch.DiffuseSRV);
+		DrawContext->SetShaderResource(2, batch.MaskSRV);
+
+		r3dDX11VertexBuffer* buffers[2] =
+		{
+			batch.VertexBuffer,
+			&InstanceBuffer
+		};
+
+		DrawContext->SetVertexBuffers(0, 2, buffers);
+		DrawContext->SetIndexBuffer(&batch.Gpu->IndexBuffer);
+
+		DrawContext->DrawIndexedInstanced(
+			batch.IndexCount,
+			static_cast<unsigned int>(batch.Instances.size())
+		);
+
+		if (stats)
+		{
+			if (depthOnly)
+			{
+				++stats->VegetationDepthDraws;
+				stats->VegetationDepthInstances += static_cast<unsigned int>(batch.Instances.size());
+			}
+			else
+			{
+				++stats->VegetationGBufferDraws;
+				stats->VegetationGBufferInstances += static_cast<unsigned int>(batch.Instances.size());
+			}
+
+			++stats->VegetationBendingDraws;
+		}
+	}
+
+	DrawContext->SetVertexBuffer(NULL, 0);
+	DrawContext->SetVertexBuffer(NULL, 1);
 	DrawContext->SetShaderResource(0, NULL);
 	DrawContext->SetShaderResource(2, NULL);
 
-	if (DrawContext->GetContext())
+	if (context)
 	{
 		ID3D11ShaderResourceView* nullSrv = NULL;
-		DrawContext->GetContext()->VSSetShaderResources(1, 1, &nullSrv);
+		context->VSSetShaderResources(1, 1, &nullSrv);
 	}
 
 	return true;
