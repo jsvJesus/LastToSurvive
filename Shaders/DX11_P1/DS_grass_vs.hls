@@ -1,0 +1,64 @@
+cbuffer GrassConstants : register(b0)
+{
+	float4x4 gViewProj;
+	float4 gCameraPos_Time;
+	float4 gParams;
+};
+
+Texture2D gDiffuseTex : register(t0);
+SamplerState gLinearSampler : register(s0);
+
+struct VSInput
+{
+	float4 Position : POSITION0;
+	float2 Texcoord : TEXCOORD0;
+
+	float4 InstancePositionAlphaRef : TEXCOORD3;
+	float4 InstanceScaleTint : TEXCOORD4;
+	float4 InstanceAnimParams : TEXCOORD5;
+	float4 InstanceCellParams : TEXCOORD6;
+};
+
+struct VSOutput
+{
+	float4 Position : SV_POSITION;
+	float2 Texcoord : TEXCOORD0;
+	float4 WorldFadeAlpha : TEXCOORD1;
+	float4 TintParams : TEXCOORD2;
+};
+
+VSOutput main(VSInput input)
+{
+	VSOutput output;
+
+	float3 localPos = input.Position.xyz * input.InstanceScaleTint.xyz;
+
+	float bladeHeight = saturate(input.Position.y * 0.5f + 0.5f);
+	float phase =
+		gCameraPos_Time.w +
+		input.InstanceCellParams.x * 0.173f +
+		input.InstanceCellParams.y * 0.119f +
+		localPos.x * 0.07f +
+		localPos.z * 0.05f;
+
+	float wind = sin(phase) * input.InstanceAnimParams.y;
+	localPos.xz += wind * bladeHeight;
+
+	float3 worldPos =
+		float3(
+			input.InstancePositionAlphaRef.x,
+			input.InstancePositionAlphaRef.y,
+			input.InstancePositionAlphaRef.z
+		) + localPos;
+
+	float distXZ = distance(worldPos.xz, gCameraPos_Time.xz);
+	float visibleRadius = max(gParams.x * input.InstanceAnimParams.w, 1.0f);
+	float fade = saturate(1.0f - distXZ / visibleRadius);
+
+	output.Position = mul(float4(worldPos, 1.0f), gViewProj);
+	output.Texcoord = input.Texcoord;
+	output.WorldFadeAlpha = float4(worldPos, fade);
+	output.TintParams = float4(input.InstancePositionAlphaRef.w, input.InstanceScaleTint.w, bladeHeight, 1.0f);
+
+	return output;
+}
