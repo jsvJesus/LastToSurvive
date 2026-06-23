@@ -278,9 +278,9 @@ GrassLib::LoadGrassLibEntry(GrassLibEntry &en, r3dFile *fin)
 
 	en.Chunks.Resize( chunkCount );
 
-	for( uint32_t i = 0, e = chunkCount; i < e; i ++ )
+	for( uint32_t chunkIndex = 0, chunkEnd = chunkCount; chunkIndex < chunkEnd; chunkIndex ++ )
 	{
-		GrassChunk& chunk = en.Chunks[ i ];
+		GrassChunk& chunk = en.Chunks[ chunkIndex ];
 
 		if( fread_be( chunk.VerticesPerItem, fin ) != 1 )
 			return false ;
@@ -297,7 +297,7 @@ GrassLib::LoadGrassLibEntry(GrassLibEntry &en, r3dFile *fin)
 				return false;
 		}
 
-		if( fread_be( chunk.NumVariations,	fin ) != 1 )
+		if( fread_be( chunk.NumVariations, fin ) != 1 )
 			return false;
 
 		r3dString texLoc;
@@ -306,136 +306,112 @@ GrassLib::LoadGrassLibEntry(GrassLibEntry &en, r3dFile *fin)
 
 		chunk.Texture = r3dRenderer->LoadTexture( texLoc.c_str(), D3DFMT_UNKNOWN, false, GetGrassDownScale() );
 
-		uint32_t itemCount;
+		uint32_t indexItemCount = 0;
 
-		if( fread_be( itemCount, fin ) != 1 )
+		if( fread_be( indexItemCount, fin ) != 1 )
 			return false;
 
-		int ibItemCount = itemCount ;
-
-		int meshCountAsFromIb = ibItemCount / chunk.IndicesPerItem ;
+		int ibItemCount = indexItemCount;
+		int meshCountAsFromIb = ibItemCount / chunk.IndicesPerItem;
 
 		if( skipEachSecondInBuffer )
 		{
-			meshCountAsFromIb /= 2 ; 
-			ibItemCount = meshCountAsFromIb * chunk.IndicesPerItem ;
+			meshCountAsFromIb /= 2;
+			ibItemCount = meshCountAsFromIb * chunk.IndicesPerItem;
 		}
 
 		chunk.IndexBuffer = new r3dIndexBuffer( ibItemCount, false, 2, GrassBufferMem );
 
-		void* data = chunk.IndexBuffer->Lock();
+		GrassChunk::Indices sourceIndices;
+		sourceIndices.Resize( indexItemCount );
+
+		if( fread( &sourceIndices[0], indexItemCount * sizeof(UINT16), 1, fin ) != 1 )
+			return false;
+
+		chunk.SysmemIndices.Resize( ibItemCount );
+
+		if( skipEachSecondInBuffer )
 		{
-			TUnlock< r3dIndexBuffer > delay_unlock( chunk.IndexBuffer ) ;
+			UINT16* dst = &chunk.SysmemIndices[0];
 
-			unsigned short * indices = 0 ;
-			if( g_bEditMode )
+			for( int meshIdx = 0; meshIdx < meshCountAsFromIb; ++meshIdx )
 			{
-				chunk.SysmemIndices.Resize( itemCount ) ;
-				indices = &chunk.SysmemIndices[ 0 ] ;
+				const int srcMeshIdx = meshIdx * 2;
+				const UINT16* src = &sourceIndices[srcMeshIdx * chunk.IndicesPerItem];
 
-				if( fread( indices, itemCount * chunk.IndexBuffer->GetItemSize() , 1, fin ) != 1 )
-					return false ;
+				memcpy( dst, src, chunk.IndicesPerItem * sizeof(UINT16) );
+				dst += chunk.IndicesPerItem;
+			}
+		}
+		else
+		{
+			memcpy( &chunk.SysmemIndices[0], &sourceIndices[0], ibItemCount * sizeof(UINT16) );
+		}
+
+		void* indexData = chunk.IndexBuffer->Lock();
+		{
+			TUnlock< r3dIndexBuffer > delay_unlock( chunk.IndexBuffer );
+			memcpy( indexData, &chunk.SysmemIndices[0], ibItemCount * sizeof(UINT16) );
+		}
+
+		for( uint32_t variationIndex = 0, variationEnd = chunk.NumVariations; variationIndex < variationEnd; variationIndex ++ )
+		{
+			uint32_t vertexItemCount = 0;
+
+			if( fread_be( vertexItemCount, fin ) != 1 )
+				return false;
+
+			int origMeshCount = vertexItemCount / chunk.VerticesPerItem;
+			int meshCount = origMeshCount;
+
+			int vbItemCount = vertexItemCount;
+
+			if( skipEachSecondInBuffer )
+			{
+				meshCount /= 2;
+				vbItemCount = meshCount * chunk.VerticesPerItem;
+			}
+
+			r3d_assert( meshCount == meshCountAsFromIb );
+
+			r3dVertexBuffer* vertexBuffer = new r3dVertexBuffer( vbItemCount, sizeof( GrassVertex ), 0, false, false, GrassBufferMem );
+			chunk.VertexBuffs[ variationIndex ] = vertexBuffer;
+
+			GrassChunk::Vertices sourceVertices;
+			sourceVertices.Resize( vertexItemCount );
+
+			if( fread( &sourceVertices[0], vertexItemCount * sizeof( GrassVertex ), 1, fin ) != 1 )
+				return false;
+
+			GrassChunk::Vertices& sysmemVertices = chunk.SysmemVertices[ variationIndex ];
+			sysmemVertices.Resize( vbItemCount );
+
+			if( skipEachSecondInBuffer )
+			{
+				GrassVertex* dst = &sysmemVertices[0];
+
+				for( int meshIdx = 0; meshIdx < meshCount; ++meshIdx )
+				{
+					const int srcMeshIdx = meshIdx * 2;
+					const GrassVertex* src = &sourceVertices[srcMeshIdx * chunk.VerticesPerItem];
+
+					memcpy( dst, src, chunk.VerticesPerItem * sizeof( GrassVertex ) );
+					dst += chunk.VerticesPerItem;
+				}
 			}
 			else
 			{
-				if( fread( data, chunk.IndexBuffer->GetDataLength(), 1, fin ) != 1 )
-					return false ;
-
-				if( skipEachSecondInBuffer )
-				{
-					fseek( fin, itemCount * chunk.IndexBuffer->GetItemSize() - chunk.IndexBuffer->GetDataLength(), SEEK_CUR ) ;
-				}
+				memcpy( &sysmemVertices[0], &sourceVertices[0], vbItemCount * sizeof( GrassVertex ) );
 			}
 
-			if( g_bEditMode )
+			void* vertexData = vertexBuffer->Lock( 0, vbItemCount );
 			{
-				memcpy( data, indices, ibItemCount * chunk.IndexBuffer->GetItemSize() ) ;
-			}
-		}
-
-		for( uint32_t i = 0, e = chunk.NumVariations; i < e; i ++ )
-		{
-			uint32_t itemCount;
-			if( fread_be( itemCount, fin ) != 1 )
-				return false;
-
-			int origMeshCount = itemCount / chunk.VerticesPerItem ;
-			int meshCount = origMeshCount ;
-
-			int vbItemCount = itemCount ;
-			if( skipEachSecondInBuffer )
-			{
-				meshCount /= 2 ;
-				vbItemCount = meshCount * chunk.VerticesPerItem ;
-			}
-
-			r3d_assert( meshCount == meshCountAsFromIb ) ;
-
-			r3dVertexBuffer* vertexBuffer = new r3dVertexBuffer( vbItemCount, sizeof (GrassVertex), 0, false, false, GrassBufferMem ) ;
-			chunk.VertexBuffs[ i ] = vertexBuffer ;
-
-			GrassChunk::Vertices& sysmemVertices = chunk.SysmemVertices[ i ] ;
-
-			void * data = vertexBuffer->Lock( 0, vbItemCount );
-			{
-				TUnlock< r3dVertexBuffer > delay_unlock( vertexBuffer ) ;
-
-				GrassVertex * vertices = 0 ;
-
-				if( g_bEditMode )
-				{
-					sysmemVertices.Resize( itemCount ) ;
-					vertices = &sysmemVertices[ 0 ] ;
-
-					if( fread( vertices, itemCount * sizeof( GrassVertex ), 1, fin ) != 1 )
-						return false;
-
-					r3d_assert( sysmemVertices.Count() * sizeof ( sysmemVertices[ 0 ] ) == vertexBuffer->GetDataLength() 
-						|| 
-						meshCount * chunk.VerticesPerItem * sizeof( GrassVertex ) == vertexBuffer->GetDataLength()
-						) ;
-				}
-				else
-				{
-					int chunkByteSize = chunk.VerticesPerItem * sizeof( GrassVertex ) ;
-
-					for( int i = 0, e = vertexBuffer->GetItemCount() ; i < e ; i += chunk.VerticesPerItem )
-					{
-						if( fread( ( GrassVertex*)data + i, chunkByteSize, 1, fin ) != 1 )
-							return false;
-
-						if( skipEachSecondInBuffer )
-						{
-							fseek( fin, chunkByteSize, SEEK_CUR ) ;
-						}
-					}
-
-					if( origMeshCount & 1 && skipEachSecondInBuffer )
-					{
-						fseek( fin, chunkByteSize, SEEK_CUR ) ;
-					}
-				}
-
-				if( g_bEditMode )
-				{
-					if( skipEachSecondInBuffer )
-					{
-						for( int i = 0, j = 0, e = vertexBuffer->GetItemCount() ; j < e ; 
-							i += 2 * chunk.VerticesPerItem, 
-							j += chunk.VerticesPerItem )
-						{
-							memcpy( (GrassVertex*)data + j , 
-								(GrassVertex*)vertices + i , sizeof(GrassVertex) * chunk.VerticesPerItem ) ;
-						}
-					}
-					else
-					{
-						memcpy( data, vertices, sizeof( GrassVertex ) * itemCount ) ;
-					}
-				}
+				TUnlock< r3dVertexBuffer > delay_unlock( vertexBuffer );
+				memcpy( vertexData, &sysmemVertices[0], vbItemCount * sizeof( GrassVertex ) );
 			}
 		}
 	}
+
 	return true;
 }
 

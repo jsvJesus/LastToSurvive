@@ -183,6 +183,7 @@ GrassMap::Close()
 					{
 						r3dRenderer->DeleteTexture( en.MaskTexture );
 					}
+					en.CpuMaskData.Clear();
 				}
 			}
 		}
@@ -493,7 +494,7 @@ GrassMap::Paint( float x, float z, float radius, float dir, const r3dString& gra
 
 			if( pgce->MaskTexture )
 			{
-				DoPaint( dx, dz, relRad, dir, pgce->MaskTexture );
+				DoPaint( dx, dz, relRad, dir, pgce->MaskTexture, &pgce->CpuMaskData );
 			}
 		}
 	}
@@ -1242,6 +1243,9 @@ void GrassMap::DoCreateMaskTextureCellEntry( GrassTextureCell& cell, int X, int 
 		memset( data, 0, CELL_MASK_TEX_DIM * lockedRect.Pitch );
 
 		D3D_V( tex->UnlockRect( 0 ) );
+
+		entry.CpuMaskData.Resize(CELL_MASK_TEX_DIM * CELL_MASK_TEX_DIM * MASK_TEX_FMT_SIZE);
+		memset(&entry.CpuMaskData[0], 0, entry.CpuMaskData.Count());
 	}
 
 	for( int cz = Z * mCellsPerTextureCell, e = (Z + 1) * mCellsPerTextureCell; cz < e ; cz ++ )
@@ -1275,8 +1279,7 @@ GrassMap::CreateCellEntry( GrassCell& cell, uint32_t TypeIdx )
 
 //------------------------------------------------------------------------
 
-void
-GrassMap::DoPaint( float CentreDX, float CentreDZ, float Radius, float Dir, r3dTexture* Tex )
+void GrassMap::DoPaint( float CentreDX, float CentreDZ, float Radius, float Dir, r3dTexture* Tex, GrassCpuBytes* CpuMirror )
 {
 	int sx = R3D_MIN( R3D_MAX( int(( CentreDX - Radius ) * CELL_MASK_TEX_DIM ), 0 ), CELL_MASK_TEX_DIM - 1 );
 	int sz = R3D_MIN( R3D_MAX( int(( CentreDZ - Radius ) * CELL_MASK_TEX_DIM ), 0 ), CELL_MASK_TEX_DIM - 1 );
@@ -1326,6 +1329,18 @@ GrassMap::DoPaint( float CentreDX, float CentreDZ, float Radius, float Dir, r3dT
 				*dest = R3D_MAX( R3D_MIN( (int)*dest, toReplace ), 0 );
 			else
 				*dest = R3D_MIN( R3D_MAX( (int)*dest, toReplace ), 255 );
+		}
+	}
+
+	if( CpuMirror )
+	{
+		CpuMirror->Resize(CELL_MASK_TEX_DIM * CELL_MASK_TEX_DIM * MASK_TEX_FMT_SIZE);
+
+		for( int j = 0; j < CELL_MASK_TEX_DIM; ++j )
+		{
+			const unsigned char* src = weights + j * lockedRect.Pitch;
+			unsigned char* dst = &(*CpuMirror)[ j * CELL_MASK_TEX_DIM ];
+			memcpy(dst, src, CELL_MASK_TEX_DIM);
 		}
 	}
 
@@ -1437,6 +1452,15 @@ void GrassMap::DoUpdateTextureCellHeightT( int X, int Z, GrassTextureCell& cell 
 		}
 
 		data += lockedRect.Pitch - sizeof( data[ 0 ] ) * CELL_HEIGHT_TEX_DIM;
+	}
+
+	cell.CpuHeightData.Resize(CELL_HEIGHT_TEX_DIM * CELL_HEIGHT_TEX_DIM * HEIGHT_TEX_FMT_SIZE);
+
+	for( int row = 0; row < CELL_HEIGHT_TEX_DIM; ++row )
+	{
+		const unsigned char* src = (const unsigned char*)lockedRect.pBits + row * lockedRect.Pitch;
+		unsigned char* dst = &cell.CpuHeightData[row * CELL_HEIGHT_TEX_DIM * HEIGHT_TEX_FMT_SIZE];
+		memcpy(dst, src, CELL_HEIGHT_TEX_DIM * HEIGHT_TEX_FMT_SIZE);
 	}
 
 	D3D_V( tex->UnlockRect( 0 ) );
@@ -2740,6 +2764,7 @@ bool GrassMap::LoadCellData_104_105( r3dFile* fin, bool is105 )
 				else
 				{
 					FillTexture( cell.HeightTexture, heightTexData, false );
+					cell.CpuHeightData = heightTexData;
 				}
 
 				float ypos, ymax;
@@ -2813,6 +2838,7 @@ bool GrassMap::LoadCellData_104_105( r3dFile* fin, bool is105 )
 							gmte.MaskTexture = r3dRenderer->AllocateTexture();
 							gmte.MaskTexture->Create( CELL_MASK_TEX_DIM, CELL_MASK_TEX_DIM, MASK_TEX_FMT, 1 );
 							FillTexture( gmte.MaskTexture, maskTexData, true );
+							gmte.CpuMaskData = maskTexData;
 						}
 					}					
 				}

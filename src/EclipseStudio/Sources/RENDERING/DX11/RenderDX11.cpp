@@ -150,6 +150,13 @@ bool r3dDX11Renderer::Init(HWND windowHandle, int width, int height, bool fullsc
 		return false;
 	}
 
+	if (!GrassPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates, &TextureLibrary))
+	{
+		r3dOutToLog("[DX11] Grass pass initialization failed\n");
+		Shutdown();
+		return false;
+	}
+
 	if (!LightingPass.Init(Device.GetDevice(), &DrawContext, &ShaderLibrary, &CommonStates))
 	{
 		r3dOutToLog("[DX11] Lighting pass initialization failed\n");
@@ -189,6 +196,7 @@ void r3dDX11Renderer::Shutdown()
 	DepthOnlyPass.Shutdown();
 	GBufferPass.Shutdown();
 	TerrainPass.Shutdown();
+	GrassPass.Shutdown();
 	VegetationPass.Shutdown();
 	LightingPass.Shutdown();
 	SkyPass.Shutdown();
@@ -388,6 +396,11 @@ r3dDX11VegetationPass& r3dDX11Renderer::GetVegetationPass()
 	return VegetationPass;
 }
 
+r3dDX11GrassPass& r3dDX11Renderer::GetGrassPass()
+{
+	return GrassPass;
+}
+
 r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass()
 {
 	return LightingPass;
@@ -451,6 +464,11 @@ const r3dDX11TerrainPass& r3dDX11Renderer::GetTerrainPass() const
 const r3dDX11VegetationPass& r3dDX11Renderer::GetVegetationPass() const
 {
 	return VegetationPass;
+}
+
+const r3dDX11GrassPass& r3dDX11Renderer::GetGrassPass() const
+{
+	return GrassPass;
 }
 
 const r3dDX11LightingPass& r3dDX11Renderer::GetLightingPass() const

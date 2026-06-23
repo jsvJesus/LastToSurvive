@@ -650,6 +650,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeferredPointLightsOptimized.cpp"/>
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeffered.cpp"/>
     <ClCompile Include="Sources\RENDERING\Deffered\VisibilityGrid.cpp"/>
+    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11GrassPass.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11LightingPass.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11SkyPass.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11TerrainPass.cpp" />
@@ -937,6 +938,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\Deffered\RenderDefferedScene.hpp"/>
     <ClInclude Include="Sources\RENDERING\Deffered\rendershadowmap.hpp"/>
     <ClInclude Include="Sources\RENDERING\Deffered\VisibilityGrid.h"/>
+    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11GrassPass.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11LightingPass.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Platform.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11SkyPass.h" />

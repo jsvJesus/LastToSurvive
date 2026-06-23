@@ -1,6 +1,7 @@
 #pragma once
 
 #define AR_GRAZ_PAZ "\\grass"
+typedef r3dTL::TArray<unsigned char> GrassCpuBytes;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -8,7 +9,7 @@ struct GrassCellEntry
 {
 	GrassCellEntry();
 
-	int					TypeIdx;
+	int TypeIdx;
 };
 
 typedef r3dTL::TArray< GrassCellEntry > GrassCellEntries;
@@ -17,17 +18,20 @@ struct GrassCell
 {
 	GrassCell();
 
-	GrassCellEntries	Entries;
+	GrassCellEntries Entries;
 
-	r3dPoint3D			Position;
+	r3dPoint3D Position;
 
-	float				YMax;
+	float YMax;
 };
 
 struct GrassMaskTextureEntry
 {
-	int					TypeIdx;
-	r3dTexture*			MaskTexture;
+	int TypeIdx;
+	r3dTexture* MaskTexture;
+
+	// DX11 mirror. Old DX9 texture stays for editor / legacy path.
+	GrassCpuBytes CpuMaskData;
 
 	GrassMaskTextureEntry();
 };
@@ -38,8 +42,11 @@ struct GrassTextureCell
 
 	GrassTextureCell();
 
-	MaskTextureEntriesArr	MaskTextureEntries;
-	r3dTexture*				HeightTexture;
+	MaskTextureEntriesArr MaskTextureEntries;
+	r3dTexture* HeightTexture;
+
+	// DX11 mirror. L16 data, CELL_HEIGHT_TEX_DIM * CELL_HEIGHT_TEX_DIM * 2.
+	GrassCpuBytes CpuHeightData;
 };
 
 class GrassMap
@@ -59,6 +66,10 @@ public:
 	typedef r3dTL::T2DArray< GrassCell >		GrassCells;
 	typedef r3dTL::T2DArray< GrassTextureCell >	GrassTextureCells;
 	typedef r3dTL::TArray< unsigned char >		Bytes;
+
+	const GrassCells& GetCells() const { return mCells; }
+	const GrassTextureCells& GetTextureCells() const { return mTextureCells; }
+	int GetCellsPerTextureCell() const { return mCellsPerTextureCell; }
 
 	static const int CELL_HEIGHT_TEX_DIM	= 64;
 	static const int CELL_MASK_TEX_DIM		= 64;
@@ -135,7 +146,7 @@ private:
 	void DoCreateMaskTextureCellEntry( GrassTextureCell& cell, int X, int Z, uint32_t TypeIdx, bool createTexture );
 	void CreateCellEntry( GrassCell& cell, uint32_t TypeIdx );
 
-	void DoPaint( float CentreDX, float CentreDZ, float Radius, float Dir, r3dTexture* Tex );
+	void DoPaint( float CentreDX, float CentreDZ, float Radius, float Dir, r3dTexture* Tex, GrassCpuBytes* CpuMirror );
 	void UpdateTextureCellHeight( int X, int Z, GrassTextureCell& cell );
 
 	void DoUpdateTextureCellHeight( int X, int Z, GrassTextureCell& cell );

@@ -10,6 +10,7 @@
 #include "RENDERING/Deffered/RenderDeffered.h"
 #include "RENDERING/DX11/RenderDX11.h"
 #include "RENDERING/DX11/RenderDX11MeshRenderer.h"
+#include "RENDERING/DX11/RenderDX11GrassPass.h"
 #include "r3dMat.h"
 #include "r3dAtmosphere.h"
 
@@ -1190,6 +1191,13 @@ namespace
 				ShadowSlices[i].depthBias_HW
 			);
 
+			renderer.GetGrassPass().RenderShadow(
+				camera,
+				viewProj,
+				&stats,
+				ShadowSlices[i].depthBias_HW
+			);
+
 			if (!pass.SetDepthBias(ShadowSlices[i].depthBias_HW))
 			{
 				pass.EndDepthTarget();
@@ -1283,8 +1291,6 @@ namespace
 
 void r3dDX11ResetWorldRenderStats(r3dDX11WorldRenderStats& stats)
 {
-	r3dResetMeshDeferredDX11WorldMatrices();
-
 	stats.TotalRenderables = 0;
 	stats.MeshRenderables = 0;
 
@@ -1573,6 +1579,12 @@ static bool r3dDX11RenderWorldDepthOnlyInternal(
 		&stats
 	);
 
+	renderer.GetGrassPass().RenderDepth(
+		camera,
+		viewProj,
+		&stats
+	);
+
 	DrawDX11DepthOnlyQueue(
 		renderer,
 		depthPass,
@@ -1753,6 +1765,12 @@ bool r3dDX11RenderWorldGBuffer(
 	gCollectionsManager.RenderDX11(
 		R3D_IDME_NORMAL,
 		renderer,
+		viewProj,
+		stats
+	);
+
+	renderer.GetGrassPass().RenderGBuffer(
+		camera,
 		viewProj,
 		stats
 	);

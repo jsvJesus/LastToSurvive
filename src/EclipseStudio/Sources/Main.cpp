@@ -328,6 +328,12 @@ static void UpdateDX11WorldHotkeys()
 	}
 }
 
+static void PrepareDX11WorldRenderQueues(const r3dCamera& camera)
+{
+	r3dResetMeshDeferredDX11WorldMatrices();
+	GameWorld().Prepare(camera);
+}
+
 static Rml::Context* g_DX11SmokeRmlContext = nullptr;
 static Rml::ElementDocument* g_DX11SmokeRmlDocument = nullptr;
 static bool g_DX11SmokeRmlReady = false;
@@ -804,6 +810,7 @@ bool StudioDX11WorldHybridTick()
 
 	r3dDX11WorldRenderStats WorldStats;
 	r3dDX11ResetWorldRenderStats(WorldStats);
+	PrepareDX11WorldRenderQueues(gCam);
 
 	const bool bWorldRendered =
 		g_DX11Renderer->RenderWorldGBuffer(
@@ -1332,6 +1339,7 @@ static void ExecuteDX11SmokeLoop()
 		{
 			r3dDX11WorldRenderStats WorldStats;
 			r3dDX11ResetWorldRenderStats(WorldStats);
+			PrepareDX11WorldRenderQueues(gCam);
 
 			const bool bWorldRendered =
 				g_DX11Renderer->RenderWorldGBuffer(
