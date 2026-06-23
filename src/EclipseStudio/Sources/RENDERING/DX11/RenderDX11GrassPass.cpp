@@ -323,7 +323,6 @@ bool r3dDX11GrassPass::EnsureChunkGpu(int typeIdx, unsigned int chunkIdx, ChunkG
 	}
 
 	ChunkGpu* gpu = new ChunkGpu();
-	memset(gpu, 0, sizeof(*gpu));
 
 	if (!chunk.SysmemIndices.Count())
 	{

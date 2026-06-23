@@ -67,15 +67,23 @@ public:
 
 	bool IsInitialized() const;
 
-private:
 	struct ChunkGpu
 	{
 		r3dDX11VertexBuffer VertexBuffers[5];
 		r3dDX11IndexBuffer IndexBuffer;
 		unsigned int VertexCounts[5];
 		unsigned int IndexCount;
+
+		ChunkGpu()
+		{
+			for( int i = 0; i < 5; ++i )
+				VertexCounts[i] = 0;
+
+			IndexCount = 0;
+		}
 	};
 
+private:
 	bool CreateShadersAndLayout(ID3D11Device* device);
 	bool CreateRasterizers(ID3D11Device* device);
 	bool EnsureInstanceCapacity(unsigned int count);
