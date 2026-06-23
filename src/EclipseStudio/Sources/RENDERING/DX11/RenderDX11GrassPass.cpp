@@ -305,10 +305,7 @@ bool r3dDX11GrassPass::RenderShadow(
 	if (!bInitialized || !DrawContext)
 		return false;
 
-	if (ShadowRasterizer)
-		DrawContext->SetRasterizerState(ShadowRasterizer);
-
-	return DrawInternal(camera, viewProj, true, stats);
+	return DrawInternal(camera, viewProj, true, stats, ShadowRasterizer);
 }
 
 bool r3dDX11GrassPass::IsInitialized() const
@@ -651,14 +648,18 @@ bool r3dDX11GrassPass::EnsureMaskTextureGpu(const GrassMaskTextureEntry* maskEnt
 	return true;
 }
 
-void r3dDX11GrassPass::SetCommonStates(bool depthOnly)
+void r3dDX11GrassPass::SetCommonStates(bool depthOnly, ID3D11RasterizerState* rasterizerOverride)
 {
 	DrawContext->SetInputLayout(GrassLayout);
 	DrawContext->SetTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DrawContext->SetShaders(GrassVS, depthOnly ? GrassDepthPS : GrassGBufferPS);
 	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
 	DrawContext->SetDepthStencilState(CommonStates->GetDepthReadWriteState());
-	DrawContext->SetRasterizerState(CullNoneRasterizer ? CullNoneRasterizer : CommonStates->GetCullNoneRasterizer());
+
+	if (rasterizerOverride)
+		DrawContext->SetRasterizerState(rasterizerOverride);
+	else
+		DrawContext->SetRasterizerState(CullNoneRasterizer ? CullNoneRasterizer : CommonStates->GetCullNoneRasterizer());
 
 	DrawContext->SetSampler(0, CommonStates->GetLinearWrapSampler());
 
@@ -680,7 +681,8 @@ bool r3dDX11GrassPass::DrawInternal(
 	const r3dCamera& camera,
 	const D3DXMATRIX& viewProj,
 	bool depthOnly,
-	r3dDX11WorldRenderStats* stats
+	r3dDX11WorldRenderStats* stats,
+	ID3D11RasterizerState* rasterizerOverride
 )
 {
 	if (!bInitialized || !g_pGrassMap || !g_pGrassLib)
@@ -692,7 +694,7 @@ bool r3dDX11GrassPass::DrawInternal(
 	if (!cells.Width() || !cells.Height() || !textureCells.Width() || !textureCells.Height())
 		return true;
 
-	SetCommonStates(depthOnly);
+	SetCommonStates(depthOnly, rasterizerOverride);
 
 	r3dDX11GrassConstants constants;
 	memset(&constants, 0, sizeof(constants));

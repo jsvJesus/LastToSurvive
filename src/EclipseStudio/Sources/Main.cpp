@@ -337,6 +337,7 @@ static void PrepareDX11WorldRenderQueues(const r3dCamera& camera)
 		r_use_oq->SetInt(0);
 
 	GameWorld().Prepare(camera);
+	PrepareDX11SlicedShadowMapRender();
 
 	if (r_use_oq)
 		r_use_oq->SetInt(oldUseOQ);

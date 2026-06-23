@@ -105,13 +105,14 @@ private:
 		const r3dCamera& camera,
 		const D3DXMATRIX& viewProj,
 		bool depthOnly,
-		r3dDX11WorldRenderStats* stats
+		r3dDX11WorldRenderStats* stats,
+		ID3D11RasterizerState* rasterizerOverride = nullptr
 	);
 
 	bool EnsureHeightTextureGpu(const GrassTextureCell& texCell, TextureGpu** outGpu);
 	bool EnsureMaskTextureGpu(const GrassMaskTextureEntry* maskEntry, TextureGpu** outGpu);
 
-	void SetCommonStates(bool depthOnly);
+	void SetCommonStates(bool depthOnly, ID3D11RasterizerState* rasterizerOverride = nullptr);
 	void ReleaseChunkGpu();
 
 private:

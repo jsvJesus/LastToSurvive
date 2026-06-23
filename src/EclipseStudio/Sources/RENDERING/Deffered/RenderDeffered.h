@@ -58,6 +58,7 @@ extern float ShadowSplitDistancesOpaqueMed[NumShadowSlices+1];
 extern float ShadowSplitDistancesTransparentHigh[NumTransparentShadowSlices+1];
 
 void SetupSMTransform(ShadowSlice& slice);
+void PrepareDX11SlicedShadowMapRender();
 
 class r3dDefferedRenderer : public r3dRenderPipeline
 {

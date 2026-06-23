@@ -1356,6 +1356,90 @@ void PrepareSlicedShadowMapRender()
 	GameWorld().PrepareSlicedShadowsInterm( shadowCam, mainFrustumPlanes );
 }
 
+void PrepareDX11SlicedShadowMapRender()
+{
+	if( !r3dRenderer || !r_shadows->GetBool() || !r3dGameLevel::Environment.SunLightOn )
+		return;
+
+	ShadowSplitDistancesOpaque[0] = ShadowCameraNear;
+	ShadowSplitDistancesOpaque[NumShadowSlices] = ShadowDrawingDistance;
+
+	PrepareSlicedShadowMapRender();
+
+	SunVector = GetEnvLightDir();
+
+	const int activeSlices = R3D_CLAMP(
+		r_active_shadow_slices->GetInt(),
+		0,
+		static_cast<int>( NumShadowSlices )
+	);
+
+	for( int i = 0; i < activeSlices; ++i )
+	{
+		ShadowSlice& slice = ShadowSlices[i];
+		const bool isLastSlice = i == activeSlices - 1;
+
+		float fNear = ShadowSplitDistancesOpaque[i];
+		const float fFar = ShadowSplitDistancesOpaque[i + 1];
+
+		if( i )
+		{
+			float fTanSqr = tanf( R3D_DEG2RAD( gCam.FOV * 0.5f ) );
+			fTanSqr *= fTanSqr;
+			fNear /= sqrtf( 1.0f + fTanSqr + gCam.Aspect * gCam.Aspect * fTanSqr );
+		}
+
+		r3dPoint3D lightSource;
+		r3dPoint3D lightTarget;
+
+		FillSliceForSplitDistances(
+			&slice,
+			ShadowSplitDistancesOpaque,
+			gShadowMapOptimizationDataOpaque,
+			&lightSource,
+			&lightTarget,
+			fNear,
+			fFar,
+			false,
+			0.0f
+		);
+
+		r3dRenderer->SetCameraEx( slice.lightView, slice.lightProj, 0.1f, 10000.0f, false );
+		gCollectionsManager.ComputeVisibility( true, true );
+
+		if( r_lfsm_wrap_mode->GetInt() && isLastSlice )
+		{
+			FillLFSliceForSplitDistances(
+				&slice,
+				&lightSource,
+				&lightTarget,
+				fNear,
+				fFar,
+				true
+			);
+		}
+		else
+		{
+			FillSliceForSplitDistances(
+				&slice,
+				ShadowSplitDistancesOpaque,
+				gShadowMapOptimizationDataOpaque,
+				&lightSource,
+				&lightTarget,
+				fNear,
+				fFar,
+				true,
+				0.0f
+			);
+		}
+
+		slice.camPos = lightSource;
+	}
+
+	GameWorld().RecalcIntermObjectMatrices();
+	r3dRenderer->SetCamera( gCam, false );
+}
+
 void RenderShadowMap( ShadowSlice& slice, bool recticular_warp )
 {
 	R3DPROFILE_FUNCTION("RenderShadowMap");
