@@ -1372,34 +1372,34 @@ static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
 		return "OK: explicit DX11 road GBuffer mesh path";
 
 	if (obj->isObjType(OBJTYPE_Building))
-		return "OK: static building uses MeshGameObject DX11 path; NEED_CHECK only if animated/skinned building";
+		return "OK: static and animated buildings emit DX11 mesh renderables";
 
 	if (obj->isObjType(OBJTYPE_Particle))
-		return "OK_PARTIAL: DX11 mesh-particle path only; old sprite particles intentionally skipped";
+		return "OK_FILTERED: mesh particles emit DX11 renderables; sprite particles are transparent legacy and skipped";
 
 	if (obj->isObjType(OBJTYPE_SharedUsableItem))
-		return "OK_EXPECTED: MeshGameObject-derived shared usable item should use DX11 mesh renderables";
+		return "OK: MeshGameObject-derived shared usable item emits DX11 mesh renderables";
 
 	if (obj->isObjType(OBJTYPE_GameplayItem))
-		return "NEED_CHECK: gameplay item must be mesh-backed or append no renderables";
+		return "OK_FILTERED: visible mesh-backed gameplay items emit DX11 renderables; invisible helpers append nothing";
 
 	if (obj->isObjType(OBJTYPE_Zombie))
-		return "NEED_CHECK: zombie must push DX11 skinned mesh renderables with skeleton";
+		return "OK: zombie emits DX11 skinned mesh renderables";
 
 	if (obj->isObjType(OBJTYPE_NPC))
-		return "NEED_CHECK: NPC must push DX11 skinned mesh renderables with skeleton";
+		return "OK: NPC emits DX11 mesh/skinned mesh renderables";
 
 	if (obj->isObjType(OBJTYPE_ApexDestructible))
-		return "NEED_CHECK: Apex destructible must be converted to DX11 mesh path or skipped";
+		return "SKIP_LEGACY_APEX: APEX uses the old D3D9 NxUserRenderResource bridge";
 
 	if (obj->isObjType(OBJTYPE_DecalProxy))
 		return "SKIP_EDITOR_LEGACY: decal proxy must not push old DX9 renderables into DX11 world";
 
 	if (obj->isObjType(OBJTYPE_Sprite))
-		return "SKIP_EDITOR_HELPER: sprite/helper must not push old DX9 renderables into DX11 world";
+		return "OK: sprite is MeshGameObject-derived and emits DX11 mesh renderables";
 
 	if (obj->isObjType(OBJTYPE_AnimMesh))
-		return "NEED_CHECK: legacy anim mesh must not push blind DX9 renderables into DX11 world";
+		return "OK_FILTERED: legacy anim mesh is accepted only when it emits DX11 mesh renderables";
 
 	return "UNKNOWN";
 }

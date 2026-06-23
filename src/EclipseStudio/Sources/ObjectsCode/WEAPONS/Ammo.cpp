@@ -174,6 +174,7 @@ void AmmoShared::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ],
 			AmmoSharedDeferredRenderable& rend = static_cast<AmmoSharedDeferredRenderable&>( render_arrays[ rsFillGBuffer ][ i ] );
 			rend.Init();
 			rend.Parent = this;
+			rend.DX11WorldTransform = &GetTransformMatrix();
 		}
 	}
 }

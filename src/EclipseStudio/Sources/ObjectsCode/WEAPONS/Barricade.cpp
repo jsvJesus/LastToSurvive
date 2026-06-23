@@ -103,6 +103,7 @@ void obj_Barricade::AppendShadowRenderables( RenderArray & rarr, const r3dCamera
 		rend.Init();
 		rend.Parent = this;
 		rend.DrawState = rsCreateSM;
+		rend.DX11WorldTransform = &GetTransformMatrix();
 	}
 }
 
@@ -116,6 +117,7 @@ void obj_Barricade::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount
 		rend.Init();
 		rend.Parent = this;
 		rend.DrawState = rsFillGBuffer;
+		rend.DX11WorldTransform = &GetTransformMatrix();
 	}
 }
 

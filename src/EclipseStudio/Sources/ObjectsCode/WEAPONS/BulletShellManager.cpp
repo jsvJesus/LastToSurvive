@@ -161,6 +161,7 @@ void BulletShellMngr::AppendRenderables(RenderArray(&render_arrays)[rsCount], co
 			rend.SortValue |= idist ;
 			rend.Init() ;
 			rend.Parent = &m_Shells[i];
+			rend.DX11WorldTransform = &m_Shells[i].getDrawMatrix();
 		}
 	}
 }

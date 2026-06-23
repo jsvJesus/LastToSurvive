@@ -262,6 +262,7 @@ void obj_ZombieDummy::AppendRenderables(RenderArray ( & render_arrays  )[ rsCoun
 
 			rend.Init();
 			rend.Parent = this;
+			rend.DX11WorldTransform = &GetTransformMatrix();
 			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
 		}
 	}
@@ -291,7 +292,8 @@ void obj_ZombieDummy::AppendShadowRenderables(RenderArray &rarr, const r3dCamera
 			ZombieMeshesShadowRenderable& rend = static_cast<ZombieMeshesShadowRenderable&>( rarr[ i ] );
 
 			rend.Init() ;
-			rend.InitDX11( NULL, anim_.GetCurrentSkeleton() );
+			rend.DX11WorldTransform = &GetTransformMatrix();
+			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
 			rend.SortValue |= idist;
 			rend.Parent = this ;
 		}
