@@ -43,8 +43,14 @@ static void AppendRoadDX11GBufferRenderables(
 	if (!mesh || !mesh->IsDrawable())
 		return;
 
-	D3DXMATRIX identity;
-	D3DXMatrixIdentity(&identity);
+	static D3DXMATRIX sRoadIdentity;
+	static bool sRoadIdentityInitialized = false;
+
+	if (!sRoadIdentityInitialized)
+	{
+		D3DXMatrixIdentity(&sRoadIdentity);
+		sRoadIdentityInitialized = true;
+	}
 
 	for (int i = 0; i < mesh->NumMatChunks; ++i)
 	{
@@ -76,7 +82,8 @@ static void AppendRoadDX11GBufferRenderables(
 			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
 			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
 
-		rend.InitDX11(&identity, NULL, R3D_MATF_ROAD);
+		rend.InitDX11(&sRoadIdentity, NULL, R3D_MATF_ROAD);
+		rend.DX11WorldTransform = &sRoadIdentity;
 
 		outArray.PushBack(rend);
 	}

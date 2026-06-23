@@ -1297,16 +1297,25 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 
 	if( r_score_sort->GetInt() )
 	{
-		D3DXMATRIX worldView ;
-
-		D3DXMatrixMultiply( &worldView, &mTransform, &r3dRenderer->ViewMatrix ) ;
-
-		newScore = GetBboxFrameScore( GetBBoxLocal(), dist, GetBBoxWorld(), worldView ) ;
-
-		// this is like refined bbox testing, if this is zero we don't need to append anything
-		if( !newScore )
+		if (MeshGameObject_UseDX11WorldPath())
 		{
-			return ;
+			// DX11 hybrid: не используем старый DX9 bbox score как hard-cull.
+			// Он зависит от r3dRenderer matrices и может выкинуть все buildings из DX11 GBuffer.
+			newScore = 1;
+		}
+		else
+		{
+			D3DXMATRIX worldView;
+
+			D3DXMatrixMultiply(&worldView, &mTransform, &r3dRenderer->ViewMatrix);
+
+			newScore = GetBboxFrameScore(GetBBoxLocal(), dist, GetBBoxWorld(), worldView);
+
+			// this is like refined bbox testing, if this is zero we don't need to append anything
+			if (!newScore)
+			{
+				return;
+			}
 		}
 	}
 

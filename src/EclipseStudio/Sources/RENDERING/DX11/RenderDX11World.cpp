@@ -1032,6 +1032,91 @@ namespace
 		}
 	}
 
+	static void DX11World_DebugDumpGBufferQueueOnce(const char* tag)
+	{
+		static bool sDumped = false;
+
+		if (sDumped)
+			return;
+
+		sDumped = true;
+
+		RenderArray& queue = g_render_arrays[rsFillGBuffer];
+
+		int total = 0;
+		int mesh = 0;
+		int unsupported = 0;
+		int badMesh = 0;
+		int road = 0;
+		int skinned = 0;
+
+		r3dOutToLog(
+			"[DX11World][DrawScan] ================= %s rsFillGBuffer =================\n",
+			tag ? tag : "<null>"
+		);
+
+		for (uint32_t i = 0, e = queue.Count(); i < e; ++i)
+		{
+			++total;
+
+			Renderable& renderable = queue[i];
+
+			MeshDeferredRenderable* meshRenderable =
+				r3dGetMeshDeferredRenderable(&renderable);
+
+			if (!meshRenderable)
+			{
+				++unsupported;
+				continue;
+			}
+
+			++mesh;
+
+			if (!meshRenderable->Mesh)
+			{
+				++badMesh;
+				continue;
+			}
+
+			const int matFlags =
+				r3dDecodeMeshDeferredRenderableMatFlags(meshRenderable->Color);
+
+			if (matFlags & R3D_MATF_ROAD)
+				++road;
+
+			if (meshRenderable->DX11Skeleton)
+				++skinned;
+
+			if (mesh <= 24)
+			{
+				r3dOutToLog(
+					"[DX11World][DrawScan] item=%u mesh=%s batch=%d flags=0x%08x road=%d skinned=%d world=%p\n",
+					i,
+					meshRenderable->Mesh->FileName.c_str(),
+					meshRenderable->BatchIdx,
+					matFlags,
+					(matFlags & R3D_MATF_ROAD) ? 1 : 0,
+					meshRenderable->DX11Skeleton ? 1 : 0,
+					meshRenderable->DX11WorldTransform
+				);
+			}
+		}
+
+		r3dOutToLog(
+			"[DX11World][DrawScan] total=%d mesh=%d unsupported=%d badMesh=%d road=%d skinned=%d\n",
+			total,
+			mesh,
+			unsupported,
+			badMesh,
+			road,
+			skinned
+		);
+
+		r3dOutToLog(
+			"[DX11World][DrawScan] =============================================================\n"
+		);
+	}
+
 	void RenderDX11ShadowQueues(
 		r3dDX11Renderer& renderer,
 		r3dDX11DepthOnlyPass& pass,
@@ -1581,8 +1666,8 @@ bool r3dDX11RenderWorldDepthOnly(
 		stats = &localStats;
 
 	r3dDX11ResetWorldRenderStats(*stats);
-
 	SanitizeDX11WorldRenderQueuesForFrame();
+	DX11World_DebugDumpGBufferQueueOnce("after sanitize");
 
 	return r3dDX11RenderWorldDepthOnlyInternal(
 		renderer,
