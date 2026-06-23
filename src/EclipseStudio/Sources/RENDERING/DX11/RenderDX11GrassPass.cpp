@@ -75,9 +75,135 @@ namespace
 
 		return nullptr;
 	}
+
+	std::map<const GrassTextureCell*, r3dDX11GrassPass::TextureGpu*> g_DX11GrassHeightTextures;
+	std::map<const GrassMaskTextureEntry*, r3dDX11GrassPass::TextureGpu*> g_DX11GrassMaskTextures;
+
+	r3dDX11GrassPass::TextureGpu* g_DX11GrassFlatHeight = NULL;
+	r3dDX11GrassPass::TextureGpu* g_DX11GrassWhiteMask = NULL;
+
+	void ReleaseTextureGpu(r3dDX11GrassPass::TextureGpu*& gpu)
+	{
+		if (!gpu)
+			return;
+
+		if (gpu->SRV)
+		{
+			gpu->SRV->Release();
+			gpu->SRV = NULL;
+		}
+
+		if (gpu->Texture)
+		{
+			gpu->Texture->Release();
+			gpu->Texture = NULL;
+		}
+
+		delete gpu;
+		gpu = NULL;
+	}
+
+	template <typename TMap>
+	void ReleaseTextureMap(TMap& texMap)
+	{
+		for (typename TMap::iterator it = texMap.begin(); it != texMap.end(); ++it)
+		{
+			r3dDX11GrassPass::TextureGpu* gpu = it->second;
+			ReleaseTextureGpu(gpu);
+		}
+
+		texMap.clear();
+	}
+
+	bool CreateTextureGpu(
+		ID3D11Device* device,
+		r3dDX11GrassPass::TextureGpu* gpu,
+		int width,
+		int height,
+		DXGI_FORMAT format,
+		const void* data,
+		unsigned int rowPitch,
+		const char* debugName
+	)
+	{
+		if (!device || !gpu || width <= 0 || height <= 0 || !data || rowPitch == 0)
+			return false;
+
+		D3D11_TEXTURE2D_DESC desc;
+		memset(&desc, 0, sizeof(desc));
+
+		desc.Width = width;
+		desc.Height = height;
+		desc.MipLevels = 1;
+		desc.ArraySize = 1;
+		desc.Format = format;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.Usage = D3D11_USAGE_IMMUTABLE;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA initData;
+		memset(&initData, 0, sizeof(initData));
+
+		initData.pSysMem = data;
+		initData.SysMemPitch = rowPitch;
+		initData.SysMemSlicePitch = 0;
+
+		HRESULT hr = device->CreateTexture2D(&desc, &initData, &gpu->Texture);
+		if (FAILED(hr) || !gpu->Texture)
+			return false;
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		memset(&srvDesc, 0, sizeof(srvDesc));
+
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		hr = device->CreateShaderResourceView(gpu->Texture, &srvDesc, &gpu->SRV);
+		if (FAILED(hr) || !gpu->SRV)
+		{
+			if (gpu->Texture)
+			{
+				gpu->Texture->Release();
+				gpu->Texture = NULL;
+			}
+
+			return false;
+		}
+
+		gpu->Width = width;
+		gpu->Height = height;
+
+#ifndef FINAL_BUILD
+		if (debugName && debugName[0])
+		{
+			gpu->Texture->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(debugName), debugName);
+			gpu->SRV->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(debugName), debugName);
+		}
+#endif
+
+		return true;
+	}
 }
 
+static const int DX11_GRASS_CELL_HEIGHT_TEX_DIM = 64;
+static const int DX11_GRASS_CELL_MASK_TEX_DIM = 64;
+static const int DX11_GRASS_HEIGHT_TEX_FMT_SIZE = 2; // old HEIGHT_TEX_FMT = D3DFMT_L16
+static const int DX11_GRASS_MASK_TEX_FMT_SIZE = 1;   // old MASK_TEX_FMT = D3DFMT_L8
+
 r3dDX11GrassPass::r3dDX11GrassPass()
+{
+}
+
+r3dDX11GrassPass::TextureGpu::TextureGpu()
+	: Texture(NULL)
+	, SRV(NULL)
+	, Width(0)
+	, Height(0)
 {
 }
 
@@ -121,6 +247,12 @@ bool r3dDX11GrassPass::Init(
 void r3dDX11GrassPass::Shutdown()
 {
 	ReleaseChunkGpu();
+
+	ReleaseTextureMap(g_DX11GrassHeightTextures);
+	ReleaseTextureMap(g_DX11GrassMaskTextures);
+
+	ReleaseTextureGpu(g_DX11GrassFlatHeight);
+	ReleaseTextureGpu(g_DX11GrassWhiteMask);
 
 	r3dDX11::SafeRelease(ShadowRasterizer);
 	r3dDX11::SafeRelease(CullNoneRasterizer);
@@ -374,6 +506,151 @@ bool r3dDX11GrassPass::EnsureChunkGpu(int typeIdx, unsigned int chunkIdx, ChunkG
 	return true;
 }
 
+bool r3dDX11GrassPass::EnsureHeightTextureGpu(const GrassTextureCell& texCell, TextureGpu** outGpu)
+{
+	if (outGpu)
+		*outGpu = NULL;
+
+	if (!Device)
+		return false;
+
+	std::map<const GrassTextureCell*, TextureGpu*>::iterator found =
+		g_DX11GrassHeightTextures.find(&texCell);
+
+	if (found != g_DX11GrassHeightTextures.end())
+	{
+		if (outGpu)
+			*outGpu = found->second;
+
+		return true;
+	}
+
+	TextureGpu* gpu = new TextureGpu();
+
+	if (texCell.CpuHeightData.Count() >= DX11_GRASS_CELL_HEIGHT_TEX_DIM * DX11_GRASS_CELL_HEIGHT_TEX_DIM * DX11_GRASS_HEIGHT_TEX_FMT_SIZE)
+	{
+		const DXGI_FORMAT format =
+			DX11_GRASS_HEIGHT_TEX_FMT_SIZE == 2
+				? DXGI_FORMAT_R16_UNORM
+				: DXGI_FORMAT_R8_UNORM;
+
+		const unsigned int rowPitch =
+			DX11_GRASS_CELL_HEIGHT_TEX_DIM * DX11_GRASS_HEIGHT_TEX_FMT_SIZE;
+
+		if (!CreateTextureGpu(
+				Device,
+				gpu,
+				DX11_GRASS_CELL_HEIGHT_TEX_DIM,
+				DX11_GRASS_CELL_HEIGHT_TEX_DIM,
+				format,
+				&texCell.CpuHeightData[0],
+				rowPitch,
+				"DX11.Grass.HeightTexture"))
+		{
+			ReleaseTextureGpu(gpu);
+			return false;
+		}
+	}
+	else
+	{
+		// fallback: flat height = 0
+		static const unsigned short flatHeight = 0;
+
+		if (!CreateTextureGpu(
+				Device,
+				gpu,
+				1,
+				1,
+				DXGI_FORMAT_R16_UNORM,
+				&flatHeight,
+				sizeof(flatHeight),
+				"DX11.Grass.FlatHeight"))
+		{
+			ReleaseTextureGpu(gpu);
+			return false;
+		}
+	}
+
+	g_DX11GrassHeightTextures[&texCell] = gpu;
+
+	if (outGpu)
+		*outGpu = gpu;
+
+	return true;
+}
+
+bool r3dDX11GrassPass::EnsureMaskTextureGpu(const GrassMaskTextureEntry* maskEntry, TextureGpu** outGpu)
+{
+	if (outGpu)
+		*outGpu = NULL;
+
+	if (!Device)
+		return false;
+
+	if (!maskEntry || maskEntry->CpuMaskData.Count() < DX11_GRASS_CELL_MASK_TEX_DIM * DX11_GRASS_CELL_MASK_TEX_DIM * DX11_GRASS_MASK_TEX_FMT_SIZE)
+	{
+		if (!g_DX11GrassWhiteMask)
+		{
+			unsigned char whiteMask = 255;
+
+			g_DX11GrassWhiteMask = new TextureGpu();
+
+			if (!CreateTextureGpu(
+					Device,
+					g_DX11GrassWhiteMask,
+					1,
+					1,
+					DXGI_FORMAT_R8_UNORM,
+					&whiteMask,
+					sizeof(whiteMask),
+					"DX11.Grass.WhiteMask"))
+			{
+				ReleaseTextureGpu(g_DX11GrassWhiteMask);
+				return false;
+			}
+		}
+
+		if (outGpu)
+			*outGpu = g_DX11GrassWhiteMask;
+
+		return true;
+	}
+
+	std::map<const GrassMaskTextureEntry*, TextureGpu*>::iterator found =
+		g_DX11GrassMaskTextures.find(maskEntry);
+
+	if (found != g_DX11GrassMaskTextures.end())
+	{
+		if (outGpu)
+			*outGpu = found->second;
+
+		return true;
+	}
+
+	TextureGpu* gpu = new TextureGpu();
+
+	if (!CreateTextureGpu(
+			Device,
+			gpu,
+			DX11_GRASS_CELL_MASK_TEX_DIM,
+			DX11_GRASS_CELL_MASK_TEX_DIM,
+			DXGI_FORMAT_R8_UNORM,
+			&maskEntry->CpuMaskData[0],
+			DX11_GRASS_CELL_MASK_TEX_DIM * DX11_GRASS_MASK_TEX_FMT_SIZE,
+			"DX11.Grass.MaskTexture"))
+	{
+		ReleaseTextureGpu(gpu);
+		return false;
+	}
+
+	g_DX11GrassMaskTextures[maskEntry] = gpu;
+
+	if (outGpu)
+		*outGpu = gpu;
+
+	return true;
+}
+
 void r3dDX11GrassPass::SetCommonStates(bool depthOnly)
 {
 	DrawContext->SetInputLayout(GrassLayout);
@@ -382,7 +659,18 @@ void r3dDX11GrassPass::SetCommonStates(bool depthOnly)
 	DrawContext->SetBlendState(CommonStates->GetOpaqueBlendState());
 	DrawContext->SetDepthStencilState(CommonStates->GetDepthReadWriteState());
 	DrawContext->SetRasterizerState(CullNoneRasterizer ? CullNoneRasterizer : CommonStates->GetCullNoneRasterizer());
+
 	DrawContext->SetSampler(0, CommonStates->GetLinearWrapSampler());
+
+	ID3D11DeviceContext* context = DrawContext->GetContext();
+	if (context)
+	{
+		ID3D11SamplerState* vsClamp = CommonStates->GetLinearClampSampler();
+		ID3D11SamplerState* psClamp = CommonStates->GetLinearClampSampler();
+
+		context->VSSetSamplers(0, 1, &vsClamp);
+		context->PSSetSamplers(1, 1, &psClamp);
+	}
 
 	GrassConstants.BindVS(DrawContext->GetContext(), 0);
 	GrassConstants.BindPS(DrawContext->GetContext(), 0);
@@ -464,6 +752,14 @@ bool r3dDX11GrassPass::DrawInternal(
 			if (!texCell.HeightTexture)
 				continue;
 
+			TextureGpu* heightGpu = NULL;
+			if (!EnsureHeightTextureGpu(texCell, &heightGpu) || !heightGpu || !heightGpu->SRV)
+				continue;
+
+			ID3D11DeviceContext* context = DrawContext->GetContext();
+			if (context)
+				context->VSSetShaderResources(1, 1, &heightGpu->SRV);
+
 			for (uint32_t entryIndex = 0, entryCount = cell.Entries.Count(); entryIndex < entryCount; ++entryIndex)
 			{
 				const GrassCellEntry& cellEntry = cell.Entries[entryIndex];
@@ -479,8 +775,12 @@ bool r3dDX11GrassPass::DrawInternal(
 					continue;
 
 				const GrassMaskTextureEntry* maskEntry = FindMaskForType(texCell, cellEntry.TypeIdx);
-				if (!maskEntry)
+
+				TextureGpu* maskGpu = NULL;
+				if (!EnsureMaskTextureGpu(maskEntry, &maskGpu) || !maskGpu || !maskGpu->SRV)
 					continue;
+
+				DrawContext->SetShaderResource(2, maskGpu->SRV);
 
 				for (uint32_t chunkIdx = 0, chunkCount = libEntry.Chunks.Count(); chunkIdx < chunkCount; ++chunkIdx)
 				{
@@ -526,10 +826,13 @@ bool r3dDX11GrassPass::DrawInternal(
 					instance.AnimParams[2] = cell.YMax - cell.Position.y;
 					instance.AnimParams[3] = libEntry.FadeDistance;
 
-					instance.CellParams[0] = static_cast<float>(x);
-					instance.CellParams[1] = static_cast<float>(z);
-					instance.CellParams[2] = static_cast<float>(texCellX);
-					instance.CellParams[3] = static_cast<float>(texCellZ);
+					const int localCellX = x - texCellX * cellsPerTextureCell;
+					const int localCellZ = z - texCellZ * cellsPerTextureCell;
+
+					instance.CellParams[0] = static_cast<float>(localCellX);
+					instance.CellParams[1] = static_cast<float>(localCellZ);
+					instance.CellParams[2] = cellSize;
+					instance.CellParams[3] = cellsPerTextureCell > 0 ? 1.0f / static_cast<float>(cellsPerTextureCell) : 1.0f;
 
 					instances.push_back(instance);
 
@@ -591,7 +894,14 @@ bool r3dDX11GrassPass::DrawInternal(
 
 	DrawContext->SetVertexBuffer(nullptr, 0);
 	DrawContext->SetVertexBuffer(nullptr, 1);
-	DrawContext->SetShaderResource(0, nullptr);
+	DrawContext->SetShaderResource(0, NULL);
+	DrawContext->SetShaderResource(2, NULL);
+
+	if (DrawContext->GetContext())
+	{
+		ID3D11ShaderResourceView* nullSrv = NULL;
+		DrawContext->GetContext()->VSSetShaderResources(1, 1, &nullSrv);
+	}
 
 	return true;
 }

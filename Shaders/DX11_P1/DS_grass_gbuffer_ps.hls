@@ -1,5 +1,8 @@
 Texture2D gDiffuseTex : register(t0);
-SamplerState gLinearSampler : register(s0);
+Texture2D gMaskTex : register(t2);
+
+SamplerState gLinearWrapSampler : register(s0);
+SamplerState gLinearClampSampler : register(s1);
 
 cbuffer GrassConstants : register(b0)
 {
@@ -14,6 +17,7 @@ struct PSInput
 	float2 Texcoord : TEXCOORD0;
 	float4 WorldFadeAlpha : TEXCOORD1;
 	float4 TintParams : TEXCOORD2;
+	float2 HeightMaskUV : TEXCOORD3;
 };
 
 struct PSOutput
@@ -26,11 +30,13 @@ struct PSOutput
 
 PSOutput main(PSInput input)
 {
-	float4 albedo = gDiffuseTex.Sample(gLinearSampler, input.Texcoord);
+	float4 albedo = gDiffuseTex.Sample(gLinearWrapSampler, input.Texcoord);
+	float mask = gMaskTex.Sample(gLinearClampSampler, input.HeightMaskUV).r;
 
 	float alphaRef = input.TintParams.x;
 	float fade = input.WorldFadeAlpha.w;
 
+	clip(mask - 0.01f);
 	clip(albedo.a * fade - alphaRef);
 
 	PSOutput output;
@@ -38,7 +44,13 @@ PSOutput main(PSInput input)
 	float tintStrength = input.TintParams.y;
 	float bladeHeight = input.TintParams.z;
 
-	float3 grassTint = lerp(albedo.rgb, albedo.rgb * float3(0.78f, 0.92f, 0.72f), saturate(tintStrength * 0.35f));
+	float3 grassTint =
+		lerp(
+			albedo.rgb,
+			albedo.rgb * float3(0.78f, 0.92f, 0.72f),
+			saturate(tintStrength * 0.35f)
+		);
+
 	grassTint *= lerp(0.75f, 1.08f, bladeHeight);
 
 	output.Color = float4(grassTint, 0.35f);
@@ -47,8 +59,7 @@ PSOutput main(PSInput input)
 	output.Normal = float4(n * 0.5f + 0.5f, 0.0f);
 
 	output.Depth = float4(input.Position.z / input.Position.w, 0.0f, 0.0f, 1.0f);
-
-	output.Aux = float4(1.0f, 0.0f, 0.0f, 0.0f);
+	output.Aux = float4(mask, 0.0f, 0.0f, 0.0f);
 
 	return output;
 }

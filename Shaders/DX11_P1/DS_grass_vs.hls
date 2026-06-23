@@ -5,8 +5,8 @@ cbuffer GrassConstants : register(b0)
 	float4 gParams;
 };
 
-Texture2D gDiffuseTex : register(t0);
-SamplerState gLinearSampler : register(s0);
+Texture2D gHeightTex : register(t1);
+SamplerState gLinearClampSampler : register(s0);
 
 struct VSInput
 {
@@ -25,6 +25,7 @@ struct VSOutput
 	float2 Texcoord : TEXCOORD0;
 	float4 WorldFadeAlpha : TEXCOORD1;
 	float4 TintParams : TEXCOORD2;
+	float2 HeightMaskUV : TEXCOORD3;
 };
 
 VSOutput main(VSInput input)
@@ -32,8 +33,21 @@ VSOutput main(VSInput input)
 	VSOutput output;
 
 	float3 localPos = input.Position.xyz * input.InstanceScaleTint.xyz;
+	float2 localXZBeforeWind = localPos.xz;
+
+	float cellSize = max(input.InstanceCellParams.z, 1.0f);
+	float invCellsPerTexCell = input.InstanceCellParams.w;
+
+	float2 cellLocal01 = saturate((localXZBeforeWind + cellSize * 0.5f) / cellSize);
+	float2 heightMaskUV = (input.InstanceCellParams.xy + cellLocal01) * invCellsPerTexCell;
+
+	float heightNorm = gHeightTex.SampleLevel(gLinearClampSampler, heightMaskUV, 0).r;
+	float groundY =
+		input.InstancePositionAlphaRef.y +
+		heightNorm * max(input.InstanceAnimParams.z, 0.001f);
 
 	float bladeHeight = saturate(input.Position.y * 0.5f + 0.5f);
+
 	float phase =
 		gCameraPos_Time.w +
 		input.InstanceCellParams.x * 0.173f +
@@ -47,7 +61,7 @@ VSOutput main(VSInput input)
 	float3 worldPos =
 		float3(
 			input.InstancePositionAlphaRef.x,
-			input.InstancePositionAlphaRef.y,
+			groundY,
 			input.InstancePositionAlphaRef.z
 		) + localPos;
 
@@ -59,6 +73,7 @@ VSOutput main(VSInput input)
 	output.Texcoord = input.Texcoord;
 	output.WorldFadeAlpha = float4(worldPos, fade);
 	output.TintParams = float4(input.InstancePositionAlphaRef.w, input.InstanceScaleTint.w, bladeHeight, 1.0f);
+	output.HeightMaskUV = heightMaskUV;
 
 	return output;
 }

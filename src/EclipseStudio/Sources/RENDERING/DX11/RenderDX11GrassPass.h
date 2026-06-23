@@ -14,6 +14,9 @@ struct r3dDX11WorldRenderStats;
 struct ID3D11Device;
 struct ID3D11RasterizerState;
 struct ID3D11ShaderResourceView;
+struct GrassTextureCell;
+struct GrassMaskTextureEntry;
+struct ID3D11Texture2D;
 
 struct r3dDX11GrassInstance
 {
@@ -83,6 +86,16 @@ public:
 		}
 	};
 
+	struct TextureGpu
+	{
+		ID3D11Texture2D* Texture;
+		ID3D11ShaderResourceView* SRV;
+		int Width;
+		int Height;
+
+		TextureGpu();
+	};
+
 private:
 	bool CreateShadersAndLayout(ID3D11Device* device);
 	bool CreateRasterizers(ID3D11Device* device);
@@ -94,6 +107,9 @@ private:
 		bool depthOnly,
 		r3dDX11WorldRenderStats* stats
 	);
+
+	bool EnsureHeightTextureGpu(const GrassTextureCell& texCell, TextureGpu** outGpu);
+	bool EnsureMaskTextureGpu(const GrassMaskTextureEntry* maskEntry, TextureGpu** outGpu);
 
 	void SetCommonStates(bool depthOnly);
 	void ReleaseChunkGpu();

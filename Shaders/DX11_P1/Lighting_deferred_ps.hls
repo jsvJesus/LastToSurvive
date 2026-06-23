@@ -762,6 +762,9 @@ float4 main(PS_INPUT input) : SV_Target
 	float deviceDepth =
 		saturate(gDepth.r);
 
+	if (deviceDepth >= 0.999999f)
+		discard;
+
 	float3 worldPos =
 		ReconstructWorld(
 			uv,

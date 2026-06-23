@@ -330,8 +330,16 @@ static void UpdateDX11WorldHotkeys()
 
 static void PrepareDX11WorldRenderQueues(const r3dCamera& camera)
 {
+	const int oldUseOQ = r_use_oq ? r_use_oq->GetInt() : 0;
+
 	r3dResetMeshDeferredDX11WorldMatrices();
+	if (r_use_oq)
+		r_use_oq->SetInt(0);
+
 	GameWorld().Prepare(camera);
+
+	if (r_use_oq)
+		r_use_oq->SetInt(oldUseOQ);
 }
 
 static Rml::Context* g_DX11SmokeRmlContext = nullptr;
@@ -818,14 +826,14 @@ bool StudioDX11WorldHybridTick()
 			&WorldStats
 		);
 
-	const bool bLightingRendered =
-		g_DX11Renderer->RenderWorldLighting(
+	const bool bSkyRendered =
+		g_DX11Renderer->RenderWorldSky(
 			gCam,
 			&WorldStats
 		);
 
-	const bool bSkyRendered =
-		g_DX11Renderer->RenderWorldSky(
+	const bool bLightingRendered =
+		g_DX11Renderer->RenderWorldLighting(
 			gCam,
 			&WorldStats
 		);
