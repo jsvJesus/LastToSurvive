@@ -30,6 +30,59 @@
 
 namespace
 {
+#ifndef RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT
+#define RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT 0
+#endif
+
+	bool IsRmlFrontEndCharacterPreviewEnabled()
+	{
+#if RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT
+		return true;
+#else
+		static int CachedValue =
+			-1;
+
+		if (CachedValue != -1)
+		{
+			return CachedValue != 0;
+		}
+
+		const char* CommandLine =
+			GetCommandLineA();
+
+		CachedValue =
+			(
+				CommandLine &&
+				strstr(
+					CommandLine,
+					"-rml_frontend_character_preview"
+				)
+			)
+				? 1
+				: 0;
+
+		if (!CachedValue)
+		{
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Preview] "
+				"Character preview disabled. "
+				"WZ_FrontEndLighting will not be loaded. "
+				"Use -rml_frontend_character_preview to enable it.\n"
+			);
+		}
+		else
+		{
+			r3dOutToLog(
+				"[RmlUI][FrontEnd][Preview] "
+				"Character preview enabled. "
+				"WZ_FrontEndLighting will be loaded.\n"
+			);
+		}
+
+		return CachedValue != 0;
+#endif
+	}
+	
 	const char* CharacterButtonPrefix =
 		"char_slot_";
 
@@ -1643,6 +1696,7 @@ void RmlFrontEndContext::Render()
 	}
 
 	if (
+		IsRmlFrontEndCharacterPreviewEnabled() &&
 		CharacterPreview &&
 		CurrentScreen == EScreen::MainMenu
 	)
@@ -1665,6 +1719,11 @@ void RmlFrontEndContext::PrepareRender()
 		!bInitialized ||
 		!CharacterPreview
 	)
+	{
+		return;
+	}
+
+	if (!IsRmlFrontEndCharacterPreviewEnabled())
 	{
 		return;
 	}
@@ -2255,9 +2314,25 @@ void RmlFrontEndContext::ShowMainMenu()
 		!IsBusy()
 	);
 
-	if (bProfileLoaded && gUserProfile.ProfileData.NumSlots > 0)
+	if (
+		IsRmlFrontEndCharacterPreviewEnabled() &&
+		bProfileLoaded &&
+		gUserProfile.ProfileData.NumSlots > 0
+	)
 	{
 		EnsureCharacterPreview();
+	}
+	else
+	{
+		RmlRuntime::Get().
+			SetCharacterPreviewTexture(
+				nullptr
+			);
+
+		RmlRuntime::Get().
+			SetCharacterPortraitTexture(
+				nullptr
+			);
 	}
 
 	RmlRuntime::Get().SetActiveContext(
@@ -4619,7 +4694,22 @@ void RmlFrontEndContext::BuildMainMenu()
 			: "OFFLINE"
 	);
 
-	EnsureCharacterPreview();
+	if (IsRmlFrontEndCharacterPreviewEnabled())
+	{
+		EnsureCharacterPreview();
+	}
+	else
+	{
+		RmlRuntime::Get().
+			SetCharacterPreviewTexture(
+				nullptr
+			);
+
+		RmlRuntime::Get().
+			SetCharacterPortraitTexture(
+				nullptr
+			);
+	}
 
 	SetMainMenuControlsEnabled(
 		true
