@@ -30,15 +30,8 @@
 
 namespace
 {
-#ifndef RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT
-#define RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT 0
-#endif
-
 	bool IsRmlFrontEndCharacterPreviewEnabled()
 	{
-#if RML_FRONTEND_CHARACTER_PREVIEW_DEFAULT
-		return true;
-#else
 		static int CachedValue =
 			-1;
 
@@ -55,32 +48,29 @@ namespace
 				CommandLine &&
 				strstr(
 					CommandLine,
-					"-rml_frontend_character_preview"
+					"-rml_frontend_no_character_preview"
 				)
 			)
-				? 1
-				: 0;
+				? 0
+				: 1;
 
-		if (!CachedValue)
+		if (CachedValue)
 		{
 			r3dOutToLog(
 				"[RmlUI][FrontEnd][Preview] "
-				"Character preview disabled. "
-				"WZ_FrontEndLighting will not be loaded. "
-				"Use -rml_frontend_character_preview to enable it.\n"
+				"Character preview enabled. "
+				"Use -rml_frontend_no_character_preview to disable it.\n"
 			);
 		}
 		else
 		{
 			r3dOutToLog(
 				"[RmlUI][FrontEnd][Preview] "
-				"Character preview enabled. "
-				"WZ_FrontEndLighting will be loaded.\n"
+				"Character preview disabled by command line.\n"
 			);
 		}
 
 		return CachedValue != 0;
-#endif
 	}
 	
 	const char* CharacterButtonPrefix =
