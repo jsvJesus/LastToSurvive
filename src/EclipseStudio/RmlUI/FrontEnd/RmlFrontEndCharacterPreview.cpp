@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "RmlFrontEndCharacterPreview.h"
 
@@ -20,6 +21,8 @@
 #include "ObjectsCode/ai/AI_Player.h"
 #include "ObjectsCode/ai/AI_PlayerAnim.h"
 
+#include "gameobjects/ObjManag.h"
+
 #include "rendering/Deffered/CommonPostFX.h"
 #include "rendering/Deffered/PostFXChief.h"
 
@@ -34,6 +37,77 @@ extern void DoLoadGame(
 	bool IsMenuLevel
 );
 extern r3dScreenBuffer* g_RmlCharacterPortraitRT;
+
+namespace
+{
+	struct FRmlPreviewObjectDrawBackup
+	{
+		GameObject* Object;
+		int ObjFlags;
+	};
+
+	void HideWorldObjectsForRmlCharacterPreview(
+		obj_Player* PreviewPlayer,
+		std::vector<FRmlPreviewObjectDrawBackup>& Backups
+	)
+	{
+		if (!PreviewPlayer)
+			return;
+
+		ObjectIterator It =
+			GameWorld().GetFirstOfAllObjects();
+
+		while (It.current)
+		{
+			GameObject* Object =
+				It.current;
+
+			if (
+				Object &&
+				Object != PreviewPlayer
+			)
+			{
+				FRmlPreviewObjectDrawBackup Backup;
+				Backup.Object =
+					Object;
+				Backup.ObjFlags =
+					Object->ObjFlags;
+
+				Backups.push_back(
+					Backup
+				);
+
+				Object->ObjFlags |=
+					OBJFLAG_SkipDraw;
+			}
+
+			It =
+				GameWorld().GetNextOfAllObjects(
+					It
+				);
+		}
+	}
+
+	void RestoreWorldObjectsForRmlCharacterPreview(
+		std::vector<FRmlPreviewObjectDrawBackup>& Backups
+	)
+	{
+		for (
+			size_t Index = 0;
+			Index < Backups.size();
+			++Index
+		)
+		{
+			if (Backups[Index].Object)
+			{
+				Backups[Index].Object->ObjFlags =
+					Backups[Index].ObjFlags;
+			}
+		}
+
+		Backups.clear();
+	}
+}
 
 RmlFrontEndCharacterPreview::
 RmlFrontEndCharacterPreview()
@@ -688,11 +762,25 @@ RenderCharacterToTarget(
 	}
 
 	/*
-	 * Единственный рендер мира в этом кадре.
+	 * Рендерим только персонажа.
+	 *
+	 * WZ_FrontEndLighting нужен как техническая сцена для создания obj_Player,
+	 * но сама карта не должна попадать в rml://character-preview.
 	 */
+	std::vector<FRmlPreviewObjectDrawBackup> HiddenObjects;
+
+	HideWorldObjectsForRmlCharacterPreview(
+		Player,
+		HiddenObjects
+	);
+
 	CurRenderPipeline->PreRender();
 	CurRenderPipeline->Render();
 	CurRenderPipeline->AppendPostFXes();
+
+	RestoreWorldObjectsForRmlCharacterPreview(
+		HiddenObjects
+	);
 
 	/*
 	 * Заполняем alpha.
