@@ -133,7 +133,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\Studio.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\lib;../External/dbghelp/lib;../External/CrashRpt/Lib;../External/fmod;../External/PhysX/lib/Win32;../External/Chilkat/Libs;../External/jpeg-6b/lib/Win32/Msvc80/Release_Static;../External/VMProtect;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -188,9 +188,9 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex64_vc.lib;fmod_event64.lib;fmod_event_net64.lib;ChilkatRel_x64.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;Recast.lib;Detour.lib;DetourCrowd.lib;DetourTileCache.lib;DebugUtils.lib;SLikeNetLibStatic.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies);discord_partner_sdk.lib;rmlui.lib;rmlui_debugger.lib</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex64_vc.lib;fmod_event64.lib;fmod_event_net64.lib;ChilkatRel_x64.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;Recast.lib;Detour.lib;DetourCrowd.lib;DetourTileCache.lib;DebugUtils.lib;SLikeNetLibStatic.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies);discord_partner_sdk.lib;rmlui.lib;rmlui_debugger.lib</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\Studio.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(WindowsSDK_LibraryPath_x64);.\..\External\dxsdk\x64Lib;..\External\dbghelp\lib\amd64;..\..\External\fmod;..\..\External\PhysX\physx\bin\win.x86_64.vc143.mt\release;..\..\External\chilkat-x86_64-vc2022\libs;..\..\External\recastnavigation\build\vs2022-x64\Recast\Release;..\..\External\recastnavigation\build\vs2022-x64\Detour\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourCrowd\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourTileCache\Release;..\..\External\recastnavigation\build\vs2022-x64\DebugUtils\Release;..\..\External\SLikeNet\build\vs2022-x64\Lib\LibStatic\Release;..\External\VMProtect;%(AdditionalLibraryDirectories);..\..\External\discord_social_sdk\lib\release;..\..\External\RmlUI\Bin-Dynamic\Release;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WindowsSDK_LibraryPath_x64);.\..\External\dxsdk\x64Lib;..\External\dbghelp\lib\amd64;..\..\External\fmod;..\..\External\PhysX\physx\bin\win.x86_64.vc143.mt\release;..\..\External\chilkat-x86_64-vc2022\libs;..\..\External\recastnavigation\build\vs2022-x64\Recast\Release;..\..\External\recastnavigation\build\vs2022-x64\Detour\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourCrowd\Release;..\..\External\recastnavigation\build\vs2022-x64\DetourTileCache\Release;..\..\External\recastnavigation\build\vs2022-x64\DebugUtils\Release;..\..\External\SLikeNet\build\vs2022-x64\Lib\LibStatic\Release;..\External\VMProtect;%(AdditionalLibraryDirectories);..\..\External\discord_social_sdk\lib\release;..\..\External\RmlUI\Bin-Dynamic\Release;..\..\External\dxsdk\x64Lib</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -237,7 +237,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9d.lib;d3d9.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatDbg.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9d.lib;d3d9.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatDbg.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\Studio_d.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\lib;../External/dbghelp/lib;../External/fmod;../External/PhysX/lib/Win32;../External/Chilkat/Libs;../External/jpeg-6b/lib/Win32/Msvc80/Debug_Static;../External/VMProtect;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ManifestFile>$(IntDir)$(TargetFileName)_d.intermediate.manifest</ManifestFile>
@@ -289,7 +289,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /largeaddressaware %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;d3d11.lib;dxgi.lib;d3dcompiler.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;windowscodecs.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex_vc.lib;fmod_event.lib;fmod_event_net.lib;ChilkatRel.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)\..\..\bin\WarZ.exe</OutputFile>
       <AdditionalLibraryDirectories>.\..\External\dxsdk\lib;../External/dbghelp/lib;../External/CrashRpt/Lib;../External/fmod;../External/PhysX/lib/Win32;../External/Chilkat/Libs;../External/jpeg-6b/lib/Win32/Msvc80/Release_Static;../External/VMProtect;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -470,7 +470,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndShop.cpp"/>
     <ClCompile Include="RmlUI\FrontEnd\RmlFrontEndSkills.cpp"/>
     <ClCompile Include="RmlUI\RmlFileInterface.cpp"/>
-    <ClCompile Include="RmlUI\RmlRenderDX11.cpp"/>
     <ClCompile Include="RmlUI\RmlRenderDX9.cpp"/>
     <ClCompile Include="RmlUI\RmlRuntime.cpp"/>
     <ClCompile Include="RmlUI\RmlSystemInterface.cpp"/>
@@ -650,32 +649,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeferredPointLightsOptimized.cpp"/>
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeffered.cpp"/>
     <ClCompile Include="Sources\RENDERING\Deffered\VisibilityGrid.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11GrassPass.cpp" />
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11LightingPass.cpp" />
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11SkyPass.cpp" />
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11TerrainPass.cpp" />
     <ClCompile Include="Sources\RENDERING\DX9\RenderDX9.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Device.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11DepthOnlyPass.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Draw.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11FrameResources.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Fullscreen.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11GBufferPass.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11GBufferResources.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Material.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11MaterialAdapter.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Mesh.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11MeshAdapter.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11MeshRenderData.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11MeshRenderer.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Resources.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11States.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Texture.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11VegetationPass.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\RenderDX11World.cpp"/>
-    <ClCompile Include="Sources\RENDERING\DX11\ShaderDX11.cpp"/>
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp"/>
     <ClCompile Include="Sources\SteamHelper.cpp"/>
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp"/>
@@ -754,7 +728,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="RmlUI\FrontEnd\RmlFrontEndShop.h"/>
     <ClInclude Include="RmlUI\FrontEnd\RmlFrontEndSkills.h"/>
     <ClInclude Include="RmlUI\RmlFileInterface.h"/>
-    <ClInclude Include="RmlUI\RmlRenderDX11.h"/>
     <ClInclude Include="RmlUI\RmlRenderDX9.h"/>
     <ClInclude Include="RmlUI\RmlRuntime.h"/>
     <ClInclude Include="RmlUI\RmlSystemInterface.h"/>
@@ -938,33 +911,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\Deffered\RenderDefferedScene.hpp"/>
     <ClInclude Include="Sources\RENDERING\Deffered\rendershadowmap.hpp"/>
     <ClInclude Include="Sources\RENDERING\Deffered\VisibilityGrid.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11GrassPass.h" />
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11LightingPass.h" />
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Platform.h" />
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11SkyPass.h" />
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11TerrainPass.h" />
     <ClInclude Include="Sources\RENDERING\DX9\DrawWorld.hpp"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Device.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11DepthOnlyPass.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Draw.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11FrameResources.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Fullscreen.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11GBufferPass.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11GBufferResources.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Material.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11MaterialAdapter.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Mesh.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11MeshAdapter.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11MeshRenderData.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11MeshRenderer.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Resources.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11States.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Texture.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11VegetationPass.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11VertexLayouts.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\RenderDX11World.h"/>
-    <ClInclude Include="Sources\RENDERING\DX11\ShaderDX11.h"/>
     <ClInclude Include="Sources\RENDERING\DX9\RenderDX9.h"/>
     <ClInclude Include="Sources\RENDERING\Probes\ProbeMaster.h"/>
     <ClInclude Include="Sources\resource.h"/>
@@ -1001,3 +948,4 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
   <ImportGroup Label="ExtensionTargets"/>
 </Project>
+

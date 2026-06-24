@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RmlRenderDX9.h"
 #include "RmlSystemInterface.h"
 #include "RmlFileInterface.h"
 
@@ -12,12 +13,6 @@
 #include <functional>
 #include <memory>
 
-struct IDirect3DDevice9;
-struct ID3D11DepthStencilView;
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct ID3D11RenderTargetView;
-
 class RmlUISystem final
 {
 public:
@@ -28,18 +23,15 @@ public:
 	~RmlUISystem();
 
 	bool Init(HWND InHwnd, IDirect3DDevice9* InDevice, bool bLoadAppSelectOnInit = true);
-	bool Init(HWND InHwnd, ID3D11Device* InDevice, ID3D11DeviceContext* InContext, bool bLoadAppSelectOnInit = true);
 	void Shutdown();
 
 	void Update(float DeltaSeconds);
 	void Render();
-	void RenderDX11(ID3D11RenderTargetView* RenderTarget, ID3D11DepthStencilView* DepthStencil, int Width, int Height);
 
 	bool ProcessWin32Message(HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam, LRESULT* OutResult);
 
 	void OnDeviceLost();
 	void OnDeviceReset();
-	void OnDeviceResetDX11(int Width, int Height);
 
 	void SetAppSelectCallback(FAppSelectCallback Callback);
 
@@ -234,6 +226,7 @@ private:
 
 	std::unique_ptr<RmlSystemInterface> SystemInterface;
 	std::unique_ptr<RmlFileInterface> FileInterface;
+	std::unique_ptr<RmlRenderDX9> RenderInterface;
 
 	Rml::Context* Context = nullptr;
 	Rml::ElementDocument* AppSelectDocument = nullptr;

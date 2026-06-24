@@ -10,9 +10,6 @@
 #include "backend/WOBackendAPI.h"
 #include "ObjectsCode/weapons/WeaponArmory.h"
 
-#include "RmlFrontEndShop.h"
-#include "RmlFrontEndSkills.h"
-
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/Elements/ElementFormControlInput.h>
@@ -812,8 +809,8 @@ namespace
 	}
 
 	std::string GetShopIconPath(
-	const BaseItemConfig* Config
-)
+		const BaseItemConfig* Config
+	)
 	{
 		if (
 			Config &&
@@ -870,50 +867,18 @@ namespace
 					Path;
 			}
 
-			const size_t SlashPosition =
-				Path.find_last_of('/');
-
-			const size_t DotPosition =
-				Path.find_last_of('.');
-
-			const bool bHasExtension =
-				DotPosition != std::string::npos &&
-				(
-					SlashPosition == std::string::npos ||
-					DotPosition > SlashPosition
-				);
-
-			if (!bHasExtension)
-			{
-				Path += ".dds";
-			}
-
-			/*
-			 * Shop.rml лежит тут:
-			 * Data/Rml/FrontEnd/Shop.rml
-			 *
-			 * А store icons лежат тут:
-			 * Data/Weapons/StoreIcons/*.dds
-			 *
-			 * Поэтому из Rml/FrontEnd нужно выйти на два уровня назад.
-			 */
 			if (
-				Path.compare(
-					0,
-					6,
-					"../../"
-				) != 0
+				Path.length() < 4 ||
+				Path.substr(Path.length() - 4) != ".dds"
 			)
 			{
-				Path =
-					std::string("../../") +
-					Path;
+				Path += ".dds";
 			}
 
 			return Path;
 		}
 
-		return "../../Weapons/no_icon.dds";
+		return "Weapons/no_icon.dds";
 	}
 
 	uint32_t GetShopLowestPrice(
@@ -1267,16 +1232,6 @@ bool RmlFrontEndContext::Init(
 	RmlRuntime& Runtime =
 		RmlRuntime::Get();
 
-	if (Runtime.IsUsingDX11())
-	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd][Init] DX9 frontend skipped: runtime uses DX11\n"
-		);
-
-		Hwnd = nullptr;
-		return false;
-	}
-
 	if (!Runtime.Acquire(
 		WindowHandle,
 		Device
@@ -1313,8 +1268,6 @@ bool RmlFrontEndContext::Init(
 	Context->EnableMouseCursor(true);
 	ClickListener = std::make_unique<FClickListener>(this);
 	CharacterPreview = std::make_unique<RmlFrontEndCharacterPreview>();
-	SkillsScreen = std::make_unique<RmlFrontEndSkills>();
-	ShopScreen = std::make_unique<RmlFrontEndShop>();
 
 	if (!LoadDocuments())
 	{
@@ -1482,16 +1435,12 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
-	if (!SkillsScreen)
-	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd] Skills screen object is missing\n"
-		);
+	SkillsDocument =
+	Context->LoadDocument(
+		"Rml/FrontEnd/Skills.rml"
+	);
 
-		return false;
-	}
-
-	if (!SkillsScreen->Load(Context))
+	if (!SkillsDocument)
 	{
 		r3dOutToLog(
 			"[RmlUI][FrontEnd] Failed to load "
@@ -1501,19 +1450,12 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
-	SkillsDocument =
-		SkillsScreen->GetDocument();
+	ShopDocument =
+	Context->LoadDocument(
+		"Rml/FrontEnd/Shop.rml"
+	);
 
-	if (!ShopScreen)
-	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd] Shop screen object is missing\n"
-		);
-
-		return false;
-	}
-
-	if (!ShopScreen->Load(Context))
+	if (!ShopDocument)
 	{
 		r3dOutToLog(
 			"[RmlUI][FrontEnd] Failed to load "
@@ -1523,166 +1465,11 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
-	ShopDocument =
-		ShopScreen->GetDocument();
-
-	SkillsScreen->SetCallbacks(
-		FRmlFrontEndSkillsCallbacks
-		{
-			[this]()
-			{
-				ShowMainMenu();
-			},
-
-			[this]()
-			{
-				ShowShop();
-			},
-
-			[this]()
-			{
-				BuildSkills();
-			},
-
-			[this]()
-			{
-				RequestLearnSelectedSkill();
-			},
-
-			[this]()
-			{
-				SetSkillsStatus(
-					"Skill reset is not connected to backend yet."
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				SelectSkillNode(
-					Id
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				(void)Id;
-
-				SetSkillsStatus(
-					"Skill category selected."
-				);
-			},
-
-			[this](const Rml::String& Text)
-			{
-				SetSkillsStatus(
-					Text
-				);
-			}
-		}
-	);
-
-	ShopScreen->SetCallbacks(
-		FRmlFrontEndShopCallbacks
-		{
-			[this]()
-			{
-				ShowMainMenu();
-			},
-
-			[this]()
-			{
-				ShowSkills();
-			},
-
-			[this]()
-			{
-				BuildShop();
-			},
-
-			[this]()
-			{
-				RequestBuySelectedShopItem();
-			},
-
-			[this]()
-			{
-				const int ApiCode =
-					gUserProfile.ApiGetShopData();
-
-				BuildShop();
-
-				SetShopStatus(
-					ApiCode == 0
-						? "Shop data refreshed."
-						: "Shop refresh failed."
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				SelectShopItem(
-					Id
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				SelectShopCategory(
-					Id
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				SelectShopCurrency(
-					Id
-				);
-			},
-
-			[this](const Rml::String& Id)
-			{
-				if (Id == "cycle")
-				{
-					if (SelectedShopSortId == "shop_tab_hot")
-						SelectedShopSortId = "shop_tab_new";
-					else if (SelectedShopSortId == "shop_tab_new")
-						SelectedShopSortId = "shop_tab_sale";
-					else if (SelectedShopSortId == "shop_tab_sale")
-						SelectedShopSortId = "shop_tab_owned";
-					else
-						SelectedShopSortId = "shop_tab_hot";
-				}
-				else
-				{
-					SelectedShopSortId =
-						Id;
-				}
-
-				BuildShop();
-
-				SetShopStatus(
-					"Shop sort changed."
-				);
-			},
-
-			[this](const Rml::String& Text)
-			{
-				SetShopStatus(
-					Text
-				);
-			}
-		}
-	);
-
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
-
-	if (SkillsScreen)
-		SkillsScreen->Hide();
-
-	if (ShopScreen)
-		ShopScreen->Hide();
+	SkillsDocument->Hide();
+	ShopDocument->Hide();
 
 	return true;
 }
@@ -1691,20 +1478,6 @@ void RmlFrontEndContext::UnloadDocuments()
 {
 	if (!Context)
 		return;
-
-	if (SkillsScreen)
-	{
-		SkillsScreen->Unload();
-		SkillsScreen.reset();
-		SkillsDocument = nullptr;
-	}
-
-	if (ShopScreen)
-	{
-		ShopScreen->Unload();
-		ShopScreen.reset();
-		ShopDocument = nullptr;
-	}
 
 	if (LoginDocument)
 	{
@@ -1731,6 +1504,24 @@ void RmlFrontEndContext::UnloadDocuments()
 		);
 
 		CharacterCreateDocument = nullptr;
+	}
+
+	if (SkillsDocument)
+	{
+		Context->UnloadDocument(
+			SkillsDocument
+		);
+
+		SkillsDocument = nullptr;
+	}
+
+	if (ShopDocument)
+	{
+		Context->UnloadDocument(
+			ShopDocument
+		);
+
+		ShopDocument = nullptr;
 	}
 }
 
@@ -1762,6 +1553,22 @@ void RmlFrontEndContext::AttachEvents()
 			ClickListener.get()
 		);
 	}
+
+	if (SkillsDocument)
+	{
+		SkillsDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (ShopDocument)
+	{
+		ShopDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
 }
 
 void RmlFrontEndContext::DetachEvents()
@@ -1788,6 +1595,22 @@ void RmlFrontEndContext::DetachEvents()
 	if (CharacterCreateDocument)
 	{
 		CharacterCreateDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (SkillsDocument)
+	{
+		SkillsDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (ShopDocument)
+	{
+		ShopDocument->RemoveEventListener(
 			"click",
 			ClickListener.get()
 		);
@@ -2390,13 +2213,9 @@ void RmlFrontEndContext::ShowLogin()
 
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
-	
-	if (SkillsScreen)
-		SkillsScreen->Hide();
-	if (ShopScreen)
-		ShopScreen->Hide();
-	
 	LoginDocument->Show();
+	SkillsDocument->Hide();
+	ShopDocument->Hide();
 
 	CurrentScreen =
 		EScreen::Login;
@@ -2425,13 +2244,8 @@ void RmlFrontEndContext::ShowMainMenu()
 
 	LoginDocument->Hide();
 	CharacterCreateDocument->Hide();
-	
-	if (SkillsScreen)
-		SkillsScreen->Hide();
-
-	if (ShopScreen)
-		ShopScreen->Hide();
-	
+	SkillsDocument->Hide();
+	ShopDocument->Hide();
 	MainMenuDocument->Show();
 
 	CurrentScreen =
@@ -2457,8 +2271,8 @@ void RmlFrontEndContext::ShowSkills()
 		!LoginDocument ||
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
-		!SkillsScreen ||
-		!ShopScreen
+		!SkillsDocument ||
+		!ShopDocument
 	)
 	{
 		return;
@@ -2479,14 +2293,13 @@ void RmlFrontEndContext::ShowSkills()
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
-
-	ShopScreen->Hide();
-	SkillsScreen->Show();
+	ShopDocument->Hide();
+	SkillsDocument->Show();
 
 	CurrentScreen =
 		EScreen::Skills;
 
-	SkillsScreen->Refresh();
+	BuildSkills();
 
 	SetSkillsControlsEnabled(
 		true
@@ -2503,8 +2316,8 @@ void RmlFrontEndContext::ShowShop()
 		!LoginDocument ||
 		!MainMenuDocument ||
 		!CharacterCreateDocument ||
-		!SkillsScreen ||
-		!ShopScreen
+		!SkillsDocument ||
+		!ShopDocument
 	)
 	{
 		return;
@@ -2525,14 +2338,13 @@ void RmlFrontEndContext::ShowShop()
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
-
-	SkillsScreen->Hide();
-	ShopScreen->Show();
+	SkillsDocument->Hide();
+	ShopDocument->Show();
 
 	CurrentScreen =
 		EScreen::Shop;
 
-	ShopScreen->Refresh();
+	BuildShop();
 
 	RmlRuntime::Get().SetActiveContext(
 		Context
@@ -2564,13 +2376,8 @@ void RmlFrontEndContext::ShowCharacterCreate()
 
 	LoginDocument->Hide();
 	MainMenuDocument->Hide();
-	
-	if (SkillsScreen)
-		SkillsScreen->Hide();
-
-	if (ShopScreen)
-		ShopScreen->Hide();
-	
+	SkillsDocument->Hide();
+	ShopDocument->Hide();
 	CharacterCreateDocument->Show();
 
 	CurrentScreen =
@@ -2880,6 +2687,168 @@ void RmlFrontEndContext::HandleClick(
 				PendingResult =
 					ERmlFrontEndResult::Exit;
 			}
+
+			return;
+		}
+
+		if (Id == "btn_shop_buy_selected")
+		{
+			RequestBuySelectedShopItem();
+			return;
+		}
+
+		if (Id == "btn_shop_preview_item")
+		{
+			SetShopStatus(
+				"Item preview is not connected yet."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_shop_sort")
+		{
+			if (SelectedShopSortId == "shop_tab_hot")
+				SelectedShopSortId = "shop_tab_new";
+			else if (SelectedShopSortId == "shop_tab_new")
+				SelectedShopSortId = "shop_tab_sale";
+			else if (SelectedShopSortId == "shop_tab_sale")
+				SelectedShopSortId = "shop_tab_owned";
+			else
+				SelectedShopSortId = "shop_tab_hot";
+
+			BuildShop();
+
+			SetShopStatus(
+				"Shop sort changed."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_shop_refresh")
+		{
+			const int ApiCode =
+				gUserProfile.ApiGetShopData();
+
+			BuildShop();
+
+			SetShopStatus(
+				ApiCode == 0
+					? "Shop data refreshed."
+					: "Shop refresh failed."
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				ShopItemButtonPrefixLength,
+				ShopItemButtonPrefix
+			) == 0
+		)
+		{
+			SelectShopItem(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_category_featured" ||
+			Id == "shop_category_weapons" ||
+			Id == "shop_category_body_armor" ||
+			Id == "shop_category_helmets" ||
+			Id == "shop_category_backpacks" ||
+			Id == "shop_category_attachments" ||
+			Id == "shop_category_placeable" ||
+			Id == "shop_category_food" ||
+			Id == "shop_category_medicine" ||
+			Id == "shop_category_usable" ||
+			Id == "shop_category_water"
+		)
+		{
+			SelectShopCategory(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_currency_gc" ||
+			Id == "shop_currency_gd"
+		)
+		{
+			SelectShopCurrency(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "shop_tab_hot" ||
+			Id == "shop_tab_new" ||
+			Id == "shop_tab_sale" ||
+			Id == "shop_tab_owned"
+		)
+		{
+			SelectedShopSortId =
+				Id;
+
+			BuildShop();
+
+			SetShopStatus(
+				"Shop sort changed."
+			);
+
+			return;
+		}
+
+		if (Id == "btn_learn_selected_skill")
+		{
+			RequestLearnSelectedSkill();
+			return;
+		}
+
+		if (Id == "btn_reset_skills")
+		{
+			SetSkillsStatus(
+				"Skill reset is not connected to backend yet."
+			);
+
+			return;
+		}
+
+		if (
+			Id.compare(
+				0,
+				SkillNodeButtonPrefixLength,
+				SkillNodeButtonPrefix
+			) == 0
+		)
+		{
+			SelectSkillNode(
+				Id
+			);
+
+			return;
+		}
+
+		if (
+			Id == "skill_category_survival" ||
+			Id == "skill_category_combat" ||
+			Id == "skill_category_support" ||
+			Id == "skill_category_crafting"
+		)
+		{
+			SetSkillsStatus(
+				"Skill category selected."
+			);
 
 			return;
 		}

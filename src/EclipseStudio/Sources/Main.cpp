@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 #include "r3dNetwork.h"
 #include "shellapi.h"
@@ -45,8 +45,6 @@
 #include "rendering\Deffered\D3DMiscFunctions.h"
 #include "rendering\Probes\ProbeMaster.h"
 
-#include "RENDERING\DX11\RenderDX11.h"
-#include "RENDERING\DX11\RenderDX11World.h"
 
 #include "ObjectsCode/weapons/ClientWeaponArmory.h"
 
@@ -138,812 +136,59 @@ extern void UnregisterMsgProc(
 static bool g_StudioResizePending = false;
 static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
-static r3dDX11Renderer* g_DX11Renderer = nullptr;
-static bool g_StudioCmdLineDX11Boot = false;
-static bool g_StudioCmdLineDX11World = true;
-
-static bool WasDX11HotkeyPressed(int virtualKey)
-{
-	static bool previousState[256] = {};
-
-	const bool isDown =
-		(GetAsyncKeyState(virtualKey) & 0x8000) != 0;
-
-	const bool pressed =
-		isDown && !previousState[virtualKey];
-
-	previousState[virtualKey] = isDown;
-
-	return pressed;
-}
-
-static void SetDX11DebugView(int mode)
-{
-	if (!r_dx11_debug_view)
-		return;
-
-	r_dx11_debug_view->SetInt(mode);
-
-	const char* name = "final";
-
-	switch (mode)
-	{
-	case 0: name = "final"; break;
-	case 1: name = "albedo"; break;
-	case 2: name = "normal"; break;
-	case 3: name = "depth"; break;
-	case 4: name = "aux"; break;
-	case 5: name = "direct only"; break;
-	case 6: name = "ambient only"; break;
-	default: break;
-	}
-
-	r3dOutToLog(
-		"[DX11][Hotkey] debug_view=%d (%s)\n",
-		mode,
-		name
-	);
-}
-
-template <typename TCmdVar>
-static void CycleDX11FloatCVar(
-	TCmdVar* cvar,
-	const char* name,
-	const float* values,
-	int count
-)
-{
-	if (!cvar || !values || count <= 0)
-		return;
-
-	const float current =
-		cvar->GetFloat();
-
-	int nextIndex = 0;
-
-	for (int i = 0; i < count; ++i)
-	{
-		if (values[i] > current + 0.001f)
-		{
-			nextIndex = i;
-			break;
-		}
-	}
-
-	cvar->SetFloat(
-		values[nextIndex]
-	);
-
-	r3dOutToLog(
-		"[DX11][Hotkey] %s=%.3f\n",
-		name,
-		values[nextIndex]
-	);
-}
-
-static void LogDX11WorldHotkeyHelpOnce()
-{
-	static bool printed = false;
-
-	if (printed)
-		return;
-
-	printed = true;
-
-	r3dOutToLog("[DX11][Hotkey] ===============================================\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 0 = final\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 1 = albedo\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 2 = normals\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 3 = depth\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 4 = aux gloss/spec\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 5 = direct light only\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 6 = ambient only\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 7 = cycle terrain texture blend\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 8 = cycle terrain normal blend\n");
-	r3dOutToLog("[DX11][Hotkey] NumPad 9 = cycle terrain detail amount\n");
-	r3dOutToLog("[DX11][Hotkey] NumLock must be ON\n");
-	r3dOutToLog("[DX11][Hotkey] ===============================================\n");
-}
-
-static void UpdateDX11WorldHotkeys()
-{
-	LogDX11WorldHotkeyHelpOnce();
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD0))
-		SetDX11DebugView(0);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD1))
-		SetDX11DebugView(1);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD2))
-		SetDX11DebugView(2);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD3))
-		SetDX11DebugView(3);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD4))
-		SetDX11DebugView(4);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD5))
-		SetDX11DebugView(5);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD6))
-		SetDX11DebugView(6);
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD7))
-	{
-		static const float values[] =
-		{
-			0.00f, // procedural only
-			0.20f, // safe tint
-			0.45f, // visible tint
-			0.70f, // strong tint
-			1.00f  // raw terrain color texture debug
-		};
-
-		CycleDX11FloatCVar(
-			r_dx11_terrain_texture_blend,
-			"r_dx11_terrain_texture_blend",
-			values,
-			_countof(values)
-		);
-	}
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD8))
-	{
-		static const float values[] =
-		{
-			0.00f,
-			0.10f,
-			0.25f,
-			0.50f,
-			1.00f
-		};
-
-		CycleDX11FloatCVar(
-			r_dx11_terrain_normal_blend,
-			"r_dx11_terrain_normal_blend",
-			values,
-			_countof(values)
-		);
-	}
-
-	if (WasDX11HotkeyPressed(VK_NUMPAD9))
-	{
-		static const float values[] =
-		{
-			0.00f,
-			0.05f,
-			0.12f,
-			0.25f,
-			0.50f
-		};
-
-		CycleDX11FloatCVar(
-			r_dx11_terrain_detail_amount,
-			"r_dx11_terrain_detail_amount",
-			values,
-			_countof(values)
-		);
-	}
-}
-
-static void PrepareDX11WorldRenderQueues(const r3dCamera& camera)
-{
-	const int oldUseOQ = r_use_oq ? r_use_oq->GetInt() : 0;
-
-	r3dResetMeshDeferredDX11WorldMatrices();
-	if (r_use_oq)
-		r_use_oq->SetInt(0);
-
-	GameWorld().Prepare(camera);
-	PrepareDX11SlicedShadowMapRender();
-
-	if (r_use_oq)
-		r_use_oq->SetInt(oldUseOQ);
-}
-
-static Rml::Context* g_DX11SmokeRmlContext = nullptr;
-static Rml::ElementDocument* g_DX11SmokeRmlDocument = nullptr;
-static bool g_DX11SmokeRmlReady = false;
-
-static bool IsDX11BootActive()
-{
-	return g_DX11Renderer && g_DX11Renderer->IsInitialized();
-}
+class RmlUISystem;
 
 bool StudioDX11WorldHybridEnabled()
 {
-	return g_StudioCmdLineDX11World;
-}
-
-bool StudioDX11UIAvailable()
-{
-	return IsDX11BootActive();
-}
-
-bool StudioDX11InitRmlUI(
-	RmlUISystem* System,
-	bool bLoadAppSelectOnInit
-)
-{
-	if (!System || !win::hWnd || !IsDX11BootActive())
-		return false;
-
-	return System->Init(
-		win::hWnd,
-		g_DX11Renderer->GetDevice().GetDevice(),
-		g_DX11Renderer->GetDevice().GetContext(),
-		bLoadAppSelectOnInit
-	);
-}
-
-bool StudioDX11BeginUIFrame(
-	float ClearR,
-	float ClearG,
-	float ClearB,
-	float ClearA
-)
-{
-	if (!IsDX11BootActive())
-		return false;
-
-	g_DX11Renderer->BeginFrame(
-		ClearR,
-		ClearG,
-		ClearB,
-		ClearA
-	);
-
-	return true;
-}
-
-void StudioDX11RenderRmlUI(
-	RmlUISystem* System
-)
-{
-	if (!System || !IsDX11BootActive())
-		return;
-
-	g_DX11Renderer->RenderRmlSystem(
-		*System
-	);
-}
-
-void StudioDX11EndUIFrame(
-	bool bVSync
-)
-{
-	if (!IsDX11BootActive())
-		return;
-
-	g_DX11Renderer->EndFrame(
-		bVSync,
-		nullptr
-	);
-}
-
-static void ShutdownDX11SmokeRml()
-{
-	RmlRuntime& Runtime = RmlRuntime::Get();
-
-	if (g_DX11SmokeRmlContext)
-	{
-		Runtime.ClearActiveContext(g_DX11SmokeRmlContext);
-
-		if (g_DX11SmokeRmlDocument)
-		{
-			g_DX11SmokeRmlContext->UnloadDocument(g_DX11SmokeRmlDocument);
-			g_DX11SmokeRmlDocument = nullptr;
-		}
-
-		Runtime.DestroyContext(g_DX11SmokeRmlContext);
-	}
-
-	g_DX11SmokeRmlReady = false;
-}
-
-static bool InitDX11SmokeRml()
-{
-	if (g_DX11SmokeRmlReady)
-		return true;
-
-	if (!g_DX11Renderer || !g_DX11Renderer->IsInitialized())
-	{
-		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: DX11 renderer is not ready\n");
-		return false;
-	}
-
-	RmlRuntime& Runtime = RmlRuntime::Get();
-
-	g_DX11SmokeRmlContext = Runtime.CreateContext(
-		"DX11Smoke",
-		Rml::Vector2i(
-			g_DX11Renderer->GetWidth(),
-			g_DX11Renderer->GetHeight()
-		)
-	);
-
-	if (!g_DX11SmokeRmlContext)
-	{
-		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: CreateContext failed\n");
-		return false;
-	}
-
-	g_DX11SmokeRmlDocument =
-		g_DX11SmokeRmlContext->LoadDocument("Rml/Studio/DX11Smoke.rml");
-
-	if (!g_DX11SmokeRmlDocument)
-	{
-		r3dOutToLog("[DX11][RmlUI] Failed to load Data/Rml/Studio/DX11Smoke.rml\n");
-		r3dOutToLog("[DX11][RmlUI] Trying fallback Data/Rml/Studio/AppSelect.rml\n");
-
-		g_DX11SmokeRmlDocument =
-			g_DX11SmokeRmlContext->LoadDocument("Rml/Studio/AppSelect.rml");
-	}
-
-	if (!g_DX11SmokeRmlDocument)
-	{
-		r3dOutToLog("[DX11][RmlUI] Smoke RML init failed: no document loaded\n");
-
-		Runtime.DestroyContext(g_DX11SmokeRmlContext);
-		g_DX11SmokeRmlContext = nullptr;
-
-		return false;
-	}
-
-	g_DX11SmokeRmlDocument->Show();
-
-	Runtime.SetActiveContext(g_DX11SmokeRmlContext);
-
-	g_DX11SmokeRmlReady = true;
-
-	r3dOutToLog(
-		"[DX11][RmlUI] Smoke document loaded. context=%s size=%dx%d\n",
-		g_DX11SmokeRmlContext->GetName().c_str(),
-		g_DX11Renderer->GetWidth(),
-		g_DX11Renderer->GetHeight()
-	);
-
-	return true;
-}
-
-void StudioDX11WorldHybridInit()
-{
-	if (!g_StudioCmdLineDX11World || g_DX11Renderer)
-		return;
-
-	g_DX11Renderer = new r3dDX11Renderer;
-	if (!g_DX11Renderer->Init(
-			win::hWnd,
-			r_width->GetInt(),
-			r_height->GetInt(),
-			r_fullscreen->GetBool(),
-#ifndef FINAL_BUILD
-			true
-#else
-			false
-#endif
-			,
-			false
-		))
-	{
-		SAFE_DELETE(g_DX11Renderer);
-		r3dOutToLog("[DX11][World] Hybrid renderer init failed\n");
-		return;
-	}
-
-	r3dOutToLog("[DX11][World] Hybrid renderer initialized\n");
-}
-
-void StudioDX11WorldHybridShutdown()
-{
-	if (!g_StudioCmdLineDX11World || !g_DX11Renderer)
-		return;
-
-	g_DX11Renderer->Shutdown();
-	SAFE_DELETE(g_DX11Renderer);
-	r3dOutToLog("[DX11][World] Hybrid renderer shutdown\n");
-}
-
-static const char* DX11CheckState(bool pass, bool warn)
-{
-	if (pass)
-		return "PASS";
-
-	if (warn)
-		return "WARN";
-
-	return "FAIL";
-}
-
-static void LogDX11WorldValidation(
-	const r3dDX11WorldRenderStats& S,
-	bool bWorldRendered,
-	bool bLightingRendered
-)
-{
-	r3dOutToLog("[DX11][Check] ================= World parity check =================\n");
-
-	// 1. Static mesh виден в depth.
-	{
-		const bool pass =
-			bWorldRendered &&
-			S.DepthStaticMeshes > 0 &&
-			S.DepthDrawnMeshes > 0 &&
-			S.DepthSkippedFailed == 0;
-
-		const bool warn =
-			bWorldRendered &&
-			S.DepthStaticMeshes > 0 &&
-			S.DepthDrawnMeshes > 0 &&
-			S.DepthSkippedFailed > 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 01 Static mesh depth: depth_static=%u depth_drawn=%u depth_failed=%u\n",
-			DX11CheckState(pass, warn),
-			S.DepthStaticMeshes,
-			S.DepthDrawnMeshes,
-			S.DepthSkippedFailed
-		);
-	}
-
-	// 2. Skinned zombie/player виден в depth.
-	// Важно: отсутствие skinned mesh в текущем кадре не является ошибкой.
-	// До спавна игрока / зомби / оружия depth_skin=0 и shadow_skin=0 — это нормально.
-	{
-		const bool hasSkinnedThisFrame =
-			S.DepthSkinnedMeshes > 0 ||
-			S.ShadowSkinnedMeshes > 0;
-
-		const bool pass =
-			bWorldRendered &&
-			S.DepthSkinnedMeshes > 0 &&
-			S.DepthDrawnMeshes > 0 &&
-			S.DepthSkippedFailed == 0;
-
-		const bool warn =
-			bWorldRendered &&
-			!hasSkinnedThisFrame &&
-			S.DepthSkippedFailed == 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 02 Skinned depth: depth_skin=%u shadow_skin=%u depth_drawn=%u\n",
-			DX11CheckState(pass, warn),
-			S.DepthSkinnedMeshes,
-			S.ShadowSkinnedMeshes,
-			S.DepthDrawnMeshes
-		);
-	}
-
-	// 3. Alpha-test mesh режется правильно.
-	{
-		const bool pass =
-			bWorldRendered &&
-			S.DepthAlphaTestedMeshes > 0;
-
-		const bool warn =
-			bWorldRendered &&
-			S.DepthAlphaTestedMeshes == 0 &&
-			(S.ShadowAlphaTested > 0 || S.TransparentShadowAlphaTested > 0);
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 03 Alpha-test depth: depth_alpha=%u shadow_alpha=%u transparent_shadow_alpha=%u\n",
-			DX11CheckState(pass, warn),
-			S.DepthAlphaTestedMeshes,
-			S.ShadowAlphaTested,
-			S.TransparentShadowAlphaTested
-		);
-	}
-
-	// 4. First-person weapon не ломает depth range.
-	{
-		const bool pass =
-			bWorldRendered &&
-			S.DepthFirstPersonMeshes > 0;
-
-		const bool warn =
-			bWorldRendered &&
-			S.DepthFirstPersonMeshes == 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 04 First-person depth range: depth_fp=%u depth_failed=%u\n",
-			DX11CheckState(pass, warn),
-			S.DepthFirstPersonMeshes,
-			S.DepthSkippedFailed
-		);
-	}
-
-	// 5. Static/skinned shadows.
-	// Для Этапа 1 достаточно, чтобы static shadows рисовались без failed.
-	// Skinned shadows проверяются как PASS только когда skinned mesh реально есть в кадре.
-	{
-		const bool hasSkinnedShadowThisFrame =
-			S.ShadowSkinnedMeshes > 0;
-
-		const bool pass =
-			S.ShadowSlicesRendered > 0 &&
-			S.ShadowDrawnMeshes > 0 &&
-			S.ShadowStaticMeshes > 0 &&
-			hasSkinnedShadowThisFrame &&
-			S.ShadowSkippedFailed == 0;
-
-		const bool warn =
-			S.ShadowSlicesRendered > 0 &&
-			S.ShadowDrawnMeshes > 0 &&
-			S.ShadowStaticMeshes > 0 &&
-			S.ShadowSkippedFailed == 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 05 Static/skinned shadows: slices=%u shadow_drawn=%u static=%u skinned=%u failed=%u\n",
-			DX11CheckState(pass, warn),
-			S.ShadowSlicesRendered,
-			S.ShadowDrawnMeshes,
-			S.ShadowStaticMeshes,
-			S.ShadowSkinnedMeshes,
-			S.ShadowSkippedFailed
-		);
-	}
-
-	// 6. Alpha-tested shadows есть у заборов/листвы/решёток.
-	{
-		const bool pass =
-			S.ShadowSlicesRendered > 0 &&
-			(S.ShadowAlphaTested > 0 || S.TransparentShadowAlphaTested > 0) &&
-			(S.ShadowDrawnMeshes > 0 || S.TransparentShadowDrawnMeshes > 0);
-
-		const bool warn =
-			S.ShadowSlicesRendered > 0 &&
-			S.ShadowAlphaTested == 0 &&
-			S.TransparentShadowAlphaTested == 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 06 Alpha-tested shadows: shadow_alpha=%u tshadow_alpha=%u shadow_drawn=%u tshadow_drawn=%u\n",
-			DX11CheckState(pass, warn),
-			S.ShadowAlphaTested,
-			S.TransparentShadowAlphaTested,
-			S.ShadowDrawnMeshes,
-			S.TransparentShadowDrawnMeshes
-		);
-	}
-
-	// 7. Directional/point/spot lights работают.
-	{
-		const bool pass =
-			bLightingRendered &&
-			S.LightingPasses > 0 &&
-			S.LightingDirectionalLights > 0 &&
-			S.LightingPointLights > 0 &&
-			S.LightingSpotLights > 0;
-
-		const bool warn =
-			bLightingRendered &&
-			S.LightingPasses > 0 &&
-			S.LightingDirectionalLights > 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 07 Lights: passes=%u dir=%u point=%u spot=%u failed=%u\n",
-			DX11CheckState(pass, warn),
-			S.LightingPasses,
-			S.LightingDirectionalLights,
-			S.LightingPointLights,
-			S.LightingSpotLights,
-			S.LightingSkippedFailed
-		);
-	}
-
-	// 8. Spec/gloss похож на DX9.
-	// Автоматом можно проверить только то, что spec/gloss decode включён.
-	// Визуальное совпадение с DX9 проверяется скриншотом.
-	{
-		const bool pass =
-			bLightingRendered &&
-			S.LightingSpecGlossDecoded > 0 &&
-			S.LightingGBufferDecoded > 0;
-
-		const bool warn =
-			bLightingRendered &&
-			S.LightingSpecGlossDecoded == 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 08 Spec/gloss decode: gdecode=%u specgloss=%u -- visual DX9 parity still needs screenshot check\n",
-			DX11CheckState(pass, warn),
-			S.LightingGBufferDecoded,
-			S.LightingSpecGlossDecoded
-		);
-	}
-
-	// 9. Terrain пишет GBuffer.
-	{
-		const bool pass =
-			S.TerrainGBufferDraws > 0 &&
-			S.TerrainSkippedFailed == 0;
-
-		const bool warn =
-			S.TerrainGBufferDraws > 0 &&
-			S.TerrainSkippedFailed > 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 09 Terrain GBuffer: terrain_g=%u tris=%u layers=%u detail=%u failed=%u\n",
-			DX11CheckState(pass, warn),
-			S.TerrainGBufferDraws,
-			S.TerrainGBufferTriangles,
-			S.TerrainSplatLayers,
-			S.TerrainDetailLayers,
-			S.TerrainSkippedFailed
-		);
-	}
-
-	// 10. Terrain получает shadows и lighting.
-	{
-		const bool pass =
-			S.TerrainGBufferDraws > 0 &&
-			S.TerrainShadowDraws > 0 &&
-			bLightingRendered &&
-			S.LightingPasses > 0 &&
-			S.LightingShadowed > 0;
-
-		const bool warn =
-			S.TerrainGBufferDraws > 0 &&
-			bLightingRendered &&
-			S.LightingPasses > 0;
-
-		r3dOutToLog(
-			"[DX11][Check][%s] 10 Terrain shadow/lighting: terrain_g=%u terrain_s=%u lighting=%u lshadow=%u\n",
-			DX11CheckState(pass, warn),
-			S.TerrainGBufferDraws,
-			S.TerrainShadowDraws,
-			S.LightingPasses,
-			S.LightingShadowed
-		);
-	}
-
-	r3dOutToLog("[DX11][Check] =====================================================\n");
+return false;
 }
 
 bool StudioDX11WorldHybridTick()
 {
-	if (!g_StudioCmdLineDX11World || !g_DX11Renderer || !g_DX11Renderer->IsInitialized())
-		return false;
+return false;
+}
 
-	static DWORD LastWorldStatsLog = 0;
-	static DWORD LastWorldValidationLog = 0;
-	UpdateDX11WorldHotkeys();
+bool StudioDX11UIAvailable()
+{
+return false;
+}
 
-	g_DX11Renderer->BeginFrame(
-		0.010f,
-		0.012f,
-		0.011f,
-		1.0f
-	);
+bool StudioDX11InitRmlUI(
+RmlUISystem*,
+bool
+)
+{
+return false;
+}
 
-	r3dDX11WorldRenderStats WorldStats;
-	r3dDX11ResetWorldRenderStats(WorldStats);
-	PrepareDX11WorldRenderQueues(gCam);
+bool StudioDX11BeginUIFrame(
+float,
+float,
+float,
+float
+)
+{
+return false;
+}
 
-	const bool bWorldRendered =
-		g_DX11Renderer->RenderWorldGBuffer(
-			gCam,
-			&WorldStats
-		);
+void StudioDX11RenderRmlUI(
+RmlUISystem*
+)
+{
+}
 
-	const bool bSkyRendered =
-		g_DX11Renderer->RenderWorldSky(
-			gCam,
-			&WorldStats
-		);
+void StudioDX11EndUIFrame(
+bool
+)
+{
+}
 
-	const bool bLightingRendered =
-		g_DX11Renderer->RenderWorldLighting(
-			gCam,
-			&WorldStats
-		);
+void StudioDX11WorldHybridInit()
+{
+}
 
-	g_DX11Renderer->EndFrame(false, nullptr);
-
-	const DWORD Now = GetTickCount();
-
-	if (Now - LastWorldStatsLog >= 1000)
-	{
-		r3dOutToLog(
-			"[DX11][World] ok=%d world_ok=%d light_ok=%d total=%u mesh=%u "
-			"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
-			"gbuffer_drawn=%u unsupported=%u failed=%u "
-			"shadow=%u smesh=%u sstatic=%u sskin=%u sdraw=%u salpha=%u sslices=%u sunsupported=%u sfailed=%u "
-			"tshadow=%u tsmesh=%u tsstatic=%u tsskin=%u tsdraw=%u tsalpha=%u tcase=%u tsunsupported=%u tsfailed=%u "
-			"lighting=%u dir=%u point=%u spot=%u lshadow=%u gdecode=%u specgloss=%u fog=%u ambient=%u probe=%u lfailed=%u "
-			"terrain_g=%u terrain_gtris=%u terrain_d=%u terrain_dtris=%u terrain_s=%u terrain_stris=%u terrain_layers=%u terrain_detail=%u terrain_failed=%u "
-			"veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u "
-			"\n",
-
-			(bWorldRendered && bLightingRendered && bSkyRendered) ? 1 : 0,
-			bWorldRendered ? 1 : 0,
-			bLightingRendered ? 1 : 0,
-
-			WorldStats.TotalRenderables,
-			WorldStats.MeshRenderables,
-
-			WorldStats.DepthTotalRenderables,
-			WorldStats.DepthMeshRenderables,
-			WorldStats.DepthStaticMeshes,
-			WorldStats.DepthSkinnedMeshes,
-			WorldStats.DepthAlphaTestedMeshes,
-			WorldStats.DepthFirstPersonMeshes,
-			WorldStats.DepthDrawnMeshes,
-			WorldStats.DepthSkippedUnsupported,
-			WorldStats.DepthSkippedFailed,
-
-			WorldStats.DrawnMeshes,
-			WorldStats.SkippedUnsupported,
-			WorldStats.SkippedFailed,
-
-			WorldStats.ShadowRenderables,
-			WorldStats.ShadowMeshRenderables,
-			WorldStats.ShadowStaticMeshes,
-			WorldStats.ShadowSkinnedMeshes,
-			WorldStats.ShadowDrawnMeshes,
-			WorldStats.ShadowAlphaTested,
-			WorldStats.ShadowSlicesRendered,
-			WorldStats.ShadowSkippedUnsupported,
-			WorldStats.ShadowSkippedFailed,
-
-			WorldStats.TransparentShadowRenderables,
-			WorldStats.TransparentShadowMeshRenderables,
-			WorldStats.TransparentShadowStaticMeshes,
-			WorldStats.TransparentShadowSkinnedMeshes,
-			WorldStats.TransparentShadowDrawnMeshes,
-			WorldStats.TransparentShadowAlphaTested,
-			WorldStats.TransparentShadowCasesRendered,
-			WorldStats.TransparentShadowSkippedUnsupported,
-			WorldStats.TransparentShadowSkippedFailed,
-
-			WorldStats.LightingPasses,
-			WorldStats.LightingDirectionalLights,
-			WorldStats.LightingPointLights,
-			WorldStats.LightingSpotLights,
-			WorldStats.LightingShadowed,
-			WorldStats.LightingGBufferDecoded,
-			WorldStats.LightingSpecGlossDecoded,
-			WorldStats.LightingFogApplied,
-			WorldStats.LightingAmbientApplied,
-			WorldStats.LightingProbeApplied,
-			WorldStats.LightingSkippedFailed,
-
-			WorldStats.TerrainGBufferDraws,
-			WorldStats.TerrainGBufferTriangles,
-			WorldStats.TerrainDepthDraws,
-			WorldStats.TerrainDepthTriangles,
-			WorldStats.TerrainShadowDraws,
-			WorldStats.TerrainShadowTriangles,
-			WorldStats.TerrainSplatLayers,
-			WorldStats.TerrainDetailLayers,
-			WorldStats.TerrainSkippedFailed,
-
-			WorldStats.VegetationGBufferInstances,
-			WorldStats.VegetationGBufferDraws,
-			WorldStats.VegetationDepthInstances,
-			WorldStats.VegetationDepthDraws,
-			WorldStats.VegetationShadowInstances,
-			WorldStats.VegetationShadowDraws,
-			WorldStats.VegetationBendingDraws,
-			WorldStats.VegetationSkippedFailed
-		);
-
-		LastWorldStatsLog = Now;
-	}
-
-	if (Now - LastWorldValidationLog >= 5000)
-	{
-		LogDX11WorldValidation(
-			WorldStats,
-			bWorldRendered,
-			bLightingRendered
-		);
-
-		LastWorldValidationLog = Now;
-	}
-
-	return true;
+void StudioDX11WorldHybridShutdown()
+{
 }
 
 static bool StudioWindowResizeMsgProc(
@@ -985,49 +230,6 @@ bool ProcessStudioPendingResize(
 	const int Height = g_StudioPendingHeight;
 
 	g_StudioResizePending = false;
-
-	if (IsDX11BootActive())
-	{
-		if (Width <= 0 || Height <= 0)
-			return false;
-
-		r3dOutToLog(
-			"[Studio][DX11] Resize backbuffer: %dx%d\n",
-			Width,
-			Height
-		);
-
-		const bool bResized =
-			g_DX11Renderer->Resize(
-				Width,
-				Height
-			);
-
-		if (bResized)
-		{
-			r_width->SetInt(Width);
-			r_height->SetInt(Height);
-
-			if (
-				ActiveRmlUI &&
-				ActiveRmlUI->IsInitialized()
-			)
-			{
-				ActiveRmlUI->OnDeviceResetDX11(
-					g_DX11Renderer->GetWidth(),
-					g_DX11Renderer->GetHeight()
-				);
-			}
-
-			InvalidateRect(
-				win::hWnd,
-				nullptr,
-				FALSE
-			);
-		}
-
-		return bResized;
-	}
 
 	if (!r3dRenderer)
 		return false;
@@ -1196,7 +398,7 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 	if (!WindowHandle)
 		return;
 
-	// Атрибуты DWM.
+	// РђС‚СЂРёР±СѓС‚С‹ DWM.
 	const DWORD ImmersiveDarkModeAttribute = 20;
 	const DWORD LegacyImmersiveDarkModeAttribute = 19;
 	const DWORD BorderColorAttribute = 34;
@@ -1212,7 +414,7 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 		sizeof(EnableDarkMode)
 	);
 
-	// Fallback для некоторых старых сборок Windows 10.
+	// Fallback РґР»СЏ РЅРµРєРѕС‚РѕСЂС‹С… СЃС‚Р°СЂС‹С… СЃР±РѕСЂРѕРє Windows 10.
 	if (FAILED(Result))
 	{
 		DwmSetWindowAttribute(
@@ -1263,195 +465,6 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 	);
 }
 
-static void ExecuteDX11SmokeLoop()
-{
-	r3dOutToLog(
-		"[DX11] Entering experimental smoke loop. Close the window to exit. world=%d\n",
-		g_StudioCmdLineDX11World ? 1 : 0
-	);
-
-	const bool bRmlReady = InitDX11SmokeRml();
-
-	if (!bRmlReady)
-	{
-		r3dOutToLog(
-			"[DX11][RmlUI] RML smoke screen is not ready. DX11 will continue with clear screen only.\n"
-		);
-	}
-
-	DWORD LastWorldStatsLog = 0;
-
-	while (!g_bExit)
-	{
-		MSG Message;
-		while (PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
-		{
-			if (Message.message == WM_QUIT)
-			{
-				g_bExit = true;
-				break;
-			}
-
-			if (g_DX11SmokeRmlContext)
-			{
-				LRESULT RmlResult = 0;
-
-				RmlRuntime::Get().ProcessWin32Message(
-					g_DX11SmokeRmlContext,
-					win::hWnd,
-					Message.message,
-					Message.wParam,
-					Message.lParam,
-					&RmlResult
-				);
-			}
-
-			TranslateMessage(&Message);
-			DispatchMessage(&Message);
-		}
-
-		if (g_bExit)
-			break;
-
-		if (win::ProcessSuspended())
-		{
-			Sleep(10);
-			continue;
-		}
-
-		ProcessStudioPendingResize(nullptr);
-
-		if (g_DX11SmokeRmlContext)
-		{
-			g_DX11SmokeRmlContext->SetDimensions(
-				Rml::Vector2i(
-					g_DX11Renderer->GetWidth(),
-					g_DX11Renderer->GetHeight()
-				)
-			);
-
-			RmlRuntime::Get().SetActiveContext(
-				g_DX11SmokeRmlContext
-			);
-
-			g_DX11SmokeRmlContext->Update();
-		}
-
-		g_DX11Renderer->BeginFrame(
-			0.025f,
-			0.032f,
-			0.040f,
-			1.0f
-		);
-
-		if (g_StudioCmdLineDX11World)
-		{
-			r3dDX11WorldRenderStats WorldStats;
-			r3dDX11ResetWorldRenderStats(WorldStats);
-			PrepareDX11WorldRenderQueues(gCam);
-
-			const bool bWorldRendered =
-				g_DX11Renderer->RenderWorldGBuffer(
-					gCam,
-					&WorldStats
-				);
-
-			const DWORD Now = GetTickCount();
-
-			if (Now - LastWorldStatsLog >= 1000)
-			{
-				r3dOutToLog(
-					"[DX11][World] "
-					"ok=%d "
-					"gbuf_total=%u gbuf_mesh=%u gbuf_drawn=%u gbuf_unsupported=%u gbuf_failed=%u "
-					"depth_total=%u depth_mesh=%u depth_static=%u depth_skin=%u depth_alpha=%u depth_fp=%u depth_drawn=%u depth_unsupported=%u depth_failed=%u "
-					"transp_depth_total=%u transp_depth_mesh=%u transp_depth_drawn=%u transp_depth_alpha=%u transp_depth_camo=%u transp_depth_unsupported=%u transp_depth_failed=%u "
-					"shadow_total=%u shadow_mesh=%u shadow_static=%u shadow_skin=%u shadow_drawn=%u shadow_alpha=%u shadow_slices=%u shadow_unsupported=%u shadow_failed=%u "
-					"tshadow_total=%u tshadow_mesh=%u tshadow_static=%u tshadow_skin=%u tshadow_drawn=%u tshadow_alpha=%u tshadow_cases=%u tshadow_unsupported=%u tshadow_failed=%u "
-					"terrain_g=%u terrain_gt=%u terrain_d=%u terrain_dt=%u terrain_s=%u terrain_st=%u terrain_failed=%u "
-					"veg_g=%u veg_gdraw=%u veg_d=%u veg_ddraw=%u veg_s=%u veg_sdraw=%u veg_bend=%u veg_failed=%u\n",
-
-					bWorldRendered ? 1 : 0,
-
-					WorldStats.TotalRenderables,
-					WorldStats.MeshRenderables,
-					WorldStats.DrawnMeshes,
-					WorldStats.SkippedUnsupported,
-					WorldStats.SkippedFailed,
-
-					WorldStats.DepthTotalRenderables,
-					WorldStats.DepthMeshRenderables,
-					WorldStats.DepthStaticMeshes,
-					WorldStats.DepthSkinnedMeshes,
-					WorldStats.DepthAlphaTestedMeshes,
-					WorldStats.DepthFirstPersonMeshes,
-					WorldStats.DepthDrawnMeshes,
-					WorldStats.DepthSkippedUnsupported,
-					WorldStats.DepthSkippedFailed,
-
-					WorldStats.TransparentDepthRenderables,
-					WorldStats.TransparentDepthMeshRenderables,
-					WorldStats.TransparentDepthDrawnMeshes,
-					WorldStats.TransparentDepthAlphaTestedMeshes,
-					WorldStats.TransparentDepthCamouflageMeshes,
-					WorldStats.TransparentDepthSkippedUnsupported,
-					WorldStats.TransparentDepthSkippedFailed,
-
-					WorldStats.ShadowRenderables,
-					WorldStats.ShadowMeshRenderables,
-					WorldStats.ShadowStaticMeshes,
-					WorldStats.ShadowSkinnedMeshes,
-					WorldStats.ShadowDrawnMeshes,
-					WorldStats.ShadowAlphaTested,
-					WorldStats.ShadowSlicesRendered,
-					WorldStats.ShadowSkippedUnsupported,
-					WorldStats.ShadowSkippedFailed,
-
-					WorldStats.TransparentShadowRenderables,
-					WorldStats.TransparentShadowMeshRenderables,
-					WorldStats.TransparentShadowStaticMeshes,
-					WorldStats.TransparentShadowSkinnedMeshes,
-					WorldStats.TransparentShadowDrawnMeshes,
-					WorldStats.TransparentShadowAlphaTested,
-					WorldStats.TransparentShadowCasesRendered,
-					WorldStats.TransparentShadowSkippedUnsupported,
-					WorldStats.TransparentShadowSkippedFailed,
-
-					WorldStats.TerrainGBufferDraws,
-					WorldStats.TerrainGBufferTriangles,
-					WorldStats.TerrainDepthDraws,
-					WorldStats.TerrainDepthTriangles,
-					WorldStats.TerrainShadowDraws,
-					WorldStats.TerrainShadowTriangles,
-					WorldStats.TerrainSkippedFailed,
-
-					WorldStats.VegetationGBufferInstances,
-					WorldStats.VegetationGBufferDraws,
-					WorldStats.VegetationDepthInstances,
-					WorldStats.VegetationDepthDraws,
-					WorldStats.VegetationShadowInstances,
-					WorldStats.VegetationShadowDraws,
-					WorldStats.VegetationBendingDraws,
-					WorldStats.VegetationSkippedFailed
-				);
-
-				LastWorldStatsLog = Now;
-			}
-		}
-
-		g_DX11Renderer->EndFrame(
-			r_vsync_enabled->GetBool(),
-			g_DX11SmokeRmlContext
-		);
-
-		Sleep(1);
-	}
-
-	ShutdownDX11SmokeRml();
-
-	r3dOutToLog("[DX11] Leaving experimental smoke loop\n");
-}
-
 void InitRender(int bUseSet = 0)
 {
 	r_out_of_vmem_encountered->SetChangeCallback( &SaveSettingsCallback ) ;
@@ -1470,41 +483,6 @@ void InitRender(int bUseSet = 0)
 		Flags |= R3DSetMode_Windowed;
 
 	MoveWindow(win::hWnd, 0, 0, r_width->GetInt(), r_height->GetInt(), 0);
-
-	if (r_dx11_boot->GetBool())
-	{
-		r3dOutToLog(
-			"[DX11] Experimental boot requested: %dx%d fullscreen=%d\n",
-			r_width->GetInt(),
-			r_height->GetInt(),
-			r_fullscreen->GetBool() ? 1 : 0
-		);
-
-		g_DX11Renderer = new r3dDX11Renderer;
-
-		if (!g_DX11Renderer->Init(
-			win::hWnd,
-			r_width->GetInt(),
-			r_height->GetInt(),
-			r_fullscreen->GetBool(),
-#ifndef FINAL_BUILD
-			true
-#else
-			false
-#endif
-		))
-		{
-			SAFE_DELETE(g_DX11Renderer);
-			r3dError("Failed to init DX11 renderer!\n");
-		}
-
-		EnableStudioWindowResize(win::hWnd);
-		ApplyStudioDarkTitleBar(win::hWnd);
-
-		ShowWindow(win::hWnd, TRUE);
-		UpdateWindow(win::hWnd);
-		return;
-	}
 
 	r3dRenderer = new r3dRenderLayer;
 
@@ -1632,11 +610,6 @@ void InitRender(int bUseSet = 0)
 
 void CloseRender()
 {
-	if (g_DX11Renderer)
-	{
-		g_DX11Renderer->Shutdown();
-		SAFE_DELETE(g_DX11Renderer);
-	}
 
 	if (!r3dRenderer)
 		return;
@@ -1846,17 +819,7 @@ void game::PreInit()
 			continue;
 		}
 
-		if(strcmp(argv[i], "-dx11") == 0)
-		{
-			g_StudioCmdLineDX11Boot = true;
-			continue;
-		}
 
-		if(strcmp(argv[i], "-dx11world") == 0)
-		{
-			g_StudioCmdLineDX11World = true;
-			continue;
-		}
 
 		if(strcmp(argv[i], "-survey") == 0 && (i + 1) < argc)
 		{
@@ -2757,11 +1720,6 @@ void game::Init()
 	r3dFileManager_OpenArchive("wz");
 
 	RegisterAllVars();
-	
-	if (g_StudioCmdLineDX11Boot && r_dx11_boot)
-	{
-		r_dx11_boot->SetBool(true);
-	}
 #ifndef FINAL_BUILD
 	RegisterHUDCommands();
 #endif
@@ -2876,16 +1834,10 @@ void game::MainLoop()
 			gUserProfile.RegisterSteamCallbacks();
 		}
 	}
-	
-
-	if (g_StudioCmdLineDX11World && r_dx11_boot)
-	{
-		r_dx11_boot->SetBool(false);
-	}
 
 	InitRender(1);
 
-	if (IsDX11BootActive())
+	/*if (IsDX11BootActive())
 	{
 		ExecuteDX11SmokeLoop();
 
@@ -2896,9 +1848,7 @@ void game::MainLoop()
 
 		CloseRender();
 		return;
-	}
-
-	StudioDX11WorldHybridInit();
+	}*/
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();
@@ -3130,8 +2080,6 @@ void game::MainLoop()
 	
 	r3dMaterialLibrary::Destroy();
 
-	StudioDX11WorldHybridShutdown();
-
 	CloseRender();
 
 	if(gSurveyOutLink)
@@ -3250,4 +2198,7 @@ void ExecutePhysicsEditor()
 	CurHUDID = 4;
 	PlayEditor();
 }
+
+
+
 
