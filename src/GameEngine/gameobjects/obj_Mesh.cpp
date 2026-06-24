@@ -1433,6 +1433,83 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 
 }
 
+struct MeshObjShadowRenderable : MeshShadowRenderableBase
+{
+	void Init()
+	{
+		DrawFunc = Draw;
+	}
+
+	static void Draw( Renderable* RThis, const r3dCamera& Cam )
+	{
+		R3DPROFILE_FUNCTION("MeshObjShadowRenderable");
+		MeshObjShadowRenderable* This = static_cast< MeshObjShadowRenderable* >( RThis );
+
+		r3dApplyPreparedMeshVSConsts(This->Parent->preparedVSConsts);
+		//This->Mesh->SetWorldMatrix( This->Parent->GetTransformMatrix() );
+
+		This->Parent->OnPreRender();
+
+		This->SubDrawFunc( RThis, Cam );
+	}
+
+	MeshGameObject* Parent;
+};
+
+/*virtual*/
+void
+MeshGameObject::AppendShadowRenderables( RenderArray& rarr, const r3dCamera& Cam ) /*OVERRIDE*/
+{
+#ifndef FINAL_BUILD
+	if(!g_bEditMode || g_bForceQualitySelectionInEditor)
+#endif
+	{
+		int meshQuality = (int)m_MinQualityLevel;
+		if(meshQuality > 3) meshQuality = 3;
+		if(meshQuality > r_mesh_quality->GetInt())
+			return;
+	}
+
+	// always use main camera to determine shadow LOD
+	// TODO : mark invisible (in main frustum) objects and use lowest LOD for their shadows
+	float distSq = (gCam - GetPosition()).LengthSq();
+
+	float dist = sqrtf( distSq );
+
+	UINT32 idist = (UINT32) R3D_MIN( dist * 64.f, (float)0x3fffffff );
+
+	int meshLodIndex;
+
+	r3dMesh* (&TargetLOD) [ NUM_LODS ] = GetPreferredMeshLODSet();
+	
+	if( InMainFrustum || !r_simplify_pure_shadows->GetInt() || TargetLOD[ 0 ]->HasAlphaTextures )
+	{
+		meshLodIndex = ChoseMeshLOD( distSq );
+	}
+	else
+	{
+		meshLodIndex = TargetLOD[3] ? 3 : TargetLOD[ 2 ] ? 2 : TargetLOD[ 1 ] ? 1 : 0;
+	}
+
+	if(!TargetLOD[ meshLodIndex ])
+		return;
+	if(!TargetLOD[ meshLodIndex ]->IsDrawable())
+		return;
+
+	uint32_t prevCount = rarr.Count();
+
+	TargetLOD[ meshLodIndex ]->AppendShadowRenderables( rarr );
+
+	for( uint32_t i = prevCount, e = rarr.Count(); i < e; i ++ )
+	{
+		MeshObjShadowRenderable& rend = static_cast<MeshObjShadowRenderable&>( rarr[ i ] );
+
+		rend.SortValue |= idist ;
+		rend.Init() ;
+		rend.Parent = this ;
+	}
+}
+
 /*virtual*/
 BOOL
 MeshGameObject::OnCreate()
