@@ -1,4 +1,4 @@
-//
+﻿//
 //
 // Object Manager
 //
@@ -1336,14 +1336,12 @@ uint8_t getShadowSliceBit(GameObject* userObject, const r3dCamera& Cam )
 GameObject* TreeObject = 0; // declare it here because of server
 
 #ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
-
 static const char* DX11World_GetSpecialObjectTypeName(const GameObject* obj)
 {
 	if (!obj)
 		return NULL;
 
-	// Более конкретные типы сначала.
+	// Р‘РѕР»РµРµ РєРѕРЅРєСЂРµС‚РЅС‹Рµ С‚РёРїС‹ СЃРЅР°С‡Р°Р»Р°.
 	if (obj->isObjType(OBJTYPE_SharedUsableItem))	return "OBJTYPE_SharedUsableItem";
 	if (obj->isObjType(OBJTYPE_GameplayItem))		return "OBJTYPE_GameplayItem";
 	if (obj->isObjType(OBJTYPE_Zombie))				return "OBJTYPE_Zombie";
@@ -1408,7 +1406,7 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 {
 	static bool sAuditStartedLogged = false;
 
-	const bool dx11WorldEnabled = StudioDX11WorldHybridEnabled();
+	const bool dx11WorldEnabled = false;
 
 	if (!sAuditStartedLogged)
 	{
@@ -1475,7 +1473,7 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 void DX11World_Stage9DumpSpecialObjectSummary()
 {
 #ifndef WO_SERVER
-	if (!StudioDX11WorldHybridEnabled())
+	if (!false)
 		return;
 
 	static bool sDumped = false;
@@ -2726,3 +2724,4 @@ void DumpPhysStats()
 	ConPrint( "Controversial wakers: %d\n", controversialWakers ) ;
 	ConPrint( "Controversial sleepers: %d\n", controversialSleepers ) ;
 }
+

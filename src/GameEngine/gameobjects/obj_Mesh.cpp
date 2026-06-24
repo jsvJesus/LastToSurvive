@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 
 #include "r3dBackgroundTaskDispatcher.h"
@@ -16,13 +16,12 @@ extern bool g_bEditMode;
 extern int g_bForceQualitySelectionInEditor;
 
 #ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
 #endif
 
 static bool MeshGameObject_UseDX11WorldPath()
 {
 #ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
+	return false;
 #else
 	return false;
 #endif
@@ -845,9 +844,9 @@ static void AppendMeshObjDeferredRenderablesDX11Safe(
 
 		rend.Parent = parent;
 
-		// Важно:
-		// Не кладём matrix в temporary pool здесь.
-		// Старый код тоже ставил прямой pointer на transform объекта.
+		// Р’Р°Р¶РЅРѕ:
+		// РќРµ РєР»Р°РґС‘Рј matrix РІ temporary pool Р·РґРµСЃСЊ.
+		// РЎС‚Р°СЂС‹Р№ РєРѕРґ С‚РѕР¶Рµ СЃС‚Р°РІРёР» РїСЂСЏРјРѕР№ pointer РЅР° transform РѕР±СЉРµРєС‚Р°.
 		rend.DX11WorldTransform = &parent->GetTransformMatrix();
 
 		int MatScoreID =
@@ -1299,8 +1298,8 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 	{
 		if (MeshGameObject_UseDX11WorldPath())
 		{
-			// DX11 hybrid: не используем старый DX9 bbox score как hard-cull.
-			// Он зависит от r3dRenderer matrices и может выкинуть все buildings из DX11 GBuffer.
+			// DX11 hybrid: РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј СЃС‚Р°СЂС‹Р№ DX9 bbox score РєР°Рє hard-cull.
+			// РћРЅ Р·Р°РІРёСЃРёС‚ РѕС‚ r3dRenderer matrices Рё РјРѕР¶РµС‚ РІС‹РєРёРЅСѓС‚СЊ РІСЃРµ buildings РёР· DX11 GBuffer.
 			newScore = 1;
 		}
 		else
@@ -1798,3 +1797,4 @@ void MeshGameObject::OnPreRender()
 //------------------------------------------------------------------------
 
 Positions gDEBUG_DrawPositions ;
+

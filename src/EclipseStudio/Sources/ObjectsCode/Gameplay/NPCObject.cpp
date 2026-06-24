@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 
 #include "GameCommon.h"
@@ -6,13 +6,12 @@
 #include "../AI/AI_Player.H"
 
 #ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
 #endif
 
 static bool NPC_UseDX11WorldPath()
 {
 #ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
+	return false;
 #else
 	return false;
 #endif
@@ -291,3 +290,4 @@ BOOL NPCObject::Load(const char* filename)
 
 	return TRUE;
 }
+

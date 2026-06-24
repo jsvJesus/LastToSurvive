@@ -67,13 +67,7 @@
 const int NUM_HUDS = 6;
 BaseHUD* HudArray[NUM_HUDS] = {0};
 
-extern bool StudioDX11WorldHybridEnabled();
-extern bool StudioDX11WorldHybridTick();
 extern int gRenderFrameCounter;
-
-#ifndef WO_SERVER
-extern void DX11World_Stage9DumpSpecialObjectSummary();
-#endif
 
 BaseHUD* editor_GetHudByIndex(int index)
 {
@@ -293,13 +287,6 @@ void DoLoadGame(const char* LevelName, int MaxPlayers, bool unloadPrev, bool isM
 	//LoadAIMesh(r3dGameLevel::GetHomeDir());
 
 	r3dOutToLog ("World loaded\n");
-
-#ifndef WO_SERVER
-	if (StudioDX11WorldHybridEnabled())
-	{
-		DX11World_Stage9DumpSpecialObjectSummary();
-	}
-#endif
 
 	InterlockedExchange( &gGameLoadActive, 0 );
 
@@ -967,36 +954,12 @@ void GameStateGameLoop()
 	R3DPROFILE_START("EndRender");
 	r3dRenderer->EndFrame();
 
-	const bool bDX11WorldOwnsPresent =
-		StudioDX11WorldHybridEnabled();
+	UpdateD3DAntiCheatPrePresent();
 
-	if (bDX11WorldOwnsPresent)
-	{
-		r3dRenderer->EndRender(false);
-		R3DPROFILE_END("EndRender");
+	r3dRenderer->EndRender(true);
+	R3DPROFILE_END("EndRender");
 
-		if (StudioDX11WorldHybridTick())
-		{
-			gRenderFrameCounter++;
-		}
-		else
-		{
-			UpdateD3DAntiCheatPrePresent();
-			r3dRenderer->EndRender(true);
-			UpdateD3DAntiCheatPostPresent();
-		}
-	}
-	else
-	{
-		UpdateD3DAntiCheatPrePresent();
-
-		r3dRenderer->EndRender(true);
-		R3DPROFILE_END("EndRender");
-
-		UpdateD3DAntiCheatPostPresent();
-
-		StudioDX11WorldHybridTick();
-	}
+	UpdateD3DAntiCheatPostPresent();
 
 	if( r3dRenderer->DeviceAvailable )
 	{

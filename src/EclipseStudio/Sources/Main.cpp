@@ -138,59 +138,6 @@ static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
 class RmlUISystem;
 
-bool StudioDX11WorldHybridEnabled()
-{
-return false;
-}
-
-bool StudioDX11WorldHybridTick()
-{
-return false;
-}
-
-bool StudioDX11UIAvailable()
-{
-return false;
-}
-
-bool StudioDX11InitRmlUI(
-RmlUISystem*,
-bool
-)
-{
-return false;
-}
-
-bool StudioDX11BeginUIFrame(
-float,
-float,
-float,
-float
-)
-{
-return false;
-}
-
-void StudioDX11RenderRmlUI(
-RmlUISystem*
-)
-{
-}
-
-void StudioDX11EndUIFrame(
-bool
-)
-{
-}
-
-void StudioDX11WorldHybridInit()
-{
-}
-
-void StudioDX11WorldHybridShutdown()
-{
-}
-
 static bool StudioWindowResizeMsgProc(
 	UINT Message,
 	WPARAM WParam,

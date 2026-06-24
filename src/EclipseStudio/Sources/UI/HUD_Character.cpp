@@ -25,14 +25,6 @@ extern void UnregisterMsgProc(
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
-extern bool StudioDX11UIAvailable();
-extern bool StudioDX11InitRmlUI(
-	RmlUISystem* System,
-	bool bLoadAppSelectOnInit
-);
-extern void StudioDX11RenderRmlUI(
-	RmlUISystem* System
-);
 
 static RmlUISystem g_CharacterRmlUI;
 
@@ -667,15 +659,6 @@ void CharacterHUD::InitCharacterRmlUI()
 	bCharacterControlsInitialized = false;
 
 	bool bRmlInitialized = false;
-
-	if (win::hWnd && StudioDX11UIAvailable())
-	{
-		bRmlInitialized =
-			StudioDX11InitRmlUI(
-				&g_CharacterRmlUI,
-				false
-			);
-	}
 
 	if (
 		!bRmlInitialized &&
@@ -1681,15 +1664,6 @@ void CharacterHUD::Draw()
 
 	UpdateCharacterControls();
 	UpdateCharacterRmlDocument();
-
-	if (StudioDX11UIAvailable())
-	{
-		StudioDX11RenderRmlUI(
-			&g_CharacterRmlUI
-		);
-
-		return;
-	}
 
 	r3dRenderer->pd3ddev->SetRenderState(
 		D3DRS_ALPHATESTENABLE,

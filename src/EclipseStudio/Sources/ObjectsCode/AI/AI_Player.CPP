@@ -1,4 +1,4 @@
-#include "r3dpch.h"
+﻿#include "r3dpch.h"
 #include "r3d.h"
 
 #include "AI_Player.h"
@@ -56,9 +56,6 @@ extern HUDVault* hudVault;
 extern 	PlayerStateVars_s CurrentRig;
 
 extern bool g_bEditMode;
-
-extern bool StudioDX11WorldHybridEnabled();
-
 extern void TPSGameHud_UnlockAchievement( int achievementID );
 
 extern float getWaterDepthAtPos(const r3dPoint3D& pos);
@@ -5292,7 +5289,7 @@ obj_Player::AppendTransparentShadowRenderables( RenderArray & rarr, const r3dCam
 	if (bDead || forcedEmptyHands)
 		drawWeaponDX11 = false;
 
-	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
+	if (false)
 	{
 		if (uberEquip_)
 		{
@@ -5341,12 +5338,12 @@ obj_Player::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
 		NetworkLocal &&
 		!bDead;
 
-	// Старое поведение:
-	// в FPS режиме свой собственный shadow не рисуем, иначе будет тень рук/оружия перед камерой.
+	// РЎС‚Р°СЂРѕРµ РїРѕРІРµРґРµРЅРёРµ:
+	// РІ FPS СЂРµР¶РёРјРµ СЃРІРѕР№ СЃРѕР±СЃС‚РІРµРЅРЅС‹Р№ shadow РЅРµ СЂРёСЃСѓРµРј, РёРЅР°С‡Рµ Р±СѓРґРµС‚ С‚РµРЅСЊ СЂСѓРє/РѕСЂСѓР¶РёСЏ РїРµСЂРµРґ РєР°РјРµСЂРѕР№.
 	if (firstPerson)
 		return;
 
-	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
+	if (false)
 	{
 		bool drawWeaponDX11 = true;
 
@@ -5679,7 +5676,7 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 		}
 	}
 
-	if (r_dx11_boot->GetBool() || StudioDX11WorldHybridEnabled())
+	if (false)
 	{
 		const bool canRenderPlayerModel =
 			!NetworkLocal ||
@@ -6950,3 +6947,4 @@ bool ProcessBulletHit( int &damageFromPiercable, GameObject* owner, const r3dPoi
 	
 	return true;
 }
+

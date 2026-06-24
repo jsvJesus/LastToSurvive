@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 #include "r3dSpline.h"
 
@@ -20,19 +20,6 @@ extern int VS_CLEAR_FLOAT_ID;
 extern int PS_CLEAR_FLOAT_ID;
 
 const char*	obj_Road::BaseMaterialDir = "data/objectsdepot/_roads/materials";
-
-#ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
-#endif
-
-static bool Road_UseDX11WorldPath()
-{
-#ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
-#else
-	return false;
-#endif
-}
 
 static void AppendRoadDX11GBufferRenderables(
 	RenderArray& outArray,
@@ -65,9 +52,9 @@ static void AppendRoadDX11GBufferRenderables(
 		if (batch.Mat->Flags & R3D_MAT_SKIP_DRAW)
 			continue;
 
-		// Road GBuffer сейчас opaque path.
-		// Если когда-нибудь появится transparent road material,
-		// его надо будет отдельно вести через forward/transparent path.
+		// Road GBuffer СЃРµР№С‡Р°СЃ opaque path.
+		// Р•СЃР»Рё РєРѕРіРґР°-РЅРёР±СѓРґСЊ РїРѕСЏРІРёС‚СЃСЏ transparent road material,
+		// РµРіРѕ РЅР°РґРѕ Р±СѓРґРµС‚ РѕС‚РґРµР»СЊРЅРѕ РІРµСЃС‚Рё С‡РµСЂРµР· forward/transparent path.
 		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
 			continue;
 
@@ -755,17 +742,6 @@ obj_Road::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const 
 {
 	const INT64 sortValue =
 		static_cast<INT64>((8 + drawPriority) * RENDERABLE_USER_SORT_VALUE);
-
-	if (Road_UseDX11WorldPath())
-	{
-		AppendRoadDX11GBufferRenderables(
-			render_arrays[rsFillGBuffer],
-			mesh_,
-			sortValue
-		);
-
-		return;
-	}
 
 	RoadRenderable rend;
 

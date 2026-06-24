@@ -203,23 +203,7 @@ static RmlUISystem g_MainRmlUI;
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
-extern bool StudioDX11UIAvailable();
-extern bool StudioDX11InitRmlUI(
-	RmlUISystem* System,
-	bool bLoadAppSelectOnInit
-);
-extern bool StudioDX11BeginUIFrame(
-	float ClearR,
-	float ClearG,
-	float ClearB,
-	float ClearA
-);
-extern void StudioDX11RenderRmlUI(
-	RmlUISystem* System
-);
-extern void StudioDX11EndUIFrame(
-	bool bVSync
-);
+
 static bool g_MainRmlInputEnabled = false;
 static int g_MainRmlResult = -1;
 static int g_MainRmlTab = 0;
@@ -539,21 +523,9 @@ int Menu_Main::DoModal()
 	g_MainRmlInputEnabled = false;
 
 	bool bUseRmlUI = false;
-	bool bUseDX11RmlUI = false;
 	bool bRmlMsgProcRegistered = false;
 
 	bool bRmlInitialized = false;
-
-	if (win::hWnd && StudioDX11UIAvailable())
-	{
-		bRmlInitialized =
-			StudioDX11InitRmlUI(
-				&g_MainRmlUI,
-				false
-			);
-
-		bUseDX11RmlUI = bRmlInitialized;
-	}
 
 	if (
 		!bRmlInitialized &&
@@ -588,21 +560,13 @@ int Menu_Main::DoModal()
 
 			bUseRmlUI = true;
 
-			r3dOutToLog(
-				bUseDX11RmlUI
-					? "[RmlUI] AppMain enabled on DX11\n"
-					: "[RmlUI] AppMain enabled\n"
-			);
+			r3dOutToLog("[RmlUI] AppMain enabled\n");
 		}
 		else
 		{
 			r3dOutToLog("[RmlUI] AppMain load failed, fallback to old imgui m_Main\n");
 
-			if (bUseDX11RmlUI)
-			{
-				g_MainRmlUI.Shutdown();
-				bUseDX11RmlUI = false;
-			}
+			g_MainRmlUI.Shutdown();
 		}
 	}
 
@@ -639,51 +603,23 @@ int Menu_Main::DoModal()
 				&g_MainRmlUI
 			);
 
-			if (!bUseDX11RmlUI)
-			{
-				r3dStartFrame();
-				ClearFullScreen_Menu();
-			}
+			r3dStartFrame();
+			ClearFullScreen_Menu();
 
 			mUpdate();
 			DiscordPresence_Tick();
 
-			if (!bUseDX11RmlUI)
-				mDrawStart();
+			mDrawStart();
 
-			if (!bUseDX11RmlUI)
-			{
-				r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
-				r3dSetFiltering(R3D_POINT);
-			}
+			r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+			r3dSetFiltering(R3D_POINT);
 
 			g_MainRmlUI.Update(r3dGetFrameTime());
 
-			if (bUseDX11RmlUI)
-			{
-				if (
-					StudioDX11BeginUIFrame(
-						0.0f,
-						0.0f,
-						0.0f,
-						1.0f
-					)
-				)
-				{
-					StudioDX11RenderRmlUI(
-						&g_MainRmlUI
-					);
+			g_MainRmlUI.Render();
 
-					StudioDX11EndUIFrame(false);
-				}
-			}
-			else
-			{
-				g_MainRmlUI.Render();
-
-				mDrawEnd();
-				r3dEndFrame();
-			}
+			mDrawEnd();
+			r3dEndFrame();
 
 			if (g_MainRmlResult != -1)
 			{

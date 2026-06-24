@@ -1,4 +1,4 @@
-#include "r3dpch.h"
+﻿#include "r3dpch.h"
 #include "r3d.h"
 
 #include "UI/UIimEdit.h"
@@ -24,13 +24,12 @@ AUTOREGISTER_CLASS(obj_Tree);
 extern GameObject*	TreeObject;
 
 #ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
 #endif
 
 static bool Tree_UseDX11WorldPath()
 {
 #ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
+	return false;
 #else
 	return false;
 #endif
@@ -279,5 +278,6 @@ obj_Tree::DoDrawShadows()
 	gCollectionsManager.Render(R3D_IDME_SHADOW);
 	r3dRenderer->SetDefaultCullMode( D3DCULL_CCW );
 }
+
 
 

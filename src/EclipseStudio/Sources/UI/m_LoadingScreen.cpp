@@ -22,23 +22,6 @@ static RmlUISystem g_LoadingRmlUI;
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
-extern bool StudioDX11UIAvailable();
-extern bool StudioDX11InitRmlUI(
-	RmlUISystem* System,
-	bool bLoadAppSelectOnInit
-);
-extern bool StudioDX11BeginUIFrame(
-	float ClearR,
-	float ClearG,
-	float ClearB,
-	float ClearA
-);
-extern void StudioDX11RenderRmlUI(
-	RmlUISystem* System
-);
-extern void StudioDX11EndUIFrame(
-	bool bVSync
-);
 
 static float LoadingProgressFromLong()
 {
@@ -81,27 +64,6 @@ static bool EnsureLoadingRmlUI()
 {
 	if (g_LoadingRmlUI.IsInitialized())
 		return true;
-
-	if (win::hWnd && StudioDX11UIAvailable())
-	{
-		if (
-			!StudioDX11InitRmlUI(
-				&g_LoadingRmlUI,
-				false
-			)
-		)
-		{
-			return false;
-		}
-
-		if (!g_LoadingRmlUI.LoadLoadingScreen())
-		{
-			g_LoadingRmlUI.Shutdown();
-			return false;
-		}
-
-		return true;
-	}
 
 	if (
 		!r3dRenderer ||
@@ -203,7 +165,6 @@ int LoadingScreen::Update()
 
 	if (
 		!m_RenderingDisabled &&
-		StudioDX11UIAvailable() &&
 		EnsureLoadingRmlUI()
 	)
 	{
@@ -214,22 +175,6 @@ int LoadingScreen::Update()
 		g_LoadingRmlUI.Update(
 			r3dGetFrameTime()
 		);
-
-		if (
-			StudioDX11BeginUIFrame(
-				0.0f,
-				0.0f,
-				0.0f,
-				1.0f
-			)
-		)
-		{
-			StudioDX11RenderRmlUI(
-				&g_LoadingRmlUI
-			);
-
-			StudioDX11EndUIFrame(false);
-		}
 
 		return 0;
 	}
@@ -345,9 +290,6 @@ void LoadingScreen::SetLoadingTexture(
 )
 {
 	R3D_ENSURE_MAIN_THREAD();
-
-	if (StudioDX11UIAvailable())
-		return;
 
 	if (m_pBackgroundTex)
 	{

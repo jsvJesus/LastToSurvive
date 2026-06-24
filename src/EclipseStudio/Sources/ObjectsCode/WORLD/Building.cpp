@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 
 #include "GameCommon.h"
@@ -10,19 +10,6 @@
 #include "building.h"
 
 #include "DamageLib.h"
-
-#ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
-#endif
-
-static bool Building_UseDX11WorldPath()
-{
-#ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
-#else
-	return false;
-#endif
-}
 
 IMPLEMENT_CLASS(obj_Building, "obj_Building", "Object");
 AUTOREGISTER_CLASS(obj_Building);
@@ -686,7 +673,7 @@ static void AppendBuildingAnimatedDX11ShadowRenderables(
 
 void obj_Building::AppendShadowRenderables(RenderArray& rarr, const r3dCamera& Cam)
 {
-	// Static building path: обычный MeshGameObject уже имеет DX11-safe renderables.
+	// Static building path: РѕР±С‹С‡РЅС‹Р№ MeshGameObject СѓР¶Рµ РёРјРµРµС‚ DX11-safe renderables.
 	if (!NeedDrawAnimated(gCam))
 	{
 		parent::AppendShadowRenderables(rarr, Cam);
@@ -695,12 +682,6 @@ void obj_Building::AppendShadowRenderables(RenderArray& rarr, const r3dCamera& C
 
 	if (gDisableDynamicObjectShadows)
 		return;
-
-	if (Building_UseDX11WorldPath())
-	{
-		AppendBuildingAnimatedDX11ShadowRenderables(rarr, this, MeshLOD[0]);
-		return;
-	}
 
 	BuildingAniShadowRenderable rend;
 	rend.Init();
@@ -712,26 +693,13 @@ void obj_Building::AppendShadowRenderables(RenderArray& rarr, const r3dCamera& C
 
 void obj_Building::AppendRenderables(RenderArray (&render_arrays)[rsCount], const r3dCamera& Cam)
 {
-	// Static building path: обычный MeshGameObject уже имеет DX11-safe renderables.
+	// Static building path: РѕР±С‹С‡РЅС‹Р№ MeshGameObject СѓР¶Рµ РёРјРµРµС‚ DX11-safe renderables.
 	if (!NeedDrawAnimated(Cam))
 	{
 		parent::AppendRenderables(render_arrays, Cam);
 		return;
 	}
-
-	if (Building_UseDX11WorldPath())
-	{
-		AppendBuildingAnimatedDX11DeferredRenderables(
-			render_arrays[rsFillGBuffer],
-			this,
-			MeshLOD[0],
-			RENDERABLE_BUILDING_SORT_VALUE
-		);
-
-		return;
-	}
-
-	// Старый DX9 fallback.
+	
 	BuildingAniDeferredRenderable rend;
 	rend.Init();
 	rend.Parent = this;
@@ -739,5 +707,6 @@ void obj_Building::AppendRenderables(RenderArray (&render_arrays)[rsCount], cons
 
 	render_arrays[rsFillGBuffer].PushBack(rend);
 }
+
 
 

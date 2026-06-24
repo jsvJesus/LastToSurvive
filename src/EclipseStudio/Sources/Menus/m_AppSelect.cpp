@@ -18,23 +18,7 @@ static RmlUISystem g_AppSelectRmlUI;
 extern bool ProcessStudioPendingResize(
 	RmlUISystem* ActiveRmlUI
 );
-extern bool StudioDX11UIAvailable();
-extern bool StudioDX11InitRmlUI(
-	RmlUISystem* System,
-	bool bLoadAppSelectOnInit
-);
-extern bool StudioDX11BeginUIFrame(
-	float ClearR,
-	float ClearG,
-	float ClearB,
-	float ClearA
-);
-extern void StudioDX11RenderRmlUI(
-	RmlUISystem* System
-);
-extern void StudioDX11EndUIFrame(
-	bool bVSync
-);
+
 static int g_AppSelectRmlResult = -1;
 static bool g_AppSelectRmlInputEnabled = false;
 
@@ -96,21 +80,9 @@ int Menu_AppSelect::DoModal()
 	}
 
 	bool bUseRmlUI = false;
-	bool bUseDX11RmlUI = false;
 	bool bRmlMsgProcRegistered = false;
 
 	bool bRmlInitialized = false;
-
-	if (win::hWnd && StudioDX11UIAvailable())
-	{
-		bRmlInitialized =
-			StudioDX11InitRmlUI(
-				&g_AppSelectRmlUI,
-				true
-			);
-
-		bUseDX11RmlUI = bRmlInitialized;
-	}
 
 	if (
 		!bRmlInitialized &&
@@ -173,21 +145,11 @@ int Menu_AppSelect::DoModal()
 
 			bUseRmlUI = true;
 
-			r3dOutToLog(
-				bUseDX11RmlUI
-					? "[RmlUI] AppSelect enabled on DX11\n"
-					: "[RmlUI] AppSelect enabled\n"
-			);
+			r3dOutToLog("[RmlUI] AppSelect enabled\n");
 		}
 		else
 		{
 			r3dOutToLog("[RmlUI] AppSelect document not ready, fallback to old imgui AppSelect\n");
-
-			if (bUseDX11RmlUI)
-			{
-				g_AppSelectRmlUI.Shutdown();
-				bUseDX11RmlUI = false;
-			}
 		}
 	}
 	else
@@ -211,8 +173,7 @@ int Menu_AppSelect::DoModal()
 			: nullptr
 		);
 
-		if (!bUseDX11RmlUI)
-			r3dStartFrame();
+		r3dStartFrame();
 
 		mUpdate();
 		DiscordPresence_Tick();
@@ -220,44 +181,18 @@ int Menu_AppSelect::DoModal()
 		if (!bUseRmlUI)
 			imgui_Update();
 
-		if (!bUseDX11RmlUI)
-			mDrawStart();
+		mDrawStart();
 
-		if (!bUseDX11RmlUI)
-		{
-			ClearFullScreen_Menu();
+		ClearFullScreen_Menu();
 
-			r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
-			r3dSetFiltering(R3D_POINT);
-			r3dRenderer->SetMipMapBias(-6.0f, -1);
-		}
+		r3dRenderer->SetRenderingMode(R3D_BLEND_ALPHA | R3D_BLEND_NZ);
+		r3dSetFiltering(R3D_POINT);
+		r3dRenderer->SetMipMapBias(-6.0f, -1);
 
 		if (bUseRmlUI)
 		{
 			g_AppSelectRmlUI.Update(r3dGetFrameTime());
-
-			if (bUseDX11RmlUI)
-			{
-				if (
-					StudioDX11BeginUIFrame(
-						0.0f,
-						0.0f,
-						0.0f,
-						1.0f
-					)
-				)
-				{
-					StudioDX11RenderRmlUI(
-						&g_AppSelectRmlUI
-					);
-
-					StudioDX11EndUIFrame(false);
-				}
-			}
-			else
-			{
-				g_AppSelectRmlUI.Render();
-			}
+			g_AppSelectRmlUI.Render();
 		}
 		else
 		{
@@ -312,14 +247,11 @@ int Menu_AppSelect::DoModal()
 			}
 		}
 
-		if (!bUseDX11RmlUI)
-		{
-			r3dRenderer->pd3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_NZ);
+		r3dRenderer->pd3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_NZ);
 
-			mDrawEnd();
-			r3dEndFrame();
-		}
+		mDrawEnd();
+		r3dEndFrame();
 
 		if (bUseRmlUI)
 		{

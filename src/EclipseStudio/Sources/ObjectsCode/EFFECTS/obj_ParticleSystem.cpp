@@ -19,19 +19,6 @@ AUTOREGISTER_CLASS(obj_ParticleSystem);
 extern bool g_bEditMode;
 extern int g_bForceQualitySelectionInEditor;
 
-#ifndef WO_SERVER
-extern bool StudioDX11WorldHybridEnabled();
-#endif
-
-static bool Particle_UseDX11WorldPath()
-{
-#ifndef WO_SERVER
-	return StudioDX11WorldHybridEnabled();
-#else
-	return false;
-#endif
-}
-
 static r3dTexture *ParticleIcon = NULL;
 //-----------------------------------------------------------------------
 obj_ParticleSystem::obj_ParticleSystem()
@@ -236,9 +223,6 @@ obj_ParticleSystem::AppendTransparentShadowRenderables( RenderArray & rarr, cons
 		return ;
 #endif
 
-	if (Particle_UseDX11WorldPath())
-		return;
-
 	ParticleShadowRenderable rend;
 
 	rend.Init();
@@ -269,14 +253,6 @@ obj_ParticleSystem::AppendShadowRenderables( RenderArray & rarr, const r3dCamera
 	if (!bRender) return;
 	r3dVector V = Cam - GetPosition();
 	if (V.Length() > 2600 ) return;
-
-	if (Particle_UseDX11WorldPath())
-	{
-		if (Torch)
-			Torch->AppendDX11DeferredMeshRenderables(NULL, &rarr);
-
-		return;
-	}
 
 	ParticleMeshRenderable rend;
 
@@ -336,14 +312,6 @@ obj_ParticleSystem::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount
 	float len = V.Length();
 	if (len > 2600 )
 		return;
-
-	if (Particle_UseDX11WorldPath())
-	{
-		if (Torch)
-			Torch->AppendDX11DeferredMeshRenderables(&render_arrays[rsFillGBuffer], NULL);
-
-		return;
-	}
 
 	int idist = GetRevIDist( len ) ;
 
