@@ -1,4 +1,4 @@
-// prefix
+﻿// prefix
 // d_ - debug
 // r_ - render
 // g_ - game
@@ -58,7 +58,7 @@ REG_VAR( d_show_browser,			false,			0 );
 REG_VAR( d_job_chief_idle_events,	true,			0 );
 
 REG_VAR( r_bpp,						32,				0 );		// color bpp
-REG_VAR( r_dx11_boot,				false,			0 );		// experimental DX11 boot path smoke test
+
 REG_VAR( r_dx11_debug_view,			0,				0 );		// DX11 lighting debug: 0 final, 1 albedo, 2 normal, 3 depth, 4 aux, 5 direct, 6 ambient
 REG_VAR( r_dx11_transparent_depth_prepass,	true,		0 );		// DX11: write alpha-tested transparent/camo objects into depth prepass
 REG_VAR( r_dx11_terrain_texture_blend,	0.00f,		0 );		// DX11 terrain color texture tint amount
@@ -598,3 +598,4 @@ REG_VAR( r_dd_pointlight_shadows,		0,				0 );
 REG_VAR( g_zombie_update_radius,		512,			0 );
 
 REG_VAR( r_disable_vfetch,				0,				0 );
+

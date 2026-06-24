@@ -1784,9 +1784,9 @@ void game::MainLoop()
 
 	InitRender(1);
 
-	/*if (IsDX11BootActive())
+
 	{
-		ExecuteDX11SmokeLoop();
+
 
 		if(gSteam.inited_) {
 			gUserProfile.DeregisterSteamCallbacks();
@@ -2145,6 +2145,7 @@ void ExecutePhysicsEditor()
 	CurHUDID = 4;
 	PlayEditor();
 }
+
 
 
 

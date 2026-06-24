@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "HUDFilters.h"
 
 extern int SG_SlicesNum; // limited to 10
@@ -58,7 +58,7 @@ extern float ShadowSplitDistancesOpaqueMed[NumShadowSlices+1];
 extern float ShadowSplitDistancesTransparentHigh[NumTransparentShadowSlices+1];
 
 void SetupSMTransform(ShadowSlice& slice);
-void PrepareDX11SlicedShadowMapRender();
+
 
 class r3dDefferedRenderer : public r3dRenderPipeline
 {
@@ -378,4 +378,5 @@ extern AccumShadowsPShaderIDs gAccumShadowsPShaderIDs;
 void GetDesiredRTDimmensions( float* oWidth, float* oHeight ) ;
 
 void SetupFilmToneConstants( int reg ) ;
+
 

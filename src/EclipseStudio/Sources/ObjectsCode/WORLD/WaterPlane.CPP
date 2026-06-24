@@ -1,4 +1,4 @@
-#include "r3dpch.h"
+﻿#include "r3dpch.h"
 #include "r3d.h"
 
 #include "UI/UIimEdit.h"
@@ -131,11 +131,6 @@ extern float terra_GetH(const r3dPoint3D &vPos);
 
 //static 
 r3dTL::TArray<obj_WaterPlane*> obj_WaterPlane::m_dWaterPlanes;
-static bool IsDX11WorldCommandLine()
-{
-	return __r3dCmdLine[0] && strstr(__r3dCmdLine, "-dx11world") != NULL;
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 obj_WaterPlane::Settings::Settings()
@@ -319,8 +314,8 @@ obj_WaterPlane::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], 
 
 #define RENDERABLE_WATER_SORT_VALUE (19*RENDERABLE_USER_SORT_VALUE)
 
-	// Water НЕ кладём в opaque GBuffer.
-	// Старый water composite остаётся в composite queue.
+	// Water РќР• РєР»Р°РґС‘Рј РІ opaque GBuffer.
+	// РЎС‚Р°СЂС‹Р№ water composite РѕСЃС‚Р°С‘С‚СЃСЏ РІ composite queue.
 	{
 		WaterRenderable rend;
 
@@ -332,10 +327,10 @@ obj_WaterPlane::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], 
 		render_arrays[ rsDrawComposite2 ].PushBack( rend );
 	}
 
-	// В DX11 world этот depth-effect renderer сейчас пустой:
-	// obj_WaterPlane::DoDrawDepth() просто return.
-	// Поэтому не кладём его в rsDrawDepthEffect, чтобы не получать depth_unsupported.
-	if (!IsDX11WorldCommandLine())
+	// Р’ DX11 world СЌС‚РѕС‚ depth-effect renderer СЃРµР№С‡Р°СЃ РїСѓСЃС‚РѕР№:
+	// obj_WaterPlane::DoDrawDepth() РїСЂРѕСЃС‚Рѕ return.
+	// РџРѕСЌС‚РѕРјСѓ РЅРµ РєР»Р°РґС‘Рј РµРіРѕ РІ rsDrawDepthEffect, С‡С‚РѕР±С‹ РЅРµ РїРѕР»СѓС‡Р°С‚СЊ depth_unsupported.
+	if (true)
 	{
 		WaterDepthRenderable rend;
 

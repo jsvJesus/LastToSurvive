@@ -1,4 +1,4 @@
-#ifndef __R3D_PARTICLE_SYSTEM_H
+﻿#ifndef __R3D_PARTICLE_SYSTEM_H
 #define __R3D_PARTICLE_SYSTEM_H
 
 #include "TimeGradient.h"
@@ -194,7 +194,7 @@ class r3dParticleSystem
 
 	void		Draw( const r3dCamera &cam, bool bShadowMap );
 	void		DrawDefferedMeshes(const r3dCamera &Cam, bool bShadowMap);
-	void		AppendDX11DeferredMeshRenderables(RenderArray* gbufferArray, RenderArray* shadowArray);
+
 
 	void		ClearParticlesOfType( BYTE type );
 
@@ -239,3 +239,4 @@ typedef r3dTL::TFixedArray< int, 64 > ParticlePSIds ;
 extern ParticlePSIds gParticlePSIds ;
 
 #endif	// __R3D_PARTICLE_SYSTEM_H
+

@@ -18,15 +18,6 @@ extern int g_bForceQualitySelectionInEditor;
 #ifndef WO_SERVER
 #endif
 
-static bool MeshGameObject_UseDX11WorldPath()
-{
-#ifndef WO_SERVER
-	return false;
-#else
-	return false;
-#endif
-}
-
 int		g_DrawCollisionMeshes = 0;
 int		g_DrawPlayerOnlyCollisionMeshes = 0;
 
@@ -1290,26 +1281,7 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 
 	if( r_score_sort->GetInt() )
 	{
-		if (MeshGameObject_UseDX11WorldPath())
-		{
-			// DX11 hybrid: РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј СЃС‚Р°СЂС‹Р№ DX9 bbox score РєР°Рє hard-cull.
-			// РћРЅ Р·Р°РІРёСЃРёС‚ РѕС‚ r3dRenderer matrices Рё РјРѕР¶РµС‚ РІС‹РєРёРЅСѓС‚СЊ РІСЃРµ buildings РёР· DX11 GBuffer.
-			newScore = 1;
-		}
-		else
-		{
-			D3DXMATRIX worldView;
-
-			D3DXMatrixMultiply(&worldView, &mTransform, &r3dRenderer->ViewMatrix);
-
-			newScore = GetBboxFrameScore(GetBBoxLocal(), dist, GetBBoxWorld(), worldView);
-
-			// this is like refined bbox testing, if this is zero we don't need to append anything
-			if (!newScore)
-			{
-				return;
-			}
-		}
+}
 	}
 
 	int meshLodIndex = ChoseMeshLOD( distSq );
@@ -1364,163 +1336,7 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 
 	if (r_depth_mode->GetInt())
 	{
-		if (MeshGameObject_UseDX11WorldPath())
-		{
-			AppendMeshObjDepthRenderablesDX11Safe(
-				render_arrays[rsDrawDepth],
-				TargetLODSet[meshLodIndex],
-				this,
-				m_ObjectColor,
-				RENDERABLE_PHYSICS_MESHES_SORT_VALUE
-			);
-		}
-		else
-		{
-			DepthMeshRenderable rend;
-			rend.Init();
-
-			rend.Parent = this;
-			rend.SortValue = RENDERABLE_PHYSICS_MESHES_SORT_VALUE;
-			rend.Mesh = TargetLODSet[meshLodIndex];
-
-			render_arrays[rsDrawDepth].PushBack(rend);
-		}
-	}
-
-	int need_append = 0 ;
-
-	if( r_z_prepass_method->GetInt() == Z_PREPASS_METHOD_DIST )
-	{
-		if( r_z_prepass_dist->GetFloat() > dist )
-		{
-			need_append = 1 ;
-		}
-	}
-	else
-	{
-		if( r_z_prepass_method->GetInt() == Z_PREPASS_METHOD_AREA )
-		{
-			R3DPROFILE_START( "MeshObj ZPrepass" ) ;
-
-			if( EstimateArea( GetBBoxWorld().Center(), GetObjectsRadius() ) )
-			{
-				D3DXMATRIX worldView ;
-
-				D3DXMatrixMultiply( &worldView, &mTransform, &r3dRenderer->ViewMatrix ) ;
-
-				if( r_z_prepass_area->GetFloat() < GetBBoxArea( GetBBoxLocal(), worldView ) )
-				{
-					need_append = 1 ;
-				}
-			}
-
-			R3DPROFILE_END( "MeshObj ZPrepass" ) ;
-		}
-	}
-
-	if (need_append && !(ObjFlags & OBJFLAG_PlayerCollisionOnly))
-	{
-		r3dMesh* mesh = TargetLODSet[meshLodIndex];
-
-		if (!mesh->HasAlphaTextures)
-		{
-			if (MeshGameObject_UseDX11WorldPath())
-			{
-				AppendMeshObjDepthRenderablesDX11Safe(
-					render_arrays[rsDepthPrepass],
-					mesh,
-					this,
-					m_ObjectColor,
-					0
-				);
-			}
-			else
-			{
-				DepthPrepassMeshRenderable dprend;
-
-				dprend.Init();
-
-				dprend.Parent = this;
-				dprend.SortValue = 0;
-				dprend.Mesh = mesh;
-
-				render_arrays[rsDepthPrepass].PushBack(dprend);
-			}
-
-#ifndef FINAL_BUILD
-			if (r_highlight_prepass->GetInt())
-			{
-				HighlightMeshRenderable rend;
-				rend.Init();
-
-				rend.Parent = this;
-				rend.SortValue = RENDERABLE_HIGHLIGHT_SORT_VALUE;
-				rend.Mesh = mesh;
-
-				render_arrays[rsDrawDebugData].PushBack(rend);
-			}
-#endif
-		}
-	}
-
-#ifndef FINAL_BUILD
-	if( r_highlight_casters->GetInt() && !( this->ObjFlags & ( OBJFLAG_DisableShadows | OBJFLAG_PlayerCollisionOnly ) ) )
-	{
-		HighlightMeshRenderable	rend ;
-		rend.Init() ;
-
-		rend.Parent = this ;
-		rend.SortValue = RENDERABLE_HIGHLIGHT_SORT_VALUE ;
-		rend.Mesh		= TargetLODSet[ meshLodIndex ] ;
-
-		render_arrays[ rsDrawDebugData ].PushBack( rend ) ;
-	}
-#endif
-
-}
-
-//------------------------------------------------------------------------
-
-struct MeshObjShadowRenderable : MeshShadowRenderableBase
-{
-	void Init()
-	{
-		DrawFunc = Draw;
-	}
-
-	static void Draw( Renderable* RThis, const r3dCamera& Cam )
-	{
-		R3DPROFILE_FUNCTION("MeshObjShadowRenderable");
-		MeshObjShadowRenderable* This = static_cast< MeshObjShadowRenderable* >( RThis );
-
-		r3dApplyPreparedMeshVSConsts(This->Parent->preparedVSConsts);
-		//This->Mesh->SetWorldMatrix( This->Parent->GetTransformMatrix() );
-
-		This->Parent->OnPreRender();
-
-		This->SubDrawFunc( RThis, Cam );
-	}
-
-	MeshGameObject* Parent;
-};
-
-/*virtual*/
-void
-MeshGameObject::AppendShadowRenderables( RenderArray& rarr, const r3dCamera& Cam ) /*OVERRIDE*/
-{
-	COMPILE_ASSERT( sizeof(MeshObjShadowRenderable) <= MAX_RENDERABLE_SIZE );
-
-#ifndef FINAL_BUILD
-	if(!g_bEditMode || g_bForceQualitySelectionInEditor)
-#endif
-	{
-		int meshQuality = (int)m_MinQualityLevel;
-		if(meshQuality > 3) meshQuality = 3;
-		if(meshQuality > r_mesh_quality->GetInt())
-			return;
-	}
-
-	// always use main camera to determine shadow LOD
+// always use main camera to determine shadow LOD
 	// TODO : mark invisible (in main frustum) objects and use lowest LOD for their shadows
 	float distSq = (gCam - GetPosition()).LengthSq();
 
@@ -1790,5 +1606,6 @@ void MeshGameObject::OnPreRender()
 //------------------------------------------------------------------------
 
 Positions gDEBUG_DrawPositions ;
+
 
 

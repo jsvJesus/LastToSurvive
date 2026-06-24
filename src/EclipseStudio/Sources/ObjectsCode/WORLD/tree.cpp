@@ -26,15 +26,6 @@ extern GameObject*	TreeObject;
 #ifndef WO_SERVER
 #endif
 
-static bool Tree_UseDX11WorldPath()
-{
-#ifndef WO_SERVER
-	return false;
-#else
-	return false;
-#endif
-}
-
 obj_Tree::obj_Tree()
 {
 	r3d_assert(TreeObject == 0);
@@ -278,6 +269,7 @@ obj_Tree::DoDrawShadows()
 	gCollectionsManager.Render(R3D_IDME_SHADOW);
 	r3dRenderer->SetDefaultCullMode( D3DCULL_CCW );
 }
+
 
 
 

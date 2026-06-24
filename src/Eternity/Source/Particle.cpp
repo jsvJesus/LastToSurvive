@@ -4040,7 +4040,7 @@ void r3dParticleSystem::DrawDefferedMeshes(const r3dCamera &Cam, bool bShadowMap
 	return;
 }
 
-void r3dParticleSystem::AppendDX11DeferredMeshRenderables(
+
 	RenderArray* gbufferArray,
 	RenderArray* shadowArray
 )
@@ -4277,4 +4277,5 @@ void ParticlePShaderId::FillMacros( ShaderMacros& defines )
 	if( shadow_type == 1 ) defines[ 4 ].Definition = "1" ;
 	if( shadow_type == 2 ) defines[ 4 ].Definition = "2" ;
 }
+
 

@@ -1285,7 +1285,6 @@ int			n_draw_interm;
 GameObject* box_scene_query[ OBJECTMANAGER_MAXOBJECTS ];
 int			n_box_scene_query;
 
-
 RenderArray	g_render_arrays[ rsCount ];
 
 
@@ -1299,7 +1298,6 @@ int renderable_Comparator( void const * p0, void const* p1 )
 	// preserve effect of bit 31 then append effect of bits 32..63 (sign bit 63 will get into sign bit 31)
 	return int( ( diff | diff >> 1 ) & 0x7fffffff | diff >> 32 );
 }
-
 
 int _render_World = 1;
 static r3dVector prevCamPos = r3dVector(0,0,0);
@@ -1336,12 +1334,11 @@ uint8_t getShadowSliceBit(GameObject* userObject, const r3dCamera& Cam )
 GameObject* TreeObject = 0; // declare it here because of server
 
 #ifndef WO_SERVER
-static const char* DX11World_GetSpecialObjectTypeName(const GameObject* obj)
+
 {
 	if (!obj)
 		return NULL;
-
-	// Р‘РѕР»РµРµ РєРѕРЅРєСЂРµС‚РЅС‹Рµ С‚РёРїС‹ СЃРЅР°С‡Р°Р»Р°.
+	
 	if (obj->isObjType(OBJTYPE_SharedUsableItem))	return "OBJTYPE_SharedUsableItem";
 	if (obj->isObjType(OBJTYPE_GameplayItem))		return "OBJTYPE_GameplayItem";
 	if (obj->isObjType(OBJTYPE_Zombie))				return "OBJTYPE_Zombie";
@@ -1358,7 +1355,7 @@ static const char* DX11World_GetSpecialObjectTypeName(const GameObject* obj)
 	return NULL;
 }
 
-static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
+
 {
 	if (!obj)
 		return "ERROR: null object";
@@ -1402,7 +1399,7 @@ static const char* DX11World_GetSpecialObjectDX11Status(const GameObject* obj)
 	return "UNKNOWN";
 }
 
-static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookName)
+
 {
 	static bool sAuditStartedLogged = false;
 
@@ -1413,7 +1410,7 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 		sAuditStartedLogged = true;
 
 		r3dOutToLog(
-			"[DX11World][Stage9] audit entered: dx11world=%d hook=%s\n",
+
 			dx11WorldEnabled ? 1 : 0,
 			hookName ? hookName : "<null>"
 		);
@@ -1425,7 +1422,7 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 	if (!obj)
 		return;
 
-	const char* typeName = DX11World_GetSpecialObjectTypeName(obj);
+
 	if (!typeName)
 		return;
 
@@ -1460,17 +1457,17 @@ static void DX11World_AuditSpecialObjectOnce(GameObject* obj, const char* hookNa
 	}
 
 	r3dOutToLog(
-		"[DX11World][Stage9] special object seen: type=%s class=%s name=%s hook=%s status=%s\n",
+
 		typeName,
 		className,
 		obj->Name.c_str(),
 		hookName ? hookName : "<null>",
-		DX11World_GetSpecialObjectDX11Status(obj)
+
 	);
 }
 #endif
 
-void DX11World_Stage9DumpSpecialObjectSummary()
+
 {
 #ifndef WO_SERVER
 	if (!false)
@@ -1507,7 +1504,7 @@ void DX11World_Stage9DumpSpecialObjectSummary()
 		{ OBJTYPE_SharedUsableItem, "OBJTYPE_SharedUsableItem", 0, NULL, NULL },
 	};
 
-	r3dOutToLog("[DX11World][Stage9][WorldScan] ================= special object summary =================\n");
+
 
 	for (ObjectIterator iter = GameWorld().GetFirstOfAllObjects(); iter.current; iter = GameWorld().GetNextOfAllObjects(iter))
 	{
@@ -1536,7 +1533,7 @@ void DX11World_Stage9DumpSpecialObjectSummary()
 	for (int i = 0; i < _countof(Stats); ++i)
 	{
 		r3dOutToLog(
-			"[DX11World][Stage9][WorldScan] %-27s count=%d first_class=%s first_name=%s\n",
+
 			Stats[i].Name,
 			Stats[i].Count,
 			Stats[i].FirstClass ? Stats[i].FirstClass : "<none>",
@@ -1544,7 +1541,7 @@ void DX11World_Stage9DumpSpecialObjectSummary()
 		);
 	}
 
-	r3dOutToLog("[DX11World][Stage9][WorldScan] =================================================================\n");
+
 #endif
 }
 
@@ -1919,7 +1916,7 @@ ObjectManager::PrepareSlicedShadowsInterm( const r3dCamera& Cam, D3DXPLANE (&mai
 			int inMainFrustum = CheckDirShadowVisibility( obj, newRecalcShadowExData | obj->ShadowExDirty, r3dRenderer->ViewMatrix, MAX_DIR_SHADOW_LENGTH, mainFrustumPlanes ) ;
 
 #ifndef WO_SERVER
-			DX11World_AuditSpecialObjectOnce(draw_interm[i].obj, "AppendSlicedShadowRenderables");
+
 #endif
 
 			draw_interm[i].obj->AppendSlicedShadowRenderables(g_render_arrays, !shadowCull || inMainFrustum, Cam);
@@ -1956,7 +1953,7 @@ ObjectManager::PrepareShadowsInterm( const r3dCamera& Cam )
 		if( !( obj->ObjFlags & DISABLE_SHADOWS_FLAGS ) )
 		{
 #ifndef WO_SERVER
-			DX11World_AuditSpecialObjectOnce(obj, "AppendShadowRenderables");
+
 #endif
 
 			obj->AppendShadowRenderables(g_render_arrays[rsCreateSM], Cam);
@@ -1994,7 +1991,7 @@ ObjectManager::PrepareTransparentShadowsInterm( const r3dCamera& Cam )
 		ds.shadow_slice = 0 ;
 
 #ifndef WO_SERVER
-		DX11World_AuditSpecialObjectOnce(obj, "AppendTransparentShadowRenderables");
+
 #endif
 
 		obj->AppendTransparentShadowRenderables(g_render_arrays[rsCreateTransparentSM], Cam);
@@ -2109,7 +2106,7 @@ void AppendSkippOcclusionCheckRenderables( const r3dCamera& Cam )
 			}
 
 #ifndef WO_SERVER
-			DX11World_AuditSpecialObjectOnce(draw[i].obj, "AppendRenderables/SkipOcclusion");
+
 #endif
 
 			draw[i].obj->AppendRenderables(g_render_arrays, Cam);
@@ -2224,7 +2221,7 @@ ObjectManager::Prepare( const r3dCamera& Cam )
 			}
 
 #ifndef WO_SERVER
-			DX11World_AuditSpecialObjectOnce(draw[i].obj, "AppendRenderables");
+
 #endif
 
 			draw[i].obj->AppendRenderables(g_render_arrays, Cam);
@@ -2724,4 +2721,5 @@ void DumpPhysStats()
 	ConPrint( "Controversial wakers: %d\n", controversialWakers ) ;
 	ConPrint( "Controversial sleepers: %d\n", controversialSleepers ) ;
 }
+
 
