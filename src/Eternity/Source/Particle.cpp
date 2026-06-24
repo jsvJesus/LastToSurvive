@@ -1,4 +1,4 @@
-#include "r3dPCH.h"
+﻿#include "r3dPCH.h"
 #include "r3d.h"
 
 #include "JobChief.h"
@@ -4183,20 +4183,12 @@ void r3dParticleSystem::AppendDX11DeferredMeshRenderables(
 					static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
 					static_cast<INT64>((static_cast<UINT64>(PE.Mesh->buffers.VBId) << 16));
 
-				rend.InitDX11(&world, NULL);
-
 				gbufferArray->PushBack(rend);
 			}
 		}
 
 		if (appendShadow)
 		{
-			r3dAppendMeshShadowRenderablesDX11(
-				*shadowArray,
-				PE.Mesh,
-				&world,
-				NULL
-			);
 		}
 	}
 }
@@ -4285,3 +4277,4 @@ void ParticlePShaderId::FillMacros( ShaderMacros& defines )
 	if( shadow_type == 1 ) defines[ 4 ].Definition = "1" ;
 	if( shadow_type == 2 ) defines[ 4 ].Definition = "2" ;
 }
+

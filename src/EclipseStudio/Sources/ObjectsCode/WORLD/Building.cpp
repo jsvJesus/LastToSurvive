@@ -625,13 +625,9 @@ static void AppendBuildingAnimatedDX11DeferredRenderables(
 			sortBase |
 			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
 			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
-
-		rend.InitDX11(&parent->GetTransformMatrix(), parent->m_Animation.pSkeleton);
 		rend.Init();
 
 		rend.Parent = parent;
-		rend.DX11WorldTransform = &parent->GetTransformMatrix();
-		rend.DX11Skeleton = parent->m_Animation.pSkeleton;
 
 		outArray.PushBack(rend);
 	}
@@ -665,7 +661,6 @@ static void AppendBuildingAnimatedDX11ShadowRenderables(
 			static_cast<BuildingAniDX11ShadowRenderable&>(outArray[i]);
 
 		rend.Init();
-		rend.InitDX11(&parent->GetTransformMatrix(), parent->m_Animation.pSkeleton);
 		rend.Parent = parent;
 		rend.SortValue |= idist;
 	}
@@ -707,6 +702,8 @@ void obj_Building::AppendRenderables(RenderArray (&render_arrays)[rsCount], cons
 
 	render_arrays[rsFillGBuffer].PushBack(rend);
 }
+
+
 
 
 

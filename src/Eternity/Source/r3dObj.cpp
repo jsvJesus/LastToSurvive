@@ -1,4 +1,4 @@
-#include	"r3dPCH.h"
+﻿#include	"r3dPCH.h"
 
 #include	"r3d.h"
 
@@ -17,14 +17,6 @@ r3dVertexBuffer * r3dMesh::pInstancesVB = NULL;
 
 int	r3dMesh::numInstancesInVB = 0;
 INT64 RENDERABLE_EMITTER_USER_SORT_VALUE = 15 * RENDERABLE_USER_SORT_VALUE;
-
-namespace
-{
-	static const unsigned int DX11_RENDERABLE_WORLD_MATRIX_COUNT = 32768;
-	D3DXMATRIX g_DX11RenderableWorldMatrices[DX11_RENDERABLE_WORLD_MATRIX_COUNT];
-	unsigned int g_DX11RenderableWorldMatrixCursor = 0;
-}
-
 
 LPDIRECT3DVERTEXDECLARATION9 r3dSkinnedMeshVertex::pDecl = 0;
 const D3DVERTEXELEMENT9 r3dSkinnedMeshVertex::VBDecl[] = 
@@ -192,8 +184,8 @@ r3dMesh::r3dMesh( int UsePreciseVertices )
 
 	m_Loaded = 0 ;
 	m_Drawable = 0 ;
-	DX11RenderData = NULL;
-	DX11RenderDataDestroy = NULL;
+
+
 
 	numInstancesInArray = 0;
 
@@ -256,7 +248,7 @@ void r3dMesh::Unload()
 	if(!IsLoaded())
 		return;
 
-	ReleaseDX11RenderData();
+
 
 	if( Flags & obfPlayerMesh )
 	{
@@ -283,24 +275,6 @@ void r3dMesh::Unload()
 
 	SAFE_DELETE( pInstancesVB );
 	SAFE_DELETE_ARRAY(VertexNormals);
-
-// 	if(g_pVB != NULL) 
-// 	{
-// #ifdef _DEBUG
-// 		_r3d_mVBufferMap.erase((DWORD)g_pVB);
-// #endif
-// 
-// 		g_pVB->Release();
-// 		g_pVB = NULL;
-// 
-// 		r3dRenderer->Stats.BufferMem -= NumVertices * sizeof(R3D_MESH_VERTEX);
-// 	}
-// 
-// 	if(g_IB != NULL) {
-// 		g_IB->Release();
-// 		g_IB = NULL;
-// 		r3dRenderer->Stats.BufferMem -= NumIndices * sizeof(DWORD);
-// 	}
 
 	if( Flags & obfPlayerMesh )
 	{
@@ -334,33 +308,6 @@ void r3dMesh::Unload()
 	m_Loaded = 0 ;
 
 	return;
-}
-
-r3dDX11MeshRenderData*
-r3dMesh::GetDX11RenderData() const
-{
-	return DX11RenderData;
-}
-
-void
-r3dMesh::SetDX11RenderData( r3dDX11MeshRenderData* renderData, void ( *destroyFn )( r3dDX11MeshRenderData* ) )
-{
-	ReleaseDX11RenderData();
-
-	DX11RenderData = renderData;
-	DX11RenderDataDestroy = destroyFn;
-}
-
-void
-r3dMesh::ReleaseDX11RenderData()
-{
-	if( DX11RenderData && DX11RenderDataDestroy )
-	{
-		DX11RenderDataDestroy( DX11RenderData );
-	}
-
-	DX11RenderData = NULL;
-	DX11RenderDataDestroy = NULL;
 }
 
 void
@@ -1548,7 +1495,7 @@ static const DWORD R3D_MESH_DEFERRED_COLOR_FLAG_ROAD = 0xfe000000;
 
 DWORD r3dEncodeMeshDeferredRenderableColorFlags( DWORD color, UINT matFlags )
 {
-	// RGB оставляем как есть. Alpha-байт используем как маленький path marker.
+	// RGB РѕСЃС‚Р°РІР»СЏРµРј РєР°Рє РµСЃС‚СЊ. Alpha-Р±Р°Р№С‚ РёСЃРїРѕР»СЊР·СѓРµРј РєР°Рє РјР°Р»РµРЅСЊРєРёР№ path marker.
 	color &= 0x00ffffff;
 
 	if( matFlags & R3D_MATF_ROAD )
@@ -1582,300 +1529,6 @@ MeshDeferredRenderable::Draw( Renderable* RThis, const r3dCamera& Cam )
 	Mesh->DrawMeshStart( &color );
 	Mesh->DrawMeshDeferredBatch( This->BatchIdx, matFlags );
 	Mesh->DrawMeshEnd();
-}
-
-void
-MeshDeferredRenderable::InitDX11(
-	const D3DXMATRIX* worldTransform,
-	const r3dSkeleton* skeleton,
-	UINT matFlags
-)
-{
-	DrawFunc = Draw;
-
-	if( matFlags )
-	{
-		Color = r3dEncodeMeshDeferredRenderableColorFlags( Color, matFlags );
-	}
-
-	DX11Signature = DX11SignatureValue;
-	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
-	DX11Skeleton = skeleton;
-}
-
-void
-MeshShadowRenderable::InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton )
-{
-	// DX11 shadow path читает MeshShadowRenderable напрямую,
-	// но старый DX9/общий RenderArray всё ещё может вызвать DrawFunc.
-	// Поэтому DrawFunc обязан быть валидным.
-	DrawFunc = SubDrawFunc ? SubDrawFunc : MeshShadowRenderable::DrawSingleBatch;
-
-	DX11Signature = DX11SignatureValue;
-	DX11WorldTransform = worldTransform ? r3dAllocateMeshDeferredDX11WorldMatrix( *worldTransform ) : NULL;
-	DX11Skeleton = skeleton;
-}
-
-void
-r3dResetMeshDeferredDX11WorldMatrices()
-{
-	g_DX11RenderableWorldMatrixCursor = 0;
-}
-
-const D3DXMATRIX*
-r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform )
-{
-	if( g_DX11RenderableWorldMatrixCursor >= DX11_RENDERABLE_WORLD_MATRIX_COUNT )
-	{
-		r3dOutToLog(
-			"[DX11][World] mesh renderable world matrix pool overflow (%u), wrapping\n",
-			DX11_RENDERABLE_WORLD_MATRIX_COUNT
-		);
-		g_DX11RenderableWorldMatrixCursor = 0;
-	}
-
-	D3DXMATRIX* result = &g_DX11RenderableWorldMatrices[ g_DX11RenderableWorldMatrixCursor++ ];
-	*result = worldTransform;
-	return result;
-}
-
-static bool r3dRepairMeshDeferredRenderableBatch(
-	MeshDeferredRenderable* meshRenderable
-)
-{
-	if (!meshRenderable || !meshRenderable->Mesh)
-		return false;
-
-	r3dMesh* mesh = meshRenderable->Mesh;
-
-	if (meshRenderable->BatchIdx >= 0 && meshRenderable->BatchIdx < mesh->NumMatChunks)
-		return true;
-
-	const DWORD materialId =
-		static_cast<DWORD>((static_cast<UINT64>(meshRenderable->SortValue) >> 32) & 0xffffffff);
-
-	for (int i = 0; i < mesh->NumMatChunks; ++i)
-	{
-		const r3dTriBatch& batch = mesh->MatChunks[i];
-
-		if (!batch.Mat)
-			continue;
-
-		if (batch.EndIndex <= batch.StartIndex)
-			continue;
-
-		if (batch.Mat->ID == materialId)
-		{
-			meshRenderable->BatchIdx = i;
-			return true;
-		}
-	}
-
-	for (int i = 0; i < mesh->NumMatChunks; ++i)
-	{
-		const r3dTriBatch& batch = mesh->MatChunks[i];
-
-		if (!batch.Mat)
-			continue;
-
-		if (batch.EndIndex <= batch.StartIndex)
-			continue;
-
-		meshRenderable->BatchIdx = i;
-		return true;
-	}
-
-	return false;
-}
-
-MeshDeferredRenderable*
-r3dGetMeshDeferredRenderable(Renderable* renderable)
-{
-	if (!renderable)
-		return NULL;
-
-	MeshDeferredRenderable* meshRenderable =
-		static_cast<MeshDeferredRenderable*>(renderable);
-
-	if (meshRenderable->DX11Signature != MeshDeferredRenderable::DX11SignatureValue)
-		return NULL;
-
-	if (!meshRenderable->Mesh)
-		return NULL;
-
-	__try
-	{
-		if (!meshRenderable->Mesh->IsLoaded())
-			return NULL;
-
-		if (
-			meshRenderable->Mesh->NumMatChunks < 0 ||
-			meshRenderable->Mesh->NumMatChunks > r3dMesh::ConstNumMatChunks
-		)
-		{
-			return NULL;
-		}
-
-		if (meshRenderable->BatchIdx < 0 || meshRenderable->BatchIdx >= meshRenderable->Mesh->NumMatChunks)
-		{
-			if (!r3dRepairMeshDeferredRenderableBatch(meshRenderable))
-			{
-				static int InvalidBatchLogCount = 0;
-
-				if (InvalidBatchLogCount < 64)
-				{
-					++InvalidBatchLogCount;
-
-					r3dOutToLog(
-						"[DX11][RenderableReject][Deferred] invalid BatchIdx mesh='%s' file='%s' batch=%d numChunks=%d sig=%08x sort=%I64u\n",
-						meshRenderable->Mesh->Name,
-						meshRenderable->Mesh->FileName.c_str(),
-						meshRenderable->BatchIdx,
-						meshRenderable->Mesh->NumMatChunks,
-						meshRenderable->DX11Signature,
-						static_cast<UINT64>(meshRenderable->SortValue)
-					);
-				}
-
-				return NULL;
-			}
-		}
-
-		const r3dTriBatch& batch =
-			meshRenderable->Mesh->MatChunks[meshRenderable->BatchIdx];
-
-		if (!batch.Mat)
-			return NULL;
-
-		if (batch.EndIndex <= batch.StartIndex)
-			return NULL;
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
-	{
-		return NULL;
-	}
-
-	return meshRenderable;
-}
-
-const MeshDeferredRenderable*
-r3dGetMeshDeferredRenderable( const Renderable* renderable )
-{
-	return r3dGetMeshDeferredRenderable( const_cast< Renderable* >( renderable ) );
-}
-
-MeshShadowRenderable*
-r3dGetMeshShadowRenderable( Renderable* renderable )
-{
-	if( !renderable )
-		return NULL;
-
-	MeshShadowRenderable* meshRenderable = static_cast< MeshShadowRenderable* >( renderable );
-	return meshRenderable->DX11Signature == MeshShadowRenderable::DX11SignatureValue ? meshRenderable : NULL;
-}
-
-const MeshShadowRenderable*
-r3dGetMeshShadowRenderable( const Renderable* renderable )
-{
-	return r3dGetMeshShadowRenderable( const_cast< Renderable* >( renderable ) );
-}
-
-void
-r3dAppendMeshDeferredRenderablesDX11(
-	RenderArray& oArr,
-	r3dMesh* mesh,
-	const r3dColor& color,
-	const D3DXMATRIX* worldTransform,
-	const r3dSkeleton* skeleton
-)
-{
-	if (!mesh || !mesh->IsDrawable())
-		return;
-
-	for (int i = 0; i < mesh->NumMatChunks; ++i)
-	{
-		const r3dTriBatch& batch = mesh->MatChunks[i];
-
-		if (!batch.Mat)
-			continue;
-
-		if (batch.EndIndex <= batch.StartIndex)
-			continue;
-
-		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
-			continue;
-
-		MeshDeferredRenderable rend;
-		memset(&rend, 0, sizeof(rend));
-
-		rend.BatchIdx = i;
-		rend.Color = color.GetPacked();
-		rend.Mesh = mesh;
-		rend.SortValue =
-			((UINT64)batch.Mat->ID << 32) |
-			((UINT64)mesh->buffers.VBId << 16);
-
-		rend.InitDX11(worldTransform, skeleton);
-
-		oArr.PushBack(rend);
-	}
-}
-
-void
-r3dAppendMeshShadowRenderablesDX11(
-	RenderArray& oArr,
-	r3dMesh* mesh,
-	const D3DXMATRIX* worldTransform,
-	const r3dSkeleton* skeleton
-)
-{
-	if (!mesh || !mesh->IsDrawable())
-		return;
-
-	const r3dSkeleton* dx11Skeleton =
-		mesh->IsSkeletal() ? skeleton : NULL;
-
-	if (mesh->HasAlphaTextures)
-	{
-		for (int i = 0; i < mesh->NumMatChunks; ++i)
-		{
-			const r3dTriBatch& batch = mesh->MatChunks[i];
-
-			if (!batch.Mat)
-				continue;
-
-			if (batch.EndIndex <= batch.StartIndex)
-				continue;
-
-			MeshShadowRenderable rend;
-			memset(&rend, 0, sizeof(rend));
-
-			rend.SubDrawFunc = MeshShadowRenderable::Draw;
-			rend.BatchIdx = i;
-			rend.Mesh = mesh;
-			rend.SortValue =
-				((UINT64)batch.Mat->ID << 32) |
-				(UINT64)mesh->buffers.VB.Get();
-
-			rend.InitDX11(worldTransform, dx11Skeleton);
-
-			oArr.PushBack(rend);
-		}
-	}
-	else
-	{
-		MeshShadowRenderable rend;
-		memset(&rend, 0, sizeof(rend));
-
-		rend.SubDrawFunc = MeshShadowRenderable::DrawSingleBatch;
-		rend.Mesh = mesh;
-		rend.BatchIdx = -1;
-		rend.SortValue = (UINT64)mesh->buffers.VB.Get() << 32;
-
-		rend.InitDX11(worldTransform, dx11Skeleton);
-
-		oArr.PushBack(rend);
-	}
 }
 
 //------------------------------------------------------------------------
@@ -1969,7 +1622,6 @@ r3dMesh::AppendShadowRenderables( RenderArray& oArr )
 			rend.BatchIdx		= i;
 			rend.Mesh			= this;
 			rend.SortValue		= (UINT64)batch.Mat->ID << 32 | (UINT64) buffers.VB.Get();
-			rend.InitDX11( NULL, NULL );
 
 			oArr.PushBack( rend );
 		}
@@ -1983,7 +1635,6 @@ r3dMesh::AppendShadowRenderables( RenderArray& oArr )
 		rend.Mesh		= this;
 		rend.BatchIdx	= -1;
 		rend.SortValue	= (UINT64) buffers.VB.Get() << 32;
-		rend.InitDX11( NULL, NULL );
 
 		oArr.PushBack( rend );
 	}
@@ -2019,8 +1670,6 @@ r3dMesh::AppendRenderablesDeferred(RenderArray& oArr, const r3dColor& color)
 		rend.SortValue =
 			((UINT64)batch.Mat->ID << 32) |
 			((UINT64)buffers.VBId << 16);
-
-		rend.InitDX11(NULL);
 
 		oArr.PushBack(rend);
 	}
@@ -2064,8 +1713,6 @@ r3dMesh::AppendTransparentRenderables(
 		rend.Color = color.GetPacked();
 		rend.Mesh = this;
 		rend.SortValue = RENDERABLE_EMITTER_USER_SORT_VALUE | idist;
-
-		rend.InitDX11(NULL);
 
 		oArr.PushBack(rend);
 	}
@@ -2751,3 +2398,6 @@ void r3dMesh::DeleteWeights()
 	delete [] pWeights ;
 	pWeights = 0 ;
 }
+
+
+

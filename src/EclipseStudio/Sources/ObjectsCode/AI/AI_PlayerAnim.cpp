@@ -1,4 +1,4 @@
-#include "r3dpch.h"
+﻿#include "r3dpch.h"
 #include "r3d.h"
 
 #include "GameCommon.h"
@@ -881,14 +881,6 @@ void CUberEquip::AppendSlotMeshRenderables( RenderArray& renderArray, r3dMesh* m
 {
 	if( !mesh || !mesh->IsDrawable() )
 		return;
-
-	r3dAppendMeshDeferredRenderablesDX11(
-		renderArray,
-		mesh,
-		r3dColor::white,
-		&world,
-		mesh->IsSkeletal() ? skeleton : NULL
-	);
 }
 
 void CUberEquip::AppendSlotMeshShadowRenderables(
@@ -900,13 +892,6 @@ void CUberEquip::AppendSlotMeshShadowRenderables(
 {
 	if (!mesh || !mesh->IsDrawable())
 		return;
-
-	r3dAppendMeshShadowRenderablesDX11(
-		renderArray,
-		mesh,
-		&world,
-		mesh->IsSkeletal() ? skeleton : NULL
-	);
 }
 
 void CUberEquip::AppendSlotShadowRenderables(
@@ -2287,3 +2272,4 @@ void CUberAnim::UpdateJump(bool bOnGround)
 	}
 */	
 }
+

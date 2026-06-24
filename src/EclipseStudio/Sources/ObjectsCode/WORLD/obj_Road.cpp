@@ -21,61 +21,6 @@ extern int PS_CLEAR_FLOAT_ID;
 
 const char*	obj_Road::BaseMaterialDir = "data/objectsdepot/_roads/materials";
 
-static void AppendRoadDX11GBufferRenderables(
-	RenderArray& outArray,
-	r3dMesh* mesh,
-	INT64 sortBase
-)
-{
-	if (!mesh || !mesh->IsDrawable())
-		return;
-
-	static D3DXMATRIX sRoadIdentity;
-	static bool sRoadIdentityInitialized = false;
-
-	if (!sRoadIdentityInitialized)
-	{
-		D3DXMatrixIdentity(&sRoadIdentity);
-		sRoadIdentityInitialized = true;
-	}
-
-	for (int i = 0; i < mesh->NumMatChunks; ++i)
-	{
-		const r3dTriBatch& batch = mesh->MatChunks[i];
-
-		if (!batch.Mat)
-			continue;
-
-		if (batch.EndIndex <= batch.StartIndex)
-			continue;
-
-		if (batch.Mat->Flags & R3D_MAT_SKIP_DRAW)
-			continue;
-
-		// Road GBuffer СЃРµР№С‡Р°СЃ opaque path.
-		// Р•СЃР»Рё РєРѕРіРґР°-РЅРёР±СѓРґСЊ РїРѕСЏРІРёС‚СЃСЏ transparent road material,
-		// РµРіРѕ РЅР°РґРѕ Р±СѓРґРµС‚ РѕС‚РґРµР»СЊРЅРѕ РІРµСЃС‚Рё С‡РµСЂРµР· forward/transparent path.
-		if ((batch.Mat->Flags & R3D_MAT_TRANSPARENT) != 0)
-			continue;
-
-		MeshDeferredRenderable rend;
-		memset(&rend, 0, sizeof(rend));
-
-		rend.BatchIdx = i;
-		rend.Color = r3dColor::white.GetPacked();
-		rend.Mesh = mesh;
-		rend.SortValue =
-			sortBase |
-			static_cast<INT64>((static_cast<UINT64>(batch.Mat->ID) << 32)) |
-			static_cast<INT64>((static_cast<UINT64>(mesh->buffers.VBId) << 16));
-
-		rend.InitDX11(&sRoadIdentity, NULL, R3D_MATF_ROAD);
-		rend.DX11WorldTransform = &sRoadIdentity;
-
-		outArray.PushBack(rend);
-	}
-}
-
 //
 //
 // 	class for Building Object, as you may guess..
@@ -1062,3 +1007,5 @@ void CleanOrphanedRoadFiles()
 	}
 }
 #endif
+
+

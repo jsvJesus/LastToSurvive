@@ -5279,15 +5279,15 @@ obj_Player::AppendTransparentShadowRenderables( RenderArray & rarr, const r3dCam
 	if (firstPerson)
 		return;
 
-	bool drawWeaponDX11 = true;
+	bool drawWeapon = true;
 
 	const Weapon* wpn = m_Weapons[m_SelectedWeapon];
 
 	if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
-		drawWeaponDX11 = false;
+		drawWeapon = false;
 
 	if (bDead || forcedEmptyHands)
-		drawWeaponDX11 = false;
+		drawWeapon = false;
 
 	if (false)
 	{
@@ -5297,7 +5297,7 @@ obj_Player::AppendTransparentShadowRenderables( RenderArray & rarr, const r3dCam
 				rarr,
 				GetSkeleton(),
 				DrawFullMatrix_Localized,
-				drawWeaponDX11,
+				drawWeapon,
 				false
 			);
 		}
@@ -5345,15 +5345,15 @@ obj_Player::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
 
 	if (false)
 	{
-		bool drawWeaponDX11 = true;
+		bool drawWeapon = true;
 
 		const Weapon* wpn = m_Weapons[m_SelectedWeapon];
 
 		if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
-			drawWeaponDX11 = false;
+			drawWeapon = false;
 
 		if (bDead || forcedEmptyHands)
-			drawWeaponDX11 = false;
+			drawWeapon = false;
 
 		if (uberEquip_)
 		{
@@ -5361,7 +5361,7 @@ obj_Player::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam )
 				rarr,
 				GetSkeleton(),
 				DrawFullMatrix_Localized,
-				drawWeaponDX11,
+				drawWeapon,
 				false
 			);
 		}
@@ -5690,15 +5690,15 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 
 		if (canRenderPlayerModel && !scopeHidesPlayer)
 		{
-			bool drawWeaponDX11 = true;
+			bool drawWeapon = true;
 
 			const Weapon* wpn = m_Weapons[m_SelectedWeapon];
 
 			if (wpn && wpn->getCategory() == storecat_GRENADE && uberAnim_->IsGrenadeLaunched())
-				drawWeaponDX11 = false;
+				drawWeapon = false;
 
 			if (bDead || forcedEmptyHands)
-				drawWeaponDX11 = false;
+				drawWeapon = false;
 
 			if (uberEquip_)
 			{
@@ -5706,7 +5706,7 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 					render_arrays[firstPerson ? rsFillGBufferFirstPerson : rsFillGBuffer],
 					GetSkeleton(),
 					DrawFullMatrix_Localized,
-					drawWeaponDX11,
+					drawWeapon,
 					firstPerson
 				);
 			}
@@ -6947,4 +6947,5 @@ bool ProcessBulletHit( int &damageFromPiercable, GameObject* owner, const r3dPoi
 	
 	return true;
 }
+
 

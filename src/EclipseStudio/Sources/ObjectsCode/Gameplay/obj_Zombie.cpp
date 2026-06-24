@@ -1,4 +1,4 @@
-//=========================================================================
+﻿//=========================================================================
 //	Module: obj_Zombie.cpp
 //	Copyright (C) Online Warmongers Group Inc. 2012.
 //=========================================================================
@@ -173,8 +173,7 @@ void obj_Zombie::AppendRenderables(RenderArray ( & render_arrays  )[ rsCount ], 
 
 			rend.Init();
 			rend.Parent = this;
-			rend.DX11WorldTransform = &GetTransformMatrix();
-			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
+
 		}
 	}
 
@@ -217,8 +216,7 @@ void obj_Zombie::AppendShadowRenderables(RenderArray &rarr, const r3dCamera& cam
 			ZombieMeshesShadowRenderable& rend = static_cast<ZombieMeshesShadowRenderable&>( rarr[ i ] );
 
 			rend.Init() ;
-			rend.DX11WorldTransform = &GetTransformMatrix();
-			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
+
 			rend.SortValue |= idist;
 			rend.Parent = this ;
 		}
@@ -1126,3 +1124,4 @@ void obj_Zombie::DestroySounds()
 	if(m_sndHurtHandle) { SoundSys.Release(m_sndHurtHandle); m_sndHurtHandle = NULL;}
 	if(m_sndDeathHandle) { SoundSys.Release(m_sndDeathHandle); m_sndDeathHandle = NULL;}
 }
+

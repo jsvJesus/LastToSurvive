@@ -838,8 +838,6 @@ static void AppendMeshObjDeferredRenderablesDX11Safe(
 			((UINT64)mesh->buffers.VBId << 16);
 
 		rend.SortValue |= idist;
-
-		rend.InitDX11(NULL, NULL);
 		rend.Init();
 
 		rend.Parent = parent;
@@ -847,7 +845,6 @@ static void AppendMeshObjDeferredRenderablesDX11Safe(
 		// Р’Р°Р¶РЅРѕ:
 		// РќРµ РєР»Р°РґС‘Рј matrix РІ temporary pool Р·РґРµСЃСЊ.
 		// РЎС‚Р°СЂС‹Р№ РєРѕРґ С‚РѕР¶Рµ СЃС‚Р°РІРёР» РїСЂСЏРјРѕР№ pointer РЅР° transform РѕР±СЉРµРєС‚Р°.
-		rend.DX11WorldTransform = &parent->GetTransformMatrix();
 
 		int MatScoreID =
 			(rend.SortValue >> 32) & MAT_FRAME_SCORE_MASK;
@@ -899,12 +896,9 @@ static void AppendMeshObjDepthRenderablesDX11Safe(
 			baseSortValue |
 			((UINT64)batch.Mat->ID << 32) |
 			((UINT64)mesh->buffers.VBId << 16);
-
-		rend.InitDX11(NULL, NULL);
 		rend.Init();
 
 		rend.Parent = parent;
-		rend.DX11WorldTransform = &parent->GetTransformMatrix();
 
 		outArray.PushBack(rend);
 	}
@@ -1352,7 +1346,7 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 		MeshObjDeferredRenderable& rend = static_cast<MeshObjDeferredRenderable&>( render_arrays[rsDrawTransparents][ i ] ) ;
 		rend.Init() ;
 		rend.Parent = this ;
-		rend.DX11WorldTransform = &GetTransformMatrix();
+
 	}
 
 	// collision meshes
@@ -1562,7 +1556,6 @@ MeshGameObject::AppendShadowRenderables( RenderArray& rarr, const r3dCamera& Cam
 
 		rend.SortValue |= idist ;
 		rend.Init() ;
-		rend.InitDX11( &GetTransformMatrix(), NULL );
 		rend.Parent = this ;
 	}
 }
@@ -1797,4 +1790,5 @@ void MeshGameObject::OnPreRender()
 //------------------------------------------------------------------------
 
 Positions gDEBUG_DrawPositions ;
+
 

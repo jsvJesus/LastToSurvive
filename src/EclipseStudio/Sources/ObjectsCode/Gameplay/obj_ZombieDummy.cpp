@@ -1,4 +1,4 @@
-//=========================================================================
+﻿//=========================================================================
 //	Module: obj_ZombieDummy.cpp
 //	Copyright (C) Online Warmongers Group Inc. 2012.
 //=========================================================================
@@ -262,8 +262,7 @@ void obj_ZombieDummy::AppendRenderables(RenderArray ( & render_arrays  )[ rsCoun
 
 			rend.Init();
 			rend.Parent = this;
-			rend.DX11WorldTransform = &GetTransformMatrix();
-			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
+
 		}
 	}
 }
@@ -292,8 +291,7 @@ void obj_ZombieDummy::AppendShadowRenderables(RenderArray &rarr, const r3dCamera
 			ZombieMeshesShadowRenderable& rend = static_cast<ZombieMeshesShadowRenderable&>( rarr[ i ] );
 
 			rend.Init() ;
-			rend.DX11WorldTransform = &GetTransformMatrix();
-			rend.DX11Skeleton = anim_.GetCurrentSkeleton();
+
 			rend.SortValue |= idist;
 			rend.Parent = this ;
 		}
@@ -411,3 +409,4 @@ void obj_ZombieDummy::DoHit()
 	int aid = g_zombieAnimPool->Add(hitAnim, buf);
 	anim_.StartAnimation(aid, 0, 0.0f, 1.0f, 0.1f);
 }
+

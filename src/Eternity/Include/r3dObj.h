@@ -1,4 +1,4 @@
-#ifndef	__R3D_MESH_H
+﻿#ifndef	__R3D_MESH_H
 #define	__R3D_MESH_H
 
 #define R3D_PIVOT_CENTER	1
@@ -9,7 +9,7 @@
 #define R3D_ALLOW_ASYNC_MESH_LOADING 1
 
 class r3dVertexBuffer;
-class r3dDX11MeshRenderData;
+
 class r3dSkeleton;
 
 #pragma pack(push)
@@ -74,32 +74,17 @@ struct PrecalculatedMeshVSConsts
 
 struct MeshDeferredRenderable : Renderable
 {
-	static const DWORD DX11SignatureValue = 0xD311F11B;
 
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
-
-	void InitDX11(
-		const D3DXMATRIX* worldTransform,
-		const r3dSkeleton* skeleton = NULL,
-		UINT matFlags = 0
-	);
 
 	int						BatchIdx;
 	DWORD					Color;
 	r3dMesh*				Mesh;
-	DWORD					DX11Signature;
-	const D3DXMATRIX*		DX11WorldTransform;
-	const r3dSkeleton*		DX11Skeleton;
+
 };
 
-MeshDeferredRenderable* r3dGetMeshDeferredRenderable( Renderable* renderable );
-const MeshDeferredRenderable* r3dGetMeshDeferredRenderable( const Renderable* renderable );
 DWORD r3dEncodeMeshDeferredRenderableColorFlags( DWORD color, UINT matFlags );
 UINT r3dDecodeMeshDeferredRenderableMatFlags( DWORD color );
-void r3dResetMeshDeferredDX11WorldMatrices();
-const D3DXMATRIX* r3dAllocateMeshDeferredDX11WorldMatrix( const D3DXMATRIX& worldTransform );
-void r3dAppendMeshDeferredRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const r3dColor& color, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton );
-void r3dAppendMeshShadowRenderablesDX11( RenderArray& oArr, r3dMesh* mesh, const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton );
 
 struct MeshDeferredHighlightRenderable : Renderable
 {
@@ -113,23 +98,16 @@ struct MeshDeferredHighlightRenderable : Renderable
 
 struct MeshShadowRenderable : Renderable
 {
-	static const DWORD DX11SignatureValue = 0xD3115A0D;
 
 	static void DrawSingleBatch( Renderable* RThis, const r3dCamera& Cam );
 	static void Draw( Renderable* RThis, const r3dCamera& Cam );
-	void InitDX11( const D3DXMATRIX* worldTransform, const r3dSkeleton* skeleton = NULL );
 
 	void (*SubDrawFunc)( Renderable* This, const r3dCamera& Cam );
 
 	r3dMesh*				Mesh;
 	int						BatchIdx;
-	DWORD					DX11Signature;
-	const D3DXMATRIX*		DX11WorldTransform;
-	const r3dSkeleton*		DX11Skeleton;
-};
 
-MeshShadowRenderable* r3dGetMeshShadowRenderable( Renderable* renderable );
-const MeshShadowRenderable* r3dGetMeshShadowRenderable( const Renderable* renderable );
+};
 
 class MeshTextureDensityVisualizer;
 
@@ -150,8 +128,8 @@ private:
 	static int					numInstancesInVB;
 	volatile LONG				m_Loaded ;
 	volatile LONG				m_Drawable ;
-	r3dDX11MeshRenderData*		DX11RenderData;
-	void						( *DX11RenderDataDestroy )( r3dDX11MeshRenderData* );
+
+
 
 public:
 
@@ -247,9 +225,9 @@ public:
 
 	void		Unload();
 
-	r3dDX11MeshRenderData*		GetDX11RenderData() const;
-	void						SetDX11RenderData( r3dDX11MeshRenderData* renderData, void ( *destroyFn )( r3dDX11MeshRenderData* ) );
-	void						ReleaseDX11RenderData();
+
+
+
 
 
 	// I/O functions
@@ -401,3 +379,5 @@ r3dPoint2D UnpackTexcoord(short u, short v, const r3dPoint2D &texcUnpackScale);
 void ToSkinFileName( char (&skinFile)[256], const char* baseFile );
 
 #endif //__R3D_MESH_H
+
+
