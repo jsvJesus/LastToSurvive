@@ -158,9 +158,6 @@ obj_Tree::AppendShadowRenderables( RenderArray & rarr, const r3dCamera& Cam ) /*
 	if ( ! g_trees->GetBool() )
 		return;
 
-	if (Tree_UseDX11WorldPath())
-		return;
-
 	TreeShadowRenderable rend;
 
 	rend.Init();
@@ -215,9 +212,6 @@ void
 obj_Tree::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], const r3dCamera& Cam ) /*OVERRIDE*/
 {
 	if ( ! g_trees->GetBool() )
-		return;
-
-	if (Tree_UseDX11WorldPath())
 		return;
 
 	TreeRenderable rend;

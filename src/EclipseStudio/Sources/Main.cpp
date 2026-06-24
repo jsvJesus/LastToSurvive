@@ -1785,17 +1785,7 @@ void game::MainLoop()
 	InitRender(1);
 
 
-	{
 
-
-		if(gSteam.inited_) {
-			gUserProfile.DeregisterSteamCallbacks();
-			gSteam.Shutdown();
-		}
-
-		CloseRender();
-		return;
-	}*/
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();
@@ -2145,6 +2135,7 @@ void ExecutePhysicsEditor()
 	CurHUDID = 4;
 	PlayEditor();
 }
+
 
 
 

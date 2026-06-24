@@ -1281,7 +1281,17 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 
 	if( r_score_sort->GetInt() )
 	{
-}
+		D3DXMATRIX worldView ;
+
+		D3DXMatrixMultiply( &worldView, &mTransform, &r3dRenderer->ViewMatrix ) ;
+
+		newScore = GetBboxFrameScore( GetBBoxLocal(), dist, GetBBoxWorld(), worldView ) ;
+
+		// this is like refined bbox testing, if this is zero we don't need to append anything
+		if( !newScore )
+		{
+			return ;
+		}
 	}
 
 	int meshLodIndex = ChoseMeshLOD( distSq );
@@ -1294,31 +1304,30 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 	if(!TargetLODSet[ meshLodIndex ]->IsDrawable())
 		return;
 
-	uint32_t prevTranspCount =
-	render_arrays[rsDrawTransparents].Count();
+	uint32_t prevCount = render_arrays[ m_FillGBufferTarget ].Count();
+	uint32_t prevTranspCount = render_arrays[rsDrawTransparents].Count();
+	TargetLODSet[ meshLodIndex ]->AppendRenderablesDeferred( render_arrays[ m_FillGBufferTarget ], m_ObjectColor );
+	TargetLODSet[ meshLodIndex ]->AppendTransparentRenderables( render_arrays[rsDrawTransparents], m_ObjectColor, dist, 0 );
 
-	AppendMeshObjDeferredRenderablesDX11Safe(
-		render_arrays[m_FillGBufferTarget],
-		TargetLODSet[meshLodIndex],
-		this,
-		m_ObjectColor,
-		idist,
-		newScore
-	);
+	for( uint32_t i = prevCount, e = render_arrays[ m_FillGBufferTarget ].Count(); i < e; i ++ )
+	{
+		MeshObjDeferredRenderable& rend = static_cast<MeshObjDeferredRenderable&>( render_arrays[ m_FillGBufferTarget ][ i ] ) ;
 
-	TargetLODSet[meshLodIndex]->AppendTransparentRenderables(
-		render_arrays[rsDrawTransparents],
-		m_ObjectColor,
-		dist,
-		0
-	);
+		int MatScoreID = ( rend.SortValue >> 32 ) & MAT_FRAME_SCORE_MASK ;
+
+		int score = gMatFrameScores[ MatScoreID ] ;
+		gMatFrameScores[ MatScoreID ] = R3D_MAX( score, newScore ) ;
+
+		rend.Init() ;
+		rend.SortValue |= idist ;
+		rend.Parent = this ;
+	}
 
 	for( uint32_t i = prevTranspCount, e = render_arrays[rsDrawTransparents].Count(); i < e; i ++ )
 	{
 		MeshObjDeferredRenderable& rend = static_cast<MeshObjDeferredRenderable&>( render_arrays[rsDrawTransparents][ i ] ) ;
 		rend.Init() ;
 		rend.Parent = this ;
-
 	}
 
 	// collision meshes
@@ -1334,46 +1343,94 @@ void MeshGameObject::AppendRenderables( RenderArray ( & render_arrays  )[ rsCoun
 	}
 #endif
 
-	if (r_depth_mode->GetInt())
+	if( r_depth_mode->GetInt() )
 	{
-// always use main camera to determine shadow LOD
-	// TODO : mark invisible (in main frustum) objects and use lowest LOD for their shadows
-	float distSq = (gCam - GetPosition()).LengthSq();
+		DepthMeshRenderable rend ;
+		rend.Init() ;		
 
-	float dist = sqrtf( distSq );
+		rend.Parent		= this ;
+		rend.SortValue	= RENDERABLE_PHYSICS_MESHES_SORT_VALUE;
+		rend.Mesh		= TargetLODSet[ meshLodIndex ] ;
 
-	UINT32 idist = (UINT32) R3D_MIN( dist * 64.f, (float)0x3fffffff );
+		render_arrays[ rsDrawDepth ].PushBack( rend );
+	}
 
-	int meshLodIndex;
+	int need_append = 0 ;
 
-	r3dMesh* (&TargetLOD) [ NUM_LODS ] = GetPreferredMeshLODSet();
-	
-	if( InMainFrustum || !r_simplify_pure_shadows->GetInt() || TargetLOD[ 0 ]->HasAlphaTextures )
+	if( r_z_prepass_method->GetInt() == Z_PREPASS_METHOD_DIST )
 	{
-		meshLodIndex = ChoseMeshLOD( distSq );
+		if( r_z_prepass_dist->GetFloat() > dist )
+		{
+			need_append = 1 ;
+		}
 	}
 	else
 	{
-		meshLodIndex = TargetLOD[3] ? 3 : TargetLOD[ 2 ] ? 2 : TargetLOD[ 1 ] ? 1 : 0;
+		if( r_z_prepass_method->GetInt() == Z_PREPASS_METHOD_AREA )
+		{
+			R3DPROFILE_START( "MeshObj ZPrepass" ) ;
+
+			if( EstimateArea( GetBBoxWorld().Center(), GetObjectsRadius() ) )
+			{
+				D3DXMATRIX worldView ;
+
+				D3DXMatrixMultiply( &worldView, &mTransform, &r3dRenderer->ViewMatrix ) ;
+
+				if( r_z_prepass_area->GetFloat() < GetBBoxArea( GetBBoxLocal(), worldView ) )
+				{
+					need_append = 1 ;
+				}
+			}
+
+			R3DPROFILE_END( "MeshObj ZPrepass" ) ;
+		}
 	}
 
-	if(!TargetLOD[ meshLodIndex ])
-		return;
-	if(!TargetLOD[ meshLodIndex ]->IsDrawable())
-		return;
-
-	uint32_t prevCount = rarr.Count();
-
-	TargetLOD[ meshLodIndex ]->AppendShadowRenderables( rarr );
-
-	for( uint32_t i = prevCount, e = rarr.Count(); i < e; i ++ )
+	if( need_append && !( ObjFlags & OBJFLAG_PlayerCollisionOnly ) )
 	{
-		MeshObjShadowRenderable& rend = static_cast<MeshObjShadowRenderable&>( rarr[ i ] );
+		r3dMesh* mesh = TargetLODSet[ meshLodIndex ] ;
+		if( !mesh->HasAlphaTextures )
+		{
+			DepthPrepassMeshRenderable dprend ;
 
-		rend.SortValue |= idist ;
-		rend.Init() ;
-		rend.Parent = this ;
+			dprend.Init() ;
+
+			dprend.Parent		= this ;
+			dprend.SortValue	= 0 ;
+			dprend.Mesh			= mesh ;
+
+			render_arrays[ rsDepthPrepass ].PushBack( dprend ) ;
+
+#ifndef FINAL_BUILD
+			if( r_highlight_prepass->GetInt() )
+			{
+				HighlightMeshRenderable	rend ;
+				rend.Init() ;
+
+				rend.Parent		= this ;
+				rend.SortValue	= RENDERABLE_HIGHLIGHT_SORT_VALUE ;
+				rend.Mesh		= mesh ;
+
+				render_arrays[ rsDrawDebugData ].PushBack( rend ) ;
+			}
+#endif
+		}
 	}
+
+#ifndef FINAL_BUILD
+	if( r_highlight_casters->GetInt() && !( this->ObjFlags & ( OBJFLAG_DisableShadows | OBJFLAG_PlayerCollisionOnly ) ) )
+	{
+		HighlightMeshRenderable	rend ;
+		rend.Init() ;
+
+		rend.Parent = this ;
+		rend.SortValue = RENDERABLE_HIGHLIGHT_SORT_VALUE ;
+		rend.Mesh		= TargetLODSet[ meshLodIndex ] ;
+
+		render_arrays[ rsDrawDebugData ].PushBack( rend ) ;
+	}
+#endif
+
 }
 
 /*virtual*/
