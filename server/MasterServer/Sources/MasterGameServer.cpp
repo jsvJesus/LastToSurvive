@@ -708,7 +708,7 @@ bool CMasterGameServer::CreateNewGame(const CMSNewGameData& ngd, DWORD* out_ip, 
 
   char cmd[512];
   sprintf(cmd, "\"%u %u %u\" \"%s\"", n.gameId, n.port, ngd.CustomerID, strginfo);
-  const char* exe = "WZ_GameServer.exe";
+  const char* exe = "GameServer.exe";
   int err;
   if(err = (int)ShellExecute(NULL, "open", exe, cmd, "", SW_SHOW) < 32) {
     r3dOutToLog("!!! unable to run %s: %d\n", exe, err);

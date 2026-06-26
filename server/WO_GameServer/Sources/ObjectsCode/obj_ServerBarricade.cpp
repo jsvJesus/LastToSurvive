@@ -73,7 +73,11 @@ BOOL obj_ServerBarricade::OnCreate()
 	r3dBoundBox obb;
 	obb.Size = bsize;
 	obb.Org  = r3dPoint3D(GetPosition().x - obb.Size.x/2, GetPosition().y, GetPosition().z - obb.Size.z/2);
+#if ENABLE_AUTODESK_NAVIGATION
 	m_ObstacleId = gAutodeskNavMesh.AddObstacle(obb, GetRotationVector().x);
+#else
+	m_ObstacleId = -1;
+#endif
 	
 	// calc 2d radius
 	m_Radius = R3D_MAX(obb.Size.x, obb.Size.z) / 2;
@@ -86,7 +90,9 @@ BOOL obj_ServerBarricade::OnDestroy()
 {
 	if(m_ObstacleId >= 0)
 	{
+#if ENABLE_AUTODESK_NAVIGATION
 		gAutodeskNavMesh.RemoveObstacle(m_ObstacleId);
+#endif
 	}
 	
 	return parent::OnDestroy();

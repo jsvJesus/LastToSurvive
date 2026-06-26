@@ -1877,7 +1877,7 @@ void game::MainLoop()
 #ifndef FINAL_BUILD
 	case	Menu_AppSelect::bUpdateDB:
 		g_bEditMode = false;
-		UpdateDB("26.163.92.76", "Data/Weapons/itemsDB.xml");
+		UpdateDB(g_api_ip->GetString(), "Data/Weapons/itemsDB.xml");
 		MessageBox(0, "Successfully updated English DB!", "Result", MB_OK);
 		break;
 #endif
@@ -1891,8 +1891,6 @@ void game::MainLoop()
 			//g_serverip->SetString("127.0.0.1");
 		}
 
-		// override API settings
-		//g_api_ip->SetString("26.163.92.76");
 	case	Menu_AppSelect::bStartGameSVN:
 		if(m_ret == Menu_AppSelect::bStartGameSVN)
 			DiscordPresence_SetGame("Game (DEV Server)", r3dGameLevel::GetHomeDir());

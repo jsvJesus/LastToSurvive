@@ -2,6 +2,8 @@
 
 #include "../../GameEngine/ai/AutodeskNav/AutodeskNavAgent.h"
 
+#if ENABLE_AUTODESK_NAVIGATION
+
 class ZombieNavAgent : public AutodeskNavAgent
 {
 public:
@@ -19,3 +21,14 @@ protected:
 
 ZombieNavAgent* CreateZombieNavAgent(const r3dPoint3D &pos);
 void DeleteZombieNavAgent(ZombieNavAgent* a);
+
+#else
+
+class ZombieNavAgent
+{
+};
+
+ZombieNavAgent* CreateZombieNavAgent(const r3dPoint3D &pos);
+void DeleteZombieNavAgent(ZombieNavAgent* a);
+
+#endif

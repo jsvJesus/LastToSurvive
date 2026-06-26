@@ -3,6 +3,7 @@
 #include "r3dNetwork.h"
 #include <shellapi.h>
 #include <signal.h>
+#include "CkGlobal.h"
 #include "CkString.h"
 
 #pragma warning (disable: 4244)
@@ -27,6 +28,11 @@ static	int		cfg_hostPort = 0;
 static	char		cfg_masterip[512] = "";
 static	GBGameInfo	cfg_ginfo;
 static  uint32_t	cfg_creatorID; // customerID if any of creator, 0 if permanent game
+static	char		cfg_apiIp[256] = "";
+static	char		cfg_apiBaseUrl[256] = "";
+static	int		cfg_apiPort = 0;
+static	int		cfg_apiUseSSL = 0;
+static	char		cfg_apiServerKey[128] = "";
 	__int64		cfg_sessionId = 0;
 	int		cfg_uploadLogs = 0;
 
@@ -49,7 +55,24 @@ static bool downloadGameRewards()
 	return true;
 }
 
+static bool UnlockChilkatBundle(const char* componentName, const char* legacyUnlockCode)
+{
+	CkGlobal chilkatGlobal;
+	if(chilkatGlobal.UnlockBundle(legacyUnlockCode))
+		return true;
+
+	if(chilkatGlobal.UnlockBundle("WarZ trial unlock"))
+	{
+		r3dOutToLog("Chilkat %s unlocked in trial mode\n", componentName);
+		return true;
+	}
+
+	r3dOutToLog("Chilkat %s unlock failed: %s\n", componentName, chilkatGlobal.lastErrorText());
+	return false;
+}
+
 #include "CkByteData.h"
+#include "CkBinData.h"
 #include "CkHttp.h"
 #include "../../EclipseStudio/Sources/backend/WOBackendAPI.h"
 #include "../../EclipseStudio/Sources/ObjectsCode/weapons/WeaponArmory.h"
@@ -59,22 +82,35 @@ static bool downloadLootBoxData()
 	r3d_assert(g_pWeaponArmory);
   
 	CkHttp http;
-	int success = http.UnlockComponent("ARKTOSHttp_decCLPWFQXmU");
-	if (success != 1) 
-		r3dError("Internal error!!!");
+	if(!UnlockChilkatBundle("http", "ARKTOSHttp_decCLPWFQXmU"))
+	{
+		r3dOutToLog("Skipping lootbox data download because Chilkat HTTP is locked\n");
+		return true;
+	}
 
 	CkHttpRequest req;
-	req.UsePost();
-	req.put_Path("/WarZ/api/php/api_GetLootBoxConfig.php");
-	req.AddParam("serverkey", "9F179EB9-C74E-4933-85B5-EB135E16F5EF");
+	req.put_HttpVerb("POST");
+	req.put_ContentType("application/x-www-form-urlencoded");
 
-	CkHttpResponse* resp = http.SynchronousRequest("localhost", 443, true, req);
+	extern const char* gDomainBaseUrl;
+	extern int gDomainPort;
+	extern bool gDomainUseSSL;
+	extern char* g_ServerApiKey;
+
+	char path[512];
+	sprintf(path, "%s%s", gDomainBaseUrl, "api_GetLootBoxConfig.aspx");
+	req.put_Path(path);
+	req.AddParam("skey1", g_ServerApiKey);
+
+	CkHttpResponse* resp = http.SynchronousRequest(g_api_ip->GetString(), gDomainPort, gDomainUseSSL, req);
 	if(!resp)
 		r3dError("timeout getting lootbox db");
 			
 	// we can't use getBosyStr() because it'll fuckup characters inside UTF-8 xml
 	CkByteData bodyData;
-	resp->get_Body(bodyData);
+	CkBinData bodyBin;
+	resp->GetBodyBd(bodyBin);
+	bodyBin.GetBinary(bodyData);
 	delete resp;
 		
 	pugi::xml_document xmlFile;
@@ -89,6 +125,31 @@ static bool downloadLootBoxData()
 	g_pWeaponArmory->updateLootBoxContent(xmlFile.child("LootBoxDB"));
 	
 	return true;
+}
+
+static void ApplyBackendConfig()
+{
+	if(cfg_apiIp[0])
+		g_api_ip->SetString(cfg_apiIp);
+
+	extern const char* gDomainBaseUrl;
+	extern int gDomainPort;
+	extern bool gDomainUseSSL;
+	extern char* g_ServerApiKey;
+
+	if(cfg_apiBaseUrl[0])
+		gDomainBaseUrl = cfg_apiBaseUrl;
+	if(cfg_apiPort > 0)
+		gDomainPort = cfg_apiPort;
+	gDomainUseSSL = cfg_apiUseSSL ? true : false;
+	if(cfg_apiServerKey[0])
+		g_ServerApiKey = cfg_apiServerKey;
+
+	r3dOutToLog("Backend API: %s:%d%s ssl:%d\n",
+		g_api_ip->GetString(),
+		gDomainPort,
+		gDomainBaseUrl,
+		gDomainUseSSL ? 1 : 0);
 }
 
 void gameServerLoop()
@@ -251,7 +312,8 @@ static void ParseArgs(int argc, char* argv[])
     default:
       throw "invalid number of arguments";
     
-    case 6: // normal start
+    case 6:  // normal start
+    case 11: // normal start with backend API config from SupervisorServer.cfg
     {
       if(3 != sscanf(argv[1], "%u %d %u", &cfg_gameId, &cfg_hostPort, &cfg_creatorID))
         throw "can't parse argv[1]";
@@ -268,6 +330,19 @@ static void ParseArgs(int argc, char* argv[])
       
       if(1 != sscanf(argv[5], "%d", &cfg_uploadLogs))
         throw "can't parse argv[5]";
+
+      if(argc == 11)
+      {
+        r3dscpy(cfg_apiIp, argv[6]);
+        r3dscpy(cfg_apiBaseUrl, argv[7]);
+
+        if(1 != sscanf(argv[8], "%d", &cfg_apiPort))
+          throw "can't parse argv[8]";
+        if(1 != sscanf(argv[9], "%d", &cfg_apiUseSSL))
+          throw "can't parse argv[9]";
+
+        r3dscpy(cfg_apiServerKey, argv[10]);
+      }
 
       break;
     }
@@ -359,6 +434,7 @@ int main(int argc, char* argv[])
     // from SF config.cpp, bah.
     extern void RegisterAllVars();
     RegisterAllVars();
+    ApplyBackendConfig();
     
     gameServerLoop();
   } 

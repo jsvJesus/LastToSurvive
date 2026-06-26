@@ -9,15 +9,24 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+#include "PhysXRepXHelpers.h"
+
+#if !(defined(WO_SERVER) && defined(_WIN64))
 #include "RepX\RepX.h"
 #include "RepX\RepXUtility.h"
 #include "extensions\PxStringTableExt.h"
 //#include "PhysX\PxFoundation\internal\PxIOStream\public\PxFileBuf.h"
-
-#include "PhysXRepXHelpers.h"
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 
+#if defined(WO_SERVER) && defined(_WIN64)
+physx::repx::RepXCollection* loadCollection(const char* inPath, PxAllocatorCallback& inCallback)
+{
+	r3dOutToLog("RepX load skipped for server x64: %s\n", inPath);
+	return NULL;
+}
+#else
 class MyPhysXFileBuf_ReadOnly : public PxInputData
 {
 private:
@@ -52,9 +61,11 @@ physx::repx::RepXCollection* loadCollection(const char* inPath, PxAllocatorCallb
 		retval = &physx::repx::RepXUpgrader::upgradeCollection( *retval );
 	return retval;
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 
+#if !defined(_WIN64)
 PhysxUserFileReadStream::PhysxUserFileReadStream(const char* filename) : 
 fpr(NULL)
 {
@@ -76,6 +87,7 @@ PxU32 PhysxUserFileReadStream::read(void* buffer, PxU32 size)
 	PX_ASSERT(w);
 	return w;
 }
+#endif
 
 //-------------------------------------------------------------------------
 //	PhysxUserMemoryReadStream
@@ -124,6 +136,7 @@ PxU32 PhysxUserMemoryWriteStream::write(const void* src, PxU32 size)
 //	PhysxUserFileWriteStream
 //-------------------------------------------------------------------------
 
+#if !defined(_WIN64)
 PhysxUserFileWriteStream::PhysxUserFileWriteStream(const char *fileName)
 : fpw(0)
 {
@@ -145,6 +158,7 @@ PxU32 PhysxUserFileWriteStream::write(const void* src, PxU32 count)
 	PxU32 cnt = fwrite(src, count, 1, fpw);
 	return cnt;
 }
+#endif
 
 //-------------------------------------------------------------------------
 //	PhysxUserMemoryWriteStream

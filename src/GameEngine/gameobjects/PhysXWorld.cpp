@@ -467,7 +467,15 @@ void PhysXWorld::Init()
 	PhysXPvd = PxCreatePvd(*PhysXFoundation);
 	if (PhysXPvd)
 	{
-		PhysXPvdTransport = PxDefaultPvdSocketTransportCreate("26.163.92.76", 5425, 1000);
+		char pvdHost[128] = "127.0.0.1";
+		if(_access("ServerHost.cfg", 4) == 0)
+		{
+			char publicIp[128] = "127.0.0.1";
+			r3dscpy(publicIp, r3dReadCFG_S("ServerHost.cfg", "ServerHost", "publicIp", publicIp));
+			r3dscpy(pvdHost, r3dReadCFG_S("ServerHost.cfg", "ServerHost", "physxPvdIp", publicIp));
+		}
+
+		PhysXPvdTransport = PxDefaultPvdSocketTransportCreate(pvdHost, 5425, 1000);
 		if (PhysXPvdTransport)
 			PhysXPvd->connect(*PhysXPvdTransport, PxPvdInstrumentationFlag::ePROFILE);
 	}

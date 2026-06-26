@@ -6,6 +6,8 @@
 #include "../../GameEngine/gameobjects/PhysXWorld.h"
 #include "../../GameEngine/gameobjects/PhysObj.h"
 
+#if ENABLE_AUTODESK_NAVIGATION
+
 ZombieNavAgent::ZombieNavAgent()
 {
 }
@@ -29,3 +31,18 @@ void DeleteZombieNavAgent(ZombieNavAgent* a)
 {
 	gAutodeskNavMesh.DeleteNavAgent(a);
 }
+
+#else
+
+ZombieNavAgent* CreateZombieNavAgent(const r3dPoint3D& pos)
+{
+	(void)pos;
+	return NULL;
+}
+
+void DeleteZombieNavAgent(ZombieNavAgent* a)
+{
+	(void)a;
+}
+
+#endif

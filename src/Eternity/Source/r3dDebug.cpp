@@ -21,6 +21,27 @@ extern void r3dCloseLogFile();
 bool CreateConfigPath(char* dest);
 bool CreateWorkPath(char* dest);
 
+static const wchar_t* GetCrashReportUrl()
+{
+	static wchar_t crashReportUrl[512] = L"http://127.0.0.1/APS/php/api_CrashRpt.php";
+
+	if(_access("ServerHost.cfg", 4) == 0)
+	{
+		char publicIp[128] = "127.0.0.1";
+		char crashUrl[512] = "";
+
+		r3dscpy(publicIp, r3dReadCFG_S("ServerHost.cfg", "ServerHost", "publicIp", publicIp));
+		r3dscpy(crashUrl, r3dReadCFG_S("ServerHost.cfg", "ServerHost", "crashReportUrl", ""));
+
+		if(crashUrl[0] == 0)
+			sprintf(crashUrl, "http://%s/APS/php/api_CrashRpt.php", publicIp);
+
+		MultiByteToWideChar(CP_UTF8, 0, crashUrl, -1, crashReportUrl, R3D_ARRAYSIZE(crashReportUrl));
+	}
+
+	return crashReportUrl;
+}
+
 static BOOL CALLBACK MyMiniDumpCallback(PVOID                            pParam, 
 								 const PMINIDUMP_CALLBACK_INPUT   pInput, 
 								 PMINIDUMP_CALLBACK_OUTPUT        pOutput 
@@ -268,7 +289,7 @@ void r3dThreadEntryHelper(threadEntry_fn fn, DWORD in)
 		info.pszAppVersion = L"1.0";
 		info.pszEmailTo = NULL;
 		
-		info.pszUrl = L"http://26.163.92.76/APS/php/api_CrashRpt.php";
+		info.pszUrl = GetCrashReportUrl();
 		
 		info.pszCrashSenderPath = NULL;
 		info.pfnCrashCallback = &r3dCrashRptCallback;

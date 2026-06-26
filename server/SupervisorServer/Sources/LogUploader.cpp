@@ -5,6 +5,7 @@
 #include "CkHttpResponse.h"
 #include "CkByteData.h"
 #include "CkGZip.h"
+#include "CkGlobal.h"
 
 #include "LogUploader.h"
 #include "SupervisorServer.h"
@@ -17,6 +18,21 @@ CLogUploader	gLogUploader;
 //static	bool		gDomainUseSSL = true;
 // see CLogUploader::Start for dev mode override
 
+static bool UnlockChilkatBundle(const char* componentName, const char* legacyUnlockCode)
+{
+	CkGlobal chilkatGlobal;
+	if(chilkatGlobal.UnlockBundle(legacyUnlockCode))
+		return true;
+
+	if(chilkatGlobal.UnlockBundle("WarZ trial unlock"))
+	{
+		r3dOutToLog("Chilkat %s unlocked in trial mode\n", componentName);
+		return true;
+	}
+
+	r3dOutToLog("Chilkat %s unlock failed: %s\n", componentName, chilkatGlobal.lastErrorText());
+	return false;
+}
 
 CFileData::CFileData(const char* in_fname, bool compress)
 {
@@ -35,8 +51,11 @@ CFileData::CFileData(const char* in_fname, bool compress)
 	{
 		// compress them
 		CkGzip gzip;
-		if(gzip.UnlockComponent("ARKTOSZIP_cRvE6e7mpSqD") == false)
-			r3dError("failed to unlock gzip");
+		if(!UnlockChilkatBundle("gzip", "ARKTOSZIP_cRvE6e7mpSqD"))
+		{
+			r3dOutToLog("!!! failed to unlock gzip, skipping compressed log file %s\n", in_fname);
+			return;
+		}
 
 		CkByteData cdata;
 		if(!gzip.CompressMemory(data, cdata)) {
@@ -64,11 +83,6 @@ CLogUploader::CLogUploader()
 {
 	uploadThread_ = NULL;
 
-	bool success = http_.UnlockComponent("ARKTOSHttp_decCLPWFQXmU");
-	if(!success || !http_.IsUnlocked()) {
-		r3dError("unable to unlock http component", MB_OK);
-		return;
-	}
 	http_.put_ConnectTimeout(30);
 	http_.put_ReadTimeout(60);
 }
@@ -91,6 +105,12 @@ void CLogUploader::Start()
 	//}
 
 	// create upload thread
+	if(!UnlockChilkatBundle("http", "ARKTOSHttp_decCLPWFQXmU"))
+	{
+		r3dOutToLog("LogUploader: disabled because Chilkat HTTP is locked\n");
+		return;
+	}
+
 	uploadThread_ = (HANDLE)_beginthreadex(NULL, 0,	&UploadThreadEntry, this, 0, NULL);
 
 	return;
@@ -159,7 +179,8 @@ int CLogUploader::UploadDataToServer(CFileData& logdata, CFileData& dmpdata, CFi
 	char fullUrl[512];
 	sprintf(fullUrl, "%s%s", gSupervisorConfig->webAPIDomainBaseURL_.c_str(), "api_SrvUploadLogFile.aspx");
 
-	req.UseUpload();
+	req.put_HttpVerb("POST");
+	req.put_ContentType("multipart/form-data");
 	req.put_Path(fullUrl);
 	req.AddParam("skey1", gSupervisorConfig->webAPIServerKey_.c_str());
 

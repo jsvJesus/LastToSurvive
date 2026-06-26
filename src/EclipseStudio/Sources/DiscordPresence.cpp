@@ -19,7 +19,7 @@ static const char* DISCORD_LARGE_IMAGE_KEY = "lts_logo";
 
 static char gDiscordDetails[128] = "In Studio";
 static char gDiscordState[128] = "Main Menu";
-static char gDiscordLargeText[128] = "Eclipse Studio";
+static char gDiscordLargeText[128] = "GameStudioGame Editor";
 static char gDiscordSmallText[128] = "WarZ Editor";
 static bool gDiscordPresenceDirty = false;
 static bool gDiscordReady = false;
@@ -195,7 +195,7 @@ static bool DiscordPresence_IpcSendActivity(bool clearPresence)
 		sprintf(startTime, "%I64d", gDiscordStartTime);
 
 		json += "{\"type\":0";
-		json += ",\"name\":\"Eclipse Studio\"";
+		json += ",\"name\":\"GameStudioGame Editor\"";
 		json += ",\"details\":\"" + DiscordPresence_JsonEscape(gDiscordDetails) + "\"";
 		json += ",\"state\":\"" + DiscordPresence_JsonEscape(gDiscordState) + "\"";
 		json += ",\"timestamps\":{\"start\":";
@@ -310,7 +310,7 @@ static void DiscordPresence_Send()
 	uint64_t appId = DiscordPresence_GetAppId();
 	Discord_Activity_SetApplicationId(&activity, &appId);
 
-	Discord_String name = DiscordPresence_String("Eclipse Studio");
+	Discord_String name = DiscordPresence_String("Game Editor");
 	Discord_Activity_SetName(&activity, name);
 	Discord_Activity_SetType(&activity, Discord_ActivityTypes_Playing);
 	Discord_Activity_SetSupportedPlatforms(&activity, Discord_ActivityGamePlatforms_Desktop);
@@ -450,7 +450,7 @@ void DiscordPresence_SetMenu()
 {
 	DiscordPresence_Copy(gDiscordDetails, sizeof(gDiscordDetails), "In Studio");
 	DiscordPresence_Copy(gDiscordState, sizeof(gDiscordState), "Main Menu");
-	DiscordPresence_Copy(gDiscordLargeText, sizeof(gDiscordLargeText), "Eclipse Studio");
+	DiscordPresence_Copy(gDiscordLargeText, sizeof(gDiscordLargeText), "Game Editor");
 	DiscordPresence_Copy(gDiscordSmallText, sizeof(gDiscordSmallText), "Menu");
 	gDiscordPresenceDirty = true;
 	DiscordPresence_Tick();

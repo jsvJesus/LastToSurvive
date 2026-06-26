@@ -72,14 +72,19 @@ void CSupervisorServer::StartGame(const SBPKT_M2S_StartGameReq_s& n)
   ckGameName.setString(n.ginfo.name);
   ckGameName.base64Encode("utf-8");
   
-  char params[512];
-  sprintf(params, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%d\"", 
+  char params[1024];
+  sprintf(params, "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%d\" \"%s\" \"%s\" \"%d\" \"%d\" \"%s\"",
     gSupervisorConfig->gameServerExe_.c_str(), 
     arg1, 
     arg2,
     arg3,
     ckGameName.getString(),
-    gSupervisorConfig->uploadLogs_
+    gSupervisorConfig->uploadLogs_,
+    gSupervisorConfig->webAPIDomainIP_.c_str(),
+    gSupervisorConfig->webAPIDomainBaseURL_.c_str(),
+    gSupervisorConfig->webAPIDomainPort_,
+    gSupervisorConfig->webAPIDomainUseSSL_ ? 1 : 0,
+    gSupervisorConfig->webAPIServerKey_.c_str()
     );
   
   r3dOutToLog("CreateProcess: %s\n", params);

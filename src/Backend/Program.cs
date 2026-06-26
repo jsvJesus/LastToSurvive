@@ -4,11 +4,15 @@ using WarZ.Api.Data;
 using WarZ.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
+ServerHostSettings serverHost = ServerHostSettings.Load(builder.Environment.ContentRootPath);
+builder.WebHost.UseUrls(serverHost.ApiUrls);
 
 string connectionString =
-    builder.Configuration.GetConnectionString("LTS") // Big Dick
-    ?? throw new InvalidOperationException(
-        "Connection string 'LTS' was not configured.");
+    ServerHostSettings.Expand(
+        builder.Configuration.GetConnectionString("LTS") // Big Dick
+        ?? throw new InvalidOperationException(
+            "Connection string 'LTS' was not configured."),
+        serverHost);
 
 long maxRequestBodySize =
     (builder.Configuration.GetValue<int?>("Legacy:MaxRequestBodySizeMb") ?? 256)
@@ -122,6 +126,9 @@ app.MapMethods("/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.Ex
 app.MapMethods("/APS/api_LeaderboardGet.aspx", legacyMethods, LeaderboardEndpoint.ExecuteAsync);
 app.MapMethods("/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_GetDataGameRewards.aspx", legacyMethods, GameRewardsEndpoint.ExecuteAsync);
+app.MapMethods("/api_GetLootBoxConfig.aspx", legacyMethods, LootBoxConfigEndpoint.ExecuteAsync);
+app.MapMethods("/APS/api_GetLootBoxConfig.aspx", legacyMethods, LootBoxConfigEndpoint.ExecuteAsync);
+app.MapMethods("/WarZ/api/php/api_GetLootBoxConfig.php", legacyMethods, LootBoxConfigEndpoint.ExecuteAsync);
 app.MapMethods("/api_ClanCreate.aspx", legacyMethods, ClanCreateEndpoint.ExecuteAsync);
 app.MapMethods("/APS/api_ClanCreate.aspx", legacyMethods, ClanCreateEndpoint.ExecuteAsync);
 app.MapMethods("/api_ClanApply.aspx", legacyMethods, ClanApplyEndpoint.ExecuteAsync);
@@ -152,3 +159,133 @@ app.MapMethods("/api_SrvUploadLogFile.aspx", legacyMethods, ServerUploadLogEndpo
 app.MapMethods("/APS/api_SrvUploadLogFile.aspx", legacyMethods, ServerUploadLogEndpoint.ExecuteAsync);
 
 app.Run();
+
+internal sealed class ServerHostSettings
+{
+    public string PublicIp { get; private init; } = "127.0.0.1";
+    public string ApiIp { get; private init; } = "127.0.0.1";
+    public string DatabaseIp { get; private init; } = "127.0.0.1";
+    public int ApiPort { get; private init; } = 8080;
+
+    public string ApiUrl => $"http://{ApiIp}:{ApiPort}";
+    public string[] ApiUrls
+    {
+        get
+        {
+            string localhostUrl = $"http://localhost:{ApiPort}";
+
+            return string.Equals(
+                    ApiIp,
+                    "localhost",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(
+                    ApiIp,
+                    "127.0.0.1",
+                    StringComparison.OrdinalIgnoreCase)
+                ? new[] { ApiUrl }
+                : new[] { ApiUrl, localhostUrl };
+        }
+    }
+
+    public static ServerHostSettings Load(string contentRootPath)
+    {
+        Dictionary<string, string> values = ReadValues(contentRootPath);
+
+        string publicIp = Get(values, "publicIp", "127.0.0.1");
+        string apiIp = Get(values, "apiIp", publicIp);
+        string databaseIp = Get(values, "databaseIp", publicIp);
+        int apiPort = int.TryParse(Get(values, "apiPort", "8080"), out int parsedPort)
+            ? parsedPort
+            : 8080;
+
+        return new ServerHostSettings
+        {
+            PublicIp = publicIp,
+            ApiIp = apiIp,
+            DatabaseIp = databaseIp,
+            ApiPort = apiPort
+        };
+    }
+
+    public static string Expand(string value, ServerHostSettings settings)
+    {
+        return value
+            .Replace("{PublicIp}", settings.PublicIp, StringComparison.OrdinalIgnoreCase)
+            .Replace("{ApiIp}", settings.ApiIp, StringComparison.OrdinalIgnoreCase)
+            .Replace("{DatabaseIp}", settings.DatabaseIp, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Dictionary<string, string> ReadValues(string contentRootPath)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        string? path = FindConfigPath(contentRootPath);
+
+        if (path is null)
+            return values;
+
+        bool inServerHostSection = false;
+
+        foreach (string rawLine in File.ReadLines(path))
+        {
+            string line = rawLine.Trim();
+
+            if (line.Length == 0 || line.StartsWith(';') || line.StartsWith('#'))
+                continue;
+
+            if (line.StartsWith('[') && line.EndsWith(']'))
+            {
+                inServerHostSection = string.Equals(
+                    line[1..^1],
+                    "ServerHost",
+                    StringComparison.OrdinalIgnoreCase);
+                continue;
+            }
+
+            if (!inServerHostSection)
+                continue;
+
+            int equalsIndex = line.IndexOf('=');
+            if (equalsIndex <= 0)
+                continue;
+
+            string key = line[..equalsIndex].Trim();
+            string settingValue = line[(equalsIndex + 1)..].Trim();
+            values[key] = settingValue;
+        }
+
+        return values;
+    }
+
+    private static string? FindConfigPath(string contentRootPath)
+    {
+        foreach (string startPath in new[] { Environment.CurrentDirectory, contentRootPath, AppContext.BaseDirectory })
+        {
+            var directory = new DirectoryInfo(startPath);
+
+            while (directory is not null)
+            {
+                string localPath = Path.Combine(directory.FullName, "ServerHost.cfg");
+                if (File.Exists(localPath))
+                    return localPath;
+
+                string binPath = Path.Combine(directory.FullName, "bin", "ServerHost.cfg");
+                if (File.Exists(binPath))
+                    return binPath;
+
+                directory = directory.Parent;
+            }
+        }
+
+        return null;
+    }
+
+    private static string Get(
+        IReadOnlyDictionary<string, string> values,
+        string key,
+        string fallback)
+    {
+        return values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : fallback;
+    }
+}

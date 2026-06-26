@@ -51,6 +51,227 @@ AUTOREGISTER_CLASS(obj_Zombie);
 	int		_zstat_NavFails   = 0;
 	int		_zstat_Disabled   = 0;
 
+#if !ENABLE_AUTODESK_NAVIGATION
+
+obj_Zombie::obj_Zombie() :
+	netMover(this, 1.0f / 10.0f, (float)PKT_C2C_MoveSetCell_s::PLAYER_CELL_RADIUS)
+{
+	_zstat_NumZombies++;
+
+	spawnObject = NULL;
+	HalloweenZombie = false;
+	HeroItemID = 0;
+	HeadIdx = BodyIdx = LegsIdx = 0;
+	ZombieDisabled = 1;
+	ZombieState = EZombieStates::ZState_Idle;
+	StateStartTime = r3dGetTime();
+	StateTimer = -1;
+	ZombieHealth = 100;
+	FastZombie = 0;
+	WalkSpeed = 0;
+	RunSpeed = 0;
+	navAgent = NULL;
+	patrolPntIdx = -1;
+	moveWatchTime = 0;
+	moveStartTime = 0;
+	moveAvoidTime = 0;
+	moveFrameCount = 0;
+	staggerTime = -1;
+	animState = 0;
+	DetectRadius = 0;
+	hardObjLock = invalidGameObjectID;
+	nextDetectTime = r3dGetTime();
+	attackTimer = 0;
+	isFirstAttack = 0;
+}
+
+obj_Zombie::~obj_Zombie()
+{
+	_zstat_NumZombies--;
+}
+
+BOOL obj_Zombie::OnCreate()
+{
+	ObjTypeFlags |= OBJTYPE_Zombie;
+	return parent::OnCreate();
+}
+
+BOOL obj_Zombie::OnDestroy()
+{
+	DeleteZombieNavAgent(navAgent);
+	navAgent = NULL;
+	return parent::OnDestroy();
+}
+
+void obj_Zombie::DisableZombie()
+{
+	ZombieDisabled = true;
+	_zstat_Disabled++;
+	_zstat_NavFails++;
+}
+
+void obj_Zombie::AILog(int level, const char* fmt, ...)
+{
+	(void)level;
+	(void)fmt;
+}
+
+bool obj_Zombie::CheckNavPos(r3dPoint3D& pos)
+{
+	(void)pos;
+	return false;
+}
+
+void obj_Zombie::CreateNavAgent()
+{
+	navAgent = NULL;
+}
+
+void obj_Zombie::StopNavAgent()
+{
+}
+
+void obj_Zombie::SetNavAgentSpeed(float speed)
+{
+	(void)speed;
+}
+
+bool obj_Zombie::MoveNavAgent(const r3dPoint3D& pos, float maxAstarRange)
+{
+	(void)pos;
+	(void)maxAstarRange;
+	return false;
+}
+
+int obj_Zombie::CheckMoveWatchdog()
+{
+	return 2;
+}
+
+int obj_Zombie::CheckMoveStatus()
+{
+	return 2;
+}
+
+GameObject* obj_Zombie::FindBarricade()
+{
+	return NULL;
+}
+
+bool obj_Zombie::CheckForBarricadeBlock()
+{
+	return false;
+}
+
+void obj_Zombie::FaceVector(const r3dPoint3D& v)
+{
+	SetRotationVector(r3dPoint3D(R3D_RAD2DEG(atan2f(v.x, v.z)), 0, 0));
+}
+
+GameObject* obj_Zombie::ScanForTarget(bool immidiate)
+{
+	(void)immidiate;
+	return NULL;
+}
+
+bool obj_Zombie::IsPlayerDetectable(const obj_ServerPlayer* plr, float dist)
+{
+	(void)plr;
+	(void)dist;
+	return false;
+}
+
+GameObject* obj_Zombie::GetClosestPlayerBySenses()
+{
+	return NULL;
+}
+
+bool obj_Zombie::CheckViewToPlayer(const GameObject* obj)
+{
+	(void)obj;
+	return false;
+}
+
+bool obj_Zombie::SenseWeaponFire(const obj_ServerPlayer* plr, const ServerWeapon* wpn)
+{
+	(void)plr;
+	(void)wpn;
+	return false;
+}
+
+bool obj_Zombie::StartAttack(const GameObject* trg)
+{
+	(void)trg;
+	return false;
+}
+
+void obj_Zombie::StopAttack()
+{
+}
+
+BOOL obj_Zombie::Update()
+{
+	return parent::Update();
+}
+
+DefaultPacket* obj_Zombie::NetGetCreatePacket(int* out_size)
+{
+	static PKT_S2C_CreateZombie_s n;
+	n.spawnID = toP2pNetId(GetNetworkID());
+	n.spawnPos = GetPosition();
+	n.spawnDir = GetRotationVector().x;
+	n.moveCell = netMover.SrvGetCell();
+	n.HeroItemID = HeroItemID;
+	n.HeadIdx = (BYTE)HeadIdx;
+	n.BodyIdx = (BYTE)BodyIdx;
+	n.LegsIdx = (BYTE)LegsIdx;
+	n.State = (BYTE)ZombieState;
+	n.FastZombie = (BYTE)FastZombie;
+	n.WalkSpeed = WalkSpeed;
+	n.RunSpeed = RunSpeed;
+
+	*out_size = sizeof(n);
+	return &n;
+}
+
+void obj_Zombie::SendAIStateToNet()
+{
+}
+
+void obj_Zombie::DebugSingleZombie()
+{
+}
+
+BOOL obj_Zombie::OnNetReceive(DWORD EventID, const void* packetData, int packetSize)
+{
+	(void)EventID;
+	(void)packetData;
+	(void)packetSize;
+	return TRUE;
+}
+
+void obj_Zombie::SwitchToState(int in_state)
+{
+	ZombieState = in_state;
+	StateStartTime = r3dGetTime();
+}
+
+void obj_Zombie::DoDeath()
+{
+	SwitchToState(EZombieStates::ZState_Dead);
+}
+
+bool obj_Zombie::ApplyDamage(GameObject* fromObj, float damage, int bodyPart, STORE_CATEGORIES damageSource)
+{
+	(void)fromObj;
+	(void)damage;
+	(void)bodyPart;
+	(void)damageSource;
+	return false;
+}
+
+#else
+
 obj_Zombie::obj_Zombie() : 
 	netMover(this, 1.0f / 10.0f, (float)PKT_C2C_MoveSetCell_s::PLAYER_CELL_RADIUS)
 {
@@ -1297,3 +1518,5 @@ bool obj_Zombie::ApplyDamage(GameObject* fromObj, float damage, int bodyPart, ST
 	
 	return false; // false as zombie wasn't killed
 }
+
+#endif

@@ -157,7 +157,13 @@ void obj_ZombieSpawn::GenerateNavPoints()
 	
 	// shuffle positions around
 	if(navPoints.size() > 0)
-		std::random_shuffle(navPoints.begin(), navPoints.end());
+	{
+		for(size_t i = navPoints.size(); i > 1; --i)
+		{
+			size_t j = (size_t)u_random((int)i);
+			std::swap(navPoints[i - 1], navPoints[j]);
+		}
+	}
 	
 	r3dOutToLog("%d/%d valid navpoints for %d zombies at %f %f %f\n", navPoints.size(), cells * cells, maxZombieCount, GetPosition().x, GetPosition().y, GetPosition().z);
 }

@@ -90,7 +90,9 @@ void PlayGameServer()
   gCollectionsManager.Init( 0, 1 );
 
   r3dOutToLog( "NavMesh.Load...\n" );
+#if ENABLE_AUTODESK_NAVIGATION
   gAutodeskNavMesh.Init();
+#endif
 
   r3dResetFrameTime();
   GameWorld().Update();

@@ -31,7 +31,7 @@ class r3dNetwork
 	int		dumpStats_;
 	int		lastPing_;
 	DWORD		firstBindIP_;
-	const static int FIRST_FREE_PACKET_ID = 134; // must be more that RakNet::ID_USER_PACKET_ENUM
+	const static int FIRST_FREE_PACKET_ID = 134; // must be more that SLikeNet::ID_USER_PACKET_ENUM
 
   public:
 	r3dNetwork();
@@ -60,7 +60,7 @@ class r3dNetwork
 #pragma pack(1)
 struct r3dNetPacketHeader
 {
-	// this first BYTE will be passed directly to RakNet network library.
+	// this first BYTE will be passed directly to SLikeNet network library.
 	const BYTE	EventID;
 
 	r3dNetPacketHeader(int PKT_ID) : EventID((BYTE)PKT_ID) 

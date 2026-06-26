@@ -6209,6 +6209,9 @@ r3dCSHolderWithDeviceQueue::r3dCSHolderWithDeviceQueue(CRITICAL_SECTION& in_cs)
 : cs( in_cs )
 {
 #ifndef WO_SERVER
+	if( !r3dRenderer )
+		return;
+
 	if( R3D_IS_MAIN_THREAD() )
 	{
 		for( ; !TryEnterCriticalSection( &cs ) ; )
@@ -6228,6 +6231,9 @@ r3dCSHolderWithDeviceQueue::r3dCSHolderWithDeviceQueue(CRITICAL_SECTION& in_cs)
 r3dCSHolderWithDeviceQueue::~r3dCSHolderWithDeviceQueue()
 {
 #ifndef WO_SERVER
+	if( !r3dRenderer )
+		return;
+
 	LeaveCriticalSection( &cs ) ;
 #endif
 }

@@ -2,13 +2,11 @@
 #include "r3d.h"
 #include "r3dNetwork.h"
 
-#include "RakPeerInterface.h"
-#include "MessageIdentifiers.h"
-#include "RakNetTypes.h"
-#include "RakNetStatistics.h"
-#include "GetTime.h"
-
-namespace RakNet = SLNet;
+#include "slikenet/peerinterface.h"
+#include "slikenet/MessageIdentifiers.h"
+#include "slikenet/types.h"
+#include "slikenet/statistics.h"
+#include "slikenet/GetTime.h"
 
 	int	_r3d_Network_DoLog = 0;
 
@@ -19,13 +17,13 @@ class r3dNetworkImpl
 	
 	const char*	networkName;
 
-	RakNet::RakPeerInterface* peer;
+	SLNet::RakPeerInterface* peer;
 	bool            isHost;
 	
-	RakNet::SystemAddress* peerData;
+	SLNet::SystemAddress* peerData;
 	DWORD		maxPeers;
 
-	RakNet::RakNetStatistics stat_;
+	SLNet::RakNetStatistics stat_;
 
 	r3dNetCallback*	callback;
 };
@@ -60,7 +58,7 @@ int r3dNetwork::Initialize(r3dNetCallback* callback, const char* networkName)
   r3d_assert(impl == NULL);
   r3d_assert(callback);
   
-  // make double sure that our first free packet ID is above raknet user range
+  // make double sure that our first free packet ID is above SLikeNet user range
   if(r3dNetwork::FIRST_FREE_PACKET_ID < ID_USER_PACKET_ENUM)
 	r3dError("bad FIRST_FREE_PACKET_ID\n");
   
@@ -84,14 +82,14 @@ void r3dNetwork::Deinitialize()
   if(impl->peer)
   {
     impl->peer->Shutdown(1000);
-    RakNet::RakPeerInterface::DestroyInstance(impl->peer);
+    SLNet::RakPeerInterface::DestroyInstance(impl->peer);
     impl->peer = NULL;
   }
 
   if(dumpStats_ >= 1)
   {
     char statbuf[1024 * 8];
-    RakNet::StatisticsToString(&impl->stat_, statbuf, 2);
+    SLNet::StatisticsToString(&impl->stat_, statbuf, 2);
     r3dOutToLog("r3dNetwork %s Global Stats:\n%s", impl->networkName, statbuf);
   }
 
@@ -109,7 +107,7 @@ void r3dNetwork::Update()
   if(!impl) 
     return;
     
-  RakNet::Packet* p = NULL;
+  SLNet::Packet* p = NULL;
   while((p = impl->peer->Receive()) != NULL)
   {
     BYTE* data = p->data;
@@ -117,8 +115,8 @@ void r3dNetwork::Update()
     
     // skip timestamping
     if((unsigned char)p->data[0] == ID_TIMESTAMP) {
-      data += sizeof(RakNet::MessageID) + sizeof(RakNet::Time);
-      len  -= sizeof(RakNet::MessageID) + sizeof(RakNet::Time);
+      data += sizeof(SLNet::MessageID) + sizeof(SLNet::Time);
+      len  -= sizeof(SLNet::MessageID) + sizeof(SLNet::Time);
     }
     
     if(_r3d_Network_DoLog && data[0] < ID_USER_PACKET_ENUM) {
@@ -147,11 +145,11 @@ void r3dNetwork::Update()
         //r3dOutToLog("ID_CONNECTION_REQUEST_ACCEPTED: %d\n", p->systemAddress.systemIndex);
         r3d_assert(!impl->isHost);
         
-        RakNet::SystemAddress extIp = impl->peer->GetExternalID(p->systemAddress);
+        SLNet::SystemAddress extIp = impl->peer->GetExternalID(p->systemAddress);
         r3dOutToLog("r3dNetwork: external ip: %s\n", extIp.ToString(true, ':'));
 
         DWORD peerId = 0;
-        r3d_assert(impl->peerData[peerId] == RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+        r3d_assert(impl->peerData[peerId] == SLNet::UNASSIGNED_SYSTEM_ADDRESS);
         impl->peerData[peerId] = p->systemAddress;
 
 	impl->callback->OnNetPeerConnected(peerId);
@@ -166,7 +164,7 @@ void r3dNetwork::Update()
 
 	DWORD peerId = p->systemAddress.systemIndex;
 	r3d_assert(peerId < impl->maxPeers);
-	r3d_assert(impl->peerData[peerId] == RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+	r3d_assert(impl->peerData[peerId] == SLNet::UNASSIGNED_SYSTEM_ADDRESS);
 	impl->peerData[peerId] = p->systemAddress;
 
 	impl->callback->OnNetPeerConnected(peerId);
@@ -184,11 +182,11 @@ void r3dNetwork::Update()
 
 	DWORD peerId = p->systemAddress.systemIndex;
 	r3d_assert(peerId < impl->maxPeers);
-	impl->peerData[peerId] = RakNet::UNASSIGNED_SYSTEM_ADDRESS;
+	impl->peerData[peerId] = SLNet::UNASSIGNED_SYSTEM_ADDRESS;
 	
 	impl->callback->OnNetPeerDisconnected(peerId);
 	
-	RakNet::RakNetStatistics* rns = impl->peer->GetStatistics(p->systemAddress);
+	SLNet::RakNetStatistics* rns = impl->peer->GetStatistics(p->systemAddress);
 	if(rns == NULL)
 	  break;
 	  
@@ -197,7 +195,7 @@ void r3dNetwork::Update()
 
         if(dumpStats_ >= 2) {
 	  char statbuf[1024 * 8];
-	  RakNet::StatisticsToString(rns, statbuf, 0);
+	  SLNet::StatisticsToString(rns, statbuf, 0);
 	  r3dOutToLog("r3dNetwork Stat: %s\n%s", p->systemAddress.ToString(true, ':'), statbuf);
 	}
         break;
@@ -207,7 +205,7 @@ void r3dNetwork::Update()
       {
         if(data[0] < FIRST_FREE_PACKET_ID)
         {
-          // ignore other raknet packets
+          // ignore other SLikeNet packets
           break;
         }
 
@@ -234,7 +232,7 @@ void r3dNetwork::Update()
   return;
 }
 
-static int RakNet_FillBindAddresses(RakNet::SocketDescriptor* binds, int port, DWORD* firstIP)
+static int SLikeNet_FillBindAddresses(SLNet::SocketDescriptor* binds, int port, DWORD* firstIP)
 {
   // get all computer available ip addresses
   char ac[256];
@@ -259,12 +257,12 @@ static int RakNet_FillBindAddresses(RakNet::SocketDescriptor* binds, int port, D
     r3dscpy(ip, inet_ntoa(ipaddr));
     r3dOutToLog("IP: %s\n", ip);
 
-    // add raknet bind
-    binds[numBinds] = RakNet::SocketDescriptor(port, ip);
+    // add SLikeNet bind
+    binds[numBinds] = SLNet::SocketDescriptor(port, ip);
   }
 
   // add localhost binding as well
-  binds[numBinds++] = RakNet::SocketDescriptor(port, "127.0.0.1");
+  binds[numBinds++] = SLNet::SocketDescriptor(port, "127.0.0.1");
   
   return numBinds;
 }
@@ -280,24 +278,24 @@ int r3dNetwork::CreateHost(int port, int numPeers)
   r3dOutToLog("r3dNetwork: Creating host at port %d\n", port); CLOG_INDENT;
 
   impl->maxPeers = numPeers;
-  impl->peerData = new RakNet::SystemAddress[numPeers];
-  impl->peer     = RakNet::RakPeerInterface::GetInstance();
+  impl->peerData = new SLNet::SystemAddress[numPeers];
+  impl->peer     = SLNet::RakPeerInterface::GetInstance();
   
   // we have to bind to every available address
   // otherwise on machines with multiple IPs default gateway can be different from external IP
   // and send functions will fail.
-  RakNet::SocketDescriptor sdescs[128 + 1];
-  int numBinds = RakNet_FillBindAddresses(&sdescs[0], port, &firstBindIP_);
-  RakNet::StartupResult sr = impl->peer->Startup(numPeers, &sdescs[0], numBinds);
-  if(sr != RakNet::RAKNET_STARTED) {
+  SLNet::SocketDescriptor sdescs[128 + 1];
+  int numBinds = SLikeNet_FillBindAddresses(&sdescs[0], port, &firstBindIP_);
+  SLNet::StartupResult sr = impl->peer->Startup(numPeers, &sdescs[0], numBinds);
+  if(sr != SLNet::RAKNET_STARTED) {
     r3dError("r3dNetwork::CreateHost failed %d\n", sr);
   }
 
   impl->peer->SetMaximumIncomingConnections(numPeers);
-  //impl->peer->SetTimeoutTime(45000, RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+  //impl->peer->SetTimeoutTime(45000, SLNet::UNASSIGNED_SYSTEM_ADDRESS);
 
   impl->isHost = true;
-  impl->stat_.connectionStartTime = RakNet::GetTimeUS();
+  impl->stat_.connectionStartTime = SLNet::GetTimeUS();
 
   return 1;
 }
@@ -310,12 +308,12 @@ int r3dNetwork::CreateClient()
   r3dOutToLog("r3dNetwork: Creating client\n"); CLOG_INDENT;
 
   impl->maxPeers = 1;
-  impl->peerData = new RakNet::SystemAddress[1];
+  impl->peerData = new SLNet::SystemAddress[1];
 
-  RakNet::SocketDescriptor socketDescriptor;
-  impl->peer = RakNet::RakPeerInterface::GetInstance();
-  RakNet::StartupResult sr = impl->peer->Startup(1, &socketDescriptor, 1);
-  if(sr != RakNet::RAKNET_STARTED) {
+  SLNet::SocketDescriptor socketDescriptor;
+  impl->peer = SLNet::RakPeerInterface::GetInstance();
+  SLNet::StartupResult sr = impl->peer->Startup(1, &socketDescriptor, 1);
+  if(sr != SLNet::RAKNET_STARTED) {
     r3dError("r3dNetwork::CreateClient failed %d\n", sr);
   }
   
@@ -323,7 +321,7 @@ int r3dNetwork::CreateClient()
     r3dOutToLog("IP: %s\n", impl->peer->GetLocalIP(i));
   }
 
-  //impl->peer->SetTimeoutTime(45000, RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+  //impl->peer->SetTimeoutTime(45000, SLNet::UNASSIGNED_SYSTEM_ADDRESS);
   
   // enable pings
   impl->peer->SetOccasionalPing(true);
@@ -345,15 +343,15 @@ int r3dNetwork::Connect(const char* hostname, int port)
   r3dOutToLog("r3dNetwork: connecting\n"); CLOG_INDENT;
 #endif  
 
-  RakNet::ConnectionAttemptResult car = impl->peer->Connect(
+  SLNet::ConnectionAttemptResult car = impl->peer->Connect(
 	hostname, 
 	port, 
 	"", 
 	0);
-  if(car != RakNet::CONNECTION_ATTEMPT_STARTED)
+  if(car != SLNet::CONNECTION_ATTEMPT_STARTED)
     r3dError("r3dNetwork::Connect failed %d\n", car);
     
-  impl->stat_.connectionStartTime = RakNet::GetTimeUS();
+  impl->stat_.connectionStartTime = SLNet::GetTimeUS();
 
   return 1;
 }
@@ -375,7 +373,7 @@ bool r3dNetwork::IsConnected()
   }
   
   // if we have host peer - we're connected
-  if(impl->peerData[0] != RakNet::UNASSIGNED_SYSTEM_ADDRESS) {
+  if(impl->peerData[0] != SLNet::UNASSIGNED_SYSTEM_ADDRESS) {
     return true;
   }
 
@@ -412,7 +410,7 @@ void r3dNetwork::SendToHost(const r3dNetPacketHeader* data, int dataSize, bool i
   // make sure our logical packet id is valid
   r3d_assert(data->EventID >= r3dNetwork::FIRST_FREE_PACKET_ID);
   
-  /*NOTE from RakNet.
+  /*NOTE from SLikeNet.
     The sequenced messages will be in order, and the ordered messages will be in order. 
     However, that doesn't mean that all messages will be in order because they are independent sets.
   */  

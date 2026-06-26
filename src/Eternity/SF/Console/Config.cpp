@@ -1,4 +1,5 @@
 #include "r3dPCH.h"
+#include "r3d.h"
 #include "Config.h"
 
 
@@ -25,6 +26,28 @@ void ExecVarIni( const char* path )
 	g_pCmdProc->FlushBuffer();
 }
 
+static void ApplyServerHostConfig()
+{
+	const char* configFile = "ServerHost.cfg";
+	const char* group = "ServerHost";
+
+	if(_access(configFile, 4) != 0)
+		return;
+
+	char publicIp[128] = "";
+	char serverIp[128] = "";
+	char apiIp[128] = "";
+
+	r3dscpy(publicIp, r3dReadCFG_S(configFile, group, "publicIp", ""));
+	r3dscpy(serverIp, r3dReadCFG_S(configFile, group, "serverIp", publicIp));
+	r3dscpy(apiIp, r3dReadCFG_S(configFile, group, "apiIp", publicIp));
+
+	if(g_serverip && serverIp[0])
+		g_serverip->SetString(serverIp);
+	if(g_api_ip && apiIp[0])
+		g_api_ip->SetString(apiIp);
+}
+
 //--------------------------------------------------------------------------------------------------------
 void RegisterAllVars()
 {
@@ -40,6 +63,7 @@ void RegisterAllVars()
 
 	ExecVarIni( "game.ini" );
 	ExecVarIni( "local.ini" );
+	ApplyServerHostConfig();
 }
 
 //--------------------------------------------------------------------------------------------------------

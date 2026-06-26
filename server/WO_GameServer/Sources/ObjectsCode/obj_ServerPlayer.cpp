@@ -682,13 +682,13 @@ BOOL obj_ServerPlayer::Update()
 
 	// anti cheat: player is under the ground, or player is flying above the ground
 	{
-		//PxRaycastHit hit;
-		PxSweepHit hit;
+		PxSweepBuffer hit;
 		PxSceneQueryFilterData filter(PxFilterData(COLLIDABLE_PLAYER_COLLIDABLE_MASK, 0, 0, 0), PxSceneQueryFilterFlag::eSTATIC);
 		r3dVector pos = GetPosition();
 		PxBoxGeometry boxg(0.5f, 0.1f, 0.5f);
 		PxTransform pose(PxVec3(pos.x, pos.y+0.5f, pos.z));
-		if(!g_pPhysicsWorld->PhysXScene->sweepSingle(boxg, pose, PxVec3(0,-1,0), 2000.0f, PxSceneQueryFlag::eDISTANCE|PxSceneQueryFlag::eINITIAL_OVERLAP|PxSceneQueryFlag::eINITIAL_OVERLAP_KEEP, hit, filter))
+		PxHitFlags hitFlags = PxHitFlag::eDEFAULT;
+		if(!g_pPhysicsWorld->PhysXScene->sweep(boxg, pose, PxVec3(0,-1,0), 2000.0f, hit, hitFlags, filter))
 		{
 			m_PlayerUndergroundAntiCheatTimer += r3dGetFrameTime();
 			if(m_PlayerUndergroundAntiCheatTimer > 2.0f)
@@ -702,7 +702,7 @@ BOOL obj_ServerPlayer::Update()
 			if(m_PlayerUndergroundAntiCheatTimer > 0)
 				m_PlayerUndergroundAntiCheatTimer -= r3dGetFrameTime();
 
-			float dist = hit.distance;
+			float dist = hit.block.distance;
 			//r3dOutToLog("@@@@ dist=%.2f\n", dist);
 			if(dist > 2.1f) // higher than 1.6 meter above ground
 			{
