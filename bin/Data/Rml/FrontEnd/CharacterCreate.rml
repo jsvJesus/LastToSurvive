@@ -1,0 +1,225 @@
+<rml>
+<head>
+	<title>Create Survivor</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
+</head>
+
+<body class="frontend_body">
+
+	<div class="background_grid"></div>
+	<div class="background_vignette"></div>
+
+	<div class="main_topbar">
+
+		<div class="main_logo_block">
+			<div class="game_title small">
+				LAST TO SURVIVE
+			</div>
+
+			<div class="game_subtitle">
+				CREATE SURVIVOR
+			</div>
+		</div>
+
+		<div class="account_block">
+			<div>NEW CHARACTER</div>
+			<div>MAXIMUM 5 SURVIVORS</div>
+		</div>
+
+	</div>
+
+	<div class="character_create_layout">
+
+		<div class="create_preview_panel">
+
+			<div class="section_header">
+				CHARACTER PREVIEW
+			</div>
+
+			<div class="create_preview_area">
+
+				<div class="create_preview_placeholder">
+					<div class="preview_character_icon">
+						+
+					</div>
+
+					<div
+						id="create_hero_name"
+						class="preview_character_name"
+					>
+						ASIAN MALE
+					</div>
+
+					<div class="preview_character_description">
+						3D character preview will be connected
+						after the creation flow is verified.
+					</div>
+				</div>
+
+			</div>
+
+			<div class="create_character_info">
+
+				<div class="create_info_row">
+					<div class="create_info_label">HERO ITEM</div>
+					<div id="create_hero_item" class="create_info_value">
+						20201
+					</div>
+				</div>
+
+				<div class="create_info_row">
+					<div class="create_info_label">GAME MODE</div>
+					<div id="create_game_mode" class="create_info_value">
+						NORMAL
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+		<div class="create_form_panel">
+
+			<div class="section_header">
+				SURVIVOR CONFIGURATION
+			</div>
+
+			<div class="field_label">
+				CHARACTER NAME
+			</div>
+
+			<input
+				id="create_character_name"
+				class="frontend_input"
+				type="text"
+				maxlength="16"
+			/>
+
+			<div class="create_help_text">
+				Use between 4 and 16 characters.
+				Special symbols are not allowed.
+			</div>
+
+			<div class="appearance_title">
+				APPEARANCE
+			</div>
+
+			<div class="appearance_row">
+
+				<div class="appearance_label">
+					HEAD
+				</div>
+
+				<button
+					id="btn_create_head_prev"
+					class="appearance_button secondary_button"
+				>
+					&lt;
+				</button>
+
+				<div
+					id="create_head_value"
+					class="appearance_value"
+				>
+					1 / 4
+				</div>
+
+				<button
+					id="btn_create_head_next"
+					class="appearance_button secondary_button"
+				>
+					&gt;
+				</button>
+
+			</div>
+
+			<div class="appearance_row">
+
+				<div class="appearance_label">
+					UPPER BODY
+				</div>
+
+				<button
+					id="btn_create_body_prev"
+					class="appearance_button secondary_button"
+				>
+					&lt;
+				</button>
+
+				<div
+					id="create_body_value"
+					class="appearance_value"
+				>
+					1 / 4
+				</div>
+
+				<button
+					id="btn_create_body_next"
+					class="appearance_button secondary_button"
+				>
+					&gt;
+				</button>
+
+			</div>
+
+			<div class="appearance_row">
+
+				<div class="appearance_label">
+					LEGS
+				</div>
+
+				<button
+					id="btn_create_legs_prev"
+					class="appearance_button secondary_button"
+				>
+					&lt;
+				</button>
+
+				<div
+					id="create_legs_value"
+					class="appearance_value"
+				>
+					1 / 4
+				</div>
+
+				<button
+					id="btn_create_legs_next"
+					class="appearance_button secondary_button"
+				>
+					&gt;
+				</button>
+
+			</div>
+
+			<div
+				id="create_character_status"
+				class="status_text create_status"
+			>
+				Configure your survivor and enter a name.
+			</div>
+
+			<button
+				id="btn_create_character_confirm"
+				class="primary_button large"
+			>
+				CREATE SURVIVOR
+			</button>
+
+			<button
+				id="btn_create_character_cancel"
+				class="secondary_button"
+			>
+				BACK TO SURVIVORS
+			</button>
+
+		</div>
+
+	</div>
+
+	<div class="frontend_footer">
+		<div>RMLUI CHARACTER CREATION</div>
+		<div>PUBLIC / DEV SERVER</div>
+	</div>
+
+</body>
+</rml>

@@ -1,0 +1,36 @@
+<rml>
+<head>
+	<title>DX11 RmlUI Smoke</title>
+	<link type="text/rcss" href="DX11Smoke.rcss"/>
+</head>
+
+<body>
+	<div id="screen">
+		<div id="panel">
+			<div id="title">RmlUI DX11 ONLINE</div>
+			<div id="subtitle">Studio.exe is rendering RML through DirectX 11</div>
+
+			<div id="status-grid">
+				<div class="status-row">
+					<div class="status-label">Renderer</div>
+					<div class="status-value">DX11</div>
+				</div>
+
+				<div class="status-row">
+					<div class="status-label">Runtime</div>
+					<div class="status-value">RmlUI</div>
+				</div>
+
+				<div class="status-row">
+					<div class="status-label">Document</div>
+					<div class="status-value">DX11Smoke.rml</div>
+				</div>
+			</div>
+
+			<div id="footer">
+				If you see this panel, RML render output works.
+			</div>
+		</div>
+	</div>
+</body>
+</rml>

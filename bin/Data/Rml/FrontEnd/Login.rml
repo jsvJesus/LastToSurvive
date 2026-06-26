@@ -1,0 +1,153 @@
+<rml>
+<head>
+	<title>Last To Survive Login</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
+</head>
+
+<body class="frontend_body">
+
+	<div class="background_grid"></div>
+	<div class="background_vignette"></div>
+	<div class="login_background_light"></div>
+
+	<div class="screen_edge screen_edge_top"></div>
+	<div class="screen_edge screen_edge_bottom"></div>
+
+	<div class="login_topbar">
+
+		<div class="login_brand">
+
+			<div class="login_brand_mark">
+				LTS
+			</div>
+
+			<div class="login_brand_text">
+
+				<div class="game_title small">
+					LAST TO SURVIVE
+				</div>
+
+				<div class="game_subtitle">
+					SURVIVOR NETWORK
+				</div>
+
+			</div>
+
+		</div>
+
+		<div class="login_system_readout">
+
+			<div class="system_label">
+				NETWORK STATUS
+			</div>
+
+			<div class="system_value">
+				SECURE CONNECTION READY
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="login_layout">
+
+		<div class="login_panel tactical_panel">
+
+			<div class="panel_accent"></div>
+			<div class="panel_top_line"></div>
+
+			<div class="login_panel_meta">
+
+				<div class="login_panel_code">
+					ACCOUNT ACCESS
+				</div>
+
+				<div class="login_panel_state">
+					ONLINE
+				</div>
+
+			</div>
+
+			<div class="panel_caption">
+				ACCOUNT LOGIN
+			</div>
+
+			<div class="panel_description">
+				Enter your credentials to connect to the Last To Survive survivor network.
+			</div>
+
+			<div class="field_label">
+				ACCOUNT EMAIL
+			</div>
+
+			<input
+				id="login_username"
+				class="frontend_input"
+				type="text"
+			/>
+
+			<div class="field_label">
+				PASSWORD
+			</div>
+
+			<input
+				id="login_password"
+				class="frontend_input"
+				type="password"
+			/>
+
+			<div
+				id="login_status"
+				class="status_text"
+			>
+				Enter your account credentials.
+			</div>
+
+			<button
+				id="btn_login"
+				class="primary_button login_action"
+			>
+
+				<div class="button_code">
+					NET
+				</div>
+
+				<div class="button_label">
+					SIGN IN
+				</div>
+
+			</button>
+
+			<button
+				id="btn_login_exit"
+				class="secondary_button login_action"
+			>
+
+				<div class="button_code">
+					ESC
+				</div>
+
+				<div class="button_label">
+					EXIT GAME
+				</div>
+
+			</button>
+
+		</div>
+
+	</div>
+
+	<div class="frontend_footer">
+
+		<div>
+			LTS FRONTEND / RMLUI
+		</div>
+
+		<div>
+			RELEASE X64 / SECURE CHANNEL
+		</div>
+
+	</div>
+
+</body>
+</rml>

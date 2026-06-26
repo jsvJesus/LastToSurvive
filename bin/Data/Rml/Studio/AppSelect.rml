@@ -1,0 +1,73 @@
+<rml>
+<head>
+	<title>Last To Survive - App Select</title>
+	<link type="text/rcss" href="AppSelect.rcss"/>
+</head>
+
+<body>
+	<div id="screen">
+		<img id="background_image" src="../Assets/bg.png"/>
+		<div id="background_tint"></div>
+		<div id="panel_shadow"></div>
+
+		<div id="panel">
+			<div id="corner_top_left" class="panel_corner"></div>
+			<div id="corner_top_right" class="panel_corner"></div>
+			<div id="corner_bottom_left" class="panel_corner"></div>
+			<div id="corner_bottom_right" class="panel_corner"></div>
+			<div id="panel_dot_top" class="panel_dot"></div>
+			<div id="panel_dot_bottom" class="panel_dot"></div>
+
+			<div id="brand_mark">
+				<img id="brand_logo" src="../Assets/LTS_logo.png"/>
+			</div>
+			<div id="title">APP SELECT</div>
+			<div id="header_line"></div>
+
+			<div id="game_section_label" class="section_label">GAME</div>
+
+			<button id="btn_game_public" class="menu_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_server.png"/></span>
+				<span class="menu_label">GAME - PUBLIC SERVER</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<button id="btn_game_dev" class="menu_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_server.png"/></span>
+				<span class="menu_label">GAME - DEV SERVER</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<div id="editors_section_label" class="section_label">EDITORS</div>
+			<div id="editors_section_line"></div>
+
+			<button id="btn_level_editor" class="menu_button editor_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_level.png"/></span>
+				<span class="menu_label">LEVEL EDITOR</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<button id="btn_particle_editor" class="menu_button editor_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_particle.png"/></span>
+				<span class="menu_label">PARTICLE EDITOR</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<button id="btn_physics_editor" class="menu_button editor_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_physics.png"/></span>
+				<span class="menu_label">PHYSICS EDITOR</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<button id="btn_character_editor" class="menu_button editor_button">
+				<span class="menu_icon"><img class="menu_icon_png" src="../Assets/icon_character.png"/></span>
+				<span class="menu_label">CHARACTER EDITOR</span>
+				<span class="menu_chevron">›</span>
+			</button>
+
+			<div id="footer_text">Created &amp; Edited by ES3N1N</div>
+			<button id="btn_exit" class="exit_button">EXIT</button>
+		</div>
+	</div>
+</body>
+</rml>

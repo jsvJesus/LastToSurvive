@@ -1,0 +1,390 @@
+<rml>
+<head>
+	<title>Last To Survive Main Menu</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
+</head>
+
+<body class="frontend_body main_menu_body">
+
+	<div
+		id="shop_background_stage"
+		class="frontend_static_background"
+	>
+		<img
+			id="shop_background_image"
+			class="frontend_static_background_image"
+			src="../Assets/bg.png"
+		/>
+
+		<div class="frontend_static_background_shade"></div>
+		<div class="main_menu_scene_vignette"></div>
+		<div class="skills_scene_scrim"></div>
+	</div>
+
+	<div
+		id="character_preview_stage"
+		class="main_menu_scene"
+	>
+		<img
+			id="character_preview_texture"
+			class="main_menu_scene_texture"
+			src="rml://character-preview"
+		/>
+
+		<div class="main_menu_scene_shade"></div>
+		<div class="main_menu_scene_vignette"></div>
+	</div>
+
+	<div class="frontend_shell_topbar">
+
+		<img
+			class="frontend_topbar_background"
+			src="../Assets/FrontEnd/Top_Bar.png"
+		/>
+
+		<div class="frontend_topbar_content">
+
+			<div class="top_level_block">
+				<div class="top_level_left">
+					<div id="top_level_value" class="top_level_value">1</div>
+				</div>
+
+				<div class="top_level_right">
+					<div class="top_level_caption">LEVEL</div>
+					<div class="top_level_progress">
+						<div id="top_level_xp_fill" class="top_level_progress_fill"></div>
+					</div>
+					<div id="top_level_xp_text" class="top_level_xp_text">0 / 0</div>
+				</div>
+			</div>
+
+			<div class="top_faction_block">
+				<div id="top_faction_icon" class="top_faction_icon">F</div>
+
+				<div class="top_faction_info">
+					<div class="top_faction_caption">FACTION</div>
+					<div id="top_survivor_name" class="top_faction_name">EX MILITARY</div>
+					<div id="top_survivor_role" class="top_faction_level">LEVEL 1</div>
+				</div>
+			</div>
+
+			<div class="top_currency_block">
+				<div class="top_currency_item currency_zc">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zc.png"/>
+					<div id="balance_gc" class="top_currency_value">0</div>
+					<button id="btn_money_zc" class="top_currency_add">+</button>
+				</div>
+
+				<div class="top_currency_item currency_zd">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zd.png"/>
+					<div id="balance_gd" class="top_currency_value">0</div>
+					<button id="btn_money_zd" class="top_currency_add">+</button>
+				</div>
+
+				<div class="top_currency_item currency_zlt">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zlt.png"/>
+					<div id="balance_zlt" class="top_currency_value">0</div>
+				</div>
+				<div id="balance_ltc" class="runtime_hidden_value">0</div>
+			</div>
+
+			<div class="frontend_navigation">
+			<button id="nav_survivor" class="top_navigation_button active">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">HOME</div>
+			</button>
+			<button id="nav_skills" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SKILLS</div>
+			</button>
+			<button id="nav_equipment" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">EQUIPMENT</div>
+			</button>
+			<button id="nav_shop" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SHOP</div>
+			</button>
+			<button id="nav_clan" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">CLAN</div>
+			</button>
+			<button id="nav_awards" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">AWARDS</div>
+			</button>
+			</div>
+
+			<div class="frontend_account_actions">
+				<button id="btn_change_name" class="top_icon_button">
+					<div class="top_icon_glyph cart_icon">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
+					</div>
+					<div class="account_action_tooltip">CHANGE NAME</div>
+				</button>
+				<button id="btn_change_character" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
+					</div>
+					<div class="account_action_tooltip">CHANGE CHARACTER</div>
+				</button>
+				<button id="btn_find_friend" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_find_friend.png"/>
+					</div>
+					<div class="account_action_tooltip">FRIENDS</div>
+				</button>
+				<button id="btn_rewards" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_rewards.png"/>
+					</div>
+					<div class="account_action_tooltip">MISSIONS</div>
+				</button>
+				<button id="btn_settings" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
+					</div>
+					<div class="account_action_tooltip">SETTINGS</div>
+				</button>
+				<button id="btn_frontend_exit" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
+					</div>
+					<div class="account_action_tooltip">EXIT</div>
+				</button>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="home_overlay">
+
+		<button
+			id="btn_view_rewards"
+			class="experience_card"
+		>
+			<div class="experience_icon">
+				XP
+			</div>
+
+			<div class="experience_content">
+				<div
+					id="reward_rank_title"
+					class="experience_title"
+				>
+					RECRUIT
+				</div>
+
+				<div
+					id="reward_xp_text"
+					class="experience_text"
+				>
+					0 / 100
+				</div>
+
+				<div class="experience_progress">
+					<div
+						id="reward_xp_fill"
+						class="experience_progress_fill"
+					></div>
+				</div>
+			</div>
+		</button>
+
+		<div class="mission_card">
+
+			<div class="mission_header">
+				<div class="mission_type">ACTIVE CONTRACT</div>
+				<div class="mission_status">IN PROGRESS</div>
+			</div>
+
+			<div class="mission_body">
+
+				<div class="mission_emblem">
+					01
+				</div>
+
+				<div class="mission_content">
+					<div class="mission_title">
+						STOLEN SPARE PARTS
+					</div>
+
+					<div class="mission_description">
+						Redeem spare parts from hostile territory.
+					</div>
+
+					<div class="mission_progress_text">
+						0 / 3 OBJECTIVES
+					</div>
+				</div>
+
+			</div>
+
+			<div class="mission_footer">
+				<div>MORE</div>
+				<div>59:34</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="premium_badge">
+		PREMIUM NOT ACTIVE
+	</div>
+
+	<div class="bottom_play_area">
+
+		<button
+			id="btn_quick_join"
+			class="play_button"
+		>
+			<div class="play_button_icon">
+				*
+			</div>
+
+			<div class="play_button_text">
+				PLAY
+			</div>
+		</button>
+
+		<div class="squad_slots">
+
+			<div class="squad_slot">
+				<div class="squad_slot_plus">+</div>
+				<div>ADD TO SQUAD</div>
+			</div>
+
+			<div class="squad_slot disabled">
+				<div class="squad_slot_plus">+</div>
+				<div>ADD TO SQUAD</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="survivor_identity">
+
+		<div
+			id="survivor_state"
+			class="survivor_state ready"
+		>
+			READY
+		</div>
+
+		<div class="survivor_identity_text">
+			<div id="survivor_nickname" class="survivor_nickname">
+				SURVIVOR
+			</div>
+
+			<div id="survivor_class" class="survivor_class">
+				EX MILITARY
+			</div>
+		</div>
+
+	</div>
+
+	<div class="preview_help">
+		LMB ROTATE  |  RMB MOVE  |  WHEEL ZOOM
+	</div>
+
+	<div class="main_menu_status_bar">
+
+		<div class="main_menu_status_left">
+			<div class="status_indicator"></div>
+
+			<div
+				id="main_menu_status"
+				class="frontend_status"
+			>
+				Loading survivor profile...
+			</div>
+		</div>
+
+		<div class="preview_server_information">
+
+			<div class="server_information_label">
+				REGION:
+			</div>
+
+			<div
+				id="footer_region"
+				class="server_information_value"
+			>
+				AUTO
+			</div>
+
+			<div class="server_information_separator">
+				|
+			</div>
+
+			<div class="server_information_label">
+				SERVER:
+			</div>
+
+			<div
+				id="footer_server"
+				class="server_information_value"
+			>
+				OFFLINE
+			</div>
+
+			<div class="connection_bars">
+				<div class="connection_bar bar_one"></div>
+				<div class="connection_bar bar_two"></div>
+				<div class="connection_bar bar_three"></div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="frontend_chat_bar">
+		<div class="chat_icon">...</div>
+		<div class="chat_hint">Press [ENTER] to open chat</div>
+	</div>
+
+	<div class="runtime_hidden_value">
+
+		<div id="account_name">ACCOUNT</div>
+		<div id="selected_character">SURVIVOR</div>
+
+		<div id="stat_player_kills">0</div>
+		<div id="stat_zombie_kills">0</div>
+		<div id="stat_time_played">0d 00h 00m</div>
+		<div id="stat_health">100%</div>
+		<div id="stat_reputation">0</div>
+		<div id="stat_rank">UNRANKED</div>
+
+		<div id="survivor_level_value">1</div>
+		<div id="survivor_level_xp_text">0 / 100</div>
+		<div id="survivor_level_xp_fill"></div>
+
+		<input
+			id="rename_character_name"
+			type="text"
+			maxlength="16"
+		/>
+
+		<button id="btn_rename_character">
+			APPLY NAME
+		</button>
+
+	</div>
+
+</body>
+</rml>

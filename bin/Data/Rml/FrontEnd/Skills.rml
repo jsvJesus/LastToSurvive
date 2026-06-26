@@ -1,0 +1,485 @@
+<rml>
+<head>
+	<title>Last To Survive Skills</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
+</head>
+
+<body class="frontend_body main_menu_body skills_body">
+
+	<div id="skills_background_stage" class="frontend_static_background">
+		<img
+			id="skills_background_image"
+			class="frontend_static_background_image"
+			src="../Assets/bg.png"
+		/>
+
+		<div class="frontend_static_background_shade"></div>
+		<div class="main_menu_scene_vignette"></div>
+		<div class="skills_scene_scrim"></div>
+	</div>
+
+	<div class="frontend_shell_topbar">
+
+		<img
+			class="frontend_topbar_background"
+			src="../Assets/FrontEnd/Top_Bar.png"
+		/>
+
+		<div class="frontend_topbar_content">
+
+			<div class="top_level_block">
+				<div class="top_level_left">
+					<div id="top_level_value" class="top_level_value">1</div>
+				</div>
+
+				<div class="top_level_right">
+					<div class="top_level_caption">LEVEL</div>
+					<div class="top_level_progress">
+						<div id="top_level_xp_fill" class="top_level_progress_fill"></div>
+					</div>
+					<div id="top_level_xp_text" class="top_level_xp_text">0 / 0</div>
+				</div>
+			</div>
+
+			<div class="top_faction_block">
+				<div id="top_faction_icon" class="top_faction_icon">F</div>
+
+				<div class="top_faction_info">
+					<div class="top_faction_caption">FACTION:</div>
+					<div id="top_survivor_name" class="top_faction_name">NO FACTION</div>
+					<div id="top_survivor_role" class="top_faction_level">LEVEL 1</div>
+				</div>
+			</div>
+
+			<div class="top_currency_block">
+				<div class="top_currency_item currency_zc">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zc.png"/>
+					<div id="balance_gc" class="top_currency_value">0</div>
+					<button id="btn_money_zc" class="top_currency_add">+</button>
+				</div>
+
+				<div class="top_currency_item currency_zd">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zd.png"/>
+					<div id="balance_gd" class="top_currency_value">0</div>
+					<button id="btn_money_zd" class="top_currency_add">+</button>
+				</div>
+
+				<div class="top_currency_item currency_zlt">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zlt.png"/>
+					<div id="balance_zlt" class="top_currency_value">0</div>
+				</div>
+				<div id="balance_ltc" class="runtime_hidden_value">0</div>
+			</div>
+
+			<div class="frontend_navigation">
+			<button id="nav_survivor" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">HOME</div>
+			</button>
+			<button id="nav_skills" class="top_navigation_button active">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SKILLS</div>
+			</button>
+			<button id="nav_equipment" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">EQUIPMENT</div>
+			</button>
+			<button id="nav_shop" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SHOP</div>
+			</button>
+			<button id="nav_clan" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">CLAN</div>
+			</button>
+			<button id="nav_awards" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">AWARDS</div>
+			</button>
+			</div>
+
+			<div class="frontend_account_actions">
+				<button id="btn_change_name" class="top_icon_button">
+					<div class="top_icon_glyph cart_icon">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
+					</div>
+					<div class="account_action_tooltip">CHANGE NAME</div>
+				</button>
+				<button id="btn_change_character" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
+					</div>
+					<div class="account_action_tooltip">CHANGE CHARACTER</div>
+				</button>
+				<button id="btn_find_friend" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_find_friend.png"/>
+					</div>
+					<div class="account_action_tooltip">FRIENDS</div>
+				</button>
+				<button id="btn_rewards" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_rewards.png"/>
+					</div>
+					<div class="account_action_tooltip">MISSIONS</div>
+				</button>
+				<button id="btn_settings" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
+					</div>
+					<div class="account_action_tooltip">SETTINGS</div>
+				</button>
+				<button id="btn_frontend_exit" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
+					</div>
+					<div class="account_action_tooltip">EXIT</div>
+				</button>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="skills_layout">
+
+		<div class="skills_panel skills_left_panel">
+
+			<div class="skills_panel_header">
+				<div>
+					<div class="skills_panel_title">SURVIVOR SKILLS</div>
+					<div class="skills_panel_subtitle">CHARACTER PROGRESSION</div>
+				</div>
+
+				<div class="skills_points_box">
+					<div class="skills_points_label">SP</div>
+					<div id="skill_points_value" class="skills_points_value">0</div>
+				</div>
+			</div>
+
+			<div class="skills_survivor_card">
+				<div class="skills_survivor_level">
+					<div class="skills_survivor_level_number" id="skills_survivor_level_value">1</div>
+					<div class="skills_survivor_level_label">LEVEL</div>
+				</div>
+
+				<div class="skills_survivor_info">
+					<div id="skills_survivor_name" class="skills_survivor_name">ES3N1N</div>
+					<div id="skills_survivor_class" class="skills_survivor_class">EX MILITARY</div>
+
+					<div class="skills_xp_bar">
+						<div id="skills_xp_fill" class="skills_xp_fill"></div>
+					</div>
+
+					<div id="skills_xp_text" class="skills_xp_text">0 / 100 XP</div>
+				</div>
+			</div>
+
+			<div class="skills_category_title">CATEGORIES</div>
+
+			<button id="skill_category_survival" class="skill_category_button active">
+				<div class="skill_category_code">01</div>
+				<div class="skill_category_text">
+					<div class="skill_category_name">SURVIVAL</div>
+					<div class="skill_category_desc">Health, stamina, resistance</div>
+				</div>
+			</button>
+
+			<button id="skill_category_combat" class="skill_category_button">
+				<div class="skill_category_code">02</div>
+				<div class="skill_category_text">
+					<div class="skill_category_name">COMBAT</div>
+					<div class="skill_category_desc">Weapons, recoil, reload speed</div>
+				</div>
+			</button>
+
+			<button id="skill_category_support" class="skill_category_button">
+				<div class="skill_category_code">03</div>
+				<div class="skill_category_text">
+					<div class="skill_category_name">SUPPORT</div>
+					<div class="skill_category_desc">Looting, medicine, repair</div>
+				</div>
+			</button>
+
+			<button id="skill_category_crafting" class="skill_category_button">
+				<div class="skill_category_code">04</div>
+				<div class="skill_category_text">
+					<div class="skill_category_name">CRAFTING</div>
+					<div class="skill_category_desc">Craft, trade, engineering</div>
+				</div>
+			</button>
+
+			<div class="skills_reset_block">
+				<button id="btn_reset_skills" class="skills_reset_button">
+					RESET SKILLS
+				</button>
+
+				<div class="skills_reset_hint">
+					Skill reset is controlled by backend rules.
+				</div>
+			</div>
+
+		</div>
+
+		<div class="skills_panel skills_tree_panel">
+
+			<div class="skills_tree_header">
+				<div>
+					<div class="skills_panel_title">SKILL TREE</div>
+					<div class="skills_panel_subtitle">SELECT A NODE TO VIEW DETAILS</div>
+				</div>
+
+				<div class="skills_tree_legend">
+					<div class="skill_legend_item">
+						<div class="skill_legend_dot learned"></div>
+						<div>LEARNED</div>
+					</div>
+
+					<div class="skill_legend_item">
+						<div class="skill_legend_dot available"></div>
+						<div>AVAILABLE</div>
+					</div>
+
+					<div class="skill_legend_item last">
+						<div class="skill_legend_dot locked"></div>
+						<div>LOCKED</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="skill_tree_map">
+
+				<div class="skill_tree_column">
+
+					<div class="skill_branch_title">SURVIVAL</div>
+
+					<button id="skill_node_endurance_1" class="skill_node learned">
+						<div class="skill_node_rank">I</div>
+						<div class="skill_node_name">ENDURANCE</div>
+						<div class="skill_node_level">1 / 5</div>
+					</button>
+
+					<div class="skill_connector learned"></div>
+
+					<button id="skill_node_vitality_1" class="skill_node available selected">
+						<div class="skill_node_rank">II</div>
+						<div class="skill_node_name">VITALITY</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_resistance_1" class="skill_node locked">
+						<div class="skill_node_rank">III</div>
+						<div class="skill_node_name">RESISTANCE</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+				</div>
+
+				<div class="skill_tree_column">
+
+					<div class="skill_branch_title">COMBAT</div>
+
+					<button id="skill_node_recoil_1" class="skill_node learned">
+						<div class="skill_node_rank">I</div>
+						<div class="skill_node_name">RECOIL CONTROL</div>
+						<div class="skill_node_level">1 / 5</div>
+					</button>
+
+					<div class="skill_connector available"></div>
+
+					<button id="skill_node_reload_1" class="skill_node available">
+						<div class="skill_node_rank">II</div>
+						<div class="skill_node_name">FAST RELOAD</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_marksman_1" class="skill_node locked">
+						<div class="skill_node_rank">III</div>
+						<div class="skill_node_name">MARKSMAN</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+				</div>
+
+				<div class="skill_tree_column">
+
+					<div class="skill_branch_title">SUPPORT</div>
+
+					<button id="skill_node_scavenger_1" class="skill_node available">
+						<div class="skill_node_rank">I</div>
+						<div class="skill_node_name">SCAVENGER</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_medtech_1" class="skill_node locked">
+						<div class="skill_node_rank">II</div>
+						<div class="skill_node_name">MED TECH</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_repair_1" class="skill_node locked">
+						<div class="skill_node_rank">III</div>
+						<div class="skill_node_name">FIELD REPAIR</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+				</div>
+
+				<div class="skill_tree_column last">
+
+					<div class="skill_branch_title">CRAFTING</div>
+
+					<button id="skill_node_crafting_1" class="skill_node available">
+						<div class="skill_node_rank">I</div>
+						<div class="skill_node_name">BASIC CRAFT</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_trader_1" class="skill_node locked">
+						<div class="skill_node_rank">II</div>
+						<div class="skill_node_name">TRADER</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+					<div class="skill_connector locked"></div>
+
+					<button id="skill_node_engineer_1" class="skill_node locked">
+						<div class="skill_node_rank">III</div>
+						<div class="skill_node_name">ENGINEER</div>
+						<div class="skill_node_level">0 / 5</div>
+					</button>
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<div class="skills_panel skills_details_panel">
+
+			<div class="skills_panel_header">
+				<div>
+					<div class="skills_panel_title">SKILL DETAILS</div>
+					<div class="skills_panel_subtitle">SELECTED NODE</div>
+				</div>
+
+				<div id="selected_skill_state" class="selected_skill_state available">
+					AVAILABLE
+				</div>
+			</div>
+
+			<div class="selected_skill_card">
+
+				<div class="selected_skill_icon">
+					II
+				</div>
+
+				<div class="selected_skill_main">
+					<div id="selected_skill_name" class="selected_skill_name">
+						VITALITY
+					</div>
+
+					<div id="selected_skill_category" class="selected_skill_category">
+						SURVIVAL SKILL
+					</div>
+				</div>
+
+			</div>
+
+			<div id="selected_skill_description" class="selected_skill_description">
+				Increases maximum health and improves survivability during long raids.
+			</div>
+
+			<div class="skill_detail_rows">
+
+				<div class="skill_detail_row">
+					<div class="skill_detail_label">CURRENT LEVEL</div>
+					<div id="selected_skill_level" class="skill_detail_value">0 / 5</div>
+				</div>
+
+				<div class="skill_detail_row">
+					<div class="skill_detail_label">NEXT BONUS</div>
+					<div id="selected_skill_bonus" class="skill_detail_value">+2% MAX HEALTH</div>
+				</div>
+
+				<div class="skill_detail_row">
+					<div class="skill_detail_label">COST</div>
+					<div id="selected_skill_cost" class="skill_detail_value orange">1 SP</div>
+				</div>
+
+				<div class="skill_detail_row">
+					<div class="skill_detail_label">REQUIRED LEVEL</div>
+					<div id="selected_skill_required_level" class="skill_detail_value">2</div>
+				</div>
+
+			</div>
+
+			<div class="skill_requirements_box">
+				<div class="skill_requirements_title">REQUIREMENTS</div>
+
+				<div id="selected_skill_requirement_1" class="skill_requirement passed">
+					Endurance Level 1 learned
+				</div>
+
+				<div id="selected_skill_requirement_2" class="skill_requirement passed">
+					Survivor Level 2 reached
+				</div>
+
+				<div id="selected_skill_requirement_3" class="skill_requirement failed">
+					Need 1 Skill Point
+				</div>
+			</div>
+
+			<button id="btn_learn_selected_skill" class="learn_skill_button">
+				LEARN SKILL
+			</button>
+
+			<div id="skill_details_status" class="skill_details_status">
+				Select available skill node and confirm learning.
+			</div>
+
+		</div>
+
+	</div>
+	<div class="main_menu_status_bar">
+		<div class="main_menu_status_left">
+			<div class="status_indicator"></div>
+
+			<div id="main_menu_status" class="frontend_status">
+				Skills loaded.
+			</div>
+		</div>
+	</div>
+	<div class="runtime_hidden_value">
+		<div id="selected_skill_id">skill_node_vitality_1</div>
+		<div id="selected_skill_backend_id">0</div>
+		<div id="selected_skill_category_id">survival</div>
+		<div id="skill_points_available">0</div>
+		<div id="skill_points_spent">0</div>
+		<div id="account_name">ACCOUNT</div>
+		<div id="selected_character">SURVIVOR</div>
+	</div>
+</body>
+</rml>
