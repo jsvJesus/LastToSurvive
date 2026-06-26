@@ -1,0 +1,33 @@
+<rml>
+<head>
+	<title>Last To Survive</title>
+	<link type="text/rcss" href="LoadingScreen.rcss"/>
+</head>
+
+<body>
+	<div id="loading_root">
+		<div id="loading_panel">
+			<div id="loading_icon">
+				<div id="loading_icon_inner"></div>
+			</div>
+
+			<div id="loading_text_block">
+				<div id="loading_title">NO NAME</div>
+				<div id="loading_description">No description</div>
+			</div>
+
+			<div id="loading_progress">
+				<div id="loading_bar">
+					<div id="loading_bar_fill">
+						<div id="loading_bar_glow"></div>
+					</div>
+				</div>
+
+				<div id="loading_percent">0%</div>
+			</div>
+
+			<div id="loading_tip">TipOfTheDay5</div>
+		</div>
+	</div>
+</body>
+</rml>

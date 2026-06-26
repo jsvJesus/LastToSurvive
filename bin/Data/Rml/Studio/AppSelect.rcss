@@ -1,0 +1,418 @@
+body
+{
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+
+	font-family: Arial;
+	color: #f0f0ef;
+	background-color: #050708;
+	overflow: hidden;
+}
+
+#screen
+{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	background-color: #07090a;
+	overflow: hidden;
+}
+
+#background_image
+{
+	position: absolute;
+	left: 0;
+	top: 0;
+
+	width: 100%;
+	height: 100%;
+
+	margin: 0;
+	padding: 0;
+
+	opacity: 1;
+}
+
+/* MAIN PANEL */
+
+#panel
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+
+	width: 640px;
+	height: 760px;
+	margin-left: -320px;
+	margin-top: -380px;
+	padding: 0;
+
+	background-color: #0b0d0e66;
+	border: 1px #4c4c48;
+}
+
+.panel_corner
+{
+	position: absolute;
+	width: 11px;
+	height: 11px;
+}
+
+#corner_top_left
+{
+	left: -1px;
+	top: -1px;
+	border-left: 1px #d47717;
+	border-top: 1px #d47717;
+}
+
+#corner_top_right
+{
+	right: -1px;
+	top: -1px;
+	border-right: 1px #d47717;
+	border-top: 1px #d47717;
+}
+
+#corner_bottom_left
+{
+	left: -1px;
+	bottom: -1px;
+	border-left: 1px #d47717;
+	border-bottom: 1px #d47717;
+}
+
+#corner_bottom_right
+{
+	right: -1px;
+	bottom: -1px;
+	border-right: 1px #d47717;
+	border-bottom: 1px #d47717;
+}
+
+.panel_dot
+{
+	position: absolute;
+	left: 50%;
+	width: 6px;
+	height: 6px;
+	margin-left: -3px;
+	background-color: #ff8a16;
+	border-radius: 3px;
+}
+
+#panel_dot_top
+{
+	top: -3px;
+}
+
+#panel_dot_bottom
+{
+	bottom: -3px;
+}
+
+/* HEADER */
+
+#brand_mark
+{
+	position: absolute;
+	left: 31px;
+	top: 35px;
+
+	width: 76px;
+	height: 76px;
+	margin: 0;
+	padding: 0;
+
+	background-color: #0c0f10;
+	border: 1px #7b3e11;
+	overflow: hidden;
+}
+
+#brand_logo
+{
+	display: block;
+	width: 64px;
+	height: 64px;
+	margin-left: 6px;
+	margin-top: 6px;
+}
+
+#title
+{
+	position: absolute;
+	left: 127px;
+	top: 51px;
+
+	width: 420px;
+	height: 42px;
+	margin: 0;
+	padding: 0;
+
+	color: #efefed;
+	font-size: 27px;
+	font-weight: bold;
+	line-height: 42px;
+	letter-spacing: 2px;
+	text-align: left;
+}
+
+#header_line
+{
+	position: absolute;
+	left: 31px;
+	top: 137px;
+	width: 578px;
+	height: 1px;
+	background-color: #303231;
+}
+
+/* SECTION LABELS */
+
+.section_label
+{
+	position: absolute;
+	left: 31px;
+	width: 120px;
+	height: 20px;
+
+	color: #aaa8a2;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 20px;
+	letter-spacing: 1px;
+	text-align: left;
+}
+
+#game_section_label
+{
+	top: 148px;
+}
+
+#editors_section_label
+{
+	top: 316px;
+}
+
+#editors_section_line
+{
+	position: absolute;
+	left: 101px;
+	top: 326px;
+	width: 508px;
+	height: 1px;
+	background-color: #262827;
+}
+
+/* MENU BUTTONS */
+
+.menu_button
+{
+	position: absolute;
+	left: 31px;
+
+	width: 578px;
+	height: 56px;
+	margin: 0;
+	padding: 0;
+
+	background-color: #0d1011;
+	border: 1px #3a3c3b;
+
+	color: #e6e5e1;
+	font-size: 17px;
+	line-height: 56px;
+	text-align: left;
+}
+
+#btn_game_public
+{
+	top: 177px;
+}
+
+#btn_game_dev
+{
+	top: 246px;
+}
+
+#btn_level_editor
+{
+	top: 344px;
+}
+
+#btn_particle_editor
+{
+	top: 413px;
+}
+
+#btn_physics_editor
+{
+	top: 482px;
+}
+
+#btn_character_editor
+{
+	top: 551px;
+}
+
+.menu_button:hover
+{
+	background-color: #191511;
+	border: 1px #9a5518;
+	color: #ffffff;
+}
+
+.menu_button:active
+{
+	background-color: #2c1b0f;
+	border: 1px #ff8a16;
+	color: #ffffff;
+}
+
+.menu_button.selected
+{
+	background-color: #3a1e0d;
+	border: 1px #ef7d15;
+	color: #ffffff;
+}
+
+.menu_button.selected:hover
+{
+	background-color: #4b260e;
+	border: 1px #ff941f;
+}
+
+.menu_icon
+{
+	position: absolute;
+	left: 20px;
+	top: 0;
+
+	width: 48px;
+	height: 56px;
+	margin: 0;
+	padding: 0;
+
+	color: #d7d6d1;
+	font-size: 27px;
+	font-weight: normal;
+	line-height: 56px;
+	text-align: center;
+}
+
+.menu_icon_png
+{
+	width: 32px;
+	height: 32px;
+	display: block;
+	margin-left: 8px;
+	margin-top: 12px;
+}
+
+.menu_button.selected .menu_icon
+{
+	color: #ffffff;
+}
+
+.menu_label
+{
+	position: absolute;
+	left: 101px;
+	top: 0;
+
+	width: 410px;
+	height: 56px;
+	margin: 0;
+	padding: 0;
+
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 56px;
+	letter-spacing: 1px;
+	text-align: left;
+}
+
+.menu_chevron
+{
+	position: absolute;
+	right: 15px;
+	top: 0;
+
+	width: 24px;
+	height: 56px;
+	margin: 0;
+	padding: 0;
+
+	color: #6b6a65;
+	font-size: 22px;
+	font-weight: normal;
+	line-height: 56px;
+	text-align: center;
+	opacity: 0;
+}
+
+.menu_button:hover .menu_chevron,
+.menu_button.selected .menu_chevron
+{
+	color: #ef7d15;
+	opacity: 1;
+}
+
+/* FOOTER */
+
+#footer_text
+{
+	position: absolute;
+	left: 31px;
+	top: 690px;
+
+	width: 310px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+
+	color: #777773;
+	font-size: 12px;
+	line-height: 20px;
+	text-align: left;
+}
+
+.exit_button
+{
+	position: absolute;
+	right: 31px;
+	top: 677px;
+
+	width: 170px;
+	height: 42px;
+	margin: 0;
+	padding: 0;
+
+	background-color: #0d0f10;
+	border: 1px #a85a16;
+
+	color: #e77b17;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 42px;
+	letter-spacing: 1px;
+	text-align: center;
+}
+
+.exit_button:hover
+{
+	background-color: #2c190d;
+	border: 1px #ff8a16;
+	color: #ff9a31;
+}
+
+.exit_button:active
+{
+	background-color: #4a240d;
+	border: 1px #ff9a31;
+	color: #ffffff;
+}

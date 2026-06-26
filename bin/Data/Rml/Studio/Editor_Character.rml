@@ -1,0 +1,706 @@
+<rml>
+<head>
+	<title>Last To Survive - Character Editor</title>
+	<link type="text/rcss" href="Editor_Character.rcss"/>
+</head>
+
+<body>
+	<div id="characters_screen">
+		<!-- LEFT PANEL -->
+
+		<div id="characters_left_panel" class="editor_panel">
+
+			<div class="panel_corner corner_top_left"></div>
+			<div class="panel_corner corner_top_right"></div>
+			<div class="panel_corner corner_bottom_left"></div>
+			<div class="panel_corner corner_bottom_right"></div>
+
+			<div class="panel_header">
+				<div class="panel_header_title">
+					ANIMATION CONTROL
+				</div>
+
+				<div class="panel_header_line"></div>
+			</div>
+
+			<div id="characters_mode_tabs">
+
+				<button
+					id="btn_char_mode_states"
+					class="mode_tab selected">
+					PLAYER STATES
+				</button>
+
+				<button
+					id="btn_char_mode_all_anims"
+					class="mode_tab">
+					ALL ANIMS
+				</button>
+
+			</div>
+
+			<div id="characters_left_content">
+
+				<!-- PLAYER STATES MODE -->
+
+				<div id="character_states_panel">
+
+					<div class="section_title">
+						PLAYER STATE
+					</div>
+
+					<div
+						id="character_state_list"
+						class="selection_list">
+
+						<button
+							id="btn_char_state_0"
+							class="list_button selected">
+							IDLE
+						</button>
+
+						<button
+							id="btn_char_state_1"
+							class="list_button">
+							IDLE AIM
+						</button>
+
+						<button
+							id="btn_char_state_2"
+							class="list_button">
+							MOVE CROUCH
+						</button>
+
+						<button
+							id="btn_char_state_3"
+							class="list_button">
+							MOVE CROUCH AIM
+						</button>
+
+						<button
+							id="btn_char_state_4"
+							class="list_button">
+							MOVE WALK AIM
+						</button>
+
+						<button
+							id="btn_char_state_5"
+							class="list_button">
+							MOVE RUN
+						</button>
+
+						<button
+							id="btn_char_state_6"
+							class="list_button">
+							MOVE SPRINT
+						</button>
+
+						<button
+							id="btn_char_state_7"
+							class="list_button">
+							JUMP STAND
+						</button>
+
+						<button
+							id="btn_char_state_8"
+							class="list_button">
+							DIE
+						</button>
+
+					</div>
+
+					<div class="section_title section_spacing">
+						MOVE DIRECTION
+					</div>
+
+					<div
+						id="character_direction_list"
+						class="selection_list compact_list">
+
+						<button
+							id="btn_char_direction_0"
+							class="list_button selected">
+							STAND
+						</button>
+
+						<button
+							id="btn_char_direction_1"
+							class="list_button">
+							STRAFE
+						</button>
+
+						<button
+							id="btn_char_direction_2"
+							class="list_button">
+							STRAFE LEFT
+						</button>
+
+						<button
+							id="btn_char_direction_3"
+							class="list_button">
+							STRAFE RIGHT
+						</button>
+
+						<button
+							id="btn_char_direction_4"
+							class="list_button">
+							LEFT
+						</button>
+
+						<button
+							id="btn_char_direction_5"
+							class="list_button">
+							RIGHT
+						</button>
+
+						<button
+							id="btn_char_direction_6"
+							class="list_button">
+							BACK
+						</button>
+
+						<button
+							id="btn_char_direction_7"
+							class="list_button">
+							BACK LEFT
+						</button>
+
+						<button
+							id="btn_char_direction_8"
+							class="list_button">
+							BACK RIGHT
+						</button>
+
+					</div>
+
+					<div class="section_title section_spacing">
+						ACTIONS
+					</div>
+
+					<button
+						id="btn_char_ui_idle"
+						class="toggle_button">
+
+						<span class="toggle_indicator"></span>
+
+						<span class="toggle_label">
+							UI IDLE MODE
+						</span>
+
+						<span
+							id="char_ui_idle_value"
+							class="toggle_value">
+							OFF
+						</span>
+
+					</button>
+
+					<div class="button_row">
+
+						<button
+							id="btn_char_reload"
+							class="action_button half_button">
+							RELOAD
+						</button>
+
+						<button
+							id="btn_char_shoot"
+							class="action_button half_button right_half">
+							SHOOT
+						</button>
+
+					</div>
+
+					<div class="slider_block">
+
+						<div class="slider_header">
+
+							<span class="slider_label">
+								JUMP ANIM SPEED
+							</span>
+
+							<span
+								id="char_jump_speed_value"
+								class="slider_value">
+								1.90
+							</span>
+
+						</div>
+
+						<input
+							id="char_jump_speed"
+							class="range_input"
+							type="range"
+							min="0.5"
+							max="4.0"
+							step="0.01"
+							value="1.9"/>
+
+					</div>
+
+					<div class="slider_block">
+
+						<div class="slider_header">
+
+							<span class="slider_label">
+								JUMP DELAY
+							</span>
+
+							<span
+								id="char_jump_delay_value"
+								class="slider_value">
+								0.30
+							</span>
+
+						</div>
+
+						<input
+							id="char_jump_delay"
+							class="range_input"
+							type="range"
+							min="0.0"
+							max="1.0"
+							step="0.01"
+							value="0.3"/>
+
+					</div>
+
+					<button
+						id="btn_char_jump"
+						class="action_button full_button">
+						JUMP
+					</button>
+
+					<button
+						id="btn_char_jump_anim"
+						class="action_button full_button">
+						JUMP ONLY ANIM
+					</button>
+
+					<button
+						id="btn_char_in_air"
+						class="action_button full_button">
+						IN AIR
+					</button>
+
+				</div>
+
+				<!-- ALL ANIMATIONS MODE -->
+
+				<div id="character_all_anims_panel">
+
+					<div class="section_title">
+						ANIMATION LIBRARY
+					</div>
+
+					<div
+						id="character_animation_list"
+						class="dynamic_list">
+
+						<div
+							id="character_animation_list_empty"
+							class="empty_text">
+							NO ANIMATIONS LOADED
+						</div>
+
+					</div>
+
+					<div class="button_row section_spacing">
+
+						<button
+							id="btn_char_play_pause"
+							class="action_button half_button">
+							PLAY
+						</button>
+
+						<button
+							id="btn_char_stop"
+							class="action_button half_button right_half">
+							STOP
+						</button>
+
+					</div>
+
+					<div
+						id="character_frame_controls"
+						class="slider_block">
+
+						<div class="slider_header">
+
+							<span class="slider_label">
+								FRAME
+							</span>
+
+							<span
+								id="char_frame_value"
+								class="slider_value">
+								0
+							</span>
+
+						</div>
+
+						<input
+							id="char_frame"
+							class="range_input"
+							type="range"
+							min="0"
+							max="1"
+							step="1"
+							value="0"/>
+
+					</div>
+
+					<div
+						id="character_speed_controls"
+						class="slider_block hidden">
+
+						<div class="slider_header">
+
+							<span class="slider_label">
+								CURRENT SPEED
+							</span>
+
+							<span
+								id="char_current_speed_value"
+								class="slider_value">
+								1.00
+							</span>
+
+						</div>
+
+						<input
+							id="char_current_speed"
+							class="range_input"
+							type="range"
+							min="0.0"
+							max="4.0"
+							step="0.01"
+							value="1.0"/>
+
+						<button
+							id="btn_char_default_speed"
+							class="action_button full_button small_top_gap">
+							DEFAULT SPEED
+						</button>
+
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<!-- RIGHT PANEL -->
+
+		<div id="characters_right_panel" class="editor_panel">
+
+			<div class="panel_corner corner_top_left"></div>
+			<div class="panel_corner corner_top_right"></div>
+			<div class="panel_corner corner_bottom_left"></div>
+			<div class="panel_corner corner_bottom_right"></div>
+
+			<div class="panel_header">
+
+				<div class="panel_header_title">
+					CURRENT ANIMATION
+				</div>
+
+				<div class="panel_header_line"></div>
+
+			</div>
+
+			<div id="characters_right_content">
+
+				<div
+					id="character_anim_info"
+					class="info_block">
+
+					<div class="info_row">
+
+						<span class="info_label">
+							LENGTH
+						</span>
+
+						<span
+							id="character_anim_length"
+							class="info_value">
+							0.0000 SEC
+						</span>
+
+					</div>
+
+					<div class="info_row">
+
+						<span class="info_label">
+							FRAMES
+						</span>
+
+						<span
+							id="character_anim_frames"
+							class="info_value">
+							0
+						</span>
+
+					</div>
+
+					<div class="info_row">
+
+						<span class="info_label">
+							TRACKS
+						</span>
+
+						<span
+							id="character_anim_tracks"
+							class="info_value">
+							0
+						</span>
+
+					</div>
+
+					<div class="info_row">
+
+						<span class="info_label">
+							FRAME RATE
+						</span>
+
+						<span
+							id="character_anim_framerate"
+							class="info_value">
+							0.0000
+						</span>
+
+					</div>
+
+					<div class="info_row info_row_large">
+
+						<span class="info_label">
+							ANIM NAME
+						</span>
+
+						<span
+							id="character_anim_name"
+							class="info_value wrap_value">
+							DEFAULT
+						</span>
+
+					</div>
+
+					<div class="info_row info_row_large">
+
+						<span class="info_label">
+							FILE
+						</span>
+
+						<span
+							id="character_anim_file"
+							class="info_value wrap_value">
+							-
+						</span>
+
+					</div>
+
+				</div>
+
+				<div class="section_title section_spacing">
+					VIEW OPTIONS
+				</div>
+
+				<button
+					id="btn_char_show_skeleton"
+					class="toggle_button">
+
+					<span class="toggle_indicator"></span>
+
+					<span class="toggle_label">
+						SHOW SKELETON
+					</span>
+
+					<span
+						id="char_show_skeleton_value"
+						class="toggle_value">
+						OFF
+					</span>
+
+				</button>
+
+				<button
+					id="btn_char_show_anim_stack"
+					class="toggle_button enabled">
+
+					<span class="toggle_indicator"></span>
+
+					<span class="toggle_label">
+						SHOW ANIM STACK
+					</span>
+
+					<span
+						id="char_show_anim_stack_value"
+						class="toggle_value">
+						ON
+					</span>
+
+				</button>
+
+				<button
+					id="btn_char_show_equipment"
+					class="toggle_button">
+
+					<span class="toggle_indicator"></span>
+
+					<span class="toggle_label">
+						SHOW EQUIPMENT
+					</span>
+
+					<span
+						id="char_show_equipment_value"
+						class="toggle_value">
+						OFF
+					</span>
+
+				</button>
+
+				<div class="section_title section_spacing">
+					ANIMATION STACK
+				</div>
+
+				<div
+					id="character_anim_stack_list"
+					class="dynamic_list stack_list">
+
+					<div
+						id="character_anim_stack_empty"
+						class="empty_text">
+						NO ACTIVE TRACKS
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		<!-- EQUIPMENT -->
+
+		<div
+			id="character_equipment_panel"
+			class="equipment_panel hidden">
+
+			<div class="panel_corner corner_top_left"></div>
+			<div class="panel_corner corner_top_right"></div>
+			<div class="panel_corner corner_bottom_left"></div>
+			<div class="panel_corner corner_bottom_right"></div>
+
+			<div id="equipment_header">
+
+				<div id="equipment_title">
+					EQUIPMENT
+				</div>
+
+				<div id="equipment_current">
+					HEAD ARMOR
+				</div>
+
+				<button
+					id="btn_char_equipment_close"
+					class="equipment_close_button">
+					X
+				</button>
+
+			</div>
+
+			<div id="equipment_categories">
+
+				<button
+					id="btn_char_equipment_category_0"
+					class="equipment_category selected">
+					HEAD ARMOR
+				</button>
+
+				<button
+					id="btn_char_equipment_category_1"
+					class="equipment_category">
+					ARMOR
+				</button>
+
+				<button
+					id="btn_char_equipment_category_2"
+					class="equipment_category">
+					HEAD
+				</button>
+
+				<button
+					id="btn_char_equipment_category_3"
+					class="equipment_category">
+					BODY
+				</button>
+
+				<button
+					id="btn_char_equipment_category_4"
+					class="equipment_category">
+					LEGS
+				</button>
+
+				<button
+					id="btn_char_equipment_category_5"
+					class="equipment_category">
+					HERO
+				</button>
+
+				<button
+					id="btn_char_equipment_category_6"
+					class="equipment_category">
+					SECONDARY
+				</button>
+
+				<button
+					id="btn_char_equipment_category_7"
+					class="equipment_category">
+					PRIMARY
+				</button>
+
+			</div>
+
+			<div id="equipment_selected_row">
+
+				<span id="equipment_selected_label">
+					SELECTED
+				</span>
+
+				<span id="equipment_selected_value">
+					EMPTY
+				</span>
+
+			</div>
+
+			<div id="character_equipment_content">
+
+				<div
+					id="character_equipment_list"
+					class="equipment_list">
+
+					<div class="empty_text">
+						NO ITEMS
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<!-- CAMERA HELP -->
+
+		<div id="characters_help_bar">
+
+			<span class="help_key">RMB</span>
+			<span class="help_text">ROTATE CAMERA</span>
+
+			<span class="help_separator"></span>
+
+			<span class="help_key">W / S</span>
+			<span class="help_text">ZOOM</span>
+
+		</div>
+
+	</div>
+</body>
+</rml>

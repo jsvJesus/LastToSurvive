@@ -1,0 +1,311 @@
+<rml>
+<head>
+	<title>Last To Survive Shop</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
+</head>
+
+<body class="frontend_body main_menu_body shop_body">
+
+	<div id="shop_background_stage" class="frontend_static_background">
+		<img
+			id="shop_background_image"
+			class="frontend_static_background_image"
+			src="../Assets/bg.png"
+		/>
+
+		<div class="frontend_static_background_shade"></div>
+		<div class="main_menu_scene_vignette"></div>
+		<div class="skills_scene_scrim"></div>
+	</div>
+
+	<div class="frontend_shell_topbar">
+
+		<img
+			class="frontend_topbar_background"
+			src="../Assets/FrontEnd/Top_Bar.png"
+		/>
+
+		<div class="frontend_topbar_content">
+
+			<div class="top_level_block">
+				<div class="top_level_left">
+					<div id="top_level_value" class="top_level_value">1</div>
+				</div>
+
+				<div class="top_level_right">
+					<div class="top_level_caption">LEVEL</div>
+					<div class="top_level_progress">
+						<div id="top_level_xp_fill" class="top_level_progress_fill"></div>
+					</div>
+					<div id="top_level_xp_text" class="top_level_xp_text">0 / 0</div>
+				</div>
+			</div>
+
+			<div class="top_faction_block">
+				<div id="top_faction_icon" class="top_faction_icon">F</div>
+
+				<div class="top_faction_info">
+					<div class="top_faction_caption">FACTION</div>
+					<div id="top_survivor_name" class="top_faction_name">EX MILITARY</div>
+					<div id="top_survivor_role" class="top_faction_level">LEVEL 1</div>
+				</div>
+			</div>
+
+			<div class="top_currency_block">
+				<div class="top_currency_row">
+					<div class="top_currency_icon gold">G</div>
+					<div class="top_currency_label">GC</div>
+					<div id="balance_gc" class="top_currency_value">0</div>
+					<button id="btn_add_gc" class="top_currency_add">+</button>
+				</div>
+
+				<div class="top_currency_row">
+					<div class="top_currency_icon dollars">$</div>
+					<div class="top_currency_label">GD</div>
+					<div id="balance_gd" class="top_currency_value">0</div>
+					<button id="btn_add_gd" class="top_currency_add">+</button>
+				</div>
+
+				<div id="balance_ltc" class="runtime_hidden_value">0</div>
+			</div>
+
+			<div class="frontend_navigation">
+			<button id="nav_survivor" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">HOME</div>
+			</button>
+			<button id="nav_skills" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SKILLS</div>
+			</button>
+			<button id="nav_equipment" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">EQUIPMENT</div>
+			</button>
+			<button id="nav_shop" class="top_navigation_button active">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">SHOP</div>
+			</button>
+			<button id="nav_clan" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">CLAN</div>
+			</button>
+			<button id="nav_awards" class="top_navigation_button">
+				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
+				<div class="top_navigation_label">AWARDS</div>
+			</button>
+			</div>
+
+			<div class="frontend_account_actions">
+				<button id="btn_change_name" class="top_icon_button">
+					<div class="top_icon_glyph cart_icon">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
+					</div>
+				</button>
+				<button id="btn_change_character" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
+					</div>
+				</button>
+				<button id="btn_find_friend" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_find_friend.png"/>
+					</div>
+				</button>
+				<button id="btn_rewards" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_rewards.png"/>
+					</div>
+				</button>
+				<button id="btn_settings" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
+					</div>
+				</button>
+				<button id="btn_frontend_exit" class="top_icon_button">
+					<div class="top_icon_glyph">
+						<img class="top_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
+					</div>
+				</button>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="shop_layout">
+
+		<div class="shop_panel shop_categories_panel">
+			<div class="shop_panel_title">MARKET</div>
+			<div class="shop_panel_subtitle">SURVIVAL SUPPLIES</div>
+
+			<button id="shop_category_featured" class="shop_category_button active">
+				<div class="shop_category_code">01</div>
+				<div>FEATURED</div>
+			</button>
+			<button id="shop_category_weapons" class="shop_category_button">
+				<div class="shop_category_code">02</div>
+				<div>ALL WEAPONS</div>
+			</button>
+			<button id="shop_category_body_armor" class="shop_category_button">
+				<div class="shop_category_code">03</div>
+				<div>BODY ARMOR</div>
+			</button>
+			<button id="shop_category_helmets" class="shop_category_button">
+				<div class="shop_category_code">04</div>
+				<div>HELMETS</div>
+			</button>
+			<button id="shop_category_backpacks" class="shop_category_button">
+				<div class="shop_category_code">05</div>
+				<div>BACKPACKS</div>
+			</button>
+			<button id="shop_category_attachments" class="shop_category_button">
+				<div class="shop_category_code">06</div>
+				<div>ATTACHMENTS</div>
+			</button>
+			<button id="shop_category_placeable" class="shop_category_button">
+				<div class="shop_category_code">07</div>
+				<div>PLACEABLE</div>
+			</button>
+			<button id="shop_category_food" class="shop_category_button">
+				<div class="shop_category_code">08</div>
+				<div>FOOD</div>
+			</button>
+			<button id="shop_category_medicine" class="shop_category_button">
+				<div class="shop_category_code">09</div>
+				<div>MEDICINE</div>
+			</button>
+			<button id="shop_category_usable" class="shop_category_button">
+				<div class="shop_category_code">10</div>
+				<div>USABLE</div>
+			</button>
+			<button id="shop_category_water" class="shop_category_button">
+				<div class="shop_category_code">11</div>
+				<div>WATER</div>
+			</button>
+
+			<div class="shop_actions_stack">
+				<button id="btn_shop_sort" class="shop_small_button">SORT</button>
+				<button id="btn_shop_refresh" class="shop_small_button">REFRESH</button>
+			</div>
+		</div>
+
+		<div class="shop_panel shop_items_panel">
+			<div class="shop_tabs">
+				<button id="shop_tab_hot" class="shop_tab_button active">HOT</button>
+				<button id="shop_tab_new" class="shop_tab_button">NEW</button>
+				<button id="shop_tab_sale" class="shop_tab_button">SALE</button>
+				<button id="shop_tab_owned" class="shop_tab_button">OWNED</button>
+			</div>
+
+			<div id="shop_items_grid" class="shop_items_grid">
+				<div class="shop_empty_text">LOADING SHOP ITEMS</div>
+			</div>
+		</div>
+
+		<div class="shop_panel shop_preview_panel">
+			<div class="shop_panel_title">PREVIEW</div>
+			<div class="shop_panel_subtitle">MODEL DISPLAY</div>
+
+			<div class="shop_model_stage">
+				<img
+					id="selected_item_store_icon"
+					class="selected_item_store_icon"
+					src="Weapons/no_icon.dds"
+				/>
+				<div id="selected_item_preview_name" class="selected_item_preview_name">SELECT ITEM</div>
+			</div>
+
+			<div class="shop_preview_hint">
+				3D ITEM PREVIEW SLOT
+			</div>
+		</div>
+
+		<div class="shop_panel shop_details_panel">
+			<div class="shop_panel_header">
+				<div>
+					<div class="shop_panel_title">ITEM DETAILS</div>
+					<div id="selected_item_badge" class="shop_panel_subtitle">FEATURED ITEM</div>
+				</div>
+			</div>
+
+			<div class="selected_item_card">
+				<div id="selected_item_icon" class="selected_item_icon">IT</div>
+				<div class="selected_item_main">
+					<div id="selected_item_name" class="selected_item_name">SELECT ITEM</div>
+					<div id="selected_item_category" class="selected_item_category">ITEM</div>
+				</div>
+			</div>
+
+			<div id="selected_item_description" class="selected_item_description">
+				Reliable military assault rifle with solid damage, controllable recoil and good field durability.
+			</div>
+
+			<div class="selected_item_prices">
+				<button id="shop_currency_gc" class="selected_price selected">
+					<div class="selected_price_label">GC</div>
+					<div id="selected_item_gc_price" class="selected_price_value">195</div>
+				</button>
+				<button id="shop_currency_gd" class="selected_price">
+					<div class="selected_price_label">GD</div>
+					<div id="selected_item_gd_price" class="selected_price_value">15 000</div>
+				</button>
+			</div>
+
+			<div class="selected_item_stats">
+				<div class="selected_item_stat">
+					<div>DAMAGE</div>
+					<div id="selected_item_damage_value" class="selected_item_stat_value">72</div>
+				</div>
+				<div class="selected_item_stat">
+					<div>RANGE</div>
+					<div id="selected_item_range_value" class="selected_item_stat_value">64</div>
+				</div>
+				<div class="selected_item_stat">
+					<div>RECOIL</div>
+					<div id="selected_item_recoil_value" class="selected_item_stat_value">48</div>
+				</div>
+				<div class="selected_item_stat">
+					<div>WEIGHT</div>
+					<div id="selected_item_weight_value" class="selected_item_stat_value">38</div>
+				</div>
+			</div>
+
+			<button id="btn_shop_buy_selected" class="shop_buy_button">BUY SELECTED</button>
+			<button id="btn_shop_preview_item" class="shop_preview_button">PREVIEW</button>
+
+			<div id="shop_details_status" class="shop_details_status">
+				Shop visual screen loaded.
+			</div>
+		</div>
+
+	</div>
+	<div class="main_menu_status_bar">
+		<div class="main_menu_status_left">
+			<div class="status_indicator"></div>
+			<div id="main_menu_status" class="frontend_status">
+				Shop visual screen loaded.
+			</div>
+		</div>
+	</div>
+	<div class="runtime_hidden_value">
+		<div id="selected_shop_item_id">shop_item_0</div>
+		<div id="selected_shop_backend_item_id">101001</div>
+		<div id="selected_shop_category_id">featured</div>
+		<div id="account_name">ACCOUNT</div>
+		<div id="selected_character">SURVIVOR</div>
+	</div>
+</body>
+</rml>

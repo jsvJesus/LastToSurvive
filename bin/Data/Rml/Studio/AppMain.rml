@@ -1,0 +1,110 @@
+<rml>
+<head>
+	<title>Last To Survive - Level Editor</title>
+	<link type="text/rcss" href="AppMain.rcss"/>
+</head>
+
+<body>
+	<div id="screen">
+		<img id="background_image" src="../Assets/bg.png"/>
+		<div id="background_tint"></div>
+		<div id="panel_shadow"></div>
+
+		<div id="panel">
+			<div id="corner_top_left" class="panel_corner"></div>
+			<div id="corner_top_right" class="panel_corner"></div>
+			<div id="corner_bottom_left" class="panel_corner"></div>
+			<div id="corner_bottom_right" class="panel_corner"></div>
+			<div id="panel_dot_top" class="panel_dot"></div>
+			<div id="panel_dot_bottom" class="panel_dot"></div>
+
+			<div id="brand_row">
+				<div id="brand_mark">
+					<img id="brand_logo" src="../Assets/LTS_logo.png"/>
+				</div>
+				<div id="brand_text">
+					<div id="title">LEVEL EDITOR</div>
+					<div id="subtitle">MAP MANAGEMENT / CREATION</div>
+				</div>
+				<div id="module_badge">STUDIO / MAPS</div>
+			</div>
+
+			<div id="header_line"></div>
+
+			<div id="tabs_label">WORKSPACE</div>
+			<div id="tabs_line"></div>
+
+			<div id="tabs">
+				<button id="btn_appmain_live_maps" class="tab_button">LIVE MAPS</button>
+				<button id="btn_appmain_editor_maps" class="tab_button">EDITOR MAPS</button>
+				<button id="btn_appmain_create_map" class="tab_button">CREATE MAP</button>
+			</div>
+
+			<div id="appmain_maps_panel">
+				<div id="maps_frame">
+					<div id="appmain_section_title">LIVE MAPS</div>
+					<div id="maps_section_line"></div>
+
+					<div id="appmain_map_list"></div>
+
+					<button id="btn_appmain_scroll_up" class="scroll_button">▲</button>
+
+					<div id="appmain_scroll_track">
+						<div id="appmain_scroll_thumb"></div>
+					</div>
+
+					<button id="btn_appmain_scroll_down" class="scroll_button">▼</button>
+				</div>
+
+				<div id="selection_frame">
+					<div id="selection_title">SELECTION</div>
+					<div id="selection_line"></div>
+					<div id="appmain_selected_label">SELECTED MAP</div>
+					<div id="appmain_selected_value">No map selected</div>
+					<div id="selection_hint">Choose a map from the list, then launch it in the editor.</div>
+					<button id="btn_appmain_load_level" class="main_button">LOAD LEVEL</button>
+				</div>
+			</div>
+
+			<div id="appmain_create_panel">
+				<div id="create_frame">
+					<div id="create_title">CREATE NEW MAP</div>
+					<div id="create_line"></div>
+					<div id="create_hint">Configure the base terrain and create a new editor workspace.</div>
+
+					<div class="field_label" id="label_map_name">MAP NAME</div>
+					<input id="appmain_create_name" class="text_input" type="text" value="NewLevel"/>
+
+					<div class="field_label" id="label_terrain">TERRAIN</div>
+					<button id="btn_appmain_terrain_toggle" class="option_button">Terrain: OFF</button>
+
+					<div class="field_label" id="label_terrain_v2">TERRAIN TYPE</div>
+					<button id="btn_appmain_terrain2_toggle" class="option_button">Terrain V2: OFF</button>
+
+					<div class="field_label" id="label_cell_size">CELL SIZE</div>
+					<input id="appmain_cell_size" class="small_input" type="text" value="1.0"/>
+
+					<div class="field_label" id="label_terrain_height">TERRAIN HEIGHT</div>
+					<input id="appmain_height" class="small_input" type="text" value="100.0"/>
+
+					<div class="field_label" id="label_terrain_size">TERRAIN SIZE</div>
+					<button id="btn_appmain_terrain_size" class="option_button">Terrain Size: 256</button>
+
+					<div class="field_label" id="label_splat_size">SPLAT MAP SIZE</div>
+					<button id="btn_appmain_splat_size" class="option_button">Splat Size: 256</button>
+
+					<button id="btn_appmain_create_level" class="main_button">CREATE LEVEL</button>
+				</div>
+			</div>
+
+			<div id="footer_line"></div>
+			<div id="footer_row">
+				<div id="footer_text">Created &amp; Edited by ES3N1N</div>
+				<div id="footer_status">LTS EDITOR MODULE</div>
+				<button id="btn_appmain_back" class="footer_button">BACK</button>
+				<button id="btn_appmain_exit" class="footer_button exit_button">EXIT</button>
+			</div>
+		</div>
+	</div>
+</body>
+</rml>
