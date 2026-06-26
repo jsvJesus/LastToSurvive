@@ -3557,81 +3557,248 @@ void RmlRenderDX9::ReleaseGeometry(Rml::CompiledGeometryHandle geometry)
 	delete Geometry;
 }
 
+static bool RmlDx9IsDriveAbsoluteW(const std::wstring& Path)
+{
+    return Path.size() >= 2 && Path[1] == L':';
+}
+
+static bool RmlDx9IsUncPathW(const std::wstring& Path)
+{
+    return Path.size() >= 2 && Path[0] == L'\\' && Path[1] == L'\\';
+}
+
+static bool RmlDx9StartsWithI(const std::wstring& Text, const wchar_t* Prefix)
+{
+    const size_t PrefixLen = wcslen(Prefix);
+
+    if (Text.size() < PrefixLen)
+        return false;
+
+    return _wcsnicmp(Text.c_str(), Prefix, PrefixLen) == 0;
+}
+
+static std::wstring RmlDx9NormalizePathW(std::wstring Path)
+{
+    for (wchar_t& Ch : Path)
+    {
+        if (Ch == L'/')
+            Ch = L'\\';
+    }
+
+    std::wstring Prefix;
+    size_t ReadIndex = 0;
+    bool AbsoluteRoot = false;
+
+    if (Path.size() >= 2 && Path[1] == L':')
+    {
+        Prefix = Path.substr(0, 2);
+        ReadIndex = 2;
+
+        if (ReadIndex < Path.size() && Path[ReadIndex] == L'\\')
+        {
+            Prefix += L"\\";
+            ++ReadIndex;
+            AbsoluteRoot = true;
+        }
+    }
+    else if (Path.size() >= 2 && Path[0] == L'\\' && Path[1] == L'\\')
+    {
+        Prefix = L"\\\\";
+        ReadIndex = 2;
+        AbsoluteRoot = true;
+    }
+
+    std::vector<std::wstring> Parts;
+    std::wstring Current;
+
+    for (size_t Index = ReadIndex; Index <= Path.size(); ++Index)
+    {
+        const wchar_t Ch = Index < Path.size() ? Path[Index] : L'\\';
+
+        if (Ch == L'\\')
+        {
+            if (Current.empty() || Current == L".")
+            {
+                Current.clear();
+                continue;
+            }
+
+            if (Current == L"..")
+            {
+                if (!Parts.empty())
+                {
+                    Parts.pop_back();
+                }
+                else if (!AbsoluteRoot)
+                {
+                    Parts.push_back(Current);
+                }
+            }
+            else
+            {
+                Parts.push_back(Current);
+            }
+
+            Current.clear();
+        }
+        else
+        {
+            Current.push_back(Ch);
+        }
+    }
+
+    std::wstring Result = Prefix;
+
+    for (size_t Index = 0; Index < Parts.size(); ++Index)
+    {
+        if (!Result.empty() && Result.back() != L'\\')
+            Result += L"\\";
+
+        Result += Parts[Index];
+    }
+
+    return Result;
+}
+
+static std::wstring RmlDx9GetFileNameW(const std::wstring& Path)
+{
+    const std::wstring Normalized = RmlDx9NormalizePathW(Path);
+    const size_t Pos = Normalized.find_last_of(L"\\");
+
+    if (Pos == std::wstring::npos)
+        return Normalized;
+
+    return Normalized.substr(Pos + 1);
+}
+
+static void RmlDx9AddCandidate(std::vector<std::wstring>& Candidates, const std::wstring& Path)
+{
+    const std::wstring Normalized = RmlDx9NormalizePathW(Path);
+
+    if (Normalized.empty())
+        return;
+
+    for (const std::wstring& Existing : Candidates)
+    {
+        if (_wcsicmp(Existing.c_str(), Normalized.c_str()) == 0)
+            return;
+    }
+
+    Candidates.push_back(Normalized);
+}
+
 std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
 {
-	if (path.empty())
-		return std::wstring();
+    if (path.empty())
+        return std::wstring();
 
-	const int Required = MultiByteToWideChar(
-		CP_UTF8,
-		0,
-		path.c_str(),
-		static_cast<int>(path.size()),
-		nullptr,
-		0
-	);
+    const int Required = MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        path.c_str(),
+        static_cast<int>(path.size()),
+        nullptr,
+        0
+    );
 
-	if (Required <= 0)
-	{
-		OutputDebugStringA(
-			"[RmlUI][DX9] ResolvePathW failed: UTF-8 conversion failed\n"
-		);
+    if (Required <= 0)
+    {
+        OutputDebugStringA("[RmlUI][DX9] ResolvePathW failed: UTF-8 conversion failed\n");
+        return std::wstring();
+    }
 
-		return std::wstring();
-	}
+    std::wstring WidePath;
+    WidePath.resize(static_cast<size_t>(Required));
 
-	std::wstring WidePath;
-	WidePath.resize(static_cast<size_t>(Required));
+    MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        path.c_str(),
+        static_cast<int>(path.size()),
+        &WidePath[0],
+        Required
+    );
 
-	MultiByteToWideChar(
-		CP_UTF8,
-		0,
-		path.c_str(),
-		static_cast<int>(path.size()),
-		&WidePath[0],
-		Required
-	);
+    for (wchar_t& Ch : WidePath)
+    {
+        if (Ch == L'/')
+            Ch = L'\\';
+    }
 
-	RmlStripDataPrefixW(WidePath);
+    RmlStripDataPrefixW(WidePath);
 
-	const bool IsAbsolute =
-		(WidePath.size() >= 2 && WidePath[1] == L':') ||
-		(!WidePath.empty() &&
-			(WidePath[0] == L'\\' || WidePath[0] == L'/'));
+    if (RmlDx9StartsWithI(WidePath, L"data:\\"))
+        WidePath.erase(0, 6);
+    else if (RmlDx9StartsWithI(WidePath, L"data:"))
+        WidePath.erase(0, 5);
 
-	if (IsAbsolute)
-		return WidePath;
+    while (!WidePath.empty() && (WidePath[0] == L'\\' || WidePath[0] == L'/') && !RmlDx9IsUncPathW(WidePath))
+    {
+        WidePath.erase(WidePath.begin());
+    }
 
-	if (DataRoot.empty())
-		return WidePath;
-	
-	const std::wstring DataPath =
-		DataRoot + L"\\" + WidePath;
+    WidePath = RmlDx9NormalizePathW(WidePath);
 
-	if (RmlFileExistsW(DataPath))
-		return DataPath;
-	
-	const std::wstring StudioPath =
-		DataRoot + L"\\Rml\\Assets\\" + WidePath;
+    if (RmlDx9IsDriveAbsoluteW(WidePath) || RmlDx9IsUncPathW(WidePath))
+        return WidePath;
 
-	if (RmlFileExistsW(StudioPath))
-		return StudioPath;
+    if (DataRoot.empty())
+        return WidePath;
 
-	wchar_t DebugText[2048]{};
+    std::vector<std::wstring> Candidates;
+    const std::wstring FileName = RmlDx9GetFileNameW(WidePath);
 
-	_snwprintf_s(
-		DebugText,
-		_countof(DebugText),
-		_TRUNCATE,
-		L"[RmlUI][DX9] Texture path not found. Source='%ls' Data='%ls' Studio='%ls'\n",
-		WidePath.c_str(),
-		DataPath.c_str(),
-		StudioPath.c_str()
-	);
+    // 1. Main correct path:
+    //    DataRoot + Rml/FrontEnd/../Assets/... => DataRoot/Rml/Assets/...
+    RmlDx9AddCandidate(Candidates, DataRoot + L"\\" + WidePath);
 
-	OutputDebugStringW(DebugText);
-	
-	return DataPath;
+    // 2. Root-relative RML asset path:
+    //    Assets/... => DataRoot/Rml/Assets/...
+    if (RmlDx9StartsWithI(WidePath, L"Assets\\"))
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\Rml\\" + WidePath);
+
+    // 3. Short asset path fallback:
+    //    btn_ico/xxx.png => DataRoot/Rml/Assets/btn_ico/xxx.png
+    if (!RmlDx9StartsWithI(WidePath, L"Rml\\"))
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\Rml\\Assets\\" + WidePath);
+
+    // 4. Shop item icons:
+    //    Weapons/StoreIcons/xxx.png => DataRoot/Weapons/StoreIcons/xxx.png
+    if (!RmlDx9StartsWithI(WidePath, L"Weapons\\StoreIcons\\"))
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\Weapons\\StoreIcons\\" + WidePath);
+
+    // 5. Shop generated item icon fallback:
+    //    xxx.png => DataRoot/Weapons/StoreIcons/xxx.png
+    if (!FileName.empty())
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\Weapons\\StoreIcons\\" + FileName);
+
+    // 6. RML asset filename fallback:
+    //    xxx.png => DataRoot/Rml/Assets/xxx.png
+    if (!FileName.empty())
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\Rml\\Assets\\" + FileName);
+
+    for (const std::wstring& Candidate : Candidates)
+    {
+        if (RmlFileExistsW(Candidate))
+            return Candidate;
+    }
+
+    wchar_t DebugText[4096]{};
+    _snwprintf_s(
+        DebugText,
+        _countof(DebugText),
+        _TRUNCATE,
+        L"[RmlUI][DX9] Texture path not found. Source='%hs', FirstCandidate='%ls'\n",
+        path.c_str(),
+        Candidates.empty() ? L"" : Candidates[0].c_str()
+    );
+
+    OutputDebugStringW(DebugText);
+
+    if (!Candidates.empty())
+        return Candidates[0];
+
+    return WidePath;
 }
 
 bool RmlRenderDX9::CreateTextureFromRGBA(const unsigned char* PixelsRGBA, int Width, int Height, IDirect3DTexture9** OutTexture)
