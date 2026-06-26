@@ -44,6 +44,20 @@
 
 		<div class="frontend_topbar_content">
 
+			<div class="top_level_block">
+				<div class="top_level_left">
+					<div id="top_level_value" class="top_level_value">1</div>
+				</div>
+
+				<div class="top_level_right">
+					<div class="top_level_caption">LEVEL</div>
+					<div class="top_level_progress">
+						<div id="top_level_xp_fill" class="top_level_progress_fill"></div>
+					</div>
+					<div id="top_level_xp_text" class="top_level_xp_text">0 / 0</div>
+				</div>
+			</div>
+
 			<div class="top_faction_block">
 				<div id="top_faction_icon" class="top_faction_icon">F</div>
 
@@ -56,19 +70,19 @@
 
 			<div class="top_currency_block">
 				<div class="top_currency_item currency_zc">
-					<img class="top_currency_icon_image" src="../Assets/btn_store/btn_money_zc.png"/>
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zc.png"/>
 					<div id="balance_gc" class="top_currency_value">0</div>
 					<button id="btn_money_zc" class="top_currency_add">+</button>
 				</div>
 
 				<div class="top_currency_item currency_zd">
-					<img class="top_currency_icon_image" src="../Assets/btn_store/btn_money_zd.png"/>
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zd.png"/>
 					<div id="balance_gd" class="top_currency_value">0</div>
 					<button id="btn_money_zd" class="top_currency_add">+</button>
 				</div>
 
 				<div class="top_currency_item currency_zlt">
-					<img class="top_currency_icon_image" src="../Assets/btn_store/btn_money_zlt.png"/>
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zlt.png"/>
 					<div id="balance_zlt" class="top_currency_value">0</div>
 				</div>
 				<div id="balance_ltc" class="runtime_hidden_value">0</div>
