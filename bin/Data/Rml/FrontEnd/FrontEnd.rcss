@@ -567,17 +567,13 @@ button:disabled {
 }
 
 /* ============================================================
-   MAIN TOP BAR REDESIGN
-   Top_Bar.png = 1920 x 78
+   MAIN TOP BAR
+   Single source of truth for FrontEnd top layout.
 
    Layout:
-   1) Level block      = 160 x 78
-   2) Faction block    = 242 x 78
-   3) Currency block   = 176 x 78
-   4) Navigation block = 942 x 78
-   5) Icon block       = 384 x 78
-   Edge padding        = 8px left + 8px right
-   Total               = 1904 x 78 inside 1920 x 78
+   - Left: level, faction, currencies
+   - Center: main navigation
+   - Right: account actions
    ============================================================ */
 
 .frontend_shell_topbar {
@@ -610,20 +606,23 @@ button:disabled {
 	height: 58px;
 	margin-left: 0px;
 	z-index: 1;
-	display: flex;
-	flex-direction: row;
+	display: block;
+	overflow: hidden;
 }
 
 /* ------------------------------------------------------------
-   1. LEVEL INFO : 160 x 78
+   LEFT: LEVEL
    ------------------------------------------------------------ */
 
 .top_level_block {
-	position: relative;
+	position: absolute;
+	left: 8px;
+	top: 0px;
 	width: 118px;
 	height: 58px;
 	display: flex;
 	flex-direction: row;
+	flex-grow: 0;
 	flex-shrink: 0;
 	overflow: hidden;
 }
@@ -700,17 +699,20 @@ button:disabled {
 }
 
 /* ------------------------------------------------------------
-   2. FACTION INFO : 242 x 78
+   LEFT: FACTION
    ------------------------------------------------------------ */
 
 .top_faction_block {
-	position: relative;
+	position: absolute;
+	left: 126px;
+	top: 0px;
 	width: 192px;
 	height: 58px;
 	padding-top: 7px;
 	padding-left: 8px;
 	display: flex;
 	flex-direction: row;
+	flex-grow: 0;
 	flex-shrink: 0;
 	overflow: hidden;
 }
@@ -775,27 +777,32 @@ button:disabled {
 }
 
 /* ------------------------------------------------------------
-   3. CURRENCY : 176 x 78
-   Shows 2 currencies only: GC and GD.
-   Max display value is clamped by C++ to 999999999.
+   LEFT: CURRENCY
    ------------------------------------------------------------ */
 
 .top_currency_block {
-	position: relative;
-	width: 150px;
+	position: absolute;
+	left: 320px;
+	top: 0px;
+	width: 286px;
 	height: 58px;
-	padding-top: 5px;
-	padding-left: 6px;
-	padding-right: 6px;
+	padding-top: 14px;
+	padding-left: 0px;
+	padding-right: 0px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-grow: 0;
 	flex-shrink: 0;
 	overflow: hidden;
 }
 
 .top_currency_row {
 	position: relative;
-	width: 138px;
-	height: 23px;
-	margin-bottom: 3px;
+	width: 134px;
+	height: 30px;
+	margin-right: 8px;
+	margin-bottom: 0px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -807,8 +814,8 @@ button:disabled {
 	width: 16px;
 	height: 16px;
 	padding-top: 2px;
-	margin-left: 0px;
-	margin-right: 6px;
+	margin-left: 4px;
+	margin-right: 5px;
 	color: #ffffff;
 	background-color: rgba(20, 28, 32, 0.80);
 	border-width: 1px;
@@ -829,7 +836,7 @@ button:disabled {
 }
 
 .top_currency_label {
-	width: 20px;
+	width: 18px;
 	color: #e97831;
 	font-size: 8px;
 	font-weight: bold;
@@ -839,7 +846,7 @@ button:disabled {
 }
 
 .top_currency_value {
-	width: 70px;
+	width: 56px;
 	color: #ffffff;
 	font-size: 10px;
 	font-weight: bold;
@@ -879,42 +886,88 @@ button:disabled {
 }
 
 /* ------------------------------------------------------------
-   4. MAIN NAVIGATION : 962 x 78
-   Each clickable block = 192 x 78
-   Button texture       = 140 x 33
+   CENTER: MAIN NAVIGATION
    ------------------------------------------------------------ */
 
 .frontend_navigation {
-	position: relative;
-	width: 0px;
+	position: absolute;
+	left: 50%;
+	top: 0px;
+	width: 690px;
 	height: 58px;
-	padding-left: 1px;
-	padding-right: 1px;
-	display: flex;
-	flex-direction: row;
-	align-items: stretch;
-	flex-grow: 1;
-	flex-shrink: 1;
-	z-index: 1;
+	margin-left: -345px;
+	padding-left: 0px;
+	padding-right: 0px;
+	display: block;
+	flex-grow: 0;
+	flex-shrink: 0;
+	z-index: 2;
 	overflow: hidden;
 }
 
 .top_navigation_button {
-	position: relative;
+	position: absolute;
+	top: 0px;
 	width: 115px;
 	min-width: 115px;
+	max-width: 115px;
 	height: 58px;
 	padding: 0px;
 	margin: 0px;
 	color: rgba(0, 0, 0, 0);
 	background-color: rgba(0, 0, 0, 0.00);
+	decorator: none;
 	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
 	font-size: 0px;
 	line-height: 0px;
 	text-align: center;
+	filter: none;
+	text-shadow: none;
 	overflow: hidden;
-	flex-grow: 1;
-	flex-shrink: 1;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+#nav_survivor {
+	left: 0px;
+}
+
+#nav_skills {
+	left: 115px;
+}
+
+#nav_equipment {
+	left: 230px;
+}
+
+#nav_shop {
+	left: 345px;
+}
+
+#nav_clan {
+	left: 460px;
+}
+
+#nav_awards {
+	left: 575px;
+}
+
+.top_navigation_button:hover,
+.top_navigation_button:active,
+.top_navigation_button.active,
+.top_navigation_button.selected {
+	color: rgba(0, 0, 0, 0);
+	background-color: rgba(0, 0, 0, 0.00);
+	decorator: none;
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
+	filter: none;
+	text-shadow: none;
 }
 
 .top_navigation_texture {
@@ -996,38 +1049,45 @@ button:disabled {
 }
 
 /* ------------------------------------------------------------
-   5. SECONDARY ICON MENU : 384 x 78
-   Six icon blocks  = 64 x 78
-   Exit block       = 64 x 78
-   Icon texture     = 32 x 33
+   RIGHT: ACCOUNT ACTIONS
    ------------------------------------------------------------ */
 
 .frontend_account_actions {
-	position: relative;
+	position: absolute;
+	right: 8px;
+	top: 0px;
 	width: 288px;
 	height: 58px;
-	display: flex;
-	flex-direction: row;
-	align-items: stretch;
-	justify-content: flex-start;
+	display: block;
+	flex-grow: 0;
 	flex-shrink: 0;
-	z-index: 1;
+	z-index: 5;
 	overflow: hidden;
 }
 
 .top_icon_button {
-	position: relative;
+	position: absolute;
+	top: 0px;
 	width: 48px;
 	min-width: 48px;
+	max-width: 48px;
 	height: 58px;
-	padding: 0px;
 	margin: 0px;
-	color: rgba(0, 0, 0, 0);
+	padding: 0px;
+	color: rgba(255, 255, 255, 0.55);
 	background-color: rgba(0, 0, 0, 0.00);
+	decorator: none;
 	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
 	font-size: 0px;
 	line-height: 0px;
+	text-align: center;
+	filter: none;
+	text-shadow: none;
 	overflow: hidden;
+	flex-grow: 0;
 	flex-shrink: 0;
 }
 
@@ -1036,32 +1096,95 @@ button:disabled {
 	min-width: 48px;
 }
 
-.top_icon_glyph {
-	position: absolute;
-	left: 6px;
-	top: 12px;
-	width: 36px;
-	height: 34px;
-	padding-top: 8px;
-	color: #d7dbdd;
-	background-color: rgba(8, 11, 13, 0.18);
-	border-width: 1px;
-	border-color: rgba(130, 138, 142, 0.18);
-	font-size: 12px;
-	font-weight: bold;
-	line-height: 14px;
-	text-align: center;
-	text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.90);
+#btn_change_name {
+	left: 0px;
 }
 
-.top_icon_button:hover .top_icon_glyph {
-	color: #ffffff;
-	border-color: rgba(235, 215, 120, 0.52);
-	text-shadow: 0px 0px 8px rgba(255, 230, 110, 0.55);
+#btn_change_character {
+	left: 48px;
+}
+
+#btn_find_friend {
+	left: 96px;
+}
+
+#btn_rewards {
+	left: 144px;
+}
+
+#btn_settings {
+	left: 192px;
+}
+
+#btn_frontend_exit {
+	left: 240px;
+}
+
+.top_icon_button:hover,
+.top_icon_button:active,
+.top_icon_button.active,
+.top_icon_button.selected {
+	background-color: rgba(0, 0, 0, 0.00);
+	decorator: none;
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
+	filter: none;
+	text-shadow: none;
+}
+
+.top_icon_glyph {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 48px;
+	height: 58px;
+	margin-left: 0px;
+	padding: 0px;
+	z-index: 1;
+	color: rgba(255, 255, 255, 0.55);
+	background-color: rgba(0, 0, 0, 0.00);
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	font-size: 0px;
+	line-height: 0px;
+	text-align: center;
+	filter: none;
+	text-shadow: none;
+	pointer-events: none;
 }
 
 .top_icon_glyph.cart_icon {
 	color: #f0d84e;
+}
+
+.top_icon_image {
+	position: relative;
+	width: 48px;
+	height: 58px;
+	margin-left: 0px;
+	margin-top: 0px;
+	opacity: 0.58;
+	filter: none;
+	pointer-events: none;
+}
+
+.top_icon_button:hover .top_icon_image {
+	opacity: 1.00;
+	filter: drop-shadow(#ffffff99 0px 0px 5px);
+}
+
+.top_icon_button:active .top_icon_image,
+.top_icon_button.active .top_icon_image,
+.top_icon_button.selected .top_icon_image {
+	opacity: 1.00;
+	filter: drop-shadow(#ffffffbb 0px 0px 7px);
+}
+
+.top_icon_button:hover .top_icon_glyph.cart_icon .top_icon_image {
+	opacity: 1.00;
+	filter: drop-shadow(#ffd84eaa 0px 0px 6px);
 }
 
 .top_icon_button_texture {
@@ -2955,537 +3078,4 @@ button:disabled {
 	width: 100%;
 	margin-top: 18px;
 	margin-bottom: 10px;
-}
-
-/* ============================================================
-   TOP BAR HOTFIX
-   Fixed absolute layout for RmlUI DX9 frontend.
-   Prevents navigation buttons from stacking vertically.
-   Icon buttons have no background; only PNG icon highlights.
-   ============================================================ */
-
-.frontend_topbar_content {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	width: 100%;
-	height: 58px;
-	margin-left: 0px;
-	z-index: 1;
-	display: block;
-	overflow: hidden;
-}
-
-.top_level_block {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	width: 118px;
-	height: 58px;
-	flex-grow: 0;
-	flex-shrink: 0;
-	overflow: hidden;
-}
-
-.top_faction_block {
-	position: absolute;
-	left: 118px;
-	top: 0px;
-	width: 192px;
-	height: 58px;
-	padding-top: 7px;
-	padding-left: 8px;
-	flex-grow: 0;
-	flex-shrink: 0;
-	overflow: hidden;
-}
-
-.top_currency_block {
-	position: absolute;
-	left: 310px;
-	top: 0px;
-	width: 150px;
-	height: 58px;
-	padding-top: 5px;
-	padding-left: 6px;
-	padding-right: 6px;
-	flex-grow: 0;
-	flex-shrink: 0;
-	overflow: hidden;
-}
-
-.frontend_navigation {
-	position: absolute;
-	left: 470px;
-	top: 0px;
-	width: 690px;
-	height: 58px;
-	padding-left: 0px;
-	padding-right: 0px;
-	display: block;
-	flex-grow: 0;
-	flex-shrink: 0;
-	z-index: 1;
-	overflow: hidden;
-}
-
-.top_navigation_button {
-	position: absolute;
-	top: 0px;
-	width: 115px;
-	min-width: 115px;
-	max-width: 115px;
-	height: 58px;
-	padding: 0px;
-	margin: 0px;
-	color: rgba(0, 0, 0, 0);
-	background-color: rgba(0, 0, 0, 0.00);
-	decorator: none;
-	border-width: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-bottom-width: 0px;
-	border-bottom-color: rgba(0, 0, 0, 0);
-	font-size: 0px;
-	line-height: 0px;
-	text-align: center;
-	filter: none;
-	text-shadow: none;
-	overflow: hidden;
-	flex-grow: 0;
-	flex-shrink: 0;
-}
-
-#nav_survivor {
-	left: 0px;
-}
-
-#nav_skills {
-	left: 115px;
-}
-
-#nav_equipment {
-	left: 230px;
-}
-
-#nav_shop {
-	left: 345px;
-}
-
-#nav_clan {
-	left: 460px;
-}
-
-#nav_awards {
-	left: 575px;
-}
-
-.top_navigation_button:hover,
-.top_navigation_button:active,
-.top_navigation_button.active,
-.top_navigation_button.selected {
-	color: rgba(0, 0, 0, 0);
-	background-color: rgba(0, 0, 0, 0.00);
-	decorator: none;
-	border-width: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-bottom-width: 0px;
-	border-bottom-color: rgba(0, 0, 0, 0);
-	filter: none;
-	text-shadow: none;
-}
-
-.frontend_account_actions {
-	position: absolute;
-	left: 1160px;
-	top: 0px;
-	width: 288px;
-	height: 58px;
-	display: block;
-	flex-grow: 0;
-	flex-shrink: 0;
-	z-index: 2;
-	overflow: hidden;
-}
-
-.top_icon_button {
-	position: absolute;
-	top: 0px;
-	width: 48px;
-	min-width: 48px;
-	max-width: 48px;
-	height: 58px;
-	margin: 0px;
-	padding: 0px;
-	background-color: rgba(0, 0, 0, 0.00);
-	decorator: none;
-	border-width: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-bottom-width: 0px;
-	border-bottom-color: rgba(0, 0, 0, 0);
-	color: rgba(255, 255, 255, 0.55);
-	font-size: 0px;
-	line-height: 0px;
-	text-align: center;
-	filter: none;
-	text-shadow: none;
-	overflow: hidden;
-	flex-grow: 0;
-	flex-shrink: 0;
-}
-
-#btn_change_name {
-	left: 0px;
-}
-
-#btn_change_character {
-	left: 48px;
-}
-
-#btn_find_friend {
-	left: 96px;
-}
-
-#btn_rewards {
-	left: 144px;
-}
-
-#btn_settings {
-	left: 192px;
-}
-
-#btn_frontend_exit {
-	left: 240px;
-}
-
-.top_icon_button:hover,
-.top_icon_button:active,
-.top_icon_button.active,
-.top_icon_button.selected {
-	background-color: rgba(0, 0, 0, 0.00);
-	decorator: none;
-	border-width: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-bottom-width: 0px;
-	border-bottom-color: rgba(0, 0, 0, 0);
-	filter: none;
-	text-shadow: none;
-}
-
-.top_icon_glyph {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	width: 48px;
-	height: 58px;
-	margin-left: 0px;
-	padding: 0px;
-	z-index: 1;
-	color: rgba(255, 255, 255, 0.55);
-	background-color: rgba(0, 0, 0, 0.00);
-	border-width: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	font-size: 0px;
-	line-height: 0px;
-	text-align: center;
-	filter: none;
-	text-shadow: none;
-	pointer-events: none;
-}
-
-.top_icon_image {
-	position: relative;
-	width: 48px;
-	height: 58px;
-	margin-left: 0px;
-	margin-top: 0px;
-	opacity: 0.58;
-	filter: none;
-	pointer-events: none;
-}
-
-.top_icon_button:hover .top_icon_image {
-	opacity: 1.00;
-	filter: drop-shadow(#ffffff99 0px 0px 5px);
-}
-
-.top_icon_button:active .top_icon_image,
-.top_icon_button.active .top_icon_image,
-.top_icon_button.selected .top_icon_image {
-	opacity: 1.00;
-	filter: drop-shadow(#ffffffbb 0px 0px 7px);
-}
-
-.top_icon_button:hover .top_icon_glyph.cart_icon .top_icon_image {
-	opacity: 1.00;
-	filter: drop-shadow(#ffd84eaa 0px 0px 6px);
-}
-
-/* ============================================================
-   FRONTEND TOP BAR FINAL LAYOUT FIX
-   Left: level/faction/currency
-   Center: main navigation
-   Right: account actions
-   ============================================================ */
-
-.frontend_topbar_content {
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 100%;
-    height: 58px;
-    margin-left: 0px;
-    z-index: 1;
-    display: block;
-    overflow: hidden;
-}
-
-/* LEFT GROUP */
-
-.top_level_block {
-    position: absolute;
-    left: 8px;
-    top: 0px;
-    width: 118px;
-    height: 58px;
-    display: flex;
-    flex-direction: row;
-    flex-grow: 0;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.top_faction_block {
-    position: absolute;
-    left: 126px;
-    top: 0px;
-    width: 192px;
-    height: 58px;
-    padding-top: 7px;
-    padding-left: 8px;
-    display: flex;
-    flex-direction: row;
-    flex-grow: 0;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-.top_currency_block {
-    position: absolute;
-    left: 320px;
-    top: 0px;
-    width: 286px;
-    height: 58px;
-    padding-top: 14px;
-    padding-left: 0px;
-    padding-right: 0px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-grow: 0;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-
-/* Currency rows must be horizontal, not vertical */
-
-.top_currency_row {
-    position: relative;
-    width: 134px;
-    height: 30px;
-    margin-right: 8px;
-    margin-bottom: 0px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: rgba(9, 13, 16, 0.35);
-    overflow: hidden;
-}
-
-.top_currency_icon {
-    width: 16px;
-    height: 16px;
-    padding-top: 2px;
-    margin-left: 4px;
-    margin-right: 5px;
-    color: #ffffff;
-    background-color: rgba(20, 28, 32, 0.80);
-    border-width: 1px;
-    border-color: rgba(95, 109, 116, 0.70);
-    font-size: 8px;
-    font-weight: bold;
-    line-height: 10px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.top_currency_label {
-    width: 18px;
-    color: #e97831;
-    font-size: 8px;
-    font-weight: bold;
-    line-height: 12px;
-    letter-spacing: 1px;
-    flex-shrink: 0;
-}
-
-.top_currency_value {
-    width: 56px;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: bold;
-    line-height: 12px;
-    letter-spacing: 1px;
-    text-align: right;
-    white-space: nowrap;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.top_currency_add {
-    width: 17px;
-    height: 17px;
-    margin-left: 5px;
-    padding: 0px;
-    color: #ffffff;
-    background-color: rgba(32, 42, 47, 0.90);
-    border-width: 1px;
-    border-color: rgba(110, 123, 130, 0.75);
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 16px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-/* CENTER NAVIGATION */
-
-.frontend_navigation {
-    position: absolute;
-    left: 50%;
-    top: 0px;
-    width: 690px;
-    height: 58px;
-    margin-left: -345px;
-    padding-left: 0px;
-    padding-right: 0px;
-    display: block;
-    flex-grow: 0;
-    flex-shrink: 0;
-    z-index: 1;
-    overflow: hidden;
-}
-
-.top_navigation_button {
-    position: absolute;
-    top: 0px;
-    width: 115px;
-    min-width: 115px;
-    max-width: 115px;
-    height: 58px;
-    padding: 0px;
-    margin: 0px;
-    color: rgba(0, 0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.00);
-    decorator: none;
-    border-width: 0px;
-    border-color: rgba(0, 0, 0, 0);
-    border-bottom-width: 0px;
-    border-bottom-color: rgba(0, 0, 0, 0);
-    font-size: 0px;
-    line-height: 0px;
-    text-align: center;
-    filter: none;
-    text-shadow: none;
-    overflow: hidden;
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-#nav_survivor {
-    left: 0px;
-}
-
-#nav_skills {
-    left: 115px;
-}
-
-#nav_equipment {
-    left: 230px;
-}
-
-#nav_shop {
-    left: 345px;
-}
-
-#nav_clan {
-    left: 460px;
-}
-
-#nav_awards {
-    left: 575px;
-}
-
-/* RIGHT ACCOUNT ACTIONS */
-
-.frontend_account_actions {
-    position: absolute;
-    right: 8px;
-    top: 0px;
-    width: 288px;
-    height: 58px;
-    display: block;
-    flex-grow: 0;
-    flex-shrink: 0;
-    z-index: 2;
-    overflow: hidden;
-}
-
-.top_icon_button {
-    position: absolute;
-    top: 0px;
-    width: 48px;
-    min-width: 48px;
-    max-width: 48px;
-    height: 58px;
-    margin: 0px;
-    padding: 0px;
-    background-color: rgba(0, 0, 0, 0.00);
-    decorator: none;
-    border-width: 0px;
-    border-color: rgba(0, 0, 0, 0);
-    border-bottom-width: 0px;
-    border-bottom-color: rgba(0, 0, 0, 0);
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0px;
-    line-height: 0px;
-    text-align: center;
-    filter: none;
-    text-shadow: none;
-    overflow: hidden;
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-#btn_change_name {
-    left: 0px;
-}
-
-#btn_change_character {
-    left: 48px;
-}
-
-#btn_find_friend {
-    left: 96px;
-}
-
-#btn_rewards {
-    left: 144px;
-}
-
-#btn_settings {
-    left: 192px;
-}
-
-#btn_frontend_exit {
-    left: 240px;
 }
