@@ -130,31 +130,37 @@
 					<div class="top_icon_glyph cart_icon">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
 					</div>
+					<div class="account_action_tooltip">CHANGE NAME</div>
 				</button>
 				<button id="btn_change_character" class="top_icon_button">
 					<div class="top_icon_glyph">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
 					</div>
+					<div class="account_action_tooltip">CHANGE CHARACTER</div>
 				</button>
 				<button id="btn_find_friend" class="top_icon_button">
 					<div class="top_icon_glyph">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_find_friend.png"/>
 					</div>
+					<div class="account_action_tooltip">FRIENDS</div>
 				</button>
 				<button id="btn_rewards" class="top_icon_button">
 					<div class="top_icon_glyph">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_rewards.png"/>
 					</div>
+					<div class="account_action_tooltip">MISSIONS</div>
 				</button>
 				<button id="btn_settings" class="top_icon_button">
 					<div class="top_icon_glyph">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
 					</div>
+					<div class="account_action_tooltip">SETTINGS</div>
 				</button>
 				<button id="btn_frontend_exit" class="top_icon_button">
 					<div class="top_icon_glyph">
 						<img class="top_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
 					</div>
+					<div class="account_action_tooltip">EXIT</div>
 				</button>
 			</div>
 
