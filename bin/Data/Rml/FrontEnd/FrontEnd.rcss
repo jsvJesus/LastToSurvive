@@ -706,10 +706,10 @@ button:disabled {
 	position: absolute;
 	left: 126px;
 	top: 0px;
-	width: 192px;
+	width: 160px;
 	height: 58px;
 	padding-top: 7px;
-	padding-left: 8px;
+	padding-left: 6px;
 	display: flex;
 	flex-direction: row;
 	flex-grow: 0;
@@ -719,14 +719,14 @@ button:disabled {
 
 .top_faction_icon {
 	position: relative;
-	width: 42px;
-	height: 42px;
-	padding-top: 11px;
+	width: 36px;
+	height: 36px;
+	padding-top: 8px;
 	color: #ffffff;
 	background-color: rgba(18, 24, 28, 0.75);
 	border-width: 1px;
 	border-color: rgba(94, 108, 116, 0.75);
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: bold;
 	line-height: 20px;
 	letter-spacing: 1px;
@@ -736,9 +736,9 @@ button:disabled {
 
 .top_faction_info {
 	position: relative;
-	width: 134px;
+	width: 108px;
 	height: 42px;
-	margin-left: 9px;
+	margin-left: 7px;
 	padding-top: 2px;
 	flex-shrink: 0;
 }
@@ -752,10 +752,10 @@ button:disabled {
 }
 
 .top_faction_name {
-	width: 134px;
+	width: 108px;
 	margin-top: 4px;
 	color: #ffffff;
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: bold;
 	line-height: 15px;
 	letter-spacing: 1px;
@@ -765,7 +765,7 @@ button:disabled {
 }
 
 .top_faction_level {
-	width: 134px;
+	width: 108px;
 	margin-top: 4px;
 	color: #e97831;
 	font-size: 8px;
@@ -778,111 +778,150 @@ button:disabled {
 
 /* ------------------------------------------------------------
    LEFT: CURRENCY
+   ZC / ZD / ZLT
+   Source icons are 64x64, rendered compact inside 58px topbar.
    ------------------------------------------------------------ */
 
 .top_currency_block {
-	position: absolute;
-	left: 320px;
-	top: 0px;
-	width: 286px;
-	height: 58px;
-	padding-top: 14px;
-	padding-left: 0px;
-	padding-right: 0px;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	flex-grow: 0;
-	flex-shrink: 0;
-	overflow: hidden;
+    position: absolute;
+    left: 320px;
+    top: 0px;
+
+    width: 292px;
+    height: 58px;
+
+    padding-top: 21px;
+    padding-left: 0px;
+    padding-right: 0px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    overflow: hidden;
 }
 
-.top_currency_row {
-	position: relative;
-	width: 134px;
-	height: 30px;
-	margin-right: 8px;
-	margin-bottom: 0px;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	background-color: rgba(9, 13, 16, 0.35);
-	overflow: hidden;
+.top_currency_item {
+    position: relative;
+
+    width: 92px;
+    height: 20px;
+
+    margin-right: 5px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    background-color: rgba(0, 0, 0, 0.00);
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    overflow: hidden;
 }
 
-.top_currency_icon {
-	width: 16px;
-	height: 16px;
-	padding-top: 2px;
-	margin-left: 4px;
-	margin-right: 5px;
-	color: #ffffff;
-	background-color: rgba(20, 28, 32, 0.80);
-	border-width: 1px;
-	border-color: rgba(95, 109, 116, 0.70);
-	font-size: 8px;
-	font-weight: bold;
-	line-height: 10px;
-	text-align: center;
-	flex-shrink: 0;
+.top_currency_item:last-child {
+    margin-right: 0px;
 }
 
-.top_currency_icon.gold {
-	color: #ffb15e;
-}
+.top_currency_icon_image {
+    position: relative;
 
-.top_currency_icon.dollars {
-	color: #d4dde1;
-}
+    width: 18px;
+    height: 18px;
 
-.top_currency_label {
-	width: 18px;
-	color: #e97831;
-	font-size: 8px;
-	font-weight: bold;
-	line-height: 12px;
-	letter-spacing: 1px;
-	flex-shrink: 0;
+    margin-left: 0px;
+    margin-right: 4px;
+
+    display: block;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    filter: drop-shadow(#000000cc 0px 1px 2px);
 }
 
 .top_currency_value {
-	width: 56px;
-	color: #ffffff;
-	font-size: 10px;
-	font-weight: bold;
-	line-height: 12px;
-	letter-spacing: 1px;
-	text-align: right;
-	white-space: nowrap;
-	overflow: hidden;
-	flex-shrink: 0;
+    position: relative;
+
+    width: 50px;
+    height: 18px;
+
+    color: #ffffff;
+
+    font-size: 8px;
+    font-weight: bold;
+    line-height: 18px;
+    letter-spacing: 0px;
+
+    text-align: right;
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.95);
 }
 
 .top_currency_add {
-	width: 17px;
-	height: 17px;
-	margin-left: 5px;
-	padding: 0px;
-	color: #ffffff;
-	background-color: rgba(32, 42, 47, 0.90);
-	border-width: 1px;
-	border-color: rgba(110, 123, 130, 0.75);
-	font-size: 12px;
-	font-weight: bold;
-	line-height: 16px;
-	text-align: center;
-	flex-shrink: 0;
+    position: relative;
+
+    width: 14px;
+    height: 14px;
+
+    margin-left: 4px;
+    padding: 0px;
+
+    color: #ffffff;
+    background-color: rgba(28, 37, 42, 0.92);
+
+    decorator: none;
+
+    border-width: 1px;
+    border-color: rgba(110, 123, 130, 0.78);
+
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 12px;
+    text-align: center;
+
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.95);
+    filter: none;
+
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
 .top_currency_add:hover {
-	background-color: rgba(65, 33, 20, 0.90);
-	border-color: #d16b32;
-	filter: drop-shadow(#e879324c 0px 0px 6px);
+    color: #ffffff;
+    background-color: rgba(72, 36, 20, 0.95);
+
+    border-color: #e07830;
+
+    filter: drop-shadow(#e8793255 0px 0px 6px);
 }
 
 .top_currency_add:active {
-	background-color: rgba(95, 38, 24, 0.95);
-	border-color: #ff8b52;
+    background-color: rgba(95, 38, 24, 0.96);
+    border-color: #ff8b52;
+}
+
+.currency_zc .top_currency_value {
+    color: #ffb15e;
+}
+
+.currency_zd .top_currency_value {
+    color: #dce7eb;
+}
+
+.currency_zlt .top_currency_value {
+    color: #f1d27a;
 }
 
 /* ------------------------------------------------------------

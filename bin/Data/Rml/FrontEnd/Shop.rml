@@ -52,20 +52,22 @@
 			</div>
 
 			<div class="top_currency_block">
-				<div class="top_currency_row">
-					<div class="top_currency_icon gold">G</div>
-					<div class="top_currency_label">GC</div>
+				<div class="top_currency_item currency_zc">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zc.png"/>
 					<div id="balance_gc" class="top_currency_value">0</div>
-					<button id="btn_add_gc" class="top_currency_add">+</button>
+					<button id="btn_money_zc" class="top_currency_add">+</button>
 				</div>
 
-				<div class="top_currency_row">
-					<div class="top_currency_icon dollars">$</div>
-					<div class="top_currency_label">GD</div>
+				<div class="top_currency_item currency_zd">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zd.png"/>
 					<div id="balance_gd" class="top_currency_value">0</div>
-					<button id="btn_add_gd" class="top_currency_add">+</button>
+					<button id="btn_money_zd" class="top_currency_add">+</button>
 				</div>
 
+				<div class="top_currency_item currency_zlt">
+					<img class="top_currency_icon_image" src="../Assets/btn_ico/btn_money_zlt.png"/>
+					<div id="balance_zlt" class="top_currency_value">0</div>
+				</div>
 				<div id="balance_ltc" class="runtime_hidden_value">0</div>
 			</div>
 
