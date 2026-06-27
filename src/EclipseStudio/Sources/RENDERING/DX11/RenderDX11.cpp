@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include "GameCommon.h"
+#include "TrueNature/ITerrain.h"
 #include "rendering/DX11/RenderDX11.h"
 
 bool RenderDX11_Init();
@@ -21,6 +22,10 @@ bool RenderDX11_IsReady();
 bool RenderDX11_RenderWorld(
 	const WorldDX11FrameDesc& Desc
 );
+
+extern r3dITerrain* Terrain;
+class r3dTerrain2;
+extern r3dTerrain2* Terrain2;
 
 static void RenderDX11_LogText(
 	const char* Text
@@ -37,6 +42,14 @@ static void RenderDX11_LogText(
 
 namespace
 {
+	static const int DX11_TERRAIN_GRID_DIM = 17;
+	static const int DX11_TERRAIN_VERTEX_COUNT =
+		DX11_TERRAIN_GRID_DIM * DX11_TERRAIN_GRID_DIM;
+	static const int DX11_TERRAIN_INDEX_COUNT =
+		(DX11_TERRAIN_GRID_DIM - 1) *
+		(DX11_TERRAIN_GRID_DIM - 1) *
+		6;
+
 	struct WorldDX11FrameCB
 	{
 		float ViewProj[16];
@@ -47,6 +60,11 @@ namespace
 		float NearFar[4];
 	};
 
+	struct WorldDX11TerrainVertex
+	{
+		float Position[3];
+	};
+
 	typedef char WorldDX11FrameCB_SizeMustBe16ByteAligned[
 		(sizeof(WorldDX11FrameCB) % 16) == 0 ? 1 : -1
 	];
@@ -54,15 +72,28 @@ namespace
 	ID3D11Device*			gDX11Device = 0;
 	ID3D11DeviceContext*	gDX11Context = 0;
 
-	ID3D11Texture2D*		gDX11ColorTexture = 0;
+	ID3D11Texture2D*		gDX11GBufferColorTexture = 0;
+	ID3D11Texture2D*		gDX11GBufferNormalTexture = 0;
+	ID3D11Texture2D*		gDX11GBufferDepthLinearTexture = 0;
+	ID3D11Texture2D*		gDX11GBufferAuxTexture = 0;
 	ID3D11Texture2D*		gDX11DepthTexture = 0;
 	ID3D11Texture2D*		gDX11SmokeReadbackTexture = 0;
 
-	ID3D11RenderTargetView*	gDX11ColorRTV = 0;
+	ID3D11RenderTargetView*	gDX11GBufferColorRTV = 0;
+	ID3D11RenderTargetView*	gDX11GBufferNormalRTV = 0;
+	ID3D11RenderTargetView*	gDX11GBufferDepthLinearRTV = 0;
+	ID3D11RenderTargetView*	gDX11GBufferAuxRTV = 0;
 	ID3D11DepthStencilView*	gDX11DepthDSV = 0;
 
 	ID3D11VertexShader*		gDX11ClearVS = 0;
 	ID3D11PixelShader*		gDX11ClearPS = 0;
+
+	ID3D11VertexShader*		gDX11TerrainVS = 0;
+	ID3D11PixelShader*		gDX11TerrainPS = 0;
+	ID3D11InputLayout*		gDX11TerrainInputLayout = 0;
+
+	ID3D11Buffer*			gDX11TerrainVB = 0;
+	ID3D11Buffer*			gDX11TerrainIB = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 
@@ -88,6 +119,7 @@ namespace
 
 	bool					gDX11Initialized = false;
 	bool					gDX11SmokeReadbackLogged = false;
+	bool					gDX11TerrainGBufferReadbackLogged = false;
 
 	template <typename T>
 	void RenderDX11_SafeRelease(T*& Ptr)
@@ -236,8 +268,18 @@ namespace
 
 	void RenderDX11_ReleaseShaders()
 	{
+		RenderDX11_SafeRelease(gDX11TerrainInputLayout);
+		RenderDX11_SafeRelease(gDX11TerrainPS);
+		RenderDX11_SafeRelease(gDX11TerrainVS);
+
 		RenderDX11_SafeRelease(gDX11ClearPS);
 		RenderDX11_SafeRelease(gDX11ClearVS);
+	}
+
+	void RenderDX11_ReleaseTerrainResources()
+	{
+		RenderDX11_SafeRelease(gDX11TerrainIB);
+		RenderDX11_SafeRelease(gDX11TerrainVB);
 	}
 
 	void RenderDX11_ReleaseConstantBuffers()
@@ -298,6 +340,21 @@ namespace
 		Matrix[15] = 1.0f;
 	}
 
+	void RenderDX11_CopyMatrix(
+		float* Out,
+		const D3DXMATRIX& Matrix
+	)
+	{
+		if (!Out)
+			return;
+
+		const float* Source =
+			reinterpret_cast<const float*>(&Matrix);
+
+		for (int i = 0; i < 16; ++i)
+			Out[i] = Source[i];
+	}
+
 	void RenderDX11_BindFrameCB()
 	{
 		if (!gDX11Context || !gDX11FrameCB)
@@ -352,16 +409,29 @@ namespace
 				Mapped.pData
 			);
 
-		for (int i = 0; i < 16; ++i)
+		if (r3dRenderer)
 		{
-			FrameCB->ViewProj[i] = 0.0f;
-			FrameCB->View[i] = 0.0f;
-			FrameCB->Proj[i] = 0.0f;
-		}
+			RenderDX11_CopyMatrix(
+				FrameCB->ViewProj,
+				r3dRenderer->ViewProjMatrix
+			);
 
-		RenderDX11_SetIdentityMatrix(FrameCB->ViewProj);
-		RenderDX11_SetIdentityMatrix(FrameCB->View);
-		RenderDX11_SetIdentityMatrix(FrameCB->Proj);
+			RenderDX11_CopyMatrix(
+				FrameCB->View,
+				r3dRenderer->ViewMatrix
+			);
+
+			RenderDX11_CopyMatrix(
+				FrameCB->Proj,
+				r3dRenderer->ProjMatrix
+			);
+		}
+		else
+		{
+			RenderDX11_SetIdentityMatrix(FrameCB->ViewProj);
+			RenderDX11_SetIdentityMatrix(FrameCB->View);
+			RenderDX11_SetIdentityMatrix(FrameCB->Proj);
+		}
 
 		FrameCB->CameraPos[0] = gCam.x;
 		FrameCB->CameraPos[1] = gCam.y;
@@ -657,6 +727,112 @@ namespace
 			return false;
 		}
 
+		if (!RenderDX11_CompileShaderFromFile(
+			"Nature\\dx11_terrain.hls",
+			"VSMain",
+			"vs_5_0",
+			&VSBlob
+		))
+		{
+			RenderDX11_SafeRelease(VSBlob);
+			RenderDX11_SafeRelease(PSBlob);
+			return false;
+		}
+
+		Hr =
+			gDX11Device->CreateVertexShader(
+				VSBlob->GetBufferPointer(),
+				VSBlob->GetBufferSize(),
+				0,
+				&gDX11TerrainVS
+			);
+
+		if (FAILED(Hr))
+		{
+			RenderDX11_SafeRelease(VSBlob);
+
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create terrain VS failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		const D3D11_INPUT_ELEMENT_DESC TerrainLayoutDesc[] =
+		{
+			{
+				"POSITION",
+				0,
+				DXGI_FORMAT_R32G32B32_FLOAT,
+				0,
+				0,
+				D3D11_INPUT_PER_VERTEX_DATA,
+				0
+			}
+		};
+
+		Hr =
+			gDX11Device->CreateInputLayout(
+				TerrainLayoutDesc,
+				_countof(TerrainLayoutDesc),
+				VSBlob->GetBufferPointer(),
+				VSBlob->GetBufferSize(),
+				&gDX11TerrainInputLayout
+			);
+
+		RenderDX11_SafeRelease(VSBlob);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create terrain input layout failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		if (!RenderDX11_CompileShaderFromFile(
+			"Nature\\dx11_terrain.hls",
+			"PSMain",
+			"ps_5_0",
+			&PSBlob
+		))
+		{
+			RenderDX11_SafeRelease(PSBlob);
+			return false;
+		}
+
+		Hr =
+			gDX11Device->CreatePixelShader(
+				PSBlob->GetBufferPointer(),
+				PSBlob->GetBufferSize(),
+				0,
+				&gDX11TerrainPS
+			);
+
+		RenderDX11_SafeRelease(PSBlob);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create terrain PS failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
 		OutputDebugStringA(
 			"[RenderDX11] Shaders created\n"
 		);
@@ -700,6 +876,305 @@ namespace
 		);
 	}
 
+	bool RenderDX11_CreateTerrainResources()
+	{
+		if (gDX11TerrainVB && gDX11TerrainIB)
+			return true;
+
+		RenderDX11_ReleaseTerrainResources();
+
+		D3D11_BUFFER_DESC VBDesc = {};
+		VBDesc.ByteWidth =
+			sizeof(WorldDX11TerrainVertex) *
+			DX11_TERRAIN_VERTEX_COUNT;
+		VBDesc.Usage = D3D11_USAGE_DYNAMIC;
+		VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		HRESULT Hr =
+			gDX11Device->CreateBuffer(
+				&VBDesc,
+				0,
+				&gDX11TerrainVB
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create terrain VB failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		unsigned short Indices[DX11_TERRAIN_INDEX_COUNT] = {};
+		int Index = 0;
+
+		for (int z = 0; z < DX11_TERRAIN_GRID_DIM - 1; ++z)
+		{
+			for (int x = 0; x < DX11_TERRAIN_GRID_DIM - 1; ++x)
+			{
+				const unsigned short I0 =
+					static_cast<unsigned short>(
+						z * DX11_TERRAIN_GRID_DIM + x
+					);
+				const unsigned short I1 =
+					static_cast<unsigned short>(
+						z * DX11_TERRAIN_GRID_DIM + x + 1
+					);
+				const unsigned short I2 =
+					static_cast<unsigned short>(
+						(z + 1) * DX11_TERRAIN_GRID_DIM + x
+					);
+				const unsigned short I3 =
+					static_cast<unsigned short>(
+						(z + 1) * DX11_TERRAIN_GRID_DIM + x + 1
+					);
+
+				Indices[Index++] = I0;
+				Indices[Index++] = I1;
+				Indices[Index++] = I2;
+				Indices[Index++] = I1;
+				Indices[Index++] = I3;
+				Indices[Index++] = I2;
+			}
+		}
+
+		D3D11_BUFFER_DESC IBDesc = {};
+		IBDesc.ByteWidth = sizeof(Indices);
+		IBDesc.Usage = D3D11_USAGE_DEFAULT;
+		IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA InitData = {};
+		InitData.pSysMem = Indices;
+
+		Hr =
+			gDX11Device->CreateBuffer(
+				&IBDesc,
+				&InitData,
+				&gDX11TerrainIB
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create terrain IB failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		OutputDebugStringA(
+			"[RenderDX11] Terrain DX11 buffers created\n"
+		);
+
+		return true;
+	}
+
+	bool RenderDX11_UpdateTerrainVertices()
+	{
+		if (!gDX11Context || !gDX11TerrainVB || !Terrain)
+			return false;
+
+		if (!Terrain->IsLoaded())
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11TerrainVB,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Map terrain VB failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		WorldDX11TerrainVertex* Vertices =
+			reinterpret_cast<WorldDX11TerrainVertex*>(
+				Mapped.pData
+			);
+
+		const r3dTerrainDesc& TerrainDesc =
+			Terrain->GetDesc();
+
+		float Step = TerrainDesc.CellSize * 4.0f;
+
+		if (Step <= 0.01f)
+			Step = 4.0f;
+
+		const float HalfSize =
+			Step *
+			static_cast<float>(DX11_TERRAIN_GRID_DIM - 1) *
+			0.5f;
+
+		int VertexIndex = 0;
+
+		for (int z = 0; z < DX11_TERRAIN_GRID_DIM; ++z)
+		{
+			for (int x = 0; x < DX11_TERRAIN_GRID_DIM; ++x)
+			{
+				const float WorldX =
+					gCam.x - HalfSize +
+					static_cast<float>(x) * Step;
+
+				const float WorldZ =
+					gCam.z - HalfSize +
+					static_cast<float>(z) * Step;
+
+				r3dPoint3D Pos(
+					WorldX,
+					0.0f,
+					WorldZ
+				);
+
+				Vertices[VertexIndex].Position[0] = WorldX;
+				Vertices[VertexIndex].Position[1] =
+					Terrain->GetHeight(Pos);
+				Vertices[VertexIndex].Position[2] = WorldZ;
+
+				++VertexIndex;
+			}
+		}
+
+		gDX11Context->Unmap(
+			gDX11TerrainVB,
+			0
+		);
+
+		return true;
+	}
+
+	bool RenderDX11_BindTerrainGeometry()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11TerrainInputLayout ||
+			!gDX11TerrainVB ||
+			!gDX11TerrainIB
+		)
+		{
+			return false;
+		}
+
+		UINT Stride = sizeof(WorldDX11TerrainVertex);
+		UINT Offset = 0;
+
+		gDX11Context->IASetInputLayout(
+			gDX11TerrainInputLayout
+		);
+
+		gDX11Context->IASetPrimitiveTopology(
+			D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+		);
+
+		gDX11Context->IASetVertexBuffers(
+			0,
+			1,
+			&gDX11TerrainVB,
+			&Stride,
+			&Offset
+		);
+
+		gDX11Context->IASetIndexBuffer(
+			gDX11TerrainIB,
+			DXGI_FORMAT_R16_UINT,
+			0
+		);
+
+		return true;
+	}
+
+	bool RenderDX11_DrawTerrainDepth()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11TerrainVS ||
+			!RenderDX11_CreateTerrainResources() ||
+			!RenderDX11_UpdateTerrainVertices() ||
+			!RenderDX11_BindTerrainGeometry()
+		)
+		{
+			return false;
+		}
+
+		gDX11Context->VSSetShader(
+			gDX11TerrainVS,
+			0,
+			0
+		);
+
+		gDX11Context->PSSetShader(
+			0,
+			0,
+			0
+		);
+
+		gDX11Context->DrawIndexed(
+			DX11_TERRAIN_INDEX_COUNT,
+			0,
+			0
+		);
+
+		return true;
+	}
+
+	bool RenderDX11_DrawTerrainGBuffer()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11TerrainVS ||
+			!gDX11TerrainPS ||
+			!RenderDX11_CreateTerrainResources() ||
+			!RenderDX11_UpdateTerrainVertices() ||
+			!RenderDX11_BindTerrainGeometry()
+		)
+		{
+			return false;
+		}
+
+		gDX11Context->VSSetShader(
+			gDX11TerrainVS,
+			0,
+			0
+		);
+
+		gDX11Context->PSSetShader(
+			gDX11TerrainPS,
+			0,
+			0
+		);
+
+		gDX11Context->DrawIndexed(
+			DX11_TERRAIN_INDEX_COUNT,
+			0,
+			0
+		);
+
+		return true;
+	}
+
 	void RenderDX11_SmokeReadbackOnce()
 	{
 		if (gDX11SmokeReadbackLogged)
@@ -707,7 +1182,7 @@ namespace
 
 		if (
 			!gDX11Context ||
-			!gDX11ColorTexture ||
+			!gDX11GBufferColorTexture ||
 			!gDX11SmokeReadbackTexture ||
 			gDX11FrameWidth <= 0 ||
 			gDX11FrameHeight <= 0
@@ -718,7 +1193,7 @@ namespace
 
 		gDX11Context->CopyResource(
 			gDX11SmokeReadbackTexture,
-			gDX11ColorTexture
+			gDX11GBufferColorTexture
 		);
 
 		D3D11_MAPPED_SUBRESOURCE Mapped = {};
@@ -785,6 +1260,114 @@ namespace
 		OutputDebugStringA(Text);
 
 		gDX11SmokeReadbackLogged = true;
+	}
+
+	void RenderDX11_TerrainGBufferReadbackOnce()
+	{
+		if (gDX11TerrainGBufferReadbackLogged)
+			return;
+
+		if (
+			!gDX11Context ||
+			!gDX11GBufferColorTexture ||
+			!gDX11SmokeReadbackTexture ||
+			gDX11FrameWidth <= 0 ||
+			gDX11FrameHeight <= 0
+		)
+		{
+			return;
+		}
+
+		gDX11Context->CopyResource(
+			gDX11SmokeReadbackTexture,
+			gDX11GBufferColorTexture
+		);
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11SmokeReadbackTexture,
+				0,
+				D3D11_MAP_READ,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Terrain GBuffer readback Map failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			gDX11TerrainGBufferReadbackLogged = true;
+			return;
+		}
+
+		const int SampleXs[5] =
+		{
+			gDX11FrameWidth / 2,
+			gDX11FrameWidth / 4,
+			(gDX11FrameWidth * 3) / 4,
+			gDX11FrameWidth / 2,
+			gDX11FrameWidth / 2
+		};
+
+		const int SampleYs[5] =
+		{
+			gDX11FrameHeight / 2,
+			gDX11FrameHeight / 2,
+			gDX11FrameHeight / 2,
+			gDX11FrameHeight / 4,
+			(gDX11FrameHeight * 3) / 4
+		};
+
+		unsigned int R[5] = {};
+		unsigned int G[5] = {};
+		unsigned int B[5] = {};
+		unsigned int A[5] = {};
+
+		for (int i = 0; i < 5; ++i)
+		{
+			const unsigned char* Row =
+				reinterpret_cast<const unsigned char*>(
+					Mapped.pData
+				) + Mapped.RowPitch * SampleYs[i];
+
+			const unsigned char* Pixel =
+				Row + SampleXs[i] * 4;
+
+			R[i] = Pixel[0];
+			G[i] = Pixel[1];
+			B[i] = Pixel[2];
+			A[i] = Pixel[3];
+		}
+
+		gDX11Context->Unmap(
+			gDX11SmokeReadbackTexture,
+			0
+		);
+
+		char Text[1024] = {};
+		sprintf_s(
+			Text,
+			"[RenderDX11] Terrain GBuffer readback: %dx%d center=(%u,%u,%u,%u) left=(%u,%u,%u,%u) right=(%u,%u,%u,%u) top=(%u,%u,%u,%u) bottom=(%u,%u,%u,%u)\n",
+			gDX11FrameWidth,
+			gDX11FrameHeight,
+			R[0], G[0], B[0], A[0],
+			R[1], G[1], B[1], A[1],
+			R[2], G[2], B[2], A[2],
+			R[3], G[3], B[3], A[3],
+			R[4], G[4], B[4], A[4]
+		);
+
+		OutputDebugStringA(Text);
+
+		gDX11TerrainGBufferReadbackLogged = true;
 	}
 
 	const char* RenderDX11_FeatureLevelToString(
@@ -1155,43 +1738,60 @@ namespace
 	{
 		if (gDX11Context)
 		{
-			ID3D11RenderTargetView* NullRTV[1] =
+			ID3D11RenderTargetView* NullRTV[4] =
 			{
+				0,
+				0,
+				0,
 				0
 			};
 
 			gDX11Context->OMSetRenderTargets(
-				1,
+				4,
 				NullRTV,
 				0
 			);
 		}
 
-		RenderDX11_SafeRelease(gDX11ColorRTV);
+		RenderDX11_SafeRelease(gDX11GBufferAuxRTV);
+		RenderDX11_SafeRelease(gDX11GBufferDepthLinearRTV);
+		RenderDX11_SafeRelease(gDX11GBufferNormalRTV);
+		RenderDX11_SafeRelease(gDX11GBufferColorRTV);
 		RenderDX11_SafeRelease(gDX11DepthDSV);
 
 		RenderDX11_SafeRelease(gDX11SmokeReadbackTexture);
-		RenderDX11_SafeRelease(gDX11ColorTexture);
+		RenderDX11_SafeRelease(gDX11GBufferAuxTexture);
+		RenderDX11_SafeRelease(gDX11GBufferDepthLinearTexture);
+		RenderDX11_SafeRelease(gDX11GBufferNormalTexture);
+		RenderDX11_SafeRelease(gDX11GBufferColorTexture);
 		RenderDX11_SafeRelease(gDX11DepthTexture);
 
 		gDX11FrameWidth = 0;
 		gDX11FrameHeight = 0;
 		gDX11SmokeReadbackLogged = false;
+		gDX11TerrainGBufferReadbackLogged = false;
 
 		gDX11Viewport = D3D11_VIEWPORT();
 	}
 
-	bool RenderDX11_CreateColorTarget(
+	bool RenderDX11_CreateGBufferTarget(
 		int Width,
-		int Height
+		int Height,
+		DXGI_FORMAT Format,
+		const char* DebugName,
+		ID3D11Texture2D** OutTexture,
+		ID3D11RenderTargetView** OutRTV
 	)
 	{
+		if (!OutTexture || !OutRTV)
+			return false;
+
 		D3D11_TEXTURE2D_DESC TextureDesc = {};
 		TextureDesc.Width = static_cast<UINT>(Width);
 		TextureDesc.Height = static_cast<UINT>(Height);
 		TextureDesc.MipLevels = 1;
 		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		TextureDesc.Format = Format;
 		TextureDesc.SampleDesc.Count = 1;
 		TextureDesc.SampleDesc.Quality = 0;
 		TextureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -1203,7 +1803,7 @@ namespace
 			gDX11Device->CreateTexture2D(
 				&TextureDesc,
 				0,
-				&gDX11ColorTexture
+				OutTexture
 			);
 
 		if (FAILED(Hr))
@@ -1211,7 +1811,8 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create color texture failed. HRESULT=0x%08X\n",
+				"[RenderDX11] Create %s texture failed. HRESULT=0x%08X\n",
+				DebugName ? DebugName : "gbuffer",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -1221,9 +1822,9 @@ namespace
 
 		Hr =
 			gDX11Device->CreateRenderTargetView(
-				gDX11ColorTexture,
+				*OutTexture,
 				0,
-				&gDX11ColorRTV
+				OutRTV
 			);
 
 		if (FAILED(Hr))
@@ -1231,11 +1832,68 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create color RTV failed. HRESULT=0x%08X\n",
+				"[RenderDX11] Create %s RTV failed. HRESULT=0x%08X\n",
+				DebugName ? DebugName : "gbuffer",
 				static_cast<unsigned int>(Hr)
 			);
 
 			OutputDebugStringA(Text);
+			return false;
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_CreateGBufferTargets(
+		int Width,
+		int Height
+	)
+	{
+		if (!RenderDX11_CreateGBufferTarget(
+			Width,
+			Height,
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			"GBufferColor",
+			&gDX11GBufferColorTexture,
+			&gDX11GBufferColorRTV
+		))
+		{
+			return false;
+		}
+
+		if (!RenderDX11_CreateGBufferTarget(
+			Width,
+			Height,
+			DXGI_FORMAT_R16G16B16A16_FLOAT,
+			"GBufferNormal",
+			&gDX11GBufferNormalTexture,
+			&gDX11GBufferNormalRTV
+		))
+		{
+			return false;
+		}
+
+		if (!RenderDX11_CreateGBufferTarget(
+			Width,
+			Height,
+			DXGI_FORMAT_R32_FLOAT,
+			"GBufferDepthLinear",
+			&gDX11GBufferDepthLinearTexture,
+			&gDX11GBufferDepthLinearRTV
+		))
+		{
+			return false;
+		}
+
+		if (!RenderDX11_CreateGBufferTarget(
+			Width,
+			Height,
+			DXGI_FORMAT_R8G8B8A8_UNORM,
+			"GBufferAux",
+			&gDX11GBufferAuxTexture,
+			&gDX11GBufferAuxRTV
+		))
+		{
 			return false;
 		}
 
@@ -1358,10 +2016,16 @@ namespace
 			RenderDX11_ClampSize(Desc.Height);
 
 		if (
-			gDX11ColorTexture &&
+			gDX11GBufferColorTexture &&
+			gDX11GBufferNormalTexture &&
+			gDX11GBufferDepthLinearTexture &&
+			gDX11GBufferAuxTexture &&
 			gDX11DepthTexture &&
 			gDX11SmokeReadbackTexture &&
-			gDX11ColorRTV &&
+			gDX11GBufferColorRTV &&
+			gDX11GBufferNormalRTV &&
+			gDX11GBufferDepthLinearRTV &&
+			gDX11GBufferAuxRTV &&
 			gDX11DepthDSV &&
 			gDX11FrameWidth == Width &&
 			gDX11FrameHeight == Height
@@ -1372,7 +2036,7 @@ namespace
 
 		RenderDX11_ReleaseFrameTargets();
 
-		if (!RenderDX11_CreateColorTarget(Width, Height))
+		if (!RenderDX11_CreateGBufferTargets(Width, Height))
 		{
 			RenderDX11_ReleaseFrameTargets();
 			return false;
@@ -1403,7 +2067,7 @@ namespace
 		char Text[256] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Frame targets ready %dx%d\n",
+			"[RenderDX11] GBuffer targets ready %dx%d\n",
 			Width,
 			Height
 		);
@@ -1415,13 +2079,16 @@ namespace
 
 	void RenderDX11_BindFrameTargets()
 	{
-		ID3D11RenderTargetView* RTViews[1] =
+		ID3D11RenderTargetView* RTViews[4] =
 		{
-			gDX11ColorRTV
+			gDX11GBufferColorRTV,
+			gDX11GBufferNormalRTV,
+			gDX11GBufferDepthLinearRTV,
+			gDX11GBufferAuxRTV
 		};
 
 		gDX11Context->OMSetRenderTargets(
-			1,
+			4,
 			RTViews,
 			gDX11DepthDSV
 		);
@@ -1436,7 +2103,7 @@ namespace
 
 	void RenderDX11_ClearFrameTargets()
 	{
-		const float ClearColor[4] =
+		const float ClearColorAlbedo[4] =
 		{
 			0.02f,
 			0.04f,
@@ -1444,9 +2111,48 @@ namespace
 			1.0f
 		};
 
+		const float ClearNormal[4] =
+		{
+			0.5f,
+			0.5f,
+			1.0f,
+			1.0f
+		};
+
+		const float ClearDepthLinear[4] =
+		{
+			1.0f,
+			0.0f,
+			0.0f,
+			0.0f
+		};
+
+		const float ClearAux[4] =
+		{
+			0.0f,
+			0.0f,
+			0.0f,
+			0.0f
+		};
+
 		gDX11Context->ClearRenderTargetView(
-			gDX11ColorRTV,
-			ClearColor
+			gDX11GBufferColorRTV,
+			ClearColorAlbedo
+		);
+
+		gDX11Context->ClearRenderTargetView(
+			gDX11GBufferNormalRTV,
+			ClearNormal
+		);
+
+		gDX11Context->ClearRenderTargetView(
+			gDX11GBufferDepthLinearRTV,
+			ClearDepthLinear
+		);
+
+		gDX11Context->ClearRenderTargetView(
+			gDX11GBufferAuxRTV,
+			ClearAux
 		);
 
 		gDX11Context->ClearDepthStencilView(
@@ -1459,13 +2165,16 @@ namespace
 
 	void RenderDX11_UnbindFrameTargets()
 	{
-		ID3D11RenderTargetView* NullRTV[1] =
+		ID3D11RenderTargetView* NullRTV[4] =
 		{
+			0,
+			0,
+			0,
 			0
 		};
 
 		gDX11Context->OMSetRenderTargets(
-			1,
+			4,
 			NullRTV,
 			0
 		);
@@ -1593,6 +2302,7 @@ bool RenderDX11_Init()
 void RenderDX11_Shutdown()
 {
 	RenderDX11_ReleaseFrameTargets();
+	RenderDX11_ReleaseTerrainResources();
 
 	if (gDX11Context)
 	{

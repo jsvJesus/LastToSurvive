@@ -34,6 +34,7 @@
 #include "rendering/Probes/ProbeMaster.h"
 
 #include "rendering/Deffered/D3DMiscFunctions.h"
+#include "rendering/World/WorldRenderer.h"
 
 #include "..\..\..\bin\Data\Shaders\DX9_P1\system\LibSM\shadow_config.h" // shader config file
 
@@ -7154,7 +7155,22 @@ void r3dDefferedRenderer::Render()
 	}
 
 	// setup stencil, geometry rendered will set stencil to 1. Then when rendering directional light, it will do it only for pixels that have stencil in 1
-	RenderDeferredScene1();
+	WorldRender_LogSelectedBackendOnce();
+
+	bool bWorldRendered = false;
+
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+	if (WorldRender_IsDX11Active())
+	{
+		bWorldRendered =
+			WorldRender_TryRenderDX11();
+	}
+#endif
+
+	if (!bWorldRendered)
+	{
+		RenderDeferredScene1();
+	}
 
 	if( r_split_grass_render->GetInt() )
 	{

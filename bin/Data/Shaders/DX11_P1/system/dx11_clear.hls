@@ -14,6 +14,14 @@ struct VS_OUTPUT
 	float2 TexCoord : TEXCOORD0;
 };
 
+struct PS_OUTPUT
+{
+	float4 Color : SV_Target0;
+	float4 Normal : SV_Target1;
+	float DepthLinear : SV_Target2;
+	float4 Aux : SV_Target3;
+};
+
 VS_OUTPUT VSMain(uint VertexID : SV_VertexID)
 {
 	VS_OUTPUT Output;
@@ -38,10 +46,8 @@ VS_OUTPUT VSMain(uint VertexID : SV_VertexID)
 	return Output;
 }
 
-float4 PSMain(VS_OUTPUT Input) : SV_Target0
+PS_OUTPUT PSMain(VS_OUTPUT Input)
 {
-	(void)Input;
-
 	// Distinct color for DX11 smoke test.
 	// Expected readback approximately:
 	// R=26, G=51, B=89, A=255
@@ -51,10 +57,19 @@ float4 PSMain(VS_OUTPUT Input) : SV_Target0
 	float NearFarCheck =
 		saturate(gNearFar.x / max(gNearFar.y, 1.0f));
 
-	return float4(
-		0.10f * SizeCheck.x,
+	float TexCoordCheck =
+		dot(Input.TexCoord, float2(0.0f, 0.0f));
+
+	PS_OUTPUT Output;
+	Output.Color = float4(
+		0.10f * SizeCheck.x + TexCoordCheck,
 		0.20f * SizeCheck.y,
 		0.35f + NearFarCheck * 0.01f,
 		1.0f
 	);
+	Output.Normal = float4(0.5f, 0.5f, 1.0f, 1.0f);
+	Output.DepthLinear = NearFarCheck;
+	Output.Aux = float4(gScreenSize.zw, 0.0f, 1.0f);
+
+	return Output;
 }
