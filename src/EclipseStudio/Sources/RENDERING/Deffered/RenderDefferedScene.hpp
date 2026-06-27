@@ -1,3 +1,5 @@
+#pragma once
+#include "rendering/World/WorldRenderer.h"
 
 inline DWORD F2DW( FLOAT f ) { return *((DWORD*)&f); }
 
@@ -588,9 +590,25 @@ void RenderDeferredScene1()
 
 void RenderDeferredScene()
 {
+	StudioWorldRenderer_LogSelectedBackendOnce();
 
 	R3DPROFILE_START("Render: Scene");
-	RenderDeferredScene1();
+
+	bool bWorldRendered = false;
+
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+	if (StudioWorldRenderer_IsDX11WorldActive())
+	{
+		bWorldRendered =
+			StudioWorldRenderer_RenderDX11WorldStub();
+	}
+#endif
+
+	if (!bWorldRendered)
+	{
+		RenderDeferredScene1();
+	}
+
 	R3DPROFILE_END("Render: Scene");
 
 	R3DPROFILE_START("Render: Buffers");
