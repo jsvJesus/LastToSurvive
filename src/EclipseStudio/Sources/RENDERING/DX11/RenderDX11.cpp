@@ -9,7 +9,10 @@
 #include <DXGI.h>
 #include <D3Dcompiler.h>
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "GameCommon.h"
 #include "TrueNature/ITerrain.h"
@@ -42,7 +45,7 @@ static void RenderDX11_LogText(
 
 namespace
 {
-	static const int DX11_TERRAIN_GRID_DIM = 17;
+	static const int DX11_TERRAIN_GRID_DIM = 65;
 	static const int DX11_TERRAIN_VERTEX_COUNT =
 		DX11_TERRAIN_GRID_DIM * DX11_TERRAIN_GRID_DIM;
 	static const int DX11_TERRAIN_INDEX_COUNT =
@@ -63,7 +66,11 @@ namespace
 	struct WorldDX11TerrainVertex
 	{
 		float Position[3];
+		float Normal[3];
 	};
+
+	static const int DX11_PREVIEW_WIDTH = 480;
+	static const int DX11_PREVIEW_HEIGHT = 270;
 
 	typedef char WorldDX11FrameCB_SizeMustBe16ByteAligned[
 		(sizeof(WorldDX11FrameCB) % 16) == 0 ? 1 : -1
@@ -120,6 +127,14 @@ namespace
 	bool					gDX11Initialized = false;
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
+	bool					gDX11PreviewValid = false;
+
+	r3dTexture*				gDX11PreviewTexture = 0;
+
+	unsigned int			gDX11PreviewPixels[
+		DX11_PREVIEW_WIDTH *
+		DX11_PREVIEW_HEIGHT
+	] = {};
 
 	template <typename T>
 	void RenderDX11_SafeRelease(T*& Ptr)
@@ -132,6 +147,62 @@ namespace
 	}
 
 	int RenderDX11_ClampSize(int Value);
+
+	bool RenderDX11_IsSwitchBoundary(char Ch)
+	{
+		return
+			Ch == 0 ||
+			isspace(static_cast<unsigned char>(Ch)) ||
+			Ch == '"' ||
+			Ch == '\'';
+	}
+
+	bool RenderDX11_CommandLineHasSwitch(const char* SwitchName)
+	{
+		if (!SwitchName || !SwitchName[0])
+			return false;
+
+		const char* CmdLine = GetCommandLineA();
+
+		if (!CmdLine || !CmdLine[0])
+			return false;
+
+		const size_t SwitchLen = strlen(SwitchName);
+
+		for (const char* It = CmdLine; *It; ++It)
+		{
+			const bool bStartBoundary =
+				It == CmdLine ||
+				RenderDX11_IsSwitchBoundary(*(It - 1));
+
+			if (!bStartBoundary)
+				continue;
+
+			if (_strnicmp(It, SwitchName, SwitchLen) != 0)
+				continue;
+
+			if (!RenderDX11_IsSwitchBoundary(It[SwitchLen]))
+				continue;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	bool RenderDX11_WantsSmokeDebug()
+	{
+		return
+			RenderDX11_CommandLineHasSwitch("-dx11smoke") ||
+			RenderDX11_CommandLineHasSwitch("/dx11smoke");
+	}
+
+	bool RenderDX11_WantsDebugPreview()
+	{
+		return
+			RenderDX11_CommandLineHasSwitch("-dx11preview") ||
+			RenderDX11_CommandLineHasSwitch("/dx11preview");
+	}
 
 	class RenderDX11IncludeHandler : public ID3DInclude
 	{
@@ -220,7 +291,7 @@ namespace
 			char* Data =
 				new char[File->size + 1];
 
-			const int ReadSize =
+			const size_t ReadSize =
 				fread(
 					Data,
 					1,
@@ -280,6 +351,49 @@ namespace
 	{
 		RenderDX11_SafeRelease(gDX11TerrainIB);
 		RenderDX11_SafeRelease(gDX11TerrainVB);
+	}
+
+	void RenderDX11_ReleasePreviewTexture()
+	{
+		if (gDX11PreviewTexture && r3dRenderer)
+		{
+			r3dRenderer->DeleteTexture(
+				gDX11PreviewTexture,
+				1
+			);
+		}
+
+		gDX11PreviewTexture = 0;
+		gDX11PreviewValid = false;
+	}
+
+	bool RenderDX11_EnsurePreviewTexture()
+	{
+		if (gDX11PreviewTexture)
+			return true;
+
+		if (!r3dRenderer || !r3dRenderer->pd3ddev)
+			return false;
+
+		gDX11PreviewTexture =
+			r3dRenderer->AllocateTexture();
+
+		if (!gDX11PreviewTexture)
+			return false;
+
+		if (!gDX11PreviewTexture->Create(
+			DX11_PREVIEW_WIDTH,
+			DX11_PREVIEW_HEIGHT,
+			D3DFMT_A8R8G8B8,
+			1,
+			D3DPOOL_MANAGED
+		))
+		{
+			RenderDX11_ReleasePreviewTexture();
+			return false;
+		}
+
+		return true;
 	}
 
 	void RenderDX11_ReleaseConstantBuffers()
@@ -522,7 +636,7 @@ namespace
 		char* Data =
 			new char[File->size + 1];
 
-		const int ReadSize =
+		const size_t ReadSize =
 			fread(
 				Data,
 				1,
@@ -772,6 +886,15 @@ namespace
 				0,
 				D3D11_INPUT_PER_VERTEX_DATA,
 				0
+			},
+			{
+				"NORMAL",
+				0,
+				DXGI_FORMAT_R32G32B32_FLOAT,
+				0,
+				sizeof(float) * 3,
+				D3D11_INPUT_PER_VERTEX_DATA,
+				0
 			}
 		};
 
@@ -1019,15 +1142,45 @@ namespace
 		const r3dTerrainDesc& TerrainDesc =
 			Terrain->GetDesc();
 
-		float Step = TerrainDesc.CellSize * 4.0f;
+		float CellSize = TerrainDesc.CellSize;
 
-		if (Step <= 0.01f)
-			Step = 4.0f;
+		if (CellSize <= 0.01f)
+			CellSize = 1.0f;
 
-		const float HalfSize =
-			Step *
-			static_cast<float>(DX11_TERRAIN_GRID_DIM - 1) *
-			0.5f;
+		int CellsPerPatch = TerrainDesc.CellCountPerTile;
+
+		if (CellsPerPatch <= 0)
+			CellsPerPatch = DX11_TERRAIN_GRID_DIM - 1;
+
+		float PatchSize =
+			CellSize *
+			static_cast<float>(CellsPerPatch);
+
+		if (PatchSize <= CellSize)
+			PatchSize =
+				CellSize *
+				static_cast<float>(DX11_TERRAIN_GRID_DIM - 1);
+
+		float BaseX =
+			floorf(gCam.x / PatchSize) *
+			PatchSize;
+
+		float BaseZ =
+			floorf(gCam.z / PatchSize) *
+			PatchSize;
+
+		const float MaxBaseX =
+			R3D_MAX(0.0f, TerrainDesc.XSize - PatchSize);
+
+		const float MaxBaseZ =
+			R3D_MAX(0.0f, TerrainDesc.ZSize - PatchSize);
+
+		BaseX = R3D_CLAMP(BaseX, 0.0f, MaxBaseX);
+		BaseZ = R3D_CLAMP(BaseZ, 0.0f, MaxBaseZ);
+
+		const float Step =
+			PatchSize /
+			static_cast<float>(DX11_TERRAIN_GRID_DIM - 1);
 
 		int VertexIndex = 0;
 
@@ -1036,11 +1189,11 @@ namespace
 			for (int x = 0; x < DX11_TERRAIN_GRID_DIM; ++x)
 			{
 				const float WorldX =
-					gCam.x - HalfSize +
+					BaseX +
 					static_cast<float>(x) * Step;
 
 				const float WorldZ =
-					gCam.z - HalfSize +
+					BaseZ +
 					static_cast<float>(z) * Step;
 
 				r3dPoint3D Pos(
@@ -1049,10 +1202,21 @@ namespace
 					WorldZ
 				);
 
-				Vertices[VertexIndex].Position[0] = WorldX;
-				Vertices[VertexIndex].Position[1] =
+				const float Height =
 					Terrain->GetHeight(Pos);
+
+				Pos.y = Height;
+
+				const r3dPoint3D Normal =
+					Terrain->GetNormal(Pos);
+
+				Vertices[VertexIndex].Position[0] = WorldX;
+				Vertices[VertexIndex].Position[1] = Height;
 				Vertices[VertexIndex].Position[2] = WorldZ;
+
+				Vertices[VertexIndex].Normal[0] = Normal.x;
+				Vertices[VertexIndex].Normal[1] = Normal.y;
+				Vertices[VertexIndex].Normal[2] = Normal.z;
 
 				++VertexIndex;
 			}
@@ -1125,6 +1289,10 @@ namespace
 			0
 		);
 
+		gDX11Context->RSSetState(
+			gDX11RasterSolidNoCull
+		);
+
 		gDX11Context->PSSetShader(
 			0,
 			0,
@@ -1160,6 +1328,10 @@ namespace
 			0
 		);
 
+		gDX11Context->RSSetState(
+			gDX11RasterSolidNoCull
+		);
+
 		gDX11Context->PSSetShader(
 			gDX11TerrainPS,
 			0,
@@ -1173,6 +1345,118 @@ namespace
 		);
 
 		return true;
+	}
+
+	bool RenderDX11_UpdatePreviewTexture()
+	{
+		if (!RenderDX11_EnsurePreviewTexture())
+			return false;
+
+		IDirect3DTexture9* PreviewD3DTexture =
+			gDX11PreviewTexture->AsTex2D();
+
+		if (!PreviewD3DTexture)
+			return false;
+
+		D3DLOCKED_RECT LockedRect = {};
+
+		HRESULT Hr =
+			PreviewD3DTexture->LockRect(
+				0,
+				&LockedRect,
+				0,
+				0
+			);
+
+		if (FAILED(Hr))
+		{
+			static bool bLockFailedLogged = false;
+
+			if (!bLockFailedLogged)
+			{
+				char Text[256] = {};
+				sprintf_s(
+					Text,
+					"[RenderDX11] Preview texture LockRect failed. HRESULT=0x%08X\n",
+					static_cast<unsigned int>(Hr)
+				);
+
+				OutputDebugStringA(Text);
+				bLockFailedLogged = true;
+			}
+
+			return false;
+		}
+
+		for (int y = 0; y < DX11_PREVIEW_HEIGHT; ++y)
+		{
+			unsigned char* DestRow =
+				reinterpret_cast<unsigned char*>(
+					LockedRect.pBits
+				) + LockedRect.Pitch * y;
+
+			const unsigned int* SrcRow =
+				gDX11PreviewPixels +
+				y * DX11_PREVIEW_WIDTH;
+
+			memcpy(
+				DestRow,
+				SrcRow,
+				sizeof(unsigned int) * DX11_PREVIEW_WIDTH
+			);
+		}
+
+		PreviewD3DTexture->UnlockRect(0);
+
+		return true;
+	}
+
+	void RenderDX11_UpdatePreviewFromMappedColor(
+		const D3D11_MAPPED_SUBRESOURCE& Mapped
+	)
+	{
+		if (
+			!Mapped.pData ||
+			gDX11FrameWidth <= 0 ||
+			gDX11FrameHeight <= 0
+		)
+		{
+			gDX11PreviewValid = false;
+			return;
+		}
+
+		for (int y = 0; y < DX11_PREVIEW_HEIGHT; ++y)
+		{
+			const int SourceY =
+				(y * gDX11FrameHeight) /
+				DX11_PREVIEW_HEIGHT;
+
+			const unsigned char* Row =
+				reinterpret_cast<const unsigned char*>(
+					Mapped.pData
+				) + Mapped.RowPitch * SourceY;
+
+			for (int x = 0; x < DX11_PREVIEW_WIDTH; ++x)
+			{
+				const int SourceX =
+					(x * gDX11FrameWidth) /
+					DX11_PREVIEW_WIDTH;
+
+				const unsigned char* Pixel =
+					Row + SourceX * 4;
+
+				gDX11PreviewPixels[
+					y * DX11_PREVIEW_WIDTH + x
+				] =
+					(0xffu << 24) |
+					(static_cast<unsigned int>(Pixel[0]) << 16) |
+					(static_cast<unsigned int>(Pixel[1]) << 8) |
+					static_cast<unsigned int>(Pixel[2]);
+			}
+		}
+
+		gDX11PreviewValid =
+			RenderDX11_UpdatePreviewTexture();
 	}
 
 	void RenderDX11_SmokeReadbackOnce()
@@ -1264,8 +1548,16 @@ namespace
 
 	void RenderDX11_TerrainGBufferReadbackOnce()
 	{
-		if (gDX11TerrainGBufferReadbackLogged)
+		const bool bWantPreview =
+			RenderDX11_WantsDebugPreview();
+
+		if (
+			gDX11TerrainGBufferReadbackLogged &&
+			!bWantPreview
+		)
+		{
 			return;
+		}
 
 		if (
 			!gDX11Context ||
@@ -1296,15 +1588,35 @@ namespace
 
 		if (FAILED(Hr))
 		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[RenderDX11] Terrain GBuffer readback Map failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
+			if (!gDX11TerrainGBufferReadbackLogged)
+			{
+				char Text[256] = {};
+				sprintf_s(
+					Text,
+					"[RenderDX11] Terrain GBuffer readback Map failed. HRESULT=0x%08X\n",
+					static_cast<unsigned int>(Hr)
+				);
+
+				OutputDebugStringA(Text);
+			}
+
+			gDX11PreviewValid = false;
+			gDX11TerrainGBufferReadbackLogged = true;
+			return;
+		}
+
+		if (bWantPreview)
+		{
+			RenderDX11_UpdatePreviewFromMappedColor(Mapped);
+		}
+
+		if (gDX11TerrainGBufferReadbackLogged)
+		{
+			gDX11Context->Unmap(
+				gDX11SmokeReadbackTexture,
+				0
 			);
 
-			OutputDebugStringA(Text);
-			gDX11TerrainGBufferReadbackLogged = true;
 			return;
 		}
 
@@ -1770,6 +2082,7 @@ namespace
 		gDX11FrameHeight = 0;
 		gDX11SmokeReadbackLogged = false;
 		gDX11TerrainGBufferReadbackLogged = false;
+		gDX11PreviewValid = false;
 
 		gDX11Viewport = D3D11_VIEWPORT();
 	}
@@ -2183,6 +2496,56 @@ namespace
 
 #include "DrawWorldDX11.hpp"
 
+void RenderDX11_DrawDebugPreviewDX9()
+{
+	if (
+		!RenderDX11_WantsDebugPreview() ||
+		!gDX11PreviewValid ||
+		!gDX11PreviewTexture ||
+		!r3dRenderer
+	)
+	{
+		return;
+	}
+
+	const float PreviewW =
+		r3dRenderer->ScreenW * 0.5f;
+
+	const float PreviewH =
+		r3dRenderer->ScreenH;
+
+	const float X =
+		r3dRenderer->ScreenW * 0.5f;
+
+	const float Y = 0.0f;
+
+	r3dDrawBox2D(
+		X,
+		Y,
+		PreviewW,
+		PreviewH,
+		r3dColor(0, 0, 0, 180)
+	);
+
+	r3dDrawBox2D(
+		X,
+		Y,
+		PreviewW,
+		PreviewH,
+		r3dColor(255, 255, 255, 255),
+		gDX11PreviewTexture
+	);
+
+	r3dDrawLine2D(
+		X,
+		Y,
+		X,
+		Y + PreviewH,
+		2.0f,
+		r3dColor(255, 255, 255, 220)
+	);
+}
+
 bool RenderDX11_Init()
 {
 	if (gDX11Initialized)
@@ -2301,6 +2664,7 @@ bool RenderDX11_Init()
 
 void RenderDX11_Shutdown()
 {
+	RenderDX11_ReleasePreviewTexture();
 	RenderDX11_ReleaseFrameTargets();
 	RenderDX11_ReleaseTerrainResources();
 
@@ -2357,12 +2721,14 @@ bool RenderDX11_RenderWorld(
 
 	RenderDX11_ClearFrameTargets();
 
-	// Real DX11 smoke draw.
-	// This renders fullscreen triangle into DX11 offscreen target.
-	// Result is not presented yet; old DX9 world still renders after fallback.
-	RenderDX11_DrawClearTriangle();
-
-	RenderDX11_SmokeReadbackOnce();
+	if (RenderDX11_WantsSmokeDebug())
+	{
+		// Real DX11 smoke draw.
+		// This renders fullscreen triangle into DX11 offscreen target.
+		// Result is not presented; old DX9 world still renders after fallback.
+		RenderDX11_DrawClearTriangle();
+		RenderDX11_SmokeReadbackOnce();
+	}
 
 	if (!DrawWorldDX11_BeginFrame(Desc))
 	{

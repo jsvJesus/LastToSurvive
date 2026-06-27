@@ -609,6 +609,8 @@ void RenderDeferredScene()
 		RenderDeferredScene1();
 	}
 
+	WorldRender_DrawDX11DebugPreview();
+
 	R3DPROFILE_END("Render: Scene");
 
 	R3DPROFILE_START("Render: Buffers");

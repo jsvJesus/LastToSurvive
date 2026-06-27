@@ -62,4 +62,11 @@ bool WorldDX11_Render(
 #endif
 }
 
+void WorldDX11_DrawDebugPreviewDX9()
+{
+#if LTS_STUDIO_DX11_WORLD
+	RenderDX11_DrawDebugPreviewDX9();
+#endif
+}
+
 #endif // LTS_STUDIO_DX11

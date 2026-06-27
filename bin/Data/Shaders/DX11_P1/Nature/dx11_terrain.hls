@@ -11,12 +11,14 @@ cbuffer FrameCB : register(b0)
 struct VS_INPUT
 {
 	float3 Position : POSITION;
+	float3 Normal : NORMAL;
 };
 
 struct VS_OUTPUT
 {
 	float4 Position : SV_POSITION;
 	float3 WorldPos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
 };
 
 struct PS_OUTPUT
@@ -32,6 +34,7 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 	VS_OUTPUT Output;
 
 	Output.WorldPos = Input.Position;
+	Output.Normal = normalize(Input.Normal);
 	Output.Position = mul(float4(Input.Position, 1.0f), gViewProj);
 
 	return Output;
@@ -50,10 +53,18 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	float DepthLinear =
 		saturate(CameraDistance / max(gNearFar.y, 1.0f));
 
-	Output.Color = float4(0.12f, 0.30f + HeightTint * 0.25f, 0.12f, 1.0f);
-	Output.Normal = float4(0.5f, 1.0f, 0.5f, 1.0f);
+	float3 Normal = normalize(Input.Normal);
+	float Slope = saturate(1.0f - Normal.y);
+
+	Output.Color = float4(
+		0.10f + Slope * 0.25f,
+		0.24f + HeightTint * 0.35f,
+		0.10f + Normal.y * 0.10f,
+		1.0f
+	);
+	Output.Normal = float4(Normal * 0.5f + 0.5f, 1.0f);
 	Output.DepthLinear = DepthLinear;
-	Output.Aux = float4(DepthLinear, HeightTint, 0.0f, 1.0f);
+	Output.Aux = float4(DepthLinear, HeightTint, Slope, 1.0f);
 
 	return Output;
 }

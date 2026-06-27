@@ -152,14 +152,24 @@ static inline bool WorldRender_TryRenderDX11()
 	}
 
 	WorldDX11FrameDesc Desc = {};
-	Desc.Width = r3dRenderer ? r3dRenderer->ScreenW : 1;
-	Desc.Height = r3dRenderer ? r3dRenderer->ScreenH : 1;
+	Desc.Width = r3dRenderer ? static_cast<int>(r3dRenderer->ScreenW) : 1;
+	Desc.Height = r3dRenderer ? static_cast<int>(r3dRenderer->ScreenH) : 1;
 	Desc.NearClip = r3dRenderer ? r3dRenderer->NearClip : 0.1f;
 	Desc.FarClip = r3dRenderer ? r3dRenderer->FarClip : 10000.0f;
 
 	return WorldDX11_Render(Desc);
 #else
 	return false;
+#endif
+}
+
+static inline void WorldRender_DrawDX11DebugPreview()
+{
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+	if (WorldRender_IsDX11Active())
+	{
+		WorldDX11_DrawDebugPreviewDX9();
+	}
 #endif
 }
 

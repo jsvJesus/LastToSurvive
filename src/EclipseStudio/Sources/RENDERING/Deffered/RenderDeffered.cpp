@@ -7172,6 +7172,8 @@ void r3dDefferedRenderer::Render()
 		RenderDeferredScene1();
 	}
 
+	WorldRender_DrawDX11DebugPreview();
+
 	if( r_split_grass_render->GetInt() )
 	{
 		gBuffer_Color->Activate( 0 );

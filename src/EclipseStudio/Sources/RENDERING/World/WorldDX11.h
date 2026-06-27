@@ -17,6 +17,7 @@ void WorldDX11_Shutdown();
 
 bool WorldDX11_IsAvailable();
 bool WorldDX11_Render(const WorldDX11FrameDesc& Desc);
+void WorldDX11_DrawDebugPreviewDX9();
 
 #else
 
@@ -37,6 +38,10 @@ static inline bool WorldDX11_IsAvailable()
 static inline bool WorldDX11_Render(const WorldDX11FrameDesc&)
 {
     return false;
+}
+
+static inline void WorldDX11_DrawDebugPreviewDX9()
+{
 }
 
 #endif // LTS_STUDIO_DX11
