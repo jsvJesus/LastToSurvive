@@ -24,17 +24,34 @@ bool RenderDX11_RenderWorld(
 
 namespace
 {
+	struct WorldDX11FrameCB
+	{
+		float ViewProj[16];
+		float View[16];
+		float Proj[16];
+		float CameraPos[4];
+		float ScreenSize[4];
+		float NearFar[4];
+	};
+
+	typedef char WorldDX11FrameCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11FrameCB) % 16) == 0 ? 1 : -1
+	];
+
 	ID3D11Device*			gDX11Device = 0;
 	ID3D11DeviceContext*	gDX11Context = 0;
 
 	ID3D11Texture2D*		gDX11ColorTexture = 0;
 	ID3D11Texture2D*		gDX11DepthTexture = 0;
+	ID3D11Texture2D*		gDX11SmokeReadbackTexture = 0;
 
 	ID3D11RenderTargetView*	gDX11ColorRTV = 0;
 	ID3D11DepthStencilView*	gDX11DepthDSV = 0;
 
 	ID3D11VertexShader*		gDX11ClearVS = 0;
 	ID3D11PixelShader*		gDX11ClearPS = 0;
+
+	ID3D11Buffer*			gDX11FrameCB = 0;
 
 	D3D11_VIEWPORT			gDX11Viewport = {};
 
@@ -57,6 +74,7 @@ namespace
 	D3D_FEATURE_LEVEL		gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
 
 	bool					gDX11Initialized = false;
+	bool					gDX11SmokeReadbackLogged = false;
 
 	template <typename T>
 	void RenderDX11_SafeRelease(T*& Ptr)
@@ -67,6 +85,8 @@ namespace
 			Ptr = 0;
 		}
 	}
+
+	int RenderDX11_ClampSize(int Value);
 
 	class RenderDX11IncludeHandler : public ID3DInclude
 	{
@@ -205,6 +225,162 @@ namespace
 	{
 		RenderDX11_SafeRelease(gDX11ClearPS);
 		RenderDX11_SafeRelease(gDX11ClearVS);
+	}
+
+	void RenderDX11_ReleaseConstantBuffers()
+	{
+		RenderDX11_SafeRelease(gDX11FrameCB);
+	}
+
+	bool RenderDX11_CreateConstantBuffers()
+	{
+		RenderDX11_ReleaseConstantBuffers();
+
+		D3D11_BUFFER_DESC Desc = {};
+		Desc.ByteWidth = sizeof(WorldDX11FrameCB);
+		Desc.Usage = D3D11_USAGE_DYNAMIC;
+		Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		HRESULT Hr =
+			gDX11Device->CreateBuffer(
+				&Desc,
+				0,
+				&gDX11FrameCB
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create frame constant buffer failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		OutputDebugStringA(
+			"[RenderDX11] Constant buffers created\n"
+		);
+
+		return true;
+	}
+
+	void RenderDX11_SetIdentityMatrix(
+		float* Matrix
+	)
+	{
+		if (!Matrix)
+			return;
+
+		for (int i = 0; i < 16; ++i)
+			Matrix[i] = 0.0f;
+
+		Matrix[0] = 1.0f;
+		Matrix[5] = 1.0f;
+		Matrix[10] = 1.0f;
+		Matrix[15] = 1.0f;
+	}
+
+	void RenderDX11_BindFrameCB()
+	{
+		if (!gDX11Context || !gDX11FrameCB)
+			return;
+
+		gDX11Context->VSSetConstantBuffers(
+			0,
+			1,
+			&gDX11FrameCB
+		);
+
+		gDX11Context->PSSetConstantBuffers(
+			0,
+			1,
+			&gDX11FrameCB
+		);
+	}
+
+	void RenderDX11_UpdateFrameCB(
+		const WorldDX11FrameDesc& Desc
+	)
+	{
+		if (!gDX11Context || !gDX11FrameCB)
+			return;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11FrameCB,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Map frame constant buffer failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return;
+		}
+
+		WorldDX11FrameCB* FrameCB =
+			reinterpret_cast<WorldDX11FrameCB*>(
+				Mapped.pData
+			);
+
+		for (int i = 0; i < 16; ++i)
+		{
+			FrameCB->ViewProj[i] = 0.0f;
+			FrameCB->View[i] = 0.0f;
+			FrameCB->Proj[i] = 0.0f;
+		}
+
+		RenderDX11_SetIdentityMatrix(FrameCB->ViewProj);
+		RenderDX11_SetIdentityMatrix(FrameCB->View);
+		RenderDX11_SetIdentityMatrix(FrameCB->Proj);
+
+		FrameCB->CameraPos[0] = gCam.x;
+		FrameCB->CameraPos[1] = gCam.y;
+		FrameCB->CameraPos[2] = gCam.z;
+		FrameCB->CameraPos[3] = 1.0f;
+
+		const float Width =
+			static_cast<float>(
+				RenderDX11_ClampSize(Desc.Width)
+			);
+
+		const float Height =
+			static_cast<float>(
+				RenderDX11_ClampSize(Desc.Height)
+			);
+
+		FrameCB->ScreenSize[0] = Width;
+		FrameCB->ScreenSize[1] = Height;
+		FrameCB->ScreenSize[2] = 1.0f / Width;
+		FrameCB->ScreenSize[3] = 1.0f / Height;
+
+		FrameCB->NearFar[0] = Desc.NearClip;
+		FrameCB->NearFar[1] = Desc.FarClip;
+		FrameCB->NearFar[2] = 0.0f;
+		FrameCB->NearFar[3] = 0.0f;
+
+		gDX11Context->Unmap(
+			gDX11FrameCB,
+			0
+		);
+
+		RenderDX11_BindFrameCB();
 	}
 
 	void RenderDX11_MakeShaderFileName(
@@ -509,6 +685,93 @@ namespace
 			3,
 			0
 		);
+	}
+
+	void RenderDX11_SmokeReadbackOnce()
+	{
+		if (gDX11SmokeReadbackLogged)
+			return;
+
+		if (
+			!gDX11Context ||
+			!gDX11ColorTexture ||
+			!gDX11SmokeReadbackTexture ||
+			gDX11FrameWidth <= 0 ||
+			gDX11FrameHeight <= 0
+		)
+		{
+			return;
+		}
+
+		gDX11Context->CopyResource(
+			gDX11SmokeReadbackTexture,
+			gDX11ColorTexture
+		);
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11SmokeReadbackTexture,
+				0,
+				D3D11_MAP_READ,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Smoke readback Map failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			gDX11SmokeReadbackLogged = true;
+			return;
+		}
+
+		const int SampleX =
+			gDX11FrameWidth / 2;
+
+		const int SampleY =
+			gDX11FrameHeight / 2;
+
+		const unsigned char* Row =
+			reinterpret_cast<const unsigned char*>(
+				Mapped.pData
+			) + Mapped.RowPitch * SampleY;
+
+		const unsigned char* Pixel =
+			Row + SampleX * 4;
+
+		const unsigned int R = Pixel[0];
+		const unsigned int G = Pixel[1];
+		const unsigned int B = Pixel[2];
+		const unsigned int A = Pixel[3];
+
+		gDX11Context->Unmap(
+			gDX11SmokeReadbackTexture,
+			0
+		);
+
+		char Text[512] = {};
+		sprintf_s(
+			Text,
+			"[RenderDX11] Smoke shader draw readback: %dx%d center RGBA=(%u,%u,%u,%u)\n",
+			gDX11FrameWidth,
+			gDX11FrameHeight,
+			R,
+			G,
+			B,
+			A
+		);
+
+		OutputDebugStringA(Text);
+
+		gDX11SmokeReadbackLogged = true;
 	}
 
 	const char* RenderDX11_FeatureLevelToString(
@@ -894,11 +1157,13 @@ namespace
 		RenderDX11_SafeRelease(gDX11ColorRTV);
 		RenderDX11_SafeRelease(gDX11DepthDSV);
 
+		RenderDX11_SafeRelease(gDX11SmokeReadbackTexture);
 		RenderDX11_SafeRelease(gDX11ColorTexture);
 		RenderDX11_SafeRelease(gDX11DepthTexture);
 
 		gDX11FrameWidth = 0;
 		gDX11FrameHeight = 0;
+		gDX11SmokeReadbackLogged = false;
 
 		gDX11Viewport = D3D11_VIEWPORT();
 	}
@@ -1028,6 +1293,47 @@ namespace
 		return true;
 	}
 
+	bool RenderDX11_CreateSmokeReadbackTarget(
+	int Width,
+	int Height
+)
+	{
+		D3D11_TEXTURE2D_DESC TextureDesc = {};
+		TextureDesc.Width = static_cast<UINT>(Width);
+		TextureDesc.Height = static_cast<UINT>(Height);
+		TextureDesc.MipLevels = 1;
+		TextureDesc.ArraySize = 1;
+		TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		TextureDesc.SampleDesc.Count = 1;
+		TextureDesc.SampleDesc.Quality = 0;
+		TextureDesc.Usage = D3D11_USAGE_STAGING;
+		TextureDesc.BindFlags = 0;
+		TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		TextureDesc.MiscFlags = 0;
+
+		HRESULT Hr =
+			gDX11Device->CreateTexture2D(
+				&TextureDesc,
+				0,
+				&gDX11SmokeReadbackTexture
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create smoke readback texture failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		return true;
+	}
+
 	bool RenderDX11_EnsureFrameTargets(
 		const WorldDX11FrameDesc& Desc
 	)
@@ -1041,6 +1347,7 @@ namespace
 		if (
 			gDX11ColorTexture &&
 			gDX11DepthTexture &&
+			gDX11SmokeReadbackTexture &&
 			gDX11ColorRTV &&
 			gDX11DepthDSV &&
 			gDX11FrameWidth == Width &&
@@ -1059,6 +1366,12 @@ namespace
 		}
 
 		if (!RenderDX11_CreateDepthTarget(Width, Height))
+		{
+			RenderDX11_ReleaseFrameTargets();
+			return false;
+		}
+
+		if (!RenderDX11_CreateSmokeReadbackTarget(Width, Height))
 		{
 			RenderDX11_ReleaseFrameTargets();
 			return false;
@@ -1230,6 +1543,16 @@ bool RenderDX11_Init()
 		return false;
 	}
 
+	if (!RenderDX11_CreateConstantBuffers())
+	{
+		OutputDebugStringA(
+			"[RenderDX11] Failed to create constant buffers\n"
+		);
+
+		RenderDX11_Shutdown();
+		return false;
+	}
+
 	if (!RenderDX11_CreateShaders())
 	{
 		OutputDebugStringA(
@@ -1265,6 +1588,7 @@ void RenderDX11_Shutdown()
 	}
 
 	RenderDX11_ReleaseShaders();
+	RenderDX11_ReleaseConstantBuffers();
 	RenderDX11_ReleaseStates();
 
 	RenderDX11_SafeRelease(gDX11Context);
@@ -1306,8 +1630,16 @@ bool RenderDX11_RenderWorld(
 	}
 
 	RenderDX11_BindFrameTargets();
+	RenderDX11_UpdateFrameCB(Desc);
 
 	RenderDX11_ClearFrameTargets();
+
+	// Real DX11 smoke draw.
+	// This renders fullscreen triangle into DX11 offscreen target.
+	// Result is not presented yet; old DX9 world still renders after fallback.
+	RenderDX11_DrawClearTriangle();
+
+	RenderDX11_SmokeReadbackOnce();
 
 	if (!DrawWorldDX11_BeginFrame(Desc))
 	{
@@ -1337,6 +1669,11 @@ bool RenderDX11_RenderWorld(
 	{
 		RenderDX11_UnbindFrameTargets();
 		return false;
+	}
+
+	if (gDX11Context)
+	{
+		gDX11Context->Flush();
 	}
 
 	RenderDX11_UnbindFrameTargets();

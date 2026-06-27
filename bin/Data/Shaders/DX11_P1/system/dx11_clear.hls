@@ -1,3 +1,13 @@
+cbuffer FrameCB : register(b0)
+{
+	float4x4 gViewProj;
+	float4x4 gView;
+	float4x4 gProj;
+	float4 gCameraPos;
+	float4 gScreenSize;
+	float4 gNearFar;
+};
+
 struct VS_OUTPUT
 {
 	float4 Position : SV_POSITION;
@@ -32,5 +42,19 @@ float4 PSMain(VS_OUTPUT Input) : SV_Target0
 {
 	(void)Input;
 
-	return float4(0.02f, 0.04f, 0.06f, 1.0f);
+	// Distinct color for DX11 smoke test.
+	// Expected readback approximately:
+	// R=26, G=51, B=89, A=255
+	float2 SizeCheck =
+		saturate(gScreenSize.xy * gScreenSize.zw);
+
+	float NearFarCheck =
+		saturate(gNearFar.x / max(gNearFar.y, 1.0f));
+
+	return float4(
+		0.10f * SizeCheck.x,
+		0.20f * SizeCheck.y,
+		0.35f + NearFarCheck * 0.01f,
+		1.0f
+	);
 }
