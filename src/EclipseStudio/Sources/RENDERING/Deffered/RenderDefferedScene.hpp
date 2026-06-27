@@ -599,8 +599,7 @@ void RenderDeferredScene()
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
 	if (StudioWorldRenderer_IsDX11WorldActive())
 	{
-		bWorldRendered =
-			StudioWorldRenderer_RenderDX11WorldStub();
+		bWorldRendered = StudioWorldRenderer_RenderDX11World();
 	}
 #endif
 

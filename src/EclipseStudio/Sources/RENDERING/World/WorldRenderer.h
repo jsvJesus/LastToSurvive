@@ -1,6 +1,7 @@
 #pragma once
 
 #include "r3dRendererConfig.h"
+#include "rendering/World/WorldDX11.h"
 
 #include <windows.h>
 #include <string.h>
@@ -130,14 +131,27 @@ static inline void StudioWorldRenderer_LogSelectedBackendOnce()
 // Temporary stub.
 // Later this will call real DX11 world renderer.
 // For now it always returns false, so caller falls back to DX9.
-static inline bool StudioWorldRenderer_RenderDX11WorldStub()
+static inline bool StudioWorldRenderer_RenderDX11World()
 {
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
-	OutputDebugStringA(
-		"[StudioWorldRenderer] DX11 world path selected, "
-		"but DX11 world renderer is not implemented yet. Falling back to DX9.\n"
-	);
-#endif
+	if (!StudioWorldDX11_IsAvailable())
+	{
+		OutputDebugStringA(
+			"[StudioWorldRenderer] DX11 world requested, "
+			"but StudioWorldDX11 is not available. Falling back to DX9.\n"
+		);
 
+		return false;
+	}
+
+	StudioWorldDX11FrameDesc Desc = {};
+	Desc.Width = r3dRenderer ? r3dRenderer->ScreenW : 1;
+	Desc.Height = r3dRenderer ? r3dRenderer->ScreenH : 1;
+	Desc.NearClip = r3dRenderer ? r3dRenderer->NearClip : 0.1f;
+	Desc.FarClip = r3dRenderer ? r3dRenderer->FarClip : 10000.0f;
+
+	return StudioWorldDX11_RenderWorld(Desc);
+#else
 	return false;
+#endif
 }
