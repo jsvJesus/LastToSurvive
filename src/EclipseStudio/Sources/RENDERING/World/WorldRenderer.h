@@ -7,13 +7,13 @@
 #include <string.h>
 #include <ctype.h>
 
-enum EStudioWorldRendererBackend
+enum EWorldRenderBackend
 {
-	STUDIO_WORLD_RENDER_DX9 = 0,
-	STUDIO_WORLD_RENDER_DX11 = 1
+	WORLD_RENDER_BACKEND_DX9 = 0,
+	WORLD_RENDER_BACKEND_DX11 = 1
 };
 
-static inline bool StudioWorldRenderer_IsSwitchBoundary(char Ch)
+static inline bool WorldRender_IsSwitchBoundary(char Ch)
 {
 	return
 		Ch == 0 ||
@@ -22,7 +22,7 @@ static inline bool StudioWorldRenderer_IsSwitchBoundary(char Ch)
 		Ch == '\'';
 }
 
-static inline bool StudioWorldRenderer_CommandLineHasSwitch(const char* SwitchName)
+static inline bool WorldRender_CommandLineHasSwitch(const char* SwitchName)
 {
 	if (!SwitchName || !SwitchName[0])
 		return false;
@@ -38,7 +38,7 @@ static inline bool StudioWorldRenderer_CommandLineHasSwitch(const char* SwitchNa
 	{
 		const bool bStartBoundary =
 			It == CmdLine ||
-			StudioWorldRenderer_IsSwitchBoundary(*(It - 1));
+			WorldRender_IsSwitchBoundary(*(It - 1));
 
 		if (!bStartBoundary)
 			continue;
@@ -46,7 +46,7 @@ static inline bool StudioWorldRenderer_CommandLineHasSwitch(const char* SwitchNa
 		if (_strnicmp(It, SwitchName, SwitchLen) != 0)
 			continue;
 
-		if (!StudioWorldRenderer_IsSwitchBoundary(It[SwitchLen]))
+		if (!WorldRender_IsSwitchBoundary(It[SwitchLen]))
 			continue;
 
 		return true;
@@ -55,14 +55,14 @@ static inline bool StudioWorldRenderer_CommandLineHasSwitch(const char* SwitchNa
 	return false;
 }
 
-static inline bool StudioWorldRenderer_WantsDX11World()
+static inline bool WorldRender_WantsDX11()
 {
 	return
-		StudioWorldRenderer_CommandLineHasSwitch("-dx11world") ||
-		StudioWorldRenderer_CommandLineHasSwitch("/dx11world");
+		WorldRender_CommandLineHasSwitch("-dx11world") ||
+		WorldRender_CommandLineHasSwitch("/dx11world");
 }
 
-static inline bool StudioWorldRenderer_IsDX11WorldCompiled()
+static inline bool WorldRender_IsDX11Compiled()
 {
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
 	return true;
@@ -71,30 +71,30 @@ static inline bool StudioWorldRenderer_IsDX11WorldCompiled()
 #endif
 }
 
-static inline EStudioWorldRendererBackend StudioWorldRenderer_GetBackend()
+static inline EWorldRenderBackend WorldRender_GetBackend()
 {
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
-	if (StudioWorldRenderer_WantsDX11World())
-		return STUDIO_WORLD_RENDER_DX11;
+	if (WorldRender_WantsDX11())
+		return WORLD_RENDER_BACKEND_DX11;
 #endif
 
-	return STUDIO_WORLD_RENDER_DX9;
+	return WORLD_RENDER_BACKEND_DX9;
 }
 
-static inline bool StudioWorldRenderer_IsDX11WorldActive()
+static inline bool WorldRender_IsDX11Active()
 {
-	return StudioWorldRenderer_GetBackend() == STUDIO_WORLD_RENDER_DX11;
+	return WorldRender_GetBackend() == WORLD_RENDER_BACKEND_DX11;
 }
 
-static inline const char* StudioWorldRenderer_GetBackendName()
+static inline const char* WorldRender_GetBackendName()
 {
 	return
-		StudioWorldRenderer_GetBackend() == STUDIO_WORLD_RENDER_DX11
+		WorldRender_GetBackend() == WORLD_RENDER_BACKEND_DX11
 		? "DX11_WORLD"
 		: "DX9_WORLD";
 }
 
-static inline void StudioWorldRenderer_LogSelectedBackendOnce()
+static inline void WorldRender_LogSelectedBackendOnce()
 {
 	static bool bLogged = false;
 
@@ -104,53 +104,50 @@ static inline void StudioWorldRenderer_LogSelectedBackendOnce()
 	bLogged = true;
 
 	if (
-		StudioWorldRenderer_WantsDX11World() &&
-		!StudioWorldRenderer_IsDX11WorldCompiled()
+		WorldRender_WantsDX11() &&
+		!WorldRender_IsDX11Compiled()
 	)
 	{
 		OutputDebugStringA(
-			"[StudioWorldRenderer] -dx11world requested, "
+			"[WorldRenderer] -dx11world requested, "
 			"but LTS_STUDIO_DX11_WORLD is disabled. Using DX9 world.\n"
 		);
 	}
 
-	if (StudioWorldRenderer_GetBackend() == STUDIO_WORLD_RENDER_DX11)
+	if (WorldRender_GetBackend() == WORLD_RENDER_BACKEND_DX11)
 	{
 		OutputDebugStringA(
-			"[StudioWorldRenderer] Selected backend: DX11 world\n"
+			"[WorldRenderer] Selected backend: DX11 world\n"
 		);
 	}
 	else
 	{
 		OutputDebugStringA(
-			"[StudioWorldRenderer] Selected backend: DX9 world\n"
+			"[WorldRenderer] Selected backend: DX9 world\n"
 		);
 	}
 }
 
-// Temporary stub.
-// Later this will call real DX11 world renderer.
-// For now it always returns false, so caller falls back to DX9.
-static inline bool StudioWorldRenderer_RenderDX11World()
+static inline bool WorldRender_TryRenderDX11()
 {
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
-	if (!StudioWorldDX11_IsAvailable())
+	if (!WorldDX11_IsAvailable())
 	{
 		OutputDebugStringA(
-			"[StudioWorldRenderer] DX11 world requested, "
-			"but StudioWorldDX11 is not available. Falling back to DX9.\n"
+			"[WorldRenderer] DX11 world requested, "
+			"but WorldDX11 is not available. Falling back to DX9.\n"
 		);
 
 		return false;
 	}
 
-	StudioWorldDX11FrameDesc Desc = {};
+	WorldDX11FrameDesc Desc = {};
 	Desc.Width = r3dRenderer ? r3dRenderer->ScreenW : 1;
 	Desc.Height = r3dRenderer ? r3dRenderer->ScreenH : 1;
 	Desc.NearClip = r3dRenderer ? r3dRenderer->NearClip : 0.1f;
 	Desc.FarClip = r3dRenderer ? r3dRenderer->FarClip : 10000.0f;
 
-	return StudioWorldDX11_RenderWorld(Desc);
+	return WorldDX11_Render(Desc);
 #else
 	return false;
 #endif

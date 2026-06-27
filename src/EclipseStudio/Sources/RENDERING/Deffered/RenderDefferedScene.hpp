@@ -590,16 +590,17 @@ void RenderDeferredScene1()
 
 void RenderDeferredScene()
 {
-	StudioWorldRenderer_LogSelectedBackendOnce();
+	WorldRender_LogSelectedBackendOnce();
 
 	R3DPROFILE_START("Render: Scene");
 
 	bool bWorldRendered = false;
 
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
-	if (StudioWorldRenderer_IsDX11WorldActive())
+	if (WorldRender_IsDX11Active())
 	{
-		bWorldRendered = StudioWorldRenderer_RenderDX11World();
+		bWorldRendered =
+			WorldRender_TryRenderDX11();
 	}
 #endif
 

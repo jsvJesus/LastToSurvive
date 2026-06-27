@@ -2,9 +2,7 @@
 
 #include "r3dRendererConfig.h"
 
-#if LTS_STUDIO_DX11
-
-struct StudioWorldDX11FrameDesc
+struct WorldDX11FrameDesc
 {
     int Width;
     int Height;
@@ -12,25 +10,19 @@ struct StudioWorldDX11FrameDesc
     float FarClip;
 };
 
-bool StudioWorldDX11_IsAvailable();
-bool StudioWorldDX11_RenderWorld(const StudioWorldDX11FrameDesc& Desc);
+#if LTS_STUDIO_DX11
+
+bool WorldDX11_IsAvailable();
+bool WorldDX11_Render(const WorldDX11FrameDesc& Desc);
 
 #else
 
-struct StudioWorldDX11FrameDesc
-{
-    int Width;
-    int Height;
-    float NearClip;
-    float FarClip;
-};
-
-static inline bool StudioWorldDX11_IsAvailable()
+static inline bool WorldDX11_IsAvailable()
 {
     return false;
 }
 
-static inline bool StudioWorldDX11_RenderWorld(const StudioWorldDX11FrameDesc&)
+static inline bool WorldDX11_Render(const WorldDX11FrameDesc&)
 {
     return false;
 }
