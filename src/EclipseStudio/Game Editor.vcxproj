@@ -20,7 +20,7 @@
         <PreprocessorDefinitions>
                 LTS_STUDIO_DX9=1;
                 LTS_STUDIO_DX11=1;
-                LTS_STUDIO_DX11_WORLD=0;
+                LTS_STUDIO_DX11_WORLD=1;
                 WIN32;
                 WIN64;
                 _WIN64;NDEBUG;
