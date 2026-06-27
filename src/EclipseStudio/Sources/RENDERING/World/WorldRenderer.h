@@ -1,5 +1,6 @@
 #pragma once
 
+#include "r3d.h"
 #include "r3dRendererConfig.h"
 #include "rendering/World/WorldDX11.h"
 
@@ -12,6 +13,15 @@ enum EWorldRenderBackend
 	WORLD_RENDER_BACKEND_DX9 = 0,
 	WORLD_RENDER_BACKEND_DX11 = 1
 };
+
+static inline void WorldRender_LogText(const char* Text)
+{
+	if (!Text)
+		return;
+
+	OutputDebugStringA(Text);
+	r3dOutToLog("%s", Text);
+}
 
 static inline bool WorldRender_IsSwitchBoundary(char Ch)
 {
@@ -108,7 +118,7 @@ static inline void WorldRender_LogSelectedBackendOnce()
 		!WorldRender_IsDX11Compiled()
 	)
 	{
-		OutputDebugStringA(
+		WorldRender_LogText(
 			"[WorldRenderer] -dx11world requested, "
 			"but LTS_STUDIO_DX11_WORLD is disabled. Using DX9 world.\n"
 		);
@@ -116,13 +126,13 @@ static inline void WorldRender_LogSelectedBackendOnce()
 
 	if (WorldRender_GetBackend() == WORLD_RENDER_BACKEND_DX11)
 	{
-		OutputDebugStringA(
+		WorldRender_LogText(
 			"[WorldRenderer] Selected backend: DX11 world\n"
 		);
 	}
 	else
 	{
-		OutputDebugStringA(
+		WorldRender_LogText(
 			"[WorldRenderer] Selected backend: DX9 world\n"
 		);
 	}
@@ -133,7 +143,7 @@ static inline bool WorldRender_TryRenderDX11()
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
 	if (!WorldDX11_IsAvailable())
 	{
-		OutputDebugStringA(
+		WorldRender_LogText(
 			"[WorldRenderer] DX11 world requested, "
 			"but WorldDX11 is not available. Falling back to DX9.\n"
 		);

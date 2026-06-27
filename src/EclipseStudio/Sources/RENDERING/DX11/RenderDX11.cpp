@@ -22,6 +22,19 @@ bool RenderDX11_RenderWorld(
 	const WorldDX11FrameDesc& Desc
 );
 
+static void RenderDX11_LogText(
+	const char* Text
+)
+{
+	if (!Text)
+		return;
+
+	OutputDebugStringA(Text);
+	r3dOutToLog("%s", Text);
+}
+
+#define OutputDebugStringA RenderDX11_LogText
+
 namespace
 {
 	struct WorldDX11FrameCB
@@ -1686,5 +1699,7 @@ bool RenderDX11_RenderWorld(
 	// Это важно: старый DX9 RenderDeferredScene1() продолжит рисовать мир.
 	return false;
 }
+
+#undef OutputDebugStringA
 
 #endif // LTS_STUDIO_DX11

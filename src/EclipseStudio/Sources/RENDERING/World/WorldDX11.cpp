@@ -8,6 +8,18 @@
 
 #include "rendering/DX11/RenderDX11.h"
 
+namespace
+{
+	void WorldDX11_LogText(const char* Text)
+	{
+		if (!Text)
+			return;
+
+		OutputDebugStringA(Text);
+		r3dOutToLog("%s", Text);
+	}
+}
+
 bool WorldDX11_Init()
 {
 	return RenderDX11_Init();
@@ -36,7 +48,7 @@ bool WorldDX11_Render(
 #if LTS_STUDIO_DX11_WORLD
 	if (!WorldDX11_IsAvailable())
 	{
-		OutputDebugStringA(
+		WorldDX11_LogText(
 			"[WorldDX11] Render skipped: RenderDX11 is not available\n"
 		);
 
