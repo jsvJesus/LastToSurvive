@@ -7,6 +7,7 @@
 
 #include <D3D11.h>
 #include <DXGI.h>
+#include <D3Dcompiler.h>
 
 #include <stdio.h>
 
@@ -31,6 +32,9 @@ namespace
 
 	ID3D11RenderTargetView*	gDX11ColorRTV = 0;
 	ID3D11DepthStencilView*	gDX11DepthDSV = 0;
+
+	ID3D11VertexShader*		gDX11ClearVS = 0;
+	ID3D11PixelShader*		gDX11ClearPS = 0;
 
 	D3D11_VIEWPORT			gDX11Viewport = {};
 
@@ -64,6 +68,123 @@ namespace
 		}
 	}
 
+	class RenderDX11IncludeHandler : public ID3DInclude
+	{
+	public:
+		explicit RenderDX11IncludeHandler(
+			const char* ShaderFileName
+		)
+		{
+			BasePath[0] = 0;
+
+			if (!ShaderFileName || !ShaderFileName[0])
+				return;
+
+			r3dscpy(BasePath, ShaderFileName);
+
+			for (char* It = BasePath; *It; ++It)
+			{
+				if (*It == '/')
+					*It = '\\';
+			}
+
+			char* LastSlash = strrchr(BasePath, '\\');
+
+			if (LastSlash)
+				*LastSlash = 0;
+			else
+				BasePath[0] = 0;
+		}
+
+		STDMETHOD(Open)(
+			D3D_INCLUDE_TYPE IncludeType,
+			LPCSTR pFileName,
+			LPCVOID pParentData,
+			LPCVOID* ppData,
+			UINT* pBytes
+		)
+		{
+			(void)IncludeType;
+			(void)pParentData;
+
+			if (!ppData || !pBytes || !pFileName)
+				return E_FAIL;
+
+			*ppData = 0;
+			*pBytes = 0;
+
+			char FileName[MAX_PATH] = {};
+
+			if (BasePath[0])
+			{
+				sprintf_s(
+					FileName,
+					"%s\\%s",
+					BasePath,
+					pFileName
+				);
+			}
+			else
+			{
+				sprintf_s(
+					FileName,
+					"%s",
+					pFileName
+				);
+			}
+
+			r3dFile* File =
+				r3d_open(
+					FileName,
+					"rb"
+				);
+
+			if (!File)
+			{
+				char Text[512] = {};
+				sprintf_s(
+					Text,
+					"[RenderDX11] Missing shader include: %s\n",
+					FileName
+				);
+
+				OutputDebugStringA(Text);
+				return E_FAIL;
+			}
+
+			char* Data =
+				new char[File->size + 1];
+
+			const int ReadSize =
+				fread(
+					Data,
+					1,
+					File->size,
+					File
+				);
+
+			fclose(File);
+
+			Data[ReadSize] = 0;
+
+			*ppData = Data;
+			*pBytes = static_cast<UINT>(ReadSize);
+
+			return S_OK;
+		}
+
+		STDMETHOD(Close)(
+			LPCVOID pData
+		)
+		{
+			delete[] reinterpret_cast<const char*>(pData);
+			return S_OK;
+		}
+
+	private:
+		char BasePath[MAX_PATH];
+	};
+
 	void RenderDX11_ReleaseStates()
 	{
 		RenderDX11_SafeRelease(gDX11SamplerLinearClamp);
@@ -78,6 +199,316 @@ namespace
 		RenderDX11_SafeRelease(gDX11DepthDisabled);
 		RenderDX11_SafeRelease(gDX11DepthReadLessEqual);
 		RenderDX11_SafeRelease(gDX11DepthWriteLessEqual);
+	}
+
+	void RenderDX11_ReleaseShaders()
+	{
+		RenderDX11_SafeRelease(gDX11ClearPS);
+		RenderDX11_SafeRelease(gDX11ClearVS);
+	}
+
+	void RenderDX11_MakeShaderFileName(
+		char* OutFileName,
+		size_t OutFileNameSize,
+		const char* RelativeFileName
+	)
+	{
+		if (!OutFileName || !OutFileNameSize)
+			return;
+
+		OutFileName[0] = 0;
+
+		if (!RelativeFileName || !RelativeFileName[0])
+			return;
+
+		sprintf_s(
+			OutFileName,
+			OutFileNameSize,
+			"Data\\Shaders\\DX11_P1\\%s",
+			RelativeFileName
+		);
+	}
+
+	bool RenderDX11_LoadShaderSource(
+	const char* FileName,
+	char** OutData,
+	UINT* OutSize
+)
+	{
+		if (!FileName || !FileName[0] || !OutData || !OutSize)
+			return false;
+
+		*OutData = 0;
+		*OutSize = 0;
+
+		r3dFile* File =
+			r3d_open(
+				FileName,
+				"rb"
+			);
+
+		if (!File)
+		{
+			char Text[512] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Missing shader file: %s\n",
+				FileName
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		char* Data =
+			new char[File->size + 1];
+
+		const int ReadSize =
+			fread(
+				Data,
+				1,
+				File->size,
+				File
+			);
+
+		fclose(File);
+
+		Data[ReadSize] = 0;
+
+		*OutData = Data;
+		*OutSize = static_cast<UINT>(ReadSize);
+
+		return true;
+	}
+
+	bool RenderDX11_CompileShaderFromFile(
+	const char* RelativeFileName,
+	const char* EntryPoint,
+	const char* Profile,
+	ID3DBlob** OutBlob
+)
+	{
+		if (!RelativeFileName || !EntryPoint || !Profile || !OutBlob)
+			return false;
+
+		*OutBlob = 0;
+
+		char FileName[MAX_PATH] = {};
+
+		RenderDX11_MakeShaderFileName(
+			FileName,
+			_countof(FileName),
+			RelativeFileName
+		);
+
+		char* SourceData = 0;
+		UINT SourceSize = 0;
+
+		if (!RenderDX11_LoadShaderSource(
+			FileName,
+			&SourceData,
+			&SourceSize
+		))
+		{
+			return false;
+		}
+
+		UINT Flags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+#if defined(_DEBUG)
+		Flags |= D3DCOMPILE_DEBUG;
+		Flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+		ID3DBlob* ErrorBlob = 0;
+
+		RenderDX11IncludeHandler IncludeHandler(
+			FileName
+		);
+
+		HRESULT Hr =
+			D3DCompile(
+				SourceData,
+				SourceSize,
+				FileName,
+				0,
+				&IncludeHandler,
+				EntryPoint,
+				Profile,
+				Flags,
+				0,
+				OutBlob,
+				&ErrorBlob
+			);
+
+		delete[] SourceData;
+
+		if (FAILED(Hr))
+		{
+			const char* ErrorText =
+				ErrorBlob
+				? reinterpret_cast<const char*>(
+					ErrorBlob->GetBufferPointer()
+				)
+				: "unknown error";
+
+			char Text[4096] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Shader compile failed: %s entry=%s profile=%s HRESULT=0x%08X\n%s\n",
+				FileName,
+				EntryPoint,
+				Profile,
+				static_cast<unsigned int>(Hr),
+				ErrorText
+			);
+
+			OutputDebugStringA(Text);
+
+			RenderDX11_SafeRelease(ErrorBlob);
+
+			if (*OutBlob)
+			{
+				(*OutBlob)->Release();
+				*OutBlob = 0;
+			}
+
+			return false;
+		}
+
+		RenderDX11_SafeRelease(ErrorBlob);
+
+		char Text[512] = {};
+		sprintf_s(
+			Text,
+			"[RenderDX11] Shader compiled: %s entry=%s profile=%s\n",
+			FileName,
+			EntryPoint,
+			Profile
+		);
+
+		OutputDebugStringA(Text);
+
+		return true;
+	}
+
+	bool RenderDX11_CreateShaders()
+	{
+		RenderDX11_ReleaseShaders();
+
+		ID3DBlob* VSBlob = 0;
+		ID3DBlob* PSBlob = 0;
+
+		if (!RenderDX11_CompileShaderFromFile(
+			"system\\dx11_clear.hls",
+			"VSMain",
+			"vs_5_0",
+			&VSBlob
+		))
+		{
+			RenderDX11_SafeRelease(VSBlob);
+			RenderDX11_SafeRelease(PSBlob);
+			return false;
+		}
+
+		HRESULT Hr =
+			gDX11Device->CreateVertexShader(
+				VSBlob->GetBufferPointer(),
+				VSBlob->GetBufferSize(),
+				0,
+				&gDX11ClearVS
+			);
+
+		RenderDX11_SafeRelease(VSBlob);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create clear VS failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		if (!RenderDX11_CompileShaderFromFile(
+			"system\\dx11_clear.hls",
+			"PSMain",
+			"ps_5_0",
+			&PSBlob
+		))
+		{
+			RenderDX11_SafeRelease(PSBlob);
+			return false;
+		}
+
+		Hr =
+			gDX11Device->CreatePixelShader(
+				PSBlob->GetBufferPointer(),
+				PSBlob->GetBufferSize(),
+				0,
+				&gDX11ClearPS
+			);
+
+		RenderDX11_SafeRelease(PSBlob);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create clear PS failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		OutputDebugStringA(
+			"[RenderDX11] Shaders created\n"
+		);
+
+		return true;
+	}
+
+	void RenderDX11_BindClearShaders()
+	{
+		if (!gDX11Context)
+			return;
+
+		gDX11Context->IASetInputLayout(0);
+		gDX11Context->IASetPrimitiveTopology(
+			D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+		);
+
+		gDX11Context->VSSetShader(
+			gDX11ClearVS,
+			0,
+			0
+		);
+
+		gDX11Context->PSSetShader(
+			gDX11ClearPS,
+			0,
+			0
+		);
+	}
+
+	void RenderDX11_DrawClearTriangle()
+	{
+		if (!gDX11Context || !gDX11ClearVS || !gDX11ClearPS)
+			return;
+
+		RenderDX11_BindClearShaders();
+
+		gDX11Context->Draw(
+			3,
+			0
+		);
 	}
 
 	const char* RenderDX11_FeatureLevelToString(
@@ -799,6 +1230,16 @@ bool RenderDX11_Init()
 		return false;
 	}
 
+	if (!RenderDX11_CreateShaders())
+	{
+		OutputDebugStringA(
+			"[RenderDX11] Failed to create shaders\n"
+		);
+
+		RenderDX11_Shutdown();
+		return false;
+	}
+
 	gDX11Initialized = true;
 
 	char Text[256] = {};
@@ -823,6 +1264,7 @@ void RenderDX11_Shutdown()
 		gDX11Context->Flush();
 	}
 
+	RenderDX11_ReleaseShaders();
 	RenderDX11_ReleaseStates();
 
 	RenderDX11_SafeRelease(gDX11Context);

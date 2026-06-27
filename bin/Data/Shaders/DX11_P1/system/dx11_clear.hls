@@ -1,0 +1,36 @@
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT VSMain(uint VertexID : SV_VertexID)
+{
+	VS_OUTPUT Output;
+
+	float2 Positions[3] =
+	{
+		float2(-1.0f, -1.0f),
+		float2(-1.0f,  3.0f),
+		float2( 3.0f, -1.0f)
+	};
+
+	float2 TexCoords[3] =
+	{
+		float2(0.0f, 1.0f),
+		float2(0.0f, -1.0f),
+		float2(2.0f, 1.0f)
+	};
+
+	Output.Position = float4(Positions[VertexID], 0.0f, 1.0f);
+	Output.TexCoord = TexCoords[VertexID];
+
+	return Output;
+}
+
+float4 PSMain(VS_OUTPUT Input) : SV_Target0
+{
+	(void)Input;
+
+	return float4(0.02f, 0.04f, 0.06f, 1.0f);
+}
