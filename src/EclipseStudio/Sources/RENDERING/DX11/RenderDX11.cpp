@@ -7,13 +7,19 @@
 
 #include <D3D11.h>
 #include <DXGI.h>
-#include <D3Dcompiler.h>
-#include <D3DX11.h>
 
 #include <stdio.h>
 
 #include "GameCommon.h"
-#include "rendering/World/WorldDX11.h"
+#include "rendering/DX11/RenderDX11.h"
+
+bool RenderDX11_Init();
+void RenderDX11_Shutdown();
+bool RenderDX11_IsReady();
+
+bool RenderDX11_RenderWorld(
+	const WorldDX11FrameDesc& Desc
+);
 
 namespace
 {

@@ -6,12 +6,7 @@
 
 #if LTS_STUDIO_DX11
 
-bool RenderDX11_Init();
-void RenderDX11_Shutdown();
-bool RenderDX11_IsReady();
-bool RenderDX11_RenderWorld(
-	const WorldDX11FrameDesc& Desc
-);
+#include "rendering/DX11/RenderDX11.h"
 
 bool WorldDX11_Init()
 {
