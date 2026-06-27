@@ -121,3 +121,5 @@ packages/
 /bin/Data/Shaders/*
 !/bin/Data/Shaders/DX9_P1/
 !/bin/Data/Shaders/DX9_P1/**
+!/bin/Data/Shaders/DX11_P1/
+!/bin/Data/Shaders/DX11_P1/**
