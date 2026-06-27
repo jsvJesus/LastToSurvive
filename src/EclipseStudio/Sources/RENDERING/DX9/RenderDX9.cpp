@@ -1,5 +1,9 @@
 #include "r3dPCH.h"
 #include "r3d.h"
+
+#include "r3dRendererConfig.h"
+#if LTS_STUDIO_DX9
+
 #include "r3dLight.h"
 #include "d3dfont.h"
 
@@ -389,3 +393,4 @@ void FillSSAOBlurMacros( ShaderMacros& oMacros, int tapCount, int scaled, int no
 
 ColorCorrectionSettings g_ColorCorrectionSettings;
 
+#endif // LTS_STUDIO_DX9

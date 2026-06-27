@@ -1,6 +1,10 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include "r3dRendererConfig.h"
+#if LTS_STUDIO_DX9
+
+
 #include "RmlRenderDX9.h"
 #include <RmlUi/Core/Core.h>
 #include <RmlUi/Core/DecorationTypes.h>
@@ -7186,3 +7190,5 @@ void RmlRenderDX9::ReleaseShader(
 
 	delete Shader;
 }
+
+#endif // LTS_STUDIO_DX9

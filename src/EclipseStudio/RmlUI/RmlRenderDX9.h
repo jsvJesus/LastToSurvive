@@ -1,7 +1,11 @@
 #pragma once
 
+#include "r3dRendererConfig.h"
+
 #include <RmlUi/Core/RenderInterface.h>
 
+#if LTS_STUDIO_DX9
+#include <RmlUi/Core.h>
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -537,3 +541,5 @@ private:
 		float OutWeights[5]
 	);
 };
+
+#endif // LTS_STUDIO_DX9

@@ -1,3 +1,7 @@
+#pragma once
+
+#include "r3dRendererConfig.h"
+#if LTS_STUDIO_DX9
 
 #include "rendering/Deffered/CommonPostFX.h"
 
@@ -1040,3 +1044,5 @@ void FillColorCorrectionTexture( const r3dBezierGradient& xcurve, const r3dBezie
 
 	outTex->Unlock ();
 }
+
+#endif // LTS_STUDIO_DX9
