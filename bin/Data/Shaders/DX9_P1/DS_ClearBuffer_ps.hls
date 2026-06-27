@@ -1,0 +1,50 @@
+//
+float4 vNearFar : register ( c0 );
+
+#ifndef LOW_QUALITY
+#define LOW_QUALITY 1
+#endif
+
+#ifndef DEPTH_ONLY
+#define DEPTH_ONLY 0
+#endif
+
+struct PSOUT
+{
+#if DEPTH_ONLY
+ 
+ float4 Depth : COLOR0;
+ 
+#else
+ 
+ float4 Color : COLOR0;
+ float4 Normal : COLOR1;
+ float4 Depth : COLOR2;
+ 
+#if AUX_ENABLED
+ float4 Aux : COLOR3;
+#endif
+
+#endif
+};
+ 
+PSOUT main(float4 color	: COLOR0)
+{
+  PSOUT out1;
+
+
+#if !DEPTH_ONLY
+  out1.Color = color;
+  out1.Normal= float4(0,0,0,0.0); 
+#endif
+  
+  out1.Depth = 524288.f;
+  
+#if !DEPTH_ONLY
+#if AUX_ENABLED
+  out1.Aux= float4(1.0,0.5,0.0,0);
+#endif
+#endif
+
+  return out1;
+}

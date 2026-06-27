@@ -1,0 +1,20 @@
+
+sampler Tex1;
+sampler Tex2;
+sampler Tex3;
+sampler Tex4;
+
+float4 Power : register(c0);
+
+
+half4 main(half2 uv1 : TEXCOORD0, half2 uv2 : TEXCOORD1, half2 uv3 : TEXCOORD2, half2 uv4 : TEXCOORD3 ) : COLOR
+{
+ half4 t1 = tex2D(Tex1, uv1); //*Power;
+ half4 t2 = tex2D(Tex2, uv2); //*Power;
+ half4 t3 = tex2D(Tex3, uv3); //*Power;
+// half4 t4 = tex2D(Tex4, uv4); //*Power;
+
+ return saturate((t1+t2+t3)/3);
+// return (t1+t2+t3+t4)/4;
+}
+

@@ -1,0 +1,44 @@
+sampler samplerBackBuffer	: register ( s0 );
+sampler samplerAlpha		: register ( s4 );
+
+float2 invResolution : register ( c0 );
+
+float4 main( float2 Tex : TEXCOORD0 ) : COLOR0
+{
+	float4 alpha_coef = tex2D(samplerAlpha, Tex);
+	float4 final_color = tex2D(samplerBackBuffer, Tex) ;/* saturate(1 - dot(alpha_coef,1)) +
+		tex2D(samplerBackBuffer, Tex - float2(0, invResolution.y)) * alpha_coef.r +
+		tex2D(samplerBackBuffer, Tex + float2(0, invResolution.y)) * alpha_coef.g +
+		tex2D(samplerBackBuffer, Tex + float2( invResolution.x, 0)) * alpha_coef.b +
+		tex2D(samplerBackBuffer, Tex - float2( invResolution.x, 0)) * alpha_coef.a;*/
+
+	if (alpha_coef.r > 0.0)
+	{
+		// MIX with UP
+		float4 mix_color = tex2D(samplerBackBuffer, Tex - float2(0, invResolution.y));
+		final_color = lerp(final_color, mix_color, alpha_coef.r);
+	}
+
+	if (alpha_coef.g > 0.0)
+	{
+		// MIX with DOWN
+		float4 mix_color = tex2D(samplerBackBuffer, Tex + float2(0, invResolution.y));
+		final_color = lerp(final_color, mix_color, alpha_coef.g);
+	}
+
+	if (alpha_coef.b > 0.0)
+	{
+		// MIX with LEFT
+		float4 mix_color = tex2D(samplerBackBuffer, Tex + float2( invResolution.x, 0));
+		final_color = lerp(final_color, mix_color, alpha_coef.b);
+	}
+
+	if (alpha_coef.a > 0.0)
+	{
+		// MIX with RIGHT
+		float4 mix_color = tex2D(samplerBackBuffer, Tex - float2( invResolution.x, 0));
+		final_color = lerp(final_color, mix_color, alpha_coef.a);
+	}
+
+	return final_color;
+}

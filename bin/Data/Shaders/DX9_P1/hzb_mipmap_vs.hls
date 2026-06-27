@@ -1,0 +1,6 @@
+void main( float4 vPos			: POSITION,
+           float2 vTex			: TEXCOORD0 : register (v3),
+           out float4 vPosOut	: POSITION )
+{
+   vPosOut = vPos;
+}

@@ -1,0 +1,22 @@
+sampler Tex 		: register (s0);
+
+float2 PixelSize	: register ( c0 );
+float4 RWModifier	: register ( c1 ); // xy - read, zw - write. Default should be (1,0,1,0)
+
+const float BlurOffset[9] = {-4,-3,-2,-1,0,1,2,3,4};
+
+void main
+(
+	float4 color_in		: COLOR,
+	float2 uv1			: TEXCOORD0,
+	out float4 color_out: COLOR
+)
+{
+	float4 color = 0;
+	for(int i=0; i<9; ++i)
+	{
+		color += tex2D(Tex, uv1+PixelSize*float2(BlurOffset[i],0))*RWModifier.x + RWModifier.y;
+	}
+	color_out = (color/9.0f)*RWModifier.z + RWModifier.w;
+
+}

@@ -1,0 +1,79 @@
+// Enter your shader in this window
+
+#ifndef AUX
+#define AUX 0
+#endif
+
+#ifndef DO_CLIP
+#define DO_CLIP 0
+#endif
+
+#ifndef OUTPUT_DEPTH
+#define OUTPUT_DEPTH 1
+#endif
+
+struct PSOUT
+{
+	half4	Color	: COLOR0;
+
+	half4	Normal	: COLOR1;
+
+#if OUTPUT_DEPTH
+	float4	Depth	: COLOR2;
+#endif
+
+#if AUX
+	half4	Aux		:
+	#if OUTPUT_DEPTH
+		COLOR3;
+	#else
+		COLOR2;
+	#endif
+#endif
+
+};
+
+sampler2D DiffuseTex : register( s0 );
+sampler2D TintTex    : register( s1 );
+sampler2D NormalTex  : register( s2 );
+
+float3 vAlphaRef_TintStrength_SSAO   : register( c0 );
+
+PSOUT main( in half4 iTexc_Die_Z : TEXCOORD0,
+			in half2 iTintTexc   : TEXCOORD1,
+			in half3 iNormal     : TEXCOORD2 )
+{
+	PSOUT o;
+
+	float SSAO = vAlphaRef_TintStrength_SSAO.z;
+
+	half2 texc	= iTexc_Die_Z.xy;
+	half die	= iTexc_Die_Z.z;
+	
+	half fAlphaRef		= vAlphaRef_TintStrength_SSAO.x;
+	half fTintStrength	= vAlphaRef_TintStrength_SSAO.y;
+
+	half4 diffSample = tex2D( DiffuseTex, texc );
+	half3 tintSample = tex2D( TintTex, iTintTexc );
+
+	tintSample = lerp( 1.0h, tintSample, fTintStrength ) ;
+
+#if DO_CLIP
+	clip( diffSample.a * die - (half)fAlphaRef );
+#endif
+
+	o.Color 	= half4( diffSample.rgb * tintSample, 0.h );
+
+	// change for HDR
+	o.Normal	= half4( iNormal, 0.h );
+
+#if OUTPUT_DEPTH
+	o.Depth		= iTexc_Die_Z.w;
+#endif
+
+#if AUX
+	o.Aux = half4( SSAO, 0.0, 1.0, 0.0 );
+#endif
+
+	return o;
+}

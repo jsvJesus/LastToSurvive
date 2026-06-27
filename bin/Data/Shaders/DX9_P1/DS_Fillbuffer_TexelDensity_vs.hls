@@ -1,0 +1,30 @@
+
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x3 ModelMatrix			: register (c4);
+float4x3 NormalMatrix			: register (c7);
+
+// NOTE: duplicate in:
+// DS_Fillbuffer_disp_vs.hls
+// DS_Fillbuffer_Instanced_vs.hls
+// Transparent_vs.hls
+
+float2 vTexcUnpackScale			: register( c16 ) ;
+
+void main(	float4 vPos			: POSITION,
+			float vTexDensity 	: TEXCOORD3,
+			float4 vNormal		: NORMAL,
+			
+			out	float4 vPosOut	: POSITION,
+			out	float4 vTexOut1	: TEXCOORD0,
+			out	float3 vNormOut	: TEXCOORD1 )
+{
+	vPosOut = mul(vPos, ModelViewProjMatrix);
+
+	vTexOut1.xy = 0 ;
+	vTexOut1.z  = vPosOut.w;
+	vTexOut1.w = vTexDensity;
+
+	// NOTE : 4 component multiply, casue we also unpack with that matrix
+	vNormOut = mul( vNormal, NormalMatrix ).xyz;
+}
+

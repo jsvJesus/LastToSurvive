@@ -1,0 +1,140 @@
+// SSAO
+sampler smpDepth 		: register (s0);
+sampler smpRandRot 		: register (s2);
+
+float4 g_vSSScale_DepthRange_Far : register ( c0 );
+float4 g_vDepthTransform_RangeK1K2 : register ( c1 );
+float4 g_vColorControl : register ( c2 );
+
+void RetrieveDepth( half2 fTexc, out half fDepth, out half fRCPDepth )
+{
+	fDepth = tex2Dlod ( smpDepth, float4 (fTexc,0,0) ).r * g_vSSScale_DepthRange_Far.w;
+	fRCPDepth = 1 / fDepth;
+}
+
+#define BM_HQ 1
+
+half3 mirror( half3 vDir, half3 vPlane )
+{
+	return vDir - 2.h * vPlane * dot(vPlane,vDir);
+}
+
+half4 main( float4 vTexc_RendTexc : TEXCOORD0 ) : COLOR0
+{
+	
+	half2 vSSScale			= g_vSSScale_DepthRange_Far.xy;
+	half fDepthRange		= g_vSSScale_DepthRange_Far.z;
+
+	half fRangeK1	= g_vDepthTransform_RangeK1K2.z;
+	half fRangeK2	= g_vDepthTransform_RangeK1K2.w;
+
+	half2 vTexc 	= vTexc_RendTexc.xy;
+	half2 vRandTexc	= vTexc_RendTexc.zw;
+
+	// define kernel
+
+	const half fStep = 1.h - 1.h/8.h;
+	const half fScale = 0.025h;
+	half n = 0.h;
+
+	const half3 arrKernel[8] =
+	{
+		normalize(half3( 1, 1, 1))*fScale*(n+=fStep),
+		normalize(half3(-1,-1,-1))*fScale*(n+=fStep),
+		normalize(half3(-1,-1, 1))*fScale*(n+=fStep),
+		normalize(half3(-1, 1,-1))*fScale*(n+=fStep),
+		normalize(half3(-1, 1 ,1))*fScale*(n+=fStep),
+		normalize(half3( 1,-1,-1))*fScale*(n+=fStep),
+		normalize(half3( 1,-1, 1))*fScale*(n+=fStep),
+		normalize(half3( 1, 1,-1))*fScale*(n+=fStep),
+	};
+
+	half fSceneDepth, fRCPSceneDepth;
+
+	const half fDepthFadeStart = 0.985h;
+	const half fDepthFadeEnd = 0.99h;
+
+	RetrieveDepth( vTexc, fSceneDepth, fRCPSceneDepth );
+
+	[branch]
+	if( fSceneDepth < fDepthFadeEnd )
+	{
+		// random rot vec
+		half3 vRotSample = tex2Dlod( smpRandRot, half4(vRandTexc,0,0) ).rgb;
+		vRotSample = (2.h * vRotSample - 1.h);
+
+#if 0
+		half3 vSampleScale = half3(vSSScale, fDepthRange) * saturate( fSceneDepth * fRangeK1 )*(1.h+fSceneDepth * fRangeK2);
+#else
+		half3 vSampleScale = half3(vSSScale, fDepthRange) * (1.0h + max( fSceneDepth - fRangeK1, 0.h ) * fRangeK2);
+#endif
+
+		vSampleScale.xy *= fRCPSceneDepth;
+
+		half fDepthRangeScale 	= 0.85f / vSampleScale.z;
+		half fDepthTestSoftness	= 192.h / vSampleScale.z;
+
+		// sample
+		half4 vSkyAccess = 0.h;
+		half4 vSceneDepthes[2];
+
+		half3 vIrrSample;
+		half4 vDistance;
+		half4 vRangeIsInvalid;
+
+		half fHQScale = 0.5h;
+
+		half fDummy;   
+
+		[unroll]
+		for(int i=0; i<2; i++)
+		{   
+			[unroll]
+			for( int j = 0; j < 4; j ++ )
+			{    
+				vIrrSample = mirror(arrKernel[i*4+j], vRotSample )*vSampleScale;
+			
+				RetrieveDepth( vTexc + vIrrSample.xy, vSceneDepthes[0][j], fDummy );
+
+				vSceneDepthes[0][j] += vIrrSample.z; 
+
+#if BM_HQ
+				vIrrSample.xyz *= fHQScale;
+				RetrieveDepth( vTexc + vIrrSample.xy, vSceneDepthes[1][j], fDummy );
+				vSceneDepthes[1][j] += vIrrSample.z;
+#endif
+			} 
+	
+			half fDefVal = 0.5h;
+
+#if BM_HQ
+			const int SKY_ACCESS_LOOP_COUNT = 2;
+#else   	
+			const int SKY_ACCESS_LOOP_COUNT = 1;
+#endif
+
+			[unroll]
+			for(int s=0; s < SKY_ACCESS_LOOP_COUNT; s++)
+			{
+				vDistance = fSceneDepth - vSceneDepthes[s];
+				half4 vDistanceScaled = vDistance * fDepthRangeScale;
+
+				vRangeIsInvalid = (saturate( abs(vDistanceScaled) ) + saturate( vDistanceScaled )) * 0.5h; 
+				vSkyAccess += lerp(saturate((-vDistance)*fDepthTestSoftness), fDefVal, vRangeIsInvalid);
+			}
+		}
+
+#if BM_HQ
+		half fSkyAccessMul = 1/16.h;
+#else
+		half fSkyAccessMul = 1/8.h;
+#endif   
+
+		half fRes = dot( vSkyAccess, 2.0h * fSkyAccessMul );
+		return lerp( fRes * g_vColorControl.x + g_vColorControl.y, 1.h, saturate((fSceneDepth - fDepthFadeStart)/(fDepthFadeEnd-fDepthFadeStart)) );
+	}
+	else
+	{
+		return 1.h;
+	}
+}

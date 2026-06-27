@@ -1,0 +1,21 @@
+/////
+
+struct VSIn
+{
+	float4 pos: POSITION0;
+	float2 tc: TEXCOORD0;
+};
+
+struct VSOut
+{
+	float4 pos: POSITION0;
+	float2 tc: TEXCOORD0;
+};
+
+VSOut main(VSIn inData)
+{
+	VSOut o;
+	o.pos = inData.pos;
+	o.tc = inData.tc;
+	return o;
+}

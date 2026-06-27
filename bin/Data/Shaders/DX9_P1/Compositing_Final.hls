@@ -1,0 +1,455 @@
+
+// Final Compositing using DistortionBuffer
+
+sampler Screen : register (s0);
+sampler DistortTex : register (s1);
+sampler Blurred : register (s2);
+sampler Bloom : register (s3);
+sampler DepthTex : register (s4);
+
+half4 BlurVector : register (c0);
+half4 GlareColor : register (c1);
+half4 TintColor : register (c2);
+
+half4 BW  = { 0.3f, 0.59f, 0.11f, 1.0f};
+
+
+float4 RGB2HSI(float4 c)
+{
+ float4 hsi;
+	double _min, _mid, _max;
+
+	if(c.r>c.g && c.r>c.b)
+	{
+		_max = c.r;
+		_mid = max(c.g, c.b);
+		_min = min(c.g, c.b);
+	}
+	else
+	{
+		if(c.g>c.b)
+		{
+			_max = c.g;
+			_mid = max(c.r, c.b);
+			_min = min(c.r, c.b);
+		}
+		else
+		{
+			_max = c.b;
+			_mid = max(c.r, c.g);
+			_min = min(c.r, c.g);
+		}
+	}
+
+	hsi.z = _max;
+	hsi.y = 0;
+	hsi.x = 0;
+	if(hsi.z==0 || _max==_min)
+	{
+		// this is a black image or grayscale image
+		hsi.y = 0;
+		hsi.x = 0;
+	}
+	else
+	{
+		hsi.y = (hsi.z - _min) / hsi.z;
+		// domains are 60 degrees of
+		// red, yellow, green, cyan, blue or magenta
+		double domainBase = 0.0;
+		double oneSixth = 1.0/6.0;
+		double domainOffset = ( (_mid-_min) / (_max-_min) ) / 6.0;
+
+		if(c.r==_max)
+		{
+			if(_mid==c.g)
+			{                        // green is ascending
+				domainBase = 0;               // red domain
+			}
+			else
+			{                                  
+				domainBase = 5.0/6.0;         // magenta domain
+				domainOffset = oneSixth - domainOffset;
+			}
+		}
+		else
+		{
+			if(c.g==_max)
+			{
+				if(_mid==c.b)
+				{                      // blue is ascending
+					domainBase = 2.0/6.0;       // green domain
+				}
+				else
+				{                        // red is ascending
+					domainBase = 1.0/6.0;       // yellow domain
+					domainOffset = oneSixth - domainOffset;
+				}
+			}
+			else
+			{
+				if(_mid==c.r)
+				{                      // red is ascending
+					domainBase = 4.0/6.0;       // blue domain
+				}
+				else
+				{                        // green is descending
+					domainBase = 3.0/6.0;       // cyan domain
+					domainOffset = oneSixth - domainOffset;
+				}
+			}
+		}
+		hsi.x = domainBase + domainOffset;
+	}
+
+ hsi.a = 1;	
+ return hsi;
+}
+
+
+
+
+
+
+
+float4 HSI2RGB(float4 hsi)
+{
+ float4 c;
+
+  if(hsi.z==0.0)
+	{
+    // black image
+    c.r = c.g = c.b = 0;
+  }
+  else
+	{
+    if(hsi.g==0.0)
+		{
+      // grayscale image
+      c.r = c.g = c.b = hsi.b;
+    }
+    else
+		{
+      double domainOffset = 0.0;
+      if(hsi.r<1.0/6.0)
+			{     // red domain; green acending
+        domainOffset = hsi.r;
+        c.r = hsi.b;
+        c.b = hsi.b * (1-hsi.g);
+        c.g = c.b + (hsi.b-c.b)*domainOffset*6;
+      }
+      else
+			{
+        if(hsi.r<2.0/6)
+				{     // yellow domain; red acending
+          domainOffset = hsi.r - 1.0/6.0;
+          c.g = hsi.b;
+          c.b = hsi.b * (1-hsi.g);
+          c.r = c.g - (hsi.b-c.b)*domainOffset*6;
+        }
+        else
+				{
+          if(hsi.r<3.0/6)
+					{   // green domain; blue descending
+            domainOffset = hsi.r-2.0/6;
+            c.g = hsi.b;
+            c.r = hsi.b * (1-hsi.g);
+            c.b = c.r + (hsi.b-c.r)*domainOffset * 6;
+          }
+          else
+					{
+            if(hsi.r<4.0/6)
+						{ // cyan domain, green acsending
+              domainOffset = hsi.r - 3.0/6;
+              c.b = hsi.b;
+              c.r = hsi.b * (1-hsi.g);
+              c.g = c.b - (hsi.b-c.r) * domainOffset * 6;
+            }
+            else
+						{
+              if(hsi.r<5.0/6)
+							{       // blue domain, red ascending
+                domainOffset = hsi.r - 4.0/6;
+                c.b = hsi.b;
+                c.g = hsi.b * (1-hsi.g);
+                c.r = c.g + (hsi.b-c.g) * domainOffset * 6;
+              }
+              else
+							{          // magenta domain, blue descending
+                domainOffset = hsi.r - 5.0/6;
+                c.r = hsi.b;
+                c.g = hsi.b * (1-hsi.g);
+                c.b = c.r - (hsi.b-c.g) * domainOffset * 6;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+ c.a = 1.0f;
+ return c;
+}
+
+
+
+
+float2 pTap[12] = { 	float2(-0.326212f, -0.40581f),
+			float2(-0.840144f, -0.07358f),
+			float2(-0.695914f,  0.457137f),
+			float2(-0.203345f,  0.620716f),
+			float2( 0.96234f,  -0.194983f),
+			float2( 0.473434f, -0.480026f),
+			float2( 0.519456f,  0.767022f),
+			float2( 0.185461f, -0.893124f),
+			float2( 0.507431f,  0.064425f),
+			float2( 0.89642f,   0.412458f),
+			float2(-0.32194f,  -0.932615f),
+			float2(-0.791559f, -0.59771f)};
+
+
+float2 pTap2[8] = { 	float2( 0,0),
+			float2( 0.527837,-0.085868),
+			float2(-0.040088, 0.536087),
+			float2(-0.670445,-0.179949),
+			float2(-0.419418,-0.616039),
+			float2( 0.440453,-0.639399),
+			float2(-0.757088, 0.349334),
+			float2( 0.574619, 0.685879) };
+
+
+float4 PoissonBlur(sampler Tex, float2 uv, float BlurScale)
+{
+ float4 Col = tex2D(Tex, uv);
+
+ float2 vPixelSize = float2( 1.0f/1024.0f, 1.0f/768.0f);
+ float2 vBlurScale = float2( BlurScale, BlurScale);
+ float2 pixelRadius = vPixelSize*vBlurScale; 
+
+ for( int i=0;i<12;i++ )
+ {
+  Col += tex2D(Tex, uv+(pTap[i]*pixelRadius));
+ }  
+
+ return Col / 13.0f;
+//float4( / 13.0f, Col.a);
+}
+
+
+float4 PoissonBlur1(sampler Tex, float2 uv, float BlurScale)
+{
+ float4 Col = float4(0,0,0,1);
+
+ float2 vPixelSize = float2( 1.0f/1024.0f, 1.0f/768.0f);
+ float2 vBlurScale = float2( BlurScale, BlurScale);
+ float2 pixelRadius = vPixelSize*vBlurScale; 
+
+ for( int i=0;i<8;i++ )
+ {
+  Col += tex2D(Tex, uv+(pTap[i]*pixelRadius));
+ }  
+
+ return Col/8.0f;
+}
+
+
+
+
+ 
+float4 DOF (sampler tHighResSource, sampler tLowResSource, sampler DepthTex, float2 vTexCoord)
+{
+float4 vLODScale;
+float4 vMaxCoC;
+ 
+
+float2 vHighResPixelSize = float2(1.0f/1024.0f, 1.0f/768.0f);
+float2 vLowResPixelSize = float2(1.0f/512.0f, 1.0f/512.0f);
+int numTaps = 8;
+int tapOffset = 0;
+
+
+   float4 cOut;
+   float sDiscRadius;
+   float sCenterDepth;
+ 
+   float2 vPoisson[10] = {
+ 
+      float2(0.0,0.0),
+         float2(0.527837, -0.085868),
+         float2(-0.040088, 0.536087),
+         float2(-0.670445, -0.179949),
+         float2(-0.419418, -0.616039),
+         float2(0.440453, -0.639399),
+         float2(-0.757088, 0.349334),
+         float2(0.574619, 0.685879),
+         float2(0.03851, -0.939059),
+         float2(-0.341977, 0.939091)
+   };
+ 
+   // center tap
+   cOut = tex2D (tHighResSource, vTexCoord);
+      
+   float2 DP1 = tex2D (DepthTex, vTexCoord);
+   cOut.a = DP1.g;
+ 
+   sCenterDepth = DP1.r; //cOut.a;
+   sDiscRadius = 1.0f; //abs (cOut.a * vMaxCoC.y - vMaxCoC.x);
+   float sDiscRadiusLow = 2.0f; //sDiscRadius * vLODScale.w;
+   cOut = 0;
+
+   float2 vTexCoordTweak = vTexCoord + float2(0.5, 0.25)*vHighResPixelSize;
+
+   float Blurness = 0;
+
+   for (int t = 0; t < 8; t++)
+   {
+      float2 vPoissonCoordLow;
+      float2 vPoissonCoordHigh;
+ 
+      vPoissonCoordLow = vTexCoordTweak + (vLowResPixelSize * vPoisson[t+tapOffset] * sDiscRadiusLow);
+      vPoissonCoordHigh = vTexCoordTweak + (vHighResPixelSize * vPoisson[t+tapOffset] * sDiscRadius);
+ 
+      float4 cTapLow;
+      float4 cTapHigh;
+ 
+      cTapLow = tex2D(tLowResSource, vPoissonCoordLow);
+      cTapHigh = tex2D(tHighResSource, vPoissonCoordHigh);
+ 
+      float2 DP = tex2D (DepthTex, vPoissonCoordHigh);
+      cTapHigh.a = DP.g;
+
+      DP = tex2D (DepthTex, vPoissonCoordLow);
+      cTapLow.a = DP.g;
+
+      if (DP.r < sCenterDepth)
+       if (DP.g > DP1.g) Blurness +=1;
+ 
+      float sTempDepth = cTapHigh.a;
+      float sTapBlur = sTempDepth; //abs(sTempDepth * 2.0 - 1.0);
+ 
+      cTapHigh = lerp(cTapHigh, cTapLow, sTapBlur.x);
+ 
+      float vTempComp0 = cTapHigh.a - sCenterDepth;
+ 
+      float sLerpTapBlur = cTapHigh.a; //abs(cTapHigh.a * 2.0 - 1.0);
+      float sWeight = (vTempComp0 >= 0.0) ? 1.0 : sLerpTapBlur;
+
+      cOut.rgb += cTapHigh.rgb * sWeight;
+      cOut.a += sWeight;
+   }
+
+//   Blurness / = 8;
+   
+   cOut = tex2D (tHighResSource, vTexCoord);
+   cOut = lerp(cOut, tex2D(tLowResSource, vTexCoord), saturate(DP1.g+Blurness));
+  
+  return cOut;
+
+//   return (cOut / cOut.a);
+}
+
+
+
+float4 DOF1 (sampler tHighResSource, sampler tLowResSource, sampler DepthTex, float2 vTexCoord)
+{
+float4 vLODScale;
+float4 vMaxCoC;
+ 
+float2 vHighResPixelSize = float2(1.0f/1024.0f, 1.0f/768.0f);
+float2 vLowResPixelSize = float2(1.0f/512.0f, 1.0f/512.0f);
+int numTaps = 8;
+int tapOffset = 0;
+
+
+   float4 cOut;
+   float sDiscRadius;
+   float sCenterDepth;
+ 
+   float2 vPoisson[10] = {
+ 
+      float2(0.0,0.0),
+         float2(0.527837, -0.085868),
+         float2(-0.040088, 0.536087),
+         float2(-0.670445, -0.179949),
+         float2(-0.419418, -0.616039),
+         float2(0.440453, -0.639399),
+         float2(-0.757088, 0.349334),
+         float2(0.574619, 0.685879),
+         float2(0.03851, -0.939059),
+         float2(-0.341977, 0.939091)
+   };
+
+   float2 DP1 = tex2D (DepthTex, vTexCoord);
+  
+   sDiscRadius = 20.0f;// * clamp(-DP1.g,0,1);
+
+   float Blur = 0;
+
+   for (int t = 0; t < 8; t++)
+   {
+      float2 vPoissonCoordHigh;
+ 
+      vPoissonCoordHigh = vTexCoord + (vHighResPixelSize * vPoisson[t+tapOffset] * sDiscRadius);
+ 
+      float2 DP = tex2D (DepthTex, vPoissonCoordHigh);
+
+      DP.g = clamp(-DP.g, 0,1);
+
+      Blur += DP.g;
+
+   }
+
+  Blur = saturate(abs(DP1.g) + Blur / 4.0f); 
+
+  cOut = tex2D (tHighResSource, vTexCoord);
+  cOut = lerp(cOut, tex2D(tLowResSource, vTexCoord), Blur);
+ 
+  return cOut;
+}
+
+ 
+
+
+
+half4 main(half2 uv1 : TEXCOORD0 ) : COLOR
+{
+ half4 t1 = tex2D(DistortTex, uv1);
+// t1.rg -= 0.5f/255.0f;
+
+ half2 uv2 = uv1 + ((t1.rg - 128.0f/255.0f)*2.0f)*0.25f;
+
+ half Blurness = saturate(t1.b); // + abs(t6.g));
+
+ half4 t3 = tex2D(DistortTex, uv2);
+ half4 t2 = tex2D(Screen, uv1);
+ half4 t4 = tex2D(Blurred, uv2);
+ half4 t5 = tex2D(Bloom, uv1);
+ half2 t6 = tex2D(DepthTex, uv1);
+
+ half LumB11 = (dot(half3(t5.r, t5.g, t5.b),half3(0.3f, 0.59f, 0.11f)));
+
+ half4 PicC = t2; //lerp(t2, t4, -0.5f);
+
+ return PicC + (1-LumB11/2)*t5;
+
+// return half4(Blurness, Blurness, Blurness, 1);
+half4 FC1 = DOF1 (Screen, Blurred, DepthTex, uv2);
+
+// half4 FC1 = t2; //lerp( t2,t4, Blurness);
+
+ half LumB = (dot(half3(t4.r, t4.g, t4.b),half3(0.3f, 0.59f, 0.11f)))*0.8f;
+
+ half4 Col1 = half4(1-LumB,1-LumB,1-LumB,1);
+
+ half4 FinalColor =  FC1 + t5; //*Col1;
+ FinalColor.a = 1;
+
+ half LumB1 = (dot(half3(FinalColor.r, FinalColor.g, FinalColor.b),half3(0.3f, 0.59f, 0.11f)));
+
+ half4 FinalTinted = LumB1 * half4(0.2, 0.2, 0.3,1); //TintColor;
+ half4 FinalColor1 = lerp(FinalColor,FinalTinted, 0.8);
+
+ FinalColor1.a = 1;
+
+ return FinalColor;
+}

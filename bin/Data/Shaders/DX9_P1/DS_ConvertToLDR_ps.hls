@@ -1,0 +1,37 @@
+//
+
+sampler sScreen	: register (s0);
+sampler sExposure : register( s4 ) ;
+
+float4      vFilmToneABCD       : register(c0);
+float4      vFilmToneEF_EB_WL   : register(c1);
+float4      vFilmToneEXPADJ     : register(c2);
+float4      vExposure_InvGamma  : register(c3);
+
+#include "Lib\Tonemapping.hls"
+
+float4 main(float4 uv1_uv2 : TEXCOORD0 ) : COLOR
+{
+
+	float2 uv1 	= uv1_uv2.xy;
+	float2 uv2 	= uv1_uv2.zw;
+
+	float4 TexCol = tex2D( sScreen, uv1 ) ;
+
+	float ExposureBias = vFilmToneEF_EB_WL.z ;
+
+	float Col = tex2D( sExposure, float2( 0.5, 0.5 ) ) ;
+	
+	TexCol.rgb = TM_ApplyFilmToneNew(TexCol.rgb, pow(2,ExposureBias+Col) );
+
+
+//	TexCol = PS_Reinhard02( TexCol, Lum ,ExposureBias) ;
+
+//	TexCol.rgb = Col;
+
+// Final before blitting to screen - btw should we do color correctiob here ????
+	TexCol.rgb = pow( TexCol.rgb, vExposure_InvGamma.y ) ;
+	
+	return TexCol;
+}
+

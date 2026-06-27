@@ -1,0 +1,11 @@
+sampler2D Screen : register( s0 );
+
+float fPower : register ( c0 );
+
+void main(	in half2 vTexc : TEXCOORD,
+			out half4 oColr : COLOR0 )
+{
+	half4 colr = (half4)tex2D( Screen, vTexc );
+	half3 blackwhite = dot(colr.rgb, half3(0.3h, 0.59h, 0.11h));
+	oColr = half4 ( lerp ( colr.rgb, blackwhite, saturate(fPower)), 1.0f );
+}

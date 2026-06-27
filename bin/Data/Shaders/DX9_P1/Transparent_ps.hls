@@ -1,0 +1,288 @@
+//////////////////////////////////////////////////
+
+#ifndef VERTEX_SHADER
+#define VERTEX_SHADER 0
+#endif
+
+#ifndef PIXEL_SHADER
+#define PIXEL_SHADER 1
+#endif
+
+#ifndef FIRST_PERSON
+#define FIRST_PERSON 0
+#endif
+
+#include "fog.hls"
+#include "Lib\LightHelper.hls"
+
+float4		vFilmToneABCD		: register(c24);	// (c60);
+float4		vFilmToneEF_EB_WL	: register(c25);	// (c61);
+
+#include "Lib\Tonemapping.hls"
+
+sampler DiffuseTex 		: register (s0);
+sampler DepthTex		: register (s1);
+sampler DistortionTex  	: register (s2);
+sampler EnvPowerMap   	: register (s3);
+sampler EnvCubeMap		: register (s8);
+
+sampler CamoEffTex		: register (s9);
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+float4x3 mWorld : register( c32 ) ;
+float4x3 mWorldView : register( c35 ) ;
+
+struct PSOut
+{
+	float4 cl0: COLOR0;
+	float4 cl1: COLOR1;
+};
+
+#ifndef AURA_EFFECT
+#define AURA_EFFECT 0
+#endif
+
+#ifndef TRANSPARENT_CAMO
+#define TRANSPARENT_CAMO 0
+#endif
+
+float harshize( float a )
+{
+	return saturate( 2 * a - 0.5 );
+}
+
+void calcAuraEff( out float4 oColr, out float oAuraL, float3 modelPos, float3 worldNormal )
+{
+	float at = Aura.a ;
+
+	float3 uvsrc = modelPos * 2 ;
+
+	float2 auv = uvsrc.xy ;
+
+	float auraL_xy = tex2D(DiffuseTex, auv + float2( at, 0.2 ) ).r ;
+	auraL_xy *= tex2D(DiffuseTex, auv + float2( 0, at ) ).r ;
+
+	auv = uvsrc.xz ;
+	float auraL_xz = tex2D(DiffuseTex, auv + float2( at, 0.2 ) ).r ;
+	auraL_xz *= tex2D(DiffuseTex, auv + float2( 0, at ) ).r ;
+
+	auv = uvsrc.yz ;
+	float auraL_yz = tex2D(DiffuseTex, auv + float2( at, 0.2 ) ).r ;
+	auraL_yz *= tex2D(DiffuseTex, auv + float2( 0, at ) ).r ;
+
+	float auraL = lerp ( auraL_xy, auraL_yz, harshize( abs( worldNormal.x ) ) );	
+	auraL = lerp ( auraL, auraL_xz, harshize( abs( worldNormal.y ) ) );
+
+	float3 diff = lerp( Aura.rgb, 1, auraL * auraL * auraL ) ;
+	
+	auraL *= 0.5 ;
+	
+	oColr = float4( diff * auraL, auraL ) ;
+//	oColr.rgb = pow(oColr,2.2f);
+	oAuraL = auraL ;
+}
+
+void calcCamoEff( out float4 oDist, out float3 oReflColor, out float oFres, float3 texcSource, float3 normal, float3 view, float dist )
+{
+	float at = Aura.a ;
+
+	float shock = Aura.g ;
+
+	float3 uvsrc = ( texcSource * 0.5 - 0.5 ) * TCamoExtra.x ;
+
+	float2 auv = uvsrc.xy ;
+
+	float2 auv2 ;
+
+	float alpha = at ;
+
+	float sina, cosa ;
+
+	sincos( alpha, sina, cosa ) ;
+
+	auv2.x = uvsrc.x * cosa - uvsrc.y * sina ;
+	auv2.y = uvsrc.x * sina + uvsrc.y * cosa ;
+
+	auv2 *= 2 ;
+
+	float2 camo2 ;
+	
+	const float bumpiness = 1.0f ;
+
+	camo2 = ( tex2D(CamoEffTex, auv + float2( at, 0.2 ) ).rg - 0.5 ) * 0.33 * bumpiness ;
+	camo2 += ( tex2D(CamoEffTex, auv2 + float2( 0, at ) ).rg - 0.5 ) * bumpiness ;
+	
+	const float hh = 0.5 ;
+
+	float3 camo_xy = float3( camo2.x, camo2.y, ( normal.z  < 0 ? -hh : hh ) ) ;
+
+	auv = uvsrc.yz ;
+
+	auv2.x = uvsrc.y * cosa - uvsrc.z * sina ;
+	auv2.y = uvsrc.y * sina + uvsrc.z * cosa ;	
+
+	auv2 *= 2 ;
+
+	camo2 = ( tex2D(CamoEffTex, auv + float2( 0.2, at ) ).rg - 0.5 ) * 0.33 * bumpiness ;
+	camo2 += ( tex2D(CamoEffTex, auv2 + float2( at, 0 ) ).rg - 0.5 ) * bumpiness ;
+
+	float3 camo_yz = float3( ( normal.x  < 0 ? -hh : hh ) , camo2.x, camo2.y ) ;
+
+	float lfact = harshize( abs( normal.x ) ) ;
+
+	float3 camo = lerp ( camo_xy, camo_yz, lfact );
+
+	float3 wcamo = mul( camo, mWorld ) ;
+	float3 vcamo = mul( camo, mWorldView ) ;
+
+	vcamo.x = - vcamo.x ;
+	
+	float dd = sqrt( max( dist - 3, 1 ) );
+
+	oDist		= float4( vcamo.xy * ( 1 + shock ) / dd + 0.5, 0, 1 );
+	
+	oFres = saturate( 1 - abs( dot( normalize( wcamo) , normalize( view ) ) ) ) ;
+
+	oReflColor	= texCUBE( EnvCubeMap, reflect( view, wcamo ) ) ;
+}
+
+PSOut main
+(
+	float2 tc0          : TEXCOORD0,
+	float4 ssPos        : TEXCOORD1,
+	float4 fogVal_camDir: TEXCOORD2,
+	float3 worldNormal  : TEXCOORD3,
+	float3 vertexDiffuse: TEXCOORD4,
+	float3 modelPos     : TEXCOORD5,
+	float3 modelNormal  : TEXCOORD6
+)
+{
+
+	PSOut o;
+	
+	float4 origDiff = tex2D(DiffuseTex, tc0) * Mat_Diffuse ;
+	
+	float4 cl = origDiff ;
+//	cl.rgb = pow(cl.rgb, 2.2f) ;
+
+	float3 distortion = tex2D(DistortionTex, tc0).rgb;	
+
+	float2 screenUV = ssPos.xy / ssPos.w;	
+
+	float depth = tex2D(DepthTex, screenUV);
+	
+	float camoAlpha = Aura.b;
+	float camoMasterTransparency = Aura.r;
+	
+#if 0	
+ 	depth	= max(depth, tex2D(DepthTex, screenUV + float2(PixelSize.x,PixelSize.y)).r);
+ 	depth	= max(depth, tex2D(DepthTex, screenUV + float2(-PixelSize.x,PixelSize.y)).r);
+ 	depth	= max(depth, tex2D(DepthTex, screenUV + float2(-PixelSize.x,-PixelSize.y)).r);
+ 	depth	= max(depth, tex2D(DepthTex, screenUV + float2(PixelSize.x,-PixelSize.y)).r);	
+#endif
+	
+	float visible = ssPos.w < depth  ? 1 : 0;
+		
+	cl.a *= visible ;
+	
+	worldNormal = normalize(worldNormal);
+	float4 diffuseColor = saturate(dot(worldNormal, SunDir)) * SunColor + AmbientColor;
+	
+	float3 viewVec = normalize(-fogVal_camDir.xyz);
+	
+	float specularPower = Material_Params.x;
+	float metalness = Material_Params.y;
+	float chromePower = Material_Params.z;
+	
+	float3 vhalf = normalize(viewVec + SunDir);
+	float4 specularColor = 0;//light_CalcSpecular(dot(worldNormal, vhalf), specularPower, 1);
+	
+	float chromness = tex2D(EnvPowerMap, tc0).r * chromePower;
+	float4 Vec1 = float4(reflect(-viewVec, worldNormal), 7.0f - 7.0f * chromness);
+
+#if !TRANSPARENT_CAMO
+	float4 ReflColor = texCUBElod(EnvCubeMap, Vec1);
+   	float4 Fr = fresnelReflectance(dot(worldNormal, viewVec), ReflColor); 
+#endif
+
+#if AURA_EFFECT
+	clip( depth - ssPos.w + 0.07 ) ;
+
+	float auraL ;
+	calcAuraEff( o.cl0, auraL, modelPos, modelNormal ) ;
+#else
+
+#if TRANSPARENT_CAMO
+#if !FIRST_PERSON
+	clip( depth - ssPos.w + 0.07 ) ;
+#endif
+
+	float3 reflColr = 0 ;
+	float camoFres = 0 ;
+
+	calcCamoEff( o.cl1, reflColr, camoFres, modelPos, modelNormal, fogVal_camDir.xyz, ssPos.w ) ;
+
+	o.cl1.rg = lerp(0.5, o.cl1.rg, camoMasterTransparency);
+	
+#endif
+
+#if TRANSPARENT_CAMO
+	cl.rgb *= diffuseColor ;
+#else
+	cl.rgb = lerp(cl * diffuseColor, Fr * diffuseColor * Mat_Diffuse.rgb, metalness)  + specularColor ;
+#endif
+	
+	
+#if !AURA_EFFECT && !TRANSPARENT_CAMO
+	clip(depth - ssPos.w);
+#endif
+//	cl.rgb = TM_ApplyFilmTone(cl.rgb) + vertexDiffuse;
+//	cl.rgb = vertexDiffuse;
+	
+	//aerial perspective
+	float4 aer = getAerialVal(fogVal_camDir.xyz, length(fogVal_camDir.xyz));
+	cl.rgb = lerp(cl.rgb, aer.rgb * cl.a, aer.a);
+	cl.rgb = lerp(cl.rgb, g_fogColor.rgb * cl.a, fogVal_camDir.w);
+	
+	o.cl0 = cl;
+#endif
+	
+#if AURA_EFFECT
+	distortion = float3(0.5, 0.5, auraL * 4);
+#endif
+
+#if TRANSPARENT_CAMO
+
+	float camFinAlpha ;
+	
+	float shock = Aura.g ;
+	
+	float lerpFact = saturate( pow( dot( abs( o.cl1.rg  - 0.5 ), (1).xx ), 4 ) * 8 ) ;
+		
+	float colorLerpFact = pow( lerpFact, 8 ) ;
+	lerpFact = lerpFact * ( 1 - camoAlpha ) ;	
+	
+	camFinAlpha = max( camoAlpha, TCamoColor1.a * lerpFact ) ;
+	
+	float reflectionAmmount = TCamoExtra.z ;
+	float3 colorForColorated = lerp( cl, reflColr, reflectionAmmount * camoFres ) ;
+	float3 colorated = lerp( colorForColorated, lerp( TCamoColor0.rgb, TCamoColor1.rgb,  colorLerpFact ), lerpFact ) ;	
+
+	float distortScale = TCamoExtra.y ;
+	o.cl1.rg = lerp( 0.5, o.cl1.rg, distortScale ) ;
+	o.cl1.b = lerpFact * shock ;
+
+	o.cl0.rgb = colorated * camFinAlpha ;
+	o.cl0.a = camFinAlpha * camoMasterTransparency ;
+	
+#else
+	distortion.rg = (distortion.rg * 2 - 1) * o.cl0.a;
+	distortion.rg = (distortion.rg * 0.5 + 0.5);
+	
+	o.cl1 = float4(distortion, 1);	
+#endif
+
+//	o.cl0.rgb = pow(o.cl0.rgb,2.2f);
+	return o;
+}

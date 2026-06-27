@@ -1,0 +1,73 @@
+
+sampler DiffuseTex : register (s0);
+sampler NormalTex  : register (s1);
+sampler GlossMap   : register (s2);
+
+sampler IBLMap     : register (s4);
+
+sampler ShadowMask : register (s5);
+
+float4 Color : register(c1);
+float4   vLight  : register(c4);
+float4   vHelper  : register(c9);
+
+float4 CamDepth : register (c10);
+
+struct PSOUT
+{
+ float4 Color : COLOR0;
+ float4 Depth : COLOR1;
+};
+
+
+PSOUT main(	float3 uv1 : TEXCOORD0, 
+		float3 View : TEXCOORD1, 
+		float3 vNorm : TEXCOORD2, 
+		float3 vNorm1 : TEXCOORD3, 
+		float4 DiffuseColor : COLOR0, 
+		float Attn2 : COLOR1) : COLOR
+{
+ PSOUT out1 = (PSOUT)0;
+
+ out1.Depth.r = uv1.z; 
+
+ float Light = dot(tex2D(NormalTex, uv1.xy).rgb*2-1, DiffuseColor.rgb*2-1);
+ float BackFace = max(0,-Light);
+
+ float LR = max( 0, (Light + 0.8f ) / ( 1 + 0.8f ));
+ float LG = max( 0, (Light + 0.7f ) / ( 1 + 0.7f ));
+ float LB = max( 0, (Light + 0.7f ) / ( 1 + 0.7f ));
+
+ float4 c = float4(LR,LG,LB,1);
+
+// float4 c = pow(dot(tex2D(NormalTex, uv1.xy).rgb*2-1, DiffuseColor.rgb*2-1)/2+0.5, 2);
+
+ float4 c1 = texCUBE(IBLMap, normalize((vNorm1+vNorm)/2));
+
+ float4 c2 = saturate(c + c1*0.4f);
+
+ float3 vReflect = normalize( View + normalize(DiffuseColor*2-1) );
+
+ // Compute specular term:
+ float4 SpecularColor = pow(max( 0, dot(vReflect, tex2D(NormalTex, uv1.xy)*2-1 ) ), 16 ) * c *tex2D(GlossMap, uv1.xy).rrrr;
+
+ float4 FacingRatio = max(0, dot(normalize(View), tex2D(NormalTex, uv1.xy)*2-1));
+
+ float4 SSS = pow(float4(1.0,0.5,0.45,1)*BackFace*tex2D(GlossMap, uv1.xy).g*2,2);
+
+ float RedSkin = float4(0.3f,0.1,0.1,1)*BackFace;
+
+ float4 Rim = saturate(pow(1-FacingRatio,4)) * float4(0.2,0.15,0.1,1);
+
+ float4 TexColor = tex2D(DiffuseTex, uv1.xy);
+
+ float Color1 = dot(float3(Color.r, Color.g, Color.b),float3(0.3f, 0.59f, 0.11f));
+
+ float4 FinalColor = c2*Color * TexColor + (SSS + RedSkin)*TexColor*Color1 +
+                    SpecularColor * TexColor;
+
+ out1.Color = FinalColor; //+float4(0,0,0,1);
+ return out1;
+
+}
+

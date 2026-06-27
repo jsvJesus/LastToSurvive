@@ -1,0 +1,35 @@
+sampler2D sPrevExposure : register( s0 ) ;
+sampler2D sLuma : register( s4 ) ;
+
+float4      vFilmToneABCD       : register(c0);
+float4      vFilmToneEF_EB_WL   : register(c1);
+float4      vFilmToneEXPADJ     : register(c2);
+float4      vFilmToneEXPADJ1     : register(c3);
+
+float4      vLerpCtrl           : register(c4);
+
+float4 main( in float4 texc : TEXCOORD0 ) : COLOR0
+{
+
+	float	MinLuma = vFilmToneEXPADJ.x;
+	float	MaxLuma = vFilmToneEXPADJ.y;
+	float	MedLuma = vFilmToneEXPADJ.z;
+
+	float Lum = tex2D( sLuma, float2( 0.5, 0.5 ) ) ;
+	
+	Lum = clamp(Lum, MinLuma,MaxLuma)/(MaxLuma - MinLuma);
+
+	float col = vFilmToneEXPADJ.w - vFilmToneEXPADJ.w * Lum * ( MaxLuma - MinLuma ) / MedLuma;
+	col = max(vFilmToneEXPADJ1.x, col);
+	float prevCol = tex2D( sPrevExposure, float2( 0.5, 0.5 ) ) ;
+	
+	float dtscaled ;
+	
+	[ flatten ]
+	if( col < prevCol )
+		dtscaled = -vLerpCtrl.x ;
+	else
+		dtscaled = -vLerpCtrl.y ;
+
+	return prevCol + ( col - prevCol ) * ( 1 - exp( dtscaled ) ) ;
+}

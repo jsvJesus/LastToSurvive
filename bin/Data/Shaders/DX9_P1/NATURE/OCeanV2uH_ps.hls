@@ -1,0 +1,132 @@
+#include "..\fog.hls"
+
+sampler DiffuseMap : register (s0);
+sampler DiffuseMap1 : register (s1);
+sampler DepthMap   : register (s2);
+sampler RefractMap : register (s3);
+sampler ColorTexture : register (s6);
+sampler RipplesTexture : register (s9);
+
+#include "OceanIO_ps.hls"
+
+float4 main( float3 vPos : TEXCOORD0,
+	float2 ruv: TEXCOORD1,
+	float2 ruv10: TEXCOORD2
+ ) : COLOR
+{
+	//----------------------------------------------------------
+	//DIRECTION TO CAMERA
+ 	float3 camVec = vPos - vCamera_Lerp.xyz;
+ 	float camVecL = length(camVec);
+ 	float3 Vn = camVec / camVecL;
+ 	
+
+	//---------------------------------------------------------
+	//NORMAL
+ 	float mip = ((-1/Vn.y - 1)*0.025f + camVecL*0.0025f) * prevCam_mipA.w;
+  	mip = min(mip, 6);
+
+	float3 Nn = float3(0,1,0);
+#if ( RIPPLES )
+	{
+		float w = simParams.x;
+		float2 ripuv = (vPos.xz - vCamera_Lerp.xz + rippleOffset.yw)*simParams.y + 0.5f;
+		float h0 = tex2D(RipplesTexture, ripuv+float2(0,0)).r;
+		float h1 = tex2D(RipplesTexture, ripuv+float2(w,0)).r;
+		float h2 = tex2D(RipplesTexture, ripuv+float2(0,w)).r;
+		float ww = 0.015f;
+		Nn = -normalize(cross( float3(ww, h1-h0, 0), float3(0, h2-h0, ww)));
+	}
+#endif
+  	float3 nc1 = tex2Dlod(DiffuseMap, float4(ruv + Nn.xz/5, 0.0f, mip));
+  	float3 nc2 = tex2Dlod(DiffuseMap1, float4(ruv + Nn.xz/5, 0.0f, mip));
+ 	float3 Nn1 = 2.0f * lerp(nc1.xzy, nc2.xzy, vCamera_Lerp.w) - 1.0f;
+ 	//bumpness and smooth normals far from the camera
+ 	Nn1.y *= bumpness_RefrIndex_TileSize_x10.x * pow(-Vn.y, -0.3f);
+	Nn = normalize(normalize(-Nn1)-Nn*2);
+
+
+	//----------------------------------------------------------
+	//Reflection component
+	
+	float3 rflVec = reflect(Vn, Nn);
+	float3 reflv = rflVec;
+	if(reflv.y>0.0f)	reflv = normalize(float3( reflv.x, -0.01f, reflv.z) );	//do not reflect overwater geometry
+	
+	//compute 2D texture coord of reflection
+	float4 reflc = mul(float4(reflv, 1.0f), RefractViewProjTexXf);
+	float2 uvr = reflc.xy / reflc.w;
+	//zoom in left and right sides of reflection dou to normal map perturbations and getting reflection outside reflection map
+	if(uvr.x<0.1f)	uvr.x = uvr.x*0.5f + 0.05f;
+	else	if(uvr.x>0.9f)	uvr.x = 0.9f + (uvr.x-0.9f)*0.5f;
+	
+	
+	float3 reflectColor;
+	float3 rflPos;	//compute world pos of reflected geometry
+	if( abs(saturate(uvr.x)-uvr.x) + abs(saturate(uvr.y)-uvr.y)>0.001f)	//if reflection is outside screen
+	{
+		//get reflection color from sky cubemap
+		reflectColor = texCUBE(SkyCube, rflVec).rgb;
+		reflectColor = pow(reflectColor, 2.2);
+		rflPos = vPos.xyz + rflVec*10000.0f;
+	}
+	else
+	{
+		reflectColor = tex2D(RefractMap, uvr).rgb;
+		float4 rflScrPos = float4( projVal.zw * uvr + CausticDepth_Strength_projVal.zw, 1, 1);
+		rflScrPos.xyz *= tex2D(DepthMap, uvr).r * projVal.x + projVal.y;
+		rflPos = mul(rflScrPos, invViewMtx);
+	}
+	
+
+	//----------------------------------------------------------
+	//REFRACTION
+	//float3 owN = float3(Vn.x, Vn.y, Vn.z) + float3(Nn.x, 0.0f, Nn.z)*(bumpness_RefrIndex_TileSize_x10.y - 1.0f);
+	
+	float tl = 3.0f;
+	float2 uuv = ruv * tl;
+	uuv.x -= SunVector_Time.w / tl / 10;
+  	nc1 = tex2Dlod(DiffuseMap, float4(uuv, 0.0f, 0));
+  	nc2 = tex2Dlod(DiffuseMap1, float4(uuv, 0.0f, 0));
+ 	float3 addN = 0.2f * lerp(nc1.xzy, nc2.xzy, vCamera_Lerp.w) - 0.1f;
+	
+	float3 owN = float3(Vn.x, Vn.y, Vn.z) + (float3(Nn.x, 0.0f, Nn.z)*(bumpness_RefrIndex_TileSize_x10.y - 1.0f)
+		+ float3(1,0,1)*addN )* ColTileBlend_Pert_Coast.z;
+	float4 owUV = mul(float4( normalize(owN) , 1.0f), RefractViewProjTexXf);
+	float2 uvR = owUV.xy / owUV.w;
+	float3 refractColor = tex2D(RefractMap, uvR).rgb;
+	
+	float4 rfrScrPos = float4( projVal.zw * uvR + CausticDepth_Strength_projVal.zw, 1, 1);
+	rfrScrPos.xyz *= tex2D(DepthMap, uvR).r * projVal.x + projVal.y;
+	float3 rfrPos = mul(rfrScrPos, invViewMtx);
+
+	//FOG
+	float fogVal = getFogVal(rfrPos, vPos.xyz);
+	refractColor.rgb = lerp(refractColor.rgb, g_fogColor.rgb, fogVal);
+
+	//----------------------------------------------------------
+	//‘–≈Õ≈À‹
+	float fresnel = bumpness_RefrIndex_TileSize_x10.y + SunColor_refrIdx2.w * pow(abs(1 - saturate(dot(-Vn, Nn))), 4);
+
+	//add sunlight
+	float3 h = float3(1, -1, 1)*SunVector_Time.xyz - Vn;
+	float3 nn = Nn + (2*tex2D(DiffuseMap, ruv10).xzy -1)* 0.2f;
+	float hnn = dot( nn, h ) / ( sqrt( dot(h, h)*dot(nn, nn) ) );
+	reflectColor += SunColor_refrIdx2.rgb * pow ( max ( hnn, 0.0f ), deepColor_SpecularCosinePower.a )/fresnel;
+	
+	
+	float4 finalColor;
+	finalColor.rgb = lerp(refractColor.rgb, reflectColor.rgb, fresnel);
+	
+	//Analyse camera underwater depth
+	float3 beamAttFactor = pow(2, length(vPos.xyz-vCamera_Lerp.xyz) * beamAttColor);
+	float3 diffAttFactor = pow(2, (vPos.y - vCamera_Lerp.y) * diffAttColor);
+	finalColor.rgb *= beamAttFactor;
+	
+	float camLight = pow(2, -(vPos.y - vCamera_Lerp.y)/attenColor_Dist.w*3);
+	
+	finalColor.rgb += camLight*deepColor_SpecularCosinePower.rgb * saturate(1.0f - beamAttFactor * diffAttFactor);
+	finalColor.a = 1;
+	
+	return finalColor;
+}

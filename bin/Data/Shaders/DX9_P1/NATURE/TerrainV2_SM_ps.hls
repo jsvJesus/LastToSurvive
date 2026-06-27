@@ -1,0 +1,7 @@
+#include "..\system\libSM\shadow_config.h"
+#include "..\system\libSM\pcf1.hls"
+
+float4 main( float LightZ : TEXCOORD0 ) : COLOR
+{
+	return GenerateShadow( LightZ );
+}

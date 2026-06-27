@@ -1,0 +1,26 @@
+sampler Tex 		: register(s0);
+sampler Depth		: register(s1);
+uniform float2 PixelSize : register(c0);
+uniform float2 DoFRange : register(c1);
+
+float4 main(float2 uv1      : TEXCOORD0): COLOR
+{
+	float d0 = tex2D(Depth, uv1).x;
+	float dof = saturate((d0-DoFRange.x)/(DoFRange.y-DoFRange.x));
+	float4 basecolor = tex2D(Tex, uv1);
+	if(dof == 0)
+		return basecolor;
+	
+	
+	float4 color=0;
+	float counter = 0;
+	for(int i=-4; i<=4; ++i)
+	{
+		float2 uv = uv1+PixelSize*float2(0,i);
+		float d = tex2D(Depth, uv).x;
+		float weight = d<DoFRange.x?0.0f:1.0f;
+		color += tex2D(Tex, uv)*weight;
+		counter += weight;
+	}
+	return lerp(basecolor, color/counter, dof);
+}

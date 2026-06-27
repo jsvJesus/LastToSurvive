@@ -1,0 +1,300 @@
+//
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+
+sampler ShadowMap	: register (s4);
+sampler ProjTex		: register (s6);
+
+sampler EnvCubeMap 	: register (s8);
+
+#ifndef DIFFUSE_ONLY
+#define DIFFUSE_ONLY 1
+#endif
+
+#ifndef SSAO_ENABLED
+#define SSAO_ENABLED 1
+#endif
+
+float4	vCamPos				: register(c0);
+float4	Color				: register(c1);
+
+float4  vLightDistanceParams: register(c2);
+
+float4x3 mLightMtx			: register(c3);
+
+float3 vLightCentre			: register(c6);
+
+float4	vFlags				: register(c7);
+float4	vUnused				: register(c8);
+
+float4	vUnused2			: register(c9);
+
+float4  vMultiShadowParms   : register(c10);
+
+float4	SSS_Params			: register(c11);
+
+ float4 fresnelReflectance ( float Dot, float4 CSpec ) {
+           return CSpec+(1-CSpec)*pow(1-Dot,5);
+    }
+    
+    
+float Intensity( float3 N, float3 PN, float3 LV, float L, float W )
+{
+	float R0 = vLightDistanceParams.x ;
+	float R1 = vLightDistanceParams.y ;
+	
+	float PlaneD = abs( dot( LV, PN ) );
+	
+	float XD = LV.x > 0 ? LV.x - L : -L - LV.x ;
+	float ZD = LV.z > 0 ? LV.z - W : -W - LV.z ;
+
+	XD = max( XD, 0 ) ;
+	ZD = max( ZD, 0 ) ;
+	
+	float xfact, zfact ;
+	
+	xfact = XD * R0 + R1 ;
+	zfact = ZD * R0 + R1 ;
+	
+	float I0 = saturate( PlaneD * R0 + R1 ) ;
+	float I1 = saturate( xfact ) ;
+	float I2 = saturate( zfact ) ;
+
+	float nf = xfact * zfact ;
+
+	float3 CPN = -PN ;
+	
+	float DoubleSided = vFlags.x ;
+	
+	[flatten]
+	if( LV.y > DoubleSided )
+		CPN = PN;
+		
+	float banAbove = 1 - saturate( DoubleSided * LV.y ) ;
+		
+	float3 LV1 = normalize( lerp( normalize( LV ), CPN, nf * nf ) ) ;	
+	
+	float D = saturate( dot( LV1, N ) ) * banAbove ;
+	
+	return I0 * I1 * I2 * D ;
+}
+
+float SpecularIntensity( float3 N, float3 PN )
+{
+	return 0.f ;
+}
+
+#define Power pow
+#define ArcTan atan
+#define Sqrt sqrt
+
+float SpecIntensityF( float3 LV, float3 N, float3 VV, float L, float v )
+{
+	float px = LV.x ;
+	float py = LV.y ;
+	float pz = LV.z ;
+	
+	float Nx = N.x ;
+	float Ny = N.y ;
+	float Nz = N.z ;
+	
+	float Vx = VV.x ;
+	float Vy = VV.y ;
+	float Vz = VV.z ;
+	
+	float R = 
+-((Sqrt(Power(L,2) - 2*L*px + Power(px,2) + Power(py,2))*
+        (2*Nx*Ny*Vx + (-1 + 2*Power(Ny,2))*Vy + 2*Ny*Nz*Vz)*
+        ArcTan((pz + v)/
+          Sqrt(Power(L,2) - 2*L*px + Power(px,2) + 
+            Power(py,2))))/((L - px)*py)) - 
+   ((py*(-2*Nx*Ny*Vx + Vy - 2*Power(Ny,2)*Vy - 
+           2*Ny*Nz*Vz) + 
+        px*(Vx - 2*Power(Nx,2)*Vx - 2*Nx*(Ny*Vy + Nz*Vz)) + 
+        L*((-1 + 2*Power(Nx,2))*Vx + 2*Nx*(Ny*Vy + Nz*Vz)))*
+      ArcTan((pz + v)/
+        Sqrt(Power(L,2) - 2*L*px + Power(px,2) + 
+          Power(py,2))))/
+    ((L - px)*Sqrt(Power(L,2) - 2*L*px + Power(px,2) + 
+        Power(py,2))) - (Sqrt(Power(L,2) + 2*L*px + 
+        Power(px,2) + Power(py,2))*
+      (2*Nx*Ny*Vx + (-1 + 2*Power(Ny,2))*Vy + 2*Ny*Nz*Vz)*
+      ArcTan((pz + v)/
+        Sqrt(Power(L,2) + 2*L*px + Power(px,2) + 
+          Power(py,2))))/((L + px)*py) + 
+   ((px*(-Vx + 2*Power(Nx,2)*Vx + 2*Nx*Ny*Vy + 
+           2*Nx*Nz*Vz) + 
+        py*(2*Nx*Ny*Vx - Vy + 2*Power(Ny,2)*Vy + 
+           2*Ny*Nz*Vz) + 
+        L*((-1 + 2*Power(Nx,2))*Vx + 2*Nx*(Ny*Vy + Nz*Vz)))*
+      ArcTan((pz + v)/
+        Sqrt(Power(L,2) + 2*L*px + Power(px,2) + 
+          Power(py,2))))/
+    ((L + px)*Sqrt(Power(L,2) + 2*L*px + Power(px,2) + 
+        Power(py,2))) + ((-2*Nx*Nz*py*Vx + 
+        2*Nx*Ny*(pz + v)*Vx - 2*Ny*Nz*py*Vy - (pz + v)*Vy + 
+        2*Power(Ny,2)*(pz + v)*Vy + py*Vz - 
+        2*Power(Nz,2)*py*Vz + 2*Ny*Nz*(pz + v)*Vz)*
+      ArcTan((-L + px)/Sqrt(Power(py,2) + Power(pz + v,2))))
+     /(py*Sqrt(Power(py,2) + Power(pz + v,2))) + 
+   ((2*Nx*(Nz*py - Ny*(pz + v))*Vx + pz*Vy + v*Vy - 
+        2*Power(Ny,2)*(pz + v)*Vy - py*Vz + 
+        2*Power(Nz,2)*py*Vz + 2*Ny*Nz*(py*Vy - (pz + v)*Vz))
+       *ArcTan((L + px)/Sqrt(Power(py,2) + Power(pz + v,2)))
+      )/(py*Sqrt(Power(py,2) + Power(pz + v,2))); 
+      
+      return R ;
+}
+
+float IntensityF( float3 LV, float3 N, float L, float v )
+{
+
+	float px = LV.x ;
+	float py = LV.y ;
+	float pz = LV.z ;
+
+	float Nx = N.x ;
+	float Ny = N.y ;
+	float Nz = N.z ;
+
+	float R = 
+((L*Ny - Ny*px + Nx*py)*Sqrt(Power(L,2) + 2*L*px + 
+        Power(px,2) + Power(py,2))*
+      Sqrt(Power(py,2) + Power(pz + v,2))*
+      ArcTan((pz + v)/
+        Sqrt(Power(L,2) - 2*L*px + Power(px,2) + 
+          Power(py,2))) + 
+     Sqrt(Power(L,2) - 2*L*px + Power(px,2) + Power(py,2))*
+      ((L*Ny + Ny*px - Nx*py)*
+         Sqrt(Power(py,2) + Power(pz + v,2))*
+         ArcTan((pz + v)/
+           Sqrt(Power(L,2) + 2*L*px + Power(px,2) + 
+             Power(py,2))) + 
+        Sqrt(Power(L,2) + 2*L*px + Power(px,2) + 
+           Power(py,2))*(Nz*py - Ny*(pz + v))*
+         (ArcTan((-L + px)/
+             Sqrt(Power(py,2) + Power(pz + v,2))) - 
+           ArcTan((L + px)/
+             Sqrt(Power(py,2) + Power(pz + v,2))))))/
+   (2.*py*Sqrt(Power(L,2) - 2*L*px + Power(px,2) + 
+       Power(py,2))*Sqrt(Power(L,2) + 2*L*px + 
+       Power(px,2) + Power(py,2))*
+     Sqrt(Power(py,2) + Power(pz + v,2)));
+
+	return R ;
+}
+
+
+float4 main(float4 PPos 	: TEXCOORD0, 
+			float3 WPos		: TEXCOORD1,
+			float2 SPos		: TEXCOORD2
+	) : COLOR
+{
+	float L = vLightDistanceParams.z ;
+	float W = vLightDistanceParams.w ;
+
+	float4 TexCol = tex2Dproj(AlbedoTex, PPos);
+//	TexCol.rgb = pow(TexCol.rgb, 1.0/2.2);
+
+	float4 normalTex = tex2Dproj(NormalTex, PPos);
+	float4 auxData = tex2Dproj(AuxData, PPos);
+
+	float SSAOTerm = 1;
+
+	float  MetalnessMap = TexCol.a;
+
+	float3 Normal = normalize(normalTex.rgb*2-1);
+	float SpecularPOW = auxData.g;
+	float ReflChrome = auxData.a;
+	float SelfIllum = abs(normalTex.a * 2 - 1); // -1..0 - selfIllum, 0..1 - Bloom 
+
+	float3 Cam = vCamPos.xyz;
+
+	float Depth = tex2Dproj(DepthTex, PPos).r / PPos.w;
+
+	float3 CamVec = WPos.xyz - Cam;
+
+	float3 RealPos = Cam + Depth*CamVec;
+	
+	float3 LV = -mul( float4( RealPos, 1 ), mLightMtx ) ;
+	float3 LCam = mul( float4( vCamPos.xyz, 1 ), mLightMtx ) ;
+	float3 N = mul( Normal, (float3x3)mLightMtx );
+	
+	float3 VV = normalize( LV - LCam );
+
+#if 1
+	float I = Intensity( N, float3(0,1,0), LV, L, W ) ;
+#else
+	float I = IntensityF( LV, N, L, W ) - IntensityF( LV, N, L, -W ) ;
+#endif
+
+	float3 ToEye = normalize( LCam + LV ) ;
+
+#if 0
+	float S = SpecIntensityF( -LV, N, ToEye, L, W ) - SpecIntensityF( -LV, N, ToEye, L, -W ) ;
+	S = pow( saturate( S * 0.0125 ), 4 );	
+#else
+	float S = 0 ;
+#endif	
+
+	float4 DiffuseColor = I * Color ;
+
+	float4 FinalColor;
+
+
+#if 0
+	FinalColor.rgb = DiffuseColor* TexCol + S * DiffuseColor * 0.5f ;
+#else
+	FinalColor.rgb = DiffuseColor* TexCol + S ;
+#endif
+
+	FinalColor.rgb = FinalColor.rgb * SSAOTerm * SSAOTerm ; 
+
+	FinalColor.a = 0;
+	
+	//------------------------------------------------------------------
+	
+	float ShadowK = 1.f ;
+	
+#ifdef SHADOW_MAP
+	float3 V = vLightCentre - RealPos;
+	
+	float3 VN = normalize( V ) ;
+
+	float3 absV = abs( V );
+	float CmpVal = max( max( absV.x, absV.y ), absV.z ) - 0.05;
+
+	float3 rndVec0;
+
+	[flatten]
+	if( abs( VN.y ) > 0.1 )
+	{
+		rndVec0 = float3( -VN.z, 0, VN.x );
+	}
+	else
+	{
+		rndVec0 = float3( -VN.y, VN.x, 0 );
+	}
+
+	rndVec0 = normalize( rndVec0 );
+	float3 rndVec1 = cross( VN, rndVec0 );
+
+	rndVec0 *= vMultiShadowParms.x;
+	rndVec1 *= vMultiShadowParms.x;
+
+	ShadowK = texCUBE( ShadowMap, -V ).r  < CmpVal ? 0 : 1;
+
+	ShadowK += texCUBE( ShadowMap, -VN + rndVec0 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN - rndVec0 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN + rndVec1 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN - rndVec1 ).r  < CmpVal ? 0 : 1;
+
+	ShadowK *= 0.2;
+#elif defined( SS_SHADOW_MAP )
+	ShadowK = tex2Dproj( ShadowMap, PPos );	
+#endif
+
+	return FinalColor * ShadowK ;
+}

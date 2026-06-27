@@ -1,0 +1,34 @@
+sampler2D sRight : register( s0 );
+sampler2D sLeft : register( s4 ) ;
+
+half4 main( half4 vTexc : TEXCOORD0 ) : COLOR0
+{
+
+	//read left and right texture samples
+	half4 rcolor = tex2D( sLeft, vTexc.xy ) ;
+	half4 lcolor = tex2D( sRight, vTexc.xy  );
+
+	//find max value of colour for use as value
+	half r_max= max( max(rcolor.x,rcolor.y), rcolor.z ) ;
+	half l_max= max( max(lcolor.x,lcolor.y), lcolor.z ) ;
+
+	//generate greyscale image
+	half4 rgray = half4(r_max,r_max,r_max,r_max) ;
+	half4 lgray = half4(l_max,l_max,l_max,l_max) ;
+
+	half rcyan = dot( rcolor, half4( 0.0h, 1.0h, 1.0h ,0.0h ) ) ;
+	half rred  = dot( rcolor, half4( 1.0h, 0.0h, 0.0h ,0.0h ) ) ;
+	half lcyan = dot( lcolor, half4( 0.0h, 1.0h, 1.0h ,0.0h ) ) ;
+	half lred  = dot( lcolor, half4( 1.0h, 0.0h, 0.0h ,0.0h ) ) ;
+
+	half r_ratio  = pow( 1.0h - clamp( abs( rcyan -rred ), 0.h, 1.h),  1.h ) ;
+	half l_ratio  = pow( 1.0h - clamp( abs( lcyan -lred ), 0.h, 1.h),  1.h ) ;
+
+
+	rcolor = r_ratio * rcolor + ( 1.0h - r_ratio ) * rgray ;
+	lcolor = l_ratio * lcolor + ( 1.0h - l_ratio ) * lgray ;
+
+	return rcolor * half4( 0.0h, 1.0h, 1.0h, 0.0h ) + lcolor * half4( 1.0h, 0.0h, 0.0h, 0.0h );
+
+}
+

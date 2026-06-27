@@ -1,0 +1,57 @@
+
+sampler Tex1 : register (s0);
+sampler DepthTex : register (s1);
+sampler DistortTex : register(s2);
+
+float2 PixelSize    : register(c0); // depth texture
+float4   vParam  	: register(c18);
+
+#ifndef USE_DISTORT
+#define USE_DISTORT 1
+#endif
+
+
+void main( half2 uv1 : TEXCOORD0, 
+            half4 uv2 : TEXCOORD1,
+            half4 DiffuseColor : COLOR0,
+
+		out half4 outColor : COLOR0
+#if USE_DISTORT
+		, out half4 outDistort : COLOR1
+#endif
+		)
+
+{
+ half4 Color = tex2D(Tex1, uv1); 
+ Color.rgb = pow(Color.rgb,2.2); 
+
+ half4 distort = tex2D(DistortTex, uv1);
+
+ float2 depth_uv = uv2.xy/uv2.w;
+ depth_uv.y = -depth_uv.y;
+ depth_uv *= 0.5h;
+ depth_uv += 0.5h;
+ 
+ float t6 = tex2D(DepthTex, depth_uv).r;
+#if(0)
+ t6 = min(t6, tex2D(DepthTex, depth_uv + float2(PixelSize.x,PixelSize.y)).r);
+ t6 = min(t6, tex2D(DepthTex, depth_uv + float2(-PixelSize.x,PixelSize.y)).r);
+ t6 = min(t6, tex2D(DepthTex, depth_uv + float2(-PixelSize.x,-PixelSize.y)).r);
+ t6 = min(t6, tex2D(DepthTex, depth_uv + float2(PixelSize.x,-PixelSize.y)).r);
+#endif
+
+ float Depth = saturate((t6 - uv2.w) * vParam.z);
+
+ Color.a *= DiffuseColor.a * Depth;
+ Color.rgb *= (DiffuseColor.rgb * Color.a);
+
+ Color.a *= vParam.y;
+
+ outColor = saturate(Color);
+ 
+#if USE_DISTORT
+ outDistort = distort;
+ outDistort.a = 1; // disable blending of distortion particles, as otherwise they will become white pixels
+#endif
+
+}

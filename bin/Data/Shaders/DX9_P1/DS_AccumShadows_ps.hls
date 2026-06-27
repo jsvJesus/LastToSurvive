@@ -1,0 +1,207 @@
+// Enter your shader in this window// Enter your shader in this window//
+
+#include "smdepth_inc.hls"
+
+sampler ShadowTexPointFiltering	: register(s0);
+sampler DepthTex				: register(s1);
+sampler ShadowTexLinearFiltering: register(s2);
+
+float4x4 LightMtx         : register(c0);
+float4   ReconstructParam : register(c4);
+float4   ShadowTexScale   : register(c5);
+float4   ShadowParam0     : register(c6);
+float4   ShadowParam1     : register(c7);
+float4   ShadowParam2     : register(c8);
+float3   LightPos         : register(c9);
+
+#define FXAA_CONSOLE__EDGE_SHARPNESS 8.0
+#define FXAA_CONSOLE__EDGE_THRESHOLD_MIN 0.05
+#define FXAA_CONSOLE__EDGE_THRESHOLD 0.125
+
+#ifndef HW_SHADOW_MAPS
+#define HW_SHADOW_MAPS 0
+#endif
+
+#ifndef RECTICULAR_WARP
+#define RECTICULAR_WARP 0
+#endif
+
+#define LIGHT_TYPE_DIRECT 0
+#define LIGHT_TYPE_POINT 1
+#define LIGHT_TYPE_SPOT 2
+
+#ifndef LIGHT_TYPE
+#define LIGHT_TYPE LIGHT_TYPE_DIRECT
+#endif
+
+float2 Shadow2D(float3 tcz)
+{
+	float2 pos = tcz.xy;
+	float CmpVal = tcz.z;
+	float ld00 = tex2D( ShadowTexPointFiltering, pos ).r;
+
+#if HW_SHADOW_MAPS
+	float ShadowK = tex2Dproj(ShadowTexLinearFiltering, float4(pos, CmpVal, 1));	
+#else
+	float s00 = ld00 < CmpVal ? 0 : 1;
+
+	float2 posScaled = pos * ShadowTexScale.xy;
+	float2 subpixPos = frac(posScaled);
+	pos = (posScaled - subpixPos) * ShadowTexScale.zw;
+	
+	float2 step0 = ShadowParam0.xy;
+	float2 step1 = ShadowParam0.zw;
+	float2 step2 = ShadowParam1.xy;
+
+	float s10 = tex2D( ShadowTexPointFiltering, pos + step0 ).r	< CmpVal ? 0 : 1;
+	float s01 = tex2D( ShadowTexPointFiltering, pos + step1 ).r	< CmpVal ? 0 : 1;
+	float s11 = tex2D( ShadowTexPointFiltering, pos + step2 ).r	< CmpVal ? 0 : 1;
+
+	float ShadowK = lerp(	lerp( s00, s10, subpixPos.x ),
+							lerp( s01, s11, subpixPos.x ),
+							subpixPos.y );
+#endif
+	return float2(ShadowK, ld00);
+}
+
+float2 CalcShadowsFXAA(float3 tcz)
+{
+	float compareDepth = tcz.z;
+	float2 pos = tcz.xy;
+	float2 smTexelOffset = ShadowTexScale.zw;
+	float4 fxaaConsoleRcpFrameOpt = float4(smTexelOffset * 2, smTexelOffset * 0.5); 
+	float4 fxaaConsolePosPos = float4(pos - fxaaConsoleRcpFrameOpt.zw, pos + fxaaConsoleRcpFrameOpt.zw);
+/*--------------------------------------------------------------------------*/
+    float lumaNw = Shadow2D(float3(fxaaConsolePosPos.xy, compareDepth)).x;
+    float lumaSw = Shadow2D(float3(fxaaConsolePosPos.xw, compareDepth)).x;
+    float lumaNe = Shadow2D(float3(fxaaConsolePosPos.zy, compareDepth)).x;
+    float lumaSe = Shadow2D(float3(fxaaConsolePosPos.zw, compareDepth)).x;
+/*--------------------------------------------------------------------------*/
+	float2 centerTap = Shadow2D(float3(tcz.xy, compareDepth));
+    float rgbyM = centerTap.x;
+/*--------------------------------------------------------------------------*/
+    float dirSwMinusNe = lumaSw - lumaNe;
+    float dirSeMinusNw = lumaSe - lumaNw;
+/*--------------------------------------------------------------------------*/
+    float2 dir;
+    dir.x = dirSwMinusNe + dirSeMinusNw;
+    dir.y = dirSwMinusNe - dirSeMinusNw;
+/*--------------------------------------------------------------------------*/
+    dir *= 2;
+    float rgbyN1 = Shadow2D(float3(pos.xy - dir * fxaaConsoleRcpFrameOpt.zw, compareDepth)).x;
+    float rgbyP1 = Shadow2D(float3(pos.xy + dir * fxaaConsoleRcpFrameOpt.zw, compareDepth)).x;
+/*--------------------------------------------------------------------------*/
+    float rgbyA = rgbyN1 + rgbyP1;
+    rgbyA = lerp(centerTap.x, rgbyA, 0.5);
+/*--------------------------------------------------------------------------*/
+    return float2(rgbyA, centerTap.y);
+}
+
+float4 main(	float2 uv1      : TEXCOORD0,
+				float3 WPos		: TEXCOORD1 ): COLOR
+{
+
+	float invRefZ = ReconstructParam.w;
+	float3 Cam = ReconstructParam.xyz;
+
+	float bias = ShadowParam1.w;
+	float maxDist = ShadowParam1.z;
+
+	float physRange = ShadowParam2.x;
+	float depthRange = ShadowParam2.y;
+	float edgeFadeWidth = ShadowParam2.z;
+	float lightDepthScale = ShadowParam2.w;
+
+	float ZVal = tex2D( DepthTex, uv1).r;
+	float RefVal = ZVal * invRefZ;
+
+	float3 CamVec = WPos - Cam;
+
+	float3 RealPos = Cam + RefVal*CamVec;
+
+	float edgeFactor = 1;
+
+#if LIGHT_TYPE != LIGHT_TYPE_DIRECT
+
+	float3 V = RealPos - LightPos;
+
+	float distSq = dot( V, V );
+
+	clip( maxDist - distSq );
+
+#else
+
+	float3 DVec = RealPos - Cam;
+
+	float distSq = dot( DVec, DVec );
+
+	clip( maxDist - distSq );
+	
+	edgeFactor = saturate((maxDist - distSq) / edgeFadeWidth);
+
+#endif
+
+
+#if LIGHT_TYPE == LIGHT_TYPE_POINT
+	float3 absV = abs( V );
+	float CmpVal = ( max( max( absV.x, absV.y ), absV.z ) - 0.05 ) ;
+
+	float ld00 = texCUBE( ShadowTexPointFiltering, V ).r * lightDepthScale ;
+
+	float ShadowK = ld00 < CmpVal ? 0 : 1;
+#else
+
+#if LIGHT_TYPE == LIGHT_TYPE_SPOT
+	float4 LPPos = mul( float4( RealPos, 1 ), LightMtx );
+	float2 LTexc = LPPos.xy / LPPos.w * float2( 0.5, -0.5 ) + (0.5).xx;
+#else
+	// no need to perspective divide, as
+	// we're dealing with orthogonal projection
+	float3 LPPos = mul( float4( RealPos, 1 ), LightMtx ).xyz;
+	
+#if RECTICULAR_WARP
+	LPPos.xy = ShadowWarp( LPPos );
+	LPPos.xy = 0.5 * LPPos.xy + 0.5;
+#endif
+
+	float2 LTexc = LPPos.xy;
+#endif
+
+#if LIGHT_TYPE == LIGHT_TYPE_DIRECT
+	clip( LTexc.xyy );
+	clip( 1 - LTexc.xyy );
+#endif
+
+#if LIGHT_TYPE == LIGHT_TYPE_SPOT
+	float CmpVal = LPPos.w - bias;
+#else
+	float CmpVal = LPPos.z - bias;
+#endif
+				
+#if FXAA_SHADOW_BLUR
+	float2 shadow = CalcShadowsFXAA(float3(LTexc, CmpVal));
+#else
+
+	float cmpRescale = 1.0 ;
+
+#if LIGHT_TYPE == LIGHT_TYPE_SPOT
+	cmpRescale /= lightDepthScale;
+#endif
+
+	float2 shadow = Shadow2D(float3(LTexc, CmpVal * cmpRescale ));
+
+#endif
+	float ShadowK = shadow.x;
+	float ld00 = shadow.y;
+
+#endif
+
+	float dist = saturate( 1 - ZVal * depthRange );
+
+	float frcDist = frac( dist * 256 );
+
+	float physVal = ( CmpVal - ld00 ) * physRange;
+	
+	ShadowK = lerp(1, ShadowK, edgeFactor);
+	return saturate( float4( ShadowK, physVal, dist - frcDist / 256, frcDist ) ) ;
+}

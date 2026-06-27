@@ -1,0 +1,16 @@
+//
+
+#include "postfx_common.h"
+
+void main( float4 vPos			: POSITION,
+           float2 vTex			: TEXCOORD0,
+           out float4 vPosOut	: POSITION,
+           out float4 vTexOut	: TEXCOORD0 )
+{
+	vPosOut    = vPos;
+
+	float2 vTTex = vTex * g_vTexcTransform.xy + g_vTexcTransform.zw;
+
+	vTexOut.xy = vTTex;
+	vTexOut.zw = vTTex - 0.5;
+}

@@ -1,0 +1,64 @@
+#include "..\fog.hls"
+
+#include "SkyIO_ps.hls"
+
+struct vert2frag
+{
+	float4 Position     : POSITION;
+	float2 TerrainCoord : TEXCOORD0;
+	float2 NormalCoord  : TEXCOORD1;
+	float4 Lin          : COLOR0;
+	float4 Fex          : COLOR1;
+	float4 Vertex_Height: TEXCOORD2;
+}; 
+
+#ifndef NORMAL_ENABLED
+#define NORMAL_ENABLED 1
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+#if NORMAL_ENABLED
+	float4 Normal : COLOR1;
+#endif	
+};
+
+                                                    
+PSOUT main( vert2frag IN ) : COLOR     
+{
+	// Move this to precomputed const saves just 4 instructions and no shader performance improvement
+	float4 const1;
+	const1.rgb = OneOverBetaRPlusBetaM * Multipliers.x * SunColorAndIntensity.xyz * SunColorAndIntensity.w;
+	const1.w = 1 / ( CloudsHorizonFadeH_TexSizeInv.y - CloudsHorizonFadeH_TexSizeInv.x );
+	
+	
+	float distance = length( IN.Vertex_Height.xyz);
+
+	// Angle between sun direction and view direction                                   
+	float theta = dot( SunDir_CloudsScale.xyz, IN.Vertex_Height.xyz ) / distance;
+	float phase1 = 1.0 + theta * theta;
+	float phase2 = pow( rsqrt( HGg_CloudDensity2.y - HGg_CloudDensity2.z * theta ), 3 ) * HGg_CloudDensity2.x;
+
+	// Extinction term                                                                  
+	float3 extinction = 1 - exp( -BetaRPlusBetaM_CloudDensity.xyz * distance );
+
+	// Inscattering term                                                                
+	float3 inscatter = (phase1 * BetaDashR + phase2 * BetaDashM * MieScale.r) * extinction * const1;
+
+	//FOG in horizont
+	//float lp = max(IN.Vertex_Height.w - CloudsHorizonFadeH_TexSizeInv.x, 0.0) * const1.w;
+	//inscatter.rgb = lerp(inscatter.rgb, g_fogColor.rgb, (1.0f - saturate(lp)) * MieScale.r );
+
+
+	PSOUT out1;
+
+	out1.Color.rgb = inscatter * Amplify.x;
+	out1.Color.a = 0;  // gloss
+
+#if NORMAL_ENABLED	
+	out1.Normal = float4(0.5,0,0.0, 0);
+#endif
+
+	return out1;
+}                                                   

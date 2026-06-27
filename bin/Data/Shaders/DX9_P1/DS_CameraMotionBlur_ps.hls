@@ -1,0 +1,61 @@
+//
+sampler Diffuse 		: register (s0);
+sampler Depth 			: register (s1);
+sampler DiffuseLinear	: register (s4);
+
+float4 MotionBlurConstantX		: register ( c0 );
+float4 MotionBlurConstantY		: register ( c1 );
+float4 MotionBlurConstantW		: register ( c2 );
+float2 MotionBlurVelocityScale_FarInv: register ( c3 );
+
+#define NUM_SAMPLES 4
+
+half getStencil(float2 uv)
+{
+	// do not check stensil buffer on pc
+	//half stencil = step(tex2D(Depth, uv).a, 127.f/255.f); 
+	//return stencil;
+	return 1;
+}
+
+
+half4 main( half2 uv1	: TEXCOORD0,
+			half4 wpos	: COLOR0 ) : COLOR
+{
+	half2 texCoord = uv1;
+
+	float4 dSample = tex2D(Depth, texCoord);
+	half stencil = 1;//step(dSample.a, 127.f/255.f); 
+	half4 color = half4(tex2D(Diffuse, texCoord));
+	//if(stencil > 0)
+	{
+		float zOverW = dSample.r * MotionBlurVelocityScale_FarInv.y; //dot(dSample.rgb, float3(255.0/256.0, 255.0/65536.0, 255.0/16777216.0));
+		half4 screen = half4(texCoord, zOverW, 1.0f);
+
+		// simple noise
+		half fNoise = clamp(frac( ( wpos.x * 0.6180339887h ) + ( wpos.y * wpos.y * 0.3819660112h ) ), .5h, 1.h);
+
+		// calculate instantaneous screen-space velocity of pixel
+		half K = half(dot( MotionBlurConstantW.xyz, screen.xyz ));
+		half2 velocity = half2( dot( MotionBlurConstantX, screen ), dot( MotionBlurConstantY, screen ) ) - (screen.xy * K);
+		velocity *= fNoise*MotionBlurVelocityScale_FarInv.x;
+
+		half len = length(velocity);
+		if(len > 0.25h) velocity = normalize(velocity)*0.25h;
+		if(len > 0.01h)
+		{
+			half2 duv = (velocity.xy/NUM_SAMPLES)/4;
+			half2 uv = screen.xy;
+			half ss = stencil;
+			for( int i=1; i<NUM_SAMPLES; ++i ) {
+				uv = saturate(uv+duv);
+				half s = getStencil(uv);
+				color += half4(tex2D(DiffuseLinear, uv)) * s;
+				ss += s;
+			}
+			color /= ss;
+		}
+	}
+	
+	return half4(color.rgb, 1);
+}

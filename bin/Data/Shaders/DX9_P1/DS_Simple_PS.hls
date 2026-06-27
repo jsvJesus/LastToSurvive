@@ -1,0 +1,95 @@
+//
+sampler DiffuseTex 	: register (s0);
+sampler NormalTex  	: register (s1);
+sampler GlossMap   	: register (s2);
+sampler EnvPowerMap   	: register (s3);
+sampler SelfIllumMap   	: register (s4);
+sampler DetailNormalMap : register (s5);
+sampler SSSMap : register (s6);
+
+float3   vSunVector : register ( c20 );
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+#ifndef FILL_ROADS
+#define FILL_ROADS 0
+#endif
+
+#ifndef DOUBLE_SIDED
+#define DOUBLE_SIDED 1
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+
+#if FILL_ROADS
+	float DBuffer : DEPTH;
+#endif
+};
+
+#define SSAOTermDefault 1
+
+PSOUT main(	float3  uv1 	: TEXCOORD0, 
+			float3  Normal 	: TEXCOORD1,
+			float3 t1		: TEXCOORD2,
+			float3 t2		: TEXCOORD3,
+			float3 RealPos	: TEXCOORD4
+#if DOUBLE_SIDED
+			, float Face : VFACE
+#endif
+			)
+
+{
+	PSOUT out1;
+
+#if DOUBLE_SIDED
+	[flatten]
+	if( Face < 0 )
+	{
+		Normal = - Normal;
+	}
+#endif
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy);
+
+	TexCol.rgb = TexCol.rgb * Mat_Diffuse ; 
+
+#if !FILL_ROADS
+	clip (TexCol.a - 0.25f); 
+#endif
+
+	float4 Metalness = tex2D(GlossMap, uv1.xy);
+	float3 NMap = (tex2D(NormalTex, uv1.xy).xyz)*2-1;
+	float3 DetailNMap = (tex2D(DetailNormalMap, uv1.xy*Mat_Glow.z).xyz)*2-1;
+
+	NMap.xy += DetailNMap.xy * Mat_Glow.w ;
+	NMap = normalize( NMap ) ;
+
+	// PT: not necessary here. we doing final normalize later.
+
+	float3x3 w2t; // world to tangent matrix
+	w2t = float3x3(t1, t2, Normal);
+
+	float3 vBump;
+	vBump = mul(NMap.xyz, w2t);
+
+	Normal = normalize(vBump);
+
+	float d = saturate( dot( Normal, -vSunVector ) );
+
+	out1.Color.rgb = TexCol.rgb * d ;
+
+#if FILL_ROADS
+	out1.Color.a	= TexCol.a;
+#else
+	out1.Color.a	= 1;
+#endif
+
+#if FILL_ROADS
+	float depth		= DDepth.y / ( uv1.z + DDepth.x ) + DDepth.z ;	
+	out1.DBuffer	= depth ;
+#endif
+
+	return out1;
+}

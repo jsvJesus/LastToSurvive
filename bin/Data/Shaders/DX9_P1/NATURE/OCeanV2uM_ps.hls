@@ -1,0 +1,75 @@
+#include "..\fog.hls"
+
+sampler DiffuseMap : register (s0);
+sampler DiffuseMap1 : register (s1);
+sampler DepthMap   : register (s2);
+sampler RefractMap : register (s3);
+sampler ColorTexture : register (s6);
+sampler RipplesTexture : register (s9);
+
+#include "OceanIO_ps.hls"
+
+float4 main( float3 vPos : TEXCOORD0,
+	float2 ruv: TEXCOORD1,
+	float2 ruv10: TEXCOORD2
+ ) : COLOR
+{
+	//DIRECTION TO CAMERA
+ 	float3 Vn = normalize(vPos - vCamera_Lerp.xyz);
+ 	
+	float3 Nn = float3(0,1,0);
+#if ( RIPPLES )
+	{
+		float w = simParams.x;
+		float2 ripuv = (vPos.xz - vCamera_Lerp.xz + rippleOffset.yw)*simParams.y + 0.5f;
+		float h0 = tex2D(RipplesTexture, ripuv+float2(0,0)).r;
+		float h1 = tex2D(RipplesTexture, ripuv+float2(w,0)).r;
+		float h2 = tex2D(RipplesTexture, ripuv+float2(0,w)).r;
+		float ww = 0.015f;
+		Nn = -normalize(cross( float3(ww, h1-h0, 0), float3(0, h2-h0, ww)));
+	}
+#endif
+	//NORMAL
+  	float3 nc1 = tex2D(DiffuseMap, ruv + Nn.xz/5);
+  	float3 nc2 = tex2D(DiffuseMap1, ruv + Nn.xz/5);
+ 	float3 Nn1 = 2.0f * lerp(nc1.xzy, nc2.xzy, vCamera_Lerp.w) - 1.0f;
+ 	Nn1.y *= bumpness_RefrIndex_TileSize_x10.x;
+	Nn = normalize(normalize(-Nn1)-Nn*2);
+
+	//----------------------------------------------------------
+	//Reflection component
+	float3 rflVec = reflect(Vn, Nn);
+	float3 reflectColor = texCUBE(SkyCube, rflVec).rgb;
+	reflectColor = pow(reflectColor, 2.2);
+	float3 rflPos = vPos.xyz + rflVec*10000.0f;
+
+	//----------------------------------------------------------
+	//REFRACTION
+	float3 owN = Vn + (float3(Nn.x, 0.0f, Nn.z)*(bumpness_RefrIndex_TileSize_x10.y - 1.0f))* ColTileBlend_Pert_Coast.z;
+	float4 owUV = mul(float4( owN , 1.0f), RefractViewProjTexXf);
+	float2 uvR = owUV.xy / owUV.w;
+	float3 refractColor = tex2D(RefractMap, uvR).rgb;
+	
+	float4 rfrScrPos = float4( projVal.zw * uvR + CausticDepth_Strength_projVal.zw, 1, 1);
+	rfrScrPos.xyz *= tex2D(DepthMap, uvR).r * projVal.x + projVal.y;
+	float3 rfrPos = mul(rfrScrPos, invViewMtx);
+
+	//FOG
+	float fogVal = getFogVal(rfrPos, vPos.xyz);
+	refractColor.rgb = lerp(refractColor.rgb, g_fogColor.rgb, fogVal);
+
+	//----------------------------------------------------------
+	//‘–≈Õ≈À‹
+	float4 finalColor;
+	
+	float fresnel = bumpness_RefrIndex_TileSize_x10.y + SunColor_refrIdx2.w * pow(1 + dot(Vn, Nn), 4);
+	finalColor.rgb = lerp(refractColor.rgb, reflectColor.rgb, fresnel);
+	
+	//Analyse camera underwater depth
+	float3 beamAttFactor = pow(2, length(vPos.xyz-vCamera_Lerp.xyz) * beamAttColor);
+	finalColor.rgb *= beamAttFactor;
+	finalColor.rgb += addFactor.w*saturate(1.0f - beamAttFactor * addFactor.rgb) * deepColor_SpecularCosinePower.rgb;
+
+	finalColor.a = 1;
+	return finalColor;
+}

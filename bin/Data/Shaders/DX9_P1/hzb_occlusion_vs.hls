@@ -1,0 +1,14 @@
+float2 ResultsSize : register(c0);
+
+void main( float4 vPosRadius	: POSITION,
+           float2 vPixel		: TEXCOORD0,
+           out float4 vPosOut	: POSITION,
+		   out float4 vBound	: TEXCOORD0)
+{
+    // Calculate the pixel location of this bounds information so that we can encode it into
+    // the render target at an 'index' we can read back later.
+    vPosOut = float4((vPixel.x / ResultsSize.x * 2) - 1, (vPixel.y / ResultsSize.y * -2) + 1, 0, 1);
+    
+    // Bounding sphere center (XYZ) and radius (W), world space
+    vBound = vPosRadius;
+}

@@ -1,0 +1,84 @@
+// Enter your shader in this window//
+sampler Tex 											: register ( s0 );
+
+#ifndef NUM_TAPS
+#define NUM_TAPS 4
+#endif
+
+float4 	TapStep[ NUM_TAPS / 2 + NUM_TAPS % 2 ]			: register ( c0 );
+
+#define NUM_COEFS ( NUM_TAPS + 1 )
+
+float4 	BlurCoef[ NUM_COEFS / 4 + !!( NUM_COEFS % 4 ) ]	: register ( c4 );
+
+float4	AlphaMultiply									: register ( c8 );
+
+float4	DepthParms										: register ( c9 );
+
+
+float GetBlurCoef( int idx )
+{
+	return BlurCoef[ idx / 4 ][ idx % 4 ];
+}
+
+
+bool CompareDepth( float a, float b )
+{
+	return a >= b;
+}
+
+#define GLOW_AMPLIFY 8.f
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+	float4 color = tex2D( Tex, texc );
+
+
+	float ccoef = GetBlurCoef( 0 );
+
+#ifdef PRESERVE_GLOW
+//	ccoef *= 1.f + GLOW_AMPLIFY * color.a ;
+#endif
+	color *= ccoef ;
+
+	float gw = ccoef ;
+
+	[unroll]
+	for( int i=0; i < NUM_TAPS / 2; ++i )
+	{
+		float2 step = i % 2 ? TapStep[ i / 2 ].zw : TapStep[ i / 2 ].xy;
+
+		float coef = GetBlurCoef( i * 2 + 1 );
+
+
+		float4 s0 = tex2D( Tex, texc + step ) ;
+		float4 s1 = tex2D( Tex, texc - step ) ;
+
+		float c0 = coef, c1 = coef ;
+
+#ifdef PRESERVE_GLOW
+//		c0 *= 1 + s0.a * GLOW_AMPLIFY;
+//		c1 *= 1 + s1.a * GLOW_AMPLIFY;
+		
+//		gw += c0 ;
+//		gw += c1 ;
+#endif
+
+		color += s0 * c0 ;
+		color += s1 * c1 ;
+	}
+
+
+#ifdef PRESERVE_GLOW
+//	color /= gw * 0.985;
+#endif
+
+
+	color.a *= AlphaMultiply.x ;	
+
+	color_out = color ;
+}

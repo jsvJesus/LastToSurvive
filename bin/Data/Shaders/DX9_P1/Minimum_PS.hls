@@ -1,0 +1,46 @@
+// Enter your shader in this window//
+sampler Tex0 											: register ( s0 );
+sampler Tex1 											: register ( s1 );
+
+float4 PCF_Params0 : register( c0 );
+float4 PCF_Params1 : register( c1 );
+float4 PCF_Params2 : register( c2 );
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+#if USE_PCF
+
+	float2 texScale		= PCF_Params0.xy;
+	float2 invTexScale	= PCF_Params0.zw;
+
+	float2 dTexc0       = PCF_Params1.xy;
+	float2 dTexc1       = PCF_Params1.zw;
+	float2 dTexc2       = PCF_Params2.xy;
+	float2 dTexc3       = PCF_Params2.zw;
+
+	float2 pixelTexc = texc * texScale;
+	float2 subPixelTexc = frac( pixelTexc );
+	pixelTexc -= subPixelTexc;
+	pixelTexc *= invTexScale;
+
+	float4 val00 = tex2D( Tex0, pixelTexc + dTexc0 );
+	float4 val10 = tex2D( Tex0, pixelTexc + dTexc1 );
+	float4 val01 = tex2D( Tex0, pixelTexc + dTexc2 );
+	float4 val11 = tex2D( Tex0, pixelTexc + dTexc3 );
+
+	float4 val0 = lerp( 
+					lerp( val00, val10, subPixelTexc.x ),
+					lerp( val01, val11, subPixelTexc.x ),
+						subPixelTexc.y );
+#else
+	float4 val0 = tex2D( Tex0, texc );
+#endif
+
+	float4 val1 = tex2D( Tex1, texc );
+
+	color_out = min( val0, val1 );
+}

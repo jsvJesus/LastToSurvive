@@ -1,0 +1,25 @@
+sampler Screen 		: register(s0);
+sampler Particle	: register(s1);
+sampler Distort		: register(s2);
+
+float4 main(float2 uv1      : TEXCOORD0): COLOR
+{
+	float4 screenColor = tex2D(Screen, uv1);
+	float2 distort = tex2D(Distort, uv1).rg*2-1;
+	float alpha = tex2D(Particle, uv1).a;
+	
+#if 0
+	distort *= alpha;
+#endif
+	
+	if(dot(distort, distort)==0.0f)
+		return screenColor;
+	float delta = 0.03f;
+	// make sure that we are not trying to sample from outside of screen
+	delta = lerp(0, delta, saturate(uv1.x*40)); 
+	delta = lerp(0, delta, saturate(uv1.y*40)); 
+	delta = lerp(0, delta, saturate((1-uv1.x)*40)); 
+	delta = lerp(0, delta, saturate((1-uv1.y)*40)); 
+
+	return tex2D(Screen, saturate(uv1+distort*delta));
+}

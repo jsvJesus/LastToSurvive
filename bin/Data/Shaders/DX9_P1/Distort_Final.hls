@@ -1,0 +1,19 @@
+
+// Final Compositing using DistortionBuffer
+
+sampler Screen : register (s0);
+sampler DistortTex : register (s1);
+
+
+half4 main(half2 uv1 : TEXCOORD0 ) : COLOR
+{
+ half4 t1 = tex2D(DistortTex, uv1);
+ t1.rg -= 0.5f/255.0f;
+
+ half2 uv2 = uv1 + ((t1.rg - 0.5f)*2.0f)*0.25f;
+
+ half4 t2 = tex2D(Screen, uv2);
+ t2.a = 1;
+
+ return t2;
+}

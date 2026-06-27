@@ -1,0 +1,181 @@
+sampler	texmap    	: register (s0);
+sampler	reliefmap 	: register (s1);
+
+//float4	vAmbientColor	: register(??);
+//float4	vDiffuseColor	: register(??);
+//float4	vSpecularColor	: register(??);
+//float 	fShine		: register(??);
+
+float ray_intersect_rm(			// use linear and binary search
+      in sampler2D reliefmap,
+      in float2 dp, 
+      in float2 ds)
+{
+   const int linear_search_steps=8;
+   
+   // current size of search window
+   float size=1.0/linear_search_steps;
+   // current depth position
+   float depth=0.0;
+
+   // search front to back for first point inside object
+   for( int i=0;i<linear_search_steps-1;i++ )
+   {
+		float4 t=tex2D(reliefmap,dp+ds*depth);
+
+		if (depth<t.w)
+			depth+=size;
+   }
+   
+   const int binary_search_steps=8;
+
+   // recurse around first point (depth) for closest match
+   for( int i=0;i<binary_search_steps;i++ )
+   {
+		size*=0.5;
+		float4 t=tex2D(reliefmap,dp+ds*depth);
+		if (depth<t.w)
+			depth+=2*size;
+		depth-=size;
+   }
+
+   return depth;
+}
+
+
+
+
+float4 ReliefMap(
+	float4 in_color    : COLOR0,
+	float2 in_txcoord  : TEXCOORD0,
+	float3 in_vpos     : TEXCOORD1,
+	float3 in_tangent  : TEXCOORD2,
+	float3 in_binormal : TEXCOORD3,
+	float3 in_normal   : TEXCOORD4,
+	float4 in_lightpos : TEXCOORD5)
+	: COLOR
+{
+	float4 t,c;
+	float3 p,v,l,s;
+	float2 dp,ds,uv;
+	float d,a;
+
+	float depth = 0.004f;
+	float tile = 1.0f;
+
+	// ray intersect in view direction
+	p  = in_vpos;
+	v  = normalize(p);
+	a  = dot(in_normal,-v);
+	s  = float3(dot(v,in_tangent.xyz), dot(v,in_binormal.xyz), a);
+	s  *= depth/a;
+	ds = s.xy;
+	dp = in_txcoord*tile;
+	d  = ray_intersect_rm(reliefmap,dp,ds);
+
+	// get rm and color texture points
+	uv=dp+ds*d;
+	t=tex2D(reliefmap,uv);
+	c=tex2D(texmap,uv);
+
+	// expand normal from normal map in local polygon space
+	t.xyz-=0.5;
+//	t.xyz = t.xyz*2-1;
+	t.xyz=normalize(t.x*in_tangent.xyz-t.y*in_binormal.xyz+t.z*in_normal.xyz);
+
+	// compute light direction
+	p += v*d/(a*depth);
+	l=normalize(p-in_lightpos.xyz);
+
+	float l1 = distance(in_lightpos.xyz,in_vpos);
+        
+	float att1  = 1.0f - saturate(l1/2000.0f);
+
+	// compute diffuse and specular terms
+	float att=1;//saturate(dot(-l,in_normal));
+	float diff= saturate(dot(-l,t.xyz));
+	float spec= 0;saturate(dot(normalize(-l-v),t.xyz));
+
+	// compute final color
+	float4 finalcolor;
+	finalcolor.xyz= float4(0.1f, 0.1f, 0.1f, 1)*c + float4(1.0f, 1.0f, 1.0f, 1)*att*(c*diff+pow(spec,16)*c*2);
+	finalcolor.w=1.0;
+
+	return finalcolor;
+}
+
+
+
+float4 ParallaxMap(
+	float4 in_color    : COLOR0,
+	float2 in_txcoord  : TEXCOORD0,
+	float3 in_vpos     : TEXCOORD1,
+	float3 in_tangent  : TEXCOORD2,
+	float3 in_binormal : TEXCOORD3,
+	float3 in_normal   : TEXCOORD4,
+	float4 in_lightpos : TEXCOORD5)
+	: COLOR
+{
+   	// view and light directions
+	float3 v = normalize(in_vpos);
+	float3 l = normalize(in_lightpos.xyz-in_vpos);
+
+	float tile = 1.0f;
+
+	float2 uv = in_txcoord*tile;
+
+	// parallax code
+	float3x3 tbn = float3x3(in_tangent,in_binormal,in_normal);
+	float height = tex2D(reliefmap,uv).w * 0.08 - 0.04;
+	uv += height * mul(tbn,v);
+
+	// normal map
+	float4 normal=tex2D(reliefmap,uv);
+	normal.xyz-=0.5; 
+	
+	// transform normal to world space
+	normal.xyz=normalize(normal.x*in_tangent-normal.y*in_binormal+normal.z*in_normal);
+
+	// color map
+	float4 color=tex2D(texmap,uv);
+
+	float l1 = distance(in_lightpos.xyz,in_vpos);
+      
+	float att1  = 1.0f - saturate(l1/200.0f);
+
+	// compute diffuse and specular terms
+	float att  = saturate(dot(l,in_normal.xyz));
+	float diff = saturate(dot(l,normal.xyz));
+	float spec=0; //saturate(dot(normalize(l-v),normal.xyz));
+
+	// compute final color
+	float4 finalcolor;
+	finalcolor.xyz=float4(0.1f, 0.1f, 0.1f, 1)*color.xyz+
+		att*(color.xyz*diff+pow(spec, 16)*color.xyz*2);
+
+	finalcolor.w=1.0;
+
+	return finalcolor;
+}
+
+
+
+
+float4 main(
+	float4 in_color    : COLOR0,
+	float2 in_txcoord  : TEXCOORD0,
+	float3 in_vpos     : TEXCOORD1,
+	float3 in_tangent  : TEXCOORD2,
+	float3 in_binormal : TEXCOORD3,
+	float3 in_normal   : TEXCOORD4,
+	float4 in_lightpos : TEXCOORD5)
+	: COLOR
+{
+ //return tex2D(texmap,in_txcoord);
+ 
+  return ReliefMap (in_color, in_txcoord, in_vpos, in_tangent, in_binormal, in_normal, in_lightpos);
+//  return ParallaxMap (in_color, in_txcoord, in_vpos, in_tangent, in_binormal, in_normal, in_lightpos);
+}
+
+
+

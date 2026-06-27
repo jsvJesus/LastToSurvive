@@ -1,0 +1,18 @@
+
+#include "postfx_common.h"
+
+void main
+(
+	float4 position	: POSITION,
+	float4 color	: COLOR,
+	float2 uv1	: TEXCOORD0,
+
+	out float4 oPosition : POSITION,
+	out float2 ouv1    : TEXCOORD0,
+	out float4 PosOut  : COLOR0
+)
+{
+	oPosition = position;
+	PosOut = position;
+	ouv1 = uv1 * g_vTexcTransform.xy + g_vTexcTransform.zw;
+}

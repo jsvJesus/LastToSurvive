@@ -1,0 +1,154 @@
+#include "fog.hls"
+
+float4x4 View		: register(c0);
+float4x4 Projection : register(c4);
+float4 camPos		: register(c8);
+float4 lightDir		: register(c9);
+float4 tileSize		: register(c12);
+float4 shift		: register(c14);
+
+float4 CamInvDepth : register (c15);
+
+float4 pointLight[4]		: register(c17);
+float4 pointLightColor[4]	: register(c21);
+float4 pointLightsCount		: register(c25);
+
+float4 gradientLow		: register(c26);
+float4 gradientHigh		: register(c27);
+float4 rects[64]		: register(c28);
+
+
+sampler2D cloudRef: register(s2);
+sampler2D cloudPos : register(s3);
+
+
+
+float2 unpack2(float v)
+{
+	float i1 = fmod( v, 4096.0f );
+	float i0 = (v-i1) / 4096.0f;
+	return float2( i0, i1 ) / 4096.0f;
+}
+
+void main(		in float3 iPos  : POSITION,
+				in float2 iTexCoord0		: TEXCOORD0,
+				in float4 ipartInst_RotFade : TEXCOORD1,
+				
+				out float4 oPos				: POSITION,
+				out float2 oTexCoord0		: TEXCOORD0,
+				out float ofade				: TEXCOORD1,
+				out float ospecular			: TEXCOORD2,
+				out float4 oSH				: TEXCOORD3,
+				out float4 ovTexOutPos		: TEXCOORD4,
+				out float oFogVal			: TEXCOORD5,
+				out float3 oPointColor		: TEXCOORD6,
+				out float3 oGradient		: TEXCOORD7
+				)
+{
+	//float2 partInst = unpack2(ipartInst_RotFade.x);
+	float particleIdx = ipartInst_RotFade.x;
+	float instanceIdx = ipartInst_RotFade.z;
+	
+	float ppc_u;
+	float ppc_v = modf(instanceIdx*tileSize.w, ppc_u);
+	float4 cloudInst = tex2Dlod(cloudPos, float4(ppc_v+0.5f/tileSize.w, (ppc_u+0.5f)/tileSize.w, 0,0));
+
+	float2 scaleHeight = unpack2(cloudInst.g) * float2(100.0f, 16.0f*60.0f);
+
+	float4 f0 = tex2Dlod(cloudRef, float4(particleIdx.x, cloudInst.r, 0,0));
+	float3 WPos;
+	float2 wpXY = unpack2(f0.a);
+	WPos.xy = wpXY;
+	
+	float4 posRotate = float4( unpack2(cloudInst.a), unpack2(cloudInst.b));
+	
+	float2 zSI = unpack2(f0.r);
+	WPos.z = zSI.x;
+
+	float scale = scaleHeight.x * 16.0f*60.0f;
+	WPos *= scale;
+	//WPos.xz -= 0.5f * scale;
+	float size = 240 * scaleHeight.x;
+	
+	float sangle;
+	float cangle;
+	sincos(posRotate.w*2.0*3.1415926f, sangle, cangle);
+	
+	float2 tXZ = WPos.xz;
+	WPos.x = cangle * tXZ.x + sangle * tXZ.y;
+	WPos.z = -sangle * tXZ.x + cangle * tXZ.y;
+	
+	float3 wp;
+	wp.xyz = posRotate.xyz * 100000.0f;
+
+	float2 rotFade = ipartInst_RotFade.yw;//unpack2(ipartInst_RotFade.y);
+
+
+	wp.xz += shift.xz;
+	wp.x += camPos.x - frac(camPos.x / tileSize.x)* tileSize.x;
+	wp.z += camPos.z - frac(camPos.z / tileSize.z)* tileSize.z;
+	float3 dx = camPos.xyz - wp;
+	if(abs(dx.x)>tileSize.y)	wp.x += sign(dx.x)*tileSize.x;
+	if(abs(dx.z)>tileSize.y)	wp.z += sign(dx.z)*tileSize.z;
+
+	oGradient = lerp(gradientLow, gradientHigh, WPos.y/scaleHeight.y);
+	
+	WPos += wp;	  
+	
+	
+	float Sin, Cos;
+	sincos( rotFade.x*2.0f*3.1415926f, Sin, Cos );
+	float3 Pos;
+	Pos.x = iPos.x * Cos - iPos.y * Sin;
+	Pos.y = iPos.x * Sin + iPos.y * Cos;
+	Pos.z = iPos.z;
+
+	float3 zdir = normalize(WPos - camPos.xyz);
+	float3 ydir = float3(0,1,0);
+	float3 xdir = normalize( cross(zdir, ydir) );
+	ydir = cross(xdir, zdir);
+	float3 D = size * mul( float3(-Pos.x, Pos.y, 0), float3x3(xdir, ydir, zdir) );
+	float3 P = mul( float4( D + WPos, 1 ), View ).xyz;
+
+	float3 PP = size *Pos + mul( float4( WPos, 1 ), (float4x3)View );
+	
+	float d2c = distance(WPos, camPos.xyz);
+	if(d2c>2)	ofade = 1;
+	else	ofade = d2c*0.33333 + 0.3333f;
+	ofade *= rotFade.y;
+	if(ofade>1.0f)	ofade = 1.0f;
+	
+//ofade = 1.0f;
+//if(abs(WPos.x - 818.46429f)<0.0001f) ofade = 0.5f;
+//if(abs(wpXY.x - 0.393798828125)<0.00001f) ofade = 0.5f;
+//if(abs(scaleHeight.x - 1.1962891)<0.00001f) ofade = 0.5f;
+
+
+
+
+	float k = 1 - d2c*2.0f;
+	if(k<0)	k = 0;
+	float3 pp = lerp(P, PP, k);
+   	oPos  = mul( float4( pp, 1 ), Projection );
+	ovTexOutPos = oPos;
+
+	oTexCoord0.xy = lerp(rects[(int)(zSI.y*63)].xy, rects[(int)(zSI.y*63)].zw, iTexCoord0.xy);
+
+	float ld = clamp( dot( normalize(WPos - camPos.xyz), lightDir.xyz ), 0, 1 );
+	ospecular = pow( ld, 30);
+	
+	oSH = float4( unpack2(f0.g), unpack2(f0.b) ) * 8.0f - 4.0f;
+
+	oPointColor = 0;
+
+ 	
+	int count = pointLightsCount.x;
+	[loop]
+  	for(int i = 0; i < count; ++i)
+ 	{
+		float dist = distance(pointLight[i].xyz, WPos);
+		oPointColor +=  (pointLightColor[i].w / pow(dist, 2.0f)) * pointLightColor[i].rgb;
+	}
+	
+	oFogVal = getFogVal(camPos.xyz, WPos.xyz);
+}

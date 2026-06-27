@@ -1,0 +1,43 @@
+float4x4 mC2W : register(c0);  // inverse matrix of world to projection matrix
+float2   vPix : register(c4);  // 0.5f/texture size
+float4   vOff : register(c5);  // parameter to compute blur direction
+
+
+
+//------------------------------------------------
+// vertex shader input 
+//------------------------------------------------
+struct SVSInput {
+	float4 vPosC : POSITION0;
+	float2 vTex : TEXCOORD0;
+};
+
+//------------------------------------------------
+// vertex shader output
+//------------------------------------------------
+struct SVSOutput {
+	float4 vWorldPos : TEXCOORD0;
+	float4 vTex : TEXCOORD1;
+	float4 vPos : POSITION0;
+};
+
+
+//------------------------------------------------
+// vertex shader
+//------------------------------------------------
+
+void main( out SVSOutput _Output, in SVSInput _Input )
+{
+	// projection position
+	_Output.vPos = float4( _Input.vPosC.xy, 0.5f, 1 );
+
+	// transform projection space to world space 	
+	_Output.vWorldPos = mul( _Input.vPosC, mC2W );
+
+	// uv 
+	_Output.vTex.xy = _Input.vTex + vPix;
+
+	// compute blur direction 
+	_Output.vTex.zw = _Input.vTex * vOff.xy + vOff.zw;
+
+}

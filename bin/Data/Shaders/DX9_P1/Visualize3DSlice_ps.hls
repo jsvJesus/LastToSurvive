@@ -1,0 +1,8 @@
+//
+
+sampler tex : register( s0 );
+
+float4 main( float3 coords : TEXCOORD0 ) : COLOR
+{
+	return tex3D( tex, coords );
+}

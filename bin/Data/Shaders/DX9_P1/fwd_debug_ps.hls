@@ -1,0 +1,14 @@
+//
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+};
+
+PSOUT main(	in float4 colorin : COLOR0)
+{
+	PSOUT out1;
+
+	out1.Color = colorin;
+	return out1;
+}

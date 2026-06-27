@@ -1,0 +1,31 @@
+
+float3 LastMipInfo : register(c0); // x = width, y = height, z = mip level
+sampler LastMip : register(s0);
+
+float4 main( in float4 Position   : POSITION0,
+           in float4 PositionSS : VPOS ) : Color0
+{
+    float width = LastMipInfo.x;
+    float height = LastMipInfo.y;
+    float mip = LastMipInfo.z;
+    
+    // get the upper left pixel coordinates of the 2x2 block we're going to downsample.
+    // we need to muliply the screenspace positions components by 2 because we're sampling
+    // the previous mip, so the maximum x/y values will be half as much of the mip we're
+    // rendering to.
+    float2 Coords0 = float2((PositionSS.x * 2) / width, (PositionSS.y * 2) / height);
+    
+    float2 Coords1 = float2(Coords0.x + (1 / width), Coords0.y);
+    float2 Coords2 = float2(Coords0.x, Coords0.y + (1 / height));
+    float2 Coords3 = float2(Coords1.x, Coords2.y);
+    
+    // fetch a 2x2 neighborhood and compute the max
+    float4 vTexels;
+    vTexels.x = tex2Dlod( LastMip, float4(Coords0, 0, mip) ).x;
+    vTexels.y = tex2Dlod( LastMip, float4(Coords1, 0, mip) ).x;
+    vTexels.z = tex2Dlod( LastMip, float4(Coords2, 0, mip) ).x;
+    vTexels.w = tex2Dlod( LastMip, float4(Coords3, 0, mip) ).x;
+    float fMaxDepth = max( max( vTexels.x, vTexels.y ), max( vTexels.z, vTexels.w ) );
+        
+    return fMaxDepth;
+}

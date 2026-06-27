@@ -1,0 +1,33 @@
+//
+
+float4 TexXfm[ 3 ] : register( c0 );
+
+float4 PosXfm : register( c3 );
+
+float4 TexcSwapArg : register( c4 );
+
+float2 SwapTexc( float2 texc, float arg )
+{
+	[ flatten ]
+	if( arg > 0.5 )
+	{
+		return texc.yx;
+	}
+	else
+	{
+		return texc.xy;
+	}
+}
+
+void main(	inout float4 Pos : POSITION,
+			in float2 Texc : TEXCOORD0,
+			out float4 Texc0_Texc1 : TEXCOORD0,
+			out float4 Texc2 : TEXCOORD1 )
+{
+	Pos.xy = Pos.xy * PosXfm.xy + PosXfm.zw;
+
+	Texc0_Texc1.xy = SwapTexc( Texc, TexcSwapArg.x ) * TexXfm[ 0 ].xy + TexXfm[ 0 ].zw;
+	Texc0_Texc1.zw = SwapTexc( Texc, TexcSwapArg.y ) * TexXfm[ 1 ].xy + TexXfm[ 1 ].zw;
+
+	Texc2.xy = SwapTexc( Texc, TexcSwapArg.z ) * TexXfm[ 2 ].xy + TexXfm[ 2 ].zw;
+}

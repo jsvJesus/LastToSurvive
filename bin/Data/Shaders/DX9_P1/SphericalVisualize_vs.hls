@@ -1,0 +1,15 @@
+//
+float4x3 matW : register( c0 ) ;
+
+float4x4 matVP : register( c3 ) ;
+
+void main(	in float4 iPos : POSITION,
+			out float4 oPos : POSITION,
+			
+			out float3 oSpherePos : TEXCOORD0 )
+{
+	float4 wpos = float4( mul( iPos, matW ).xyz, 1 ) ;
+	oPos = mul( wpos, matVP ) ;
+
+	oSpherePos = iPos ;	
+}

@@ -1,0 +1,75 @@
+#ifndef VS_LQ
+#define VS_LQ 0
+#endif
+
+#include "..\System\IOParam\IODefine_VS.hls"
+
+float4 vPixOffset_NormalMapFadeK	: register( c30 );
+float4 vTexcTransform0				: register( c31 );
+float4 vTexcTransform1				: register( c32 );
+float4 vTexcTransSel				: register( c33 );
+float2 vSignSel						: register( c34 );
+
+float3 UnpackNormal(float2 pn)
+{
+#if VS_LQ
+	pn = pn * 2 / 255.f - 1  ;
+#else
+	pn = pn * 2 - 1;
+#endif
+
+	float y = sqrt(saturate(1 - pn.x*pn.x - pn.y*pn.y));
+
+	float3 rv = float3(pn.y, y, pn.x);
+	
+	return rv;
+}
+
+VertTerrOutMP_t main( VertexType IN )
+{ 
+	VertTerrOutMP_t OUT;
+
+	TerrVertData_t res = CalcTerrainVertData( IN );	
+
+	float4 wPos = float4( res.vPos, 1 );
+	
+	float4 PosT = mul( wPos, mProj );
+
+	OUT.vPosOut = PosT;
+	OUT.vPos_vTexOutSM.xyz = res.vPos.xyz;
+	OUT.vPos_vTexOutSM.w = PosT.w;
+
+	OUT.vColor_FadeK.w = saturate ( PosT.w * vPixOffset_NormalMapFadeK.z + vPixOffset_NormalMapFadeK.w );
+	
+#if VS_LQ
+	float3 vNormal = UnpackNormal(IN.vHeightAndNormal.zw);	
+	OUT.vNormal = vNormal ;
+#else
+	float3 vNormal = UnpackNormal(IN.vNormals.bg);	
+	float3 vMorthNormal = UnpackNormal(IN.vNormals.ra);
+	OUT.vNormal = lerp( vNormal, vMorthNormal, IN.fMorthMask * res.fLerp );
+#endif
+	
+	OUT.vColor_FadeK.xyz = IN.vColor.xyz;
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//	>	UV
+	//
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	OUT.vTexOut1.xy = res.vPos.xz * WorldScale.xx; // world 
+	OUT.vTexOut1.y = 1 - OUT.vTexOut1.y;
+	
+	OUT.vTexOut1.xy += vPixOffset_NormalMapFadeK.xy;
+
+	OUT.vTexOut1.z = dot( wPos, vTexcTransform0 );
+	OUT.vTexOut1.w = dot( wPos, vTexcTransform1 );
+
+	OUT.vSelectConform = vTexcTransSel;
+	OUT.vSelectSign    = vSignSel;
+	
+	return OUT;
+	
+}
+

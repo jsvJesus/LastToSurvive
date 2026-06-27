@@ -1,0 +1,138 @@
+// Set for each tree
+float4x4 mProj 				: register(c0);
+float4x3 mWorld 			: register(c4);
+float4x3 mNormal			: register(c7);
+float4x3 mWorldView			: register(c10);
+float4x3 mNormalView		: register(c13);
+
+// general parameters
+float3	vCamera				: register(c15);
+float2	vTexcUnpackScale	: register(c16);
+
+
+float4x4 mProjective 		: register(c20);
+
+float4   WorldScale  		: register( c24 );
+float4x3 mMirror  			: register( c25 );
+float4   vCamT 				: register( c28 );
+float4   vMorphF_HMinMax	: register( c29 );
+
+float4  vParaboloidParams   : register( c30 );
+
+
+
+struct VertTerrIn_t
+{
+	float4	vPos		: POSITION;
+	float2	fHeightDelta: TEXCOORD0;
+	float4	vNormals	: COLOR0;
+	float4	vColor		: COLOR1;
+	float	fMorthMask	: TEXCOORD1;
+};
+
+struct VertTerrInLQ
+{
+	float4	vPos				: POSITION;
+	float4	vHeightAndNormal	: TEXCOORD0;
+	float4	vColor				: COLOR0;
+};
+
+struct VertTerrOut_t
+{
+	float4 vPosOut: POSITION;
+	float2 vTexOut1: TEXCOORD0;
+
+	float3 vUV0: TEXCOORD1;
+	float3 vUV1: TEXCOORD2;
+	float3 vUV2: TEXCOORD3;
+	float3 vUV3: TEXCOORD4;
+	float3 vUV4: TEXCOORD5;
+
+	float4 vPos_vTexOutSM : TEXCOORD6;
+	float3 vNormal: TEXCOORD7;
+	float4 vColor_FadeK: COLOR0;
+};
+
+struct VertTerrOutMP_t
+{
+	float4 vPosOut        : POSITION ;
+
+	float4 vTexOut1       : TEXCOORD0 ;
+
+	float4 vPos_vTexOutSM : TEXCOORD1 ;
+	float3 vNormal        : TEXCOORD2 ;
+
+	float4 vSelectConform : TEXCOORD3 ;
+	float2 vSelectSign    : TEXCOORD4 ;
+
+	float4 vColor_FadeK   : COLOR0 ;
+
+};
+
+struct TerrVertData_t
+{	
+	float3 vPos; 
+	float fLerp; 
+};
+
+float UnpackHeight(float ph)
+{
+	float mulF = vMorphF_HMinMax.y;
+	float addF = vMorphF_HMinMax.z;
+	return ph * mulF + addF;
+}
+
+float UnpackHeightLQ(float2 hh)
+{
+	float mulF = vMorphF_HMinMax.y;
+	float addF = vMorphF_HMinMax.z;
+	return ( hh.x + hh.y * 256.f ) * mulF + addF;
+}
+
+float UnpackDelta(float pd)
+{
+	float halfRange = vMorphF_HMinMax.y;
+	return pd * halfRange;
+}
+
+#if VS_LQ
+#define VertexType VertTerrInLQ
+#else
+#define VertexType VertTerrIn_t
+#endif
+
+TerrVertData_t CalcTerrainVertData( VertexType IN )
+{
+	TerrVertData_t res;
+	
+#ifdef ORTHO_DIFFUSE
+	res.vPos = IN.vPos;
+
+	res.vPos.x = res.vPos.x * vCamT.y + vCamT.x;
+	res.vPos.z = res.vPos.z * vCamT.y + vCamT.z;
+#else
+	res.vPos = mul( IN.vPos, mMirror );
+#endif
+
+#if VS_LQ
+	float fHeight = UnpackHeightLQ(IN.vHeightAndNormal.xy);
+	float fDelta = 	0.f;
+#else
+	float fHeight = UnpackHeight(IN.fHeightDelta.x);
+	float fDelta = UnpackDelta(IN.fHeightDelta.y);
+#endif
+
+#if defined(ORTHO_DIFFUSE) || VS_LQ
+	float fMorphHeight = 0.;
+	res.fLerp = 0.;
+#else
+	res.fLerp = vMorphF_HMinMax.x;
+	float fMorphHeight = fDelta * IN.fMorthMask * res.fLerp;
+#endif
+			
+	res.vPos.y = fHeight + fMorphHeight;
+	
+	return res;	
+}
+	
+

@@ -1,0 +1,17 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         float4 Diffuse: COLOR0: register(v5),
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vTexOut1 = vUV1;
+}

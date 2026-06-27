@@ -1,0 +1,23 @@
+sampler Screen:		register ( s0 );
+
+float4 BlurParams:	register ( c0 );
+
+#define NUM_SAMPLES 8
+
+float4 main( float2 texcoord : TEXCOORD0 ) : COLOR0
+{
+	half density = BlurParams.z / 2;
+	const half2 blurCenter = BlurParams.xy;
+
+	half2 deltaTexcoord = blurCenter - texcoord;
+	deltaTexcoord *= (1.0 / NUM_SAMPLES) * density;
+
+	half3 color = 0;
+	for (int i = 0; i < NUM_SAMPLES; i++)
+	{
+		texcoord += deltaTexcoord;
+		color += tex2D(Screen, texcoord).rgb;
+	}
+	
+	return float4(color * (1.0 / NUM_SAMPLES), 1);
+}

@@ -1,0 +1,142 @@
+// Final Compositing using DistortionBuffer
+
+sampler DepthTex : register (s0);
+sampler NormalTex : register (s1);
+sampler RotTexture4x4 : register (s2);
+
+
+
+
+
+half4 CalcSSAO1(float2 uv1, float Scale) 
+{
+ float fSceneDepth = tex2D(DepthTex, uv1).r;
+
+ const int NumSamples = 16;
+ float OffsetScale = Scale;
+ const float OffsetScaleStep = 1 + 2.4/NumSamples;
+ 
+ const float2 ScreenSize = float2(1280, 720);
+
+ float2 rotationuv = uv1 * ScreenSize/4;
+ float3 vRotation = 2*tex2D(RotTexture4x4, rotationuv).rgb-1;
+
+
+
+ float3x3 rotMat;
+
+ float h = 1 / (1+vRotation.z);
+
+ rotMat._m00 = h*vRotation.y*vRotation.y+vRotation.z;
+ rotMat._m01 = -h*vRotation.y*vRotation.x;
+ rotMat._m02 = -vRotation.x;
+ rotMat._m10 = -h*vRotation.y*vRotation.x;
+ rotMat._m11 = h*vRotation.x*vRotation.x+vRotation.z;
+ rotMat._m12 = -vRotation.y;
+ rotMat._m20 = vRotation.x;
+ rotMat._m21 = vRotation.y;
+ rotMat._m22 = vRotation.z;
+
+
+
+ float AO = 0;
+
+ for (int i=0;i<NumSamples/8;i++)
+ {
+    for (int x=-1;x<=1;x+=2)
+    for (int y=-1;y<=1;y+=2)
+    for (int z=-1;z<=1;z+=2)
+    {
+      float3 Offset = normalize(float3(x,y,z))*( OffsetScale*= OffsetScaleStep); 
+
+      float3 RotateOffset = mul(Offset, rotMat); 	
+
+     
+      float3 SamplePos = float3(uv1, fSceneDepth);
+
+      SamplePos += float3(RotateOffset.xy, RotateOffset.z*fSceneDepth*2);
+
+      float fSceneDepthS = tex2D(DepthTex, SamplePos.xy).r;
+
+      float RangeIsInvalid = saturate(((fSceneDepth - fSceneDepthS)/(fSceneDepthS)));
+
+      float AOS = 0.0f;
+
+//      if (fSceneDepthS > SamplePos.z) AOS = 0.5f;
+
+      AO += lerp((fSceneDepthS > SamplePos.z), 1.0, RangeIsInvalid);
+//      AO += (fSceneDepthS > SamplePos.z); 
+    }
+ }
+  
+
+    
+  AO = AO / NumSamples;
+
+ return float4(AO,AO,AO,1);
+}
+
+
+
+
+half4 CalcSSAO2(float2 uv1, float Scale) 
+{
+ float fSceneDepth = tex2D(DepthTex, uv1).r;
+
+ const int NumSamples = 4*9;
+ float OffsetScale = Scale;
+ const float OffsetScaleStep = 1 + 2.4/NumSamples;
+ 
+ const float2 ScreenSize = float2(1280, 720);
+ const float2 PixSize = float2(1/1280, 1/720);
+
+ float AO = 0;
+
+ for (int i=0;i<NumSamples/9;i++)
+ {
+  for (int x=-3;x<=3;x+=2)
+  for (int y=-3;y<=3;y+=2)
+  {
+   float2 Offset = float2(x,y);//*( OffsetScale*= OffsetScaleStep); 
+
+   float2 rotationuv = (uv1+Offset*PixSize); // * ScreenSize/4;
+   float2 vRotation = (2*tex2D(RotTexture4x4, rotationuv).rg-1);
+
+      float fSceneDepthS = tex2D(DepthTex,rotationuv).r;
+
+      float RangeIsInvalid = saturate(((fSceneDepth - fSceneDepthS)/(fSceneDepthS)));
+
+      float AOS = 0.0f;
+
+//      if (fSceneDepthS > fSceneDepthS) AOS = 0.5f;
+
+//      AO += lerp((fSceneDepthS > fSceneDepthS), 1.0, RangeIsInvalid);
+      AO += (fSceneDepthS < fSceneDepth); 
+    }
+ }
+  
+
+    
+//  AO = AO / NumSamples;
+
+ return float4(AO,AO,AO,1);
+}
+
+
+
+
+
+
+
+
+
+
+half4 main(half2 uv1 : TEXCOORD0 ) : COLOR
+{
+// half4 SSAO1 = CalcSSAO1(uv1, 0.0025);//+0.5f;
+ half4 SSAO1 = CalcSSAO1(uv1, 0.01);//+0.5f;
+// half4 SSAO1 = CalcSSAO2(uv1, 0.01);//+0.5f;
+
+ return saturate(SSAO1*SSAO1+SSAO1);
+}
+

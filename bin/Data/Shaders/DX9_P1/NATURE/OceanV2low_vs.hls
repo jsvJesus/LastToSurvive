@@ -1,0 +1,32 @@
+#include "..\fog.hls"
+
+float4x4 mProj : register(c0);
+float4  WaveParam  : register(c5);
+float3 vCamera  : register(c8);
+float4 bumpness_RefrIndex_TileSize	: register(c22);
+float4x4 RefractViewProjTexXf : register (c23);
+
+void main( float4 vPos: POSITION,
+#if ( WATER_PLANE )
+            float3 vNormal : NORMAL,
+            out float3 vNormalOut : TEXCOORD4,
+#endif
+    		out float4 vPosOut: POSITION,
+			out float3 vRealPosOut: TEXCOORD0,
+			out float2 vUVOut: TEXCOORD1,
+			out float4 texCoordV: TEXCOORD2,
+			out float vFogOut: TEXCOORD3
+       )
+{
+  	vPosOut = mul( vPos, mProj );
+	vRealPosOut = vPos;
+#if ( WATER_PLANE )
+	vNormalOut = vNormal;
+#else
+	vRealPosOut.y = WaveParam.z;
+#endif
+	vUVOut = vPos.xz * bumpness_RefrIndex_TileSize.z;
+	texCoordV = mul(float4(vPos - vCamera.xyz, 1.0f), RefractViewProjTexXf);
+	vFogOut = getFogVal(vCamera.xyz, vRealPosOut);
+	
+}

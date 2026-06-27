@@ -1,0 +1,58 @@
+
+sampler DiffuseTex : register (s0);
+sampler DepthTex : register (s4);
+
+float4 TintColor : register (c9);
+float4 CamDepth : register (c10);
+float4 EffectPos : register (c11);
+
+float ComputeVolumetricFog( in float3 cameraToWorldPos, float Depth )
+{
+  float cHeightFalloff = 0.1f;
+  float cGlobalDensity = 0.2f;
+
+  float3 Cam = CamDepth.yzw;
+
+  float cVolFogHeightDensityAtViewer = 1 - exp( -cHeightFalloff * Cam.y); //cViewPos.z );
+
+  float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer;
+ 
+  const float cSlopeThreshold = 0.01;
+  if( abs( cameraToWorldPos.z ) > cSlopeThreshold )
+  {
+		float t = cHeightFalloff * cameraToWorldPos.y;
+  		fogInt *= ( 1.0 - exp( -t ) ) / t;
+  }
+
+  return exp( -cGlobalDensity * fogInt );
+}
+
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+ float2 t6 = tex2D(DepthTex, uv1).r; //DecodeARGB32(tex2D(DepthTex, uv1))*10000.0f;
+ 
+ float3 Cam = CamDepth.yzw;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6.r / 60000.0f; //CamDepth.x;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float FogDistance = 2200;
+// if (Cam.y < 108) FogDistance = 500+Cam.y/108*2000;
+
+ float FogDensity = saturate(length(RealPos - Cam)/ FogDistance); 
+ FogDensity = 1.0f - exp(-pow(0.66*FogDensity,2));
+
+ float4 FogColor1 = float4(TintColor.r,TintColor.g, TintColor.b, FogDensity);
+
+ return FogColor1;
+}
+

@@ -1,0 +1,39 @@
+float4x4 mW2C : register(c0);   // world to projection matrix
+float4 vXZParam : register(c4); // scale and offset for x and z position
+float2 vHeight : register(c5);  // height parameter
+float3 vEye : register(c6);     // view position
+float4 vUVParam : register(c7); // uv scale and offset
+
+struct SVSInput {
+	float4 vPos : POSITION0;
+};
+
+//------------------------------------------------
+// output of the vertex shader
+//------------------------------------------------
+struct SVSOutput {
+	float2 vTex      : TEXCOORD0;
+	float4 vPos      : POSITION;
+};
+
+
+//------------------------------------------------
+// Vertex shader
+//------------------------------------------------
+void main(out SVSOutput _Output, in SVSInput _Input)
+{
+	// compute world position
+	float4 vWorldPos;
+	vWorldPos.xz = _Input.vPos.xy * vXZParam.xy + vXZParam.zw;
+	// height is propotional to the square distance in horizontal direction.
+	float2 vDir = vEye.xz - vWorldPos.xz;
+	float fSqDistance = dot( vDir, vDir );
+	vWorldPos.y = fSqDistance * vHeight.x + vHeight.y;
+	vWorldPos.w = 1.0f;
+	
+	// transform and projection
+	_Output.vPos = mul( vWorldPos, mW2C);
+	
+	// texture coordinate 
+	_Output.vTex = _Input.vPos.zw * vUVParam.xy + vUVParam.zw;
+}

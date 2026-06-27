@@ -1,0 +1,15 @@
+
+sampler Tex1;
+
+float4 Col : register(c0);
+
+float4 BW  = { 0.3, 0.59, 0.11, 0.0};
+
+half4 main(half4 Col : COLOR0, half2 uv1 : TEXCOORD0 ) : COLOR
+{
+ half4 t1 = tex2D(Tex1, uv1);
+
+ half4 r = saturate (t1 - half4(0.5, 0.5, 0.5,0));
+
+ return r*Col;
+}

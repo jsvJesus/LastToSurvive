@@ -1,0 +1,16 @@
+//
+void main(	in float4 vNorm_Depth	: TEXCOORD0,
+			in float4 vColor 		: COLOR0,
+
+			out float4 ColorOut		: COLOR0,
+			out float4 NormalOut	: COLOR1,
+			out float4 DepthOut 	: COLOR2,
+			out float4 gAuxOut 		: COLOR3
+		)
+
+{
+	NormalOut	= float4( normalize( vNorm_Depth.xyz ) * 0.5 + 0.5, 0 );
+	DepthOut	= vNorm_Depth.w;
+	ColorOut 	= vColor;
+	gAuxOut		= float4( 1, 1, 0, 0.5 );
+}

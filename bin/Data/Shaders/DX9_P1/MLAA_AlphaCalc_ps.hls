@@ -1,0 +1,96 @@
+sampler samplerDiscontinuity	: register ( s0 );
+sampler samplerHorzLines		: register ( s4 );
+sampler samplerVertLines		: register ( s5 );
+sampler samplerAreaCalc			: register ( s6 );
+
+float4 invResolution : register ( c0 );
+
+float4 main( float2 Tex : TEXCOORD0 ) : COLOR0
+{
+	float2 area_tex_inv_resolution = invResolution.zw;
+
+	float4 line_center = tex2D(samplerDiscontinuity, Tex);
+	float4 result = 0;
+
+	if (line_center.g > 0.0)
+	{
+		float4 res_row_or_col = tex2D(samplerHorzLines, Tex);
+		res_row_or_col.rg *= 255.0;
+
+		float size = (res_row_or_col.r + res_row_or_col.g);
+		if (res_row_or_col.r <= res_row_or_col.g)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x - (res_row_or_col.r + 1.0) * invResolution.x, Tex.y)).r > 0.0)
+				result.g += tex2D(samplerAreaCalc, float2(res_row_or_col.r * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+		if (res_row_or_col.g <= res_row_or_col.r)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x + res_row_or_col.g * invResolution.x, Tex.y)).r > 0.0)
+				result.g += tex2D(samplerAreaCalc, float2(res_row_or_col.g * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+	}
+
+	if (line_center.r > 0.0)
+	{
+		float4 res_row_or_col = tex2D(samplerVertLines, Tex); // r = up / g = down
+		res_row_or_col.rg *= 255.0;
+
+		float size = (res_row_or_col.r + res_row_or_col.g);
+		if (res_row_or_col.r <= res_row_or_col.g)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x, Tex.y - (res_row_or_col.r + 1.0) * invResolution.y)).g > 0.0)
+				result.b += tex2D(samplerAreaCalc, float2(res_row_or_col.r * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+		if (res_row_or_col.g <= res_row_or_col.r)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x, Tex.y + res_row_or_col.g * invResolution.y)).g > 0.)
+				result.b += tex2D(samplerAreaCalc, float2(res_row_or_col.g * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+	}
+
+	float2 incY = Tex - float2(0, invResolution.y);
+	line_center = tex2D(samplerDiscontinuity, incY);
+
+	if (line_center.g > 0.0)
+	{
+		float4 res_row_or_col = tex2D(samplerHorzLines, incY); // r = left / g = right
+		res_row_or_col.rg *= 255.0;
+
+		float size = (res_row_or_col.r + res_row_or_col.g);
+		if (res_row_or_col.r <= res_row_or_col.g)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x - (res_row_or_col.r + 1.0) * invResolution.x, Tex.y)).r > 0.0)
+				result.r += tex2D(samplerAreaCalc, float2(res_row_or_col.r * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+		if (res_row_or_col.g <= res_row_or_col.r)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x + res_row_or_col.g * invResolution.x, Tex.y)).r > 0.0)
+				result.r += tex2D(samplerAreaCalc, float2(res_row_or_col.g * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+	}
+
+	float2 decX = Tex - float2(invResolution.x, 0);
+	line_center = tex2D(samplerDiscontinuity, decX);
+
+	if (line_center.r > 0.0)
+	{
+		float4 res_row_or_col = tex2D(samplerVertLines, decX); // r = up / g = down
+		res_row_or_col.rg *= 255.0;
+
+		float size = (res_row_or_col.r + res_row_or_col.g);
+		if (res_row_or_col.r <= res_row_or_col.g)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x, Tex.y - (res_row_or_col.r + 1.0) * invResolution.y)).g > 0.0)
+				result.a += tex2D(samplerAreaCalc, float2(res_row_or_col.r * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+		if (res_row_or_col.g <= res_row_or_col.r)
+		{
+			if (tex2D(samplerDiscontinuity, float2(Tex.x, Tex.y + res_row_or_col.g * invResolution.y)).g > 0.0)
+				result.a += tex2D(samplerAreaCalc, float2(res_row_or_col.g * area_tex_inv_resolution.x, size * area_tex_inv_resolution.y)).r;
+		}
+	}
+	
+	float max_val = max(max(result.r, result.g), max(result.b, result.a));
+	float4 map = float4(result.r == max_val, result.g == max_val, result.b == max_val, result.a == max_val);
+	return map * result;
+}

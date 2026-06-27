@@ -1,0 +1,61 @@
+//
+sampler DiffuseTex 		: register (s0);
+sampler NormalTex  		: register (s1);
+sampler GlossMap   		: register (s2);
+sampler EnvPowerMap   	: register (s3);
+sampler SelfIllumMap   	: register (s4);
+
+struct PSOUT
+{
+	float4 Color	: COLOR0;
+	float4 Normal	: COLOR1;
+	float4 Depth	: COLOR2;
+	float4 gAux		: COLOR3;
+};
+
+
+PSOUT main(	float4  uv1_rand_clr: TEXCOORD0, 
+		float3  Normal	: TEXCOORD1 )
+
+{
+	PSOUT out1;
+
+	float3 uv1 = uv1_rand_clr.xyz;
+	float rand_color = uv1_rand_clr.w;
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy);
+	clip (TexCol.a - 0.25f);
+
+	//float4 GlossCol = tex2D(GlossMap, uv1.xy);
+	// float3 NMap = tex2D(NormalTex, uv1.xy)*2-1;
+
+//	TexCol.rgb = pow( TexCol.rgb, 2.2 ); 
+
+	out1.Color.rgb = rand_color * TexCol;
+	out1.Color.a = 0;//GlossCol.r*Material_Params.x;
+
+	Normal = normalize(Normal);
+
+	//float3x3 w2t; // world to tangent matrix
+	// w2t = float3x3(t1, t2, Normal);
+
+	// float3 vBump;
+	//vBump = mul(NMap.xyz, w2t);
+
+	// Normal = normalize(vBump);
+
+	out1.Normal.rgb = (Normal.xyz * 0.5f + 0.5f);
+
+	float SelfIlm = 0.5f;//tex2D(SelfIllumMap, uv1).r;
+	float Refl    = 0;//tex2D(EnvPowerMap, uv1).r*Material_Params.y;
+
+	out1.Normal.a = SelfIlm;
+
+	//  V = Pos1.xyz - vCamPos.xyz;
+	out1.Depth = uv1.z; //EncodeFloatRGBA(saturate(uv1.z/10000.0f));
+
+	//Refl * 0.5 + (0.5 + SelfIlm * 0.5);
+	out1.gAux = float4(1,0.5,0.5, Refl);
+
+	return out1;
+}

@@ -1,0 +1,103 @@
+
+
+float3 FilmTone(float3 x)
+{
+
+#if 0
+float A = 0.32;//Shoulder Strength
+float B = 0.3; //Linear Strength
+float C = 0.1; //Linear Angle
+float D = 0.2;//Toe Strength
+float E = 0.01; //Toe Numerator
+float F = 0.3; //Toe Denominator
+
+A = 0.15;
+B = 0.50;
+C = 0.10;
+D = 0.20;
+E = 0.02;
+F = 0.30;
+#else
+
+float A = vFilmToneABCD.x ;
+float B = vFilmToneABCD.y ;
+float C = vFilmToneABCD.z ;
+float D = vFilmToneABCD.w ;
+float E = vFilmToneEF_EB_WL.x;
+float F = vFilmToneEF_EB_WL.y;
+
+#endif
+
+   return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F)) - E/F;
+}
+
+
+float3 TM_ApplyFilmTone(float3 FinalColor )
+{
+    	float ExposureBias = vFilmToneEF_EB_WL.z;
+   	float WhiteLevel = vFilmToneEF_EB_WL.w;
+   	
+   	float3 curr = FilmTone(ExposureBias*FinalColor.rgb);
+
+   	float3 whiteScale = 1.0f/FilmTone(float3(WhiteLevel,WhiteLevel,WhiteLevel));
+
+	return (curr*whiteScale);
+
+}
+
+
+float3 TM_ApplyFilmToneNew (float3 FinalColor, float ExposureBias)
+{
+   	float WhiteLevel = vFilmToneEF_EB_WL.w;
+   	
+   	float3 curr = FilmTone(ExposureBias*FinalColor.rgb);
+
+   	float3 whiteScale = 1.0f/FilmTone(float3(WhiteLevel,WhiteLevel,WhiteLevel));
+
+	return (curr*whiteScale);
+
+}
+
+
+
+
+float4 PS_Reinhard02( float4 color, float avgLuminance , float exposure) 
+{  
+
+// RGB -> XYZ conversion  
+const float3x3 RGB2XYZ = {0.5141364, 0.3238786,  0.16036376,                             
+			  0.265068,  0.67023428, 0.06409157,
+                          0.0241188, 0.1228178,  0.84442666};				                      
+
+float3 XYZ = mul(RGB2XYZ, color.rgb);    
+
+// XYZ -> Yxy conversion  
+float3 Yxy;  
+
+Yxy.r = XYZ.g;                // copy luminance Y  
+Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b ); // x = X / (X + Y + Z)  
+Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b ); // y = Y / (X + Y + Z)   
+
+   
+// (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance  
+float Lp = Yxy.r * exposure / avgLuminance;                         
+
+// (Ld) Scale all luminance within a displayable range of 0 to 1 
+float whitePoint = 110.0;
+Yxy.r = (Lp * (1.0f + Lp/(whitePoint * whitePoint)))/(1.0f + Lp);
+
+
+ // Yxy -> XYZ conversion  
+XYZ.r = Yxy.r * Yxy.g / Yxy. b;               // X = Y * x / y  
+XYZ.g = Yxy.r;                                // copy luminance Y  
+XYZ.b = Yxy.r * (1 - Yxy.g - Yxy.b) / Yxy.b;  // Z = Y * (1-x-y) / y      
+
+// XYZ -> RGB conversion  
+const float3x3 XYZ2RGB  = { 2.5651,-1.1665,-0.3986,
+                              -1.0217, 1.9777, 0.0439,                                
+0.0753, -0.2543, 1.1892};  
+
+return float4(mul(XYZ2RGB, XYZ), 1.0f);
+}
+
+

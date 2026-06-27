@@ -1,0 +1,55 @@
+// CREATE_BLOOM
+
+sampler RT		: register(s0);
+sampler diffuse	: register(s4);
+sampler normals	: register(s1);
+
+float4 vBlumParams0  : register (c0);
+float4 vBlumParams1  : register (c1);
+float4 vGlowTint	 : register (c2);
+float4 vGlowBarrier  : register (c3);
+
+float4 main( float2 uv1 : TEXCOORD0) : COLOR
+{
+	float4 blum_params = vBlumParams0;
+
+	float3 d = tex2D( RT, uv1 ).rgb;
+	float selfIllum = tex2D( normals, uv1 ).a ;
+	
+	float intensity = dot( d.rgb, float3( 0.3h, 0.59h, 0.11h ))*2.0f;
+
+	float3 bloomkoef = 0;
+
+//	[flatten]
+//	if ( intensity > blum_params.y )
+	{
+	  bloomkoef = (1.0f/(blum_params.y+1.0f) )* vBlumParams1.rgb ;
+//	  bloomkoef = blum_params.x* vBlumParams1.rgb ;
+	}
+
+
+//	d *= bloomkoef;//*(blum_params.x*5.0f);	
+	d *= bloomkoef*(blum_params.x*2.0f);	
+	
+	//	Glow
+	float3 glowCl = 0;
+
+	float3 d1 = tex2D( RT, uv1 ).rgb;
+
+	[flatten]
+	if ( selfIllum > vGlowBarrier.x )
+	{
+		glowCl = d1*vGlowBarrier.y*vGlowTint;
+	}
+
+
+	[flatten]
+	if ( selfIllum > 0 )
+	{
+		d = 0;
+	}
+	
+	return float4(d+glowCl, selfIllum);
+}
+
+

@@ -1,0 +1,72 @@
+//
+
+#ifndef RECTICULAR_WARP
+#define RECTICULAR_WARP 0
+#endif
+
+#ifndef VERTEX_FETCHLESS
+#define VERTEX_FETCHLESS 0
+#endif
+
+#ifndef SHADOW_PATH
+#define SHADOW_PATH 0
+#endif
+
+#ifndef DEPTH_PATH
+#define DEPTH_PATH 0
+#endif
+
+#include "../smdepth_inc.hls"
+
+sampler sHeight				: register ( s0 );
+
+float4x4 gWVP               : register( c0 ) ;
+float4 gToHeightTexc        : register( c4 ) ;
+float4 gToPSTexc            : register( c5 ) ;
+
+//--------------------------------------------------------------------------------------------------------		
+
+void main(	in float4 iPos			: POSITION,
+
+#if VERTEX_FETCHLESS
+			in float iHeight		: TEXCOORD0,
+#endif
+			out float4 oPos			: POSITION
+
+#if SHADOW_PATH
+			, out float oDepth			: TEXCOORD0
+#else
+	#if !DEPTH_PATH
+			, out float3 oTexc_Depth	: TEXCOORD0
+	#endif
+#endif
+			)
+{
+	float4 spos = iPos ;
+	
+	float4 pos = spos.xzyw ;
+
+	float2 heightTexc	= spos.xy * gToHeightTexc.xy + gToHeightTexc.zw ;
+	float2 psTexc		= iPos.xy * gToPSTexc.xy + gToPSTexc.zw ;
+
+#if VERTEX_FETCHLESS
+	pos.y			= iHeight ;
+#else
+	pos.y			= tex2Dlod( sHeight, float4( heightTexc, 0, 0 ) ).r ;
+#endif
+
+	oPos			= mul( pos, gWVP ) ;
+	
+#if RECTICULAR_WARP
+	oPos = ShadowWarp( oPos );
+#endif
+
+#if SHADOW_PATH
+	oDepth.x	= oPos.z ;
+#else
+	#if !DEPTH_PATH
+		oTexc_Depth.xy	= psTexc.xy ;
+		oTexc_Depth.z	= oPos.w ;
+	#endif
+#endif
+}

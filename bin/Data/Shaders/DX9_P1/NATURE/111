@@ -1,0 +1,17 @@
+
+ v1 = pnt + r3dPoint3D(0,0,CellSize);
+ v2 = pnt + r3dPoint3D(CellSize,0,-CellSize);
+ v3 = pnt + r3dPoint3D(-CellSize,0,-CellSize);
+
+ v1.Y = GetHeight(v1);
+ v2.Y = GetHeight(v2);
+ v3.Y = GetHeight(v3);
+
+ a      = v2 - v1;
+ b      = v3 - v1;
+ Normal = a.Cross(b);
+ Normal.Normalize();
+ if(R3D_ABS(Normal.X) < 0.001) Normal.X = 0.;
+ if(R3D_ABS(Normal.Y) < 0.001) Normal.Y = 0.;
+ if(R3D_ABS(Normal.Z) < 0.001) Normal.Z = 0.;
+

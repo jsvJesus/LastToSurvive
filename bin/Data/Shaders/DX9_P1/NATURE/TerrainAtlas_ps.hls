@@ -1,0 +1,150 @@
+#define MAX_LAYERS 3
+
+#ifndef NUM_LAYERS
+#define NUM_LAYERS 3
+#endif
+
+#ifndef FIRST_BATCH
+#define FIRST_BATCH 1
+#endif
+
+#ifndef MODULATION_BATCH
+#define MODULATION_BATCH 1
+#define NUM_LAYERS 0
+#define FIRST_BATCH 0
+#endif
+
+#if MODULATION_BATCH && ( NUM_LAYERS || FIRST_BATCH )
+#error Modulation batch should have no layers!
+#endif
+
+sampler sBaseDiffuse           : register ( s0 );
+sampler sBaseNormal            : register ( s1 );
+
+sampler sDiffuse[ MAX_LAYERS ] : register ( s2 );
+sampler sNormal[ MAX_LAYERS ]  : register ( s5 );
+
+sampler sSplat[ MAX_LAYERS ]   : register ( s8 );
+
+sampler sColor                 : register ( s11 );
+sampler sVertexNormal          : register ( s12 );
+
+float3 gSplatControls[ MAX_LAYERS ] : register( c0 );
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+
+#if !MODULATION_BATCH
+	float4 Normal : COLOR1;
+#endif
+};
+
+
+//--------------------------------------------------------------------------------------------------------		
+
+PSOUT main(	in float4 Texc0 : TEXCOORD0,
+			in float4 Texc1 : TEXCOORD1,
+			in float2 Texc2 : TEXCOORD2
+			// convert normals to world space from tangent space in final batch
+			 )
+{
+
+	float3 splat = 0 ; 
+	
+	[unroll]
+	for( int i = 0; i < NUM_LAYERS ; i ++ )
+	{
+		splat[ i ] = dot( tex2D( sSplat[ i ], Texc0.xy ), gSplatControls[ i ] );
+	}
+
+	float2 vTexc[ MAX_LAYERS ] = { Texc1.xy, Texc1.zw, Texc2.xy } ;
+
+	float3 baseDiff = tex2D( sBaseDiffuse, Texc0.zw ) ;	
+	
+	float3x3 TBN_N ;
+	
+	float3 norm = tex2Dlod( sVertexNormal, float4( Texc0.xy, 0, 0 ) ) * 2 - 1 ;
+	
+	float3 tang = float3( 1, 0, 0 );
+	float3 binorm = normalize( cross( tang, norm ) );
+	
+	tang = normalize( cross( norm, binorm ) );
+
+	TBN_N = float3x3( tang, binorm, norm ) ;	
+			
+	float3 baseNorm = tex2D( sBaseNormal, Texc0.zw ) * 2 - 1 ;
+	
+	baseNorm = mul( baseNorm, TBN_N ) * 0.5 + 0.5 ;
+	
+	float3 diffs[ 3 ] ;
+	float3 norms[ 3 ] ;
+	
+	diffs[ 0 ] = 0 ;
+	diffs[ 1 ] = 0 ;
+	diffs[ 2 ] = 0 ;
+	
+	norms[ 0 ] = 0 ;
+	norms[ 1 ] = 0 ;
+	norms[ 2 ] = 0 ;
+	
+	float baseMult = 1.0 ;
+	
+	int idx = 0 ;
+	
+	[unroll]
+	for( idx = 0 ; idx < NUM_LAYERS ; idx ++ )
+	{
+		diffs[ idx ] = tex2D( sDiffuse[ idx ], vTexc[ idx ] ) ;
+
+		float3 norm = tex2D( sNormal[ idx ], vTexc[ idx ] ) * 2 - 1 ;
+		
+		norms[ idx ] = mul( norm, TBN_N ) * 0.5 + 0.5 ;
+		
+		float alpha = splat[ idx ] ;
+		float invAlpha = 1 - alpha ;
+		
+		baseMult *= invAlpha ;
+		
+		diffs[ idx ] *= alpha ;
+		norms[ idx ] *= alpha ;
+		
+		[unroll]
+		for( int i = 0 ; i < idx ; i ++ )
+		{
+			diffs[ i ] *= invAlpha ;
+			norms[ i ] *= invAlpha ;
+		}
+	}
+	
+	PSOUT res ;
+	
+	float4 finalDiff = 0 ;
+	float4 finalNorm = 0 ;
+	
+#if FIRST_BATCH
+	finalDiff.xyz = baseDiff * baseMult ;
+	finalNorm.xyz = baseNorm * baseMult ;
+#else
+	finalDiff.a = baseMult ;
+	finalNorm.a = baseMult ;
+#endif
+	
+	for( int i = 0 ; i < idx ; i ++ )
+	{
+		finalDiff.xyz += diffs[ i ] ;
+		finalNorm.xyz += norms[ i ] ;
+	}
+		
+	res.Color = finalDiff ;
+	
+#if MODULATION_BATCH
+	res.Color.rgb = tex2D( sColor, Texc0.xy ).rgb ;
+
+	res.Color.a = 1 ;
+#else
+	res.Normal = finalNorm ;	
+#endif
+	
+	return res ;
+}

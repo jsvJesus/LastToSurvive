@@ -1,0 +1,7 @@
+float4 inColor:register(c0);
+
+void main(out half4 outColor : COLOR0)
+{
+ outColor = inColor;//half4(0.63h, 0.28h, 0.64h, 0.4h);
+}
+

@@ -1,0 +1,11 @@
+// for format conversion etc.
+
+sampler2D sSource : register( s0 );
+
+float4 vTransform0 : register( c0 );
+float4 vTransform1 : register( c1 );
+
+float4 main( float2 texc : TEXCOORD0 ) : COLOR0
+{
+	return tex2D( sSource, texc ) * vTransform0 + vTransform1 ;
+}

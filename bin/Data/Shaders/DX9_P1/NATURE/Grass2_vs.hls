@@ -1,0 +1,81 @@
+// Enter your shader in this window//
+sampler2D HeightTex : register( s0 );
+
+#if IS_MASKED
+sampler2D MaskTex	: register( s1 );
+#endif
+
+#if HAS_NORMALS
+sampler2D NormalTex	: register( s2 );
+#endif
+
+float4x4    mWVP                 : register( c0 );
+float4      vDescaleX            : register( c4 );
+float4      vDescaleZ            : register( c5 );
+float4      vHeightScale_Time    : register( c6 );
+float4      vTexcoordTransform_H : register( c7 );
+float4      vTexcoordTransform_M : register( c8 );
+float4      vDistFade            : register( c9 );
+float4      vWorldTexcTransform  : register( c10 );
+float3      vGrassNormal         : register( c11 );
+
+void main(	in float4	iPos			: POSITION,
+			in float4 	iTexc			: TEXCOORD0,
+			out float4	oPos			: POSITION,
+			out float4	oTexc_Die_Z		: TEXCOORD0,
+			out float2	oTintTexc		: TEXCOORD1,
+			out float3	oNormal			: TEXCOORD2
+			 )
+{
+	float4 vArealTexc_H	= float4( iPos.xz * vTexcoordTransform_H.xy + vTexcoordTransform_H.zw, 0, 0 );
+	float4 vArealTexc_M	= float4( iPos.xz * vTexcoordTransform_M.xy + vTexcoordTransform_M.zw, 0, 0 );
+	float2 vTintTexc	= float2( iPos.xz * vWorldTexcTransform.xy + vWorldTexcTransform.zw );
+
+	float height = tex2Dlod( HeightTex, vArealTexc_H ).r;
+
+#if IS_MASKED
+	float mask = tex2Dlod( MaskTex, vArealTexc_M ).r;
+	iPos.y *= mask;
+#else
+	float mask = 1.f;
+#endif
+
+	float2 worldPosXZ = float2( dot( iPos, vDescaleX ), dot( iPos, vDescaleZ ) );
+
+	float phaseShift0 = dot( worldPosXZ, float2( 0.0, 0.5 ) );
+	float phaseShift1 = dot( worldPosXZ, float2( 0.5, 0.0 ) ) + 0.33;
+
+	float2 fadeDelta = worldPosXZ - vDistFade.xy;
+	float fadeCoef = saturate( dot( fadeDelta, fadeDelta ) * vDistFade.z + vDistFade.w );
+
+	iPos.y *= fadeCoef;
+
+	float modelHeightScale = vHeightScale_Time.x;
+	float animHeightScale = vHeightScale_Time.y;
+	float time = vHeightScale_Time.z;
+	
+	float wavePhase = ( sin( time + phaseShift0 ) + sin( time + phaseShift1 ) ) * 0.5;
+
+	iPos.xz += iPos.y * animHeightScale * wavePhase;
+
+	iPos.y += height * modelHeightScale;
+
+	oPos = mul( iPos, mWVP );
+
+	oTexc_Die_Z.xy		= iTexc;
+	oTexc_Die_Z.z		= mask * fadeCoef;
+	oTexc_Die_Z.w		= oPos.w;
+
+	oTintTexc			= vTintTexc;
+
+#if HAS_NORMALS
+	oNormal = normalize( tex2Dlod( NormalTex, float4( vTintTexc.x, 1 - vTintTexc.y, 0, 0 ) ) * 2 - 1 + vGrassNormal ) * 0.5 + 0.5;
+#else
+	oNormal = vGrassNormal;
+#endif
+
+	// modify normal to increase waviness effect
+	oNormal.xz += wavePhase * 0.05;
+	oNormal = normalize( oNormal );
+
+}

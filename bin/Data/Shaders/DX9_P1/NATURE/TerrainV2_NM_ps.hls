@@ -1,0 +1,43 @@
+
+
+sampler HeightMapSampler : register (s0);
+sampler Noisemap : register (s1);
+
+float4  NoiseParam : register (c1);
+
+
+float4 main(float2 uv1 : TEXCOORD0 ) : COLOR
+{
+  float2 uvN = uv1*NoiseParam.xx;
+
+  float4 t2 = tex2D(Noisemap, uvN);
+
+	float dU = 1.0f / NoiseParam.y;
+
+float s1 = tex2D(HeightMapSampler, float2(uv1.x - dU, uv1.y)).r/4;
+float s2 = tex2D(HeightMapSampler, float2(uv1.x, uv1.y - dU)).r/4;
+float s3 = tex2D(HeightMapSampler, float2(uv1.x + dU, uv1.y)).r/4;
+float s4 = tex2D(HeightMapSampler, float2(uv1.x, uv1.y + dU)).r/4;	  	
+
+float  coef   = NoiseParam.z;    // change this value to soften / harden the normal map
+
+
+    float h1 = s4 - (s4+s2)/2;
+    float h2 = s3 - (s3+s1)/2;
+    float cellSize = 2.0f;
+    float3 normal = float3(-h2, cellSize, -h1);
+    normal = normalize(normal);
+
+    normal = normalize(float3(s1 - s3, cellSize*coef, s2 - s4));
+
+    normal += (t2*2-1)*NoiseParam.w;
+    normal = normalize(normal);
+    normal.z = -normal.z;
+
+    normal = normal*0.5 + 0.5f;
+
+  float4 Color = float4(normal.x, normal.y, normal.z, 1);
+
+
+ return Color; //lerp(Color, t2, NoiseParam.w);
+}

@@ -1,0 +1,23 @@
+//
+
+sampler sScreen	: register (s0);
+
+float4		vFilmToneABCD		: register(c0);
+float4		vFilmToneEF_EB_WL	: register(c1);
+
+#include "Lib\Tonemapping.hls"
+
+
+float4 main(float4 uv1_uv2 : TEXCOORD0 ) : COLOR
+{
+
+	float2 uv1 	= uv1_uv2.xy;
+	float2 uv2 	= uv1_uv2.zw;
+
+	float4 TexCol = tex2D( sScreen, uv1 ) ;
+	
+	TexCol.rgb = TM_ApplyFilmTone(TexCol.rgb) ;
+
+	return TexCol;
+}
+

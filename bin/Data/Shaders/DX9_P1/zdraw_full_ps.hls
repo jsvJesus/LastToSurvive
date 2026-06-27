@@ -1,0 +1,51 @@
+//
+sampler WaterNorm1 : register (s2);
+sampler WaterNorm2 : register (s3);
+sampler DepthTex : register (s4);
+sampler FallowTex : register (s5);
+
+float4 TintColorDefault : register (c9);
+float4 CamInvDepth	: register (c10);
+float4 HalfInvRes : register (c11);
+float2 NearFarPlane : register (c12);
+float2 FogParams : register (c13);
+
+float4 deepColor_LakeHeight : register(c14);
+float4 shallowColor_Depth : register(c15);
+float4 attenColor_Dist : register(c16);
+float4 bumpness_RefrIndex_TileSize : register(c17);
+float4 normLerp : register(c18);
+float4 CausticDepth_Strength_projVal	: register (c19);	//xy
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+			float3 WPos : TEXCOORD1,
+			float2 SPos : TEXCOORD2 ) : COLOR
+{
+
+	//CONSTS FOR deep water color computations
+	float3 beamAttColor = -log( pow(abs(attenColor_Dist.rgb), 1.0f / attenColor_Dist.a) );
+	float3 diffAttColor = -log( saturate((1.0f - saturate(shallowColor_Depth.rgb / deepColor_LakeHeight.rgb)) / exp(-shallowColor_Depth.a * beamAttColor.rgb)) ) / shallowColor_Depth.a;
+	
+	float3 CamVec = WPos - CamInvDepth.xyz;
+	float3 vPos = CamInvDepth.xyz + tex2D(DepthTex, uv1 + HalfInvRes.xy).r * CamInvDepth.w * CamVec;
+	
+	if(vPos.y>deepColor_LakeHeight.w+0.01 || CamInvDepth.y > deepColor_LakeHeight.w)
+		return float4(0,0,0,1);
+
+
+	//освещение на дне
+	float geoLight = pow(2, -(deepColor_LakeHeight.w - vPos.y)/attenColor_Dist.w*3);
+	float camLight = pow(2, -(deepColor_LakeHeight.w - CamInvDepth.y)/attenColor_Dist.w*3);
+	float camGeoFade = pow(2, -length(vPos.xyz - CamInvDepth.xyz)/attenColor_Dist.w*3);
+	
+	//цвет воды затухает
+	float3 waterColor = deepColor_LakeHeight.rgb * camLight;
+	
+  	float nc1 = tex2D(WaterNorm1, vPos.xz*bumpness_RefrIndex_TileSize.z).w;
+  	float nc2 = tex2D(WaterNorm2, vPos.xz*bumpness_RefrIndex_TileSize.z).w;
+	float caustValue = CausticDepth_Strength_projVal.y * saturate(1 - (deepColor_LakeHeight.w - vPos.y) * CausticDepth_Strength_projVal.x);
+ 	float caustic = lerp(nc1, nc2, normLerp.x) * caustValue;
+	
+	return float4(waterColor, camGeoFade*camLight*(1 + caustic));
+}

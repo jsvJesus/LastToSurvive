@@ -1,0 +1,30 @@
+
+sampler DiffuseTex 		: register (s0);
+
+struct PSOUT
+{
+	float4 Color	: COLOR0;
+	float4 Normal	: COLOR1;
+	float4 Depth	: COLOR2;
+	float4 gAux		: COLOR3;
+};
+
+
+PSOUT main(	float3 uv1 : TEXCOORD0, 
+			float3 Normal : TEXCOORD1 )
+{
+	PSOUT out1;
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy);
+	
+	clip (TexCol.a - 0.25f);
+
+	Normal = normalize ( Normal );
+	
+	out1.Color = float4 ( TexCol.rgb, 0.0f );
+	out1.Normal = float4(Normal.xyz * 0.5f + 0.5f, 0.0f);
+	out1.Depth = uv1.z;
+	out1.gAux = float4(1,0.5,0.5,0.5f);
+
+	return out1;
+}

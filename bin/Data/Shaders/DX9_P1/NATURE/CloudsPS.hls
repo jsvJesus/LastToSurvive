@@ -1,0 +1,14 @@
+
+sampler Tex1 	: register (s0);
+
+
+struct vert2frag                                    
+{                                                   
+    float4 Position     : POSITION;                 
+    float2 uv1 : TEXCOORD0;                
+};                                                  
+                                                    
+float4 main( vert2frag IN ) : COLOR     
+{                                                   
+   return tex2D(Tex1, IN.uv1);
+}                                                   

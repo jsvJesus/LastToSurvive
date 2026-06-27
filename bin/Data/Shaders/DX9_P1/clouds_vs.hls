@@ -1,0 +1,121 @@
+//
+
+#define CLD_MAX_LIGHTS 2
+// NUM_LIGHTS - customized define
+
+
+float4x4 	mWV 						: register( c0	);
+float4x4 	mP							: register( c4	);
+float4		vScale_FadeOut				: register( c8	);
+float4 		vColr						: register( c9 	);
+float4		vLight_LitOffset			: register( c10 );
+float4		vTransform					: register( c11 ); 
+float4		vGradients_Pow_LightTransp	: register( c12 );
+
+float4		vLightPos_Attenuation[ CLD_MAX_LIGHTS ]	: register( c13 );
+float3		vLightColr[ CLD_MAX_LIGHTS ]			: register( c15 );
+float4		vShadingGroup[16]						: register( c17	);
+
+// 'int' gives a hint to the compiler that it can avoid 
+//  subbing frc when using vPos_ShGroup.a to index vShadingGroup array
+void main(	in int4 vPos_ShGroup	: POSITION,
+			in int2 vExt 			: TEXCOORD0,
+			in float2 vTexc	 		: TEXCOORD1,
+
+			out	float4 vPosOut					: POSITION,
+			out float4 vTexcBase_FromCentreOut	: TEXCOORD0,
+			out float4 vTexcRotatedOut			: TEXCOORD1,
+			out float4 vTexOutPos				: TEXCOORD2,
+			out float4 vColorOut				: COLOR0
+			 )
+{
+
+	float4 	vPos 	= float4( vPos_ShGroup.xyz, 1 );
+	int	shGroup 	= vPos_ShGroup.a;
+
+	float3 vLight 	= vLight_LitOffset.xyz;
+	float litOffset	= vLight_LitOffset.w;
+	
+	float gradMin		= vGradients_Pow_LightTransp.x;
+	float gradMax		= vGradients_Pow_LightTransp.y;
+	float gradPow		= vGradients_Pow_LightTransp.z;
+	float lightTransp	= vGradients_Pow_LightTransp.w;
+	
+	float nrmPosY	= vPos.y * (0.5f/32767.f) + 0.5f;
+
+	vPos.xyz *= vScale_FadeOut.xyz;
+
+	// extract randomized sign from the position
+	float rndSign = frac( dot( vPos.xyz, vPos.xyz ) ) < 0.5 ? -1 : 1;
+
+	vPos = mul( vPos, mWV );
+
+	float3 vShVec = vPos.xyz - vShadingGroup[ shGroup ].xyz;
+
+	float2 vDelta = vExt * vScale_FadeOut.xy;
+	
+	// randomize direction of the rotation
+	float4 vRndXForm 	= vTransform;
+	vRndXForm.yw 		*= rndSign;
+
+	vPos.x += dot( vDelta, float2( +vRndXForm.x	, -vRndXForm.y ) );
+	vPos.y += dot( vDelta, float2( +vRndXForm.y	, +vRndXForm.x ) );
+
+	vTexcBase_FromCentreOut.xy = vTexc;
+
+	float2 vDeltaCorner = float2( vDelta.x < 0 ? -1 : 1, vDelta.y < 0 ? -1 : 1 );
+
+	vTexcBase_FromCentreOut.z = dot( vDeltaCorner, float2( +vRndXForm.x, -vRndXForm.y ) );
+	vTexcBase_FromCentreOut.w = dot( vDeltaCorner, float2( +vRndXForm.y, +vRndXForm.x ) );
+
+	// shtink so that texture edges are not visible   ( 1 / sqrtf(2) )
+	float2 vDeltaRot = normalize( vDelta ) * 0.707106;
+
+	vTexcRotatedOut.x = dot( vDeltaRot, float2( +vRndXForm.z, -vRndXForm.w ) );
+	vTexcRotatedOut.y = dot( vDeltaRot, float2( +vRndXForm.w, +vRndXForm.z ) );
+
+	vTexcRotatedOut.z = dot( vDeltaRot, float2( +vRndXForm.z, +vRndXForm.w ) );
+	vTexcRotatedOut.w = dot( vDeltaRot, float2( -vRndXForm.w, +vRndXForm.z ) );
+
+	vTexcRotatedOut = vTexcRotatedOut * 0.5 + 0.5;
+	
+	vPosOut = mul( vPos, mP );
+
+	//-------------------------
+	// lighting
+	float shLen = length( vShVec );
+	vShVec		/= shLen;
+
+	// handle the case when a vertex gets directly
+	// to the shading group's centre (shLen's near 0)
+	float litFactor	= saturate( shLen * 256 );
+	float lit 		= lerp( 0.75, saturate( dot( vShVec, vLight ) * 0.5 + litOffset ), litFactor );
+	
+	float vertiLit	= pow( saturate( lerp( gradMin, gradMax, nrmPosY ) ), gradPow );
+	// account lighting & fade out on closeup
+	vColorOut = vColr * float4( (vertiLit*lit).xxx, vScale_FadeOut.w * saturate( vPos.z * 0.015625 ) );
+	
+	// pos out
+	vTexOutPos = vPosOut;
+	
+	// point lights
+	float litLightClr;
+	float3 vLightColorOut;
+	float3 vLightVecToSh;
+	float attenuation;
+	float4 lightColr;
+	
+	[unroll]
+	for( int i = 0; i < NUM_LIGHTS; i ++ )
+	{
+		vLightVecToSh = vPos.xyz - vLightPos_Attenuation[i].xyz;
+		attenuation = vLightPos_Attenuation[i].w;
+		lightColr = float4(vLightColr[i], 1.f);
+		
+		litLightClr = lerp( 0.75, saturate( dot( vShVec, vLightVecToSh ) * 0.5 + litOffset ), litFactor );
+		litLightClr *= 1.f - saturate ( dot (vLightVecToSh,vLightVecToSh)*attenuation );
+		
+		vLightColorOut = lightColr.xyz*litLightClr.xxx;
+		vColorOut.xyz += vLightColorOut * lightTransp.xxx;
+	}
+}

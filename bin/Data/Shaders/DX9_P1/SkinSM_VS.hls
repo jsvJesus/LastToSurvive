@@ -1,0 +1,72 @@
+#include "System\IOParam\IODefine_VS.hls"
+
+// NOTE: duplicate in 
+// Transparenv_vs.hls
+// Skin_VS.hls
+float4 	vUnpackScale				: register (c22);
+float2	vUnpackTexc_ExtrudeAmmount	: register (c23);
+
+#include "smdepth_inc.hls"
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SHADOWTYPE_PERSP
+#endif
+
+
+float4x3 bone1[ 73 ]	: register(c24);
+
+void main( float4 vPos: POSITION,
+		  float4 BlendWeights: BLENDWEIGHT,
+		  int4 BlendIndices: BLENDINDICES,
+		  float3 vNormal: NORMAL,
+		  float2 vUV1: TEXCOORD0,
+
+		  out float4 vPosOut: POSITION,
+		  out float3 vTexOut1: TEXCOORD0,
+		  out float3 vNormOut	: TEXCOORD1,
+		  out float3 vWorldPosOut : TEXCOORD2
+		  )
+{
+	vPos.xyz *= vUnpackScale;
+
+	// cast the vectors to arrays for use in the for loop below
+	float BlendWeightsArray[4] = (float[4])BlendWeights;
+
+	float3 Pos1 = float3(0,0,0);
+	Pos1 += mul(vPos, bone1[BlendIndices[0]])*BlendWeightsArray[0];
+	Pos1 += mul(vPos, bone1[BlendIndices[1]])*BlendWeightsArray[1];
+	Pos1 += mul(vPos, bone1[BlendIndices[2]])*BlendWeightsArray[2];
+	Pos1 += mul(vPos, bone1[BlendIndices[3]])*BlendWeightsArray[3];
+
+	float3 Norm1 = float3(0,0,0);
+
+	Norm1 += mul(vNormal, bone1[BlendIndices[0]])*BlendWeightsArray[0];
+	Norm1 += mul(vNormal, bone1[BlendIndices[1]])*BlendWeightsArray[1];
+	Norm1 += mul(vNormal, bone1[BlendIndices[2]])*BlendWeightsArray[2];
+	Norm1 += mul(vNormal, bone1[BlendIndices[3]])*BlendWeightsArray[3];
+                                                 
+	vPosOut     = mul(float4(Pos1.xyz, 1.0f), mProj); 
+	
+#if SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED
+	vPosOut = ShadowWarp( vPosOut );
+#endif
+	
+	vWorldPosOut = mul(float4(Pos1.xyz, 1.0f), mWorld); 
+	
+	vTexOut1.xy = vUV1.xy * vUnpackTexc_ExtrudeAmmount.xy ;
+
+#if SHADOW_TYPE == SHADOWTYPE_ORTHO || SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED
+	vTexOut1.z = vPosOut.z;
+#else
+ 	vTexOut1.z = vPosOut.w;
+#endif
+
+	vNormOut = mul( Norm1, mWorldView );
+
+	// hack it to displace less
+#if 0
+	vNormOut.z += vNormOut.z > 0 ? 0.33 : -0.33;
+#endif
+
+	vNormOut = normalize( vNormOut );
+}

@@ -1,0 +1,67 @@
+//
+
+sampler2D		sDiffuse	: register( s0 );
+sampler2D		sNormal		: register( s1 );
+sampler2D		sDepth		: register( s2 );
+
+float3 g_CamPos     : register( c0 );
+float4 g_LightPos   : register( c1 );
+float4x4 g_VPMtx    : register( c2 );
+
+void main(
+			in float4 iCoefs : TEXCOORD0,
+			in float3 iCamVec : TEXCOORD1,			
+			in float2 iTexc : TEXCOORD2,
+
+			out float4 oR_SH	: COLOR0,
+			out float4 oG_SH	: COLOR1,
+			out float4 oB_SH	: COLOR2
+			)
+{
+	float3 camPos = g_CamPos.xyz;
+
+	float3 lightPos = g_LightPos.xyz;
+
+	float4 diff = tex2D( sDiffuse, iTexc );
+	float3 norm = tex2D( sNormal, iTexc ).xyz * 2 - 1;
+
+	float depth = tex2D( sDepth, iTexc );
+
+	float3 Cam = camPos.xyz;
+
+	float3 realPos = camPos + depth * iCamVec;
+	
+	float3 camLightVec = lightPos - camPos;
+		
+	float4 lightP = mul( float4( lightPos, 1 ), g_VPMtx );
+
+	lightP.xyz /= lightP.w;
+	
+	float validSample = lightP.w > 0.1;
+	
+	[flatten]
+	if( abs( lightP.x ) > 1 )
+		validSample = 0;
+	
+	[flatten]
+	if( abs( lightP.y ) > 1 )
+		validSample = 0;
+		
+	float ldepth = tex2D( sDepth, lightP.xy * 0.5 + 0.5 );
+	
+	float visibility = 1.0;
+
+	visibility = lerp( 1.0, ldepth >= lightP.w, validSample );
+
+	float3 lightVecDenorm = lightPos - realPos;
+	float len = length( lightVecDenorm );
+	float3 lightVec = lightVecDenorm / len;
+	
+	float sample = visibility * saturate( dot( lightVec, norm ) ) / len;
+	
+	float4 sampleMulCoefs = sample * iCoefs;
+
+	oR_SH = sampleMulCoefs * diff.r;
+	oG_SH = sampleMulCoefs * diff.g;
+	oB_SH = sampleMulCoefs * diff.b;
+}

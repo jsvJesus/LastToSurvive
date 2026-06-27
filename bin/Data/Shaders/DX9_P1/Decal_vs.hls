@@ -1,0 +1,101 @@
+// Enter your shader in this window// Enter your shader in this window
+
+float4x4	mVP : register( c0 );
+float3x3	mVStepT : register( c4 );
+float4 		vTexcTransform : register( c7 );
+float4 		vScaleParams : register( c8 );
+
+void main(  in float4 iPos								: POSITION,
+			in float2 iScale							: TEXCOORD0,
+			in float4 iCorner_Rot						: TEXCOORD1,
+			in float4 iDir_TimeLeft						: TEXCOORD2,
+			in float4 iUVParams							: TEXCOORD3,
+			in float4 iBlend_ClipFarNear				: TEXCOORD4,
+			out float4 oPos								: POSITION,			
+			out float4 oWPos0_RefZ						: TEXCOORD0,
+			out float4 oWPos1_Scale						: TEXCOORD1,
+			out float4 oAtlasT							: TEXCOORD2,
+			out float4 oDir_TimeLeft					: TEXCOORD3, 
+			out float3 oTangent							: TEXCOORD4,
+			out float3 oBinorm							: TEXCOORD5,
+			out float4 oScreenUV_ClipFarNear			: TEXCOORD6,
+			out float3 oBackgroundBlend_ScaleXY			: TEXCOORD7 )
+{
+
+	float2 spriteCorner;
+
+	oScreenUV_ClipFarNear.zw = iBlend_ClipFarNear.yz;
+
+	float2 Scale = iScale.xy * vScaleParams.xx;
+	oBackgroundBlend_ScaleXY.x = iBlend_ClipFarNear.x;
+	oBackgroundBlend_ScaleXY.yz = Scale.xy;
+	
+#if 0
+	if( iParams.x >= 0.75 ) spriteCorner = float2( +1, +1 );
+	else
+	if( iParams.x >= 0.50 ) spriteCorner = float2( +1, -1 );
+	else
+	if( iParams.x >= 0.25 ) spriteCorner = float2( -1, +1 );
+	else
+	if( iParams.x >= 0.00 ) spriteCorner = float2( -1, -1 );
+#else
+	spriteCorner = iCorner_Rot.xy * 2 - 1 ;
+#endif
+
+	float3 dir = iDir_TimeLeft.xyz * 2 - 1;
+
+	float3 binorm;
+
+	[flatten]
+	if( abs( dir.y ) > 0.1 )
+	{
+		binorm = float3( -dir.z, 0, dir.x );
+	}
+	else
+	{
+		binorm = float3( -dir.y, dir.x, 0 );
+	}
+
+	binorm = normalize( binorm );
+
+
+#if 0
+	float angle = frac( iParams.x * 4 ) * 3.1415926535 * 2;
+#else
+	float angle = iCorner_Rot.z * 3.1415926535 * 2;
+#endif
+
+	float sina, cosa;
+
+	sincos( angle, sina, cosa );
+
+	binorm = binorm * cosa + cross( dir, binorm ) * sina;
+	
+	float3 tangent = cross( binorm, dir );
+
+	oTangent	= tangent;
+	oBinorm		= binorm;
+
+	float4 cornerPos = iPos;
+
+	float3 vertStep = mul( float3( 0.75 * spriteCorner * max( Scale.x, Scale.y ), 0 ), mVStepT );
+	
+	cornerPos.xyz += vertStep;	
+
+	oWPos1_Scale.xyz	= cornerPos.xyz;
+	oWPos1_Scale.w		= sqrt( dot( Scale.xy, Scale.xy ) );
+
+	oPos				= mul( cornerPos, mVP );
+
+	oWPos0_RefZ.xyz		= iPos.xyz;
+	oWPos0_RefZ.w		= oPos.w;
+
+	// we can divide here, cause .w stays same across our sprite
+	oScreenUV_ClipFarNear.xy		= oPos.xy / oPos.w;
+	oScreenUV_ClipFarNear.xy		= oScreenUV_ClipFarNear.xy * vTexcTransform.xy + vTexcTransform.zw;
+
+	oAtlasT				= iUVParams;
+
+	oDir_TimeLeft.xyz	= dir;
+	oDir_TimeLeft.w		= iDir_TimeLeft.w;
+}

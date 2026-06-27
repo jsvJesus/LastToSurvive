@@ -1,0 +1,13 @@
+
+#include "system\IOParam\IODefine_VS.hls"
+
+
+void main( float4 vPos: POSITION,
+            float4 Diffuse: COLOR0: register(v5),
+         out float4 vPosOut: POSITION,
+		 out float2 color : COLOR0
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+  color = Diffuse;
+}

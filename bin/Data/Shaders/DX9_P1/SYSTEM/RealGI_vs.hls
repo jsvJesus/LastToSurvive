@@ -1,0 +1,74 @@
+
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+
+float4   cAmbientColor  : register(c8);
+float4   cFog  : register(c9);
+
+float4   cLight[8]  : register(c30);
+float4   cLightColor[8]  : register(c38);
+
+
+float4 CalcAOColor(float4 cLight, float4 Color, float3 Pos)
+{
+ float3 Light = cLight.xyz - Pos;
+
+ float4 Col = saturate(1.0f - length(Light)*( 1.0f/(cLight.w*1.5f)));
+
+ float LumB1 = dot(float3(cAmbientColor.r, cAmbientColor.g, cAmbientColor.b),float3(0.3f, 0.59f, 0.11f));
+ float LumB2 = dot(float3(Col.r, Col.g, Col.b),float3(0.3f, 0.59f, 0.11f));
+
+ LumB2 = min(LumB1*1.5f, LumB2);
+
+ return Color * LumB2;
+}
+ 
+
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         float2 vUV2: TEXCOORD1: register(v8),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+         out float4 vColorOut1: COLOR1,
+	 out float  vFog: FOG,
+         out float3 vTexOut1: TEXCOORD0,
+         out float2 vTexOut2: TEXCOORD1,
+         out float3 vPosOut1: TEXCOORD2
+       )
+{
+  float4 vPos1 = mul( vPos, mProj ); 
+  float3 vPos2 = mul( vPos.xyz, mWorld ); 
+       
+  vFog = 1 - vPos1.z * cFog.w;
+
+  vPosOut = vPos1;
+  vPosOut1 = vPos2;
+ vTexOut1.xy = vUV1;
+ vTexOut1.z = vPos1.z;
+  vTexOut2 = vUV2;
+
+  float3 Norm1 = normalize(mul(vNormal, mWorld));
+
+  float4 FinalColor = float4(0,0,0,1);
+
+  for (int i=0;i<8;i++)
+    FinalColor += CalcAOColor(cLight[i], cLightColor[i], vPos2);
+  
+/*
+  float  Attn2 = saturate(dot( Norm1, Light ));
+
+  if (Attn2 > 0.0f ) Attn2 /= 1.3f;
+  else 
+    Attn2 = 1.0f;
+
+  Light = normalize(Light);
+
+  float4 DC = saturate(dot( Norm1, Light ))*Attn1;
+*/
+
+  vColorOut = cAmbientColor;
+  vColorOut1 = FinalColor;
+}
+

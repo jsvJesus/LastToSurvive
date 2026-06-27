@@ -1,0 +1,16 @@
+//
+
+float4 Params : register( c0 );
+float3 SunDir : register( c1 );
+
+sampler Screen: register (s0);
+
+float4 main( in float2 texc : TEXCOORD, float3 viewRay: TEXCOORD1 ) : COLOR
+{
+	float weight = Params.x;	
+	float radius = Params.y;	
+
+	viewRay = normalize(viewRay);
+	float4 cl = tex2D(Screen, texc);
+	return pow(dot(viewRay, SunDir), radius) * weight * cl;
+}

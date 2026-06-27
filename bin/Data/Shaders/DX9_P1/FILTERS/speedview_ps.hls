@@ -1,0 +1,18 @@
+
+sampler CurBuffer : register (s0);
+sampler PrevBuffer : register (s1);
+
+float4 CamDepth : register (c10);
+float4 EffectPos : register (c11);
+
+float4 main(half2 uv1 : TEXCOORD0) : COLOR
+{
+ float4 C1 = tex2D(CurBuffer, uv1)*2-1;
+ float4 C2 = tex2D(PrevBuffer, uv1)*2-1;
+
+ float4 FC = (C1)*0.5+0.5;
+ FC.a = 1;
+
+ return FC;
+}
+

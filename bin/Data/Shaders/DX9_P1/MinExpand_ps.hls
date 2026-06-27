@@ -1,0 +1,27 @@
+//
+float4 vInvRes0 : register( c0 );
+
+sampler2D sSource : register( s0 );
+
+float4 main( in float4 vTexc : TEXCOORD0 ) : COLOR0
+{
+	float2 val0, val1 ;
+
+	
+	float4 IR0 = vInvRes0  ;
+
+	val0.x = tex2D( sSource, vTexc ).r ;
+	val0.y = tex2D( sSource, vTexc - IR0.xy ).r ;
+	
+	val1.x = tex2D( sSource, vTexc + IR0.xy ).r ;	
+	val1.y = tex2D( sSource, vTexc - IR0.zw ).r ;
+
+	float val2 = tex2D( sSource, vTexc + IR0.zw ).r ;
+
+
+	float2 m0 = min( val0, val1 ) ;
+	
+	float m1 = min( min( m0.x, m0.y ), val2 ) + 0.0625;
+
+	return m1 * 1.5f;
+}

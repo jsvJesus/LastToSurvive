@@ -1,0 +1,26 @@
+
+#include "System\IOParam\IODefine_VS.hls"
+
+float4 vColor : register(c29); // light vector
+float2 depthUVHalfPixelOffset: register(c30);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+         out float2 vTexOut1: TEXCOORD0, 
+         out float4 vTexOut2 : TEXCOORD1
+       )
+{
+ float4 vPos1 = mul( vPos, mProj ); 
+ vPosOut = vPos1;
+       
+ vColorOut = pow(vColor,2.2f);
+ vTexOut1.xy = vUV1 * vTexcUnpackScale.xy ;
+ //vTexOut1.z = vPos1.w;
+ 
+ vTexOut2 = vPosOut;//mul(vPos1, mProjective);
+ vTexOut2.xy += depthUVHalfPixelOffset * vTexOut2.w;
+  
+}

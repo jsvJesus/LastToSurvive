@@ -1,0 +1,19 @@
+//
+
+#include "System\IOParam\IODefine_VS.hls"
+
+float4 vColor : register( c64 );
+
+void main(	in float4 vPos 				: POSITION,
+			in float4 vNormal			: NORMAL,
+			out float4 vPosOut 			: POSITION,
+			out float4 vNorm_DepthOut 	: TEXCOORD0,
+			out float4 vColorOut 		: COLOR0 )
+{
+	vPosOut = mul ( vPos, mProj );
+	
+	vNorm_DepthOut.xyz 	= mul( vNormal, mWorld );
+	vNorm_DepthOut.w	= vPosOut.w;
+	
+	vColorOut = vColor;
+}

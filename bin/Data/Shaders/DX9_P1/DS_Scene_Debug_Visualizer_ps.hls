@@ -1,0 +1,52 @@
+
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+
+#ifndef SHOW_NORMALS
+#define SHOW_NORMALS 0
+#endif
+
+#ifndef SHOW_DEPTH
+#define SHOW_DEPTH 0
+#endif
+
+#ifndef SHOW_AUX
+#define SHOW_AUX 0
+#endif
+
+#ifndef SHOW_DIFFUSE
+#define SHOW_DIFFUSE 0
+#endif
+
+float4 vDepthMultiplier: register(c0);
+float4 vColorMask: register(c1);
+
+float4 main(float4 uv1_uv2 : TEXCOORD0) : COLOR
+{
+	float2 uv1 = uv1_uv2.xy;
+
+	float4 diffuseData = tex2D(AlbedoTex, uv1);
+	float4 normalData = tex2D(NormalTex, uv1);
+	float4 auxData = tex2D(AuxData, uv1);
+	float depthData = tex2D(DepthTex, uv1).r;;
+	
+	float4 cl = 0;
+#if SHOW_NORMALS
+	cl = normalData;
+#elif SHOW_AUX
+	cl = auxData;
+#elif SHOW_DEPTH
+	cl = depthData * vDepthMultiplier.r;
+#elif SHOW_DIFFUSE
+	cl = diffuseData;
+#endif
+	cl *= vColorMask;
+
+	if (dot(cl.rgb, 1) == 0)
+		cl.rgb = cl.a;
+		
+	return cl;
+}
+

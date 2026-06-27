@@ -1,0 +1,42 @@
+//
+sampler2D baseMap	: register(s0);
+sampler2D DepthTex	: register(s1);
+sampler2D noiseMap	: register(s2);
+
+void main( 		in half4 vTexcBase_FromCentre	: TEXCOORD0,
+				in half4 vTexcRotated 			: TEXCOORD1,
+				in half4 vTexOutPos				: TEXCOORD2,
+				in half4 vColor  				: COLOR0,
+				out float4 oColr0 : COLOR0,
+				out float4 oColr1 : COLOR1  )
+{  
+	half2 texcBase		= vTexcBase_FromCentre.xy;
+	half2 fromCentre 	= vTexcBase_FromCentre.zw;
+
+	half2 texcRot0		= vTexcRotated.xy;
+	half2 texcRot1		= vTexcRotated.zw;
+   
+	half edgeW = saturate( dot( fromCentre, fromCentre ) );
+    
+	half alpha = tex2D( baseMap, texcBase ).r;
+	
+	// depth test
+	half2 depth_uv = vTexOutPos.xy / vTexOutPos.w;
+	depth_uv.y = -depth_uv.y;
+	depth_uv *= 0.5h;
+	depth_uv += 0.5h;	
+
+	half fD = tex2D ( DepthTex, depth_uv );
+
+	half depthFade = saturate((fD - vTexOutPos.w)/5.0f);
+   
+	half rotatedAlpha 	=	tex2D( noiseMap, texcRot0 ).r;
+	rotatedAlpha 		*=	tex2D( noiseMap, texcRot1 ).r;
+     
+	alpha = lerp( alpha, alpha * rotatedAlpha, edgeW );
+
+	half finalAlpha = depthFade*vColor.a*alpha;
+  
+	oColr0 = half4( vColor.rgb * finalAlpha, finalAlpha );
+	oColr1 = half4( 0.5, 0.5, 0.5, 1 );
+}

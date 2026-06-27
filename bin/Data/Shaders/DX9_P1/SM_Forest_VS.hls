@@ -1,0 +1,34 @@
+
+float4x4 ViewProjMat : register (c0);
+
+void main( float4 vPos		: POSITION,
+         float3 vNormal		: NORMAL,
+         float2 vUV1		: TEXCOORD0,
+         float4 worldpos	: TEXCOORD3, // x,y,z,rotatex
+		 float3 scale		: TEXCOORD4, // sx,sy,sz
+         out float4 vPosOut	: POSITION,
+         out float2 vTexOut1: TEXCOORD0,
+         out float4 vPosOut2: TEXCOORD1 )
+{
+	float4x4 WorldMatrix;
+	
+	float sangle;
+	float cangle;
+	sincos(worldpos.w, sangle, cangle);
+	
+	WorldMatrix[0] = float4(cangle * scale.x,	0.0f,			-sangle,			0.0f);
+	WorldMatrix[1] = float4(0.0f,				1.0f * scale.y,	0.0f,				0.0f);
+	WorldMatrix[2] = float4(sangle,				0.0f,			cangle * scale.z,	0.0f);
+	WorldMatrix[3] = float4(worldpos.x,			worldpos.y,		worldpos.z,			1.0f);
+
+	float4x4 ModelViewProjMatrix = mul(WorldMatrix, ViewProjMat);
+	
+	vPosOut = mul( vPos, ModelViewProjMatrix );
+	
+	float4 Pos1 = mul(vPos, WorldMatrix);
+
+	vTexOut1.xy = vUV1;
+	vPosOut2.xyz = Pos1.xyz;
+	vPosOut2.w = vPosOut.w;
+}
+

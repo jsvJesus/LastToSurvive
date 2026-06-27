@@ -1,0 +1,123 @@
+//
+
+#include "SkyIO_ps.hls"
+
+struct vert2frag
+{
+	float4 Position		: POSITION;
+	float2 TexCoord		: TEXCOORD0;
+	
+    float2 TerrainCoord : TEXCOORD1;                                                    
+    float2 NormalCoord  : TEXCOORD2;                                                    
+    float4 Lin          : COLOR0;                                                       
+    float4 Fex          : COLOR1;
+    float4 Vertex_Height: TEXCOORD3;		
+}; 
+
+#ifndef SCATTER_SUN
+#define SCATTER_SUN 1
+#endif
+
+#ifndef DOUBLE
+#define DOUBLE 1
+#endif
+
+#ifndef NORMAL_ENABLED
+#define NORMAL_ENABLED 1
+#endif
+
+#ifndef HDR
+#define HDR 1
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+#if NORMAL_ENABLED	
+	float4 Normal : COLOR1;
+#endif	
+};
+
+sampler2D SkyTex0 : register( s0 );
+sampler2D SkyTex1 : register( s1 );
+
+sampler2D SkyGlow0 : register( s2 );
+sampler2D SkyGlow1 : register( s3 );
+
+float4 SunSpot( vert2frag IN )
+{
+	// Calculate view direction and distance
+	float3 vertex        = IN.Vertex_Height.xyz;
+	float3 viewDirection = normalize( vertex );
+	float  distance      = length( vertex );
+
+	float3 BetaRPlusBetaM	= BetaRPlusBetaM_CloudDensity.xyz;
+	float3 HGg 				= HGg_CloudDensity2.xyz;
+	float2 TexSizeInv		= CloudsHorizonFadeH_TexSizeInv.zw;
+
+	// Angle between sun direction and view direction
+	float3 sunDirection = normalize(SunDir_CloudsScale.xyz); // mul( MV, float4(SunDir, 0.0) ).xyz );
+	float  theta        = dot( sunDirection.xyz, viewDirection.xyz );
+
+	// Phase1 and Phase2
+	float phase1 = 1.0 + theta * theta;
+	float phase2 = pow( rsqrt( HGg.y - HGg.z * theta ), 3 ) * HGg.x;
+
+	// Extinction term
+	float3 extinction      = exp( -BetaRPlusBetaM * distance );
+	float3 totalExtinction = extinction * Multipliers.yzw;
+
+	// Inscattering term
+	float3 betaMie = BetaDashM * phase2 * MieScale.r;
+	float3 inscatter = betaMie * OneOverBetaRPlusBetaM * (1.0 - extinction);
+	inscatter	*= Multipliers.x;
+	inscatter	*= SunColorAndIntensity.xyz * SunColorAndIntensity.w ;
+
+	float SelfIlm = 0;
+	float sun_intensity = pow(dot(inscatter, float3(0.299f, 0.587f, 0.114f)),64);// * ( 1 - cloudDensity );
+	if( sun_intensity > 0.95f )	SelfIlm = 1.0f; // bloom
+
+	inscatter	= saturate( inscatter * 0.5 ) * 2;
+	return float4( inscatter, SelfIlm );
+}
+
+PSOUT main( vert2frag IN ) : COLOR
+{
+#if DOUBLE
+	float4 vColor = lerp( tex2D( SkyTex0, IN.TexCoord ), tex2D( SkyTex1, IN.TexCoord ), SkyLerp_SpotAmplify.x );
+	float Glow = lerp( tex2D( SkyGlow0, IN.TexCoord ), tex2D( SkyGlow1, IN.TexCoord ), SkyLerp_SpotAmplify.x );
+#else
+	float4 vColor = tex2D( SkyTex0, IN.TexCoord );
+	float Glow = tex2D( SkyGlow0, IN.TexCoord );
+#endif
+
+#if HDR
+	// Fix for HDR pipeline
+	vColor = pow(vColor, 2.2f);
+#endif
+
+	float sunIntensityForLerp = 0.f;
+
+#if SCATTER_SUN
+	float4 vSunSpot = SunSpot( IN ) * SkyLerp_SpotAmplify.y;
+	sunIntensityForLerp = dot( vSunSpot, float3( 0.3, 0.59, 0.11 ) );
+#else
+	float4 vSunSpot = 0;
+#endif
+
+	PSOUT out1;
+
+#if 0
+	out1.Color.rgb	= lerp( vColor, vSunSpot.rgb, saturate( sunIntensityForLerp * ( 1.0 - vColor.a ) ) ) * Amplify.x;
+#else
+	out1.Color.rgb	= ( vColor + vSunSpot.rgb * saturate( 1.0 - vColor.a ) ) * Amplify.x ;
+#endif
+
+	out1.Color.a	= 0;  // gloss
+
+#if NORMAL_ENABLED
+	out1.Normal		= float4( 0.5, 0, 0.5, vSunSpot.a + Glow );
+#endif
+
+	return out1;
+}

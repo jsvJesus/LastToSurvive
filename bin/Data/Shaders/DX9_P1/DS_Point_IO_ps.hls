@@ -1,0 +1,27 @@
+//
+float4     vCamPos              : register(c0);
+float4     Color                : register(c1);
+
+float4     vLightPos            : register(c2);
+//	x = 1/(endFade - startFade); y = startFade/(endFade - startFade); zw = unused
+float4     vLightDistanceParams : register(c3);
+
+float3x3   mLightMtx            : register(c4);
+float4     vMultiShadowParms    : register(c7);
+float4     vUnused              : register(c8);
+
+float4     SSS_Params0          : register(c9);
+float4     SSS_Params1          : register(c10);
+
+float4     InvDepthRes          : register(c11);
+float4     ViewSpacePos         : register(c12);
+float4     vShadowMapRes        : register(c13);
+
+float4x3   vLightViewMtx        : register(c14);
+
+float4     vParaboloidParams    : register(c17);
+
+float4     vBacklightColor      : register(c30);
+
+// not used - for SSS_Helper to compile
+float4 vAmbientColor ;

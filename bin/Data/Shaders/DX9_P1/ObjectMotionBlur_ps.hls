@@ -1,0 +1,36 @@
+//
+sampler Tex 		: register (s0);
+sampler AuxData 	: register (s3);
+sampler TexLinear	: register (s4);
+
+float	MotionBlurStrength : register ( c0 );
+
+#define NUM_SAMPLES 8
+
+half4 main ( float4 color_in: COLOR,
+			 half2 uv1      : TEXCOORD0 ) : COLOR
+{
+	half4 auxData = half4(tex2D(AuxData, uv1));
+	half2 Velocity = auxData.yz*2.h - 1.h;
+
+	half4 color = half4(tex2D(Tex, uv1));
+
+	half VelLen = length(Velocity);
+
+	[branch]
+	if( VelLen > 0.01h )
+	{
+		Velocity /= NUM_SAMPLES*8;
+		
+		Velocity *= MotionBlurStrength;
+		
+		[unroll]
+		for(int i=0; i<NUM_SAMPLES; ++i)
+		{
+			color += half4( tex2Dlod( TexLinear, half4( uv1-Velocity*half(i), 0.h, 0.h ) ) );
+		}
+		color /= NUM_SAMPLES+1;
+	}
+
+	return color;
+}

@@ -1,0 +1,273 @@
+
+sampler DiffuseTex : register (s0);
+sampler DepthTex : register (s4);
+
+float4 TintColor : register (c9);
+float4 CamDepth : register (c10);
+float4 EffectPos : register (c11);
+
+
+float ComputeVolumetricFog( in float3 cameraToWorldPos, float Depth )
+{
+  float cHeightFalloff = 0.1f;
+  float cGlobalDensity = 0.2f;
+
+  float3 Cam = CamDepth.yzw;
+
+  float cVolFogHeightDensityAtViewer = 1 - exp( -cHeightFalloff * Cam.y); //cViewPos.z );
+
+  float fogInt = length( cameraToWorldPos ) * cVolFogHeightDensityAtViewer;
+ 
+  const float cSlopeThreshold = 0.01;
+  if( abs( cameraToWorldPos.z ) > cSlopeThreshold )
+  {
+		float t = cHeightFalloff * cameraToWorldPos.y;
+  		fogInt *= ( 1.0 - exp( -t ) ) / t;
+  }
+
+  return exp( -cGlobalDensity * fogInt );
+}
+
+float3 mirror( float3 vDir, float3 vPlane ) 
+{
+  return vDir - 2 * vPlane * dot(vPlane,vDir);
+}
+
+
+float4 Deferred_SSAO_Pass_PS(float2 uv1)
+{
+	// define kernel
+	const float step = 1.f - 1.f/8.f;
+	float n = 0;
+	const float fScale = 0.025f; 
+	const float3 arrKernel[8] =
+	{
+		normalize(float3( 1, 1, 1))*fScale*(n+=step),
+		normalize(float3(-1,-1,-1))*fScale*(n+=step),
+		normalize(float3(-1,-1, 1))*fScale*(n+=step),
+		normalize(float3(-1, 1,-1))*fScale*(n+=step),
+		normalize(float3(-1, 1 ,1))*fScale*(n+=step),
+		normalize(float3( 1,-1,-1))*fScale*(n+=step),
+		normalize(float3( 1,-1, 1))*fScale*(n+=step),
+		normalize(float3( 1, 1,-1))*fScale*(n+=step),
+	};
+
+	// create random rot matrix
+	float3 rotSample = float3(0.3,0.26,0.167); //tex2D(sRotSampler4x4_16, IN.ScreenTC.zw).rgb;
+	rotSample = (2.0 * rotSample - 1.0);
+
+	float fSceneDepth = tex2D(DepthTex, uv1).r;
+
+	// range conversions
+  	float fSceneDepthM = fSceneDepth * 1; // * PS_NearFarClipDist.y;  
+
+	//SSAO_params.zzw
+	float3 vSampleScale = 0.5f * saturate(fSceneDepthM / 5.3f) * (1.f + fSceneDepthM / 8.f );
+        // make area smaller if distance less than 5 meters
+        // make area bigger if distance more than 32 meters
+
+    float fDepthRangeScale = 1 / vSampleScale.z * 0.85f;
+	
+	// convert from meters into SS units
+	vSampleScale.xy *= 1.0f / fSceneDepthM;
+	vSampleScale.z  *= 2.0f / 1;//PS_NearFarClipDist.y;
+
+  float fDepthTestSoftness = 64.f/vSampleScale.z;
+
+	// sample
+  float4 vSkyAccess = 0.f;
+  float4 arrSceneDepth2[2];      
+  float3 vIrrSample;
+  float4 vDistance;
+  float4 fRangeIsInvalid;
+
+  const float bHQ = 1;
+  
+  float fHQScale = 0.5f;
+
+  for(int i=0; i<2; i++)
+  {    
+    vIrrSample = mirror(arrKernel[i*4+0], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].x = tex2D( DepthTex, uv1+ vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].x = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+1], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].y = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].y = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+2], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].z = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].z = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+3], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].w = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].w = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    float fDefVal = 0.55f;
+
+    for(int s=0; s<(bHQ ? 2 : 1); s++)
+    {
+      vDistance = fSceneDepth - arrSceneDepth2[s]; 
+      float4 vDistanceScaled = vDistance * fDepthRangeScale;
+      fRangeIsInvalid = (saturate( abs(vDistanceScaled) ) + saturate( vDistanceScaled ))/2;  
+      vSkyAccess += lerp(saturate((-vDistance)*fDepthTestSoftness), fDefVal, fRangeIsInvalid);
+    }
+  }
+
+  float4 Color = dot( vSkyAccess, (bHQ ? 1/16.0f : 1/8.0f)*2.0 ) - 0.075f; //SSAO_params.y; // 0.075f
+  Color = saturate(lerp( 0.9f, Color, 0.5f)); //SSAO_params.x ));
+  Color.a = 1;
+  
+	return Color;
+}
+
+
+
+
+float4 SSAO_Pass(float2 uv1)
+{
+	// define kernel
+	const float step = 1.f - 1.f/8.f;
+	float n = 0;
+	const float fScale = 0.025f; 
+	const float3 arrKernel[8] =
+	{
+		normalize(float3( 1, 1, 1))*fScale*(n+=step),
+		normalize(float3(-1,-1,-1))*fScale*(n+=step),
+		normalize(float3(-1,-1, 1))*fScale*(n+=step),
+		normalize(float3(-1, 1,-1))*fScale*(n+=step),
+		normalize(float3(-1, 1 ,1))*fScale*(n+=step),
+		normalize(float3( 1,-1,-1))*fScale*(n+=step),
+		normalize(float3( 1,-1, 1))*fScale*(n+=step),
+		normalize(float3( 1, 1,-1))*fScale*(n+=step),
+	};
+
+	// create random rot matrix
+	float3 rotSample = float3(0.0,0.0,0.0); //tex2D(sRotSampler4x4_16, IN.ScreenTC.zw).rgb;
+//	rotSample = (2.0 * rotSample - 1.0);
+
+	float fSceneDepth = tex2D(DepthTex, uv1).r;
+
+	// sample
+  float4 vSkyAccess = 0.f;
+  float4 arrSceneDepth2[2];      
+  float3 vIrrSample;
+  float4 vDistance;
+  float4 fRangeIsInvalid;
+
+  const float bHQ = 1;
+  
+  float fHQScale = 0.5f;
+
+  for(int i=0; i<2; i++)
+  {    
+    vIrrSample = mirror(arrKernel[i*4+0], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].x = tex2D( DepthTex, uv1+ vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].x = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+1], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].y = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].y = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+2], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].z = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].z = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    vIrrSample = mirror(arrKernel[i*4+3], rotSample) * vSampleScale;		
+    arrSceneDepth2[0].w = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    if (bHQ)
+    {
+      vIrrSample.xyz *= fHQScale;
+      arrSceneDepth2[1].w = tex2D( DepthTex, uv1 + vIrrSample.xy ).r + vIrrSample.z;  
+    }
+
+    float fDefVal = 0.55f;
+
+    for(int s=0; s<(bHQ ? 2 : 1); s++)
+    {
+      vDistance = fSceneDepth - arrSceneDepth2[s]; 
+
+      
+      float4 vDistanceScaled = vDistance;// * fDepthRangeScale;
+      fRangeIsInvalid = (saturate( abs(vDistanceScaled) ) + saturate( vDistanceScaled ))/2;  
+      vSkyAccess += lerp(saturate((-vDistance)*fDepthTestSoftness), fDefVal, fRangeIsInvalid);
+    }
+  }
+
+  float4 Color = dot( vSkyAccess, (bHQ ? 1/16.0f : 1/8.0f)*2.0 ) - 0.075f; //SSAO_params.y; // 0.075f
+  Color = saturate(lerp( 1.0f, Color, 0.3f)); //SSAO_params.x ));
+  Color.a = 1;
+  
+	return Color;
+}
+
+
+
+
+
+
+
+
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+ float2 t6 = tex2D(DepthTex, uv1);
+ 
+// return SSAO_Pass(uv1);
+
+
+ float3 Cam = CamDepth.yzw;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6.r / CamDepth.x;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float FogDistance = 6000;
+// if (Cam.y < 108) FogDistance = 500+Cam.y/108*2000;
+
+// float FogDensity =  ComputeVolumetricFog((RealPos-Cam), Depth);
+ float HeightFalloff = exp(-saturate(RealPos.y/200))/ saturate(RealPos.y/200);
+ float FogDensity = length(RealPos - Cam)/ FogDistance; //*HeightFalloff; 
+
+ float4 FogColor1 = float4(55.0/255.0, 138.0/255.0, 221.0/255.0,saturate(FogDensity));
+
+ float4 FC = FogColor1; //1-saturate(RealPos.y/200.0f));
+
+ return FC;
+}
+

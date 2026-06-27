@@ -1,0 +1,71 @@
+
+
+ half4 fresnelReflectance ( half Dot, half4 CSpec ) {
+           return CSpec+(1.h-CSpec)*pow(1.h-Dot,5.h)*CSpec;
+
+    }
+
+ float4 fresnelReflectance1 ( float Dot, float4 CSpec ) {
+           return CSpec*pow(Dot,5);
+    }
+
+ float4 fresnelReflectance3 ( float Dot, float4 CSpec ) {
+           return CSpec+(1-CSpec)*pow(1-Dot,5);
+    }
+
+
+ float4 fresnelReflectance2 ( float Dot, float4 CSpec ) {
+  float MaterialF = 0.08f;
+           return  (MaterialF+(1-MaterialF)*pow(1-Dot,5))*CSpec;
+//           return  (CSpec+(1-CSpec)*pow(1-Dot,5));
+    }
+
+
+
+struct light_Params
+{
+	float3 vLight;		// Direction TO THE  light source
+	float3 vNormal;		// Normal
+	float3 vEyeVec;		
+	half4  vLightColor;
+	half   vDistanceAttn;	// distance attenuation
+	half  vPower;
+};
+
+
+half4 light_CalcSpecular(light_Params Param)
+{
+  half3 vhalf = normalize(Param.vEyeVec + Param.vLight);
+
+  half ViewDot = dot(Param.vNormal.rgb, vhalf);
+
+  half Power = pow(2.0h, 1.0h+Param.vPower*10.0h);
+
+  half SpecularPower = pow(ViewDot, Power );
+
+  half EnergyConservation = (Power+2.h)/(2.h*3.1415926h);
+
+  half Dim = dot(normalize(Param.vLight), Param.vNormal.rgb)+0.01f;
+  Dim = saturate(Dim);
+
+  float base = 1.0f - dot(Param.vEyeVec,normalize(vhalf));//Param.vNormal.rgb);//vhalf);
+  float exponential = pow( base, 5.0f);
+  float fresnel = exponential + 0.01f * (1.0f - exponential);
+ // specVal *= fresnel;
+//  fresnel =0;
+
+  return EnergyConservation* (SpecularPower*Param.vLightColor)*Param.vDistanceAttn*Dim;
+}
+
+
+
+
+half4 light_CalcDiffuse(light_Params Param)
+{
+	half Dim = dot(normalize(Param.vLight), Param.vNormal.rgb)+0.0f;
+//	float Dim = 0.5f + 0.5f*(dot(normalize(Param.vLight), Param.vNormal.rgb));
+	Dim = saturate(Dim);
+
+	return Dim * Param.vDistanceAttn * Param.vLightColor;
+}
+

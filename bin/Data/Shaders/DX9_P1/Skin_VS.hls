@@ -1,0 +1,76 @@
+
+float4x4 ModelViewProjMatrix	: register (c0);
+
+// NOTE: duplicated in IODefine_VS.hls
+float4x4 mWorld 		: register(c4);
+
+// NOTE: duplicate in 
+// Transparenv_vs.hls
+// SkinSM_VS.hls
+// SkinDepth_VS.hls
+float4 	vUnpackScale				: register (c22);
+float2	vUnpackTexc_ExtrudeAmmount	: register (c23);
+
+float4x3 bone1[73] 	: register(c24);
+
+void main(	float4 vPos				: POSITION,
+			float4 BlendWeights		: BLENDWEIGHT,
+			int4 BlendIndices		: BLENDINDICES,
+			float4 vNormal4			: NORMAL,
+			float4 vTangent4		: TANGENT,
+			float2 vUV1				: TEXCOORD0,
+
+			out float4 vPosOut		: POSITION,
+			out float3 vTexOut1		: TEXCOORD0,
+			out float3 vNormOut		: TEXCOORD1,
+			out float3 t1			: TEXCOORD2,
+			out float3 t2			: TEXCOORD3,
+			out float3 RealPos		: TEXCOORD4
+		)
+{
+
+	vPos.xyz *= vUnpackScale.xyz;
+
+	float3 vNormal = vNormal4.xyz * 2 - 1;
+	float4 vTangent4u = vTangent4 * 2 - 1;
+
+	float3 vTangent = vTangent4u.xyz;
+	float wtangent = vTangent4u.w;
+
+	// calc vertex world position
+	float3 Pos1 = float3(0,0,0);
+
+	Pos1 += mul(vPos, bone1[BlendIndices.x])*BlendWeights[0];
+	Pos1 += mul(vPos, bone1[BlendIndices.y])*BlendWeights[1];
+	Pos1 += mul(vPos, bone1[BlendIndices.z])*BlendWeights[2];
+	Pos1 += mul(vPos, bone1[BlendIndices.w])*BlendWeights[3];
+
+	// calc normal
+	vNormOut = float3(0,0,0);
+	vNormOut += mul(vNormal, bone1[BlendIndices[0]])*BlendWeights[0];
+	vNormOut += mul(vNormal, bone1[BlendIndices[1]])*BlendWeights[1];
+	vNormOut += mul(vNormal, bone1[BlendIndices[2]])*BlendWeights[2];
+	vNormOut += mul(vNormal, bone1[BlendIndices[3]])*BlendWeights[3];
+	
+	vNormOut = mul( vNormOut, (float3x3)mWorld ) ;
+	vNormOut = normalize(vNormOut);
+	
+	RealPos = Pos1;	
+	
+	vPosOut = mul(float4(Pos1.xyz, 1.0f), ModelViewProjMatrix);
+	
+	vTexOut1.xy = vUV1.xy * vUnpackTexc_ExtrudeAmmount.xy ;	
+	vTexOut1.z  = vPosOut.w;	
+
+	// calc tangent space
+	t1 = float3(0,0,0);
+	t1 += mul(vTangent, bone1[BlendIndices[0]])*BlendWeights[0];
+	t1 += mul(vTangent, bone1[BlendIndices[1]])*BlendWeights[1];
+	t1 += mul(vTangent, bone1[BlendIndices[2]])*BlendWeights[2];
+	t1 += mul(vTangent, bone1[BlendIndices[3]])*BlendWeights[3];
+	
+	t1 = mul( t1, (float3x3)mWorld ) ;
+	t1 = normalize(t1);  
+	
+	t2 = cross(vNormOut, t1) * wtangent;
+}

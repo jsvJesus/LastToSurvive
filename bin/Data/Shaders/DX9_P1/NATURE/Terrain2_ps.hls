@@ -1,0 +1,58 @@
+//
+sampler sTileDiffuse           : register ( s0 );
+sampler sTileNormal            : register ( s1 );
+
+float4 g_SpecularPow_DefSSAO    :  register( c0 );
+
+float4 g_Light                  :  register( c1 );
+
+#ifndef FORWARD_LIGHTING
+#define FORWARD_LIGHTING 0
+#endif
+
+struct PSOUT
+{
+	float4	Color	: COLOR0 ;
+#if !FORWARD_LIGHTING	
+	float4	Normal	: COLOR1 ;
+	float4	Depth	: COLOR2 ;
+
+#if AUX_ENABLED
+	float4	Aux		: COLOR3 ;
+#endif
+
+#endif
+	
+};
+
+
+//--------------------------------------------------------------------------------------------------------		
+
+PSOUT main(	in float3 iTexc_Depth : TEXCOORD0 )
+{
+	float specPow = g_SpecularPow_DefSSAO.x;
+	float defSSAO = g_SpecularPow_DefSSAO.y;
+
+	PSOUT res ;
+	
+	float2 texc = iTexc_Depth.xy ;
+	float depth = iTexc_Depth.z ;
+	
+	float3 norm = normalize( tex2D( sTileNormal, texc ).xyz * 2 - 1 ) ;
+
+#if FORWARD_LIGHTING
+	res.Color	= float4( tex2D( sTileDiffuse, texc ).rgb, 0 ) * saturate( dot( norm, -g_Light.xyz ) ) ;
+#else
+	res.Color	= float4( tex2D( sTileDiffuse, texc ).rgb, 0 ) ;
+	res.Normal	= float4( norm.xyz * 0.5f + 0.5f, g_Light.w ) ;	
+
+	res.Depth	= depth ;
+
+
+#if AUX_ENABLED
+	res.Aux		= float4( defSSAO, specPow, 1, 0 ) ;
+#endif
+#endif
+
+	return res ;
+}

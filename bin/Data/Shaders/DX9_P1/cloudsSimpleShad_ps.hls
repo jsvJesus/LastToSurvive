@@ -1,0 +1,15 @@
+float4 ambSH		: register(c9);
+float4 lightSH		: register(c10);
+float4 lightColor	: register(c11);
+float4 tileSize		: register(c12);
+float4 ambientColor : register(c13);
+
+sampler2D samp : register(s0);
+sampler2D Depth : register(s1);
+
+void main(		in float4 iPos		: POSITION,
+ 				in float2 iTexCoord0 : TEXCOORD0,
+				out float4 oColr0	: COLOR0)
+{					
+	oColr0 = tex2D(samp, iTexCoord0).a*0.5f;
+}

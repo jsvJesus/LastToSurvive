@@ -1,0 +1,41 @@
+
+sampler NormalsAndSelfIllum : register (s3);
+sampler DepthTex : register (s4);
+
+float4 TintColor : register (c9);
+float4 CamInvDepth : register (c10);
+float4 EffectParam : register (c11); // fog  distance, max_density, height
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+ float AuxParam = abs(tex2D(NormalsAndSelfIllum, uv1+ float2(0.5/1280, 0.5/720)).a*2-1);
+
+ float2 t6 = tex2D(DepthTex, uv1+ float2(0.5/1280, 0.5/720)).r; //DecodeARGB32(tex2D(DepthTex, uv1))*10000.0f;
+ 
+ float3 Cam = CamInvDepth.xyz;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6.r * CamInvDepth.w;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float FogDistance = EffectParam.x;
+ float FogDensity = EffectParam.y;
+
+
+ float FogValHeight = (1.0f-saturate(RealPos.y/EffectParam.z));
+ float FogValDistance = (saturate(distance(Cam.xyz, RealPos.xyz)/FogDistance));
+ float FogVal = saturate(FogValHeight*FogValDistance)*FogDensity;
+
+
+ float4 FogColor1 =  float4(TintColor.r,TintColor.g, TintColor.b,lerp(FogVal, 0, AuxParam));
+
+ return FogColor1;
+}
+

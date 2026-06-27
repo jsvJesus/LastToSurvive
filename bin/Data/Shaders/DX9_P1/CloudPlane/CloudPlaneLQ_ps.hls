@@ -1,0 +1,20 @@
+struct SPSInput {
+	float4 vWorldPos : TEXCOORD0;
+	float2 vTex      : TEXCOORD2;
+	float2 vScreenPos : VPOS;
+};
+
+
+sampler sDensity : register(s0);  // density map
+float3 cLit : register(c12);      // light color
+float3 cAmb : register(c13);      // ambient light
+
+
+
+float4 main(in SPSInput _Input) : COLOR0
+{
+	float a = tex2D( sDensity, _Input.vTex.xy ).a;
+	float f = (sqrt(1-a) + 0.2) * 0.7;
+	float3 c = cAmb + cLit*f;
+	return float4(c, a);
+}

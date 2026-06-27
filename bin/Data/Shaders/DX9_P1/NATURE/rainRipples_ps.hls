@@ -1,0 +1,47 @@
+sampler sampMain : register (s0);
+float3 drop0Point_amount : register(c0);
+float3 drop1Point_amount : register(c1);
+float3 drop2Point_amount : register(c2);
+float3 drop3Point_amount : register(c3);
+
+float2 getV(float2 uv, float2 idx)
+{
+	float2 v;
+	v.x = 1 / length(idx);
+	v.y = tex2D(sampMain, uv+idx/512).r * v.x;
+	return v;
+}
+
+float4 main( float2 uv : TEXCOORD0) : COLOR
+{
+	//return float4(0, 0, 0, 1);
+	float2 cc = tex2D(sampMain, uv).rg;
+
+	float d = 1.0f/512;
+	
+	float sum =
+		tex2D(sampMain, uv-float2(d,0)).r +
+		tex2D(sampMain, uv+float2(d,0)).r +
+		tex2D(sampMain, uv+float2(0,d)).r +
+		tex2D(sampMain, uv-float2(0,d)).r;
+	float h = 0.99f * ( cc.r - cc.g ) + sum*0.25f;
+
+	float2 ss = float2(0,0);
+	ss += getV(uv, float2(-1,-1));
+	ss += getV(uv, float2( 0,-1));
+	ss += getV(uv, float2( 1,-1));
+	ss += getV(uv, float2(-1, 0));
+	ss += getV(uv, float2( 1, 0));
+	ss += getV(uv, float2(-1, 1));
+	ss += getV(uv, float2( 0, 1));
+	ss += getV(uv, float2( 1, 1));
+	h = 0.98f * ( cc.r - cc.g ) + ss.y / ss.x;
+
+	if( length(drop0Point_amount.xy-uv) < 0.002f)	h += drop0Point_amount.z;
+	if( length(drop1Point_amount.xy-uv) < 0.002f)	h += drop1Point_amount.z;
+	if( length(drop2Point_amount.xy-uv) < 0.002f)	h += drop2Point_amount.z;
+	if( length(drop3Point_amount.xy-uv) < 0.002f)	h += drop3Point_amount.z;
+
+	return float4(h, cc.r, 0, 1);
+	return float4(cc, 0, 1);
+}

@@ -1,0 +1,45 @@
+#ifndef VERTEX_SHADER
+#define VERTEX_SHADER 0
+#define PIXEL_SHADER 1
+#endif
+
+#include "fog.hls"
+
+
+
+
+sampler NormalsAndSelfIllum: register (s3);
+sampler DepthTex : register (s4);
+float4 CamInvDepth	: register (c10);
+float4 HalfInvRes : register (c11);
+
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+
+//	float AuxParam = abs(tex2D(NormalsAndSelfIllum, uv1 + HalfInvRes.xy ).a*2-1);
+	float Depth = tex2D(DepthTex, uv1 + HalfInvRes.xy ).r * CamInvDepth.w;
+
+	// Reconstruct World Z using UV and Depth
+	float3 CamVec = WPos - CamInvDepth.xyz;
+	float3 RealPos = CamInvDepth.xyz + Depth*CamVec;
+
+	clip(RealPos.y - HalfInvRes.z);
+
+	float4 aer = getAerialVal(CamVec, Depth*length(CamVec));
+
+	float FogVal = getFogVal(CamInvDepth.xyz, RealPos.xyz);
+	float X = (1-aer.a)*(1-FogVal);
+	float Y = 1-X;
+	
+	float3 C = (aer.rgb*aer.a*(1-FogVal) + g_fogColor.rgb*FogVal) / Y;
+
+	if(Depth<=1.0f) return float4( C, Y);
+	return float4( g_fogColor.rgb, FogVal);
+
+}
+

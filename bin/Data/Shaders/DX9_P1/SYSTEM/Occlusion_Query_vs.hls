@@ -1,0 +1,18 @@
+float4x4 matWVP : register(c0);             
+
+struct VS_IN_DEPTH                          
+{                                           
+	float3 pos	: POSITION;                 
+};                                          
+
+struct VS_OUT_DEPTH                         
+{                                           
+	float4 pos : POSITION;               // Projected space position 
+};                                          
+
+VS_OUT_DEPTH main( VS_IN_DEPTH IN )
+{                                           
+	VS_OUT_DEPTH OUT;                         
+	OUT.pos = mul(float4(IN.pos, 1), matWVP);
+	return OUT;                               // Transfer position
+}                                           

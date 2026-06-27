@@ -1,0 +1,14 @@
+float4x4 mViewProj : register( c0 );
+
+void main(	float3 vPos : POSITION,
+			float3 vNormal : NORMAL,
+			float2 vTexCoord : TEXCOORD0,
+			float3 vU : TEXCOORD1,
+			float3 vV : TEXCOORD2,
+			out float4 vPosOut: POSITION,
+			out float2 vTexOut: TEXCOORD0
+			)
+{
+	vTexOut = vTexCoord;
+	vPosOut = mul( float4( vPos, 1 ), mViewProj );
+}

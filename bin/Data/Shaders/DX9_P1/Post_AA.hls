@@ -1,0 +1,109 @@
+
+sampler G_Screen 	: register (s0);
+sampler G_Normal 	: register (s1);
+sampler G_Depth 	: register (s2);
+
+sampler G_Blur 		: register (s3);
+
+
+float4 BW  = { 0.3f, 0.59f, 0.11f, 1.0f};
+
+const static float2 PixelSize = float2(1.0f/1280.0f, 1.0f/720.0f);
+
+
+   ////////////////////////////   
+   // Neighbor offset table   
+   ////////////////////////////   
+   const static float2 offsets[9] = {   
+  float2( 0.0,  0.0), //Center       0   
+   float2(-1.0, -1.0), //Top Left     1   
+   float2( 0.0, -1.0), //Top          2   
+   float2( 1.0, -1.0), //Top Right    3   
+   float2( 1.0,  0.0), //Right        4   
+   float2( 1.0,  1.0), //Bottom Right 5   
+   float2( 0.0,  1.0), //Bottom       6   
+   float2(-1.0,  1.0), //Bottom Left  7   
+   float2(-1.0,  0.0)  //Left         8   
+};   
+
+float DL_GetEdgeWeight(in float2 screenPos)   
+{   
+  float Depth[9];   
+  float3 Normal[9];   
+  //Retrieve normal and depth data for all neighbors.   
+
+  for (int i=0; i<9; ++i)   
+  {   
+    float2 uv = screenPos + offsets[i] * PixelSize;   
+    Depth[i] = tex2D(G_Depth, uv); //DL_GetDepth(uv);  //Retrieves depth from MRTs   
+    Normal[i]= tex2D(G_Normal, uv); //DL_GetNormal(uv); //Retrieves normal from MRTs   
+  }   
+  //Compute Deltas in Depth.   
+   float4 Deltas1;   
+  float4 Deltas2;   
+  Deltas1.x = Depth[1];   
+  Deltas1.y = Depth[2];   
+  Deltas1.z = Depth[3];   
+  Deltas1.w = Depth[4];   
+  Deltas2.x = Depth[5];   
+  Deltas2.y = Depth[6];   
+  Deltas2.z = Depth[7];   
+  Deltas2.w = Depth[8];   
+  //Compute absolute gradients from center.   
+  Deltas1 = abs(Deltas1 - Depth[0]);   
+  Deltas2 = abs(Depth[0] - Deltas2);   
+  //Find min and max gradient, ensuring min != 0   
+   float4 maxDeltas = max(Deltas1, Deltas2);   
+  float4 minDeltas = max(min(Deltas1, Deltas2), 0.00001);   
+  // Compare change in gradients, flagging ones that change   
+   // significantly.   
+   // How severe the change must be to get flagged is a function of the   
+   // minimum gradient. It is not resolution dependent. The constant   
+   // number here would change based on how the depth values are stored   
+   // and how sensitive the edge detection should be.   
+   float4 depthResults = step(minDeltas * 25.0, maxDeltas);   
+  //Compute change in the cosine of the angle between normals.   
+  Deltas1.x = dot(Normal[1], Normal[0]);   
+  Deltas1.y = dot(Normal[2], Normal[0]);   
+  Deltas1.z = dot(Normal[3], Normal[0]);   
+  Deltas1.w = dot(Normal[4], Normal[0]);   
+  Deltas2.x = dot(Normal[5], Normal[0]);   
+  Deltas2.y = dot(Normal[6], Normal[0]);   
+  Deltas2.z = dot(Normal[7], Normal[0]);   
+  Deltas2.w = dot(Normal[8], Normal[0]);   
+  Deltas1 = abs(Deltas1 - Deltas2);   
+  // Compare change in the cosine of the angles, flagging changes   
+   // above some constant threshold. The cosine of the angle is not a   
+   // linear function of the angle, so to have the flagging be   
+   // independent of the angles involved, an arccos function would be   
+   // required.   
+   float4 normalResults = step(0.4, Deltas1);   
+  normalResults = max(normalResults, depthResults);   
+  return (normalResults.x + normalResults.y +   
+          normalResults.z + normalResults.w) * 0.25;   
+}  
+
+
+float4 main ( float2 Tex : TEXCOORD0  ) : COLOR
+{
+// Tex = Tex + float2(1.0f/1280.0f, 1.0f/720.0f)/2;
+
+ float Mask = DL_GetEdgeWeight(Tex);
+
+ float4 Orig = tex2D(G_Screen, Tex);
+
+ float2 uv = Tex + float2(-1,-1) * PixelSize/2;   
+ float4 AA1 = tex2D(G_Blur, Tex);
+
+ uv = Tex + float2(-1,1) * PixelSize/2;   
+ AA1 += tex2D(G_Blur, Tex);
+
+ uv = Tex + float2(1,1) * PixelSize/2;   
+ AA1 += tex2D(G_Blur, Tex);
+
+ uv = Tex + float2(1,-1) * PixelSize/2;   
+ AA1 += tex2D(G_Blur, Tex);
+
+ return lerp(Orig, AA1/4,  Mask);
+}
+

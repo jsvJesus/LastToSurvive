@@ -1,0 +1,38 @@
+
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x3 ModelMatrix			: register (c4);
+float4x3 BoneMatrices[60]		: register (c12);
+
+void main(	float3 vPos			: POSITION,
+			float2 vUV1			: TEXCOORD0,
+			float3 vNormal		: NORMAL,
+			float3 vTangent		: TANGENT,
+			int2   boneIndices	: BLENDINDICES, 
+			
+			out	float4 vPosOut	: POSITION,
+			out	float3 vTexOut1	: TEXCOORD0,
+			out	float3 vNormOut	: TEXCOORD1,
+			out	float3 t1		: TEXCOORD2,
+			out	float3 t2		: TEXCOORD3,
+			out	float3 RealPos	: TEXCOORD4 )
+{
+	float4x3 boneMat = BoneMatrices[boneIndices.x];
+	float3 skinnedPos		= mul(float4(vPos, 1), boneMat);
+	float3 skinnedNormal	= mul(vNormal, (float3x3)boneMat);
+	float3 skinnedTangent	= mul(vTangent, (float3x3)boneMat);
+	
+	float4 pos = float4(skinnedPos, 1);
+	
+	vPosOut = mul(pos, ModelViewProjMatrix);
+	
+	vTexOut1.xy = float2(vUV1.x, 1.0 - vUV1.y);
+	vTexOut1.z  = vPosOut.w;
+
+	vNormOut = mul(skinnedNormal, ModelMatrix);
+
+	t1 = mul(skinnedTangent, ModelMatrix);
+	t2 = cross(vNormOut, t1);
+	
+	RealPos = mul(pos, ModelMatrix);
+}
+

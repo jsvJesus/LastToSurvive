@@ -1,0 +1,104 @@
+//
+sampler Screen		: register ( s0 );
+sampler GlowPower	: register ( s4 );
+
+float4 GodRaysParam	: register ( c0 );
+float4 GodRaysPos	: register ( c1 );
+
+
+float4 BW  = { 0.3f, 0.59f, 0.11f, 1.0f};
+
+#define NUM_SAMPLES 8
+#define NUM_SAMPLES1 4
+
+
+float4 Glare(float2 uv )
+{
+	float Density	= GodRaysParam.x; //0.6f;
+	float Weight	= GodRaysParam.y; //1.0f;
+	float Decay 	= GodRaysParam.z; //0.8f;
+	float Exposure	= GodRaysParam.w; //1.0f;
+
+	// float2 delta = uv - float2(GodRaysPos.x,GodRaysPos.y);
+	float2 delta = uv - float2(0.5,0.5);
+
+	delta *= 1.0f /NUM_SAMPLES1 *Density;
+
+	float4 Col = float4(0,0,0,0);
+
+	float IllumDecay = 0.9f;
+
+	float2 uv1 = uv;
+
+	float4 screen = 0;
+
+	[ unroll ]
+	for (int i=0;i<NUM_SAMPLES1; i++)
+	{
+		float4 Col1 = tex2D(Screen, uv1);
+
+		uv1 -= delta;
+
+		[flatten]
+		if( i == 0 ) screen = Col1;
+
+		Col1 *= float4(0.8,0.4, 0.6,1.0f)*(1-IllumDecay);
+
+		float Dimmer = 1 - saturate(3.0f*Weight * length(uv1 - float2(0.5f, 0.5f)));
+
+		Col1 *= Dimmer;
+
+		Col1 *= IllumDecay;
+
+		Col += Col1;
+
+		IllumDecay *= Decay;
+	}
+
+	return float4(screen + Col.rgb*Exposure, 1);
+}
+
+
+
+float4 GodRays(float2 uv)
+{
+	float Density	= GodRaysParam.x; //0.6f;
+	float Decay 	= GodRaysParam.z; //0.8f;
+	float Exposure	= GodRaysParam.w; //1.0f;
+
+	const half2 sunposition = GodRaysPos.xy;
+
+	half2 deltaTexcoord = sunposition - uv;
+	
+	deltaTexcoord *= (1.0 / NUM_SAMPLES) * Density;
+
+	half illuminationDecay = 1;
+	
+	half3 color = 0;
+	for (int i = 0; i < NUM_SAMPLES; i++)
+	{
+		uv += deltaTexcoord;
+
+		half3 sample = tex2D(Screen, uv).rgb;
+		
+		sample *= illuminationDecay;
+		
+		color += sample;
+		
+		illuminationDecay *= Decay;
+	}
+	
+	return float4(color * Exposure * (1.0 / NUM_SAMPLES), 1);
+}
+
+
+
+
+float4 main(float2 uv1 : TEXCOORD0 ) : COLOR
+{
+#if 0
+	return Glare(uv1);
+#else
+	return GodRays(uv1);
+#endif
+}

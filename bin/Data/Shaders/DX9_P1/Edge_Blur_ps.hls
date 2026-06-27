@@ -1,0 +1,90 @@
+//
+sampler Tex 											: register ( s0 );
+sampler	Depth											: register ( s2 );
+
+float4 	TapStep[ NUM_TAPS / 2 + NUM_TAPS % 2 ]			: register ( c0 );
+
+#define NUM_COEFS ( NUM_TAPS + 1 )
+
+float4 	BlurCoef[ NUM_COEFS / 4 + !!( NUM_COEFS % 4 ) ]	: register ( c4 );
+
+float3	DepthParams										: register ( c6 );
+
+
+float GetBlurCoef( int idx )
+{
+	return BlurCoef[ idx / 4 ][ idx % 4 ];
+}
+
+
+float FilterDepthDiff( inout float m, float diff )
+{
+	[flatten]
+	if( abs( diff ) < DepthParams.y )
+	{
+		return diff;		
+	}
+	else
+	{
+		m = 0;
+		return 0;
+	}
+}
+
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+	float4 color = tex2D( Tex, texc );
+
+	float prev_diff = color.a *  saturate( TapStep[0].y * 1000 );
+
+	float diff 		= 0;
+	float centre 	= tex2D( Depth, texc ).r;
+
+	float m = 1;
+
+	[unroll]
+	for( int i=0; i < NUM_TAPS; ++i )
+	{
+		float2 step = i % 2 ? TapStep[ i / 2 ].zw : TapStep[ i / 2 ].xy;
+
+		diff += FilterDepthDiff( m, centre - tex2D( Depth, texc - step ).r );
+		diff += FilterDepthDiff( m, centre - tex2D( Depth, texc + step ).r );
+	}
+
+	diff = saturate( abs( diff * m * DepthParams.z ) );
+
+	[branch]
+	if( diff > DepthParams.x )
+	{
+
+		float4 unblurred = color;
+
+		color *= GetBlurCoef( 0 );
+
+		[unroll]
+		for( int i=0; i < NUM_TAPS; ++i )
+		{
+			float2 step = i % 2 ? TapStep[ i / 2 ].zw : TapStep[ i / 2 ].xy;
+		
+			float coef = GetBlurCoef( i + 1 );
+
+			color += tex2Dlod( Tex, float4( texc + step, 0, 0 ) ) * coef;
+			color += tex2Dlod( Tex, float4( texc - step, 0, 0 ) ) * coef;
+		}
+
+		color = lerp( unblurred, color, diff );
+	}
+
+
+#define DO_DEBUG 0
+#if DO_DEBUG
+	color.a = max( diff, prev_diff );
+#endif
+
+	color_out = color;
+}

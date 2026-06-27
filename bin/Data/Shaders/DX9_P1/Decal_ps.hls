@@ -1,0 +1,219 @@
+// Enter your shader in this window
+
+float3 CamPos			: register( c0 );
+float4 NormStep0		: register( c1 );
+float3 WNormStep0		: register( c2 );
+float3 WNormStep1		: register( c3 );
+float3 Displace_ARef	: register( c4 );
+
+
+sampler2D SceneDepthTex		: register( s0 );
+sampler2D NoiseTex			: register( s1 );
+sampler2D DiffuseTex		: register( s2 );
+sampler2D NormalTex			: register( s3 );
+sampler2D SceneDiffuseTex	: register( s4 );
+
+float3 GetPos( float2 uv, float invRefZ, float3 wpos )
+{
+	float depth 	= tex2D( SceneDepthTex, uv ).r;
+
+	float scaleCoef	= depth * invRefZ;
+
+	return CamPos + ( wpos - CamPos ) * scaleCoef;
+}
+
+float2 ray_intersect_rm(	in float2 uv, in float2 ds )
+{
+	const int linear_search_steps = 12;
+   
+	// current size of search window
+	float size = 1.0/linear_search_steps;
+	// current depth position
+	float depth = 1.0;
+
+
+	// search front to back for first point inside object
+
+	float3 step = float3( -size * ds, -size );
+	float3 dp = float3( uv, 1.0f );
+
+	float4 t;
+
+	[unroll]
+	for( int i = 0;i < linear_search_steps - 1 ; i++ )
+	{
+		t = tex2Dlod( NormalTex, float4( dp.xy, 0, 0 ) );
+
+		[flatten]
+		if ( dp.z > t.w )		
+		{
+			dp += step;
+		}
+	}
+
+	const int binary_search_steps = 4;
+
+	// recurse around first point (depth) for closest match
+	[unroll]
+	for( int i = 0; i < binary_search_steps; i ++ )
+	{
+		step *= 0.5;
+
+		[flatten]
+		if ( dp.z > t.w )
+		{
+			dp += 2 * step;
+		}
+
+		dp 		-= step;
+
+		t = tex2Dlod( NormalTex, float4( dp.xy, 0, 0 ) );
+	}
+
+#if 0
+	return dp.xy + 0.5 * ( t.w - dp.z ) * ds;
+#else
+	return dp.xy;
+#endif
+
+}
+
+
+void main(	in float4 iWPos0_RefZ						: TEXCOORD0,
+			in float4 iWPos1_Scale						: TEXCOORD1,
+			in float4 iAtlasT							: TEXCOORD2,
+			in float4 iDir_TimeLeft						: TEXCOORD3,
+			in float3 iTangent							: TEXCOORD4,
+			in float3 iBinorm							: TEXCOORD5,
+			in float4 iScreenUV_ClipFarNear				: TEXCOORD6,
+			in float3 iBackgroundBlend_ScaleXY			: TEXCOORD7,
+
+			out float4 oDiffuse : COLOR0,
+			out float4 oNorm : COLOR1
+			 )
+{
+
+	float2 screenUV = iScreenUV_ClipFarNear.xy;
+	float backgroundBlendFactor = iBackgroundBlend_ScaleXY.x;
+	
+	float clipFarMin = iScreenUV_ClipFarNear.z;
+	float clipNearCoef = iScreenUV_ClipFarNear.w;
+
+	float refZ      = iWPos0_RefZ.w;
+	float invRefZ   = 1.f / refZ;
+	
+	float displace = Displace_ARef.x;
+	float aRef = Displace_ARef.y;
+	
+	float scale 	= iWPos1_Scale.w;
+	float2 scaleXY = iBackgroundBlend_ScaleXY.yz ;
+
+	float3 WPos0 = iWPos0_RefZ.xyz;
+	float3 WPos1 = iWPos1_Scale.xyz;
+
+	float3 CentrePos = WPos0;
+
+	float3 CN = iDir_TimeLeft.xyz;
+
+	float3 scaledStep0 = WNormStep0 * refZ;
+	float3 scaledStep1 = WNormStep1 * refZ;
+
+	float3 ActualPos = GetPos( screenUV, invRefZ, WPos1 );
+
+	float3 AStepPos10N = GetPos( screenUV - NormStep0.xy, invRefZ, WPos1 - scaledStep0 );
+	float3 AStepPos01N = GetPos( screenUV - NormStep0.zw, invRefZ, WPos1 - scaledStep1 );
+
+	float3 AStepPos10 = GetPos( screenUV + NormStep0.xy, invRefZ, WPos1 + scaledStep0 );
+	float3 AStepPos01 = GetPos( screenUV + NormStep0.zw, invRefZ, WPos1 + scaledStep1 );
+
+	float3 AN0 = normalize( cross( AStepPos10 - ActualPos, AStepPos01 - ActualPos ) );
+	float3 AN1 = normalize( cross( ActualPos - AStepPos10N, ActualPos - AStepPos01N ) );
+
+	float dt0 = dot( AN0, CN );
+	float dt1 = dot( AN1, CN );	
+
+	float3 AN = dt1 > dt0 ? AN1 : AN0;
+
+	float clipNormFactor = dot( AN, CN ) - 0.25f;
+
+	clip( clipNormFactor );
+
+	float3 ToActPos = ActualPos - CentrePos;
+
+	float hscale	= scale * 0.5f;
+	float dfactor	= dot( ActualPos - WPos0, CN );
+
+	float clipFarFactor = min( hscale, clipFarMin ) - dfactor;
+	float clipNearFactor = hscale + dfactor;
+
+	clip( clipFarFactor );
+	clip( hscale * clipNearCoef + dfactor );
+
+	float clipFade = saturate( saturate( 4 * clipNormFactor ) * 24 * clipNearFactor * clipFarFactor / scale ) ;
+
+	float3 Delta = ToActPos ;
+
+	float2 uv = float2( dot( Delta, iTangent ) / scaleXY.x , dot( Delta, iBinorm ) / scaleXY.y );
+
+	uv += 0.5f;
+
+	// texkill originaly works on .xyz
+	// and current compiler crashes if we substitute
+	// something other than float or float3 to clip
+
+	float3 uv3 = float3( uv, 0 );
+
+	clip( uv3 );
+	clip( 1 - uv3 );
+
+	uv = uv * iAtlasT.xy + iAtlasT.zw;
+
+	float2 dx = ddx( uv );
+	float2 dy = ddy( uv );
+
+#if DO_RELIEF
+
+#define TEX2D(s,uv,dx,dy) tex2Dgrad(s,uv,dx,dy)
+
+	float3 view  = normalize( ActualPos - CamPos );
+	float a      = dot( CN, view );
+
+	float3 step  = normalize( float3(dot(view, iTangent ), dot( view, iBinorm ), a ) );
+	step         *= displace / a;
+
+	uv = ray_intersect_rm( uv, step.xy );
+
+#else
+
+#define TEX2D(s,uv,dx,dy) tex2D(s,uv)
+
+#endif
+
+	float4 diff = TEX2D( DiffuseTex, uv, dx, dy );
+
+#define NOISE_FADEOUT 0
+
+#if NOISE_FADEOUT
+	float alphaRef = lerp( tex2Dlod( NoiseTex, float4( uv, 0, 0 ) ).r + 1.0, aRef, iDir_TimeLeft.w ) ;
+#else
+	float alphaRef = aRef;
+#endif
+
+	clip( diff.a - alphaRef );
+
+	float3 norm = TEX2D( NormalTex, uv, dx, dy ) * 2 - 1;
+
+	float3x3 TBN = float3x3( iTangent, -iBinorm, CN );
+
+	norm = mul( norm, TBN );
+
+#if !NOISE_FADEOUT
+	diff.a *= iDir_TimeLeft.w * clipFade;
+#endif
+
+	oDiffuse.a = diff.a;
+//	oDiffuse.rgb = lerp(diff, pow(tex2D(SceneDiffuseTex, screenUV),1/2.2), backgroundBlendFactor);
+	oDiffuse.rgb = lerp(diff, tex2D(SceneDiffuseTex, screenUV), backgroundBlendFactor);
+//	oDiffuse.rgb = pow( oDiffuse.rgb, 2.2 );
+	oNorm = float4( norm * 0.5 + 0.5, diff.a );
+}

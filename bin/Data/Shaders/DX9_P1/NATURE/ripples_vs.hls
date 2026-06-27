@@ -1,0 +1,9 @@
+void main( float3 vPos: POSITION,
+    		out float4 oPos: POSITION,
+			out float2 oUV: TEXCOORD0)
+{
+	oPos = float4(vPos*2, 1);
+	oUV = vPos.xy+0.5;
+	oUV.y = 1-oUV.y;
+
+}

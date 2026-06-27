@@ -1,0 +1,17 @@
+//
+
+sampler2D Source	: register( s0 );
+sampler2D Depth		: register( s2 );
+
+float2 Conv 		: register( c0 );
+
+float4 main( in float2 texc : TEXCOORD0 ) : COLOR0
+{
+	float d 	= tex2D( Depth, texc );
+
+	float4 colr	= tex2D( Source, texc );
+
+	colr.a = saturate( d * Conv.x + Conv.y );
+
+	return colr;
+}

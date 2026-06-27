@@ -1,0 +1,22 @@
+
+float3  LightVec   : register(c0);
+sampler TerrainMap : register(s0);
+sampler NormalMap  : register(s1);
+
+struct vert2frag                                                            
+{                                                                           
+    float4 Position     : POSITION;                                         
+    float2 TerrainCoord : TEXCOORD0;                                        
+    float2 NormalCoord  : TEXCOORD1;                                        
+    float4 Lin          : COLOR0;                                           
+    float4 Fex          : COLOR1;                                           
+};                                                                          
+                                                                            
+float4 main(vert2frag IN) : COLOR                                       
+{                                                                           
+    //float3 normal = 2.0 * (tex2D( NormalMap, IN.NormalCoord ).xyz - 0.5);   
+    //float3 light  = saturate( dot( normal, LightVec ) );                    
+    float3 albedo = tex2D( TerrainMap, IN.TerrainCoord ).xyz;               
+                                                                            
+    return float4(albedo, 1) * IN.Fex + IN.Lin;
+}                                                                           

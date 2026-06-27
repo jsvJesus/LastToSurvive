@@ -1,0 +1,7 @@
+//
+float4 gClearValue : register(c0);
+
+float4 main() : COLOR0 
+{
+  return gClearValue;
+}

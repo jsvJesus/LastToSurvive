@@ -1,0 +1,59 @@
+#include "system\libSM\shadow_config.h"
+#include "system\libSM\pcf1.hls"
+
+float3 LightPos : register( c30 );
+float PixelDiameter : register( c31 );
+
+sampler DiffuseTex : register (s0);
+
+#define SMPSTYPE_DEFAULT 0
+#define SMPSTYPE_HW 1
+#define SMPSTYPE_NORMAL_OFFSET 2
+#define SMPSTYPE_SIMPLE 3
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SMPSTYPE_DEFAULT
+#endif
+
+struct PSOut
+{
+	float4 cl: COLOR;
+};
+
+PSOut main( float3 uv1_z	: TEXCOORD0,
+			float3 norm	: TEXCOORD1,
+			float3 worldPos: TEXCOORD2 )
+{
+	PSOut o;
+	half4 TexCol = tex2Dbias( DiffuseTex, float4( uv1_z.xy, 0, -3 ) );
+
+	clip( TexCol.a - 0.25h );
+
+#if SHADOW_TYPE == SMPSTYPE_NORMAL_OFFSET
+	float3 lightVec = normalize(LightPos - worldPos);
+	float dotLV = saturate(1 - dot(lightVec, norm));
+	norm *= dotLV;
+#endif
+
+#if SHADOW_TYPE == SMPSTYPE_SIMPLE
+	o.cl = GenerateShadow( uv1_z.z );
+#else	
+	float len_xy = length( norm.xy );
+	
+	float tn = len_xy / ( abs( norm.z ) + 0.1 );
+	
+	float z = uv1_z.z + PixelDiameter * tn * 1.5;
+
+	o.cl = GenerateShadow( z );
+#endif
+	
+	// cancel all calculations cause they're useless
+#if SHADOW_TYPE == SMPSTYPE_HW
+	o.cl = 0 ;
+#else
+	// for double depth shadow maps
+	o.cl.a = 0.5;	
+#endif
+
+	return o;
+}

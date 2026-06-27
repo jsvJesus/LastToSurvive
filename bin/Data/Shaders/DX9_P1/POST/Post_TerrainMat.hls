@@ -1,0 +1,35 @@
+//
+sampler DepthTex	: register (s0);
+
+float4   vCamPos  	: register(c7);  // x,y,z
+float4   vBounds  	: register(c8);  // minh, maxh, minslope, maxslope
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+//  float4 rt1 = tex2D(RT_1, uv1);
+//  float3 Normal = rt1.rgb*2-1;
+//  Normal = normalize(Normal);
+
+  float t6 = tex2D(DepthTex, uv1).r/vCamPos.w;
+
+  float3 Cam = vCamPos.xyz;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6; // / 10000.0f; //CamDepth.x;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float alpha = saturate(saturate(RealPos.y - vBounds.x)/(vBounds.y-vBounds.x));
+
+ float4 FinalColor;
+ FinalColor.rgb = float3(255,0,0);
+ FinalColor.a = 1;//alpha;
+
+ return FinalColor;
+}

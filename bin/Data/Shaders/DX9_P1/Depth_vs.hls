@@ -1,0 +1,16 @@
+
+//#include "System\IOParam\IODefine_VS.hls"
+
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x4 ModelMatrix			: register (c4);
+float4x4 NormalMatrix			: register (c8);
+
+void main(	float4 vPos			: POSITION,
+			
+			out	float4 vPosOut	: POSITION,
+			out float4 vOutTex : TEXCOORD0 )
+{
+	vPosOut = mul(vPos, ModelViewProjMatrix) ;
+	vOutTex = vPosOut ;
+}
+

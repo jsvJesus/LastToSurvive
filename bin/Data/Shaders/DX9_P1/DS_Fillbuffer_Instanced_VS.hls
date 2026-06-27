@@ -1,0 +1,51 @@
+
+
+float4x4 ViewProjMatrix	: register (c0);
+
+// NOTE: duplicate in:
+// DS_Fillbuffer_disp_vs.hls
+// DS_Fillbuffer_vs.hls
+// Transparent_vs.hls
+// DS_Forest_VS.hls
+
+float2 vTexcUnpackScale			: register( c16 ) ;
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL,
+         float4 DiffuseIn: COLOR0,
+         float2 vUV1: TEXCOORD0,
+         float3 vUV2: TEXCOORD1,
+         float3 vUV3: TEXCOORD2,
+		 float4 vWorld1 : TEXCOORD3,
+		 float4 vWorld2 : TEXCOORD4,
+		 float4 vWorld3 : TEXCOORD5,
+		 float4 vWorld4 : TEXCOORD6,
+
+         out float4 vPosOut: POSITION,
+         out float3 vTexOut1: TEXCOORD0,
+         out float3 vNormOut: TEXCOORD1,
+		 out float3 t1	: TEXCOORD2,
+		 out float3 t2	: TEXCOORD3,
+		 out float3 RealPos : TEXCOORD4
+       )
+{
+	float4x4 ModelMatrix;
+	ModelMatrix[0] = vWorld1;
+	ModelMatrix[1] = vWorld2;
+	ModelMatrix[2] = vWorld3;
+	ModelMatrix[3] = vWorld4;
+	float4x4 ModelViewProjMatrix = mul(ModelMatrix, ViewProjMatrix);
+	
+	vPosOut = mul(vPos, ModelViewProjMatrix);
+
+	vTexOut1.xy = vUV1.xy * vTexcUnpackScale.xy ;
+	vTexOut1.z  = vPosOut.w;
+
+	vNormOut = normalize(mul(vNormal, ModelMatrix));
+
+	t1 = normalize(mul(vUV2, ModelMatrix));
+	t2 = normalize(mul(vUV3, ModelMatrix));	
+	
+	RealPos = mul(vPos, ModelMatrix);
+}
+

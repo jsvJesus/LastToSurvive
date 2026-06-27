@@ -1,0 +1,38 @@
+
+sampler DiffuseTex : register (s0);
+sampler NormalTex  : register (s1);
+sampler GlossMap   : register (s2);
+
+sampler LightTex   : register (s3);
+sampler IBLMap     : register (s3);
+
+sampler ShadowMask : register (s5);
+
+half4 Color : register(c1);
+float4   vLight  : register(c4);
+float4   vHelper  : register(c9);
+
+
+half4 main(half2 uv1 : TEXCOORD0, float3 View : TEXCOORD1, float3 vNorm : TEXCOORD2, half4 DiffuseColor : COLOR0, half Attn2 : COLOR1) : COLOR
+{
+ half wrap = 0.5;
+
+ half4 c = max( 0, ( dot(vNorm, normalize(DiffuseColor.rgb*2-1)) + wrap ) / ( 1 + wrap ) );
+
+ half3 vReflect = normalize( normalize(View) + vNorm );
+
+ half4 c1 = tex3D(IBLMap, reflect(View, vNorm));
+                                                         
+ half fresnel = 0;//0.05 + 0.95 * pow(1-saturate(dot(vNorm,View)), 2);
+ half fresnel1 = 0.95 * pow(saturate(dot(vNorm,View)), 16)*half4(0.4, 0.4, 0.4, 1);
+
+ half4 c2 = lerp (tex2D(DiffuseTex, uv1)*c, c1, 0.1f );
+
+ // Compute specular term:
+ half4 SpecularColor = pow(max( 0, dot(vReflect, normalize(vNorm) )), 2000 );
+
+ half4 FinalColor =   c1 * fresnel1 + c2 + SpecularColor * Color*2;
+
+ return FinalColor+half4(0,0,0,1);
+}
+

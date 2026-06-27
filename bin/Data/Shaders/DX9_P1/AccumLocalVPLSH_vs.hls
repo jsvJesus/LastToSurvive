@@ -1,0 +1,17 @@
+//
+
+void main( 
+           in float3 iWorldVec : POSITION,
+           inout float4 ioCoefs : TEXCOORD0,
+           in float2 iTexc : TEXCOORD1,
+           out float4 oPos : POSITION,
+           out float3 oCamVec : TEXCOORD1,
+           out float2 oTexc : TEXCOORD2
+            )
+{
+	oPos = float4( 0.0, 0.0, 0.0, 1.0 );
+
+	oCamVec = iWorldVec;
+
+	oTexc = iTexc;
+}

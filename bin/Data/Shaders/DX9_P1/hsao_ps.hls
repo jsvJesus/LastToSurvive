@@ -1,0 +1,212 @@
+// HSAO
+
+#define M_PI 3.14159265f
+
+#define NUM_DIRS 5
+#define NUM_STEPS 4
+
+sampler smpDepth 		: register (s0);
+sampler smpRandRot 		: register (s2);
+
+float4 g_vR_Aspect						: register(c0);
+float4 g_vResolution_Inverse			: register(c1);
+float4 g_vDepthTransform_AngleBias 		: register(c2);
+float4 g_vRProjScale_Inverse			: register(c3);
+float4 g_vColorControl_vDistCoefs		: register(c4);
+float4 g_vDirs[NUM_DIRS/2+(NUM_DIRS%2)]	: register(c5);
+
+float2 mirror( float2 vDir, float2 vPlane )
+{
+	return vDir - 2.h * vPlane * dot(vPlane,vDir);
+}
+
+void RetrieveDepth( float2 fTexc, out float fDepth, out float fRCPDepth )
+{
+	fDepth = tex2Dlod ( smpDepth, float4 (fTexc,0,0) );
+	fRCPDepth = 1 / fDepth;
+}
+
+
+float length2(float3 v) 
+{ 
+	return dot(v, v); 
+} 
+
+float3 min_diff(float3 P, float3 Pr, float3 Pl)
+{
+    float3 V1 = Pr - P;
+    float3 V2 = P - Pl;
+    return (length2(V1) < length2(V2)) ? V1 : V2;
+}
+
+float2 snap_uv_offset( float2 uv )
+{
+	float2 vResolution 		= g_vResolution_Inverse.xy;
+	float2 vInvResolution   = g_vResolution_Inverse.zw;
+
+    return round( uv * vResolution ) * vInvResolution;
+}
+
+float tangent( float3 T )
+{
+    return -T.z / length(T.xy);
+}
+
+float tangent( float3 P, float3 S )
+{
+    return (P.z - S.z) / length(S.xy - P.xy);
+}
+
+float2 tan_sin( float3 P, float3 S )
+{
+   float2 res;
+   res.x = (P.z - S.z) / length( S.xy - P.xy );
+   res.y = (P.z - S.z) / length( S - P );
+   
+   return res;
+}
+
+float biased_tangent(float3 T)
+{
+	float fAngleBias = g_vDepthTransform_AngleBias.z;
+	return tangent(T) + fAngleBias;
+}
+
+float3 uv_to_eye(float2 uv, float eye_z)
+{
+	float2 vInvProjScale = g_vRProjScale_Inverse.zw;
+    uv = (uv * float2(2.0, -2.0) - float2(1.0, -1.0));
+    return float3(uv * vInvProjScale * eye_z, eye_z);
+}
+
+float3 fetch_eye_pos( float2 uv )
+{
+	float fDepth, fDummy;
+	RetrieveDepth( uv, fDepth, fDummy );
+    return uv_to_eye(uv, fDepth);
+}
+
+void fetch_eye_pos_and_rcp_depth( float2 uv, out float4 fRes, out float fDepth, out float fRCPDepth )
+{
+	RetrieveDepth( uv, fDepth, fRCPDepth );
+    fRes = float4( uv_to_eye(uv, fDepth), fRCPDepth );
+}
+
+float AccumulatedHorizonOcclusion(float2 deltaUV, 
+                                  float2 uv0, 
+                                  float3 P, 
+                                  float randstep,
+                                  float3 dPdu,
+                                  float3 dPdv,
+								  float	fSqr_R )
+{
+	float2 vInvResolution 	= g_vResolution_Inverse.zw;
+
+    float2 uv = uv0;
+    
+    // Snap increments to pixels to avoid disparities between xy 
+    // and z sample locations and sample along a line
+    deltaUV = snap_uv_offset( deltaUV );
+
+    // Compute tangent vector using the tangent plane
+    float3 T = deltaUV.x * dPdu + deltaUV.y * dPdv;
+
+    float tanH = biased_tangent(T);
+    float sinH = tanH / sqrt(1.0f + tanH*tanH);
+
+    float ao = 0;
+	
+	[unroll]
+    for(float j = 0; j < NUM_STEPS; ++j)
+    {
+        uv += deltaUV;
+        float3 S = fetch_eye_pos( uv );
+        
+        // Ignore any samples outside the radius of influence
+        float d2  = length2( S - P );
+        
+		[flatten]
+        if ( d2 < fSqr_R )
+        {
+			float2 tasin = tan_sin(P, S);
+
+            float tanS = tasin.x, sinS = tasin.y;
+
+			[flatten]
+            if(tanS > tanH) 
+            {
+                ao += (sinS - sinH);
+                
+                // Update the current horizon angle
+                tanH = tanS;
+                sinH = sinS;
+            }
+        } 
+    }
+
+    return ao;
+}
+
+float4 main( in float4 vTexc_RndTexc : TEXCOORD0 ) : COLOR0
+{
+	float2 vInvResolution   = g_vResolution_Inverse.zw;
+	float2 vTexc 	= vTexc_RndTexc.xy;
+	float2 vRndTexc = vTexc_RndTexc.zw;
+
+	float4 vP_RCPDepth;
+	float fDepth, fRcpDepth;
+	fetch_eye_pos_and_rcp_depth( vTexc, vP_RCPDepth, fDepth, fRcpDepth );
+	
+	float fR 				= g_vR_Aspect.x;
+	float fAspect 			= g_vR_Aspect.w;
+
+	float2 vColorControl 	= g_vColorControl_vDistCoefs.xy;
+	float fDepthCoef0		= g_vColorControl_vDistCoefs.z;
+	float fDepthCoef1		= g_vColorControl_vDistCoefs.w;
+
+    float3 P			= vP_RCPDepth.xyz;
+
+	float fDistCoef		= 1.f + max( fDepth - fDepthCoef0, 0 ) * fDepthCoef1;
+
+	float fRCPDepth		= fDistCoef * vP_RCPDepth.w;
+	float fSqr_R		= fDistCoef * fDistCoef * g_vR_Aspect.z;
+    
+    // Nearest neighbor pixels on the tangent plane
+    float3 Pr, Pl, Pt, Pb;
+    float4 tangentPlane;
+
+    Pr = fetch_eye_pos( vTexc + float2( +vInvResolution.x,  0 ) );
+    Pl = fetch_eye_pos( vTexc + float2( -vInvResolution.x,  0 ) );
+    Pt = fetch_eye_pos( vTexc + float2( 0,  +vInvResolution.y ) );
+    Pb = fetch_eye_pos( vTexc + float2( 0,  -vInvResolution.y ) );
+    
+    float3 N = normalize(cross(Pr - Pl, Pt - Pb));
+    tangentPlane = float4(N, dot(P, N));
+    
+    // Screen-aligned basis for the tangent plane
+    float3 dPdu = min_diff(P, Pr, Pl);
+    float3 dPdv = min_diff(P, Pt, Pb) * fAspect;
+
+    float ao = 0;
+
+	float2 vRotSample = tex2Dlod( smpRandRot, float4(vRndTexc, 0, 0 ) ).xy;
+
+	vRotSample = 2.h * vRotSample - 1.h;
+
+	[unroll]
+    for (int i = 0; i < NUM_DIRS; i++)
+    {
+        float2 dir = float2(
+							g_vDirs[ i/2 ][ ((i % 2)*2) + 0 ],
+							g_vDirs[ i/2 ][ ((i % 2)*2) + 1 ]
+								);
+        
+        float2 deltaUV = dir * fRCPDepth;
+
+		deltaUV = mirror( deltaUV, vRotSample );
+
+        ao += AccumulatedHorizonOcclusion( deltaUV, vTexc, P, 0, dPdu, dPdv, fSqr_R );
+    }
+
+    return (1.0 - ao / NUM_DIRS) * vColorControl.x + vColorControl.y;
+}

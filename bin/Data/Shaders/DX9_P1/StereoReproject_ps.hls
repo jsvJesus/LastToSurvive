@@ -1,0 +1,54 @@
+sampler2D sColor : register( s0 );
+sampler2D sDepth : register( s2 );
+
+float4x4 mInvViewProjM : register( c0 );
+float4x4 mViewProj : register( c4 );
+float4 vMaxOffset_PixelStep_Sign : register( c8 );
+float4 vReproParms : register( c9 );
+
+#ifndef RIGHT_EYE
+#define RIGHT_EYE 1
+#endif
+
+float4 main(	in float2 vTexc : TEXCOORD0 ) : COLOR
+{
+	float MaxOffset		= vMaxOffset_PixelStep_Sign.x ;
+	float PixelStep		= vMaxOffset_PixelStep_Sign.y ;
+	float TextureStep	= vMaxOffset_PixelStep_Sign.z ;
+	float Sign			= vMaxOffset_PixelStep_Sign.w ;
+		
+	float2 t = vTexc ;
+	
+	float pos_x = 0.f ;
+
+	float stx = t.x * 0.000005f ;
+	float sw = 0.000005f ;
+	
+	float XComp = vReproParms.y ;
+	
+	do
+	{
+		float d = tex2Dlod( sDepth, float4( t, 0, 0 ) ).r ;
+					
+		float reproX = pos_x + vReproParms.x / d.x ;
+			
+		float newDiff = abs( reproX - XComp );
+		
+		float w = saturate( ( 0.011f - newDiff ) * 10000.f ) ;
+		
+		sw += w ;
+		stx += t.x * w ;
+		
+		t.x += TextureStep ;
+		pos_x += PixelStep ;
+		
+	}
+#if RIGHT_EYE	
+	while( MaxOffset - pos_x < 0 );	
+#else
+	while( MaxOffset - pos_x > 0 );	
+#endif
+
+
+	return tex2Dlod( sColor, float4( stx / sw, vTexc.y, 0.f, 0.f ) ) ;		
+}

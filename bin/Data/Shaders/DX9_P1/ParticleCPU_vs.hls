@@ -1,0 +1,60 @@
+#include "fog.hls"
+
+#include "System\IOParam\IODefine_VS.hls"
+
+#if USE_NORMALMAP
+	float3 vNormal : register(c27); // normal vector
+	float3 vLight : register(c28); // light vector
+#endif
+
+float2 depthUVHalfPixelOffset: register(c29);
+
+void main( float4 vPos: POSITION,
+#if USE_NORMALMAP
+		   float3 vTang: TANGENT,
+#endif
+		   float4 Diffuse: COLOR0,
+		   float3 vUV1: TEXCOORD0,
+           float3 vUV2: TEXCOORD1,
+           out float4 vPosOut: POSITION,
+           out float4 vColorOut: COLOR0,
+           out float4 vTexOut1: TEXCOORD0,
+           out float3 vTexOut2: TEXCOORD1,
+           out float4 vTexOut3: TEXCOORD2,
+           out float4 fogVal_camDir: TEXCOORD3
+#if USE_NORMALMAP
+           , out float3 vTexOut4: TEXCOORD4  // light in tangent
+#endif
+       )
+{
+	// Adjust lightmap TU/TV 
+
+ 	float4 vPos1 = mul( vPos, mProj ); 
+ 	vPosOut = vPos1;
+
+ 	vTexOut1.xy = vUV1.xy;
+ 	vTexOut1.z = vPos1.w;
+ 	vTexOut1.w = vUV1.z;
+
+ 	vTexOut2 = vUV2;
+
+ 	vTexOut3 = mul(vPos, mProjective);
+ 	vTexOut3.xy += depthUVHalfPixelOffset * vTexOut3.w;
+ 
+ 	vColorOut = Diffuse;
+
+	fogVal_camDir.xyz = vPos.xyz - vCamera.xyz;
+	fogVal_camDir.w = getFogVal(vCamera.xyz, vPos.xyz);
+
+#if USE_NORMALMAP
+	float3 vBinorm = cross(vNormal, -vTang);
+	vBinorm = normalize ( vBinorm );
+	float3 vTngNorm = cross ( vBinorm, vNormal );
+	float3x3 w2t; // world to tangent matrix
+	w2t = float3x3(vTngNorm, vBinorm, vNormal);
+
+	float3x3 t2w = transpose(w2t); // tangent to world matrix
+	vTexOut4 = -mul(vLight, t2w);
+#endif
+}
+

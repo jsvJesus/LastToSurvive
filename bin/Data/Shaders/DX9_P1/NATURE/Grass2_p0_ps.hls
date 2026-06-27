@@ -1,0 +1,19 @@
+// Enter your shader in this window
+
+sampler2D DiffuseTex : register( s0 );
+sampler2D TintTex    : register( s1 );
+
+float3 vAlphaRef_TintStrength_SSAO   : register( c0 );
+
+float4 main( in half4 iTexc_Die_Z : TEXCOORD0,
+			 in half2 iTintTexc   : TEXCOORD1 ) : COLOR
+{
+	half2 texc	= iTexc_Die_Z.xy;
+	half die	= iTexc_Die_Z.z;
+
+	half4 diffSample = tex2D( DiffuseTex, texc );
+
+	clip( diffSample.a * die - (half)vAlphaRef_TintStrength_SSAO.x );
+
+	return iTexc_Die_Z.w;
+}

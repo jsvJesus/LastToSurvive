@@ -1,0 +1,50 @@
+float4x4 mW2C : register(c0);   // world to projection matrix
+float4 vXZParam : register(c4); // scale and offset for x and z position
+float2 vHeight : register(c5);  // height parameter
+float3 vEye : register(c6);     // view position
+float4 vUVParam : register(c7); // uv scale and offset
+
+struct SVSInput {
+	float4 vPos : POSITION0;
+};
+
+//------------------------------------------------
+// output of the vertex shader
+//------------------------------------------------
+struct SVSOutput {
+	float3 vTex      : TEXCOORD0;
+	float2 vTex2      : TEXCOORD1;
+	float4 vPos      : POSITION;
+};
+
+//------------------------------------------------
+// input of the pixel shader
+//------------------------------------------------
+struct SPSInput {
+	float3 vTex      : TEXCOORD0;
+	float2 vTex2      : TEXCOORD1;
+};
+
+//------------------------------------------------
+// pixel shader parameters
+//------------------------------------------------
+sampler sCloud : register(s0);   // cloud texture 
+sampler sCloudCover : register(s2);   // cloud texture 
+float4 fCloudCover : register(c8);               // cloud cover
+
+//------------------------------------------------
+// pixel shader
+//------------------------------------------------
+float4 main(in SPSInput _Input) : COLOR0
+{
+	float4 clTex = tex2D( sCloud, _Input.vTex.xy );
+	float clCover = tex2D( sCloudCover, _Input.vTex2.xy ).r;
+	
+	// blend 4 channel of the cloud texture according to cloud cover 
+	float4 vDensity;
+	vDensity = abs( fCloudCover.a - float4( 0.25f, 0.5f, 0.75f, 1.0f ) ) / 0.25f;
+	vDensity = saturate( 1.0f - vDensity );
+	float _fDensity = dot( clTex, vDensity );
+	float a = saturate((_Input.vTex.z - fCloudCover.x) / (fCloudCover.y - fCloudCover.x));
+	return _fDensity *a* fCloudCover.z * clCover;
+}

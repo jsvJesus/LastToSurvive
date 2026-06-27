@@ -1,0 +1,26 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+
+float4   vLight  : register(c4);
+float4   vLightColor  : register(c10);
+float4   vHelper  : register(c9);
+float4   CameraPos  : register(c7);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+	 out float  Fog: FOG,
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vTexOut1 = vUV1;
+
+  Fog = 1; // - vPos1.z * vFog.w;
+
+}
+

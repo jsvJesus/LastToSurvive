@@ -1,0 +1,25 @@
+
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c4);
+
+void main( float4 vPos: POSITION,
+		   float3 vNormal: NORMAL,
+		 out float  Fog: FOG,
+		 out float4 vPosOut: POSITION,
+         out float3 vRealPos: TEXCOORD0,
+         out float4 vTexOutPos: TEXCOORD1
+#if ( WATER_PLANE )
+		 , out float3 vNormalOut: TEXCOORD2
+#endif
+       )
+{
+	Fog = 1;
+	vPosOut = mul( vPos, mProj ); 
+	vRealPos = mul ( vPos, mWorld ).xyz;
+#if ( WATER_PLANE )
+	// world matrix is identity matrix
+	//vNormalOut = normalize ( mul ( vNormal, mWorld ) );
+	vNormalOut = vNormal;
+#endif
+	vTexOutPos = vPosOut; 
+}

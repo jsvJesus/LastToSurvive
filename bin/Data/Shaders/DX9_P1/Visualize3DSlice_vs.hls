@@ -1,0 +1,14 @@
+//
+
+float4 g_PosXfm : register( c0 );
+float4 g_Slice  : register( c1 );
+
+void main( inout float4 pos : POSITION,
+           in float2 texc : TEXCOORD0,
+           out float3 oTexc : TEXCOORD0 )
+{
+	pos.xy = pos.xy * g_PosXfm.xy + g_PosXfm.zw;
+
+	oTexc.xy = texc;
+	oTexc.z = g_Slice.x;
+}

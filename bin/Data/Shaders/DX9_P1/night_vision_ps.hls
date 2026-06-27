@@ -1,0 +1,15 @@
+//////////////////////////////////////////////////
+
+sampler2D RT			: register(s0);
+sampler2D colorRemapTex : register(s1);
+
+half4 main(in half4 vTexc : TEXCOORD0): COLOR0
+{
+	const float3 lumCoeffs = float3(0.299f, 0.587f, 0.114f);
+	float3 cl = tex2D(RT, vTexc.xy);
+	float lum = dot(cl, lumCoeffs);
+	
+//	lum = saturate(lum * 2);
+	
+	return tex2D(colorRemapTex, float2(lum, 0));
+}

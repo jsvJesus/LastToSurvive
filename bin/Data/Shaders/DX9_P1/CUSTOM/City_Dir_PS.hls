@@ -1,0 +1,22 @@
+
+sampler DiffuseTex : register (s0);
+sampler NormalTex  : register (s1);
+sampler GlossMap   : register (s2);
+
+sampler LightTex   : register (s3);
+sampler IBLMap     : register (s3);
+
+sampler ShadowMask : register (s5);
+
+
+half4 main(half2 uv1 : TEXCOORD0) : COLOR
+{
+ half4 c1 = tex2D(DiffuseTex, uv1);
+ half4 c2 = tex2D(GlossMap, uv1);
+
+ half4 FC = c1*c2 + c1*0.2;
+ FC.a = c1.a;
+
+ return FC;
+}
+

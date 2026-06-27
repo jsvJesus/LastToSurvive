@@ -1,0 +1,32 @@
+// 
+
+#include "postfx_common.h"
+
+#ifndef GEOMETRY_TRANSFORM
+#define GEOMETRY_TRANSFORM 0
+#endif
+
+#if GEOMETRY_TRANSFORM
+float4 g_vPosTransform: register(c1);
+float4 g_vTCTransform: register(c2);
+#endif
+
+void main
+(
+	float4 position	: POSITION,
+	float2 texc		: TEXCOORD0,
+
+	out float4 oPosition : POSITION,
+	out float2 oTexc     : TEXCOORD0,
+	out float3 oWPos     : TEXCOORD1
+)
+{
+#if GEOMETRY_TRANSFORM
+	position.xy = position.xy * g_vPosTransform.xy + g_vPosTransform.zw;
+	texc = texc * g_vTCTransform.xy + g_vTCTransform.zw;
+#endif
+
+	oPosition 	= position;
+	oWPos		= mul( float4( position.xyz, 1 ), g_mInvViewProj ).xyz;
+	oTexc		= texc * g_vTexcTransform.xy + g_vTexcTransform.zw;
+}

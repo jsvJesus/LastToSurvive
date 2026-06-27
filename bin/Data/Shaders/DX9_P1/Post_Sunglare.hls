@@ -1,0 +1,40 @@
+
+sampler Screen 	: register (s0);
+sampler Depth 	: register (s1);
+
+float4 GodRaysParam : register (c10);
+float4 GodRaysPos : register (c11);
+
+
+float4 BW  = { 0.3f, 0.59f, 0.11f, 1.0f};
+
+#define NUM_SAMPLES 32
+#define NUM_SAMPLES1 4
+
+
+float4 Glare(float2 uv )
+{
+ float Density	= GodRaysParam.x; //0.6f;
+ float Weight	= GodRaysParam.y; //1.0f;
+ float Decay 	= GodRaysParam.z; //0.8f;
+ float Exposure	= 0.15f; //GodRaysParam.w; //1.0f;
+
+ float2 delta = distance(uv, float2(GodRaysPos.x,GodRaysPos.y));
+ float rd = (delta.y*(16/9)+delta.x)/2;
+
+ float4 Col = 1 - saturate(rd/0.1);
+
+   float2 t6 = tex2D(Depth, uv);
+   float Shade = clamp(t6.r-10000.0f,0,1);
+
+ return float4(Col.rgb*Exposure*4*Shade, 1);
+}
+
+
+
+
+
+float4 main(float2 uv1 : TEXCOORD0 ) : COLOR
+{
+ return Glare(uv1);
+}

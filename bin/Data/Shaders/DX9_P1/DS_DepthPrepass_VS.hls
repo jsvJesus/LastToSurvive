@@ -1,0 +1,8 @@
+
+float4x4 ModelViewProjMatrix	: register (c0);
+
+void main(	in float4 vPos		: POSITION,
+			out	float4 vPosOut	: POSITION )
+{
+	vPosOut = mul(vPos, ModelViewProjMatrix);
+}

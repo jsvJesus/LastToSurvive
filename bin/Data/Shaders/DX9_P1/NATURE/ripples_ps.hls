@@ -1,0 +1,78 @@
+/**/
+sampler sampMain : register (s0);
+sampler sampRipl : register (s1);
+float4 spl0 : register(c0);	//uv.xy, channel.z-uvscale.z, power.w
+float4 spl1 : register(c1);
+float4 spl2 : register(c2);
+float4 spl3 : register(c3);
+float4 camd : register(c5);
+float4 simParams : register(c6);	//x = 1/textureSize, y = 1/area_size, z = viscosity
+
+
+float splash(float4 spl, float2 uv)
+{
+	float channel = frac(spl.z);
+	float uvScale = spl.z - channel;
+
+	float2 finalUV = (spl.xy-uv) * uvScale + 0.5 ;
+
+	float4 m = saturate( float4( finalUV.xy, 1-finalUV.xy ) * 65536 ) ;
+
+	float borderCut = m.x * m.y * m.z * m.w ;
+	
+	float c = dot(
+		tex2D(sampRipl, finalUV ),
+		saturate( 1.0f - abs(channel - float4(0.2f, 0.4f, 0.6f, 0.8f)) * 5.0f)
+		);
+	return (c-0.5) * spl.w * borderCut ;
+}
+
+float4 main( float2 uv1 : TEXCOORD0) : COLOR
+{
+	float2 uv = uv1 + camd.xz*simParams.y;
+	float2 cc = tex2D(sampMain, uv).rg;
+
+	// lower down waves near the border of texture
+	float4 m = saturate( float4( uv1.xy, 1-uv1.xy ) / (20*simParams.x) );
+	m.x *= m.y*m.z*m.w;
+
+#if (LOWQ)
+	float sum =
+		tex2D(sampMain, uv-float2(1,0)*simParams.x).r +
+		tex2D(sampMain, uv+float2(1,0)*simParams.x).r +
+		tex2D(sampMain, uv+float2(0,1)*simParams.x).r +
+		tex2D(sampMain, uv-float2(0,1)*simParams.x).r;
+	float h = simParams.z * ( cc.r - cc.g ) + sum*0.25f;
+#else
+	float sum1 = 
+		tex2D(sampMain, uv + float2( 1, 1)*simParams.x).r +
+		tex2D(sampMain, uv + float2(-1, 1)*simParams.x).r +
+		tex2D(sampMain, uv + float2(-1,-1)*simParams.x).r +
+		tex2D(sampMain, uv + float2( 1,-1)*simParams.x).r;
+	
+	float sum2 = 
+		tex2D(sampMain, uv + float2(0,-1)*simParams.x).r +
+		tex2D(sampMain, uv + float2(-1,0)*simParams.x).r +
+		tex2D(sampMain, uv + float2(1, 0)*simParams.x).r +
+		tex2D(sampMain, uv + float2(0, 1)*simParams.x).r;
+		
+	float h = simParams.z * ( cc.r - cc.g ) + sum1*0.03661165f + cc.r*0.353553f + sum2*0.125f ;
+#endif
+
+#if (SPLASH)
+	h += splash(spl0, uv);
+	h += splash(spl1, uv);
+	h += splash(spl2, uv);
+	h += splash(spl3, uv);
+#endif
+
+	h = lerp( 0.5, h, m.x );
+
+	[flatten]
+	if( h > 0.5 )
+		h -= 1.1f / 32768 ;
+	else
+		h += 1.1f / 32768 ;
+
+	return float4(h, cc.r, 0, 1);
+}

@@ -1,0 +1,184 @@
+// Enter your shader in this window
+
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+sampler ShadowMap	: register (s4);
+
+sampler ProjTex		: register (s6);
+
+sampler EnvCubeMap 	: register (s8);
+
+#ifndef AUX_ENABLED
+#define AUX_ENABLED 1
+#endif
+
+#include "DS_Spot_IO_ps.hls"
+#include "Lib\LightHelper.hls"
+
+#ifndef SHADOW_MODE
+#define SHADOW_MODE 0
+#endif
+
+#define SHADOWS_NONE 0
+#define SHADOWS_PCF 1
+#define SHADOWS_HW 2
+#define SHADOWS_SSM 3
+
+#ifndef PROJ_TEXTURE
+#define PROJ_TEXTURE 1
+#endif
+
+float4 main(	float4 PPos		: TEXCOORD0,
+				float3 WPos		: TEXCOORD1,
+				float2 SPos		: TEXCOORD2
+	) :	COLOR
+{
+ float2 vPCFSteps1 = vPCFSteps1_Scale_Bia.xy;
+ float PCFScale = vPCFSteps1_Scale_Bia.z;
+ float ShadowBias = vPCFSteps1_Scale_Bia.w;
+
+ float invFadeDistance = vLightDistanceParams.x;
+ float startFadeMulInvFadeDistance = vLightDistanceParams.y;
+ float2	vLightFalloff	= vLightFalloff_Pow.xy;
+ float	FalloffPow		= vLightFalloff_Pow.z;
+
+ float4 TexCol = tex2Dproj(AlbedoTex, PPos);
+ TexCol.rgb = pow(TexCol.rgb, 2.2 );
+ float4 normalTex = tex2Dproj(NormalTex, PPos);
+
+#if AUX_ENABLED
+ float4 auxData = tex2Dproj(AuxData, PPos);
+ #else
+ float4 auxData = float4(1.0,0.5,0.5,0);
+ #endif
+ 
+ float SSAOTerm = 1 ;
+
+ float  MetalnessMap = TexCol.a;
+
+ float3 Normal = normalize(normalTex.rgb*2-1);
+
+ float	SpecularPOW = auxData.g;
+ float	ReflChrome = auxData.a;
+ float  SelfIllum = normalTex.a ; 
+
+
+
+	float Depth	= tex2Dproj(DepthTex, PPos).r / PPos.w;
+
+	float3 Cam = vCamPos.xyz;
+
+	float3 CamVec =	WPos - Cam;
+
+	float3 RealPos = Cam + Depth*CamVec;
+
+	float3 V = vLightPos.xyz - RealPos.xyz;
+
+	float VLen 	= length( V );
+	float3 VN 	= V / VLen;
+
+	float DimAngle = saturate(dot( VN, Normal.rgb));
+	 float3 ViewVec = normalize(Cam - RealPos.xyz);
+	
+	float4 AddVal = float4(0,0,0,0);
+
+	half AttnDist = 1 - saturate(VLen * invFadeDistance - startFadeMulInvFadeDistance);
+
+	float Attn1 = pow( saturate( dot( VN, -vLightDir ) * vLightFalloff.x + vLightFalloff.y ), FalloffPow );
+
+
+	light_Params  DLight;
+
+	DLight.vLight 		= VN;
+	DLight.vNormal 		= Normal.rgb;
+	DLight.vEyeVec		= ViewVec;
+	DLight.vLightColor 	= Color;
+	DLight.vDistanceAttn 	= AttnDist;
+	DLight.vPower 		= SpecularPOW;
+
+	half4 DiffuseColor 	= light_CalcDiffuse(DLight);
+	half4 SpecularColor 	= light_CalcSpecular(DLight);
+
+
+	float4 ReflectUV = float4(reflect(-ViewVec, Normal.rgb), 7.0f - 7.0f*ReflChrome);//*MetalnessMap);
+
+	float4 ReflColor = texCUBElod(EnvCubeMap, ReflectUV);
+	ReflColor = pow( ReflColor, 2.2 ); 
+
+
+    	float4 Fr1 = fresnelReflectance1 ( dot(Normal.rgb,ViewVec), ReflColor); 
+
+    	float4 Fr = fresnelReflectance ( dot(Normal.rgb,ViewVec), ReflColor); 
+
+	ReflColor = Fr+Fr1;//+ReflColor;
+
+
+	float4 FinalDiffuse = DiffuseColor;
+
+	float4 MatColor_Matte   = FinalDiffuse* TexCol + SpecularColor * 0.03f*TexCol;
+	float4 MatColor_Metal   = SpecularColor *ReflColor;//*2.0f;
+
+	float4 FinalColor;
+
+	FinalColor.rgb = lerp(MatColor_Matte+AddVal, MatColor_Metal, MetalnessMap);
+
+	FinalColor.rgb = lerp (FinalColor.rgb, float3(0,0,0),  SelfIllum);
+	FinalColor.a = 0;
+
+//	FinalColor.rgb = SpecularColor;
+
+
+
+ float  ShadowK = 1;
+ 
+ float4 LPPos = mul( float4( RealPos, 1 ), mLightMtx );
+ 
+ float4 projModulation = (1).xxxx;
+ 
+#if PROJ_TEXTURE
+ float4 projT = LPPos;
+ projT.xy *= 0.5;
+ projT.xy += 0.5 * projT.w;
+ projModulation = tex2Dproj( ProjTex, projT );
+#endif
+
+#if SHADOW_MODE != SHADOWS_NONE && SHADOW_MODE != SHADOWS_SSM
+ float2 LTexc = LPPos.xy / LPPos.w;
+
+ LTexc = LTexc * SM_Scale.xy + SM_Scale.zw ;
+
+ float2 LTexcScaled = LTexc * vPCFSettings.xy;
+
+ float2 delta = frac( LTexcScaled );
+
+ float2 GridLTexc = ( LTexcScaled - delta ) * vPCFSettings.zw;
+
+ float CmpVal = ( LPPos.w - ShadowBias ) * PCFScale.x;
+
+#if SHADOW_MODE == SHADOWS_HW
+ float4 projTexc = LPPos ;
+ projTexc.xy *= SM_Scale.xy ;
+ projTexc.xy += SM_Scale.zw * projTexc.w ;
+ projTexc.z -= ShadowBias ;
+ 
+ ShadowK = tex2Dproj( ShadowMap, projTexc ) ;
+#else
+ float s00 = tex2D( ShadowMap, GridLTexc ).r 					< CmpVal ? 0 : 1;
+ float s10 = tex2D( ShadowMap, GridLTexc + vPCFSteps0.xy ).r	< CmpVal ? 0 : 1;
+ float s01 = tex2D( ShadowMap, GridLTexc + vPCFSteps0.zw ).r	< CmpVal ? 0 : 1;
+ float s11 = tex2D( ShadowMap, GridLTexc + vPCFSteps1.xy ).r	< CmpVal ? 0 : 1; 
+
+ ShadowK = 	lerp(	lerp( s00, s10, delta.x ),
+					lerp( s01, s11, delta.x ),
+					delta.y ) ;
+#endif
+
+#elif SHADOW_MODE == SHADOWS_SSM
+ ShadowK = tex2Dproj( ShadowMap, PPos );
+#endif
+
+ return FinalColor * ShadowK * Attn1 * AttnDist * projModulation;
+}
+

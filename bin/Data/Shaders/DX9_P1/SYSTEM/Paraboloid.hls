@@ -1,0 +1,14 @@
+//
+
+float4 TransformParaboloidPos( float3 paraboloidPos, float2 farNearXfm )
+{
+	float L = length( paraboloidPos ) ;
+
+	float3 scaledPos = paraboloidPos.xyz / L ;
+
+	float Z = scaledPos.z + 1 ;
+
+	float2 coords = scaledPos.xy / Z ;
+
+	return float4( coords, L * farNearXfm.x + farNearXfm.y, 1 ) ;
+}

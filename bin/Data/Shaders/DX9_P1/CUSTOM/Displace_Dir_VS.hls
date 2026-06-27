@@ -1,0 +1,60 @@
+float4x4 mProj     : register(c0);
+float4x4 mWorld    : register(c20);
+
+float4x4 modelview : register(c40);
+float4x4 view      : register(c44);
+
+float4	 vLight    : register(c4);
+float4   CameraPos  	: register(c7);
+
+
+void main(
+	float4 vPos: POSITION,
+        float3 vNormal: NORMAL: register(v3),
+        float2 vUV1: TEXCOORD0: register(v7),
+        float3 vUV2: TEXCOORD2: register(v9),
+        float3 vUV3: TEXCOORD3: register(v10),
+
+	out float4 out_hpos     : POSITION,
+	out float4 out_color    : COLOR0,
+ 	out float  Fog: FOG,
+	out float2 out_txcoord  : TEXCOORD0,
+	out float3 out_vpos     : TEXCOORD1,
+	out float3 out_tangent  : TEXCOORD2,
+	out float3 out_binormal : TEXCOORD3,
+	out float3 out_normal   : TEXCOORD4,
+	out float4 out_lightpos : TEXCOORD5
+       )
+{
+ Fog = 1;
+
+	// vertex position in object space
+	float4 pos=float4(vPos.x,vPos.y,vPos.z,1.0);
+
+	// compute modelview rotation only part
+	float3x3 modelviewrot;
+	modelviewrot[0]=modelview[0].xyz;
+	modelviewrot[1]=modelview[1].xyz;
+	modelviewrot[2]=modelview[2].xyz;
+
+	// vertex position in clip space
+	out_hpos=mul(pos, mProj);
+
+	// vertex position in view space (with model transformations)
+	out_vpos=mul(pos, modelview).xyz;
+
+	// light position in view space
+//	float4 lp=float4(vLight.x, vLight.y, vLight.z,1);
+	float4 lp=float4(0, 1500,0,1);
+	out_lightpos= mul(lp,view);
+
+	// tangent space vectors in view space (with model transformations)
+	out_tangent=normalize(mul(vUV2,modelviewrot));
+	out_binormal=normalize(mul(vUV3,modelviewrot));
+	out_normal=normalize(mul(vNormal,modelviewrot));
+	
+	// copy color and texture coordinates
+	out_color   = float4(1, 1, 1, 1);
+	out_txcoord = vUV1.xy;
+
+}

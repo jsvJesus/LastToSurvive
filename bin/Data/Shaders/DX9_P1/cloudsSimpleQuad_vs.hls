@@ -1,0 +1,9 @@
+void main(		in float3 iPos  : POSITION,
+				in float2 iTexCoord0 : TEXCOORD0,
+				out float4 oPos  : POSITION,
+ 				out float2 oTexCoord0 : TEXCOORD0)
+{
+   	oPos.xyz  = iPos.xyz*2;
+   	oPos.w  = 1;
+	oTexCoord0 = iTexCoord0;
+}

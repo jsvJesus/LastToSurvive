@@ -1,0 +1,21 @@
+
+float4 Params: register(c0);
+
+void main
+(
+	float4 iPos: POSITION,
+	float2 iTC0: TEXCOORD0,
+	out float4 oPos: POSITION,
+	out float2 oTC0: TEXCOORD0,
+	out float3 oViewRay: TEXCOORD1
+)
+{
+	oPos = iPos;
+	oTC0 = iTC0;
+	
+	oViewRay = iPos.xyz;
+	oViewRay.y *= Params.x;
+	oViewRay.z = 1;
+	
+	oViewRay = normalize(oViewRay);
+}

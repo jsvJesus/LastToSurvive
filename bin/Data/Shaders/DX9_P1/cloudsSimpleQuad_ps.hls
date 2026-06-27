@@ -1,0 +1,33 @@
+float4 sunPoint : register(c20);
+float4 params : register(c21);	//x=cospow, y=strength
+sampler2D samp : register(s5);
+
+void main(		in float4 iPos		: POSITION,
+ 				in float2 iTexCoord0 : TEXCOORD0,
+				out float4 oColr0	: COLOR0, 
+				out float4 oColr1	: COLOR1)
+{					
+	oColr0 = tex2D(samp, iTexCoord0);
+	float l = length((iTexCoord0 - sunPoint.xy) * float2(sunPoint.z, 1.0f));
+	float att = saturate(1-2*pow(l,params.x));
+	float dmin=0.01f;
+	float dmid=0.5f;
+	float dmax=1.0f;
+	float scl = 0.0f;
+	if(oColr0.a>dmid)
+	{
+		if(oColr0.a<=dmax)
+			scl = (oColr0.a-dmax) / (dmid-dmax);
+	}
+	else
+		if(oColr0.a>dmin)
+			scl = (oColr0.a-dmin) / (dmid-dmin);
+	oColr0.rgb += scl*att * params.y;
+	
+	
+	//oColr0.rgb += pow(saturate(1-l), 2) * (pow(saturate(1-oColr0.a), 2)-.2);
+	//oColr0.rgb = pow(saturate(1-l), 2) * scl;
+	//oColr0.a = 1;
+	
+	oColr1 = float4(0.5, 0.5, 0.5, 1);
+}

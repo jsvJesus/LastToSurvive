@@ -1,0 +1,231 @@
+#include "..\System\IOParam\IODefine_VS.hls"
+
+#ifndef MULTI
+#define MULTI 1
+#endif
+
+#ifndef LQ
+#define LQ 0
+#endif
+
+#ifndef NUM_LAYERS
+#define NUM_LAYERS 4
+#define SPLIT_0 1
+#define SPLIT_1 1
+#define SPLIT_2 1
+#define SPLIT_3 1
+#endif
+
+#ifndef USE_LIGHT
+#define USE_LIGHT 0
+#endif
+
+#ifndef OUTPUT_NORMAL
+#define OUTPUT_NORMAL 1
+#endif
+
+sampler sDiffuse[4]            : register ( s0 );
+sampler sNormal[4] 	           : register ( s4 );
+
+sampler sMask[4]	           : register ( s8 );
+                 
+float4   vView  	           : register( c0 );
+
+float4   vGloss                : register( c1 );
+
+float4   vMatScale             : register( c2 );
+float4   vMatScaleSplit        : register( c3 );
+
+float4   vUseMaskAsAlpha       : register( c4 );
+
+float4   vSelectMaskChannel[4] : register( c5 );
+
+float3   vSunVector 		   : register ( c20 );
+
+#ifndef AUX_ENABLED
+#define AUX_ENABLED 1
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	
+#if OUTPUT_NORMAL	
+	float4 Normal : COLOR1;
+	float4 Depth : COLOR2;
+#else
+	float4 Depth : COLOR1;	
+#endif		
+	
+#if AUX_ENABLED
+	float4 gAux : COLOR3;
+#endif
+};
+
+float harshize( float a )
+{
+	return saturate( 8 * a - 3.5 );
+}
+
+void ConformZY( inout float3 norm, float snx )
+{
+	norm = float3( abs( snx - norm.y ), norm.x, norm.z );
+}
+
+void ConformXY( inout float3 norm, float snz )
+{
+	norm = float3(  norm.x, abs( snz - norm.y ), norm.z );
+}
+
+//--------------------------------------------------------------------------------------------------------		
+
+PSOUT main(	VertTerrOutMP_t IN )
+{
+	float4 Mask;
+
+	[unroll]
+	for( int i = 0; i < NUM_LAYERS; i++ )
+	{
+		float4 Splat = tex2D( sMask[ i ], IN.vTexOut1.xy );
+		Mask[ i ] = dot( vSelectMaskChannel[ i ], Splat );
+	}
+
+	float lx = harshize( abs( IN.vNormal.x ) );
+	float ly = harshize( abs( IN.vNormal.y ) );
+
+	float4 DiffRes = 0;
+	float3 NormRes = 0;
+
+	int DoSplit[ 4 ] = { SPLIT_0, SPLIT_1, SPLIT_2, SPLIT_3 };
+
+	float sss = saturate( distance( vView.xyz, IN.vPos_vTexOutSM.xyz ) * vView.w );
+
+	float2 sn = IN.vNormal.xz > 0.f;
+
+	[unroll]
+	for( int i = 0; i < NUM_LAYERS; i ++ )
+	{
+
+#if MULTI && !LQ
+		float3 UVSource = IN.vPos_vTexOutSM.xyz;
+#else
+		float3 UVSource = IN.vTexOut1.zww;
+#endif
+
+		float3 UV 		= UVSource * vMatScale[ i ];
+		float3 UVSplit	= UVSource * vMatScaleSplit[ i ];
+
+		float4 Diff_xz = tex2D( sDiffuse[ i ], UV.xz );
+		float4 Diff_xy = tex2D( sDiffuse[ i ], UV.xy );
+		float4 Diff_zy = tex2D( sDiffuse[ i ], UV.zy );
+
+		float3 Norm_xz = tex2D( sNormal[ i ], UV.xz );
+		float3 Norm_xy = tex2D( sNormal[ i ], UV.xy );
+		float3 Norm_zy = tex2D( sNormal[ i ], UV.zy );
+
+#if MULTI && !LQ
+		ConformZY( Norm_zy, sn.x );
+		ConformXY( Norm_xy, sn.y );
+
+		float4 Diff = lerp( lerp( Diff_xy, Diff_zy, lx ), Diff_xz, ly );
+		float3 Norm = lerp( lerp( Norm_xy, Norm_zy, lx ), Norm_xz, ly );
+#else
+		float4 Diff = Diff_xy;
+		float3 Norm = Norm_xy;
+#endif
+
+#if !LQ
+		[flatten]
+		if( DoSplit[ i ] )
+		{
+			Diff_xz = tex2D( sDiffuse[ i ], UVSplit.xz );
+			Diff_xy = tex2D( sDiffuse[ i ], UVSplit.xy );
+			Diff_zy = tex2D( sDiffuse[ i ], UVSplit.zy );
+
+#if MULTI && !LQ
+			float4 DiffS = lerp( lerp( Diff_xy, Diff_zy, lx ), Diff_xz, ly );
+#else
+			float4 DiffS = Diff_xy;
+#endif
+
+			Diff = lerp( Diff, DiffS, sss );
+			// remember it's packed
+			Norm = lerp( Norm, float3(0.5,0.5,1), sss );
+		}
+#endif		
+
+		Diff.a = lerp( 0, Mask[ i ], vUseMaskAsAlpha[ i ] );
+
+		[flatten]		
+		if( i )
+		{
+			DiffRes = lerp( DiffRes, Diff, Mask[ i ] );
+			NormRes = lerp( NormRes, Norm, Mask[ i ] );
+		}
+		else
+		{
+			DiffRes = Diff;
+			DiffRes.rgb = lerp( DiffRes.rgb, DiffRes.rgb * DiffRes.a, vUseMaskAsAlpha[ i ] );
+
+			NormRes = Norm;
+			NormRes = lerp( NormRes, lerp( (0.5).xxx, NormRes, DiffRes.a ), vUseMaskAsAlpha[ i ] );
+		}
+	}
+	
+#if !USE_LIGHT
+//	DiffRes.rgb = pow( DiffRes.rgb, 2.2 );
+#endif
+
+	DiffRes.rgb = DiffRes * pow(IN.vColor_FadeK.rgb, 1.0f/2.2f);
+
+#if !MULTI && !LQ
+	float conformSign = dot( sn, IN.vSelectSign.xy );
+	NormRes.y = abs( conformSign - NormRes.y );
+	NormRes.x = dot( NormRes.xy, IN.vSelectConform.xy );
+	NormRes.y = dot( NormRes.xy, IN.vSelectConform.zw );
+#endif
+		
+#if ( !RENDER_SIMPLE_TERRAIN ) 
+	// build invert matrix for base, layer1, layer2
+	
+	float3 vTangent = float3( 1, 0, 0 );
+	float3 vBinormal = normalize( cross( vTangent, IN.vNormal ) );
+	vTangent = normalize( cross( IN.vNormal, vBinormal ) );
+
+	float3x3 m = float3x3( vTangent, vBinormal, IN.vNormal );
+
+	NormRes = normalize( mul( NormRes * 2 - 1, m ) );
+	
+#endif
+
+	PSOUT out1;
+
+#if USE_LIGHT
+	float fLight = saturate(dot(-vSunVector.xyz, IN.vNormal.xyz ));
+#else
+	float fLight = 1.f;
+#endif
+
+	out1.Color.rgb = fLight * DiffRes.rgb ;
+
+	out1.Color.a   = DiffRes.a; // DiffRes.a is either blend mask or 0
+	out1.Depth = IN.vPos_vTexOutSM.w;
+
+#if AUX_ENABLED
+	out1.gAux = float4(1,DiffRes.a,1,0);
+#endif
+
+#if OUTPUT_NORMAL
+
+#if ( RENDER_SIMPLE_TERRAIN )
+	out1.Normal.rgb = IN.vNormal * 0.5f + 0.5f;
+#else
+	out1.Normal.rgb = lerp ( NormRes, IN.vNormal, IN.vColor_FadeK.w ) * 0.5f + 0.5f;
+#endif
+
+	// NOTE : DiffRes.a is used for blending
+	out1.Normal = lerp( float4( out1.Normal.rgb, 0.5 ), float4( out1.Normal.rgb * DiffRes.a, DiffRes.a ), vUseMaskAsAlpha[ 0 ] );
+#endif
+
+	return out1;
+}

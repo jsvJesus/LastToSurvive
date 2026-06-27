@@ -1,0 +1,14 @@
+//
+float4x4 g_WVP : register( c0 );
+
+void main(	in float4 pos : POSITION, 
+			in float4 color : COLOR0, 
+			in float2 uv: TEXCOORD0, 
+			
+			out float4 pos_out : POSITION,
+			out float4 colorOut: COLOR0
+ )  
+{
+	pos_out = mul( pos, g_WVP );
+	colorOut = color;
+}  

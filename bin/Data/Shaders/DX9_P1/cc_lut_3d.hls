@@ -1,0 +1,27 @@
+//
+
+#ifndef LUT_COUNT
+#define LUT_COUNT 3
+#endif
+
+sampler2D Screen				: register( s0 );
+sampler3D LUT3D[ LUT_COUNT ]	: register( s4 );
+
+float4 LerpCoef	: register ( c0 );
+
+void main(	in half2 vTexc : TEXCOORD,
+			out half4 oColr : COLOR0 )
+{
+	half4 colr = (half4)tex2D( Screen, vTexc );
+	
+	half3 res = tex3D( LUT3D[0], colr.rgb ).rgb;
+	
+	[unroll]
+	for( int i = 1 ; i < LUT_COUNT; i ++ )
+	{
+		half3 extra = tex3D( LUT3D[ i ], colr.rgb ).rgb;
+		res = lerp( res, extra, LerpCoef[ i - 1 ] );
+	}
+	
+	oColr = float4( res, colr.a );
+}

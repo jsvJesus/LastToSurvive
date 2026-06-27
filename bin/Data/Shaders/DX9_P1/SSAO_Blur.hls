@@ -1,0 +1,141 @@
+// Enter your shader in this window//
+#define USE_DEPTH 1
+#define DYNA_BRANCH 0 // we're stenciling so it doesn't give anything really
+
+#ifndef USE_NORMAL
+#define USE_NORMAL 1
+#endif
+
+#ifndef NUM_SAMPLES
+#define NUM_SAMPLES 4
+#endif
+
+sampler smpBlur	: register (s0);
+#ifdef USE_DEPTH
+sampler smpDepth 	: register ( s1 );
+sampler smpNormal   : register ( s2 );
+#endif
+
+float4 g_vDepthTransform_BlurDir : register(c0);
+float4 g_vBlurDirScaled          : register(c1);
+
+#if USE_DEPTH
+void RetrieveDepthAndNormal( half2 fTexc, out half fDepth, out half3 fNormal )
+{
+	fDepth 	= log( (half)tex2Dlod( smpDepth, float4( fTexc, 0, 0 ) ).x );
+	fNormal = tex2Dlod( smpNormal, float4( fTexc, 0, 0 ) ).rgb * 2 - 1;
+}
+#endif
+								
+half4 Blur ( half2 uv, half2 uv_scaled )
+{
+
+#if NUM_SAMPLES == 7
+	half fSmpWeight[ NUM_SAMPLES ] = { 0.9, 0.84, 0.76, 0.65, 0.50, 0.35, 0.15 };
+#elif NUM_SAMPLES == 6
+	half fSmpWeight[ NUM_SAMPLES ] = { 0.9, 0.83, 0.75, 0.6, 0.4, 0.15 };
+#elif NUM_SAMPLES == 5
+	half fSmpWeight[ NUM_SAMPLES ] = { 0.9, 0.8, 0.65, 0.45, 0.15 };
+#elif NUM_SAMPLES == 4
+    half fSmpWeight[ NUM_SAMPLES ] = { 0.9, 0.8, 0.6, 0.3 };
+#elif NUM_SAMPLES == 3
+	half fSmpWeight[ NUM_SAMPLES ] = { 0.9, 0.7, 0.3 };
+#elif NUM_SAMPLES == 2
+	half fSmpWeight[ NUM_SAMPLES ] = { 0.8, 0.4 };
+#endif
+    
+#if USE_DEPTH
+	half fDepth;
+	
+	half fDepthK0 = g_vDepthTransform_BlurDir.x;
+	half fDepthK1 = g_vDepthTransform_BlurDir.y;
+
+	half3 vNormal;
+
+    RetrieveDepthAndNormal( uv, fDepth, vNormal );
+#endif
+
+	half4 fVal				= tex2D ( smpBlur, uv_scaled );
+	half2 pixelSize			= g_vDepthTransform_BlurDir.zw;
+
+#if SCALED
+	half2 pixelSizeScaled	= g_vBlurDirScaled.xy;
+#else
+	half2 pixelSizeScaled	= pixelSize;
+#endif
+
+    half fWeightSum			= 1;
+
+	half fDepthFadeEnd = 45000;
+
+#if !USE_DEPTH
+	for ( int i = 0; i < NUM_SAMPLES; i++ )
+	{    
+		fWeightSum += fSmpWeight[ i ]*2;
+	}
+#endif
+
+#if DYNA_BRANCH
+	[branch]
+	if( tex2D( smpDepth, uv ).x < 16000 )
+#endif
+	{
+
+		[unroll]
+		for ( int i = 0; i < NUM_SAMPLES; i++ )
+		{ 
+			half 	coef0	= fSmpWeight[ i ],
+					coef1	= coef0;
+
+	#if USE_DEPTH
+			half2 vDepth;
+			half3 vNormals[2];
+
+			RetrieveDepthAndNormal ( uv + pixelSizeScaled * ( i + 1 ), vDepth.x, vNormals[0] );
+			RetrieveDepthAndNormal ( uv - pixelSizeScaled * ( i + 1 ), vDepth.y, vNormals[1] );
+
+			half2 vNormWeight;
+
+	#if USE_NORMAL
+			vNormWeight.x = dot( vNormals[ 0 ], vNormal );
+			vNormWeight.y = dot( vNormals[ 1 ], vNormal );
+	#else
+			vNormWeight.x = 1 ;
+			vNormWeight.y = 1 ;
+	#endif
+
+			half2 vDepthCoef = saturate( abs( vDepth - fDepth ) * fDepthK0 + fDepthK1 );
+
+			half2( coef0, coef1 ) *= vDepthCoef * vNormWeight;
+
+			fWeightSum += coef0;
+			fWeightSum += coef1;			
+	#endif
+
+			fVal += tex2Dlod ( smpBlur, half4( uv_scaled + pixelSize * ( i + 1 ), 0, 0 ) ) * coef0;
+			fVal += tex2Dlod ( smpBlur, half4( uv_scaled - pixelSize * ( i + 1 ), 0, 0 ) ) * coef1;
+		}
+
+		return fVal / fWeightSum;
+	}
+#if DYNA_BRANCH
+	else
+	{
+		return fVal ;
+	}
+#endif
+}
+
+void main
+(
+	half4 color_in: COLOR,
+	half4 uv1     : TEXCOORD0,
+	out half4 color_out : COLOR
+)
+{
+#if SCALED
+	color_out = Blur(uv1.xy, uv1.zw );
+#else
+	color_out = Blur(uv1.xy, uv1.xy );
+#endif
+}

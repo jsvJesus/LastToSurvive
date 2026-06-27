@@ -1,0 +1,58 @@
+#include "fog.hls"
+
+float4 ambSH		: register(c9);
+float4 lightSH		: register(c10);
+float4 lightColor	: register(c11);
+float4 tileSize		: register(c12);
+float4 ambientColor : register(c13);
+
+sampler2D samp : register(s0);
+sampler2D Depth : register(s1);
+
+void main(		in float4 iPos		: POSITION,
+ 				in float2 iTexCoord0 : TEXCOORD0,
+				in float ifade		: TEXCOORD1,
+				in float ispecular	: TEXCOORD2,
+				in float4 iSH		: TEXCOORD3,
+				in float4 ivTexOutPos : TEXCOORD4,
+				in float iFogVal : TEXCOORD5,
+				in float3 iPointColor : TEXCOORD6,
+				in float3 iGradient : TEXCOORD7,
+				out float4 oColr0	: COLOR0, 
+				out float4 oColr1	: COLOR1)
+{					
+	
+	float shl = dot(iSH, lightSH);
+	float ashl = dot(iSH, ambSH);
+	float3 ltDir = shl * lightColor.xyz;
+	float3 ltAmb = ashl * ambientColor.xyz;
+
+	float4 color = tex2D(samp, iTexCoord0);
+	color.rgb *= iGradient.rgb;
+
+	float3 c = ((ltAmb + ltDir) * color.rgb + iPointColor);
+	color.a *= ifade;
+
+	// depth test
+	float2 depth_uv = ivTexOutPos.xy / ivTexOutPos.w;
+	depth_uv.y = -depth_uv.y;
+	depth_uv *= 0.5f;
+	depth_uv += 0.5f;	
+
+	float fD = tex2D ( Depth, depth_uv );
+
+	color.a *= saturate((fD - ivTexOutPos.w)/5.0f);
+
+	
+ 	float spc = ispecular * pow(abs(shl),10);
+ 	//if(spc>1)	c += spc*pow(color.a,1.5);
+
+
+	c.rgb = lerp( c.rgb, g_fogColor.rgb, iFogVal );
+		
+	
+	oColr0 = float4(c * color.a, color.a);
+	oColr1 = float4(0.5, 0.5, 0.5, 1);
+//	oColr0.rgb = iPointColor;
+
+}

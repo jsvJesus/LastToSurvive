@@ -1,0 +1,15 @@
+
+// Setting DistortionBuffer
+
+sampler DistortTex : register (s0);
+
+
+float4 main(float2 uv1 : TEXCOORD0, float4 Col : COLOR0  ) : COLOR
+{
+ float4 t1 = tex2D(DistortTex, uv1);
+
+// t1.a *= (Col.a*2); 
+ t1.a *= Col.a; 
+ 
+ return t1;
+}

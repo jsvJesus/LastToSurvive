@@ -1,0 +1,67 @@
+sampler samplerLinesPrev		: register ( s0 );
+sampler samplerDiscontinuity	: register ( s4 );
+
+float2 LevelInvWidth	: register ( c0 );
+
+#define DELTA 0.001
+
+float4 main( float2 Tex : TEXCOORD0 ) : COLOR0
+{
+	float pattern = tex2D(samplerDiscontinuity, Tex).g;
+	float4 line_center = tex2D(samplerLinesPrev, Tex);
+
+	float level_minus = LevelInvWidth.x / 2.0;
+	float one_step_up = 1.0 / 255.0;
+
+	float4 result = line_center;
+
+	// Early check for discontinuity
+	if ( pattern < DELTA )
+		return result;
+
+	// Left, check the flag
+	if ( line_center.b < DELTA )
+	{
+		float4 tex_coord;
+
+		// Look for the L element distance
+		tex_coord.xy = Tex - float2(LevelInvWidth.x * LevelInvWidth.y, 0.0);
+		tex_coord.zw = Tex - float2(level_minus * LevelInvWidth.y, 0.0);
+
+		// Verify value
+		if (tex2D(samplerLinesPrev, tex_coord.zw).b < DELTA)
+		{
+			// Find a touch on horizontal
+			if ( tex2D(samplerDiscontinuity, tex_coord.xy).g > DELTA )
+				result.r = tex2D(samplerLinesPrev, tex_coord.xy).r + LevelInvWidth.x * one_step_up;
+			else
+				result.b = 1.0; // terminate sequence
+		}
+		else
+			result.b = 1.0;
+	}
+
+	// Right, check the flag
+	if ( line_center.a < DELTA )
+	{
+		float4 tex_coord;
+
+		// Look for the L element distance
+		tex_coord.xy = Tex + float2(LevelInvWidth.x * LevelInvWidth.y, 0.0);
+		tex_coord.zw = Tex + float2(level_minus * LevelInvWidth.y, 0.0);
+
+		// Verify value
+		if (tex2D(samplerDiscontinuity, tex_coord.xy).g > DELTA )
+		{
+			// Find a touch on horizontal
+			if (tex2D(samplerLinesPrev, tex_coord.zw).a < DELTA)
+				result.g = tex2D(samplerLinesPrev, tex_coord.xy).g + LevelInvWidth.x * one_step_up;
+			else
+				result.a = 1.0;
+		}
+		else
+			result.a = 1.;
+	}
+
+	return result;
+}

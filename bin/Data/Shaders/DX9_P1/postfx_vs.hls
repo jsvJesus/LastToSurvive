@@ -1,0 +1,26 @@
+// 
+
+#ifndef GEOMETRY_TRANSFORM
+#define GEOMETRY_TRANSFORM 0
+#endif
+
+float4 g_vOffset: register (c0);
+
+#if GEOMETRY_TRANSFORM
+float4 g_vPosTransform: register(c1);
+float4 g_vTCTransform: register(c2);
+#endif
+
+void main( float4 vPos			: POSITION,
+           float2 vTex			: TEXCOORD0,
+           out float4 vPosOut	: POSITION,
+           out float2 vTexOut	: TEXCOORD0 )
+{
+#if GEOMETRY_TRANSFORM
+	vPos.xy = vPos.xy * g_vPosTransform.xy + g_vPosTransform.zw;
+	vTex = vTex * g_vTCTransform.xy + g_vTCTransform.zw;
+#endif
+
+	vPosOut = vPos;
+	vTexOut = vTex + g_vOffset;
+}

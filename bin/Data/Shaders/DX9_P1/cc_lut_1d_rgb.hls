@@ -1,0 +1,13 @@
+//
+sampler2D Screen : register( s0 );
+sampler1D LUT1D	 : register( s4 );
+
+void main(	in half2 vTexc : TEXCOORD,
+			out half4 oColr : COLOR0 )
+{
+	oColr = (half4)tex2D( Screen, vTexc );
+
+	oColr.r = (half)tex1D( LUT1D, oColr.r ).r;
+	oColr.g = (half)tex1D( LUT1D, oColr.g ).g;
+	oColr.b = (half)tex1D( LUT1D, oColr.b ).b;
+}

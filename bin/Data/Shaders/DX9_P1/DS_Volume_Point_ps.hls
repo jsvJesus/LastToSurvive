@@ -1,0 +1,64 @@
+//
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+
+sampler ShadowMap	: register (s4);
+sampler ProjTex		: register (s6);
+
+sampler EnvCubeMap 	: register (s8);
+
+#ifndef DIFFUSE_ONLY
+// Diffuse only should be OFF by default (otherwise it will be diffuse only for all sh. variations)
+#define DIFFUSE_ONLY 0
+#endif
+
+#include "DS_Point_IO_ps.hls"
+#include "Lib\LightHelper.hls"
+#include "Lib\SSS_Helper.hls"
+
+#ifndef SSS_ON
+#define SSS_ON 0
+#endif
+
+float4   vLight_InvRefZ	: register(c3);
+
+float4 main
+(
+	float4 uv1_uv2 : TEXCOORD0, 
+	float3 WPos : TEXCOORD1,
+	float2 SPos : TEXCOORD2
+): COLOR
+{
+	float2 uv1 = uv1_uv2.xy;
+	float2 uv2 = uv1_uv2.zw;
+
+	float invRefZ = vLightPos.w;
+	
+	float Depth = tex2D(DepthTex, uv1).r * invRefZ;
+	float3 Cam = vCamPos.xyz;
+
+	// Reconstruct World Z using UV and Depth
+	float3 CamVec = WPos - Cam;
+	float3 cameraToWorldPos = Depth * CamVec;
+
+	float3 worldPos = Cam + cameraToWorldPos;
+	
+	float atten = Color.a;	
+	float3 c = atten * (vLightPos.xyz - Cam.xyz);
+	float3 d = atten * cameraToWorldPos;
+		
+	float u = dot(c, c) + 1;
+	float v = -2 * dot(c, d);
+	float w =  dot(d, d);
+	float div = rsqrt(4 * u * w - v * v);	
+	//float lightning = sqrt( w ) * 2 * ( atan( ( v + 2 * w ) * div ) - atan( v * div ) ) * div; 
+	float2 atan_res = atan(float2(v + 2 * w, v) * div);
+	float lightning = sqrt(w) * 2 * (atan_res.x - atan_res.y) * div; 
+	
+	float4 cl = lightning;
+	cl.rgb *= Color;
+
+	return cl;
+}

@@ -1,0 +1,18 @@
+//
+#include "system\IOParam\IODefine_VS.hls"
+
+float4 		vScreenT	: register( c24 );
+
+void main(	float4 vPos: POSITION,
+			out float4 vPosOut		: POSITION,
+			out float4 vTexOut		: TEXCOORD0,
+			out float3 vWPos		: TEXCOORD1,
+			out float2 vSPosOut		: TEXCOORD2
+			)
+{
+  vWPos = mul( vPos, mWorld );
+  vPosOut = mul( vPos, mProj );
+
+  vTexOut = float4( vPosOut.xy*vScreenT.xy + vScreenT.zw*vPosOut.w, vPosOut.zw );
+  vSPosOut = ((vPosOut.xy / vPosOut.z)+1)/2 ;
+}

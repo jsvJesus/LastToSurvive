@@ -1,0 +1,157 @@
+/////////////////////////////////////////////////////////
+
+#define VERTEX_SHADER 1
+
+#include "fog.hls"
+
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x3 ModelMatrix			: register (c4);
+float4x3 NormalMatrix			: register (c7);
+
+// NOTE: duplicate in:
+// DS_Fillbuffer_disp_vs.hls
+// DS_Fillbuffer_Instanced_vs.hls
+// DS_Fillbuffer_vs.hls
+
+float4 vTexcUnpackScale			: register( c16 );
+float3 vCamera					: register( c17 );
+
+// NOTE: duplicate in 
+// SkinSM_VS.hls
+// SkinDepth_VS.hls
+// Skin_VS.hls
+
+float4 vUnpackScale					: register( c22 );
+float3 vUnpackTexc_ExtrudeAmmount	: register( c23 );
+
+float4   WorldScale  		: register( c24 );
+
+#if BONES
+float4x3 bone1[73] 	: register(c24);
+#endif
+
+struct PointLight
+{
+	float4 pos;
+	float4 color;
+	float4 att;
+};
+
+//	Point light parameters
+#ifndef NUM_POINT_LIGHTS
+#define NUM_POINT_LIGHTS 0
+#endif
+
+#ifndef BONES
+#define BONES 0
+#endif
+
+#if NUM_POINT_LIGHTS
+PointLight ptLights[NUM_POINT_LIGHTS]: register(c243);
+#endif
+
+void main
+(
+	float4 vPos				: POSITION,
+	float2 vUV1				: TEXCOORD0,
+	float4 vNormal			: NORMAL,
+	float4 vTangent			: TANGENT,
+	
+#if BONES	
+	float4 BlendWeights		: BLENDWEIGHT,
+	int4 BlendIndices		: BLENDINDICES,	
+#endif
+			
+	out	float4 vPosOut		: POSITION,
+	out	float2 vTexOut1		: TEXCOORD0,
+	out	float4 ssPos		: TEXCOORD1,
+	out float4 fogVal_camDir: TEXCOORD2,
+	out float3 worldNormal	: TEXCOORD3,
+	out float3 lightsColor	: TEXCOORD4
+	
+	, out float3 oModelPos : TEXCOORD5
+	, out float3 oModelNorm : TEXCOORD6
+)
+{
+	float3 worldPos ;
+
+#if BONES
+	// calc vertex world position
+	float3 vModelPos = float3( 0, 0, 0 );
+	
+	vNormal.xyz = vNormal.xyz * 2 - 1;	
+
+	float3 usc = vUnpackScale.xyz ;
+
+	vPos.xyz *= usc ;
+
+	vModelPos += mul(vPos, bone1[BlendIndices.x])*BlendWeights[0];
+	vModelPos += mul(vPos, bone1[BlendIndices.y])*BlendWeights[1];
+	vModelPos += mul(vPos, bone1[BlendIndices.z])*BlendWeights[2];
+	vModelPos += mul(vPos, bone1[BlendIndices.w])*BlendWeights[3];	
+
+	// calc normal
+	float3 vModelNorm = float3( 0, 0, 0 );
+	vModelNorm += mul(vNormal, bone1[BlendIndices[0]])*BlendWeights[0];
+	vModelNorm += mul(vNormal, bone1[BlendIndices[1]])*BlendWeights[0];
+	vModelNorm += mul(vNormal, bone1[BlendIndices[2]])*BlendWeights[0];
+	vModelNorm += mul(vNormal, bone1[BlendIndices[3]])*BlendWeights[0];
+
+	vModelNorm = normalize(vModelNorm);
+
+	vModelPos += vModelNorm * vUnpackTexc_ExtrudeAmmount.z ;
+
+	oModelPos = vModelPos ;
+	oModelNorm = vModelNorm ;
+
+	vPosOut = mul(float4(vModelPos.xyz, 1.0f), ModelViewProjMatrix);
+
+#else
+	float3 vModelPos = vPos;
+	float3 vModelNorm = vNormal.xyz * 2 - 1;
+
+	vModelPos += vModelNorm * vUnpackTexc_ExtrudeAmmount.z ;
+
+	oModelPos = vModelPos * WorldScale ;
+	oModelNorm = vModelNorm ;
+
+	vPosOut = mul(float4(vModelPos.xyz, 1.0f), ModelViewProjMatrix);	
+#endif
+
+	worldPos = mul(float4(vModelPos.xyz, 1.0f), ModelMatrix);
+	worldNormal = mul(vModelNorm, (float3x3)ModelMatrix);
+	
+#if BONES
+	vTexOut1.xy = vUV1.xy * vUnpackTexc_ExtrudeAmmount.xy ;
+#else
+	vTexOut1.xy = vUV1.xy * vTexcUnpackScale.xy ;
+#endif
+
+	ssPos = vPosOut;
+	ssPos.xy = ssPos.xy * 0.5 + 0.5 * ssPos.w;
+	ssPos.y = ssPos.w - ssPos.y;
+
+   	//	Point lights
+   	lightsColor = 0;
+#if NUM_POINT_LIGHTS
+   	[unroll]
+   	for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
+   	{
+   		float3 lightVec = ptLights[i].pos - worldPos;
+   		float lightVecLen = length(lightVec);
+   		float3 color = saturate(dot(normalize(worldNormal), normalize(lightVec))) * ptLights[i].color;
+   		
+   		float invFadeDistance = ptLights[i].att.x;
+   		float startFadeMulInvFadeDistance = ptLights[i].att.y;
+   		
+		float attnDist = 1 - saturate(lightVecLen * invFadeDistance - startFadeMulInvFadeDistance);
+
+   		lightsColor += color * attnDist;
+   	}
+#endif
+
+	fogVal_camDir.xyz = worldPos.xyz - vCamera.xyz;
+	fogVal_camDir.w = saturate(getFogVal(vCamera.xyz, worldPos.xyz));
+
+}
+

@@ -1,0 +1,37 @@
+//-----------------------
+
+float4x3    invViewMtx                              : register(  c0 );
+float4x4    RefractViewProjTexXf                    : register(  c3 );  // (c4);
+float4      vCamera_Lerp                            : register(  c7 );  // (c8);
+float4      prevCam_mipA                            : register(  c8 );  // (c9);
+float4      projVal                                 : register(  c9 );  // (c10);
+
+float4      SunVector_Time                          : register( c10 );  // (c11);
+
+
+float4      deepColor_SpecularCosinePower           : register( c11 );  // (c15);
+float4      attenColor_Dist                         : register( c12 );  // (c17);
+float4      bumpness_RefrIndex_TileSize_x10         : register( c13 );  // (c18);
+float4      CausticDepth_Strength_projVal           : register( c14 );  // (c19);   //xy
+
+
+float4      beamAttColor                            : register( c15 );  // (c20);
+float3      diffAttColor                            : register( c16 );  // (c21);
+float4      vars                                    : register( c17 );  // (c22);
+float4      ColTileBlend_Pert_Coast                 : register( c18 );  // (c23);
+// x - color texture tiling 0.001-0.1
+// y - blend between color and reflection
+// z - perturbation of refraction map
+// w - depth of coast blending with water
+
+float4      SunColor_refrIdx2                       : register( c19 );  // (c27);
+float4      addFactor                               : register( c20 );  // (c28);
+float4      rippleOffset                            : register( c21 );  // (c29);
+float4      simParams                               : register( c22 );  // (c30);   //x = 1/textureSize, y = 1/area_size, z = viscosity
+float4      specIntensity_Bumpiness                 : register( c23 );
+float4      reflIntensity_fresnelPow                : register( c24 );
+float4      farTileControl                          : register( c25 );
+float4      farTileBumpiness_Lerp_FresBumpiness     : register( c26 );
+
+//////////////////////////////////////
+// eliminate commons

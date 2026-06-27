@@ -1,0 +1,53 @@
+//
+
+float4 gColor_DefSSAO                        : register( c0 );
+float4 gMetalness_Chromeness_Glow_SpecPower  : register( c1 );
+float3 gNormal                               : register( c2 );
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	
+	float4 Normal : COLOR1;	
+	float4 Depth : COLOR2;
+	
+#if AUX
+	float4 Aux : COLOR3;
+#endif
+
+};
+
+///////////////////////////////////////////////////////////////
+
+PSOUT main(	float3  uv1 	: TEXCOORD0, 
+			float3  Normal 	: TEXCOORD1,
+			float3 t1		: TEXCOORD2,
+			float3 t2		: TEXCOORD3,
+			float3 RealPos	: TEXCOORD4
+			)
+
+{
+
+	float Metalness		= gMetalness_Chromeness_Glow_SpecPower.r;
+	float Chromeness	= gMetalness_Chromeness_Glow_SpecPower.g;
+	float Glow			= gMetalness_Chromeness_Glow_SpecPower.b;
+	float SpecPower		= gMetalness_Chromeness_Glow_SpecPower.a;
+
+	PSOUT res;
+	
+	res.Color.rgb = gColor_DefSSAO.rgb;
+	res.Color.a = Metalness;
+	
+	res.Normal.rgb = gNormal.rgb;
+	res.Normal.a = Glow;
+	
+	res.Depth = uv1.z;
+
+#if AUX
+	res.Aux = float4( gColor_DefSSAO.w, SpecPower, 0, Chromeness );
+#endif
+
+	res.Depth = uv1.z;
+
+	return res;
+}

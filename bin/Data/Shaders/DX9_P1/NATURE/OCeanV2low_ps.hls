@@ -1,0 +1,57 @@
+#include "..\fog.hls"
+
+sampler DiffuseMap : register (s0);
+sampler DiffuseMap1 : register (s1);
+sampler DepthMap   : register (s2);
+sampler RefractMap : register (s3);
+
+#include "OceanIO_ps.hls"
+
+float4 main( float3 vPos : TEXCOORD0,
+#if ( WATER_PLANE )
+	float3 vNormal : TEXCOORD4,
+#endif
+	float2 ruv: TEXCOORD1,
+	float4 texCoordV: TEXCOORD2,
+	float vFogVal : TEXCOORD3
+) : COLOR
+{
+	//DIRECTION TO CAMERA
+ 	float3 camVec = vPos - vCamera_Lerp.xyz;
+ 	float3 Vn = normalize(camVec);
+
+  	float3 Nn = normalize((tex2D(DiffuseMap, ruv).xzy - 0.5f)* float3(1, bumpness_RefrIndex_TileSize_x10.x, 1));	//NORMAL
+#if ( WATER_PLANE )
+	Nn = normalize(vNormal + Nn);
+#endif
+  	
+	float3 reflectColor = texCUBE(SkyCube, reflect(Vn, Nn)).rgb;	//Reflection component
+	reflectColor = pow(reflectColor, 2.2) * 0.7;
+	
+	// TODO : find out why VS output gets screwed ( some post projection LERP issuses? )
+	texCoordV = mul( camVec, RefractViewProjTexXf );
+
+	//REFRACTION
+	float3 R = ( tex2Dproj(DepthMap, texCoordV).r / texCoordV.w - 1.0) * ColTileBlend_Pert_Coast.z * reflect( camVec*float3(1,-1,1), Nn) + camVec;
+	
+	float4 texCoordR = mul(float4(R, 1), (float3x4)RefractViewProjTexXf);
+	float dist = (camVec.y - R.y * tex2Dproj(DepthMap, texCoordR).r / texCoordR.w)*2;
+	
+	float3 beamAttFactor = pow(2, dist * beamAttColor.rgb);
+	float3 diffAttFactor = pow(2, dist * diffAttColor);
+
+	//blend water with coast. Far parts of coast blended harder. Soften blend when look down
+	float dy = saturate( dist * ColTileBlend_Pert_Coast.w );
+	
+	float3 refractColor = tex2Dproj(RefractMap, texCoordR).rgb ;
+	refractColor += dy * ( refractColor * (beamAttFactor - 1) + saturate(1 - beamAttFactor * diffAttFactor) * deepColor_SpecularCosinePower.rgb);
+
+	float fresnel = bumpness_RefrIndex_TileSize_x10.y + SunColor_refrIdx2.w * pow(abs(1 - saturate(dot(-Vn, Nn))), 4);
+	
+	float4 finalColor;
+	finalColor.rgb = lerp(refractColor.rgb, reflectColor.rgb, saturate( fresnel * dy ) );
+	finalColor.rgb = lerp(finalColor.rgb, g_fogColor.rgb, vFogVal);	//FOG
+	finalColor.a = 1;
+	
+	return finalColor;
+}

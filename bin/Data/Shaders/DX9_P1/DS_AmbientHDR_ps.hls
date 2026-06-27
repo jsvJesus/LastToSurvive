@@ -1,0 +1,119 @@
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+
+sampler AuxData	 	: register (s3);
+sampler AuxData_Bi 	: register (s4);
+
+sampler EnvCubeMap 	: register (s8);
+
+#ifndef HQ
+#define HQ 1
+#endif
+
+float4   vCamPos  		: register(c0);
+float4	 Color 			: register(c1);
+
+float4   vAmbientColor  : register(c2);
+float4   vLight_InvRefZ	: register(c3);
+
+float4   	vBacklightColor  : register(c30);
+
+#include "Lib\LightHelper.hls"
+
+float4 main(float4 uv1_uv2 : TEXCOORD0, 
+			float3 WPos : TEXCOORD1,
+			float2 SPos : TEXCOORD2
+			) : COLOR
+{
+
+	float2 uv1 = uv1_uv2.xy;
+	float2 uv2 = uv1_uv2.zw;
+
+	float4 TexCol = tex2D(AlbedoTex, uv1);
+	TexCol.rgb 	= pow( TexCol.rgb, 2.2f ); 
+
+	float4 normalAndSelfIllum = tex2D(NormalTex, uv1);
+	
+	float4 AmbientFactor ;
+	
+	float3 vLight = vLight_InvRefZ.xyz;
+	float invRefZ = vLight_InvRefZ.w;	
+
+	float3 Normal = normalAndSelfIllum.rgb*2-1;
+	Normal = normalize( Normal ) ;	
+
+	// vAmbientColor pow 2.2 is done on CPU
+	AmbientFactor = vAmbientColor;//pow(vAmbientColor, 1.0f/2.2f);//*max(0.00,SkydomeAccess);
+
+	float4 Backlight = vBacklightColor;
+        Backlight.rgb *= saturate(dot(float3(0,-1,0), Normal.rgb))*vBacklightColor.a;
+
+	AmbientFactor +=Backlight;
+	
+#if HQ
+	float SSAOTerm = tex2D(AuxData_Bi, uv2).r ;
+#else
+	float SSAOTerm = 1.0f ;
+#endif
+
+
+    float4 MatColor_Matte = AmbientFactor * TexCol;	
+
+	float SelfIllum = normalAndSelfIllum.a;
+
+	float4 FinalColor;
+
+
+#if HQ
+	float4 linearColor = Color;
+	
+	float  MetalnessMap = TexCol.a ;	
+
+	float Depth = tex2D(DepthTex, uv1).r * invRefZ;
+	float4 auxData = tex2D(AuxData, uv1);
+	
+	float	SpecularPOW = auxData.g;
+	float	ReflChrome = auxData.a;	
+		
+	float3 Cam = vCamPos.xyz;
+	float3 CamVec = WPos - Cam;
+	
+	float3 RealPos = Cam + Depth*CamVec;
+
+	float3 ViewVec = normalize(Cam - RealPos.xyz);
+	
+	float4 Vec1 = float4(reflect(-ViewVec, Normal.rgb), 7.0f - 7.0f*ReflChrome);//*MetalnessMap);	
+	
+	float4 ReflColor = texCUBElod(EnvCubeMap, Vec1);
+
+// For HDR only
+// sumulate fake HDR reflections
+	ReflColor = pow( ReflColor, 2.2 ); 
+
+    	float4 Fr1 = fresnelReflectance2 ( dot(Normal.rgb,ViewVec), ReflColor);
+
+    	float4 Fr = fresnelReflectance1 ( dot(Normal.rgb,ViewVec), ReflColor); 
+
+	ReflColor = Fr+Fr1;//+ReflColor;
+
+
+	float4 MatColor_Metal = Fr1*AmbientFactor+Fr/4; ;	
+
+
+	FinalColor.rgb = lerp( MatColor_Matte, MatColor_Metal, MetalnessMap );
+#else
+	FinalColor.rgb = MatColor_Matte.rgb ;
+#endif
+
+
+//	FinalColor.rgb = ReflColor;//SelfIllum;//AmbientFactor.rgb;
+
+	FinalColor.rgb = lerp ( FinalColor.rgb, TexCol.rgb*16.0f, SelfIllum);
+		
+	FinalColor.rgb *= pow(SSAOTerm * SSAOTerm,2.2) ;
+	FinalColor.a = 1;
+
+	return FinalColor ;	
+}
+

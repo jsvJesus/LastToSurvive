@@ -1,0 +1,255 @@
+#ifndef VERTEX_SHADER
+#define VERTEX_SHADER 0
+#define PIXEL_SHADER 1
+#endif
+
+#include "..\fog.hls"
+
+sampler DiffuseMap : register (s0);
+sampler DiffuseMap1 : register (s1);
+sampler DepthMap   : register (s2);
+sampler RefractMap : register (s3);
+sampler ShadowMap 	: register (s5);
+sampler ColorTexture : register (s6);
+//sampler RipplesTexture : register (s8);
+sampler RipplesTexture : register (s9);
+
+sampler FarTileMap : register (s10);
+sampler FarTileMap1 : register (s11);
+
+#include "OceanIO_ps.hls"
+
+float4 main( float3 vPos : TEXCOORD0,
+#if ( WATER_PLANE )
+	float3 vNormal : TEXCOORD3,
+#endif
+	float2 ruv: TEXCOORD1,
+	float3 ruv10: TEXCOORD2,
+	float4 scrPos: TEXCOORD4
+ ) : COLOR
+{
+	//----------------------------------------------------------
+	//DIRECTION TO CAMERA
+ 	float3 camVec = vPos - vCamera_Lerp.xyz;
+ 	float camVecL = length(camVec);
+ 	float3 Vn = camVec / camVecL;
+ 	
+
+	//---------------------------------------------------------
+	//NORMAL
+	
+ 	float mip = ((-1/Vn.y - 1)*0.025f + camVecL*0.0025f) * prevCam_mipA.w;
+  	mip = min(mip, 6);
+
+	float3 Nn = float3(0,1,0);
+#if ( RIPPLES )
+		{
+			float w = simParams.x;
+			float2 ripuv = (vPos.xz - vCamera_Lerp.xz + rippleOffset.yw)*simParams.y + 0.5f;
+			float h0 = tex2D(RipplesTexture, ripuv+float2(0,0)).r;
+			float h1 = tex2D(RipplesTexture, ripuv+float2(w,0)).r;
+			float h2 = tex2D(RipplesTexture, ripuv+float2(0,w)).r;
+			float ww = 0.015f;
+			Nn = -normalize(cross( float3(ww, h1-h0, 0), float3(0, h2-h0, ww)));
+		}
+#endif
+	float3 nc1 = tex2Dlod(DiffuseMap, float4(ruv + Nn.xz/5, 0.0f, mip));
+	float3 nc2 = tex2Dlod(DiffuseMap1, float4(ruv + Nn.xz/5, 0.0f, mip));
+	
+	float3 farNC1 = tex2D(FarTileMap, ruv * farTileControl.x );
+	float3 farNC2 = tex2D(FarTileMap1, ruv * farTileControl.x );
+	
+	float3 farNC = lerp( farNC1, farNC2, farTileBumpiness_Lerp_FresBumpiness.y ) * 2 - 1;
+
+	farNC.z *= farTileBumpiness_Lerp_FresBumpiness.x ;
+	farNC = normalize( farNC ) ;	
+	
+	float farTileFactor = saturate( camVecL * farTileControl.y + farTileControl.z ) * farTileControl.w ;
+	
+	float3 Nn1 = lerp(nc1.xzy, nc2.xzy, vCamera_Lerp.w) * 2 - 1  + farNC.xzy * farTileFactor ;
+	//bumpness and smooth normals far from the camera
+	Nn1.y *= bumpness_RefrIndex_TileSize_x10.x ;
+	Nn1 = normalize(Nn1);
+#if ( WATER_PLANE )
+	Nn1 = normalize(vNormal + Nn1);
+#endif
+	Nn = normalize(Nn+Nn1);
+
+	/*{
+		//rain
+		float w = 1.0f/512;
+		float2 ripuv = vPos.xz/2 + Nn.xz/5;
+		float h0 = tex2D(RipplesTexture, ripuv+float2(0,0)).r;
+		float h1 = tex2D(RipplesTexture, ripuv+float2(w,0)).r;
+		float h2 = tex2D(RipplesTexture, ripuv+float2(0,w)).r;
+		float ww = 0.015f;
+		float3 Nr = -normalize(cross( float3(ww, h1-h0, 0), float3(0, h2-h0, ww)));
+		Nn = normalize(Nn + Nr/max(1,camVecL));
+	}*/
+
+	
+
+
+
+	//----------------------------------------------------------
+	//Reflection component
+	
+	float3 rflVec = reflect(Vn, Nn);
+	float3 reflv = rflVec;
+#if ( WATER_PLANE==0 )
+	if(reflv.y<0.0f)	reflv = normalize(float3( reflv.x, 0.01f, reflv.z) );	//do not reflect underwater geometry
+#endif
+	
+	//compute 2D texture coord of reflection
+	float4 reflc = mul(float4(reflv, 1.0f), RefractViewProjTexXf);
+	float2 uvr = reflc.xy / reflc.w;
+	//zoom in left and right sides of reflection dou to normal map perturbations and getting reflection outside reflection map
+	if(uvr.x<0.1f)	uvr.x = uvr.x*0.5f + 0.05f;
+	else	if(uvr.x>0.9f)	uvr.x = 0.9f + (uvr.x-0.9f)*0.5f;
+	
+	
+	float3 reflectColor;
+	float3 rflPos;	//compute world pos of reflected geometry
+#if ( WATER_PLANE )
+	if(1)
+#else	
+	if( dot(Vn, reflv)<0.2f	//reject bug of getting reflection when look down
+	 || abs(saturate(uvr.x)-uvr.x) + abs(saturate(uvr.y)-uvr.y)>0.001f)	//if reflection is outside screen
+#endif	 
+	{
+		//get reflection color from sky cubemap
+		reflectColor = texCUBE(SkyCube, rflVec).rgb;
+		//	Back to linear space
+		reflectColor = pow(reflectColor, 2.2);
+
+		rflPos = vPos.xyz + rflVec*10000.0f;
+	}
+	else
+	{
+		float4 rflScrPos = float4( projVal.zw * uvr + CausticDepth_Strength_projVal.zw, 1, 1);
+		rflScrPos.xyz *= tex2D(DepthMap, uvr).r * projVal.x + projVal.y;
+		rflPos = mul(rflScrPos, invViewMtx);
+		reflectColor = tex2D(RefractMap, uvr).rgb;
+	}
+	
+	//fog reflected color from water point to worlpos of reflected geometry
+	float fogRfl = getFogVal(vPos.xyz, rflPos.xyz);
+	reflectColor.rgb = lerp(reflectColor.rgb, g_fogColor.rgb, fogRfl);
+
+	//blend reflected color with water color
+//  	reflectColor = lerp(reflectColor, tex2D(ColorTexture, vPos.xz*ColTileBlend_Pert_Coast.x).rgb, ColTileBlend_Pert_Coast.y);
+	float4 colorTex = tex2D(ColorTexture, vPos.xz*ColTileBlend_Pert_Coast.x);
+	colorTex = pow(colorTex, 2.2);
+	reflectColor *= lerp(1, colorTex, ColTileBlend_Pert_Coast.y);
+
+	//----------------------------------------------------------
+	//REFRACTION
+	
+	float3 rN = Nn;
+	//lower normal perturbation under camera
+	rN.y /= saturate( pow( bumpness_RefrIndex_TileSize_x10.w * camVecL, 4));
+	rN = normalize(rN);
+
+	float3 V_y = camVec;
+	V_y.y = -V_y.y;
+	float4 texCoordV = mul(float4(camVec, 1), RefractViewProjTexXf);
+	float w1 = 1 / texCoordV.w;
+	float radius = max( tex2D(DepthMap, texCoordV.xy * w1).r * w1 - 1, 0) * ColTileBlend_Pert_Coast.z;
+
+
+	float3 vec0 = camVec + radius * reflect(V_y, rN);
+#if ( WATER_PLANE==0 )
+	vec0.y = min(vec0.y, 0);
+#endif	
+	float3 vec1 = float3(camVec.x, min(camVec.y, 0), camVec.z);
+
+	float4 texCoordR = mul(float4(vec0, 1), RefractViewProjTexXf);
+	float4 texCoordR1 = mul(float4(vec1, 1), RefractViewProjTexXf);
+
+	float2 w2 = 1 / float2(texCoordR.w, texCoordR1.w);
+	float4 uvG = float4(texCoordR.xy, texCoordR1.xy) * w2.xxyy;
+
+	w2.xy *= float2( tex2D(DepthMap, uvG.xy).r, tex2D(DepthMap, uvG.zw).r );
+	float3 D = vec0 * w2.x - camVec;
+	float3 D1 = vec1 * w2.y - camVec;
+
+	float4 dist = float4( length(D), abs(D.y), length(D1), abs(D1.y) );
+	
+	//compute real world position
+	float4 u0 = mul(float4(vec0, 1), RefractViewProjTexXf);
+	float4 u1 = mul(float4(vec1, 1), RefractViewProjTexXf);
+	float4 rtc = float4(u0.xy / u0.w, u1.xy / u1.w);
+
+	float4 v = projVal.zwzw * rtc + CausticDepth_Strength_projVal.zwzw;
+	float4 s0 = float4( v.xy, 1, 1);
+	float4 s1 = float4( v.zw, 1, 1);
+	s0.xyz *= tex2D(DepthMap, rtc.xy).r * projVal.x + projVal.y;
+	s1.xyz *= tex2D(DepthMap, rtc.zw).r * projVal.x + projVal.y;
+	float3 refrPos = mul(s0, invViewMtx);
+	float3 refrPos1 = mul(s1, invViewMtx);
+	
+	
+#if ( WATER_PLANE==0 )
+	//skip refraction of overwater parts of geometry
+	if(refrPos.y-Vn.y >= vPos.y)
+	{
+		refrPos = refrPos1;
+		dist.xy = dist.zw;
+		rtc.xy = rtc.zw;
+	}
+#endif	
+	float3 refractColor = tex2D(RefractMap, rtc.xy).rgb ;
+
+	//blend water with coast. Far parts of coast blended harder. Soften blend when look down
+	float dy = saturate( dist.x * ColTileBlend_Pert_Coast.w );
+
+ 	float caustic = lerp(
+ 		tex2D(DiffuseMap, refrPos.xz * beamAttColor.w).w,
+ 		tex2D(DiffuseMap1, refrPos.xz * beamAttColor.w).w,
+ 		vCamera_Lerp.w);
+	float shad = 1;//tex2D( ShadowMap, scrPos.xy / scrPos.w ).r*2;
+	float caustValue = tex2D( ShadowMap, scrPos.xy / scrPos.w ).r * CausticDepth_Strength_projVal.y * saturate(1 - dist.y * CausticDepth_Strength_projVal.x) * dy;
+	refractColor *= shad * caustic * caustValue + 1;
+
+	//compute refracted water color
+	float3 beamAttFactor = pow(2, dist.x * beamAttColor.rgb);
+	float3 diffAttFactor = pow(2, dist.y * diffAttColor);
+	refractColor *= lerp(float3(1,1,1), beamAttFactor, dy);
+	refractColor += deepColor_SpecularCosinePower.rgb * saturate(1.0f - beamAttFactor * diffAttFactor)*dy;
+
+
+	//----------------------------------------------------------
+	//‘–≈Õ≈À‹
+	
+	float3 fresNorm = Nn ;
+	fresNorm.y *= farTileBumpiness_Lerp_FresBumpiness.z ;
+	fresNorm = normalize( fresNorm ) ;
+	
+	float fresnel = bumpness_RefrIndex_TileSize_x10.y + SunColor_refrIdx2.w * pow(abs(1 - saturate(dot(-Vn, fresNorm))), reflIntensity_fresnelPow.w );
+
+	//add sunlight
+	float3 h = SunVector_Time.xyz - Vn;
+	float3 nn = Nn;
+	
+	nn.y *= specIntensity_Bumpiness.w ;
+
+	float hnn = dot( nn, h ) / ( sqrt( dot(h, h)*dot(nn, nn) ) );
+	
+	reflectColor *= reflIntensity_fresnelPow.rgb ;
+	reflectColor += specIntensity_Bumpiness.rgb * pow ( max ( hnn, 0.0f ), deepColor_SpecularCosinePower.a ) / fresnel;
+	
+	
+	float4 finalColor;
+	finalColor.rgb = lerp(refractColor.rgb, reflectColor.rgb, saturate( fresnel * dy ) );
+	finalColor.a = 1;
+
+	//aerial perspective
+	float4 aer = getAerialVal(camVec, camVecL);
+	finalColor.rgb = lerp(finalColor.rgb, aer.rgb, aer.a);
+	
+	//FOG
+	float fogVal = getFogVal(vCamera_Lerp.xyz, vPos.xyz);
+	finalColor.rgb = lerp(finalColor.rgb, g_fogColor.rgb, fogVal);
+
+	return finalColor;
+}

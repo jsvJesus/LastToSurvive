@@ -1,0 +1,45 @@
+//
+sampler DiffuseTex : register (s0);
+sampler DepthTex : register (s4);
+
+float3 TintColor : register (c9);
+float3 Cam : register (c10);
+float2 FogParams : register (c13);
+
+float4 main( float3 vRealPos : TEXCOORD0,
+			float4 OutPos : TEXCOORD1
+#if ( WATER_PLANE )
+			, float3 OutNormal : TEXCOORD2
+#endif
+) : COLOR
+{
+	float WaterDepth = OutPos.w;
+	
+	float2 depth_uv = OutPos.xy/OutPos.w;
+	depth_uv = depth_uv * float2(0.5f,-0.5f) + 0.5f;
+	
+	float Depth = tex2D(DepthTex, depth_uv).r;
+	float DTest = Depth - WaterDepth;
+	clip ( DTest - 0.0001h );
+
+#if ( WATER_PLANE )
+	float3 vNrm = normalize(OutNormal);
+#else
+    float3 vNrm = float3(0,1,0);
+#endif
+
+	//return half4(dot(vNrm, half3(0,1,0)).xxx,1.h);
+
+	float3 CamVec = normalize(vRealPos.xyz - Cam);
+	float  fDot = dot ( vNrm, CamVec );
+	float3 RealPos = Cam + Depth*CamVec;
+	float3 WaterPos = Cam + WaterDepth*CamVec;
+
+    float HeightFalloff = saturate(DTest*FogParams.x);
+	float HeightFalloff22 = saturate(DTest)*saturate(sign(fDot))*saturate(WaterDepth*FogParams.y);
+	
+	float fAtten1 = saturate ( sign ( -fDot ) );
+	HeightFalloff = 0;//saturate( fAtten1 * HeightFalloff + HeightFalloff22);
+    return half4 ( TintColor.rgb, HeightFalloff );
+}
+

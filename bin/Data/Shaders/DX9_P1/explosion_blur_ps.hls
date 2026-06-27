@@ -1,0 +1,26 @@
+//
+sampler2D RT			: register( s0 );
+sampler2D ModulationTex	: register( s4 );
+
+float2 vBlurParams : register( c0 );
+
+half4 main( in half4 vTexc : TEXCOORD0 ) : COLOR0
+{
+
+	float brightPassThreshold = vBlurParams.x;
+	float blurWidth	= vBlurParams.y;
+	
+	#define SAMPLE_COUNT 11
+
+	float4 cl = 0;
+	for (int i = 0; i < SAMPLE_COUNT; ++i)
+	{
+		float f = float(i) / SAMPLE_COUNT;
+		float scaleOffset = f * blurWidth;
+		float2 tc = lerp(vTexc.xy, vTexc.zw, scaleOffset);
+		float4 color = tex2D(RT, tc);
+		color = max(0, color - brightPassThreshold);
+		cl += color / SAMPLE_COUNT;
+	}
+	return cl;
+}

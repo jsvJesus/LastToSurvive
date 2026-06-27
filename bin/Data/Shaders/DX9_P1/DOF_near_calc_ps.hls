@@ -1,0 +1,16 @@
+//
+sampler blurredSampler : register ( s0 );
+sampler shrunkSampler : register ( s4 );
+
+half4 main( float2 uv : TEXCOORD0 ) : COLOR
+{
+	float3 color;   
+	float coc;   
+	half4 blurred;   
+	half4 shrunk;   
+	shrunk = tex2D( shrunkSampler, uv );   
+	blurred = tex2D( blurredSampler, uv );   
+	color = shrunk.rgb;   
+	coc = 2 * max( blurred.a, shrunk.a ) - shrunk.a;
+	return float4( color, coc );   
+}

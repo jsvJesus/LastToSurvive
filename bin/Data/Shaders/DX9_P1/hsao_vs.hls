@@ -1,0 +1,13 @@
+// SSAO
+
+float4 g_vOffsets_RandScale : register (c0);
+
+void main( float4 vPos			: POSITION,
+           float2 vTex			: TEXCOORD0 : register (v3),
+           out float4 vPosOut	: POSITION,
+           out float4 vTexOut	: TEXCOORD0 )
+{
+   vPosOut    = vPos;
+   vTexOut.xy = vTex + g_vOffsets_RandScale.xy;
+   vTexOut.zw = vTex * g_vOffsets_RandScale.zw + 1./8;
+}

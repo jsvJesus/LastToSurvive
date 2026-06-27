@@ -1,0 +1,31 @@
+
+sampler Tex1 	: register (s0);
+sampler Lightmap: register (s1);
+sampler ShadowMap: register (s2);
+
+float4   vAddColor : register(c9);
+
+struct PSOUT
+{
+ float4 Color : COLOR0;
+// float4 Depth : COLOR1;
+};
+
+
+PSOUT main(float3 uv1 : TEXCOORD0,float2 uv2 : TEXCOORD1,float2 uv3 : TEXCOORD2, float4 DiffuseColor : COLOR0) : COLOR
+{
+ PSOUT out1 = (PSOUT)0;
+
+ float4 SM = tex2D(ShadowMap, uv3);
+
+ float4 ColShadow = (SM.r+SM.g+SM.b)/3;
+
+ float4 TM = tex2D(Tex1, uv1);
+ float4 c = DiffuseColor * TM; //*tex2D(Lightmap, uv2)*2 + vAddColor*TM; 
+ c.a = DiffuseColor.a*TM.a;
+
+ out1.Color = c;
+// out1.Depth.r = uv1.z; 
+
+ return out1;
+}

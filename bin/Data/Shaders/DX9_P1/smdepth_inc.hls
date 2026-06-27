@@ -1,0 +1,21 @@
+//
+#define SHADOWTYPE_PERSP			0
+#define SHADOWTYPE_PERSP_PARABOLOID	1
+#define SHADOWTYPE_ORTHO			2
+#define SHADOWTYPE_ORTHO_WARPED		3
+
+float2 ShadowWarp( float2 pos )
+{
+  pos.x = 8 * pos.x / ( 8 * abs(pos.x) + 1.0f );
+  pos.y = 8 * pos.y / ( 8 * abs(pos.y) + 1.0f );
+  
+  return pos;
+}
+
+float4 ShadowWarp( float4 pos )
+{
+  pos.xy = ShadowWarp( pos.xy ); 
+  return pos;
+}
+
+

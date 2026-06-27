@@ -1,0 +1,24 @@
+//
+sampler Screen 				: register (s0);
+sampler FGNoiseTex 			: register (s4);
+
+float4 DisguiseTransform	: register (c0);
+float4 TexTransform 		: register (c1);
+float4 GrainTransform 		: register (c2);
+
+half4 main(float2 uv1 : TEXCOORD0 ) : COLOR
+{
+	half4 t2 = half4(tex2D(Screen, uv1));
+
+	float2 DisguiseUV = uv1 * DisguiseTransform.xy + DisguiseTransform.zw;
+
+	half Disguise 	= half( tex2D( FGNoiseTex, DisguiseUV ).r );
+
+	float2 UV 		= uv1 * TexTransform.xy + TexTransform.zw;
+
+	half4 NoiseSamp = frac( half4( tex2D( FGNoiseTex, UV ) ) + Disguise + half( GrainTransform.z ) );
+
+	NoiseSamp = ( NoiseSamp * GrainTransform.x + GrainTransform.y );
+
+	return t2 + NoiseSamp ;
+}

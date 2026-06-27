@@ -1,0 +1,30 @@
+// Set for each tree
+// NOTE : If you add constants, append to enum at r3dMat.h
+
+float4  Material_Params : register(c0); // (c40);   //SpecularPower, ReflectionPower, SpecularPower1, SSSValue
+float4  Mat_Diffuse     : register(c1); // (c41);   // Low quality self illumination in a; ( NOTE : also used in Trasnparent_ps.hls, where .a is transparency multiplier )
+float4  Mat_Specular    : register(c2); // (c42);   // Low quality metallness parameter in a;
+float4  Mat_Glow        : register(c3); // (c43);   // z - DetailScale, w - DetailDistance
+
+float4  CamVec          : register(c4); // (c50);
+float4  DDepth          : register(c5); // (c51);
+
+float4  CamoInterpolator: register(c6); // (c63);
+float4  DefSSAO         : register(c7); // (c64);
+float4  MaskColor       : register(c8); // (c66);   // 65 is aura stuff
+
+float   fDisplace       : register(c9); // (c0);
+
+// transparent stuff
+
+float2  PixelSize       : register(c10); // (c0); pixel size
+float4  SunDir          : register(c11); // (c1);
+float4  SunColor        : register(c12); // (c2);
+float4  AmbientColor    : register(c13); // (c3);
+
+float4 Aura             : register(c14); // (c65);
+float4 TCamoExtra       : register(c15);
+float4 TCamoColor0      : register(c16);
+float4 TCamoColor1      : register(c17);
+
+// NOTE : If you add constants, append to enum at r3dMat.h

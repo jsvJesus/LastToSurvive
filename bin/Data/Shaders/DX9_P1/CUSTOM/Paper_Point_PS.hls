@@ -1,0 +1,39 @@
+
+sampler DiffuseTex : register (s0);
+sampler NormalTex  : register (s1);
+sampler GlossMap   : register (s2);
+
+sampler LightTex   : register (s3);
+sampler IBLMap     : register (s3);
+
+sampler ShadowMask : register (s5);
+
+half4   vLight  : register(c4);
+half4   vHelper  : register(c9);
+
+half4 main(half2 uv1 :  TEXCOORD0, 
+           half3 Pos :  TEXCOORD1,
+           half3 Norm : TEXCOORD2, 
+           float4 smuv : TEXCOORD3,
+           half4 DiffuseColor : COLOR0) : COLOR
+{
+ half2 uv2 = smuv.xy/smuv.w;
+
+ half4 SMask = 1- tex2D(ShadowMask, uv2);
+ SMask.a = 1;
+
+ // Compute the reflection vector:
+ half3 Light = vLight - Pos;
+
+  half Attn1 = 1.0f - length(Light)*vHelper.x;
+
+  half AttnNLI = saturate(max(0, dot(normalize(-Norm), normalize(Light))+0.2f));
+  half AttnNLO = max(0, dot(normalize(Norm), normalize(Light)));
+
+  half4 TexCol = tex2D(DiffuseTex, uv1);
+  half4 TexOpac = tex2D(NormalTex, uv1);
+  half4 FinalColor = DiffuseColor * TexCol * Attn1 *AttnNLO + AttnNLI *2*TexCol*DiffuseColor*TexOpac.r;
+
+// return float4(0,0,0,0);
+  return FinalColor*SMask;
+}

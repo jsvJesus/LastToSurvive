@@ -1,0 +1,62 @@
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler ShadowMap	: register (s5);
+
+float4   vCamPos  		: register(c0);
+float4	 Color 			: register(c1);
+
+float4   vAmbientColor  : register(c2);
+float4   vLight_InvRefZ	: register(c3);
+
+float4   	vBacklightColor  : register(c30);
+
+#ifndef WHITE_ALBEDO
+#define WHITE_ALBEDO 0
+#endif
+
+float4 main(float4 uv1_uv2 : TEXCOORD0, 
+			float3 WPos : TEXCOORD1,
+			float2 SPos : TEXCOORD2
+			) : COLOR
+{
+
+	float2 uv1 = uv1_uv2.xy;
+
+	float4 TexCol = pow(tex2D(AlbedoTex, uv1),2.2f);
+#if WHITE_ALBEDO
+	TexCol.rgb = 1;
+#endif
+
+	float4 normalAndSelfIllum = tex2D(NormalTex, uv1);
+	float3 Normal = normalize(normalAndSelfIllum.rgb * 2 - 1);
+	float Dim = saturate(dot(normalize(-vLight_InvRefZ.xyz), Normal.rgb));
+
+	float SelfIllum = normalAndSelfIllum.a ;
+	float SM = tex2D(ShadowMap, uv1).r;
+   	SM = saturate(SM + SelfIllum);
+
+	float4 linearColor = Color;
+
+	float SkydomeAccess = saturate((dot(float3(0,1,0), Normal.rgb)+1.0)/2);
+
+	float4 AmbientFactor = vAmbientColor*max(0.00,SkydomeAccess);
+
+	float4 Backlight = vBacklightColor;
+    Backlight.rgb *= (1-Dim)*vBacklightColor.a;
+
+	float4 FinalDiffuse = lerp(AmbientFactor, linearColor*Dim, SM*Dim)+Backlight;
+		
+    float4 MatColor_Matte = FinalDiffuse * TexCol;
+    
+	float4 FinalColor;
+	
+	FinalColor.rgb = MatColor_Matte.rgb;
+	
+	FinalColor.rgb = lerp (FinalColor.rgb, TexCol.rgb,  SelfIllum);
+	
+	FinalColor.a = 1;
+
+	return FinalColor;
+
+}
+

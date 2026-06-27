@@ -1,0 +1,22 @@
+#include "..\System\IOParam\IODefine_VS.hls"
+
+struct VertSMTerrOut_t
+{
+	float4 vPosOut: POSITION;
+	float Depth: TEXCOORD0;
+};
+
+
+VertSMTerrOut_t main( VertTerrIn_t IN )
+{
+	VertSMTerrOut_t OUT;	
+	
+	TerrVertData_t res = CalcTerrainVertData( IN );
+		
+	OUT.vPosOut = mul( res.vPos, mProj ); 		
+
+	OUT.Depth = OUT.vPosOut.z/OUT.vPosOut.w;
+
+	return OUT;
+}
+

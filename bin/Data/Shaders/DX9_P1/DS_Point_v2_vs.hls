@@ -1,0 +1,37 @@
+////
+
+float4 halfPixelSize: register(c0);
+float4x4 invViewProj: register(c1);
+float4x4 viewProj: register(c5);
+
+struct VSOut
+{
+	float4 pos: POSITION;
+	float2 lightDataTC: TEXCOORD0;
+	float2 sceneDataTC: TEXCOORD1;
+	float4 worldPos: TEXCOORD2;
+	float viewSpaceZ: TEXCOORD3;
+};
+
+struct VSIn
+{
+	float2 pos: POSITION;
+	float z: TEXCOORD0;
+};
+
+VSOut main(VSIn inData)
+{
+	VSOut o;
+	o.pos = float4(inData.pos, inData.z, 1);
+	o.lightDataTC = inData.pos * 0.5 + 0.5;
+	o.sceneDataTC = o.lightDataTC;
+	o.sceneDataTC.y = 1 - o.sceneDataTC.y;
+	o.sceneDataTC += halfPixelSize.xy;
+	o.lightDataTC += halfPixelSize.xy;
+
+	o.worldPos = mul(invViewProj, o.pos);
+	o.worldPos /= o.worldPos.w;
+	o.viewSpaceZ = mul(viewProj, o.worldPos).w;
+
+	return o;
+}

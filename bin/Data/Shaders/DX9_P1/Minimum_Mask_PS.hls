@@ -1,0 +1,15 @@
+// Enter your shader in this window//
+sampler Tex0 											: register ( s0 );
+sampler Tex1 											: register ( s1 );
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+	float4 val0 = tex2D( Tex0, texc );
+	float4 val1 = tex2D( Tex1, texc );
+
+	color_out = val0 < val1 ? 1 : 0;
+}

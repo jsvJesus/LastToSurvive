@@ -1,0 +1,334 @@
+//
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+
+sampler ShadowMap	: register (s4);
+sampler ProjTex		: register (s6);
+
+sampler EnvCubeMap 	: register (s8);
+
+#ifndef DIFFUSE_ONLY
+#define DIFFUSE_ONLY 0
+#endif
+
+#include "DS_Point_IO_ps.hls"
+#include "Lib\LightHelper.hls"
+#include "Lib\SSS_Helper.hls"
+#include "System\Paraboloid.hls"
+
+
+#ifndef SSS_ON
+#define SSS_ON 0
+#endif
+
+#define SHADOW_MODE_NONE 0
+#define SHADOW_MODE_NORMAL 1
+#define SHADOW_MODE_NORMAL_PCF 2
+#define SHADOW_MODE_SSM 3
+#define SHADOW_MODE_PARABOLOID 4
+
+#ifndef SHADOW_MODE
+#define SHADOW_MODE SHADOW_MODE_NONE
+#endif
+
+#if SHADOW_MODE == SHADOW_MODE_NORMAL_PCF
+#define PCF 1
+#else
+#define PCF 0
+#endif
+
+float GetCubemapShadow( float3 V, float3 VN )
+{
+ float ShadowK;
+
+ float rndVecScale = vMultiShadowParms.x ;
+ float cmpValScale = vMultiShadowParms.y ;
+ 
+ float3 absV = abs( V );
+ float CmpVal = ( max( max( absV.x, absV.y ), absV.z ) - 0.05 ) * cmpValScale ;
+
+ float3 rndVec0;
+
+ [flatten]
+ if( abs( VN.y ) > 0.1 )
+ {
+   rndVec0 = float3( -VN.z, 0, VN.x );
+ }
+ else
+ {
+   rndVec0 = float3( -VN.y, VN.x, 0 );
+ }
+
+
+ rndVec0 = normalize( rndVec0 );
+ float3 rndVec1 = cross( VN, rndVec0 );
+
+ rndVec0 *= rndVecScale ;
+ rndVec1 *= rndVecScale ;
+ 
+ float3 V00, V10, V01, V11;
+ 
+ float2 lerpT;
+
+ float3 transmut = V;
+ 
+ float3 selT = float3(1,0,0);
+ 
+ [flatten]
+ if( absV.x > absV.y )
+ {
+   [flatten]
+   if( absV.x < absV.z )
+   {
+     selT = float3( 0, 0, 1 );
+   }
+ }
+ else
+ {
+   [flatten]
+   if( absV.y > absV.z )
+   {
+     selT = float3( 0, 1, 0 );
+   }
+   else
+   {
+     selT = float3( 0, 0, 1 );
+   }
+ }
+ 
+ transmut = V.xyz * selT.x + V.yxz * selT.y + V.zxy * selT.z;
+ 
+ transmut /= abs( transmut.x );
+
+ transmut *= vShadowMapRes.x;
+ lerpT = frac( transmut.yz );
+ 
+ transmut.yz -= lerpT;
+ 
+ transmut *= vShadowMapRes.y;
+ 
+ transmut.yz += 0.5 * vShadowMapRes.y;
+
+ V00 = transmut;
+ V10 = transmut;
+ V01 = transmut;
+ V11 = transmut;
+ 
+ V10.y += vShadowMapRes.y;
+ V01.z += vShadowMapRes.y;
+ 
+ V11.yz += vShadowMapRes.yy;
+ 
+ V00 = V00.xyz * selT.x + V00.yxz * selT.y + V00.yzx * selT.z;
+ V10 = V10.xyz * selT.x + V10.yxz * selT.y + V10.yzx * selT.z;
+
+ V01 = V01.xyz * selT.x + V01.yxz * selT.y + V01.yzx * selT.z;
+ V11 = V11.xyz * selT.x + V11.yxz * selT.y + V11.yzx * selT.z;
+ 
+#if PCF
+ float K00 = texCUBE( ShadowMap, -V00 ).r  < CmpVal ? 0 : 1;
+ float K10 = texCUBE( ShadowMap, -V10 ).r  < CmpVal ? 0 : 1;
+ float K01 = texCUBE( ShadowMap, -V01 ).r  < CmpVal ? 0 : 1;
+ float K11 = texCUBE( ShadowMap, -V11 ).r  < CmpVal ? 0 : 1;
+
+ ShadowK =	lerp(
+				lerp( K00, K10, lerpT.x ),
+				lerp( K01, K11, lerpT.x ),
+					lerpT.y
+					);
+					
+ ShadowK = pow( ShadowK, 2 );
+
+#else
+ ShadowK = texCUBE( ShadowMap, -V ).r  < CmpVal ? 0 : 1;
+#endif
+
+#if 0
+ ShadowK += texCUBE( ShadowMap, -VN + rndVec0 ).r  < CmpVal ? 0 : 1;
+ ShadowK += texCUBE( ShadowMap, -VN - rndVec0 ).r  < CmpVal ? 0 : 1;
+ ShadowK += texCUBE( ShadowMap, -VN + rndVec1 ).r  < CmpVal ? 0 : 1;
+ ShadowK += texCUBE( ShadowMap, -VN - rndVec1 ).r  < CmpVal ? 0 : 1;
+
+ ShadowK *= 0.2;
+#endif
+ return ShadowK;
+}
+
+float GetParaboloidShadow( float3 WPos )
+{
+	float3 LPos = mul( float4( WPos, 1 ), vLightViewMtx );
+	
+	float4 PPos = TransformParaboloidPos( float3( LPos.xy, abs( LPos.z ) ), vParaboloidParams.xy );
+
+	float2 vTexFront;
+	vTexFront = float2( PPos.x, -PPos.y );
+	
+	vTexFront *= float2( 0.5, 0.25 );
+	vTexFront.x += 0.5;
+
+	[ flatten ]
+	if( LPos.z >= 0.0f )
+	{
+		vTexFront.y += 0.25;
+	}
+	else
+	{
+		vTexFront.y += 0.75;
+		vTexFront.x = 1 - vTexFront.x;
+	}
+	
+	float smDepth = tex2D( ShadowMap, vTexFront ).r;
+	
+	return smDepth < abs( PPos.z ) - 0.0005 ? 0 : 1 ;
+}
+
+float4 main(float4 PPos 	: TEXCOORD0, 
+			float3 WPos		: TEXCOORD1,
+			float2 SPos		: TEXCOORD2
+	) : COLOR
+{
+ float invFadeDistance = vLightDistanceParams.x;
+ float startFadeMulInvFadeDistance = vLightDistanceParams.y;
+
+ float4 TexCol = tex2Dproj(AlbedoTex, PPos);
+ TexCol.rgb = pow(TexCol.rgb, 2.2);
+
+ float4 normalTex = tex2Dproj(NormalTex, PPos);
+ float4 auxData = tex2Dproj(AuxData, PPos);
+
+
+ float  MetalnessMap = TexCol.a;
+
+ float3 Normal = normalize(normalTex.rgb*2-1);
+ float	SpecularPOW = auxData.g;
+ float	ReflChrome = auxData.a;
+ float  SelfIllum = normalTex.a ; 
+
+ float3 Cam = vCamPos.xyz;
+
+ float Depth = tex2Dproj(DepthTex, PPos).r / PPos.w;
+
+ float3 CamVec = WPos.xyz - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float3 V = vLightPos - RealPos;
+ float VLen = length( V );
+ float3 VN = V / VLen;
+
+#ifdef USE_PROJ_MAP
+ half3 projMult = texCUBE( ProjTex, mul( -(half3)VN, (half3x3)mLightMtx ) ).rgb;
+#else
+ half3 projMult = 1.0h;
+#endif
+
+float3 ViewVec = normalize(Cam - RealPos.xyz);
+
+float DimAngle = dot( VN, Normal.rgb);
+
+float4 AddVal = float4(0,0,0,0);
+
+half AttnDist = 1 - saturate(VLen * invFadeDistance - startFadeMulInvFadeDistance);
+
+#if DIFFUSE_ONLY
+	DimAngle = saturate( DimAngle );
+#else
+
+half Thickness = 1-auxData.b ;
+
+#if SSS_ON
+
+	SSSAltParams SSSP ;
+
+	SSSP.vLight			= -VN ;
+	SSSP.vNormal		= Normal ;
+	SSSP.vEye			= ViewVec ;
+	SSSP.fDistortion	= SSS_Params0.x ;
+	SSSP.fPower			= SSS_Params0.y ;
+	SSSP.fScale			= SSS_Params0.z ;
+	SSSP.fLightAtt		= AttnDist ; 
+	SSSP.fThickness		= Thickness ;
+	SSSP.fAmbient		= SSS_Params0.w ;
+	SSSP.vTexCol		= TexCol ;
+	SSSP.vLightCol		= Color ;
+	SSSP.vTransCol		= SSS_Params1 ;
+	
+	AddVal = float4( SSS_CalculateALT( SSSP ), 0 ) ;
+
+	DimAngle = saturate( DimAngle );
+
+#else
+	DimAngle = saturate( DimAngle );
+#endif
+
+#endif
+
+ float4 linearColor = Color;
+
+
+	light_Params  DLight;
+
+	DLight.vLight 		= VN;
+	DLight.vNormal 		= Normal.rgb;
+	DLight.vEyeVec		= ViewVec;
+	DLight.vLightColor 	= linearColor;
+	DLight.vDistanceAttn 	= AttnDist;
+	DLight.vPower 		= SpecularPOW;
+
+	half4 DiffuseColor 	= light_CalcDiffuse(DLight);
+	half4 SpecularColor 	= light_CalcSpecular(DLight);
+
+
+	float4 ReflectUV = float4(reflect(-ViewVec, Normal.rgb), 7.0f - 7.0f*ReflChrome);//*MetalnessMap);
+
+	float4 ReflColor = texCUBElod(EnvCubeMap, ReflectUV);
+	ReflColor = pow( ReflColor, 2.2 ); 
+
+
+//	SpecularColor *= ReflColor*16.0f;
+
+    	float4 Fr1 = fresnelReflectance1 ( dot(Normal.rgb,ViewVec), ReflColor); 
+
+    	float4 Fr = fresnelReflectance ( dot(Normal.rgb,ViewVec), ReflColor); 
+
+	ReflColor = Fr+Fr1;//+ReflColor;
+
+
+
+ float ShadowK = 1.0;
+
+
+#if SHADOW_MODE == SHADOW_MODE_NORMAL || SHADOW_MODE == SHADOW_MODE_NORMAL_PCF
+ ShadowK = GetCubemapShadow( V, VN );
+#elif SHADOW_MODE == SHADOW_MODE_PARABOLOID
+ ShadowK = GetParaboloidShadow( RealPos );
+#elif SHADOW_MODE == SHADOW_MODE_SSM
+ ShadowK = tex2Dproj( ShadowMap, PPos );
+#endif
+
+
+ float4 FinalColor;
+
+#if DIFFUSE_ONLY
+ FinalColor.rgb = DiffuseColor* TexCol;
+ FinalColor.rgb = lerp (FinalColor.rgb, float3(0,0,0),MetalnessMap); 
+#else
+
+	float4 FinalDiffuse = DiffuseColor;
+
+	float4 MatColor_Matte   = FinalDiffuse* TexCol + SpecularColor * 0.03f*TexCol;
+	float4 MatColor_Metal   = FinalDiffuse*ReflColor + SpecularColor *ReflColor*2.0f;
+
+
+	FinalColor.rgb = lerp(MatColor_Matte+AddVal, MatColor_Metal, MetalnessMap);
+
+	FinalColor.rgb = lerp (FinalColor.rgb, float3(0,0,0),  SelfIllum);
+#endif
+
+
+ FinalColor.a = 0;
+
+ return FinalColor * ShadowK;
+}

@@ -1,0 +1,15 @@
+//
+sampler image1: register(s0);
+sampler image2: register(s4);
+
+float4 coef: register(c0);
+
+float4 main(float2 texCoord : TEXCOORD0): COLOR
+{
+	float4 cl1	= tex2D(image1, texCoord);
+	float4 cl2 	= tex2D(image2, texCoord);
+	
+	float4 cl = coef.x + cl2 * coef.y + cl1 * coef.z;
+
+	return cl;
+}

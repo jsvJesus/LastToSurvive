@@ -1,0 +1,89 @@
+//
+sampler2D Screen : register( s0 );
+sampler1D LUT1D	 : register( s4 );
+
+void RGBtoHSV( float r, float g, float b, out float h, out float s, out float v )
+{
+	float mi, ma, delta;
+
+	mi = min( min( r, g ), b );
+	ma = max( max( r, g ), b );
+
+	v = ma;				// v
+
+	delta = ma - mi + 0.0001;
+
+	[flatten]
+	if( ma != 0 )
+	{
+		s = delta / ma;		// s
+	}
+	else 
+	{
+		// r = g = b = 0	// s = 0, v is undefined
+		s = 0;
+		h = -1;
+
+		return;
+	}
+
+	[flatten]
+	if( r == ma )
+		h = ( g - b ) / delta;		// between yellow & magenta
+	else [flatten] if( g == ma )
+		h = 2 + ( b - r ) / delta;	// between cyan & yellow
+	else
+		h = 4 + ( r - g ) / delta;	// between magenta & cyan
+
+	[flatten]
+	if( h < 0 )
+		h += 6;
+
+	h /= 6;
+}
+
+void HSVtoRGB(float h, float s, float v, out float r, out float g, out float b)
+{
+	[flatten]
+	if (  s < 0.0001f )
+	{
+		r = v;
+		g = v;
+		b = v;
+	}
+	else
+	{
+
+		float var_h = h * 6;
+		int var_i 	= (int) var_h;
+		float var_1 = v * ( 1 - s );
+		float var_2 = v * ( 1 - s * ( var_h - var_i ) );
+		float var_3 = v * ( 1 - s * ( 1 - ( var_h - var_i ) ) );
+
+		if      ( var_i == 0 ) { r = v     ; g = var_3 ; b = var_1; }
+		else if ( var_i == 1 ) { r = var_2 ; g = v     ; b = var_1; }
+		else if ( var_i == 2 ) { r = var_1 ; g = v     ; b = var_3; }
+		else if ( var_i == 3 ) { r = var_1 ; g = var_2 ; b = v;     }
+		else if ( var_i == 4 ) { r = var_3 ; g = var_1 ; b = v;     }
+		else                   { r = v     ; g = var_1 ; b = var_2; }
+	}
+}
+
+void main(	in half2 vTexc	: TEXCOORD,
+			out half4 oColr	: COLOR0 )
+{
+	oColr = (half4)tex2D( Screen, vTexc );
+
+	float3 HSV;
+
+	RGBtoHSV( oColr.r, oColr.g, oColr.b, HSV.r, HSV.g, HSV.b );
+
+	HSV.r = (half)HSV.r + tex1D( LUT1D, HSV.r ).r - 0.5;
+
+	HSV.r = HSV.r - floor( HSV.r );
+
+	HSV.g = (half)tex1D( LUT1D, HSV.g ).g;
+	HSV.b = (half)tex1D( LUT1D, HSV.b ).b;
+
+	HSVtoRGB( HSV.r, HSV.g, HSV.b, oColr.r, oColr.g, oColr.b );
+}

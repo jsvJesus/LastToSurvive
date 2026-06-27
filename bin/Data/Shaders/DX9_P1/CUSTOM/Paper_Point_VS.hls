@@ -1,0 +1,43 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+float4x4 mRefractProj : register(c25);
+
+float4   vLight  : register(c4);
+float4   vLightColor  : register(c10);
+float4   vHelper  : register(c9);
+float4   CameraPos  : register(c7);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+         out float2 vTexOut1: TEXCOORD0,
+         out float3 vPosOut1: TEXCOORD1,
+         out float3 vNormOut: TEXCOORD2,
+         out float4 vSMTex: TEXCOORD3
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vSMTex = mul(vPos, mRefractProj);
+
+  vTexOut1 = vUV1;
+  vPosOut1 = mul(vPos.xyz, mWorld);
+
+  float3 Norm1 = normalize(mul(vNormal, mWorld));
+  vNormOut = Norm1;
+
+  float3 Light = vLight - vPosOut1;
+
+  Light = normalize(Light);
+
+//  float4 DC = vLightColor * max(dot( Norm1, Light ),0)*2;
+  float4 DC = vLightColor; // * max(0,dot( Norm1, Light ));
+  float Attn2 = 1.0f - clamp(vPosOut.z*vHelper.z,0,1);
+
+  vColorOut = DC *Attn2; //vLightColor;
+}
+

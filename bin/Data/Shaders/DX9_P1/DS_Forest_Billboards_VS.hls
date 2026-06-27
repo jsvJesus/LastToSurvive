@@ -1,0 +1,18 @@
+
+float4x4 ViewProjMat : register (c0);
+
+void main( float4 vPos		: POSITION,
+         float2 vUV1		: TEXCOORD0,
+         out float4 vPosOut	: POSITION,
+         out float3 vTexOut1: TEXCOORD0,
+         out float3 NormalOut: TEXCOORD1 )
+{
+	float4x4 WorldMatrix;
+	
+	float4 vPos1 = mul( float4(vPos.xyz,1), ViewProjMat );
+	
+	vPosOut = vPos1;
+	vTexOut1 = float3 ( vUV1, vPos1.w );
+	NormalOut = float3 ( 0, 1, 0 );
+}
+

@@ -1,0 +1,128 @@
+//////////////////////////////////////////////////////////////////////
+
+sampler2D RT: register(s0);
+sampler2D scopeMask: register(s4);
+sampler2D scopeReticle: register(s5);
+sampler2D scopeBlurMask: register(s6);
+sampler2D blurredImage: register(s7);
+sampler2D scopeNormalMap : register(s8);
+sampler2D shadowMap : register(s9);
+samplerCUBE envCubeMap : register(s10);
+
+float4 vLight : register( c0 ) ;
+float4 vAmbient : register( c1 ) ;
+float4 vSunColor : register( c2 ) ;
+float4 vShadowControl : register( c3 ) ;
+float4 vShadowSteps : register( c4 );
+float4 vMatParams : register( c5 ) ;
+
+float4x3 vInvView : register( c6 );
+
+#include "Lib\LightHelper.hls"
+
+#define SHADOW_TYPE_NONE 0
+#define SHADOW_TYPE_NORMAL 1
+#define SHADOW_TYPE_HW 2
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SHADOW_TYPE_HW
+#endif
+
+#ifndef NO_LIGHTING
+#define NO_LIGHTING 1
+#endif
+
+
+
+
+half4 main(	in half2 vTexc: TEXCOORD0, 
+			in half2 vTexc2: TEXCOORD1,
+			in float4 vShadowMapTexc : TEXCOORD2,
+			in half3 vViewSpacePos : TEXCOORD3
+			): COLOR0
+{
+	half4 reticle = tex2D(scopeReticle, vTexc2);
+	half4 mask = tex2D(scopeMask, vTexc2);
+	
+	// this is pow 2.2
+	mask.rgb *= mask.rgb;
+		
+#if SHADOW_TYPE != SHADOW_TYPE_NONE
+	float4 shadowPProj = vShadowMapTexc / vShadowMapTexc.w ;
+#endif
+
+	half shadowCoef = 1.0 ;
+	
+	half MetalnessCoef = vMatParams.x ;
+	half Chromeness	= vMatParams.y ;	
+	half SpecularPOW = vMatParams.z ;	
+
+#if SHADOW_TYPE == SHADOW_TYPE_NORMAL
+
+	float2 projSMCoords = shadowPProj.xy ;
+
+	float2 projSMCoordsScaled = projSMCoords * vShadowControl.zw ;
+	half2 lerpCoefs = frac( projSMCoordsScaled ) ;
+	float2 projSMCoordsGrid = ( projSMCoordsScaled - lerpCoefs ) * vShadowSteps.xw ;
+	
+	half shadowCoef00 = tex2D( shadowMap, projSMCoordsGrid ).r > shadowPProj.z ;
+	half shadowCoef01 = tex2D( shadowMap, projSMCoordsGrid + vShadowSteps.xy ).r > shadowPProj.z ;
+	half shadowCoef10 = tex2D( shadowMap, projSMCoordsGrid + vShadowSteps.zw ).r > shadowPProj.z ;
+	half shadowCoef11 = tex2D( shadowMap, projSMCoordsGrid + vShadowSteps.xw ).r > shadowPProj.z ;
+
+	shadowCoef =	lerp(
+						lerp( shadowCoef00, shadowCoef01, lerpCoefs.x ),
+						lerp( shadowCoef10, shadowCoef11, lerpCoefs.x ),
+							lerpCoefs.y	) ;	
+#elif SHADOW_TYPE == SHADOW_TYPE_HW
+	shadowCoef = tex2Dproj( shadowMap, vShadowMapTexc ).r ;
+#endif
+
+	half3 viewVec = normalize( -vViewSpacePos ) ;
+	
+	half4 normalSample = tex2D( scopeNormalMap, vTexc2 ) ;
+	half3 normal = normalSample.xyz * 2.0h - 1.0h ;
+	
+	half Metalness = normalSample.a * MetalnessCoef ;
+	
+	normal.z = -normal.z ;
+	
+	half3 halfVec = normalize( -vLight + viewVec ) ;
+	half spec = saturate( dot( halfVec, normal ) ) ;
+	
+	// chromeness is actually 7.0 - 7.0*Chromeness
+	half4 reflVec = half4(reflect(viewVec, normal.xyz), Chromeness );
+	
+	reflVec.xyz = mul( reflVec.xyz, vInvView ) ;
+	
+	half4 ReflColor = texCUBElod(envCubeMap, reflVec);
+
+	half dim = saturate( dot( normal, -vLight ) ) ;
+	half shadowDim = saturate( shadowCoef * dim ) ;
+	
+	half3 SpecularColor = 0;//light_CalcSpecular( spec, SpecularPOW, vSunColor );
+	
+	half3 FinalDiffuse = lerp( vAmbient.rgb, dim * vSunColor.rgb, shadowDim );
+	
+	half3 MatColor_Matte = ( FinalDiffuse + shadowDim * SpecularPOW * SpecularColor ) * mask.rgb;
+	
+	half3 Fr = fresnelReflectance ( dot( normal.rgb, viewVec ), ReflColor );
+	
+	half3 MatColor_Metal = lerp(Fr*vAmbient, mask*ReflColor, shadowDim) + SpecularColor * shadowDim;
+		
+	half3 FinalColor = lerp(MatColor_Matte, MatColor_Metal, Metalness );
+
+	half4 blur = tex2D(scopeBlurMask, vTexc2);
+	half tcOffset = (blur.rg - 0.5h);
+	half4 blurredSceneCl = tex2D(blurredImage, vTexc + tcOffset);
+	half4 sceneCl = tex2D(RT, vTexc + tcOffset);
+	half4 cl = lerp(sceneCl, blurredSceneCl, blur.b);
+	
+#if NO_LIGHTING
+	FinalColor.rgb = mask.rgb ;
+#endif
+	
+	cl.rgb = cl*(1.0h-mask.a)+FinalColor.rgb*mask.a;
+	cl.rgb = cl*(1.0h-reticle.a)+reticle*reticle.a;
+	return cl;
+}

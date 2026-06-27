@@ -1,0 +1,8 @@
+//
+sampler2D Screen : register( s0 );
+
+void main(	in half2 vTexc : TEXCOORD,
+			out half4 oColr : COLOR0 )
+{
+	oColr = (half4)tex2D( Screen, vTexc );
+}

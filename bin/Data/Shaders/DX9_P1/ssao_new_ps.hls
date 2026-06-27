@@ -1,0 +1,323 @@
+// SSAO
+sampler smpDepth 		: register ( s0 );
+sampler smpNormal		: register ( s1 );
+sampler smpRandRot 		: register ( s2 );
+
+float4		g_vZScale0_ColorControl		: register ( c0 );
+float4		g_vProjScaleTrans			: register ( c1 );
+float4		g_vInvProjScaleTrans		: register ( c2 );
+float4		g_vInvRes_DepthFadeRange	: register ( c3 );
+float4		g_vExpandRanges				: register ( c4 );
+float4		g_vDetail_Fade_ZScale1		: register ( c5 );
+float4x3	g_mViewMtx					: register ( c6 );
+
+#define USE_DEFERRED_NORMALS 0
+
+#ifndef NUM_BASE_ELEMS
+#define NUM_BASE_ELEMS 8
+#endif
+
+#if DETAIL_RADIUS
+#define NUM_ELEMS (NUM_BASE_ELEMS + 8)
+#else
+#define NUM_ELEMS NUM_BASE_ELEMS
+#endif
+
+#define DETAIL_RADIUS_SPLIT ( NUM_BASE_ELEMS / 4 ) // in (rays / 4) units
+
+// NOTE : same for different NUM_ELEMS 
+// ( last elems of detail radius get special treatment )
+#define ACCESS_MUL (1.0/NUM_BASE_ELEMS)
+#define DETAIL_ACCESS_MUL (1.0/(NUM_ELEMS-NUM_BASE_ELEMS))
+
+#define USE_COMPOSITE_ROTATION 1
+
+float3 		arrKernel[ NUM_ELEMS ]		: register ( c16 );
+
+float RetrieveDepth( float2 fTexc )
+{
+	return tex2Dlod ( smpDepth, float4 (fTexc,0,0) ).r;
+}
+
+float3 mirror( float3 vDir, float3 vPlane )
+{
+	return vDir - 2.h * vPlane * dot(vPlane,vDir);
+}
+
+float3x3 composeReflectMtx( float3 vPlane )
+{
+	float3x3 res;
+
+	float3 v2Plane = 2.h * vPlane;
+
+	res._11_12_13 = -v2Plane * vPlane.x;
+	res._21_22_23 = -v2Plane * vPlane.y;
+	res._31_32_33 = -v2Plane * vPlane.z;
+
+	res._11 += 1;
+	res._22 += 1;
+	res._33 += 1;
+
+	return res;
+}
+
+float3x3 rotMatFrom2Axes( float3 a1, float3 a2, float3 fallback )
+{
+
+	float3 v = cross( a1, a2 );
+
+	float lsqr	= dot( v, v );
+	float len	= sqrt( lsqr );
+
+	[flatten]
+	if( len < 0.0001 )
+	{
+		v = fallback;
+	}
+	else
+	{
+		v /= len;
+	}
+
+	float3x3 P = { v, v, v };
+
+	P._11_12_13 *= v.x;
+	P._21_22_23 *= v.y;
+	P._31_32_33 *= v.z;
+
+	float sina = len;
+	float cosa = dot( a1, a2 );
+
+	float3x3 I = { 1,0,0, 0,1,0, 0,0,1 };
+	float3x3 Q = { 0,-v.z,v.y,  v.z,0,-v.x,  -v.y,v.x,0 };
+
+	return P + ( I - P ) * cosa + Q * sina;
+}
+
+
+float3 uv_to_eye(float2 uv, float eye_z )
+{
+    return float3( (uv * g_vInvProjScaleTrans.xy + g_vInvProjScaleTrans.zw) * eye_z, eye_z);
+}
+
+float2 eye_to_uv(float3 eye )
+{
+    float2 uv = eye.xy/eye.z;   
+    return uv * g_vProjScaleTrans.xy + g_vProjScaleTrans.zw;
+}
+
+float2 eye_to_uv_p(float3 eye )
+{
+    float2 uv = eye.xy/eye.z;
+    return uv + g_vProjScaleTrans.zw;
+}
+
+
+float3 fetch_eye_pos( float2 uv, float refDepth, float expand )
+{
+	float z = tex2Dlod ( smpDepth, float4 (uv,0,0) ).r;
+
+	[flatten]
+	if( abs( z - refDepth ) > 0.5 * expand )
+		z = refDepth;
+
+	return uv_to_eye( uv, z );
+}
+
+float4 main( float4 vTexc_RendTexc : TEXCOORD0 ) : COLOR0
+{
+	float2 vTexc		= vTexc_RendTexc.xy;
+	float2 vRandTexc	= vTexc_RendTexc.zw;
+	
+	float2 vZScale0		= g_vZScale0_ColorControl.xy;
+	float2 vColorCtrl	= g_vZScale0_ColorControl.zw;
+
+	float2 vZScale1		= g_vDetail_Fade_ZScale1.zw;
+
+	float fRangeK1			= g_vExpandRanges.x;
+	float fRangeK2			= g_vExpandRanges.z;
+	float fDetailRangeK1	= g_vExpandRanges.y;
+	float fDetailRangeK2	= g_vExpandRanges.w;
+
+	float fDetails	= g_vDetail_Fade_ZScale1.x;
+	float fFade		= g_vDetail_Fade_ZScale1.y;
+
+	float n = 0.h;
+
+	float fSceneDepth;
+
+	const float fDepthFadeStart = g_vInvRes_DepthFadeRange.z;
+	const float fDepthFadeEnd = g_vInvRes_DepthFadeRange.w;
+
+	fSceneDepth = RetrieveDepth( vTexc );
+
+	[ branch ]
+	if( fSceneDepth < fDepthFadeEnd )
+	{
+		float3 eyePos = uv_to_eye( vTexc, fSceneDepth );
+
+	    float3 Pr, Pl, Pt, Pb;
+
+		float2 vInvResolution = g_vInvRes_DepthFadeRange.xy;
+
+		float2 vExpandK, vExpand;
+
+		vExpandK = max( fSceneDepth.xx - float2(fRangeK1, fDetailRangeK1), (0.h).xx ) * float2( fRangeK2, fDetailRangeK2 );
+		vExpand = 1 + vExpandK;
+
+#if USE_DEFERRED_NORMALS
+		float3 vRotN 	= tex2Dlod( smpNormal, float4( vTexc, 0, 0 ) ) * 2 - 1;
+		vRotN 			= mul( vRotN, (float3x3)g_mViewMtx );
+#else
+	    Pr = fetch_eye_pos( vTexc + float2( +vInvResolution.x,  0 ), fSceneDepth, vExpand.x );
+    	Pl = fetch_eye_pos( vTexc + float2( -vInvResolution.x,  0 ), fSceneDepth, vExpand.x );
+	    Pt = fetch_eye_pos( vTexc + float2( 0,  +vInvResolution.y ), fSceneDepth, vExpand.x );
+    	Pb = fetch_eye_pos( vTexc + float2( 0,  -vInvResolution.y ), fSceneDepth, vExpand.x );
+    
+	    float3 vRotN = normalize(cross(Pr - Pl, Pt - Pb));
+#endif
+
+		float3 vTan, vBiN ;
+		
+	#if 0
+		[flatten]
+		if( abs( vRotN.x ) > 0.001f )
+		{
+			vTan = float3( -vRotN.z, 0.f, vRotN.x ) ;
+			vBiN = float3( vRotN.y, -vRotN.x, 0.f ) ;
+		}
+		else
+		{
+			vTan = float3( 0.f, -vRotN.z, vRotN.y ) ;
+			
+			[flatten]
+			if( abs( vRotN.y ) > 0.001f )
+			{
+				vBiN = float3( vRotN.y, -vRotN.x, 0.f ) ;
+			}
+			else
+			{
+				vBiN = float3( vRotN.z, 0.f , -vRotN.x ) ;
+			}
+		}
+	#else
+		
+		[flatten]
+		if( abs( vRotN.x ) > 0.00001f )
+		{
+			vTan = float3( -vRotN.z, 0.f, vRotN.x ) ;
+		}
+		else
+		{
+			vTan = float3( 0.f, -vRotN.z, vRotN.y ) ;
+		}
+	
+		vBiN = cross( vRotN, vTan ) ;
+		
+	#endif
+		
+		// random rot vec
+		float2 vRndSample = tex2Dlod( smpRandRot, float4( vRandTexc.xy, 0, 0 ) ).rg;
+		
+		vTan = normalize( vTan * vRndSample.x + vBiN * vRndSample.y );
+		
+		vBiN = cross( vRotN, vTan ) ;
+
+		float fDepthRangeScale0		= vZScale0.x / vExpand.x;
+		float fDepthTestSoftness0	= vZScale0.y / vExpand.x;
+
+		float fDepthRangeScale1		= vZScale1.x / vExpand.y;
+		float fDepthTestSoftness1	= vZScale1.y / vExpand.y;
+
+		// sample
+		float4 vSkyAccess 		= 0.h;
+		float4 vDetailSkyAccess = 0.h;
+		
+		float3 vNxyS, vBxyS, vTxyS ;
+		
+		vTxyS = vTan ;
+		vNxyS = vRotN ;
+		vBxyS = vBiN ;
+		
+		float3 eyePosS = eyePos ;
+
+		eyePosS.xy *= g_vProjScaleTrans.xy ;
+		
+		vTxyS.xy *= g_vProjScaleTrans.xy ;
+		vBxyS.xy *= g_vProjScaleTrans.xy ;
+		vNxyS.xy *= g_vProjScaleTrans.xy ;
+
+		[unroll]
+		for(int i=0; i<NUM_ELEMS/4; i++)
+		{
+			float4 vSceneDepth;
+
+			float fDepthRangeScale;
+			float fDepthTestSoftness;
+
+			float expand;
+
+			[flatten]
+			if( i >= DETAIL_RADIUS_SPLIT )
+			{
+				fDepthRangeScale	= fDepthRangeScale1;
+				fDepthTestSoftness	= fDepthTestSoftness1;
+				expand				= vExpand.y;
+			}
+			else
+			{
+				fDepthRangeScale	= fDepthRangeScale0;
+				fDepthTestSoftness	= fDepthTestSoftness0;
+				expand				= vExpand.x;
+			}
+				
+			[unroll]
+			for( int j = 0; j < 4; j ++ )
+			{    
+				float3 vIrrSample = arrKernel[i*4+j];
+				vIrrSample = vIrrSample.x * vTxyS + vIrrSample.y * vNxyS + vIrrSample.z * vBxyS ;
+				
+				vIrrSample *= expand ;
+
+				float3 newPos = eyePosS + vIrrSample;
+				float2 newUV = eye_to_uv_p( newPos );
+
+				vSceneDepth[j] = RetrieveDepth( newUV ) - vIrrSample.z;
+			}
+	
+			float fDefVal = 1.0h;
+
+			float4 vDistance = vSceneDepth - fSceneDepth ;
+
+			float4 vDistanceScaled = vDistance * fDepthRangeScale;
+			float4 vRangeIsInvalid = (saturate( abs(vDistanceScaled) ) + saturate( -vDistanceScaled )) * 0.5h;
+
+			float4 res = lerp( saturate( vDistance * fDepthTestSoftness ), fDefVal, vRangeIsInvalid );
+
+			[flatten]
+			if( i >= DETAIL_RADIUS_SPLIT )
+			{
+				vDetailSkyAccess += res;
+			}
+			else
+			{
+				vSkyAccess += res;
+			}
+		}
+
+
+		float fRes = dot( vSkyAccess, ACCESS_MUL );
+
+#if DETAIL_RADIUS
+		float fDetail = saturate( 1 - dot( vDetailSkyAccess, DETAIL_ACCESS_MUL ) ) * fDetails * saturate( fFade / fSceneDepth );
+		fRes = saturate( fRes - fDetail );
+#endif
+
+		fRes = lerp( fRes * vColorCtrl.x + vColorCtrl.y, 1.h, saturate((fSceneDepth - fDepthFadeStart)/(fDepthFadeEnd-fDepthFadeStart)) );
+		return fRes;
+	}
+	else
+	{
+		return 1.h;
+	}
+}

@@ -1,0 +1,69 @@
+//
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+sampler DiffuseTex 	: register (s0);
+sampler NormalTex  	: register (s1);
+
+sampler DetailNormalMap : register (s5);
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	float4 Normal : COLOR1;	
+};
+
+#define SSAOTermDefault 1
+
+//////////////////////////////////////////////////////////////
+
+float3 GetNormal(float3 RealPos, float2 uv1)
+{
+	float3 NMap = (tex2D(NormalTex, uv1.xy).xyz)*2-1;
+
+	float3 DetailNMap = (tex2D(DetailNormalMap, uv1.xy*Mat_Glow.z*5.0f).xyz)*2-1;
+
+	NMap.xy += DetailNMap.xy * Mat_Glow.ww*2.0f ;
+
+	NMap = normalize( NMap ) ;
+
+	return NMap;
+}
+
+///////////////////////////////////////////////////////////////
+
+PSOUT main(	float3  uv1 	: TEXCOORD0, 
+			float3  Normal 	: TEXCOORD1,
+			float3 t1		: TEXCOORD2,
+			float3 t2		: TEXCOORD3,
+			float3 RealPos	: TEXCOORD4
+			)
+
+{
+	PSOUT out1;
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy);
+
+	TexCol.rgb *= Mat_Diffuse ;
+
+	float3 NMap = GetNormal(RealPos, uv1.xy);
+
+	float3x3 w2t; // world to tangent matrix
+	w2t = float3x3(t1, t2, Normal);
+
+	float3 vBump;
+	vBump = mul(NMap.xyz, w2t);
+	
+	Normal = normalize(vBump);
+
+	float3 diffColor = TexCol.rgb ;
+
+	out1.Color.rgb = diffColor ;
+
+	out1.Color.a	= TexCol.a;
+	
+	out1.Normal.rgb	= Normal * 0.5 + 0.5  ;
+	out1.Normal.a	= TexCol.a;
+
+	return out1;
+}

@@ -1,0 +1,124 @@
+// Enter your shader in this window//
+sampler Tex 											: register ( s0 );
+
+sampler	Depth											: register ( s2 );
+sampler Mask											: register ( s4 );
+
+#ifndef NUM_TAPS
+#define NUM_TAPS 4
+#endif
+
+float4 	TapStep[ NUM_TAPS / 2 + NUM_TAPS % 2 ]			: register ( c0 );
+
+#define NUM_COEFS ( NUM_TAPS + 1 )
+
+float4 	BlurCoef[ NUM_COEFS / 4 + !!( NUM_COEFS % 4 ) ]	: register ( c4 );
+
+float4	AlphaMultiply									: register ( c8 );
+
+float4	DepthParms										: register ( c9 );
+
+
+float GetBlurCoef( int idx )
+{
+	return BlurCoef[ idx / 4 ][ idx % 4 ];
+}
+
+
+bool CompareDepth( float a, float b )
+{
+	return a >= b;
+}
+
+#define GLOW_AMPLIFY 8.f
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+	float4 color = tex2D( Tex, texc );
+
+	float RadConv0 		= DepthParms.x;
+	float RadConv1 		= DepthParms.y;
+	float DepthStart	= DepthParms.z;
+
+#if REVERSE
+	float radCoef		= tex2D( Mask, texc ).a;
+	bool ignore_compare	= true;
+#else
+	bool ignore_compare	= false;
+	float depth 		= tex2D( Depth, texc ).r;
+	float radCoef 		= saturate( depth * RadConv0 + RadConv1 );
+#endif
+
+	[branch]
+	if ( radCoef <= 0 )
+	{
+		color_out = color;
+	}
+	else
+	{
+		float4 centerColor = color;
+		
+		// NOTE : number must be greater than that set by DS_ClearBuffer_ps.hls
+		float minDepth = 1048576.f ;
+
+		float ccoef = GetBlurCoef( 0 );
+
+#ifdef PRESERVE_GLOW
+//		ccoef *= 1.f + GLOW_AMPLIFY * color.a ;
+#endif
+		color *= ccoef ;
+
+		float gw = ccoef ;
+
+		[unroll]
+		for( int i=0; i < NUM_TAPS; ++i )
+		{
+			float2 step = i % 2 ? TapStep[ i / 2 ].zw : TapStep[ i / 2 ].xy;
+
+			float coef = GetBlurCoef( i + 1 );
+
+			step *= radCoef;
+
+			float tmpDepth = tex2Dlod( Depth, float4(texc + step, 0, 0 ) ).r;			
+			minDepth = min( tmpDepth, minDepth );
+			
+			[ flatten ]
+			if ( ignore_compare || CompareDepth( tmpDepth, DepthStart ) )
+				color += tex2Dlod( Tex, float4( texc + step, 0, 0 ) ) * coef;
+			else
+				color += centerColor * coef;
+			
+			tmpDepth = tex2Dlod( Depth, float4( texc - step, 0, 0 ) ).r;			
+			minDepth = min( tmpDepth, minDepth );
+
+			[ flatten ]
+			if ( ignore_compare || CompareDepth( tmpDepth, DepthStart ) )
+				color += tex2Dlod( Tex, float4( texc - step, 0, 0 ) ) * coef;
+			else
+				color += centerColor * coef;
+		}
+
+
+#ifdef PRESERVE_GLOW
+//		color /= gw * 0.985;
+#endif
+
+#if !REVERSE
+		// NOTE : number must be smaller than that set by DS_ClearBuffer_ps.hls
+		[flatten]
+		if( minDepth > 262144.f )
+		{
+			color = centerColor ;
+		}
+#endif
+
+	}
+
+	color.a *= AlphaMultiply.x ;	
+
+	color_out = color ;
+}

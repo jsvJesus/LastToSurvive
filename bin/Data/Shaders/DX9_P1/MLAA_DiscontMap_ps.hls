@@ -1,0 +1,43 @@
+sampler samplerBackBuffer		: register ( s0 );
+
+float3 InvResolutionDiscFactor	: register ( c0 );
+
+//---------------------------------------------------------------------
+float fLAB(float t)
+{
+	return (t > 0.008856) ? pow(t, 1.0 / 3.0) : 7.787 * t + 16.0 / 116.0;
+}
+
+//---------------------------------------------------------------------
+float3 XYZtoLAB(float3 xyz)
+{
+	const float3 XYZwp = { 103.2027, 100.0, 153.4256 };
+		
+	float3 lab;
+	lab.r = 116.0 * fLAB(xyz.g / XYZwp.g) - 16.0;
+	lab.g = 500.0 * (fLAB(xyz.r / XYZwp.r) - fLAB(xyz.g / XYZwp.g));
+	lab.b = 200.0 * (fLAB(xyz.g / XYZwp.g) - fLAB(xyz.b / XYZwp.b));
+	return lab;
+}
+
+float4 main( float2 Tex : TEXCOORD0 ) : COLOR0
+{
+	const float3x3 RGBtoXYZ = {	0.5893, 0.1789, 0.1831,
+								0.2904, 0.6051, 0.1045,
+								0.0000, 0.0684, 1.0202 };
+
+	float4 result = 0;
+	float3 color_c_lab = XYZtoLAB(mul(tex2D(samplerBackBuffer, Tex).rgb, RGBtoXYZ));
+
+	// Test vertical difference
+	float3 color_compare_lab = XYZtoLAB(mul(tex2D(samplerBackBuffer, Tex + float2(InvResolutionDiscFactor.x, 0)).rgb, RGBtoXYZ));
+	if ( length( color_compare_lab - color_c_lab ) > InvResolutionDiscFactor.z )
+		result.r = 1.0;
+
+	// Test horizontal difference
+	color_compare_lab = XYZtoLAB(mul(tex2D(samplerBackBuffer, Tex + float2(0, InvResolutionDiscFactor.y)).rgb, RGBtoXYZ));
+	if ( length( color_compare_lab - color_c_lab ) > InvResolutionDiscFactor.z )
+		result.g = 1.0;
+		
+	return result;
+}

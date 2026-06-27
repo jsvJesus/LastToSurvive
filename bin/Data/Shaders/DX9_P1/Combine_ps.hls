@@ -1,0 +1,15 @@
+//
+sampler source 	: register( s0 );
+sampler mask	: register( s4 );
+
+float4 ChoseChannels : register( c0 );
+
+float4 main(float2 texCoord : TEXCOORD0): COLOR
+{
+	float4 colr	= tex2D( source, texCoord );
+	float4 m 	= tex2D( mask, texCoord );
+
+	float coef = dot( m, ChoseChannels );
+
+	return float4( colr.rgb, coef );
+}

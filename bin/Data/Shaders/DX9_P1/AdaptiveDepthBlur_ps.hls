@@ -1,0 +1,57 @@
+//
+sampler Tex 			: register ( s0 );
+                        
+float4	BlurSettings	: register ( c0 );
+float4	Step			: register ( c1 );
+
+void get_w( inout float w, float d, float s )
+{
+	w = min( w, saturate( 1 - 0.5*abs( d - s ) ) );
+}
+
+void main
+(
+	float2 texc				: TEXCOORD0,
+	out float4 color_out	: COLOR
+)
+{
+	float depth = tex2D( Tex, texc ).r;
+
+	float depthCoef = BlurSettings.x;
+
+	float num_steps = depthCoef / depth;
+
+	num_steps = (int)num_steps;
+
+	float depth_sum = depth;	
+
+	float4 lodTexcF = float4( texc, 0, 0 );
+	float4 lodTexcB = lodTexcF;	
+
+	float w_sum = 1;
+
+	float s;
+	float w = 1;
+
+	[loop]
+	for( float x = 0; x < num_steps; x += 1.0 )
+	{
+		lodTexcB.xy -= Step.xy;
+		s = tex2Dlod( Tex, lodTexcB ).r;
+
+		get_w( w, depth, s);
+
+		depth_sum += s * w;
+		w_sum += w;
+
+		lodTexcF.xy += Step.xy;
+		s = tex2Dlod( Tex, lodTexcF ).r;
+		get_w( w, depth, s );
+
+		depth_sum += s * w;
+		w_sum += w;
+		
+	}
+	
+	color_out = depth_sum / w_sum;
+}

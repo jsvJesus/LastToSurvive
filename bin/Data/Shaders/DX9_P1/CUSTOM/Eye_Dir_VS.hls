@@ -1,0 +1,53 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+
+float4   vLight  : register(c4);
+float4   vLightColor  : register(c10);
+float4   vHelper  : register(c9);
+float4   CameraPos  : register(c7);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         float3 vUV2: TEXCOORD2: register(v9),
+         float3 vUV3: TEXCOORD3: register(v10),
+	 out float  Fog: FOG,
+//         float3 vUV4: TEXCOORD4: register(v11),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+         out float4 vColorOut1: COLOR1,
+         out float2 vTexOut1: TEXCOORD0,
+         out float3 vViewOut: TEXCOORD1,
+         out float3 vNormOut: TEXCOORD2
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vTexOut1 = vUV1;
+
+  Fog = 1; // - vPos1.z * vFog.w;
+
+  float3 Norm1 = normalize(mul(vNormal, mWorld));
+
+  vNormOut = Norm1;
+
+  float CL = dot (-vLight, Norm1) > 0 ? 1:0;
+
+  vColorOut1 = (1.0f - clamp(vPosOut.z*vHelper.z,0,1));//*CL;
+
+  float4 vBump;
+
+  float3 vUV4 = Norm1; //normalize(cross(normalize(vUV2),normalize(vUV3)));
+
+  vColorOut = (normalize(-vLight) * vHelper.y + vHelper.y);
+
+  float4 Pos1 = mul(vPos, mWorld);
+
+  float3 View = CameraPos.xyz - Pos1.xyz;
+
+//;Normalize the newly transformed view vector
+  vViewOut = normalize(View);
+}
+

@@ -1,0 +1,57 @@
+float4x4 View		: register(c0);
+float4x4 Projection : register(c4);
+float4 camPos		: register(c8);
+float4 tileSize		: register(c12);
+float4 shift		: register(c14);
+
+sampler2D cloudRef: register(s2);
+sampler2D cloudPos : register(s3);
+
+
+float2 unpack2(float v)
+{
+	float i1 = fmod( v, 4096.0f );
+	float i0 = (v-i1) / 4096.0f;
+	return float2( i0, i1 ) / 4096.0f;
+}
+
+void main(		in float3 iPos  : POSITION,
+				in float2 iTexCoord0		: TEXCOORD0,
+				in float4 ipartInst_RotFade : TEXCOORD1,
+				out float4 oPos  : POSITION,
+ 				out float2 oTexCoord0 : TEXCOORD0)
+{
+	float particleIdx = ipartInst_RotFade.x;
+	float instanceIdx = ipartInst_RotFade.z;
+	
+	float ppc_u;
+	float ppc_v = modf(instanceIdx*tileSize.w, ppc_u);
+	float4 cloudInst = tex2Dlod(cloudPos, float4(ppc_v+0.5f/tileSize.w, (ppc_u+0.5f)/tileSize.w, 0,0));
+
+	float4 f0 = tex2Dlod(cloudRef, float4(particleIdx.x, cloudInst.r, 0,0));
+	float3 WPos;
+	WPos.xy = unpack2(f0.a) * 16.0f*60.0f;
+	
+	float2 zSI = unpack2(f0.r);
+	WPos.z = zSI.x * 16.0f*60.0f;
+	float tidx;
+	float size = modf(zSI.y*16.0f, tidx)*240.0f;
+	
+	float3 wp;
+	wp.xyz = cloudInst.agb;
+	wp.xz += shift.xz;
+	wp.x += camPos.x - frac(camPos.x / tileSize.x)* tileSize.x;
+	wp.z += camPos.z - frac(camPos.z / tileSize.z)* tileSize.z;
+	float3 dx = camPos.xyz - wp;
+	if(abs(dx.x)>tileSize.y)	wp.x += sign(dx.x)*tileSize.x;
+	if(abs(dx.z)>tileSize.y)	wp.z += sign(dx.z)*tileSize.z;
+	WPos += wp;	  
+	
+	float3 Pp = mul( float4( WPos, 1 ), (float4x3)View ) + iPos*size;
+   	oPos  = mul( float4( Pp, 1 ), Projection );
+
+	float2 texIdx;
+	texIdx.x = modf(tidx*0.25f, texIdx.y)*4.0f;
+	oTexCoord0 = ( iTexCoord0 + texIdx ) * 0.25f;
+	
+}

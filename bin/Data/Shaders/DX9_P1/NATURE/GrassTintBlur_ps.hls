@@ -1,0 +1,25 @@
+///////
+
+sampler2D img: register(s0);
+float4 params0: register(c0);
+float4 params1: register(c1);
+
+float4 main(float2 tc: TEXCOORD0): COLOR0
+{
+	float4 step = float4(params0.xy, 0, 0);
+	float taps = params0.z;
+	float invTaps = params0.w;
+	float weight = params1.x;
+	
+	float4 start = float4(tc, 0, 0) - step * taps; 
+	
+	float4 accum = 0;
+	
+	[loop]
+	for (int i = 0; i < (int)taps; ++i)
+	{
+		accum += tex2Dlod(img, start + step * i);
+	}
+	
+	return accum * invTaps * weight;
+}

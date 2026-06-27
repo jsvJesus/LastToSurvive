@@ -1,0 +1,282 @@
+//
+sampler AlbedoTex 	: register (s0);
+sampler NormalTex 	: register (s1);
+sampler DepthTex 	: register (s2);
+sampler AuxData	 	: register (s3);
+
+sampler ShadowMap	: register (s4);
+sampler ProjTex		: register (s6);
+
+sampler EnvCubeMap 	: register (s8);
+
+float4	vCamPos				: register(c0);
+float4	Color				: register(c1);
+
+float4  vLightDistanceParams: register(c2);
+
+float4x3 mLightMtx			: register(c3);
+
+float3 vLightCentre			: register(c6);
+
+float3	vFocus1				: register(c7);
+float3	vFocus2				: register(c8);
+
+float4	vUnused				: register(c9);
+
+float4  vMultiShadowParms   : register(c10);
+
+float4	SSS_Params			: register(c11);
+
+ float4 fresnelReflectance ( float Dot, float4 CSpec ) {
+           return CSpec+(1-CSpec)*pow(1-Dot,5);
+    }
+    
+    
+float IntensityF( float3 N, float3 LV, float t )
+{
+	float3 p = LV ;
+	float pyz_ss = p.y * p.y + p.z * p.z ;
+	float rcp_pyz = 1.f / sqrt( pyz_ss ) ;
+	
+	float px_t = p.x + t ;
+
+	float A0 = ( -N.x * pyz_ss + N.y * p.y * px_t + N.z * p.z * px_t );
+	float B0 = pyz_ss * ( pyz_ss + px_t * px_t );
+
+	float A1 =  ( N.y * p.y + N.z * p.z ) * atan( px_t * rcp_pyz ) ;
+	float RCP_B1 = rcp_pyz / pyz_ss ;
+	
+	return 0.25f * ( A0 / B0 + A1 * RCP_B1 ) ;
+}
+
+float SpecIntensityF( float3 N, float3 LV, float3 V, float t )
+{
+	float3 p = LV ;
+	
+	float px_t = p.x + t ;
+	float pyz_ss = p.y * p.y + p.z * p.z ;
+	
+	float I = ((-2 * N.x * N.y * p.y * V.x - 2 * N.x * N.z * p.z * V.x + p.y * V.y - 2 *N.y*N.y* p.y * V.y - 
+				2 * N.y * N.z * p.z * V.y - 2 * N.y * N.z * p.y * V.z + p.z * V.z - 2 * N.z * N.z * p.z * V.z) * 
+				atan( px_t/sqrt( pyz_ss ) ) ) / sqrt( pyz_ss ) + 
+				1.f / 2.f * (V.x - 2 * N.x * N.x * V.x - 2 * N.x * N.y * V.y - 2 * N.x * N.z * V.z ) * log(
+				pyz_ss + px_t * px_t );
+				
+	return I ;
+}
+
+
+float4 main(float4 PPos 	: TEXCOORD0, 
+			float3 WPos		: TEXCOORD1,
+			float2 SPos		: TEXCOORD2
+	) : COLOR
+{
+	float R = vLightDistanceParams.x ;
+	float L = vLightDistanceParams.y ;
+
+	float4 TexCol = tex2Dproj(AlbedoTex, PPos);
+//	TexCol.rgb = pow(TexCol.rgb, 1.0/2.2);
+
+	float4 normalTex = tex2Dproj(NormalTex, PPos);
+	float4 auxData = tex2Dproj(AuxData, PPos);
+
+	float SSAOTerm = 1;
+
+	float  MetalnessMap = TexCol.a;
+
+	float3 Normal = normalize(normalTex.rgb*2-1);
+	float	SpecularPOW = auxData.g;
+	float	ReflChrome = auxData.a;
+	float  SelfIllum = abs(normalTex.a * 2 - 1); // -1..0 - selfIllum, 0..1 - Bloom 
+
+	float3 Cam = vCamPos.xyz;
+
+	float Depth = tex2Dproj(DepthTex, PPos).r / PPos.w;
+
+	float3 CamVec = WPos.xyz - Cam;
+
+	float3 RealPos = Cam + Depth*CamVec;
+
+
+	float3 LV = -mul( float4( RealPos, 1 ), mLightMtx ) ;
+	float3 LCam = mul( float4( vCamPos.xyz, 1 ), mLightMtx ) ;
+	float3 N = mul( Normal, (float3x3)mLightMtx );
+
+	float DSQR = 1 + LV.z * LV.z + LV.y * LV.y ;
+
+	float K0 = ( N.z * LV.z + N.y * LV.y ) ;
+	float RCP_D = 1.f / sqrt( DSQR );
+	float K1 = R * RCP_D  ; 
+
+	float LeftPoint = 0.f ;
+	float RightPoint = 0.f ;
+
+	float AbsNX = abs( N.x ) ;
+
+	[flatten]
+	if( AbsNX < 0.000001f )
+	{
+		LeftPoint = -L ;
+		RightPoint = L ;
+	}
+	else
+	{
+		float DOT_LEFT = dot( LV + float3( -L, 0, 0 ), N ) ;
+		float DOT_RIGHT = dot( LV + float3( +L, 0, 0 ), N ) ;
+		
+		float ZeroPoint = -K0 / N.x  - LV.x ;
+		
+		ZeroPoint = min( max( ZeroPoint, -L ), L ) ;
+	
+		[flatten]
+		if( DOT_LEFT < DOT_RIGHT )
+		{
+			LeftPoint = ZeroPoint ;
+			RightPoint = L ;
+		}
+		else
+		{
+			LeftPoint = -L ;
+			RightPoint = ZeroPoint ;
+		}
+	}
+
+	float I0 = IntensityF( N, LV, LeftPoint ) ;
+	float I1 = IntensityF( N, LV, RightPoint ) ;
+	
+	float I = R * ( I1 - I0 );	
+	
+	I = saturate( I ) ;	
+	
+	float3 ToEye = normalize( LCam + LV ) ;
+	
+	float SpecLeftPoint ;
+	float SpecRightPoint ;
+	
+	float debugS  = 0;
+	
+	// deduce specular borders
+	{
+		float3 L_L = -LV + float3( -L, 0, 0 );
+		float3 V = ToEye ;
+		
+		float3 Ref = L_L - 2 * dot( L_L, N ) * N ;
+		
+		float AtLeft = dot( Ref, ToEye ) ;
+		
+		float3 L_R = -LV + float3( L, 0, 0 ) ;
+		
+		Ref = L_R - 2 * dot( L_R, N ) * N ;
+		
+		float AtRight = dot( Ref, ToEye ) ;
+		
+		debugS = dot( normalize( -LV - 2 * dot( -LV, N ) * N ), normalize( ToEye ) ) ;
+		
+		float3 nLV = -LV ;
+		
+
+		float Lx = ( -2 * nLV.y * N.x  * N.y * V.x - 2 * nLV.z * N.x * N.z * V.x + nLV.y * V.y - 2 * nLV.y * N.y * N.y * V.y - 
+					 2 * nLV.z * N.y * N.z * V.y + nLV.z * V.z - 2 * nLV.y * N.y * N.z * V.z - 2 * nLV.z * N.z * N.z * V.z ) / 
+					( -V.x + 2 * N.x * N.x * V.x + 2 * N.x * N.y * V.y + 2 * N.x * N.z * V.z );
+					
+		float ZeroPoint = Lx - nLV.x ;
+		
+		ZeroPoint = max( min( Lx, L ), -L );
+
+		[flatten]
+		if( AtLeft < AtRight )
+		{
+			SpecLeftPoint = ZeroPoint ;
+			SpecRightPoint = L ;
+		}
+		else
+		{
+			SpecLeftPoint = -L ;
+			SpecRightPoint = ZeroPoint ;
+		}		
+	}
+	
+#if 1
+	SpecLeftPoint = -L ;
+	SpecRightPoint = L ;
+#endif
+
+	float SI0 = SpecIntensityF( N, -LV, ToEye, SpecLeftPoint );
+	float SI1 = SpecIntensityF( N, -LV, ToEye, SpecRightPoint );
+	
+	float S = saturate ( 0.5 * ( SI1 - SI0 ) / pow( dot(LV,LV), 0.25 ) ) ;
+
+	float Power = SpecularPOW*256.0f;
+	S = pow( S , Power ) * saturate( Power ) ;
+	
+	float4 DiffuseColor = I * Color ;
+
+	float4 FinalColor;
+
+	float ToEyeW = normalize( Cam - RealPos ) ;
+
+
+	float4 Vec1 = float4(reflect(-ToEyeW, Normal.rgb), 7.0f - 7.0f*ReflChrome); //*MetalnessMap
+	float4 ReflColor = texCUBElod(EnvCubeMap, Vec1);
+
+	float3 vhalf = normalize( normalize( vLightCentre - RealPos ) + ToEyeW );
+
+	float4 Fr = fresnelReflectance ( saturate(dot(Normal.rgb, vhalf ) ), ReflColor);
+
+	float4 SpecularColor = S * lerp( Color, 4, S ) ;
+
+
+	float4 MatColor_Metal = ( SpecularColor + ReflColor ) * I ;
+	float4 MatColor_Matte = DiffuseColor* TexCol + SpecularColor * 0.1;
+
+	FinalColor.rgb = lerp( MatColor_Matte, MatColor_Metal, MetalnessMap );
+	FinalColor.rgb = lerp( FinalColor.rgb, TexCol.rgb,  SelfIllum)*SSAOTerm*SSAOTerm; 
+
+	FinalColor.a = 0;
+
+ 	ReflColor= Fr;
+	
+	//------------------------------------------------------------------
+	
+	float ShadowK = 1.f ;
+	
+#ifdef SHADOW_MAP
+	float3 V = vLightCentre - RealPos;
+	
+	float3 VN = normalize( V ) ;
+
+	float3 absV = abs( V );
+	float CmpVal = max( max( absV.x, absV.y ), absV.z ) - 0.05;
+
+	float3 rndVec0;
+
+	[flatten]
+	if( abs( VN.y ) > 0.1 )
+	{
+		rndVec0 = float3( -VN.z, 0, VN.x );
+	}
+	else
+	{
+		rndVec0 = float3( -VN.y, VN.x, 0 );
+	}
+
+	rndVec0 = normalize( rndVec0 );
+	float3 rndVec1 = cross( VN, rndVec0 );
+
+	rndVec0 *= vMultiShadowParms.x;
+	rndVec1 *= vMultiShadowParms.x;
+
+	ShadowK = texCUBE( ShadowMap, -V ).r  < CmpVal ? 0 : 1;
+
+	ShadowK += texCUBE( ShadowMap, -VN + rndVec0 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN - rndVec0 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN + rndVec1 ).r  < CmpVal ? 0 : 1;
+	ShadowK += texCUBE( ShadowMap, -VN - rndVec1 ).r  < CmpVal ? 0 : 1;
+
+	ShadowK *= 0.2;
+#elif defined( SS_SHADOW_MAP )
+	ShadowK = tex2Dproj( ShadowMap, PPos );	
+#endif
+
+	return FinalColor * ShadowK ;
+}

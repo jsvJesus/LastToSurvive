@@ -1,0 +1,185 @@
+//
+sampler DiffuseTex 	: register (s0);
+sampler NormalTex  	: register (s1);
+sampler GlossMap   	: register (s2);
+sampler EnvPowerMap   	: register (s3);
+sampler SelfIllumMap   	: register (s4);
+sampler DetailNormalMap : register (s5);
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+#ifndef DOUBLE_SIDED
+#define DOUBLE_SIDED 1
+#endif
+
+#ifndef ALPHA_CUT
+#define ALPHA_CUT 0
+#endif
+
+struct VertInfoVS_t
+{
+	float4 vPos			: POSITION ;
+	float3 vTex			: TEXCOORD0 ;
+	
+	float3 vVPos		: TEXCOORD1 ;
+	float3 RealPos		: TEXCOORD2 ;
+
+	float3 vViewTangent		: TANGENT0 ;
+	float3 vViewBinormal	: BINORMAL0 ;
+	float3 vViewNormal		: NORMAL0 ;
+	
+	float3 vWorldTangent	: TANGENT1 ;
+	float3 vWorldBinormal	: BINORMAL1 ;
+	float3 vWorldNormal		: NORMAL1 ;
+	
+#if DOUBLE_SIDED
+	float Face : VFACE;
+#endif
+};
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	float4 Normal : COLOR1;
+	float4 Depth : COLOR2;
+	float4 gAux : COLOR3;
+
+#ifdef DISPLACE_DEPTH
+	float DBuffer : DEPTH;
+#endif
+};
+
+float ray_intersect_rm(			// use linear and binary search
+      in sampler2D reliefmap,
+      in float2 dp, 
+      in float2 ds)
+{
+   const int linear_search_steps=8;
+   
+   // current size of search window
+   float size=1.0/linear_search_steps;
+   // current depth position
+   float depth=0.0;
+
+   // search front to back for first point inside object
+   for( int i=0;i<linear_search_steps-1;i++ )
+   {
+		float4 t=tex2D(reliefmap,dp+ds*depth);
+
+		if (depth<t.w)
+			depth+=size;
+   }
+   
+   const int binary_search_steps=8;
+
+   // recurse around first point (depth) for closest match
+   for( int i=0;i<binary_search_steps;i++ )
+   {
+		size*=0.5;
+		float4 t=tex2D(reliefmap,dp+ds*depth);
+		if (depth<t.w)
+			depth+=2*size;
+		depth-=size;
+   }
+
+   return depth;
+}
+
+
+
+
+
+
+PSOUT main(	VertInfoVS_t IN )
+
+{
+	PSOUT out1;
+	
+	
+	float3 v,l,p,s;
+	float2 dp,ds;
+	float d,dl;
+	
+#if DOUBLE_SIDED
+	[flatten]
+	if( IN.Face < 0 )
+	{
+		IN.vWorldNormal = - IN.vWorldNormal;
+		IN.vViewNormal = - IN.vViewNormal;
+	}
+#endif	
+		
+	// ray intersect in view direction
+	p  = IN.vVPos;
+	v  = normalize(p);
+	float a  = dot(IN.vViewNormal,v);
+	s  = normalize( float3(dot(-v,IN.vViewTangent.xyz), dot(v,IN.vViewBinormal.xyz), a) );
+	
+	s  *= fDisplace / a;
+	ds = s.xy;
+	dp = IN.vTex.xy;
+	
+	d  = ray_intersect_rm(NormalTex,dp,ds);
+	
+	// get rm and color texture points
+	float3 uv1 = float3( dp+ds*d, IN.vTex.z );
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy)*Mat_Diffuse ;
+//	TexCol.rgb = pow( TexCol.rgb, 2.2 )*Mat_Diffuse ;
+	TexCol.rgb = Mat_Diffuse ;
+
+#if ALPHA_CUT
+	clip (TexCol.a - 0.25f); 
+#endif
+
+	float4 Metalness = tex2D(GlossMap, uv1.xy);
+	float3 NMap = (tex2D(NormalTex, uv1.xy).xyz)*2-1;
+	float3 DetailNMap = (tex2D(DetailNormalMap, uv1.xy*Mat_Glow.z).xyz)*2-1;
+
+	NMap.xy += DetailNMap * Mat_Glow.w ;
+	NMap = normalize( NMap ) ;
+
+	float3 Normal = normalize( IN.vWorldNormal );
+
+	float3x3 w2t; // world to tangent matrix
+	w2t = float3x3( IN.vWorldTangent, IN.vWorldBinormal, Normal );
+
+	float3 vBump;
+	vBump = mul(NMap.xyz, w2t);
+
+	Normal = normalize(vBump);
+
+//        Normal = normalize(PerturbNormal ( IN.RealPos.xyz, Normal , uv1.xy)); //NMap.x*0.02));
+
+	float SelfIlm = tex2D(SelfIllumMap, uv1.xy).r; // that will also be a bloom
+	float Chromness    = tex2D(EnvPowerMap, uv1.xy).r*Material_Params.y;
+
+	float3 ViewVec = normalize(CamVec.xyz - IN.RealPos.xyz);
+
+	float SpecularPower = 	Material_Params.z;
+	float MetalnessPower = 	Material_Params.x;
+
+	out1.Color.rgb = TexCol.rgb;
+	out1.Color.a = Metalness.r*MetalnessPower;
+
+	out1.Normal.rgb = (Normal.xyz * 0.5f + 0.5f);
+	out1.Normal.a = SelfIlm * Mat_Glow.x + Mat_Glow.y; 
+
+
+	//  float2 Velocity = vProjVelocity.xy - vProjVelocity.zw;
+	//  Velocity.x = clamp(Velocity.x, -0.1f, 0.1f);
+	//  Velocity.y = clamp(Velocity.y, -0.1f, 0.1f);
+	//  Velocity = Velocity*0.5f + 0.5f;
+
+	out1.gAux = float4( DefSSAO.x, SpecularPower, 0, Chromness );
+
+	out1.Depth = uv1.z;
+
+#ifdef DISPLACE_DEPTH
+	float depth		= DDepth.y / ( uv1.z + DDepth.x ) + DDepth.z ;
+	out1.DBuffer	= depth ;
+#endif
+
+	return out1;
+}
+

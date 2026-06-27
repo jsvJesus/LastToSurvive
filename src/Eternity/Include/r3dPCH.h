@@ -27,6 +27,8 @@
 #include <assert.h>
 #include <memory>
 
+#include "r3dRendererConfig.h"
+
 // RJH Network2: added the following preprocessor defines for the network, 
 // since the game project is compiled for precompiled headers and this pch
 // is everywhere, ensures that the winsock header part of windows.h

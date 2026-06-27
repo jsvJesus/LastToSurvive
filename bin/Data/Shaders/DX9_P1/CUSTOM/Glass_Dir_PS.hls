@@ -1,0 +1,36 @@
+
+sampler DiffuseTex : register (s0);
+sampler NormalTex  : register (s1);
+sampler GlossMap   : register (s2);
+
+sampler LightTex   : register (s3);
+sampler IBLMap     : register (s3);
+
+sampler ShadowMask : register (s5);
+
+half4 Color : register(c1);
+float4   vLight  : register(c4);
+float4   vHelper  : register(c9);
+
+
+half4 main(half2 uv1 : TEXCOORD0, float3 View : TEXCOORD1, float3 vNorm : TEXCOORD2, half4 DiffuseColor : COLOR0, half Attn2 : COLOR1) : COLOR
+{
+ half wrap = 0.5;
+
+ half3 Dist = (tex2D(NormalTex, uv1).rgb*2-1)*0.3;
+
+ half4 c1 = texCUBE(IBLMap, reflect(-View, vNorm)+Dist);
+                                                         
+ half4 c2 = tex2D(DiffuseTex, uv1);
+
+ half Refl = pow(max(0, dot(View, vNorm)),16);
+ half Refl1 = pow(max(0, dot(View, vNorm)),64);
+ 
+ half bRefl = 1- saturate((c2.a - 0.5)*6.0);
+
+ half4 FinalColor = lerp(c2, c1, 0.35*bRefl)+ pow(c1,16)*bRefl;
+ FinalColor.a = c2.a+ (pow(c1,16)/2)*bRefl;
+
+ return FinalColor;  //+c1*Refl1;
+}
+

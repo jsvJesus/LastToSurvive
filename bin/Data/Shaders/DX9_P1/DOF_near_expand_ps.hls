@@ -1,0 +1,15 @@
+//
+sampler srcSampler : register ( s0 );
+
+float2 invRenderTargetSize	: register ( c0 );
+
+half4 main( float2 uv : TEXCOORD0 ) : COLOR
+{
+	float4 center = tex2D( srcSampler, uv );
+	float left = tex2D( srcSampler, uv + float2( -invRenderTargetSize.x, 0 ) ).a;
+	float right = tex2D( srcSampler, uv + float2( invRenderTargetSize.x, 0 ) ).a;
+	float up = tex2D( srcSampler, uv + float2( 0, -invRenderTargetSize.y ) ).a;
+	float down = tex2D( srcSampler, uv + float2( 0, invRenderTargetSize.y ) ).a;
+	center.a = max( max( center.a, max( left, right ) ), max( up, down ) );
+	return center;
+}

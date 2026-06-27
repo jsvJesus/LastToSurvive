@@ -1,0 +1,17 @@
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x4 ModelMatrix			: register (c4);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL,
+         float2 vUV1: TEXCOORD0,
+         float3 vUV2: TEXCOORD1,
+         float3 vUV3: TEXCOORD2,
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0
+       )
+{
+	vPosOut = mul(vPos, ModelViewProjMatrix);
+
+	vTexOut1.xy = vUV1;
+}
+

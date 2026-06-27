@@ -1,0 +1,43 @@
+//
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	float4 Normal : COLOR1;	
+	float4 Depth : COLOR2;
+	float4 gAux : COLOR3;
+};
+
+
+PSOUT main(float4 uv1: TEXCOORD0, float3 Normal: TEXCOORD1)
+{
+	PSOUT out1;
+	out1.Normal.rgb = (Normal.xyz * 0.5f + 0.5f);
+	out1.Normal.a = 0;
+	out1.Depth = uv1.z;
+	out1.gAux = 0;
+
+	float4 minDensityParams = Material_Params;
+	float4 optDensityParams = Mat_Diffuse;
+	float4 maxDensityParams = Mat_Specular;
+	
+	float density = uv1.w;
+	float3 cl = 0;
+	if (density < optDensityParams.w)
+	{
+		float f = saturate((density - minDensityParams.w) / (optDensityParams.w - minDensityParams.w));
+		cl = lerp(minDensityParams.rgb, optDensityParams.rgb, f);
+	}
+	else
+	{
+		float f = saturate((density - optDensityParams.w) / (maxDensityParams.w - optDensityParams.w));
+		cl = lerp(optDensityParams.rgb, maxDensityParams.rgb, f);
+	}
+
+	out1.Color.rgb = cl;
+	out1.Color.a = 0;
+
+	return out1;
+}

@@ -1,0 +1,47 @@
+//
+sampler colorSampler		: register(s0);
+sampler depthSampler		: register(s2);
+sampler medBlurSampler		: register(s4);
+sampler largeBlurSampler	: register(s5);
+sampler farBlurSampler		: register(s6);
+
+float3 dofLerpScale			: register ( c0 );
+float3 dofLerpBias			: register ( c1 );
+float3 dofEqFar				: register ( c2 );
+
+half3 InterpolateDof( half3 color, half3 med, half3 large, half t )
+{   
+	half3 weights;
+	half  alpha;   
+	weights = saturate( t * dofLerpScale + dofLerpBias );
+	weights.y = min( weights.y, 1 - weights.x );
+	return weights.x * color + weights.y * med + weights.z * large;
+}   
+half4 main( float2 texCoords : TEXCOORD0 ) : COLOR
+{   
+	half depth;   
+	half nearCoc;   
+	half farCoc;   
+	
+	half4 med = tex2D( medBlurSampler, texCoords );
+	nearCoc = med.a;
+	
+	depth = tex2D( depthSampler, texCoords ).r;   
+	farCoc = clamp( dofEqFar.x * depth + dofEqFar.y, 0, dofEqFar.z );
+	
+	half4 _out;
+	half3 color = tex2D( colorSampler, texCoords ).rgb;
+	if ( nearCoc > farCoc / 3 )
+	{
+		half3 large = tex2D( largeBlurSampler, texCoords ).rgb;
+		_out.rgb = InterpolateDof( color, med.rgb, large, nearCoc );
+	}
+	else
+	{
+		_out.rgb = lerp( color, tex2D( farBlurSampler, texCoords ).rgb, farCoc );
+	}
+	
+	_out.a = 1;
+	
+	return _out;
+}  

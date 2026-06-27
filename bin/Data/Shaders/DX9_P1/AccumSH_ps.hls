@@ -1,0 +1,69 @@
+//
+
+sampler2D		sDiffuse	: register( s0 ) ;
+sampler2D		sNormal		: register( s1 ) ;
+samplerCUBE		sNormalToSH	: register( s2 ) ;
+
+#define SAMPLE_COUNT 8
+
+float4 texStep        : register( c0 ) ;
+float3 viewStepU      : register( c1 ) ;
+float3 viewStepV      : register( c2 ) ;
+float3 targetNorm     : register( c3 ) ;
+
+float4 texCoord       : register( c4 ) ;
+float4 viewVec        : register( c5 ) ;
+
+void main(	out float4 oR_SH	: COLOR0,
+			out float4 oG_SH	: COLOR1,
+			out float4 oB_SH	: COLOR2
+			)
+{
+	float2 texc = texCoord ;
+	
+	float4 sum_R = 0 ;
+	float4 sum_G = 0 ;
+	float4 sum_B = 0 ;
+	
+	float3 viewVecI = viewVec ;
+	float3 viewVecII = viewVec ;
+
+	for( int i = 0, j = 0 ; i < SAMPLE_COUNT * SAMPLE_COUNT ; )	
+	{	
+		float4 diff = tex2D( sDiffuse, texc ) ;
+		
+		float3 norm = tex2D( sNormal, texc ).xyz * 2 - 1 ;
+		
+		float k = saturate( dot( targetNorm, normalize( viewVecI ) ) ) ;
+		
+		float4 sh = texCUBE( sNormalToSH, norm ) * k ;
+			
+		sum_R += sh * diff.r ;
+		sum_G += sh * diff.g ;
+		sum_B += sh * diff.b ;
+		
+		i ++ ;
+		j ++ ;
+
+		[ flatten ]
+		if( j == SAMPLE_COUNT  )
+		{
+			texc.x = texCoord.x ;	
+			texc.y += texStep.y ;
+
+			viewVecII += viewStepV ;
+			viewVecI = viewVecII ;
+
+			j = 0 ;
+		}
+		else
+		{
+			texc.x += texStep.x ;
+			viewVecI += viewStepU ;
+		}
+	}
+	
+	oR_SH = sum_R ;
+	oG_SH = sum_G ;
+	oB_SH = sum_B ;
+}

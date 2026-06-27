@@ -1,0 +1,11 @@
+struct PS_OUT_DEPTH						   
+{                                          
+	float4 Color : COLOR;                  
+};                                         
+
+PS_OUT_DEPTH main() : COLOR       
+{                                          
+	PS_OUT_DEPTH OUT;                        
+	OUT.Color = float4(1,1,1,1);               
+	return OUT;                                
+}                                          

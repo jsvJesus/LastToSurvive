@@ -1,0 +1,69 @@
+// SSAO Composite
+
+sampler smpHistorySSAO  : register ( s0 ) ;
+sampler smpSSAOAndMask  : register ( s1 ) ;
+sampler smpHistoryDepth : register ( s2 ) ;
+sampler smpDepth        : register ( s3 ) ;
+
+float4   gSettings            : register ( c0 ) ;
+float4   g_vProjScaleTrans    : register ( c1 ) ;
+float4   g_vInvProjScaleTrans : register ( c2 ) ;
+float4x3 g_vToPrevViewMtx     : register ( c3 ) ;
+float4x3 g_vFromPrevViewMtx   : register ( c6 ) ;
+
+float3 uv_to_eye(float2 uv, float eye_z )
+{
+	return float3( (uv * g_vInvProjScaleTrans.xy + g_vInvProjScaleTrans.zw) * eye_z, eye_z);
+}
+
+float2 eye_to_uv(float3 eye )
+{
+	float2 uv = eye.xy/eye.z;
+	return uv * g_vProjScaleTrans.xy + g_vProjScaleTrans.zw;
+}
+
+
+float4 main( float4 vTexc_RendTexc : TEXCOORD0 ) : COLOR0
+{
+	float2 vTexc = vTexc_RendTexc.xy ;
+	float2 vTexcSSAO = vTexc_RendTexc.zw ;
+
+	float depth = tex2D( smpDepth, vTexc ).r ;
+
+	float3 eyePos = uv_to_eye( vTexc, depth );	
+
+	float3 prevEyePos = mul( float4( eyePos, 1 ), g_vToPrevViewMtx ) ;
+
+	float2 prevUV = eye_to_uv( prevEyePos ) ;
+
+	float prevDepth = tex2D( smpHistoryDepth, prevUV ) ;
+
+	float3 prevEyeInCurView = mul( float4( uv_to_eye( prevUV, prevDepth ), 1 ), g_vFromPrevViewMtx ) ;
+
+	float dist = length( prevEyeInCurView - eyePos ) ;
+	
+	float2 ssao_mask = tex2D( smpSSAOAndMask, vTexcSSAO.xy ).xy ;	
+	
+	[ flatten ]
+	if( dist < max( depth, prevDepth ) * gSettings.w )
+	{
+	
+		float2 prevSSAO_N = tex2D( smpHistorySSAO, vTexcSSAO.xy ) ;
+		
+		float filtered = prevSSAO_N.x * prevSSAO_N.y * gSettings.x
+									+ 
+								ssao_mask.x * gSettings.y ;
+
+		float result = lerp(	filtered
+									,
+									ssao_mask.x
+										,
+										ssao_mask.y ) ;
+										
+		return float4( result, prevSSAO_N.y + gSettings.x, 0, 0 ) ;
+	}
+	else
+	{
+		return float4( ssao_mask.x, gSettings.x, 0, 0 ) ;
+	}
+}

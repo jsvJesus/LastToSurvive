@@ -1,0 +1,84 @@
+//
+#if APEX
+	float4x4 ViewProjMatrix			: register (c0);
+	float4x3 ModelMatrix			: register (c4);
+	float4x3 BoneMatrices[60]		: register (c12);
+#else
+	#include "System\IOParam\IODefine_VS.hls"
+#endif
+
+#include "System\Paraboloid.hls"
+
+#include "smdepth_inc.hls"
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SHADOWTYPE_PERSP
+#endif
+
+void main(	float4 vPos: POSITION,
+			float2 vUV1: TEXCOORD0,
+			float4 vNorm: NORMAL,
+#if APEX
+			int2 boneIndices: BLENDINDICES, 
+#endif
+
+#if INSTANCED
+			float4 vWorld1 : TEXCOORD3,
+			float4 vWorld2 : TEXCOORD4,
+			float4 vWorld3 : TEXCOORD5,
+			float4 vWorld4 : TEXCOORD6,
+#endif
+
+         
+			out float4 vPosOut	: POSITION,
+			out float3 vTexOut1	: TEXCOORD0,
+			out float3 vNormOut	: TEXCOORD1,
+			out float3 vWorldPos: TEXCOORD2
+       )
+{
+
+#if APEX
+  	float4x3 boneMat = BoneMatrices[boneIndices.x];
+	float3 skinnedPos		= mul(vPos, boneMat);
+	float3 skinnedNormal	= mul(vNorm.rgb, (float3x3)boneMat);
+
+	vNormOut = mul( skinnedNormal, ModelMatrix ).xyz;
+	
+	float4 pos = float4(skinnedPos, 1);
+	vWorldPos = mul(pos, ModelMatrix); 
+	vPosOut = mul(pos, ViewProjMatrix);	
+#else
+	#if INSTANCED
+		float4x4 mWorld;
+		mWorld[0] = vWorld1;
+		mWorld[1] = vWorld2;
+		mWorld[2] = vWorld3;
+		mWorld[3] = vWorld4;
+
+		vPos = mul( vPos, mWorld );
+	#endif
+	vNormOut = normalize(mul( vNorm, mNormalView ).xyz);
+	vWorldPos = mul( vPos, mWorld );
+
+	vPosOut = mul( vPos, mProj );
+
+#if SHADOW_TYPE == SHADOWTYPE_PERSP_PARABOLOID
+	vPosOut = TransformParaboloidPos( vPosOut, vParaboloidParams.xy ) ;
+#elif SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED
+	vPosOut = ShadowWarp( vPosOut );
+#endif
+
+#endif
+
+#if APEX
+  vTexOut1.xy = vUV1;
+#else  
+  vTexOut1.xy = vUV1 * vTexcUnpackScale.xy;
+#endif
+
+#if SHADOW_TYPE == SHADOWTYPE_ORTHO || SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED || SHADOW_TYPE == SHADOWTYPE_PERSP_PARABOLOID
+  vTexOut1.z = vPosOut.z;
+#else
+  vTexOut1.z = vPosOut.w;
+#endif
+}

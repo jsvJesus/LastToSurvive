@@ -1,0 +1,38 @@
+//
+sampler Bloom 	: register (s0);
+sampler FGMask 	: register (s4);
+
+float4 thresholdArr[ 3 ]		: register( c0  );
+float4 tintColorArr[ 10 ]		: register( c3  );
+float4 texcTransformArr[ 10 ]	: register( c13 );
+
+float4 LensFlarePS ( float2 in_vTexCoord )
+{
+
+	float4 vAccum = 0;
+
+	for( int i = 0; i < NUM_GLARES; i ++ )
+	{
+
+		float4 vTint 			= tintColorArr[ i ];
+		float4 texcTransform	= texcTransformArr[ i ];
+
+		float fThreshold		= thresholdArr[ i / 4 ][ i % 4 ];
+
+		float2 vMirrorCoord = in_vTexCoord * texcTransform.xy + texcTransform.zw;
+
+		float4 vSample	= tex2D( Bloom, vMirrorCoord );
+		float4 vMask 	= tex2D( FGMask, vMirrorCoord );
+
+		vAccum  +=  max(0, vSample*vMask - fThreshold) * vTint;
+
+	}
+	
+	return vAccum;
+}
+
+half4 main(half2 uv1 : TEXCOORD0 ) : COLOR
+{
+	return LensFlarePS( uv1 );
+}
+

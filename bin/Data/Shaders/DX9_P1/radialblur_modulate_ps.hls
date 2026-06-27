@@ -1,0 +1,43 @@
+//
+
+sampler2D RT			: register( s0 );
+sampler2D ModulationTex	: register( s4 );
+
+float2 vDSP_Coef : register( c0 );
+
+half4 main( in half4 vTexc : TEXCOORD0 ) : COLOR0
+{
+
+	half fDSP 	= vDSP_Coef.x;
+	half fCoef	= vDSP_Coef.y;
+
+	half2 org_texc = vTexc.xy;
+	half4 texc = half4( org_texc.xy, 0, 0 );
+	half4 dir = half4( vTexc.zw, 0, 0 );
+
+	half accel = saturate( (half)length( dir ) - fDSP ) * fCoef;
+      
+	dir *= accel;
+
+	half4 accum = 0.h;
+   
+	#define SAMPLE_COUNT 11
+   
+	accum += tex2D( RT, org_texc );
+  
+	[branch]	
+	if( accel > 0.h )
+	{
+		[unroll]
+		for( int i = 1, e = SAMPLE_COUNT; i < e; i ++ )
+		{
+			texc -= dir;   
+			accum += tex2Dlod( RT, texc );
+		}
+   
+		accum /= SAMPLE_COUNT;
+	}
+
+	return accum * tex2D( ModulationTex, org_texc );
+
+}

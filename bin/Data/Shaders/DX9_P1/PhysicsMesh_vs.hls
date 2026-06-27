@@ -1,0 +1,13 @@
+
+#include "System\IOParam\IODefine_VS.hls"
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL,
+         float2 vUV1: TEXCOORD0,
+         
+		 out float4 vPosOut: POSITION
+       )
+{
+ float4 vPos1 = mul( vPos, mProj ); 
+ vPosOut = vPos1;
+}

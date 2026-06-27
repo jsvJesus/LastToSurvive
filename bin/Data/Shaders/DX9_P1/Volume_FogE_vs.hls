@@ -1,0 +1,20 @@
+
+float4x4 mProj : register(c0);
+
+void main( float4 vPos: POSITION,
+         float2 vUV1: TEXCOORD0: register(v7),
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0,
+         out float3 vWPos: TEXCOORD1,
+         out float2 vSPos: TEXCOORD2
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+//  vPosOut.xy += float2(0.5/1280, 0.5/720);
+
+  vTexOut1 = vUV1;
+
+  vWPos = vPos.xyz;
+  vSPos = ((vPosOut.xy / vPosOut.z)+1)/2 ;
+  vPosOut.z = vPosOut.w * 0.5;
+}

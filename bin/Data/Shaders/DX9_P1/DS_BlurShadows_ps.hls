@@ -1,0 +1,136 @@
+//
+float4 Params0 : register( c0 );
+
+sampler2D shadows : register( s0 );
+
+#ifndef NUM_SAMPLES
+#define NUM_SAMPLES 5
+#endif
+
+#ifndef DYN_BRANCH
+#define DYN_BRANCH 0
+#endif
+
+float extractDepth( float4 val )
+{
+	return val.b + val.a/256;
+}
+
+void includeSample( float4 s, int i, float depth, float sense, inout float2 oSum, inout float oTotal )
+{
+#if NUM_SAMPLES == 5
+	const float coefs[NUM_SAMPLES] = { 0.9, 0.75, 0.6, 0.3, 0.15 };
+#elif NUM_SAMPLES == 9
+	const float coefs[NUM_SAMPLES] = { 0.95, 0.85, 0.75, 0.65, 0.55, 0.45, 0.33, 0.22, 0.11 };
+#else
+#error NUM_SAMPLES unsupported!
+#endif	
+
+	float weight = saturate( 1 - abs( depth - extractDepth( s ) )* sense ) * coefs[i];
+	oTotal += weight;
+	oSum += s.rg*weight;
+}
+
+void extractDump( inout float oDump, float4 s )
+{
+	oDump = (oDump + s.g)*0.5;
+}
+
+float4 main( float2 texc : TEXCOORD0 ) : COLOR0
+{
+
+	float dumpBias = Params0.x;
+	float sense = Params0.y;
+
+	float2 stp = Params0.zw;
+
+	float4 preSamp0 = tex2D( shadows, texc );
+
+	float4 org = preSamp0;
+	stp *= saturate(org.b*org.b+0.1f);
+
+	float4 preSamp1 = tex2D( shadows, texc + stp*NUM_SAMPLES );
+	float4 preSamp2 = tex2D( shadows, texc - stp*NUM_SAMPLES );
+
+	float centraDump = extractDepth( preSamp0 ) ;
+
+#if DYN_BRANCH
+	float4 preSamp3 = tex2D( shadows, texc + stp*NUM_SAMPLES*0.5f );
+	float4 preSamp4 = tex2D( shadows, texc - stp*NUM_SAMPLES*0.5f );
+#endif
+
+	float	org_dump = max( preSamp1.g, preSamp0.g );
+			org_dump = max( preSamp2.g, org_dump );
+
+	float2 res = org.rg;
+
+#if DYN_BRANCH
+#define TEX2D tex2Dlod
+	[branch]
+	if( abs(preSamp1.r - preSamp0.r) + abs(preSamp2.r - preSamp1.r) + 
+		abs(preSamp3.r - preSamp2.r) + abs(preSamp4.r - preSamp3.r) > 0.01 )
+#else
+#define TEX2D tex2D
+#endif
+	{
+		org_dump = max( org_dump, dumpBias );
+
+		float4 samps[NUM_SAMPLES*2];
+
+		float2 x_add;
+		float dump;
+
+		dump	= org_dump;
+		x_add	= stp * dump;
+
+#if DYN_BRANCH
+		const int NumIters = NUM_SAMPLES-1;
+#else
+		const int NumIters = NUM_SAMPLES;
+#endif
+
+		[unroll]
+		for( int i = 0; i < NumIters; i ++ )
+		{
+			float4 s = samps[ i ] = TEX2D( shadows, float4(texc + x_add, 0, 0) );		
+			x_add += stp * dump;
+			extractDump( dump, s );
+		}
+
+#if DYN_BRANCH
+		samps[NUM_SAMPLES-1] = lerp(preSamp3, preSamp1, dump);
+#endif
+
+		dump	= org_dump;
+		x_add	= stp * dump;
+
+		[unroll]
+		for( int i = 0; i < NumIters; i ++ )
+		{
+			float4 s = samps[ i+NUM_SAMPLES ] = TEX2D( shadows, float4(texc - x_add,0,0) );
+			x_add += stp * dump;
+			extractDump( dump, s );
+		}
+
+#if DYN_BRANCH
+		samps[2*NUM_SAMPLES-1] = lerp(preSamp4, preSamp2, dump);
+#endif
+
+		float depth = extractDepth(org);
+
+		float total = 1;
+
+		float2 sum = 0;
+
+		[unroll]
+		for( int i = 0; i < NUM_SAMPLES; i ++ )
+		{
+			includeSample( samps[	i				], i, depth, sense, sum, total );
+			includeSample( samps[	i+NUM_SAMPLES	], i, depth, sense, sum, total );
+		}
+			
+		res = (org.rg+sum) / total;
+	}
+
+	return saturate( float4( res.rg, org.ba ) ) ;
+}

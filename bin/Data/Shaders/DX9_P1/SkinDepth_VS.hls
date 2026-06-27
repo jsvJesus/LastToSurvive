@@ -1,0 +1,32 @@
+#include "System\IOParam\IODefine_VS.hls"
+
+// NOTE: duplicate in 
+// SkinSM_VS.hls
+// SkinDepth_VS.hls
+// Skin_VS.hls
+float4 	vUnpackScale	: register (c22);
+
+float4x3 bone1[ 96 ]	: register(c24);
+
+void main( float4 vPos: POSITION,
+		  float4 BlendWeights: BLENDWEIGHT,
+		  int4 BlendIndices: BLENDINDICES,
+
+		  out float4 vPosOut	: POSITION,
+		  out float4 vTexOut	: TEXCOORD0
+		  )
+{
+	vPos.xyz *= vUnpackScale;
+
+	// cast the vectors to arrays for use in the for loop below
+	float BlendWeightsArray[4] = (float[4])BlendWeights;
+
+	float3 Pos1 = float3(0,0,0);
+	Pos1 += mul(vPos, bone1[BlendIndices[0]])*BlendWeightsArray[0];
+	Pos1 += mul(vPos, bone1[BlendIndices[1]])*BlendWeightsArray[1];
+	Pos1 += mul(vPos, bone1[BlendIndices[2]])*BlendWeightsArray[2];
+	Pos1 += mul(vPos, bone1[BlendIndices[3]])*BlendWeightsArray[3];
+                                                
+	vPosOut     = mul( float4( Pos1.xyz, 1.0f ), mProj ) ;
+	vTexOut		= vPosOut ;
+}

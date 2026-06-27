@@ -1,0 +1,58 @@
+float3   vEye : register(c4);    // view point
+float3   litDir : register(c5);  // ligtht direction
+
+// pixel shader input 
+struct SPSInput {
+	float4 vWorldPos : TEXCOORD0;
+	float2 vTex      : TEXCOORD2;
+	float2 vScreenPos : VPOS;
+};
+
+
+sampler sDensity : register(s0);  // density map
+sampler sLit : register(s1);      // blurred densitymap
+
+float4 scat[5] : register(c6);   // scattering parameters
+float2 vDistance : register(c11); // parameter for computing distance to the cloud
+float3 cLit : register(c12);      // light color
+float3 cAmb : register(c13);      // ambient light
+
+
+
+float4 main(in SPSInput _Input) : COLOR0
+{
+	float4 _clDensity = tex2D( sDensity, _Input.vTex.xy );
+	float4 _clLit = 1.0f - tex2D( sLit, _Input.vTex.xy );
+
+	// light cloud
+	float3 _clCloud = cAmb + cLit * _clLit.r;
+	
+	// compute ray direction	
+	float3 _vWorldPos = _Input.vWorldPos.xyz/_Input.vWorldPos.w;
+	float3 _vRay = _vWorldPos - vEye;	
+	float _fSqDistance = dot( _vRay, _vRay );
+	_vRay = normalize( _vRay );
+
+
+	// calcurating in-scattering 	
+	float _fVL = dot( litDir, -_vRay );
+	float fG = scat[1].w + scat[0].w * _fVL;
+	fG = rsqrt( fG );
+	fG = fG*fG*fG;
+	float3 _vMie = scat[1].rgb * fG;
+	float3 _vRayleigh = scat[0].rgb*(1.0f + _fVL*_fVL);
+	float3 _vInscattering = scat[2] * (_vMie + _vRayleigh) + scat[4].rgb;
+	
+	// compute distance to the cloud
+	float _fSin = _vRay.y;
+	float _fRSin = vDistance.x * _fSin;
+	float _fDistance = sqrt( _fRSin * _fRSin + vDistance.y ) - _fRSin;
+			
+	float3 fRatio = exp( -scat[3].rgb * _fDistance );		
+
+	float4 _color;
+	_color.rgb = saturate( lerp( _vInscattering, _clCloud, fRatio ) );
+	_color.a = _clDensity.a;
+
+	return _color;
+}

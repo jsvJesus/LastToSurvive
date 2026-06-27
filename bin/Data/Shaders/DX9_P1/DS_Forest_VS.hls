@@ -1,0 +1,150 @@
+//
+
+#include "smdepth_inc.hls"
+
+float4x4 ViewProjMat : register ( c0 );
+
+float4 AnimParams0 : register( c4 );
+float4 AnimParams1 : register( c5 );
+float4 AnimParams2 : register( c6 );
+float4 AnimParams_Times : register( c7 );
+float4 WindTexcXfm : register( c8 );
+
+#if NONINSTANCED_RENDER
+float4 PosAngle: register(c9);
+float4 ScaleColor: register(c10);
+#endif
+
+#ifndef ANIMATED
+#define ANIMATED 0
+#endif
+
+#if NONINSTANCED_RENDER
+#undef ANIMATED
+#define ANIMATED 0
+#endif
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SHADOWTYPE_PERSP
+#endif
+
+// NOTE: duplicate in:
+// DS_Fillbuffer_disp_vs.hls
+// DS_Fillbuffer_vs.hls
+// Transparent_vs.hls
+// DS_Forest_VS.hls
+
+float2 vTexcUnpackScale		: register( c16 ) ;
+
+sampler2D WindTex : register( s0 ) ;
+
+void main(	float4 vPos		: POSITION,
+			float3 vNormal		: NORMAL,
+			float4 vTangent	: TANGENT,
+			float2 vUV1		: TEXCOORD0,
+         
+#if ANIMATED
+		float4 vAnimCoefs	: TEXCOORD1,
+#endif         
+         
+#if !NONINSTANCED_RENDER
+         float4 pos_angle	: TEXCOORD3, // x,y,z,rotatex
+		 float4 scale_rand_color: TEXCOORD4, // sx,sy,sz
+		 float4 windCoefs : TEXCOORD5,
+#endif
+         out float4 vPosOut	: POSITION,
+         out float4 vTexOut1_rand_clr: TEXCOORD0,
+        out float3 vNormOut: TEXCOORD1,
+        out	float3 t1		: TEXCOORD2,
+		out	float3 t2		: TEXCOORD3,
+		out	float3 RealPos	: TEXCOORD4  
+       )
+{
+#if NONINSTANCED_RENDER
+	float angle = PosAngle.w;
+	float3 worldPos = PosAngle.xyz;
+	float3 scale = ScaleColor.xyz;
+	float randColor = ScaleColor.w;
+#else
+	float angle = pos_angle.w;
+	float3 worldPos = pos_angle.xyz;
+	float3 scale = scale_rand_color.xyz;
+	float randColor = scale_rand_color.w;
+#endif
+
+	float sangle;
+	float cangle;
+	sincos(angle, sangle, cangle);
+	
+	float3 vSPos = vPos * scale;
+	float3 vSRPos;
+
+	vSRPos.x = cangle * vSPos.x + sangle * vSPos.z;
+	vSRPos.y = vSPos.y;
+	vSRPos.z = -sangle * vSPos.x + cangle * vSPos.z;
+	
+#if ANIMATED	
+	float stemOffset = windCoefs.x + windCoefs.y / 255.0 ;
+	
+	stemOffset -= 0.5 ;
+	
+	float wind = windCoefs.z ;	
+	
+	float2 toAdd0 = AnimParams0.xy ;
+	
+	float dirRnd = sin( ( vSRPos.x + vSRPos.y + vSRPos.z  ) * 2048 ) * AnimParams0.w ;
+	
+	float sinr, cosr ;
+	
+	sincos( dirRnd, sinr, cosr ) ;
+	
+	float2 aniAmp ;
+	aniAmp.x = AnimParams2.w * sinr + AnimParams2.z * cosr ;
+	aniAmp.y = AnimParams2.w * cosr - AnimParams2.z * sinr ;	
+	
+	float2 toAdd1 = AnimParams1.zw * sin ( dot( vSRPos.xz, AnimParams1.xy ) + vSRPos.y + AnimParams_Times.y ) ;
+	float2 toAdd2 = aniAmp * sin ( dot( vSRPos.xz, AnimParams2.xy ) + AnimParams_Times.z ) ;	
+	
+	float stemWeight = pow( vAnimCoefs.z, AnimParams0.z ) ;
+	
+	vSRPos.xz += toAdd0 * stemWeight * stemOffset ;
+	vSRPos.xz += toAdd1 * vAnimCoefs.y * wind ;
+	vSRPos.xz += toAdd2 * vAnimCoefs.x * wind ;
+#endif	
+
+	float3 vSRTPos = vSRPos + worldPos;
+	RealPos = vSRTPos;
+
+	float4 vPos1 = mul( float4(vSRTPos, 1), ViewProjMat );
+	//float4 vPos1 = mul( float4(vPos.xyz + worldPos, 1), ViewProjMat );
+	vPosOut = vPos1;
+
+#if SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED
+	vPosOut = ShadowWarp( vPosOut );
+#endif
+
+	vTexOut1_rand_clr.xy = vUV1.xy * vTexcUnpackScale.xy ;
+	
+#if SHADOW_PASS && ( SHADOW_TYPE == SHADOWTYPE_ORTHO || SHADOW_TYPE == SHADOWTYPE_ORTHO_WARPED )
+	vTexOut1_rand_clr.z  = vPos1.z;
+#else
+	vTexOut1_rand_clr.z  = vPos1.w;
+#endif
+
+	vTexOut1_rand_clr.w = randColor;
+
+	vNormal = vNormal * 2 - 1;
+
+	vNormOut.x = cangle * vNormal.x + sangle * vNormal.z;
+	vNormOut.y = vNormal.y;
+	vNormOut.z = -sangle * vNormal.x + cangle * vNormal.z;
+	
+	float wtangent = vTangent.w * 2 - 1;
+	vTangent.w = 1.f;
+
+	t1.x = cangle * vTangent.x + sangle * vTangent.z;
+	t1.y = vTangent.y;
+	t1.z = -sangle * vTangent.x + cangle * vTangent.z;
+
+	t2 = cross( vNormOut, t1 ) * wtangent;
+}

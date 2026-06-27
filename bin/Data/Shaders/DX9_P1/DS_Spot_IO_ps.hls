@@ -1,0 +1,22 @@
+// Enter your shader in this window
+
+float4	vCamPos				: register(c0);
+float4	Color				: register(c1);
+
+float4	vLightPos			: register(c2);
+float3	vLightDir			: register(c3);
+float4	vLightFalloff_Pow	: register(c4);
+//	x = 1/(endFade - startFade); y = startFade/(endFade - startFade); zw = unused
+float4  vLightDistanceParams: register(c5);
+
+
+float4 vUnused              : register(c6);
+float4x4 mLightMtx          : register(c7);
+
+float4 vPCFSettings         : register(c11);
+float4 vPCFSteps0           : register(c12);
+float4 vPCFSteps1_Scale_Bia : register(c13);
+
+float4 SM_Scale             : register(c14);
+
+float4 SSS_Params           : register(c15);

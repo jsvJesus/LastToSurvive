@@ -1,0 +1,23 @@
+#include "..\System\IOParam\IODefine_VS.hls"
+
+struct VertSMTerrOut_t
+{
+	float4 vPosOut: POSITION;
+	float vTexOut1: TEXCOORD0;
+};
+
+VertSMTerrOut_t main( VertexType IN )
+{
+	VertSMTerrOut_t OUT;	
+	
+	TerrVertData_t res = CalcTerrainVertData( IN );
+		
+	OUT.vPosOut = mul( float4( res.vPos, 1 ), mProj );
+
+	// because dir light uses ortho we have linear scaled z in .z
+	// ( currently no terrain shadows from point lights & spot lights )
+	OUT.vTexOut1 = OUT.vPosOut.z;
+
+	return OUT;
+}
+

@@ -1,0 +1,81 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+
+float4   vLight  : register(c4);
+float4   vLightColor  : register(c10);
+float4   vHelper  : register(c9);
+float4   CameraPos  : register(c7);
+float4   CenterPos  : register(c8);
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         float3 vUV2: TEXCOORD2: register(v9),
+         float3 vUV3: TEXCOORD3: register(v10),
+	 out float  Fog: FOG,
+//         float3 vUV4: TEXCOORD4: register(v11),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+         out float4 vColorOut1: COLOR1,
+         out float3 vTexOut1: TEXCOORD0,
+         out float3 vViewOut: TEXCOORD1,
+         out float3 vNormOut: TEXCOORD2,
+         out float3 vNorm1Out: TEXCOORD3
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vTexOut1.xy = vUV1;
+  vTexOut1.z = vPosOut.z;
+
+  Fog = 1; // - vPos1.z * vFog.w;
+
+  float3 Norm1 = normalize(mul(vNormal, mWorld));
+
+  float4 Pos1 = mul(vPos, mWorld);
+  float3 Pos2 = mul(CenterPos, mWorld);
+
+  vNormOut = Norm1;
+  vNorm1Out = normalize(Pos1-Pos2);
+
+  float CL = dot (-vLight, Norm1) > 0 ? 1:0;
+
+  vColorOut1 = (1.0f - clamp(vPosOut.z*vHelper.z,0,1));//*CL;
+
+  float4 vBump;
+
+  float3 vUV4 = Norm1; //normalize(cross(normalize(vUV2),normalize(vUV3)));
+//  if (dot(vUV4, Norm1) < 0.0f ) vUV4 *= -1.0f;
+
+  float3 T1 = mul(vUV2.xyz, mWorld);
+  float3 T2 = mul(vUV3.xyz, mWorld);
+  float3 T3 = mul(vUV4.xyz, mWorld);
+
+  vBump.x = dot(T1, -vLight);
+  vBump.y = dot(T2, -vLight);
+  vBump.z = dot(T3, -vLight);
+  vBump.w = 1;
+
+//;Normalize the newly transformed light vector
+
+  vBump = normalize(vBump);
+
+//;place it in the range from zero to one and place it in the 
+//;diffuse color.
+//mad oD0, r1, c9.y, c9.y
+
+  vColorOut = (vBump * vHelper.y + vHelper.y);
+
+  float3 View = CameraPos.xyz - Pos1.xyz;
+
+  vBump.x = dot(T1, View);
+  vBump.y = dot(T2, View);
+  vBump.z = dot(T3, View);
+  vBump.w = 1;
+
+//;Normalize the newly transformed view vector
+  vViewOut = normalize(vBump);
+}
+

@@ -1,0 +1,26 @@
+// SSAO Mask Dilute
+
+sampler smpSSAOAndMask	: register ( s0 );
+
+float4 gInvRes : register( c0 ) ;
+
+float4 main( float4 vTexc_RendTexc : TEXCOORD0 ) : COLOR0
+{
+	float2 vTexc = vTexc_RendTexc.zw ;
+	
+	float4 samps ;
+
+	float4 samp0 = tex2D( smpSSAOAndMask, vTexc ) ;
+
+	samps.x = tex2D( smpSSAOAndMask, vTexc + gInvRes.xy ).y ;
+	samps.y = tex2D( smpSSAOAndMask, vTexc - gInvRes.xy ).y ;
+	
+	samps.z = tex2D( smpSSAOAndMask, vTexc + gInvRes.zw ).y ;
+	samps.w = tex2D( smpSSAOAndMask, vTexc - gInvRes.zw ).y ;
+	
+	samps.xy = min( samps.xy, samps.zw ) ;
+	
+	float diluted = min( min( samps.x, samps.y ), samp0.y ) ;
+	
+	return float4( samp0.x, diluted, samp0.zw ) ;
+}

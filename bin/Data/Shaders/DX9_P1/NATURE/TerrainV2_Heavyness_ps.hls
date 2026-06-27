@@ -1,0 +1,14 @@
+#include "..\System\IOParam\IODefine_VS.hls"
+                
+float4  vHeavyness : register( c0 );
+float4	vUVBorders : register( c1 );
+float4	vScale     : register( c2 );
+
+//--------------------------------------------------------------------------------------------------------		
+
+float4 main( VertTerrOutMP_t IN ) : COLOR0
+{
+	float border = dot( saturate( 1 - vScale.x * ( abs( IN.vTexOut1.xyxy - vUVBorders ) ) ), (1).xxxx );
+
+	return float4( vHeavyness.xyz, saturate( vHeavyness.w + border ) );
+}

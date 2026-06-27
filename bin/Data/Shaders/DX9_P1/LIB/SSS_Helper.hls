@@ -1,0 +1,46 @@
+//
+
+half4 SSS_CalculateSSS(float Thickness, float ViewDot, float LightDot, float SM, half4 TexCol, half4 linearColor)
+{
+	half4 AddVal = half4(0,0,0,0);
+
+	if(LightDot<0.0f)//apply SSS
+	{
+	    //float sigma_t = 0.12;
+        //float spec = pow( dot(Normal, normalize(ViewVec + vLight)), 4);
+	    //AddVal = (exp(sss * sigma_t ) * linearColor)*TexCol*SM*sss*(-Dim)*spec;
+
+	
+		AddVal.rgb = vAmbientColor.rgb * SM * TexCol * Thickness * (
+			pow( ViewDot, SSS_Params0.z )*SSS_Params0.y
+			- LightDot*SSS_Params0.x);
+		
+	}
+
+ return AddVal;	
+}
+
+struct SSSAltParams
+{
+	float3 vLight ;
+	float3 vNormal ;
+	float3 vEye ;
+	float fDistortion ;
+	float fPower ;
+	float fScale ;
+	float fLightAtt ;
+	float fThickness ;
+	float fAmbient ;
+	float3 vTexCol ;
+	float3 vLightCol ;
+	float4 vTransCol ;
+};
+
+float3 SSS_CalculateALT( SSSAltParams p )
+{
+	float3 vLTLight = -p.vLight + p.vNormal * p.fDistortion ;
+	float fLTDot = pow(saturate(dot(p.vEye, -vLTLight ) ), p.fPower ) * p.fScale ;
+	float3 fLT = p.fLightAtt * ( fLTDot + p.fAmbient ) * p.fThickness;
+
+	return lerp( p.vTexCol, p.vTransCol.rgb, p.vTransCol.a ) * p.vLightCol * fLT ;
+}

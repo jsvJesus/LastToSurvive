@@ -1,0 +1,70 @@
+#ifndef VERTEX_SHADER
+#error VERTEX_SHADER not defined!
+#endif
+
+#if VERTEX_SHADER
+#define FOG_CONST0 c253
+#define FOG_CONST1 c254
+#define FOG_CONST2 c255
+#else
+// c221
+#define FOG_CONST0 c29 
+// c222
+#define FOG_CONST1 c30
+// c223
+#define FOG_CONST2 c31
+#endif
+
+
+float4 AerialDensity_Distance_Bias	: register (FOG_CONST0); // x - density, y - distance, z - bias
+float4 g_fogColor		: register (FOG_CONST1);	//a = density
+float4 g_fogParams		: register (FOG_CONST2);	//fadeDist, top, _middle, dist
+sampler SkyCube			: register (s7);
+
+float4 getAerialVal(float3 camDir, float dist)
+{
+	float4 v;
+
+	v.rgb = texCUBElod(SkyCube, float4( normalize(camDir), AerialDensity_Distance_Bias.z ) );
+
+	v.rgb = pow(v.rgb, 2.2f);
+	v.a = saturate( 1.0f - 1.0f / pow(2, AerialDensity_Distance_Bias.x * pow( dist, AerialDensity_Distance_Bias.y) ) );
+	
+	v.a *= saturate( ( normalize( camDir ).y + 0.125 ) * 4 );
+	
+	return v;
+}
+
+
+float getFogVal(float3 camPos, float3 realPos)
+{
+
+	float3 dir = camPos.xyz - realPos.xyz;
+	float len = length(dir);
+
+	//clamp ray into fog volumes
+	float4 fp = float4(camPos.y, realPos.y, camPos.y, realPos.y);
+	fp.zw = max(fp.zw, g_fogParams.xx);
+	fp = min(fp, g_fogParams.xxyy);
+	
+	//average density in fade volume
+	float k = ( (fp.z+fp.w)*g_fogParams.z - 2*g_fogParams.y*g_fogParams.z );
+	
+	fp.xz = fp.yw - fp.xz;
+	fp.yw = -fp.xz * len/dir.y;
+
+	//float ln = length( fp.xy ) + length( fp.zw ) * k;
+	fp *= fp;
+	fp.xz += fp.yw;
+	float ln = sqrt(fp.x) + sqrt(fp.z) * k;
+
+	float a = 1 - pow(2, g_fogColor.a * pow(ln, g_fogParams.w) ) ;
+	return saturate( a * (abs(dir.y/len) + 1.0f) );	//multiply fog under camera
+
+}
+
+#ifdef R3D_FOG_VERSION
+#undef R3D_FOG_VERSION
+#endif
+
+#define R3D_FOG_VERSION 0

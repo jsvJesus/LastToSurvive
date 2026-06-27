@@ -1,0 +1,6 @@
+float4	vFill: register(c0);
+
+float4 main(float2 texCoord : TEXCOORD0): COLOR
+{
+	return vFill;
+}

@@ -1,0 +1,29 @@
+////////////////////////////////////////////////////
+
+sampler2D RT			: register( s0 );
+
+float4 uvOffsets[4]: register(c0);
+float4 strength: register(c4);
+
+float4 GetStreak(float2 uv)
+{
+	float4 Col = tex2D(RT, uv);
+	float intensity = dot( Col.rgb, float3( 0.3h, 0.59h, 0.11h ) );
+	return float4(Col.a * Col.rgb, 1);//(saturate(intensity-0.1f)/(1-0.1f));// * Col ;
+}
+
+
+half4 main( in half4 vTexc : TEXCOORD0 ) : COLOR0
+{
+	float4 cl = tex2D(RT, vTexc);
+	cl += GetStreak(vTexc + uvOffsets[0].xy);
+	cl += GetStreak(vTexc + uvOffsets[0].zw);
+	cl += GetStreak(vTexc + uvOffsets[1].xy);
+	cl += GetStreak(vTexc + uvOffsets[1].zw);
+	cl += GetStreak(vTexc + uvOffsets[2].xy);
+	cl += GetStreak(vTexc + uvOffsets[2].zw);
+	cl += GetStreak(vTexc + uvOffsets[3].xy);
+	cl += GetStreak(vTexc + uvOffsets[3].zw);
+	cl /= 9;
+	return cl * strength.x;
+}

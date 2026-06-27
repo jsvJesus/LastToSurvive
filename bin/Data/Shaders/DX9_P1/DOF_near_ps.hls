@@ -1,0 +1,43 @@
+//
+sampler colorSampler : register ( s0 );
+sampler depthSampler : register ( s1 );
+
+float4 dofEq		: register ( c0 );
+float4 dofRowDelta	: register ( c1 );
+float4 RTCoeff[ 3 ]	: register ( c2 );
+
+half4 main( float2 uv : TEXCOORD0 ) : COLOR   
+{   
+	half3 color;
+	half maxCoc;
+	float4 depth;
+	half4 coc = 0;
+	float2 rowOfs[4];
+	// "rowOfs" reduces how many moves PS2.0 uses to emulate swizzling.   
+	rowOfs[0] = 0;   
+	rowOfs[1] = dofRowDelta.zw;   
+	rowOfs[2] = dofRowDelta.zw * 2;   
+	rowOfs[3] = dofRowDelta.zw * 3;   
+	// Use bilinear filtering to average 4 color samples for free.   
+	color = 0;   
+	color += tex2D( colorSampler, uv + RTCoeff[ 0 ].xy + rowOfs[0] ).rgb;   
+	color += tex2D( colorSampler, uv + RTCoeff[ 0 ].zw + rowOfs[0] ).rgb;   
+	color += tex2D( colorSampler, uv + RTCoeff[ 0 ].xy + rowOfs[2] ).rgb;   
+	color += tex2D( colorSampler, uv + RTCoeff[ 0 ].zw + rowOfs[2] ).rgb;   
+	color /= 4;   
+	// Process 4 samples at a time to use vector hardware efficiently.   
+	// The CoC will be 1 if the depth is negative, so use "min" to pick   
+	// between "sceneCoc" and "viewCoc".
+
+	[unroll]
+	for ( int i = 0; i < 4; i++ )
+	{
+		depth[0] = tex2D( depthSampler, uv + RTCoeff[ 1 ].xy + rowOfs[i] ).r;   
+		depth[1] = tex2D( depthSampler, uv + RTCoeff[ 1 ].zw + rowOfs[i] ).r;   
+		depth[2] = tex2D( depthSampler, uv + RTCoeff[ 2 ].xy + rowOfs[i] ).r;   
+		depth[3] = tex2D( depthSampler, uv + RTCoeff[ 2 ].zw + rowOfs[i] ).r;   
+		coc = max( coc, clamp( dofEq.x * depth + dofEq.y, 0, dofEq.z ) );
+	}
+	maxCoc = max( max( coc[0], coc[1] ), max( coc[2], coc[3] ) );   
+	return half4( color, maxCoc );
+}  

@@ -1,0 +1,53 @@
+
+sampler Screen 	: register (s0);
+sampler Depth 	: register (s1);
+
+float4 GodRaysParam : register (c10);
+float4 GodRaysPos : register (c11);
+
+
+float4 BW  = { 0.3f, 0.59f, 0.11f, 1.0f};
+
+
+//Global Variables
+float Timer : TIME;
+
+//noise effect intensity value (0 = no effect, 1 = full effect)
+float fNintensity = 0.5;
+//scanlines effect intensity value (0 = no effect, 1 = full effect)
+float fSintensity = 0.1;
+//scanlines effect count value (0 = no effect, 4096 = full effect)
+float fScount = 2048;
+
+ 
+float4 main( float2 Tex : TEXCOORD0  ) : COLOR0
+{
+    // sample the source
+    float4 cTextureScreen = tex2D( Screen, Tex.xy);
+
+    // make some noise
+    float x = Tex.x * Tex.y * Timer *  1000;
+    x = fmod(x, 13) * fmod(x, 123);    
+    float dx = fmod(x, 0.01);
+    
+    // add noise
+    float3 cResult = cTextureScreen.rgb + cTextureScreen.rgb * saturate(0.1f + dx.xxx * 100);
+
+    // get us a sine and cosine
+    float2 sc; sincos(Tex.y * fScount, sc.x, sc.y);
+
+    // add scanlines
+    cResult += cTextureScreen.rgb * float3(sc.x, sc.y, sc.x) * fSintensity;
+    
+    // interpolate between source and result by intensity
+    cResult = lerp(cTextureScreen, cResult, saturate(fNintensity));
+
+    // convert to grayscale if desired
+    #ifdef MONOCHROME
+        cResult.rgb = (cResult.r * 0.3f + cResult.g * 0.59f + cResult.b * 0.11f);
+    #endif
+
+    // return with source alpha
+    return float4(cResult, cTextureScreen.a);
+} 
+

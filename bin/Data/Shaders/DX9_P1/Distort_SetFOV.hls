@@ -1,0 +1,34 @@
+
+// Setting DistortionBuffer
+
+sampler DepthMap : register (s0);
+
+float4 CamDepth : register (c10);
+
+struct PSOUT
+{
+ float4 Color : COLOR0;
+ float4 Depth : COLOR1;
+};
+
+
+float ComputeDepthBlur(float Depth, float Focus, float DOFN, float DOFF, float MaxBlur)
+{
+ float f;
+
+ if (Depth < Focus)
+    f = ((Depth - Focus) / DOFN);
+ else
+    f = ((Depth- Focus) / DOFF);
+
+ return clamp(f,-MaxBlur,MaxBlur);
+}
+
+
+float4 main(float2 uv1 : TEXCOORD0, float4 Col : COLOR0  ) : COLOR
+{
+ float FOV = ComputeDepthBlur(tex2D(DepthMap, uv1), CamDepth.x, CamDepth.y,CamDepth.z, CamDepth.w);
+ 
+ return float4(0.5, 0.5, max(0,FOV),1);
+}
+

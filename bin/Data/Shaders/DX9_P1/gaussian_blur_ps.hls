@@ -1,0 +1,15 @@
+sampler Tex 		: register(s0);
+uniform float2 PixelSize : register(c0);
+uniform float4 offset : register(c1); //x-num taps in one side, yz-offset, w - multipiler
+
+float4 main(float2 uv1      : TEXCOORD0): COLOR
+{
+	float4 color = 0;
+
+	for(int i=-NUM_ITER; i<=NUM_ITER; i++)
+	{
+		float2 uv = uv1+PixelSize*(offset.yz*float(i));
+		color += tex2D(Tex, uv);
+	}
+	return (color/((NUM_ITER*2.h+1.h)*offset.w));
+}

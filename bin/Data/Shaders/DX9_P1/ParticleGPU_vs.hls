@@ -1,0 +1,285 @@
+#ifndef VERTEX_SHADER
+#define VERTEX_SHADER 1
+#define PIXEL_SHADER 0
+#endif
+
+#ifndef USE_NORMALMAP
+#define USE_NORMALMAP 0
+#endif
+
+#define SHADOW_MODE_NONE 0
+#define SHADOW_MODE_READ_SM 1
+#define SHADOW_MODE_WRITE_SM 2
+
+#ifndef SHADOW_MODE
+#define SHADOW_MODE 2
+#endif
+
+#include "fog.hls"
+
+float4x4 mProj 			: register(c0);
+float4x4 mProjective 	: register(c20);
+float4   vCamera		: register(c15);
+
+float3 vSunDir : register( c28 );
+float2 depthUVHalfPixelOffset: register(c29);
+float4x3 mInvView : register( c30 );
+float4 gSunK_Scale : register( c33 );
+float4 gPartShadeDir : register( c34 );
+float4 gPartShadeColor : register( c35 );
+float4x4 mLight : register( c36 );
+
+#define MAX_LIGHTS 4
+
+struct ParticleLight
+{
+	float4 position ;
+	float4 attn ;
+	float4 color ;
+} ;
+
+ParticleLight lights[ MAX_LIGHTS ] : register( c40 ) ;
+
+float vWriteShadowParams : register( c52 ) ;
+
+float4 rects[64] : register( c64 );
+
+float4 adjCol(float4 clr, float3 v, float sunK)
+{
+	v.y = 0; v = normalize(v);
+	float k = ( dot(gPartShadeDir.xyz, v) + 1.0f) / 2* sunK;
+	return float4( saturate(lerp(clr.rgb, gPartShadeColor.rgb/2, k)), clr.a );
+}
+
+void main(	float4 iCorner: POSITION,
+			float4 iColor: COLOR0,
+			float3 iPos: TEXCOORD0,
+			float4 size_uvmix_rect_blend: TEXCOORD1,
+			float4 unified1: TEXCOORD2,
+			float4 unified2: TEXCOORD3,
+			float4 unified3: TEXCOORD4,
+
+/*
+R3D_PARTICLE_CAMERAQUAD: 1
+	float ang
+R3D_PARTICLE_ARBITARYQUAD: 4+3
+	float3 angXYZ, float isDirected
+	float3 direction
+R3D_PARTICLE_RAY: 4
+	float3 PrPos, float RayWidth
+R3D_PARTICLE_TRAIL: 4
+	float3 PrPos, float RayWidth
+R3D_PARTICLE_BEAM: 2
+	float RayWidth,	float length
+	CONST: float3 Position, BeamTargetPosition;
+*/		   
+
+			out float4 vPosOut: POSITION,
+			out float4 vColorOut: COLOR0,
+			out float4 vTexOut1: TEXCOORD0,
+			out float3 vTexOut2: TEXCOORD1
+			
+#if SHADOW_MODE == SHADOW_MODE_WRITE_SM
+			,
+			out float vSMDepth : TEXCOORD2
+#else
+			,
+			out float4 vTexOut3: TEXCOORD2,
+			out float4 fogVal_camDir: TEXCOORD3
+	#if SHADOW_MODE == SHADOW_MODE_READ_SM
+			,
+			out float4 vShadowTexc : TEXCOORD4
+	#endif				
+#endif
+			
+			
+#if USE_NORMALMAP
+			,
+			out float3 vTanSunDir : TEXCOORD5
+#endif		
+		)
+{
+	
+	float GlobalSize = gSunK_Scale.y;
+	float SunK = gSunK_Scale.x;
+	
+	float3 vPos, vL;
+	
+	float3 angles = unified1.xyz *3.1415926/180;
+	
+	float3	tang = float3( 1, 0, 0 ), 
+			norm = float3( 0, 0, 1 );
+			
+	float3 srcTan = float3( 1, 0, 0 ) ;
+	float3 srcNorm = float3( 0, 0, 1 );
+
+	[flatten]
+	if( unified3.r < 1.f / 255.0 - 0.001f)
+	{
+		//R3D_PARTICLE_CAMERAQUAD==0
+		//------------------------------------		
+		float2 sc;
+		sincos(45.0f*3.1415926/180 - angles.x, sc.x, sc.y);
+		
+		float3 vRotCorner;
+		
+		vRotCorner.x = iCorner.x * sc.y - iCorner.y * sc.x ;
+		vRotCorner.y = iCorner.x * sc.x + iCorner.y * sc.y ;
+		vRotCorner.z = 0;
+		
+		tang.x = srcTan.x * sc.y - srcTan.y * sc.x ;
+		tang.y = srcTan.x * sc.x - srcTan.y * sc.y ;
+		
+		norm = srcNorm ;
+		
+		tang = mul( tang, (float3x3)mInvView );
+		norm = mul( norm, (float3x3)mInvView );
+		
+		vL = mul( vRotCorner, (float3x3)mInvView );
+						
+		vPos = iPos + vL * size_uvmix_rect_blend.x * GlobalSize ;
+	}
+	else
+	[flatten]
+	if( unified3.r < 2.f / 255.0 - 0.001f )
+	{
+		//R3D_PARTICLE_ARBITARYQUAD==1
+		//------------------------------------
+		float2 sc;
+
+		sincos(angles.x, sc.x, sc.y);
+		float3x3 mY = float3x3(sc.y,0,-sc.x, 0,1,0, sc.x,0,sc.y);
+
+		sincos(angles.y, sc.x, sc.y);
+		float3x3 mX = float3x3(1,0,0, 0,sc.y,sc.x, 0,-sc.x,sc.y);
+		
+		sincos(angles.z, sc.x, sc.y);
+		float3x3 mZ = float3x3(sc.y,sc.x,0, -sc.x,sc.y,0, 0,0,1);
+		
+		float3x3 mr2 = float3x3(1,0,0, 0,1,0, 0,0,1);
+
+		[flatten]
+		if(unified2.a>0)
+		{
+			float3 vF = unified2.rgb*2.0f - 1.0f;
+			
+			[flatten]
+			if(vF.y > 0.99f)	mr2 = float3x3(1, 0, 0,   0, 0, -1,    0, 1, 0);
+			else
+			[flatten]
+			if(vF.y < -0.99f)	mr2 = float3x3(1, 0, 0,   0, 0, 1,    0, -1, 0);
+			else
+			{
+				float3 vR = normalize( cross(float3(0, 1, 0), vF) );
+				float3 vU = cross(vF, vR);
+				mr2 = float3x3(vR.x, vR.y, vR.z,   vU.x, vU.y, vU.z,    vF.x, vF.y, vF.z);
+			}
+		}
+
+		float3 v = float3((iCorner.z-0.5)*2, 0, -(iCorner.w-0.5)*2) * size_uvmix_rect_blend.x * GlobalSize;
+
+		vL = mul( mul( mul( mul( v, mZ ), mX ), mY ), mr2 );
+		
+		norm = mul( mul( mul( mul( srcNorm, mZ ), mX ), mY ), mr2 );
+		tang = mul( mul( mul( mul( srcTan, mZ ), mX ), mY ), mr2 );
+		
+		vPos = iPos + vL;
+	
+	}
+	else
+	{		
+		//R3D_PARTICLE_RAY==2
+		//R3D_PARTICLE_BEAM==6
+		//------------------------------------
+		// make vector perpendicular to line and to camera vectors
+		
+		float3 dir = ( iPos - unified1.xyz ) * (unified2.w - 0.5) * 2 ;
+		
+		float3 up = normalize( cross( dir, vCamera.xyz - iPos) ) * unified1.w * GlobalSize * 0.5f;
+		
+		float3 P2 = unified2.z > 0.f ?
+						( unified1.xyz - iPos )
+						:
+						normalize( dir ) * size_uvmix_rect_blend.x * GlobalSize;
+
+		[flatten]
+		if( unified2.z > 0.f )
+		{
+			up *= size_uvmix_rect_blend.x ;
+		}
+		
+		vL = P2*(1-iCorner.w) + up * (iCorner.z-0.5f) ;
+		vPos = iPos + vL ;
+		
+		norm = cross( P2, up ) ;
+		tang = P2 ;
+		
+		// turn lighting off
+		SunK = 0.f ;
+	}
+	
+	float3 binorm = cross( norm, tang ) ;
+	
+	float3x3 w2t = float3x3( tang, binorm, norm ) ;
+
+#if USE_NORMALMAP
+	vTanSunDir = mul( w2t, vSunDir ) ;
+#endif
+	
+	float fr1Idx = fmod( size_uvmix_rect_blend.z, 4096.0f );
+	int r1Idx = (int)fr1Idx;
+	int r2Idx = (int) ((size_uvmix_rect_blend.z - fr1Idx) / 4096.0f);
+	
+	vTexOut1.xy = lerp(rects[r1Idx].xy, rects[r1Idx].zw, iCorner.zw);
+	vTexOut2.xy = lerp(rects[r2Idx].xy, rects[r2Idx].zw, iCorner.zw);
+
+	float4 litColor = iColor;
+	litColor.rgb = pow(litColor.rgb,2.2f);
+
+#if SHADOW_MODE != SHADOW_MODE_WRITE_SM
+	[unroll]
+	for( int i = 0 ; i < MAX_LIGHTS ; i ++ )
+	{
+		ParticleLight pl = lights[ i ] ;
+		float lightVecLen = length( vPos.xyz - pl.position.xyz ) ;
+		
+		float invFadeDistance = pl.attn.x ;
+		float startFadeMulInvFadeDistance = pl.attn.y ;
+		
+		float attnDist = 1 - saturate( lightVecLen * invFadeDistance - startFadeMulInvFadeDistance ) ;		
+		
+		litColor.rgb += attnDist * pow(pl.color.rgb,2.2f) * size_uvmix_rect_blend.w ;
+	}
+#endif	
+
+	float4 vPosT = mul( float4(vPos,1), mProj ); 
+	vPosOut = vPosT; 
+
+	vColorOut = litColor;
+
+	vTexOut1.z = vPosT.w;
+	vTexOut1.w = size_uvmix_rect_blend.w;
+		
+	vTexOut2.z = size_uvmix_rect_blend.y;
+	
+
+#if SHADOW_MODE == SHADOW_MODE_WRITE_SM
+	vTexOut1.w	*=	vWriteShadowParams.x ;
+	vSMDepth	=	vPosT.z ;
+	
+#else
+	vTexOut3 = mul(float4(vPos,1), mProjective);
+	vTexOut3.xy += depthUVHalfPixelOffset * vTexOut3.w;
+
+	fogVal_camDir.xyz = vPos.xyz - vCamera.xyz;
+	
+	fogVal_camDir.w = getFogVal(vCamera.xyz, vPos.xyz);
+
+#endif
+
+#if SHADOW_MODE == SHADOW_MODE_READ_SM
+	vShadowTexc = mul( float4(vPos,1), mLight ) ;
+#endif		
+	
+}
+

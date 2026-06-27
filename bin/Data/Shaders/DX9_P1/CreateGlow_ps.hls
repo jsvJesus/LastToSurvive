@@ -1,0 +1,21 @@
+//
+sampler diffuse		: register(s0);
+sampler normals		: register(s1);
+
+float4 TintColor	: register(c0);
+
+half4 main( half2 uv1 : TEXCOORD0) : COLOR
+{
+	half selfIllum = saturate( tex2D( normals, uv1 ).a*2.0h-1.0h );
+
+	[branch]
+	if ( selfIllum > 0.h )
+	{
+		half3 d = tex2Dlod( diffuse, half4( uv1, 0.h, 0.h ) ).rgb;
+		return half4( d*selfIllum*TintColor, 1.0h );
+	}	
+	else
+	{
+		return 0.h;	
+	}
+}

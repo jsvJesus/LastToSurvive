@@ -1,0 +1,19 @@
+
+#include "..\system\IOParam\IODefine_VS.hls"
+
+
+void main( float4 vPos: POSITION,
+         float2 vUV1: TEXCOORD0: register(v7),
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0,
+         out float3 vWPos: TEXCOORD1,
+         out float2 vSPos: TEXCOORD2
+       )
+{
+  vPosOut = mul( vPos, mProj ); 
+
+  vTexOut1 = vUV1 + float2(1.0f/1280.0f, 1.0f/720.0f)/2;
+
+  vWPos = vPos.xyz;
+  vSPos = ((vPosOut.xy / vPosOut.z)+1)/2 ;
+}

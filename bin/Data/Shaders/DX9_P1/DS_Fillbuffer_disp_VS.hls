@@ -1,0 +1,66 @@
+float4x4 ModelViewProjMatrix	: register (c0);
+float4x3 ModelMatrix			: register (c4);
+float4x3 NormalMatrix			: register (c7);
+float4x3 mModelView				: register (c10);
+float4x3 NormalViewMatrix		: register (c13);
+
+// NOTE: duplicate in:
+// DS_Fillbuffer_vs.hls
+// DS_Fillbuffer_Instanced_vs.hls
+// Transparent_vs.hls
+
+float2 vTexcUnpackScale			: register( c16 ) ;
+
+struct VertInfoVS_t
+{
+	float4 vPos			: POSITION;
+	float3 vTex			: TEXCOORD0;
+	
+	float3 vVPos		: TEXCOORD1;
+	float3 RealPos		: TEXCOORD2;
+
+	float3 vViewTangent		: TANGENT0;
+	float3 vViewBinormal	: BINORMAL0;
+	float3 vViewNormal		: NORMAL0;
+	
+	float3 vWorldTangent	: TANGENT1;
+	float3 vWorldBinormal	: BINORMAL1;
+	float3 vWorldNormal		: NORMAL1;
+};
+
+VertInfoVS_t main(	float4 vPos		: POSITION,
+					float2 vUV1		: TEXCOORD0,
+					float4 vNormal	: NORMAL,
+					float4 vTangent	: TANGENT )
+{
+	VertInfoVS_t OUT;
+
+	float4 pos = float4( vPos.x, vPos.y, vPos.z, 1.0 );
+
+	OUT.vPos = mul(pos, ModelViewProjMatrix);
+
+	float wtangent = vTangent.w * 2 - 1;
+	vTangent.w = 1.f;
+
+	OUT.vTex.xy = vUV1.xy * vTexcUnpackScale.xy ;
+	OUT.vTex.z  = OUT.vPos.w;
+	
+	// vertex position in view space (with model transformations)
+	OUT.vVPos = mul( pos, mModelView ).xyz;
+
+	// tangent space vectors in view space (with model transformations)
+	// NOTE : 4 component multiply, casue we also unpack with that matrix
+	OUT.vViewTangent	= mul( vTangent, NormalViewMatrix ).xyz;
+	OUT.vViewNormal		= mul( vNormal, NormalViewMatrix ).xyz;
+	OUT.vViewBinormal	= cross( OUT.vViewNormal, OUT.vViewTangent ) * wtangent;
+	
+	OUT.RealPos = mul(vPos, ModelMatrix);
+	
+	// NOTE : 4 component multiply, casue we also unpack with that matrix
+	OUT.vWorldTangent	= mul( vTangent, NormalMatrix ).xyz;
+	OUT.vWorldNormal	= mul( vNormal, NormalMatrix ).xyz;
+	OUT.vWorldBinormal	= cross( OUT.vWorldNormal, OUT.vWorldTangent ) * wtangent;
+	
+	return OUT;
+}
+

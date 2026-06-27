@@ -1,0 +1,152 @@
+// Enter your shader in this window
+// Enter your shader in this window
+// Enter your shader in this window
+
+#include "..\System\IOParam\IODefine_VS.hls"
+
+
+
+// RENDER_SIMPLE_TERRAIN - compilation setting
+
+sampler BaseMat		: register (s0);
+sampler Mask		: register (s1);
+sampler LMap		: register (s2);
+
+#if ( !RENDER_SIMPLE_TERRAIN )
+sampler sBaseBump  	: register(s8);
+#endif
+
+float4   vSplit  		: register(c6);
+float4   vLayerScl  	: register(c7);
+
+float3   vNormalMirror_NormalMapFade: register(c13);
+float4   vGlossBase  	: register(c14);
+float4   vGlossLayers  	: register(c15);
+
+float4   vView  		: register(c5);
+
+#ifndef AUX_ENABLED
+#define AUX_ENABLED 1
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	float4 Normal : COLOR1;
+	float4 Depth : COLOR2;
+#if AUX_ENABLED
+	float4 gAux : COLOR3;
+#endif
+};
+
+//--------------------------------------------------------------------------------------------------------
+float3 CalcNormal( sampler sBump, float2 uv, float2 vScaleUV, float3x3 m, float fBlendFactor )
+{
+	float3 v1, v2, vRes;
+	
+	v1 = tex2D( sBump, uv ).rgb;
+	v2 = tex2D( sBump, uv * vScaleUV ).rgb;
+	vRes = lerp( v1, v2, fBlendFactor );
+	vRes = vRes * 2.f - 1.f;
+	
+	return normalize( mul( vRes, m ) );
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+float3 CalcNormalVert( sampler sBump, float4 uv, float2 vScaleUV, float3x3 m, float fBlendFactor, float fBlendXxZ )
+{
+	float3 v1, v2, vR1, vR2, vRes;
+	
+	v1 = tex2D( sBump, uv.xy ).rgb;
+	v2 = tex2D( sBump, uv.xy * vScaleUV ).rgb;
+	vR1 = lerp( v1, v2, fBlendFactor);
+	
+	v1 = tex2D( sBump, uv.zw ).rgb;
+	v2 = tex2D( sBump, uv.zw * vScaleUV ).rgb;
+	vR2 = lerp( v1, v2, fBlendFactor);	
+	
+	vRes = lerp( vR1, vR2, fBlendXxZ );
+	vRes = vRes * 2.f - 1.f;
+	
+	return normalize( mul( vRes, m ) );		
+}
+
+
+//--------------------------------------------------------------------------------------------------------		
+PSOUT main(	VertTerrOut_t IN )
+{
+	float4 Splat = tex2D(Mask, IN.vTexOut1.xy);
+	float4 LMapC  = tex2D(LMap, IN.vTexOut1.xy);
+	//float3 vNormal  = normalize( LMapC.rgb * 2.f - 1.f );
+	//vNormal.xz *= vNormalMirror_NormalMapFade.xy;
+
+
+	float4 M1 = tex2D(BaseMat, IN.vUV0.xy);
+
+//	float4 FM1 = pow( M1, 2.2 );
+	float4 FM1 = M1;
+
+	// build invert matrix for base, layer1, layer2
+	
+	float3 vTangent = float3( 1, 0, 0 );
+	float3 vBinormal = normalize( cross( vTangent, IN.vNormal ) );
+	vTangent = normalize( cross( IN.vNormal, vBinormal ) );
+
+	float3x3 m = float3x3( vTangent, vBinormal, IN.vNormal );
+
+
+	// factor blend
+	float2 vNormXZ = IN.vNormal.xz / ( length( IN.vNormal.xz ) + 0.001f );
+		
+	float fLen = 1.f / length( vNormXZ );
+	
+	vNormXZ.x *= fLen;	
+	float fBlend =  vNormXZ.x * vNormXZ.x;
+
+	FM1.a = vGlossBase.x;
+	
+	float4 vColRes = FM1; //float4( abs( xz.x ),0,0,1);
+
+	vColRes.rgb = vColRes * IN.vColor_FadeK.xyz; //float3( 1, 1, 1 );
+		
+	// calculate normals per layer
+	
+	float3 v1, v2, v3;
+	float3 vBaseN, vN1, vN2, vN3, vN4;
+	
+	// base layer
+	vBaseN = CalcNormal( sBaseBump, IN.vUV0.xy, float2( 0.75, 0.75 ), m, 0.f );
+	
+	// new matrix for X & Z proj
+	vBinormal = float3( 0, -1, 0 );
+	vTangent = normalize( cross( IN.vNormal, vBinormal ) );
+	vBinormal = normalize( cross( vTangent, IN.vNormal ) );
+	m = float3x3( vTangent, vBinormal, IN.vNormal );
+	
+	// normals result
+	float3 vResN = vBaseN;
+
+	vResN = normalize( vResN );
+
+	PSOUT out1;
+
+	out1.Color.rgb = vColRes.rgb;
+	out1.Color.a =  0; //vColRes.a;  // metalness
+
+	out1.Depth = IN.vPos_vTexOutSM.w; //EncodeFloatRGBA(saturate( IN.vTexOutSM/10000.0f));
+
+	out1.Normal.rgb = lerp ( vResN, IN.vNormal, IN.vColor_FadeK.w ) * 0.5f + 0.5f;
+
+	out1.Normal.a = 0.5;
+
+#if AUX_ENABLED
+	out1.gAux = float4(1,0,0,0);
+#endif
+
+
+//	out1.Color.rgb = float4(1,1,1,0);
+//	out1.Normal.rgb = IN.vNormal * 0.5f + 0.5f;
+
+	return out1;
+}

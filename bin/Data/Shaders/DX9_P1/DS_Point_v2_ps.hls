@@ -1,0 +1,156 @@
+///////////////////////////////////
+
+sampler3D lightsIndices: register(s0);
+sampler2D lightsParams: register(s1);
+
+sampler AlbedoTex: register (s2);
+sampler NormalTex: register (s3);
+sampler DepthTex: register (s4);
+sampler AuxData: register (s5);
+sampler EnvCubeMap: register (s8);
+
+//	x - inverse of indices texture depth
+//	y - params texture inv size (width == height)
+//	z - params texture size (width == height)
+//  w - inv ref z
+float4 texParams: register(c0);
+float4 vCamPos: register(c1);
+float4 vSSAO_Scale: register(c2);
+float4 SSS_Params: register(c3);
+
+//	Number of pixels that occupy light parameters
+#define NUM_PIXELS_PER_LIGHT 3
+
+float4 fresnelReflectance(float Dot, float4 CSpec)
+{
+	return CSpec + (1 - CSpec) * pow(1 - Dot, 5);
+}
+
+float4 main
+(
+	float2 lightDataTC: TEXCOORD0,
+	float2 sceneDataTC: TEXCOORD1,
+	float4 worldPos: TEXCOORD2,
+	float viewSpaceZ: TEXCOORD3
+): COLOR0
+{
+	float depthStep = texParams.x;
+	float paramsTexSize = texParams.z;
+	float paramsTexInvSize = texParams.y;
+
+	float Depth = tex2D(DepthTex, sceneDataTC).r / viewSpaceZ;
+
+	float3 Cam = vCamPos.xyz;
+
+	// Reconstruct World Z using UV and Depth
+	float3 CamVec = worldPos.xyz - Cam;
+
+	float3 RealPos = Cam + Depth*CamVec;
+
+	float4 TexCol = tex2D(AlbedoTex, sceneDataTC);
+//	TexCol.rgb = pow(TexCol.rgb, 1.0/2.2);
+
+	float4 normalTex = tex2D(NormalTex, sceneDataTC);
+	float4 auxData = tex2D(AuxData, sceneDataTC);
+
+#if 1//SSAO_ENABLED
+	float SSAOTerm = tex2D(AuxData, sceneDataTC * vSSAO_Scale.xy).r;
+#else
+	float SSAOTerm = 1;
+#endif
+
+	float  MetalnessMap = TexCol.a;
+
+	float3 Normal = normalize(normalTex.rgb * 2 - 1);
+	float SpecularPOW = auxData.g;
+	float ReflChrome = auxData.a;
+	float SelfIllum = abs(normalTex.a * 2 - 1); // -1..0 - selfIllum, 0..1 - Bloom
+	
+	float3 ViewVec = normalize(Cam - RealPos.xyz);
+
+	float4 Vec1 = float4(reflect(-ViewVec, Normal.rgb), 7.0f - 7.0f*ReflChrome); //*MetalnessMap
+	float4 ReflColor = texCUBElod(EnvCubeMap, Vec1);
+	float Power = SpecularPOW * 256.0;
+	
+	float numLights = tex3D(lightsIndices, float3(lightDataTC, depthStep * 0.5)).r * 0xffff;
+
+	float4 cl = float4(0, 0, 0, 0);
+	[loop]
+	for (int i = 1; i <= (int)numLights; ++i)
+	{
+		float4 volTC = float4(lightDataTC, depthStep * (0.5 + i), 0);
+		float lightID = tex3Dlod(lightsIndices, volTC).r;
+		
+		float idInt = lightID * 0xffff * NUM_PIXELS_PER_LIGHT;
+
+		float4 lightParams[NUM_PIXELS_PER_LIGHT];
+		
+		[unroll]
+		for (int i = 0; i < NUM_PIXELS_PER_LIGHT; ++i)
+		{
+			float v = floor((idInt + i) * paramsTexInvSize);
+			float u = (idInt + i) - v * paramsTexSize;
+
+			float4 paramsTC = float4((float2(u, v) + float2(0.5, 0.5)) * paramsTexInvSize, 0, 0);
+			lightParams[i] = tex2Dlod(lightsParams, paramsTC);
+		}
+		
+		float3 lightPos = lightParams[0].rgb;
+		float4 Color = lightParams[1];
+		float invFadeDistance = lightParams[2].x;
+		float startFadeMulInvFadeDistance = lightParams[2].y;
+		
+		float3 V = lightPos - RealPos;
+		float VLen = length( V );
+		float3 VN = V / VLen;
+
+		#ifdef USE_PROJ_MAP
+			half3 projMult = texCUBE( ProjTex, mul( -(half3)VN, (half3x3)mLightMtx ) ).rgb;
+		#else
+			half3 projMult = 1.0h;
+		#endif
+
+		float DimAngle = dot(VN, Normal.rgb);
+		float4 AddVal = float4(0,0,0,0);
+		
+		if (DimAngle < 0.0f)//apply SSS
+		{
+		#if 0
+			AddVal.rgb = Color.rgb * TexCol * auxData.b * (pow( dot(ViewVec, VN), SSS_Params.z )*SSS_Params.y - DimAngle * SSS_Params.x);
+		#else
+			AddVal = 0.f ;
+		#endif
+		
+			DimAngle = saturate( DimAngle );
+		}
+		
+		half AttnDist = 1 - saturate(VLen * invFadeDistance - startFadeMulInvFadeDistance);
+		float4 DiffuseColor = DimAngle * Color;
+
+		float3 vhalf = normalize(normalize(V) + ViewVec);
+
+		float4 SpecularPower = pow(saturate(dot(vhalf, Normal.rgb)), Power );
+
+		float4 Fr = fresnelReflectance ( saturate(dot(Normal.rgb,vhalf)), ReflColor);
+
+		float4 SpecularColor = ((Power+2)/(2*3.1415926f))* (SpecularPower*ReflColor);
+		ReflColor = Fr; //texCUBElod(EnvCubeMap, Vec2);
+
+		float4 FinalColor;
+
+#if DIFFUSE_ONLY
+		FinalColor.rgb = DiffuseColor* TexCol;
+		FinalColor.rgb = FinalColor.rgb * AttnDist *SSAOTerm * SSAOTerm ; 
+#else
+		float4 MatColor_Metal = SpecularColor*DimAngle + ReflColor*DimAngle;
+		float4 MatColor_Matte = DiffuseColor* TexCol + SpecularColor*0.00;
+
+		FinalColor.rgb = lerp(MatColor_Matte+AddVal.rgb, MatColor_Metal, MetalnessMap);
+		FinalColor.rgb = lerp (FinalColor.rgb, TexCol.rgb,  SelfIllum)*AttnDist*SSAOTerm*SSAOTerm; 
+#endif
+
+		cl.rgb += FinalColor.rgb;
+	}
+	
+	return cl;
+}

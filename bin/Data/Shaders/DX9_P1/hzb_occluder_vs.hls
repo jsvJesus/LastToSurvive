@@ -1,0 +1,12 @@
+float4x4 ModelViewProjMatrix	: register (c0);
+
+void main( float4 vPos: POSITION,
+         out float4 vPosOut: POSITION,
+		 out float	Depth : TEXCOORD0
+       )
+{
+	vPosOut = mul(vPos, ModelViewProjMatrix);
+
+	Depth = vPosOut.z/vPosOut.w;
+}
+

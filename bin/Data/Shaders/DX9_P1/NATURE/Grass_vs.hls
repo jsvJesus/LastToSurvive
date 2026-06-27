@@ -1,0 +1,76 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+
+float4   vHelper2 : register(c5);
+float4   vSize1  : register(c6);
+float4   vSize2  : register(c7);
+float4   vHelper : register(c8);
+float4   vAnim : register(c10);
+
+float4   vBend[4] : register(c11);
+
+
+//; c5 - Fog and fade out Data ( Cam.x, Cam.z, 1/Fog Range, 1/VisRange)
+//; c6 - Camera Right
+//; c7 - Camera Up
+//; c8 - Scale coef for lightmap
+//; c9 - Some helper constant - 1 most of time :)
+//; c10 - general animation vector
+
+
+void main( float4 vPos: POSITION,
+         float3 vNormal: NORMAL: register(v3),
+         float2 vUV1: TEXCOORD0: register(v7),
+         out float4 vPosOut: POSITION,
+         out float4 vColorOut: COLOR0,
+	 out float  Fog: FOG,
+         out float3 vTexOut1: TEXCOORD0,
+         out float2 vTexOut2: TEXCOORD1,
+         out float2 vTexOut3: TEXCOORD2
+       )
+{
+ float4 Pos1 = vNormal.xxxx * vSize1 + vNormal.yyyy * vSize2 + vPos;
+
+// Adjust lightmap TU/TV 
+ vTexOut2.x = Pos1.x * vHelper.x;
+ vTexOut2.y = 1.0f - Pos1.z * vHelper.y;
+
+ vTexOut3.x = saturate(0.5f + (Pos1.x - vHelper2.x)/vHelper.z);
+ vTexOut3.y = 1.0f - saturate(0.5f + (Pos1.z - vHelper2.y)/vHelper.z);
+
+
+//; Animate Grass top vertices
+//; some generic shitty wave....
+ float H = 1.0f - vUV1.y;
+ Pos1.x += H * sin(vAnim.x + Pos1.z) * sin(vAnim.y + Pos1.x);
+ Pos1.z += H * sin(vAnim.x + Pos1.x) * sin(vAnim.y + Pos1.z);
+
+ float Adj = (sin(vAnim.x + Pos1.z) * sin(vAnim.y + Pos1.x)*0.5f)*H;
+
+ for (int i=0;i<4;i++)
+ {
+  float3 Vec = Pos1.xyz - vBend[i].xyz;
+
+  float Pow = (1.0f - saturate(length(Vec)/30.0f)) * H * 12.0f * vBend[i].w;
+  Vec = normalize(Vec);
+  Pos1.x += Vec * Pow;
+  Pos1.z += Vec * Pow;
+ }
+
+ float4 vPos1 = mul( Pos1, mProj ); 
+ vPosOut = vPos1;
+
+ Fog = 1 - vHelper2.z * vPos1.z;
+
+ vTexOut1.xy = vUV1;
+ vTexOut1.z  = vPos1.z;
+
+ vColorOut.rgb = float3(1+Adj,1+Adj,1+Adj);
+ vColorOut.a = 1.0 - pow(clamp(vPosOut.z*vHelper2.w,0,1),16);
+}
+
+
+
+
+ 

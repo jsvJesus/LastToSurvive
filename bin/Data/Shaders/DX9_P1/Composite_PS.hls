@@ -1,0 +1,21 @@
+//
+sampler DiffuseTex 	: register (s0);
+float4 	Mat_Diffuse		: register(c41);
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+};
+
+PSOUT main(	float2  uv1 	: TEXCOORD0)
+{
+	PSOUT out1;
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy)*Mat_Diffuse;
+	clip (TexCol.a - 0.25f); 
+
+	out1.Color.rgb = TexCol.rgb;
+	out1.Color.a = 1.0f;
+
+	return out1;
+}

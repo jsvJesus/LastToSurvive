@@ -1,0 +1,22 @@
+//
+
+float4 gToPos               : register( c0 ) ;
+float4 gToTexc              : register( c1 ) ;
+
+//--------------------------------------------------------------------------------------------------------		
+
+void main(	
+			in float4 iPos : POSITION,
+
+			out float4 oPos : POSITION,
+
+			out float2 oTexc : TEXCOORD0
+			)
+{
+	oPos.xy	= iPos.xy * gToPos.xy + gToPos.zw ;
+	oPos.zw = iPos.zw ;
+
+	float2 splatTexc = iPos.xy * gToTexc.xy + gToTexc.zw ;
+	
+	oTexc.xy = splatTexc ;
+}

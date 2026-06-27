@@ -1,0 +1,79 @@
+//
+sampler RT_0        : register (s0);
+sampler RT_1        : register (s1);
+sampler DepthTex    : register (s2);
+sampler RT_3        : register (s3);
+
+float4   vCamPos    : register(c7);  // x,y,z
+float4   vBounds    : register(c8);  // minh, maxh, minslope, maxslope
+float4   vExtra     : register(c9);
+float4   vInvResolution : register(c10) ;
+float4   g_vInvProjScaleTrans : register ( c11 ) ;
+
+float4x3 g_vInvView : register( c12 ) ;
+
+float3 uv_to_eye(float2 uv, float eye_z )
+{
+    return float3( (uv * g_vInvProjScaleTrans.xy + g_vInvProjScaleTrans.zw) * eye_z, eye_z);
+}
+
+float3 fetch_eye_pos( float2 uv )
+{
+	float z = tex2D( DepthTex, uv ).r;
+	return uv_to_eye( uv, z );
+}
+
+
+
+float4 main(float2 uv1 : TEXCOORD0, 
+	    float3 WPos : TEXCOORD1,
+	    float2 SPos : TEXCOORD2
+	) : COLOR
+{
+  float4 rt1 = tex2D(RT_1, uv1);
+  
+  float fSceneDepth = tex2D(DepthTex, uv1).r ;
+  
+  float3 Pr = fetch_eye_pos( uv1 + float2( +vInvResolution.x,  0 ) );
+  float3 Pl = fetch_eye_pos( uv1 + float2( -vInvResolution.x,  0 ) );
+  float3 Pt = fetch_eye_pos( uv1 + float2( 0,  +vInvResolution.y ) );
+  float3 Pb = fetch_eye_pos( uv1 + float2( 0,  -vInvResolution.y ) );
+
+  float3 Normal = normalize( mul( cross(Pr - Pl, Pt - Pb), g_vInvView ).xyz );  
+  
+  float t6 = fSceneDepth/vCamPos.w;
+
+  float3 Cam = vCamPos.xyz;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6; // / 10000.0f; //CamDepth.x;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float alpha0 = vExtra.x ;
+ float alpha1 = vExtra.y ; 
+
+ float alpha = alpha0;
+
+ // since we're on terrain Normal.y < 0 is a no go
+ float f = saturate( Normal.y );
+ 
+ float compSign = vExtra.x ;
+
+ [flatten]
+ if (   ( RealPos.y - vBounds.x ) >= 0 && 
+        ( RealPos.y - vBounds.y ) <= 0 &&
+        ( f - vBounds.z ) >= +0.1 && 
+        ( f - vBounds.w ) <= -0.1 )
+ {
+   alpha = alpha1;
+ }
+
+ float4 FinalColor;
+ FinalColor.rgb = float3(255,0,0);
+ FinalColor.a = alpha;
+
+ return FinalColor;
+}

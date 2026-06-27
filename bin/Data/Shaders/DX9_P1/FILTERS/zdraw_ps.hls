@@ -1,0 +1,40 @@
+
+sampler DiffuseTex : register (s0);
+sampler DepthTex : register (s4);
+
+float4 TintColor : register (c9);
+float4 CamDepth : register (c10);
+float4 EffectPos : register (c11);
+
+float4 main(half2 uv1 : TEXCOORD0, float3 WPos : TEXCOORD1) : COLOR
+{
+ float2 t6 = tex2D(DepthTex, uv1);
+
+ float3 Cam = CamDepth.yzw;
+
+// Reconstruct World Z using UV and Depth
+ float Depth = t6.x / 1000.0f;
+
+ float3 CamVec = WPos - Cam;
+
+ float3 RealPos = Cam + Depth*CamVec;
+
+ float SideA = distance(EffectPos.xyz, RealPos);
+
+ float LakeDepth = saturate(max(0,-30-RealPos.y)/50.0f);
+// float LakeDepth = saturate(max(0,650-RealPos.y)/450.0f);
+
+ float4 Col1, Col2;
+
+ Col1.rgb = TintColor.rgb;
+ Col1.a = 0;
+ Col2.rgb = TintColor.rgb*2;
+ Col2.a = 1;
+
+ float4 FC = saturate(1.0f - SideA/300.0f)*float4(1,1,1,1); //lerp (Col1, Col2, LakeDepth);
+
+ FC = float4(0,0.02,0.05,LakeDepth); //*pow(saturate(SideA/1000.0f),1.5)*0.95);
+
+ return FC;
+}
+

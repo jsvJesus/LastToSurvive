@@ -1,0 +1,46 @@
+
+
+
+sampler Tex1;
+
+float4 BlurParams : register (c0);
+
+
+
+float4 PoissonBlur1(sampler Tex, float2 uv, float BlurScale)
+{
+ float4 Col = float4(0,0,0,1);
+
+const float2 pTap[12] = { 	float2(-0.326212f, -0.40581f),
+			float2(-0.840144f, -0.07358f),
+			float2(-0.695914f,  0.457137f),
+			float2(-0.203345f,  0.620716f),
+			float2( 0.96234f,  -0.194983f),
+			float2( 0.473434f, -0.480026f),
+			float2( 0.519456f,  0.767022f),
+			float2( 0.185461f, -0.893124f),
+			float2( 0.507431f,  0.064425f),
+			float2( 0.89642f,   0.412458f),
+			float2(-0.32194f,  -0.932615f),
+			float2(-0.791559f, -0.59771f)};
+
+
+
+ float2 vPixelSize = float2( 1.0f/(1280.0f/4.0f), 1.0f/(720.0f/4.0f));
+ float2 vBlurScale = float2( BlurScale, BlurScale);
+ float2 pixelRadius = vPixelSize*vBlurScale; 
+
+ for( int i=0;i<12;i++ )
+ {
+  Col += tex2D(Tex, uv+(pTap[i]*pixelRadius));
+ }  
+
+ return Col/12.0f;
+}
+
+
+half4 main(half2 uv1 : TEXCOORD0,half4 Col : COLOR0 ) : COLOR
+{
+ return PoissonBlur1(Tex1, uv1, BlurParams.x);
+}
+

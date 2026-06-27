@@ -1,0 +1,18 @@
+
+sampler ScreenTex: register (s0);
+
+float4   vBlur  : register(c0);
+
+float4 BW  = { 0.3, 0.59, 0.11, 0.0};
+
+float4 main(float4 Col : COLOR0, float2 uv1 : TEXCOORD0 ) : COLOR
+{
+ float4 t1 = tex2D(ScreenTex, uv1);
+ float4 LumT = dot(t1,BW);
+
+ float4 fc = lerp(t1,LumT, vBlur.a);
+ fc.a = vBlur.a;
+
+ return fc;
+}
+

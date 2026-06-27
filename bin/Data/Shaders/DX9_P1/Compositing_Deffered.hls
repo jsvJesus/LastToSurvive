@@ -1,0 +1,23 @@
+sampler Screen 	: register (s0);
+sampler ColorGrading : register(s1);
+sampler FGNoiseTex 	: register (s5);
+
+float4 FilmGrainParams : register (c0);
+
+float4 main(float2 uv1 : TEXCOORD0 ) : COLOR
+{
+	float4 t2 = tex2D(Screen, uv1);
+
+	float4 NoiseImg = tex2D(FGNoiseTex, uv1*FilmGrainParams.y + FilmGrainParams.xx);
+	float4 HighLightNoise = (NoiseImg*2-1)* (FilmGrainParams.z/255.0f);
+	float4 result = saturate(t2+t2*HighLightNoise);
+
+	// apply color grading at the final step
+	result.r = tex1D(ColorGrading, result.r).r;
+	result.g = tex1D(ColorGrading, result.g).g;
+	result.b = tex1D(ColorGrading, result.b).b;
+
+
+	return result;
+}
+

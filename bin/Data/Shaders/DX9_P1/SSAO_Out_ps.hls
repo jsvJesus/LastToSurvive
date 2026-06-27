@@ -1,0 +1,9 @@
+sampler texScreen : register (s0);
+
+float4 pickChannel : register( c65 );
+
+half4 main(half2 uv1 : TEXCOORD0 ) : COLOR
+{
+	half4 color = tex2D ( texScreen, uv1 );
+	return half4 ( dot( color, pickChannel ).xxx, 1);
+}

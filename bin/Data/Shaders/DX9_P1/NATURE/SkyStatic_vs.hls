@@ -1,0 +1,115 @@
+//
+
+float4    EyePos_Attenuation1        : register(c20);
+float4    SunDir_Attenuation2        : register(c21);
+float3    BetaRPlusBetaM             : register(c22);
+float3    HGg                        : register(c23);
+float3    BetaDashR                  : register(c24);
+float3    BetaDashM                  : register(c25);
+float3    OneOverBetaRPlusBetaM      : register(c26);
+float4    Multipliers                : register(c27);
+float4    SunColorAndIntensity       : register(c28);
+
+#ifndef TEXGEN_ENABLE
+#define TEXGEN_ENABLE 1
+#endif
+
+float4x4  MVP                       : register(c0);
+float4x3  WorldM                    : register(c4);
+float4 TexcTransform                : register(c8);
+
+
+struct app2vert
+{
+    float4 Position : POSITION;
+    float3 TexCoord : TEXCOORD0;
+};
+
+struct vert2frag
+{
+    float4 Position     : POSITION;
+    float2 TexCoord     : TEXCOORD0;
+
+    float2 TerrainCoord : TEXCOORD1;
+    float2 NormalCoord  : TEXCOORD2;
+    float4 Lin          : COLOR0;                                                       
+    float4 Fex          : COLOR1;
+    float4 Vertex_Height: TEXCOORD3;    
+};
+
+
+vert2frag main(app2vert IN)
+{
+    vert2frag OUT;
+    OUT.Position		= mul( IN.Position, MVP );
+    
+#if TEXGEN_ENABLE
+    OUT.TexCoord		= IN.Position.xz * TexcTransform.xy + TexcTransform.zw;
+#else
+	OUT.TexCoord		= IN.TexCoord.xy ;
+#endif
+
+	/////////////////////////////////////////////////////////////////////
+    //                                                                                  
+    // Calculate view direction and distance                                            
+    //                                                                                  
+                                                                                        
+    float3 vertex        = mul( IN.Position, WorldM ); 
+    float3 viewDirection = normalize( vertex );                                         
+    float  distance      = length( vertex );
+                                                                                        
+    //                                                                                  
+    // Angle between sun direction and view direction                                   
+    //                                                                                  
+                                                                                        
+    float3 sunDirection = normalize( SunDir_Attenuation2.xyz);
+    float  theta        = dot( sunDirection.xyz, viewDirection.xyz );                           
+                                                                                        
+    //                                                                                  
+    // Phase1 and Phase2                                                                
+    //                                                                                  
+                                                                                        
+    float phase1 = 1.0 + theta * theta;                                                 
+    float phase2 = pow( rsqrt( HGg.y - HGg.z * theta ), 3 ) * HGg.x;                    
+                                                                                        
+    //                                                                                  
+    // Extinction term                                                                  
+    //                                                                                  
+                                                                                        
+    float3 extinction      = exp( -BetaRPlusBetaM * distance );                         
+    float3 totalExtinction = extinction * Multipliers.yzw;                              
+                                                                                        
+    //                                                                                  
+    // Inscattering term                                                                
+    //                                                                                  
+                                                                                        
+    float3 betaRay = BetaDashR * phase1;                                                
+    float3 betaMie = BetaDashM * phase2;                                                
+                                                                                        
+    float3 inscatter = (betaRay + betaMie) * OneOverBetaRPlusBetaM * (1.0 - extinction);
+                                                                                        
+    //                                                                                  
+    // Apply inscattering contribution factors                                          
+    //                                                                                  
+                                                                                        
+    inscatter *= Multipliers.x;                                                         
+                                                                                        
+    //                                                                                  
+    // Scale with sun color & intensity                                                 
+    //                                                                                  
+                                                                                        
+    inscatter       *= SunColorAndIntensity.xyz * SunColorAndIntensity.w;               
+    totalExtinction *= SunColorAndIntensity.xyz * SunColorAndIntensity.w;               
+                                                                                        
+    //                                                                                  
+    // Transform vertex and set its colors                                              
+    //                                                                                  
+                                                                                        
+    OUT.TerrainCoord = IN.TexCoord.xy;                                                  
+    OUT.NormalCoord  = IN.TexCoord.xy;                                                  
+    OUT.Lin          = float4(inscatter, 1); 
+    OUT.Fex          = float4(totalExtinction, 1);
+    OUT.Vertex_Height= float4 ( vertex.xyz, ( vertex.y - SunDir_Attenuation2.w ) * EyePos_Attenuation1.w );
+
+    return OUT;
+}

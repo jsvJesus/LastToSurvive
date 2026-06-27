@@ -1,0 +1,227 @@
+//
+
+#include "System\IOParam\IOFillbuffer_PS.hls"
+
+sampler DiffuseTex 	: register (s0);
+sampler NormalTex  	: register (s1);
+sampler GlossMap   	: register (s2);
+sampler EnvPowerMap   	: register (s3);
+sampler SelfIllumMap   	: register (s4);
+sampler DetailNormalMap : register (s5);
+sampler SSSMap : register (s6);
+sampler SpecPowMap : register (s7);
+
+#if CAMOUFLAGE
+sampler CamoOldTex: register(s8);
+sampler CamoNewTex: register(s9);
+sampler CamoMask: register(s10);
+#endif
+
+#ifndef FILL_ROADS
+#define FILL_ROADS 0
+#endif
+
+#ifndef DOUBLE_SIDED
+#define DOUBLE_SIDED 1
+#endif
+
+#ifndef HIGH_QUALITY
+#define HIGH_QUALITY 1
+#endif
+
+#ifndef ALPHA_CUT
+#define ALPHA_CUT 0
+#endif
+
+struct PSOUT
+{
+	float4 Color : COLOR0;
+	
+	float4 Normal : COLOR1;	
+	float4 Depth : COLOR2;
+	
+#if HIGH_QUALITY
+	float4 gAux : COLOR3;
+#endif
+
+#if FILL_ROADS
+	float DBuffer : DEPTH;
+#endif
+};
+
+float3 PerturbNormal ( float3 surf_pos , float3 surf_norm , float2 uv2 )
+{
+	float3 vSigmaS = ddx ( surf_pos );
+	float3 vSigmaT = ddy ( surf_pos );
+
+	float3 vN = surf_norm ; // normalized
+	float3 vR1 = cross ( vSigmaT ,vN);
+	float3 vR2 = cross (vN , vSigmaS );
+
+	float fDet = dot ( vSigmaS , vR1 );
+//	float dBs = ddx ( height );
+//	float dBt = ddy ( height );
+
+
+// better ddx and ddy for height textures
+float2 TexDx = ddx(uv2.xy);
+float2 TexDy = ddy(uv2.xy);
+
+float Hll = tex2D(NormalTex, uv2).x*0.05;
+float dBs = (tex2D(NormalTex, uv2+TexDx).x*0.05 - Hll);
+float dBt = (tex2D(NormalTex, uv2+TexDy).x*0.05 - Hll);
+
+	float3 vSurfGrad =
+	sign ( fDet ) * ( dBs * vR1 + dBt * vR2 );
+
+	return normalize ( abs ( fDet )*vN - vSurfGrad );
+}
+
+//////////////////////////////////////////////////////////////
+
+float3 GetNormal(float3 RealPos, float2 uv1)
+{
+	float3 NMap = (tex2D(NormalTex, uv1.xy).xyz)*2-1;
+
+#if HIGH_QUALITY
+	float3 DetailNMap = (tex2D(DetailNormalMap, uv1.xy*Mat_Glow.z*5.0f).xyz)*2-1;
+
+	NMap.xy += DetailNMap.xy * Mat_Glow.ww*2.0f ;
+
+	NMap = normalize( NMap ) ;
+#endif
+
+	return NMap;
+}
+
+///////////////////////////////////////////////////////////////
+
+float GetGloss( float4 texSample )
+{
+#if HIGH_QUALITY
+	return texSample.r;
+#else
+	return Mat_Specular.a;
+#endif
+}
+
+///////////////////////////////////////////////////////////////
+
+float GetSpecularPowCoef( float texSample )
+{
+#if HIGH_QUALITY
+	return texSample ;
+#else
+	return 1.0 ;
+#endif
+}
+
+///////////////////////////////////////////////////////////////
+
+float GetSelfIllum(float2 uv1)
+{
+#if HIGH_QUALITY
+	return tex2D(SelfIllumMap, uv1.xy).r;
+#else
+	return Mat_Diffuse.a;
+#endif
+}
+
+///////////////////////////////////////////////////////////////
+
+PSOUT main(	float3  uv1 	: TEXCOORD0, 
+			float3  Normal 	: TEXCOORD1,
+			float3 t1		: TEXCOORD2,
+			float3 t2		: TEXCOORD3,
+			float3 RealPos	: TEXCOORD4
+#if DOUBLE_SIDED
+			, float Face : VFACE
+#endif
+			)
+
+{
+	PSOUT out1;
+
+#if DOUBLE_SIDED
+	[flatten]
+	if( Face < 0 )
+	{
+		Normal = - Normal;
+	}
+#endif
+
+	float4 TexCol = tex2D(DiffuseTex, uv1.xy);
+
+#if CAMOUFLAGE
+	float3 camo1 = tex2D(CamoOldTex, uv1.xy).rgb;
+	float3 camo2 = tex2D(CamoNewTex, uv1.xy).rgb;
+	float  camoMask = tex2D(CamoMask, uv1.xy).r;
+	TexCol.rgb = lerp(TexCol.rgb, lerp(camo1, camo2, CamoInterpolator.r), camoMask);
+#endif
+	
+	TexCol.rgb *= Mat_Diffuse ;
+
+#if !FILL_ROADS && ALPHA_CUT
+	clip (TexCol.a - 0.15f); 
+#endif
+
+	float4 glossSample = tex2D(GlossMap, uv1.xy);
+	
+	float Metalness = GetGloss(glossSample);
+	float3 NMap = GetNormal(RealPos, uv1.xy);
+
+	float3x3 w2t; // world to tangent matrix
+	w2t = float3x3(t1, t2, Normal);
+
+	float3 vBump;
+	vBump = mul(NMap.xyz, w2t);
+
+	Normal = normalize(vBump);
+
+	float SelfIlm = GetSelfIllum(uv1.xy); // that will also be a bloom
+	float Chromness = tex2D(EnvPowerMap, uv1.xy).r*Material_Params.y;
+
+	float SpecularPower = 	Material_Params.z * GetSpecularPowCoef( tex2D( SpecPowMap, uv1.xy ).r ) ;
+	float MetalnessPower = 	Material_Params.x;
+	
+	
+	float3 diffColor = TexCol.rgb ;
+
+	out1.Color.rgb = diffColor ;
+
+	float sss = tex2D(SSSMap, uv1.xy).g;
+
+	out1.Normal.rgb = (Normal.xyz * 0.5f + 0.5f);
+
+	float4 gAux = float4( DefSSAO.x, SpecularPower, sss, Chromness );
+
+#if FILL_ROADS
+	out1.Color.a	= TexCol.a;
+	
+	out1.Normal.a	= TexCol.a;
+
+	gAux.a	 		= TexCol.a;
+#else
+	out1.Color.a	= Metalness.r*MetalnessPower;
+	
+	out1.Normal.a	= SelfIlm * Mat_Glow.x ; 
+#endif
+
+	out1.Depth = uv1.z;
+
+#if FILL_ROADS
+	float depth		= DDepth.y / ( uv1.z + DDepth.x ) + DDepth.z ;
+	/*float d = distance(CamVec.xyz, RealPos.xyz);
+	if(d>25) d = 25;
+	if(d<4) d = 1.0;
+	float depth		= DDepth.y / ( uv1.z - d/2 ) + DDepth.z ;*/
+	
+	out1.DBuffer	= depth ;
+#endif
+
+#if HIGH_QUALITY
+	out1.gAux = gAux;
+#endif
+
+	return out1;
+}

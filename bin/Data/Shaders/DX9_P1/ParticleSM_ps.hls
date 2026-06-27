@@ -1,0 +1,32 @@
+#ifndef VERTEX_SHADER
+#define PIXEL_SHADER 1
+#define VERTEX_SHADER 0
+#endif
+
+#ifndef HALF_RES_PARTICLES
+#define HALF_RES_PARTICLES 1
+#endif
+
+
+sampler Tex1 	: register (s0);
+
+void main(	half4 uv1 : TEXCOORD0,
+			half3 uv2 : TEXCOORD1, 
+			
+			float smDepth : TEXCOORD2,
+		
+			half4 DiffuseColor : COLOR0,
+			
+			out half4 outColor : COLOR0
+)
+{
+ 	half4 TM = tex2D(Tex1, uv1.xy );
+ 	half4 TM1 = tex2D(Tex1, uv2.xy );
+ 	
+	float alpha = lerp(TM, TM1, uv2.z).a ;
+
+ 	alpha *= DiffuseColor.a;
+ 	alpha *= uv1.w;
+ 	
+ 	outColor = float4( 1 - alpha, smDepth, 0, 0 ) ;
+}

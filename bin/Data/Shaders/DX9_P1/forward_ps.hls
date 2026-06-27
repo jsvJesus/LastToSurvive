@@ -1,0 +1,9 @@
+sampler Diffuse : register ( s0 );
+
+void main(	float3 vPos : POSITION,
+			float2 vTexCoord : TEXCOORD0,
+			out float4 vPosOut: COLOR
+			)
+{
+	vPosOut = float4( tex2D( Diffuse, vTexCoord ).rgb, 1 );
+}

@@ -1,0 +1,30 @@
+
+// Set for each tree
+float4x4 mProj : register(c0);
+float4x4 mWorld : register(c20);
+float4x4 mProj1 : register(c25);
+
+void main( float4 vPos: POSITION,
+         float2 vUV1: TEXCOORD0: register(v7),
+	 out float  Fog: FOG,
+         out float4 vPosOut: POSITION,
+         out float2 vTexOut1: TEXCOORD0,
+         out float2 vWPos: TEXCOORD1
+       )
+{
+ float4x4 MP1 = mul(mWorld, mProj1);
+
+ float4 vPos1 = mul( vPos, MP1 );   
+ float4 vPos2 = mul( vPos, mProj );   
+
+ vPosOut = vPos2; 
+ vTexOut1 = vUV1;
+ Fog = 1;
+
+ float2 V1 = vPos1.xy / vPos1.z;
+ float2 V2 = vPos2.xy / vPos2.z;
+
+ float2 VV = V2 - V1;
+ vWPos = normalize(VV);
+}
+

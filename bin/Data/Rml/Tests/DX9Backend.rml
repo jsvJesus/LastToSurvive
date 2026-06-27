@@ -1,0 +1,292 @@
+<rml>
+<head>
+	<title>DX9 Backend Test</title>
+	<style>
+	body
+	{
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		font-family: Arial;
+		color: #eef2f4;
+		background-color: #101417;
+		overflow: hidden;
+	}
+
+	#screen
+	{
+		position: relative;
+		width: 100%;
+		height: 100%;
+		padding: 28px;
+		background-color: #101417;
+	}
+
+	.header
+	{
+		position: absolute;
+		left: 28px;
+		top: 20px;
+		width: 980px;
+		height: 42px;
+		font-size: 24px;
+		color: #ffffff;
+	}
+
+	.grid
+	{
+		position: absolute;
+		left: 28px;
+		top: 72px;
+		width: 1120px;
+		height: 650px;
+	}
+
+	.card
+	{
+		position: relative;
+		display: inline-block;
+		vertical-align: top;
+		width: 250px;
+		height: 170px;
+		margin-right: 18px;
+		margin-bottom: 18px;
+		padding: 14px;
+		background-color: #20272c;
+		border: 1px #51606a;
+	}
+
+	.label
+	{
+		position: absolute;
+		left: 14px;
+		top: 12px;
+		width: 220px;
+		height: 20px;
+		font-size: 13px;
+		color: #b8c1c7;
+	}
+
+	.stage
+	{
+		position: absolute;
+		left: 18px;
+		top: 44px;
+		width: 214px;
+		height: 106px;
+		background-color: #12181c;
+		border: 1px #31404a;
+		overflow: hidden;
+	}
+
+	.block
+	{
+		position: absolute;
+		width: 96px;
+		height: 62px;
+		background-color: #e15d4f;
+		border: 1px #ffd5ca;
+	}
+
+	.block.alt
+	{
+		background-color: #42a5c6;
+		border-color: #c9f3ff;
+	}
+
+	.block.gold
+	{
+		background-color: #e6b94f;
+		border-color: #fff0b8;
+	}
+
+	.clip_a
+	{
+		left: 16px;
+		top: 16px;
+	}
+
+	.clip_b
+	{
+		left: 72px;
+		top: 42px;
+	}
+
+	.opacity_layer .block
+	{
+		left: 34px;
+		top: 20px;
+		opacity: 0.45;
+	}
+
+	.blur_layer .block
+	{
+		left: 50px;
+		top: 22px;
+		filter: blur(6px);
+	}
+
+	.shadow_layer .block
+	{
+		left: 50px;
+		top: 22px;
+		filter: drop-shadow(#000c 18px 12px 5px);
+	}
+
+	.masked
+	{
+		left: 26px;
+		top: 20px;
+		width: 150px;
+		height: 70px;
+		background-color: #5bd179;
+		mask-image: horizontal-gradient(#0000, #000f 35%, #000f 75%, #0000);
+	}
+
+	.nested_outer
+	{
+		position: absolute;
+		left: 22px;
+		top: 16px;
+		width: 170px;
+		height: 78px;
+		background-color: #29343a;
+		overflow: hidden;
+		filter: opacity(0.82);
+	}
+
+	.nested_inner
+	{
+		position: absolute;
+		left: 42px;
+		top: 18px;
+		width: 128px;
+		height: 64px;
+		background-color: #e35d87;
+		mask-image: horizontal-gradient(#000f, #0000);
+		filter: blur(2px);
+	}
+
+	.color_matrix .block
+	{
+		left: 48px;
+		top: 20px;
+		filter: sepia(80%) saturate(160%) hue-rotate(220deg);
+	}
+
+	.gradient
+	{
+		position: absolute;
+		left: 22px;
+		top: 22px;
+		width: 170px;
+		height: 68px;
+		decorator: linear-gradient(115deg, #f05252, #f0d66b 38%, #54d7aa 66%, #4f78ff) border-box;
+		border: 1px #d8e2e8;
+	}
+
+	input
+	{
+		position: absolute;
+		left: 22px;
+		top: 28px;
+		width: 170px;
+		height: 32px;
+		padding: 5px;
+		color: #ffffff;
+		background-color: #151b1f;
+		border: 1px #6b7b86;
+		cursor: text;
+	}
+
+	button
+	{
+		position: absolute;
+		left: 22px;
+		top: 78px;
+		width: 120px;
+		height: 28px;
+		color: #101417;
+		background-color: #d7e3ea;
+		border: 1px #ffffff;
+		cursor: pointer;
+	}
+	</style>
+</head>
+
+<body>
+	<div id="screen">
+		<div class="header">RmlUi DX9 backend coverage page</div>
+
+		<div class="grid">
+			<div class="card">
+				<div class="label">layers + clip-mask, no filters</div>
+				<div class="stage">
+					<div class="block clip_a"></div>
+					<div class="block alt clip_b"></div>
+				</div>
+			</div>
+
+			<div class="card opacity_layer">
+				<div class="label">opacity layer</div>
+				<div class="stage">
+					<div class="block gold"></div>
+				</div>
+			</div>
+
+			<div class="card blur_layer">
+				<div class="label">blur filter</div>
+				<div class="stage">
+					<div class="block alt"></div>
+				</div>
+			</div>
+
+			<div class="card shadow_layer">
+				<div class="label">drop-shadow filter</div>
+				<div class="stage">
+					<div class="block gold"></div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="label">mask-image filter</div>
+				<div class="stage">
+					<div class="block masked"></div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="label">nested masks + nested layers</div>
+				<div class="stage">
+					<div class="nested_outer">
+						<div class="nested_inner"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card color_matrix">
+				<div class="label">color-matrix filters</div>
+				<div class="stage">
+					<div class="block"></div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="label">shader API gradient</div>
+				<div class="stage">
+					<div class="gradient"></div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="label">clipboard, cursor, Unicode, IME</div>
+				<div class="stage">
+					<input value="Unicode: Привiт DX9"/>
+					<button>Pointer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</rml>

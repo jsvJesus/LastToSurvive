@@ -1,0 +1,191 @@
+#ifndef VERTEX_SHADER
+#define PIXEL_SHADER 1
+#define VERTEX_SHADER 0
+#endif
+
+#include "fog.hls"
+
+#define SHADOW_TYPE_NONE 0
+#define SHADOW_TYPE_NORMAL 1
+#define SHADOW_TYPE_HW 2
+
+sampler Tex1 	: register (s0);
+sampler DepthTex : register (s1);
+sampler DistortTex : register(s2);
+
+#ifndef USE_DISTORT
+#define USE_DISTORT 0
+#endif
+
+#ifndef USE_DISTORT_TEXTURE
+#define USE_DISTORT_TEXTURE 0
+#endif
+
+#ifndef SHADOW_TYPE
+#define SHADOW_TYPE SHADOW_TYPE_NORMAL
+#endif
+
+#if USE_NORMALMAP
+	sampler NormalTex : register(s3);
+#endif
+
+sampler ShadowMap : register(s4);
+
+float2 PixelSize : register(c0); // pixel size
+
+#if USE_NORMALMAP
+	float4 vNormal_BumpPower : register(c1); 
+	float3 vLight : register(c2); // light vector
+#endif
+
+float4 DepthFade	: register(c3);
+float4 GlowControl	: register(c4);
+float4 ShadowControl : register(c5);
+float4 SunColor : register(c6);
+float4 AmbientColor : register(c7);
+float4 ShadowSteps : register(c8);
+
+void main(	half4 uv1 : TEXCOORD0,
+			half3 uv2 : TEXCOORD1, 
+			half4 uv3 : TEXCOORD2,
+			float4 fogVal_camDir : TEXCOORD3,
+
+#if SHADOW_TYPE != SHADOW_TYPE_NONE
+			float4 shadowMapTexc : TEXCOORD4,
+#endif						
+
+#if USE_NORMALMAP
+            half3 LightInTangent: TEXCOORD5,
+#endif
+			
+			half4 DiffuseColor : COLOR0,
+			
+			out half4 outColor : COLOR0
+#if USE_DISTORT
+			,out half4 outDistort : COLOR1
+#endif
+)
+{
+ 	half4 TM = tex2D(Tex1, uv1.xy );
+ 	half4 TM1 = tex2D(Tex1, uv2.xy );
+ 	
+#if USE_DISTORT_TEXTURE
+ 	half4 Distort1 = tex2D(DistortTex, uv1.xy);
+ 	half4 Distort2 = tex2D(DistortTex, uv2.xy);
+#endif
+ 	
+ 	float2 depth_uv = uv3.xy/uv3.w;
+ 	float t6 = tex2D(DepthTex, depth_uv).r;
+#if HALF_RES_PARTICLES
+ 	t6 = max(t6, tex2D(DepthTex, depth_uv + float2(PixelSize.x,PixelSize.y)).r);
+ 	t6 = max(t6, tex2D(DepthTex, depth_uv + float2(-PixelSize.x,PixelSize.y)).r);
+ 	t6 = max(t6, tex2D(DepthTex, depth_uv + float2(-PixelSize.x,-PixelSize.y)).r);
+ 	t6 = max(t6, tex2D(DepthTex, depth_uv + float2(PixelSize.x,-PixelSize.y)).r);
+#endif
+
+	float shadowCoef = 1.0 ;
+	
+#if SHADOW_TYPE != SHADOW_TYPE_NONE
+	float4 shadowPProj = shadowMapTexc / shadowMapTexc.w ;
+#endif
+
+#if SHADOW_TYPE == SHADOW_TYPE_NORMAL
+
+	float2 projSMCoords = shadowPProj.xy ;
+
+	float2 projSMCoordsScaled = projSMCoords * ShadowControl.zw ;
+	float2 lerpCoefs = frac( projSMCoordsScaled ) ;
+	float2 projSMCoordsGrid = ( projSMCoordsScaled - lerpCoefs ) * ShadowSteps.xw ;
+	
+	float shadowCoef00 = tex2D( ShadowMap, projSMCoordsGrid ).r > shadowPProj.z ;
+	float shadowCoef01 = tex2D( ShadowMap, projSMCoordsGrid + ShadowSteps.xy ).r > shadowPProj.z ;
+	float shadowCoef10 = tex2D( ShadowMap, projSMCoordsGrid + ShadowSteps.zw ).r > shadowPProj.z ;
+	float shadowCoef11 = tex2D( ShadowMap, projSMCoordsGrid + ShadowSteps.xw ).r > shadowPProj.z ;
+
+	shadowCoef =	lerp(
+						lerp( shadowCoef00, shadowCoef01, lerpCoefs.x ),
+						lerp( shadowCoef10, shadowCoef11, lerpCoefs.x ),
+							lerpCoefs.y	) ;	
+#elif SHADOW_TYPE == SHADOW_TYPE_HW
+	shadowCoef = tex2Dproj( ShadowMap, shadowMapTexc ).r ;
+#endif
+
+#if SHADOW_TYPE != SHADOW_TYPE_NONE
+	// fade near shadowmaps ends
+	float2 fadeCoords = shadowPProj.xy * 40.0 ;
+	float2 fade = saturate( 40.0 - fadeCoords ) * saturate( fadeCoords ) ;
+
+	shadowCoef = lerp( 1, shadowCoef, fade.x * fade.y ) ;
+#endif
+
+ 	float Depth = saturate( (t6 - uv1.z) * DepthFade.x );
+
+ 	half4 c = pow( lerp(TM, TM1, uv2.z), 2.2 );
+
+ 	c.a *= Depth;
+ 	c.a *= DiffuseColor.a;
+
+	c.rgb *= DiffuseColor.rgb * c.a;
+
+
+//[REAL CODE]
+// may need tweaks ie - blend between (1,1,1) and lerp result
+// for aesthetic purposes.
+
+	// compensation coefficient - compensates for the fact that addition blending
+	// works "darker" in linear space compared to gamma space, in which the artists see
+	// the texture.
+	float cc = lerp( 2.0, 1.0, uv1.w ) ;
+
+	c.rgb *= lerp(cc.xxx, lerp(AmbientColor.rgb,SunColor.rgb, shadowCoef), ShadowControl.x*uv1.w);
+
+ 	c.a *= uv1.w;
+
+#if USE_NORMALMAP
+	float fPower = 1;
+	
+	half3 vNormal = vNormal_BumpPower.xyz;
+ 	half BumpPower = vNormal_BumpPower.w;
+	
+	half3 bumpNormal = 2.h * tex2D(NormalTex,uv1) - 1.h;
+	float fD = saturate(dot(bumpNormal,LightInTangent));
+	half light = (lerp( BumpPower, 1.0f, fD));
+	
+#if ( 0 )
+	float fD2 = dot(vNormal,vLight);
+	
+	float fInverseStart = 0.8h;
+	if ( fD2 > fInverseStart )
+	{
+		float fK = saturate ( ( fD2 - fInverseStart ) / ( 1.h - fInverseStart ) );
+		
+		light = saturate(light * ( 1.h - fK ) + 2.h*(1.h-light)*fK);
+	}
+#endif
+
+ 	c.rgb *= light;
+#endif
+
+	//aerial perspective
+	float4 aer = getAerialVal(fogVal_camDir.xyz, length(fogVal_camDir.xyz));
+//	c.rgb = lerp(c.rgb, aer.rgb*c.a, aer.a);
+
+ 	c.rgb = lerp(c.rgb, g_fogColor.rgb*c.a, fogVal_camDir.w);
+ 	
+#if USE_DISTORT_TEXTURE
+ 	half4 distort = lerp(Distort1, Distort2, uv2.z);
+#else
+	half4 distort = half4( 0.5, 0.5, 0.0, 1.0 ) ;
+#endif
+ 	
+ 	outColor = c;
+ 	 	
+#if USE_DISTORT
+ 	outDistort = distort; 	
+ 	outDistort.rg = ( outDistort.rg - 0.5 ) * c.a + 0.5 ;
+ 	
+ 	outDistort.b = saturate( lerp( outDistort.b, c.a, GlowControl.x ) * GlowControl.y * uv1.w ) ;
+ 	outDistort.a = lerp( 1, outDistort.b, GlowControl.z ); // disable blending of distortion particles, as otherwise they will become white pixels
+ 	outDistort.rg *= outDistort.a;
+#endif
+}
