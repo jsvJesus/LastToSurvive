@@ -1,0 +1,59 @@
+cbuffer FrameCB : register(b0)
+{
+	row_major float4x4 gViewProj;
+	row_major float4x4 gView;
+	row_major float4x4 gProj;
+	float4 gCameraPos;
+	float4 gScreenSize;
+	float4 gNearFar;
+};
+
+struct VS_INPUT
+{
+	float3 Position : POSITION;
+};
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float3 WorldPos : TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+	float4 Color : SV_Target0;
+	float4 Normal : SV_Target1;
+	float DepthLinear : SV_Target2;
+	float4 Aux : SV_Target3;
+};
+
+VS_OUTPUT VSMain(VS_INPUT Input)
+{
+	VS_OUTPUT Output;
+
+	Output.WorldPos = Input.Position;
+	Output.Position = mul(float4(Input.Position, 1.0f), gViewProj);
+
+	return Output;
+}
+
+PS_OUTPUT PSMain(VS_OUTPUT Input)
+{
+	PS_OUTPUT Output;
+
+	float HeightTint =
+		saturate((Input.WorldPos.y - gCameraPos.y + 64.0f) / 128.0f);
+
+	float CameraDistance =
+		length(Input.WorldPos - gCameraPos.xyz);
+
+	float DepthLinear =
+		saturate(CameraDistance / max(gNearFar.y, 1.0f));
+
+	Output.Color = float4(0.12f, 0.30f + HeightTint * 0.25f, 0.12f, 1.0f);
+	Output.Normal = float4(0.5f, 1.0f, 0.5f, 1.0f);
+	Output.DepthLinear = DepthLinear;
+	Output.Aux = float4(DepthLinear, HeightTint, 0.0f, 1.0f);
+
+	return Output;
+}

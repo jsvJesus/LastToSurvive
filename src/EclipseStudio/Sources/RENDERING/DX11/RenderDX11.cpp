@@ -2382,6 +2382,8 @@ bool RenderDX11_RenderWorld(
 		return false;
 	}
 
+	RenderDX11_TerrainGBufferReadbackOnce();
+
 	if (!DrawWorldDX11_Lighting(Desc))
 	{
 		RenderDX11_UnbindFrameTargets();
