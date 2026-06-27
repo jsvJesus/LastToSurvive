@@ -152,3 +152,10 @@ static inline bool WorldRender_TryRenderDX11()
 	return false;
 #endif
 }
+
+static inline void WorldRender_Shutdown()
+{
+#if LTS_STUDIO_DX11
+	WorldDX11_Shutdown();
+#endif
+}
