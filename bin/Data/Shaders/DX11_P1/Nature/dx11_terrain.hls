@@ -8,6 +8,13 @@ cbuffer FrameCB : register(b0)
 	float4 gNearFar;
 };
 
+cbuffer TerrainCB : register(b1)
+{
+	float4 gTerrainBaseColor;
+	float4 gTerrainColorScale;
+	float4 gTerrainDebugParams;
+};
+
 struct VS_INPUT
 {
 	float3 Position : POSITION;
@@ -45,7 +52,10 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	PS_OUTPUT Output;
 
 	float HeightTint =
-		saturate((Input.WorldPos.y - gCameraPos.y + 64.0f) / 128.0f);
+	saturate(
+		(Input.WorldPos.y - gCameraPos.y + gTerrainDebugParams.x) *
+		gTerrainDebugParams.y
+	);
 
 	float CameraDistance =
 		length(Input.WorldPos - gCameraPos.xyz);
@@ -57,9 +67,9 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	float Slope = saturate(1.0f - Normal.y);
 
 	Output.Color = float4(
-		0.10f + Slope * 0.25f,
-		0.24f + HeightTint * 0.35f,
-		0.10f + Normal.y * 0.10f,
+		gTerrainBaseColor.r + Slope * gTerrainColorScale.r,
+		gTerrainBaseColor.g + HeightTint * gTerrainColorScale.g,
+		gTerrainBaseColor.b + Normal.y * gTerrainColorScale.b,
 		1.0f
 	);
 	Output.Normal = float4(Normal * 0.5f + 0.5f, 1.0f);
