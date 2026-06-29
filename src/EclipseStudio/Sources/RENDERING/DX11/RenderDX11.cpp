@@ -3264,6 +3264,18 @@ bool RenderDX11_RenderWorld(
 		return false;
 	}
 
+	if (!DrawWorldDX11_Transparent(Desc))
+	{
+		RenderDX11_UnbindFrameTargets();
+		return false;
+	}
+
+	if (!DrawWorldDX11_Post(Desc))
+	{
+		RenderDX11_UnbindFrameTargets();
+		return false;
+	}
+
 	if (!DrawWorldDX11_EndFrame(Desc))
 	{
 		RenderDX11_UnbindFrameTargets();

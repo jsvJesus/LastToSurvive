@@ -367,6 +367,115 @@ static bool DrawWorldDX11_Lighting(
     return true;
 }
 
+static bool DrawWorldDX11_Transparent(
+    const WorldDX11FrameDesc& Desc
+)
+{
+    (void)Desc;
+
+    if (!gDX11Context)
+        return false;
+
+    gDX11Context->OMSetDepthStencilState(
+        gDX11DepthReadLessEqual,
+        0
+    );
+
+    const float BlendFactor[4] =
+    {
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f
+    };
+
+    gDX11Context->OMSetBlendState(
+        gDX11BlendAlpha,
+        BlendFactor,
+        0xffffffff
+    );
+
+    gDX11Context->RSSetState(
+        gDX11RasterSolidNoCull
+    );
+
+    static bool bTransparentLogged = false;
+
+    if (!bTransparentLogged)
+    {
+        bTransparentLogged = true;
+        OutputDebugStringA(
+            "[RenderDX11] Transparent skeleton prepared\n"
+        );
+    }
+
+    // TODO:
+    // DX11 transparent pass later:
+    // - alpha-tested grass/vegetation
+    // - transparent objects
+    // - water
+    // - soft particles
+    // - distortion
+    //
+    // For now this stage is intentionally empty.
+
+    return true;
+}
+
+static bool DrawWorldDX11_Post(
+    const WorldDX11FrameDesc& Desc
+)
+{
+    (void)Desc;
+
+    if (!gDX11Context)
+        return false;
+
+    gDX11Context->OMSetDepthStencilState(
+        gDX11DepthDisabled,
+        0
+    );
+
+    const float BlendFactor[4] =
+    {
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f
+    };
+
+    gDX11Context->OMSetBlendState(
+        gDX11BlendOpaque,
+        BlendFactor,
+        0xffffffff
+    );
+
+    gDX11Context->RSSetState(
+        gDX11RasterSolidNoCull
+    );
+
+    static bool bPostLogged = false;
+
+    if (!bPostLogged)
+    {
+        bPostLogged = true;
+        OutputDebugStringA(
+            "[RenderDX11] Post skeleton prepared\n"
+        );
+    }
+
+    // TODO:
+    // DX11 post stage later:
+    // - combine lighting result
+    // - fog
+    // - tonemap or copy to composition target
+    // - debug overlay/gbuffer compare
+    //
+    // For now this stage is intentionally empty.
+
+    return true;
+}
+
 static bool DrawWorldDX11_EndFrame(
     const WorldDX11FrameDesc& Desc
 )
