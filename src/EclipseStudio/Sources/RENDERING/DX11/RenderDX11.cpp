@@ -129,6 +129,7 @@ namespace
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
 	bool					gDX11PreviewValid = false;
+	bool					gDX11OffscreenOnlyLogged = false;
 
 	ID3D11Texture2D*		gDX11PreviewReadbackTexture = 0;
 	DXGI_FORMAT				gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
@@ -2812,6 +2813,20 @@ namespace
 		return true;
 	}
 
+	void RenderDX11_LogOffscreenOnlyModeOnce()
+	{
+		if (gDX11OffscreenOnlyLogged)
+			return;
+
+		gDX11OffscreenOnlyLogged = true;
+
+		OutputDebugStringA(
+			"[RenderDX11] Offscreen-only mode confirmed. "
+			"DX11 has no swapchain and does not Present. "
+			"DX9 owns window/backbuffer/UI/Present.\n"
+		);
+	}
+
 	bool RenderDX11_EnsureFrameTargets(
 		const WorldDX11FrameDesc& Desc
 	)
@@ -3191,6 +3206,7 @@ void RenderDX11_Shutdown()
 
 	gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
 	gDX11Initialized = false;
+	gDX11OffscreenOnlyLogged = false;
 
 	OutputDebugStringA(
 		"[RenderDX11] Shutdown\n"
@@ -3224,6 +3240,7 @@ bool RenderDX11_RenderWorld(
 		return false;
 	}
 
+	RenderDX11_LogOffscreenOnlyModeOnce();
 	RenderDX11_BindFrameTargets();
 	RenderDX11_UpdateFrameCB(Desc);
 
