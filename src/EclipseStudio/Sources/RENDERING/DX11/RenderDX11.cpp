@@ -1436,7 +1436,8 @@ namespace
 		DXGI_FORMAT* OutDXFormat,
 		bool* OutBlockCompressed,
 		bool* OutBGRA8ToRGBA8,
-		bool* OutXRGB8ToRGBA8
+		bool* OutXRGB8ToRGBA8,
+		bool* OutR5G6B5ToRGBA8
 	)
 	{
 		if (OutDXFormat)
@@ -1450,6 +1451,9 @@ namespace
 
 		if (OutXRGB8ToRGBA8)
 			*OutXRGB8ToRGBA8 = false;
+
+		if (OutR5G6B5ToRGBA8)
+			*OutR5G6B5ToRGBA8 = false;
 
 		switch (SourceFormat)
 		{
@@ -1486,6 +1490,13 @@ namespace
 				*OutDXFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 			if (OutXRGB8ToRGBA8)
 				*OutXRGB8ToRGBA8 = true;
+			return true;
+
+		case D3DFMT_R5G6B5:
+			if (OutDXFormat)
+				*OutDXFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			if (OutR5G6B5ToRGBA8)
+				*OutR5G6B5ToRGBA8 = true;
 			return true;
 
 		case D3DFMT_A8B8G8R8:
@@ -1600,13 +1611,15 @@ namespace
 		bool bBlockCompressed = false;
 		bool bBGRA8ToRGBA8 = false;
 		bool bXRGB8ToRGBA8 = false;
+		bool bR5G6B5ToRGBA8 = false;
 
 		if (!RenderDX11_TranslateTerrain2TextureFormat(
 			SourceFormat,
 			&DXFormat,
 			&bBlockCompressed,
 			&bBGRA8ToRGBA8,
-			&bXRGB8ToRGBA8
+			&bXRGB8ToRGBA8,
+			&bR5G6B5ToRGBA8
 		))
 		{
 			char Text[256] = {};
@@ -1747,7 +1760,8 @@ namespace
 
 		if (
 			bBGRA8ToRGBA8 ||
-			bXRGB8ToRGBA8
+			bXRGB8ToRGBA8 ||
+			bR5G6B5ToRGBA8
 		)
 		{
 			for (int y = 0; y < Height; ++y)
@@ -1762,24 +1776,67 @@ namespace
 
 				for (int x = 0; x < Width; ++x)
 				{
-					const unsigned char B =
-						SrcRow[x * 4 + 0];
+					if (bR5G6B5ToRGBA8)
+					{
+						const unsigned short Pixel =
+							static_cast<unsigned short>(
+								SrcRow[x * 2 + 0] |
+								(SrcRow[x * 2 + 1] << 8)
+							);
 
-					const unsigned char G =
-						SrcRow[x * 4 + 1];
+						const unsigned char R5 =
+							static_cast<unsigned char>(
+								(Pixel >> 11) & 0x1F
+							);
 
-					const unsigned char R =
-						SrcRow[x * 4 + 2];
+						const unsigned char G6 =
+							static_cast<unsigned char>(
+								(Pixel >> 5) & 0x3F
+							);
 
-					const unsigned char A =
-						bXRGB8ToRGBA8
-						? 255
-						: SrcRow[x * 4 + 3];
+						const unsigned char B5 =
+							static_cast<unsigned char>(
+								Pixel & 0x1F
+							);
 
-					DstRow[x * 4 + 0] = R;
-					DstRow[x * 4 + 1] = G;
-					DstRow[x * 4 + 2] = B;
-					DstRow[x * 4 + 3] = A;
+						DstRow[x * 4 + 0] =
+							static_cast<unsigned char>(
+								(R5 << 3) | (R5 >> 2)
+							);
+
+						DstRow[x * 4 + 1] =
+							static_cast<unsigned char>(
+								(G6 << 2) | (G6 >> 4)
+							);
+
+						DstRow[x * 4 + 2] =
+							static_cast<unsigned char>(
+								(B5 << 3) | (B5 >> 2)
+							);
+
+						DstRow[x * 4 + 3] = 255;
+					}
+					else
+					{
+						const unsigned char B =
+							SrcRow[x * 4 + 0];
+
+						const unsigned char G =
+							SrcRow[x * 4 + 1];
+
+						const unsigned char R =
+							SrcRow[x * 4 + 2];
+
+						const unsigned char A =
+							bXRGB8ToRGBA8
+							? 255
+							: SrcRow[x * 4 + 3];
+
+						DstRow[x * 4 + 0] = R;
+						DstRow[x * 4 + 1] = G;
+						DstRow[x * 4 + 2] = B;
+						DstRow[x * 4 + 3] = A;
+					}
 				}
 			}
 		}
