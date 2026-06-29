@@ -2,6 +2,25 @@
 
 bool RenderDX11_NormalizeTerrainNormal(
 	r3dPoint3D& Normal
+);
+
+bool RenderDX11_ComputeTerrainNormalFromHeights(
+	const r3dTerrainDesc& TerrainDesc,
+	float WorldX,
+	float WorldZ,
+	float SampleStep,
+	r3dPoint3D* OutNormal
+);
+
+bool RenderDX11_UpdateTerrainVertices(
+	ID3D11Buffer* VertexBuffer,
+	int TileX,
+	int TileZ,
+	float PatchSize
+);
+
+bool RenderDX11_NormalizeTerrainNormal(
+	r3dPoint3D& Normal
 )
 {
 	const float LenSq =
@@ -149,13 +168,6 @@ bool RenderDX11_ComputeTerrainNormalFromHeights(
 
 	return true;
 }
-
-bool RenderDX11_UpdateTerrainVertices(
-    ID3D11Buffer* VertexBuffer,
-    int TileX,
-    int TileZ,
-    float PatchSize
-);
 
 void RenderDX11_BeginTerrainCacheFrame()
 	{
