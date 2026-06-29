@@ -135,6 +135,24 @@ namespace
 		unsigned int LastUsedFrame;
 	};
 
+	struct WorldDX11TerrainPatchBounds
+	{
+		float MinX;
+		float MinY;
+		float MinZ;
+		float MaxX;
+		float MaxY;
+		float MaxZ;
+	};
+
+	struct WorldDX11FrustumPlane
+	{
+		float A;
+		float B;
+		float C;
+		float D;
+	};
+
 	static const int DX11_PREVIEW_WIDTH = 480;
 	static const int DX11_PREVIEW_HEIGHT = 270;
 
@@ -200,6 +218,7 @@ namespace
 	unsigned int			gDX11TerrainCacheFrameId = 0;
 	int						gDX11TerrainPatchDrawCount = 0;
 	int						gDX11TerrainPatchUpdateCount = 0;
+	int						gDX11TerrainPatchCullCount = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
@@ -259,6 +278,13 @@ namespace
 	}
 
 	int RenderDX11_ClampSize(int Value);
+
+	bool RenderDX11_UpdateTerrainVertices(
+		ID3D11Buffer* VertexBuffer,
+		int TileX,
+		int TileZ,
+		float PatchSize
+	);
 
 	bool RenderDX11_IsSwitchBoundary(char Ch)
 	{
@@ -820,6 +846,7 @@ namespace
 		gDX11TerrainCacheFrameId = 0;
 		gDX11TerrainPatchDrawCount = 0;
 		gDX11TerrainPatchUpdateCount = 0;
+		gDX11TerrainPatchCullCount = 0;
 	}
 
 	void RenderDX11_ReleasePreviewTexture()
@@ -1856,6 +1883,7 @@ namespace
 
 		gDX11TerrainPatchDrawCount = 0;
 		gDX11TerrainPatchUpdateCount = 0;
+		gDX11TerrainPatchCullCount = 0;
 	}
 
 	bool RenderDX11_CreateTerrainResources()
@@ -2109,6 +2137,190 @@ namespace
 		Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
 
 		++gDX11TerrainPatchUpdateCount;
+
+		return true;
+	}
+
+	void RenderDX11_NormalizeFrustumPlane(
+		WorldDX11FrustumPlane& Plane
+	)
+	{
+		const float Len =
+			sqrtf(
+				Plane.A * Plane.A +
+				Plane.B * Plane.B +
+				Plane.C * Plane.C
+			);
+
+		if (Len <= 0.00001f)
+			return;
+
+		const float InvLen = 1.0f / Len;
+
+		Plane.A *= InvLen;
+		Plane.B *= InvLen;
+		Plane.C *= InvLen;
+		Plane.D *= InvLen;
+	}
+
+	bool RenderDX11_BuildFrameFrustum(
+		WorldDX11FrustumPlane* OutPlanes
+	)
+	{
+		if (!OutPlanes || !r3dRenderer)
+			return false;
+
+		const D3DXMATRIX& M =
+			r3dRenderer->ViewProjMatrix;
+
+		// Left
+		OutPlanes[0].A = M._14 + M._11;
+		OutPlanes[0].B = M._24 + M._21;
+		OutPlanes[0].C = M._34 + M._31;
+		OutPlanes[0].D = M._44 + M._41;
+
+		// Right
+		OutPlanes[1].A = M._14 - M._11;
+		OutPlanes[1].B = M._24 - M._21;
+		OutPlanes[1].C = M._34 - M._31;
+		OutPlanes[1].D = M._44 - M._41;
+
+		// Bottom
+		OutPlanes[2].A = M._14 + M._12;
+		OutPlanes[2].B = M._24 + M._22;
+		OutPlanes[2].C = M._34 + M._32;
+		OutPlanes[2].D = M._44 + M._42;
+
+		// Top
+		OutPlanes[3].A = M._14 - M._12;
+		OutPlanes[3].B = M._24 - M._22;
+		OutPlanes[3].C = M._34 - M._32;
+		OutPlanes[3].D = M._44 - M._42;
+
+		// Near, D3D clip space z >= 0
+		OutPlanes[4].A = M._13;
+		OutPlanes[4].B = M._23;
+		OutPlanes[4].C = M._33;
+		OutPlanes[4].D = M._43;
+
+		// Far, D3D clip space z <= w
+		OutPlanes[5].A = M._14 - M._13;
+		OutPlanes[5].B = M._24 - M._23;
+		OutPlanes[5].C = M._34 - M._33;
+		OutPlanes[5].D = M._44 - M._43;
+
+		for (int i = 0; i < 6; ++i)
+		{
+			RenderDX11_NormalizeFrustumPlane(
+				OutPlanes[i]
+			);
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_BuildTerrainPatchBounds(
+		const r3dTerrainDesc& TerrainDesc,
+		int TileX,
+		int TileZ,
+		float PatchSize,
+		WorldDX11TerrainPatchBounds* OutBounds
+	)
+	{
+		if (!OutBounds || !Terrain)
+			return false;
+
+		const float MinX =
+			static_cast<float>(TileX) *
+			PatchSize;
+
+		const float MinZ =
+			static_cast<float>(TileZ) *
+			PatchSize;
+
+		const float MaxX =
+			R3D_MIN(
+				MinX + PatchSize,
+				TerrainDesc.XSize
+			);
+
+		const float MaxZ =
+			R3D_MIN(
+				MinZ + PatchSize,
+				TerrainDesc.ZSize
+			);
+
+		float MinY =
+			TerrainDesc.MinHeight;
+
+		float MaxY =
+			TerrainDesc.MaxHeight;
+
+		Terrain->GetHeightRange(
+			&MinY,
+			&MaxY,
+			r3dPoint2D(MinX, MinZ),
+			r3dPoint2D(MaxX, MaxZ)
+		);
+
+		if (MinY > MaxY)
+		{
+			const float Tmp = MinY;
+			MinY = MaxY;
+			MaxY = Tmp;
+		}
+
+		// Small safety pad for terrain normal/height interpolation.
+		MinY -= 4.0f;
+		MaxY += 4.0f;
+
+		OutBounds->MinX = MinX;
+		OutBounds->MinY = MinY;
+		OutBounds->MinZ = MinZ;
+		OutBounds->MaxX = MaxX;
+		OutBounds->MaxY = MaxY;
+		OutBounds->MaxZ = MaxZ;
+
+		return true;
+	}
+
+	bool RenderDX11_IsTerrainPatchVisible(
+		const WorldDX11FrustumPlane* Planes,
+		const WorldDX11TerrainPatchBounds& Bounds
+	)
+	{
+		if (!Planes)
+			return true;
+
+		for (int i = 0; i < 6; ++i)
+		{
+			const WorldDX11FrustumPlane& Plane =
+				Planes[i];
+
+			const float X =
+				Plane.A >= 0.0f
+				? Bounds.MaxX
+				: Bounds.MinX;
+
+			const float Y =
+				Plane.B >= 0.0f
+				? Bounds.MaxY
+				: Bounds.MinY;
+
+			const float Z =
+				Plane.C >= 0.0f
+				? Bounds.MaxZ
+				: Bounds.MinZ;
+
+			const float Distance =
+				Plane.A * X +
+				Plane.B * Y +
+				Plane.C * Z +
+				Plane.D;
+
+			if (Distance < 0.0f)
+				return false;
+		}
 
 		return true;
 	}
@@ -2391,7 +2603,14 @@ namespace
 			}
 		}
 
-		gDX11TerrainPatchDrawCount = RequestTileCount;
+		WorldDX11FrustumPlane FrustumPlanes[6] = {};
+		const bool bHasFrustum =
+			RenderDX11_BuildFrameFrustum(
+				FrustumPlanes
+			);
+
+		gDX11TerrainPatchDrawCount = 0;
+		gDX11TerrainPatchCullCount = 0;
 
 		for (int i = 0; i < RequestTileCount; ++i)
 		{
@@ -2400,6 +2619,29 @@ namespace
 
 			const int TileZ =
 				RequestTileZs[i];
+
+			WorldDX11TerrainPatchBounds Bounds = {};
+
+			if (RenderDX11_BuildTerrainPatchBounds(
+				TerrainDesc,
+				TileX,
+				TileZ,
+				PatchSize,
+				&Bounds
+			))
+			{
+				if (
+					bHasFrustum &&
+					!RenderDX11_IsTerrainPatchVisible(
+						FrustumPlanes,
+						Bounds
+					)
+				)
+				{
+					++gDX11TerrainPatchCullCount;
+					continue;
+				}
+			}
 
 			int CacheIndex =
 				RenderDX11_FindTerrainCacheSlot(
@@ -2445,6 +2687,8 @@ namespace
 				0,
 				0
 			);
+
+			++gDX11TerrainPatchDrawCount;
 		}
 
 		return RequestTileCount > 0;
@@ -3882,9 +4126,10 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Patches: %d\nDX11 Terrain Cache Updates: %d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			gDX11TerrainPatchDrawCount,
+			gDX11TerrainPatchCullCount,
 			gDX11TerrainPatchUpdateCount
 		);
 	}
