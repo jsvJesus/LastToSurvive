@@ -2921,7 +2921,7 @@ void RenderDX11_DrawDebugPreviewDX9()
 		const RenderDX11PreviewMode PreviewMode =
 			RenderDX11_GetPreviewMode();
 
-		Font_Label->PrintF(
+		Font_Label->PrintF( // add dx11 preview modes
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
