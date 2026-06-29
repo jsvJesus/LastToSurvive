@@ -609,38 +609,17 @@ void RenderDeferredScene()
 		RenderDeferredScene1();
 	}
 
-	WorldRender_DrawDX11DebugPreview();
+	// DX11 preview must be drawn later, after all DX9 world/post/character passes.
+	// WorldRender_DrawDX11DebugPreview();
 
 	R3DPROFILE_END("Render: Scene");
 
 	R3DPROFILE_START("Render: Buffers");
 
-	//
-	// create offscreen version of rendertarget for postprocessing
-	//
-	/*
-
-	IDirect3DSurface9 	*BBuf; 
-	IDirect3DSurface9	*surf1;
-
-	r3dRenderer->pd3ddev->GetRenderTarget(0, &BBuf );
-	ScreenBuffer->OurBBuf->GetSurfaceLevel(0, &surf1);
-	r3dRenderer->pd3ddev->StretchRect( BBuf , NULL, surf1, NULL, D3DTEXF_NONE);
-	surf1->Release();
-	BBuf->Release();
-	*/
-
-	//
-	// create blurred scaled down version of rendertarget for FOV/scope effects
-	//
-
 	D3DXVECTOR4 BlurMul;
 	BlurMul = D3DXVECTOR4(0.25f, 0.25f, 0.25f, 1.0f);
 	r3dRenderer->pd3ddev->SetPixelShaderConstantF(  0, (float *)&BlurMul,  1 );
-
-	// r3dBlur2Buffer(ScreenBuffer, BlurBuffer, TempBuffer,4);
-
-
+	
 	R3DPROFILE_END("Render: Buffers");
 }
 

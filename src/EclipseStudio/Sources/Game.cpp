@@ -63,6 +63,7 @@
 #include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 
 #include "rendering/Deffered/D3DMiscFunctions.h"
+#include "rendering/World/WorldRenderer.h"
 
 const int NUM_HUDS = 6;
 BaseHUD* HudArray[NUM_HUDS] = {0};
@@ -751,8 +752,7 @@ void GameStateGameLoop()
 		// HUD, etc are rendered.
 		//
 		R3DPROFILE_START("Post processing");
-
-
+		
 		{
 			r3dRenderer->AllowNullViewport = 1 ;
 
@@ -767,6 +767,10 @@ void GameStateGameLoop()
 		}
 
 		R3DPROFILE_END("Post processing");
+
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+		WorldRender_DrawDX11DebugPreview();
+#endif
 
 		//Font_Label->PrintF(10, 500, r3dColor(255,255,255), "WorldObjects %d", GameWorld().GetNumObjects());
 		r3dSetFiltering( R3D_POINT );

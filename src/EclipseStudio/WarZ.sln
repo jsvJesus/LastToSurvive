@@ -4,7 +4,7 @@ VisualStudioVersion = 17.14.37314.3 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eternity", "..\Eternity\Eternity.vcxproj", "{3D51BE84-6441-4AC7-A73F-587C6B36DDAF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Game Editor", "Game Editor.vcxproj", "{22AD274B-9E09-431E-94D7-41780F91B239}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameEditor", "GameEditor.vcxproj", "{22AD274B-9E09-431E-94D7-41780F91B239}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLikeNetLibStatic", "..\..\External\SLikeNet\build\vs2022-x64\Lib\LibStatic\SLikeNetLibStatic.vcxproj", "{CC4792B7-6E17-3EF2-81FA-FA1F8E29AA08}"
 EndProject
