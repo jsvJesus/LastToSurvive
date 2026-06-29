@@ -114,6 +114,16 @@ bool Terrain2HasHeightTexture()
 	return gTerrainDebugParams.z >= 4.0f;
 }
 
+float2 Terrain2GetUV(float3 WorldPos)
+{
+	return saturate(
+		float2(
+			WorldPos.x * gTerrainColorScale.w,
+			WorldPos.z * gTerrainDebugParams.w
+		)
+	);
+}
+
 VS_OUTPUT VSMain(VS_INPUT Input)
 {
 	VS_OUTPUT Output;
@@ -151,12 +161,33 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 
 	float Slope = saturate(1.0f - Normal.y);
 
-	Output.Color = float4(
+	float3 DebugColor = float3(
 		gTerrainBaseColor.r + Slope * gTerrainColorScale.r,
 		gTerrainBaseColor.g + HeightTint * gTerrainColorScale.g,
-		gTerrainBaseColor.b + Normal.y * gTerrainColorScale.b,
+		gTerrainBaseColor.b + Normal.y * gTerrainColorScale.b
+	);
+
+	float3 FinalColor = DebugColor;
+
+	if (Terrain2HasColorTexture())
+	{
+		float2 TerrainUV =
+			Terrain2GetUV(Input.WorldPos);
+
+		float4 TerrainColor =
+			gTerrainColorTexture.Sample(
+				gTerrainSampler,
+				TerrainUV
+			);
+
+		FinalColor = TerrainColor.rgb;
+	}
+
+	Output.Color = float4(
+		FinalColor,
 		1.0f
 	);
+	
 	Output.Normal = float4(Normal * 0.5f + 0.5f, 1.0f);
 	Output.DepthLinear = DepthLinear;
 	Output.Aux = float4(DepthLinear, HeightTint, Slope, 1.0f);
