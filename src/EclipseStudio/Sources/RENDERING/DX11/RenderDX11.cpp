@@ -219,13 +219,34 @@ namespace
 		DX11_PREVIEW_DEPTH
 	};
 
+	RenderDX11PreviewMode RenderDX11_GetPreviewModeFromValue(
+		int Mode
+	);
+
+	const char* RenderDX11_GetPreviewModeName(
+		RenderDX11PreviewMode Mode
+	);
+
+	void RenderDX11_UpdatePreviewModeHotkey();
+
 	RenderDX11PreviewMode RenderDX11_GetPreviewMode()
 	{
+		RenderDX11_UpdatePreviewModeHotkey();
+
 		const int Mode =
 			r_dx11_debug_view
 			? r_dx11_debug_view->GetInt()
 			: 0;
 
+		return RenderDX11_GetPreviewModeFromValue(
+			Mode
+		);
+	}
+
+	RenderDX11PreviewMode RenderDX11_GetPreviewModeFromValue(
+		int Mode
+	)
+	{
 		switch (Mode)
 		{
 		case 2:
@@ -245,6 +266,108 @@ namespace
 		default:
 			return DX11_PREVIEW_COLOR;
 		}
+	}
+
+	int RenderDX11_PreviewModeToCVarValue(
+		RenderDX11PreviewMode Mode
+	)
+	{
+		switch (Mode)
+		{
+		case DX11_PREVIEW_NORMAL:
+			return 2;
+
+		case DX11_PREVIEW_LINEAR_DEPTH:
+			return 3;
+
+		case DX11_PREVIEW_AUX:
+			return 4;
+
+		case DX11_PREVIEW_DEPTH:
+			return 5;
+
+		case DX11_PREVIEW_COLOR:
+		default:
+			return 0;
+		}
+	}
+
+	void RenderDX11_UpdatePreviewModeHotkey()
+	{
+		if (!RenderDX11_WantsDebugPreview())
+			return;
+
+		if (!Keyboard)
+			return;
+
+		static bool WasF10Down = false;
+
+		const bool IsF10Down =
+			Keyboard->IsPressed(kbsF10);
+
+		if (IsF10Down && !WasF10Down)
+		{
+			const int CurrentValue =
+				r_dx11_debug_view
+				? r_dx11_debug_view->GetInt()
+				: 0;
+
+			RenderDX11PreviewMode CurrentMode =
+				RenderDX11_GetPreviewModeFromValue(
+					CurrentValue
+				);
+
+			RenderDX11PreviewMode NextMode =
+				DX11_PREVIEW_COLOR;
+
+			switch (CurrentMode)
+			{
+			case DX11_PREVIEW_COLOR:
+				NextMode = DX11_PREVIEW_NORMAL;
+				break;
+
+			case DX11_PREVIEW_NORMAL:
+				NextMode = DX11_PREVIEW_LINEAR_DEPTH;
+				break;
+
+			case DX11_PREVIEW_LINEAR_DEPTH:
+				NextMode = DX11_PREVIEW_AUX;
+				break;
+
+			case DX11_PREVIEW_AUX:
+				NextMode = DX11_PREVIEW_DEPTH;
+				break;
+
+			case DX11_PREVIEW_DEPTH:
+			default:
+				NextMode = DX11_PREVIEW_COLOR;
+				break;
+			}
+
+			const int NewValue =
+				RenderDX11_PreviewModeToCVarValue(
+					NextMode
+				);
+
+			if (r_dx11_debug_view)
+			{
+				r_dx11_debug_view->SetInt(NewValue);
+			}
+
+			gDX11PreviewValid = false;
+			gDX11TerrainGBufferReadbackLogged = false;
+
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Preview mode changed by F10: %s\n",
+				RenderDX11_GetPreviewModeName(NextMode)
+			);
+
+			OutputDebugStringA(Text);
+		}
+
+		WasF10Down = IsF10Down;
 	}
 
 	const char* RenderDX11_GetPreviewModeName(
@@ -2925,7 +3048,7 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Patches: 1",
+			"DX11 Preview: %s\nDX11 Terrain Patches: 1\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode)
 		);
 	}
