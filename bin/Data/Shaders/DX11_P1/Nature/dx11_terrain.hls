@@ -59,6 +59,12 @@ cbuffer GrassCB : register(b7)
 	float4 gWindParams;
 };
 
+Texture2D gTerrainColorTexture : register(t0);
+Texture2D gTerrainNormalTexture : register(t1);
+Texture2D gTerrainHeightTexture : register(t2);
+
+SamplerState gTerrainSampler : register(s0);
+
 struct VS_INPUT
 {
 	float3 Position : POSITION;
@@ -88,6 +94,24 @@ float3 TerrainSafeNormalize(float3 Value, float3 Fallback)
 		return Fallback;
 
 	return Value * rsqrt(LenSq);
+}
+
+bool Terrain2HasColorTexture()
+{
+	return gTerrainDebugParams.z >= 0.5f;
+}
+
+bool Terrain2HasNormalTexture()
+{
+	float Mask =
+		gTerrainDebugParams.z;
+
+	return fmod(Mask, 4.0f) >= 2.0f;
+}
+
+bool Terrain2HasHeightTexture()
+{
+	return gTerrainDebugParams.z >= 4.0f;
 }
 
 VS_OUTPUT VSMain(VS_INPUT Input)

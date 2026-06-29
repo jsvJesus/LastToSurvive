@@ -17,6 +17,7 @@
 #include "GameCommon.h"
 #include "../SF/Console/Config.h"
 #include "TrueNature/ITerrain.h"
+#include "TrueNature2/Terrain2.h"
 #include "rendering/DX11/RenderDX11.h"
 
 bool RenderDX11_Init();
@@ -220,6 +221,13 @@ namespace
 	int						gDX11TerrainPatchUpdateCount = 0;
 	int						gDX11TerrainPatchCullCount = 0;
 
+	r3dTexture*				gDX11Terrain2ColorTexture = 0;
+	r3dTexture*				gDX11Terrain2NormalTexture = 0;
+	r3dTexture*				gDX11Terrain2HeightTexture = 0;
+
+	int						gDX11Terrain2TextureMask = 0;
+	bool					gDX11Terrain2TextureInfoLogged = false;
+
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
 	ID3D11Buffer*			gDX11ObjectCB = 0;
@@ -278,6 +286,8 @@ namespace
 	}
 
 	int RenderDX11_ClampSize(int Value);
+	void RenderDX11_UpdateTerrain2TextureRefs();
+	void RenderDX11_BindTerrain2TextureSlots();
 	
 	bool RenderDX11_UpdateTerrainVertices(
 		ID3D11Buffer* VertexBuffer,
@@ -1288,6 +1298,8 @@ namespace
 		if (!gDX11Context || !gDX11TerrainCB)
 			return;
 
+		RenderDX11_UpdateTerrain2TextureRefs();
+
 		D3D11_MAPPED_SUBRESOURCE Mapped = {};
 
 		HRESULT Hr =
@@ -1329,7 +1341,8 @@ namespace
 
 		TerrainCB->DebugParams[0] = 64.0f;        // height offset
 		TerrainCB->DebugParams[1] = 1.0f / 128.0f; // height range inverse
-		TerrainCB->DebugParams[2] = 0.0f;
+		TerrainCB->DebugParams[2] =
+			static_cast<float>(gDX11Terrain2TextureMask);
 		TerrainCB->DebugParams[3] = 0.0f;
 
 		gDX11Context->Unmap(
@@ -1338,6 +1351,159 @@ namespace
 		);
 
 		RenderDX11_BindTerrainCB();
+	}
+
+	enum
+	{
+		DX11_TERRAIN2_TEXTURE_COLOR = 1 << 0,
+		DX11_TERRAIN2_TEXTURE_NORMAL = 1 << 1,
+		DX11_TERRAIN2_TEXTURE_HEIGHT = 1 << 2
+	};
+
+	void RenderDX11_LogTerrain2TextureInfo(
+		const char* Name,
+		r3dTexture* Texture
+	)
+	{
+		if (!Name)
+			Name = "unknown";
+
+		if (!Texture)
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Terrain2 %s texture: null\n",
+				Name
+			);
+
+			OutputDebugStringA(Text);
+			return;
+		}
+
+		char Text[512] = {};
+		sprintf_s(
+			Text,
+			"[RenderDX11] Terrain2 %s texture: %dx%d fmt=0x%08X loaded=%d missing=%d\n",
+			Name,
+			Texture->GetWidth(),
+			Texture->GetHeight(),
+			static_cast<unsigned int>(Texture->GetD3DFormat()),
+			Texture->IsLoaded(),
+			Texture->IsMissing() ? 1 : 0
+		);
+
+		OutputDebugStringA(Text);
+	}
+
+	void RenderDX11_UpdateTerrain2TextureRefs()
+	{
+		gDX11Terrain2ColorTexture = 0;
+		gDX11Terrain2NormalTexture = 0;
+		gDX11Terrain2HeightTexture = 0;
+		gDX11Terrain2TextureMask = 0;
+
+		if (!Terrain2)
+			return;
+
+		gDX11Terrain2ColorTexture =
+			Terrain2->GetColorTexture();
+
+		gDX11Terrain2NormalTexture =
+			Terrain2->GetNormalTexture();
+
+		gDX11Terrain2HeightTexture =
+			Terrain2->GetHeightTexture();
+
+		if (
+			gDX11Terrain2ColorTexture &&
+			gDX11Terrain2ColorTexture->IsLoaded() &&
+			!gDX11Terrain2ColorTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_COLOR;
+		}
+
+		if (
+			gDX11Terrain2NormalTexture &&
+			gDX11Terrain2NormalTexture->IsLoaded() &&
+			!gDX11Terrain2NormalTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_NORMAL;
+		}
+
+		if (
+			gDX11Terrain2HeightTexture &&
+			gDX11Terrain2HeightTexture->IsLoaded() &&
+			!gDX11Terrain2HeightTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_HEIGHT;
+		}
+
+		if (!gDX11Terrain2TextureInfoLogged)
+		{
+			gDX11Terrain2TextureInfoLogged = true;
+
+			OutputDebugStringA(
+				"[RenderDX11] Terrain2 public texture refs acquired\n"
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"color",
+				gDX11Terrain2ColorTexture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"normal",
+				gDX11Terrain2NormalTexture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"height",
+				gDX11Terrain2HeightTexture
+			);
+		}
+	}
+
+	void RenderDX11_BindTerrain2TextureSlots()
+	{
+		if (!gDX11Context)
+			return;
+
+		// Пока DX11 SRV нет.
+		// r3dTexture содержит D3D9 texture, напрямую в DX11 bind нельзя.
+		// Очищаем слоты, чтобы не поймать stale SRV от другого pass.
+		ID3D11ShaderResourceView* NullSRVs[3] =
+		{
+			0,
+			0,
+			0
+		};
+
+		gDX11Context->PSSetShaderResources(
+			0,
+			3,
+			NullSRVs
+		);
+
+		ID3D11SamplerState* Sampler =
+			gDX11SamplerLinearWrap
+			? gDX11SamplerLinearWrap
+			: gDX11SamplerLinearClamp;
+
+		if (Sampler)
+		{
+			gDX11Context->PSSetSamplers(
+				0,
+				1,
+				&Sampler
+			);
+		}
 	}
 
 	void RenderDX11_UpdateFrameCB(
@@ -1902,6 +2068,8 @@ namespace
 			0,
 			0
 		);
+
+		RenderDX11_BindTerrain2TextureSlots();
 
 		return RenderDX11_DrawTerrainPatchSet();
 	}
@@ -3273,11 +3441,14 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			gDX11TerrainPatchDrawCount,
 			gDX11TerrainPatchCullCount,
-			gDX11TerrainPatchUpdateCount
+			gDX11TerrainPatchUpdateCount,
+			(gDX11Terrain2TextureMask & DX11_TERRAIN2_TEXTURE_COLOR) ? 1 : 0,
+			(gDX11Terrain2TextureMask & DX11_TERRAIN2_TEXTURE_NORMAL) ? 1 : 0,
+			(gDX11Terrain2TextureMask & DX11_TERRAIN2_TEXTURE_HEIGHT) ? 1 : 0
 		);
 	}
 }
