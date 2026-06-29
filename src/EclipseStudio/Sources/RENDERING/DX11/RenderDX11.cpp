@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "GameCommon.h"
+#include "../SF/Console/Config.h"
 #include "TrueNature/ITerrain.h"
 #include "rendering/DX11/RenderDX11.h"
 
@@ -129,6 +130,11 @@ namespace
 	bool					gDX11TerrainGBufferReadbackLogged = false;
 	bool					gDX11PreviewValid = false;
 
+	ID3D11Texture2D*		gDX11PreviewReadbackTexture = 0;
+	DXGI_FORMAT				gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
+	int						gDX11PreviewReadbackWidth = 0;
+	int						gDX11PreviewReadbackHeight = 0;
+
 	r3dTexture*				gDX11PreviewTexture = 0;
 
 	unsigned int			gDX11PreviewPixels[
@@ -202,6 +208,225 @@ namespace
 		return
 			RenderDX11_CommandLineHasSwitch("-dx11preview") ||
 			RenderDX11_CommandLineHasSwitch("/dx11preview");
+	}
+
+	enum RenderDX11PreviewMode
+	{
+		DX11_PREVIEW_COLOR = 0,
+		DX11_PREVIEW_NORMAL,
+		DX11_PREVIEW_LINEAR_DEPTH,
+		DX11_PREVIEW_AUX,
+		DX11_PREVIEW_DEPTH
+	};
+
+	RenderDX11PreviewMode RenderDX11_GetPreviewMode()
+	{
+		const int Mode =
+			r_dx11_debug_view
+			? r_dx11_debug_view->GetInt()
+			: 0;
+
+		switch (Mode)
+		{
+		case 2:
+			return DX11_PREVIEW_NORMAL;
+
+		case 3:
+			return DX11_PREVIEW_LINEAR_DEPTH;
+
+		case 4:
+			return DX11_PREVIEW_AUX;
+
+		case 5:
+			return DX11_PREVIEW_DEPTH;
+
+		case 0:
+		case 1:
+		default:
+			return DX11_PREVIEW_COLOR;
+		}
+	}
+
+	const char* RenderDX11_GetPreviewModeName(
+		RenderDX11PreviewMode Mode
+	)
+	{
+		switch (Mode)
+		{
+		case DX11_PREVIEW_COLOR:
+			return "Color";
+
+		case DX11_PREVIEW_NORMAL:
+			return "Normal";
+
+		case DX11_PREVIEW_LINEAR_DEPTH:
+			return "LinearDepth";
+
+		case DX11_PREVIEW_AUX:
+			return "Aux";
+
+		case DX11_PREVIEW_DEPTH:
+			return "Depth";
+
+		default:
+			return "Unknown";
+		}
+	}
+
+	unsigned int RenderDX11_PackPreviewColor(
+		unsigned int R,
+		unsigned int G,
+		unsigned int B
+	)
+	{
+		if (R > 255) R = 255;
+		if (G > 255) G = 255;
+		if (B > 255) B = 255;
+
+		return
+			(0xffu << 24) |
+			(R << 16) |
+			(G << 8) |
+			B;
+	}
+
+	float RenderDX11_SaturateFloat(
+		float Value
+	)
+	{
+		if (Value < 0.0f)
+			return 0.0f;
+
+		if (Value > 1.0f)
+			return 1.0f;
+
+		return Value;
+	}
+
+	unsigned int RenderDX11_PackPreviewGray(
+		float Value
+	)
+	{
+		const float Saturated =
+			RenderDX11_SaturateFloat(Value);
+
+		const unsigned int C =
+			static_cast<unsigned int>(
+				Saturated * 255.0f + 0.5f
+			);
+
+		return RenderDX11_PackPreviewColor(
+			C,
+			C,
+			C
+		);
+	}
+
+	float RenderDX11_HalfToFloat(
+		unsigned short Value
+	)
+	{
+		const unsigned int Sign =
+			(static_cast<unsigned int>(Value) & 0x8000u) << 16;
+
+		int Exponent =
+			(Value >> 10) & 0x1f;
+
+		unsigned int Mantissa =
+			Value & 0x03ffu;
+
+		unsigned int Result = 0;
+
+		if (Exponent == 0)
+		{
+			if (Mantissa == 0)
+			{
+				Result = Sign;
+			}
+			else
+			{
+				Exponent = 1;
+
+				while ((Mantissa & 0x0400u) == 0)
+				{
+					Mantissa <<= 1;
+					--Exponent;
+				}
+
+				Mantissa &= 0x03ffu;
+
+				Result =
+					Sign |
+					(static_cast<unsigned int>(
+						Exponent + 127 - 15
+					) << 23) |
+					(Mantissa << 13);
+			}
+		}
+		else if (Exponent == 31)
+		{
+			Result =
+				Sign |
+				0x7f800000u |
+				(Mantissa << 13);
+		}
+		else
+		{
+			Result =
+				Sign |
+				(static_cast<unsigned int>(
+					Exponent + 127 - 15
+				) << 23) |
+				(Mantissa << 13);
+		}
+
+		float FloatValue = 0.0f;
+
+		memcpy(
+			&FloatValue,
+			&Result,
+			sizeof(FloatValue)
+		);
+
+		return FloatValue;
+	}
+
+	ID3D11Texture2D* RenderDX11_GetPreviewSourceTexture(
+		RenderDX11PreviewMode Mode,
+		DXGI_FORMAT* OutFormat
+	)
+	{
+		if (OutFormat)
+			*OutFormat = DXGI_FORMAT_UNKNOWN;
+
+		switch (Mode)
+		{
+		case DX11_PREVIEW_NORMAL:
+			if (OutFormat)
+				*OutFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			return gDX11GBufferNormalTexture;
+
+		case DX11_PREVIEW_LINEAR_DEPTH:
+			if (OutFormat)
+				*OutFormat = DXGI_FORMAT_R32_FLOAT;
+			return gDX11GBufferDepthLinearTexture;
+
+		case DX11_PREVIEW_AUX:
+			if (OutFormat)
+				*OutFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			return gDX11GBufferAuxTexture;
+
+		case DX11_PREVIEW_DEPTH:
+			if (OutFormat)
+				*OutFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			return gDX11DepthTexture;
+
+		case DX11_PREVIEW_COLOR:
+		default:
+			if (OutFormat)
+				*OutFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			return gDX11GBufferColorTexture;
+		}
 	}
 
 	class RenderDX11IncludeHandler : public ID3DInclude
@@ -1411,8 +1636,80 @@ namespace
 		return true;
 	}
 
-	void RenderDX11_UpdatePreviewFromMappedColor(
-		const D3D11_MAPPED_SUBRESOURCE& Mapped
+	bool RenderDX11_EnsurePreviewReadbackTexture(
+		DXGI_FORMAT Format
+	)
+	{
+		if (
+			gDX11PreviewReadbackTexture &&
+			gDX11PreviewReadbackFormat == Format &&
+			gDX11PreviewReadbackWidth == gDX11FrameWidth &&
+			gDX11PreviewReadbackHeight == gDX11FrameHeight
+		)
+		{
+			return true;
+		}
+
+		RenderDX11_SafeRelease(gDX11PreviewReadbackTexture);
+
+		gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
+		gDX11PreviewReadbackWidth = 0;
+		gDX11PreviewReadbackHeight = 0;
+
+		if (
+			!gDX11Device ||
+			gDX11FrameWidth <= 0 ||
+			gDX11FrameHeight <= 0 ||
+			Format == DXGI_FORMAT_UNKNOWN
+		)
+		{
+			return false;
+		}
+
+		D3D11_TEXTURE2D_DESC Desc = {};
+		Desc.Width = static_cast<UINT>(gDX11FrameWidth);
+		Desc.Height = static_cast<UINT>(gDX11FrameHeight);
+		Desc.MipLevels = 1;
+		Desc.ArraySize = 1;
+		Desc.Format = Format;
+		Desc.SampleDesc.Count = 1;
+		Desc.SampleDesc.Quality = 0;
+		Desc.Usage = D3D11_USAGE_STAGING;
+		Desc.BindFlags = 0;
+		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		Desc.MiscFlags = 0;
+
+		HRESULT Hr =
+			gDX11Device->CreateTexture2D(
+				&Desc,
+				0,
+				&gDX11PreviewReadbackTexture
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Create preview readback texture failed. Format=%d HRESULT=0x%08X\n",
+				static_cast<int>(Format),
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		gDX11PreviewReadbackFormat = Format;
+		gDX11PreviewReadbackWidth = gDX11FrameWidth;
+		gDX11PreviewReadbackHeight = gDX11FrameHeight;
+
+		return true;
+	}
+
+	void RenderDX11_UpdatePreviewFromMapped(
+		const D3D11_MAPPED_SUBRESOURCE& Mapped,
+		RenderDX11PreviewMode Mode
 	)
 	{
 		if (
@@ -1442,16 +1739,100 @@ namespace
 					(x * gDX11FrameWidth) /
 					DX11_PREVIEW_WIDTH;
 
-				const unsigned char* Pixel =
-					Row + SourceX * 4;
+				unsigned int PackedColor = 0xff000000u;
+
+				switch (Mode)
+				{
+				case DX11_PREVIEW_NORMAL:
+				{
+					const unsigned short* Pixel =
+						reinterpret_cast<const unsigned short*>(
+							Row + SourceX * 8
+						);
+
+					const float R =
+						RenderDX11_SaturateFloat(
+							RenderDX11_HalfToFloat(Pixel[0])
+						);
+
+					const float G =
+						RenderDX11_SaturateFloat(
+							RenderDX11_HalfToFloat(Pixel[1])
+						);
+
+					const float B =
+						RenderDX11_SaturateFloat(
+							RenderDX11_HalfToFloat(Pixel[2])
+						);
+
+					PackedColor =
+						RenderDX11_PackPreviewColor(
+							static_cast<unsigned int>(R * 255.0f + 0.5f),
+							static_cast<unsigned int>(G * 255.0f + 0.5f),
+							static_cast<unsigned int>(B * 255.0f + 0.5f)
+						);
+
+					break;
+				}
+
+				case DX11_PREVIEW_LINEAR_DEPTH:
+				{
+					const float* Pixel =
+						reinterpret_cast<const float*>(
+							Row + SourceX * 4
+						);
+
+					PackedColor =
+						RenderDX11_PackPreviewGray(
+							Pixel[0]
+						);
+
+					break;
+				}
+
+				case DX11_PREVIEW_DEPTH:
+				{
+					const unsigned int RawDepthStencil =
+						*reinterpret_cast<const unsigned int*>(
+							Row + SourceX * 4
+						);
+
+					const unsigned int Depth24 =
+						RawDepthStencil & 0x00ffffffu;
+
+					const float Depth =
+						static_cast<float>(Depth24) /
+						16777215.0f;
+
+					PackedColor =
+						RenderDX11_PackPreviewGray(
+							Depth
+						);
+
+					break;
+				}
+
+				case DX11_PREVIEW_AUX:
+				case DX11_PREVIEW_COLOR:
+				default:
+				{
+					const unsigned char* Pixel =
+						Row + SourceX * 4;
+
+					PackedColor =
+						RenderDX11_PackPreviewColor(
+							static_cast<unsigned int>(Pixel[0]),
+							static_cast<unsigned int>(Pixel[1]),
+							static_cast<unsigned int>(Pixel[2])
+						);
+
+					break;
+				}
+				}
 
 				gDX11PreviewPixels[
 					y * DX11_PREVIEW_WIDTH + x
-				] =
-					(0xffu << 24) |
-					(static_cast<unsigned int>(Pixel[0]) << 16) |
-					(static_cast<unsigned int>(Pixel[1]) << 8) |
-					static_cast<unsigned int>(Pixel[2]);
+				] = PackedColor;
 			}
 		}
 
@@ -1561,8 +1942,6 @@ namespace
 
 		if (
 			!gDX11Context ||
-			!gDX11GBufferColorTexture ||
-			!gDX11SmokeReadbackTexture ||
 			gDX11FrameWidth <= 0 ||
 			gDX11FrameHeight <= 0
 		)
@@ -1570,16 +1949,40 @@ namespace
 			return;
 		}
 
+		const RenderDX11PreviewMode PreviewMode =
+			RenderDX11_GetPreviewMode();
+
+		DXGI_FORMAT PreviewFormat =
+			DXGI_FORMAT_UNKNOWN;
+
+		ID3D11Texture2D* PreviewSource =
+			RenderDX11_GetPreviewSourceTexture(
+				PreviewMode,
+				&PreviewFormat
+			);
+
+		if (!PreviewSource)
+		{
+			gDX11PreviewValid = false;
+			return;
+		}
+
+		if (!RenderDX11_EnsurePreviewReadbackTexture(PreviewFormat))
+		{
+			gDX11PreviewValid = false;
+			return;
+		}
+
 		gDX11Context->CopyResource(
-			gDX11SmokeReadbackTexture,
-			gDX11GBufferColorTexture
+			gDX11PreviewReadbackTexture,
+			PreviewSource
 		);
 
 		D3D11_MAPPED_SUBRESOURCE Mapped = {};
 
 		HRESULT Hr =
 			gDX11Context->Map(
-				gDX11SmokeReadbackTexture,
+				gDX11PreviewReadbackTexture,
 				0,
 				D3D11_MAP_READ,
 				0,
@@ -1593,7 +1996,8 @@ namespace
 				char Text[256] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Terrain GBuffer readback Map failed. HRESULT=0x%08X\n",
+					"[RenderDX11] Preview readback Map failed. Mode=%s HRESULT=0x%08X\n",
+					RenderDX11_GetPreviewModeName(PreviewMode),
 					static_cast<unsigned int>(Hr)
 				);
 
@@ -1607,77 +2011,38 @@ namespace
 
 		if (bWantPreview)
 		{
-			RenderDX11_UpdatePreviewFromMappedColor(Mapped);
+			RenderDX11_UpdatePreviewFromMapped(
+				Mapped,
+				PreviewMode
+			);
 		}
 
 		if (gDX11TerrainGBufferReadbackLogged)
 		{
 			gDX11Context->Unmap(
-				gDX11SmokeReadbackTexture,
+				gDX11PreviewReadbackTexture,
 				0
 			);
 
 			return;
 		}
 
-		const int SampleXs[5] =
-		{
-			gDX11FrameWidth / 2,
-			gDX11FrameWidth / 4,
-			(gDX11FrameWidth * 3) / 4,
-			gDX11FrameWidth / 2,
-			gDX11FrameWidth / 2
-		};
-
-		const int SampleYs[5] =
-		{
-			gDX11FrameHeight / 2,
-			gDX11FrameHeight / 2,
-			gDX11FrameHeight / 2,
-			gDX11FrameHeight / 4,
-			(gDX11FrameHeight * 3) / 4
-		};
-
-		unsigned int R[5] = {};
-		unsigned int G[5] = {};
-		unsigned int B[5] = {};
-		unsigned int A[5] = {};
-
-		for (int i = 0; i < 5; ++i)
-		{
-			const unsigned char* Row =
-				reinterpret_cast<const unsigned char*>(
-					Mapped.pData
-				) + Mapped.RowPitch * SampleYs[i];
-
-			const unsigned char* Pixel =
-				Row + SampleXs[i] * 4;
-
-			R[i] = Pixel[0];
-			G[i] = Pixel[1];
-			B[i] = Pixel[2];
-			A[i] = Pixel[3];
-		}
-
-		gDX11Context->Unmap(
-			gDX11SmokeReadbackTexture,
-			0
-		);
-
-		char Text[1024] = {};
+		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Terrain GBuffer readback: %dx%d center=(%u,%u,%u,%u) left=(%u,%u,%u,%u) right=(%u,%u,%u,%u) top=(%u,%u,%u,%u) bottom=(%u,%u,%u,%u)\n",
+			"[RenderDX11] Preview readback ready: %dx%d Mode=%s Format=%d\n",
 			gDX11FrameWidth,
 			gDX11FrameHeight,
-			R[0], G[0], B[0], A[0],
-			R[1], G[1], B[1], A[1],
-			R[2], G[2], B[2], A[2],
-			R[3], G[3], B[3], A[3],
-			R[4], G[4], B[4], A[4]
+			RenderDX11_GetPreviewModeName(PreviewMode),
+			static_cast<int>(PreviewFormat)
 		);
 
 		OutputDebugStringA(Text);
+
+		gDX11Context->Unmap(
+			gDX11PreviewReadbackTexture,
+			0
+		);
 
 		gDX11TerrainGBufferReadbackLogged = true;
 	}
@@ -2072,6 +2437,12 @@ namespace
 		RenderDX11_SafeRelease(gDX11DepthDSV);
 
 		RenderDX11_SafeRelease(gDX11SmokeReadbackTexture);
+		RenderDX11_SafeRelease(gDX11PreviewReadbackTexture);
+
+		gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
+		gDX11PreviewReadbackWidth = 0;
+		gDX11PreviewReadbackHeight = 0;
+
 		RenderDX11_SafeRelease(gDX11GBufferAuxTexture);
 		RenderDX11_SafeRelease(gDX11GBufferDepthLinearTexture);
 		RenderDX11_SafeRelease(gDX11GBufferNormalTexture);
@@ -2544,6 +2915,20 @@ void RenderDX11_DrawDebugPreviewDX9()
 		2.0f,
 		r3dColor(255, 255, 255, 220)
 	);
+
+	if (Font_Label)
+	{
+		const RenderDX11PreviewMode PreviewMode =
+			RenderDX11_GetPreviewMode();
+
+		Font_Label->PrintF(
+			X + 10.0f,
+			Y + 10.0f,
+			r3dColor(255, 230, 120),
+			"DX11 Preview: %s\nDX11 Terrain Patches: 1",
+			RenderDX11_GetPreviewModeName(PreviewMode)
+		);
+	}
 }
 
 bool RenderDX11_Init()
