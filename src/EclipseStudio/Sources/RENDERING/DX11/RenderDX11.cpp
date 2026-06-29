@@ -126,6 +126,15 @@ namespace
 		float Normal[3];
 	};
 
+	struct WorldDX11TerrainPatchCacheEntry
+	{
+		ID3D11Buffer* VertexBuffer;
+		int TileX;
+		int TileZ;
+		bool Valid;
+		unsigned int LastUsedFrame;
+	};
+
 	static const int DX11_PREVIEW_WIDTH = 480;
 	static const int DX11_PREVIEW_HEIGHT = 270;
 
@@ -184,10 +193,13 @@ namespace
 	ID3D11PixelShader*		gDX11TerrainPS = 0;
 	ID3D11InputLayout*		gDX11TerrainInputLayout = 0;
 
-	ID3D11Buffer*			gDX11TerrainVBs[DX11_TERRAIN_PATCH_COUNT] = {};
+	WorldDX11TerrainPatchCacheEntry
+							gDX11TerrainPatchCache[DX11_TERRAIN_PATCH_COUNT] = {};
 	ID3D11Buffer*			gDX11TerrainIB = 0;
 
+	unsigned int			gDX11TerrainCacheFrameId = 0;
 	int						gDX11TerrainPatchDrawCount = 0;
+	int						gDX11TerrainPatchUpdateCount = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
@@ -793,12 +805,21 @@ namespace
 	{
 		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
 		{
-			RenderDX11_SafeRelease(gDX11TerrainVBs[i]);
+			RenderDX11_SafeRelease(
+				gDX11TerrainPatchCache[i].VertexBuffer
+			);
+
+			gDX11TerrainPatchCache[i].TileX = 0;
+			gDX11TerrainPatchCache[i].TileZ = 0;
+			gDX11TerrainPatchCache[i].Valid = false;
+			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
 
 		RenderDX11_SafeRelease(gDX11TerrainIB);
 
+		gDX11TerrainCacheFrameId = 0;
 		gDX11TerrainPatchDrawCount = 0;
+		gDX11TerrainPatchUpdateCount = 0;
 	}
 
 	void RenderDX11_ReleasePreviewTexture()
@@ -1819,13 +1840,31 @@ namespace
 		return Value;
 	}
 
+	void RenderDX11_BeginTerrainCacheFrame()
+	{
+		++gDX11TerrainCacheFrameId;
+
+		if (gDX11TerrainCacheFrameId == 0)
+		{
+			gDX11TerrainCacheFrameId = 1;
+
+			for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+			{
+				gDX11TerrainPatchCache[i].LastUsedFrame = 0;
+			}
+		}
+
+		gDX11TerrainPatchDrawCount = 0;
+		gDX11TerrainPatchUpdateCount = 0;
+	}
+
 	bool RenderDX11_CreateTerrainResources()
 	{
 		bool bAllVBsReady = true;
 
 		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
 		{
-			if (!gDX11TerrainVBs[i])
+			if (!gDX11TerrainPatchCache[i].VertexBuffer)
 			{
 				bAllVBsReady = false;
 				break;
@@ -1851,7 +1890,7 @@ namespace
 				gDX11Device->CreateBuffer(
 					&VBDesc,
 					0,
-					&gDX11TerrainVBs[i]
+					&gDX11TerrainPatchCache[i].VertexBuffer
 				);
 
 			if (FAILED(Hr))
@@ -1859,7 +1898,7 @@ namespace
 				char Text[256] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Create terrain VB[%d] failed. HRESULT=0x%08X\n",
+					"[RenderDX11] Create terrain cache VB[%d] failed. HRESULT=0x%08X\n",
 					i,
 					static_cast<unsigned int>(Hr)
 				);
@@ -1868,6 +1907,11 @@ namespace
 				RenderDX11_ReleaseTerrainResources();
 				return false;
 			}
+
+			gDX11TerrainPatchCache[i].TileX = 0;
+			gDX11TerrainPatchCache[i].TileZ = 0;
+			gDX11TerrainPatchCache[i].Valid = false;
+			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
 
 		unsigned short Indices[DX11_TERRAIN_INDEX_COUNT] = {};
@@ -1933,8 +1977,138 @@ namespace
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Terrain DX11 3x3 buffers created\n"
+			"[RenderDX11] Terrain DX11 3x3 cache buffers created\n"
 		);
+
+		return true;
+	}
+
+	bool RenderDX11_TerrainTileInRequest(
+		const int* TileXs,
+		const int* TileZs,
+		int TileCount,
+		int TileX,
+		int TileZ
+	)
+	{
+		for (int i = 0; i < TileCount; ++i)
+		{
+			if (
+				TileXs[i] == TileX &&
+				TileZs[i] == TileZ
+			)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	int RenderDX11_FindTerrainCacheSlot(
+		int TileX,
+		int TileZ
+	)
+	{
+		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+		{
+			const WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[i];
+
+			if (
+				Entry.Valid &&
+				Entry.TileX == TileX &&
+				Entry.TileZ == TileZ
+			)
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	int RenderDX11_FindTerrainCacheSlotForWrite(
+		const int* RequestTileXs,
+		const int* RequestTileZs,
+		int RequestTileCount
+	)
+	{
+		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+		{
+			if (!gDX11TerrainPatchCache[i].Valid)
+				return i;
+		}
+
+		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+		{
+			const WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[i];
+
+			if (!RenderDX11_TerrainTileInRequest(
+				RequestTileXs,
+				RequestTileZs,
+				RequestTileCount,
+				Entry.TileX,
+				Entry.TileZ
+			))
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	bool RenderDX11_EnsureTerrainCacheTile(
+		int CacheIndex,
+		int TileX,
+		int TileZ,
+		float PatchSize
+	)
+	{
+		if (
+			CacheIndex < 0 ||
+			CacheIndex >= DX11_TERRAIN_PATCH_COUNT
+		)
+		{
+			return false;
+		}
+
+		WorldDX11TerrainPatchCacheEntry& Entry =
+			gDX11TerrainPatchCache[CacheIndex];
+
+		if (!Entry.VertexBuffer)
+			return false;
+
+		if (
+			Entry.Valid &&
+			Entry.TileX == TileX &&
+			Entry.TileZ == TileZ
+		)
+		{
+			Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
+			return true;
+		}
+
+		if (!RenderDX11_UpdateTerrainVertices(
+			Entry.VertexBuffer,
+			TileX,
+			TileZ,
+			PatchSize
+		))
+		{
+			Entry.Valid = false;
+			Entry.LastUsedFrame = 0;
+			return false;
+		}
+
+		Entry.TileX = TileX;
+		Entry.TileZ = TileZ;
+		Entry.Valid = true;
+		Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
+
+		++gDX11TerrainPatchUpdateCount;
 
 		return true;
 	}
@@ -2196,53 +2370,84 @@ namespace
 				MaxTileZ - TileCountZ + 1
 			);
 
-		gDX11TerrainPatchDrawCount = 0;
-
-		int PatchIndex = 0;
+		int RequestTileXs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestTileZs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestTileCount = 0;
 
 		for (int z = 0; z < TileCountZ; ++z)
 		{
 			for (int x = 0; x < TileCountX; ++x)
 			{
-				if (PatchIndex >= DX11_TERRAIN_PATCH_COUNT)
+				if (RequestTileCount >= DX11_TERRAIN_PATCH_COUNT)
 					return false;
 
-				ID3D11Buffer* VertexBuffer =
-					gDX11TerrainVBs[PatchIndex];
-
-				const int TileX =
+				RequestTileXs[RequestTileCount] =
 					StartTileX + x;
 
-				const int TileZ =
+				RequestTileZs[RequestTileCount] =
 					StartTileZ + z;
 
-				if (
-					!RenderDX11_UpdateTerrainVertices(
-						VertexBuffer,
-						TileX,
-						TileZ,
-						PatchSize
-					) ||
-					!RenderDX11_BindTerrainGeometry(
-						VertexBuffer
-					)
-				)
-				{
-					return false;
-				}
-
-				gDX11Context->DrawIndexed(
-					DX11_TERRAIN_INDEX_COUNT,
-					0,
-					0
-				);
-
-				++gDX11TerrainPatchDrawCount;
-				++PatchIndex;
+				++RequestTileCount;
 			}
 		}
 
-		return gDX11TerrainPatchDrawCount > 0;
+		gDX11TerrainPatchDrawCount = RequestTileCount;
+
+		for (int i = 0; i < RequestTileCount; ++i)
+		{
+			const int TileX =
+				RequestTileXs[i];
+
+			const int TileZ =
+				RequestTileZs[i];
+
+			int CacheIndex =
+				RenderDX11_FindTerrainCacheSlot(
+					TileX,
+					TileZ
+				);
+
+			if (CacheIndex < 0)
+			{
+				CacheIndex =
+					RenderDX11_FindTerrainCacheSlotForWrite(
+						RequestTileXs,
+						RequestTileZs,
+						RequestTileCount
+					);
+			}
+
+			if (CacheIndex < 0)
+				return false;
+
+			if (!RenderDX11_EnsureTerrainCacheTile(
+				CacheIndex,
+				TileX,
+				TileZ,
+				PatchSize
+			))
+			{
+				return false;
+			}
+
+			WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[CacheIndex];
+
+			if (!RenderDX11_BindTerrainGeometry(
+				Entry.VertexBuffer
+			))
+			{
+				return false;
+			}
+
+			gDX11Context->DrawIndexed(
+				DX11_TERRAIN_INDEX_COUNT,
+				0,
+				0
+			);
+		}
+
+		return RequestTileCount > 0;
 	}
 
 	bool RenderDX11_DrawTerrainDepth()
@@ -3677,9 +3882,10 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Patches: %d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Patches: %d\nDX11 Terrain Cache Updates: %d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
-			gDX11TerrainPatchDrawCount
+			gDX11TerrainPatchDrawCount,
+			gDX11TerrainPatchUpdateCount
 		);
 	}
 }
@@ -3855,10 +4061,10 @@ bool RenderDX11_RenderWorld(
 		return false;
 	}
 
-	RenderDX11_LogOffscreenOnlyModeOnce();
 	RenderDX11_BindFrameTargets();
 	RenderDX11_UpdateFrameCB(Desc);
 	RenderDX11_UpdateDefaultWorldCBs();
+	RenderDX11_BeginTerrainCacheFrame();
 
 	RenderDX11_ClearFrameTargets();
 
