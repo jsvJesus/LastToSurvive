@@ -71,6 +71,50 @@ namespace
 		float DebugParams[4];
 	};
 
+	struct WorldDX11ObjectCB
+	{
+		float World[16];
+		float PrevWorld[16];
+		float ObjectColor[4];
+		float ObjectParams[4];
+	};
+
+	struct WorldDX11MaterialCB
+	{
+		float DiffuseScale[4];
+		float NormalScale[4];
+		float SpecularGloss[4];
+		float MaterialParams[4];
+	};
+
+	struct WorldDX11LightCB
+	{
+		float SunDir[4];
+		float SunColor[4];
+		float AmbientColor[4];
+		float FogColor[4];
+		float FogParams[4];
+	};
+
+	struct WorldDX11ShadowCB
+	{
+		float ShadowParams[4];
+		float ShadowAtlasParams[4];
+	};
+
+	struct WorldDX11WaterCB
+	{
+		float WaterColor[4];
+		float WaterParams[4];
+		float WaterUVParams[4];
+	};
+
+	struct WorldDX11GrassCB
+	{
+		float GrassParams[4];
+		float WindParams[4];
+	};
+
 	struct WorldDX11TerrainVertex
 	{
 		float Position[3];
@@ -85,8 +129,32 @@ namespace
 	];
 
 	typedef char WorldDX11TerrainCB_SizeMustBe16ByteAligned[
-	(sizeof(WorldDX11TerrainCB) % 16) == 0 ? 1 : -1
-];
+		(sizeof(WorldDX11TerrainCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11ObjectCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11ObjectCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11MaterialCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11MaterialCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11LightCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11LightCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11ShadowCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11ShadowCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11WaterCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11WaterCB) % 16) == 0 ? 1 : -1
+	];
+
+	typedef char WorldDX11GrassCB_SizeMustBe16ByteAligned[
+		(sizeof(WorldDX11GrassCB) % 16) == 0 ? 1 : -1
+	];
 
 	ID3D11Device*			gDX11Device = 0;
 	ID3D11DeviceContext*	gDX11Context = 0;
@@ -116,6 +184,12 @@ namespace
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
+	ID3D11Buffer*			gDX11ObjectCB = 0;
+	ID3D11Buffer*			gDX11MaterialCB = 0;
+	ID3D11Buffer*			gDX11LightCB = 0;
+	ID3D11Buffer*			gDX11ShadowCB = 0;
+	ID3D11Buffer*			gDX11WaterCB = 0;
+	ID3D11Buffer*			gDX11GrassCB = 0;
 
 	D3D11_VIEWPORT			gDX11Viewport = {};
 
@@ -759,6 +833,12 @@ namespace
 
 	void RenderDX11_ReleaseConstantBuffers()
 	{
+		RenderDX11_SafeRelease(gDX11GrassCB);
+		RenderDX11_SafeRelease(gDX11WaterCB);
+		RenderDX11_SafeRelease(gDX11ShadowCB);
+		RenderDX11_SafeRelease(gDX11LightCB);
+		RenderDX11_SafeRelease(gDX11MaterialCB);
+		RenderDX11_SafeRelease(gDX11ObjectCB);
 		RenderDX11_SafeRelease(gDX11TerrainCB);
 		RenderDX11_SafeRelease(gDX11FrameCB);
 	}
@@ -830,8 +910,68 @@ namespace
 			return false;
 		}
 
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11ObjectCB),
+			"ObjectCB",
+			&gDX11ObjectCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11MaterialCB),
+			"MaterialCB",
+			&gDX11MaterialCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11LightCB),
+			"LightCB",
+			&gDX11LightCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11ShadowCB),
+			"ShadowCB",
+			&gDX11ShadowCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11WaterCB),
+			"WaterCB",
+			&gDX11WaterCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(WorldDX11GrassCB),
+			"GrassCB",
+			&gDX11GrassCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
 		OutputDebugStringA(
-			"[RenderDX11] Constant buffers created: FrameCB(b0), TerrainCB(b1)\n"
+			"[RenderDX11] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7)\n"
 		);
 
 		return true;
@@ -902,6 +1042,184 @@ namespace
 			1,
 			&gDX11TerrainCB
 		);
+	}
+
+	bool RenderDX11_UpdateConstantBuffer(
+		ID3D11Buffer* Buffer,
+		const void* Data,
+		size_t DataSize,
+		const char* DebugName
+	)
+	{
+		if (!gDX11Context || !Buffer || !Data || DataSize == 0)
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				Buffer,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Map %s constant buffer failed. HRESULT=0x%08X\n",
+				DebugName ? DebugName : "unknown",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		memcpy(
+			Mapped.pData,
+			Data,
+			DataSize
+		);
+
+		gDX11Context->Unmap(
+			Buffer,
+			0
+		);
+
+		return true;
+	}
+
+	void RenderDX11_BindWorldConstantBuffers()
+	{
+		if (!gDX11Context)
+			return;
+
+		ID3D11Buffer* Buffers[8] =
+		{
+			gDX11FrameCB,
+			gDX11TerrainCB,
+			gDX11ObjectCB,
+			gDX11MaterialCB,
+			gDX11LightCB,
+			gDX11ShadowCB,
+			gDX11WaterCB,
+			gDX11GrassCB
+		};
+
+		gDX11Context->VSSetConstantBuffers(
+			0,
+			8,
+			Buffers
+		);
+
+		gDX11Context->PSSetConstantBuffers(
+			0,
+			8,
+			Buffers
+		);
+	}
+
+	void RenderDX11_UpdateDefaultWorldCBs()
+	{
+		WorldDX11ObjectCB ObjectCB = {};
+		RenderDX11_SetIdentityMatrix(ObjectCB.World);
+		RenderDX11_SetIdentityMatrix(ObjectCB.PrevWorld);
+		ObjectCB.ObjectColor[0] = 1.0f;
+		ObjectCB.ObjectColor[1] = 1.0f;
+		ObjectCB.ObjectColor[2] = 1.0f;
+		ObjectCB.ObjectColor[3] = 1.0f;
+
+		WorldDX11MaterialCB MaterialCB = {};
+		MaterialCB.DiffuseScale[0] = 1.0f;
+		MaterialCB.DiffuseScale[1] = 1.0f;
+		MaterialCB.DiffuseScale[2] = 1.0f;
+		MaterialCB.DiffuseScale[3] = 1.0f;
+		MaterialCB.NormalScale[0] = 1.0f;
+		MaterialCB.SpecularGloss[0] = 0.0f;
+		MaterialCB.SpecularGloss[1] = 0.5f;
+
+		WorldDX11LightCB LightCB = {};
+		LightCB.SunDir[0] = 0.0f;
+		LightCB.SunDir[1] = -1.0f;
+		LightCB.SunDir[2] = 0.0f;
+		LightCB.SunDir[3] = 0.0f;
+		LightCB.SunColor[0] = 1.0f;
+		LightCB.SunColor[1] = 1.0f;
+		LightCB.SunColor[2] = 1.0f;
+		LightCB.SunColor[3] = 1.0f;
+		LightCB.AmbientColor[0] = 0.12f;
+		LightCB.AmbientColor[1] = 0.12f;
+		LightCB.AmbientColor[2] = 0.12f;
+		LightCB.AmbientColor[3] = 1.0f;
+		LightCB.FogColor[0] = 0.45f;
+		LightCB.FogColor[1] = 0.50f;
+		LightCB.FogColor[2] = 0.55f;
+		LightCB.FogColor[3] = 1.0f;
+
+		WorldDX11ShadowCB ShadowCB = {};
+		ShadowCB.ShadowParams[0] = 0.0f;
+		ShadowCB.ShadowAtlasParams[0] = 1.0f;
+
+		WorldDX11WaterCB WaterCB = {};
+		WaterCB.WaterColor[0] = 0.05f;
+		WaterCB.WaterColor[1] = 0.10f;
+		WaterCB.WaterColor[2] = 0.12f;
+		WaterCB.WaterColor[3] = 0.65f;
+
+		WorldDX11GrassCB GrassCB = {};
+		GrassCB.GrassParams[0] = 1.0f;
+		GrassCB.WindParams[0] = 0.0f;
+		GrassCB.WindParams[1] = 0.0f;
+		GrassCB.WindParams[2] = 0.0f;
+		GrassCB.WindParams[3] = 0.0f;
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11ObjectCB,
+			&ObjectCB,
+			sizeof(ObjectCB),
+			"ObjectCB"
+		);
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11MaterialCB,
+			&MaterialCB,
+			sizeof(MaterialCB),
+			"MaterialCB"
+		);
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11LightCB,
+			&LightCB,
+			sizeof(LightCB),
+			"LightCB"
+		);
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11ShadowCB,
+			&ShadowCB,
+			sizeof(ShadowCB),
+			"ShadowCB"
+		);
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11WaterCB,
+			&WaterCB,
+			sizeof(WaterCB),
+			"WaterCB"
+		);
+
+		RenderDX11_UpdateConstantBuffer(
+			gDX11GrassCB,
+			&GrassCB,
+			sizeof(GrassCB),
+			"GrassCB"
+		);
+
+		RenderDX11_BindWorldConstantBuffers();
 	}
 
 	void RenderDX11_UpdateTerrainCB()
@@ -3372,6 +3690,7 @@ bool RenderDX11_RenderWorld(
 	RenderDX11_LogOffscreenOnlyModeOnce();
 	RenderDX11_BindFrameTargets();
 	RenderDX11_UpdateFrameCB(Desc);
+	RenderDX11_UpdateDefaultWorldCBs();
 
 	RenderDX11_ClearFrameTargets();
 

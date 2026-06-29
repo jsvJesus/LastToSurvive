@@ -15,6 +15,50 @@ cbuffer TerrainCB : register(b1)
 	float4 gTerrainDebugParams;
 };
 
+cbuffer ObjectCB : register(b2)
+{
+	row_major float4x4 gWorld;
+	row_major float4x4 gPrevWorld;
+	float4 gObjectColor;
+	float4 gObjectParams;
+};
+
+cbuffer MaterialCB : register(b3)
+{
+	float4 gDiffuseScale;
+	float4 gNormalScale;
+	float4 gSpecularGloss;
+	float4 gMaterialParams;
+};
+
+cbuffer LightCB : register(b4)
+{
+	float4 gSunDir;
+	float4 gSunColor;
+	float4 gAmbientColor;
+	float4 gFogColor;
+	float4 gFogParams;
+};
+
+cbuffer ShadowCB : register(b5)
+{
+	float4 gShadowParams;
+	float4 gShadowAtlasParams;
+};
+
+cbuffer WaterCB : register(b6)
+{
+	float4 gWaterColor;
+	float4 gWaterParams;
+	float4 gWaterUVParams;
+};
+
+cbuffer GrassCB : register(b7)
+{
+	float4 gGrassParams;
+	float4 gWindParams;
+};
+
 struct VS_INPUT
 {
 	float3 Position : POSITION;
