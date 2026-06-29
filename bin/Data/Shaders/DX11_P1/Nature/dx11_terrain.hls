@@ -80,12 +80,25 @@ struct PS_OUTPUT
 	float4 Aux : SV_Target3;
 };
 
+float3 TerrainSafeNormalize(float3 Value, float3 Fallback)
+{
+	float LenSq = dot(Value, Value);
+
+	if (LenSq <= 0.000001f)
+		return Fallback;
+
+	return Value * rsqrt(LenSq);
+}
+
 VS_OUTPUT VSMain(VS_INPUT Input)
 {
 	VS_OUTPUT Output;
 
 	Output.WorldPos = Input.Position;
-	Output.Normal = normalize(Input.Normal);
+	Output.Normal = TerrainSafeNormalize(
+		Input.Normal,
+		float3(0.0f, 1.0f, 0.0f)
+	);
 	Output.Position = mul(float4(Input.Position, 1.0f), gViewProj);
 
 	return Output;
@@ -107,7 +120,11 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	float DepthLinear =
 		saturate(CameraDistance / max(gNearFar.y, 1.0f));
 
-	float3 Normal = normalize(Input.Normal);
+	float3 Normal = TerrainSafeNormalize(
+		Input.Normal,
+		float3(0.0f, 1.0f, 0.0f)
+	);
+
 	float Slope = saturate(1.0f - Normal.y);
 
 	Output.Color = float4(

@@ -279,6 +279,156 @@ namespace
 
 	int RenderDX11_ClampSize(int Value);
 
+	bool RenderDX11_NormalizeTerrainNormal(
+		r3dPoint3D& Normal
+	)
+	{
+		const float LenSq =
+			Normal.x * Normal.x +
+			Normal.y * Normal.y +
+			Normal.z * Normal.z;
+
+		if (!(LenSq > 0.000001f && LenSq < 1000000.0f))
+			return false;
+
+		const float InvLen =
+			1.0f / sqrtf(LenSq);
+
+		Normal.x *= InvLen;
+		Normal.y *= InvLen;
+		Normal.z *= InvLen;
+
+		if (Normal.y < 0.0f)
+		{
+			Normal.x = -Normal.x;
+			Normal.y = -Normal.y;
+			Normal.z = -Normal.z;
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_ComputeTerrainNormalFromHeights(
+		const r3dTerrainDesc& TerrainDesc,
+		float WorldX,
+		float WorldZ,
+		float SampleStep,
+		r3dPoint3D* OutNormal
+	)
+	{
+		if (!Terrain || !OutNormal)
+			return false;
+
+		if (SampleStep <= 0.01f)
+			SampleStep = TerrainDesc.CellSize;
+
+		if (SampleStep <= 0.01f)
+			SampleStep = 1.0f;
+
+		const float LeftX =
+			R3D_MAX(
+				0.0f,
+				WorldX - SampleStep
+			);
+
+		const float RightX =
+			R3D_MIN(
+				TerrainDesc.XSize,
+				WorldX + SampleStep
+			);
+
+		const float BackZ =
+			R3D_MAX(
+				0.0f,
+				WorldZ - SampleStep
+			);
+
+		const float FrontZ =
+			R3D_MIN(
+				TerrainDesc.ZSize,
+				WorldZ + SampleStep
+			);
+
+		const float DeltaX =
+			RightX - LeftX;
+
+		const float DeltaZ =
+			FrontZ - BackZ;
+
+		if (
+			DeltaX <= 0.001f ||
+			DeltaZ <= 0.001f
+		)
+		{
+			return false;
+		}
+
+		r3dPoint3D PosLeft(
+			LeftX,
+			0.0f,
+			WorldZ
+		);
+
+		r3dPoint3D PosRight(
+			RightX,
+			0.0f,
+			WorldZ
+		);
+
+		r3dPoint3D PosBack(
+			WorldX,
+			0.0f,
+			BackZ
+		);
+
+		r3dPoint3D PosFront(
+			WorldX,
+			0.0f,
+			FrontZ
+		);
+
+		const float HeightLeft =
+			Terrain->GetHeight(
+				PosLeft
+			);
+
+		const float HeightRight =
+			Terrain->GetHeight(
+				PosRight
+			);
+
+		const float HeightBack =
+			Terrain->GetHeight(
+				PosBack
+			);
+
+		const float HeightFront =
+			Terrain->GetHeight(
+				PosFront
+			);
+
+		const float SlopeX =
+			(HeightRight - HeightLeft) /
+			DeltaX;
+
+		const float SlopeZ =
+			(HeightFront - HeightBack) /
+			DeltaZ;
+
+		r3dPoint3D Normal(
+			-SlopeX,
+			1.0f,
+			-SlopeZ
+		);
+
+		if (!RenderDX11_NormalizeTerrainNormal(Normal))
+			return false;
+
+		*OutNormal = Normal;
+
+		return true;
+	}
+	
 	bool RenderDX11_UpdateTerrainVertices(
 		ID3D11Buffer* VertexBuffer,
 		int TileX,
@@ -2387,6 +2537,15 @@ namespace
 			PatchSize /
 			static_cast<float>(DX11_TERRAIN_GRID_DIM - 1);
 
+		const r3dTerrainDesc& TerrainDesc =
+			Terrain->GetDesc();
+
+		float NormalSampleStep =
+			TerrainDesc.CellSize;
+
+		if (NormalSampleStep <= 0.01f)
+			NormalSampleStep = Step;
+
 		int VertexIndex = 0;
 
 		for (int z = 0; z < DX11_TERRAIN_GRID_DIM; ++z)
@@ -2412,8 +2571,30 @@ namespace
 
 				Pos.y = Height;
 
-				const r3dPoint3D Normal =
-					Terrain->GetNormal(Pos);
+				r3dPoint3D Normal;
+
+				if (!RenderDX11_ComputeTerrainNormalFromHeights(
+					TerrainDesc,
+					WorldX,
+					WorldZ,
+					NormalSampleStep,
+					&Normal
+				))
+				{
+					Normal =
+						Terrain->GetNormal(
+							Pos
+						);
+
+					if (!RenderDX11_NormalizeTerrainNormal(Normal))
+					{
+						Normal.Assign(
+							0.0f,
+							1.0f,
+							0.0f
+						);
+					}
+				}
 
 				Vertices[VertexIndex].Position[0] = WorldX;
 				Vertices[VertexIndex].Position[1] = Height;
