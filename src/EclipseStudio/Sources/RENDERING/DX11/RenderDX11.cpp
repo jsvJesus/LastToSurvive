@@ -241,6 +241,19 @@ namespace
 	float					gDX11Terrain2Layer0ScaleU = 1.0f;
 	float					gDX11Terrain2Layer0ScaleV = 1.0f;
 
+	r3dTexture*				gDX11Terrain2Mask0Texture = 0;
+
+	r3dTexture*				gDX11Terrain2Layer1DiffuseTexture = 0;
+	r3dTexture*				gDX11Terrain2Layer2DiffuseTexture = 0;
+	r3dTexture*				gDX11Terrain2Layer3DiffuseTexture = 0;
+
+	float					gDX11Terrain2Layer1ScaleU = 1.0f;
+	float					gDX11Terrain2Layer1ScaleV = 1.0f;
+	float					gDX11Terrain2Layer2ScaleU = 1.0f;
+	float					gDX11Terrain2Layer2ScaleV = 1.0f;
+	float					gDX11Terrain2Layer3ScaleU = 1.0f;
+	float					gDX11Terrain2Layer3ScaleV = 1.0f;
+
 	int						gDX11Terrain2TextureMask = 0;
 	bool					gDX11Terrain2TextureInfoLogged = false;
 
@@ -249,6 +262,11 @@ namespace
 	WorldDX11Terrain2TextureBridge gDX11Terrain2HeightBridge = {};
 	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer0DiffuseBridge = {};
 	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer0NormalBridge = {};
+	WorldDX11Terrain2TextureBridge gDX11Terrain2Mask0Bridge = {};
+
+	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer1DiffuseBridge = {};
+	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer2DiffuseBridge = {};
+	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer3DiffuseBridge = {};
 
 	int						gDX11Terrain2SRVMask = 0;
 
@@ -1402,8 +1420,14 @@ namespace
 		DX11_TERRAIN2_TEXTURE_COLOR = 1 << 0,
 		DX11_TERRAIN2_TEXTURE_NORMAL = 1 << 1,
 		DX11_TERRAIN2_TEXTURE_HEIGHT = 1 << 2,
+
 		DX11_TERRAIN2_TEXTURE_LAYER0_DIFFUSE = 1 << 3,
-		DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL = 1 << 4
+		DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL = 1 << 4,
+
+		DX11_TERRAIN2_TEXTURE_MASK0 = 1 << 5,
+		DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE = 1 << 6,
+		DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE = 1 << 7,
+		DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE = 1 << 8
 	};
 
 	void RenderDX11_ResetTerrain2TextureBridge(
@@ -1440,6 +1464,22 @@ namespace
 
 		RenderDX11_ResetTerrain2TextureBridge(
 			gDX11Terrain2Layer0NormalBridge
+		);
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11Terrain2Mask0Bridge
+		);
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11Terrain2Layer1DiffuseBridge
+		);
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11Terrain2Layer2DiffuseBridge
+		);
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11Terrain2Layer3DiffuseBridge
 		);
 
 		gDX11Terrain2SRVMask = 0;
@@ -2026,11 +2066,25 @@ namespace
 		gDX11Terrain2ColorTexture = 0;
 		gDX11Terrain2NormalTexture = 0;
 		gDX11Terrain2HeightTexture = 0;
+
 		gDX11Terrain2Layer0DiffuseTexture = 0;
 		gDX11Terrain2Layer0NormalTexture = 0;
 
+		gDX11Terrain2Mask0Texture = 0;
+
+		gDX11Terrain2Layer1DiffuseTexture = 0;
+		gDX11Terrain2Layer2DiffuseTexture = 0;
+		gDX11Terrain2Layer3DiffuseTexture = 0;
+
 		gDX11Terrain2Layer0ScaleU = 1.0f;
 		gDX11Terrain2Layer0ScaleV = 1.0f;
+
+		gDX11Terrain2Layer1ScaleU = 1.0f;
+		gDX11Terrain2Layer1ScaleV = 1.0f;
+		gDX11Terrain2Layer2ScaleU = 1.0f;
+		gDX11Terrain2Layer2ScaleV = 1.0f;
+		gDX11Terrain2Layer3ScaleU = 1.0f;
+		gDX11Terrain2Layer3ScaleV = 1.0f;
 
 		gDX11Terrain2TextureMask = 0;
 		gDX11Terrain2SRVMask = 0;
@@ -2065,6 +2119,63 @@ namespace
 			if (fabsf(Layer0.ShaderScaleV) > 0.00001f)
 				gDX11Terrain2Layer0ScaleV =
 					Layer0.ShaderScaleV;
+		}
+
+		if (Terrain2->GetNumMasks() > 0)
+		{
+			gDX11Terrain2Mask0Texture =
+				Terrain2->GetLayerMask(0);
+		}
+
+		if (Terrain2->GetNumLayers() > 1)
+		{
+			const r3dTerrainLayer& Layer1 =
+				Terrain2->GetLayer(1);
+
+			gDX11Terrain2Layer1DiffuseTexture =
+				Layer1.DiffuseTex;
+
+			if (fabsf(Layer1.ShaderScaleU) > 0.00001f)
+				gDX11Terrain2Layer1ScaleU =
+					Layer1.ShaderScaleU;
+
+			if (fabsf(Layer1.ShaderScaleV) > 0.00001f)
+				gDX11Terrain2Layer1ScaleV =
+					Layer1.ShaderScaleV;
+		}
+
+		if (Terrain2->GetNumLayers() > 2)
+		{
+			const r3dTerrainLayer& Layer2 =
+				Terrain2->GetLayer(2);
+
+			gDX11Terrain2Layer2DiffuseTexture =
+				Layer2.DiffuseTex;
+
+			if (fabsf(Layer2.ShaderScaleU) > 0.00001f)
+				gDX11Terrain2Layer2ScaleU =
+					Layer2.ShaderScaleU;
+
+			if (fabsf(Layer2.ShaderScaleV) > 0.00001f)
+				gDX11Terrain2Layer2ScaleV =
+					Layer2.ShaderScaleV;
+		}
+
+		if (Terrain2->GetNumLayers() > 3)
+		{
+			const r3dTerrainLayer& Layer3 =
+				Terrain2->GetLayer(3);
+
+			gDX11Terrain2Layer3DiffuseTexture =
+				Layer3.DiffuseTex;
+
+			if (fabsf(Layer3.ShaderScaleU) > 0.00001f)
+				gDX11Terrain2Layer3ScaleU =
+					Layer3.ShaderScaleU;
+
+			if (fabsf(Layer3.ShaderScaleV) > 0.00001f)
+				gDX11Terrain2Layer3ScaleV =
+					Layer3.ShaderScaleV;
 		}
 
 		if (
@@ -2117,6 +2228,46 @@ namespace
 				DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL;
 		}
 
+		if (
+			gDX11Terrain2Mask0Texture &&
+			gDX11Terrain2Mask0Texture->IsLoaded() &&
+			!gDX11Terrain2Mask0Texture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_MASK0;
+		}
+
+		if (
+			gDX11Terrain2Layer1DiffuseTexture &&
+			gDX11Terrain2Layer1DiffuseTexture->IsLoaded() &&
+			!gDX11Terrain2Layer1DiffuseTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE;
+		}
+
+		if (
+			gDX11Terrain2Layer2DiffuseTexture &&
+			gDX11Terrain2Layer2DiffuseTexture->IsLoaded() &&
+			!gDX11Terrain2Layer2DiffuseTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE;
+		}
+
+		if (
+			gDX11Terrain2Layer3DiffuseTexture &&
+			gDX11Terrain2Layer3DiffuseTexture->IsLoaded() &&
+			!gDX11Terrain2Layer3DiffuseTexture->IsMissing()
+		)
+		{
+			gDX11Terrain2TextureMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE;
+		}
+
 		if (!gDX11Terrain2TextureInfoLogged)
 		{
 			gDX11Terrain2TextureInfoLogged = true;
@@ -2148,6 +2299,26 @@ namespace
 			RenderDX11_LogTerrain2TextureInfo(
 				"layer0 normal",
 				gDX11Terrain2Layer0NormalTexture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"mask0",
+				gDX11Terrain2Mask0Texture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"layer1 diffuse",
+				gDX11Terrain2Layer1DiffuseTexture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"layer2 diffuse",
+				gDX11Terrain2Layer2DiffuseTexture
+			);
+
+			RenderDX11_LogTerrain2TextureInfo(
+				"layer3 diffuse",
+				gDX11Terrain2Layer3DiffuseTexture
 			);
 		}
 
@@ -2210,6 +2381,54 @@ namespace
 			gDX11Terrain2SRVMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL;
 		}
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2Mask0Bridge,
+				gDX11Terrain2Mask0Texture,
+				"mask0"
+			)
+		)
+		{
+			gDX11Terrain2SRVMask |=
+				DX11_TERRAIN2_TEXTURE_MASK0;
+		}
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2Layer1DiffuseBridge,
+				gDX11Terrain2Layer1DiffuseTexture,
+				"layer1 diffuse"
+			)
+		)
+		{
+			gDX11Terrain2SRVMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE;
+		}
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2Layer2DiffuseBridge,
+				gDX11Terrain2Layer2DiffuseTexture,
+				"layer2 diffuse"
+			)
+		)
+		{
+			gDX11Terrain2SRVMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE;
+		}
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2Layer3DiffuseBridge,
+				gDX11Terrain2Layer3DiffuseTexture,
+				"layer3 diffuse"
+			)
+		)
+		{
+			gDX11Terrain2SRVMask |=
+				DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE;
+		}
 	}
 
 	void RenderDX11_BindTerrain2TextureSlots()
@@ -2217,18 +2436,22 @@ namespace
 		if (!gDX11Context)
 			return;
 
-		ID3D11ShaderResourceView* SRVs[5] =
+		ID3D11ShaderResourceView* SRVs[9] =
 		{
-			gDX11Terrain2ColorBridge.SRV,
-			gDX11Terrain2NormalBridge.SRV,
-			gDX11Terrain2HeightBridge.SRV,
-			gDX11Terrain2Layer0DiffuseBridge.SRV,
-			gDX11Terrain2Layer0NormalBridge.SRV
+			gDX11Terrain2ColorBridge.SRV,          // t0
+			gDX11Terrain2NormalBridge.SRV,         // t1
+			gDX11Terrain2HeightBridge.SRV,         // t2
+			gDX11Terrain2Layer0DiffuseBridge.SRV,  // t3
+			gDX11Terrain2Layer0NormalBridge.SRV,   // t4
+			gDX11Terrain2Mask0Bridge.SRV,          // t5
+			gDX11Terrain2Layer1DiffuseBridge.SRV,  // t6
+			gDX11Terrain2Layer2DiffuseBridge.SRV,  // t7
+			gDX11Terrain2Layer3DiffuseBridge.SRV   // t8
 		};
 
 		gDX11Context->PSSetShaderResources(
 			0,
-			5,
+			9,
 			SRVs
 		);
 
@@ -4182,7 +4405,7 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d L0D%d L0N%d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d L0D%d L0N%d M0%d L1D%d L2D%d L3D%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			gDX11TerrainPatchDrawCount,
 			gDX11TerrainPatchCullCount,
@@ -4191,7 +4414,11 @@ void RenderDX11_DrawDebugPreviewDX9()
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_NORMAL) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_HEIGHT) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER0_DIFFUSE) ? 1 : 0,
-			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL) ? 1 : 0
+			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL) ? 1 : 0,
+			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_MASK0) ? 1 : 0,
+			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE) ? 1 : 0,
+			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE) ? 1 : 0,
+			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE) ? 1 : 0
 		);
 	}
 }
