@@ -62,6 +62,8 @@ cbuffer GrassCB : register(b7)
 Texture2D gTerrainColorTexture : register(t0);
 Texture2D gTerrainNormalTexture : register(t1);
 Texture2D gTerrainHeightTexture : register(t2);
+Texture2D gTerrainLayer0DiffuseTexture : register(t3);
+Texture2D gTerrainLayer0NormalTexture : register(t4);
 
 SamplerState gTerrainSampler : register(s0);
 
@@ -96,31 +98,47 @@ float3 TerrainSafeNormalize(float3 Value, float3 Fallback)
 	return Value * rsqrt(LenSq);
 }
 
-bool Terrain2HasColorTexture()
-{
-	return gTerrainDebugParams.z >= 0.5f;
-}
-
-bool Terrain2HasNormalTexture()
+bool Terrain2MaskHasBit(float Bit)
 {
 	float Mask =
 		gTerrainDebugParams.z;
 
-	return fmod(Mask, 4.0f) >= 2.0f;
+	return fmod(
+		floor(Mask / Bit),
+		2.0f
+	) >= 1.0f;
+}
+
+bool Terrain2HasColorTexture()
+{
+	return Terrain2MaskHasBit(1.0f);
+}
+
+bool Terrain2HasNormalTexture()
+{
+	return Terrain2MaskHasBit(2.0f);
 }
 
 bool Terrain2HasHeightTexture()
 {
-	return gTerrainDebugParams.z >= 4.0f;
+	return Terrain2MaskHasBit(4.0f);
 }
 
-float2 Terrain2GetUV(float3 WorldPos)
+bool Terrain2HasLayer0DiffuseTexture()
 {
-	return saturate(
-		float2(
-			WorldPos.x * gTerrainColorScale.w,
-			WorldPos.z * gTerrainDebugParams.w
-		)
+	return Terrain2MaskHasBit(8.0f);
+}
+
+bool Terrain2HasLayer0NormalTexture()
+{
+	return Terrain2MaskHasBit(16.0f);
+}
+
+float2 Terrain2GetLayer0UV(float3 WorldPos)
+{
+	return float2(
+		WorldPos.x * gTerrainColorScale.w,
+		WorldPos.z * gTerrainDebugParams.w
 	);
 }
 
@@ -169,18 +187,20 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 
 	float3 FinalColor = DebugColor;
 
-	if (Terrain2HasColorTexture())
+	if (Terrain2HasLayer0DiffuseTexture())
 	{
-		float2 TerrainUV =
-			Terrain2GetUV(Input.WorldPos);
-
-		float4 TerrainColor =
-			gTerrainColorTexture.Sample(
-				gTerrainSampler,
-				TerrainUV
+		float2 LayerUV =
+			Terrain2GetLayer0UV(
+				Input.WorldPos
 			);
 
-		FinalColor = TerrainColor.rgb;
+		float4 LayerColor =
+			gTerrainLayer0DiffuseTexture.Sample(
+				gTerrainSampler,
+				LayerUV
+			);
+
+		FinalColor = LayerColor.rgb;
 	}
 
 	Output.Color = float4(
