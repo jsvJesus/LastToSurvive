@@ -29,6 +29,84 @@ namespace
 			: "";
 	}
 
+	bool ForceSurfaceAlpha255(
+		IDirect3DSurface9* Surface
+	)
+	{
+		if (!Surface)
+			return false;
+
+		D3DSURFACE_DESC Desc{};
+
+		if (
+			FAILED(
+				Surface->GetDesc(
+					&Desc
+				)
+			)
+		)
+		{
+			return false;
+		}
+
+		if (Desc.Format != D3DFMT_A8R8G8B8)
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Force alpha skipped, unsupported format=%d\n",
+				static_cast<int>(
+					Desc.Format
+				)
+			);
+
+			return false;
+		}
+
+		D3DLOCKED_RECT Locked{};
+
+		if (
+			FAILED(
+				Surface->LockRect(
+					&Locked,
+					NULL,
+					0
+				)
+			)
+		)
+		{
+			return false;
+		}
+
+		for (
+			UINT Y = 0;
+			Y < Desc.Height;
+			++Y
+		)
+		{
+			DWORD* Row =
+				reinterpret_cast<DWORD*>(
+					reinterpret_cast<unsigned char*>(
+						Locked.pBits
+					) +
+					Locked.Pitch * Y
+				);
+
+			for (
+				UINT X = 0;
+				X < Desc.Width;
+				++X
+			)
+			{
+				Row[X] =
+					Row[X] |
+					0xFF000000;
+			}
+		}
+
+		Surface->UnlockRect();
+
+		return true;
+	}
+
 	bool RenderMeshToIconDds(
 		r3dMesh* Mesh,
 		const char* OutputFileName,
@@ -205,7 +283,7 @@ namespace
 			0,
 			NULL,
 			D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-			0x00000000,
+			0xFF202020,
 			1.0f,
 			0
 		);
@@ -321,7 +399,7 @@ namespace
 			FALSE
 		);
 
-		r3dRenderer->SetCullMode(D3DCULL_CCW);
+		r3dRenderer->SetCullMode(D3DCULL_NONE);
 
 		Mesh->SetVSConsts(
 			World
@@ -365,6 +443,10 @@ namespace
 
 			goto CleanupFail;
 		}
+
+		ForceSurfaceAlpha255(
+			SystemSurface
+		);
 
 		Hr =
 			D3DXSaveSurfaceToFileA(
