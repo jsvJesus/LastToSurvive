@@ -743,76 +743,10 @@ namespace
 		);
 	}
 
-	bool DoesPhysicalFileExist(
-	const char* FileName
-)
-	{
-		if (
-			!FileName ||
-			!FileName[0]
-		)
-		{
-			return false;
-		}
-
-		const DWORD Attributes =
-			GetFileAttributesA(
-				FileName
-			);
-
-		return
-			Attributes != INVALID_FILE_ATTRIBUTES &&
-			!(Attributes & FILE_ATTRIBUTE_DIRECTORY);
-	}
-
-	std::string GetGeneratedShopIconPath(const BaseItemConfig* Config)
-	{
-		if (!Config)
-			return "";
-
-		char PhysicalPath[256]{};
-		char RmlPath[256]{};
-
-		sprintf_s(
-			PhysicalPath,
-			sizeof(PhysicalPath),
-			"Data\\Weapons\\GeneratedShopIcons\\%u.dds",
-			Config->m_itemID
-		);
-
-		if (
-			DoesPhysicalFileExist(
-				PhysicalPath
-			)
-		)
-		{
-			sprintf_s(
-				RmlPath,
-				sizeof(RmlPath),
-				"Weapons/GeneratedShopIcons/%u.dds",
-				Config->m_itemID
-			);
-
-			return RmlPath;
-		}
-
-		return "";
-	}
-
 	std::string GetShopIconPath(
 		const BaseItemConfig* Config
 	)
 	{
-		const std::string GeneratedIconPath =
-		GetGeneratedShopIconPath(
-			Config
-		);
-
-		if (!GeneratedIconPath.empty())
-		{
-			return GeneratedIconPath;
-		}
-		
 		if (
 			Config &&
 			Config->m_StoreIcon &&

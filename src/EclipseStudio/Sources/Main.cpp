@@ -1773,51 +1773,6 @@ void ExecuteBackendTest();
 
 extern int		_r3d_bTerminateOnZ;
 
-static bool GetCmdLineUIntArg(
-	const char* Name,
-	uint32_t* OutValue
-)
-{
-	if (
-		!Name ||
-		!OutValue
-	)
-	{
-		return false;
-	}
-
-	const char* Found =
-		strstr(
-			__r3dCmdLine,
-			Name
-		);
-
-	if (!Found)
-		return false;
-
-	Found += strlen(Name);
-
-	while (
-		*Found == ' ' ||
-		*Found == '='
-	)
-	{
-		++Found;
-	}
-
-	if (!*Found)
-		return false;
-
-	*OutValue =
-		static_cast<uint32_t>(
-			atoi(
-				Found
-			)
-		);
-
-	return *OutValue != 0;
-}
-
 void game::MainLoop()
 {
 	// init steam we need to initialize this before the renderer for the overlay.
@@ -1916,26 +1871,6 @@ void game::MainLoop()
 		RmlFrontEndShopIconBaker::WriteBakeList(
 			"Data/Weapons/GeneratedShopIcons/ShopIconBakeList.json"
 		);
-
-		const bool bOverwriteIcons = strstr(__r3dCmdLine, "-shopiconbaker_overwrite") != NULL;
-
-		uint32_t BakeItemId = 0;
-
-		if (
-			GetCmdLineUIntArg(
-				"-shopiconbaker_item",
-				&BakeItemId
-			)
-		)
-		{
-			RmlFrontEndShopIconBaker::BakeSingleItem3D(
-				BakeItemId,
-				"Data\\Weapons\\GeneratedShopIcons",
-				0,
-				0,
-				bOverwriteIcons
-			);
-		}
 	}
 
 	// for editors, do not lock mouse. when we start game, in ExecuteNetworkGame we will set that var to true

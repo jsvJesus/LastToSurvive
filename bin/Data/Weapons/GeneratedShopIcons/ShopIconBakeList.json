@@ -12,7 +12,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Premium_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301118.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301118.png"
     },
     {
       "itemID": 301119,
@@ -24,7 +24,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Premium_02.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301119.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301119.png"
     },
     {
       "itemID": 301120,
@@ -36,7 +36,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Premium_03.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301120.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301120.png"
     },
     {
       "itemID": 301121,
@@ -48,7 +48,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Reg_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301121.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301121.png"
     },
     {
       "itemID": 301122,
@@ -60,7 +60,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Reg_02.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301122.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301122.png"
     },
     {
       "itemID": 301123,
@@ -72,7 +72,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Reg_03.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301123.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301123.png"
     },
     {
       "itemID": 301124,
@@ -84,7 +84,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Loot_Drop_Premium_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301124.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301124.png"
     },
     {
       "itemID": 301125,
@@ -96,7 +96,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301125.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301125.png"
     },
     {
       "itemID": 301126,
@@ -108,7 +108,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301126.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301126.png"
     },
     {
       "itemID": 301127,
@@ -120,7 +120,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301127.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301127.png"
     },
     {
       "itemID": 301128,
@@ -132,7 +132,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301128.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301128.png"
     },
     {
       "itemID": 301129,
@@ -144,7 +144,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301129.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301129.png"
     },
     {
       "itemID": 301130,
@@ -156,7 +156,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301130.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301130.png"
     },
     {
       "itemID": 301132,
@@ -168,7 +168,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301132.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301132.png"
     },
     {
       "itemID": 301133,
@@ -180,7 +180,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301133.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301133.png"
     },
     {
       "itemID": 301134,
@@ -192,7 +192,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301134.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301134.png"
     },
     {
       "itemID": 301135,
@@ -204,7 +204,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301135.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301135.png"
     },
     {
       "itemID": 301136,
@@ -216,7 +216,7 @@
       "name": "ZOMBIE- Money",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301136.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301136.png"
     },
     {
       "itemID": 301137,
@@ -228,7 +228,7 @@
       "name": "LootBox",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301137.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301137.png"
     },
     {
       "itemID": 301151,
@@ -240,7 +240,7 @@
       "name": "Account_ClanCreate",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanCreate.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301151.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301151.png"
     },
     {
       "itemID": 301152,
@@ -252,7 +252,7 @@
       "name": "Account_ClanUpg1",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg1.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301152.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301152.png"
     },
     {
       "itemID": 301153,
@@ -264,7 +264,7 @@
       "name": "Account_ClanUpg2",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg2.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301153.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301153.png"
     },
     {
       "itemID": 301154,
@@ -276,7 +276,7 @@
       "name": "Account_ClanUpg3",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg3.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301154.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301154.png"
     },
     {
       "itemID": 301155,
@@ -288,7 +288,7 @@
       "name": "Account_ClanUpg4",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg4.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301155.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301155.png"
     },
     {
       "itemID": 301156,
@@ -300,7 +300,7 @@
       "name": "Account_ClanUpg5",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg5.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301156.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301156.png"
     },
     {
       "itemID": 301157,
@@ -312,7 +312,7 @@
       "name": "Account_ClanUpg6",
       "storeIcon": "$Data/Weapons/StoreIcons/Account_ClanUpg6.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301157.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301157.png"
     },
     {
       "itemID": 301158,
@@ -324,7 +324,7 @@
       "name": "Premium Loot",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301158.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301158.png"
     },
     {
       "itemID": 301159,
@@ -336,7 +336,7 @@
       "name": "Char_Revive",
       "storeIcon": "$Data/Weapons/StoreIcons/Char_Revive.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301159.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301159.png"
     },
     {
       "itemID": 301160,
@@ -348,7 +348,7 @@
       "name": "Xmas Loot",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301160.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301160.png"
     },
     {
       "itemID": 301161,
@@ -360,7 +360,7 @@
       "name": "WEAP - Household Melee",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301161.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301161.png"
     },
     {
       "itemID": 301162,
@@ -372,7 +372,7 @@
       "name": "WEAP - Hunting Melee",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301162.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301162.png"
     },
     {
       "itemID": 301166,
@@ -384,7 +384,7 @@
       "name": "SPAWN - Hunting Weapons",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301166.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301166.png"
     },
     {
       "itemID": 301170,
@@ -396,7 +396,7 @@
       "name": "WEAP - Civilian Guns common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301170.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301170.png"
     },
     {
       "itemID": 301171,
@@ -408,7 +408,7 @@
       "name": "WEAP - Civilian Ammo common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301171.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301171.png"
     },
     {
       "itemID": 301173,
@@ -420,7 +420,7 @@
       "name": "WEAP - Law guns common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301173.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301173.png"
     },
     {
       "itemID": 301174,
@@ -432,7 +432,7 @@
       "name": "WEAP - Law ammo common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301174.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301174.png"
     },
     {
       "itemID": 301175,
@@ -444,7 +444,7 @@
       "name": "SPAWN - Law weapons",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301175.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301175.png"
     },
     {
       "itemID": 301176,
@@ -456,7 +456,7 @@
       "name": "WEAP - Law guns RARE",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301176.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301176.png"
     },
     {
       "itemID": 301177,
@@ -468,7 +468,7 @@
       "name": "WEAP - Law ammo RARE",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301177.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301177.png"
     },
     {
       "itemID": 301179,
@@ -480,7 +480,7 @@
       "name": "WEAP - Military Guns common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301179.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301179.png"
     },
     {
       "itemID": 301180,
@@ -492,7 +492,7 @@
       "name": "WEAP - Military Ammo common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301180.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301180.png"
     },
     {
       "itemID": 301181,
@@ -504,7 +504,7 @@
       "name": "SPAWN - Military Weapons common",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301181.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301181.png"
     },
     {
       "itemID": 301182,
@@ -516,7 +516,7 @@
       "name": "WEAP - Military Guns RARE",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301182.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301182.png"
     },
     {
       "itemID": 301183,
@@ -528,7 +528,7 @@
       "name": "WEAP - Military Ammo RARE",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301183.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301183.png"
     },
     {
       "itemID": 301184,
@@ -540,7 +540,7 @@
       "name": "SPAWN - Military Weapons RARE",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301184.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301184.png"
     },
     {
       "itemID": 301192,
@@ -552,7 +552,7 @@
       "name": "SUPPLIES - Food, snacks",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301192.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301192.png"
     },
     {
       "itemID": 301193,
@@ -564,7 +564,7 @@
       "name": "SUPPLIES - Food, rare",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301193.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301193.png"
     },
     {
       "itemID": 301195,
@@ -576,7 +576,7 @@
       "name": "SUPPLIES - Water, small",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301195.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301195.png"
     },
     {
       "itemID": 301198,
@@ -588,7 +588,7 @@
       "name": "SUPPLIES - Medical, generic",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301198.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301198.png"
     },
     {
       "itemID": 301199,
@@ -600,7 +600,7 @@
       "name": "SUPPLIES - Medical, rare",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301199.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301199.png"
     },
     {
       "itemID": 301200,
@@ -612,7 +612,7 @@
       "name": "SUPPLIES - Infection ",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301200.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301200.png"
     },
     {
       "itemID": 301201,
@@ -624,7 +624,7 @@
       "name": "GEAR - Armor, light",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301201.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301201.png"
     },
     {
       "itemID": 301203,
@@ -636,7 +636,7 @@
       "name": "GEAR - Armor, heavy",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301203.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301203.png"
     },
     {
       "itemID": 301204,
@@ -648,7 +648,7 @@
       "name": "SUPPLIES - Survival Gear",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301204.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301204.png"
     },
     {
       "itemID": 301205,
@@ -660,7 +660,7 @@
       "name": "GEAR - Fortification",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301205.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301205.png"
     },
     {
       "itemID": 301211,
@@ -672,7 +672,7 @@
       "name": "SPAWN - Civilian Supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301211.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301211.png"
     },
     {
       "itemID": 301213,
@@ -684,7 +684,7 @@
       "name": "SPAWN - Civilian vehicle",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301213.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301213.png"
     },
     {
       "itemID": 301214,
@@ -696,7 +696,7 @@
       "name": "SPAWN - Civilian weapons",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301214.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301214.png"
     },
     {
       "itemID": 301215,
@@ -708,7 +708,7 @@
       "name": "SPAWN - Farm supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301215.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301215.png"
     },
     {
       "itemID": 301216,
@@ -720,7 +720,7 @@
       "name": "SPAWN - Farm weapons",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301216.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301216.png"
     },
     {
       "itemID": 301218,
@@ -732,7 +732,7 @@
       "name": "SPAWN - Medical supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301218.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301218.png"
     },
     {
       "itemID": 301219,
@@ -744,7 +744,7 @@
       "name": "SPAWN - General store supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301219.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301219.png"
     },
     {
       "itemID": 301222,
@@ -756,7 +756,7 @@
       "name": "SPAWN - Military supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301222.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301222.png"
     },
     {
       "itemID": 301224,
@@ -768,7 +768,7 @@
       "name": "SPAWN - City supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301224.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301224.png"
     },
     {
       "itemID": 301225,
@@ -780,7 +780,7 @@
       "name": "SPAWN - Police Car",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301225.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301225.png"
     },
     {
       "itemID": 301226,
@@ -792,7 +792,7 @@
       "name": "SPAWN - Ambulance",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301226.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301226.png"
     },
     {
       "itemID": 301227,
@@ -804,7 +804,7 @@
       "name": "SPAWN - Firetruck",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301227.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301227.png"
     },
     {
       "itemID": 301228,
@@ -816,7 +816,7 @@
       "name": "SPAWN - Food, restaurant",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301228.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301228.png"
     },
     {
       "itemID": 301229,
@@ -828,7 +828,7 @@
       "name": "SPAWN - Military vehicle, checkpoint",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301229.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301229.png"
     },
     {
       "itemID": 301230,
@@ -840,7 +840,7 @@
       "name": "SPAWN - Post Office supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301230.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301230.png"
     },
     {
       "itemID": 301231,
@@ -852,7 +852,7 @@
       "name": "SPAWN - Construction zone",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301231.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301231.png"
     },
     {
       "itemID": 301232,
@@ -864,7 +864,7 @@
       "name": "SPAWN - Law supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301232.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301232.png"
     },
     {
       "itemID": 301233,
@@ -876,7 +876,7 @@
       "name": "SPAWN - Playground",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301233.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301233.png"
     },
     {
       "itemID": 301242,
@@ -888,7 +888,7 @@
       "name": "SPAWN - Hunting supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301242.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301242.png"
     },
     {
       "itemID": 301243,
@@ -900,7 +900,7 @@
       "name": "WEAP - Military Melee",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301243.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301243.png"
     },
     {
       "itemID": 301244,
@@ -912,7 +912,7 @@
       "name": "WEAP - Law Melee",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301244.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301244.png"
     },
     {
       "itemID": 301247,
@@ -924,7 +924,7 @@
       "name": "GEAR - Weapon Attachments",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301247.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301247.png"
     },
     {
       "itemID": 301249,
@@ -936,7 +936,7 @@
       "name": "SUPPLIES - Construction Zone",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301249.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301249.png"
     },
     {
       "itemID": 301250,
@@ -948,7 +948,7 @@
       "name": "SUPPLIES - Firetruck supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301250.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301250.png"
     },
     {
       "itemID": 301251,
@@ -960,7 +960,7 @@
       "name": "SUPPLIES - Law supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301251.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301251.png"
     },
     {
       "itemID": 301252,
@@ -972,7 +972,7 @@
       "name": "SUPPLIES - Playground",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301252.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301252.png"
     },
     {
       "itemID": 301254,
@@ -984,7 +984,7 @@
       "name": "SUPPLIES - Civilian Gear",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301254.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301254.png"
     },
     {
       "itemID": 301255,
@@ -996,7 +996,7 @@
       "name": "SUPPLIES - Military Gear",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301255.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301255.png"
     },
     {
       "itemID": 301256,
@@ -1008,7 +1008,7 @@
       "name": "SUPPLIES - Farm Supplies",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_LootBox.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/301256.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/301256.png"
     },
     {
       "itemID": 400000,
@@ -1020,7 +1020,7 @@
       "name": "Forward Grip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Grip_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Grip_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400000.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400000.png"
     },
     {
       "itemID": 400001,
@@ -1032,7 +1032,7 @@
       "name": "5.45 AK 30",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_AK74_30_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_AK74_30_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400001.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400001.png"
     },
     {
       "itemID": 400003,
@@ -1044,7 +1044,7 @@
       "name": "ACOG",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Acog_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Acog_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400003.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400003.png"
     },
     {
       "itemID": 400004,
@@ -1056,7 +1056,7 @@
       "name": "Rifle Laser",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Side_Laser_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Side_Laser_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400004.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400004.png"
     },
     {
       "itemID": 400005,
@@ -1068,7 +1068,7 @@
       "name": "Holographic",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Eotech_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Eotech_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400005.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400005.png"
     },
     {
       "itemID": 400006,
@@ -1080,7 +1080,7 @@
       "name": "SCAR IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Scar.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Scar.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400006.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400006.png"
     },
     {
       "itemID": 400007,
@@ -1092,7 +1092,7 @@
       "name": "Kobra",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Kobra_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Kobra_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400007.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400007.png"
     },
     {
       "itemID": 400008,
@@ -1104,7 +1104,7 @@
       "name": "Tactical Sniper Scope",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Scope6x_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Scope6x_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400008.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400008.png"
     },
     {
       "itemID": 400009,
@@ -1116,7 +1116,7 @@
       "name": "SMG Grip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Grip_Mp7_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Grip_Mp7_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400009.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400009.png"
     },
     {
       "itemID": 101002,
@@ -1128,7 +1128,7 @@
       "name": "M16",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_M16.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_M16.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101002.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101002.png"
     },
     {
       "itemID": 400010,
@@ -1140,7 +1140,7 @@
       "name": "STANAG 60",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_M4_60rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_M4_60rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400010.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400010.png"
     },
     {
       "itemID": 101004,
@@ -1152,7 +1152,7 @@
       "name": "FN FiveSeven",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_FN57.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_FN57.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101004.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101004.png"
     },
     {
       "itemID": 400012,
@@ -1164,7 +1164,7 @@
       "name": "Flash Hider",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Muzzle_FlashHider_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Muzzle_FlashHider_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400012.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400012.png"
     },
     {
       "itemID": 101005,
@@ -1176,7 +1176,7 @@
       "name": "G36",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_G36.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_G36.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101005.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101005.png"
     },
     {
       "itemID": 400013,
@@ -1188,7 +1188,7 @@
       "name": "Silencer ",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Muzzle_Silencer_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Muzzle_Silencer_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400013.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400013.png"
     },
     {
       "itemID": 400015,
@@ -1200,7 +1200,7 @@
       "name": "STANAG 45",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_M4_40rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_M4_40rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400015.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400015.png"
     },
     {
       "itemID": 400016,
@@ -1212,7 +1212,7 @@
       "name": "STANAG 30",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_M4_30rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_M4_30rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400016.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400016.png"
     },
     {
       "itemID": 400017,
@@ -1224,7 +1224,7 @@
       "name": "STANAG C-Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_C-Mag_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_C-Mag_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400017.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400017.png"
     },
     {
       "itemID": 400018,
@@ -1236,7 +1236,7 @@
       "name": "Rifle Flashlight",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Side_Flashlight_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Side_Flashlight_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400018.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400018.png"
     },
     {
       "itemID": 400019,
@@ -1248,7 +1248,7 @@
       "name": "Compact Scope",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_SwissCompact_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_SwissCompact_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400019.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400019.png"
     },
     {
       "itemID": 400020,
@@ -1260,7 +1260,7 @@
       "name": "Red Dot SP",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_SwissRedDot_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_SwissRedDot_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400020.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400020.png"
     },
     {
       "itemID": 400021,
@@ -1272,7 +1272,7 @@
       "name": "Pistol laser",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Pistol_Laser_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Pistol_Laser_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400021.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400021.png"
     },
     {
       "itemID": 400022,
@@ -1284,7 +1284,7 @@
       "name": "Pistol Flashlight",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Pistol_flashlight_WL1.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Pistol_flashlight_WL1.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400022.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400022.png"
     },
     {
       "itemID": 400023,
@@ -1296,7 +1296,7 @@
       "name": "Reflex Sight",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Reflex_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Reflex_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400023.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400023.png"
     },
     {
       "itemID": 400024,
@@ -1308,7 +1308,7 @@
       "name": "M4 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M4FFH.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M4FFH.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400024.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400024.png"
     },
     {
       "itemID": 400025,
@@ -1320,7 +1320,7 @@
       "name": "SIG 556 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_SG556.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_SG556.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400025.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400025.png"
     },
     {
       "itemID": 400026,
@@ -1332,7 +1332,7 @@
       "name": "MP7 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mp7.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mp7.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400026.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400026.png"
     },
     {
       "itemID": 400027,
@@ -1344,7 +1344,7 @@
       "name": "PSO-1",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_PSO1_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_PSO1_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400027.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400027.png"
     },
     {
       "itemID": 400029,
@@ -1356,7 +1356,7 @@
       "name": "G36 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_SG556_30rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_SG556_30rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400029.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400029.png"
     },
     {
       "itemID": 101022,
@@ -1368,7 +1368,7 @@
       "name": "AK-74M",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_AK74M.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_AK74M.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101022.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101022.png"
     },
     {
       "itemID": 400030,
@@ -1380,7 +1380,7 @@
       "name": "VSS-20",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_MAG_Vintorez_20.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_MAG_Vintorez_20.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400030.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400030.png"
     },
     {
       "itemID": 400031,
@@ -1392,7 +1392,7 @@
       "name": "VSS-10",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_MAG_Vintorez_10.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_MAG_Vintorez_10.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400031.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400031.png"
     },
     {
       "itemID": 400032,
@@ -1404,7 +1404,7 @@
       "name": "MP7 40",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Mp7_60rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Mp7_60rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400032.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400032.png"
     },
     {
       "itemID": 400033,
@@ -1416,7 +1416,7 @@
       "name": "MP7 30",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Mp7_30rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Mp7_30rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400033.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400033.png"
     },
     {
       "itemID": 400034,
@@ -1428,7 +1428,7 @@
       "name": "9x19 Para Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_SIGP226.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_SIGP226.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400034.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400034.png"
     },
     {
       "itemID": 400035,
@@ -1440,7 +1440,7 @@
       "name": "M249 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M249.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M249.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400035.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400035.png"
     },
     {
       "itemID": 400036,
@@ -1452,7 +1452,7 @@
       "name": "KT IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Keltech.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Keltech.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400036.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400036.png"
     },
     {
       "itemID": 400038,
@@ -1464,7 +1464,7 @@
       "name": "Blackwater Long Range",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_BW_LongRange_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_BW_LongRange_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400038.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400038.png"
     },
     {
       "itemID": 400039,
@@ -1476,7 +1476,7 @@
       "name": "Swiss Arms Scope 8x",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_MultiRail_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_MultiRail_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400039.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400039.png"
     },
     {
       "itemID": 101032,
@@ -1488,7 +1488,7 @@
       "name": "AKM",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_AKM.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_AKM.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101032.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101032.png"
     },
     {
       "itemID": 400040,
@@ -1500,7 +1500,7 @@
       "name": "Iron AK74M",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AK74M.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AK74M.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400040.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400040.png"
     },
     {
       "itemID": 400042,
@@ -1512,7 +1512,7 @@
       "name": "Iron G36",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_G36.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_G36.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400042.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400042.png"
     },
     {
       "itemID": 101035,
@@ -1524,7 +1524,7 @@
       "name": "AKS-74U",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_AKS74U.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_AKS74U.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101035.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101035.png"
     },
     {
       "itemID": 400043,
@@ -1536,7 +1536,7 @@
       "name": "AWM .338 Magnum ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_AW50_10rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_AW50_10rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400043.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400043.png"
     },
     {
       "itemID": 400046,
@@ -1548,7 +1548,7 @@
       "name": "P90 50 rounds",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_P90_50rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_P90_50rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400046.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400046.png"
     },
     {
       "itemID": 400047,
@@ -1560,7 +1560,7 @@
       "name": "Bizon 64 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Bizon_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Bizon_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400047.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400047.png"
     },
     {
       "itemID": 101040,
@@ -1572,7 +1572,7 @@
       "name": "M4 Semi",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_SIG516.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_SIG516.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101040.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101040.png"
     },
     {
       "itemID": 400048,
@@ -1584,7 +1584,7 @@
       "name": "SVD ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_SVD_10Rnd_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_SVD_10Rnd_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400048.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400048.png"
     },
     {
       "itemID": 400049,
@@ -1596,7 +1596,7 @@
       "name": "CZ Scorpion EVO-3 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_scorpionevo3_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_scorpionevo3_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400049.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400049.png"
     },
     {
       "itemID": 400050,
@@ -1608,7 +1608,7 @@
       "name": "AA-12 Drum",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_usas12_Drum_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_usas12_Drum_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400050.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400050.png"
     },
     {
       "itemID": 400051,
@@ -1620,7 +1620,7 @@
       "name": "EVO-3 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_ScorpionEVO3.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_ScorpionEVO3.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400051.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400051.png"
     },
     {
       "itemID": 400052,
@@ -1632,7 +1632,7 @@
       "name": "Bizon IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Bizon.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Bizon.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400052.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400052.png"
     },
     {
       "itemID": 400053,
@@ -1644,7 +1644,7 @@
       "name": "USS-12 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Usas12.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Usas12.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400053.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400053.png"
     },
     {
       "itemID": 400054,
@@ -1656,7 +1656,7 @@
       "name": "P90 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_P90.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_P90.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400054.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400054.png"
     },
     {
       "itemID": 400055,
@@ -1668,7 +1668,7 @@
       "name": "Pecheneg IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Pecheneg.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Pecheneg.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400055.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400055.png"
     },
     {
       "itemID": 400056,
@@ -1680,7 +1680,7 @@
       "name": "PKM IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_PKM.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_PKM.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400056.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400056.png"
     },
     {
       "itemID": 400058,
@@ -1692,7 +1692,7 @@
       "name": "SIG516 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Sig516.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Sig516.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400058.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400058.png"
     },
     {
       "itemID": 400059,
@@ -1704,7 +1704,7 @@
       "name": "TAR21 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_tar21.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_tar21.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400059.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400059.png"
     },
     {
       "itemID": 400060,
@@ -1716,7 +1716,7 @@
       "name": "RPK IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RPK.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RPK.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400060.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400060.png"
     },
     {
       "itemID": 400061,
@@ -1728,7 +1728,7 @@
       "name": "RPO IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RPO.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RPO.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400061.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400061.png"
     },
     {
       "itemID": 400062,
@@ -1740,7 +1740,7 @@
       "name": "AN94 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_An94.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_An94.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400062.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400062.png"
     },
     {
       "itemID": 101055,
@@ -1752,7 +1752,7 @@
       "name": "M4",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_M4FFH.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_M4FFH.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101055.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101055.png"
     },
     {
       "itemID": 400065,
@@ -1764,7 +1764,7 @@
       "name": "AT4 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_SUP_AT4.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_SUP_AT4.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400065.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400065.png"
     },
     {
       "itemID": 400066,
@@ -1776,7 +1776,7 @@
       "name": "M4 IS2",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AacHoneyBadger.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AacHoneyBadger.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400066.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400066.png"
     },
     {
       "itemID": 101060,
@@ -1788,7 +1788,7 @@
       "name": "PKM",
       "storeIcon": "$Data/Weapons/StoreIcons/MG_PKM.dds",
       "model": "Data/ObjectsDepot/Weapons/MG_PKM.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101060.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101060.png"
     },
     {
       "itemID": 400069,
@@ -1800,7 +1800,7 @@
       "name": "5.45 AK 45 ",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_AN94_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_AN94_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400069.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400069.png"
     },
     {
       "itemID": 400070,
@@ -1812,7 +1812,7 @@
       "name": ".308 Winchester Sniper rifle ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_AW_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_AW_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400070.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400070.png"
     },
     {
       "itemID": 101063,
@@ -1824,7 +1824,7 @@
       "name": "MP7",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_MP7.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_MP7.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101063.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101063.png"
     },
     {
       "itemID": 400071,
@@ -1836,7 +1836,7 @@
       "name": "9mm Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Jericho.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Jericho.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400071.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400071.png"
     },
     {
       "itemID": 101064,
@@ -1848,7 +1848,7 @@
       "name": "UZI",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_UZI.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_UZI.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101064.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101064.png"
     },
     {
       "itemID": 400073,
@@ -1860,7 +1860,7 @@
       "name": "Saiga 10 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Saiga_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Saiga_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400073.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400073.png"
     },
     {
       "itemID": 400074,
@@ -1872,7 +1872,7 @@
       "name": "Standard Muzzle",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Muzzle_AacHoneyBadger_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Muzzle_AacHoneyBadger_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400074.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400074.png"
     },
     {
       "itemID": 101068,
@@ -1884,7 +1884,7 @@
       "name": "SVD ",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_SVD_PSO.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_SVD_PSO.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101068.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101068.png"
     },
     {
       "itemID": 400079,
@@ -1896,7 +1896,7 @@
       "name": "MP5 10mm Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_MP5A4_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_MP5A4_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400079.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400079.png"
     },
     {
       "itemID": 400080,
@@ -1908,7 +1908,7 @@
       "name": "SAIGA IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Saiga.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Saiga.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400080.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400080.png"
     },
     {
       "itemID": 400081,
@@ -1920,7 +1920,7 @@
       "name": "XA5 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_MP5A4.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_MP5A4.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400081.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400081.png"
     },
     {
       "itemID": 400082,
@@ -1932,7 +1932,7 @@
       "name": "M590 Is",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mossberg590_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mossberg590_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400082.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400082.png"
     },
     {
       "itemID": 400083,
@@ -1944,7 +1944,7 @@
       "name": "Veresk IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Sr-1_Veresk.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Sr-1_Veresk.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400083.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400083.png"
     },
     {
       "itemID": 400084,
@@ -1956,7 +1956,7 @@
       "name": "SMG-20 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Sr-1_Veresk_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Sr-1_Veresk_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400084.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400084.png"
     },
     {
       "itemID": 400085,
@@ -1968,7 +1968,7 @@
       "name": "SMG-40 ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Sr-1_Veresk_02.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Sr-1_Veresk_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400085.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400085.png"
     },
     {
       "itemID": 400086,
@@ -1980,7 +1980,7 @@
       "name": "Desert Eagle ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Desert_Eagle_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Desert_Eagle_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400086.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400086.png"
     },
     {
       "itemID": 400087,
@@ -1992,7 +1992,7 @@
       "name": "5.7 FN M240 Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_FN57.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_FN57.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400087.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400087.png"
     },
     {
       "itemID": 400088,
@@ -2004,7 +2004,7 @@
       "name": "Modular Aluminum Combat Grip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Grip_Sr-1_Veresk_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Grip_Sr-1_Veresk_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400088.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400088.png"
     },
     {
       "itemID": 101084,
@@ -2016,7 +2016,7 @@
       "name": "VSS VINTOREZ",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_Vintorez.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_Vintorez.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101084.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101084.png"
     },
     {
       "itemID": 101085,
@@ -2028,7 +2028,7 @@
       "name": "MAUSER SP66",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_AW.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_AW.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101085.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101085.png"
     },
     {
       "itemID": 101087,
@@ -2040,7 +2040,7 @@
       "name": "AW Magnum",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_AW50.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_AW50.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101087.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101087.png"
     },
     {
       "itemID": 101088,
@@ -2052,7 +2052,7 @@
       "name": "M107",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_M82.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_M82.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101088.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101088.png"
     },
     {
       "itemID": 400099,
@@ -2064,7 +2064,7 @@
       "name": "G36 C-Mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_C-Mag_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_C-Mag_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400099.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400099.png"
     },
     {
       "itemID": 400100,
@@ -2076,7 +2076,7 @@
       "name": "5.45 AK Drum",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_AK74_Drum_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_AK74_Drum_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400100.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400100.png"
     },
     {
       "itemID": 101093,
@@ -2088,7 +2088,7 @@
       "name": "RPK-74 ",
       "storeIcon": "$Data/Weapons/StoreIcons/MG_RPK.dds",
       "model": "Data/ObjectsDepot/Weapons/MG_RPK.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101093.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101093.png"
     },
     {
       "itemID": 400101,
@@ -2100,7 +2100,7 @@
       "name": "7.62 AKM clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_RPK_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_RPK_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400101.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400101.png"
     },
     {
       "itemID": 101095,
@@ -2112,7 +2112,7 @@
       "name": "FN M249 ",
       "storeIcon": "$Data/Weapons/StoreIcons/MG_M249_SAW.dds",
       "model": "Data/ObjectsDepot/Weapons/MG_M249_SAW.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101095.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101095.png"
     },
     {
       "itemID": 101098,
@@ -2124,7 +2124,7 @@
       "name": "SAIGA",
       "storeIcon": "$Data/Weapons/StoreIcons/SHG_Saiga.dds",
       "model": "Data/ObjectsDepot/Weapons/SHG_Saiga.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101098.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101098.png"
     },
     {
       "itemID": 101103,
@@ -2136,7 +2136,7 @@
       "name": "MP5/10",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_MP5A4.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_MP5A4.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101103.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101103.png"
     },
     {
       "itemID": 101106,
@@ -2148,7 +2148,7 @@
       "name": "Honey Badger",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_AacHoneyBadger_01.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_AacHoneyBadger_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101106.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101106.png"
     },
     {
       "itemID": 101107,
@@ -2160,7 +2160,7 @@
       "name": "FN P90 ",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_P90.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_P90.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101107.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101107.png"
     },
     {
       "itemID": 101108,
@@ -2172,7 +2172,7 @@
       "name": "EVO-3",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_ScorpionEVO3.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_ScorpionEVO3.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101108.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101108.png"
     },
     {
       "itemID": 101109,
@@ -2184,7 +2184,7 @@
       "name": "BIZON",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_Bizon.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_Bizon.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101109.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101109.png"
     },
     {
       "itemID": 101111,
@@ -2196,7 +2196,7 @@
       "name": "B92",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Beretta92F.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Beretta92F.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101111.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101111.png"
     },
     {
       "itemID": 400119,
@@ -2208,7 +2208,7 @@
       "name": "MASADA IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mossada.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mossada.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400119.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400119.png"
     },
     {
       "itemID": 101112,
@@ -2220,7 +2220,7 @@
       "name": "B93R ",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Beretta93R.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Beretta93R.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101112.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101112.png"
     },
     {
       "itemID": 400121,
@@ -2232,7 +2232,7 @@
       "name": "USS-12 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Usas12.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Usas12.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400121.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400121.png"
     },
     {
       "itemID": 101115,
@@ -2244,7 +2244,7 @@
       "name": "Jericho 9mm",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Jericho.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Jericho.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101115.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101115.png"
     },
     {
       "itemID": 400127,
@@ -2256,7 +2256,7 @@
       "name": "M16 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M16.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M16.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400127.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400127.png"
     },
     {
       "itemID": 101120,
@@ -2268,7 +2268,7 @@
       "name": "Sig Sauer P226",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_SigP226.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_SigP226.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101120.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101120.png"
     },
     {
       "itemID": 400128,
@@ -2280,7 +2280,7 @@
       "name": "AKM IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AKM.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AKM.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400128.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400128.png"
     },
     {
       "itemID": 400129,
@@ -2292,7 +2292,7 @@
       "name": "AKS IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AKS74U.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AKS74U.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400129.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400129.png"
     },
     {
       "itemID": 400133,
@@ -2304,7 +2304,7 @@
       "name": ".50 BMG",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_M82.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_M82.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400133.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400133.png"
     },
     {
       "itemID": 400134,
@@ -2316,7 +2316,7 @@
       "name": "UZI IS",
       "storeIcon": "$Data/Weapons/StoreIcons/Attm_Optic_Iron_UZI.dds",
       "model": "Data/ObjectsDepot/Weapons/Attm_Optic_Iron_UZI.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400134.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400134.png"
     },
     {
       "itemID": 400135,
@@ -2328,7 +2328,7 @@
       "name": ".45 ACP STI Eagle Elite ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Jericho.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Jericho.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400135.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400135.png"
     },
     {
       "itemID": 400136,
@@ -2340,7 +2340,7 @@
       "name": "12 Gauge Ammo",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_8x.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_8x.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400136.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400136.png"
     },
     {
       "itemID": 400137,
@@ -2352,7 +2352,7 @@
       "name": "2x 12gauge ",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_2x.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_2x.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400137.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400137.png"
     },
     {
       "itemID": 400139,
@@ -2364,7 +2364,7 @@
       "name": "Arrow Explosive",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Arrow_Exp_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Arrow_Exp_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400139.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400139.png"
     },
     {
       "itemID": 400140,
@@ -2376,7 +2376,7 @@
       "name": "Arrow",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Arrow_Reg_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Arrow_Reg_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400140.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400140.png"
     },
     {
       "itemID": 400141,
@@ -2388,7 +2388,7 @@
       "name": "Shotgun shell 2x",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_2x.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_2x.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400141.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400141.png"
     },
     {
       "itemID": 400142,
@@ -2400,7 +2400,7 @@
       "name": "Shotgun shell 8x",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_8x.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_8x.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400142.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400142.png"
     },
     {
       "itemID": 400143,
@@ -2412,7 +2412,7 @@
       "name": "M249 Ammo Box",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_M249_Box_TPS_01.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_M249_Box_TPS_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400143.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400143.png"
     },
     {
       "itemID": 400144,
@@ -2424,7 +2424,7 @@
       "name": ".22 Caliber Clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Ruger.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Ruger.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400144.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400144.png"
     },
     {
       "itemID": 400145,
@@ -2436,7 +2436,7 @@
       "name": "Anaconda clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Colt_Anaconda.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Colt_Anaconda.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400145.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400145.png"
     },
     {
       "itemID": 400146,
@@ -2448,7 +2448,7 @@
       "name": "Large Kruger Rifle Clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Big.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Big.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400146.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400146.png"
     },
     {
       "itemID": 400147,
@@ -2460,7 +2460,7 @@
       "name": "Medium Kruger Rifle Clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Mid.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Mid.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400147.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400147.png"
     },
     {
       "itemID": 400148,
@@ -2472,7 +2472,7 @@
       "name": "Standard Kruger .22 Rifle Clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Small.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Small.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400148.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400148.png"
     },
     {
       "itemID": 400149,
@@ -2484,7 +2484,7 @@
       "name": "Kruger Rifle IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RugerASR.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RugerASR.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400149.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400149.png"
     },
     {
       "itemID": 400150,
@@ -2496,7 +2496,7 @@
       "name": "Kruger Mini-14 clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Mini14.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Mini14.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400150.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400150.png"
     },
     {
       "itemID": 400151,
@@ -2508,7 +2508,7 @@
       "name": "Kruger Mini-14 IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mini14.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mini14.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400151.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400151.png"
     },
     {
       "itemID": 400152,
@@ -2520,7 +2520,7 @@
       "name": "Flare clip",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Flare.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Flare.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400152.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400152.png"
     },
     {
       "itemID": 400153,
@@ -2532,7 +2532,7 @@
       "name": "Standard Mosin Magazine",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Mosin.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Mosin.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400153.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400153.png"
     },
     {
       "itemID": 400154,
@@ -2544,7 +2544,7 @@
       "name": ".40 caliber 1911 mag",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Mag_Colt_1911.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Mag_Colt_1911.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400154.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400154.png"
     },
     {
       "itemID": 400155,
@@ -2556,7 +2556,7 @@
       "name": "Mosin IS",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mosin.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mosin.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400155.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400155.png"
     },
     {
       "itemID": 400156,
@@ -2568,7 +2568,7 @@
       "name": "Pistol Silencer",
       "storeIcon": "$Data/Weapons/StoreIcons/ATTM_Muzzle_Silencer_02.dds",
       "model": "Data/ObjectsDepot/Weapons/ATTM_Muzzle_Silencer_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400156.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400156.png"
     },
     {
       "itemID": 400157,
@@ -2580,7 +2580,7 @@
       "name": "Nail Strip",
       "storeIcon": "$Data/Weapons/StoreIcons/Attm_Mag_Nailgun.dds",
       "model": "Data/ObjectsDepot/Weapons/Attm_Mag_Nailgun.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/400157.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/400157.png"
     },
     {
       "itemID": 101158,
@@ -2592,7 +2592,7 @@
       "name": "MOSSBERG 590",
       "storeIcon": "$Data/Weapons/StoreIcons/SHG_Mossberg590_01.dds",
       "model": "Data/ObjectsDepot/Weapons/SHG_Mossberg590_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101158.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101158.png"
     },
     {
       "itemID": 101169,
@@ -2604,7 +2604,7 @@
       "name": "MASADA",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Mossada.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Mossada.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101169.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101169.png"
     },
     {
       "itemID": 101172,
@@ -2616,7 +2616,7 @@
       "name": "SIG SAUER 556",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_SIG_SG556.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_SIG_SG556.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101172.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101172.png"
     },
     {
       "itemID": 101173,
@@ -2628,7 +2628,7 @@
       "name": "IMI TAR-21",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_tar21.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_tar21.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101173.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101173.png"
     },
     {
       "itemID": 101180,
@@ -2640,7 +2640,7 @@
       "name": "Desert Eagle",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Desert_Eagle.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Desert_Eagle.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101180.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101180.png"
     },
     {
       "itemID": 101183,
@@ -2652,7 +2652,7 @@
       "name": "KT DECIDER",
       "storeIcon": "$Data/Weapons/StoreIcons/SHG_Keltech.dds",
       "model": "Data/ObjectsDepot/Weapons/SHG_Keltech.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101183.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101183.png"
     },
     {
       "itemID": 101193,
@@ -2664,7 +2664,7 @@
       "name": "FN SCAR CQC",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Fn_scar.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Fn_scar.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101193.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101193.png"
     },
     {
       "itemID": 101197,
@@ -2676,7 +2676,7 @@
       "name": "RA H23",
       "storeIcon": "$Data/Weapons/StoreIcons/MG_G36MG.dds",
       "model": "Data/ObjectsDepot/Weapons/MG_G36MG.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101197.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101197.png"
     },
     {
       "itemID": 101200,
@@ -2688,7 +2688,7 @@
       "name": "AA-12",
       "storeIcon": "$Data/Weapons/StoreIcons/SHG_Usas12.dds",
       "model": "Data/ObjectsDepot/Weapons/SHG_Usas12.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101200.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101200.png"
     },
     {
       "itemID": 101201,
@@ -2700,7 +2700,7 @@
       "name": "VERESK SR-2",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_SR-1_Veresk.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_SR-1_Veresk.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101201.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101201.png"
     },
     {
       "itemID": 101210,
@@ -2712,7 +2712,7 @@
       "name": "FN SCAR NIGHT STALKER",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Fn_scar_NightCamo.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Fn_scar_NightCamo.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101210.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101210.png"
     },
     {
       "itemID": 101217,
@@ -2724,7 +2724,7 @@
       "name": "MAUSER SRG DESERT",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_AW_Des.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_AW_Des.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101217.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101217.png"
     },
     {
       "itemID": 101224,
@@ -2736,7 +2736,7 @@
       "name": "STI Eagle Elite .45 ACP",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Jericho.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Jericho.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101224.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101224.png"
     },
     {
       "itemID": 101246,
@@ -2748,7 +2748,7 @@
       "name": "FN PS90",
       "storeIcon": "$Data/Weapons/StoreIcons/SMG_PS90.dds",
       "model": "Data/ObjectsDepot/Weapons/SMG_PS90.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101246.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101246.png"
     },
     {
       "itemID": 101247,
@@ -2760,7 +2760,7 @@
       "name": "BLASER R93",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_Blaser_LRS2_01.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_Blaser_LRS2_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101247.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101247.png"
     },
     {
       "itemID": 101256,
@@ -2772,7 +2772,7 @@
       "name": "Antibiotics",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Med_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Med_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101256.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101256.png"
     },
     {
       "itemID": 101261,
@@ -2784,7 +2784,7 @@
       "name": "Bandages ",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_bandage_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_bandage_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101261.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101261.png"
     },
     {
       "itemID": 101262,
@@ -2796,7 +2796,7 @@
       "name": "Bandages DX",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_bandage_02.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_bandage_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101262.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101262.png"
     },
     {
       "itemID": 101267,
@@ -2808,7 +2808,7 @@
       "name": "Tactical Knife",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Knife_01.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Knife_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101267.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101267.png"
     },
     {
       "itemID": 101278,
@@ -2820,7 +2820,7 @@
       "name": "Bat",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_BaseballBat_01.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_BaseballBat_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101278.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101278.png"
     },
     {
       "itemID": 101283,
@@ -2832,7 +2832,7 @@
       "name": "Bag of Chips",
       "storeIcon": "$Data/Weapons/StoreIcons/consumables_bag_chips_01.dds",
       "model": "Data/ObjectsDepot/Weapons/consumables_bag_chips_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101283.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101283.png"
     },
     {
       "itemID": 101284,
@@ -2844,7 +2844,7 @@
       "name": "Bag MRE",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Bag_MRE_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Bag_MRE_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101284.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101284.png"
     },
     {
       "itemID": 101285,
@@ -2856,7 +2856,7 @@
       "name": "Instant Oatmeal",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Bag_Oat_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Bag_Oat_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101285.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101285.png"
     },
     {
       "itemID": 101286,
@@ -2868,7 +2868,7 @@
       "name": "Coconut Water",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Coconutwater_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Coconutwater_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101286.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101286.png"
     },
     {
       "itemID": 101288,
@@ -2880,7 +2880,7 @@
       "name": "Chocolate Bar",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Bar_Chocolate_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Bar_Chocolate_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101288.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101288.png"
     },
     {
       "itemID": 101289,
@@ -2892,7 +2892,7 @@
       "name": "Granola Bar",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Bar_Granola_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Bar_Granola_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101289.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101289.png"
     },
     {
       "itemID": 101290,
@@ -2904,7 +2904,7 @@
       "name": "Can of Pasta",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Can_Pasta_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Can_Pasta_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101290.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101290.png"
     },
     {
       "itemID": 101291,
@@ -2916,7 +2916,7 @@
       "name": "Can of Soup",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Can_Soup_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Can_Soup_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101291.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101291.png"
     },
     {
       "itemID": 101292,
@@ -2928,7 +2928,7 @@
       "name": "Can of Ham",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Can_Spam_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Can_Spam_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101292.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101292.png"
     },
     {
       "itemID": 101293,
@@ -2940,7 +2940,7 @@
       "name": "Can of Tuna",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Can_Tuna_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Can_Tuna_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101293.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101293.png"
     },
     {
       "itemID": 101294,
@@ -2952,7 +2952,7 @@
       "name": "Energy drink",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Energydrink_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Energydrink_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101294.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101294.png"
     },
     {
       "itemID": 101295,
@@ -2964,7 +2964,7 @@
       "name": "Electro-AID",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_gatorade_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_gatorade_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101295.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101295.png"
     },
     {
       "itemID": 101296,
@@ -2976,7 +2976,7 @@
       "name": "Can of soda",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_soda_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_soda_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101296.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101296.png"
     },
     {
       "itemID": 101297,
@@ -2988,7 +2988,7 @@
       "name": "Juice",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_Tetrapack_Juice_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_Tetrapack_Juice_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101297.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101297.png"
     },
     {
       "itemID": 101298,
@@ -3000,7 +3000,7 @@
       "name": "Water 1L",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_water_L_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_water_L_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101298.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101298.png"
     },
     {
       "itemID": 101299,
@@ -3012,7 +3012,7 @@
       "name": "Water 375ml",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_water_S_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_water_S_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101299.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101299.png"
     },
     {
       "itemID": 101300,
@@ -3024,7 +3024,7 @@
       "name": "Pain killers",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_PainKiller_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_PainKiller_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101300.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101300.png"
     },
     {
       "itemID": 101301,
@@ -3036,7 +3036,7 @@
       "name": "Zombie Repellent",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_ZombieRepellent_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_ZombieRepellent_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101301.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101301.png"
     },
     {
       "itemID": 101302,
@@ -3048,7 +3048,7 @@
       "name": "C01-Vaccine",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Syringe_01_Vaccine.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Syringe_01_Vaccine.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101302.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101302.png"
     },
     {
       "itemID": 101303,
@@ -3060,7 +3060,7 @@
       "name": "C04-Vaccine",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Syringe_01_GC_Vaccine.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Syringe_01_GC_Vaccine.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101303.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101303.png"
     },
     {
       "itemID": 101304,
@@ -3072,7 +3072,7 @@
       "name": "Medkit",
       "storeIcon": "$Data/Weapons/StoreIcons/item_medkit_01.dds",
       "model": "Data/ObjectsDepot/Weapons/item_medkit_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101304.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101304.png"
     },
     {
       "itemID": 101305,
@@ -3084,7 +3084,7 @@
       "name": "Time Capsule",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_MsgBottle.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_MsgBottle.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101305.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101305.png"
     },
     {
       "itemID": 101306,
@@ -3096,7 +3096,7 @@
       "name": "Flashlight",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Flashlight.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Flashlight.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101306.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101306.png"
     },
     {
       "itemID": 101307,
@@ -3108,7 +3108,7 @@
       "name": "Hammer",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Hammer.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Hammer.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101307.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101307.png"
     },
     {
       "itemID": 101308,
@@ -3120,7 +3120,7 @@
       "name": "Hatchet",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Hatchet.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Hatchet.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101308.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101308.png"
     },
     {
       "itemID": 101309,
@@ -3132,7 +3132,7 @@
       "name": "Pickaxe",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Pickaxe.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Pickaxe.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101309.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101309.png"
     },
     {
       "itemID": 101310,
@@ -3144,7 +3144,7 @@
       "name": "Frag Grenade",
       "storeIcon": "$Data/Weapons/StoreIcons/EXP_M26.dds",
       "model": "Data/ObjectsDepot/Weapons/EXP_M26.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101310.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101310.png"
     },
     {
       "itemID": 101311,
@@ -3156,7 +3156,7 @@
       "name": "Chemlight White",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101311.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101311.png"
     },
     {
       "itemID": 101312,
@@ -3168,7 +3168,7 @@
       "name": "Flare",
       "storeIcon": "$Data/Weapons/StoreIcons/EXP_Flare.dds",
       "model": "Data/ObjectsDepot/Weapons/EXP_Flare.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101312.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101312.png"
     },
     {
       "itemID": 101313,
@@ -3180,7 +3180,7 @@
       "name": "Spiked Bat",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_BaseballBat_Spikes_01.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_BaseballBat_Spikes_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101313.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101313.png"
     },
     {
       "itemID": 101314,
@@ -3192,7 +3192,7 @@
       "name": "Metal Bat",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_BaseballBat_02.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_BaseballBat_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101314.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101314.png"
     },
     {
       "itemID": 101315,
@@ -3204,7 +3204,7 @@
       "name": "Binoculars",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Binocular.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Binocular.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101315.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101315.png"
     },
     {
       "itemID": 101316,
@@ -3216,7 +3216,7 @@
       "name": "Barb wire barricade",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Barricade_BarbWire.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Barricade_BarbWire.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101316.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101316.png"
     },
     {
       "itemID": 101317,
@@ -3228,7 +3228,7 @@
       "name": "Wood shield barricade",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Barricade_WoodShield.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Barricade_WoodShield.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101317.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101317.png"
     },
     {
       "itemID": 101318,
@@ -3240,7 +3240,7 @@
       "name": "Riot Shield",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Riot_Shield_Crate_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Riot_Shield_Crate_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101318.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101318.png"
     },
     {
       "itemID": 101319,
@@ -3252,7 +3252,7 @@
       "name": "Range Finder",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_RangeFinder.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_RangeFinder.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101319.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101319.png"
     },
     {
       "itemID": 101320,
@@ -3264,7 +3264,7 @@
       "name": "Flare Gun",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_FlareGun.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_FlareGun.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101320.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101320.png"
     },
     {
       "itemID": 101321,
@@ -3276,7 +3276,7 @@
       "name": "Double Barrel",
       "storeIcon": "$Data/Weapons/StoreIcons/SHG_DoubleBarrel.dds",
       "model": "Data/ObjectsDepot/Weapons/SHG_DoubleBarrel.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101321.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101321.png"
     },
     {
       "itemID": 101322,
@@ -3288,7 +3288,7 @@
       "name": "Compound Crossbow",
       "storeIcon": "$Data/Weapons/StoreIcons/SNP_CrossBow.dds",
       "model": "Data/ObjectsDepot/Weapons/SNP_CrossBow.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101322.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101322.png"
     },
     {
       "itemID": 101323,
@@ -3300,7 +3300,7 @@
       "name": "Air horn",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Airhorn.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Airhorn.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101323.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101323.png"
     },
     {
       "itemID": 101324,
@@ -3312,7 +3312,7 @@
       "name": "Sandbag barricade",
       "storeIcon": "$Data/Weapons/StoreIcons/item_barricade_sandbag.dds",
       "model": "Data/ObjectsDepot/Weapons/item_barricade_sandbag.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101324.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101324.png"
     },
     {
       "itemID": 101325,
@@ -3324,7 +3324,7 @@
       "name": "Chemlight blue",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight_blue.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight_blue.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101325.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101325.png"
     },
     {
       "itemID": 101326,
@@ -3336,7 +3336,7 @@
       "name": "Chemlight green",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight_green.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight_green.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101326.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101326.png"
     },
     {
       "itemID": 101327,
@@ -3348,7 +3348,7 @@
       "name": "Chemlight orange",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight_orange.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight_orange.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101327.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101327.png"
     },
     {
       "itemID": 101328,
@@ -3360,7 +3360,7 @@
       "name": "Chemlight red",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight_red.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight_red.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101328.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101328.png"
     },
     {
       "itemID": 101329,
@@ -3372,7 +3372,7 @@
       "name": "Chemlight yellow",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Chemlight_yellow.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Chemlight_yellow.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101329.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101329.png"
     },
     {
       "itemID": 101330,
@@ -3384,7 +3384,7 @@
       "name": "Kruger .22",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Ruger.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Ruger.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101330.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101330.png"
     },
     {
       "itemID": 101331,
@@ -3396,7 +3396,7 @@
       "name": "Anaconda",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_Colt_Anaconda.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_Colt_Anaconda.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101331.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101331.png"
     },
     {
       "itemID": 101332,
@@ -3408,7 +3408,7 @@
       "name": "Kruger .22 Rifle",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Ruger_Rifle.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Ruger_Rifle.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101332.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101332.png"
     },
     {
       "itemID": 101334,
@@ -3420,7 +3420,7 @@
       "name": "Kruger Mini-14",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Mini14.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Mini14.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101334.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101334.png"
     },
     {
       "itemID": 101335,
@@ -3432,7 +3432,7 @@
       "name": "Kandy Kane",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_CandyCane_01.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_CandyCane_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101335.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101335.png"
     },
     {
       "itemID": 101336,
@@ -3444,7 +3444,7 @@
       "name": "Katana",
       "storeIcon": "$Data/Weapons/StoreIcons/mel_katana_01.dds",
       "model": "Data/ObjectsDepot/Weapons/mel_katana_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101336.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101336.png"
     },
     {
       "itemID": 101337,
@@ -3456,7 +3456,7 @@
       "name": "Jokoto Katana",
       "storeIcon": "$Data/Weapons/StoreIcons/mel_katana_01_special.dds",
       "model": "Data/ObjectsDepot/Weapons/mel_katana_01_special.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101337.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101337.png"
     },
     {
       "itemID": 101338,
@@ -3468,7 +3468,7 @@
       "name": "Wakizashi",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_katana_02_special.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_katana_02_special.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101338.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101338.png"
     },
     {
       "itemID": 101339,
@@ -3480,7 +3480,7 @@
       "name": "Machete",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Machete_01.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Machete_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101339.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101339.png"
     },
     {
       "itemID": 101340,
@@ -3492,7 +3492,7 @@
       "name": "MiniSaints",
       "storeIcon": "$Data/Weapons/StoreIcons/Consumables_MiniSaints_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Consumables_MiniSaints_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101340.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101340.png"
     },
     {
       "itemID": 101341,
@@ -3504,7 +3504,7 @@
       "name": "Mosin Nagant",
       "storeIcon": "$Data/Weapons/StoreIcons/ASR_Mosin_Rifle.dds",
       "model": "Data/ObjectsDepot/Weapons/ASR_Mosin_Rifle.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101341.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101341.png"
     },
     {
       "itemID": 101342,
@@ -3516,7 +3516,7 @@
       "name": "1911",
       "storeIcon": "$Data/Weapons/StoreIcons/HG_colt_1911.dds",
       "model": "Data/ObjectsDepot/Weapons/HG_colt_1911.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101342.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101342.png"
     },
     {
       "itemID": 101343,
@@ -3528,7 +3528,7 @@
       "name": "Brass Knuckles",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_BrassKnuckles.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_BrassKnuckles.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101343.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101343.png"
     },
     {
       "itemID": 101344,
@@ -3540,7 +3540,7 @@
       "name": "Canoe Paddle",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Canoe_paddle.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Canoe_paddle.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101344.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101344.png"
     },
     {
       "itemID": 101345,
@@ -3552,7 +3552,7 @@
       "name": "Cricket bat",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Cricket_bat.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Cricket_bat.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101345.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101345.png"
     },
     {
       "itemID": 101346,
@@ -3564,7 +3564,7 @@
       "name": "Shovel",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Shovel.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Shovel.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101346.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101346.png"
     },
     {
       "itemID": 101347,
@@ -3576,7 +3576,7 @@
       "name": "Chainsaw",
       "storeIcon": "$Data/Weapons/StoreIcons/MEL_Chainsaw.dds",
       "model": "Data/ObjectsDepot/Weapons/MEL_Chainsaw.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101347.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101347.png"
     },
     {
       "itemID": 101348,
@@ -3588,7 +3588,7 @@
       "name": "Personal locker",
       "storeIcon": "$Data/Weapons/StoreIcons/Item_Lockbox_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Item_Lockbox_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101348.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101348.png"
     },
     {
       "itemID": 101352,
@@ -3600,7 +3600,7 @@
       "name": "Wooden door block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Door_Wood_2M_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Door_Wood_2M_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101352.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101352.png"
     },
     {
       "itemID": 101353,
@@ -3612,7 +3612,7 @@
       "name": "Metal wall block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Metal_2M_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Metal_2M_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101353.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101353.png"
     },
     {
       "itemID": 101354,
@@ -3624,7 +3624,7 @@
       "name": "Tall brick wall block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Brick_Tall_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Brick_Tall_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101354.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101354.png"
     },
     {
       "itemID": 101355,
@@ -3636,7 +3636,7 @@
       "name": "Wooden wall piece, 2M",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Wood_2M_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Wood_2M_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101355.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101355.png"
     },
     {
       "itemID": 101356,
@@ -3648,7 +3648,7 @@
       "name": "Short brick wall piece",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Brick_Short_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Brick_Short_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101356.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101356.png"
     },
     {
       "itemID": 101357,
@@ -3660,7 +3660,7 @@
       "name": "Farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Farm_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Farm_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101357.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101357.png"
     },
     {
       "itemID": 101358,
@@ -3672,7 +3672,7 @@
       "name": "Industrial power generator",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_PowerGen_Indust_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_PowerGen_Indust_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101358.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101358.png"
     },
     {
       "itemID": 101359,
@@ -3684,7 +3684,7 @@
       "name": "Small power generator",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_PowerGen_01_Small.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_PowerGen_01_Small.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101359.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101359.png"
     },
     {
       "itemID": 101360,
@@ -3696,7 +3696,7 @@
       "name": "Solar water purifier",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_SolarWater_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_SolarWater_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101360.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101360.png"
     },
     {
       "itemID": 101361,
@@ -3708,7 +3708,7 @@
       "name": "Placeable light",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Light_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Light_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101361.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101361.png"
     },
     {
       "itemID": 101362,
@@ -3720,7 +3720,7 @@
       "name": "Bag of Chips farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Farm_ChipBag_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Farm_ChipBag_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101362.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101362.png"
     },
     {
       "itemID": 101363,
@@ -3732,7 +3732,7 @@
       "name": "Apple farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Apple_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Apple_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101363.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101363.png"
     },
     {
       "itemID": 101364,
@@ -3744,7 +3744,7 @@
       "name": "Banana farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Banana_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Banana_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101364.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101364.png"
     },
     {
       "itemID": 101365,
@@ -3756,7 +3756,7 @@
       "name": "Carrot farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Carrot_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Carrot_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101365.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101365.png"
     },
     {
       "itemID": 101366,
@@ -3768,7 +3768,7 @@
       "name": "Lettuce farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Lettuce.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Lettuce.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101366.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101366.png"
     },
     {
       "itemID": 101367,
@@ -3780,7 +3780,7 @@
       "name": "Pinapple farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_PineApple_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_PineApple_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101367.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101367.png"
     },
     {
       "itemID": 101368,
@@ -3792,7 +3792,7 @@
       "name": "Potato farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Potato_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Potato_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101368.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101368.png"
     },
     {
       "itemID": 101369,
@@ -3804,7 +3804,7 @@
       "name": "Tomato farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_Tomato_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_Tomato_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101369.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101369.png"
     },
     {
       "itemID": 101370,
@@ -3816,7 +3816,7 @@
       "name": "Watermelon farm block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Veg_WaterMelon_01.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Veg_WaterMelon_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101370.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101370.png"
     },
     {
       "itemID": 101371,
@@ -3828,7 +3828,7 @@
       "name": "Wood Door Crate 2M",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Door_Wood_2M_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Door_Wood_2M_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101371.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101371.png"
     },
     {
       "itemID": 101372,
@@ -3840,7 +3840,7 @@
       "name": "Farm Block Crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Farm_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Farm_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101372.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101372.png"
     },
     {
       "itemID": 101373,
@@ -3852,7 +3852,7 @@
       "name": "Light block crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Light_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Light_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101373.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101373.png"
     },
     {
       "itemID": 101374,
@@ -3864,7 +3864,7 @@
       "name": "Power Generator Block Crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_PowerGen_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_PowerGen_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101374.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101374.png"
     },
     {
       "itemID": 101375,
@@ -3876,7 +3876,7 @@
       "name": "Industrial Power Generator Block",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_PowerGen_Indust_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_PowerGen_Indust_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101375.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101375.png"
     },
     {
       "itemID": 101376,
@@ -3888,7 +3888,7 @@
       "name": "Solar Water Purifier block crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_SolarWater_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_SolarWater_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101376.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101376.png"
     },
     {
       "itemID": 101377,
@@ -3900,7 +3900,7 @@
       "name": "Short Brick Wall crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Brick_Short_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Brick_Short_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101377.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101377.png"
     },
     {
       "itemID": 101378,
@@ -3912,7 +3912,7 @@
       "name": "Tall Brick wall crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Brick_Tall_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Brick_Tall_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101378.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101378.png"
     },
     {
       "itemID": 101379,
@@ -3924,7 +3924,7 @@
       "name": "Tall 2M Metal Wall Block crate",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Metal_2M_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Metal_2M_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101379.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101379.png"
     },
     {
       "itemID": 101380,
@@ -3936,7 +3936,7 @@
       "name": "Wood Wall block crate, 2M",
       "storeIcon": "$Data/Weapons/StoreIcons/Block_Wall_Wood_2M_01_Crate.dds",
       "model": "Data/ObjectsDepot/Weapons/Block_Wall_Wood_2M_01_Crate.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101380.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101380.png"
     },
     {
       "itemID": 101381,
@@ -3948,7 +3948,7 @@
       "name": "Butterfly Knife",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_ButterflyKnife.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_ButterflyKnife.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101381.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101381.png"
     },
     {
       "itemID": 101382,
@@ -3960,7 +3960,7 @@
       "name": "Crowbar",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_Crowbar.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_Crowbar.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101382.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101382.png"
     },
     {
       "itemID": 101383,
@@ -3972,7 +3972,7 @@
       "name": "Fire Axe",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_FireAxe.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_FireAxe.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101383.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101383.png"
     },
     {
       "itemID": 101384,
@@ -3984,7 +3984,7 @@
       "name": "Frying Pan",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_FryingPan.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_FryingPan.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101384.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101384.png"
     },
     {
       "itemID": 101385,
@@ -3996,7 +3996,7 @@
       "name": "Garden Shears",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_GardenShears.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_GardenShears.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101385.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101385.png"
     },
     {
       "itemID": 101386,
@@ -4008,7 +4008,7 @@
       "name": "Golf Club",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_Golf_Club.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_Golf_Club.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101386.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101386.png"
     },
     {
       "itemID": 101388,
@@ -4020,7 +4020,7 @@
       "name": "Pitchfork",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_Pitchfork.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_Pitchfork.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101388.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101388.png"
     },
     {
       "itemID": 101389,
@@ -4032,7 +4032,7 @@
       "name": "Police Baton",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_PoliceBaton.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_PoliceBaton.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101389.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101389.png"
     },
     {
       "itemID": 101390,
@@ -4044,7 +4044,7 @@
       "name": "Power Drill",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_Power_Drill.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_Power_Drill.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101390.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101390.png"
     },
     {
       "itemID": 101391,
@@ -4056,7 +4056,7 @@
       "name": "Wrench",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_Wrench.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_Wrench.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101391.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101391.png"
     },
     {
       "itemID": 101392,
@@ -4068,7 +4068,7 @@
       "name": "Nail Gun",
       "storeIcon": "$Data/Weapons/StoreIcons/Mel_NailGun.dds",
       "model": "Data/ObjectsDepot/Weapons/Mel_NailGun.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/101392.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/101392.png"
     },
     {
       "itemID": 20006,
@@ -4080,7 +4080,7 @@
       "name": "K. Style Helmet",
       "storeIcon": "$Data/Weapons/StoreIcons/HEADHELMET.dds",
       "model": "Data/ObjectsDepot/Characters/HEADHELMET.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20006.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20006.png"
     },
     {
       "itemID": 20015,
@@ -4092,7 +4092,7 @@
       "name": "Custom Guerilla",
       "storeIcon": "$Data/Weapons/StoreIcons/ARMOR_Rebel_Heavy.dds",
       "model": "Data/ObjectsDepot/Characters/ARMOR_Rebel_Heavy.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20015.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20015.png"
     },
     {
       "itemID": 20022,
@@ -4104,7 +4104,7 @@
       "name": "Beret Cover",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Beret.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Beret.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20022.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20022.png"
     },
     {
       "itemID": 20023,
@@ -4116,7 +4116,7 @@
       "name": "Boonie Cover",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Boonie.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Boonie.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20023.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20023.png"
     },
     {
       "itemID": 20025,
@@ -4128,7 +4128,7 @@
       "name": "Shadow",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Shadow.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Shadow.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20025.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20025.png"
     },
     {
       "itemID": 20032,
@@ -4140,7 +4140,7 @@
       "name": "Black Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Mask_Black_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Mask_Black_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20032.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20032.png"
     },
     {
       "itemID": 20033,
@@ -4152,7 +4152,7 @@
       "name": "Clown Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Mask_Clown_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Mask_Clown_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20033.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20033.png"
     },
     {
       "itemID": 20034,
@@ -4164,7 +4164,7 @@
       "name": "Jason Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Mask_Hockey_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Mask_Hockey_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20034.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20034.png"
     },
     {
       "itemID": 20035,
@@ -4176,7 +4176,7 @@
       "name": "Skull Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Mask_Skull_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Mask_Skull_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20035.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20035.png"
     },
     {
       "itemID": 20036,
@@ -4188,7 +4188,7 @@
       "name": "Slash Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Mask_Slash_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Mask_Slash_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20036.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20036.png"
     },
     {
       "itemID": 20041,
@@ -4200,7 +4200,7 @@
       "name": "Boonie Desert",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Boonie_Hat_Desert.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Boonie_Hat_Desert.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20041.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20041.png"
     },
     {
       "itemID": 20042,
@@ -4212,7 +4212,7 @@
       "name": "Boonie Green",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Boonie_Hat_MilGreen.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Boonie_Hat_MilGreen.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20042.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20042.png"
     },
     {
       "itemID": 20043,
@@ -4224,7 +4224,7 @@
       "name": "M9 helmet black",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Black_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Black_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20043.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20043.png"
     },
     {
       "itemID": 20046,
@@ -4236,7 +4236,7 @@
       "name": "M9 Helmet with Goggles",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Desert_02.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Desert_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20046.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20046.png"
     },
     {
       "itemID": 20047,
@@ -4248,7 +4248,7 @@
       "name": "M9 Helmet Green",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_MilGreen_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_MilGreen_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20047.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20047.png"
     },
     {
       "itemID": 20048,
@@ -4260,7 +4260,7 @@
       "name": "M9 Helmet Urban",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Urban_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Urban_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20048.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20048.png"
     },
     {
       "itemID": 20049,
@@ -4272,7 +4272,7 @@
       "name": "M9 Helmet Forest 1",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_forest_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_forest_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20049.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20049.png"
     },
     {
       "itemID": 20050,
@@ -4284,7 +4284,7 @@
       "name": "M9 Helmet Goggles 1",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_forest_02.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_forest_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20050.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20050.png"
     },
     {
       "itemID": 20054,
@@ -4296,7 +4296,7 @@
       "name": "IBA Sand",
       "storeIcon": "$Data/Weapons/StoreIcons/Armor_IBA_01_Sand.dds",
       "model": "Data/ObjectsDepot/Characters/Armor_IBA_01_Sand.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20054.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20054.png"
     },
     {
       "itemID": 20056,
@@ -4308,7 +4308,7 @@
       "name": "MTV Forest",
       "storeIcon": "$Data/Weapons/StoreIcons/Armor_MTV_01_Forest.dds",
       "model": "Data/ObjectsDepot/Characters/Armor_MTV_01_Forest.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20056.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20056.png"
     },
     {
       "itemID": 20059,
@@ -4320,7 +4320,7 @@
       "name": "Light Gear Forest",
       "storeIcon": "$Data/Weapons/StoreIcons/ARMOR_Light_Forest.dds",
       "model": "Data/ObjectsDepot/Characters/ARMOR_Light_Forest.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20059.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20059.png"
     },
     {
       "itemID": 20067,
@@ -4332,7 +4332,7 @@
       "name": "NVG Goggles",
       "storeIcon": "$Data/Weapons/StoreIcons/Hgear_KStyle_NVG_01.dds",
       "model": "Data/ObjectsDepot/Characters/Hgear_KStyle_NVG_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20067.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20067.png"
     },
     {
       "itemID": 20096,
@@ -4344,7 +4344,7 @@
       "name": "Boonie Hat Leather",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Boonie_hat_Leather_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Boonie_hat_Leather_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20096.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20096.png"
     },
     {
       "itemID": 20097,
@@ -4356,7 +4356,7 @@
       "name": "Fireman Helmet",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_Fireman_Helmet_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_Fireman_Helmet_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20097.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20097.png"
     },
     {
       "itemID": 20098,
@@ -4368,7 +4368,7 @@
       "name": "Hard Hat",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_HardHat_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_HardHat_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20098.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20098.png"
     },
     {
       "itemID": 20170,
@@ -4380,7 +4380,7 @@
       "name": "Basic Zombie Character",
       "storeIcon": "$Data/Weapons/StoreIcons/Zombie.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20170.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20170.png"
     },
     {
       "itemID": 20171,
@@ -4392,7 +4392,7 @@
       "name": "",
       "storeIcon": "$Data/Weapons/StoreIcons/UpperBody_Shirt_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20171.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20171.png"
     },
     {
       "itemID": 20172,
@@ -4404,7 +4404,7 @@
       "name": "",
       "storeIcon": "$Data/Weapons/StoreIcons/LowerBody_Jeans_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20172.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20172.png"
     },
     {
       "itemID": 20173,
@@ -4416,7 +4416,7 @@
       "name": "",
       "storeIcon": "$Data/Weapons/StoreIcons/Head_Bald_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20173.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20173.png"
     },
     {
       "itemID": 20174,
@@ -4428,7 +4428,7 @@
       "name": "Ex military",
       "storeIcon": "$Data/Weapons/StoreIcons/RegularGuy.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20174.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20174.png"
     },
     {
       "itemID": 20175,
@@ -4440,7 +4440,7 @@
       "name": "Medium Backpack",
       "storeIcon": "$Data/Weapons/StoreIcons/gear_backpack_16slots.dds",
       "model": "Data/ObjectsDepot/Characters/gear_backpack_16slots.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20175.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20175.png"
     },
     {
       "itemID": 20176,
@@ -4452,7 +4452,7 @@
       "name": "Small Backpack",
       "storeIcon": "$Data/Weapons/StoreIcons/Gear_Backpack_8slots.dds",
       "model": "Data/ObjectsDepot/Characters/Gear_Backpack_8slots.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20176.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20176.png"
     },
     {
       "itemID": 20177,
@@ -4464,7 +4464,7 @@
       "name": "Gas Mask",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_GasMask_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_GasMask_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20177.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20177.png"
     },
     {
       "itemID": 20178,
@@ -4476,7 +4476,7 @@
       "name": "Gas Mask 2",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_GasMask_02.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_GasMask_02.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20178.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20178.png"
     },
     {
       "itemID": 20179,
@@ -4488,7 +4488,7 @@
       "name": "Large Backpack",
       "storeIcon": "$Data/Weapons/StoreIcons/Gear_Backpack_Med_01.dds",
       "model": "Data/ObjectsDepot/Characters/Gear_Backpack_Med_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20179.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20179.png"
     },
     {
       "itemID": 20180,
@@ -4500,7 +4500,7 @@
       "name": "Military Ruck",
       "storeIcon": "$Data/Weapons/StoreIcons/gear_backpack_32slots.dds",
       "model": "Data/ObjectsDepot/Characters/gear_backpack_32slots.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20180.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20180.png"
     },
     {
       "itemID": 20181,
@@ -4512,7 +4512,7 @@
       "name": "Teddy Bear backpack",
       "storeIcon": "$Data/Weapons/StoreIcons/gear_backpack_teddybear.dds",
       "model": "Data/ObjectsDepot/Characters/gear_backpack_teddybear.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20181.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20181.png"
     },
     {
       "itemID": 20182,
@@ -4524,7 +4524,7 @@
       "name": "Ex Cage Fighter",
       "storeIcon": "$Data/Weapons/StoreIcons/MohawkGuy.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20182.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20182.png"
     },
     {
       "itemID": 20183,
@@ -4536,7 +4536,7 @@
       "name": "Zombie_Woman",
       "storeIcon": "$Data/Weapons/StoreIcons/Zombie_Woman.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20183.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20183.png"
     },
     {
       "itemID": 20184,
@@ -4548,7 +4548,7 @@
       "name": "Hunter",
       "storeIcon": "$Data/Weapons/StoreIcons/AsianGirl.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20184.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20184.png"
     },
     {
       "itemID": 20185,
@@ -4560,7 +4560,7 @@
       "name": "ALICE Rucksack",
       "storeIcon": "$Data/Weapons/StoreIcons/Gear_Backpack_Med_01_black.dds",
       "model": "Data/ObjectsDepot/Characters/Gear_Backpack_Med_01_black.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20185.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20185.png"
     },
     {
       "itemID": 20186,
@@ -4572,7 +4572,7 @@
       "name": "Zombie man",
       "storeIcon": "$Data/Weapons/StoreIcons/Zombie_man.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20186.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20186.png"
     },
     {
       "itemID": 20187,
@@ -4584,7 +4584,7 @@
       "name": "Night vision military",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_NV_Mil_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_NV_Mil_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20187.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20187.png"
     },
     {
       "itemID": 20188,
@@ -4596,7 +4596,7 @@
       "name": "Night vision civilian",
       "storeIcon": "$Data/Weapons/StoreIcons/HGEAR_NV_Civ_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGEAR_NV_Civ_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20188.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20188.png"
     },
     {
       "itemID": 20189,
@@ -4608,7 +4608,7 @@
       "name": "Rebel without a cause",
       "storeIcon": "$Data/Weapons/StoreIcons/CharacterMale_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20189.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20189.png"
     },
     {
       "itemID": 20190,
@@ -4620,7 +4620,7 @@
       "name": "Zombie Military",
       "storeIcon": "$Data/Weapons/StoreIcons/Zombie_Military.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20190.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20190.png"
     },
     {
       "itemID": 20191,
@@ -4632,7 +4632,7 @@
       "name": "Zombie Man 2",
       "storeIcon": "$Data/Weapons/StoreIcons/Zombie_man_02.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20191.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20191.png"
     },
     {
       "itemID": 20192,
@@ -4644,7 +4644,7 @@
       "name": "Helloween Special!",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_Pumpkin_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_Pumpkin_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20192.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20192.png"
     },
     {
       "itemID": 20193,
@@ -4656,7 +4656,7 @@
       "name": "Average Joe",
       "storeIcon": "$Data/Weapons/StoreIcons/CharacterMale_02.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20193.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20193.png"
     },
     {
       "itemID": 20194,
@@ -4668,7 +4668,7 @@
       "name": "The Mechanic",
       "storeIcon": "$Data/Weapons/StoreIcons/CharacterFemale_01.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20194.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20194.png"
     },
     {
       "itemID": 20195,
@@ -4680,7 +4680,7 @@
       "name": "Rockin Rollah",
       "storeIcon": "$Data/Weapons/StoreIcons/CharacterFemale_02.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20195.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20195.png"
     },
     {
       "itemID": 20196,
@@ -4692,7 +4692,7 @@
       "name": "Backpack GameSpot",
       "storeIcon": "$Data/Weapons/StoreIcons/Gear_Backpack_GameSpot.dds",
       "model": "Data/ObjectsDepot/Characters/Gear_Backpack_GameSpot.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20196.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20196.png"
     },
     {
       "itemID": 20197,
@@ -4704,7 +4704,7 @@
       "name": "Christmas Special",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_Santa_Beard_01.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_Santa_Beard_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20197.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20197.png"
     },
     {
       "itemID": 20198,
@@ -4716,7 +4716,7 @@
       "name": "Santa's Lil Helper",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_Xmas_Elf.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_Xmas_Elf.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20198.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20198.png"
     },
     {
       "itemID": 20199,
@@ -4728,7 +4728,7 @@
       "name": "Captain Jack Frost",
       "storeIcon": "$Data/Weapons/StoreIcons/HGear_Xmas_Snowman.dds",
       "model": "Data/ObjectsDepot/Characters/HGear_Xmas_Snowman.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20199.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20199.png"
     },
     {
       "itemID": 20200,
@@ -4740,7 +4740,7 @@
       "name": "Santa's Sack",
       "storeIcon": "$Data/Weapons/StoreIcons/Gear_SantaBag_01.dds",
       "model": "Data/ObjectsDepot/Characters/Gear_SantaBag_01.sco",
-      "output": "Data/Weapons/GeneratedShopIcons/20200.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20200.png"
     },
     {
       "itemID": 20201,
@@ -4752,7 +4752,7 @@
       "name": "Paramedic",
       "storeIcon": "$Data/Weapons/StoreIcons/CharacterMale_Asian.dds",
       "model": "",
-      "output": "Data/Weapons/GeneratedShopIcons/20201.dds"
+      "output": "Data/Weapons/GeneratedShopIcons/20201.png"
     }
   ]
 }
