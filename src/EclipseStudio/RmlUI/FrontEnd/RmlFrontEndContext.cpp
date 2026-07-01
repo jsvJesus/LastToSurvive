@@ -765,9 +765,7 @@ namespace
 			!(Attributes & FILE_ATTRIBUTE_DIRECTORY);
 	}
 
-	std::string GetGeneratedShopIconPath(
-		const BaseItemConfig* Config
-	)
+	std::string GetGeneratedShopIconPath(const BaseItemConfig* Config)
 	{
 		if (!Config)
 			return "";
@@ -792,29 +790,6 @@ namespace
 				RmlPath,
 				sizeof(RmlPath),
 				"Weapons/GeneratedShopIcons/%u.dds",
-				Config->m_itemID
-			);
-
-			return RmlPath;
-		}
-
-		sprintf_s(
-			PhysicalPath,
-			sizeof(PhysicalPath),
-			"Data\\Weapons\\GeneratedShopIcons\\%u.png",
-			Config->m_itemID
-		);
-
-		if (
-			DoesPhysicalFileExist(
-				PhysicalPath
-			)
-		)
-		{
-			sprintf_s(
-				RmlPath,
-				sizeof(RmlPath),
-				"Weapons/GeneratedShopIcons/%u.png",
 				Config->m_itemID
 			);
 

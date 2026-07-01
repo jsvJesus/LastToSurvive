@@ -1871,6 +1871,13 @@ void game::MainLoop()
 		RmlFrontEndShopIconBaker::WriteBakeList(
 			"Data/Weapons/GeneratedShopIcons/ShopIconBakeList.json"
 		);
+
+		const bool bOverwriteIcons = strstr(__r3dCmdLine, "-shopiconbaker_overwrite") != NULL;
+
+		RmlFrontEndShopIconBaker::CopyExistingStoreIcons(
+			"Data\\Weapons\\GeneratedShopIcons",
+			bOverwriteIcons
+		);
 	}
 
 	// for editors, do not lock mouse. when we start game, in ExecuteNetworkGame we will set that var to true

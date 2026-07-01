@@ -6,4 +6,9 @@ public:
     static bool WriteBakeList(
         const char* OutputFileName
     );
+
+    static bool CopyExistingStoreIcons(
+        const char* OutputDirectory,
+        bool bOverwriteExisting
+    );
 };
