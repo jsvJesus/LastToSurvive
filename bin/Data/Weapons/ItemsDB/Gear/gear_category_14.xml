@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<GearArmory>
+	<Gear itemID="20171" category="14" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/UpperBody_Shirt_01.sco" />
+		<Store name="" icon="$Data/Weapons/StoreIcons/UpperBody_Shirt_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20172" category="14" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/LowerBody_Jeans_01.sco" />
+		<Store name="" icon="$Data/Weapons/StoreIcons/LowerBody_Jeans_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20173" category="14" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Head_Bald_01.sco" />
+		<Store name="" icon="$Data/Weapons/StoreIcons/Head_Bald_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+</GearArmory>

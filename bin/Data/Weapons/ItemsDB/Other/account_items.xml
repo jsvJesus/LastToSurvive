@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ItemsDB>
+	<Item itemID="301151" category="1" Weight="0">
+		<Store name="Account_ClanCreate" icon="$Data/Weapons/StoreIcons/Account_ClanCreate.dds" desc="clan create item" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301152" category="1" Weight="0">
+		<Store name="Account_ClanUpg1" icon="$Data/Weapons/StoreIcons/Account_ClanUpg1.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301153" category="1" Weight="0">
+		<Store name="Account_ClanUpg2" icon="$Data/Weapons/StoreIcons/Account_ClanUpg2.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301154" category="1" Weight="0">
+		<Store name="Account_ClanUpg3" icon="$Data/Weapons/StoreIcons/Account_ClanUpg3.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301155" category="1" Weight="0">
+		<Store name="Account_ClanUpg4" icon="$Data/Weapons/StoreIcons/Account_ClanUpg4.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301156" category="1" Weight="0">
+		<Store name="Account_ClanUpg5" icon="$Data/Weapons/StoreIcons/Account_ClanUpg5.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301157" category="1" Weight="0">
+		<Store name="Account_ClanUpg6" icon="$Data/Weapons/StoreIcons/Account_ClanUpg6.dds" desc="buy price is in permanent GC ($) &#13;NOTE- number of added clan members is in **permanent GD** price" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+	<Item itemID="301159" category="1" Weight="0">
+		<Store name="Char_Revive" icon="$Data/Weapons/StoreIcons/Char_Revive.dds" desc="item for char revive before time, price is permanent GC" LevelRequired="0" slotW="1" slotH="1" />
+	</Item>
+</ItemsDB>

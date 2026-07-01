@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101310" category="27" upgrade="1" FNAME="EXP_M26" Weight="180">
+		<Model file="Data/ObjectsDepot/Weapons/EXP_M26.sco" AnimPrefix="EXP_M26" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/EXP_M26.dds" />
+		<Store name="Frag Grenade" icon="$Data/Weapons/StoreIcons/EXP_M26.dds" desc="The fragmentation grenade is used to spray shrapnel upon exploding. Pull the pin and dont forget to throw it far.. Fire in the hole!" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="grenade" damage="50" immediate="false" mass="10" decay="50" speed="20" area="10" delay="4" timeout="0" numShells="1" clipSize="1" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101311" category="27" upgrade="1" FNAME="Item_Chemlight" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight.dds" />
+		<Store name="Chemlight White" icon="$Data/Weapons/StoreIcons/Item_Chemlight.dds" desc="A white glow stick" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101312" category="27" upgrade="1" FNAME="EXP_Flare" Weight="50">
+		<Model file="Data/ObjectsDepot/Weapons/EXP_Flare.sco" AnimPrefix="EXP_Flare" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/EXP_Flare.dds" />
+		<Store name="Flare" icon="$Data/Weapons/StoreIcons/EXP_Flare.dds" desc="Throw these to light up an area for a few minutes, also handy as a way to occupy the infected" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="Flare" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101325" category="27" upgrade="1" FNAME="Item_Chemlight_blue" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight_blue.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight_blue.dds" />
+		<Store name="Chemlight blue" icon="$Data/Weapons/StoreIcons/Item_Chemlight_blue.dds" desc="A blue glowstick" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight_blue" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101326" category="27" upgrade="1" FNAME="Item_Chemlight_green" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight_green.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight_green.dds" />
+		<Store name="Chemlight green" icon="$Data/Weapons/StoreIcons/Item_Chemlight_green.dds" desc="A green glowstick. Ravers favorite color" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight_green" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101327" category="27" upgrade="1" FNAME="Item_Chemlight_orange" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight_orange.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight_orange.dds" />
+		<Store name="Chemlight orange" icon="$Data/Weapons/StoreIcons/Item_Chemlight_orange.dds" desc="An orange glowstick" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight_orange" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101328" category="27" upgrade="1" FNAME="Item_Chemlight_red" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight_red.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight_red.dds" />
+		<Store name="Chemlight red" icon="$Data/Weapons/StoreIcons/Item_Chemlight_red.dds" desc="A red glowstick" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight_red" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101329" category="27" upgrade="1" FNAME="Item_Chemlight_yellow" Weight="30">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Chemlight_yellow.sco" AnimPrefix="Item_Chemlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Chemlight_yellow.dds" />
+		<Store name="Chemlight yellow" icon="$Data/Weapons/StoreIcons/Item_Chemlight_yellow.dds" desc="A yellow glowstick" LevelRequired="0" slotW="1" slotH="1" />
+		<PrimaryFire bullet="ChemLight_yellow" damage="0" immediate="false" mass="10" decay="50" speed="20" area="0" delay="180" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="grenade" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

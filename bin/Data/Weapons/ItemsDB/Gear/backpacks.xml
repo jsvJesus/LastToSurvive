@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<BackpackArmory>
+	<Backpack itemID="20175" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/gear_backpack_16slots.sco" />
+		<Store name="Medium Backpack" icon="$Data/Weapons/StoreIcons/gear_backpack_16slots.dds" desc="A medium sized backpack with plenty of space and durability." slotW="2" slotH="2" />
+		<Desc maxSlots="18" maxWeight="15" />
+	</Backpack>
+	<Backpack itemID="20176" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_8slots.sco" />
+		<Store name="Small Backpack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_8slots.dds" desc="A small backpack allowing some storage for essential items and equipment." slotW="2" slotH="2" />
+		<Desc maxSlots="12" maxWeight="10" />
+	</Backpack>
+	<Backpack itemID="20179" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_Med_01.sco" />
+		<Store name="Large Backpack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_Med_01.dds" desc="24 item backpack. Big enough for a few weeks of adventuring" slotW="2" slotH="2" />
+		<Desc maxSlots="24" maxWeight="20" />
+	</Backpack>
+	<Backpack itemID="20180" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/gear_backpack_32slots.sco" />
+		<Store name="Military Ruck" icon="$Data/Weapons/StoreIcons/gear_backpack_32slots.dds" desc="The mother of all backpacks. Carry 32 items at once!" slotW="2" slotH="2" />
+		<Desc maxSlots="32" maxWeight="30" />
+	</Backpack>
+	<Backpack itemID="20181" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/gear_backpack_teddybear.sco" />
+		<Store name="Teddy Bear backpack" icon="$Data/Weapons/StoreIcons/gear_backpack_teddybear.dds" desc="Roman's favorite accessory" slotW="2" slotH="2" />
+		<Desc maxSlots="12" maxWeight="10" />
+	</Backpack>
+	<Backpack itemID="20185" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_Med_01_black.sco" />
+		<Store name="ALICE Rucksack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_Med_01_black.dds" desc="Large backpack that fits everything you will need. The All-purpose Lightweight Individual Carrying Equipment.  Dont forget the poo tickets!" slotW="2" slotH="2" />
+		<Desc maxSlots="28" maxWeight="25" />
+	</Backpack>
+	<Backpack itemID="20196" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_GameSpot.sco" />
+		<Store name="Gear_Backpack_GameSpot" icon="$Data/Weapons/StoreIcons/Gear_Backpack_GameSpot.dds" desc="" slotW="2" slotH="2" />
+		<Desc maxSlots="20" maxWeight="15" />
+	</Backpack>
+	<Backpack itemID="20200" category="12" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/Gear_SantaBag_01.sco" />
+		<Store name="Santa's Sack" icon="$Data/Weapons/StoreIcons/Gear_SantaBag_01.dds" desc="With presents for everyone! Well, mostly zombies. And bandits." slotW="2" slotH="2" />
+		<Desc maxSlots="28" maxWeight="25" />
+	</Backpack>
+</BackpackArmory>

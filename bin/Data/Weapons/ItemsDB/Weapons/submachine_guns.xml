@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101035" category="26" upgrade="1" FNAME="ASR_AKS74U" Weight="2700">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_AKS74U.sco" AnimPrefix="ASR_AKS74U" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_AKS74U.dds" />
+		<Store name="AKS-74U" icon="$Data/Weapons/StoreIcons/ASR_AKS74U.dds" desc="The AKS-74U is a shortened gas operated carbine version of the AKS-74 assault rifle. It fires a 5.45 x 39 mm round and is very effective at medium ranges." LevelRequired="32" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="27" immediate="false" mass="1" decay="55" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="0.43" rateOfFire="650" spread="12" recoil="5.0025" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/AKS-74U" reload="Sounds/Weapons/ASR/ASR_Generic_Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4200" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400129" d2="0" d3="0" d4="400001" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101063" category="26" upgrade="1" FNAME="SMG_MP7" Weight="2000">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_MP7.sco" AnimPrefix="SMG_MP7" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_MP7.dds" />
+		<Store name="MP7" icon="$Data/Weapons/StoreIcons/SMG_MP7.dds" desc="The RA TR7 submachine gun is a special issue weapon that fires a 4.6 mm standard cartridge from a 30 round magazine. It is effective at close range targets." LevelRequired="32" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="24" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="11" recoil="6.4" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/HK_UMP" reload="Sounds/Weapons/New Reloads/M7-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1002" i4="4003" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400026" d2="0" d3="0" d4="400033" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101064" category="26" upgrade="1" FNAME="SMG_UZI" Weight="3500">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_UZI.sco" AnimPrefix="SMG_UZI" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_UZI.dds" />
+		<Store name="UZI" icon="$Data/Weapons/StoreIcons/SMG_UZI.dds" desc="The special issue UZI submachine gun is a open bolt, blow back design that fires 9 mm rounds from its magazine housed in the weapons pistol grip." LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="15" recoil="9.6" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/Uzi" reload="Sounds/Weapons/New Reloads/Uzi-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="0" i2="3001" i3="0" i4="4006" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400134" d2="0" d3="0" d4="400084" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101103" category="26" upgrade="1" FNAME="SMG_MP5A4" Weight="2800">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_MP5A4.sco" AnimPrefix="SMG_MP5A4" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_MP5A4.dds" />
+		<Store name="MP5/10" icon="$Data/Weapons/StoreIcons/SMG_MP5A4.dds" desc="The MP5/10 submachine gun was designed to fire a 10 mm Auto rounds from a 30 round clip effectively against close ranged targets." LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="23" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="11" recoil="7.2" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/HK_MP5" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400081" d2="0" d3="0" d4="400079" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101106" category="26" upgrade="1" FNAME="SMG_AacHoneyBadger_01" Weight="4000">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_AacHoneyBadger_01.sco" AnimPrefix="SMG_AacHoneyBadger_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_AacHoneyBadger_01.dds" />
+		<Store name="Honey Badger" icon="$Data/Weapons/StoreIcons/SMG_AacHoneyBadger_01.dds" desc="The Honey Badger submachine gun fires a .300 round at a medium rate of fire causing a good amount of damage on close range targets." LevelRequired="52" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="45" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="780" spread="12" recoil="7.2" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/HK_MP5SD" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="400074" d1="400066" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101107" category="26" upgrade="1" FNAME="SMG_P90" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_P90.sco" AnimPrefix="smg_p90" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_P90.dds" />
+		<Store name="FN P90 " icon="$Data/Weapons/StoreIcons/SMG_P90.dds" desc="The FN P90 submachine gun was designed to fire 9 mm rounds from a large 50 round magazine. It is very effective on close range targets." LevelRequired="36" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="900" spread="10" recoil="8" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/FN_P90" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400054" d2="0" d3="0" d4="400046" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101108" category="26" upgrade="1" FNAME="SMG_ScorpionEVO3" Weight="3250">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_ScorpionEVO3.sco" AnimPrefix="SMG_ScorpionEVO3" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_ScorpionEVO3.dds" />
+		<Store name="EVO-3" icon="$Data/Weapons/StoreIcons/SMG_ScorpionEVO3.dds" desc="The EVO-3 submachine gun was designed to effectively fire 9 mm rounds from a 25 round magazine at close ranged targets at a very high rate of fire.." LevelRequired="24" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="11" recoil="10.4" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/Scorpion_EVO3" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400051" d2="0" d3="0" d4="400049" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101109" category="26" upgrade="1" FNAME="SMG_Bizon" Weight="2000">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_Bizon.sco" AnimPrefix="SMG_Bizon" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_Bizon.dds" />
+		<Store name="BIZON" icon="$Data/Weapons/StoreIcons/SMG_Bizon.dds" desc="The Bizon submachine gun was designed to fire a 9 mm round from a 64 round magazine delivering accurate fire on close range targets." LevelRequired="43" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="900" spread="11" recoil="8.8" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="smg" />
+		<Sound shoot="Sounds/NewWeapons/SMG/Bizon" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400052" d2="0" d3="0" d4="400047" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101201" category="26" upgrade="1" FNAME="SMG_SR-1_Veresk" Weight="1600">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_SR-1_Veresk.sco" AnimPrefix="SMG_SR-1_Veresk" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_SR-1_Veresk.dds" />
+		<Store name="VERESK SR-2" icon="$Data/Weapons/StoreIcons/SMG_SR-1_Veresk.dds" desc="The MTAC Flasher submachine gun was designed to fire a standard 9 mm round at a high rate of fire with reasonable accuracy at close range targets." LevelRequired="27" slotW="4" slotH="2" />
+		<PrimaryFire bullet="9mm" damage="23" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="11" recoil="5.6" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Kalashnikov_AK74" reload="Sounds/Weapons/New Reloads/M7-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="4006" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400083" d2="0" d3="0" d4="400084" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101246" category="26" upgrade="1" FNAME="SMG_PS90" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/SMG_PS90.sco" AnimPrefix="smg_p90" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/SMG_PS90.dds" />
+		<Store name="FN P90 S" icon="$Data/Weapons/StoreIcons/SMG_PS90.dds" desc="The FN P90S submachine gun is a highly effective weapon that carries a unique 50 round magazine. It fires a standard 5.56 mm round." LevelRequired="58" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="26" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="2" rateOfFire="900" spread="11" recoil="8" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/SMG/FN_P90" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400054" d2="0" d3="0" d4="400046" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

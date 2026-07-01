@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101002" category="20" upgrade="1" FNAME="ASR_M16" Weight="4000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_M16.sco" AnimPrefix="ASR_M16" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_M16.dds" />
+		<Store name="M16" icon="$Data/Weapons/StoreIcons/ASR_M16.dds" desc="The M16 rifle is a gas operated standard infantry assault rifle, chambered for 5.56x45mm NATO round." LevelRequired="0" slotW="4" slotH="2" sort="100" featured="1" />
+		<PrimaryFire bullet="5.56" damage="27" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="9" recoil="7.0035" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/ColtM16" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400127" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101005" category="20" upgrade="1" FNAME="ASR_G36" Weight="3300">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_G36.sco" AnimPrefix="ASR_G36" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_G36.dds" />
+		<Store name="G36" icon="$Data/Weapons/StoreIcons/ASR_G36.dds" desc="The MTAC X36 assault rifle fires a 5.56 mm round. Its high rate of fire and medium recoil deliver a reasonably tight spread on impact of targets up to medium ranges." LevelRequired="23" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="30" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="8.004" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/HK_G36" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4100" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400042" d2="0" d3="0" d4="400029" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101022" category="20" upgrade="1" FNAME="ASR_AK74M" Weight="3400">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_AK74M.sco" AnimPrefix="ASR_AK74m" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_AK74M.dds" />
+		<Store name="AK-74M" icon="$Data/Weapons/StoreIcons/ASR_AK74M.dds" desc="The AK-74M assault rifle is an upgrade of the AK 74 design with a slightly increased rate of fire. It fires a 5.45 x 39 mm round accurately at medium ranges." LevelRequired="20" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="0.43" rateOfFire="625" spread="12" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Kalashnikov_AK74" reload="Sounds/Weapons/ASR/ASR_Generic_Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4200" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400040" d2="0" d3="0" d4="400001" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101032" category="20" upgrade="1" FNAME="ASR_AKM" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_AKM.sco" AnimPrefix="ASR_AKM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_AKM.dds" />
+		<Store name="AKM" icon="$Data/Weapons/StoreIcons/ASR_AKM.dds" desc="The AKM is an assault rifle that was designed as a simplified version of the AK-47 rifle. It fires a 7.62 x 39 mm round and is relatively effective at medium ranges." LevelRequired="10" slotW="4" slotH="2" />
+		<PrimaryFire bullet="7.62" damage="34" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="0.43" rateOfFire="600" spread="14" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Kalashnikov_AKM" reload="Sounds/Weapons/ASR/ASR_Generic_Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400128" d2="0" d3="0" d4="400101" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101040" category="20" upgrade="1" FNAME="ASR_SIG516" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_SIG516.sco" AnimPrefix="ASR_SIG516" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_SIG516.dds" />
+		<Store name="M4 Semi" icon="$Data/Weapons/StoreIcons/ASR_SIG516.dds" desc="The civilian M4 semi auto rifle, chambered for 5.56x45mm NATO round." LevelRequired="46" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="35" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="9" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/HK_416" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400058" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101055" category="20" upgrade="1" FNAME="ASR_M4FFH" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_M4FFH.sco" AnimPrefix="ASR_M4FFH" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_M4FFH.dds" />
+		<Store name="M4" icon="$Data/Weapons/StoreIcons/ASR_M4FFH.dds" desc="The M4 is a versitile, light weight, commando style assault rifle that is gas operated and fires a 5.56 x 45 mm round effectively in both close and medium ranges." LevelRequired="35" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="34" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="9" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/ColtM4" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400024" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101169" category="20" upgrade="1" FNAME="ASR_Mossada" Weight="4000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Mossada.sco" AnimPrefix="ASR_Mossada" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mossada.dds" />
+		<Store name="MASADA" icon="$Data/Weapons/StoreIcons/ASR_Mossada.dds" desc="The Masada was designed for close combat operations and is a gas operated assault rifle that fires a chambered for 5.56x45mm NATO round. It is highly effective at close ranges." LevelRequired="43" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="28" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="9" recoil="5.0025" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/AEK971" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400119" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101172" category="20" upgrade="1" FNAME="ASR_SIG_SG556" Weight="4000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_SIG_SG556.sco" AnimPrefix="ASR_SIG_SG556" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_SIG_SG556.dds" />
+		<Store name="SIG SAUER 556" icon="$Data/Weapons/StoreIcons/ASR_SIG_SG556.dds" desc="The 556 is a gas operated, rotating bolt assault rifle that fires a 5.56 x 45 mm round and was designed for special operations. It is very effective out to medium ranges." LevelRequired="15" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="27" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="6" recoil="6.50325" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/SIG_551" reload="Sounds/Weapons/New Reloads/ASR_SIG_SG556_Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400025" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101173" category="20" upgrade="1" FNAME="ASR_tar21" Weight="3300">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_tar21.sco" AnimPrefix="ASR_tar21" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_tar21.dds" />
+		<Store name="IMI TAR-21" icon="$Data/Weapons/StoreIcons/ASR_tar21.dds" desc="The TAR-21 is an unique gas operated, rotating bolt, bullpup design assault rifle that fires a 5.56 x 45 mm round. It is extremely effective at close and medium range." LevelRequired="39" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="33" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="6" recoil="7.0035" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/HK_G11" reload="Sounds/Weapons/New Reloads/G36-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="0" i3="0" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400059" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101193" category="20" upgrade="1" FNAME="ASR_Fn_scar" Weight="3500">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Fn_scar.sco" AnimPrefix="ASR_Scar" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Fn_scar.dds" />
+		<Store name="FN SCAR CQC" icon="$Data/Weapons/StoreIcons/ASR_Fn_scar.dds" desc="The SCAR 16 CQC is an advanced assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges." LevelRequired="30" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.56" damage="30" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="1.5" rateOfFire="625" spread="7" recoil="3.0015" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/FN_SCAR" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400006" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101210" category="20" upgrade="1" FNAME="ASR_Fn_scar_NightCamo" Weight="3500">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Fn_scar_NightCamo.sco" AnimPrefix="asr_scar" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Fn_scar_NightCamo.dds" />
+		<Store name="FN SCAR NIGHT STALKER" icon="$Data/Weapons/StoreIcons/ASR_Fn_scar_NightCamo.dds" desc="The Scar 17 CQC Nightstalker is a assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges." LevelRequired="58" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="7" recoil="3.0015" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/FN_SCAR" reload="Sounds/Weapons/New Reloads/M16-Reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400006" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101322" category="20" upgrade="1" FNAME="SNP_CrossBow" Weight="3500">
+		<Model file="Data/ObjectsDepot/Weapons/SNP_CrossBow.sco" AnimPrefix="SNP_CrossBow" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/SNP_CrossBow.dds" />
+		<Store name="Compound Crossbow" icon="$Data/Weapons/StoreIcons/SNP_CrossBow.dds" desc="String drawn compound hunting crossbow for silent kills. Uses bow arrows for ammo" LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="Sniper5.45" damage="20" immediate="true" mass="1" decay="50" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="2" rateOfFire="60" spread="2" recoil="2" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Special/Crossbow" reload="Sounds/Weapons/New Reloads/Crossbow-Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400140" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101332" category="20" upgrade="1" FNAME="ASR_Ruger_Rifle" Weight="2500">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Ruger_Rifle.sco" AnimPrefix="ASR_Ruger_Rifle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Ruger_Rifle.dds" />
+		<Store name="Kruger .22 Rifle" icon="$Data/Weapons/StoreIcons/ASR_Ruger_Rifle.dds" desc="Semi-automatic .22 Long Rifle with removable rotary magazine" LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="25" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Ruger22" reload="Sounds/Weapons/New Reloads/ASR_Ruger_rifle_reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="7001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400149" d2="0" d3="0" d4="400148" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101334" category="20" upgrade="1" FNAME="ASR_Mini14" Weight="3100">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Mini14.sco" AnimPrefix="ASR_Mini14" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mini14.dds" />
+		<Store name="Kruger Mini-14" icon="$Data/Weapons/StoreIcons/ASR_Mini14.dds" desc="The Kruger's short size makes it ideal for all situations where ease of maneuverability is a priority, whether it be on the ranch or the deep woods." LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="25" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Ruger22" reload="Sounds/Weapons/New Reloads/ASR_Mini14_reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="7020" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400151" d2="0" d3="0" d4="400150" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101341" category="20" upgrade="1" FNAME="ASR_Mosin_Rifle" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/ASR_Mosin_Rifle.sco" AnimPrefix="ASR_Mosin_Rifle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mosin_Rifle.dds" />
+		<Store name="Mosin" icon="$Data/Weapons/StoreIcons/ASR_Mosin_Rifle.dds" desc="A Russian bolt action rifle with an internally fed magazine, this reliable rifle has been in popular use through countless wars since 1891" LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="Sniper5.45" damage="50" immediate="false" mass="1" decay="500" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.5" rateOfFire="40" spread="2" recoil="8" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/Mosin" reload="Sounds/Weapons/New Reloads/Mosin-reload" />
+		<FPS IsFPS="1" i0="2001" i1="5001" i2="0" i3="0" i4="7030" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400155" d2="0" d3="0" d4="400153" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

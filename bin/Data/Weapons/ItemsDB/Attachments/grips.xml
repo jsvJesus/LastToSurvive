@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<AttachmentArmory>
+	<Attachment itemID="400000" category="19" type="3" SpecID="1001" Weight="600">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Grip_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="Grip" />
+		<Store name="Forward Grip" icon="$Data/Weapons/StoreIcons/ATTM_Grip_01.dds" desc="The bottom rail grip will allow the shooter more control of the weapon by use of the attached grip." LevelRequired="9" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-5" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400009" category="19" type="3" SpecID="1002" Weight="450">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Grip_Mp7_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="Grip" />
+		<Store name="SMG Grip" icon="$Data/Weapons/StoreIcons/ATTM_Grip_Mp7_01.dds" desc="The M 7 grip provides a shooter with more control and accuracy when firing a weapon at a high rate of fire." LevelRequired="21" slotW="1" slotH="2" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-5" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400088" category="19" type="3" SpecID="1003" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Grip_Sr-1_Veresk_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="Grip" />
+		<Store name="Modular Aluminum Combat Grip" icon="$Data/Weapons/StoreIcons/ATTM_Grip_Sr-1_Veresk_01.dds" desc="" LevelRequired="21" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-5" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+</AttachmentArmory>

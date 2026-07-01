@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='utf-8'?>
+<GearArmory>
+	<Gear itemID="20006" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HEADHELMET.sco" />
+		<Store name="K. Style Helmet" icon="$Data/Weapons/StoreIcons/HEADHELMET.dds" desc="The good ol' Turtle Head is guaranteed to protect your brain. (Well, at least a little bit)&#13;Level 2 Protection" LevelRequired="20" slotW="2" slotH="2" />
+		<Armor damagePerc="30" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
+	</Gear>
+	<Gear itemID="20022" category="13" Weight="300">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Beret.sco" />
+		<Store name="Beret Cover" icon="$Data/Weapons/StoreIcons/HGEAR_Beret.dds" desc="This cover is a stylish military fashion statement which stands out smashingly in a combat zone!" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20023" category="13" Weight="200">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Boonie.sco" />
+		<Store name="Boonie Cover" icon="$Data/Weapons/StoreIcons/HGEAR_Boonie.dds" desc="This Jungle Boonie cover is high speed, great for blending in and blocking out the sun and bugs but it won't stop bullets." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20025" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Shadow.sco" />
+		<Store name="Shadow" icon="$Data/Weapons/StoreIcons/HGEAR_Shadow.dds" desc="This head gear was designed to not only make you look scary but also to protect your pretty face." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20032" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Mask_Black_01.sco" />
+		<Store name="Black Mask" icon="$Data/Weapons/StoreIcons/HGEAR_Mask_Black_01.dds" desc="The frightening Black Mask of Death, sure to give your enemies the chills." LevelRequired="5" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20033" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Mask_Clown_01.sco" />
+		<Store name="Clown Mask" icon="$Data/Weapons/StoreIcons/HGEAR_Mask_Clown_01.dds" desc="For all of you Jokers out there, we bring you the Clown Mask." LevelRequired="10" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" />
+	</Gear>
+	<Gear itemID="20034" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Mask_Hockey_01.sco" />
+		<Store name="Jason Mask" icon="$Data/Weapons/StoreIcons/HGEAR_Mask_Hockey_01.dds" desc="Hiding a monster, this mask strikes real horror in those who face it." LevelRequired="20" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20035" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Mask_Skull_01.sco" />
+		<Store name="Skull Mask" icon="$Data/Weapons/StoreIcons/HGEAR_Mask_Skull_01.dds" desc="The Skull Mask shows you know how to Grin and Bear it!" LevelRequired="30" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20036" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Mask_Slash_01.sco" />
+		<Store name="Slash Mask" icon="$Data/Weapons/StoreIcons/HGEAR_Mask_Slash_01.dds" desc="While not just another pretty face, the Slash Mask is a cut above the rest! Get it and look the part of a killer." LevelRequired="40" slotW="2" slotH="2" />
+		<Armor damagePerc="10" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20041" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Boonie_Hat_Desert.sco" />
+		<Store name="Boonie Desert" icon="$Data/Weapons/StoreIcons/HGEAR_Boonie_Hat_Desert.dds" desc="This boonie hat is great for desert ops, keeping you out of the sun and foiling those pesky bugs." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20042" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Boonie_Hat_MilGreen.sco" />
+		<Store name="Boonie Green" icon="$Data/Weapons/StoreIcons/HGEAR_Boonie_Hat_MilGreen.dds" desc="While not a bullet stopper this boonie hat will keep you cool and in camo in the wild places." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20043" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Black_01.sco" />
+		<Store name="M9 helmet black" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Black_01.dds" desc="The M9 helmet gives a good standard of head protection. This one in black." LevelRequired="5" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20046" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Desert_02.sco" />
+		<Store name="M9 Helmet with Goggles" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Desert_02.dds" desc="The M9 helmet gives a good standard of head protection. This one with goggles." LevelRequired="25" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20047" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_MilGreen_01.sco" />
+		<Store name="M9 Helmet Green" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_MilGreen_01.dds" desc="The M9 helmet gives a good standard of head protection. This one in green." LevelRequired="25" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20048" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_Urban_01.sco" />
+		<Store name="M9 Helmet Urban" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_Urban_01.dds" desc="The M9 helmet gives a good standard of head protection. This one in Urban camo." LevelRequired="30" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20049" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_forest_01.sco" />
+		<Store name="M9 Helmet Forest 1" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_forest_01.dds" desc="The M9 helmet gives a good standard of head protection. This one in a special forest pattern." LevelRequired="35" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20050" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_M9_Helmet_forest_02.sco" />
+		<Store name="M9 Helmet Goggles 1" icon="$Data/Weapons/StoreIcons/HGEAR_M9_Helmet_forest_02.dds" desc="The M9 helmet gives a good standard of head protection. This one with goggles." LevelRequired="40" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20067" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/Hgear_KStyle_NVG_01.sco" />
+		<Store name="NVG Goggles" icon="$Data/Weapons/StoreIcons/Hgear_KStyle_NVG_01.dds" desc="Standard K style helmet rigged with NVG set up for night ops." LevelRequired="20" slotW="2" slotH="2" />
+		<Armor damagePerc="25" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
+	</Gear>
+	<Gear itemID="20096" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Boonie_hat_Leather_01.sco" />
+		<Store name="Boonie Hat Leather" icon="$Data/Weapons/StoreIcons/HGEAR_Boonie_hat_Leather_01.dds" desc="This is the boonie hat that comes with a bit of sophistication. It is all leather, which is bound to be a hit, but it will not stop one!" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20097" category="13" Weight="500">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_Fireman_Helmet_01.sco" />
+		<Store name="Fireman Helmet" icon="$Data/Weapons/StoreIcons/HGEAR_Fireman_Helmet_01.dds" desc="The traditional Firefighters helmet has been saving men for years. Give it a try if you want to be different in the battlezone." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20098" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_HardHat_01.sco" />
+		<Store name="Hard Hat" icon="$Data/Weapons/StoreIcons/HGEAR_HardHat_01.dds" desc="The traditional construction hard hat is just the ticket for knocking around old buildings and showing your enemies that you are tough!" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20177" category="13" Weight="500">
+		<Model file="Data/ObjectsDepot/Characters/HGear_GasMask_01.sco" />
+		<Store name="Gas Mask" icon="$Data/Weapons/StoreIcons/HGear_GasMask_01.dds" desc="A mask put over your face to protect from inhaling airborn pollutants and toxic gasses" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20178" category="13" Weight="500">
+		<Model file="Data/ObjectsDepot/Characters/HGear_GasMask_02.sco" />
+		<Store name="Gas Mask 2" icon="$Data/Weapons/StoreIcons/HGear_GasMask_02.dds" desc="A mask put over your face to protect from inhaling airborn pollutants and toxic gasses" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20187" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_NV_Mil_01.sco" />
+		<Store name="Night vision military" icon="$Data/Weapons/StoreIcons/HGEAR_NV_Mil_01.dds" desc="Otherwise known as NVD's. These enhance light allowing the user to see in almost total darkness" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20188" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGEAR_NV_Civ_01.sco" />
+		<Store name="Night vision civilian" icon="$Data/Weapons/StoreIcons/HGEAR_NV_Civ_01.dds" desc="Night vision for everyone, these affordable goggles allow you to see at night while remaining hidden in the darkness" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20192" category="13" Weight="1000">
+		<Model file="Data/ObjectsDepot/Characters/HGear_Pumpkin_01.sco" />
+		<Store name="Halloween Special!" icon="$Data/Weapons/StoreIcons/HGear_Pumpkin_01.dds" desc="A unique mask to celebrate the eve of the hallows. Eat, Drink and be Scary! Wuhahahahaaa!" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20197" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGear_Santa_Beard_01.sco" />
+		<Store name="Christmas Special" icon="$Data/Weapons/StoreIcons/HGear_Santa_Beard_01.dds" desc="A yule tide treat" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20198" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGear_Xmas_Elf.sco" />
+		<Store name="Santa's Lil Helper" icon="$Data/Weapons/StoreIcons/HGear_Xmas_Elf.dds" desc="Makin presents for all the good girls and boys!" LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+	<Gear itemID="20199" category="13" Weight="100">
+		<Model file="Data/ObjectsDepot/Characters/HGear_Xmas_Snowman.sco" />
+		<Store name="Captain Jack Frost" icon="$Data/Weapons/StoreIcons/HGear_Xmas_Snowman.dds" desc="With a corncob pipe and a button nose..." LevelRequired="0" slotW="2" slotH="2" />
+		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+</GearArmory>

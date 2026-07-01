@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<GearArmory>
+	<Gear itemID="20015" category="11" Weight="4000">
+		<Model file="Data/ObjectsDepot/Characters/ARMOR_Rebel_Heavy.sco" />
+		<Store name="Custom Guerilla" icon="$Data/Weapons/StoreIcons/ARMOR_Rebel_Heavy.dds" desc="Custom designed guerilla field gear and body armor that allows for decent protection under fast moving conditions. Level 2 Protection" LevelRequired="20" slotW="2" slotH="3" />
+		<Armor damagePerc="25" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
+	</Gear>
+	<Gear itemID="20054" category="11" Weight="2000">
+		<Model file="Data/ObjectsDepot/Characters/Armor_IBA_01_Sand.sco" />
+		<Store name="IBA Sand" icon="$Data/Weapons/StoreIcons/Armor_IBA_01_Sand.dds" desc="Special IBA release gear in Sand toned pattern with Level 2 protection." LevelRequired="10" slotW="2" slotH="3" />
+		<Armor damagePerc="20" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
+	</Gear>
+	<Gear itemID="20056" category="11" Weight="3000">
+		<Model file="Data/ObjectsDepot/Characters/Armor_MTV_01_Forest.sco" />
+		<Store 
+			name="MTV Forest" 
+			icon="$Data/Weapons/StoreIcons/Armor_MTV_01_Forest.dds" 
+			desc="Limited edition MTV release Forest patterned gear with Level 2 protection." 
+			LevelRequired="15" 
+			slotW="2" 
+			slotH="3" 
+		/>
+		<Armor damagePerc="20" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
+	</Gear>
+	<Gear itemID="20059" category="11" Weight="2000">
+		<Model file="Data/ObjectsDepot/Characters/ARMOR_Light_Forest.sco" />
+		<Store 
+			name="Light Gear Forest" 
+			icon="$Data/Weapons/StoreIcons/ARMOR_Light_Forest.dds" 
+			desc="Light weight Level 1 protection in a Green Forest pattern." 
+			LevelRequired="10" 
+			slotW="2" 
+			slotH="3" 
+		/>
+		<Armor damagePerc="15" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
+	</Gear>
+</GearArmory>

@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FoodArmory>
+	<Item itemID="101283" category="30" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/consumables_bag_chips_01.sco" />
+		<Store name="Bag of Chips" icon="$Data/Weapons/StoreIcons/consumables_bag_chips_01.dds" desc="A bag of potato chips.  Relieves minor hunger. BBQ Flavor!" LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="-5" food="10" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101284" category="30" Weight="400">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Bag_MRE_01.sco" />
+		<Store name="Bag MRE" icon="$Data/Weapons/StoreIcons/Consumables_Bag_MRE_01.dds" desc="Meals Ready-to-Eat.  Extremely convenient! An MRE can be eaten cold, right out of the pouch but they always taste better hot. Each serving size substantially relieves hunger and thirst" LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="25" toxicity="0" water="60" food="100" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101285" category="30" Weight="220">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Bag_Oat_01.sco" />
+		<Store name="Instant Oatmeal" icon="$Data/Weapons/StoreIcons/Consumables_Bag_Oat_01.dds" desc="A heart warming way to start your day. Classic Maple and Brown Sugar. Relieves a moderate amount of hunger." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="5" food="15" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101288" category="30" Weight="220">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Bar_Chocolate_01.sco" />
+		<Store name="Chocolate Bar" icon="$Data/Weapons/StoreIcons/Consumables_Bar_Chocolate_01.dds" desc="A milk chocolate candy bar. The finest in gourmet chocolate. Each serving size provides minor sustenance." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="0" food="10" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101289" category="30" Weight="220">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Bar_Granola_01.sco" />
+		<Store name="Granola Bar" icon="$Data/Weapons/StoreIcons/Consumables_Bar_Granola_01.dds" desc="An organic granola bar.  Each serving size helps relieve moderate hunger." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="0" food="10" stamina="25" shopSS="1" />
+	</Item>
+	<Item itemID="101290" category="30" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Can_Pasta_01.sco" />
+		<Store name="Can of Pasta" icon="$Data/Weapons/StoreIcons/Consumables_Can_Pasta_01.dds" desc="A can of delicious Pasta-O's. Fortified with iron and vitamins. Low sugar and low fat. Suitable for Vegetarians. &#13;Gluten Free" LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="0" food="35" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101291" category="30" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Can_Soup_01.sco" />
+		<Store name="Can of Soup" icon="$Data/Weapons/StoreIcons/Consumables_Can_Soup_01.dds" desc="A can of creamy tomato soup. No need to add water. Relieves moderate hunger." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="10" toxicity="0" water="10" food="35" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101292" category="30" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Can_Spam_01.sco" />
+		<Store name="Can of Ham" icon="$Data/Weapons/StoreIcons/Consumables_Can_Spam_01.dds" desc="Mechanically separated Spiced Ham in a 5-ounce cans. May contain pig parts. Relieves moderate hunger." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="5" toxicity="0" water="0" food="35" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101293" category="30" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_Can_Tuna_01.sco" />
+		<Store name="Can of Tuna" icon="$Data/Weapons/StoreIcons/Consumables_Can_Tuna_01.dds" desc="Chunk lite savory tuna in water.  Firm, flaky, fresh tasting that you can really tear into. Each serving relieves moderate hunger." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="5" toxicity="0" water="10" food="35" stamina="0" shopSS="1" />
+	</Item>
+	<Item itemID="101340" category="30" Weight="400">
+		<Model file="Data/ObjectsDepot/Weapons/Consumables_MiniSaints_01.sco" />
+		<Store name="MiniSaints" icon="$Data/Weapons/StoreIcons/Consumables_MiniSaints_01.dds" desc="Creamy, moist and delectable, MiniSaints are a delicious treat the whole family can enjoy! Best consumed while watching family movies, possibly involving snow and dogs." LevelRequired="0" slotW="1" slotH="1" />
+		<Property health="0" toxicity="0" water="5" food="15" stamina="0" shopSS="5" />
+	</Item>
+</FoodArmory>

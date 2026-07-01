@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='utf-8'?>
+<HeroArmory>
+	<Hero itemID="20170" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/Zombie" />
+		<Store name="Basic Zombie Character" icon="$Data/Weapons/StoreIcons/Zombie.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="5" maxBodys="5" maxLegs="5" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20174" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/RegularGuy" />
+		<Store name="Ex Military" icon="$Data/Weapons/StoreIcons/RegularGuy.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20182" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/MohawkGuy" />
+		<Store name="Ex cage fighter" icon="$Data/Weapons/StoreIcons/MohawkGuy.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20183" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/Zombie_Woman" />
+		<Store name="Zombie_Woman" icon="$Data/Weapons/StoreIcons/Zombie_Woman.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="5" maxBodys="5" maxLegs="5" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20184" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/AsianGirl" />
+		<Store name="Hunter" icon="$Data/Weapons/StoreIcons/AsianGirl.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20186" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/Zombie_man" />
+		<Store name="Zombie man" icon="$Data/Weapons/StoreIcons/Zombie_man.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="5" maxBodys="5" maxLegs="5" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20189" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/CharacterMale_01" />
+		<Store name="Male Character" icon="$Data/Weapons/StoreIcons/CharacterMale_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20190" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/Zombie_Military" />
+		<Store name="Zombie Military" icon="$Data/Weapons/StoreIcons/Zombie_Military.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="5" maxBodys="5" maxLegs="5" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20191" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/Zombie_man_02" />
+		<Store name="Zombie Man 2" icon="$Data/Weapons/StoreIcons/Zombie_man_02.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="5" maxBodys="5" maxLegs="5" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20193" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/CharacterMale_02" />
+		<Store name="Average Joe" icon="$Data/Weapons/StoreIcons/CharacterMale_02.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20194" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/CharacterFemale_01" />
+		<Store name="CharacterFemale_01" icon="$Data/Weapons/StoreIcons/CharacterFemale_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20195" category="16" Weight="0">
+		<Model file="Data/ObjectsDepot/Characters/CharacterFemale_02" />
+		<Store name="CharacterFemale_02" icon="$Data/Weapons/StoreIcons/CharacterFemale_02.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+	<Hero itemID="20201" category="16" Weight="-1">
+		<Model file="Data/ObjectsDepot/Characters/CharacterMale_Asian" />
+		<Store name="Asian Male" icon="$Data/Weapons/StoreIcons/CharacterMale_Asian.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
+		<HeroDesc damagePerc="0" damageMax="0" maxHeads="4" maxBodys="4" maxLegs="4" ProtectionLevel="1" />
+	</Hero>
+</HeroArmory>

@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101098" category="22" upgrade="1" FNAME="SHG_Saiga" Weight="3500">
+		<Model file="Data/ObjectsDepot/Weapons/SHG_Saiga.sco" AnimPrefix="SHG_SAIGA" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_sh1" />
+		<HudIcon file="$Data/Weapons/HudIcons/SHG_Saiga.dds" />
+		<Store name="SAIGA" icon="$Data/Weapons/StoreIcons/SHG_Saiga.dds" desc="The Saiga was developed as a 12 gauge shotgun with a 8 round storage tube. It inflicts a substancial amount of damage on targets at a close range." LevelRequired="25" slotW="4" slotH="2" />
+		<PrimaryFire bullet="buckshot" damage="27" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1.43" rateOfFire="100" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/SHOTGUN/SHG_Generic_Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400080" d2="0" d3="0" d4="400073" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101158" category="22" upgrade="1" FNAME="SHG_Mossberg590_01" Weight="2500">
+		<Model file="Data/ObjectsDepot/Weapons/SHG_Mossberg590_01.sco" AnimPrefix="SHG_Mossberg590_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_sh1" />
+		<HudIcon file="$Data/Weapons/HudIcons/SHG_Mossberg590_01.dds" />
+		<Store name="MOSSBERG 590" icon="$Data/Weapons/StoreIcons/SHG_Mossberg590_01.dds" desc="The Mossberg 590 is a 12 gauge shotgun which has a 8 round storage tube. It is known to do an extremely high amount of damage at close range." LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="buckshot" damage="24" immediate="false" mass="1" decay="12" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="8" activeReloadTick="1.43" rateOfFire="60" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Shotgun/Mossberg" reload="Sounds/Weapons/New Reloads/Mossberg_reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400082" d2="0" d3="0" d4="400136" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101183" category="22" upgrade="1" FNAME="SHG_Keltech" Weight="4000">
+		<Model file="Data/ObjectsDepot/Weapons/SHG_Keltech.sco" AnimPrefix="SHG_Keltech" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_sh1" />
+		<HudIcon file="$Data/Weapons/HudIcons/SHG_Keltech.dds" />
+		<Store name="KT DECIDER" icon="$Data/Weapons/StoreIcons/SHG_Keltech.dds" desc="The KT Decider is a bull-pup shotgun design that has two magazine feed tubes, each side capable of holding 7 shells, for a total capacity of 14+1." LevelRequired="35" slotW="4" slotH="2" />
+		<PrimaryFire bullet="buckshot" damage="25" immediate="false" mass="1" decay="15" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="8" activeReloadTick="1.43" rateOfFire="50" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Shotgun/SHG_Keltech" reload="Sounds/Weapons/New Reloads/SHG_Keltech_reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400036" d2="0" d3="0" d4="400136" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101200" category="22" upgrade="1" FNAME="SHG_Usas12" Weight="5000">
+		<Model file="Data/ObjectsDepot/Weapons/SHG_Usas12.sco" AnimPrefix="SHG_Usas12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_sh1" />
+		<HudIcon file="$Data/Weapons/HudIcons/SHG_Usas12.dds" />
+		<Store name="AA-12" icon="$Data/Weapons/StoreIcons/SHG_Usas12.dds" desc="The AA-12 gauge automatic shotgun was designed to fire 12 gauge rounds from a 20 round storage system. It causes a reasonable amount of damage per round." LevelRequired="45" slotW="4" slotH="2" />
+		<PrimaryFire bullet="buckshot" damage="22" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.5" activeReloadTick="1.43" rateOfFire="150" spread="20" recoil="25" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/SHOTGUN/SHG_Generic_Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400121" d2="0" d3="0" d4="400050" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101321" category="22" upgrade="1" FNAME="SHG_DoubleBarrel" Weight="3000">
+		<Model file="Data/ObjectsDepot/Weapons/SHG_DoubleBarrel.sco" AnimPrefix="SHG_DoubleBarrel" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_sh1" />
+		<HudIcon file="$Data/Weapons/HudIcons/SHG_DoubleBarrel.dds" />
+		<Store name="Double Barrel" icon="$Data/Weapons/StoreIcons/SHG_DoubleBarrel.dds" desc="Also known as Doubles or Broomsticks, this powerful shotgun allows two shots to be fired in quick succession before reloading" LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="buckshot" damage="20" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="1.43" rateOfFire="120" spread="20" recoil="25" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/New Reloads/SH_Double_barrel_reload" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400141" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

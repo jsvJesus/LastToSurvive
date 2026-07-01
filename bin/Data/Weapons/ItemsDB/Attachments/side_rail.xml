@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<AttachmentArmory>
+	<Attachment itemID="400004" category="19" type="2" SpecID="3001" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Side_Laser_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
+		<Store name="Rifle Laser" icon="$Data/Weapons/StoreIcons/ATTM_Side_Laser_01.dds" desc="The Laser attachment mounts onto the side of a weapon and allows the shooter to mark the target with the laser." LevelRequired="18" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400018" category="19" type="2" SpecID="3001" Weight="600">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Side_Flashlight_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
+		<Store name="Rifle Flashlight" icon="$Data/Weapons/StoreIcons/ATTM_Side_Flashlight_01.dds" desc="The Flashlight can be used to light dark areas and temporarily blind a shooters opponent." LevelRequired="14" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400021" category="19" type="2" SpecID="3002" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Pistol_Laser_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
+		<Store name="Pistol laser" icon="$Data/Weapons/StoreIcons/ATTM_Pistol_Laser_01.dds" desc="The Pistol Laser is mounted on the left side of a handgun and used to target the enemy with a laser light." LevelRequired="18" slotW="1" slotH="2" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400022" category="19" type="2" SpecID="3002" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Pistol_flashlight_WL1.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
+		<Store name="Pistol Flashlight" icon="$Data/Weapons/StoreIcons/ATTM_Pistol_flashlight_WL1.dds" desc="The Pistol Flashlight can be used to light dark areas and temporarily blind a shooters opponent." LevelRequired="14" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+</AttachmentArmory>

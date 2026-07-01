@@ -1,0 +1,353 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101305" category="28" upgrade="1" FNAME="Item_MsgBottle" Weight="450">
+		<Model file="Data/ObjectsDepot/Weapons/Item_MsgBottle.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_MsgBottle.dds" />
+		<Store name="Time Capsule" icon="$Data/Weapons/StoreIcons/Item_MsgBottle.dds" desc="Write a message and leave it anywhere in the world for others to find" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="5.45" damage="20" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="4" activeReloadTick="2" rateOfFire="10" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS />
+	</Weapon>
+	<Weapon itemID="101316" category="28" upgrade="1" FNAME="Item_Barricade_BarbWire" Weight="500">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Barricade_BarbWire.sco" AnimPrefix="Item_Barricade_BarbWire" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Barricade_BarbWire.dds" />
+		<Store name="Barb wire barricade" icon="$Data/Weapons/StoreIcons/Item_Barricade_BarbWire.dds" desc="Drag this across a doorway to barricade the entrance leaving you safe inside, unless something is already inside with you!" LevelRequired="0" shopCategory="28" slotW="2" slotH="2" sort="280" />
+		<PrimaryFire bullet="melee" damage="500" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101317" category="28" upgrade="1" FNAME="Item_Barricade_WoodShield" Weight="700">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Barricade_WoodShield.sco" AnimPrefix="Item_Barricade_WoodShield" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Barricade_WoodShield.dds" />
+		<Store name="Wood shield barricade" icon="$Data/Weapons/StoreIcons/Item_Barricade_WoodShield.dds" desc="Great for blocking doorways to keep out those pesky infected" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="250" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101318" category="28" upgrade="1" FNAME="Item_Riot_Shield_Crate_01" Weight="900">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Riot_Shield_Crate_01.sco" AnimPrefix="Item_Riot_Shield_Crate_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Riot_Shield_Crate_01.dds" />
+		<Store name="Riot Shield" icon="$Data/Weapons/StoreIcons/Item_Riot_Shield_Crate_01.dds" desc="Its a riot shield! Hide behind it for safety" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="400" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101324" category="28" upgrade="1" FNAME="item_barricade_sandbag" Weight="1000">
+		<Model file="Data/ObjectsDepot/Weapons/item_barricade_sandbag.sco" AnimPrefix="item_barricade_sandbag" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/item_barricade_sandbag.dds" />
+		<Store name="Sandbag barricade" icon="$Data/Weapons/StoreIcons/item_barricade_sandbag.dds" desc="These should keep out the undead.. until they learn to climb that is" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="5.45" damage="500" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="0" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101348" category="28" upgrade="1" FNAME="Item_Lockbox_01_Crate" Weight="5000">
+		<Model file="Data/ObjectsDepot/Weapons/Item_Lockbox_01_Crate.sco" AnimPrefix="Item_Lockbox_01_Crate" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/Item_Lockbox_01_Crate.dds" />
+		<Store name="Personal locker" icon="$Data/Weapons/StoreIcons/Item_Lockbox_01_Crate.dds" desc="Placeable personal storage unit" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="5.45" damage="20" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4" activeReloadTick="2" rateOfFire="10" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS />
+	</Weapon>
+	<Weapon itemID="101352" category="28" upgrade="1" FNAME="Block_Door_Wood_2M_01" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Door_Wood_2M_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Door_Wood_2M_01.dds" />
+		<Store name="Wooden door block" icon="$Data/Weapons/StoreIcons/Block_Door_Wood_2M_01.dds" desc="2 meters high" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="250" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101353" category="28" upgrade="1" FNAME="Block_Wall_Metal_2M_01" Weight="500">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Metal_2M_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Metal_2M_01.dds" />
+		<Store name="Metal wall block" icon="$Data/Weapons/StoreIcons/Block_Wall_Metal_2M_01.dds" desc="2 meters high" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="500" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101354" category="28" upgrade="1" FNAME="Block_Wall_Brick_Tall_01" Weight="400">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Brick_Tall_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Brick_Tall_01.dds" />
+		<Store name="Tall brick wall block" icon="$Data/Weapons/StoreIcons/Block_Wall_Brick_Tall_01.dds" desc="Large brick wall piece" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="250" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101355" category="28" upgrade="1" FNAME="Block_Wall_Wood_2M_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Wood_2M_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Wood_2M_01.dds" />
+		<Store name="Wooden wall piece, 2M" icon="$Data/Weapons/StoreIcons/Block_Wall_Wood_2M_01.dds" desc="2 meter tall wooden wall piece" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="250" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101356" category="28" upgrade="1" FNAME="Block_Wall_Brick_Short_01" Weight="400">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Brick_Short_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Brick_Short_01.dds" />
+		<Store name="Short brick wall piece" icon="$Data/Weapons/StoreIcons/Block_Wall_Brick_Short_01.dds" desc="Short brick wall block" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="500" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101357" category="28" upgrade="1" FNAME="Block_Farm_01" Weight="400">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Farm_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Farm_01.dds" />
+		<Store name="Farm Block" icon="$Data/Weapons/StoreIcons/Block_Farm_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="250" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101358" category="28" upgrade="1" FNAME="Block_PowerGen_Indust_01" Weight="500">
+		<Model file="Data/ObjectsDepot/Weapons/Block_PowerGen_Indust_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_PowerGen_Indust_01.dds" />
+		<Store name="Industrial power generator" icon="$Data/Weapons/StoreIcons/Block_PowerGen_Indust_01.dds" desc="Industrial strength power generator" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101359" category="28" upgrade="1" FNAME="Block_PowerGen_01_Small" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_PowerGen_01_Small.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_PowerGen_01_Small.dds" />
+		<Store name="Small Power Generator" icon="$Data/Weapons/StoreIcons/Block_PowerGen_01_Small.dds" desc="Small Power Generator" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="200" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101360" category="28" upgrade="1" FNAME="Block_SolarWater_01" Weight="500">
+		<Model file="Data/ObjectsDepot/Weapons/Block_SolarWater_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_SolarWater_01.dds" />
+		<Store name="Solar Water Purifier" icon="$Data/Weapons/StoreIcons/Block_SolarWater_01.dds" desc="Small solar powered water purifier" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="200" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101361" category="28" upgrade="1" FNAME="Block_Light_01" Weight="200">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Light_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Light_01.dds" />
+		<Store name="Placeable light" icon="$Data/Weapons/StoreIcons/Block_Light_01.dds" desc="Moveable, placeable light source" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="200" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101362" category="28" upgrade="1" FNAME="Block_Farm_ChipBag_01" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Farm_ChipBag_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Farm_ChipBag_01.dds" />
+		<Store name="Bag of Chips farm block" icon="$Data/Weapons/StoreIcons/Block_Farm_ChipBag_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="200" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101363" category="28" upgrade="1" FNAME="Block_Veg_Apple_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Apple_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Apple_01.dds" />
+		<Store name="Apple farm block" icon="$Data/Weapons/StoreIcons/Block_Veg_Apple_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="200" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101364" category="28" upgrade="1" FNAME="Block_Veg_Banana_01" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Banana_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Banana_01.dds" />
+		<Store name="Banana farm block" icon="$Data/Weapons/StoreIcons/Block_Veg_Banana_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101365" category="28" upgrade="1" FNAME="Block_Veg_Carrot_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Carrot_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Carrot_01.dds" />
+		<Store name="Carrot farm block" icon="$Data/Weapons/StoreIcons/Block_Veg_Carrot_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101366" category="28" upgrade="1" FNAME="Block_Veg_Lettuce" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Lettuce.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Lettuce.dds" />
+		<Store name="Lettuce farm block" icon="$Data/Weapons/StoreIcons/Block_Veg_Lettuce.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101367" category="28" upgrade="1" FNAME="Block_Veg_PineApple_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_PineApple_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_PineApple_01.dds" />
+		<Store name="Pineapple farm block" icon="$Data/Weapons/StoreIcons/Block_Veg_PineApple_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101368" category="28" upgrade="1" FNAME="Block_Veg_Potato_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Potato_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Potato_01.dds" />
+		<Store name="Potato Farm Block" icon="$Data/Weapons/StoreIcons/Block_Veg_Potato_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101369" category="28" upgrade="1" FNAME="Block_Veg_Tomato_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_Tomato_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_Tomato_01.dds" />
+		<Store name="Tomato Farm Block" icon="$Data/Weapons/StoreIcons/Block_Veg_Tomato_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101370" category="28" upgrade="1" FNAME="Block_Veg_WaterMelon_01" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Veg_WaterMelon_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Veg_WaterMelon_01.dds" />
+		<Store name="Watermelon Farm Block" icon="$Data/Weapons/StoreIcons/Block_Veg_WaterMelon_01.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101371" category="28" upgrade="1" FNAME="Block_Door_Wood_2M_01_Crate" Weight="350">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Door_Wood_2M_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Door_Wood_2M_01_Crate.dds" />
+		<Store name="Wood Door Crate 2M" icon="$Data/Weapons/StoreIcons/Block_Door_Wood_2M_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101372" category="28" upgrade="1" FNAME="Block_Farm_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Farm_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Farm_01_Crate.dds" />
+		<Store name="Farm Block Crate" icon="$Data/Weapons/StoreIcons/Block_Farm_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101373" category="28" upgrade="1" FNAME="Block_Light_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Light_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Light_01_Crate.dds" />
+		<Store name="Light block crate" icon="$Data/Weapons/StoreIcons/Block_Light_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101374" category="28" upgrade="1" FNAME="Block_PowerGen_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_PowerGen_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_PowerGen_01_Crate.dds" />
+		<Store name="Power Generator Block Crate" icon="$Data/Weapons/StoreIcons/Block_PowerGen_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101375" category="28" upgrade="1" FNAME="Block_PowerGen_Indust_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_PowerGen_Indust_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_PowerGen_Indust_01_Crate.dds" />
+		<Store name="Industrial Power Generator block" icon="$Data/Weapons/StoreIcons/Block_PowerGen_Indust_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101376" category="28" upgrade="1" FNAME="Block_SolarWater_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_SolarWater_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_SolarWater_01_Crate.dds" />
+		<Store name="Solar Water Power block crate" icon="$Data/Weapons/StoreIcons/Block_SolarWater_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101377" category="28" upgrade="1" FNAME="Block_Wall_Brick_Short_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Brick_Short_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Brick_Short_01_Crate.dds" />
+		<Store name="Short Brick Wall crate" icon="$Data/Weapons/StoreIcons/Block_Wall_Brick_Short_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101378" category="28" upgrade="1" FNAME="Block_Wall_Brick_Tall_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Brick_Tall_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Brick_Tall_01_Crate.dds" />
+		<Store name="Tall Brick wall crate" icon="$Data/Weapons/StoreIcons/Block_Wall_Brick_Tall_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101379" category="28" upgrade="1" FNAME="Block_Wall_Metal_2M_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Metal_2M_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Metal_2M_01_Crate.dds" />
+		<Store name="Tall 2M Metal Wall Block crate" icon="$Data/Weapons/StoreIcons/Block_Wall_Metal_2M_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101380" category="28" upgrade="1" FNAME="Block_Wall_Wood_2M_01_Crate" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/Block_Wall_Wood_2M_01_Crate.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Block_Wall_Wood_2M_01_Crate.dds" />
+		<Store name="Wood Wall block crate, 2M" icon="$Data/Weapons/StoreIcons/Block_Wall_Wood_2M_01_Crate.dds" desc="" shopCategory="28" slotW="2" slotH="2" sort="280" LevelRequired="0" />
+		<PrimaryFire bullet="melee" damage="300" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="" reload="" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101060" category="23" upgrade="1" FNAME="MG_PKM" Weight="8000">
+		<Model file="Data/ObjectsDepot/Weapons/MG_PKM.sco" AnimPrefix="MG_PKM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/MG_PKM.dds" />
+		<Store name="PKM" icon="$Data/Weapons/StoreIcons/MG_PKM.dds" desc="The PKM machine gun was designed to fire a 7.62 mm rounds from a linked system and is reasonably accurate out to medium ranged targets." LevelRequired="34" slotW="4" slotH="2" />
+		<PrimaryFire bullet="7.62" damage="36" immediate="false" mass="1" decay="300" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="5" activeReloadTick="2.43" rateOfFire="625" spread="15" recoil="10" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/LightMachineGun/Kalashnikov_PKM" reload="Sounds/Weapons/MG/MG_Generic_Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400056" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101093" category="23" upgrade="1" FNAME="MG_RPK" Weight="5000">
+		<Model file="Data/ObjectsDepot/Weapons/MG_RPK.sco" AnimPrefix="MG_RPK" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/MG_RPK.dds" />
+		<Store name="RPK-74 " icon="$Data/Weapons/StoreIcons/MG_RPK.dds" desc="The RPK-74 machine gun fires a 5.45 mm high velocity round that delivers a reasonably accurate rate of fire onto targets out to medium ranges." LevelRequired="0" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="34" immediate="false" mass="1" decay="300" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4" activeReloadTick="2.43" rateOfFire="600" spread="14" recoil="10" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/LightMachineGun/Kalashnikov_RPK74" reload="Sounds/Weapons/New Reloads/MG_RPK_reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="4200" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400060" d2="0" d3="0" d4="400100" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101095" category="23" upgrade="1" FNAME="MG_M249_SAW" Weight="10000">
+		<Model file="Data/ObjectsDepot/Weapons/MG_M249_SAW.sco" AnimPrefix="MG_M249" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/MG_M249_SAW.dds" />
+		<Store name="FN M249 " icon="$Data/Weapons/StoreIcons/MG_M249_SAW.dds" desc="The FN M249 machine gun fires a 5.56 mm round from a belt fed system. It is highly effective against targets at close and medium ranges." LevelRequired="25" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="31" immediate="false" mass="1" decay="300" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="6" activeReloadTick="2.43" rateOfFire="600" spread="14" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/LightMachineGun/FN_M249" reload="Sounds/Weapons/New Reloads/MG_M240_SAW_Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400035" d2="0" d3="0" d4="400143" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101197" category="23" upgrade="1" FNAME="MG_G36MG" Weight="6000">
+		<Model file="Data/ObjectsDepot/Weapons/MG_G36MG.sco" AnimPrefix="MG_G36MG" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/MG_G36MG.dds" />
+		<Store name="RA H23" icon="$Data/Weapons/StoreIcons/MG_G36MG.dds" desc="The RA LMG36 was designed to fire a 7.62 mm standard round. This machine gun delivers a reasonable amount of accurate fire onto targets at medium ranges." LevelRequired="49" slotW="4" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="31" immediate="false" mass="1" decay="300" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4" activeReloadTick="2.43" rateOfFire="650" spread="15" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Assault/HK_G36_CMag" reload="Sounds/Weapons/New Reloads/MG_G36MG_Reload" />
+		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400042" d2="0" d3="0" d4="400017" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>

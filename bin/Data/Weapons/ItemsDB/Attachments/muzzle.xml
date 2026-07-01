@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<AttachmentArmory>
+	<Attachment itemID="400012" category="19" type="0" SpecID="2001" Weight="450">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Muzzle_FlashHider_01.sco" MuzzleParticle="muzzle_asr_noflash" FireSound="" ScopeAnim="" />
+		<Store name="Flash Hider" icon="$Data/Weapons/StoreIcons/ATTM_Muzzle_FlashHider_01.dds" desc="The Muzzle FlashHider will lower the visual flash of a weapon when fired at normal or rapid speeds." LevelRequired="15" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="-5" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400013" category="19" type="0" SpecID="2001" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Muzzle_Silencer_01.sco" MuzzleParticle="muzzle_asr_noflash" FireSound="Sounds/NewWeapons/SMG/HK_MP5SD" ScopeAnim="" />
+		<Store name="Silencer " icon="$Data/Weapons/StoreIcons/ATTM_Muzzle_Silencer_01.dds" desc="The Silencer will lower the sound of a weapons discharge when fired at normal or rapid speeds." LevelRequired="21" slotW="1" slotH="2" />
+		<Upgrade damage="-20" range="-10" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400074" category="19" type="0" SpecID="0" Weight="0">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Muzzle_AacHoneyBadger_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
+		<Store name="standard muzzle" icon="$Data/Weapons/StoreIcons/ATTM_Muzzle_AacHoneyBadger_01.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
+		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+	<Attachment itemID="400156" category="19" type="0" SpecID="8001" Weight="300">
+		<Model file="Data/ObjectsDepot/Weapons/ATTM_Muzzle_Silencer_02.sco" MuzzleParticle="muzzle_asr_noflash" FireSound="Sounds/NewWeapons/SMG/HK_MP5SD" ScopeAnim="" />
+		<Store name="Pistol Silencer" icon="$Data/Weapons/StoreIcons/ATTM_Muzzle_Silencer_02.dds" desc="Lowers the sound of pistols being fired" LevelRequired="0" slotW="2" slotH="1" />
+		<Upgrade damage="-20" range="-10" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="" />
+	</Attachment>
+</AttachmentArmory>

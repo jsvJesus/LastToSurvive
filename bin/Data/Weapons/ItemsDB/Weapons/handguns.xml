@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='utf-8'?>
+<WeaponsArmory>
+	<Weapon itemID="101004" category="25" upgrade="1" FNAME="HG_FN57" Weight="750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_FN57.sco" AnimPrefix="HG_FN57" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_FN57.dds" />
+		<Store name="FN FiveSeven" icon="$Data/Weapons/StoreIcons/HG_FN57.dds" desc="The FN Five Seven is a standard issue handgun that was designed to fire a 5.7 mm round. It is an effective weapon against close range targets." LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Glock9mm" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400087" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101111" category="25" upgrade="1" FNAME="HG_Beretta92F" Weight="750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Beretta92F.sco" AnimPrefix="HG_beretta92f" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Beretta92F.dds" />
+		<Store name="B92" icon="$Data/Weapons/StoreIcons/HG_Beretta92F.dds" desc="The B92 handgun was specially designed to fire a 9mm round and is reasonably effective agains close range targets." LevelRequired="5" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="33" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta92" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101112" category="25" upgrade="1" FNAME="HG_Beretta93R" Weight="750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Beretta93R.sco" AnimPrefix="HG_Beretta93R" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Beretta93R.dds" />
+		<Store name="B93R " icon="$Data/Weapons/StoreIcons/HG_Beretta93R.dds" desc="The B93R handgun was designed to fire a 9mm parabellum round from a 20 round clip. It is a relatively effective weapon against close ranged targets." LevelRequired="15" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="30" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta93R" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101115" category="25" upgrade="1" FNAME="HG_Jericho" Weight="750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Jericho.sco" AnimPrefix="HG_Jericho" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Jericho.dds" />
+		<Store name="Jericho 9mm" icon="$Data/Weapons/StoreIcons/HG_Jericho.dds" desc="The Jericho was designed as a universal self-loading pistol which fires a 9mm Parabellum round and is highly effective at close range." LevelRequired="17" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="35" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="9" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/H&amp;K_USP" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101120" category="25" upgrade="1" FNAME="HG_SigP226" Weight="750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_SigP226.sco" AnimPrefix="HG_SIGP226" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_SigP226.dds" />
+		<Store name="Sig Sauer P226" icon="$Data/Weapons/StoreIcons/HG_SigP226.dds" desc="The SIG P226 is a full-sized, service-type pistol made by SIG Sauer. It been designed to fire a 9 x 19 mm round that makes it an effective weapon against close ranged targets." LevelRequired="26" slotW="2" slotH="2" />
+		<PrimaryFire bullet="9mm" damage="35" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta92" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400034" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101180" category="25" upgrade="1" FNAME="HG_Desert_Eagle" Weight="1750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Desert_Eagle.sco" AnimPrefix="HG_Desert_Eagle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Desert_Eagle.dds" />
+		<Store name="Desert Eagle" icon="$Data/Weapons/StoreIcons/HG_Desert_Eagle.dds" desc="The Desert Eagle handgun was designed to fire a .50 caliber round and deals a substancial amount of damage to targets at close ranges." LevelRequired="45" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="50" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="12" recoil="22" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400086" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101224" category="25" upgrade="1" FNAME="HG_Jericho" Weight="1500">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Jericho.sco" AnimPrefix="HG_Jericho" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_asr" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Jericho.dds" />
+		<Store name="STI Eagle Elite .45 ACP" icon="$Data/Weapons/StoreIcons/HG_Jericho.dds" desc="The STI Eagle Elite handgun is an upgraded version of the STI Eagle and is designed to fire a .45 ACP round effectively at close ranges." LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="36" immediate="false" mass="1" decay="45" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="9" recoil="9" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="assault" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS />
+	</Weapon>
+	<Weapon itemID="101320" category="25" upgrade="1" FNAME="HG_FlareGun" Weight="1000">
+		<Model file="Data/ObjectsDepot/Weapons/HG_FlareGun.sco" AnimPrefix="HG_FlareGun" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_FlareGun.dds" />
+		<Store name="Flare Gun" icon="$Data/Weapons/StoreIcons/HG_FlareGun.dds" desc="" LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="Flare" damage="5" immediate="false" mass="10" decay="50" speed="50" area="0" delay="180" timeout="0" numShells="0" clipSize="1" reloadTime="2" activeReloadTick="2" rateOfFire="60" spread="15" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/SMG/HK_MP5SD" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400152" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101330" category="25" upgrade="1" FNAME="HG_Ruger" Weight="600">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Ruger.sco" AnimPrefix="HG_Ruger" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Ruger.dds" />
+		<Store name="Ruger" icon="$Data/Weapons/StoreIcons/HG_Ruger.dds" desc="Reliable and relatively common, the lower powered Kruger .22 is a household staple, allowing for low cost practice with firm control" LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="20" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="2" rateOfFire="800" spread="9" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Ruger22" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400144" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101331" category="25" upgrade="1" FNAME="HG_Colt_Anaconda" Weight="1750">
+		<Model file="Data/ObjectsDepot/Weapons/HG_Colt_Anaconda.sco" AnimPrefix="HG_Colt_Anaconda" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_Colt_Anaconda.dds" />
+		<Store name="Colt Anaconda" icon="$Data/Weapons/StoreIcons/HG_Colt_Anaconda.dds" desc="Introduced in 1990, the Colt Anaconda is a large double action .44 caliber revolver featuring a six round cylinder, designed and produced by the Colt's Manufacturing Company" LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="45" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="10" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400145" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101342" category="25" upgrade="1" FNAME="HG_colt_1911" Weight="650">
+		<Model file="Data/ObjectsDepot/Weapons/HG_colt_1911.sco" AnimPrefix="HG_colt_1911" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="muzzle_hg" />
+		<HudIcon file="$Data/Weapons/HudIcons/HG_colt_1911.dds" />
+		<Store name="1911" icon="$Data/Weapons/StoreIcons/HG_colt_1911.dds" desc="Standard US service pistol known for its minimal recoil and light weight" LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="Sniper5.45" damage="35" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.2" activeReloadTick="0.4" rateOfFire="800" spread="4" recoil="2" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/9mmGeneric" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
+		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400154" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+	<Weapon itemID="101392" category="25" upgrade="1" FNAME="Mel_NailGun" Weight="800">
+		<Model file="Data/ObjectsDepot/Weapons/Mel_NailGun.sco" AnimPrefix="Mel_NailGun" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+		<MuzzleModel file="" />
+		<HudIcon file="$Data/Weapons/HudIcons/Mel_NailGun.dds" />
+		<Store name="Nail Gun" icon="$Data/Weapons/StoreIcons/Mel_NailGun.dds" desc="Commonly used in construction" LevelRequired="0" slotW="2" slotH="2" />
+		<PrimaryFire bullet="5.45" damage="10" immediate="false" mass="10" decay="5" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1" rateOfFire="120" spread="15" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+		<Animation type="pistol" />
+		<Sound shoot="Sounds/NewWeapons/Handgun/Nailgun" reload="Sounds/Weapons/New Reloads/Nailgun-reload" />
+		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400157" d5="0" d6="0" d7="0" d8="0" />
+	</Weapon>
+</WeaponsArmory>
