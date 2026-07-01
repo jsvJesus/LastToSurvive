@@ -76,6 +76,14 @@ protected:
 	virtual FoodConfig* loadFoodItem(pugi::xml_node& xmlItem);
 	virtual ScopeConfig* loadScope(pugi::xml_node& xmlScope);
 	virtual AchievementConfig* loadAchievement(pugi::xml_node& xmlAchievement);
+
+	bool LoadItemsDatabase();
+	bool LoadItemsDatabaseSingleFile(const char* FileName);
+	bool LoadItemsDatabaseManifest(const char* ManifestFileName);
+	bool LoadItemsDatabaseFile(const char* FileName, const char* ArmoryType);
+
+	void LoadItemsDatabaseNode(pugi::xml_node xmlDB);
+	void LoadArmoryNode(const char* ArmoryType, pugi::xml_node xmlArmory);
 	
 	Ammo* getAmmo(const char* ammoName);
 

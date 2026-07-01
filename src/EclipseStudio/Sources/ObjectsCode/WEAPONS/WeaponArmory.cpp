@@ -162,102 +162,552 @@ bool WeaponArmory::Init()
 		delete [] fileBuffer;
 	}
 
-	const char* ItemsDBFile = "Data/Weapons/itemsDB.xml";
-	
-	r3dFile* f = r3d_open(ItemsDBFile, "rb");
-	if ( !f )
+	if (!LoadItemsDatabase())
 	{
-		r3dError("Failed to open %s\n", ItemsDBFile);
 		return false;
 	}
 
-	char* fileBuffer = new char[f->size + 1];
-	r3d_assert(fileBuffer);
-	fread(fileBuffer, f->size, 1, f);
-	fileBuffer[f->size] = 0;
-	pugi::xml_document xmlFile;
-	pugi::xml_parse_result parseResult = xmlFile.load_buffer_inplace(fileBuffer, f->size);
-	fclose(f);
-	if(!parseResult)
-		r3dError("Failed to parse XML, error: %s", parseResult.description());
-	pugi::xml_node xmlDB = xmlFile.child("DB");
-	{
-		pugi::xml_node xmlAttachments = xmlDB.child("AttachmentArmory");
-		pugi::xml_node xmlAttm = xmlAttachments.child("Attachment");
-		while(!xmlAttm.empty())
-		{
-			loadWeaponAttachment(xmlAttm);
-			xmlAttm = xmlAttm.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlArmory = xmlDB.child("WeaponsArmory");
-		pugi::xml_node xmlWeapon = xmlArmory.child("Weapon");
-		while(!xmlWeapon.empty())
-		{
-			loadWeapon(xmlWeapon);
-			xmlWeapon = xmlWeapon.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlArmory = xmlDB.child("GearArmory");
-		pugi::xml_node xmlGear = xmlArmory.child("Gear");
-		while(!xmlGear.empty())
-		{
-			loadGear(xmlGear);
-			xmlGear = xmlGear.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlHeroes = xmlDB.child("HeroArmory");
-		pugi::xml_node xmlHero = xmlHeroes.child("Hero");
-		while(!xmlHero.empty())
-		{
-			loadHero(xmlHero);
-			xmlHero = xmlHero.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlArmory = xmlDB.child("BackpackArmory");
-		pugi::xml_node xmlItem = xmlArmory.child("Backpack");
-		while(!xmlItem.empty())
-		{
-			loadBackback(xmlItem);
-			xmlItem = xmlItem.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlItems = xmlDB.child("ItemsDB");
-		pugi::xml_node xmlItem = xmlItems.child("Item");
-		while(!xmlItem.empty())
-		{
-			loadItem(xmlItem);
-			xmlItem = xmlItem.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlItems = xmlDB.child("LootBoxDB");
-		pugi::xml_node xmlItem = xmlItems.child("LootBox");
-		while(!xmlItem.empty())
-		{
-			loadLootBox(xmlItem);
-			xmlItem = xmlItem.next_sibling();
-		}
-	}
-	{
-		pugi::xml_node xmlItems = xmlDB.child("FoodArmory");
-		pugi::xml_node xmlItem = xmlItems.child("Item");
-		while(!xmlItem.empty())
-		{
-			loadFoodItem(xmlItem);
-			xmlItem = xmlItem.next_sibling();
-		}
-	}
-
-	// delete only after we are done parsing xml!
-	delete [] fileBuffer;
-
 	return true;
+}
+
+bool WeaponArmory::LoadItemsDatabase()
+{
+    const char* ManifestFile =
+        "Data/Weapons/ItemsDB/items_manifest.xml";
+
+    r3dFile* ManifestCheck =
+        r3d_open(
+            ManifestFile,
+            "rb"
+        );
+
+    if (!ManifestCheck)
+    {
+        r3dOutToLog(
+            "[ItemsDB] Split manifest not found, fallback to Data/Weapons/itemsDB.xml\n"
+        );
+
+        return LoadItemsDatabaseSingleFile(
+            "Data/Weapons/itemsDB.xml"
+        );
+    }
+
+    fclose(ManifestCheck);
+
+    r3dOutToLog(
+        "[ItemsDB] Loading split manifest: %s\n",
+        ManifestFile
+    );
+
+    return LoadItemsDatabaseManifest(
+        ManifestFile
+    );
+}
+
+bool WeaponArmory::LoadItemsDatabaseSingleFile(
+    const char* FileName
+)
+{
+    r3dFile* f =
+        r3d_open(
+            FileName,
+            "rb"
+        );
+
+    if (!f)
+    {
+        r3dError(
+            "Failed to open %s\n",
+            FileName
+        );
+
+        return false;
+    }
+
+    char* fileBuffer =
+        new char[f->size + 1];
+
+    r3d_assert(fileBuffer);
+
+    fread(
+        fileBuffer,
+        f->size,
+        1,
+        f
+    );
+
+    fileBuffer[f->size] = 0;
+
+    pugi::xml_document xmlFile;
+
+    pugi::xml_parse_result parseResult =
+        xmlFile.load_buffer_inplace(
+            fileBuffer,
+            f->size
+        );
+
+    fclose(f);
+
+    if (!parseResult)
+    {
+        r3dError(
+            "Failed to parse XML %s, error: %s",
+            FileName,
+            parseResult.description()
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    pugi::xml_node xmlDB =
+        xmlFile.child("DB");
+
+    if (xmlDB.empty())
+    {
+        r3dError(
+            "ItemsDB XML has no <DB> root: %s\n",
+            FileName
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    LoadItemsDatabaseNode(
+        xmlDB
+    );
+
+    delete [] fileBuffer;
+
+    return true;
+}
+
+bool WeaponArmory::LoadItemsDatabaseManifest(
+    const char* ManifestFileName
+)
+{
+    r3dFile* f =
+        r3d_open(
+            ManifestFileName,
+            "rb"
+        );
+
+    if (!f)
+    {
+        return false;
+    }
+
+    char* fileBuffer =
+        new char[f->size + 1];
+
+    r3d_assert(fileBuffer);
+
+    fread(
+        fileBuffer,
+        f->size,
+        1,
+        f
+    );
+
+    fileBuffer[f->size] = 0;
+
+    pugi::xml_document xmlFile;
+
+    pugi::xml_parse_result parseResult =
+        xmlFile.load_buffer_inplace(
+            fileBuffer,
+            f->size
+        );
+
+    fclose(f);
+
+    if (!parseResult)
+    {
+        r3dError(
+            "Failed to parse items manifest %s, error: %s",
+            ManifestFileName,
+            parseResult.description()
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    pugi::xml_node xmlManifest =
+        xmlFile.child("ItemDatabase");
+
+    if (xmlManifest.empty())
+    {
+        r3dError(
+            "Items manifest has no <ItemDatabase> root: %s\n",
+            ManifestFileName
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    pugi::xml_node xmlArmory =
+        xmlManifest.child("Armory");
+
+    while (!xmlArmory.empty())
+    {
+        const char* ArmoryType =
+            xmlArmory.attribute("type").value();
+
+        const char* FileName =
+            xmlArmory.attribute("file").value();
+
+        if (!ArmoryType || !ArmoryType[0] ||
+            !FileName || !FileName[0])
+        {
+            r3dError(
+                "Invalid <Armory> entry in %s\n",
+                ManifestFileName
+            );
+
+            delete [] fileBuffer;
+            return false;
+        }
+
+        if (!LoadItemsDatabaseFile(
+            FileName,
+            ArmoryType
+        ))
+        {
+            r3dError(
+                "Failed to load armory file %s type %s\n",
+                FileName,
+                ArmoryType
+            );
+
+            delete [] fileBuffer;
+            return false;
+        }
+
+        xmlArmory =
+            xmlArmory.next_sibling("Armory");
+    }
+
+    delete [] fileBuffer;
+
+    return true;
+}
+
+bool WeaponArmory::LoadItemsDatabaseFile(
+    const char* FileName,
+    const char* ArmoryType
+)
+{
+    r3dFile* f =
+        r3d_open(
+            FileName,
+            "rb"
+        );
+
+    if (!f)
+    {
+        r3dError(
+            "Failed to open item database file %s\n",
+            FileName
+        );
+
+        return false;
+    }
+
+    char* fileBuffer =
+        new char[f->size + 1];
+
+    r3d_assert(fileBuffer);
+
+    fread(
+        fileBuffer,
+        f->size,
+        1,
+        f
+    );
+
+    fileBuffer[f->size] = 0;
+
+    pugi::xml_document xmlFile;
+
+    pugi::xml_parse_result parseResult =
+        xmlFile.load_buffer_inplace(
+            fileBuffer,
+            f->size
+        );
+
+    fclose(f);
+
+    if (!parseResult)
+    {
+        r3dError(
+            "Failed to parse XML %s, error: %s",
+            FileName,
+            parseResult.description()
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    pugi::xml_node xmlRoot =
+        xmlFile.first_child();
+
+    pugi::xml_node xmlArmory;
+
+    if (
+        xmlRoot &&
+        strcmp(
+            xmlRoot.name(),
+            ArmoryType
+        ) == 0
+    )
+    {
+        xmlArmory =
+            xmlRoot;
+    }
+    else
+    {
+        pugi::xml_node xmlDB =
+            xmlFile.child("DB");
+
+        if (!xmlDB.empty())
+        {
+            xmlArmory =
+                xmlDB.child(
+                    ArmoryType
+                );
+        }
+    }
+
+    if (xmlArmory.empty())
+    {
+        r3dError(
+            "Armory file %s has no <%s> root\n",
+            FileName,
+            ArmoryType
+        );
+
+        delete [] fileBuffer;
+        return false;
+    }
+
+    LoadArmoryNode(
+        ArmoryType,
+        xmlArmory
+    );
+
+    delete [] fileBuffer;
+
+    return true;
+}
+
+void WeaponArmory::LoadItemsDatabaseNode(
+    pugi::xml_node xmlDB
+)
+{
+    LoadArmoryNode(
+        "AttachmentArmory",
+        xmlDB.child("AttachmentArmory")
+    );
+
+    LoadArmoryNode(
+        "WeaponsArmory",
+        xmlDB.child("WeaponsArmory")
+    );
+
+    LoadArmoryNode(
+        "GearArmory",
+        xmlDB.child("GearArmory")
+    );
+
+    LoadArmoryNode(
+        "HeroArmory",
+        xmlDB.child("HeroArmory")
+    );
+
+    LoadArmoryNode(
+        "BackpackArmory",
+        xmlDB.child("BackpackArmory")
+    );
+
+    LoadArmoryNode(
+        "ItemsDB",
+        xmlDB.child("ItemsDB")
+    );
+
+    LoadArmoryNode(
+        "LootBoxDB",
+        xmlDB.child("LootBoxDB")
+    );
+
+    LoadArmoryNode(
+        "FoodArmory",
+        xmlDB.child("FoodArmory")
+    );
+}
+
+void WeaponArmory::LoadArmoryNode(
+    const char* ArmoryType,
+    pugi::xml_node xmlArmory
+)
+{
+    if (!ArmoryType || !ArmoryType[0])
+        return;
+
+    if (xmlArmory.empty())
+        return;
+
+    if (strcmp(ArmoryType, "AttachmentArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Attachment");
+
+        while (!xmlItem.empty())
+        {
+            loadWeaponAttachment(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Attachment");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "WeaponsArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Weapon");
+
+        while (!xmlItem.empty())
+        {
+            loadWeapon(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Weapon");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "GearArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Gear");
+
+        while (!xmlItem.empty())
+        {
+            loadGear(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Gear");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "HeroArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Hero");
+
+        while (!xmlItem.empty())
+        {
+            loadHero(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Hero");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "BackpackArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Backpack");
+
+        while (!xmlItem.empty())
+        {
+            loadBackback(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Backpack");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "ItemsDB") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Item");
+
+        while (!xmlItem.empty())
+        {
+            loadItem(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Item");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "LootBoxDB") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("LootBox");
+
+        while (!xmlItem.empty())
+        {
+            loadLootBox(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("LootBox");
+        }
+
+        return;
+    }
+
+    if (strcmp(ArmoryType, "FoodArmory") == 0)
+    {
+        pugi::xml_node xmlItem =
+            xmlArmory.child("Item");
+
+        while (!xmlItem.empty())
+        {
+            loadFoodItem(
+                xmlItem
+            );
+
+            xmlItem =
+                xmlItem.next_sibling("Item");
+        }
+
+        return;
+    }
+
+    r3dOutToLog(
+        "[ItemsDB] Unknown armory type: %s\n",
+        ArmoryType
+    );
 }
 
 AchievementConfig* WeaponArmory::loadAchievement(pugi::xml_node& xmlAchievement)
