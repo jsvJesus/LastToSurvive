@@ -2,6 +2,7 @@
 #include "r3d.h"
 
 #include "r3dRender.h"
+#include "r3dObj.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -28,12 +29,462 @@ namespace
 			: "";
 	}
 
+	bool RenderMeshToIconDds(
+		r3dMesh* Mesh,
+		const char* OutputFileName,
+		int Width,
+		int Height
+	)
+	{
+		if (
+			!Mesh ||
+			!OutputFileName ||
+			!OutputFileName[0] ||
+			Width <= 0 ||
+			Height <= 0
+		)
+		{
+			return false;
+		}
+
+		if (
+			!r3dRenderer ||
+			!r3dRenderer->pd3ddev
+		)
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] D3D device is not ready.\n"
+			);
+
+			return false;
+		}
+
+		if (!Mesh->IsDrawable())
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Mesh is not drawable: %s\n",
+				Mesh->FileName.c_str()
+			);
+
+			return false;
+		}
+
+		IDirect3DDevice9* Device =
+			r3dRenderer->pd3ddev;
+
+		IDirect3DTexture9* RenderTexture =
+			NULL;
+
+		IDirect3DSurface9* RenderSurface =
+			NULL;
+
+		IDirect3DSurface9* DepthSurface =
+			NULL;
+
+		IDirect3DSurface9* OldRenderSurface =
+			NULL;
+
+		IDirect3DSurface9* OldDepthSurface =
+			NULL;
+
+		IDirect3DSurface9* SystemSurface =
+			NULL;
+
+		D3DVIEWPORT9 OldViewport{};
+
+		D3DXMATRIXA16 OldView =
+			r3dRenderer->ViewMatrix;
+
+		D3DXMATRIXA16 OldProj =
+			r3dRenderer->ProjMatrix;
+
+		D3DXMATRIXA16 OldViewProj =
+			r3dRenderer->ViewProjMatrix;
+
+		r3dRenderer->GetRT(
+			0,
+			&OldRenderSurface
+		);
+
+		r3dRenderer->GetDSS(
+			&OldDepthSurface
+		);
+
+		r3dRenderer->DoGetViewport(
+			&OldViewport
+		);
+
+		HRESULT Hr =
+			Device->CreateTexture(
+				static_cast<UINT>(Width),
+				static_cast<UINT>(Height),
+				1,
+				D3DUSAGE_RENDERTARGET,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_DEFAULT,
+				&RenderTexture,
+				NULL
+			);
+
+		if (
+			FAILED(Hr) ||
+			!RenderTexture
+		)
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Failed to create render texture %dx%d hr=0x%08X\n",
+				Width,
+				Height,
+				static_cast<unsigned int>(Hr)
+			);
+
+			goto CleanupFail;
+		}
+
+		Hr =
+			RenderTexture->GetSurfaceLevel(
+				0,
+				&RenderSurface
+			);
+
+		if (
+			FAILED(Hr) ||
+			!RenderSurface
+		)
+		{
+			goto CleanupFail;
+		}
+
+		Hr =
+			Device->CreateDepthStencilSurface(
+				static_cast<UINT>(Width),
+				static_cast<UINT>(Height),
+				D3DFMT_D24S8,
+				D3DMULTISAMPLE_NONE,
+				0,
+				TRUE,
+				&DepthSurface,
+				NULL
+			);
+
+		if (
+			FAILED(Hr) ||
+			!DepthSurface
+		)
+		{
+			goto CleanupFail;
+		}
+
+		r3dRenderer->SetRT(
+			0,
+			RenderSurface
+		);
+
+		r3dRenderer->SetDSS(
+			DepthSurface
+		);
+
+		D3DVIEWPORT9 Viewport{};
+		Viewport.X = 0;
+		Viewport.Y = 0;
+		Viewport.Width =
+			static_cast<DWORD>(Width);
+		Viewport.Height =
+			static_cast<DWORD>(Height);
+		Viewport.MinZ = 0.0f;
+		Viewport.MaxZ = 1.0f;
+
+		r3dRenderer->DoSetViewport(
+			0.0f,
+			0.0f,
+			static_cast<float>(Width),
+			static_cast<float>(Height)
+		);
+
+		Device->Clear(
+			0,
+			NULL,
+			D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+			0x00000000,
+			1.0f,
+			0
+		);
+
+		const r3dPoint3D BoxSize =
+			Mesh->localBBox.Size;
+
+		const r3dPoint3D BoxOrg =
+			Mesh->localBBox.Org;
+
+		const r3dPoint3D Center =
+			BoxOrg +
+			BoxSize * 0.5f;
+
+		float Radius =
+			R3D_MAX(
+				BoxSize.X,
+				R3D_MAX(
+					BoxSize.Y,
+					BoxSize.Z
+				)
+			) * 0.5f;
+
+		Radius =
+			R3D_MAX(
+				Radius,
+				0.25f
+			);
+
+		const float Aspect =
+			static_cast<float>(Width) /
+			static_cast<float>(Height);
+
+		const float Fov =
+			R3D_DEG2RAD(28.0f);
+
+		const float Distance =
+			Radius /
+			tanf(Fov * 0.5f) *
+			1.35f;
+
+		D3DXVECTOR3 Eye(
+			0.0f,
+			Radius * 0.18f,
+			-Distance
+		);
+
+		D3DXVECTOR3 At(
+			0.0f,
+			0.0f,
+			0.0f
+		);
+
+		D3DXVECTOR3 Up(
+			0.0f,
+			1.0f,
+			0.0f
+		);
+
+		D3DXMatrixLookAtLH(
+			&r3dRenderer->ViewMatrix,
+			&Eye,
+			&At,
+			&Up
+		);
+
+		D3DXMatrixPerspectiveFovLH(
+			&r3dRenderer->ProjMatrix,
+			Fov,
+			Aspect,
+			0.01f,
+			Distance + Radius * 8.0f
+		);
+
+		r3dRenderer->ViewProjMatrix =
+			r3dRenderer->ViewMatrix *
+			r3dRenderer->ProjMatrix;
+
+		D3DXMATRIXA16 MoveToOrigin;
+		D3DXMATRIXA16 Rotation;
+		D3DXMATRIXA16 World;
+
+		D3DXMatrixTranslation(
+			&MoveToOrigin,
+			-Center.X,
+			-Center.Y,
+			-Center.Z
+		);
+
+		D3DXMatrixRotationYawPitchRoll(
+			&Rotation,
+			R3D_DEG2RAD(35.0f),
+			R3D_DEG2RAD(-8.0f),
+			R3D_DEG2RAD(0.0f)
+		);
+
+		World =
+			MoveToOrigin *
+			Rotation;
+
+		Device->SetRenderState(
+			D3DRS_ZENABLE,
+			TRUE
+		);
+
+		Device->SetRenderState(
+			D3DRS_ZWRITEENABLE,
+			TRUE
+		);
+
+		Device->SetRenderState(
+			D3DRS_ALPHABLENDENABLE,
+			FALSE
+		);
+
+		r3dRenderer->SetCullMode(D3DCULL_CCW);
+
+		Mesh->SetVSConsts(
+			World
+		);
+
+		Mesh->DrawMeshDeferred(
+			r3dColor::white,
+			0
+		);
+
+		Hr =
+			Device->CreateOffscreenPlainSurface(
+				static_cast<UINT>(Width),
+				static_cast<UINT>(Height),
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_SYSTEMMEM,
+				&SystemSurface,
+				NULL
+			);
+
+		if (
+			FAILED(Hr) ||
+			!SystemSurface
+		)
+		{
+			goto CleanupFail;
+		}
+
+		Hr =
+			Device->GetRenderTargetData(
+				RenderSurface,
+				SystemSurface
+			);
+
+		if (FAILED(Hr))
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] GetRenderTargetData failed hr=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			goto CleanupFail;
+		}
+
+		Hr =
+			D3DXSaveSurfaceToFileA(
+				OutputFileName,
+				D3DXIFF_DDS,
+				SystemSurface,
+				NULL,
+				NULL
+			);
+
+		if (FAILED(Hr))
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Save DDS failed: %s hr=0x%08X\n",
+				OutputFileName,
+				static_cast<unsigned int>(Hr)
+			);
+
+			goto CleanupFail;
+		}
+
+		r3dRenderer->SetRT(
+			0,
+			OldRenderSurface
+		);
+
+		r3dRenderer->SetDSS(
+			OldDepthSurface
+		);
+
+		r3dRenderer->DoSetViewport(
+			static_cast<float>(OldViewport.X),
+			static_cast<float>(OldViewport.Y),
+			static_cast<float>(OldViewport.Width),
+			static_cast<float>(OldViewport.Height)
+		);
+
+		r3dRenderer->ViewMatrix =
+			OldView;
+
+		r3dRenderer->ProjMatrix =
+			OldProj;
+
+		r3dRenderer->ViewProjMatrix =
+			OldViewProj;
+
+		if (SystemSurface)
+			SystemSurface->Release();
+
+		if (DepthSurface)
+			DepthSurface->Release();
+
+		if (RenderSurface)
+			RenderSurface->Release();
+
+		if (RenderTexture)
+			RenderTexture->Release();
+
+		if (OldDepthSurface)
+			OldDepthSurface->Release();
+
+		if (OldRenderSurface)
+			OldRenderSurface->Release();
+
+		return true;
+
+		CleanupFail:
+
+			r3dRenderer->SetRT(
+				0,
+				OldRenderSurface
+			);
+
+		r3dRenderer->SetDSS(
+			OldDepthSurface
+		);
+
+		r3dRenderer->DoSetViewport(
+			static_cast<float>(OldViewport.X),
+			static_cast<float>(OldViewport.Y),
+			static_cast<float>(OldViewport.Width),
+			static_cast<float>(OldViewport.Height)
+		);
+
+		r3dRenderer->ViewMatrix =
+			OldView;
+
+		r3dRenderer->ProjMatrix =
+			OldProj;
+
+		r3dRenderer->ViewProjMatrix =
+			OldViewProj;
+
+		if (SystemSurface)
+			SystemSurface->Release();
+
+		if (DepthSurface)
+			DepthSurface->Release();
+
+		if (RenderSurface)
+			RenderSurface->Release();
+
+		if (RenderTexture)
+			RenderTexture->Release();
+
+		if (OldDepthSurface)
+			OldDepthSurface->Release();
+
+		if (OldRenderSurface)
+			OldRenderSurface->Release();
+
+		return false;
+	}
+
 	bool ResizeDdsIcon(
-	const char* SourcePath,
-	const char* TargetPath,
-	int TargetWidth,
-	int TargetHeight
-)
+		const char* SourcePath,
+		const char* TargetPath,
+		int TargetWidth,
+		int TargetHeight
+	)
 	{
 		if (
 			!SourcePath ||
@@ -953,4 +1404,152 @@ bool RmlFrontEndShopIconBaker::BakeResizedStoreIcons(
 	);
 
 	return FailedCount == 0;
+}
+
+bool RmlFrontEndShopIconBaker::BakeSingleItem3D(
+	uint32_t ItemId,
+	const char* OutputDirectory,
+	int Width,
+	int Height,
+	bool bOverwriteExisting
+)
+{
+	if (
+		!OutputDirectory ||
+		!OutputDirectory[0]
+	)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Empty output directory.\n"
+		);
+
+		return false;
+	}
+
+	if (!g_pWeaponArmory)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Weapon armory is not initialized.\n"
+		);
+
+		return false;
+	}
+
+	const BaseItemConfig* Config =
+		g_pWeaponArmory->getConfig(
+			ItemId
+		);
+
+	if (!Config)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Item not found: %u\n",
+			ItemId
+		);
+
+		return false;
+	}
+
+	const int RuntimeCategory =
+		GetBakeRuntimeCategory(
+			Config
+		);
+
+	const RmlFrontEndShopSizing::FShopGridSize GridSize =
+		RmlFrontEndShopSizing::GetShopGridSize(
+			Config,
+			RuntimeCategory
+		);
+
+	if (Width <= 0)
+	{
+		Width =
+			RmlFrontEndShopSizing::GetShopIconWidthPx(
+				GridSize
+			);
+	}
+
+	if (Height <= 0)
+	{
+		Height =
+			RmlFrontEndShopSizing::GetShopIconHeightPx(
+				GridSize
+			);
+	}
+
+	const ModelItemConfig* ModelConfig =
+		GetModelConfigForItem(
+			ItemId,
+			Config
+		);
+
+	if (!ModelConfig)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Item has no model config: %u\n",
+			ItemId
+		);
+
+		return false;
+	}
+
+	r3dMesh* Mesh =
+		ModelConfig->getMesh();
+
+	if (!Mesh)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Failed to load mesh for item: %u\n",
+			ItemId
+		);
+
+		return false;
+	}
+
+	CreateDirectoryA(
+		"Data\\Weapons\\GeneratedShopIcons",
+		NULL
+	);
+
+	const std::string OutputPath =
+		BuildGeneratedIconPhysicalPath(
+			OutputDirectory,
+			ItemId
+		);
+
+	if (
+		!bOverwriteExisting &&
+		DoesPhysicalFileExist(
+			OutputPath.c_str()
+		)
+	)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Icon already exists, skipped: %s\n",
+			OutputPath.c_str()
+		);
+
+		return true;
+	}
+
+	const bool bResult =
+		RenderMeshToIconDds(
+			Mesh,
+			OutputPath.c_str(),
+			Width,
+			Height
+		);
+
+	r3dOutToLog(
+		"[ShopIconBaker] 3D bake item=%u size=%dx%d result=%s output=%s\n",
+		ItemId,
+		Width,
+		Height,
+		bResult
+			? "OK"
+			: "FAILED",
+		OutputPath.c_str()
+	);
+
+	return bResult;
 }

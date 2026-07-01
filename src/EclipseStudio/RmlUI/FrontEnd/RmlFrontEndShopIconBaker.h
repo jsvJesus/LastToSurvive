@@ -16,4 +16,12 @@ public:
         const char* OutputDirectory,
         bool bOverwriteExisting
     );
+
+    static bool BakeSingleItem3D(
+        uint32_t ItemId,
+        const char* OutputDirectory,
+        int Width,
+        int Height,
+        bool bOverwriteExisting
+    );
 };
