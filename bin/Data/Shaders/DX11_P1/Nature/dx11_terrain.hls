@@ -13,6 +13,9 @@ cbuffer TerrainCB : register(b1)
 	float4 gTerrainBaseColor;
 	float4 gTerrainColorScale;
 	float4 gTerrainDebugParams;
+	float4 gTerrainSize;
+	float4 gTerrainLayerScale0;
+	float4 gTerrainLayerScale1;
 };
 
 cbuffer ObjectCB : register(b2)
@@ -159,21 +162,36 @@ bool Terrain2HasLayer3DiffuseTexture()
 	return Terrain2MaskHasBit(256.0f);
 }
 
-float2 Terrain2GetLayer0UV(float3 WorldPos)
+float2 Terrain2GetLayerUV(float3 WorldPos, float2 Scale)
 {
 	return float2(
-		WorldPos.x * gTerrainColorScale.w,
-		WorldPos.z * gTerrainDebugParams.w
+		WorldPos.x * Scale.x * 2.0f,
+		WorldPos.z * Scale.y * 2.0f
+	);
+}
+
+float2 Terrain2GetLayer0UV(float3 WorldPos)
+{
+	return Terrain2GetLayerUV(
+		WorldPos,
+		gTerrainLayerScale0.xy
+	);
+}
+
+float2 Terrain2GetTerrainUV(float3 WorldPos)
+{
+	return saturate(
+		float2(
+			WorldPos.x * gTerrainSize.z,
+			WorldPos.z * gTerrainSize.w
+		)
 	);
 }
 
 float2 Terrain2GetMaskUV(float3 WorldPos)
 {
-	return saturate(
-		float2(
-			WorldPos.x / max(gNearFar.z, 1.0f),
-			WorldPos.z / max(gNearFar.w, 1.0f)
-		)
+	return Terrain2GetTerrainUV(
+		WorldPos
 	);
 }
 
@@ -221,6 +239,22 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	);
 
 	float3 FinalColor = DebugColor;
+	float3 TerrainColorMod = float3(
+		1.0f,
+		1.0f,
+		1.0f
+	);
+
+	if (Terrain2HasColorTexture())
+	{
+		TerrainColorMod =
+			gTerrainColorTexture.Sample(
+				gTerrainSampler,
+				Terrain2GetTerrainUV(
+					Input.WorldPos
+				)
+			).rgb;
+	}
 
 	if (Terrain2HasLayer0DiffuseTexture())
 	{
@@ -235,43 +269,39 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 				LayerUV
 			).rgb;
 
-		FinalColor = Layer0Color;
+		FinalColor =
+			saturate(
+				Layer0Color *
+				TerrainColorMod
+			);
 
 		if (Terrain2HasMask0Texture())
 		{
-			float2 MaskUV =
-				Terrain2GetMaskUV(
-					Input.WorldPos
-				);
-
 			float3 Mask =
 				gTerrainMask0Texture.Sample(
 					gTerrainSampler,
-					MaskUV
+					Terrain2GetMaskUV(
+						Input.WorldPos
+					)
 				).rgb;
-
-			float MaskR =
-				saturate(Mask.r);
-
-			float MaskG =
-				saturate(Mask.g);
-
-			float MaskB =
-				saturate(Mask.b);
 
 			if (Terrain2HasLayer1DiffuseTexture())
 			{
 				float3 Layer1Color =
 					gTerrainLayer1DiffuseTexture.Sample(
 						gTerrainSampler,
-						LayerUV
-					).rgb;
+						Terrain2GetLayerUV(
+							Input.WorldPos,
+							gTerrainLayerScale0.zw
+						)
+					).rgb *
+					TerrainColorMod;
 
 				FinalColor =
 					lerp(
 						FinalColor,
 						Layer1Color,
-						MaskR
+						saturate(Mask.r)
 					);
 			}
 
@@ -280,14 +310,18 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 				float3 Layer2Color =
 					gTerrainLayer2DiffuseTexture.Sample(
 						gTerrainSampler,
-						LayerUV
-					).rgb;
+						Terrain2GetLayerUV(
+							Input.WorldPos,
+							gTerrainLayerScale1.xy
+						)
+					).rgb *
+					TerrainColorMod;
 
 				FinalColor =
 					lerp(
 						FinalColor,
 						Layer2Color,
-						MaskG
+						saturate(Mask.g)
 					);
 			}
 
@@ -296,16 +330,25 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 				float3 Layer3Color =
 					gTerrainLayer3DiffuseTexture.Sample(
 						gTerrainSampler,
-						LayerUV
-					).rgb;
+						Terrain2GetLayerUV(
+							Input.WorldPos,
+							gTerrainLayerScale1.zw
+						)
+					).rgb *
+					TerrainColorMod;
 
 				FinalColor =
 					lerp(
 						FinalColor,
 						Layer3Color,
-						MaskB
+						saturate(Mask.b)
 					);
 			}
+
+			FinalColor =
+				saturate(
+					FinalColor
+				);
 		}
 	}
 

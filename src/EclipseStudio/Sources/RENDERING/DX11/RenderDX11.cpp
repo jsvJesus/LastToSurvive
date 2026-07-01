@@ -54,9 +54,10 @@ namespace
 		(DX11_TERRAIN_GRID_DIM - 1) *
 		(DX11_TERRAIN_GRID_DIM - 1) *
 		6;
-	static const int DX11_TERRAIN_PATCH_RADIUS = 1;
+	static const int DX11_TERRAIN_PATCH_DEFAULT_RADIUS = 2;
+	static const int DX11_TERRAIN_PATCH_MAX_RADIUS = 3;
 	static const int DX11_TERRAIN_PATCH_SIDE =
-		DX11_TERRAIN_PATCH_RADIUS * 2 + 1;
+		DX11_TERRAIN_PATCH_MAX_RADIUS * 2 + 1;
 	static const int DX11_TERRAIN_PATCH_COUNT =
 		DX11_TERRAIN_PATCH_SIDE * DX11_TERRAIN_PATCH_SIDE;
 
@@ -75,6 +76,9 @@ namespace
 		float BaseColor[4];
 		float ColorScale[4];
 		float DebugParams[4];
+		float TerrainSize[4];
+		float LayerScale0[4];
+		float LayerScale1[4];
 	};
 
 	struct WorldDX11ObjectCB
@@ -165,8 +169,22 @@ namespace
 		DXGI_FORMAT DXFormat;
 	};
 
-	static const int DX11_PREVIEW_WIDTH = 480;
-	static const int DX11_PREVIEW_HEIGHT = 270;
+	struct WorldDX11Terrain2LayerSlot
+	{
+		r3dTexture* DiffuseTexture;
+		r3dTexture* NormalTexture;
+		float ScaleU;
+		float ScaleV;
+		int SourceLayerIndex;
+	};
+
+	static const int DX11_PREVIEW_WIDTH = 960;
+	static const int DX11_PREVIEW_HEIGHT = 1080;
+
+	static const int DX11_TERRAIN2_LAYERS_PER_MASK =
+		r3dTerrain2::LAYERS_PER_MASK;
+	static const int DX11_TERRAIN2_BATCH_LAYER_COUNT =
+		DX11_TERRAIN2_LAYERS_PER_MASK + 1;
 
 	typedef char WorldDX11FrameCB_SizeMustBe16ByteAligned[
 		(sizeof(WorldDX11FrameCB) % 16) == 0 ? 1 : -1
@@ -235,24 +253,15 @@ namespace
 	r3dTexture*				gDX11Terrain2ColorTexture = 0;
 	r3dTexture*				gDX11Terrain2NormalTexture = 0;
 	r3dTexture*				gDX11Terrain2HeightTexture = 0;
-	r3dTexture*				gDX11Terrain2Layer0DiffuseTexture = 0;
-	r3dTexture*				gDX11Terrain2Layer0NormalTexture = 0;
 
-	float					gDX11Terrain2Layer0ScaleU = 1.0f;
-	float					gDX11Terrain2Layer0ScaleV = 1.0f;
-
-	r3dTexture*				gDX11Terrain2Mask0Texture = 0;
-
-	r3dTexture*				gDX11Terrain2Layer1DiffuseTexture = 0;
-	r3dTexture*				gDX11Terrain2Layer2DiffuseTexture = 0;
-	r3dTexture*				gDX11Terrain2Layer3DiffuseTexture = 0;
-
-	float					gDX11Terrain2Layer1ScaleU = 1.0f;
-	float					gDX11Terrain2Layer1ScaleV = 1.0f;
-	float					gDX11Terrain2Layer2ScaleU = 1.0f;
-	float					gDX11Terrain2Layer2ScaleV = 1.0f;
-	float					gDX11Terrain2Layer3ScaleU = 1.0f;
-	float					gDX11Terrain2Layer3ScaleV = 1.0f;
+	WorldDX11Terrain2LayerSlot
+							gDX11Terrain2BatchLayers[
+								DX11_TERRAIN2_BATCH_LAYER_COUNT
+							] = {};
+	r3dTexture*				gDX11Terrain2BatchMaskTexture = 0;
+	int						gDX11Terrain2LayerCount = 0;
+	int						gDX11Terrain2MaskCount = 0;
+	int						gDX11Terrain2ActiveMaskIndex = 0;
 
 	int						gDX11Terrain2TextureMask = 0;
 	bool					gDX11Terrain2TextureInfoLogged = false;
@@ -260,13 +269,15 @@ namespace
 	WorldDX11Terrain2TextureBridge gDX11Terrain2ColorBridge = {};
 	WorldDX11Terrain2TextureBridge gDX11Terrain2NormalBridge = {};
 	WorldDX11Terrain2TextureBridge gDX11Terrain2HeightBridge = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer0DiffuseBridge = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer0NormalBridge = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Mask0Bridge = {};
-
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer1DiffuseBridge = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer2DiffuseBridge = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2Layer3DiffuseBridge = {};
+	WorldDX11Terrain2TextureBridge
+		gDX11Terrain2BatchDiffuseBridge[
+			DX11_TERRAIN2_BATCH_LAYER_COUNT
+		] = {};
+	WorldDX11Terrain2TextureBridge
+		gDX11Terrain2BatchNormalBridge[
+			DX11_TERRAIN2_BATCH_LAYER_COUNT
+		] = {};
+	WorldDX11Terrain2TextureBridge gDX11Terrain2BatchMaskBridge = {};
 
 	int						gDX11Terrain2SRVMask = 0;
 
@@ -395,12 +406,80 @@ namespace
 			RenderDX11_CommandLineHasSwitch("/dx11preview");
 	}
 
+	bool RenderDX11_WantsTerrainCullEnabled()
+	{
+		if (
+			RenderDX11_CommandLineHasSwitch("-dx11terrainnocull") ||
+			RenderDX11_CommandLineHasSwitch("/dx11terrainnocull")
+		)
+		{
+			return false;
+		}
+
+		return
+			RenderDX11_CommandLineHasSwitch("-dx11terraincull") ||
+			RenderDX11_CommandLineHasSwitch("/dx11terraincull");
+	}
+
+	int RenderDX11_GetTerrainPatchRadius()
+	{
+		if (
+			RenderDX11_CommandLineHasSwitch("-dx11terrain3x3") ||
+			RenderDX11_CommandLineHasSwitch("/dx11terrain3x3")
+		)
+		{
+			return 1;
+		}
+
+		if (
+			RenderDX11_CommandLineHasSwitch("-dx11terrainwide") ||
+			RenderDX11_CommandLineHasSwitch("/dx11terrainwide") ||
+			RenderDX11_CommandLineHasSwitch("-dx11terrain7x7") ||
+			RenderDX11_CommandLineHasSwitch("/dx11terrain7x7")
+		)
+		{
+			return DX11_TERRAIN_PATCH_MAX_RADIUS;
+		}
+
+		return DX11_TERRAIN_PATCH_DEFAULT_RADIUS;
+	}
+
+	int RenderDX11_GetTerrainPatchSide()
+	{
+		return
+			RenderDX11_GetTerrainPatchRadius() *
+			2 +
+			1;
+	}
+
+	void RenderDX11_ResetTerrain2LayerSlot(
+		WorldDX11Terrain2LayerSlot& Slot
+	)
+	{
+		Slot.DiffuseTexture = 0;
+		Slot.NormalTexture = 0;
+		Slot.ScaleU = 1.0f;
+		Slot.ScaleV = 1.0f;
+		Slot.SourceLayerIndex = -1;
+	}
+
+	bool RenderDX11_IsTerrain2TextureReady(
+		r3dTexture* Texture
+	)
+	{
+		return
+			Texture &&
+			Texture->IsLoaded() &&
+			!Texture->IsMissing();
+	}
+
 	enum RenderDX11PreviewMode
 	{
 		DX11_PREVIEW_COLOR = 0,
 		DX11_PREVIEW_NORMAL,
 		DX11_PREVIEW_LINEAR_DEPTH,
 		DX11_PREVIEW_AUX,
+		DX11_PREVIEW_TERRAIN_MASK,
 		DX11_PREVIEW_DEPTH
 	};
 
@@ -444,6 +523,9 @@ namespace
 			return DX11_PREVIEW_AUX;
 
 		case 5:
+			return DX11_PREVIEW_TERRAIN_MASK;
+
+		case 6:
 			return DX11_PREVIEW_DEPTH;
 
 		case 0:
@@ -468,8 +550,11 @@ namespace
 		case DX11_PREVIEW_AUX:
 			return 4;
 
-		case DX11_PREVIEW_DEPTH:
+		case DX11_PREVIEW_TERRAIN_MASK:
 			return 5;
+
+		case DX11_PREVIEW_DEPTH:
+			return 6;
 
 		case DX11_PREVIEW_COLOR:
 		default:
@@ -520,6 +605,10 @@ namespace
 				break;
 
 			case DX11_PREVIEW_AUX:
+				NextMode = DX11_PREVIEW_TERRAIN_MASK;
+				break;
+
+			case DX11_PREVIEW_TERRAIN_MASK:
 				NextMode = DX11_PREVIEW_DEPTH;
 				break;
 
@@ -572,6 +661,9 @@ namespace
 
 		case DX11_PREVIEW_AUX:
 			return "Aux";
+
+		case DX11_PREVIEW_TERRAIN_MASK:
+			return "TerrainMask";
 
 		case DX11_PREVIEW_DEPTH:
 			return "Depth";
@@ -720,6 +812,7 @@ namespace
 			return gDX11GBufferDepthLinearTexture;
 
 		case DX11_PREVIEW_AUX:
+		case DX11_PREVIEW_TERRAIN_MASK:
 			if (OutFormat)
 				*OutFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 			return gDX11GBufferAuxTexture;
@@ -1386,11 +1479,25 @@ namespace
 
 		float InvTerrainSizeX = 1.0f;
 		float InvTerrainSizeZ = 1.0f;
+		float TerrainSizeX = 1.0f;
+		float TerrainSizeZ = 1.0f;
 
 		if (Terrain && Terrain->IsLoaded())
 		{
 			const r3dTerrainDesc& TerrainDesc =
 				Terrain->GetDesc();
+
+			TerrainSizeX =
+				R3D_MAX(
+					TerrainDesc.XSize,
+					1.0f
+				);
+
+			TerrainSizeZ =
+				R3D_MAX(
+					TerrainDesc.ZSize,
+					1.0f
+				);
 
 			if (TerrainDesc.XSize > 0.01f)
 				InvTerrainSizeX = 1.0f / TerrainDesc.XSize;
@@ -1403,9 +1510,34 @@ namespace
 		TerrainCB->DebugParams[1] = 1.0f / 128.0f; // height range inverse
 		TerrainCB->DebugParams[2] =
 			static_cast<float>(gDX11Terrain2SRVMask);
-		TerrainCB->DebugParams[3] = gDX11Terrain2Layer0ScaleV;
+		TerrainCB->DebugParams[3] =
+			gDX11Terrain2BatchLayers[0].ScaleV;
 
-		TerrainCB->ColorScale[3] = gDX11Terrain2Layer0ScaleU;
+		TerrainCB->ColorScale[3] =
+			gDX11Terrain2BatchLayers[0].ScaleU;
+
+		TerrainCB->TerrainSize[0] = TerrainSizeX;
+		TerrainCB->TerrainSize[1] = TerrainSizeZ;
+		TerrainCB->TerrainSize[2] = InvTerrainSizeX;
+		TerrainCB->TerrainSize[3] = InvTerrainSizeZ;
+
+		TerrainCB->LayerScale0[0] =
+			gDX11Terrain2BatchLayers[0].ScaleU;
+		TerrainCB->LayerScale0[1] =
+			gDX11Terrain2BatchLayers[0].ScaleV;
+		TerrainCB->LayerScale0[2] =
+			gDX11Terrain2BatchLayers[1].ScaleU;
+		TerrainCB->LayerScale0[3] =
+			gDX11Terrain2BatchLayers[1].ScaleV;
+
+		TerrainCB->LayerScale1[0] =
+			gDX11Terrain2BatchLayers[2].ScaleU;
+		TerrainCB->LayerScale1[1] =
+			gDX11Terrain2BatchLayers[2].ScaleV;
+		TerrainCB->LayerScale1[2] =
+			gDX11Terrain2BatchLayers[3].ScaleU;
+		TerrainCB->LayerScale1[3] =
+			gDX11Terrain2BatchLayers[3].ScaleV;
 
 		gDX11Context->Unmap(
 			gDX11TerrainCB,
@@ -1458,28 +1590,23 @@ namespace
 			gDX11Terrain2HeightBridge
 		);
 
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Layer0DiffuseBridge
-		);
+		for (
+			int i = 0;
+			i < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++i
+		)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2BatchDiffuseBridge[i]
+			);
+
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2BatchNormalBridge[i]
+			);
+		}
 
 		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Layer0NormalBridge
-		);
-
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Mask0Bridge
-		);
-
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Layer1DiffuseBridge
-		);
-
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Layer2DiffuseBridge
-		);
-
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2Layer3DiffuseBridge
+			gDX11Terrain2BatchMaskBridge
 		);
 
 		gDX11Terrain2SRVMask = 0;
@@ -1627,6 +1754,216 @@ namespace
 		}
 	}
 
+	bool RenderDX11_CopyTerrain2MipToUpload(
+		const D3DLOCKED_RECT& Locked,
+		int Width,
+		int Height,
+		DXGI_FORMAT DXFormat,
+		bool bBlockCompressed,
+		bool bBGRA8ToRGBA8,
+		bool bXRGB8ToRGBA8,
+		bool bR5G6B5ToRGBA8,
+		unsigned char** OutData,
+		UINT* OutRowPitch,
+		UINT* OutRows,
+		UINT* OutSlicePitch
+	)
+	{
+		if (
+			!Locked.pBits ||
+			Width <= 0 ||
+			Height <= 0 ||
+			!OutData ||
+			!OutRowPitch ||
+			!OutRows ||
+			!OutSlicePitch
+		)
+		{
+			return false;
+		}
+
+		*OutData = 0;
+		*OutRowPitch = 0;
+		*OutRows = 0;
+		*OutSlicePitch = 0;
+
+		if (bBlockCompressed)
+		{
+			const UINT BlockBytes =
+				RenderDX11_GetTerrain2BCBlockBytes(
+					DXFormat
+				);
+
+			if (!BlockBytes)
+				return false;
+
+			const UINT BlocksX =
+				static_cast<UINT>(
+					(Width + 3) / 4
+				);
+
+			const UINT BlocksY =
+				static_cast<UINT>(
+					(Height + 3) / 4
+				);
+
+			*OutRowPitch =
+				BlocksX * BlockBytes;
+
+			*OutRows =
+				BlocksY;
+		}
+		else
+		{
+			const UINT BytesPerPixel =
+				RenderDX11_GetTerrain2DXFormatBytesPerPixel(
+					DXFormat
+				);
+
+			if (!BytesPerPixel)
+				return false;
+
+			*OutRowPitch =
+				static_cast<UINT>(Width) *
+				BytesPerPixel;
+
+			*OutRows =
+				static_cast<UINT>(Height);
+		}
+
+		*OutSlicePitch =
+			*OutRowPitch *
+			*OutRows;
+
+		unsigned char* UploadData =
+			new unsigned char[*OutSlicePitch];
+
+		if (!UploadData)
+			return false;
+
+		memset(
+			UploadData,
+			0,
+			*OutSlicePitch
+		);
+
+		const unsigned char* SourceBytes =
+			reinterpret_cast<const unsigned char*>(
+				Locked.pBits
+			);
+
+		if (
+			bBGRA8ToRGBA8 ||
+			bXRGB8ToRGBA8 ||
+			bR5G6B5ToRGBA8
+		)
+		{
+			for (int y = 0; y < Height; ++y)
+			{
+				const unsigned char* SrcRow =
+					SourceBytes +
+					y * Locked.Pitch;
+
+				unsigned char* DstRow =
+					UploadData +
+					y * (*OutRowPitch);
+
+				for (int x = 0; x < Width; ++x)
+				{
+					if (bR5G6B5ToRGBA8)
+					{
+						const unsigned short Pixel =
+							static_cast<unsigned short>(
+								SrcRow[x * 2 + 0] |
+								(SrcRow[x * 2 + 1] << 8)
+							);
+
+						const unsigned char R5 =
+							static_cast<unsigned char>(
+								(Pixel >> 11) & 0x1F
+							);
+
+						const unsigned char G6 =
+							static_cast<unsigned char>(
+								(Pixel >> 5) & 0x3F
+							);
+
+						const unsigned char B5 =
+							static_cast<unsigned char>(
+								Pixel & 0x1F
+							);
+
+						DstRow[x * 4 + 0] =
+							static_cast<unsigned char>(
+								(R5 << 3) | (R5 >> 2)
+							);
+
+						DstRow[x * 4 + 1] =
+							static_cast<unsigned char>(
+								(G6 << 2) | (G6 >> 4)
+							);
+
+						DstRow[x * 4 + 2] =
+							static_cast<unsigned char>(
+								(B5 << 3) | (B5 >> 2)
+							);
+
+						DstRow[x * 4 + 3] = 255;
+					}
+					else
+					{
+						const unsigned char B =
+							SrcRow[x * 4 + 0];
+
+						const unsigned char G =
+							SrcRow[x * 4 + 1];
+
+						const unsigned char R =
+							SrcRow[x * 4 + 2];
+
+						const unsigned char A =
+							bXRGB8ToRGBA8
+							? 255
+							: SrcRow[x * 4 + 3];
+
+						DstRow[x * 4 + 0] = R;
+						DstRow[x * 4 + 1] = G;
+						DstRow[x * 4 + 2] = B;
+						DstRow[x * 4 + 3] = A;
+					}
+				}
+			}
+		}
+		else
+		{
+			for (UINT y = 0; y < *OutRows; ++y)
+			{
+				const unsigned char* SrcRow =
+					SourceBytes +
+					y * Locked.Pitch;
+
+				unsigned char* DstRow =
+					UploadData +
+					y * (*OutRowPitch);
+
+				const UINT CopyBytes =
+					*OutRowPitch <
+					static_cast<UINT>(Locked.Pitch)
+					? *OutRowPitch
+					: static_cast<UINT>(Locked.Pitch);
+
+				memcpy(
+					DstRow,
+					SrcRow,
+					CopyBytes
+				);
+			}
+		}
+
+		*OutData = UploadData;
+		return true;
+	}
+
 	bool RenderDX11_UploadTerrain2TextureToDX11(
 		WorldDX11Terrain2TextureBridge& Bridge,
 		r3dTexture* Source,
@@ -1716,218 +2053,132 @@ namespace
 		if (!D3D9Texture)
 			return false;
 
-		D3DLOCKED_RECT Locked = {};
+		UINT MipLevels =
+			D3D9Texture->GetLevelCount();
 
-		HRESULT Hr =
-			D3D9Texture->LockRect(
-				0,
-				&Locked,
-				0,
-				D3DLOCK_READONLY
+		if (!MipLevels)
+			MipLevels = 1;
+
+		D3D11_SUBRESOURCE_DATA* InitData =
+			new D3D11_SUBRESOURCE_DATA[MipLevels];
+
+		unsigned char** UploadDatas =
+			new unsigned char*[MipLevels];
+
+		if (!InitData || !UploadDatas)
+		{
+			delete[] InitData;
+			delete[] UploadDatas;
+			return false;
+		}
+
+		memset(
+			InitData,
+			0,
+			sizeof(D3D11_SUBRESOURCE_DATA) * MipLevels
+		);
+
+		memset(
+			UploadDatas,
+			0,
+			sizeof(unsigned char*) * MipLevels
+		);
+
+		HRESULT Hr = S_OK;
+
+		for (UINT Mip = 0; Mip < MipLevels; ++Mip)
+		{
+			D3DSURFACE_DESC LevelDesc = {};
+			Hr =
+				D3D9Texture->GetLevelDesc(
+					Mip,
+					&LevelDesc
+				);
+
+			if (FAILED(Hr))
+				break;
+
+			D3DLOCKED_RECT Locked = {};
+			Hr =
+				D3D9Texture->LockRect(
+					Mip,
+					&Locked,
+					0,
+					D3DLOCK_READONLY
+				);
+
+			if (FAILED(Hr))
+				break;
+
+			UINT UploadRowPitch = 0;
+			UINT UploadRows = 0;
+			UINT UploadSlicePitch = 0;
+
+			const bool bCopied =
+				RenderDX11_CopyTerrain2MipToUpload(
+					Locked,
+					static_cast<int>(LevelDesc.Width),
+					static_cast<int>(LevelDesc.Height),
+					DXFormat,
+					bBlockCompressed,
+					bBGRA8ToRGBA8,
+					bXRGB8ToRGBA8,
+					bR5G6B5ToRGBA8,
+					&UploadDatas[Mip],
+					&UploadRowPitch,
+					&UploadRows,
+					&UploadSlicePitch
+				);
+
+			D3D9Texture->UnlockRect(
+				Mip
 			);
+
+			if (!bCopied)
+			{
+				Hr = E_FAIL;
+				break;
+			}
+
+			InitData[Mip].pSysMem =
+				UploadDatas[Mip];
+			InitData[Mip].SysMemPitch =
+				UploadRowPitch;
+			InitData[Mip].SysMemSlicePitch =
+				UploadSlicePitch;
+		}
 
 		if (FAILED(Hr))
 		{
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s LockRect failed. HRESULT=0x%08X\n",
+				"[RenderDX11] Terrain2 %s mip upload failed. HRESULT=0x%08X\n",
 				DebugName,
 				static_cast<unsigned int>(Hr)
 			);
 
 			OutputDebugStringA(Text);
-			return false;
-		}
 
-		UINT UploadRowPitch = 0;
-		UINT UploadRows = 0;
-		UINT UploadSlicePitch = 0;
+			for (UINT Mip = 0; Mip < MipLevels; ++Mip)
+				delete[] UploadDatas[Mip];
 
-		if (bBlockCompressed)
-		{
-			const UINT BlockBytes =
-				RenderDX11_GetTerrain2BCBlockBytes(
-					DXFormat
-				);
+			delete[] UploadDatas;
+			delete[] InitData;
 
-			const UINT BlocksX =
-				static_cast<UINT>(
-					(Width + 3) / 4
-				);
-
-			const UINT BlocksY =
-				static_cast<UINT>(
-					(Height + 3) / 4
-				);
-
-			UploadRowPitch =
-				BlocksX * BlockBytes;
-
-			UploadRows =
-				BlocksY;
-		}
-		else
-		{
-			const UINT BytesPerPixel =
-				RenderDX11_GetTerrain2DXFormatBytesPerPixel(
-					DXFormat
-				);
-
-			if (!BytesPerPixel)
-			{
-				D3D9Texture->UnlockRect(0);
-				return false;
-			}
-
-			UploadRowPitch =
-				static_cast<UINT>(Width) *
-				BytesPerPixel;
-
-			UploadRows =
-				static_cast<UINT>(Height);
-		}
-
-		UploadSlicePitch =
-			UploadRowPitch *
-			UploadRows;
-
-		unsigned char* UploadData =
-			new unsigned char[UploadSlicePitch];
-
-		if (!UploadData)
-		{
-			D3D9Texture->UnlockRect(0);
-			return false;
-		}
-
-		memset(
-			UploadData,
-			0,
-			UploadSlicePitch
-		);
-
-		const unsigned char* SourceBytes =
-			reinterpret_cast<const unsigned char*>(
-				Locked.pBits
+			RenderDX11_ResetTerrain2TextureBridge(
+				Bridge
 			);
 
-		if (
-			bBGRA8ToRGBA8 ||
-			bXRGB8ToRGBA8 ||
-			bR5G6B5ToRGBA8
-		)
-		{
-			for (int y = 0; y < Height; ++y)
-			{
-				const unsigned char* SrcRow =
-					SourceBytes +
-					y * Locked.Pitch;
-
-				unsigned char* DstRow =
-					UploadData +
-					y * UploadRowPitch;
-
-				for (int x = 0; x < Width; ++x)
-				{
-					if (bR5G6B5ToRGBA8)
-					{
-						const unsigned short Pixel =
-							static_cast<unsigned short>(
-								SrcRow[x * 2 + 0] |
-								(SrcRow[x * 2 + 1] << 8)
-							);
-
-						const unsigned char R5 =
-							static_cast<unsigned char>(
-								(Pixel >> 11) & 0x1F
-							);
-
-						const unsigned char G6 =
-							static_cast<unsigned char>(
-								(Pixel >> 5) & 0x3F
-							);
-
-						const unsigned char B5 =
-							static_cast<unsigned char>(
-								Pixel & 0x1F
-							);
-
-						DstRow[x * 4 + 0] =
-							static_cast<unsigned char>(
-								(R5 << 3) | (R5 >> 2)
-							);
-
-						DstRow[x * 4 + 1] =
-							static_cast<unsigned char>(
-								(G6 << 2) | (G6 >> 4)
-							);
-
-						DstRow[x * 4 + 2] =
-							static_cast<unsigned char>(
-								(B5 << 3) | (B5 >> 2)
-							);
-
-						DstRow[x * 4 + 3] = 255;
-					}
-					else
-					{
-						const unsigned char B =
-							SrcRow[x * 4 + 0];
-
-						const unsigned char G =
-							SrcRow[x * 4 + 1];
-
-						const unsigned char R =
-							SrcRow[x * 4 + 2];
-
-						const unsigned char A =
-							bXRGB8ToRGBA8
-							? 255
-							: SrcRow[x * 4 + 3];
-
-						DstRow[x * 4 + 0] = R;
-						DstRow[x * 4 + 1] = G;
-						DstRow[x * 4 + 2] = B;
-						DstRow[x * 4 + 3] = A;
-					}
-				}
-			}
+			return false;
 		}
-		else
-		{
-			for (UINT y = 0; y < UploadRows; ++y)
-			{
-				const unsigned char* SrcRow =
-					SourceBytes +
-					y * Locked.Pitch;
-
-				unsigned char* DstRow =
-					UploadData +
-					y * UploadRowPitch;
-
-				const UINT CopyBytes =
-					UploadRowPitch <
-					static_cast<UINT>(Locked.Pitch)
-					? UploadRowPitch
-					: static_cast<UINT>(Locked.Pitch);
-
-				memcpy(
-					DstRow,
-					SrcRow,
-					CopyBytes
-				);
-			}
-		}
-
-		D3D9Texture->UnlockRect(0);
 
 		D3D11_TEXTURE2D_DESC TextureDesc = {};
 		TextureDesc.Width =
 			static_cast<UINT>(Width);
 		TextureDesc.Height =
 			static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
+		TextureDesc.MipLevels = MipLevels;
 		TextureDesc.ArraySize = 1;
 		TextureDesc.Format = DXFormat;
 		TextureDesc.SampleDesc.Count = 1;
@@ -1937,20 +2188,18 @@ namespace
 		TextureDesc.CPUAccessFlags = 0;
 		TextureDesc.MiscFlags = 0;
 
-		D3D11_SUBRESOURCE_DATA InitData = {};
-		InitData.pSysMem = UploadData;
-		InitData.SysMemPitch = UploadRowPitch;
-		InitData.SysMemSlicePitch = UploadSlicePitch;
-
 		Hr =
 			gDX11Device->CreateTexture2D(
 				&TextureDesc,
-				&InitData,
+				InitData,
 				&Bridge.Texture
 			);
 
-		delete[] UploadData;
-		UploadData = 0;
+		for (UINT Mip = 0; Mip < MipLevels; ++Mip)
+			delete[] UploadDatas[Mip];
+
+		delete[] UploadDatas;
+		delete[] InitData;
 
 		if (FAILED(Hr))
 		{
@@ -1975,7 +2224,7 @@ namespace
 		SRVDesc.Format = DXFormat;
 		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		SRVDesc.Texture2D.MostDetailedMip = 0;
-		SRVDesc.Texture2D.MipLevels = 1;
+		SRVDesc.Texture2D.MipLevels = MipLevels;
 
 		Hr =
 			gDX11Device->CreateShaderResourceView(
@@ -2012,10 +2261,11 @@ namespace
 		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Terrain2 %s uploaded to DX11 SRV: %dx%d d3d9fmt=0x%08X dxgifmt=%d\n",
+			"[RenderDX11] Terrain2 %s uploaded to DX11 SRV: %dx%d mips=%u d3d9fmt=0x%08X dxgifmt=%d\n",
 			DebugName,
 			Width,
 			Height,
+			static_cast<unsigned int>(MipLevels),
 			static_cast<unsigned int>(SourceFormat),
 			static_cast<int>(DXFormat)
 		);
@@ -2061,36 +2311,83 @@ namespace
 		OutputDebugStringA(Text);
 	}
 
+	void RenderDX11_SetTerrain2BatchLayerSlot(
+		int SlotIndex,
+		int SourceLayerIndex
+	)
+	{
+		if (
+			!Terrain2 ||
+			SlotIndex < 0 ||
+			SlotIndex >= DX11_TERRAIN2_BATCH_LAYER_COUNT ||
+			SourceLayerIndex < 0 ||
+			SourceLayerIndex >= Terrain2->GetNumLayers()
+		)
+		{
+			return;
+		}
+
+		const r3dTerrainLayer& Layer =
+			Terrain2->GetLayer(
+				SourceLayerIndex
+			);
+
+		WorldDX11Terrain2LayerSlot& Slot =
+			gDX11Terrain2BatchLayers[SlotIndex];
+
+		Slot.DiffuseTexture =
+			Layer.DiffuseTex;
+
+		Slot.NormalTexture =
+			Layer.NormalTex;
+
+		if (fabsf(Layer.ShaderScaleU) > 0.00001f)
+			Slot.ScaleU =
+				Layer.ShaderScaleU;
+
+		if (fabsf(Layer.ShaderScaleV) > 0.00001f)
+			Slot.ScaleV =
+				Layer.ShaderScaleV;
+
+		Slot.SourceLayerIndex =
+			SourceLayerIndex;
+	}
+
 	void RenderDX11_UpdateTerrain2TextureRefs()
 	{
 		gDX11Terrain2ColorTexture = 0;
 		gDX11Terrain2NormalTexture = 0;
 		gDX11Terrain2HeightTexture = 0;
 
-		gDX11Terrain2Layer0DiffuseTexture = 0;
-		gDX11Terrain2Layer0NormalTexture = 0;
+		for (
+			int i = 0;
+			i < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++i
+		)
+		{
+			RenderDX11_ResetTerrain2LayerSlot(
+				gDX11Terrain2BatchLayers[i]
+			);
+		}
 
-		gDX11Terrain2Mask0Texture = 0;
-
-		gDX11Terrain2Layer1DiffuseTexture = 0;
-		gDX11Terrain2Layer2DiffuseTexture = 0;
-		gDX11Terrain2Layer3DiffuseTexture = 0;
-
-		gDX11Terrain2Layer0ScaleU = 1.0f;
-		gDX11Terrain2Layer0ScaleV = 1.0f;
-
-		gDX11Terrain2Layer1ScaleU = 1.0f;
-		gDX11Terrain2Layer1ScaleV = 1.0f;
-		gDX11Terrain2Layer2ScaleU = 1.0f;
-		gDX11Terrain2Layer2ScaleV = 1.0f;
-		gDX11Terrain2Layer3ScaleU = 1.0f;
-		gDX11Terrain2Layer3ScaleV = 1.0f;
+		gDX11Terrain2BatchMaskTexture = 0;
+		gDX11Terrain2LayerCount = 0;
+		gDX11Terrain2MaskCount = 0;
+		gDX11Terrain2ActiveMaskIndex = 0;
 
 		gDX11Terrain2TextureMask = 0;
 		gDX11Terrain2SRVMask = 0;
 
 		if (!Terrain2)
 			return;
+
+		gDX11Terrain2LayerCount =
+			Terrain2->GetNumLayers();
+
+		gDX11Terrain2MaskCount =
+			Terrain2->GetNumMasks();
+
+		gDX11Terrain2ActiveMaskIndex = 0;
 
 		gDX11Terrain2ColorTexture =
 			Terrain2->GetColorTexture();
@@ -2101,168 +2398,97 @@ namespace
 		gDX11Terrain2HeightTexture =
 			Terrain2->GetHeightTexture();
 
-		if (Terrain2->GetNumLayers() > 0)
+		RenderDX11_SetTerrain2BatchLayerSlot(
+			0,
+			0
+		);
+
+		if (gDX11Terrain2MaskCount > 0)
 		{
-			const r3dTerrainLayer& Layer0 =
-				Terrain2->GetLayer(0);
-
-			gDX11Terrain2Layer0DiffuseTexture =
-				Layer0.DiffuseTex;
-
-			gDX11Terrain2Layer0NormalTexture =
-				Layer0.NormalTex;
-
-			if (fabsf(Layer0.ShaderScaleU) > 0.00001f)
-				gDX11Terrain2Layer0ScaleU =
-					Layer0.ShaderScaleU;
-
-			if (fabsf(Layer0.ShaderScaleV) > 0.00001f)
-				gDX11Terrain2Layer0ScaleV =
-					Layer0.ShaderScaleV;
+			gDX11Terrain2BatchMaskTexture =
+				Terrain2->GetLayerMask(
+					gDX11Terrain2ActiveMaskIndex
+				);
 		}
 
-		if (Terrain2->GetNumMasks() > 0)
-		{
-			gDX11Terrain2Mask0Texture =
-				Terrain2->GetLayerMask(0);
-		}
-
-		if (Terrain2->GetNumLayers() > 1)
-		{
-			const r3dTerrainLayer& Layer1 =
-				Terrain2->GetLayer(1);
-
-			gDX11Terrain2Layer1DiffuseTexture =
-				Layer1.DiffuseTex;
-
-			if (fabsf(Layer1.ShaderScaleU) > 0.00001f)
-				gDX11Terrain2Layer1ScaleU =
-					Layer1.ShaderScaleU;
-
-			if (fabsf(Layer1.ShaderScaleV) > 0.00001f)
-				gDX11Terrain2Layer1ScaleV =
-					Layer1.ShaderScaleV;
-		}
-
-		if (Terrain2->GetNumLayers() > 2)
-		{
-			const r3dTerrainLayer& Layer2 =
-				Terrain2->GetLayer(2);
-
-			gDX11Terrain2Layer2DiffuseTexture =
-				Layer2.DiffuseTex;
-
-			if (fabsf(Layer2.ShaderScaleU) > 0.00001f)
-				gDX11Terrain2Layer2ScaleU =
-					Layer2.ShaderScaleU;
-
-			if (fabsf(Layer2.ShaderScaleV) > 0.00001f)
-				gDX11Terrain2Layer2ScaleV =
-					Layer2.ShaderScaleV;
-		}
-
-		if (Terrain2->GetNumLayers() > 3)
-		{
-			const r3dTerrainLayer& Layer3 =
-				Terrain2->GetLayer(3);
-
-			gDX11Terrain2Layer3DiffuseTexture =
-				Layer3.DiffuseTex;
-
-			if (fabsf(Layer3.ShaderScaleU) > 0.00001f)
-				gDX11Terrain2Layer3ScaleU =
-					Layer3.ShaderScaleU;
-
-			if (fabsf(Layer3.ShaderScaleV) > 0.00001f)
-				gDX11Terrain2Layer3ScaleV =
-					Layer3.ShaderScaleV;
-		}
-
-		if (
-			gDX11Terrain2ColorTexture &&
-			gDX11Terrain2ColorTexture->IsLoaded() &&
-			!gDX11Terrain2ColorTexture->IsMissing()
+		for (
+			int SlotIndex = 1;
+			SlotIndex < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++SlotIndex
 		)
+		{
+			const int SourceLayerIndex =
+				gDX11Terrain2ActiveMaskIndex *
+				DX11_TERRAIN2_LAYERS_PER_MASK +
+				SlotIndex;
+
+			RenderDX11_SetTerrain2BatchLayerSlot(
+				SlotIndex,
+				SourceLayerIndex
+			);
+		}
+
+		if (RenderDX11_IsTerrain2TextureReady(gDX11Terrain2ColorTexture))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_COLOR;
 		}
 
-		if (
-			gDX11Terrain2NormalTexture &&
-			gDX11Terrain2NormalTexture->IsLoaded() &&
-			!gDX11Terrain2NormalTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(gDX11Terrain2NormalTexture))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_NORMAL;
 		}
 
-		if (
-			gDX11Terrain2HeightTexture &&
-			gDX11Terrain2HeightTexture->IsLoaded() &&
-			!gDX11Terrain2HeightTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(gDX11Terrain2HeightTexture))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_HEIGHT;
 		}
 
-		if (
-			gDX11Terrain2Layer0DiffuseTexture &&
-			gDX11Terrain2Layer0DiffuseTexture->IsLoaded() &&
-			!gDX11Terrain2Layer0DiffuseTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchLayers[0].DiffuseTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER0_DIFFUSE;
 		}
 
-		if (
-			gDX11Terrain2Layer0NormalTexture &&
-			gDX11Terrain2Layer0NormalTexture->IsLoaded() &&
-			!gDX11Terrain2Layer0NormalTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchLayers[0].NormalTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL;
 		}
 
-		if (
-			gDX11Terrain2Mask0Texture &&
-			gDX11Terrain2Mask0Texture->IsLoaded() &&
-			!gDX11Terrain2Mask0Texture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchMaskTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_MASK0;
 		}
 
-		if (
-			gDX11Terrain2Layer1DiffuseTexture &&
-			gDX11Terrain2Layer1DiffuseTexture->IsLoaded() &&
-			!gDX11Terrain2Layer1DiffuseTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchLayers[1].DiffuseTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE;
 		}
 
-		if (
-			gDX11Terrain2Layer2DiffuseTexture &&
-			gDX11Terrain2Layer2DiffuseTexture->IsLoaded() &&
-			!gDX11Terrain2Layer2DiffuseTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchLayers[2].DiffuseTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE;
 		}
 
-		if (
-			gDX11Terrain2Layer3DiffuseTexture &&
-			gDX11Terrain2Layer3DiffuseTexture->IsLoaded() &&
-			!gDX11Terrain2Layer3DiffuseTexture->IsMissing()
-		)
+		if (RenderDX11_IsTerrain2TextureReady(
+			gDX11Terrain2BatchLayers[3].DiffuseTexture
+		))
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE;
@@ -2275,6 +2501,21 @@ namespace
 			OutputDebugStringA(
 				"[RenderDX11] Terrain2 public texture refs acquired\n"
 			);
+
+			char BatchText[256] = {};
+			sprintf_s(
+				BatchText,
+				"[RenderDX11] Terrain2 layers=%d masks=%d activeMask=%d batchLayers=[%d,%d,%d,%d]\n",
+				gDX11Terrain2LayerCount,
+				gDX11Terrain2MaskCount,
+				gDX11Terrain2ActiveMaskIndex,
+				gDX11Terrain2BatchLayers[0].SourceLayerIndex,
+				gDX11Terrain2BatchLayers[1].SourceLayerIndex,
+				gDX11Terrain2BatchLayers[2].SourceLayerIndex,
+				gDX11Terrain2BatchLayers[3].SourceLayerIndex
+			);
+
+			OutputDebugStringA(BatchText);
 
 			RenderDX11_LogTerrain2TextureInfo(
 				"color",
@@ -2292,33 +2533,33 @@ namespace
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"layer0 diffuse",
-				gDX11Terrain2Layer0DiffuseTexture
+				"batch layer0 diffuse",
+				gDX11Terrain2BatchLayers[0].DiffuseTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"layer0 normal",
-				gDX11Terrain2Layer0NormalTexture
+				"batch layer0 normal",
+				gDX11Terrain2BatchLayers[0].NormalTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"mask0",
-				gDX11Terrain2Mask0Texture
+				"batch mask",
+				gDX11Terrain2BatchMaskTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"layer1 diffuse",
-				gDX11Terrain2Layer1DiffuseTexture
+				"batch layer1 diffuse",
+				gDX11Terrain2BatchLayers[1].DiffuseTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"layer2 diffuse",
-				gDX11Terrain2Layer2DiffuseTexture
+				"batch layer2 diffuse",
+				gDX11Terrain2BatchLayers[2].DiffuseTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
-				"layer3 diffuse",
-				gDX11Terrain2Layer3DiffuseTexture
+				"batch layer3 diffuse",
+				gDX11Terrain2BatchLayers[3].DiffuseTexture
 			);
 		}
 
@@ -2360,9 +2601,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Layer0DiffuseBridge,
-				gDX11Terrain2Layer0DiffuseTexture,
-				"layer0 diffuse"
+				gDX11Terrain2BatchDiffuseBridge[0],
+				gDX11Terrain2BatchLayers[0].DiffuseTexture,
+				"batch layer0 diffuse"
 			)
 		)
 		{
@@ -2372,9 +2613,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Layer0NormalBridge,
-				gDX11Terrain2Layer0NormalTexture,
-				"layer0 normal"
+				gDX11Terrain2BatchNormalBridge[0],
+				gDX11Terrain2BatchLayers[0].NormalTexture,
+				"batch layer0 normal"
 			)
 		)
 		{
@@ -2384,9 +2625,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Mask0Bridge,
-				gDX11Terrain2Mask0Texture,
-				"mask0"
+				gDX11Terrain2BatchMaskBridge,
+				gDX11Terrain2BatchMaskTexture,
+				"batch mask"
 			)
 		)
 		{
@@ -2396,9 +2637,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Layer1DiffuseBridge,
-				gDX11Terrain2Layer1DiffuseTexture,
-				"layer1 diffuse"
+				gDX11Terrain2BatchDiffuseBridge[1],
+				gDX11Terrain2BatchLayers[1].DiffuseTexture,
+				"batch layer1 diffuse"
 			)
 		)
 		{
@@ -2408,9 +2649,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Layer2DiffuseBridge,
-				gDX11Terrain2Layer2DiffuseTexture,
-				"layer2 diffuse"
+				gDX11Terrain2BatchDiffuseBridge[2],
+				gDX11Terrain2BatchLayers[2].DiffuseTexture,
+				"batch layer2 diffuse"
 			)
 		)
 		{
@@ -2420,9 +2661,9 @@ namespace
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2Layer3DiffuseBridge,
-				gDX11Terrain2Layer3DiffuseTexture,
-				"layer3 diffuse"
+				gDX11Terrain2BatchDiffuseBridge[3],
+				gDX11Terrain2BatchLayers[3].DiffuseTexture,
+				"batch layer3 diffuse"
 			)
 		)
 		{
@@ -2441,12 +2682,12 @@ namespace
 			gDX11Terrain2ColorBridge.SRV,          // t0
 			gDX11Terrain2NormalBridge.SRV,         // t1
 			gDX11Terrain2HeightBridge.SRV,         // t2
-			gDX11Terrain2Layer0DiffuseBridge.SRV,  // t3
-			gDX11Terrain2Layer0NormalBridge.SRV,   // t4
-			gDX11Terrain2Mask0Bridge.SRV,          // t5
-			gDX11Terrain2Layer1DiffuseBridge.SRV,  // t6
-			gDX11Terrain2Layer2DiffuseBridge.SRV,  // t7
-			gDX11Terrain2Layer3DiffuseBridge.SRV   // t8
+			gDX11Terrain2BatchDiffuseBridge[0].SRV, // t3
+			gDX11Terrain2BatchNormalBridge[0].SRV,  // t4
+			gDX11Terrain2BatchMaskBridge.SRV,       // t5
+			gDX11Terrain2BatchDiffuseBridge[1].SRV, // t6
+			gDX11Terrain2BatchDiffuseBridge[2].SRV, // t7
+			gDX11Terrain2BatchDiffuseBridge[3].SRV  // t8
 		};
 
 		gDX11Context->PSSetShaderResources(
@@ -3279,6 +3520,34 @@ namespace
 				}
 
 				case DX11_PREVIEW_AUX:
+				{
+					const unsigned char* Pixel =
+						Row + SourceX * 4;
+
+					PackedColor =
+						RenderDX11_PackPreviewColor(
+							static_cast<unsigned int>(Pixel[0]),
+							static_cast<unsigned int>(Pixel[1]),
+							static_cast<unsigned int>(Pixel[2])
+						);
+
+					break;
+				}
+
+				case DX11_PREVIEW_TERRAIN_MASK:
+				{
+					const unsigned char* Pixel =
+						Row + SourceX * 4;
+
+					PackedColor =
+						RenderDX11_PackPreviewGray(
+							static_cast<float>(Pixel[3]) /
+							255.0f
+						);
+
+					break;
+				}
+
 				case DX11_PREVIEW_COLOR:
 				default:
 				{
@@ -3732,12 +4001,12 @@ namespace
 	bool RenderDX11_CreateSamplerStates()
 	{
 		D3D11_SAMPLER_DESC Desc = {};
-		Desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		Desc.Filter = D3D11_FILTER_ANISOTROPIC;
 		Desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		Desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		Desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		Desc.MipLODBias = 0.0f;
-		Desc.MaxAnisotropy = 1;
+		Desc.MaxAnisotropy = 8;
 		Desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 		Desc.BorderColor[0] = 0.0f;
 		Desc.BorderColor[1] = 0.0f;
@@ -4405,8 +4674,11 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d L0D%d L0N%d M0%d L1D%d L2D%d L3D%d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d L0D%d L0N%d M0%d L1D%d L2D%d L3D%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
+			RenderDX11_GetTerrainPatchSide(),
+			RenderDX11_GetTerrainPatchSide(),
+			RenderDX11_WantsTerrainCullEnabled() ? "ON" : "OFF",
 			gDX11TerrainPatchDrawCount,
 			gDX11TerrainPatchCullCount,
 			gDX11TerrainPatchUpdateCount,

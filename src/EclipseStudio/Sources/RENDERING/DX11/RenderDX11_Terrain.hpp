@@ -307,7 +307,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Terrain DX11 3x3 cache buffers created\n"
+			"[RenderDX11] Terrain DX11 patch cache buffers created\n"
 		);
 
 		return true;
@@ -572,16 +572,33 @@ void RenderDX11_BeginTerrainCacheFrame()
 			MaxY = Tmp;
 		}
 
-		// Small safety pad for terrain normal/height interpolation.
-		MinY -= 4.0f;
-		MaxY += 4.0f;
+		const float HorizontalPad =
+			R3D_MAX(
+				PatchSize * 0.20f,
+				TerrainDesc.CellSize * 8.0f
+			);
 
-		OutBounds->MinX = MinX;
-		OutBounds->MinY = MinY;
-		OutBounds->MinZ = MinZ;
-		OutBounds->MaxX = MaxX;
-		OutBounds->MaxY = MaxY;
-		OutBounds->MaxZ = MaxZ;
+		const float HeightSpan =
+			R3D_MAX(
+				TerrainDesc.MaxHeight - TerrainDesc.MinHeight,
+				0.0f
+			);
+
+		const float VerticalPad =
+			R3D_MIN(
+				R3D_MAX(
+					HeightSpan * 0.08f,
+					24.0f
+				),
+				160.0f
+			);
+
+		OutBounds->MinX = MinX - HorizontalPad;
+		OutBounds->MinY = MinY - VerticalPad;
+		OutBounds->MinZ = MinZ - HorizontalPad;
+		OutBounds->MaxX = MaxX + HorizontalPad;
+		OutBounds->MaxY = MaxY + VerticalPad;
+		OutBounds->MaxZ = MaxZ + HorizontalPad;
 
 		return true;
 	}
@@ -865,16 +882,19 @@ void RenderDX11_BeginTerrainCacheFrame()
 				0x7fffffff
 			);
 
+		const int PatchSide =
+			RenderDX11_GetTerrainPatchSide();
+
 		const int TileCountX =
 			RenderDX11_ClampInt(
-				DX11_TERRAIN_PATCH_SIDE,
+				PatchSide,
 				1,
 				MaxTileX + 1
 			);
 
 		const int TileCountZ =
 			RenderDX11_ClampInt(
-				DX11_TERRAIN_PATCH_SIDE,
+				PatchSide,
 				1,
 				MaxTileZ + 1
 			);
@@ -936,8 +956,11 @@ void RenderDX11_BeginTerrainCacheFrame()
 			}
 		}
 
+		//const bool bTerrainCullingEnabled = RenderDX11_WantsTerrainCullEnabled();
+
 		WorldDX11FrustumPlane FrustumPlanes[6] = {};
 		const bool bHasFrustum =
+			//bTerrainCullingEnabled &&
 			RenderDX11_BuildFrameFrustum(
 				FrustumPlanes
 			);
