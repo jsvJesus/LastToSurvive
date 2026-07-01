@@ -1,0 +1,3 @@
+<AchievementDB>
+	<Achievement id="1" enabled="1" name="ACHIEVETITLE_FIRST_KILL" desc="ACHIEVEDESC_FIRST_KILL" hudIcon="$Data/Menu/new_achievements/FirstBlood.dds"/>
+</AchievementDB>
