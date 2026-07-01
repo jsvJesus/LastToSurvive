@@ -2961,6 +2961,11 @@ bool r3dTerrain2::GetDX11VisibleAtlasTileInfo(
 	return true;
 }
 
+void r3dTerrain2::UpdateDX11VisibleAtlasTiles()
+{
+	UpdateVisibleTiles();
+}
+
 int r3dTerrain2::GetDX11AtlasVolumeCount() const
 {
 	return (int)m_Atlas.Count();

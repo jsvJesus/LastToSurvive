@@ -16,6 +16,8 @@ cbuffer TerrainCB : register(b1)
 	float4 gTerrainSize;
 	float4 gTerrainLayerScale0;
 	float4 gTerrainLayerScale1;
+	float4 gTerrainAtlasTexTransform;
+	float4 gTerrainAtlasWorld;
 };
 
 cbuffer ObjectCB : register(b2)
@@ -72,6 +74,8 @@ Texture2D gTerrainMask0Texture : register(t5);
 Texture2D gTerrainLayer1DiffuseTexture : register(t6);
 Texture2D gTerrainLayer2DiffuseTexture : register(t7);
 Texture2D gTerrainLayer3DiffuseTexture : register(t8);
+Texture2D gTerrainAtlasDiffuseTexture : register(t9);
+Texture2D gTerrainAtlasNormalTexture : register(t10);
 
 SamplerState gTerrainSampler : register(s0);
 
@@ -162,6 +166,16 @@ bool Terrain2HasLayer3DiffuseTexture()
 	return Terrain2MaskHasBit(256.0f);
 }
 
+bool Terrain2HasAtlasDiffuseTexture()
+{
+	return Terrain2MaskHasBit(512.0f);
+}
+
+bool Terrain2HasAtlasNormalTexture()
+{
+	return Terrain2MaskHasBit(1024.0f);
+}
+
 float2 Terrain2GetLayerUV(float3 WorldPos, float2 Scale)
 {
 	return float2(
@@ -193,6 +207,26 @@ float2 Terrain2GetMaskUV(float3 WorldPos)
 	return Terrain2GetTerrainUV(
 		WorldPos
 	);
+}
+
+float2 Terrain2GetAtlasUV(float3 WorldPos)
+{
+	float InvWorldDim =
+		gTerrainAtlasWorld.w;
+
+	float2 Local01 =
+		saturate(
+			float2(
+				(WorldPos.x - gTerrainAtlasWorld.x) * InvWorldDim,
+				(WorldPos.z - gTerrainAtlasWorld.y) * InvWorldDim
+			)
+		);
+
+	float2 LocalSigned =
+		Local01 * 2.0f - 1.0f;
+
+	return LocalSigned * gTerrainAtlasTexTransform.xy +
+		gTerrainAtlasTexTransform.zw;
 }
 
 VS_OUTPUT VSMain(VS_INPUT Input)
@@ -348,6 +382,32 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			FinalColor =
 				saturate(
 					FinalColor
+				);
+		}
+	}
+
+	if (Terrain2HasAtlasDiffuseTexture())
+	{
+		float2 AtlasUV =
+			Terrain2GetAtlasUV(
+				Input.WorldPos
+			);
+
+		FinalColor =
+			gTerrainAtlasDiffuseTexture.Sample(
+				gTerrainSampler,
+				AtlasUV
+			).rgb;
+
+		if (Terrain2HasAtlasNormalTexture())
+		{
+			Normal =
+				TerrainSafeNormalize(
+					gTerrainAtlasNormalTexture.Sample(
+						gTerrainSampler,
+						AtlasUV
+					).xyz * 2.0f - 1.0f,
+					Normal
 				);
 		}
 	}

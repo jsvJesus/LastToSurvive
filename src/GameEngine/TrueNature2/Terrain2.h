@@ -341,6 +341,7 @@ public:
 
 	int						GetDX11VisibleAtlasTileCount() const;
 	bool					GetDX11VisibleAtlasTileInfo( int idx, DX11AtlasTileInfo* oInfo ) const;
+	void					UpdateDX11VisibleAtlasTiles();
 	int						GetDX11AtlasVolumeCount() const;
 	r3dTexture*				GetDX11AtlasDiffuseTexture( int volumeIdx ) const;
 	r3dTexture*				GetDX11AtlasNormalTexture( int volumeIdx ) const;

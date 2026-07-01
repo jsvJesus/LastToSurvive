@@ -240,6 +240,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 
 			gDX11TerrainPatchCache[i].TileX = 0;
 			gDX11TerrainPatchCache[i].TileZ = 0;
+			gDX11TerrainPatchCache[i].L = 0;
+			gDX11TerrainPatchCache[i].PatchSize = 0.0f;
 			gDX11TerrainPatchCache[i].Valid = false;
 			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
@@ -316,16 +318,19 @@ void RenderDX11_BeginTerrainCacheFrame()
 	bool RenderDX11_TerrainTileInRequest(
 		const int* TileXs,
 		const int* TileZs,
+		const int* TileLs,
 		int TileCount,
 		int TileX,
-		int TileZ
+		int TileZ,
+		int TileL
 	)
 	{
 		for (int i = 0; i < TileCount; ++i)
 		{
 			if (
 				TileXs[i] == TileX &&
-				TileZs[i] == TileZ
+				TileZs[i] == TileZ &&
+				(!TileLs || TileLs[i] == TileL)
 			)
 			{
 				return true;
@@ -337,7 +342,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 
 	int RenderDX11_FindTerrainCacheSlot(
 		int TileX,
-		int TileZ
+		int TileZ,
+		int TileL
 	)
 	{
 		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
@@ -348,7 +354,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 			if (
 				Entry.Valid &&
 				Entry.TileX == TileX &&
-				Entry.TileZ == TileZ
+				Entry.TileZ == TileZ &&
+				Entry.L == TileL
 			)
 			{
 				return i;
@@ -361,6 +368,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 	int RenderDX11_FindTerrainCacheSlotForWrite(
 		const int* RequestTileXs,
 		const int* RequestTileZs,
+		const int* RequestTileLs,
 		int RequestTileCount
 	)
 	{
@@ -378,9 +386,11 @@ void RenderDX11_BeginTerrainCacheFrame()
 			if (!RenderDX11_TerrainTileInRequest(
 				RequestTileXs,
 				RequestTileZs,
+				RequestTileLs,
 				RequestTileCount,
 				Entry.TileX,
-				Entry.TileZ
+				Entry.TileZ,
+				Entry.L
 			))
 			{
 				return i;
@@ -394,6 +404,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 		int CacheIndex,
 		int TileX,
 		int TileZ,
+		int TileL,
 		float PatchSize
 	)
 	{
@@ -414,7 +425,9 @@ void RenderDX11_BeginTerrainCacheFrame()
 		if (
 			Entry.Valid &&
 			Entry.TileX == TileX &&
-			Entry.TileZ == TileZ
+			Entry.TileZ == TileZ &&
+			Entry.L == TileL &&
+			fabsf(Entry.PatchSize - PatchSize) <= 0.01f
 		)
 		{
 			Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
@@ -435,6 +448,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 
 		Entry.TileX = TileX;
 		Entry.TileZ = TileZ;
+		Entry.L = TileL;
+		Entry.PatchSize = PatchSize;
 		Entry.Valid = true;
 		Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
 
@@ -827,6 +842,129 @@ void RenderDX11_BeginTerrainCacheFrame()
 		return true;
 	}
 
+	int RenderDX11_FindTerrainCacheSlotForAtlasWrite(
+		int DrawIndex
+	)
+	{
+		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+		{
+			if (!gDX11TerrainPatchCache[i].Valid)
+				return i;
+		}
+
+		return RenderDX11_ClampInt(
+			DrawIndex % DX11_TERRAIN_PATCH_COUNT,
+			0,
+			DX11_TERRAIN_PATCH_COUNT - 1
+		);
+	}
+
+	bool RenderDX11_DrawTerrain2AtlasTiles()
+	{
+		if (
+			!gDX11Context ||
+			!Terrain2 ||
+			!Terrain ||
+			!Terrain->IsLoaded()
+		)
+		{
+			return false;
+		}
+
+		Terrain2->UpdateDX11VisibleAtlasTiles();
+
+		const int VisibleTileCount =
+			Terrain2->GetDX11VisibleAtlasTileCount();
+
+		if (VisibleTileCount <= 0)
+			return false;
+
+		gDX11TerrainPatchDrawCount = 0;
+		gDX11TerrainPatchCullCount = 0;
+
+		for (int i = 0; i < VisibleTileCount; ++i)
+		{
+			r3dTerrain2::DX11AtlasTileInfo TileInfo = {};
+
+			if (
+				!Terrain2->GetDX11VisibleAtlasTileInfo(
+					i,
+					&TileInfo
+				)
+			)
+			{
+				continue;
+			}
+
+			const int AtlasMask =
+				RenderDX11_EnsureTerrain2AtlasVolumeSRVs(
+					TileInfo.AtlasVolumeID
+				);
+
+			if (!(AtlasMask & DX11_TERRAIN2_TEXTURE_ATLAS_DIFFUSE))
+				continue;
+
+			gDX11Terrain2ActiveAtlasSRVMask =
+				AtlasMask;
+
+			RenderDX11_BindTerrain2AtlasTextureSlots(
+				TileInfo.AtlasVolumeID
+			);
+
+			if (!RenderDX11_WriteTerrainCB(&TileInfo))
+				return false;
+
+			int CacheIndex =
+				RenderDX11_FindTerrainCacheSlot(
+					TileInfo.X,
+					TileInfo.Z,
+					TileInfo.L
+				);
+
+			if (CacheIndex < 0)
+			{
+				CacheIndex =
+					RenderDX11_FindTerrainCacheSlotForAtlasWrite(
+						i
+					);
+			}
+
+			if (CacheIndex < 0)
+				return false;
+
+			if (
+				!RenderDX11_EnsureTerrainCacheTile(
+					CacheIndex,
+					TileInfo.X,
+					TileInfo.Z,
+					TileInfo.L,
+					TileInfo.WorldDim
+				)
+			)
+			{
+				return false;
+			}
+
+			WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[CacheIndex];
+
+			if (!RenderDX11_BindTerrainGeometry(Entry.VertexBuffer))
+				return false;
+
+			gDX11Context->DrawIndexed(
+				DX11_TERRAIN_INDEX_COUNT,
+				0,
+				0
+			);
+
+			++gDX11TerrainPatchDrawCount;
+		}
+
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
+
+		return gDX11TerrainPatchDrawCount > 0;
+	}
+
 	bool RenderDX11_DrawTerrainPatchSet()
 	{
 		if (
@@ -937,6 +1075,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 
 		int RequestTileXs[DX11_TERRAIN_PATCH_COUNT] = {};
 		int RequestTileZs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestTileLs[DX11_TERRAIN_PATCH_COUNT] = {};
 		int RequestTileCount = 0;
 
 		for (int z = 0; z < TileCountZ; ++z)
@@ -951,6 +1090,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 
 				RequestTileZs[RequestTileCount] =
 					StartTileZ + z;
+
+				RequestTileLs[RequestTileCount] = 0;
 
 				++RequestTileCount;
 			}
@@ -1002,7 +1143,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 			int CacheIndex =
 				RenderDX11_FindTerrainCacheSlot(
 					TileX,
-					TileZ
+					TileZ,
+					0
 				);
 
 			if (CacheIndex < 0)
@@ -1011,6 +1153,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 					RenderDX11_FindTerrainCacheSlotForWrite(
 						RequestTileXs,
 						RequestTileZs,
+						RequestTileLs,
 						RequestTileCount
 					);
 			}
@@ -1022,6 +1165,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 				CacheIndex,
 				TileX,
 				TileZ,
+				0,
 				PatchSize
 			))
 			{

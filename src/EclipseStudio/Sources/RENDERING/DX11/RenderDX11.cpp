@@ -79,6 +79,8 @@ namespace
 		float TerrainSize[4];
 		float LayerScale0[4];
 		float LayerScale1[4];
+		float AtlasTexTransform[4];
+		float AtlasWorld[4];
 	};
 
 	struct WorldDX11ObjectCB
@@ -136,6 +138,8 @@ namespace
 		ID3D11Buffer* VertexBuffer;
 		int TileX;
 		int TileZ;
+		int L;
+		float PatchSize;
 		bool Valid;
 		unsigned int LastUsedFrame;
 	};
@@ -278,8 +282,12 @@ namespace
 			DX11_TERRAIN2_BATCH_LAYER_COUNT
 		] = {};
 	WorldDX11Terrain2TextureBridge gDX11Terrain2BatchMaskBridge = {};
+	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasDiffuseBridges = 0;
+	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasNormalBridges = 0;
+	int						gDX11Terrain2AtlasBridgeCount = 0;
 
 	int						gDX11Terrain2SRVMask = 0;
+	int						gDX11Terrain2ActiveAtlasSRVMask = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
@@ -983,6 +991,8 @@ namespace
 
 			gDX11TerrainPatchCache[i].TileX = 0;
 			gDX11TerrainPatchCache[i].TileZ = 0;
+			gDX11TerrainPatchCache[i].L = 0;
+			gDX11TerrainPatchCache[i].PatchSize = 0.0f;
 			gDX11TerrainPatchCache[i].Valid = false;
 			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
@@ -1431,41 +1441,13 @@ namespace
 		RenderDX11_BindWorldConstantBuffers();
 	}
 
-	void RenderDX11_UpdateTerrainCB()
+	void RenderDX11_FillTerrainCB(
+		WorldDX11TerrainCB* TerrainCB,
+		const r3dTerrain2::DX11AtlasTileInfo* AtlasTile
+	)
 	{
-		if (!gDX11Context || !gDX11TerrainCB)
+		if (!TerrainCB)
 			return;
-
-		RenderDX11_UpdateTerrain2TextureRefs();
-
-		D3D11_MAPPED_SUBRESOURCE Mapped = {};
-
-		HRESULT Hr =
-			gDX11Context->Map(
-				gDX11TerrainCB,
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&Mapped
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[RenderDX11] Map terrain constant buffer failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return;
-		}
-
-		WorldDX11TerrainCB* TerrainCB =
-			reinterpret_cast<WorldDX11TerrainCB*>(
-				Mapped.pData
-			);
 
 		TerrainCB->BaseColor[0] = 0.10f;
 		TerrainCB->BaseColor[1] = 0.24f;
@@ -1509,7 +1491,10 @@ namespace
 		TerrainCB->DebugParams[0] = 64.0f;        // height offset
 		TerrainCB->DebugParams[1] = 1.0f / 128.0f; // height range inverse
 		TerrainCB->DebugParams[2] =
-			static_cast<float>(gDX11Terrain2SRVMask);
+			static_cast<float>(
+				gDX11Terrain2SRVMask |
+				gDX11Terrain2ActiveAtlasSRVMask
+			);
 		TerrainCB->DebugParams[3] =
 			gDX11Terrain2BatchLayers[0].ScaleV;
 
@@ -1539,12 +1524,98 @@ namespace
 		TerrainCB->LayerScale1[3] =
 			gDX11Terrain2BatchLayers[3].ScaleV;
 
+		TerrainCB->AtlasTexTransform[0] = 0.0f;
+		TerrainCB->AtlasTexTransform[1] = 0.0f;
+		TerrainCB->AtlasTexTransform[2] = 0.0f;
+		TerrainCB->AtlasTexTransform[3] = 0.0f;
+
+		TerrainCB->AtlasWorld[0] = 0.0f;
+		TerrainCB->AtlasWorld[1] = 0.0f;
+		TerrainCB->AtlasWorld[2] = 0.0f;
+		TerrainCB->AtlasWorld[3] = 0.0f;
+
+		if (AtlasTile)
+		{
+			TerrainCB->AtlasTexTransform[0] =
+				AtlasTile->TexScaleU;
+			TerrainCB->AtlasTexTransform[1] =
+				AtlasTile->TexScaleV;
+			TerrainCB->AtlasTexTransform[2] =
+				AtlasTile->TexOffsetU;
+			TerrainCB->AtlasTexTransform[3] =
+				AtlasTile->TexOffsetV;
+
+			TerrainCB->AtlasWorld[0] =
+				AtlasTile->WorldX;
+			TerrainCB->AtlasWorld[1] =
+				AtlasTile->WorldZ;
+			TerrainCB->AtlasWorld[2] =
+				AtlasTile->WorldDim;
+			TerrainCB->AtlasWorld[3] =
+				AtlasTile->WorldDim > 0.01f ?
+					1.0f / AtlasTile->WorldDim :
+					0.0f;
+		}
+	}
+
+	bool RenderDX11_WriteTerrainCB(
+		const r3dTerrain2::DX11AtlasTileInfo* AtlasTile
+	)
+	{
+		if (!gDX11Context || !gDX11TerrainCB)
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11TerrainCB,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[RenderDX11] Map terrain constant buffer failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
+		WorldDX11TerrainCB* TerrainCB =
+			reinterpret_cast<WorldDX11TerrainCB*>(
+				Mapped.pData
+			);
+
+		RenderDX11_FillTerrainCB(
+			TerrainCB,
+			AtlasTile
+		);
+
 		gDX11Context->Unmap(
 			gDX11TerrainCB,
 			0
 		);
 
 		RenderDX11_BindTerrainCB();
+
+		return true;
+	}
+
+	void RenderDX11_UpdateTerrainCB()
+	{
+		RenderDX11_UpdateTerrain2TextureRefs();
+
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
+
+		RenderDX11_WriteTerrainCB(0);
 	}
 
 	enum
@@ -1559,7 +1630,10 @@ namespace
 		DX11_TERRAIN2_TEXTURE_MASK0 = 1 << 5,
 		DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE = 1 << 6,
 		DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE = 1 << 7,
-		DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE = 1 << 8
+		DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE = 1 << 8,
+
+		DX11_TERRAIN2_TEXTURE_ATLAS_DIFFUSE = 1 << 9,
+		DX11_TERRAIN2_TEXTURE_ATLAS_NORMAL = 1 << 10
 	};
 
 	void RenderDX11_ResetTerrain2TextureBridge(
@@ -1609,7 +1683,30 @@ namespace
 			gDX11Terrain2BatchMaskBridge
 		);
 
+		for (
+			int i = 0;
+			i < gDX11Terrain2AtlasBridgeCount;
+			++i
+		)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2AtlasDiffuseBridges[i]
+			);
+
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2AtlasNormalBridges[i]
+			);
+		}
+
+		delete [] gDX11Terrain2AtlasDiffuseBridges;
+		delete [] gDX11Terrain2AtlasNormalBridges;
+
+		gDX11Terrain2AtlasDiffuseBridges = 0;
+		gDX11Terrain2AtlasNormalBridges = 0;
+		gDX11Terrain2AtlasBridgeCount = 0;
+
 		gDX11Terrain2SRVMask = 0;
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
 	}
 
 	bool RenderDX11_TranslateTerrain2TextureFormat(
@@ -2711,6 +2808,144 @@ namespace
 		}
 	}
 
+	bool RenderDX11_EnsureTerrain2AtlasBridgeCount(
+		int VolumeCount
+	)
+	{
+		if (VolumeCount < 0)
+			VolumeCount = 0;
+
+		if (VolumeCount == gDX11Terrain2AtlasBridgeCount)
+			return true;
+
+		for (
+			int i = 0;
+			i < gDX11Terrain2AtlasBridgeCount;
+			++i
+		)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2AtlasDiffuseBridges[i]
+			);
+
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2AtlasNormalBridges[i]
+			);
+		}
+
+		delete [] gDX11Terrain2AtlasDiffuseBridges;
+		delete [] gDX11Terrain2AtlasNormalBridges;
+
+		gDX11Terrain2AtlasDiffuseBridges = 0;
+		gDX11Terrain2AtlasNormalBridges = 0;
+		gDX11Terrain2AtlasBridgeCount = 0;
+
+		if (!VolumeCount)
+			return true;
+
+		gDX11Terrain2AtlasDiffuseBridges =
+			new WorldDX11Terrain2TextureBridge[VolumeCount]();
+
+		gDX11Terrain2AtlasNormalBridges =
+			new WorldDX11Terrain2TextureBridge[VolumeCount]();
+
+		if (
+			!gDX11Terrain2AtlasDiffuseBridges ||
+			!gDX11Terrain2AtlasNormalBridges
+		)
+		{
+			delete [] gDX11Terrain2AtlasDiffuseBridges;
+			delete [] gDX11Terrain2AtlasNormalBridges;
+
+			gDX11Terrain2AtlasDiffuseBridges = 0;
+			gDX11Terrain2AtlasNormalBridges = 0;
+			gDX11Terrain2AtlasBridgeCount = 0;
+
+			return false;
+		}
+
+		gDX11Terrain2AtlasBridgeCount =
+			VolumeCount;
+
+		return true;
+	}
+
+	int RenderDX11_EnsureTerrain2AtlasVolumeSRVs(
+		int VolumeID
+	)
+	{
+		if (!Terrain2 || VolumeID < 0)
+			return 0;
+
+		const int VolumeCount =
+			Terrain2->GetDX11AtlasVolumeCount();
+
+		if (
+			VolumeID >= VolumeCount ||
+			!RenderDX11_EnsureTerrain2AtlasBridgeCount(
+				VolumeCount
+			)
+		)
+		{
+			return 0;
+		}
+
+		int AtlasMask = 0;
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2AtlasDiffuseBridges[VolumeID],
+				Terrain2->GetDX11AtlasDiffuseTexture(VolumeID),
+				"atlas diffuse"
+			)
+		)
+		{
+			AtlasMask |=
+				DX11_TERRAIN2_TEXTURE_ATLAS_DIFFUSE;
+		}
+
+		if (
+			RenderDX11_UploadTerrain2TextureToDX11(
+				gDX11Terrain2AtlasNormalBridges[VolumeID],
+				Terrain2->GetDX11AtlasNormalTexture(VolumeID),
+				"atlas normal"
+			)
+		)
+		{
+			AtlasMask |=
+				DX11_TERRAIN2_TEXTURE_ATLAS_NORMAL;
+		}
+
+		return AtlasMask;
+	}
+
+	void RenderDX11_BindTerrain2AtlasTextureSlots(
+		int VolumeID
+	)
+	{
+		if (!gDX11Context)
+			return;
+
+		ID3D11ShaderResourceView* SRVs[2] = {};
+
+		if (
+			VolumeID >= 0 &&
+			VolumeID < gDX11Terrain2AtlasBridgeCount
+		)
+		{
+			SRVs[0] =
+				gDX11Terrain2AtlasDiffuseBridges[VolumeID].SRV;
+			SRVs[1] =
+				gDX11Terrain2AtlasNormalBridges[VolumeID].SRV;
+		}
+
+		gDX11Context->PSSetShaderResources(
+			9,
+			2,
+			SRVs
+		);
+	}
+
 	void RenderDX11_UpdateFrameCB(
 		const WorldDX11FrameDesc& Desc
 	)
@@ -3275,6 +3510,13 @@ namespace
 		);
 
 		RenderDX11_BindTerrain2TextureSlots();
+
+		if (RenderDX11_DrawTerrain2AtlasTiles())
+			return true;
+
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
+
+		RenderDX11_WriteTerrainCB(0);
 
 		return RenderDX11_DrawTerrainPatchSet();
 	}
