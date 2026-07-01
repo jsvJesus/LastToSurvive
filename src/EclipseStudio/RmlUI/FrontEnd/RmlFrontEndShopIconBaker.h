@@ -11,4 +11,9 @@ public:
         const char* OutputDirectory,
         bool bOverwriteExisting
     );
+
+    static bool BakeResizedStoreIcons(
+        const char* OutputDirectory,
+        bool bOverwriteExisting
+    );
 };

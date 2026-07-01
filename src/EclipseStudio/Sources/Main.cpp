@@ -1874,7 +1874,7 @@ void game::MainLoop()
 
 		const bool bOverwriteIcons = strstr(__r3dCmdLine, "-shopiconbaker_overwrite") != NULL;
 
-		RmlFrontEndShopIconBaker::CopyExistingStoreIcons(
+		RmlFrontEndShopIconBaker::BakeResizedStoreIcons(
 			"Data\\Weapons\\GeneratedShopIcons",
 			bOverwriteIcons
 		);

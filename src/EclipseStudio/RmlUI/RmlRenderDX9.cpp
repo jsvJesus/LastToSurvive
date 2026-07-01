@@ -3771,6 +3771,25 @@ std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
     if (!RmlDx9StartsWithI(WidePath, L"Weapons\\StoreIcons\\"))
         RmlDx9AddCandidate(Candidates, DataRoot + L"\\Weapons\\StoreIcons\\" + WidePath);
 
+	// 4.1. Generated shop item icons:
+	//      Weapons/GeneratedShopIcons/101001.dds
+	//      => DataRoot/Weapons/GeneratedShopIcons/101001.dds
+	if (!RmlDx9StartsWithI(WidePath, L"Weapons\\GeneratedShopIcons\\"))
+	{
+		RmlDx9AddCandidate(
+			Candidates,
+			DataRoot + L"\\Weapons\\GeneratedShopIcons\\" + WidePath
+		);
+	}
+
+	if (!FileName.empty())
+	{
+		RmlDx9AddCandidate(
+			Candidates,
+			DataRoot + L"\\Weapons\\GeneratedShopIcons\\" + FileName
+		);
+	}
+
     // 5. Shop generated item icon fallback:
     //    xxx.png => DataRoot/Weapons/StoreIcons/xxx.png
     if (!FileName.empty())

@@ -1,6 +1,10 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include "r3dRender.h"
+#include <d3d9.h>
+#include <d3dx9.h>
+
 #include "RmlFrontEndShopIconBaker.h"
 #include "RmlFrontEndShopSizing.h"
 
@@ -24,9 +28,99 @@ namespace
 			: "";
 	}
 
-	bool DoesPhysicalFileExist(
-	const char* FileName
+	bool ResizeDdsIcon(
+	const char* SourcePath,
+	const char* TargetPath,
+	int TargetWidth,
+	int TargetHeight
 )
+	{
+		if (
+			!SourcePath ||
+			!SourcePath[0] ||
+			!TargetPath ||
+			!TargetPath[0] ||
+			TargetWidth <= 0 ||
+			TargetHeight <= 0
+		)
+		{
+			return false;
+		}
+
+		if (
+			!r3dRenderer ||
+			!r3dRenderer->pd3ddev
+		)
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] D3D device is not ready.\n"
+			);
+
+			return false;
+		}
+
+		IDirect3DTexture9* Texture =
+			NULL;
+
+		D3DXIMAGE_INFO ImageInfo{};
+
+		const HRESULT LoadResult =
+			D3DXCreateTextureFromFileExA(
+				r3dRenderer->pd3ddev,
+				SourcePath,
+				static_cast<UINT>(TargetWidth),
+				static_cast<UINT>(TargetHeight),
+				1,
+				0,
+				D3DFMT_A8R8G8B8,
+				D3DPOOL_SCRATCH,
+				D3DX_FILTER_LINEAR,
+				D3DX_FILTER_LINEAR,
+				0,
+				&ImageInfo,
+				NULL,
+				&Texture
+			);
+
+		if (
+			FAILED(LoadResult) ||
+			!Texture
+		)
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Failed to load/resize DDS: %s hr=0x%08X\n",
+				SourcePath,
+				static_cast<unsigned int>(LoadResult)
+			);
+
+			return false;
+		}
+
+		const HRESULT SaveResult =
+			D3DXSaveTextureToFileA(
+				TargetPath,
+				D3DXIFF_DDS,
+				Texture,
+				NULL
+			);
+
+		Texture->Release();
+
+		if (FAILED(SaveResult))
+		{
+			r3dOutToLog(
+				"[ShopIconBaker] Failed to save DDS: %s hr=0x%08X\n",
+				TargetPath,
+				static_cast<unsigned int>(SaveResult)
+			);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	bool DoesPhysicalFileExist(const char* FileName)
 	{
 		if (
 			!FileName ||
@@ -715,6 +809,144 @@ bool RmlFrontEndShopIconBaker::CopyExistingStoreIcons(
 	r3dOutToLog(
 		"[ShopIconBaker] DDS copy finished. Copied=%d Skipped=%d Missing=%d Failed=%d\n",
 		CopiedCount,
+		SkippedCount,
+		MissingCount,
+		FailedCount
+	);
+
+	return FailedCount == 0;
+}
+
+bool RmlFrontEndShopIconBaker::BakeResizedStoreIcons(
+	const char* OutputDirectory,
+	bool bOverwriteExisting
+)
+{
+	if (
+		!OutputDirectory ||
+		!OutputDirectory[0]
+	)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Empty output directory.\n"
+		);
+
+		return false;
+	}
+
+	if (!g_pWeaponArmory)
+	{
+		r3dOutToLog(
+			"[ShopIconBaker] Weapon armory is not initialized.\n"
+		);
+
+		return false;
+	}
+
+	CreateDirectoryA(
+		"Data\\Weapons\\GeneratedShopIcons",
+		NULL
+	);
+
+	int BakedCount = 0;
+	int SkippedCount = 0;
+	int MissingCount = 0;
+	int FailedCount = 0;
+
+	g_pWeaponArmory->startItemSearch();
+
+	while (
+		g_pWeaponArmory->searchNextItem()
+	)
+	{
+		const uint32_t ItemId =
+			g_pWeaponArmory->getCurrentSearchItemID();
+
+		const BaseItemConfig* Config =
+			g_pWeaponArmory->getConfig(
+				ItemId
+			);
+
+		if (!Config)
+		{
+			++SkippedCount;
+			continue;
+		}
+
+		const std::string SourcePath =
+			NormalizeStoreIconToPhysicalPath(
+				Config
+			);
+
+		if (
+			SourcePath.empty() ||
+			!DoesPhysicalFileExist(
+				SourcePath.c_str()
+			)
+		)
+		{
+			++MissingCount;
+			continue;
+		}
+
+		const int RuntimeCategory =
+			GetBakeRuntimeCategory(
+				Config
+			);
+
+		const RmlFrontEndShopSizing::FShopGridSize GridSize =
+			RmlFrontEndShopSizing::GetShopGridSize(
+				Config,
+				RuntimeCategory
+			);
+
+		const int TargetWidth =
+			RmlFrontEndShopSizing::GetShopIconWidthPx(
+				GridSize
+			);
+
+		const int TargetHeight =
+			RmlFrontEndShopSizing::GetShopIconHeightPx(
+				GridSize
+			);
+
+		const std::string TargetPath =
+			BuildGeneratedIconPhysicalPath(
+				OutputDirectory,
+				ItemId
+			);
+
+		if (
+			!bOverwriteExisting &&
+			DoesPhysicalFileExist(
+				TargetPath.c_str()
+			)
+		)
+		{
+			++SkippedCount;
+			continue;
+		}
+
+		if (
+			ResizeDdsIcon(
+				SourcePath.c_str(),
+				TargetPath.c_str(),
+				TargetWidth,
+				TargetHeight
+			)
+		)
+		{
+			++BakedCount;
+		}
+		else
+		{
+			++FailedCount;
+		}
+	}
+
+	r3dOutToLog(
+		"[ShopIconBaker] DDS resize finished. Baked=%d Skipped=%d Missing=%d Failed=%d\n",
+		BakedCount,
 		SkippedCount,
 		MissingCount,
 		FailedCount
