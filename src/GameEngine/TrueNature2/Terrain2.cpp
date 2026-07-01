@@ -2866,6 +2866,146 @@ int r3dTerrain2::GetNumMasks() const
 	return (int)m_Masks.Count();
 }
 
+int r3dTerrain2::GetDX11VisibleAtlasTileCount() const
+{
+	return (int)m_VisibleTiles.Count();
+}
+
+bool r3dTerrain2::GetDX11VisibleAtlasTileInfo(
+	int idx,
+	DX11AtlasTileInfo* oInfo
+) const
+{
+	if (
+		!oInfo ||
+		idx < 0 ||
+		idx >= (int)m_VisibleTiles.Count()
+	)
+	{
+		return false;
+	}
+
+	const AllocatedTile* tile =
+		m_VisibleTiles[ idx ];
+
+	if (
+		!tile ||
+		tile->AtlasVolumeID < 0 ||
+		tile->AtlasVolumeID >= (int)m_Atlas.Count() ||
+		tile->AtlasTileID < 0 ||
+		tile->L < 0 ||
+		tile->L >= NUM_QUALITY_LAYERS
+	)
+	{
+		return false;
+	}
+
+	oInfo->X = tile->X;
+	oInfo->Z = tile->Z;
+	oInfo->L = tile->L;
+	oInfo->ConFlags = tile->ConFlags;
+	oInfo->AtlasVolumeID = tile->AtlasVolumeID;
+	oInfo->AtlasTileID = tile->AtlasTileID;
+
+	int2 atlasXZ =
+		GetTileAtlasXZ( tile );
+
+	float antiBorder =
+		m_QualitySettings.AtlasTileDim /
+		float( m_QualitySettings.AtlasTileDim + 2 * r_terrain2_padding->GetInt() );
+
+	float antiBorderAddU =
+		float( r_terrain2_padding->GetInt() ) /
+		ATLAS_TEXTURE_DIM *
+		antiBorder;
+
+	float antiBorderAddV =
+		float( r_terrain2_padding->GetInt() ) /
+		ATLAS_TEXTURE_DIM *
+		antiBorder;
+
+	float uvScaleMul0 =
+		m_AtlasTileCountPerSideInv * 0.5f;
+
+	float uvScaleMul1 =
+		uvScaleMul0 * antiBorder;
+
+	oInfo->TexScaleU =
+		uvScaleMul1;
+
+	oInfo->TexScaleV =
+		-uvScaleMul1;
+
+	oInfo->TexOffsetU =
+		uvScaleMul1 +
+		atlasXZ.x * m_AtlasTileCountPerSideInv +
+		0.5f / ATLAS_TEXTURE_DIM +
+		antiBorderAddU;
+
+	oInfo->TexOffsetV =
+		1.0f -
+		uvScaleMul1 -
+		atlasXZ.y * m_AtlasTileCountPerSideInv -
+		0.5f / ATLAS_TEXTURE_DIM -
+		antiBorderAddV;
+
+	oInfo->WorldDim =
+		m_TileWorldDims[ tile->L ];
+
+	oInfo->WorldX =
+		tile->X * oInfo->WorldDim;
+
+	oInfo->WorldZ =
+		tile->Z * oInfo->WorldDim;
+
+	return true;
+}
+
+int r3dTerrain2::GetDX11AtlasVolumeCount() const
+{
+	return (int)m_Atlas.Count();
+}
+
+r3dTexture* r3dTerrain2::GetDX11AtlasDiffuseTexture(
+	int volumeIdx
+) const
+{
+	if (
+		volumeIdx < 0 ||
+		volumeIdx >= (int)m_Atlas.Count()
+	)
+	{
+		return NULL;
+	}
+
+	const AtlasVolume& volume =
+		m_Atlas[ volumeIdx ];
+
+	return volume.Diffuse ?
+		volume.Diffuse->Tex :
+		NULL;
+}
+
+r3dTexture* r3dTerrain2::GetDX11AtlasNormalTexture(
+	int volumeIdx
+) const
+{
+	if (
+		volumeIdx < 0 ||
+		volumeIdx >= (int)m_Atlas.Count()
+	)
+	{
+		return NULL;
+	}
+
+	const AtlasVolume& volume =
+		m_Atlas[ volumeIdx ];
+
+	return volume.Normal ?
+		volume.Normal->Tex :
+		NULL;
+}
+
 //------------------------------------------------------------------------
 
 void

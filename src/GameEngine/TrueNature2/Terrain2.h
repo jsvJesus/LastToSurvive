@@ -208,6 +208,25 @@ public:
 		void	Init();
 	};
 
+	struct DX11AtlasTileInfo
+	{
+		int X;
+		int Z;
+		int L;
+		int ConFlags;
+		int AtlasVolumeID;
+		int AtlasTileID;
+
+		float TexScaleU;
+		float TexScaleV;
+		float TexOffsetU;
+		float TexOffsetV;
+
+		float WorldX;
+		float WorldZ;
+		float WorldDim;
+	};
+
 	typedef r3dTL::TFixedArray< float, NUM_QUALITY_LAYERS > LayerFloats;
 	typedef r3dTL::TArray< r3dTexture* > MaskArray;
 	typedef r3dTL::TArray< r3dTerrainLayer > TerrainLayerArr;
@@ -319,6 +338,12 @@ public:
 	void					SetLayer( int idx, const r3dTerrainLayer& layer );
 	int						GetNumLayers() const;
 	int						GetNumMasks() const;
+
+	int						GetDX11VisibleAtlasTileCount() const;
+	bool					GetDX11VisibleAtlasTileInfo( int idx, DX11AtlasTileInfo* oInfo ) const;
+	int						GetDX11AtlasVolumeCount() const;
+	r3dTexture*				GetDX11AtlasDiffuseTexture( int volumeIdx ) const;
+	r3dTexture*				GetDX11AtlasNormalTexture( int volumeIdx ) const;
 
 	void					UpdateTilesWithLayer( int idx );
 

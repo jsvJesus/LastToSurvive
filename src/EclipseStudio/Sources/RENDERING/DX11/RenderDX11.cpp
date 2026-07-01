@@ -4670,11 +4670,21 @@ void RenderDX11_DrawDebugPreviewDX9()
 		const RenderDX11PreviewMode PreviewMode =
 			RenderDX11_GetPreviewMode();
 
+		const int AtlasVolumes =
+			Terrain2 ?
+				Terrain2->GetDX11AtlasVolumeCount() :
+				0;
+
+		const int AtlasTiles =
+			Terrain2 ?
+				Terrain2->GetDX11VisibleAtlasTileCount() :
+				0;
+
 		Font_Label->PrintF(
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2 Textures: C%d N%d H%d L0D%d L0N%d M0%d L1D%d L2D%d L3D%d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2: Layers %d Masks %d AtlasVol %d AtlasTiles %d\nDX11 Terrain2 Batch: C%d N%d H%d B0D%d B0N%d M%d B1D%d B2D%d B3D%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			RenderDX11_GetTerrainPatchSide(),
 			RenderDX11_GetTerrainPatchSide(),
@@ -4682,6 +4692,10 @@ void RenderDX11_DrawDebugPreviewDX9()
 			gDX11TerrainPatchDrawCount,
 			gDX11TerrainPatchCullCount,
 			gDX11TerrainPatchUpdateCount,
+			gDX11Terrain2LayerCount,
+			gDX11Terrain2MaskCount,
+			AtlasVolumes,
+			AtlasTiles,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_COLOR) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_NORMAL) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_HEIGHT) ? 1 : 0,
