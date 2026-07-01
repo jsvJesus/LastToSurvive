@@ -77,7 +77,6 @@
 #include "GameCode\UserRewards.h"
 #include "GameCode\UserSettings.h"
 
-#include "../RmlUI/FrontEnd/RmlFrontEndShopIconBaker.h"
 #include "../RmlUI/RmlUISystem.h"
 #include "../RmlUI/RmlRuntime.h"
 
@@ -1865,13 +1864,6 @@ void game::MainLoop()
 	g_pWeaponArmory = new ClientWeaponArmory();
 	g_pWeaponArmory->Init();
 	r3dShowArtBugs();
-
-	if (strstr(__r3dCmdLine, "-shopiconbaker"))
-	{
-		RmlFrontEndShopIconBaker::WriteBakeList(
-			"Data/Weapons/GeneratedShopIcons/ShopIconBakeList.json"
-		);
-	}
 
 	// for editors, do not lock mouse. when we start game, in ExecuteNetworkGame we will set that var to true
 	d_mouse_window_lock->SetBool(false);
