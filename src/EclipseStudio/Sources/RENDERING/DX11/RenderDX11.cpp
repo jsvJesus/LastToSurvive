@@ -60,6 +60,7 @@ namespace
 		DX11_TERRAIN_PATCH_MAX_RADIUS * 2 + 1;
 	static const int DX11_TERRAIN_PATCH_COUNT =
 		DX11_TERRAIN_PATCH_SIDE * DX11_TERRAIN_PATCH_SIDE;
+	static const int DX11_TERRAIN_PATCH_CACHE_COUNT = 256;
 
 	struct WorldDX11FrameCB
 	{
@@ -171,6 +172,7 @@ namespace
 		int Height;
 		D3DFORMAT SourceFormat;
 		DXGI_FORMAT DXFormat;
+		unsigned int LastUploadFrame;
 	};
 
 	struct WorldDX11Terrain2LayerSlot
@@ -246,7 +248,7 @@ namespace
 	ID3D11InputLayout*		gDX11TerrainInputLayout = 0;
 
 	WorldDX11TerrainPatchCacheEntry
-							gDX11TerrainPatchCache[DX11_TERRAIN_PATCH_COUNT] = {};
+							gDX11TerrainPatchCache[DX11_TERRAIN_PATCH_CACHE_COUNT] = {};
 	ID3D11Buffer*			gDX11TerrainIB = 0;
 
 	unsigned int			gDX11TerrainCacheFrameId = 0;
@@ -288,6 +290,10 @@ namespace
 
 	int						gDX11Terrain2SRVMask = 0;
 	int						gDX11Terrain2ActiveAtlasSRVMask = 0;
+	int						gDX11Terrain2AtlasVisibleCount = 0;
+	int						gDX11Terrain2AtlasDrawCount = 0;
+	int						gDX11Terrain2AtlasSkipInfoCount = 0;
+	int						gDX11Terrain2AtlasSkipSRVCount = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
@@ -983,7 +989,7 @@ namespace
 
 	void RenderDX11_ReleaseTerrainResources()
 	{
-		for (int i = 0; i < DX11_TERRAIN_PATCH_COUNT; ++i)
+		for (int i = 0; i < DX11_TERRAIN_PATCH_CACHE_COUNT; ++i)
 		{
 			RenderDX11_SafeRelease(
 				gDX11TerrainPatchCache[i].VertexBuffer
@@ -1614,6 +1620,10 @@ namespace
 		RenderDX11_UpdateTerrain2TextureRefs();
 
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
+		gDX11Terrain2AtlasVisibleCount = 0;
+		gDX11Terrain2AtlasDrawCount = 0;
+		gDX11Terrain2AtlasSkipInfoCount = 0;
+		gDX11Terrain2AtlasSkipSRVCount = 0;
 
 		RenderDX11_WriteTerrainCB(0);
 	}
@@ -1648,6 +1658,7 @@ namespace
 		Bridge.Height = 0;
 		Bridge.SourceFormat = D3DFMT_UNKNOWN;
 		Bridge.DXFormat = DXGI_FORMAT_UNKNOWN;
+		Bridge.LastUploadFrame = 0;
 	}
 
 	void RenderDX11_ReleaseTerrain2TextureBridges()
@@ -2064,7 +2075,8 @@ namespace
 	bool RenderDX11_UploadTerrain2TextureToDX11(
 		WorldDX11Terrain2TextureBridge& Bridge,
 		r3dTexture* Source,
-		const char* DebugName
+		const char* DebugName,
+		bool bForceRefresh = false
 	)
 	{
 		if (!DebugName)
@@ -2134,7 +2146,11 @@ namespace
 			Bridge.Width == Width &&
 			Bridge.Height == Height &&
 			Bridge.SourceFormat == SourceFormat &&
-			Bridge.DXFormat == DXFormat
+			Bridge.DXFormat == DXFormat &&
+			(
+				!bForceRefresh ||
+				Bridge.LastUploadFrame == gDX11TerrainCacheFrameId
+			)
 		)
 		{
 			return true;
@@ -2150,10 +2166,20 @@ namespace
 		if (!D3D9Texture)
 			return false;
 
+		D3DSURFACE_DESC TopDesc = {};
+		if (FAILED(D3D9Texture->GetLevelDesc(0, &TopDesc)))
+			return false;
+
+		const bool bRenderTargetSource =
+			(TopDesc.Usage & D3DUSAGE_RENDERTARGET) != 0;
+
 		UINT MipLevels =
 			D3D9Texture->GetLevelCount();
 
 		if (!MipLevels)
+			MipLevels = 1;
+
+		if (bRenderTargetSource)
 			MipLevels = 1;
 
 		D3D11_SUBRESOURCE_DATA* InitData =
@@ -2196,6 +2222,10 @@ namespace
 				break;
 
 			D3DLOCKED_RECT Locked = {};
+			IDirect3DSurface9* SrcSurface = 0;
+			IDirect3DSurface9* SysMemSurface = 0;
+			bool bLockedSurface = false;
+
 			Hr =
 				D3D9Texture->LockRect(
 					Mip,
@@ -2204,8 +2234,62 @@ namespace
 					D3DLOCK_READONLY
 				);
 
+			if (
+				FAILED(Hr) &&
+				bRenderTargetSource &&
+				Mip == 0 &&
+				r3dRenderer &&
+				r3dRenderer->pd3ddev
+			)
+			{
+				Hr =
+					D3D9Texture->GetSurfaceLevel(
+						0,
+						&SrcSurface
+					);
+
+				if (SUCCEEDED(Hr))
+				{
+					Hr =
+						r3dRenderer->pd3ddev->CreateOffscreenPlainSurface(
+							LevelDesc.Width,
+							LevelDesc.Height,
+							LevelDesc.Format,
+							D3DPOOL_SYSTEMMEM,
+							&SysMemSurface,
+							0
+						);
+				}
+
+				if (SUCCEEDED(Hr))
+				{
+					Hr =
+						r3dRenderer->pd3ddev->GetRenderTargetData(
+							SrcSurface,
+							SysMemSurface
+						);
+				}
+
+				if (SUCCEEDED(Hr))
+				{
+					Hr =
+						SysMemSurface->LockRect(
+							&Locked,
+							0,
+							D3DLOCK_READONLY
+						);
+
+					bLockedSurface =
+						SUCCEEDED(Hr);
+				}
+			}
+
 			if (FAILED(Hr))
+			{
+				RenderDX11_SafeRelease(SysMemSurface);
+				RenderDX11_SafeRelease(SrcSurface);
 				break;
+			}
 
 			UINT UploadRowPitch = 0;
 			UINT UploadRows = 0;
@@ -2227,9 +2311,19 @@ namespace
 					&UploadSlicePitch
 				);
 
-			D3D9Texture->UnlockRect(
-				Mip
-			);
+			if (bLockedSurface)
+			{
+				SysMemSurface->UnlockRect();
+			}
+			else
+			{
+				D3D9Texture->UnlockRect(
+					Mip
+				);
+			}
+
+			RenderDX11_SafeRelease(SysMemSurface);
+			RenderDX11_SafeRelease(SrcSurface);
 
 			if (!bCopied)
 			{
@@ -2354,6 +2448,8 @@ namespace
 		Bridge.Height = Height;
 		Bridge.SourceFormat = SourceFormat;
 		Bridge.DXFormat = DXFormat;
+		Bridge.LastUploadFrame =
+			gDX11TerrainCacheFrameId;
 
 		char Text[512] = {};
 		sprintf_s(
@@ -2896,7 +2992,8 @@ namespace
 			RenderDX11_UploadTerrain2TextureToDX11(
 				gDX11Terrain2AtlasDiffuseBridges[VolumeID],
 				Terrain2->GetDX11AtlasDiffuseTexture(VolumeID),
-				"atlas diffuse"
+				"atlas diffuse",
+				false
 			)
 		)
 		{
@@ -2908,7 +3005,8 @@ namespace
 			RenderDX11_UploadTerrain2TextureToDX11(
 				gDX11Terrain2AtlasNormalBridges[VolumeID],
 				Terrain2->GetDX11AtlasNormalTexture(VolumeID),
-				"atlas normal"
+				"atlas normal",
+				false
 			)
 		)
 		{
@@ -4926,7 +5024,7 @@ void RenderDX11_DrawDebugPreviewDX9()
 			X + 10.0f,
 			Y + 10.0f,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2: Layers %d Masks %d AtlasVol %d AtlasTiles %d\nDX11 Terrain2 Batch: C%d N%d H%d B0D%d B0N%d M%d B1D%d B2D%d B3D%d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2: Layers %d Masks %d AtlasVol %d AtlasTiles %d\nDX11 Atlas Draw: Visible %d Drawn %d SkipInfo %d SkipSRV %d\nDX11 Terrain2 Batch: C%d N%d H%d B0D%d B0N%d M%d B1D%d B2D%d B3D%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			RenderDX11_GetTerrainPatchSide(),
 			RenderDX11_GetTerrainPatchSide(),
@@ -4938,6 +5036,10 @@ void RenderDX11_DrawDebugPreviewDX9()
 			gDX11Terrain2MaskCount,
 			AtlasVolumes,
 			AtlasTiles,
+			gDX11Terrain2AtlasVisibleCount,
+			gDX11Terrain2AtlasDrawCount,
+			gDX11Terrain2AtlasSkipInfoCount,
+			gDX11Terrain2AtlasSkipSRVCount,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_COLOR) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_NORMAL) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_HEIGHT) ? 1 : 0,
