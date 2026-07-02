@@ -107,7 +107,7 @@ static void MasterServerQuckJoin()
 
 	NetPacketsGameBrowser::GBPKT_C2M_QuickGameReq_s n;
 	n.CustomerID = gUserProfile.CustomerID;
-	n.gameMap    = d_use_test_map->GetInt();
+	n.gameMap    = GBGameInfo::MAPID_WZ_SafeZone;
 	n.region     = 0xFF;
 		
 	gMasterServerLogic.SendJoinQuickGame(n);
@@ -408,6 +408,11 @@ RunRmlSelectedGame()
 	case GBGameInfo::MAPID_WZ_Colorado:
 		r3dGameLevel::SetHomeDir(
 			"WZ_Colorado"
+		);
+		break;
+	case GBGameInfo::MAPID_WZ_SafeZone:
+		r3dGameLevel::SetHomeDir(
+			"WZ_SafeZone"
 		);
 		break;
 	}

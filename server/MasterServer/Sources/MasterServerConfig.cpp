@@ -68,13 +68,31 @@ void CMasterServerConfig::Temp_Load_WarZGames()
   for(int i=0; i<numGames; i++)
   {
     GBGameInfo ginfo;
+
+    //
+    // SAFEZONE
+    // PlayGame из FrontEnd должен сначала отправлять игрока сюда.
+    //
+    ginfo.mapId      = GBGameInfo::MAPID_WZ_SafeZone;
+    ginfo.maxPlayers = maxPlayers;
+
+    sprintf(ginfo.name, "US SafeZone %03d", i + 1);
+    AddPermanentGame(30000 + i, ginfo, GBNET_REGION_US_West);
+
+    sprintf(ginfo.name, "EU SafeZone %03d", i + 1);
+    AddPermanentGame(40000 + i, ginfo, GBNET_REGION_Europe);
+
+    //
+    // OPEN WORLD
+    // Сюда игрок позже будет переходить из SafeZone через NPC / Gate.
+    //
     ginfo.mapId      = GBGameInfo::MAPID_WZ_Colorado;
     ginfo.maxPlayers = maxPlayers;
 
-    sprintf(ginfo.name, "US Server %03d", i + 1);
+    sprintf(ginfo.name, "US Colorado %03d", i + 1);
     AddPermanentGame(10000 + i, ginfo, GBNET_REGION_US_West);
 
-    sprintf(ginfo.name, "EU Server %03d", i + 1);
+    sprintf(ginfo.name, "EU Colorado %03d", i + 1);
     AddPermanentGame(20000 + i, ginfo, GBNET_REGION_Europe);
   }
 }
@@ -115,7 +133,8 @@ static int StringToGBMapID(char* str)
 {
   if(stricmp(str, "MAPID_WZ_Colorado") == 0)
     return GBGameInfo::MAPID_WZ_Colorado;
-
+  if(stricmp(str, "MAPID_WZ_SafeZone") == 0)
+    return GBGameInfo::MAPID_WZ_SafeZone;
   if(stricmp(str, "MAPID_Editor_Particles") == 0)
     return GBGameInfo::MAPID_Editor_Particles;
   if(stricmp(str, "MAPID_ServerTest") == 0)

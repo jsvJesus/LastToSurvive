@@ -2510,16 +2510,6 @@ void RmlFrontEndContext::HandleClick(
 				"Deploying to SafeZone..."
 			);
 
-			/*
-				TODO:
-				Сейчас RequestQuickJoin() используется как старый вход в игру.
-				На этом этапе считаем его входом в SafeZone.
-
-				Позже правильно разделить:
-				RequestJoinSafeZone()
-				RequestJoinRankedDeathMatch()
-				RequestJoinRankedCaptureTheFlag()
-			*/
 			RequestQuickJoin();
 			return;
 		}

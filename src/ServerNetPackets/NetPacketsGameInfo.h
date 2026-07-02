@@ -19,7 +19,7 @@ enum EGBGameRegion
 };
 
 // MAKE SURE to increase GBGAMEINFO_VERSION after changing following structs
-#define GBGAMEINFO_VERSION 0x00000003
+#define GBGAMEINFO_VERSION 0x00000004
 
 struct GBGameInfo
 {
@@ -30,6 +30,8 @@ struct GBGameInfo
 	  MAPID_WZ_Colorado,
 	  // NOTE: do *NOT* add maps inside current IDs, add ONLY at the end
 	  // otherwise current map statistics in DB will be broken
+	  MAPID_WZ_SafeZone,
+		
 	  MAPID_MAX_ID,
 	};
 
