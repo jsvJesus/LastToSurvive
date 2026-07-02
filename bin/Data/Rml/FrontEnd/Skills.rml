@@ -1,7 +1,7 @@
 <rml>
 <head>
 	<title>Last To Survive Skills</title>
-	<link type="text/rcss" href="FrontEnd.rcss"/>
+	<link type="text/rcss" href="Skills.rcss"/>
 </head>
 
 <body class="frontend_body main_menu_body skills_body">

@@ -1,0 +1,1010 @@
+/* ============================================================
+   SKILLS / SHOP CONTENT SCREENS
+   ============================================================ */
+
+.frontend_static_background {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	overflow: hidden;
+	background-color: #030506;
+}
+
+.frontend_static_background_image {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+}
+
+.frontend_static_background_shade,
+.skills_scene_scrim {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.frontend_static_background_shade {
+	z-index: 2;
+	background-color: rgba(0, 0, 0, 0.46);
+}
+
+.skills_scene_scrim {
+	z-index: 4;
+	background-color: rgba(0, 0, 0, 0.26);
+}
+
+.skills_layout,
+.shop_layout {
+	position: absolute;
+	left: 28px;
+	right: 4px;
+	top: 86px;
+	bottom: 42px;
+	z-index: 12;
+	display: flex;
+	flex-direction: row;
+}
+
+.skills_panel,
+.shop_panel {
+	position: relative;
+	height: 100%;
+	background-color: rgba(8, 12, 15, 0.86);
+	decorator: linear-gradient(180deg, #1d262b, #0d1316 58%, #06090b) border-box;
+	border-width: 1px;
+	border-color: rgba(88, 100, 106, 0.62);
+	box-shadow: #00000099 0px 4px 12px 0px;
+	overflow: hidden;
+}
+
+.skills_left_panel {
+	width: 292px;
+	margin-right: 12px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.skills_tree_panel {
+	flex-grow: 1;
+	margin-right: 12px;
+	padding: 16px;
+}
+
+.skills_details_panel {
+	width: 318px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.skills_panel_header,
+.skills_tree_header,
+.shop_panel_header {
+	width: 100%;
+	height: 58px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(84, 96, 102, 0.55);
+}
+
+.skills_panel_title,
+.shop_panel_title {
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 18px;
+	letter-spacing: 1px;
+}
+
+.skills_panel_subtitle,
+.shop_panel_subtitle {
+	margin-top: 4px;
+	color: #e17332;
+	font-size: 8px;
+	font-weight: bold;
+	line-height: 10px;
+	letter-spacing: 2px;
+}
+
+.skills_points_box {
+	width: 58px;
+	height: 42px;
+	padding-top: 6px;
+	background-color: rgba(161, 54, 47, 0.92);
+	border-width: 1px;
+	border-color: #d75f51;
+	text-align: center;
+}
+
+.skills_points_label {
+	color: #ffffff;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.skills_points_value {
+	color: #ffffff;
+	font-size: 17px;
+	font-weight: bold;
+	line-height: 18px;
+}
+
+.skills_survivor_card {
+	width: 100%;
+	height: 78px;
+	margin-top: 14px;
+	display: flex;
+	background-color: rgba(5, 8, 10, 0.66);
+	border-width: 1px;
+	border-color: rgba(67, 78, 84, 0.66);
+}
+
+.skills_survivor_level {
+	width: 66px;
+	height: 76px;
+	padding-top: 12px;
+	background-color: rgba(160, 55, 47, 0.88);
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.skills_survivor_level_number {
+	color: #ffffff;
+	font-size: 28px;
+	font-weight: bold;
+	line-height: 30px;
+}
+
+.skills_survivor_level_label {
+	margin-top: 2px;
+	color: #ffd8d3;
+	font-size: 7px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.skills_survivor_info {
+	width: 192px;
+	padding: 12px 12px 8px 12px;
+}
+
+.skills_survivor_name {
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 16px;
+}
+
+.skills_survivor_class {
+	margin-top: 3px;
+	color: #e17332;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.skills_xp_bar {
+	position: relative;
+	width: 100%;
+	height: 5px;
+	margin-top: 9px;
+	background-color: #11191d;
+	border-width: 1px;
+	border-color: #354047;
+}
+
+.skills_xp_fill {
+	width: 0%;
+	height: 100%;
+	background-color: #c44739;
+}
+
+.skills_xp_text {
+	margin-top: 5px;
+	color: #9fa9ad;
+	font-size: 8px;
+	font-weight: bold;
+}
+
+.skills_category_title {
+	margin-top: 18px;
+	margin-bottom: 8px;
+	color: #737f85;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.skill_category_button {
+	width: 100%;
+	height: 58px;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	text-align: left;
+	background-color: rgba(9, 14, 17, 0.82);
+	border-color: rgba(64, 76, 82, 0.72);
+}
+
+.skill_category_button.active,
+.skill_category_button.selected,
+.skill_category_button:hover {
+	background-color: rgba(91, 35, 29, 0.90);
+	border-color: #d45c4c;
+}
+
+.skill_category_code {
+	width: 46px;
+	color: #ffffff;
+	font-size: 13px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.skill_category_text {
+	width: 206px;
+}
+
+.skill_category_name {
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 14px;
+}
+
+.skill_category_desc {
+	margin-top: 4px;
+	color: #8f9a9f;
+	font-size: 8px;
+	font-weight: normal;
+	line-height: 11px;
+}
+
+.skills_reset_block {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 16px;
+}
+
+.skills_reset_button,
+.learn_skill_button {
+	width: 100%;
+	height: 42px;
+	background-color: rgba(153, 54, 45, 0.94);
+	decorator: linear-gradient(180deg, #cc5548, #96352e 54%, #541b18) border-box;
+	border-color: #d75f51;
+	font-size: 13px;
+	letter-spacing: 1px;
+}
+
+.skills_reset_hint,
+.skill_details_status,
+.shop_details_status {
+	margin-top: 10px;
+	color: #7c878c;
+	font-size: 9px;
+	line-height: 13px;
+}
+
+.skills_tree_legend {
+	display: flex;
+	align-items: center;
+	color: #9aa4a8;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.skill_legend_item {
+	margin-left: 12px;
+	display: flex;
+	align-items: center;
+}
+
+.skill_legend_dot {
+	width: 9px;
+	height: 9px;
+	margin-right: 5px;
+	border-width: 1px;
+}
+
+.skill_legend_dot.learned {
+	background-color: #4fb066;
+	border-color: #91d99d;
+}
+
+.skill_legend_dot.available {
+	background-color: #d47332;
+	border-color: #ff9a55;
+}
+
+.skill_legend_dot.locked {
+	background-color: #343c41;
+	border-color: #59646a;
+}
+
+.skill_tree_map {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	top: 88px;
+	bottom: 16px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.skill_tree_column {
+	width: 24%;
+	height: 100%;
+	margin-right: 1%;
+}
+
+.skill_tree_column.last {
+	margin-right: 0px;
+}
+
+.skill_branch_title {
+	width: 100%;
+	height: 30px;
+	padding-top: 9px;
+	color: #e17332;
+	background-color: rgba(6, 9, 11, 0.72);
+	border-width: 1px;
+	border-color: rgba(64, 76, 82, 0.55);
+	font-size: 9px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.skill_node {
+	width: 100%;
+	height: 86px;
+	margin-top: 14px;
+	padding: 10px;
+	text-align: center;
+	background-color: rgba(10, 15, 18, 0.90);
+	border-color: rgba(67, 79, 85, 0.78);
+}
+
+.skill_node.learned {
+	border-color: #5aa56a;
+}
+
+.skill_node.available {
+	border-color: #c96a33;
+}
+
+.skill_node.locked {
+	color: #6f787d;
+	background-color: rgba(7, 10, 12, 0.84);
+	border-color: #30393e;
+}
+
+.skill_node.selected {
+	background-color: rgba(82, 34, 29, 0.94);
+	border-color: #f1765a;
+	filter: drop-shadow(#e879324c 0px 0px 8px);
+}
+
+.skill_node_rank {
+	width: 32px;
+	height: 25px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-top: 5px;
+	color: #ffffff;
+	background-color: rgba(160, 55, 47, 0.90);
+	font-size: 11px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.skill_node_name {
+	margin-top: 8px;
+	color: #ffffff;
+	font-size: 11px;
+	font-weight: bold;
+	line-height: 13px;
+}
+
+.skill_node_level {
+	margin-top: 5px;
+	color: #9fa9ad;
+	font-size: 8px;
+	font-weight: bold;
+}
+
+.skill_connector {
+	width: 2px;
+	height: 22px;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #394349;
+}
+
+.skill_connector.learned {
+	background-color: #5aa56a;
+}
+
+.skill_connector.available {
+	background-color: #c96a33;
+}
+
+.selected_skill_state {
+	width: 92px;
+	height: 28px;
+	padding-top: 9px;
+	font-size: 8px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.selected_skill_state.available {
+	color: #fff1d6;
+	background-color: rgba(126, 67, 26, 0.82);
+	border-width: 1px;
+	border-color: #d88435;
+}
+
+.selected_skill_state.learned {
+	color: #e6f6e9;
+	background-color: rgba(24, 72, 35, 0.82);
+	border-width: 1px;
+	border-color: #4a905a;
+}
+
+.selected_skill_state.locked {
+	color: #abb4b8;
+	background-color: rgba(37, 43, 47, 0.82);
+	border-width: 1px;
+	border-color: #59646a;
+}
+
+.selected_skill_card,
+.selected_item_card {
+	width: 100%;
+	height: 82px;
+	margin-top: 18px;
+	display: flex;
+	background-color: rgba(5, 8, 10, 0.68);
+	border-width: 1px;
+	border-color: rgba(67, 78, 84, 0.66);
+}
+
+.selected_skill_icon,
+.selected_item_icon {
+	width: 72px;
+	height: 80px;
+	padding-top: 25px;
+	color: #ffffff;
+	background-color: rgba(160, 55, 47, 0.92);
+	font-size: 18px;
+	font-weight: bold;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.selected_skill_main,
+.selected_item_main {
+	padding: 19px 12px 10px 14px;
+}
+
+.selected_skill_name,
+.selected_item_name {
+	color: #ffffff;
+	font-size: 18px;
+	font-weight: bold;
+	line-height: 20px;
+}
+
+.selected_skill_category,
+.selected_item_category {
+	margin-top: 6px;
+	color: #e17332;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.selected_skill_description,
+.selected_item_description {
+	margin-top: 14px;
+	color: #a4adb1;
+	font-size: 10px;
+	line-height: 15px;
+}
+
+.skill_detail_rows,
+.selected_item_stats {
+	margin-top: 16px;
+	border-top-width: 1px;
+	border-top-color: rgba(69, 81, 87, 0.60);
+}
+
+.skill_detail_row,
+.selected_item_stat {
+	width: 100%;
+	height: 32px;
+	padding-left: 2px;
+	padding-right: 2px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(69, 81, 87, 0.45);
+	color: #8f9a9f;
+	font-size: 9px;
+	font-weight: bold;
+}
+
+.skill_detail_value,
+.selected_item_stat_value {
+	color: #ffffff;
+	font-size: 10px;
+}
+
+.skill_detail_value.orange {
+	color: #e17332;
+}
+
+.skill_requirements_box {
+	margin-top: 16px;
+	padding: 12px;
+	background-color: rgba(5, 8, 10, 0.58);
+	border-width: 1px;
+	border-color: rgba(67, 78, 84, 0.55);
+}
+
+.skill_requirements_title {
+	color: #e17332;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.skill_requirement {
+	margin-top: 8px;
+	font-size: 9px;
+	line-height: 12px;
+}
+
+.skill_requirement.passed {
+	color: #78c987;
+}
+
+.skill_requirement.failed {
+	color: #d76f62;
+}
+
+.learn_skill_button {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 54px;
+	width: auto;
+}
+
+.skill_details_status {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 16px;
+}
+
+.shop_categories_panel {
+	width: 220px;
+	margin-right: 12px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.shop_items_panel {
+	width: 800px;
+	flex-grow: 0;
+	margin-right: 12px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.shop_preview_panel {
+	width: 420px;
+	margin-right: 8px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.shop_details_panel {
+	width: 330px;
+	margin-left: 24px;
+	padding: 16px;
+	flex-shrink: 0;
+}
+
+.shop_category_button {
+	width: 100%;
+	height: 38px;
+	margin-top: 7px;
+	display: flex;
+	align-items: center;
+	text-align: left;
+	background-color: rgba(9, 14, 17, 0.82);
+	border-color: rgba(64, 76, 82, 0.72);
+	font-size: 10px;
+	letter-spacing: 1px;
+}
+
+.shop_category_button.active,
+.shop_category_button.selected,
+.shop_category_button:hover,
+.shop_tab_button.active,
+.shop_tab_button.selected,
+.shop_tab_button:hover {
+	background-color: rgba(91, 35, 29, 0.90);
+	border-color: #d45c4c;
+}
+
+.shop_category_code {
+	width: 38px;
+	color: #e17332;
+	text-align: center;
+}
+
+.shop_actions_stack {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 16px;
+}
+
+.shop_small_button {
+	width: 100%;
+	height: 34px;
+	margin-top: 8px;
+	font-size: 10px;
+	letter-spacing: 1px;
+}
+
+.shop_tabs {
+	width: 100%;
+	height: 40px;
+	display: flex;
+}
+
+.shop_tab_button {
+	width: 24%;
+	height: 34px;
+	margin-right: 1%;
+	background-color: rgba(9, 14, 17, 0.82);
+	border-color: rgba(64, 76, 82, 0.72);
+	font-size: 10px;
+	letter-spacing: 1px;
+}
+
+.shop_items_grid {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	top: 66px;
+	bottom: 16px;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	background-color: rgba(3, 5, 6, 0.50);
+	decorator: linear-gradient(180deg, #10161a, #070b0d) border-box;
+	border-width: 1px;
+	border-color: rgba(74, 86, 92, 0.56);
+	padding: 0px;
+	overflow: auto;
+}
+
+.shop_grid_spacer {
+	position: relative;
+	width: 768px;
+}
+
+.shop_item_card {
+	position: absolute;
+	width: 64px;
+	height: 64px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	padding: 4px;
+	text-align: left;
+	background-color: rgba(9, 14, 17, 0.88);
+	border-color: rgba(64, 76, 82, 0.74);
+	border-width: 1px;
+}
+
+.shop_item_card.item_size_1x1 {
+	width: 64px;
+	height: 64px;
+}
+
+.shop_item_card.item_size_2x1 {
+	width: 128px;
+	height: 64px;
+}
+
+.shop_item_card.item_size_1x2 {
+	width: 64px;
+	height: 128px;
+}
+
+.shop_item_card.item_size_2x2 {
+	width: 128px;
+	height: 128px;
+}
+
+.shop_item_card.item_size_2x3 {
+	width: 128px;
+	height: 192px;
+}
+
+.shop_item_card.item_size_4x2 {
+	width: 256px;
+	height: 128px;
+}
+
+.shop_item_card:hover,
+.shop_item_card.selected {
+	background-color: rgba(82, 34, 29, 0.94);
+	border-color: #f1765a;
+	filter: drop-shadow(#e879324c 0px 0px 8px);
+}
+
+.shop_item_card.locked {
+	color: #707a7f;
+	background-color: rgba(7, 10, 12, 0.84);
+	border-color: #30393e;
+}
+
+.shop_item_badge {
+	position: absolute;
+	left: 4px;
+	right: 4px;
+	top: 4px;
+	height: 12px;
+	color: #e17332;
+	font-size: 7px;
+	font-weight: bold;
+	letter-spacing: 1px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.shop_item_image {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 46px;
+	height: 30px;
+	margin-left: -23px;
+	margin-top: -19px;
+	image-color: #ffffff;
+}
+
+.item_size_2x1 .shop_item_image {
+	width: 100px;
+	height: 30px;
+	margin-left: -50px;
+	margin-top: -19px;
+}
+
+.item_size_1x2 .shop_item_image {
+	width: 46px;
+	height: 80px;
+	margin-left: -23px;
+	margin-top: -44px;
+}
+
+.item_size_2x2 .shop_item_image {
+	width: 96px;
+	height: 74px;
+	margin-left: -48px;
+	margin-top: -43px;
+}
+
+.item_size_2x3 .shop_item_image {
+	width: 96px;
+	height: 138px;
+	margin-left: -48px;
+	margin-top: -75px;
+}
+
+.item_size_4x2 .shop_item_image {
+	width: 210px;
+	height: 74px;
+	margin-left: -105px;
+	margin-top: -43px;
+}
+
+.shop_item_stack {
+	position: absolute;
+	right: 4px;
+	top: 18px;
+	min-width: 22px;
+	height: 14px;
+	padding-top: 2px;
+	color: #ffffff;
+	background-color: rgba(5, 8, 10, 0.82);
+	border-width: 1px;
+	border-color: rgba(97, 109, 116, 0.70);
+	font-size: 8px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.shop_item_name {
+	position: absolute;
+	left: 5px;
+	right: 5px;
+	bottom: 20px;
+	color: #ffffff;
+	font-size: 7px;
+	font-weight: bold;
+	line-height: 9px;
+	text-align: center;
+	height: 18px;
+	overflow: hidden;
+}
+
+.item_size_1x1 .shop_item_name {
+	display: none;
+}
+
+.shop_item_type {
+	display: none;
+	margin-top: 3px;
+	color: #8f9a9f;
+	font-size: 8px;
+	font-weight: bold;
+	text-align: center;
+	letter-spacing: 1px;
+}
+
+.shop_item_price {
+	position: absolute;
+	left: 4px;
+	right: 4px;
+	bottom: 3px;
+	height: 14px;
+	padding-top: 2px;
+	color: #f4d061;
+	background-color: rgba(5, 8, 10, 0.62);
+	font-size: 7px;
+	font-weight: bold;
+	text-align: center;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.shop_empty_text {
+	width: 100%;
+	padding-top: 130px;
+	color: #79858a;
+	font-size: 11px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.shop_model_stage {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	top: 66px;
+	bottom: 72px;
+	background-color: rgba(3, 5, 6, 0.46);
+	border-width: 1px;
+	border-color: rgba(74, 86, 92, 0.56);
+	overflow: hidden;
+}
+
+.selected_item_store_icon {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 360px;
+	height: 230px;
+	margin-left: -180px;
+	margin-top: -130px;
+	image-color: #ffffff;
+}
+
+.selected_item_preview_name {
+	position: absolute;
+	left: 14px;
+	right: 14px;
+	bottom: 18px;
+	color: #ffffff;
+	font-size: 17px;
+	font-weight: bold;
+	line-height: 20px;
+	text-align: center;
+}
+
+.shop_preview_hint {
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 16px;
+	height: 38px;
+	padding-top: 12px;
+	color: #78848a;
+	background-color: rgba(5, 8, 10, 0.58);
+	border-width: 1px;
+	border-color: rgba(67, 78, 84, 0.55);
+	font-size: 9px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.selected_item_prices {
+	margin-top: 16px;
+	display: flex;
+}
+
+.selected_price {
+	width: 48%;
+	height: 46px;
+	margin-right: 2%;
+	padding-top: 8px;
+	background-color: rgba(5, 8, 10, 0.62);
+	border-width: 1px;
+	border-color: rgba(67, 78, 84, 0.55);
+	text-align: center;
+}
+
+.selected_price.selected,
+.selected_price:hover {
+	border-color: #f1765a;
+	background-color: rgba(82, 34, 29, 0.94);
+}
+
+.selected_price_label {
+	color: #e17332;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.selected_price_value {
+	margin-top: 3px;
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.shop_buy_button,
+.shop_preview_button {
+	width: 100%;
+	height: 42px;
+	margin-top: 12px;
+	font-size: 13px;
+	letter-spacing: 1px;
+}
+
+.shop_buy_button {
+	background-color: rgba(153, 54, 45, 0.94);
+	decorator: linear-gradient(180deg, #cc5548, #96352e 54%, #541b18) border-box;
+	border-color: #d75f51;
+}
+
+.shop_preview_button {
+	background-color: rgba(18, 25, 29, 0.92);
+	border-color: rgba(84, 98, 105, 0.78);
+}
