@@ -267,10 +267,10 @@
 		id="play_mode_modal"
 		class="play_mode_overlay"
 	>
-		<button
+		<div
 			id="play_mode_close_area"
 			class="play_mode_backdrop"
-		></button>
+		></div>
 
 		<div class="play_mode_panel">
 

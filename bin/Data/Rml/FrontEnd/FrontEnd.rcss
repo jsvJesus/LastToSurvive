@@ -3170,6 +3170,8 @@ button:disabled {
 	padding: 0px;
 	margin: 0px;
 
+	display: block;
+
 	color: rgba(0, 0, 0, 0);
 	background-color: rgba(0, 0, 0, 0.62);
 
@@ -3177,6 +3179,27 @@ button:disabled {
 
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
+
+	filter: none;
+	text-shadow: none;
+
+	z-index: 81;
+}
+
+.play_mode_backdrop:hover,
+.play_mode_backdrop:active,
+.play_mode_backdrop:focus {
+	color: rgba(0, 0, 0, 0);
+	background-color: rgba(0, 0, 0, 0.62);
+
+	decorator: none;
+
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	border-bottom-width: 0px;
+	border-bottom-color: rgba(0, 0, 0, 0);
 
 	filter: none;
 	text-shadow: none;
