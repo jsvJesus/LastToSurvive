@@ -156,74 +156,109 @@
 
 	</div>
 
-	<div class="home_overlay">
+	<div id="mainmenu_dashboard" class="mainmenu_dashboard">
 
-		<button
-			id="btn_view_rewards"
-			class="experience_card"
-		>
-			<div class="experience_icon">
-				XP
+		<div id="card_news" class="mm_card mm_card_news">
+			<div class="mm_card_header">
+				<div class="mm_card_kicker">NEWS</div>
+				<div class="mm_card_chip">LIVE</div>
 			</div>
 
-			<div class="experience_content">
-				<div
-					id="reward_rank_title"
-					class="experience_title"
-				>
-					RECRUIT
-				</div>
-
-				<div
-					id="reward_xp_text"
-					class="experience_text"
-				>
-					0 / 100
-				</div>
-
-				<div class="experience_progress">
-					<div
-						id="reward_xp_fill"
-						class="experience_progress_fill"
-					></div>
-				</div>
-			</div>
-		</button>
-
-		<div class="mission_card">
-
-			<div class="mission_header">
-				<div class="mission_type">ACTIVE CONTRACT</div>
-				<div class="mission_status">IN PROGRESS</div>
+			<div id="news_title" class="mm_card_title">
+				Server update
 			</div>
 
-			<div class="mission_body">
-
-				<div class="mission_emblem">
-					01
-				</div>
-
-				<div class="mission_content">
-					<div class="mission_title">
-						STOLEN SPARE PARTS
-					</div>
-
-					<div class="mission_description">
-						Redeem spare parts from hostile territory.
-					</div>
-
-					<div class="mission_progress_text">
-						0 / 3 OBJECTIVES
-					</div>
-				</div>
-
+			<div id="news_body" class="mm_card_text">
+				Latest survivor network news.
 			</div>
 
-			<div class="mission_footer">
-				<div>MORE</div>
-				<div>59:34</div>
+			<button id="btn_news_more" class="mm_card_action">
+				MORE
+			</button>
+		</div>
+
+		<div id="card_featured_shop" class="mm_card mm_card_featured_shop">
+			<div class="mm_card_header">
+				<div class="mm_card_kicker">STORE</div>
+				<div id="featured_shop_badge" class="mm_card_chip hot">NEW</div>
 			</div>
 
+			<div id="featured_shop_name" class="mm_card_title">
+				Featured item
+			</div>
+
+			<div id="featured_shop_price" class="mm_card_text">
+				0 GC
+			</div>
+
+			<button id="btn_featured_shop_open" class="mm_card_action">
+				OPEN SHOP
+			</button>
+		</div>
+
+		<div id="card_rank" class="mm_card mm_card_rank">
+			<div class="mm_card_header">
+				<div class="mm_card_kicker">RANK</div>
+				<div id="rank_level" class="mm_card_chip">LVL 1</div>
+			</div>
+
+			<div id="rank_title" class="mm_card_title">
+				RECRUIT
+			</div>
+
+			<div class="mm_progress">
+				<div id="rank_xp_fill" class="mm_progress_fill"></div>
+			</div>
+
+			<div id="rank_xp_text" class="mm_card_text">
+				0 / 100 XP
+			</div>
+
+			<div id="rank_reward_text" class="mm_card_reward">
+				Next reward: 0 GD
+			</div>
+		</div>
+
+		<div id="card_missions" class="mm_card mm_card_missions">
+			<div class="mm_card_header">
+				<div class="mm_card_kicker">MISSIONS</div>
+				<div class="mm_card_chip">MVP</div>
+			</div>
+
+			<div id="mission_title" class="mm_card_title">
+				No active mission
+			</div>
+
+			<div id="mission_state" class="mm_card_text">
+				Available missions will appear here.
+			</div>
+
+			<div id="mission_reward" class="mm_card_reward">
+				Reward: -
+			</div>
+
+			<button id="btn_missions_open" class="mm_card_action">
+				MISSIONS
+			</button>
+		</div>
+
+		<div id="card_battlepass" class="mm_card mm_card_battlepass locked">
+			<div class="mm_card_header">
+				<div class="mm_card_kicker">BATTLE PASS</div>
+				<div class="mm_card_chip locked">LOCKED</div>
+			</div>
+
+			<div class="mm_card_title">
+				COMING SOON
+			</div>
+
+			<div class="mm_card_text">
+				Season progression will be available later.
+			</div>
+
+			<button id="btn_battlepass_stub" class="mm_card_action disabled">
+				LOCKED
+			</button>
 		</div>
 
 	</div>

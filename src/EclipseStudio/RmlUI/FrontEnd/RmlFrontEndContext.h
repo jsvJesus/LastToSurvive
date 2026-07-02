@@ -186,6 +186,13 @@ private:
 
 	void BuildMainMenu();
 
+	void BuildMainMenuDashboard();
+	void BuildNewsCard();
+	void BuildFeaturedShopCard();
+	void BuildRankCard();
+	void BuildMissionsCard();
+	void BuildBattlePassCard();
+
 	void BuildSkills();
 
 	void SelectSkillNode(
@@ -401,6 +408,7 @@ private:
 	Rml::String SelectedShopItemElementId = "shop_item_0";
 	int SelectedShopBackendItemId = 0;
 	int SelectedShopStoreIndex = -1;
+	int FeaturedShopStoreIndex = -1;
 	int SelectedShopBuyIndex = 4;
 	Rml::String SelectedShopCategoryId = "shop_category_featured";
 	Rml::String SelectedShopCurrencyId = "shop_currency_gc";

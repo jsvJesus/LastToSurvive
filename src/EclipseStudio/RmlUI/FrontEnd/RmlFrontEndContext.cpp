@@ -939,6 +939,92 @@ namespace
 		return Result;
 	}
 
+	std::string BuildPermanentShopPriceText(
+	const wiStoreItem& StoreItem
+)
+	{
+		std::string PriceText;
+
+		if (StoreItem.pricePerm > 0)
+		{
+			PriceText +=
+				FormatShopPrice(
+					StoreItem.pricePerm
+				);
+
+			PriceText += " ZC";
+		}
+
+		if (StoreItem.gd_pricePerm > 0)
+		{
+			if (!PriceText.empty())
+				PriceText += " / ";
+
+			PriceText +=
+				FormatShopPrice(
+					StoreItem.gd_pricePerm
+				);
+
+			PriceText += " ZD";
+		}
+
+		if (PriceText.empty())
+		{
+			PriceText = "NO PRICE";
+		}
+
+		return PriceText;
+	}
+
+	int FindFeaturedStoreItemIndex()
+	{
+		int FirstValidStoreIndex = -1;
+
+		for (uint32_t Index = 0; Index < g_NumStoreItems; ++Index)
+		{
+			const wiStoreItem& StoreItem =
+				g_StoreItems[Index];
+
+			if (
+				StoreItem.pricePerm == 0 &&
+				StoreItem.gd_pricePerm == 0
+			)
+			{
+				continue;
+			}
+
+			const BaseItemConfig* Config =
+				g_pWeaponArmory
+					? g_pWeaponArmory->getConfig(
+						StoreItem.itemID
+					)
+					: nullptr;
+
+			if (!Config)
+				continue;
+
+			if (FirstValidStoreIndex < 0)
+			{
+				FirstValidStoreIndex =
+					static_cast<int>(
+						Index
+					);
+			}
+
+			if (
+				StoreItem.isNew ||
+				Config->m_StoreFeatured
+			)
+			{
+				return static_cast<int>(
+					Index
+				);
+			}
+		}
+
+		return FirstValidStoreIndex;
+	}
+
 	std::string FormatPlayedTime(int TotalSeconds)
 	{
 		if (TotalSeconds < 0)
@@ -2590,6 +2676,82 @@ void RmlFrontEndContext::HandleClick(
 				"Ranked Capture The Flag is not available yet.",
 				EFrontendNoticeType::Warning,
 				2.0f
+			);
+
+			return;
+		}
+
+		if (Id == "btn_news_more")
+		{
+			SetMainMenuStatus(
+				"News API is not connected yet."
+			);
+
+			ShowFrontendNotice(
+				"NEWS",
+				"Dynamic news API will be connected in the next stage.",
+				EFrontendNoticeType::Info,
+				3.0f
+			);
+
+			return;
+		}
+
+		if (Id == "btn_featured_shop_open")
+		{
+			if (FeaturedShopStoreIndex >= 0)
+			{
+				SelectedShopStoreIndex =
+					FeaturedShopStoreIndex;
+
+				SelectedShopBackendItemId =
+					g_StoreItems[
+						FeaturedShopStoreIndex
+					].itemID;
+
+				char ElementId[64]{};
+
+				sprintf_s(
+					ElementId,
+					"shop_item_%d",
+					FeaturedShopStoreIndex
+				);
+
+				SelectedShopItemElementId =
+					ElementId;
+			}
+
+			ShowShop();
+			return;
+		}
+
+		if (Id == "btn_missions_open")
+		{
+			SetMainMenuStatus(
+				"Missions screen is not connected yet."
+			);
+
+			ShowFrontendNotice(
+				"MISSIONS",
+				"Missions card is ready. Dynamic mission data will be connected later.",
+				EFrontendNoticeType::Info,
+				3.0f
+			);
+
+			return;
+		}
+
+		if (Id == "btn_battlepass_stub")
+		{
+			SetMainMenuStatus(
+				"Battle Pass is not available yet."
+			);
+
+			ShowFrontendNotice(
+				"BATTLE PASS",
+				"Season progression will be available later.",
+				EFrontendNoticeType::Warning,
+				3.0f
 			);
 
 			return;
@@ -4404,6 +4566,8 @@ void RmlFrontEndContext::BuildMainMenu()
 			"Account has no permanent survivor."
 		);
 
+		BuildMainMenuDashboard();
+
 		SetMainMenuControlsEnabled(
 			true
 		);
@@ -4730,8 +4894,311 @@ void RmlFrontEndContext::BuildMainMenu()
 		true
 	);
 
+	BuildMainMenuDashboard();
+
 	SetMainMenuStatus(
 		"Survivor profile ready."
+	);
+}
+
+void RmlFrontEndContext::BuildMainMenuDashboard()
+{
+	BuildNewsCard();
+	BuildFeaturedShopCard();
+	BuildRankCard();
+	BuildMissionsCard();
+	BuildBattlePassCard();
+}
+
+void RmlFrontEndContext::BuildNewsCard()
+{
+	if (!MainMenuDocument)
+		return;
+
+	SetElementText(
+		MainMenuDocument,
+		"news_title",
+		"SafeZone deployment online"
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"news_body",
+		"SafeZone is now the first deployment point. Open World access will be routed through NPC transition."
+	);
+}
+
+void RmlFrontEndContext::BuildFeaturedShopCard()
+{
+	if (!MainMenuDocument)
+		return;
+
+	FeaturedShopStoreIndex =
+		FindFeaturedStoreItemIndex();
+
+	if (FeaturedShopStoreIndex < 0)
+	{
+		SetElementText(
+			MainMenuDocument,
+			"featured_shop_badge",
+			"EMPTY"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"featured_shop_name",
+			"No shop item"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"featured_shop_price",
+			"Shop data is not loaded."
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"btn_featured_shop_open",
+			"SHOP"
+		);
+
+		SetElementClass(
+			MainMenuDocument,
+			"card_featured_shop",
+			"locked",
+			true
+		);
+
+		return;
+	}
+
+	const wiStoreItem& StoreItem =
+		g_StoreItems[
+			FeaturedShopStoreIndex
+		];
+
+	const BaseItemConfig* Config =
+		g_pWeaponArmory
+			? g_pWeaponArmory->getConfig(
+				StoreItem.itemID
+			)
+			: nullptr;
+
+	const char* ItemName =
+		Config &&
+		Config->m_StoreName &&
+		Config->m_StoreName[0]
+			? Config->m_StoreName
+			: "Featured item";
+
+	const bool bFeatured =
+		Config &&
+		Config->m_StoreFeatured;
+
+	SetElementText(
+		MainMenuDocument,
+		"featured_shop_badge",
+		StoreItem.isNew
+			? "NEW"
+			: (
+				bFeatured
+					? "HOT"
+					: "STORE"
+			)
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"featured_shop_name",
+		ItemName
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"featured_shop_price",
+		BuildPermanentShopPriceText(
+			StoreItem
+		)
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"btn_featured_shop_open",
+		"OPEN SHOP"
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"card_featured_shop",
+		"locked",
+		false
+	);
+}
+
+void RmlFrontEndContext::BuildRankCard()
+{
+	if (!MainMenuDocument)
+		return;
+
+	const int CharacterCount =
+		gUserProfile.ProfileData.
+			NumSlots;
+
+	if (
+		CharacterCount <= 0 ||
+		SelectedCharacterIndex < 0 ||
+		SelectedCharacterIndex >= CharacterCount
+	)
+	{
+		SetElementText(
+			MainMenuDocument,
+			"rank_title",
+			"NO SURVIVOR"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"rank_level",
+			"LVL 0"
+		);
+
+		SetElementPercent(
+			MainMenuDocument,
+			"rank_xp_fill",
+			0.0f
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"rank_xp_text",
+			"0 / 100 XP"
+		);
+
+		SetElementText(
+			MainMenuDocument,
+			"rank_reward_text",
+			"Next reward: -"
+		);
+
+		return;
+	}
+
+	const wiCharDataFull& Character =
+		gUserProfile.ProfileData.
+			ArmorySlots[
+				SelectedCharacterIndex
+			];
+
+	const FFrontendLevelProgress Level =
+		CalculateFrontendLevelProgress(
+			Character.Stats.XP
+		);
+
+	const std::string ExperienceText =
+		FormatGroupedNumber(
+			Level.TotalExperience
+		) +
+		" / " +
+		FormatGroupedNumber(
+			Level.NextLevelExperience
+		) +
+		" XP";
+
+	char Text[128]{};
+
+	sprintf_s(
+		Text,
+		"LVL %d",
+		Level.Level
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"rank_level",
+		Text
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"rank_title",
+		GetExperienceTitle(
+			Level.Level
+		)
+	);
+
+	SetElementPercent(
+		MainMenuDocument,
+		"rank_xp_fill",
+		Level.Percent
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"rank_xp_text",
+		ExperienceText
+	);
+
+	const int NextRewardGd =
+		std::max(
+			250,
+			Level.Level * 250
+		);
+
+	sprintf_s(
+		Text,
+		"Next reward: %s ZD",
+		FormatGroupedNumber(
+			NextRewardGd
+		).c_str()
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"rank_reward_text",
+		Text
+	);
+}
+
+void RmlFrontEndContext::BuildMissionsCard()
+{
+	if (!MainMenuDocument)
+		return;
+
+	SetElementText(
+		MainMenuDocument,
+		"mission_title",
+		"Daily contract unavailable"
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"mission_state",
+		"Mission API is not connected yet. This card is ready for dynamic data."
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"mission_reward",
+		"Reward: ZD / XP"
+	);
+}
+
+void RmlFrontEndContext::BuildBattlePassCard()
+{
+	if (!MainMenuDocument)
+		return;
+
+	SetElementClass(
+		MainMenuDocument,
+		"card_battlepass",
+		"locked",
+		true
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"btn_battlepass_stub",
+		"LOCKED"
 	);
 }
 
