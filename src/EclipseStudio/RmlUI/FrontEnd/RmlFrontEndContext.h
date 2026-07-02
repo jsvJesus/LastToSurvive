@@ -70,6 +70,15 @@ private:
 		Shop
 	};
 
+	enum class EFrontendNoticeType
+	{
+		Info = 0,
+		Success,
+		Warning,
+		Error,
+		System
+	};
+
 	enum EAsyncOperation : LONG
 	{
 		AsyncOperation_None = 0,
@@ -274,6 +283,19 @@ private:
 		const Rml::String& Text
 	);
 
+	void ShowFrontendNotice(
+		const char* Title,
+		const Rml::String& Text,
+		EFrontendNoticeType Type,
+		float Seconds
+	);
+
+	void HideFrontendNotice();
+
+	void UpdateFrontendNotice(
+		float DeltaSeconds
+	);
+
 	void SetCharacterCreateStatus(
 		const Rml::String& Text
 	);
@@ -392,8 +414,8 @@ private:
 	bool bRuntimeAcquired = false;
 	bool bProfileLoaded = false;
 
-	EPreviewDragMode PreviewDragMode =
-		EPreviewDragMode::None;
+	float FrontendNoticeSeconds = 0.0f;
+	EPreviewDragMode PreviewDragMode = EPreviewDragMode::None;
 
 	POINT PreviewDragLastPoint{};
 };

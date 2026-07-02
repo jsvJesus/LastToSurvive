@@ -1686,7 +1686,7 @@ button:disabled {
 .bottom_play_area {
 	position: absolute;
 	left: 31px;
-	bottom: 14px;
+	bottom: 42px;
 	height: 49px;
 	z-index: 15;
 	display: flex;
@@ -3467,4 +3467,105 @@ button:disabled {
 
 .play_mode_card.route .play_mode_card_footer {
 	color: #9fb8c9;
+}
+
+/* ============================================================
+   FRONTEND CENTER NOTICES
+   ============================================================ */
+
+.frontend_notice_layer {
+	display: none;
+
+	position: absolute;
+	left: 50%;
+	top: 30%;
+
+	width: 560px;
+	min-height: 82px;
+
+	margin-left: -280px;
+
+	z-index: 96;
+}
+
+.frontend_notice_layer.visible {
+	display: block;
+}
+
+.frontend_notice {
+	width: 560px;
+	min-height: 82px;
+
+	padding: 17px 20px;
+
+	background-color: rgba(7, 11, 13, 0.96);
+	decorator: linear-gradient(180deg, #202a2f, #0b1013 52%, #06090b) border-box;
+
+	border-width: 1px;
+	border-color: rgba(94, 110, 118, 0.88);
+	border-left-width: 4px;
+	border-left-color: #d96d2a;
+	border-bottom-width: 2px;
+	border-bottom-color: rgba(0, 0, 0, 0.72);
+
+	box-shadow: #000000cc 0px 8px 24px 0px;
+	filter: drop-shadow(#000000cc 0px 6px 10px);
+}
+
+.frontend_notice.info {
+	border-left-color: #d96d2a;
+}
+
+.frontend_notice.success {
+	border-left-color: #5fc878;
+}
+
+.frontend_notice.warning {
+	border-left-color: #e5b84a;
+}
+
+.frontend_notice.error {
+	border-left-color: #cf3d32;
+}
+
+.frontend_notice.system {
+	border-left-color: #7fa0b6;
+}
+
+.frontend_notice_title {
+	width: 100%;
+
+	color: #ff8b40;
+	font-size: 10px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.frontend_notice.success .frontend_notice_title {
+	color: #8ee69e;
+}
+
+.frontend_notice.warning .frontend_notice_title {
+	color: #ffd36a;
+}
+
+.frontend_notice.error .frontend_notice_title {
+	color: #ff7568;
+}
+
+.frontend_notice.system .frontend_notice_title {
+	color: #a9c5d8;
+}
+
+.frontend_notice_text {
+	width: 100%;
+
+	margin-top: 8px;
+
+	color: #d8dde0;
+	font-size: 13px;
+	font-weight: bold;
+	line-height: 18px;
+	text-align: center;
 }

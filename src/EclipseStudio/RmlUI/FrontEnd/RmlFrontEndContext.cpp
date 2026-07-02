@@ -1560,6 +1560,10 @@ void RmlFrontEndContext::Update()
 	RefreshDimensions();
 	PollAsyncOperation();
 
+	UpdateFrontendNotice(
+		r3dGetFrameTime()
+	);
+
 	RmlRuntime::Get().SetActiveContext(
 		Context
 	);
@@ -2392,13 +2396,26 @@ void RmlFrontEndContext::ShowMainMenuMessage(
 
 	ShowMainMenu();
 
-	SetMainMenuStatus(
+	const Rml::String Text =
 		WideToUtf8(
 			Message
 				? Message
 				: L""
-		)
+		);
+
+	SetMainMenuStatus(
+		Text
 	);
+
+	if (!Text.empty())
+	{
+		ShowFrontendNotice(
+			"SYSTEM",
+			Text,
+			EFrontendNoticeType::Warning,
+			4.0f
+		);
+	}
 }
 
 void RmlFrontEndContext::RefreshProfile()
@@ -2473,6 +2490,13 @@ void RmlFrontEndContext::HandleClick(
 				SetMainMenuStatus(
 					"Select game mode."
 				);
+
+				//ShowFrontendNotice(
+					//"DEPLOYMENT",
+					//"Select deployment route.",
+					//EFrontendNoticeType::Info,
+					//2.5f
+				//);
 			}
 
 			return;
@@ -2494,6 +2518,8 @@ void RmlFrontEndContext::HandleClick(
 				"Game mode selection closed."
 			);
 
+			HideFrontendNotice();
+
 			return;
 		}
 
@@ -2510,6 +2536,13 @@ void RmlFrontEndContext::HandleClick(
 				"Deploying to SafeZone..."
 			);
 
+			ShowFrontendNotice(
+				"SAFEZONE",
+				"Deploying to SafeZone...",
+				EFrontendNoticeType::System,
+				2.0f
+			);
+
 			RequestQuickJoin();
 			return;
 		}
@@ -2518,6 +2551,13 @@ void RmlFrontEndContext::HandleClick(
 		{
 			SetMainMenuStatus(
 				"Open World is entered from SafeZone through NPC transition."
+			);
+
+			ShowFrontendNotice(
+				"ROUTE LOCKED",
+				"Open World is entered from SafeZone through NPC transition.",
+				EFrontendNoticeType::Info,
+				2.0f
 			);
 
 			return;
@@ -2529,6 +2569,13 @@ void RmlFrontEndContext::HandleClick(
 				"Ranked DeathMatch is not available yet."
 			);
 
+			ShowFrontendNotice(
+				"MODE LOCKED",
+				"Ranked DeathMatch is not available yet.",
+				EFrontendNoticeType::Warning,
+				2.0f
+			);
+
 			return;
 		}
 
@@ -2536,6 +2583,13 @@ void RmlFrontEndContext::HandleClick(
 		{
 			SetMainMenuStatus(
 				"Ranked Capture The Flag is not available yet."
+			);
+
+			ShowFrontendNotice(
+				"MODE LOCKED",
+				"Ranked Capture The Flag is not available yet.",
+				EFrontendNoticeType::Warning,
+				2.0f
 			);
 
 			return;
@@ -6998,6 +7052,13 @@ void RmlFrontEndContext::RequestQuickJoin()
 			"You need to create a character first."
 		);
 
+		ShowFrontendNotice(
+			"NO SURVIVOR",
+			"You need to create a character first.",
+			EFrontendNoticeType::Error,
+			4.0f
+		);
+
 		return;
 	}
 
@@ -7008,6 +7069,13 @@ void RmlFrontEndContext::RequestQuickJoin()
 	{
 		SetMainMenuStatus(
 			"Select a character first."
+		);
+
+		ShowFrontendNotice(
+			"SELECT SURVIVOR",
+			"Select a character first.",
+			EFrontendNoticeType::Warning,
+			4.0f
 		);
 
 		return;
@@ -7021,6 +7089,13 @@ void RmlFrontEndContext::RequestQuickJoin()
 
 	SetMainMenuStatus(
 		"Searching for a game server..."
+	);
+
+	ShowFrontendNotice(
+		"MATCHMAKING",
+		"Searching for a SafeZone server...",
+		EFrontendNoticeType::System,
+		3.0f
 	);
 }
 
@@ -7089,9 +7164,8 @@ SetMainMenuControlsEnabled(
 
 	const char* CommonControls[] =
 	{
-		"nav_survivor",
+		"nav_home",
 		"nav_shop",
-		"nav_community",
 		"nav_skills",
 		"nav_equipment",
 		"nav_clan",
@@ -7330,6 +7404,135 @@ void RmlFrontEndContext::SetMainMenuStatus(
 		"main_menu_status",
 		Text
 	);
+}
+
+void RmlFrontEndContext::ShowFrontendNotice(
+	const char* Title,
+	const Rml::String& Text,
+	EFrontendNoticeType Type,
+	float Seconds
+)
+{
+	if (!MainMenuDocument)
+		return;
+
+	SetElementText(
+		MainMenuDocument,
+		"frontend_notice_title",
+		Title ? Title : "SYSTEM"
+	);
+
+	SetElementText(
+		MainMenuDocument,
+		"frontend_notice_text",
+		Text
+	);
+
+	const char* TypeClass = "info";
+
+	switch (Type)
+	{
+	case EFrontendNoticeType::Success:
+		TypeClass = "success";
+		break;
+
+	case EFrontendNoticeType::Warning:
+		TypeClass = "warning";
+		break;
+
+	case EFrontendNoticeType::Error:
+		TypeClass = "error";
+		break;
+
+	case EFrontendNoticeType::System:
+		TypeClass = "system";
+		break;
+
+	default:
+		TypeClass = "info";
+		break;
+	}
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		"info",
+		false
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		"success",
+		false
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		"warning",
+		false
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		"error",
+		false
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		"system",
+		false
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice",
+		TypeClass,
+		true
+	);
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice_layer",
+		"visible",
+		true
+	);
+
+	FrontendNoticeSeconds =
+		Seconds > 0.0f
+			? Seconds
+			: 3.5f;
+}
+
+void RmlFrontEndContext::HideFrontendNotice()
+{
+	FrontendNoticeSeconds = 0.0f;
+
+	SetElementClass(
+		MainMenuDocument,
+		"frontend_notice_layer",
+		"visible",
+		false
+	);
+}
+
+void RmlFrontEndContext::UpdateFrontendNotice(
+	float DeltaSeconds
+)
+{
+	if (FrontendNoticeSeconds <= 0.0f)
+		return;
+
+	FrontendNoticeSeconds -= DeltaSeconds;
+
+	if (FrontendNoticeSeconds <= 0.0f)
+	{
+		HideFrontendNotice();
+	}
 }
 
 bool RmlFrontEndContext::IsBusy() const

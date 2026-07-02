@@ -354,6 +354,18 @@
 
 		</div>
 	</div>
+	
+	<div id="frontend_notice_layer" class="frontend_notice_layer">
+		<div id="frontend_notice" class="frontend_notice info">
+			<div id="frontend_notice_title" class="frontend_notice_title">
+				SYSTEM
+			</div>
+
+			<div id="frontend_notice_text" class="frontend_notice_text">
+				Message
+			</div>
+		</div>
+	</div>
 
 	<div class="survivor_identity">
 
@@ -377,7 +389,7 @@
 	</div>
 
 	<div class="preview_help">
-		LMB ROTATE  |  RMB MOVE  |  WHEEL ZOOM
+		LMB ROTATE
 	</div>
 
 	<div class="main_menu_status_bar">
