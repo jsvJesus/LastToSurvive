@@ -1426,6 +1426,21 @@ bool RmlFrontEndContext::LoadDocuments()
 		return false;
 	}
 
+	TopBarDocument =
+	Context->LoadDocument(
+		"Rml/FrontEnd/TopBar.rml"
+	);
+
+	if (!TopBarDocument)
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Failed to load "
+			"Data/Rml/FrontEnd/TopBar.rml\n"
+		);
+
+		return false;
+	}
+
 	MainMenuDocument =
 		Context->LoadDocument(
 			"Rml/FrontEnd/MainMenu.rml"
@@ -1487,6 +1502,7 @@ bool RmlFrontEndContext::LoadDocuments()
 	}
 
 	LoginDocument->Hide();
+	TopBarDocument->Hide();
 	MainMenuDocument->Hide();
 	CharacterCreateDocument->Hide();
 	SkillsDocument->Hide();
@@ -1507,6 +1523,15 @@ void RmlFrontEndContext::UnloadDocuments()
 		);
 
 		LoginDocument = nullptr;
+	}
+
+	if (TopBarDocument)
+	{
+		Context->UnloadDocument(
+			TopBarDocument
+		);
+
+		TopBarDocument = nullptr;
 	}
 
 	if (MainMenuDocument)
@@ -1559,6 +1584,14 @@ void RmlFrontEndContext::AttachEvents()
 		);
 	}
 
+	if (TopBarDocument)
+	{
+		TopBarDocument->AddEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
 	if (MainMenuDocument)
 	{
 		MainMenuDocument->AddEventListener(
@@ -1600,6 +1633,14 @@ void RmlFrontEndContext::DetachEvents()
 	if (LoginDocument)
 	{
 		LoginDocument->RemoveEventListener(
+			"click",
+			ClickListener.get()
+		);
+	}
+
+	if (TopBarDocument)
+	{
+		TopBarDocument->RemoveEventListener(
 			"click",
 			ClickListener.get()
 		);
@@ -2243,6 +2284,7 @@ void RmlFrontEndContext::ShowLogin()
 	}
 
 	MainMenuDocument->Hide();
+	TopBarDocument->Hide();
 	CharacterCreateDocument->Hide();
 	LoginDocument->Show();
 	SkillsDocument->Hide();
@@ -2278,6 +2320,8 @@ void RmlFrontEndContext::ShowMainMenu()
 	SkillsDocument->Hide();
 	ShopDocument->Hide();
 	MainMenuDocument->Show();
+	TopBarDocument->Show();
+	RefreshTopBar();
 
 	CurrentScreen =
 		EScreen::MainMenu;
@@ -2342,6 +2386,8 @@ void RmlFrontEndContext::ShowSkills()
 	CharacterCreateDocument->Hide();
 	ShopDocument->Hide();
 	SkillsDocument->Show();
+	TopBarDocument->Show();
+	RefreshTopBar();
 
 	CurrentScreen =
 		EScreen::Skills;
@@ -2387,6 +2433,8 @@ void RmlFrontEndContext::ShowShop()
 	CharacterCreateDocument->Hide();
 	SkillsDocument->Hide();
 	ShopDocument->Show();
+	TopBarDocument->Show();
+	RefreshTopBar();
 
 	CurrentScreen =
 		EScreen::Shop;
@@ -2422,6 +2470,7 @@ void RmlFrontEndContext::ShowCharacterCreate()
 	}
 
 	LoginDocument->Hide();
+	TopBarDocument->Hide();
 	MainMenuDocument->Hide();
 	SkillsDocument->Hide();
 	ShopDocument->Hide();
@@ -3127,6 +3176,7 @@ void RmlFrontEndContext::HandleClick(
 		}
 
 		if (Current == LoginDocument ||
+			Current == TopBarDocument ||
 			Current == MainMenuDocument ||
 			Current == CharacterCreateDocument ||
 			Current == SkillsDocument ||
@@ -4384,19 +4434,19 @@ void RmlFrontEndContext::BuildMainMenu()
 		);
 
 	SetElementText(
-		MainMenuDocument,
+		TopBarDocument,
 		"balance_gc",
 		GcText
 	);
 
 	SetElementText(
-		MainMenuDocument,
+		TopBarDocument,
 		"balance_gd",
 		GdText
 	);
 
 	SetElementText(
-		MainMenuDocument,
+		TopBarDocument,
 		"balance_ltc",
 		"0"
 	);
@@ -4422,13 +4472,13 @@ void RmlFrontEndContext::BuildMainMenu()
 			0;
 
 		SetElementText(
-			MainMenuDocument,
+			TopBarDocument,
 			"top_survivor_name",
 			"NO SURVIVOR"
 		);
 
 		SetElementText(
-			MainMenuDocument,
+			TopBarDocument,
 			"top_survivor_role",
 			"EMPTY SLOT"
 		);
@@ -4452,19 +4502,19 @@ void RmlFrontEndContext::BuildMainMenu()
 		);
 
 		SetElementText(
-			MainMenuDocument,
+			TopBarDocument,
 			"survivor_nickname",
 			"NO SURVIVOR"
 		);
 
 		SetElementText(
-			MainMenuDocument,
+			TopBarDocument,
 			"survivor_class",
 			"EMPTY SLOT"
 		);
 
 		SetElementText(
-			MainMenuDocument,
+			TopBarDocument,
 			"survivor_state",
 			"UNAVAILABLE"
 		);
@@ -8208,4 +8258,59 @@ Rml::String RmlFrontEndContext::EscapeRmlText(
 	}
 
 	return Result;
+}
+
+void RmlFrontEndContext::RefreshTopBar()
+{
+	if (!TopBarDocument)
+		return;
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_home",
+		"active",
+		CurrentScreen == EScreen::MainMenu
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_skills",
+		"active",
+		CurrentScreen == EScreen::Skills
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_shop",
+		"active",
+		CurrentScreen == EScreen::Shop
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_equipment",
+		"active",
+		false
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_inventory",
+		"active",
+		false
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_clan",
+		"active",
+		false
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_awards",
+		"active",
+		false
+	);
 }

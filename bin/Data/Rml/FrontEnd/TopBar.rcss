@@ -1,0 +1,336 @@
+/* ============================================================
+   LAST TO SURVIVE
+   ============================================================ */
+
+* {
+	box-sizing: border-box;
+}
+
+div,
+button,
+img {
+	display: block;
+}
+
+body {
+	margin: 0px;
+	padding: 0px;
+	font-family: "Noto Sans";
+	color: #d8dde0;
+}
+
+.runtime_hidden_value {
+	display: none;
+}
+
+.topbar_body {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 86px;
+	overflow: visible;
+	background-color: rgba(0, 0, 0, 0.00);
+}
+
+.topbar_root {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 86px;
+	overflow: visible;
+	background-color: rgba(8, 10, 12, 0.90);
+	border-bottom-width: 1px;
+	border-bottom-color: rgba(95, 105, 112, 0.55);
+}
+
+/* LEFT PROFILE */
+
+.topbar_left_profile {
+	position: absolute;
+	left: 34px;
+	top: 16px;
+	width: 240px;
+	height: 58px;
+	display: flex;
+	align-items: center;
+}
+
+.topbar_faction_icon {
+	width: 44px;
+	height: 44px;
+	margin-right: 10px;
+	padding-top: 15px;
+	color: #ffffff;
+	background-color: rgba(10, 14, 17, 0.74);
+	border-width: 1px;
+	border-color: rgba(89, 101, 108, 0.64);
+	font-size: 13px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.topbar_profile_text {
+	width: 178px;
+	height: 50px;
+	padding-top: 4px;
+}
+
+.topbar_profile_label {
+	color: #6f7b82;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	line-height: 11px;
+}
+
+.topbar_profile_name {
+	width: 178px;
+	height: 18px;
+	margin-top: 4px;
+	overflow: hidden;
+	color: #ffffff;
+	font-size: 13px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+.topbar_profile_role {
+	margin-top: 2px;
+	color: #d96d2a;
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	line-height: 11px;
+}
+
+/* MONEY */
+
+.topbar_money {
+	position: absolute;
+	left: 288px;
+	top: 24px;
+	width: 420px;
+	height: 42px;
+	display: flex;
+	align-items: center;
+	overflow: visible;
+}
+
+.topbar_money_item {
+	height: 42px;
+	margin-right: 22px;
+	display: flex;
+	align-items: center;
+}
+
+.topbar_money_icon {
+	width: 30px;
+	height: 30px;
+	margin-right: 8px;
+}
+
+.topbar_money_value {
+	min-width: 88px;
+	height: 30px;
+	padding-top: 6px;
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 16px;
+	text-align: left;
+	letter-spacing: 1px;
+	white-space: nowrap;
+}
+
+.currency_zc .topbar_money_value {
+	color: #ffb15e;
+}
+
+.currency_zd .topbar_money_value {
+	color: #e8eef0;
+}
+
+.currency_zlt .topbar_money_value {
+	color: #f1d27a;
+}
+
+.topbar_money_add {
+	width: 20px;
+	height: 20px;
+	margin-left: 4px;
+	padding: 0px;
+	color: #ffffff;
+	background-color: rgba(24, 31, 35, 0.96);
+	border-width: 1px;
+	border-color: rgba(113, 127, 134, 0.86);
+	font-size: 13px;
+	font-weight: bold;
+	line-height: 16px;
+	text-align: center;
+	filter: none;
+}
+
+.topbar_money_add:hover {
+	background-color: rgba(72, 36, 20, 0.95);
+	border-color: #e07830;
+}
+
+/* CENTER TABS */
+
+.topbar_tabs {
+	position: absolute;
+	left: 50%;
+	top: 6px;
+	width: 882px;
+	height: 48px;
+	margin-left: -441px;
+	display: flex;
+	align-items: center;
+}
+
+.topbar_tab {
+	position: relative;
+	width: 126px;
+	height: 48px;
+	margin-right: 1px;
+	padding: 0px;
+	color: #c9d0d4;
+	background-color: rgba(17, 22, 27, 0.96);
+	decorator: linear-gradient(180deg, rgba(31, 39, 45, 0.98), rgba(13, 17, 21, 0.98)) border-box;
+	border-width: 1px;
+	border-color: rgba(63, 75, 83, 0.80);
+	border-bottom-width: 2px;
+	border-bottom-color: rgba(0, 0, 0, 0.85);
+	font-size: 0px;
+	filter: none;
+	text-shadow: none;
+}
+
+.topbar_tab.small {
+	width: 104px;
+}
+
+.topbar_tab:hover {
+	color: #ffffff;
+	background-color: rgba(29, 36, 42, 0.98);
+	border-color: rgba(120, 132, 140, 0.82);
+	border-bottom-color: #d96d2a;
+	filter: none;
+}
+
+.topbar_tab.active {
+	color: #ffffff;
+	background-color: rgba(126, 28, 31, 0.98);
+	decorator: linear-gradient(180deg, rgba(177, 42, 44, 0.98), rgba(91, 19, 22, 0.98)) border-box;
+	border-color: rgba(209, 72, 70, 0.92);
+	border-bottom-color: #ff733d;
+}
+
+.topbar_tab.shop {
+	background-color: rgba(91, 78, 40, 0.95);
+	decorator: linear-gradient(180deg, rgba(120, 103, 52, 0.98), rgba(48, 42, 23, 0.98)) border-box;
+	border-color: rgba(170, 146, 76, 0.76);
+}
+
+.topbar_tab.shop.active,
+.topbar_tab.shop:hover {
+	color: #ffffff;
+	background-color: rgba(150, 116, 45, 0.98);
+	decorator: linear-gradient(180deg, rgba(190, 150, 62, 0.98), rgba(88, 66, 26, 0.98)) border-box;
+	border-color: rgba(230, 194, 105, 0.92);
+	border-bottom-color: #f1c864;
+}
+
+.topbar_tab_label {
+	position: absolute;
+	left: 0px;
+	top: 15px;
+	width: 100%;
+	height: 18px;
+	color: inherit;
+	font-size: 13px;
+	font-weight: bold;
+	line-height: 16px;
+	letter-spacing: 1px;
+	text-align: center;
+	white-space: nowrap;
+	text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.96);
+	pointer-events: none;
+}
+
+/* RIGHT ICONS */
+
+.topbar_actions {
+	position: absolute;
+	right: 34px;
+	top: 11px;
+	width: 230px;
+	height: 56px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	overflow: visible;
+}
+
+.topbar_icon_button {
+	position: relative;
+	width: 42px;
+	height: 42px;
+	margin-left: 4px;
+	padding: 0px;
+	background-color: rgba(16, 21, 25, 0.70);
+	border-width: 1px;
+	border-color: rgba(65, 76, 84, 0.72);
+	border-bottom-width: 2px;
+	border-bottom-color: rgba(0, 0, 0, 0.86);
+	filter: none;
+}
+
+.topbar_icon_button:hover {
+	background-color: rgba(31, 39, 45, 0.96);
+	border-color: rgba(217, 109, 42, 0.90);
+	border-bottom-color: #d96d2a;
+	filter: none;
+}
+
+.topbar_icon_image {
+	width: 42px;
+	height: 42px;
+	opacity: 0.78;
+	pointer-events: none;
+}
+
+.topbar_icon_button:hover .topbar_icon_image {
+	opacity: 1.00;
+	filter: drop-shadow(#ffffff88 0px 0px 5px);
+}
+
+.topbar_tooltip {
+	display: none;
+	position: absolute;
+	left: -45px;
+	top: 50px;
+	width: 132px;
+	height: 26px;
+	padding-top: 7px;
+	color: #ffffff;
+	background-color: rgba(5, 8, 10, 0.94);
+	border-width: 1px;
+	border-color: rgba(232, 120, 50, 0.78);
+	font-size: 9px;
+	font-weight: bold;
+	line-height: 10px;
+	letter-spacing: 1px;
+	text-align: center;
+	white-space: nowrap;
+	z-index: 100;
+	pointer-events: none;
+}
+
+.topbar_icon_button:hover .topbar_tooltip {
+	display: block;
+}

@@ -1,0 +1,102 @@
+<rml>
+<head>
+	<title>Last To Survive TopBar</title>
+	<link type="text/rcss" href="TopBar.rcss"/>
+</head>
+
+<body class="topbar_body">
+
+	<div class="topbar_root">
+
+		<div class="topbar_left_profile">
+			<div id="top_faction_icon" class="topbar_faction_icon">F</div>
+
+			<div class="topbar_profile_text">
+				<div class="topbar_profile_label">FACTION</div>
+				<div id="top_survivor_name" class="topbar_profile_name">SURVIVOR</div>
+				<div id="top_survivor_role" class="topbar_profile_role">EX MILITARY</div>
+			</div>
+		</div>
+
+		<div class="topbar_money">
+			<div class="topbar_money_item currency_zc">
+				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zc.png"/>
+				<div id="balance_gc" class="topbar_money_value">0</div>
+				<button id="btn_money_zc" class="topbar_money_add">+</button>
+			</div>
+
+			<div class="topbar_money_item currency_zd">
+				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zd.png"/>
+				<div id="balance_gd" class="topbar_money_value">0</div>
+				<button id="btn_money_zd" class="topbar_money_add">+</button>
+			</div>
+
+			<div class="topbar_money_item currency_zlt">
+				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zlt.png"/>
+				<div id="balance_zlt" class="topbar_money_value">0</div>
+			</div>
+
+			<div id="balance_ltc" class="runtime_hidden_value">0</div>
+		</div>
+
+		<div class="topbar_tabs">
+			<button id="nav_home" class="topbar_tab active">
+				<div class="topbar_tab_label">HOME</div>
+			</button>
+
+			<button id="nav_equipment" class="topbar_tab">
+				<div class="topbar_tab_label">EQUIPMENT</div>
+			</button>
+
+			<button id="nav_inventory" class="topbar_tab">
+				<div class="topbar_tab_label">INVENTORY</div>
+			</button>
+
+			<button id="nav_skills" class="topbar_tab">
+				<div class="topbar_tab_label">SKILLS</div>
+			</button>
+
+			<button id="nav_shop" class="topbar_tab shop">
+				<div class="topbar_tab_label">SHOP</div>
+			</button>
+
+			<button id="nav_clan" class="topbar_tab small">
+				<div class="topbar_tab_label">CLAN</div>
+			</button>
+
+			<button id="nav_awards" class="topbar_tab small">
+				<div class="topbar_tab_label">AWARDS</div>
+			</button>
+		</div>
+
+		<div class="topbar_actions">
+			<button id="btn_change_name" class="topbar_icon_button">
+				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
+				<div class="topbar_tooltip">CHANGE NAME</div>
+			</button>
+
+			<button id="btn_change_character" class="topbar_icon_button">
+				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
+				<div class="topbar_tooltip">CHANGE CHARACTER</div>
+			</button>
+
+			<button id="btn_rewards" class="topbar_icon_button">
+				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_rewards.png"/>
+				<div class="topbar_tooltip">AWARDS</div>
+			</button>
+
+			<button id="btn_settings" class="topbar_icon_button">
+				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
+				<div class="topbar_tooltip">SETTINGS</div>
+			</button>
+
+			<button id="btn_frontend_exit" class="topbar_icon_button">
+				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
+				<div class="topbar_tooltip">EXIT</div>
+			</button>
+		</div>
+
+	</div>
+
+</body>
+</rml>

@@ -185,6 +185,7 @@ private:
 	);
 
 	void BuildMainMenu();
+	void RefreshTopBar();
 
 	void BuildMainMenuDashboard();
 	void BuildNewsCard();
@@ -368,6 +369,7 @@ private:
 	Rml::Context* Context = nullptr;
 
 	Rml::ElementDocument* LoginDocument = nullptr;
+	Rml::ElementDocument* TopBarDocument = nullptr;
 	Rml::ElementDocument* MainMenuDocument = nullptr;
 	Rml::ElementDocument* CharacterCreateDocument = nullptr;
 	Rml::ElementDocument* SkillsDocument = nullptr; // borrowed from SkillsScreen
