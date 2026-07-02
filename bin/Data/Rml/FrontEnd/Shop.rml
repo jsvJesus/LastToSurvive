@@ -58,7 +58,7 @@
 			</div>
 
 			<div class="frontend_navigation">
-			<button id="nav_survivor" class="top_navigation_button">
+			<button id="nav_home" class="top_navigation_button">
 				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
 				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
 				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>

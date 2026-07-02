@@ -75,7 +75,7 @@
 			</div>
 
 			<div class="frontend_navigation">
-			<button id="nav_survivor" class="top_navigation_button active">
+			<button id="nav_home" class="top_navigation_button active">
 				<img class="top_navigation_texture top_navigation_texture_base" src="../Assets/FrontEnd/button_top_bar.png"/>
 				<img class="top_navigation_texture top_navigation_texture_active" src="../Assets/FrontEnd/button_active_top_bar.png"/>
 				<img class="top_navigation_texture top_navigation_texture_hover" src="../Assets/FrontEnd/button_active_top_bar.png"/>
@@ -261,6 +261,98 @@
 
 		</div>
 
+	</div>
+	
+	<div
+		id="play_mode_modal"
+		class="play_mode_overlay"
+	>
+		<button
+			id="play_mode_close_area"
+			class="play_mode_backdrop"
+		></button>
+
+		<div class="play_mode_panel">
+
+			<div class="play_mode_header">
+				<div>
+					<div class="play_mode_kicker">DEPLOYMENT</div>
+					<div class="play_mode_title">SELECT GAME MODE</div>
+				</div>
+
+				<button
+					id="play_mode_close"
+					class="play_mode_close_button"
+				>
+					X
+				</button>
+			</div>
+
+			<div class="play_mode_description">
+				Choose where your survivor will be deployed. More modes will be added later.
+			</div>
+
+			<div class="play_mode_list">
+
+				<button
+					id="play_mode_openworld"
+					class="play_mode_card available"
+				>
+					<div class="play_mode_card_status">AVAILABLE</div>
+					<div class="play_mode_card_title">PVP/PVE OPEN WORLD</div>
+					<div class="play_mode_card_text">
+						Main survival mode. Explore, loot, fight players and infected.
+					</div>
+					<div class="play_mode_card_footer">
+						ENTER WORLD
+					</div>
+				</button>
+
+				<button
+					id="play_mode_deathmatch"
+					class="play_mode_card locked"
+				>
+					<div class="play_mode_card_status">LOCKED</div>
+					<div class="play_mode_card_title">DEATHMATCH</div>
+					<div class="play_mode_card_text">
+						Ranked fast combat mode. Coming later.
+					</div>
+					<div class="play_mode_card_footer">
+						RANKED
+					</div>
+				</button>
+
+				<button
+					id="play_mode_ctf"
+					class="play_mode_card locked"
+				>
+					<div class="play_mode_card_status">LOCKED</div>
+					<div class="play_mode_card_title">CAPTURE THE FLAG</div>
+					<div class="play_mode_card_text">
+						Ranked team objective mode. Coming later.
+					</div>
+					<div class="play_mode_card_footer">
+						RANKED
+					</div>
+				</button>
+
+				<button
+					id="play_mode_raid"
+					class="play_mode_card locked"
+				>
+					<div class="play_mode_card_status">DEV</div>
+					<div class="play_mode_card_title">PVE/PVP RAID</div>
+					<div class="play_mode_card_text">
+						Buffer safe-zone with traders, NPC missions and transition to the main map.
+					</div>
+					<div class="play_mode_card_footer">
+						BUFFER ZONE
+					</div>
+				</button>
+
+			</div>
+
+		</div>
 	</div>
 
 	<div class="survivor_identity">

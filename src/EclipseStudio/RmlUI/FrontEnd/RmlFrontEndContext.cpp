@@ -2458,7 +2458,68 @@ void RmlFrontEndContext::HandleClick(
 
 		if (Id == "btn_quick_join")
 		{
+			if (
+				CurrentScreen == EScreen::MainMenu &&
+				MainMenuDocument
+			)
+			{
+				SetElementClass(
+					MainMenuDocument,
+					"play_mode_modal",
+					"visible",
+					true
+				);
+
+				SetMainMenuStatus(
+					"Select game mode."
+				);
+			}
+
+			return;
+		}
+
+		if (
+			Id == "play_mode_close" ||
+			Id == "play_mode_close_area"
+		)
+		{
+			SetElementClass(
+				MainMenuDocument,
+				"play_mode_modal",
+				"visible",
+				false
+			);
+
+			SetMainMenuStatus(
+				"Game mode selection closed."
+			);
+
+			return;
+		}
+
+		if (Id == "play_mode_openworld")
+		{
+			SetElementClass(
+				MainMenuDocument,
+				"play_mode_modal",
+				"visible",
+				false
+			);
+
 			RequestQuickJoin();
+			return;
+		}
+
+		if (
+			Id == "play_mode_deathmatch" ||
+			Id == "play_mode_ctf" ||
+			Id == "play_mode_raid"
+		)
+		{
+			SetMainMenuStatus(
+				"This game mode is not available yet."
+			);
+
 			return;
 		}
 
@@ -2489,7 +2550,7 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
-		if (Id == "nav_survivor")
+		if (Id == "nav_home")
 		{
 			if (
 				CurrentScreen == EScreen::Skills ||
@@ -2501,7 +2562,7 @@ void RmlFrontEndContext::HandleClick(
 			else
 			{
 				SetMainMenuStatus(
-					"Survivor profile active."
+					"Home screen active."
 				);
 			}
 
