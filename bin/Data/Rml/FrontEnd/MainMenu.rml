@@ -289,22 +289,36 @@
 			</div>
 
 			<div class="play_mode_description">
-				Choose where your survivor will be deployed. More modes will be added later.
+				Play Game sends you to SafeZone first. Open World is entered from SafeZone through NPC transition.
 			</div>
 
 			<div class="play_mode_list">
 
 				<button
-					id="play_mode_openworld"
+					id="play_mode_safezone"
 					class="play_mode_card available"
 				>
 					<div class="play_mode_card_status">AVAILABLE</div>
-					<div class="play_mode_card_title">PVP/PVE OPEN WORLD</div>
+					<div class="play_mode_card_title">SAFEZONE</div>
 					<div class="play_mode_card_text">
-						Main survival mode. Explore, loot, fight players and infected.
+						Safe buffer map. Meet traders, NPCs, missions and prepare before entering Open World.
 					</div>
 					<div class="play_mode_card_footer">
-						ENTER WORLD
+						ENTER SAFEZONE
+					</div>
+				</button>
+
+				<button
+					id="play_mode_openworld_info"
+					class="play_mode_card route"
+				>
+					<div class="play_mode_card_status">ROUTE</div>
+					<div class="play_mode_card_title">OPEN WORLD</div>
+					<div class="play_mode_card_text">
+						Open World is entered only from SafeZone through NPC or world transition.
+					</div>
+					<div class="play_mode_card_footer">
+						FROM SAFEZONE
 					</div>
 				</button>
 
@@ -312,13 +326,13 @@
 					id="play_mode_deathmatch"
 					class="play_mode_card locked"
 				>
-					<div class="play_mode_card_status">LOCKED</div>
+					<div class="play_mode_card_status">RANKED</div>
 					<div class="play_mode_card_title">DEATHMATCH</div>
 					<div class="play_mode_card_text">
-						Ranked fast combat mode. Coming later.
+						Ranked combat mode with matchmaking, rating and seasonal rewards.
 					</div>
 					<div class="play_mode_card_footer">
-						RANKED
+						COMING SOON
 					</div>
 				</button>
 
@@ -326,27 +340,13 @@
 					id="play_mode_ctf"
 					class="play_mode_card locked"
 				>
-					<div class="play_mode_card_status">LOCKED</div>
+					<div class="play_mode_card_status">RANKED</div>
 					<div class="play_mode_card_title">CAPTURE THE FLAG</div>
 					<div class="play_mode_card_text">
-						Ranked team objective mode. Coming later.
+						Ranked team objective mode. Capture enemy flag and protect your base.
 					</div>
 					<div class="play_mode_card_footer">
-						RANKED
-					</div>
-				</button>
-
-				<button
-					id="play_mode_raid"
-					class="play_mode_card locked"
-				>
-					<div class="play_mode_card_status">DEV</div>
-					<div class="play_mode_card_title">PVE/PVP RAID</div>
-					<div class="play_mode_card_text">
-						Buffer safe-zone with traders, NPC missions and transition to the main map.
-					</div>
-					<div class="play_mode_card_footer">
-						BUFFER ZONE
+						COMING SOON
 					</div>
 				</button>
 

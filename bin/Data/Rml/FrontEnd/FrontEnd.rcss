@@ -3427,3 +3427,21 @@ button:disabled {
 .play_mode_card.available .play_mode_card_footer {
 	color: #ffb15e;
 }
+
+.play_mode_card.route {
+	opacity: 0.72;
+}
+
+.play_mode_card.route:hover {
+	background-color: rgba(24, 31, 35, 0.96);
+	border-color: rgba(118, 138, 148, 0.90);
+	filter: none;
+}
+
+.play_mode_card.route .play_mode_card_status {
+	color: #82a9c8;
+}
+
+.play_mode_card.route .play_mode_card_footer {
+	color: #9fb8c9;
+}

@@ -2497,7 +2497,7 @@ void RmlFrontEndContext::HandleClick(
 			return;
 		}
 
-		if (Id == "play_mode_openworld")
+		if (Id == "play_mode_safezone")
 		{
 			SetElementClass(
 				MainMenuDocument,
@@ -2506,18 +2506,46 @@ void RmlFrontEndContext::HandleClick(
 				false
 			);
 
+			SetMainMenuStatus(
+				"Deploying to SafeZone..."
+			);
+
+			/*
+				TODO:
+				Сейчас RequestQuickJoin() используется как старый вход в игру.
+				На этом этапе считаем его входом в SafeZone.
+
+				Позже правильно разделить:
+				RequestJoinSafeZone()
+				RequestJoinRankedDeathMatch()
+				RequestJoinRankedCaptureTheFlag()
+			*/
 			RequestQuickJoin();
 			return;
 		}
 
-		if (
-			Id == "play_mode_deathmatch" ||
-			Id == "play_mode_ctf" ||
-			Id == "play_mode_raid"
-		)
+		if (Id == "play_mode_openworld_info")
 		{
 			SetMainMenuStatus(
-				"This game mode is not available yet."
+				"Open World is entered from SafeZone through NPC transition."
+			);
+
+			return;
+		}
+
+		if (Id == "play_mode_deathmatch")
+		{
+			SetMainMenuStatus(
+				"Ranked DeathMatch is not available yet."
+			);
+
+			return;
+		}
+
+		if (Id == "play_mode_ctf")
+		{
+			SetMainMenuStatus(
+				"Ranked Capture The Flag is not available yet."
 			);
 
 			return;
