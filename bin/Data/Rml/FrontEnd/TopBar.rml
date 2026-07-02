@@ -10,22 +10,8 @@
 	<div class="topbar_root">
 
 		<div class="topbar_left_profile">
-			<div id="top_faction_icon" class="topbar_faction_icon">F</div>
-
 			<div class="topbar_profile_text">
-				<div class="topbar_profile_label">FACTION</div>
 				<div id="top_survivor_name" class="topbar_profile_name">SURVIVOR</div>
-				<div id="top_survivor_role" class="topbar_profile_role">EX MILITARY</div>
-
-				<div class="topbar_level_row">
-					<div class="topbar_level_label">LVL</div>
-					<div id="top_level_value" class="topbar_level_value">1</div>
-					<div id="top_level_xp_text" class="topbar_xp_text">0 / 100</div>
-				</div>
-
-				<div class="topbar_xp_bar">
-					<div id="top_level_xp_fill" class="topbar_xp_fill"></div>
-				</div>
 			</div>
 		</div>
 
