@@ -1,6 +1,7 @@
 <rml>
 <head>
 	<title>Last To Survive Shop</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
 	<link type="text/rcss" href="Shop.rcss"/>
 </head>
 
@@ -165,6 +166,7 @@
 		</div>
 
 	</div>
+
 	<div class="main_menu_status_bar">
 		<div class="main_menu_status_left">
 			<div class="status_indicator"></div>
@@ -173,6 +175,7 @@
 			</div>
 		</div>
 	</div>
+
 	<div class="runtime_hidden_value">
 		<div id="selected_shop_item_id">shop_item_0</div>
 		<div id="selected_shop_backend_item_id">101001</div>
@@ -180,5 +183,6 @@
 		<div id="account_name">ACCOUNT</div>
 		<div id="selected_character">SURVIVOR</div>
 	</div>
+
 </body>
 </rml>

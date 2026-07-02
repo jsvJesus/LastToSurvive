@@ -2,6 +2,7 @@
 <head>
 	<title>Create Survivor</title>
 	<link type="text/rcss" href="FrontEnd.rcss"/>
+	<link type="text/rcss" href="CharacterCreate.rcss"/>
 </head>
 
 <body class="frontend_body">

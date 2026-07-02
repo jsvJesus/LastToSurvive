@@ -1,6 +1,7 @@
 <rml>
 <head>
 	<title>Last To Survive Skills</title>
+	<link type="text/rcss" href="FrontEnd.rcss"/>
 	<link type="text/rcss" href="Skills.rcss"/>
 </head>
 
@@ -127,7 +128,6 @@
 			<div class="skill_tree_map">
 
 				<div class="skill_tree_column">
-
 					<div class="skill_branch_title">SURVIVAL</div>
 
 					<button id="skill_node_endurance_1" class="skill_node learned">
@@ -151,11 +151,9 @@
 						<div class="skill_node_name">RESISTANCE</div>
 						<div class="skill_node_level">0 / 5</div>
 					</button>
-
 				</div>
 
 				<div class="skill_tree_column">
-
 					<div class="skill_branch_title">COMBAT</div>
 
 					<button id="skill_node_recoil_1" class="skill_node learned">
@@ -179,11 +177,9 @@
 						<div class="skill_node_name">MARKSMAN</div>
 						<div class="skill_node_level">0 / 5</div>
 					</button>
-
 				</div>
 
 				<div class="skill_tree_column">
-
 					<div class="skill_branch_title">SUPPORT</div>
 
 					<button id="skill_node_scavenger_1" class="skill_node available">
@@ -207,11 +203,9 @@
 						<div class="skill_node_name">FIELD REPAIR</div>
 						<div class="skill_node_level">0 / 5</div>
 					</button>
-
 				</div>
 
 				<div class="skill_tree_column last">
-
 					<div class="skill_branch_title">CRAFTING</div>
 
 					<button id="skill_node_crafting_1" class="skill_node available">
@@ -235,7 +229,6 @@
 						<div class="skill_node_name">ENGINEER</div>
 						<div class="skill_node_level">0 / 5</div>
 					</button>
-
 				</div>
 
 			</div>
@@ -328,6 +321,7 @@
 		</div>
 
 	</div>
+
 	<div class="main_menu_status_bar">
 		<div class="main_menu_status_left">
 			<div class="status_indicator"></div>
@@ -337,6 +331,7 @@
 			</div>
 		</div>
 	</div>
+
 	<div class="runtime_hidden_value">
 		<div id="selected_skill_id">skill_node_vitality_1</div>
 		<div id="selected_skill_backend_id">0</div>
@@ -346,5 +341,6 @@
 		<div id="account_name">ACCOUNT</div>
 		<div id="selected_character">SURVIVOR</div>
 	</div>
+
 </body>
 </rml>

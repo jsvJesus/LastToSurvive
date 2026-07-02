@@ -2,6 +2,7 @@
 <head>
 	<title>Last To Survive Main Menu</title>
 	<link type="text/rcss" href="FrontEnd.rcss"/>
+	<link type="text/rcss" href="MainMenu.rcss"/>
 </head>
 
 <body class="frontend_body main_menu_body">
@@ -159,7 +160,7 @@
 		</div>
 
 	</div>
-	
+
 	<div
 		id="play_mode_modal"
 		class="play_mode_overlay"
@@ -251,7 +252,7 @@
 
 		</div>
 	</div>
-	
+
 	<div id="frontend_notice_layer" class="frontend_notice_layer">
 		<div id="frontend_notice" class="frontend_notice info">
 			<div id="frontend_notice_title" class="frontend_notice_title">
@@ -360,6 +361,12 @@
 		<div id="survivor_level_value">1</div>
 		<div id="survivor_level_xp_text">0 / 100</div>
 		<div id="survivor_level_xp_fill"></div>
+
+		<div id="top_level_value">1</div>
+		<div id="top_level_xp_text">0 / 100</div>
+		<div id="top_level_xp_fill"></div>
+		<div id="top_survivor_name">SURVIVOR</div>
+		<div id="top_survivor_role">EX MILITARY</div>
 
 		<input
 			id="rename_character_name"

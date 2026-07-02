@@ -1,0 +1,159 @@
+/* ============================================================
+   LOGIN SCREEN ONLY
+   ============================================================ */
+
+.login_topbar {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 100%;
+	height: 86px;
+
+	padding-left: 32px;
+	padding-right: 32px;
+
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	background-color: rgba(6, 9, 11, 0.98);
+
+	border-bottom-width: 1px;
+	border-bottom-color: #30393e;
+}
+
+.login_brand {
+	height: 58px;
+
+	display: flex;
+	align-items: center;
+}
+
+.login_brand_mark {
+	width: 58px;
+	height: 52px;
+
+	margin-right: 15px;
+	padding-top: 15px;
+
+	color: #ff8b40;
+	background-color: #10171b;
+
+	border-width: 1px;
+	border-color: #d96d2a;
+
+	font-size: 13px;
+	font-weight: bold;
+	letter-spacing: 2px;
+	text-align: center;
+}
+
+.login_brand_text {
+	height: 52px;
+
+	padding-top: 3px;
+}
+
+.login_system_readout {
+	min-width: 250px;
+
+	padding: 9px 12px;
+
+	background-color: #0b1013;
+
+	border-left-width: 2px;
+	border-left-color: #d96d2a;
+
+	text-align: right;
+}
+
+.system_label {
+	color: #68747a;
+
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.system_value {
+	margin-top: 4px;
+
+	color: #f0f2f3;
+
+	font-size: 10px;
+	font-weight: bold;
+	letter-spacing: 1px;
+}
+
+.login_layout {
+	position: absolute;
+	left: 0px;
+	top: 86px;
+
+	width: 100%;
+	bottom: 0px;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.login_panel {
+	width: 470px;
+
+	padding: 32px 34px 30px 38px;
+}
+
+.login_panel_meta {
+	width: 100%;
+	height: 18px;
+
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.login_panel_code,
+.login_panel_state {
+	color: #59656b;
+
+	font-size: 8px;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+
+.login_panel_state {
+	color: #73c785;
+}
+
+.panel_caption {
+	width: 100%;
+
+	margin-top: 14px;
+
+	color: #ffffff;
+
+	font-size: 22px;
+	font-weight: bold;
+	letter-spacing: 3px;
+}
+
+.panel_description {
+	width: 100%;
+
+	margin-top: 8px;
+	margin-bottom: 24px;
+
+	color: #707c82;
+
+	font-size: 10px;
+	line-height: 16px;
+}
+
+.login_action {
+	display: flex;
+	align-items: center;
+
+	padding-right: 12px;
+}

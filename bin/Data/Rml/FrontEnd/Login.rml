@@ -2,6 +2,7 @@
 <head>
 	<title>Last To Survive Login</title>
 	<link type="text/rcss" href="FrontEnd.rcss"/>
+	<link type="text/rcss" href="Login.rcss"/>
 </head>
 
 <body class="frontend_body">
