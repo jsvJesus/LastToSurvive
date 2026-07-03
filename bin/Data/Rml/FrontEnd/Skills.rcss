@@ -24,7 +24,7 @@
 
 	height: 100%;
 
-	background-color: rgba(8, 12, 15, 0.86);
+	background-color: rgba(8, 12, 15, 0.90);
 	decorator: linear-gradient(180deg, #1d262b, #0d1316 58%, #06090b) border-box;
 
 	border-width: 1px;
@@ -73,7 +73,7 @@
 .skills_panel_title {
 	color: #ffffff;
 
-	font-size: 16px;
+	font-size: 17px;
 	font-weight: bold;
 	line-height: 18px;
 	letter-spacing: 1px;
@@ -84,7 +84,7 @@
 
 	color: #e17332;
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	line-height: 10px;
 	letter-spacing: 2px;
@@ -252,6 +252,8 @@
 	background-color: rgba(91, 35, 29, 0.90);
 
 	border-color: #d45c4c;
+	border-left-width: 4px;
+	border-left-color: #ff8f55;
 }
 
 .skill_category_code {
@@ -272,7 +274,7 @@
 .skill_category_name {
 	color: #ffffff;
 
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: bold;
 	line-height: 14px;
 }
@@ -282,9 +284,9 @@
 
 	color: #8f9a9f;
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: normal;
-	line-height: 11px;
+	line-height: 12px;
 }
 
 .skills_reset_block {
@@ -314,8 +316,8 @@
 
 	color: #7c878c;
 
-	font-size: 9px;
-	line-height: 13px;
+	font-size: 10px;
+	line-height: 14px;
 }
 
 .skills_tree_legend {
@@ -442,9 +444,9 @@
 
 	color: #ffffff;
 
-	font-size: 10px;
+	font-size: 11px;
 	font-weight: bold;
-	line-height: 12px;
+	line-height: 13px;
 }
 
 .skill_node_level {
@@ -552,8 +554,8 @@
 
 	color: #aab3b8;
 
-	font-size: 10px;
-	line-height: 15px;
+	font-size: 11px;
+	line-height: 16px;
 }
 
 .skill_detail_rows {
@@ -575,7 +577,7 @@
 .skill_detail_label {
 	color: #737f85;
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 1px;
 }
@@ -583,7 +585,7 @@
 .skill_detail_value {
 	color: #ffffff;
 
-	font-size: 10px;
+	font-size: 11px;
 	font-weight: bold;
 }
 

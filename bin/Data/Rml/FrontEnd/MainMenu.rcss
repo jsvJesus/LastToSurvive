@@ -56,10 +56,10 @@
 .mainmenu_dashboard {
 	position: absolute;
 	left: 34px;
-	top: 132px;
+	top: 114px;
 
 	width: 500px;
-	height: 610px;
+	height: 482px;
 
 	z-index: 25;
 
@@ -71,10 +71,10 @@
 	position: relative;
 
 	width: 500px;
-	height: 102px;
+	height: 90px;
 
-	margin-bottom: 10px;
-	padding: 13px 16px 12px 19px;
+	margin-bottom: 8px;
+	padding: 11px 16px 10px 19px;
 
 	background-color: rgba(6, 10, 12, 0.90);
 	decorator: linear-gradient(180deg, rgba(28, 37, 42, 0.96), rgba(9, 14, 17, 0.98) 58%, rgba(4, 7, 8, 0.98)) border-box;
@@ -126,7 +126,7 @@
 
 	color: #d96d2a;
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 2px;
 	line-height: 14px;
@@ -146,7 +146,7 @@
 	border-width: 1px;
 	border-color: rgba(70, 83, 90, 0.78);
 
-	font-size: 7px;
+	font-size: 8px;
 	font-weight: bold;
 	letter-spacing: 1px;
 	text-align: center;
@@ -165,40 +165,40 @@
 }
 
 .mm_card_title {
-	width: 330px;
+	width: 342px;
 	height: 21px;
 
-	margin-top: 7px;
+	margin-top: 5px;
 
 	color: #f1f5f7;
 
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: bold;
 	letter-spacing: 1px;
 	line-height: 19px;
 }
 
 .mm_card_text {
-	width: 330px;
+	width: 342px;
 	min-height: 16px;
 
-	margin-top: 4px;
+	margin-top: 3px;
 
 	color: #aeb8bd;
 
 	font-size: 10px;
-	line-height: 14px;
+	line-height: 13px;
 }
 
 .mm_card_reward {
-	width: 330px;
+	width: 342px;
 	height: 14px;
 
-	margin-top: 4px;
+	margin-top: 3px;
 
 	color: #d96d2a;
 
-	font-size: 9px;
+	font-size: 10px;
 	font-weight: bold;
 	letter-spacing: 1px;
 	line-height: 12px;
@@ -207,12 +207,12 @@
 .mm_card_button {
 	position: absolute;
 	right: 16px;
-	bottom: 16px;
+	bottom: 12px;
 
 	width: 120px;
-	height: 28px;
+	height: 30px;
 
-	padding-top: 8px;
+	padding-top: 9px;
 
 	color: #dfe7ea;
 	background-color: rgba(23, 32, 37, 0.96);
@@ -223,7 +223,7 @@
 	border-bottom-width: 2px;
 	border-bottom-color: rgba(8, 11, 13, 0.95);
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 1px;
 	text-align: center;
@@ -257,7 +257,7 @@
 	width: 330px;
 	height: 8px;
 
-	margin-top: 9px;
+	margin-top: 6px;
 
 	background-color: rgba(3, 6, 8, 0.96);
 
@@ -277,7 +277,7 @@
 .premium_badge {
 	position: absolute;
 	right: 54px;
-	top: 128px;
+	top: 112px;
 
 	width: 300px;
 	height: 48px;
@@ -292,7 +292,7 @@
 	border-width: 1px;
 	border-color: rgba(75, 89, 97, 0.64);
 
-	font-size: 10px;
+	font-size: 11px;
 	font-weight: bold;
 	letter-spacing: 2px;
 	text-align: center;
@@ -445,6 +445,14 @@
 	filter: none;
 }
 
+.play_button:active {
+	background-color: #8e2b23;
+	decorator: linear-gradient(180deg, #a7382d, #8e2b23 54%, #551410) border-box;
+
+	border-color: #ff7a67;
+	border-bottom-color: #3e0d0a;
+}
+
 .play_button_icon {
 	width: 56px;
 	height: 56px;
@@ -497,7 +505,7 @@
 	border-width: 1px;
 	border-color: rgba(75, 89, 97, 0.66);
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 1px;
 }
@@ -530,6 +538,10 @@
 	height: 100%;
 
 	z-index: 120;
+}
+
+.play_mode_overlay.visible {
+	display: block;
 }
 
 .play_mode_backdrop {
@@ -645,6 +657,14 @@
 	border-color: rgba(217, 109, 42, 0.86);
 }
 
+.play_mode_card.available:hover,
+.play_mode_card.route:hover {
+	background-color: rgba(34, 45, 50, 0.98);
+
+	border-color: #ff8f55;
+	border-bottom-color: #d96d2a;
+}
+
 .play_mode_card.locked {
 	opacity: 0.72;
 }
@@ -652,7 +672,7 @@
 .play_mode_card_status {
 	color: #d96d2a;
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 2px;
 }
@@ -672,8 +692,8 @@
 
 	color: #aeb8bd;
 
-	font-size: 10px;
-	line-height: 14px;
+	font-size: 11px;
+	line-height: 15px;
 }
 
 .play_mode_card_footer {
@@ -692,7 +712,7 @@
 	border-width: 1px;
 	border-color: rgba(88, 105, 114, 0.76);
 
-	font-size: 8px;
+	font-size: 9px;
 	font-weight: bold;
 	letter-spacing: 1px;
 	text-align: center;
@@ -747,8 +767,8 @@
 
 	color: #ffffff;
 
-	font-size: 12px;
-	line-height: 16px;
+	font-size: 13px;
+	line-height: 17px;
 }
 
 /* FOOTER / CHAT */
