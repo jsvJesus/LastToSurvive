@@ -189,6 +189,7 @@ private:
 
 	void BuildMainMenu();
 	void RefreshTopBar();
+	void KeepTopBarOnTop();
 
 	void BuildMainMenuDashboard();
 	void BuildNewsCard();

@@ -74,6 +74,12 @@
       background: transparent;
     }
 
+    button.active {
+      border-color: var(--accent);
+      background: #332016;
+      color: #ffd6bd;
+    }
+
     select {
       min-width: 150px;
       padding: 0 8px;
@@ -296,6 +302,8 @@
       <button id="saveRml">Save RML</button>
       <button id="saveRcss">Save RCSS</button>
       <button id="downloadAll" class="ghost">Download</button>
+      <button id="moveMode" class="ghost">Move Off</button>
+      <button id="undoMove" class="ghost">Undo</button>
 
       <div class="toolbar-spacer"></div>
 
@@ -330,6 +338,7 @@
         <div class="preview-head">
           <div class="pane-title">PREVIEW</div>
           <div id="previewMeta" class="pane-meta">Browser approximation of RmlUI</div>
+          <div id="selectedMeta" class="pane-meta">selected: none</div>
         </div>
         <div id="previewWrap" class="preview-wrap">
           <div id="stageShell" class="stage-shell">
@@ -360,7 +369,13 @@
       linkedRcss: [],
       dirtyRml: false,
       dirtyRcss: false,
-      fitScale: true
+      fitScale: true,
+      previewScale: 1,
+      moveMode: false,
+      selectedSelector: "",
+      selectedElementId: "",
+      undoStack: [],
+      previewPan: null
     };
 
     const el = {
@@ -372,6 +387,8 @@
       saveRml: document.getElementById("saveRml"),
       saveRcss: document.getElementById("saveRcss"),
       downloadAll: document.getElementById("downloadAll"),
+      moveMode: document.getElementById("moveMode"),
+      undoMove: document.getElementById("undoMove"),
       basePath: document.getElementById("basePath"),
       viewportW: document.getElementById("viewportW"),
       viewportH: document.getElementById("viewportH"),
@@ -381,6 +398,7 @@
       rmlMeta: document.getElementById("rmlMeta"),
       rcssMeta: document.getElementById("rcssMeta"),
       previewMeta: document.getElementById("previewMeta"),
+      selectedMeta: document.getElementById("selectedMeta"),
       previewWrap: document.getElementById("previewWrap"),
       stageShell: document.getElementById("stageShell"),
       previewFrame: document.getElementById("previewFrame"),
@@ -666,17 +684,552 @@ ${bodyHtml}
       updateMeta();
     }
 
+    function installPreviewDesigner() {
+      const doc = el.previewFrame.contentDocument;
+      if (!doc || !doc.body) {
+        return;
+      }
+
+      const style = doc.createElement("style");
+      style.textContent = `
+        .__rml_editor_selected {
+          outline: 2px solid #f0a45b !important;
+          outline-offset: 0 !important;
+        }
+        .__rml_editor_move_mode * {
+          cursor: crosshair !important;
+        }
+        .__rml_editor_dragging {
+          cursor: move !important;
+        }
+      `;
+      doc.head.appendChild(style);
+
+      if (state.moveMode) {
+        doc.body.classList.add("__rml_editor_move_mode");
+      }
+
+      let selectedElement = null;
+      let drag = null;
+
+      function selectableTarget(target) {
+        if (!target || target === doc.documentElement || target === doc.body) {
+          return null;
+        }
+
+        return target.closest("[id]") || target.closest("[class]") || target;
+      }
+
+      function selectorForElement(node) {
+        if (!node || node === doc.body) {
+          return "";
+        }
+
+        if (node.id) {
+          return "#" + cssEscape(node.id);
+        }
+
+        const classes = Array.from(node.classList || [])
+          .filter(name => !name.startsWith("__rml_editor_"));
+
+        if (classes.length) {
+          return "." + cssEscape(classes[0]);
+        }
+
+        return node.tagName ? node.tagName.toLowerCase() : "";
+      }
+
+      function cssEscape(value) {
+        if (window.CSS && CSS.escape) {
+          return CSS.escape(value);
+        }
+
+        return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+      }
+
+      function selectElement(node) {
+        if (selectedElement) {
+          selectedElement.classList.remove("__rml_editor_selected");
+        }
+
+        selectedElement = node;
+        state.selectedSelector = selectorForElement(node);
+        state.selectedElementId = node && node.id ? node.id : "";
+
+        if (selectedElement) {
+          selectedElement.classList.add("__rml_editor_selected");
+        }
+
+        updateSelectedMeta();
+      }
+
+      function startDrag(event) {
+        if (!state.moveMode) {
+          return;
+        }
+
+        const target = selectableTarget(event.target);
+        if (!target) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        selectElement(target);
+
+        drag = {
+          target,
+          startX: event.clientX,
+          startY: event.clientY,
+          startLeft: 0,
+          startTop: 0,
+          active: false
+        };
+      }
+
+      function moveDrag(event) {
+        if (!drag) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!drag.active) {
+          const dx = event.clientX - drag.startX;
+          const dy = event.clientY - drag.startY;
+          if (Math.abs(dx) < 3 && Math.abs(dy) < 3) {
+            return;
+          }
+
+          drag.startLeft = Math.round(drag.target.offsetLeft);
+          drag.startTop = Math.round(drag.target.offsetTop);
+          drag.active = true;
+
+          drag.target.classList.add("__rml_editor_dragging");
+          drag.target.style.position = "absolute";
+          drag.target.style.left = drag.startLeft + "px";
+          drag.target.style.top = drag.startTop + "px";
+        }
+
+        const left = Math.round(drag.startLeft + event.clientX - drag.startX);
+        const top = Math.round(drag.startTop + event.clientY - drag.startY);
+
+        drag.target.style.left = left + "px";
+        drag.target.style.top = top + "px";
+        updateSelectedMeta(left, top);
+      }
+
+      function endDrag(event) {
+        if (!drag) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!drag.active) {
+          drag = null;
+          return;
+        }
+
+        const left = Number.parseInt(drag.target.style.left, 10) || 0;
+        const top = Number.parseInt(drag.target.style.top, 10) || 0;
+
+        drag.target.classList.remove("__rml_editor_dragging");
+        writePositionToRcss(state.selectedSelector, left, top);
+        drag = null;
+      }
+
+      doc.addEventListener("mousedown", startDrag, true);
+      doc.addEventListener("mousemove", moveDrag, true);
+      doc.addEventListener("mouseup", endDrag, true);
+      doc.addEventListener("mouseleave", endDrag, true);
+      doc.addEventListener("keydown", handleUndoShortcut, true);
+
+      if (state.selectedSelector) {
+        try {
+          const node = doc.querySelector(state.selectedSelector);
+          if (node) {
+            selectElement(node);
+          }
+        } catch (_err) {
+          updateSelectedMeta();
+        }
+      } else {
+        updateSelectedMeta();
+      }
+    }
+
+    function updateSelectedMeta(left, top) {
+      const selector = state.selectedSelector || "none";
+      const suffix = Number.isFinite(left) && Number.isFinite(top) ? ` ${left}px, ${top}px` : "";
+      el.selectedMeta.textContent = `selected: ${selector}${suffix}`;
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function revealTextRange(textarea, start, end) {
+      if (start < 0) {
+        return;
+      }
+
+      textarea.setSelectionRange(start, end);
+
+      const before = textarea.value.slice(0, start);
+      const line = before.split(/\r?\n/).length;
+      const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 18;
+      textarea.scrollTop = Math.max(0, (line - 4) * lineHeight);
+    }
+
+    function revealRmlForElement(node) {
+      const text = el.rmlEditor.value;
+      let match = null;
+
+      if (node && node.id) {
+        const regex = new RegExp(`id\\s*=\\s*["']${escapeRegExp(node.id)}["']`, "i");
+        match = regex.exec(text);
+      }
+
+      if (!match && node && node.classList && node.classList.length) {
+        const classes = Array.from(node.classList)
+          .filter(name => !name.startsWith("__rml_editor_"));
+
+        for (const className of classes) {
+          const regex = new RegExp(`class\\s*=\\s*["'][^"']*\\b${escapeRegExp(className)}\\b[^"']*["']`, "i");
+          match = regex.exec(text);
+          if (match) {
+            break;
+          }
+        }
+      }
+
+      if (match) {
+        revealTextRange(el.rmlEditor, match.index, match.index + match[0].length);
+      }
+    }
+
+    function revealRcssForSelector(selector) {
+      if (!selector) {
+        return;
+      }
+
+      cacheCurrentRcssEditor();
+
+      const targetName = findRcssForSelector(selector);
+      if (!targetName) {
+        return;
+      }
+
+      const file = getFile(targetName);
+      const text = targetName === state.selectedRcss ? el.rcssEditor.value : (file ? file.text : "");
+      const range = findRuleRange(text, selector);
+
+      if (targetName !== state.selectedRcss) {
+        state.selectedRcss = targetName;
+        el.rcssSelect.value = targetName;
+        el.rcssEditor.value = text;
+      }
+
+      if (range) {
+        revealTextRange(el.rcssEditor, range.start, range.close + 1);
+      }
+    }
+
+    function revealSourceForSelection(node) {
+      revealRmlForElement(node);
+      revealRcssForSelector(state.selectedSelector);
+    }
+
+    function cacheCurrentRcssEditor() {
+      if (!state.selectedRcss) {
+        return;
+      }
+
+      const file = getFile(state.selectedRcss);
+      if (file) {
+        file.text = el.rcssEditor.value;
+      }
+    }
+
+    function findRuleRange(css, selector) {
+      if (!selector) {
+        return null;
+      }
+
+      let searchAt = 0;
+
+      while (searchAt < css.length) {
+        const index = css.indexOf(selector, searchAt);
+        if (index === -1) {
+          return null;
+        }
+
+        const before = css[index - 1] || "";
+        const after = css[index + selector.length] || "";
+        const looksBounded =
+          !/[a-zA-Z0-9_-]/.test(before) &&
+          !/[a-zA-Z0-9_-]/.test(after);
+
+        const brace = css.indexOf("{", index + selector.length);
+        if (!looksBounded || brace === -1) {
+          searchAt = index + selector.length;
+          continue;
+        }
+
+        const header = css.slice(index, brace);
+        if (header.includes("}")) {
+          searchAt = index + selector.length;
+          continue;
+        }
+
+        let depth = 1;
+        for (let i = brace + 1; i < css.length; i++) {
+          if (css[i] === "{") {
+            depth++;
+          } else if (css[i] === "}") {
+            depth--;
+            if (depth === 0) {
+              return {
+                start: index,
+                open: brace,
+                close: i
+              };
+            }
+          }
+        }
+
+        return null;
+      }
+
+      return null;
+    }
+
+    function setDeclaration(block, property, value) {
+      const pattern = new RegExp(`(^|\\n)(\\s*)${property}\\s*:[^;]*;`, "i");
+      if (pattern.test(block)) {
+        return block.replace(pattern, (_m, prefix, indent) => `${prefix}${indent}${property}: ${value};`);
+      }
+
+      const insert = `\n\t${property}: ${value};`;
+      return block.replace(/\s*$/, insert + "\n");
+    }
+
+    function updateRulePosition(css, selector, left, top) {
+      const range = findRuleRange(css, selector);
+
+      if (!range) {
+        return `${css.replace(/\s*$/g, "")}\n\n${selector} {\n\tposition: absolute;\n\tleft: ${left}px;\n\ttop: ${top}px;\n}\n`;
+      }
+
+      let block = css.slice(range.open + 1, range.close);
+      block = setDeclaration(block, "position", "absolute");
+      block = setDeclaration(block, "left", `${left}px`);
+      block = setDeclaration(block, "top", `${top}px`);
+
+      return css.slice(0, range.open + 1) + block + css.slice(range.close);
+    }
+
+    function findRcssForSelector(selector) {
+      const candidates = Array.from(new Set([
+        state.selectedRcss,
+        ...state.linkedRcss
+      ])).filter(Boolean);
+
+      for (const name of candidates) {
+        const text = name === state.selectedRcss ? el.rcssEditor.value : currentRcssText(name);
+        if (findRuleRange(text, selector)) {
+          return name;
+        }
+      }
+
+      return state.selectedRcss || candidates[0] || "";
+    }
+
+    function writePositionToRcss(selector, left, top) {
+      if (!selector) {
+        return;
+      }
+
+      cacheCurrentRcssEditor();
+
+      const targetName = findRcssForSelector(selector);
+      if (!targetName) {
+        setStatus("No RCSS file is selected for position write.", "err");
+        return;
+      }
+
+      const file = getFile(targetName);
+      const oldText = targetName === state.selectedRcss ? el.rcssEditor.value : (file ? file.text : "");
+      const newText = updateRulePosition(oldText, selector, left, top);
+
+      if (newText === oldText) {
+        return;
+      }
+
+      state.undoStack.push({
+        type: "rcss-position",
+        name: targetName,
+        text: oldText,
+        selector,
+        selectedRcss: state.selectedRcss
+      });
+
+      if (targetName !== state.selectedRcss) {
+        state.selectedRcss = targetName;
+        el.rcssSelect.value = targetName;
+      }
+
+      if (file) {
+        file.text = newText;
+      }
+
+      el.rcssEditor.value = newText;
+      state.dirtyRcss = true;
+      setStatus(`Moved ${selector} to ${left}px, ${top}px in ${targetName}.`, "ok");
+      updateMeta();
+    }
+
+    function undoLastAction() {
+      const action = state.undoStack.pop();
+      if (!action) {
+        setStatus("Nothing to undo.", "");
+        return;
+      }
+
+      if (action.type !== "rcss-position") {
+        return;
+      }
+
+      const file = getFile(action.name);
+      if (file) {
+        file.text = action.text;
+      }
+
+      state.selectedRcss = action.name;
+      el.rcssSelect.value = action.name;
+      el.rcssEditor.value = action.text;
+      state.dirtyRcss = true;
+      state.selectedSelector = action.selector || state.selectedSelector;
+
+      setStatus(`Undo move for ${action.selector || action.name}. Save RCSS when ready.`, "ok");
+      updatePreview();
+      updateMeta();
+    }
+
+    function shouldUseNativeUndo(target) {
+      if (!target) {
+        return false;
+      }
+
+      const tagName = (target.tagName || "").toLowerCase();
+      return tagName === "textarea" ||
+        tagName === "input" ||
+        tagName === "select" ||
+        target.isContentEditable;
+    }
+
+    function handleUndoShortcut(event) {
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== "z") {
+        return;
+      }
+
+      if (shouldUseNativeUndo(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      undoLastAction();
+    }
+
+    function applyPreviewScale(scale) {
+      const width = parseInt(el.viewportW.value, 10) || 1920;
+      const height = parseInt(el.viewportH.value, 10) || 1080;
+
+      state.previewScale = Math.max(0.1, Math.min(4, scale));
+      el.stageShell.style.transform = `scale(${state.previewScale})`;
+      el.stageShell.style.marginBottom = `${height * state.previewScale - height}px`;
+      el.stageShell.style.marginRight = `${width * state.previewScale - width}px`;
+      el.previewMeta.textContent = `${width}x${height} at ${Math.round(state.previewScale * 100)}%`;
+    }
+
     function fitPreview() {
       const width = parseInt(el.viewportW.value, 10) || 1920;
       const height = parseInt(el.viewportH.value, 10) || 1080;
       const wrapW = Math.max(240, el.previewWrap.clientWidth - 36);
       const wrapH = Math.max(160, el.previewWrap.clientHeight - 36);
-      const scale = state.fitScale ? Math.min(wrapW / width, wrapH / height, 1) : 1;
+      const scale = state.fitScale ? Math.min(wrapW / width, wrapH / height, 1) : state.previewScale;
 
-      el.stageShell.style.transform = `scale(${scale})`;
-      el.stageShell.style.marginBottom = `${height * scale - height}px`;
-      el.stageShell.style.marginRight = `${width * scale - width}px`;
-      el.previewMeta.textContent = `${width}x${height} at ${Math.round(scale * 100)}%`;
+      applyPreviewScale(scale);
+    }
+
+    function zoomPreviewAtClient(clientX, clientY, deltaY) {
+      const oldScale = state.previewScale || 1;
+      const zoomFactor = deltaY < 0 ? 1.1 : 1 / 1.1;
+      const newScale = Math.max(0.1, Math.min(4, oldScale * zoomFactor));
+      const wrapRect = el.previewWrap.getBoundingClientRect();
+      const anchorX = clientX - wrapRect.left;
+      const anchorY = clientY - wrapRect.top;
+      const shellX = el.stageShell.offsetLeft;
+      const shellY = el.stageShell.offsetTop;
+      const worldX = (el.previewWrap.scrollLeft + anchorX - shellX) / oldScale;
+      const worldY = (el.previewWrap.scrollTop + anchorY - shellY) / oldScale;
+
+      state.fitScale = false;
+      el.fitPreview.textContent = "1:1";
+      applyPreviewScale(newScale);
+
+      el.previewWrap.scrollLeft = worldX * newScale + shellX - anchorX;
+      el.previewWrap.scrollTop = worldY * newScale + shellY - anchorY;
+    }
+
+    function handlePreviewWheel(event) {
+      event.preventDefault();
+      zoomPreviewAtClient(event.clientX, event.clientY, event.deltaY);
+    }
+
+    function startPreviewPan(clientX, clientY, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      state.previewPan = {
+        startX: clientX,
+        startY: clientY,
+        scrollLeft: el.previewWrap.scrollLeft,
+        scrollTop: el.previewWrap.scrollTop
+      };
+    }
+
+    function movePreviewPan(clientX, clientY, event) {
+      if (!state.previewPan) {
+        return;
+      }
+
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      el.previewWrap.scrollLeft = state.previewPan.scrollLeft - (clientX - state.previewPan.startX);
+      el.previewWrap.scrollTop = state.previewPan.scrollTop - (clientY - state.previewPan.startY);
+    }
+
+    function endPreviewPan(event) {
+      if (!state.previewPan) {
+        return;
+      }
+
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      state.previewPan = null;
     }
 
     function updateMeta() {
@@ -928,15 +1481,37 @@ ${bodyHtml}
       el.saveRml.addEventListener("click", saveRml);
       el.saveRcss.addEventListener("click", saveRcss);
       el.downloadAll.addEventListener("click", downloadAll);
+      el.moveMode.addEventListener("click", toggleMoveMode);
+      el.undoMove.addEventListener("click", undoLastAction);
       el.viewportW.addEventListener("input", updatePreview);
       el.viewportH.addEventListener("input", updatePreview);
       el.basePath.addEventListener("input", updatePreview);
+      el.previewFrame.addEventListener("load", installPreviewDesigner);
       el.fitPreview.addEventListener("click", () => {
         state.fitScale = !state.fitScale;
         el.fitPreview.textContent = state.fitScale ? "Fit" : "1:1";
         fitPreview();
       });
       window.addEventListener("resize", fitPreview);
+      window.addEventListener("keydown", handleUndoShortcut, true);
+    }
+
+    function toggleMoveMode() {
+      state.moveMode = !state.moveMode;
+      el.moveMode.textContent = state.moveMode ? "Move On" : "Move Off";
+      el.moveMode.classList.toggle("active", state.moveMode);
+
+      const doc = el.previewFrame.contentDocument;
+      if (doc && doc.body) {
+        doc.body.classList.toggle("__rml_editor_move_mode", state.moveMode);
+      }
+
+      setStatus(
+        state.moveMode
+          ? "Move mode enabled. Drag a preview block, then Save RCSS."
+          : "Move mode disabled.",
+        state.moveMode ? "ok" : ""
+      );
     }
 
     function seedEmptyEditor() {

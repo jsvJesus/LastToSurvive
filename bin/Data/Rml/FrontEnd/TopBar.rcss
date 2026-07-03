@@ -188,8 +188,8 @@
 }
 
 .topbar_money_icon {
-	width: 26px;
-	height: 26px;
+	width: 36px;
+	height: 36px;
 
 	margin-right: 8px;
 }

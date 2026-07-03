@@ -1805,6 +1805,8 @@ void RmlFrontEndContext::Render()
 			RenderFrame();
 	}
 
+	KeepTopBarOnTop();
+
 	RmlRuntime::Get().
 		RenderContext(
 			Context,
@@ -2420,11 +2422,10 @@ void RmlFrontEndContext::ShowMainMenu()
 	SkillsDocument->Hide();
 	ShopDocument->Hide();
 	MainMenuDocument->Show();
-	TopBarDocument->Show();
+	CurrentScreen = EScreen::MainMenu;
+	
 	RefreshTopBar();
-
-	CurrentScreen =
-		EScreen::MainMenu;
+	KeepTopBarOnTop();
 
 	SetMainMenuControlsEnabled(
 		!IsBusy()
@@ -2486,18 +2487,10 @@ void RmlFrontEndContext::ShowSkills()
 	CharacterCreateDocument->Hide();
 	ShopDocument->Hide();
 	SkillsDocument->Show();
-
-	TopBarDocument->Show(
-		Rml::ModalFlag::None,
-		Rml::FocusFlag::None
-	);
-
-	TopBarDocument->PullToFront();
+	CurrentScreen = EScreen::Skills;
 
 	RefreshTopBar();
-
-	CurrentScreen =
-		EScreen::Skills;
+	KeepTopBarOnTop();
 
 	BuildSkills();
 
@@ -2540,18 +2533,10 @@ void RmlFrontEndContext::ShowShop()
 	CharacterCreateDocument->Hide();
 	SkillsDocument->Hide();
 	ShopDocument->Show();
-
-	TopBarDocument->Show(
-		Rml::ModalFlag::None,
-		Rml::FocusFlag::None
-	);
-
-	TopBarDocument->PullToFront();
+	CurrentScreen = EScreen::Shop;
 
 	RefreshTopBar();
-
-	CurrentScreen =
-		EScreen::Shop;
+	KeepTopBarOnTop();
 
 	BuildShop();
 
@@ -8379,32 +8364,20 @@ void RmlFrontEndContext::RefreshTopBar()
 	if (!TopBarDocument)
 		return;
 
+	const bool bHomeActive =
+		CurrentScreen == EScreen::MainMenu;
+
+	const bool bSkillsActive =
+		CurrentScreen == EScreen::Skills;
+
+	const bool bShopActive =
+		CurrentScreen == EScreen::Shop;
+
 	SetElementClass(
 		TopBarDocument,
 		"nav_home",
 		"active",
-		CurrentScreen == EScreen::MainMenu
-	);
-
-	SetElementClass(
-		TopBarDocument,
-		"nav_skills",
-		"active",
-		CurrentScreen == EScreen::Skills
-	);
-
-	SetElementClass(
-		TopBarDocument,
-		"nav_shop",
-		"active",
-		CurrentScreen == EScreen::Shop
-	);
-
-	SetElementClass(
-		TopBarDocument,
-		"nav_equipment",
-		"active",
-		false
+		bHomeActive
 	);
 
 	SetElementClass(
@@ -8412,6 +8385,20 @@ void RmlFrontEndContext::RefreshTopBar()
 		"nav_inventory",
 		"active",
 		false
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_skills",
+		"active",
+		bSkillsActive
+	);
+
+	SetElementClass(
+		TopBarDocument,
+		"nav_shop",
+		"active",
+		bShopActive
 	);
 
 	SetElementClass(
@@ -8427,4 +8414,28 @@ void RmlFrontEndContext::RefreshTopBar()
 		"active",
 		false
 	);
+
+	KeepTopBarOnTop();
+}
+
+void RmlFrontEndContext::KeepTopBarOnTop()
+{
+	if (!TopBarDocument)
+		return;
+
+	if (
+		CurrentScreen != EScreen::MainMenu &&
+		CurrentScreen != EScreen::Skills &&
+		CurrentScreen != EScreen::Shop
+	)
+	{
+		return;
+	}
+
+	TopBarDocument->Show(
+		Rml::ModalFlag::None,
+		Rml::FocusFlag::None
+	);
+
+	TopBarDocument->PullToFront();
 }
