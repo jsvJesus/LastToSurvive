@@ -4795,6 +4795,12 @@ void RmlFrontEndContext::BuildMainMenu()
 	);
 
 	SetElementText(
+		TopBarDocument,
+		"top_survivor_name",
+		Character.Gamertag
+	);
+
+	SetElementText(
 		MainMenuDocument,
 		"top_survivor_role",
 		CharacterRole

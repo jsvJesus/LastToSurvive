@@ -342,7 +342,7 @@
         </div>
         <div id="previewWrap" class="preview-wrap">
           <div id="stageShell" class="stage-shell">
-            <iframe id="previewFrame" sandbox="allow-same-origin"></iframe>
+            <iframe id="previewFrame" sandbox="allow-same-origin" tabindex="0"></iframe>
           </div>
         </div>
       </section>
@@ -410,6 +410,15 @@
     function setStatus(message, type) {
       el.statusText.textContent = message;
       el.statusText.className = type || "";
+    }
+
+    function updateUndoUi() {
+      if (!el.undoMove) {
+        return;
+      }
+
+      el.undoMove.disabled = state.undoStack.length <= 0;
+      el.undoMove.textContent = state.undoStack.length > 0 ? `Undo (${state.undoStack.length})` : "Undo";
     }
 
     function normalizeSlashes(path) {
@@ -761,10 +770,39 @@ ${bodyHtml}
         }
 
         updateSelectedMeta();
+        revealSourceForSelection(node);
+      }
+
+      function getAbsoluteStartPosition(node) {
+        const rect = node.getBoundingClientRect();
+        const offsetParent = node.offsetParent || doc.body;
+        let parentLeft = 0;
+        let parentTop = 0;
+        let parentScrollLeft = 0;
+        let parentScrollTop = 0;
+
+        if (
+          offsetParent &&
+          offsetParent !== doc.body &&
+          offsetParent !== doc.documentElement
+        ) {
+          const parentRect = offsetParent.getBoundingClientRect();
+          parentLeft = parentRect.left;
+          parentTop = parentRect.top;
+          parentScrollLeft = offsetParent.scrollLeft || 0;
+          parentScrollTop = offsetParent.scrollTop || 0;
+        }
+
+        return {
+          left: Math.round(rect.left - parentLeft + parentScrollLeft),
+          top: Math.round(rect.top - parentTop + parentScrollTop),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height)
+        };
       }
 
       function startDrag(event) {
-        if (!state.moveMode) {
+        if (!state.moveMode || event.button !== 0) {
           return;
         }
 
@@ -784,6 +822,8 @@ ${bodyHtml}
           startY: event.clientY,
           startLeft: 0,
           startTop: 0,
+          width: 0,
+          height: 0,
           active: false
         };
       }
@@ -803,14 +843,25 @@ ${bodyHtml}
             return;
           }
 
-          drag.startLeft = Math.round(drag.target.offsetLeft);
-          drag.startTop = Math.round(drag.target.offsetTop);
+          const start = getAbsoluteStartPosition(drag.target);
+          drag.startLeft = start.left;
+          drag.startTop = start.top;
+          drag.width = start.width || Math.round(drag.target.getBoundingClientRect().width);
+          drag.height = start.height || Math.round(drag.target.getBoundingClientRect().height);
           drag.active = true;
 
           drag.target.classList.add("__rml_editor_dragging");
           drag.target.style.position = "absolute";
           drag.target.style.left = drag.startLeft + "px";
           drag.target.style.top = drag.startTop + "px";
+          drag.target.style.marginLeft = "0px";
+          drag.target.style.marginTop = "0px";
+          if (drag.width > 0) {
+            drag.target.style.width = drag.width + "px";
+          }
+          if (drag.height > 0) {
+            drag.target.style.height = drag.height + "px";
+          }
         }
 
         const left = Math.round(drag.startLeft + event.clientX - drag.startX);
@@ -839,14 +890,72 @@ ${bodyHtml}
 
         drag.target.classList.remove("__rml_editor_dragging");
         writePositionToRcss(state.selectedSelector, left, top);
+        el.previewFrame.focus();
         drag = null;
       }
 
+      function selectOnClick(event) {
+        if (state.moveMode || event.button !== 0) {
+          return;
+        }
+
+        const target = selectableTarget(event.target);
+        if (!target) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        selectElement(target);
+      }
+
       doc.addEventListener("mousedown", startDrag, true);
+      doc.addEventListener("click", selectOnClick, true);
       doc.addEventListener("mousemove", moveDrag, true);
       doc.addEventListener("mouseup", endDrag, true);
       doc.addEventListener("mouseleave", endDrag, true);
       doc.addEventListener("keydown", handleUndoShortcut, true);
+      doc.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const frameRect = el.previewFrame.getBoundingClientRect();
+        zoomPreviewAtClient(
+          frameRect.left + event.clientX,
+          frameRect.top + event.clientY,
+          event.deltaY
+        );
+      }, { passive: false, capture: true });
+      doc.addEventListener("mousedown", (event) => {
+        if (event.button !== 2) {
+          return;
+        }
+
+        const frameRect = el.previewFrame.getBoundingClientRect();
+        startPreviewPan(
+          frameRect.left + event.clientX,
+          frameRect.top + event.clientY,
+          event
+        );
+      }, true);
+      doc.addEventListener("mousemove", (event) => {
+        if (!state.previewPan) {
+          return;
+        }
+
+        const frameRect = el.previewFrame.getBoundingClientRect();
+        movePreviewPan(
+          frameRect.left + event.clientX,
+          frameRect.top + event.clientY,
+          event
+        );
+      }, true);
+      doc.addEventListener("mouseup", (event) => {
+        if (event.button === 2) {
+          endPreviewPan(event);
+        }
+      }, true);
+      doc.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+      }, true);
 
       if (state.selectedSelector) {
         try {
@@ -1018,6 +1127,11 @@ ${bodyHtml}
       return block.replace(/\s*$/, insert + "\n");
     }
 
+    function hasDeclaration(block, property) {
+      const pattern = new RegExp(`(^|\\n)\\s*${property}\\s*:`, "i");
+      return pattern.test(block);
+    }
+
     function updateRulePosition(css, selector, left, top) {
       const range = findRuleRange(css, selector);
 
@@ -1029,6 +1143,12 @@ ${bodyHtml}
       block = setDeclaration(block, "position", "absolute");
       block = setDeclaration(block, "left", `${left}px`);
       block = setDeclaration(block, "top", `${top}px`);
+      if (hasDeclaration(block, "margin-left")) {
+        block = setDeclaration(block, "margin-left", "0px");
+      }
+      if (hasDeclaration(block, "margin-top")) {
+        block = setDeclaration(block, "margin-top", "0px");
+      }
 
       return css.slice(0, range.open + 1) + block + css.slice(range.close);
     }
@@ -1077,6 +1197,7 @@ ${bodyHtml}
         selector,
         selectedRcss: state.selectedRcss
       });
+      updateUndoUi();
 
       if (targetName !== state.selectedRcss) {
         state.selectedRcss = targetName;
@@ -1095,6 +1216,7 @@ ${bodyHtml}
 
     function undoLastAction() {
       const action = state.undoStack.pop();
+      updateUndoUi();
       if (!action) {
         setStatus("Nothing to undo.", "");
         return;
@@ -1133,7 +1255,12 @@ ${bodyHtml}
     }
 
     function handleUndoShortcut(event) {
-      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== "z") {
+      const isUndoKey =
+        event.code === "KeyZ" ||
+        String(event.key || "").toLowerCase() === "z" ||
+        String(event.key || "").toLowerCase() === "я";
+
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || !isUndoKey) {
         return;
       }
 
@@ -1338,6 +1465,8 @@ ${bodyHtml}
       state.selectedRcss = el.rcssSelect.value || "";
       state.dirtyRml = false;
       state.dirtyRcss = false;
+      state.undoStack = [];
+      updateUndoUi();
 
       loadSelectedIntoEditors();
     }
@@ -1487,11 +1616,27 @@ ${bodyHtml}
       el.viewportH.addEventListener("input", updatePreview);
       el.basePath.addEventListener("input", updatePreview);
       el.previewFrame.addEventListener("load", installPreviewDesigner);
+      el.previewWrap.addEventListener("wheel", handlePreviewWheel, { passive: false });
+      el.previewWrap.addEventListener("mousedown", (event) => {
+        if (event.button === 2) {
+          startPreviewPan(event.clientX, event.clientY, event);
+        }
+      });
+      el.previewWrap.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+      });
       el.fitPreview.addEventListener("click", () => {
         state.fitScale = !state.fitScale;
+        if (!state.fitScale) {
+          state.previewScale = 1;
+        }
         el.fitPreview.textContent = state.fitScale ? "Fit" : "1:1";
         fitPreview();
       });
+      window.addEventListener("mousemove", (event) => {
+        movePreviewPan(event.clientX, event.clientY, event);
+      });
+      window.addEventListener("mouseup", endPreviewPan);
       window.addEventListener("resize", fitPreview);
       window.addEventListener("keydown", handleUndoShortcut, true);
     }
@@ -1524,6 +1669,7 @@ ${bodyHtml}
 
     bindEvents();
     seedEmptyEditor();
+    updateUndoUi();
   </script>
 </body>
 </html>

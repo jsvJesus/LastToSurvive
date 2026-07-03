@@ -9,28 +9,33 @@
 
 	<div class="topbar_root">
 
-		<div class="topbar_left_profile">
-			<div class="topbar_profile_text">
-				<div id="account_name" class="topbar_profile_name">ACCOUNT</div>
+		<img class="topbar_background" src="../Assets/MainMenu/Top_Bar.png"/>
+
+		<div class="topbar_level_block">
+			<img class="topbar_level_badge" src="../Assets/MainMenu/badge_lvl/topbar_lvl_badge.png"/>
+			<div id="top_level_value" class="topbar_level_value">5</div>
+			<div class="topbar_level_title">LVL</div>
+			<div id="top_survivor_name" class="topbar_character_name">ES3N1N</div>
+
+			<div class="topbar_level_progress_bg">
+				<div id="top_level_xp_fill" class="topbar_level_progress_fill"></div>
 			</div>
 		</div>
 
 		<div class="topbar_money">
-			<div class="topbar_money_item currency_zc">
-				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zc.png"/>
-				<div id="balance_gc" class="topbar_money_value">0</div>
-				<button id="btn_money_zc" class="topbar_money_add">+</button>
+			<div class="topbar_money_item">
+				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zc.png"/>
+				<div id="balance_gc" class="topbar_money_value">999999999</div>
 			</div>
 
-			<div class="topbar_money_item currency_zd">
-				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zd.png"/>
-				<div id="balance_gd" class="topbar_money_value">0</div>
-				<button id="btn_money_zd" class="topbar_money_add">+</button>
+			<div class="topbar_money_item">
+				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zd.png"/>
+				<div id="balance_gd" class="topbar_money_value">999999999</div>
 			</div>
 
-			<div class="topbar_money_item currency_zlt">
-				<img class="topbar_money_icon" src="../Assets/btn_store/btn_money_zlt.png"/>
-				<div id="balance_zlt" class="topbar_money_value">0</div>
+			<div class="topbar_money_item">
+				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zlt.png"/>
+				<div id="balance_zlt" class="topbar_money_value">999999999</div>
 			</div>
 
 			<div id="balance_ltc" class="runtime_hidden_value">0</div>
@@ -41,50 +46,41 @@
 				<div class="topbar_tab_label">HOME</div>
 			</button>
 
-			<button id="nav_inventory" class="topbar_tab">
-				<div class="topbar_tab_label">INVENTORY</div>
-			</button>
-
 			<button id="nav_skills" class="topbar_tab">
 				<div class="topbar_tab_label">SKILLS</div>
+			</button>
+
+			<button id="nav_equipment" class="topbar_tab">
+				<div class="topbar_tab_label">EQUIPMENT</div>
 			</button>
 
 			<button id="nav_shop" class="topbar_tab">
 				<div class="topbar_tab_label">SHOP</div>
 			</button>
 
-            <button id="nav_clan" class="topbar_tab">
+			<button id="nav_clan" class="topbar_tab">
 				<div class="topbar_tab_label">CLAN</div>
 			</button>
 
-            <button id="nav_awards" class="topbar_tab">
-				<div class="topbar_tab_label">AWARDS</div>
+			<button id="nav_friends" class="topbar_tab">
+				<div class="topbar_tab_label">FRIENDS</div>
 			</button>
 		</div>
 
 		<div class="topbar_actions">
-			<button id="btn_change_name" class="topbar_icon_button">
-				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_change_name.png"/>
+			<button id="btn_change_name" class="topbar_action_button change_name">
 				<div class="topbar_tooltip">CHANGE NAME</div>
 			</button>
 
-			<button id="btn_change_character" class="topbar_icon_button">
-				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_change_character.png"/>
-				<div class="topbar_tooltip">EDIT CHARACTER</div>
-			</button>
-
-			<button id="btn_rewards" class="topbar_icon_button">
-				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_rating.png"/>
+			<button id="btn_rewards" class="topbar_action_button rating">
 				<div class="topbar_tooltip">RATING</div>
 			</button>
 
-			<button id="btn_settings" class="topbar_icon_button">
-				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_settings.png"/>
-				<div class="topbar_tooltip">SETTINGS</div>
+			<button id="btn_settings" class="topbar_action_button options">
+				<div class="topbar_tooltip">OPTIONS</div>
 			</button>
 
-			<button id="btn_frontend_exit" class="topbar_icon_button">
-				<img class="topbar_icon_image" src="../Assets/btn_ico/btn_frontend_exit.png"/>
+			<button id="btn_frontend_exit" class="topbar_action_button exit">
 				<div class="topbar_tooltip">EXIT</div>
 			</button>
 		</div>

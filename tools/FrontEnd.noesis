@@ -1,0 +1,4 @@
+<Project>
+  <Assembly>FrontEnd</Assembly>
+  <DefaultDataNamespace>FrontEnd</DefaultDataNamespace>
+</Project>

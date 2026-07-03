@@ -1,5 +1,5 @@
 /* ============================================================
-   TOP BAR ONLY
+   TOP BAR - NOESIS CONVERTED
    ============================================================ */
 
 .topbar_body {
@@ -8,7 +8,10 @@
 	top: 0px;
 
 	width: 100%;
-	height: 88px;
+	height: 78px;
+
+	margin: 0px;
+	padding: 0px;
 
 	overflow: visible;
 
@@ -21,155 +24,138 @@
 	top: 0px;
 
 	width: 100%;
-	height: 88px;
+	height: 78px;
 
 	overflow: visible;
 
-	background-color: rgba(6, 9, 11, 255);
-
-	border-bottom-width: 1px;
-	border-bottom-color: rgba(217, 109, 42, 255);
+	background-color: #4d5052;
 }
 
-/* LEFT PROFILE */
-
-.topbar_left_profile {
+.topbar_background {
 	position: absolute;
-	left: 34px;
+	left: 0px;
+	top: 0px;
+
+	width: 1920px;
+	height: 78px;
+
+	pointer-events: none;
+}
+
+
+/* LEVEL / CHARACTER */
+
+.topbar_level_block {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 245px;
+	height: 78px;
+
+	overflow: visible;
+}
+
+.topbar_level_badge {
+	position: absolute;
+	left: 12px;
 	top: 9px;
 
-	width: 250px;
-	height: 34px;
+	width: 67px;
+	height: 62px;
 
-	display: flex;
-	align-items: center;
-}
-
-.topbar_faction_icon {
-	width: 44px;
-	height: 44px;
-
-	margin-right: 10px;
-	padding-top: 15px;
-
-	color: #ffffff;
-	background-color: rgba(10, 14, 17, 255);
-
-	border-width: 1px;
-	border-color: rgba(89, 101, 108, 255);
-
-	font-size: 13px;
-	font-weight: bold;
-	text-align: center;
-}
-
-.topbar_profile_text {
-	width: 190px;
-	height: 34px;
-
-	padding-top: 0px;
-
-	overflow: hidden;
-}
-
-.topbar_profile_label {
-	color: #6f7b82;
-
-	font-size: 8px;
-	font-weight: bold;
-	letter-spacing: 2px;
-	line-height: 11px;
-}
-
-.topbar_profile_name {
-	width: 190px;
-	height: 24px;
-
-	margin-top: 5px;
-
-	overflow: hidden;
-
-	color: #ffffff;
-
-	font-size: 15px;
-	font-weight: bold;
-	letter-spacing: 2px;
-	line-height: 18px;
-
-	white-space: nowrap;
-}
-
-.topbar_profile_role {
-	margin-top: 1px;
-
-	color: #d96d2a;
-
-	font-size: 8px;
-	font-weight: bold;
-	letter-spacing: 2px;
-	line-height: 11px;
-}
-
-.topbar_level_row {
-	width: 190px;
-	height: 11px;
-
-	margin-top: 2px;
-
-	display: flex;
-	align-items: center;
-}
-
-.topbar_level_label {
-	color: #6f7b82;
-
-	font-size: 7px;
-	font-weight: bold;
-	letter-spacing: 1px;
+	pointer-events: none;
 }
 
 .topbar_level_value {
-	margin-left: 4px;
+	position: absolute;
+	left: 20px;
+	top: 14px;
+
+	width: 48px;
+	height: 38px;
 
 	color: #ffffff;
 
+	font-family: "Play";
+	font-size: 24px;
+	font-weight: bold;
+	line-height: 38px;
+	text-align: center;
+
+	pointer-events: none;
+}
+
+.topbar_level_title {
+	position: absolute;
+	left: 80px;
+	top: 27px;
+
+	width: 24px;
+	height: 12px;
+
+	color: #e1e9ed;
+
 	font-size: 8px;
-	font-weight: bold;
+	line-height: 12px;
+	text-align: left;
+
+	pointer-events: none;
 }
 
-.topbar_xp_text {
-	margin-left: 8px;
+.topbar_character_name {
+	position: absolute;
+	left: 105px;
+	top: 27px;
 
-	color: #7f8a90;
+	width: 125px;
+	height: 12px;
 
-	font-size: 7px;
-	font-weight: bold;
+	overflow: hidden;
+
+	color: #e1e9ed;
+
+	font-size: 8px;
+	line-height: 12px;
+	text-align: right;
+
+	white-space: nowrap;
+
+	pointer-events: none;
 }
 
-.topbar_xp_bar {
-	width: 160px;
-	height: 3px;
+.topbar_level_progress_bg {
+	position: absolute;
+	left: 80px;
+	top: 39px;
 
-	margin-top: 3px;
+	width: 150px;
+	height: 10px;
 
-	background-color: rgba(0, 0, 0, 255);
+	background-color: rgba(0, 0, 0, 0);
+
+	border-width: 1px;
+	border-color: #222222;
+
+	overflow: hidden;
 }
 
-.topbar_xp_fill {
-	width: 0%;
-	height: 3px;
+.topbar_level_progress_fill {
+	width: 50%;
+	height: 100%;
 
-	background-color: #d96d2a;
+	background-color: #700d0d;
 }
+
 
 /* MONEY */
 
 .topbar_money {
 	position: absolute;
-	left: 292px;
-	top: 8px;
+	left: 325px;
+	top: 21px;
 
-	width: 440px;
+	width: 590px;
 	height: 36px;
 
 	display: flex;
@@ -179,177 +165,132 @@
 }
 
 .topbar_money_item {
+	width: 190px;
 	height: 36px;
 
-	margin-right: 14px;
+	margin-right: 12px;
 
 	display: flex;
 	align-items: center;
+
+	overflow: visible;
 }
 
 .topbar_money_icon {
 	width: 36px;
 	height: 36px;
 
-	margin-right: 8px;
+	margin-right: 0px;
+
+	flex-grow: 0;
+	flex-shrink: 0;
+
+	pointer-events: none;
 }
 
 .topbar_money_value {
-	min-width: 76px;
-	height: 28px;
-
-	padding-top: 5px;
-
-	color: #ffffff;
-
-	font-size: 15px;
-	font-weight: bold;
-	line-height: 17px;
-	text-align: left;
-	letter-spacing: 1px;
-
-	white-space: nowrap;
-}
-
-.currency_zc .topbar_money_value {
-	color: #ffb15e;
-}
-
-.currency_zd .topbar_money_value {
-	color: #e8eef0;
-}
-
-.currency_zlt .topbar_money_value {
-	color: #f1d27a;
-}
-
-.topbar_money_add {
-	width: 20px;
+	width: 75px;
 	height: 20px;
 
-	margin-left: 4px;
-	padding: 0px;
+	margin-left: 0px;
+	padding: 0px 5px;
 
 	color: #ffffff;
-	background-color: rgba(28, 36, 40, 255);
 
-	border-width: 1px;
-	border-color: rgba(113, 127, 134, 255);
+	background-image: url("../Assets/MainMenu/topbar_money_bg.png");
 
-	font-size: 13px;
-	font-weight: bold;
-	line-height: 16px;
-	text-align: center;
+	font-family: "Play";
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 20px;
+	text-align: right;
 
+	white-space: nowrap;
+
+	flex-grow: 0;
+	flex-shrink: 0;
 }
 
-.topbar_money_add:hover {
-	background-color: rgba(72, 36, 20, 255);
-	border-color: #e07830;
-}
 
-/* CENTER TABS */
+/* CENTER MENU */
 
 .topbar_tabs {
 	position: absolute;
-	left: 50%;
-	top: 47px;
+	left: 650px;
+	top: 17px;
 
-	width: 640px;
-	height: 36px;
-
-	margin-left: -320px;
+	width: 1000px;
+	height: 43px;
 
 	display: flex;
 	align-items: center;
+
+	overflow: visible;
 }
 
 .topbar_tab {
 	position: relative;
 
-	width: 128px;
-	height: 36px;
+	width: 150px;
+	height: 43px;
 
-	margin-right: 1px;
+	margin-right: 20px;
 	padding: 0px;
 
-	color: #d9e1e4;
-	background-color: rgba(12, 17, 21, 255);
+	color: #e1e9ed;
 
-	border-width: 1px;
-	border-color: rgba(63, 75, 83, 255);
-	border-bottom-width: 2px;
-	border-bottom-color: rgba(0, 0, 0, 255);
+	background-color: rgba(0, 0, 0, 0);
+	background-image: url("../Assets/MainMenu/btn_tabs/button_top_bar.png");
+
+	border-width: 0px;
 
 	font-size: 0px;
 
-	text-shadow: none;
+	flex-grow: 0;
+	flex-shrink: 0;
 }
 
 .topbar_tab:hover {
 	color: #ffffff;
-	background-color: rgba(34, 44, 50, 255);
 
-	border-color: rgba(120, 132, 140, 255);
-	border-bottom-color: #d96d2a;
-
+	filter: none;
 }
 
 .topbar_tab.active {
 	color: #ffffff;
-	background-color: rgba(144, 43, 32, 255);
 
-	border-color: rgba(255, 137, 82, 255);
-	border-bottom-width: 3px;
-	border-bottom-color: #ff9a55;
-}
-
-.topbar_tab.shop {
-	background-color: rgba(86, 68, 31, 255);
-
-	border-color: rgba(170, 146, 76, 255);
-}
-
-.topbar_tab.shop.active,
-.topbar_tab.shop:hover {
-	color: #ffffff;
-	background-color: rgba(150, 116, 45, 255);
-
-	border-color: rgba(230, 194, 105, 255);
-	border-bottom-color: #f1c864;
+	filter: none;
 }
 
 .topbar_tab_label {
 	position: absolute;
 	left: 0px;
-	top: 9px;
+	top: 0px;
 
-	width: 100%;
-	height: 18px;
+	width: 150px;
+	height: 43px;
 
 	color: inherit;
 
-	font-size: 12px;
-	font-weight: bold;
-	line-height: 15px;
-	letter-spacing: 1px;
-
+	font-family: "Exo 2";
+	font-size: 24px;
+	font-weight: normal;
+	line-height: 43px;
 	text-align: center;
-	white-space: nowrap;
 
-	text-shadow: 0px 1px 2px rgba(0, 0, 0, 255);
 	pointer-events: none;
 }
 
-/* RIGHT ICONS */
+
+/* RIGHT ACTION BUTTONS */
 
 .topbar_actions {
 	position: absolute;
-	right: 34px;
-	top: 7px;
+	right: 20px;
+	top: 10px;
 
-	width: 230px;
-	height: 42px;
+	width: 192px;
+	height: 58px;
 
 	display: flex;
 	align-items: center;
@@ -358,51 +299,49 @@
 	overflow: visible;
 }
 
-.topbar_icon_button {
+.topbar_action_button {
 	position: relative;
 
-	width: 38px;
-	height: 38px;
+	width: 48px;
+	height: 58px;
 
-	margin-left: 4px;
+	margin-left: 0px;
 	padding: 0px;
 
-	background-color: rgba(16, 21, 25, 255);
+	background-color: rgba(0, 0, 0, 0);
 
-	border-width: 1px;
-	border-color: rgba(65, 76, 84, 255);
-	border-bottom-width: 2px;
-	border-bottom-color: rgba(0, 0, 0, 255);
+	border-width: 0px;
 
+	flex-grow: 0;
+	flex-shrink: 0;
 }
 
-.topbar_icon_button:hover {
-	background-color: rgba(31, 39, 45, 255);
-
-	border-color: rgba(217, 109, 42, 255);
-	border-bottom-color: #d96d2a;
-
+.topbar_action_button.change_name {
+	background-image: url("../Assets/MainMenu/btn_actions/btn_change_name.png");
 }
 
-.topbar_icon_image {
-	width: 38px;
-	height: 38px;
-
-	opacity: 0.78;
-
-	pointer-events: none;
+.topbar_action_button.rating {
+	background-image: url("../Assets/MainMenu/btn_actions/btn_rating.png");
 }
 
-.topbar_icon_button:hover .topbar_icon_image {
-	opacity: 1.00;
+.topbar_action_button.options {
+	background-image: url("../Assets/MainMenu/btn_actions/btn_settings.png");
+}
+
+.topbar_action_button.exit {
+	background-image: url("../Assets/MainMenu/btn_actions/btn_frontend_exit.png");
+}
+
+.topbar_action_button:hover {
+	filter: none;
 }
 
 .topbar_tooltip {
 	display: none;
 
 	position: absolute;
-	left: -45px;
-	top: 50px;
+	left: -42px;
+	top: 62px;
 
 	width: 132px;
 	height: 26px;
@@ -426,6 +365,6 @@
 	pointer-events: none;
 }
 
-.topbar_icon_button:hover .topbar_tooltip {
+.topbar_action_button:hover .topbar_tooltip {
 	display: block;
 }
