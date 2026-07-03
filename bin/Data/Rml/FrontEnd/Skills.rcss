@@ -24,11 +24,9 @@
 
 	height: 100%;
 
-	background-color: rgba(8, 12, 15, 0.90);
-	decorator: linear-gradient(180deg, #1d262b, #0d1316 58%, #06090b) border-box;
-
+	background-color: rgba(8, 12, 15, 230);
 	border-width: 1px;
-	border-color: rgba(88, 100, 106, 0.62);
+	border-color: rgba(88, 100, 106, 158);
 
 	overflow: hidden;
 }
@@ -67,7 +65,7 @@
 	align-items: center;
 
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(84, 96, 102, 0.55);
+	border-bottom-color: rgba(84, 96, 102, 140);
 }
 
 .skills_panel_title {
@@ -96,7 +94,7 @@
 
 	padding-top: 6px;
 
-	background-color: rgba(161, 54, 47, 0.92);
+	background-color: rgba(161, 54, 47, 235);
 
 	border-width: 1px;
 	border-color: #d75f51;
@@ -128,10 +126,10 @@
 
 	display: flex;
 
-	background-color: rgba(5, 8, 10, 0.66);
+	background-color: rgba(5, 8, 10, 168);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.66);
+	border-color: rgba(67, 78, 84, 168);
 }
 
 .skills_survivor_level {
@@ -140,7 +138,7 @@
 
 	padding-top: 12px;
 
-	background-color: rgba(160, 55, 47, 0.88);
+	background-color: rgba(160, 55, 47, 224);
 
 	text-align: center;
 
@@ -241,15 +239,15 @@
 
 	text-align: left;
 
-	background-color: rgba(9, 14, 17, 0.82);
+	background-color: rgba(9, 14, 17, 209);
 
-	border-color: rgba(64, 76, 82, 0.72);
+	border-color: rgba(64, 76, 82, 184);
 }
 
 .skill_category_button.active,
 .skill_category_button.selected,
 .skill_category_button:hover {
-	background-color: rgba(91, 35, 29, 0.90);
+	background-color: rgba(91, 35, 29, 230);
 
 	border-color: #d45c4c;
 	border-left-width: 4px;
@@ -301,9 +299,7 @@
 	width: 100%;
 	height: 42px;
 
-	background-color: rgba(153, 54, 45, 0.94);
-	decorator: linear-gradient(180deg, #cc5548, #96352e 54%, #541b18) border-box;
-
+	background-color: rgba(153, 54, 45, 240);
 	border-color: #d75f51;
 
 	font-size: 13px;
@@ -405,10 +401,10 @@
 	margin-bottom: 8px;
 	padding: 10px;
 
-	background-color: rgba(8, 12, 15, 0.92);
+	background-color: rgba(8, 12, 15, 230);
 
 	border-width: 1px;
-	border-color: rgba(64, 76, 82, 0.72);
+	border-color: rgba(64, 76, 82, 184);
 
 	text-align: center;
 }
@@ -428,7 +424,7 @@
 
 .skill_node.selected,
 .skill_node:hover {
-	background-color: rgba(91, 35, 29, 0.90);
+	background-color: rgba(91, 35, 29, 230);
 	border-color: #f1765a;
 }
 
@@ -489,7 +485,7 @@
 	padding-top: 8px;
 
 	color: #ffffff;
-	background-color: rgba(161, 54, 47, 0.90);
+	background-color: rgba(161, 54, 47, 235);
 
 	border-width: 1px;
 	border-color: #d75f51;
@@ -508,10 +504,10 @@
 
 	display: flex;
 
-	background-color: rgba(5, 8, 10, 0.66);
+	background-color: rgba(5, 8, 10, 168);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.66);
+	border-color: rgba(67, 78, 84, 168);
 }
 
 .selected_skill_icon {
@@ -521,7 +517,7 @@
 	padding-top: 22px;
 
 	color: #ffffff;
-	background-color: rgba(160, 55, 47, 0.88);
+	background-color: rgba(160, 55, 47, 224);
 
 	font-size: 18px;
 	font-weight: bold;
@@ -571,7 +567,7 @@
 	align-items: center;
 
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(67, 78, 84, 0.40);
+	border-bottom-color: rgba(67, 78, 84, 168);
 }
 
 .skill_detail_label {
@@ -598,10 +594,10 @@
 
 	padding: 12px;
 
-	background-color: rgba(5, 8, 10, 0.66);
+	background-color: rgba(5, 8, 10, 168);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.66);
+	border-color: rgba(67, 78, 84, 168);
 }
 
 .skill_requirements_title {

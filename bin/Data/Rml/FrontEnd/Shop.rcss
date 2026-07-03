@@ -24,11 +24,9 @@
 
 	height: 100%;
 
-	background-color: rgba(8, 12, 15, 0.90);
-	decorator: linear-gradient(180deg, #1d262b, #0d1316 58%, #06090b) border-box;
-
+	background-color: rgba(8, 12, 15, 230);
 	border-width: 1px;
-	border-color: rgba(88, 100, 106, 0.62);
+	border-color: rgba(88, 100, 106, 158);
 
 	overflow: hidden;
 }
@@ -77,7 +75,7 @@
 	align-items: center;
 
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(84, 96, 102, 0.55);
+	border-bottom-color: rgba(84, 96, 102, 140);
 }
 
 .shop_panel_title {
@@ -111,9 +109,9 @@
 
 	text-align: left;
 
-	background-color: rgba(9, 14, 17, 0.82);
+	background-color: rgba(9, 14, 17, 209);
 
-	border-color: rgba(64, 76, 82, 0.72);
+	border-color: rgba(64, 76, 82, 184);
 
 	font-size: 11px;
 	letter-spacing: 1px;
@@ -125,7 +123,7 @@
 .shop_tab_button.active,
 .shop_tab_button.selected,
 .shop_tab_button:hover {
-	background-color: rgba(91, 35, 29, 0.90);
+	background-color: rgba(91, 35, 29, 230);
 
 	border-color: #d45c4c;
 	border-left-width: 4px;
@@ -170,9 +168,9 @@
 
 	margin-right: 1%;
 
-	background-color: rgba(9, 14, 17, 0.82);
+	background-color: rgba(9, 14, 17, 209);
 
-	border-color: rgba(64, 76, 82, 0.72);
+	border-color: rgba(64, 76, 82, 184);
 
 	font-size: 10px;
 	letter-spacing: 1px;
@@ -189,11 +187,9 @@
 	flex-wrap: wrap;
 	align-content: flex-start;
 
-	background-color: rgba(3, 5, 6, 0.50);
-	decorator: linear-gradient(180deg, #10161a, #070b0d) border-box;
-
+	background-color: rgba(3, 5, 6, 128);
 	border-width: 1px;
-	border-color: rgba(74, 86, 92, 0.56);
+	border-color: rgba(74, 86, 92, 143);
 
 	padding: 0px;
 
@@ -218,9 +214,9 @@
 
 	text-align: left;
 
-	background-color: rgba(9, 14, 17, 0.88);
+	background-color: rgba(9, 14, 17, 209);
 
-	border-color: rgba(64, 76, 82, 0.74);
+	border-color: rgba(64, 76, 82, 184);
 	border-width: 1px;
 }
 
@@ -256,16 +252,14 @@
 
 .shop_item_card:hover,
 .shop_item_card.selected {
-	background-color: rgba(82, 34, 29, 0.94);
+	background-color: rgba(82, 34, 29, 240);
 
 	border-color: #f1765a;
-
-	filter: drop-shadow(#e879324c 0px 0px 8px);
 }
 
 .shop_item_card.locked {
 	color: #707a7f;
-	background-color: rgba(7, 10, 12, 0.84);
+	background-color: rgba(7, 10, 12, 214);
 
 	border-color: #30393e;
 }
@@ -353,10 +347,10 @@
 	padding-top: 2px;
 
 	color: #ffffff;
-	background-color: rgba(5, 8, 10, 0.82);
+	background-color: rgba(5, 8, 10, 209);
 
 	border-width: 1px;
-	border-color: rgba(97, 109, 116, 0.70);
+	border-color: rgba(97, 109, 116, 178);
 
 	font-size: 8px;
 	font-weight: bold;
@@ -400,7 +394,7 @@
 	padding-top: 2px;
 
 	color: #f4d061;
-	background-color: rgba(5, 8, 10, 0.62);
+	background-color: rgba(5, 8, 10, 209);
 
 	font-size: 7px;
 	font-weight: bold;
@@ -430,10 +424,10 @@
 	top: 66px;
 	bottom: 72px;
 
-	background-color: rgba(3, 5, 6, 0.46);
+	background-color: rgba(3, 5, 6, 128);
 
 	border-width: 1px;
-	border-color: rgba(74, 86, 92, 0.56);
+	border-color: rgba(74, 86, 92, 143);
 
 	overflow: hidden;
 }
@@ -477,10 +471,10 @@
 	padding-top: 12px;
 
 	color: #78848a;
-	background-color: rgba(5, 8, 10, 0.58);
+	background-color: rgba(5, 8, 10, 209);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.55);
+	border-color: rgba(67, 78, 84, 140);
 
 	font-size: 9px;
 	font-weight: bold;
@@ -498,10 +492,10 @@
 
 	display: flex;
 
-	background-color: rgba(5, 8, 10, 0.66);
+	background-color: rgba(5, 8, 10, 209);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.66);
+	border-color: rgba(67, 78, 84, 140);
 }
 
 .selected_item_icon {
@@ -511,7 +505,7 @@
 	padding-top: 22px;
 
 	color: #ffffff;
-	background-color: rgba(160, 55, 47, 0.88);
+	background-color: rgba(160, 55, 47, 224);
 
 	font-size: 18px;
 	font-weight: bold;
@@ -561,17 +555,17 @@
 	margin-right: 2%;
 	padding-top: 8px;
 
-	background-color: rgba(5, 8, 10, 0.62);
+	background-color: rgba(5, 8, 10, 209);
 
 	border-width: 1px;
-	border-color: rgba(67, 78, 84, 0.55);
+	border-color: rgba(67, 78, 84, 140);
 
 	text-align: center;
 }
 
 .selected_price.selected,
 .selected_price:hover {
-	background-color: rgba(82, 34, 29, 0.94);
+	background-color: rgba(82, 34, 29, 240);
 
 	border-color: #f1765a;
 }
@@ -612,7 +606,7 @@
 	letter-spacing: 1px;
 
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(67, 78, 84, 0.40);
+	border-bottom-color: rgba(67, 78, 84, 140);
 }
 
 .selected_item_stat_value {
@@ -634,16 +628,14 @@
 }
 
 .shop_buy_button {
-	background-color: rgba(153, 54, 45, 0.94);
-	decorator: linear-gradient(180deg, #cc5548, #96352e 54%, #541b18) border-box;
-
+	background-color: rgba(153, 54, 45, 240);
 	border-color: #d75f51;
 }
 
 .shop_preview_button {
-	background-color: rgba(18, 25, 29, 0.92);
+	background-color: rgba(18, 25, 29, 235);
 
-	border-color: rgba(84, 98, 105, 0.78);
+	border-color: rgba(84, 98, 105, 199);
 }
 
 .shop_details_status {

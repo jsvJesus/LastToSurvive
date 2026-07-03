@@ -62,7 +62,7 @@ body {
 	width: 100%;
 	height: 100%;
 
-	background-color: rgba(0, 0, 0, 0.36);
+	background-color: rgba(0, 0, 0, 92);
 }
 
 .login_background_light {
@@ -73,7 +73,7 @@ body {
 	width: 52%;
 	height: 80%;
 
-	background-color: rgba(111, 127, 134, 0.04);
+	background-color: rgba(111, 127, 134, 10);
 }
 
 .screen_edge {
@@ -130,7 +130,7 @@ body {
 
 	z-index: 2;
 
-	background-color: rgba(0, 0, 0, 0.46);
+	background-color: rgba(0, 0, 0, 117);
 
 	pointer-events: none;
 }
@@ -145,7 +145,7 @@ body {
 
 	z-index: 3;
 
-	background-color: rgba(0, 0, 0, 0.16);
+	background-color: rgba(0, 0, 0, 41);
 
 	pointer-events: none;
 }
@@ -160,7 +160,7 @@ body {
 
 	z-index: 4;
 
-	background-color: rgba(0, 0, 0, 0.26);
+	background-color: rgba(0, 0, 0, 66);
 
 	pointer-events: none;
 }
@@ -245,7 +245,7 @@ body {
 .tactical_panel {
 	position: relative;
 
-	background-color: rgba(8, 13, 16, 0.97);
+	background-color: rgba(8, 13, 16, 247);
 
 	border-width: 1px;
 	border-color: #30393e;
@@ -325,8 +325,6 @@ button {
 
 	color: #e7eef1;
 	background-color: #12191d;
-	decorator: linear-gradient(180deg, #2a353a, #12191d 55%, #070b0d) border-box;
-
 	border-width: 1px;
 	border-color: #46535a;
 	border-bottom-width: 2px;
@@ -335,29 +333,19 @@ button {
 	font-family: "Noto Sans";
 	font-weight: bold;
 
-	text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.80);
-
-	filter: none;
+	text-shadow: 0px 1px 2px rgba(0, 0, 0, 92);
 }
 
 button:hover {
 	color: #ffffff;
 	background-color: #1b2429;
-	decorator: linear-gradient(180deg, #3a474e, #1a2429 55%, #0b1013) border-box;
-
 	border-color: #76858c;
 	border-bottom-color: #e07830;
-
-	filter: none;
 }
 
 button:active {
 	background-color: #0a0f12;
-	decorator: linear-gradient(180deg, #111719, #0a0f12 60%, #06090a) border-box;
-
 	border-bottom-width: 1px;
-
-	filter: none;
 }
 
 button.disabled,
@@ -397,16 +385,12 @@ button:disabled {
 .primary_button {
 	color: #ffffff;
 	background-color: #9d4618;
-	decorator: linear-gradient(180deg, #ff9d55, #b94f1e 42%, #6d2711) border-box;
-
 	border-color: #ff8b40;
 	border-bottom-color: #61220e;
 }
 
 .primary_button:hover {
 	background-color: #c45a20;
-	decorator: linear-gradient(180deg, #ffb46f, #d76525 45%, #863113) border-box;
-
 	border-color: #ffad70;
 	border-bottom-color: #7d2d12;
 }
@@ -414,8 +398,6 @@ button:disabled {
 .secondary_button {
 	color: #c8d0d4;
 	background-color: #12191d;
-	decorator: linear-gradient(180deg, #2d383e, #151d22 52%, #0b1013) border-box;
-
 	border-color: #364149;
 	border-bottom-color: #10171a;
 }
@@ -423,8 +405,6 @@ button:disabled {
 .secondary_button:hover {
 	color: #ffffff;
 	background-color: #1c252a;
-	decorator: linear-gradient(180deg, #3b474e, #202b30 52%, #101619) border-box;
-
 	border-color: #65737a;
 	border-bottom-color: #df6d2d;
 }
@@ -470,10 +450,10 @@ button:disabled {
 	justify-content: space-between;
 	align-items: center;
 
-	background-color: rgba(4, 7, 9, 0.58);
+	background-color: rgba(4, 7, 9, 148);
 
 	border-top-width: 1px;
-	border-top-color: rgba(66, 77, 82, 0.62);
+	border-top-color: rgba(66, 77, 82, 158);
 }
 
 .main_menu_status_left {

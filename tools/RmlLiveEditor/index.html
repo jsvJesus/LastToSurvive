@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RmlUI Live Editor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111417;
+      --panel: #171c20;
+      --panel-2: #1f262b;
+      --line: #303940;
+      --line-2: #46535d;
+      --text: #d8e1e6;
+      --muted: #8e9aa2;
+      --accent: #e06a35;
+      --accent-2: #f0a45b;
+      --good: #76c47d;
+      --bad: #e06a6a;
+      --mono: Consolas, "Cascadia Mono", "Courier New", monospace;
+      --sans: "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    select,
+    input {
+      height: 30px;
+      border: 1px solid var(--line);
+      background: #151a1e;
+      color: var(--text);
+    }
+
+    button {
+      padding: 0 11px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.primary {
+      border-color: #9b4d2b;
+      background: #2b1e18;
+      color: #ffd6bd;
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    select {
+      min-width: 150px;
+      padding: 0 8px;
+    }
+
+    input {
+      padding: 0 8px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: 46px 1fr 24px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      background: #101316;
+      white-space: nowrap;
+    }
+
+    .brand {
+      height: 30px;
+      padding: 6px 12px 0;
+      border-left: 3px solid var(--accent);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .toolbar-spacer {
+      flex: 1;
+    }
+
+    .path-input {
+      width: 285px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .viewport-input {
+      width: 68px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(420px, 46%) minmax(420px, 54%);
+      min-height: 0;
+    }
+
+    .editors {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--line);
+    }
+
+    .editor-pane {
+      display: grid;
+      grid-template-rows: 34px 1fr;
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .editor-pane:last-child {
+      border-bottom: 0;
+    }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: #14191d;
+    }
+
+    .pane-title {
+      min-width: 54px;
+      color: var(--accent-2);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .pane-meta {
+      overflow: hidden;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dirty {
+      color: var(--accent-2);
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      resize: none;
+      padding: 12px 14px;
+      border: 0;
+      outline: 0;
+      background: #0e1114;
+      color: #dfe7eb;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 18px;
+      tab-size: 4;
+      white-space: pre;
+    }
+
+    .preview-column {
+      display: grid;
+      grid-template-rows: 34px 1fr;
+      min-width: 0;
+      min-height: 0;
+      background: var(--panel-2);
+    }
+
+    .preview-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: #14191d;
+    }
+
+    .preview-wrap {
+      position: relative;
+      overflow: auto;
+      min-height: 0;
+      padding: 18px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        #0b0e11;
+      background-size: 24px 24px;
+    }
+
+    .stage-shell {
+      position: relative;
+      transform-origin: 0 0;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
+    }
+
+    iframe {
+      display: block;
+      border: 1px solid var(--line-2);
+      background: #030506;
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 10px;
+      border-top: 1px solid var(--line);
+      background: #101316;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .statusbar .ok {
+      color: var(--good);
+    }
+
+    .statusbar .err {
+      color: var(--bad);
+    }
+
+    .hint {
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 980px) {
+      .main {
+        grid-template-columns: 1fr;
+        grid-template-rows: 52% 48%;
+      }
+
+      .editors {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .toolbar {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="toolbar">
+      <div class="brand">RML LIVE EDITOR</div>
+      <button id="openFolder" class="primary">Open Folder</button>
+      <button id="importFiles">Import Files</button>
+      <input id="fileImport" class="hidden" type="file" multiple webkitdirectory>
+
+      <select id="rmlSelect" title="RML file"></select>
+      <select id="rcssSelect" title="RCSS file"></select>
+
+      <button id="saveRml">Save RML</button>
+      <button id="saveRcss">Save RCSS</button>
+      <button id="downloadAll" class="ghost">Download</button>
+
+      <div class="toolbar-spacer"></div>
+
+      <span class="hint">Base</span>
+      <input id="basePath" class="path-input" value="Z:/WarZ/bin/Data/Rml/FrontEnd" spellcheck="false">
+      <span class="hint">View</span>
+      <input id="viewportW" class="viewport-input" value="1920">
+      <input id="viewportH" class="viewport-input" value="1080">
+      <button id="fitPreview" class="ghost">Fit</button>
+    </div>
+
+    <div class="main">
+      <div class="editors">
+        <section class="editor-pane">
+          <div class="pane-head">
+            <div class="pane-title">RML</div>
+            <div id="rmlMeta" class="pane-meta">No file loaded</div>
+          </div>
+          <textarea id="rmlEditor" spellcheck="false"></textarea>
+        </section>
+
+        <section class="editor-pane">
+          <div class="pane-head">
+            <div class="pane-title">RCSS</div>
+            <div id="rcssMeta" class="pane-meta">No file loaded</div>
+          </div>
+          <textarea id="rcssEditor" spellcheck="false"></textarea>
+        </section>
+      </div>
+
+      <section class="preview-column">
+        <div class="preview-head">
+          <div class="pane-title">PREVIEW</div>
+          <div id="previewMeta" class="pane-meta">Browser approximation of RmlUI</div>
+        </div>
+        <div id="previewWrap" class="preview-wrap">
+          <div id="stageShell" class="stage-shell">
+            <iframe id="previewFrame" sandbox="allow-same-origin"></iframe>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="statusbar">
+      <span id="statusText">Open bin/Data/Rml/FrontEnd or import the folder.</span>
+      <span id="linkInfo"></span>
+      <span id="saveInfo"></span>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_BASE_PATH = "Z:/WarZ/bin/Data/Rml/FrontEnd";
+    const DEFAULT_RML = "MainMenu.rml";
+    const RML_EXT = ".rml";
+    const RCSS_EXT = ".rcss";
+
+    const state = {
+      dirHandle: null,
+      files: new Map(),
+      selectedRml: "",
+      selectedRcss: "",
+      linkedRcss: [],
+      dirtyRml: false,
+      dirtyRcss: false,
+      fitScale: true
+    };
+
+    const el = {
+      openFolder: document.getElementById("openFolder"),
+      importFiles: document.getElementById("importFiles"),
+      fileImport: document.getElementById("fileImport"),
+      rmlSelect: document.getElementById("rmlSelect"),
+      rcssSelect: document.getElementById("rcssSelect"),
+      saveRml: document.getElementById("saveRml"),
+      saveRcss: document.getElementById("saveRcss"),
+      downloadAll: document.getElementById("downloadAll"),
+      basePath: document.getElementById("basePath"),
+      viewportW: document.getElementById("viewportW"),
+      viewportH: document.getElementById("viewportH"),
+      fitPreview: document.getElementById("fitPreview"),
+      rmlEditor: document.getElementById("rmlEditor"),
+      rcssEditor: document.getElementById("rcssEditor"),
+      rmlMeta: document.getElementById("rmlMeta"),
+      rcssMeta: document.getElementById("rcssMeta"),
+      previewMeta: document.getElementById("previewMeta"),
+      previewWrap: document.getElementById("previewWrap"),
+      stageShell: document.getElementById("stageShell"),
+      previewFrame: document.getElementById("previewFrame"),
+      statusText: document.getElementById("statusText"),
+      linkInfo: document.getElementById("linkInfo"),
+      saveInfo: document.getElementById("saveInfo")
+    };
+
+    function setStatus(message, type) {
+      el.statusText.textContent = message;
+      el.statusText.className = type || "";
+    }
+
+    function normalizeSlashes(path) {
+      return String(path || "").replace(/\\/g, "/").replace(/\/+$/g, "");
+    }
+
+    function fileName(path) {
+      return normalizeSlashes(path).split("/").pop();
+    }
+
+    function isRml(name) {
+      return name.toLowerCase().endsWith(RML_EXT);
+    }
+
+    function isRcss(name) {
+      return name.toLowerCase().endsWith(RCSS_EXT);
+    }
+
+    function getFile(name) {
+      return state.files.get(fileName(name));
+    }
+
+    function currentRmlText() {
+      return el.rmlEditor.value;
+    }
+
+    function currentRcssText(name) {
+      if (fileName(name) === state.selectedRcss) {
+        return el.rcssEditor.value;
+      }
+
+      const file = getFile(name);
+      return file ? file.text : "";
+    }
+
+    function listFiles(extCheck) {
+      return Array.from(state.files.keys())
+        .filter(extCheck)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    function refreshSelect(select, files, selected) {
+      select.innerHTML = "";
+
+      for (const name of files) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      }
+
+      if (selected && files.includes(selected)) {
+        select.value = selected;
+      } else if (files.length) {
+        select.value = files[0];
+      }
+    }
+
+    function parseLinkedRcss(rmlText) {
+      const links = [];
+      const linkRegex = /<link\b[^>]*href\s*=\s*["']([^"']+\.rcss)["'][^>]*>/gi;
+      let match;
+
+      while ((match = linkRegex.exec(rmlText))) {
+        links.push(fileName(match[1]));
+      }
+
+      return Array.from(new Set(links));
+    }
+
+    function extractBody(rmlText) {
+      const bodyMatch = /<body\b([^>]*)>([\s\S]*?)<\/body>/i.exec(rmlText);
+      if (!bodyMatch) {
+        return {
+          attrs: "",
+          html: rmlText
+        };
+      }
+
+      return {
+        attrs: bodyMatch[1] || "",
+        html: bodyMatch[2] || ""
+      };
+    }
+
+    function pathToFileUrl(path) {
+      const normalized = normalizeSlashes(path);
+      if (/^[a-z]:\//i.test(normalized)) {
+        return "file:///" + normalized;
+      }
+      if (normalized.startsWith("/")) {
+        return "file://" + normalized;
+      }
+      return normalized;
+    }
+
+    function resolvePreviewUrl(url) {
+      const raw = String(url || "").trim().replace(/^["']|["']$/g, "");
+
+      if (!raw || raw === "#") {
+        return raw;
+      }
+
+      if (/^(data:|blob:|https?:|file:)/i.test(raw)) {
+        return raw;
+      }
+
+      if (raw.toLowerCase().startsWith("rml://character-preview")) {
+        return characterPreviewDataUrl();
+      }
+
+      if (raw.toLowerCase().startsWith("rml://")) {
+        return "";
+      }
+
+      const base = normalizeSlashes(el.basePath.value || DEFAULT_BASE_PATH);
+      const parts = base.split("/").concat(raw.split("/"));
+      const stack = [];
+
+      for (const part of parts) {
+        if (!part || part === ".") {
+          continue;
+        }
+        if (part === "..") {
+          stack.pop();
+          continue;
+        }
+        stack.push(part);
+      }
+
+      return pathToFileUrl(stack.join("/"));
+    }
+
+    function rewriteHtmlUrls(html) {
+      return html
+        .replace(/\bsrc\s*=\s*["']([^"']+)["']/gi, (_m, url) => `src="${resolvePreviewUrl(url)}"`)
+        .replace(/\bhref\s*=\s*["']([^"']+)["']/gi, (_m, url) => `href="${resolvePreviewUrl(url)}"`);
+    }
+
+    function rewriteCssUrls(css) {
+      return css.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (_m, _q, url) => {
+        return `url("${resolvePreviewUrl(url)}")`;
+      });
+    }
+
+    function rmlColorsToBrowserCss(css) {
+      return css.replace(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([0-9.]+)\s*\)/gi, (_m, r, g, b, a) => {
+        const alpha = Number(a);
+        const browserAlpha = alpha > 1 ? Math.max(0, Math.min(255, alpha)) / 255 : Math.max(0, Math.min(1, alpha));
+        return `rgba(${r}, ${g}, ${b}, ${Number(browserAlpha.toFixed(3))})`;
+      });
+    }
+
+    function transformRcss(rcss) {
+      let css = rmlColorsToBrowserCss(rcss);
+
+      css = css.replace(/decorator\s*:\s*linear-gradient\(([^;]+?)\)\s*border-box\s*;/gi, (_m, body) => {
+        return `background: linear-gradient(${body});`;
+      });
+
+      css = css.replace(/decorator\s*:\s*image\(\s*(['"]?)([^'")]+)\1\s*\)\s*;/gi, (_m, _q, url) => {
+        return `background-image: url("${resolvePreviewUrl(url)}"); background-size: cover;`;
+      });
+
+      css = css.replace(/font-effect\s*:[^;]+;/gi, "");
+      css = css.replace(/image-color\s*:[^;]+;/gi, "");
+      css = css.replace(/drag\s*:[^;]+;/gi, "");
+      css = css.replace(/focus\s*:[^;]+;/gi, "");
+      css = css.replace(/tab-index\s*:[^;]+;/gi, "");
+
+      return rewriteCssUrls(css);
+    }
+
+    function characterPreviewDataUrl() {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1080">
+          <defs>
+            <radialGradient id="g" cx="52%" cy="40%" r="62%">
+              <stop offset="0" stop-color="#46545d"/>
+              <stop offset="0.55" stop-color="#11181c"/>
+              <stop offset="1" stop-color="#050708"/>
+            </radialGradient>
+            <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#9ca8ae"/>
+              <stop offset="1" stop-color="#31383c"/>
+            </linearGradient>
+          </defs>
+          <rect width="960" height="1080" fill="url(#g)"/>
+          <ellipse cx="490" cy="1010" rx="255" ry="34" fill="#000" opacity="0.45"/>
+          <path d="M455 245c-52 16-86 64-82 123 4 62 47 102 105 106 68 5 119-44 119-111 0-79-70-141-142-118z" fill="#1d252a"/>
+          <path d="M390 475c-54 40-86 126-98 250l-24 236h419l-27-245c-13-118-46-200-100-240-39 31-127 31-170-1z" fill="url(#body)" opacity="0.92"/>
+          <path d="M347 535c-61 34-105 101-131 198l-47 176 86 22 55-165 54-75z" fill="#242d33"/>
+          <path d="M606 535c67 44 109 116 132 205l45 169-88 22-55-165-52-78z" fill="#242d33"/>
+          <path d="M388 505l86 51 90-52 26 90-118 67-112-67z" fill="#10171b" opacity="0.62"/>
+          <text x="480" y="104" text-anchor="middle" fill="#d8e1e6" font-family="Arial" font-size="30" font-weight="700" letter-spacing="4">CHARACTER PREVIEW</text>
+          <text x="480" y="142" text-anchor="middle" fill="#89969d" font-family="Arial" font-size="16" letter-spacing="2">RML EDITOR PLACEHOLDER</text>
+        </svg>`;
+
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
+    function buildPreviewHtml() {
+      const rml = currentRmlText();
+      const body = extractBody(rml);
+      const linked = parseLinkedRcss(rml);
+      state.linkedRcss = linked;
+
+      const cssParts = [];
+      for (const name of linked) {
+        const text = currentRcssText(name);
+        if (text) {
+          cssParts.push(`/* ${name} */\n${transformRcss(text)}`);
+        }
+      }
+
+      if (state.selectedRcss && !linked.includes(state.selectedRcss)) {
+        cssParts.push(`/* ${state.selectedRcss} */\n${transformRcss(el.rcssEditor.value)}`);
+      }
+
+      const previewCss = cssParts.join("\n\n");
+      const bodyHtml = rewriteHtmlUrls(body.html);
+      const width = parseInt(el.viewportW.value, 10) || 1920;
+      const height = parseInt(el.viewportH.value, 10) || 1080;
+
+      return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html, body {
+  width: ${width}px;
+  height: ${height}px;
+  margin: 0;
+  overflow: hidden;
+  background: #030506;
+}
+* {
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 0;
+  min-width: 0;
+}
+button, input {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+}
+img {
+  object-fit: cover;
+}
+${previewCss}
+</style>
+</head>
+<body ${body.attrs}>
+${bodyHtml}
+</body>
+</html>`;
+    }
+
+    function updatePreview() {
+      const width = parseInt(el.viewportW.value, 10) || 1920;
+      const height = parseInt(el.viewportH.value, 10) || 1080;
+
+      el.previewFrame.style.width = width + "px";
+      el.previewFrame.style.height = height + "px";
+      el.stageShell.style.width = width + "px";
+      el.stageShell.style.height = height + "px";
+
+      el.previewFrame.srcdoc = buildPreviewHtml();
+
+      fitPreview();
+      updateMeta();
+    }
+
+    function fitPreview() {
+      const width = parseInt(el.viewportW.value, 10) || 1920;
+      const height = parseInt(el.viewportH.value, 10) || 1080;
+      const wrapW = Math.max(240, el.previewWrap.clientWidth - 36);
+      const wrapH = Math.max(160, el.previewWrap.clientHeight - 36);
+      const scale = state.fitScale ? Math.min(wrapW / width, wrapH / height, 1) : 1;
+
+      el.stageShell.style.transform = `scale(${scale})`;
+      el.stageShell.style.marginBottom = `${height * scale - height}px`;
+      el.stageShell.style.marginRight = `${width * scale - width}px`;
+      el.previewMeta.textContent = `${width}x${height} at ${Math.round(scale * 100)}%`;
+    }
+
+    function updateMeta() {
+      const rmlLines = el.rmlEditor.value ? el.rmlEditor.value.split(/\r?\n/).length : 0;
+      const rcssLines = el.rcssEditor.value ? el.rcssEditor.value.split(/\r?\n/).length : 0;
+
+      el.rmlMeta.innerHTML = `${state.selectedRml || "No file"} - ${rmlLines} lines${state.dirtyRml ? ' <span class="dirty">modified</span>' : ""}`;
+      el.rcssMeta.innerHTML = `${state.selectedRcss || "No file"} - ${rcssLines} lines${state.dirtyRcss ? ' <span class="dirty">modified</span>' : ""}`;
+      el.linkInfo.textContent = state.linkedRcss.length ? `linked: ${state.linkedRcss.join(", ")}` : "linked: none";
+    }
+
+    async function resolveFrontEndHandle(handle) {
+      const directFiles = [];
+      for await (const [name, entry] of handle.entries()) {
+        if (entry.kind === "file" && (isRml(name) || isRcss(name))) {
+          directFiles.push(name);
+        }
+      }
+
+      if (directFiles.length) {
+        return handle;
+      }
+
+      try {
+        return await handle
+          .getDirectoryHandle("bin")
+          .then(h => h.getDirectoryHandle("Data"))
+          .then(h => h.getDirectoryHandle("Rml"))
+          .then(h => h.getDirectoryHandle("FrontEnd"));
+      } catch (_err) {
+        return handle;
+      }
+    }
+
+    async function openFolder() {
+      if (!window.showDirectoryPicker) {
+        setStatus("Folder saving is not supported here. Use Import Files or open in Chrome/Edge.", "err");
+        return;
+      }
+
+      try {
+        const picked = await window.showDirectoryPicker({ mode: "readwrite" });
+        state.dirHandle = await resolveFrontEndHandle(picked);
+        await loadFromDirectoryHandle(state.dirHandle);
+        setStatus("Folder loaded. Live preview is ready.", "ok");
+      } catch (err) {
+        if (err && err.name !== "AbortError") {
+          setStatus("Unable to open folder: " + err.message, "err");
+        }
+      }
+    }
+
+    async function loadFromDirectoryHandle(dirHandle) {
+      state.files.clear();
+
+      for await (const [name, entry] of dirHandle.entries()) {
+        if (entry.kind !== "file" || (!isRml(name) && !isRcss(name))) {
+          continue;
+        }
+
+        const file = await entry.getFile();
+        state.files.set(name, {
+          handle: entry,
+          text: await file.text(),
+          canSave: true
+        });
+      }
+
+      finishFileLoad();
+    }
+
+    async function importFiles(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) {
+        return;
+      }
+
+      state.dirHandle = null;
+      state.files.clear();
+
+      for (const file of files) {
+        const name = file.name;
+        if (!isRml(name) && !isRcss(name)) {
+          continue;
+        }
+
+        state.files.set(name, {
+          handle: null,
+          text: await file.text(),
+          canSave: false
+        });
+      }
+
+      finishFileLoad();
+      setStatus("Files imported. Save will download files unless folder access is used.", "ok");
+    }
+
+    function finishFileLoad() {
+      const rmlFiles = listFiles(isRml);
+      const rcssFiles = listFiles(isRcss);
+
+      refreshSelect(el.rmlSelect, rmlFiles, rmlFiles.includes(DEFAULT_RML) ? DEFAULT_RML : rmlFiles[0]);
+      refreshSelect(el.rcssSelect, rcssFiles, rcssFiles[0]);
+
+      state.selectedRml = el.rmlSelect.value || "";
+      state.selectedRcss = el.rcssSelect.value || "";
+      state.dirtyRml = false;
+      state.dirtyRcss = false;
+
+      loadSelectedIntoEditors();
+    }
+
+    function loadSelectedIntoEditors() {
+      const rmlFile = getFile(state.selectedRml);
+      const rcssFile = getFile(state.selectedRcss);
+
+      el.rmlEditor.value = rmlFile ? rmlFile.text : "";
+      el.rcssEditor.value = rcssFile ? rcssFile.text : "";
+
+      state.dirtyRml = false;
+      state.dirtyRcss = false;
+
+      updateRcssSelectionFromRml();
+      updatePreview();
+    }
+
+    function updateRcssSelectionFromRml() {
+      const linked = parseLinkedRcss(el.rmlEditor.value);
+      state.linkedRcss = linked;
+
+      const rcssFiles = listFiles(isRcss);
+      refreshSelect(el.rcssSelect, rcssFiles, linked[linked.length - 1] || state.selectedRcss || rcssFiles[0]);
+
+      state.selectedRcss = el.rcssSelect.value || "";
+      const rcssFile = getFile(state.selectedRcss);
+      el.rcssEditor.value = rcssFile ? rcssFile.text : "";
+      state.dirtyRcss = false;
+    }
+
+    async function saveCurrent(name, text) {
+      const file = getFile(name);
+      if (!file) {
+        return false;
+      }
+
+      file.text = text;
+
+      if (file.canSave && file.handle && file.handle.createWritable) {
+        const writable = await file.handle.createWritable();
+        await writable.write(text);
+        await writable.close();
+        el.saveInfo.textContent = `saved: ${name}`;
+        return true;
+      }
+
+      downloadText(name, text);
+      el.saveInfo.textContent = `downloaded: ${name}`;
+      return true;
+    }
+
+    async function saveRml() {
+      if (!state.selectedRml) {
+        return;
+      }
+
+      try {
+        await saveCurrent(state.selectedRml, el.rmlEditor.value);
+        state.dirtyRml = false;
+        setStatus("RML saved.", "ok");
+        updateMeta();
+      } catch (err) {
+        setStatus("RML save failed: " + err.message, "err");
+      }
+    }
+
+    async function saveRcss() {
+      if (!state.selectedRcss) {
+        return;
+      }
+
+      try {
+        await saveCurrent(state.selectedRcss, el.rcssEditor.value);
+        state.dirtyRcss = false;
+        setStatus("RCSS saved.", "ok");
+        updateMeta();
+        updatePreview();
+      } catch (err) {
+        setStatus("RCSS save failed: " + err.message, "err");
+      }
+    }
+
+    function downloadText(name, text) {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadAll() {
+      if (state.selectedRml) {
+        downloadText(state.selectedRml, el.rmlEditor.value);
+      }
+
+      if (state.selectedRcss) {
+        downloadText(state.selectedRcss, el.rcssEditor.value);
+      }
+    }
+
+    function onRmlInput() {
+      state.dirtyRml = true;
+      updatePreview();
+    }
+
+    function onRcssInput() {
+      state.dirtyRcss = true;
+      updatePreview();
+    }
+
+    function onRmlSelect() {
+      state.selectedRml = el.rmlSelect.value;
+      const rmlFile = getFile(state.selectedRml);
+      el.rmlEditor.value = rmlFile ? rmlFile.text : "";
+      state.dirtyRml = false;
+      updateRcssSelectionFromRml();
+      updatePreview();
+    }
+
+    function onRcssSelect() {
+      state.selectedRcss = el.rcssSelect.value;
+      const rcssFile = getFile(state.selectedRcss);
+      el.rcssEditor.value = rcssFile ? rcssFile.text : "";
+      state.dirtyRcss = false;
+      updatePreview();
+    }
+
+    function bindEvents() {
+      el.openFolder.addEventListener("click", openFolder);
+      el.importFiles.addEventListener("click", () => el.fileImport.click());
+      el.fileImport.addEventListener("change", importFiles);
+      el.rmlSelect.addEventListener("change", onRmlSelect);
+      el.rcssSelect.addEventListener("change", onRcssSelect);
+      el.rmlEditor.addEventListener("input", onRmlInput);
+      el.rcssEditor.addEventListener("input", onRcssInput);
+      el.saveRml.addEventListener("click", saveRml);
+      el.saveRcss.addEventListener("click", saveRcss);
+      el.downloadAll.addEventListener("click", downloadAll);
+      el.viewportW.addEventListener("input", updatePreview);
+      el.viewportH.addEventListener("input", updatePreview);
+      el.basePath.addEventListener("input", updatePreview);
+      el.fitPreview.addEventListener("click", () => {
+        state.fitScale = !state.fitScale;
+        el.fitPreview.textContent = state.fitScale ? "Fit" : "1:1";
+        fitPreview();
+      });
+      window.addEventListener("resize", fitPreview);
+    }
+
+    function seedEmptyEditor() {
+      refreshSelect(el.rmlSelect, [], "");
+      refreshSelect(el.rcssSelect, [], "");
+      el.rmlEditor.value = "<rml>\n<head>\n\t<title>Preview</title>\n\t<link type=\"text/rcss\" href=\"FrontEnd.rcss\"/>\n</head>\n<body class=\"frontend_body\">\n\t<div class=\"panel_title\">Open bin/Data/Rml/FrontEnd</div>\n</body>\n</rml>\n";
+      el.rcssEditor.value = ".panel_title {\n\tposition: absolute;\n\tleft: 40px;\n\ttop: 40px;\n\tcolor: #ff8337;\n\tfont-size: 24px;\n\tfont-weight: bold;\n}\n";
+      updatePreview();
+    }
+
+    bindEvents();
+    seedEmptyEditor();
+  </script>
+</body>
+</html>

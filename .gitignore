@@ -10,6 +10,9 @@
 !/sql/
 !/server/
 !/External/
+!/tools/
+!/tools/RmlLiveEditor/
+!/tools/RmlLiveEditor/**
 
 # Keep only RmlUI source package from External
 /External/*

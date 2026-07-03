@@ -12,7 +12,7 @@
 
 	overflow: visible;
 
-	background-color: rgba(0, 0, 0, 0.00);
+	background-color: rgba(0, 0, 0, 0);
 }
 
 .topbar_root {
@@ -25,11 +25,10 @@
 
 	overflow: visible;
 
-	background-color: rgba(6, 9, 11, 0.94);
-	decorator: linear-gradient(180deg, rgba(20, 27, 31, 0.98), rgba(7, 11, 13, 0.96) 52%, rgba(3, 5, 6, 0.92)) border-box;
+	background-color: rgba(6, 9, 11, 255);
 
 	border-bottom-width: 1px;
-	border-bottom-color: rgba(217, 109, 42, 0.55);
+	border-bottom-color: rgba(217, 109, 42, 255);
 }
 
 /* LEFT PROFILE */
@@ -54,10 +53,10 @@
 	padding-top: 15px;
 
 	color: #ffffff;
-	background-color: rgba(10, 14, 17, 0.74);
+	background-color: rgba(10, 14, 17, 255);
 
 	border-width: 1px;
-	border-color: rgba(89, 101, 108, 0.64);
+	border-color: rgba(89, 101, 108, 255);
 
 	font-size: 13px;
 	font-weight: bold;
@@ -153,7 +152,7 @@
 
 	margin-top: 3px;
 
-	background-color: rgba(0, 0, 0, 0.65);
+	background-color: rgba(0, 0, 0, 255);
 }
 
 .topbar_xp_fill {
@@ -232,21 +231,20 @@
 	padding: 0px;
 
 	color: #ffffff;
-	background-color: rgba(28, 36, 40, 0.98);
+	background-color: rgba(28, 36, 40, 255);
 
 	border-width: 1px;
-	border-color: rgba(113, 127, 134, 0.86);
+	border-color: rgba(113, 127, 134, 255);
 
 	font-size: 13px;
 	font-weight: bold;
 	line-height: 16px;
 	text-align: center;
 
-	filter: none;
 }
 
 .topbar_money_add:hover {
-	background-color: rgba(72, 36, 20, 0.95);
+	background-color: rgba(72, 36, 20, 255);
 	border-color: #e07830;
 }
 
@@ -276,54 +274,48 @@
 	padding: 0px;
 
 	color: #d9e1e4;
-	background-color: rgba(12, 17, 21, 0.96);
-	decorator: linear-gradient(180deg, rgba(34, 43, 49, 0.98), rgba(13, 18, 22, 0.98) 56%, rgba(5, 8, 10, 0.98)) border-box;
+	background-color: rgba(12, 17, 21, 255);
 
 	border-width: 1px;
-	border-color: rgba(63, 75, 83, 0.80);
+	border-color: rgba(63, 75, 83, 255);
 	border-bottom-width: 2px;
-	border-bottom-color: rgba(0, 0, 0, 0.85);
+	border-bottom-color: rgba(0, 0, 0, 255);
 
 	font-size: 0px;
 
-	filter: none;
 	text-shadow: none;
 }
 
 .topbar_tab:hover {
 	color: #ffffff;
-	background-color: rgba(34, 44, 50, 0.98);
+	background-color: rgba(34, 44, 50, 255);
 
-	border-color: rgba(120, 132, 140, 0.82);
+	border-color: rgba(120, 132, 140, 255);
 	border-bottom-color: #d96d2a;
 
-	filter: none;
 }
 
 .topbar_tab.active {
 	color: #ffffff;
-	background-color: rgba(144, 43, 32, 0.98);
-	decorator: linear-gradient(180deg, rgba(225, 101, 63, 0.98), rgba(145, 42, 32, 0.98) 52%, rgba(78, 20, 18, 0.98)) border-box;
+	background-color: rgba(144, 43, 32, 255);
 
-	border-color: rgba(255, 137, 82, 0.96);
+	border-color: rgba(255, 137, 82, 255);
 	border-bottom-width: 3px;
 	border-bottom-color: #ff9a55;
 }
 
 .topbar_tab.shop {
-	background-color: rgba(86, 68, 31, 0.95);
-	decorator: linear-gradient(180deg, rgba(128, 104, 48, 0.98), rgba(54, 43, 20, 0.98)) border-box;
+	background-color: rgba(86, 68, 31, 255);
 
-	border-color: rgba(170, 146, 76, 0.76);
+	border-color: rgba(170, 146, 76, 255);
 }
 
 .topbar_tab.shop.active,
 .topbar_tab.shop:hover {
 	color: #ffffff;
-	background-color: rgba(150, 116, 45, 0.98);
-	decorator: linear-gradient(180deg, rgba(190, 150, 62, 0.98), rgba(88, 66, 26, 0.98)) border-box;
+	background-color: rgba(150, 116, 45, 255);
 
-	border-color: rgba(230, 194, 105, 0.92);
+	border-color: rgba(230, 194, 105, 255);
 	border-bottom-color: #f1c864;
 }
 
@@ -345,7 +337,7 @@
 	text-align: center;
 	white-space: nowrap;
 
-	text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.96);
+	text-shadow: 0px 1px 2px rgba(0, 0, 0, 255);
 	pointer-events: none;
 }
 
@@ -375,23 +367,21 @@
 	margin-left: 4px;
 	padding: 0px;
 
-	background-color: rgba(16, 21, 25, 0.70);
+	background-color: rgba(16, 21, 25, 255);
 
 	border-width: 1px;
-	border-color: rgba(65, 76, 84, 0.72);
+	border-color: rgba(65, 76, 84, 255);
 	border-bottom-width: 2px;
-	border-bottom-color: rgba(0, 0, 0, 0.86);
+	border-bottom-color: rgba(0, 0, 0, 255);
 
-	filter: none;
 }
 
 .topbar_icon_button:hover {
-	background-color: rgba(31, 39, 45, 0.96);
+	background-color: rgba(31, 39, 45, 255);
 
-	border-color: rgba(217, 109, 42, 0.90);
+	border-color: rgba(217, 109, 42, 255);
 	border-bottom-color: #d96d2a;
 
-	filter: none;
 }
 
 .topbar_icon_image {
@@ -405,7 +395,6 @@
 
 .topbar_icon_button:hover .topbar_icon_image {
 	opacity: 1.00;
-	filter: drop-shadow(#ffffff88 0px 0px 5px);
 }
 
 .topbar_tooltip {
@@ -421,10 +410,10 @@
 	padding-top: 7px;
 
 	color: #ffffff;
-	background-color: rgba(5, 8, 10, 0.94);
+	background-color: rgba(5, 8, 10, 255);
 
 	border-width: 1px;
-	border-color: rgba(232, 120, 50, 0.78);
+	border-color: rgba(232, 120, 50, 255);
 
 	font-size: 9px;
 	font-weight: bold;

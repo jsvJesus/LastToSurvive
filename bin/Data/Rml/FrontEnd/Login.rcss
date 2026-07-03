@@ -17,7 +17,7 @@
 	justify-content: space-between;
 	align-items: center;
 
-	background-color: rgba(6, 9, 11, 0.98);
+	background-color: rgba(6, 9, 11, 250);
 
 	border-bottom-width: 1px;
 	border-bottom-color: #30393e;

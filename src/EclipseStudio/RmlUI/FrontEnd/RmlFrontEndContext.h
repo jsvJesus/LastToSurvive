@@ -124,6 +124,9 @@ private:
 
 	void UnloadDocuments();
 
+	void ReloadStyleSheets();
+	bool ReloadDocuments();
+
 	void AttachEvents();
 	void DetachEvents();
 

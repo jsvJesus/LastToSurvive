@@ -14,6 +14,7 @@
 #include <RmlUi/Core/Element.h>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/Elements/ElementFormControlInput.h>
+#include <RmlUi/Core/Factory.h>
 #include <RmlUi/Core/Traits.h>
 
 #include <process.h>
@@ -1571,6 +1572,92 @@ void RmlFrontEndContext::UnloadDocuments()
 	}
 }
 
+void RmlFrontEndContext::ReloadStyleSheets()
+{
+	if (!bInitialized || !Context)
+		return;
+
+	Rml::Factory::ClearStyleSheetCache();
+
+	if (LoginDocument)
+		LoginDocument->ReloadStyleSheet();
+
+	if (TopBarDocument)
+		TopBarDocument->ReloadStyleSheet();
+
+	if (MainMenuDocument)
+		MainMenuDocument->ReloadStyleSheet();
+
+	if (CharacterCreateDocument)
+		CharacterCreateDocument->ReloadStyleSheet();
+
+	if (SkillsDocument)
+		SkillsDocument->ReloadStyleSheet();
+
+	if (ShopDocument)
+		ShopDocument->ReloadStyleSheet();
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd] Stylesheets reloaded\n"
+	);
+}
+
+bool RmlFrontEndContext::ReloadDocuments()
+{
+	if (!bInitialized || !Context)
+		return false;
+
+	const EScreen PreviousScreen = CurrentScreen;
+
+	DetachEvents();
+	UnloadDocuments();
+
+	Rml::Factory::ClearStyleSheetCache();
+
+	if (!LoadDocuments())
+	{
+		r3dOutToLog(
+			"[RmlUI][FrontEnd] Document reload failed\n"
+		);
+
+		return false;
+	}
+
+	AttachEvents();
+
+	if (bProfileLoaded)
+		BuildMainMenu();
+
+	switch (PreviousScreen)
+	{
+	case EScreen::Login:
+		ShowLogin();
+		break;
+
+	case EScreen::MainMenu:
+		ShowMainMenu();
+		break;
+
+	case EScreen::CharacterCreate:
+		ShowCharacterCreate();
+		break;
+
+	case EScreen::Skills:
+		ShowSkills();
+		break;
+
+	case EScreen::Shop:
+		ShowShop();
+		break;
+	}
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd] Documents reloaded\n"
+	);
+
+	return true;
+}
+
 void RmlFrontEndContext::AttachEvents()
 {
 	if (!ClickListener)
@@ -1765,6 +1852,19 @@ bool RmlFrontEndContext::ProcessWin32Message(
 
 	if (!bInitialized || !Context)
 		return false;
+
+	if (
+		Message == WM_KEYDOWN &&
+		WParam == VK_F5
+	)
+	{
+		if (GetKeyState(VK_CONTROL) & 0x8000)
+			ReloadStyleSheets();
+		else
+			ReloadDocuments();
+
+		return true;
+	}
 
 	if (
 		Message == WM_KEYDOWN &&
@@ -2386,7 +2486,14 @@ void RmlFrontEndContext::ShowSkills()
 	CharacterCreateDocument->Hide();
 	ShopDocument->Hide();
 	SkillsDocument->Show();
-	TopBarDocument->Show();
+
+	TopBarDocument->Show(
+		Rml::ModalFlag::None,
+		Rml::FocusFlag::None
+	);
+
+	TopBarDocument->PullToFront();
+
 	RefreshTopBar();
 
 	CurrentScreen =
@@ -2433,7 +2540,14 @@ void RmlFrontEndContext::ShowShop()
 	CharacterCreateDocument->Hide();
 	SkillsDocument->Hide();
 	ShopDocument->Show();
-	TopBarDocument->Show();
+
+	TopBarDocument->Show(
+		Rml::ModalFlag::None,
+		Rml::FocusFlag::None
+	);
+
+	TopBarDocument->PullToFront();
+
 	RefreshTopBar();
 
 	CurrentScreen =
