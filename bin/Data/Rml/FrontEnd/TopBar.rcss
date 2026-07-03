@@ -1,5 +1,5 @@
 /* ============================================================
-   TOP BAR - NOESIS CONVERTED
+   TOP BAR - NOESIS CONVERTED FOR RMLUI
    ============================================================ */
 
 .topbar_body {
@@ -28,7 +28,7 @@
 
 	overflow: visible;
 
-	background-color: #4d5052;
+	background-color: rgba(0, 0, 0, 0);
 }
 
 .topbar_background {
@@ -38,6 +38,8 @@
 
 	width: 1920px;
 	height: 78px;
+
+	opacity: 0.72;
 
 	pointer-events: none;
 }
@@ -50,7 +52,7 @@
 	left: 0px;
 	top: 0px;
 
-	width: 245px;
+	width: 240px;
 	height: 78px;
 
 	overflow: visible;
@@ -72,79 +74,44 @@
 	left: 20px;
 	top: 14px;
 
-	width: 48px;
-	height: 38px;
+	width: 50px;
+	height: 50px;
+
+	padding-top: 10px;
+	padding-bottom: 10px;
 
 	color: #ffffff;
 
-	font-family: "Play";
 	font-size: 24px;
-	font-weight: bold;
-	line-height: 38px;
+	font-weight: normal;
+	line-height: 30px;
 	text-align: center;
-
-	pointer-events: none;
-}
-
-.topbar_level_title {
-	position: absolute;
-	left: 80px;
-	top: 27px;
-
-	width: 24px;
-	height: 12px;
-
-	color: #e1e9ed;
-
-	font-size: 8px;
-	line-height: 12px;
-	text-align: left;
 
 	pointer-events: none;
 }
 
 .topbar_character_name {
 	position: absolute;
-	left: 105px;
-	top: 27px;
+	left: 94px;
+	top: 14px;
 
 	width: 125px;
-	height: 12px;
+	height: 50px;
+
+	padding-top: 10px;
 
 	overflow: hidden;
 
-	color: #e1e9ed;
+	color: #ffffff;
 
-	font-size: 8px;
-	line-height: 12px;
-	text-align: right;
+	font-size: 24px;
+	font-weight: normal;
+	line-height: 30px;
+	text-align: center;
 
 	white-space: nowrap;
 
 	pointer-events: none;
-}
-
-.topbar_level_progress_bg {
-	position: absolute;
-	left: 80px;
-	top: 39px;
-
-	width: 150px;
-	height: 10px;
-
-	background-color: rgba(0, 0, 0, 0);
-
-	border-width: 1px;
-	border-color: #222222;
-
-	overflow: hidden;
-}
-
-.topbar_level_progress_fill {
-	width: 50%;
-	height: 100%;
-
-	background-color: #700d0d;
 }
 
 
@@ -152,54 +119,83 @@
 
 .topbar_money {
 	position: absolute;
-	left: 325px;
+	left: 240px;
 	top: 21px;
 
-	width: 590px;
+	width: 410px;
 	height: 36px;
-
-	display: flex;
-	align-items: center;
 
 	overflow: visible;
 }
 
 .topbar_money_item {
-	width: 190px;
+	position: absolute;
+	top: 0px;
+
+	width: 111px;
 	height: 36px;
-
-	margin-right: 12px;
-
-	display: flex;
-	align-items: center;
 
 	overflow: visible;
 }
 
+.topbar_money_item.money_gc {
+	left: 0px;
+}
+
+.topbar_money_item.money_gd {
+	left: 120px;
+}
+
+.topbar_money_item.money_zlt {
+	left: 240px;
+}
+
 .topbar_money_icon {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
 	width: 36px;
 	height: 36px;
 
-	margin-right: 0px;
+	pointer-events: none;
+}
 
-	flex-grow: 0;
-	flex-shrink: 0;
+.topbar_money_value_wrap {
+	position: absolute;
+	left: 36px;
+	top: 8px;
+
+	width: 75px;
+	height: 20px;
+
+	overflow: hidden;
+}
+
+.topbar_money_value_bg {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 75px;
+	height: 20px;
 
 	pointer-events: none;
 }
 
 .topbar_money_value {
-	width: 75px;
+	position: absolute;
+	left: 10px;
+	top: 0px;
+
+	width: 65px;
 	height: 20px;
 
-	margin-left: 0px;
-	padding: 0px 5px;
+	padding-left: 5px;
+	padding-right: 5px;
 
 	color: #ffffff;
 
-	background-image: url("../Assets/MainMenu/topbar_money_bg.png");
-
-	font-family: "Play";
 	font-size: 14px;
 	font-weight: normal;
 	line-height: 20px;
@@ -207,59 +203,127 @@
 
 	white-space: nowrap;
 
-	flex-grow: 0;
-	flex-shrink: 0;
+	pointer-events: none;
 }
 
 
-/* CENTER MENU */
+/* TABS */
 
 .topbar_tabs {
 	position: absolute;
 	left: 650px;
-	top: 17px;
+	top: 18px;
 
-	width: 1000px;
+	width: 1020px;
 	height: 43px;
-
-	display: flex;
-	align-items: center;
 
 	overflow: visible;
 }
 
 .topbar_tab {
-	position: relative;
+	position: absolute;
+	top: 0px;
 
 	width: 150px;
 	height: 43px;
 
-	margin-right: 20px;
+	margin: 0px;
 	padding: 0px;
 
 	color: #e1e9ed;
 
 	background-color: rgba(0, 0, 0, 0);
-	background-image: url("../Assets/MainMenu/btn_tabs/button_top_bar.png");
 
 	border-width: 0px;
 
 	font-size: 0px;
-
-	flex-grow: 0;
-	flex-shrink: 0;
 }
 
-.topbar_tab:hover {
-	color: #ffffff;
+#nav_home {
+	left: 0px;
+}
 
-	filter: none;
+#nav_skills {
+	left: 170px;
+}
+
+#nav_equipment {
+	left: 340px;
+}
+
+#nav_shop {
+	left: 510px;
+}
+
+#nav_clan {
+	left: 680px;
+}
+
+#nav_friends {
+	left: 850px;
+}
+
+.topbar_tab_bg {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 150px;
+	height: 43px;
+
+	pointer-events: none;
+}
+
+.topbar_tab_bg.normal {
+	opacity: 1.00;
+}
+
+.topbar_tab_bg.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab_bg.active_img {
+	opacity: 0.00;
+}
+
+.topbar_tab:hover .topbar_tab_bg.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab:hover .topbar_tab_bg.hover {
+	opacity: 1.00;
+}
+
+.topbar_tab:hover .topbar_tab_bg.active_img {
+	opacity: 0.00;
+}
+
+.topbar_tab.active .topbar_tab_bg.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab.active .topbar_tab_bg.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab.active .topbar_tab_bg.active_img {
+	opacity: 1.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_bg.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_bg.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_bg.active_img {
+	opacity: 1.00;
 }
 
 .topbar_tab.active {
 	color: #ffffff;
-
-	filter: none;
 }
 
 .topbar_tab_label {
@@ -272,7 +336,6 @@
 
 	color: inherit;
 
-	font-family: "Exo 2";
 	font-size: 24px;
 	font-weight: normal;
 	line-height: 43px;
@@ -282,63 +345,108 @@
 }
 
 
-/* RIGHT ACTION BUTTONS */
+/* ACTIONS */
 
 .topbar_actions {
 	position: absolute;
-	right: 20px;
+	left: 1708px;
 	top: 10px;
 
 	width: 192px;
 	height: 58px;
 
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-
 	overflow: visible;
 }
 
 .topbar_action_button {
-	position: relative;
+	position: absolute;
+	top: 0px;
 
 	width: 48px;
 	height: 58px;
 
-	margin-left: 0px;
+	margin: 0px;
 	padding: 0px;
 
 	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
 
 	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
 
-	flex-grow: 0;
-	flex-shrink: 0;
+	color: rgba(0, 0, 0, 0);
+	font-size: 0px;
+	line-height: 0px;
+	text-shadow: none;
+
+	filter: none;
+
+	overflow: visible;
 }
 
-.topbar_action_button.change_name {
-	background-image: url("../Assets/MainMenu/btn_actions/btn_change_name.png");
-}
+.topbar_action_button:hover,
+.topbar_action_button:active,
+.topbar_action_button:focus {
+	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
 
-.topbar_action_button.rating {
-	background-image: url("../Assets/MainMenu/btn_actions/btn_rating.png");
-}
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
 
-.topbar_action_button.options {
-	background-image: url("../Assets/MainMenu/btn_actions/btn_settings.png");
-}
+	color: rgba(0, 0, 0, 0);
+	text-shadow: none;
 
-.topbar_action_button.exit {
-	background-image: url("../Assets/MainMenu/btn_actions/btn_frontend_exit.png");
-}
-
-.topbar_action_button:hover {
 	filter: none;
 }
 
-.topbar_tooltip {
-	display: none;
+.topbar_action_button:nth-child(1) {
+	left: 0px;
+}
 
+.topbar_action_button:nth-child(2) {
+	left: 48px;
+}
+
+.topbar_action_button:nth-child(3) {
+	left: 96px;
+}
+
+.topbar_action_button:nth-child(4) {
+	left: 144px;
+}
+
+.topbar_action_image {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 48px;
+	height: 58px;
+	
+	background-color: rgba(0, 0, 0, 0);
+
+	pointer-events: none;
+}
+
+.topbar_action_image.normal {
+	opacity: 1.00;
+}
+
+.topbar_action_image.hover {
+	opacity: 0.00;
+}
+
+.topbar_action_button:hover .topbar_action_image.normal {
+	opacity: 0.00;
+}
+
+.topbar_action_button:hover .topbar_action_image.hover {
+	opacity: 1.00;
+}
+
+/* TOOLTIP */
+
+.topbar_tooltip {
 	position: absolute;
 	left: -42px;
 	top: 62px;
@@ -349,10 +457,10 @@
 	padding-top: 7px;
 
 	color: #ffffff;
-	background-color: rgba(5, 8, 10, 255);
+	background-color: rgba(5, 8, 10, 230);
 
 	border-width: 1px;
-	border-color: rgba(232, 120, 50, 255);
+	border-color: rgba(232, 120, 50, 220);
 
 	font-size: 9px;
 	font-weight: bold;
@@ -361,10 +469,17 @@
 	text-align: center;
 	white-space: nowrap;
 
+	opacity: 0.00;
+
 	z-index: 100;
 	pointer-events: none;
 }
 
+.topbar_action_button:nth-child(4) .topbar_tooltip {
+	left: -72px;
+	width: 100px;
+}
+
 .topbar_action_button:hover .topbar_tooltip {
-	display: block;
+	opacity: 1.00;
 }

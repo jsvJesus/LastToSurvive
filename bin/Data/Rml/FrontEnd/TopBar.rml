@@ -13,29 +13,37 @@
 
 		<div class="topbar_level_block">
 			<img class="topbar_level_badge" src="../Assets/MainMenu/badge_lvl/topbar_lvl_badge.png"/>
-			<div id="top_level_value" class="topbar_level_value">5</div>
-			<div class="topbar_level_title">LVL</div>
-			<div id="top_survivor_name" class="topbar_character_name">ES3N1N</div>
 
-			<div class="topbar_level_progress_bg">
-				<div id="top_level_xp_fill" class="topbar_level_progress_fill"></div>
+			<div id="top_level_value" class="topbar_level_value">5</div>
+
+			<div id="top_survivor_name" class="topbar_character_name">
+				ES3N1N
 			</div>
 		</div>
 
 		<div class="topbar_money">
-			<div class="topbar_money_item">
+			<div class="topbar_money_item money_gc">
 				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zc.png"/>
-				<div id="balance_gc" class="topbar_money_value">999999999</div>
+				<div class="topbar_money_value_wrap">
+					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
+					<div id="balance_gc" class="topbar_money_value">99 999</div>
+				</div>
 			</div>
 
-			<div class="topbar_money_item">
+			<div class="topbar_money_item money_gd">
 				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zd.png"/>
-				<div id="balance_gd" class="topbar_money_value">999999999</div>
+				<div class="topbar_money_value_wrap">
+					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
+					<div id="balance_gd" class="topbar_money_value">99 999</div>
+				</div>
 			</div>
 
-			<div class="topbar_money_item">
+			<div class="topbar_money_item money_zlt">
 				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zlt.png"/>
-				<div id="balance_zlt" class="topbar_money_value">999999999</div>
+				<div class="topbar_money_value_wrap">
+					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
+					<div id="balance_zlt" class="topbar_money_value">0</div>
+				</div>
 			</div>
 
 			<div id="balance_ltc" class="runtime_hidden_value">0</div>
@@ -43,46 +51,74 @@
 
 		<div class="topbar_tabs">
 			<button id="nav_home" class="topbar_tab active">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">HOME</div>
 			</button>
 
 			<button id="nav_skills" class="topbar_tab">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">SKILLS</div>
 			</button>
 
 			<button id="nav_equipment" class="topbar_tab">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">EQUIPMENT</div>
 			</button>
 
 			<button id="nav_shop" class="topbar_tab">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">SHOP</div>
 			</button>
 
 			<button id="nav_clan" class="topbar_tab">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">CLAN</div>
 			</button>
 
 			<button id="nav_friends" class="topbar_tab">
+				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
+				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
+				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
 				<div class="topbar_tab_label">FRIENDS</div>
 			</button>
 		</div>
 
 		<div class="topbar_actions">
-			<button id="btn_change_name" class="topbar_action_button change_name">
+
+			<button id="btn_change_name" class="topbar_action_button">
+				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_change_name.png"/>
+				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_change_name_hover.png"/>
 				<div class="topbar_tooltip">CHANGE NAME</div>
 			</button>
 
-			<button id="btn_rewards" class="topbar_action_button rating">
+			<button id="btn_rewards" class="topbar_action_button">
+				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_rating.png"/>
+				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_rating_hover.png"/>
 				<div class="topbar_tooltip">RATING</div>
 			</button>
 
-			<button id="btn_settings" class="topbar_action_button options">
+			<button id="btn_settings" class="topbar_action_button">
+				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_settings.png"/>
+				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_settings_hover.png"/>
 				<div class="topbar_tooltip">OPTIONS</div>
 			</button>
 
-			<button id="btn_frontend_exit" class="topbar_action_button exit">
+			<button id="btn_frontend_exit" class="topbar_action_button">
+				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_frontend_exit.png"/>
+				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_frontend_exit_hover.png"/>
 				<div class="topbar_tooltip">EXIT</div>
 			</button>
+
 		</div>
 
 	</div>
