@@ -14,7 +14,7 @@ static void DrawWorldDX11_LogOnce()
     bLogged = true;
 
     OutputDebugStringA(
-        "[RenderDX11] DrawWorldDX11.hpp included. "
+        "[DX11][Render] DrawWorldDX11.hpp included. "
         "DX11 world draw path is prepared.\n"
     );
 }
@@ -40,7 +40,7 @@ static void DrawWorldDX11_LogTerrainSkeletonOnce(
     char Text[256] = {};
     sprintf_s(
         Text,
-        "[RenderDX11] Terrain %s skeleton prepared. Terrain2=%p Terrain=%p\n",
+        "[DX11][Render] Terrain %s skeleton prepared. Terrain2=%p Terrain=%p\n",
         PassName ? PassName : "unknown",
         static_cast<void*>(Terrain2),
         static_cast<void*>(Terrain)
@@ -71,7 +71,7 @@ static bool DrawWorldDX11_TerrainDepth(
         {
             bTerrainDepthSkippedLogged = true;
             OutputDebugStringA(
-                "[RenderDX11] Terrain depth draw skipped\n"
+                "[DX11][Render] Terrain depth draw skipped\n"
             );
         }
 
@@ -84,7 +84,7 @@ static bool DrawWorldDX11_TerrainDepth(
     {
         bTerrainDepthDrawLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Terrain depth draw issued\n"
+            "[DX11][Render] Terrain depth draw issued\n"
         );
     }
 
@@ -113,7 +113,7 @@ static bool DrawWorldDX11_TerrainGBuffer(
         {
             bTerrainGBufferSkippedLogged = true;
             OutputDebugStringA(
-                "[RenderDX11] Terrain GBuffer draw skipped\n"
+                "[DX11][Render] Terrain GBuffer draw skipped\n"
             );
         }
 
@@ -126,7 +126,7 @@ static bool DrawWorldDX11_TerrainGBuffer(
     {
         bTerrainGBufferDrawLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Terrain GBuffer draw issued\n"
+            "[DX11][Render] Terrain GBuffer draw issued\n"
         );
     }
 
@@ -200,7 +200,7 @@ static bool DrawWorldDX11_DepthPrepass(
     {
         bDepthPrepassLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Depth prepass skeleton prepared\n"
+            "[DX11][Render] Depth prepass skeleton prepared\n"
         );
     }
 
@@ -213,11 +213,10 @@ static bool DrawWorldDX11_DepthPrepass(
     // DX11 version must later:
     // - set depth-only shaders
     // - bind DSV
-    // - draw terrain depth
     // - draw static/skinned depth
-
-    if (!DrawWorldDX11_TerrainDepth(Desc))
-        return false;
+    //
+    // Terrain is intentionally written during FillGBuffer for now. Drawing it
+    // here too doubles the Terrain2 atlas tile work in the debug preview.
 
     return true;
 }
@@ -260,7 +259,7 @@ static bool DrawWorldDX11_FillGBuffer(
     );
 
     gDX11Context->OMSetDepthStencilState(
-        gDX11DepthReadLessEqual,
+        gDX11DepthWriteLessEqual,
         0
     );
 
@@ -288,7 +287,7 @@ static bool DrawWorldDX11_FillGBuffer(
     {
         bFillGBufferLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Fill GBuffer skeleton prepared\n"
+            "[DX11][Render] Fill GBuffer skeleton prepared\n"
         );
     }
 
@@ -351,7 +350,7 @@ static bool DrawWorldDX11_Lighting(
     {
         bLightingLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Lighting skeleton prepared\n"
+            "[DX11][Render] Lighting skeleton prepared\n"
         );
     }
 
@@ -405,7 +404,7 @@ static bool DrawWorldDX11_Transparent(
     {
         bTransparentLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Transparent skeleton prepared\n"
+            "[DX11][Render] Transparent skeleton prepared\n"
         );
     }
 
@@ -460,7 +459,7 @@ static bool DrawWorldDX11_Post(
     {
         bPostLogged = true;
         OutputDebugStringA(
-            "[RenderDX11] Post skeleton prepared\n"
+            "[DX11][Render] Post skeleton prepared\n"
         );
     }
 

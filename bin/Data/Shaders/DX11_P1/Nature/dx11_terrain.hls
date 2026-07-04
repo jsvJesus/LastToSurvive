@@ -77,7 +77,8 @@ Texture2D gTerrainLayer3DiffuseTexture : register(t8);
 Texture2D gTerrainAtlasDiffuseTexture : register(t9);
 Texture2D gTerrainAtlasNormalTexture : register(t10);
 
-SamplerState gTerrainSampler : register(s0);
+SamplerState gTerrainWrapSampler : register(s0);
+SamplerState gTerrainClampSampler : register(s1);
 
 struct VS_INPUT
 {
@@ -283,7 +284,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	{
 		TerrainColorMod =
 			gTerrainColorTexture.Sample(
-				gTerrainSampler,
+				gTerrainClampSampler,
 				Terrain2GetTerrainUV(
 					Input.WorldPos
 				)
@@ -299,7 +300,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 
 		float3 Layer0Color =
 			gTerrainLayer0DiffuseTexture.Sample(
-				gTerrainSampler,
+				gTerrainWrapSampler,
 				LayerUV
 			).rgb;
 
@@ -313,7 +314,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 		{
 			float3 Mask =
 				gTerrainMask0Texture.Sample(
-					gTerrainSampler,
+					gTerrainClampSampler,
 					Terrain2GetMaskUV(
 						Input.WorldPos
 					)
@@ -323,7 +324,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			{
 				float3 Layer1Color =
 					gTerrainLayer1DiffuseTexture.Sample(
-						gTerrainSampler,
+						gTerrainWrapSampler,
 						Terrain2GetLayerUV(
 							Input.WorldPos,
 							gTerrainLayerScale0.zw
@@ -343,7 +344,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			{
 				float3 Layer2Color =
 					gTerrainLayer2DiffuseTexture.Sample(
-						gTerrainSampler,
+						gTerrainWrapSampler,
 						Terrain2GetLayerUV(
 							Input.WorldPos,
 							gTerrainLayerScale1.xy
@@ -363,7 +364,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			{
 				float3 Layer3Color =
 					gTerrainLayer3DiffuseTexture.Sample(
-						gTerrainSampler,
+						gTerrainWrapSampler,
 						Terrain2GetLayerUV(
 							Input.WorldPos,
 							gTerrainLayerScale1.zw
@@ -395,7 +396,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 
 		FinalColor =
 			gTerrainAtlasDiffuseTexture.Sample(
-				gTerrainSampler,
+				gTerrainClampSampler,
 				AtlasUV
 			).rgb;
 
@@ -404,7 +405,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			Normal =
 				TerrainSafeNormalize(
 					gTerrainAtlasNormalTexture.Sample(
-						gTerrainSampler,
+						gTerrainClampSampler,
 						AtlasUV
 					).xyz * 2.0f - 1.0f,
 					Normal

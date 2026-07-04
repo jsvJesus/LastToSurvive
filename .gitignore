@@ -10,6 +10,8 @@
 !/sql/
 !/server/
 !/External/
+!/docs/
+!/docs/**
 !/tools/
 !/tools/RmlLiveEditor/
 !/tools/RmlLiveEditor/**

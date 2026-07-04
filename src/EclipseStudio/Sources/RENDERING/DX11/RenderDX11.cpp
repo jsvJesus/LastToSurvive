@@ -61,6 +61,7 @@ namespace
 	static const int DX11_TERRAIN_PATCH_COUNT =
 		DX11_TERRAIN_PATCH_SIDE * DX11_TERRAIN_PATCH_SIDE;
 	static const int DX11_TERRAIN_PATCH_CACHE_COUNT = 256;
+	static const int DX11_TERRAIN_ATLAS_AUTO_REFRESH_BUDGET = 1;
 
 	struct WorldDX11FrameCB
 	{
@@ -170,6 +171,7 @@ namespace
 		ID3D11ShaderResourceView* SRV;
 		int Width;
 		int Height;
+		UINT MipLevels;
 		D3DFORMAT SourceFormat;
 		DXGI_FORMAT DXFormat;
 		unsigned int LastUploadFrame;
@@ -286,6 +288,8 @@ namespace
 	WorldDX11Terrain2TextureBridge gDX11Terrain2BatchMaskBridge = {};
 	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasDiffuseBridges = 0;
 	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasNormalBridges = 0;
+	unsigned int*			gDX11Terrain2AtlasVisibleSignatures = 0;
+	unsigned int*			gDX11Terrain2AtlasUploadedSignatures = 0;
 	int						gDX11Terrain2AtlasBridgeCount = 0;
 
 	int						gDX11Terrain2SRVMask = 0;
@@ -294,6 +298,8 @@ namespace
 	int						gDX11Terrain2AtlasDrawCount = 0;
 	int						gDX11Terrain2AtlasSkipInfoCount = 0;
 	int						gDX11Terrain2AtlasSkipSRVCount = 0;
+	int						gDX11Terrain2AtlasRefreshCount = 0;
+	int						gDX11Terrain2AtlasRefreshPendingCount = 0;
 
 	ID3D11Buffer*			gDX11FrameCB = 0;
 	ID3D11Buffer*			gDX11TerrainCB = 0;
@@ -328,7 +334,12 @@ namespace
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
 	bool					gDX11PreviewValid = false;
+	bool					gDX11FrameTargetsFailedLogged = false;
 	bool					gDX11OffscreenOnlyLogged = false;
+	bool					gDX11WorldFallbackLogged = false;
+	bool					gDX11WorldFrameFailureLogged = false;
+	bool					gDX11WorldFrameDisabled = false;
+	bool					gDX11WorldFrameDisabledLogged = false;
 
 	ID3D11Texture2D*		gDX11PreviewReadbackTexture = 0;
 	DXGI_FORMAT				gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
@@ -408,41 +419,83 @@ namespace
 
 	bool RenderDX11_WantsSmokeDebug()
 	{
-		return
-			RenderDX11_CommandLineHasSwitch("-dx11smoke") ||
-			RenderDX11_CommandLineHasSwitch("/dx11smoke");
+		static int CachedValue = -1;
+
+		if (CachedValue < 0)
+		{
+			CachedValue =
+				RenderDX11_CommandLineHasSwitch("-dx11smoke") ||
+				RenderDX11_CommandLineHasSwitch("/dx11smoke");
+		}
+
+		return CachedValue != 0;
 	}
 
 	bool RenderDX11_WantsDebugPreview()
 	{
-		return
-			RenderDX11_CommandLineHasSwitch("-dx11preview") ||
-			RenderDX11_CommandLineHasSwitch("/dx11preview");
+		static int CachedValue = -1;
+
+		if (CachedValue < 0)
+		{
+			CachedValue =
+				RenderDX11_CommandLineHasSwitch("-dx11preview") ||
+				RenderDX11_CommandLineHasSwitch("/dx11preview");
+		}
+
+		return CachedValue != 0;
 	}
 
 	bool RenderDX11_WantsTerrainCullEnabled()
 	{
+		static int CachedValue = -1;
+
+		if (CachedValue >= 0)
+			return CachedValue != 0;
+
 		if (
 			RenderDX11_CommandLineHasSwitch("-dx11terrainnocull") ||
 			RenderDX11_CommandLineHasSwitch("/dx11terrainnocull")
 		)
 		{
+			CachedValue = 0;
 			return false;
 		}
 
-		return
+		CachedValue =
 			RenderDX11_CommandLineHasSwitch("-dx11terraincull") ||
 			RenderDX11_CommandLineHasSwitch("/dx11terraincull");
+
+		return CachedValue != 0;
+	}
+
+	bool RenderDX11_WantsTerrainAtlasRefresh()
+	{
+		static int CachedValue = -1;
+
+		if (CachedValue < 0)
+		{
+			CachedValue =
+				RenderDX11_CommandLineHasSwitch("-dx11terrainatlasrefresh") ||
+				RenderDX11_CommandLineHasSwitch("/dx11terrainatlasrefresh");
+		}
+
+		return CachedValue != 0;
 	}
 
 	int RenderDX11_GetTerrainPatchRadius()
 	{
+		static int CachedRadius = -1;
+
+		if (CachedRadius > 0)
+			return CachedRadius;
+
 		if (
 			RenderDX11_CommandLineHasSwitch("-dx11terrain3x3") ||
 			RenderDX11_CommandLineHasSwitch("/dx11terrain3x3")
 		)
 		{
-			return 1;
+			CachedRadius = 1;
+			return CachedRadius;
 		}
 
 		if (
@@ -452,10 +505,12 @@ namespace
 			RenderDX11_CommandLineHasSwitch("/dx11terrain7x7")
 		)
 		{
-			return DX11_TERRAIN_PATCH_MAX_RADIUS;
+			CachedRadius = DX11_TERRAIN_PATCH_MAX_RADIUS;
+			return CachedRadius;
 		}
 
-		return DX11_TERRAIN_PATCH_DEFAULT_RADIUS;
+		CachedRadius = DX11_TERRAIN_PATCH_DEFAULT_RADIUS;
+		return CachedRadius;
 	}
 
 	int RenderDX11_GetTerrainPatchSide()
@@ -648,7 +703,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Preview mode changed by F10: %s\n",
+				"[DX11][Render] Preview mode changed by F10: %s\n",
 				RenderDX11_GetPreviewModeName(NextMode)
 			);
 
@@ -920,7 +975,7 @@ namespace
 				char Text[512] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Missing shader include: %s\n",
+					"[DX11][Render] Missing shader include: %s\n",
 					FileName
 				);
 
@@ -1099,7 +1154,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create %s constant buffer failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create %s constant buffer failed. HRESULT=0x%08X\n",
 				DebugName ? DebugName : "unknown",
 				static_cast<unsigned int>(Hr)
 			);
@@ -1196,7 +1251,7 @@ namespace
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7)\n"
+			"[DX11][Render] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7)\n"
 		);
 
 		return true;
@@ -1295,7 +1350,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Map %s constant buffer failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Map %s constant buffer failed. HRESULT=0x%08X\n",
 				DebugName ? DebugName : "unknown",
 				static_cast<unsigned int>(Hr)
 			);
@@ -1587,7 +1642,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Map terrain constant buffer failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Map terrain constant buffer failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -1656,6 +1711,7 @@ namespace
 		Bridge.Source = 0;
 		Bridge.Width = 0;
 		Bridge.Height = 0;
+		Bridge.MipLevels = 0;
 		Bridge.SourceFormat = D3DFMT_UNKNOWN;
 		Bridge.DXFormat = DXGI_FORMAT_UNKNOWN;
 		Bridge.LastUploadFrame = 0;
@@ -1711,13 +1767,19 @@ namespace
 
 		delete [] gDX11Terrain2AtlasDiffuseBridges;
 		delete [] gDX11Terrain2AtlasNormalBridges;
+		delete [] gDX11Terrain2AtlasVisibleSignatures;
+		delete [] gDX11Terrain2AtlasUploadedSignatures;
 
 		gDX11Terrain2AtlasDiffuseBridges = 0;
 		gDX11Terrain2AtlasNormalBridges = 0;
+		gDX11Terrain2AtlasVisibleSignatures = 0;
+		gDX11Terrain2AtlasUploadedSignatures = 0;
 		gDX11Terrain2AtlasBridgeCount = 0;
 
 		gDX11Terrain2SRVMask = 0;
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
+		gDX11Terrain2AtlasRefreshCount = 0;
+		gDX11Terrain2AtlasRefreshPendingCount = 0;
 	}
 
 	bool RenderDX11_TranslateTerrain2TextureFormat(
@@ -2125,7 +2187,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s texture unsupported D3D9 format=0x%08X\n",
+				"[DX11][Render] Terrain2 %s texture unsupported D3D9 format=0x%08X\n",
 				DebugName,
 				static_cast<unsigned int>(SourceFormat)
 			);
@@ -2138,27 +2200,6 @@ namespace
 
 			return false;
 		}
-
-		if (
-			Bridge.Source == Source &&
-			Bridge.Texture &&
-			Bridge.SRV &&
-			Bridge.Width == Width &&
-			Bridge.Height == Height &&
-			Bridge.SourceFormat == SourceFormat &&
-			Bridge.DXFormat == DXFormat &&
-			(
-				!bForceRefresh ||
-				Bridge.LastUploadFrame == gDX11TerrainCacheFrameId
-			)
-		)
-		{
-			return true;
-		}
-
-		RenderDX11_ResetTerrain2TextureBridge(
-			Bridge
-		);
 
 		IDirect3DTexture9* D3D9Texture =
 			Source->AsTex2D();
@@ -2181,6 +2222,55 @@ namespace
 
 		if (bRenderTargetSource)
 			MipLevels = 1;
+
+		if (
+			Bridge.Source == Source &&
+			Bridge.Texture &&
+			Bridge.SRV &&
+			Bridge.Width == Width &&
+			Bridge.Height == Height &&
+			Bridge.MipLevels == MipLevels &&
+			Bridge.SourceFormat == SourceFormat &&
+			Bridge.DXFormat == DXFormat &&
+			(
+				!bForceRefresh ||
+				Bridge.LastUploadFrame == gDX11TerrainCacheFrameId
+			)
+		)
+		{
+			return true;
+		}
+
+		const bool bCanUpdateExisting =
+			bForceRefresh &&
+			Bridge.Source == Source &&
+			Bridge.Texture &&
+			Bridge.SRV &&
+			Bridge.Width == Width &&
+			Bridge.Height == Height &&
+			Bridge.MipLevels == MipLevels &&
+			Bridge.SourceFormat == SourceFormat &&
+			Bridge.DXFormat == DXFormat;
+
+		const bool bLogUpload =
+			!bCanUpdateExisting &&
+			(
+				Bridge.Source != Source ||
+				!Bridge.Texture ||
+				!Bridge.SRV ||
+				Bridge.Width != Width ||
+				Bridge.Height != Height ||
+				Bridge.MipLevels != MipLevels ||
+				Bridge.SourceFormat != SourceFormat ||
+				Bridge.DXFormat != DXFormat
+			);
+
+		if (!bCanUpdateExisting)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				Bridge
+			);
+		}
 
 		D3D11_SUBRESOURCE_DATA* InitData =
 			new D3D11_SUBRESOURCE_DATA[MipLevels];
@@ -2344,7 +2434,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s mip upload failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Terrain2 %s mip upload failed. HRESULT=0x%08X\n",
 				DebugName,
 				static_cast<unsigned int>(Hr)
 			);
@@ -2362,6 +2452,32 @@ namespace
 			);
 
 			return false;
+		}
+
+		if (bCanUpdateExisting)
+		{
+			for (UINT Mip = 0; Mip < MipLevels; ++Mip)
+			{
+				gDX11Context->UpdateSubresource(
+					Bridge.Texture,
+					Mip,
+					0,
+					InitData[Mip].pSysMem,
+					InitData[Mip].SysMemPitch,
+					InitData[Mip].SysMemSlicePitch
+				);
+			}
+
+			for (UINT Mip = 0; Mip < MipLevels; ++Mip)
+				delete[] UploadDatas[Mip];
+
+			delete[] UploadDatas;
+			delete[] InitData;
+
+			Bridge.LastUploadFrame =
+				gDX11TerrainCacheFrameId;
+
+			return true;
 		}
 
 		D3D11_TEXTURE2D_DESC TextureDesc = {};
@@ -2397,7 +2513,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s CreateTexture2D failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Terrain2 %s CreateTexture2D failed. HRESULT=0x%08X\n",
 				DebugName,
 				static_cast<unsigned int>(Hr)
 			);
@@ -2429,7 +2545,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s CreateShaderResourceView failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Terrain2 %s CreateShaderResourceView failed. HRESULT=0x%08X\n",
 				DebugName,
 				static_cast<unsigned int>(Hr)
 			);
@@ -2446,24 +2562,28 @@ namespace
 		Bridge.Source = Source;
 		Bridge.Width = Width;
 		Bridge.Height = Height;
+		Bridge.MipLevels = MipLevels;
 		Bridge.SourceFormat = SourceFormat;
 		Bridge.DXFormat = DXFormat;
 		Bridge.LastUploadFrame =
 			gDX11TerrainCacheFrameId;
 
-		char Text[512] = {};
-		sprintf_s(
-			Text,
-			"[RenderDX11] Terrain2 %s uploaded to DX11 SRV: %dx%d mips=%u d3d9fmt=0x%08X dxgifmt=%d\n",
-			DebugName,
-			Width,
-			Height,
-			static_cast<unsigned int>(MipLevels),
-			static_cast<unsigned int>(SourceFormat),
-			static_cast<int>(DXFormat)
-		);
+		if (bLogUpload)
+		{
+			char Text[512] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Terrain2 %s uploaded to DX11 SRV: %dx%d mips=%u d3d9fmt=0x%08X dxgifmt=%d\n",
+				DebugName,
+				Width,
+				Height,
+				static_cast<unsigned int>(MipLevels),
+				static_cast<unsigned int>(SourceFormat),
+				static_cast<int>(DXFormat)
+			);
 
-		OutputDebugStringA(Text);
+			OutputDebugStringA(Text);
+		}
 
 		return true;
 	}
@@ -2481,7 +2601,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Terrain2 %s texture: null\n",
+				"[DX11][Render] Terrain2 %s texture: null\n",
 				Name
 			);
 
@@ -2492,7 +2612,7 @@ namespace
 		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Terrain2 %s texture: %dx%d fmt=0x%08X loaded=%d missing=%d\n",
+			"[DX11][Render] Terrain2 %s texture: %dx%d fmt=0x%08X loaded=%d missing=%d\n",
 			Name,
 			Texture->GetWidth(),
 			Texture->GetHeight(),
@@ -2692,13 +2812,13 @@ namespace
 			gDX11Terrain2TextureInfoLogged = true;
 
 			OutputDebugStringA(
-				"[RenderDX11] Terrain2 public texture refs acquired\n"
+				"[DX11][Render] Terrain2 public texture refs acquired\n"
 			);
 
 			char BatchText[256] = {};
 			sprintf_s(
 				BatchText,
-				"[RenderDX11] Terrain2 layers=%d masks=%d activeMask=%d batchLayers=[%d,%d,%d,%d]\n",
+				"[DX11][Render] Terrain2 layers=%d masks=%d activeMask=%d batchLayers=[%d,%d,%d,%d]\n",
 				gDX11Terrain2LayerCount,
 				gDX11Terrain2MaskCount,
 				gDX11Terrain2ActiveMaskIndex,
@@ -2889,19 +3009,123 @@ namespace
 			SRVs
 		);
 
-		ID3D11SamplerState* Sampler =
+		ID3D11SamplerState* Samplers[2] =
+		{
 			gDX11SamplerLinearWrap
 			? gDX11SamplerLinearWrap
-			: gDX11SamplerLinearClamp;
+			: gDX11SamplerLinearClamp,
 
-		if (Sampler)
+			gDX11SamplerLinearClamp
+			? gDX11SamplerLinearClamp
+			: gDX11SamplerLinearWrap
+		};
+
+		if (Samplers[0] || Samplers[1])
 		{
 			gDX11Context->PSSetSamplers(
 				0,
-				1,
-				&Sampler
+				2,
+				Samplers
 			);
 		}
+	}
+
+	unsigned int RenderDX11_HashTerrain2AtlasValue(
+		unsigned int Hash,
+		unsigned int Value
+	)
+	{
+		Hash ^= Value;
+		Hash *= 16777619u;
+
+		return Hash;
+	}
+
+	unsigned int RenderDX11_HashTerrain2AtlasTile(
+		unsigned int Hash,
+		const r3dTerrain2::DX11AtlasTileInfo& TileInfo
+	)
+	{
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.AtlasVolumeID)
+		);
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.AtlasTileID)
+		);
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.X)
+		);
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.Z)
+		);
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.L)
+		);
+		Hash = RenderDX11_HashTerrain2AtlasValue(
+			Hash,
+			static_cast<unsigned int>(TileInfo.ConFlags)
+		);
+
+		return Hash ? Hash : 1u;
+	}
+
+	bool RenderDX11_ShouldRefreshTerrain2AtlasVolume(
+		int VolumeID
+	)
+	{
+		if (
+			VolumeID < 0 ||
+			VolumeID >= gDX11Terrain2AtlasBridgeCount ||
+			!gDX11Terrain2AtlasVisibleSignatures ||
+			!gDX11Terrain2AtlasUploadedSignatures
+		)
+		{
+			return false;
+		}
+
+		if (
+			gDX11Terrain2AtlasVisibleSignatures[VolumeID] ==
+			gDX11Terrain2AtlasUploadedSignatures[VolumeID]
+		)
+		{
+			return false;
+		}
+
+		++gDX11Terrain2AtlasRefreshPendingCount;
+
+		if (
+			gDX11Terrain2AtlasRefreshCount >=
+			DX11_TERRAIN_ATLAS_AUTO_REFRESH_BUDGET
+		)
+		{
+			return false;
+		}
+
+		++gDX11Terrain2AtlasRefreshCount;
+		return true;
+	}
+
+	void RenderDX11_MarkTerrain2AtlasVolumeRefreshed(
+		int VolumeID
+	)
+	{
+		if (
+			VolumeID < 0 ||
+			VolumeID >= gDX11Terrain2AtlasBridgeCount ||
+			!gDX11Terrain2AtlasVisibleSignatures ||
+			!gDX11Terrain2AtlasUploadedSignatures
+		)
+		{
+			return;
+		}
+
+		gDX11Terrain2AtlasUploadedSignatures[VolumeID] =
+			gDX11Terrain2AtlasVisibleSignatures[VolumeID];
 	}
 
 	bool RenderDX11_EnsureTerrain2AtlasBridgeCount(
@@ -2931,9 +3155,13 @@ namespace
 
 		delete [] gDX11Terrain2AtlasDiffuseBridges;
 		delete [] gDX11Terrain2AtlasNormalBridges;
+		delete [] gDX11Terrain2AtlasVisibleSignatures;
+		delete [] gDX11Terrain2AtlasUploadedSignatures;
 
 		gDX11Terrain2AtlasDiffuseBridges = 0;
 		gDX11Terrain2AtlasNormalBridges = 0;
+		gDX11Terrain2AtlasVisibleSignatures = 0;
+		gDX11Terrain2AtlasUploadedSignatures = 0;
 		gDX11Terrain2AtlasBridgeCount = 0;
 
 		if (!VolumeCount)
@@ -2944,17 +3172,27 @@ namespace
 
 		gDX11Terrain2AtlasNormalBridges =
 			new WorldDX11Terrain2TextureBridge[VolumeCount]();
+		gDX11Terrain2AtlasVisibleSignatures =
+			new unsigned int[VolumeCount]();
+		gDX11Terrain2AtlasUploadedSignatures =
+			new unsigned int[VolumeCount]();
 
 		if (
 			!gDX11Terrain2AtlasDiffuseBridges ||
-			!gDX11Terrain2AtlasNormalBridges
+			!gDX11Terrain2AtlasNormalBridges ||
+			!gDX11Terrain2AtlasVisibleSignatures ||
+			!gDX11Terrain2AtlasUploadedSignatures
 		)
 		{
 			delete [] gDX11Terrain2AtlasDiffuseBridges;
 			delete [] gDX11Terrain2AtlasNormalBridges;
+			delete [] gDX11Terrain2AtlasVisibleSignatures;
+			delete [] gDX11Terrain2AtlasUploadedSignatures;
 
 			gDX11Terrain2AtlasDiffuseBridges = 0;
 			gDX11Terrain2AtlasNormalBridges = 0;
+			gDX11Terrain2AtlasVisibleSignatures = 0;
+			gDX11Terrain2AtlasUploadedSignatures = 0;
 			gDX11Terrain2AtlasBridgeCount = 0;
 
 			return false;
@@ -2987,13 +3225,16 @@ namespace
 		}
 
 		int AtlasMask = 0;
+		const bool bForceAtlasRefresh =
+			RenderDX11_WantsTerrainAtlasRefresh() ||
+			RenderDX11_ShouldRefreshTerrain2AtlasVolume(VolumeID);
 
 		if (
 			RenderDX11_UploadTerrain2TextureToDX11(
 				gDX11Terrain2AtlasDiffuseBridges[VolumeID],
 				Terrain2->GetDX11AtlasDiffuseTexture(VolumeID),
 				"atlas diffuse",
-				false
+				bForceAtlasRefresh
 			)
 		)
 		{
@@ -3006,12 +3247,22 @@ namespace
 				gDX11Terrain2AtlasNormalBridges[VolumeID],
 				Terrain2->GetDX11AtlasNormalTexture(VolumeID),
 				"atlas normal",
-				false
+				bForceAtlasRefresh
 			)
 		)
 		{
 			AtlasMask |=
 				DX11_TERRAIN2_TEXTURE_ATLAS_NORMAL;
+		}
+
+		if (
+			bForceAtlasRefresh &&
+			(AtlasMask & DX11_TERRAIN2_TEXTURE_ATLAS_DIFFUSE)
+		)
+		{
+			RenderDX11_MarkTerrain2AtlasVolumeRefreshed(
+				VolumeID
+			);
 		}
 
 		return AtlasMask;
@@ -3067,7 +3318,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Map frame constant buffer failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Map frame constant buffer failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3182,7 +3433,7 @@ namespace
 			char Text[512] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Missing shader file: %s\n",
+				"[DX11][Render] Missing shader file: %s\n",
 				FileName
 			);
 
@@ -3285,7 +3536,7 @@ namespace
 			char Text[4096] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Shader compile failed: %s entry=%s profile=%s HRESULT=0x%08X\n%s\n",
+				"[DX11][Render] Shader compile failed: %s entry=%s profile=%s HRESULT=0x%08X\n%s\n",
 				FileName,
 				EntryPoint,
 				Profile,
@@ -3311,7 +3562,7 @@ namespace
 		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Shader compiled: %s entry=%s profile=%s\n",
+			"[DX11][Render] Shader compiled: %s entry=%s profile=%s\n",
 			FileName,
 			EntryPoint,
 			Profile
@@ -3356,7 +3607,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create clear VS failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create clear VS failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3390,7 +3641,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create clear PS failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create clear PS failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3425,7 +3676,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create terrain VS failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create terrain VS failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3471,7 +3722,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create terrain input layout failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create terrain input layout failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3505,7 +3756,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create terrain PS failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create terrain PS failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3514,7 +3765,7 @@ namespace
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Shaders created\n"
+			"[DX11][Render] Shaders created\n"
 		);
 
 		return true;
@@ -3649,7 +3900,7 @@ namespace
 				char Text[256] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Preview texture LockRect failed. HRESULT=0x%08X\n",
+					"[DX11][Render] Preview texture LockRect failed. HRESULT=0x%08X\n",
 					static_cast<unsigned int>(Hr)
 				);
 
@@ -3738,7 +3989,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create preview readback texture failed. Format=%d HRESULT=0x%08X\n",
+				"[DX11][Render] Create preview readback texture failed. Format=%d HRESULT=0x%08X\n",
 				static_cast<int>(Format),
 				static_cast<unsigned int>(Hr)
 			);
@@ -3952,7 +4203,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Smoke readback Map failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Smoke readback Map failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -3988,7 +4239,7 @@ namespace
 		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Smoke shader draw readback: %dx%d center RGBA=(%u,%u,%u,%u)\n",
+			"[DX11][Render] Smoke shader draw readback: %dx%d center RGBA=(%u,%u,%u,%u)\n",
 			gDX11FrameWidth,
 			gDX11FrameHeight,
 			R,
@@ -4007,13 +4258,8 @@ namespace
 		const bool bWantPreview =
 			RenderDX11_WantsDebugPreview();
 
-		if (
-			gDX11TerrainGBufferReadbackLogged &&
-			!bWantPreview
-		)
-		{
+		if (!bWantPreview)
 			return;
-		}
 
 		if (
 			!gDX11Context ||
@@ -4071,7 +4317,7 @@ namespace
 				char Text[256] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Preview readback Map failed. Mode=%s HRESULT=0x%08X\n",
+					"[DX11][Render] Preview readback Map failed. Mode=%s HRESULT=0x%08X\n",
 					RenderDX11_GetPreviewModeName(PreviewMode),
 					static_cast<unsigned int>(Hr)
 				);
@@ -4084,13 +4330,10 @@ namespace
 			return;
 		}
 
-		if (bWantPreview)
-		{
-			RenderDX11_UpdatePreviewFromMapped(
-				Mapped,
-				PreviewMode
-			);
-		}
+		RenderDX11_UpdatePreviewFromMapped(
+			Mapped,
+			PreviewMode
+		);
 
 		if (gDX11TerrainGBufferReadbackLogged)
 		{
@@ -4105,7 +4348,7 @@ namespace
 		char Text[512] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] Preview readback ready: %dx%d Mode=%s Format=%d\n",
+			"[DX11][Render] Preview readback ready: %dx%d Mode=%s Format=%d\n",
 			gDX11FrameWidth,
 			gDX11FrameHeight,
 			RenderDX11_GetPreviewModeName(PreviewMode),
@@ -4161,7 +4404,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create depth write state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create depth write state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4182,7 +4425,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create depth read state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create depth read state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4205,7 +4448,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create depth disabled state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create depth disabled state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4241,7 +4484,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create raster back-cull state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create raster back-cull state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4262,7 +4505,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create raster no-cull state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create raster no-cull state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4300,7 +4543,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create opaque blend state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create opaque blend state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4327,7 +4570,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create alpha blend state failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create alpha blend state failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4366,7 +4609,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create linear wrap sampler failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create linear wrap sampler failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4389,7 +4632,7 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create linear clamp sampler failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create linear clamp sampler failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -4429,7 +4672,7 @@ namespace
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Render states created\n"
+			"[DX11][Render] Render states created\n"
 		);
 
 		return true;
@@ -4533,6 +4776,23 @@ namespace
 		gDX11Viewport = D3D11_VIEWPORT();
 	}
 
+	void RenderDX11_LogFrameTargetFailureOnce(
+		const char* Text
+	)
+	{
+		if (
+			gDX11FrameTargetsFailedLogged ||
+			!Text ||
+			!Text[0]
+		)
+		{
+			return;
+		}
+
+		gDX11FrameTargetsFailedLogged = true;
+		OutputDebugStringA(Text);
+	}
+
 	bool RenderDX11_CreateGBufferTarget(
 		int Width,
 		int Height,
@@ -4570,12 +4830,12 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create %s texture failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create %s texture failed. HRESULT=0x%08X\n",
 				DebugName ? DebugName : "gbuffer",
 				static_cast<unsigned int>(Hr)
 			);
 
-			OutputDebugStringA(Text);
+			RenderDX11_LogFrameTargetFailureOnce(Text);
 			return false;
 		}
 
@@ -4591,12 +4851,12 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create %s RTV failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create %s RTV failed. HRESULT=0x%08X\n",
 				DebugName ? DebugName : "gbuffer",
 				static_cast<unsigned int>(Hr)
 			);
 
-			OutputDebugStringA(Text);
+			RenderDX11_LogFrameTargetFailureOnce(Text);
 			return false;
 		}
 
@@ -4687,11 +4947,11 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create depth texture failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create depth texture failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
-			OutputDebugStringA(Text);
+			RenderDX11_LogFrameTargetFailureOnce(Text);
 			return false;
 		}
 
@@ -4712,11 +4972,11 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create depth DSV failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create depth DSV failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
-			OutputDebugStringA(Text);
+			RenderDX11_LogFrameTargetFailureOnce(Text);
 			return false;
 		}
 
@@ -4724,9 +4984,9 @@ namespace
 	}
 
 	bool RenderDX11_CreateSmokeReadbackTarget(
-	int Width,
-	int Height
-)
+		int Width,
+		int Height
+	)
 	{
 		D3D11_TEXTURE2D_DESC TextureDesc = {};
 		TextureDesc.Width = static_cast<UINT>(Width);
@@ -4753,11 +5013,11 @@ namespace
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create smoke readback texture failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create smoke readback texture failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
-			OutputDebugStringA(Text);
+			RenderDX11_LogFrameTargetFailureOnce(Text);
 			return false;
 		}
 
@@ -4772,9 +5032,21 @@ namespace
 		gDX11OffscreenOnlyLogged = true;
 
 		OutputDebugStringA(
-			"[RenderDX11] Offscreen-only mode confirmed. "
+			"[DX11][Render] Offscreen-only mode confirmed. "
 			"DX11 has no swapchain and does not Present. "
 			"DX9 owns window/backbuffer/UI/Present.\n"
+		);
+	}
+
+	void RenderDX11_LogWorldFallbackOnce()
+	{
+		if (gDX11WorldFallbackLogged)
+			return;
+
+		gDX11WorldFallbackLogged = true;
+
+		OutputDebugStringA(
+			"[DX11][Render] World path executed. Falling back to DX9 world.\n"
 		);
 	}
 
@@ -4794,14 +5066,17 @@ namespace
 			gDX11GBufferDepthLinearTexture &&
 			gDX11GBufferAuxTexture &&
 			gDX11DepthTexture &&
-			gDX11SmokeReadbackTexture &&
 			gDX11GBufferColorRTV &&
 			gDX11GBufferNormalRTV &&
 			gDX11GBufferDepthLinearRTV &&
 			gDX11GBufferAuxRTV &&
 			gDX11DepthDSV &&
 			gDX11FrameWidth == Width &&
-			gDX11FrameHeight == Height
+			gDX11FrameHeight == Height &&
+			(
+				!RenderDX11_WantsSmokeDebug() ||
+				gDX11SmokeReadbackTexture
+			)
 		)
 		{
 			return true;
@@ -4821,7 +5096,10 @@ namespace
 			return false;
 		}
 
-		if (!RenderDX11_CreateSmokeReadbackTarget(Width, Height))
+		if (
+			RenderDX11_WantsSmokeDebug() &&
+			!RenderDX11_CreateSmokeReadbackTarget(Width, Height)
+		)
 		{
 			RenderDX11_ReleaseFrameTargets();
 			return false;
@@ -4836,11 +5114,12 @@ namespace
 
 		gDX11FrameWidth = Width;
 		gDX11FrameHeight = Height;
+		gDX11FrameTargetsFailedLogged = false;
 
 		char Text[256] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] GBuffer targets ready %dx%d\n",
+			"[DX11][Render] GBuffer targets ready %dx%d\n",
 			Width,
 			Height
 		);
@@ -4938,6 +5217,9 @@ namespace
 
 	void RenderDX11_UnbindFrameTargets()
 	{
+		if (!gDX11Context)
+			return;
+
 		ID3D11RenderTargetView* NullRTV[4] =
 		{
 			0,
@@ -4952,6 +5234,48 @@ namespace
 			0
 		);
 	}
+
+	bool RenderDX11_FailWorldFrame(
+		const char* StageName
+	)
+	{
+		RenderDX11_UnbindFrameTargets();
+		gDX11WorldFrameDisabled = true;
+		gDX11PreviewValid = false;
+
+		if (!gDX11WorldFrameFailureLogged)
+		{
+			gDX11WorldFrameFailureLogged = true;
+
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] World frame stage failed: %s. Falling back to DX9 world.\n",
+				StageName ? StageName : "unknown"
+			);
+
+			OutputDebugStringA(Text);
+		}
+
+		return false;
+	}
+
+	bool RenderDX11_IsWorldFrameDisabled()
+	{
+		if (!gDX11WorldFrameDisabled)
+			return false;
+
+		if (!gDX11WorldFrameDisabledLogged)
+		{
+			gDX11WorldFrameDisabledLogged = true;
+
+			OutputDebugStringA(
+				"[DX11][Render] World path disabled after a DX11 frame failure. Using DX9 fallback.\n"
+			);
+		}
+
+		return true;
+	}
 }
 
 #include "DrawWorldDX11.hpp"
@@ -4960,8 +5284,6 @@ void RenderDX11_DrawDebugPreviewDX9()
 {
 	if (
 		!RenderDX11_WantsDebugPreview() ||
-		!gDX11PreviewValid ||
-		!gDX11PreviewTexture ||
 		!r3dRenderer
 	)
 	{
@@ -4979,6 +5301,9 @@ void RenderDX11_DrawDebugPreviewDX9()
 
 	const float Y = 0.0f;
 
+	const float LabelY =
+		Y + 76.0f;
+
 	r3dDrawBox2D(
 		X,
 		Y,
@@ -4987,14 +5312,21 @@ void RenderDX11_DrawDebugPreviewDX9()
 		r3dColor(0, 0, 0, 180)
 	);
 
-	r3dDrawBox2D(
-		X,
-		Y,
-		PreviewW,
-		PreviewH,
-		r3dColor(255, 255, 255, 255),
-		gDX11PreviewTexture
-	);
+	const bool bHasPreviewImage =
+		gDX11PreviewValid &&
+		gDX11PreviewTexture != 0;
+
+	if (bHasPreviewImage)
+	{
+		r3dDrawBox2D(
+			X,
+			Y,
+			PreviewW,
+			PreviewH,
+			r3dColor(255, 255, 255, 255),
+			gDX11PreviewTexture
+		);
+	}
 
 	r3dDrawLine2D(
 		X,
@@ -5010,6 +5342,36 @@ void RenderDX11_DrawDebugPreviewDX9()
 		const RenderDX11PreviewMode PreviewMode =
 			RenderDX11_GetPreviewMode();
 
+		if (!bHasPreviewImage)
+		{
+			const char* Status =
+				"WaitingForReadback";
+
+			if (gDX11WorldFrameDisabled)
+			{
+				Status = "DisabledAfterFrameFailure";
+			}
+			else if (!RenderDX11_IsReady())
+			{
+				Status = "RendererNotReady";
+			}
+			else if (!gDX11PreviewTexture)
+			{
+				Status = "PreviewTextureMissing";
+			}
+
+			Font_Label->PrintF(
+				X + 10.0f,
+				LabelY,
+				r3dColor(255, 230, 120),
+				"DX11 Preview: %s\nDX11 Preview Status: %s\nF10: next preview mode",
+				RenderDX11_GetPreviewModeName(PreviewMode),
+				Status
+			);
+
+			return;
+		}
+
 		const int AtlasVolumes =
 			Terrain2 ?
 				Terrain2->GetDX11AtlasVolumeCount() :
@@ -5022,13 +5384,14 @@ void RenderDX11_DrawDebugPreviewDX9()
 
 		Font_Label->PrintF(
 			X + 10.0f,
-			Y + 10.0f,
+			LabelY,
 			r3dColor(255, 230, 120),
-			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2: Layers %d Masks %d AtlasVol %d AtlasTiles %d\nDX11 Atlas Draw: Visible %d Drawn %d SkipInfo %d SkipSRV %d\nDX11 Terrain2 Batch: C%d N%d H%d B0D%d B0N%d M%d B1D%d B2D%d B3D%d\nF10: next preview mode",
+			"DX11 Preview: %s\nDX11 Terrain Coverage: %dx%d\nDX11 Terrain Culling: %s AtlasRefresh: %s\nDX11 Terrain Drawn: %d\nDX11 Terrain Culled: %d\nDX11 Terrain Cache Updates: %d\nDX11 Terrain2: Layers %d Masks %d AtlasVol %d AtlasTiles %d\nDX11 Atlas Draw: Visible %d Drawn %d SkipInfo %d SkipSRV %d Refresh %d Pending %d\nDX11 Terrain2 Batch: C%d N%d H%d B0D%d B0N%d M%d B1D%d B2D%d B3D%d\nF10: next preview mode",
 			RenderDX11_GetPreviewModeName(PreviewMode),
 			RenderDX11_GetTerrainPatchSide(),
 			RenderDX11_GetTerrainPatchSide(),
 			RenderDX11_WantsTerrainCullEnabled() ? "ON" : "OFF",
+			RenderDX11_WantsTerrainAtlasRefresh() ? "FORCE" : "AUTO",
 			gDX11TerrainPatchDrawCount,
 			gDX11TerrainPatchCullCount,
 			gDX11TerrainPatchUpdateCount,
@@ -5040,6 +5403,8 @@ void RenderDX11_DrawDebugPreviewDX9()
 			gDX11Terrain2AtlasDrawCount,
 			gDX11Terrain2AtlasSkipInfoCount,
 			gDX11Terrain2AtlasSkipSRVCount,
+			gDX11Terrain2AtlasRefreshCount,
+			gDX11Terrain2AtlasRefreshPendingCount,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_COLOR) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_NORMAL) ? 1 : 0,
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_HEIGHT) ? 1 : 0,
@@ -5089,7 +5454,7 @@ bool RenderDX11_Init()
 	if (FAILED(Hr) && (Flags & D3D11_CREATE_DEVICE_DEBUG))
 	{
 		OutputDebugStringA(
-			"[RenderDX11] Debug layer failed. Retrying without debug layer.\n"
+			"[DX11][Render] Debug layer failed. Retrying without debug layer.\n"
 		);
 
 		Flags &= ~D3D11_CREATE_DEVICE_DEBUG;
@@ -5115,7 +5480,7 @@ bool RenderDX11_Init()
 		char Text[256] = {};
 		sprintf_s(
 			Text,
-			"[RenderDX11] D3D11CreateDevice failed. HRESULT=0x%08X\n",
+			"[DX11][Render] D3D11CreateDevice failed. HRESULT=0x%08X\n",
 			static_cast<unsigned int>(Hr)
 		);
 
@@ -5128,7 +5493,7 @@ bool RenderDX11_Init()
 	if (!RenderDX11_CreateStates())
 	{
 		OutputDebugStringA(
-			"[RenderDX11] Failed to create render states\n"
+			"[DX11][Render] Failed to create render states\n"
 		);
 
 		RenderDX11_Shutdown();
@@ -5138,7 +5503,7 @@ bool RenderDX11_Init()
 	if (!RenderDX11_CreateConstantBuffers())
 	{
 		OutputDebugStringA(
-			"[RenderDX11] Failed to create constant buffers\n"
+			"[DX11][Render] Failed to create constant buffers\n"
 		);
 
 		RenderDX11_Shutdown();
@@ -5148,7 +5513,7 @@ bool RenderDX11_Init()
 	if (!RenderDX11_CreateShaders())
 	{
 		OutputDebugStringA(
-			"[RenderDX11] Failed to create shaders\n"
+			"[DX11][Render] Failed to create shaders\n"
 		);
 
 		RenderDX11_Shutdown();
@@ -5160,7 +5525,7 @@ bool RenderDX11_Init()
 	char Text[256] = {};
 	sprintf_s(
 		Text,
-		"[RenderDX11] Initialized. FeatureLevel=%s\n",
+		"[DX11][Render] Initialized. FeatureLevel=%s\n",
 		RenderDX11_FeatureLevelToString(gDX11FeatureLevel)
 	);
 
@@ -5191,9 +5556,13 @@ void RenderDX11_Shutdown()
 	gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
 	gDX11Initialized = false;
 	gDX11OffscreenOnlyLogged = false;
+	gDX11WorldFallbackLogged = false;
+	gDX11WorldFrameFailureLogged = false;
+	gDX11WorldFrameDisabled = false;
+	gDX11WorldFrameDisabledLogged = false;
 
 	OutputDebugStringA(
-		"[RenderDX11] Shutdown\n"
+		"[DX11][Render] Shutdown\n"
 	);
 }
 
@@ -5215,14 +5584,19 @@ bool RenderDX11_RenderWorld(
 			return false;
 	}
 
+	if (RenderDX11_IsWorldFrameDisabled())
+		return false;
+
 	if (!RenderDX11_EnsureFrameTargets(Desc))
 	{
-		OutputDebugStringA(
-			"[RenderDX11] Render skipped: frame targets failed\n"
+		RenderDX11_LogFrameTargetFailureOnce(
+			"[DX11][Render] Render skipped: frame targets failed\n"
 		);
 
 		return false;
 	}
+
+	RenderDX11_LogOffscreenOnlyModeOnce();
 
 	RenderDX11_BindFrameTargets();
 	RenderDX11_UpdateFrameCB(Desc);
@@ -5242,58 +5616,44 @@ bool RenderDX11_RenderWorld(
 
 	if (!DrawWorldDX11_BeginFrame(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("BeginFrame");
 	}
 
 	if (!DrawWorldDX11_DepthPrepass(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("DepthPrepass");
 	}
 
 	if (!DrawWorldDX11_FillGBuffer(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("FillGBuffer");
 	}
 
 	RenderDX11_TerrainGBufferReadbackOnce();
 
 	if (!DrawWorldDX11_Lighting(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("Lighting");
 	}
 
 	if (!DrawWorldDX11_Transparent(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("Transparent");
 	}
 
 	if (!DrawWorldDX11_Post(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
+		return RenderDX11_FailWorldFrame("Post");
 	}
 
 	if (!DrawWorldDX11_EndFrame(Desc))
 	{
-		RenderDX11_UnbindFrameTargets();
-		return false;
-	}
-
-	if (gDX11Context)
-	{
-		gDX11Context->Flush();
+		return RenderDX11_FailWorldFrame("EndFrame");
 	}
 
 	RenderDX11_UnbindFrameTargets();
-
-	OutputDebugStringA(
-		"[RenderDX11] World path executed. Falling back to DX9 world.\n"
-	);
+	gDX11WorldFrameFailureLogged = false;
+	RenderDX11_LogWorldFallbackOnce();
 
 	// Пока возвращаем false.
 	// Это важно: старый DX9 RenderDeferredScene1() продолжит рисовать мир.

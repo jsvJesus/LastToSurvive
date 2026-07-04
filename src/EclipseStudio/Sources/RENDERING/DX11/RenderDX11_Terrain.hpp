@@ -228,7 +228,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 				char Text[256] = {};
 				sprintf_s(
 					Text,
-					"[RenderDX11] Create terrain cache VB[%d] failed. HRESULT=0x%08X\n",
+					"[DX11][Render] Create terrain cache VB[%d] failed. HRESULT=0x%08X\n",
 					i,
 					static_cast<unsigned int>(Hr)
 				);
@@ -299,7 +299,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Create terrain IB failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Create terrain IB failed. HRESULT=0x%08X\n",
 				static_cast<unsigned int>(Hr)
 			);
 
@@ -309,7 +309,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 		}
 
 		OutputDebugStringA(
-			"[RenderDX11] Terrain DX11 patch cache buffers created\n"
+			"[DX11][Render] Terrain DX11 patch cache buffers created\n"
 		);
 
 		return true;
@@ -694,7 +694,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 			char Text[256] = {};
 			sprintf_s(
 				Text,
-				"[RenderDX11] Map terrain VB tile(%d,%d) failed. HRESULT=0x%08X\n",
+				"[DX11][Render] Map terrain VB tile(%d,%d) failed. HRESULT=0x%08X\n",
 				TileX,
 				TileZ,
 				static_cast<unsigned int>(Hr)
@@ -881,9 +881,67 @@ void RenderDX11_BeginTerrainCacheFrame()
 		gDX11Terrain2AtlasDrawCount = 0;
 		gDX11Terrain2AtlasSkipInfoCount = 0;
 		gDX11Terrain2AtlasSkipSRVCount = 0;
+		gDX11Terrain2AtlasRefreshCount = 0;
+		gDX11Terrain2AtlasRefreshPendingCount = 0;
 
 		if (VisibleTileCount <= 0)
 			return false;
+
+		const int AtlasVolumeCount =
+			Terrain2->GetDX11AtlasVolumeCount();
+
+		if (!RenderDX11_EnsureTerrain2AtlasBridgeCount(
+			AtlasVolumeCount
+		))
+		{
+			return false;
+		}
+
+		if (gDX11Terrain2AtlasVisibleSignatures)
+		{
+			memset(
+				gDX11Terrain2AtlasVisibleSignatures,
+				0,
+				sizeof(unsigned int) * AtlasVolumeCount
+			);
+
+			for (int i = 0; i < VisibleTileCount; ++i)
+			{
+				r3dTerrain2::DX11AtlasTileInfo TileInfo = {};
+
+				if (
+					!Terrain2->GetDX11VisibleAtlasTileInfo(
+						i,
+						&TileInfo
+					)
+				)
+				{
+					continue;
+				}
+
+				if (
+					TileInfo.AtlasVolumeID < 0 ||
+					TileInfo.AtlasVolumeID >= AtlasVolumeCount
+				)
+				{
+					continue;
+				}
+
+				unsigned int& Signature =
+					gDX11Terrain2AtlasVisibleSignatures[
+						TileInfo.AtlasVolumeID
+					];
+
+				if (!Signature)
+					Signature = 2166136261u;
+
+				Signature =
+					RenderDX11_HashTerrain2AtlasTile(
+						Signature,
+						TileInfo
+					);
+			}
+		}
 
 		gDX11TerrainPatchDrawCount = 0;
 		gDX11TerrainPatchCullCount = 0;
@@ -1234,6 +1292,13 @@ void RenderDX11_BeginTerrainCacheFrame()
 			0,
 			0
 		);
+
+		if (RenderDX11_DrawTerrain2AtlasTiles())
+			return true;
+
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
+
+		RenderDX11_WriteTerrainCB(0);
 
 		return RenderDX11_DrawTerrainPatchSet();
 	}

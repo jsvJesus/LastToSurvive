@@ -10,6 +10,10 @@
 
 namespace
 {
+	bool gWorldDX11InitFailed = false;
+	bool gWorldDX11InitFailedLogged = false;
+	bool gWorldDX11UnavailableLogged = false;
+
 	void WorldDX11_LogText(const char* Text)
 	{
 		if (!Text)
@@ -18,24 +22,65 @@ namespace
 		OutputDebugStringA(Text);
 		r3dOutToLog("%s", Text);
 	}
+
+	void WorldDX11_LogInitFailedOnce()
+	{
+		if (gWorldDX11InitFailedLogged)
+			return;
+
+		gWorldDX11InitFailedLogged = true;
+
+		WorldDX11_LogText(
+			"[DX11][World] Init failed. DX9 world fallback remains active.\n"
+		);
+	}
+
+	void WorldDX11_LogUnavailableOnce()
+	{
+		if (gWorldDX11UnavailableLogged)
+			return;
+
+		gWorldDX11UnavailableLogged = true;
+
+		WorldDX11_LogText(
+			"[DX11][World] Render skipped: RenderDX11 is not available.\n"
+		);
+	}
 }
 
 bool WorldDX11_Init()
 {
-	return RenderDX11_Init();
+	if (gWorldDX11InitFailed)
+		return false;
+
+	if (RenderDX11_Init())
+		return true;
+
+	gWorldDX11InitFailed = true;
+	WorldDX11_LogInitFailedOnce();
+
+	return false;
 }
 
 void WorldDX11_Shutdown()
 {
-	RenderDX11_Shutdown();
+	if (RenderDX11_IsReady())
+		RenderDX11_Shutdown();
+
+	gWorldDX11InitFailed = false;
+	gWorldDX11InitFailedLogged = false;
+	gWorldDX11UnavailableLogged = false;
 }
 
 bool WorldDX11_IsAvailable()
 {
 #if LTS_STUDIO_DX11_WORLD
+	if (gWorldDX11InitFailed)
+		return false;
+
 	return
 		RenderDX11_IsReady() ||
-		RenderDX11_Init();
+		WorldDX11_Init();
 #else
 	return false;
 #endif
@@ -48,10 +93,7 @@ bool WorldDX11_Render(
 #if LTS_STUDIO_DX11_WORLD
 	if (!WorldDX11_IsAvailable())
 	{
-		WorldDX11_LogText(
-			"[WorldDX11] Render skipped: RenderDX11 is not available\n"
-		);
-
+		WorldDX11_LogUnavailableOnce();
 		return false;
 	}
 

@@ -442,6 +442,7 @@ void InitGame()
 void DestroyGame()
 {
 	ShutdownCollections();
+	WorldRender_Shutdown();
 
 	r3dSetAsyncLoading( 0 ) ;
 

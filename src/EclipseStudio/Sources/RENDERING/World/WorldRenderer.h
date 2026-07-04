@@ -67,9 +67,16 @@ static inline bool WorldRender_CommandLineHasSwitch(const char* SwitchName)
 
 static inline bool WorldRender_WantsDX11()
 {
-	return
-		WorldRender_CommandLineHasSwitch("-dx11world") ||
-		WorldRender_CommandLineHasSwitch("/dx11world");
+	static int CachedValue = -1;
+
+	if (CachedValue < 0)
+	{
+		CachedValue =
+			WorldRender_CommandLineHasSwitch("-dx11world") ||
+			WorldRender_CommandLineHasSwitch("/dx11world");
+	}
+
+	return CachedValue != 0;
 }
 
 static inline bool WorldRender_IsDX11Compiled()
@@ -119,7 +126,7 @@ static inline void WorldRender_LogSelectedBackendOnce()
 	)
 	{
 		WorldRender_LogText(
-			"[WorldRenderer] -dx11world requested, "
+			"[DX11][WorldRenderer] -dx11world requested, "
 			"but LTS_STUDIO_DX11_WORLD is disabled. Using DX9 world.\n"
 		);
 	}
@@ -127,13 +134,13 @@ static inline void WorldRender_LogSelectedBackendOnce()
 	if (WorldRender_GetBackend() == WORLD_RENDER_BACKEND_DX11)
 	{
 		WorldRender_LogText(
-			"[WorldRenderer] Selected backend: DX11 world\n"
+			"[DX11][WorldRenderer] Selected backend: DX11 world\n"
 		);
 	}
 	else
 	{
 		WorldRender_LogText(
-			"[WorldRenderer] Selected backend: DX9 world\n"
+			"[DX11][WorldRenderer] Selected backend: DX9 world\n"
 		);
 	}
 }
@@ -143,10 +150,17 @@ static inline bool WorldRender_TryRenderDX11()
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
 	if (!WorldDX11_IsAvailable())
 	{
-		WorldRender_LogText(
-			"[WorldRenderer] DX11 world requested, "
-			"but WorldDX11 is not available. Falling back to DX9.\n"
-		);
+		static bool bLoggedUnavailable = false;
+
+		if (!bLoggedUnavailable)
+		{
+			bLoggedUnavailable = true;
+
+			WorldRender_LogText(
+				"[DX11][WorldRenderer] DX11 world requested, "
+				"but WorldDX11 is not available. Falling back to DX9.\n"
+			);
+		}
 
 		return false;
 	}
