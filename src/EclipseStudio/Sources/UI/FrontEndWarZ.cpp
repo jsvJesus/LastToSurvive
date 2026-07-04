@@ -59,6 +59,65 @@ static int LoginMenuExitFlag = 0;
 void writeGameOptionsFile();
 extern r3dScreenBuffer*	Scaleform_RenderToTextureRT;
 
+namespace
+{
+	struct FFrontendShadowDisableScope
+	{
+		FFrontendShadowDisableScope()
+		{
+			Shadows =
+				r_shadows->GetInt();
+
+			TerrainShadows =
+				r_terra_shadows->GetInt();
+
+			TransparentShadows =
+				r_transp_shadows->GetInt();
+
+			ParticleShadows =
+				r_particle_shadows->GetInt();
+
+			PointLightShadows =
+				r_dd_pointlight_shadows->GetInt();
+
+			r_shadows->SetInt(0);
+			r_terra_shadows->SetInt(0);
+			r_transp_shadows->SetInt(0);
+			r_particle_shadows->SetInt(0);
+			r_dd_pointlight_shadows->SetInt(0);
+		}
+
+		~FFrontendShadowDisableScope()
+		{
+			r_shadows->SetInt(
+				Shadows
+			);
+
+			r_terra_shadows->SetInt(
+				TerrainShadows
+			);
+
+			r_transp_shadows->SetInt(
+				TransparentShadows
+			);
+
+			r_particle_shadows->SetInt(
+				ParticleShadows
+			);
+
+			r_dd_pointlight_shadows->SetInt(
+				PointLightShadows
+			);
+		}
+
+		int Shadows;
+		int TerrainShadows;
+		int TransparentShadows;
+		int ParticleShadows;
+		int PointLightShadows;
+	};
+}
+
 float getRatio(float num1, float num2)
 {
 	if(num1 == 0)
@@ -1145,6 +1204,8 @@ void FrontendWarZ::drawPlayer()
 			D3DPERF_EndEvent() ;
 		}
 	} beginEndEvent ;
+
+	FFrontendShadowDisableScope ShadowDisableScope;
 
 	CurRenderPipeline->PreRender();
 	CurRenderPipeline->Render();

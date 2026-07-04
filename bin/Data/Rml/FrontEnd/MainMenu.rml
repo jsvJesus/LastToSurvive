@@ -145,18 +145,6 @@
 			</div>
 		</button>
 
-		<div class="squad_slots">
-
-			<div class="squad_slot">
-				<div class="squad_slot_plus">+</div>
-				<div>ADD TO SQUAD</div>
-			</div>
-
-			<div class="squad_slot disabled">
-				<div class="squad_slot_plus">+</div>
-				<div>ADD TO SQUAD</div>
-			</div>
-
 		</div>
 
 	</div>
@@ -263,27 +251,6 @@
 				Message
 			</div>
 		</div>
-	</div>
-
-	<div class="survivor_identity">
-
-		<div
-			id="survivor_state"
-			class="survivor_state ready"
-		>
-			READY
-		</div>
-
-		<div class="survivor_identity_text">
-			<div id="survivor_nickname" class="survivor_nickname">
-				SURVIVOR
-			</div>
-
-			<div id="survivor_class" class="survivor_class">
-				EX MILITARY
-			</div>
-		</div>
-
 	</div>
 
 	<div class="preview_help">

@@ -19,6 +19,12 @@
 !/External/RmlUI/
 !/External/RmlUI/**
 
+# Keep only use sdk from External
+!/External/dxsdk/Include/
+!/External/dxsdk/Include/**
+!/External/discord_social_sdk/include/
+!/External/discord_social_sdk/include/**
+
 # Explicitly exclude root runtime/build folder
 /bin/
 

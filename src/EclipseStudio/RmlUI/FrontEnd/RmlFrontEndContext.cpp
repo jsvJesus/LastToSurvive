@@ -1958,18 +1958,6 @@ bool RmlFrontEndContext::ProcessWin32Message(
 		return bRmlHandled;
 	}
 
-	if (
-		Message == WM_KEYDOWN &&
-		WParam == 'R' &&
-		IsPointerOverMainMenuElement(
-			"character_preview_stage"
-		)
-	)
-	{
-		CharacterPreview->ResetView();
-		return true;
-	}
-
 	switch (Message)
 	{
 	case WM_LBUTTONDOWN:
@@ -1981,35 +1969,6 @@ bool RmlFrontEndContext::ProcessWin32Message(
 		{
 			PreviewDragMode =
 				EPreviewDragMode::Rotate;
-
-			PreviewDragLastPoint.x =
-				GET_X_LPARAM(
-					LParam
-				);
-
-			PreviewDragLastPoint.y =
-				GET_Y_LPARAM(
-					LParam
-				);
-
-			SetCapture(
-				WindowHandle
-			);
-
-			return true;
-		}
-		break;
-
-	case WM_RBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-		if (
-			IsPointerOverMainMenuElement(
-				"character_preview_stage"
-			)
-		)
-		{
-			PreviewDragMode =
-				EPreviewDragMode::Move;
 
 			PreviewDragLastPoint.x =
 				GET_X_LPARAM(
@@ -2060,38 +2019,16 @@ bool RmlFrontEndContext::ProcessWin32Message(
 			PreviewDragLastPoint =
 				CurrentPoint;
 
-			if (
-				PreviewDragMode ==
-				EPreviewDragMode::Rotate
-			)
+			if (!(WParam & MK_LBUTTON))
 			{
-				if (!(WParam & MK_LBUTTON))
-				{
-					CancelPreviewDrag();
-					break;
-				}
-
-				CharacterPreview->Rotate(
-					DeltaX,
-					DeltaY
-				);
+				CancelPreviewDrag();
+				break;
 			}
-			else
-			{
-				if (
-					!(WParam & MK_RBUTTON) &&
-					!(WParam & MK_MBUTTON)
-				)
-				{
-					CancelPreviewDrag();
-					break;
-				}
 
-				CharacterPreview->Move(
-					DeltaX,
-					DeltaY
-				);
-			}
+			CharacterPreview->Rotate(
+				DeltaX,
+				DeltaY
+			);
 
 			return true;
 		}
@@ -2104,43 +2041,6 @@ bool RmlFrontEndContext::ProcessWin32Message(
 		)
 		{
 			CancelPreviewDrag();
-			return true;
-		}
-		break;
-
-	case WM_RBUTTONUP:
-	case WM_MBUTTONUP:
-		if (
-			PreviewDragMode ==
-			EPreviewDragMode::Move
-		)
-		{
-			CancelPreviewDrag();
-			return true;
-		}
-		break;
-
-	case WM_MOUSEWHEEL:
-		if (
-			IsPointerOverMainMenuElement(
-				"character_preview_stage"
-			)
-		)
-		{
-			const float WheelSteps =
-				static_cast<float>(
-					GET_WHEEL_DELTA_WPARAM(
-						WParam
-					)
-				) /
-				static_cast<float>(
-					WHEEL_DELTA
-				);
-
-			CharacterPreview->Zoom(
-				WheelSteps
-			);
-
 			return true;
 		}
 		break;
@@ -2914,21 +2814,6 @@ void RmlFrontEndContext::HandleClick(
 		if (Id == "btn_refresh_profile")
 		{
 			RefreshProfile();
-			return;
-		}
-
-		if (Id == "btn_reset_preview")
-		{
-			if (CharacterPreview)
-			{
-				CharacterPreview->
-					ResetView();
-			}
-
-			SetMainMenuStatus(
-				"Character preview reset."
-			);
-
 			return;
 		}
 
@@ -7797,9 +7682,7 @@ SetMainMenuControlsEnabled(
 		"btn_messages",
 		"btn_settings",
 		"btn_options",
-		"btn_frontend_exit",
-
-		"btn_reset_preview"
+		"btn_frontend_exit"
 	};
 
 	for (

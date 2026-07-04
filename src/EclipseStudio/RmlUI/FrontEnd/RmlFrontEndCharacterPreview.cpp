@@ -46,6 +46,62 @@ namespace
 		int ObjFlags;
 	};
 
+	struct FRmlFrontendShadowDisableScope
+	{
+		FRmlFrontendShadowDisableScope()
+		{
+			Shadows =
+				r_shadows->GetInt();
+
+			TerrainShadows =
+				r_terra_shadows->GetInt();
+
+			TransparentShadows =
+				r_transp_shadows->GetInt();
+
+			ParticleShadows =
+				r_particle_shadows->GetInt();
+
+			PointLightShadows =
+				r_dd_pointlight_shadows->GetInt();
+
+			r_shadows->SetInt(0);
+			r_terra_shadows->SetInt(0);
+			r_transp_shadows->SetInt(0);
+			r_particle_shadows->SetInt(0);
+			r_dd_pointlight_shadows->SetInt(0);
+		}
+
+		~FRmlFrontendShadowDisableScope()
+		{
+			r_shadows->SetInt(
+				Shadows
+			);
+
+			r_terra_shadows->SetInt(
+				TerrainShadows
+			);
+
+			r_transp_shadows->SetInt(
+				TransparentShadows
+			);
+
+			r_particle_shadows->SetInt(
+				ParticleShadows
+			);
+
+			r_dd_pointlight_shadows->SetInt(
+				PointLightShadows
+			);
+		}
+
+		int Shadows;
+		int TerrainShadows;
+		int TransparentShadows;
+		int ParticleShadows;
+		int PointLightShadows;
+	};
+
 	void HideWorldObjectsForRmlCharacterPreview(
 		obj_Player* PreviewPlayer,
 		std::vector<FRmlPreviewObjectDrawBackup>& Backups
@@ -773,6 +829,8 @@ RenderCharacterToTarget(
 		Player,
 		HiddenObjects
 	);
+
+	FRmlFrontendShadowDisableScope ShadowDisableScope;
 
 	CurRenderPipeline->PreRender();
 	CurRenderPipeline->Render();

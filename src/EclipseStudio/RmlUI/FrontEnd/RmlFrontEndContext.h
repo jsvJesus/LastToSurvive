@@ -325,8 +325,7 @@ private:
 	enum class EPreviewDragMode
 	{
 		None = 0,
-		Rotate,
-		Move
+		Rotate
 	};
 
 	bool IsElementOrChildOfId(
