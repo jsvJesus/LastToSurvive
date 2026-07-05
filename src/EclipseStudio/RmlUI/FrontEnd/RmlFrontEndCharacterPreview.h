@@ -24,6 +24,7 @@ public:
 
     void PrepareFrame();
     void RenderFrame();
+    void ForceTextureRefresh();
 
     void Rotate(
         float DeltaPixelsX,

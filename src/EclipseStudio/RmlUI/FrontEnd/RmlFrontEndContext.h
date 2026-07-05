@@ -398,6 +398,8 @@ private:
 	int CreateHeroItemID = 20201;
 	int CreateHardcore = 0;
 
+	int LastSeenDeviceResetCount = -1;
+
 	int CreateHeadIndex = 0;
 	int CreateBodyIndex = 0;
 	int CreateLegsIndex = 0;

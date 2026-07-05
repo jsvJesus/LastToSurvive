@@ -798,6 +798,25 @@ void RmlFrontEndCharacterPreview::RenderFrame()
 	FinishPreparedFrame();
 }
 
+void RmlFrontEndCharacterPreview::ForceTextureRefresh()
+{
+	FinishPreparedFrame();
+
+	RmlRuntime::Get().
+		SetCharacterPreviewTexture(
+			nullptr
+		);
+
+	RmlRuntime::Get().
+		SetCharacterPortraitTexture(
+			nullptr
+		);
+
+	r3dOutToLog(
+		"[RmlUI][FrontEnd][Preview] Force texture refresh\n"
+	);
+}
+
 void RmlFrontEndCharacterPreview::
 RenderCharacterToTarget(
 	bool bPortrait

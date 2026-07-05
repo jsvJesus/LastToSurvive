@@ -1766,6 +1766,7 @@ void RmlFrontEndContext::DetachEvents()
 	}
 }
 
+extern int gResetCount;
 void RmlFrontEndContext::Update()
 {
 	if (!bInitialized || !Context)
@@ -1773,6 +1774,30 @@ void RmlFrontEndContext::Update()
 
 	RefreshDimensions();
 	PollAsyncOperation();
+
+	if (LastSeenDeviceResetCount != gResetCount)
+	{
+		LastSeenDeviceResetCount = gResetCount;
+
+		if (CharacterPreview)
+		{
+			CharacterPreview->ForceTextureRefresh();
+		}
+
+		if (
+			CurrentScreen == EScreen::MainMenu &&
+			IsRmlFrontEndCharacterPreviewEnabled() &&
+			bProfileLoaded &&
+			gUserProfile.ProfileData.NumSlots > 0
+		)
+		{
+			EnsureCharacterPreview();
+		}
+
+		r3dOutToLog(
+			"[RmlUI][FrontEnd][Preview] Device reset detected, preview texture invalidated\n"
+		);
+	}
 
 	UpdateFrontendNotice(
 		r3dGetFrameTime()
@@ -2338,6 +2363,14 @@ void RmlFrontEndContext::ShowMainMenu()
 	)
 	{
 		EnsureCharacterPreview();
+
+		if (
+			CharacterPreview &&
+			CharacterPreview->IsInitialized()
+		)
+		{
+			CharacterPreview->ForceTextureRefresh();
+		}
 	}
 	else
 	{
@@ -2389,6 +2422,11 @@ void RmlFrontEndContext::ShowSkills()
 	SkillsDocument->Show();
 	CurrentScreen = EScreen::Skills;
 
+	if (CharacterPreview)
+	{
+		CharacterPreview->ForceTextureRefresh();
+	}
+
 	RefreshTopBar();
 	KeepTopBarOnTop();
 
@@ -2434,6 +2472,11 @@ void RmlFrontEndContext::ShowShop()
 	SkillsDocument->Hide();
 	ShopDocument->Show();
 	CurrentScreen = EScreen::Shop;
+
+	if (CharacterPreview)
+	{
+		CharacterPreview->ForceTextureRefresh();
+	}
 
 	RefreshTopBar();
 	KeepTopBarOnTop();
