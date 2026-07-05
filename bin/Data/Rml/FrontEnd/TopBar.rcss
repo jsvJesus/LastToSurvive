@@ -1,7 +1,6 @@
 /* ============================================================
    TOP BAR - MAINMENU.XAML REDESIGN FOR RMLUI
-   Source design: tools/Noesis/MainMenu.xaml
-   Target runtime: bin/Data/Rml/FrontEnd/TopBar.rml
+   v3: button images are real <img> layers, text is above them.
    ============================================================ */
 
 .topbar_body {
@@ -40,6 +39,7 @@
 	height: 78px;
 
 	opacity: 1.00;
+	z-index: 0;
 	pointer-events: none;
 }
 
@@ -54,6 +54,7 @@
 	height: 78px;
 
 	overflow: visible;
+	z-index: 5;
 }
 
 .topbar_money_item {
@@ -82,6 +83,7 @@
 	width: 64px;
 	height: 64px;
 
+	z-index: 1;
 	pointer-events: none;
 }
 
@@ -105,8 +107,11 @@
 	color: rgba(0, 0, 0, 0);
 	font-size: 0px;
 	line-height: 0px;
+	text-shadow: none;
+	filter: none;
 
 	overflow: visible;
+	z-index: 3;
 }
 
 .topbar_money_add:hover,
@@ -117,6 +122,8 @@
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
 	color: rgba(0, 0, 0, 0);
+	text-shadow: none;
+	filter: none;
 }
 
 .topbar_money_add_icon {
@@ -127,6 +134,7 @@
 	width: 14px;
 	height: 14px;
 
+	z-index: 4;
 	pointer-events: none;
 }
 
@@ -149,7 +157,6 @@
 
 	color: #e1e9ed;
 
-	font-family: "Exo 2", Tahoma, Arial;
 	font-size: 18px;
 	font-weight: normal;
 	line-height: 22px;
@@ -158,6 +165,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 
+	z-index: 2;
 	pointer-events: none;
 }
 
@@ -172,6 +180,7 @@
 	height: 78px;
 
 	overflow: visible;
+	z-index: 4;
 }
 
 .topbar_tab {
@@ -196,7 +205,7 @@
 	text-shadow: none;
 	filter: none;
 
-	overflow: visible;
+	overflow: hidden;
 }
 
 .topbar_tab:hover,
@@ -240,15 +249,8 @@
 	height: 78px;
 
 	opacity: 1.00;
+	z-index: 1;
 	pointer-events: none;
-}
-
-.topbar_tab:hover .topbar_tab_bg {
-	opacity: 0.90;
-}
-
-.topbar_tab.active .topbar_tab_bg {
-	opacity: 1.00;
 }
 
 .topbar_tab_label {
@@ -260,24 +262,34 @@
 	height: 78px;
 
 	padding-top: 0px;
+	padding-bottom: 0px;
 	padding-left: 0px;
 	padding-right: 0px;
-	padding-bottom: 0px;
 
 	color: inherit;
 
-	font-family: Play, Tahoma, Arial;
 	font-size: 24px;
 	font-weight: normal;
 	line-height: 78px;
+	letter-spacing: 2px;
 	text-align: center;
-
 	white-space: nowrap;
+
+	text-shadow: 0px 1px 2px rgba(0, 0, 0, 230);
+	z-index: 10;
 	pointer-events: none;
 }
 
-.topbar_tab.active .topbar_tab_label,
-.topbar_tab:hover .topbar_tab_label {
+.topbar_tab.tab_home .topbar_tab_label {
+	padding-left: 8px;
+}
+
+.topbar_tab:hover .topbar_tab_bg {
+	opacity: 0.90;
+}
+
+.topbar_tab:hover .topbar_tab_label,
+.topbar_tab.active .topbar_tab_label {
 	color: #ffffff;
 }
 
@@ -292,6 +304,7 @@
 	height: 78px;
 
 	overflow: visible;
+	z-index: 5;
 }
 
 .topbar_action_button {
