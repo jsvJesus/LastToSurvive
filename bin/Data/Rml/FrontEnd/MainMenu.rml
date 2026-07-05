@@ -40,12 +40,20 @@
 				src="../Assets/MainMenu/Home/Survivor_Level_Progress_bg.png"
 			/>
 
-			<div class="home_level_fill_clip">
-				<div
-					id="top_level_xp_fill"
-					class="home_level_fill"
-				></div>
+			<div
+				id="top_level_xp_fill"
+				class="home_level_fill_clip"
+			>
+				<img
+					class="home_level_fill_image"
+					src="../Assets/MainMenu/Home/Survivor_Level_Progress.png"
+				/>
 			</div>
+
+			<img
+				class="home_level_hover"
+				src="../Assets/MainMenu/Home/Survivor_Level_Progress_hover.png"
+			/>
 
 			<div
 				id="top_level_value"
@@ -99,18 +107,33 @@
 			class="home_play_button"
 		>
 			<img
-				class="home_play_options_plate"
-				src="../Assets/MainMenu/Home/PlayGame_Options_Plate.png"
+				class="home_play_options_plate normal"
+				src="../Assets/MainMenu/Home/PlayGame_Opt.png"
 			/>
 
 			<img
-				class="home_play_plate"
+				class="home_play_options_plate active"
+				src="../Assets/MainMenu/Home/PlayGame_Opt_active.png"
+			/>
+
+			<img
+				class="home_play_plate normal"
 				src="../Assets/MainMenu/Home/PlayGame_Plate.png"
 			/>
 
 			<img
-				class="home_play_icon"
+				class="home_play_plate active"
+				src="../Assets/MainMenu/Home/PlayGame_Plate_active.png"
+			/>
+
+			<img
+				class="home_play_icon normal"
 				src="../Assets/MainMenu/Home/PlayGame_Ico.png"
+			/>
+
+			<img
+				class="home_play_icon active"
+				src="../Assets/MainMenu/Home/PlayGame_Ico_active.png"
 			/>
 
 			<div class="home_play_text">

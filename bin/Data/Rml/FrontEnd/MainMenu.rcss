@@ -52,7 +52,6 @@
 .main_menu_scene {
 	position: absolute;
 	left: 0px;
-
 	right: 0px;
 	bottom: 0px;
 
@@ -154,7 +153,7 @@
 	left: 0px;
 	top: 0px;
 
-	width: 537px;
+	width: 0px;
 	height: 67px;
 
 	z-index: 2;
@@ -163,18 +162,36 @@
 	pointer-events: none;
 }
 
-.home_level_fill {
+.home_level_fill_image {
 	position: absolute;
 	left: 0px;
 	top: 0px;
 
-	width: 77%;
+	width: 537px;
 	height: 67px;
 
-	background-color: rgba(115, 36, 32, 127);
+	z-index: 1;
 
-	z-index: 2;
 	pointer-events: none;
+}
+
+.home_level_hover {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 537px;
+	height: 67px;
+
+	z-index: 20;
+
+	opacity: 0.00;
+
+	pointer-events: none;
+}
+
+.home_level_panel:hover .home_level_hover {
+	opacity: 1.00;
 }
 
 .home_level_number {
@@ -363,12 +380,48 @@
 	pointer-events: auto;
 }
 
-.home_play_button:hover {
-	filter: brightness(1.16);
+.home_play_button .normal {
+	opacity: 1.00;
 }
 
-.home_play_button:active {
-	filter: brightness(0.92);
+.home_play_button .active {
+	opacity: 0.00;
+}
+
+.home_play_button:hover .normal,
+.home_play_button:active .normal,
+.home_play_button.active .normal {
+	opacity: 0.00;
+}
+
+.home_play_button:hover .active,
+.home_play_button:active .active,
+.home_play_button.active .active {
+	opacity: 1.00;
+}
+
+.home_play_options_plate.normal {
+	z-index: 1;
+}
+
+.home_play_options_plate.active {
+	z-index: 2;
+}
+
+.home_play_plate.normal {
+	z-index: 1;
+}
+
+.home_play_plate.active {
+	z-index: 2;
+}
+
+.home_play_icon.normal {
+	z-index: 3;
+}
+
+.home_play_icon.active {
+	z-index: 4;
 }
 
 .home_play_options_plate {
