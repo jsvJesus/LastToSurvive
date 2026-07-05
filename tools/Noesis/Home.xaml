@@ -5,12 +5,30 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d"
   d:DesignWidth="1920"
-  d:DesignHeight="1080" Height="1080" Background="#FF4D5052"
+  d:DesignHeight="1080" Background="#FF4D5052"
   Foreground="#FFE1E9ED">
-  <Grid Height="1002" Margin="0,78,0,0">
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="789*"/>
-      <ColumnDefinition Width="1131*"/>
-    </Grid.ColumnDefinitions>
+  <Grid Height="1002">
+    <Image Source="Assets/bg.png" Stretch="None"/>
+    <Grid Height="1002" Margin="0,78,0,78">
+      <Image x:Name="Image_Premium_Plate" Source="Assets/MainMenu/Home/Survivor_Premium_Plate.png" Width="510" Height="66" Margin="1360,75,50,861" d:IsLocked="True"/>
+      <TextBlock x:Name="Text_Premium_Plate" Text="PREMIUM NOT ACTIVE" Width="300" Height="50" Margin="1465,84,155,868" Padding="0,8,0,8" FontFamily="Play" FontSize="24" TextAlignment="Center" TextWrapping="Wrap" d:IsLocked="True"/>
+      <Image x:Name="Image_Premium_Badge" Source="Assets/MainMenu/Home/Survivor_Premium_Badge.png" Width="54" Height="44" Margin="1780,86,86,872" d:IsLocked="True"/>
+      <ProgressBar x:Name="ProgressBar_Lvl_Exp" Value="77" Width="537" Height="67" Margin="50,75,1333,861" Opacity="0.9" d:IsLocked="True">
+        <ProgressBar.Background>
+          <ImageBrush ImageSource="Assets/MainMenu/Home/Survivor_Level_Progress_bg.png"/>
+        </ProgressBar.Background>
+        <ProgressBar.Foreground>
+          <SolidColorBrush Color="#FF732420" Opacity="0.498"/>
+        </ProgressBar.Foreground>
+      </ProgressBar>
+      <TextBlock x:Name="Text_LVL_Val_Curr" Text="99" Width="50" Height="50" Margin="70,84,1800,869" Padding="0,8,0,8" FontFamily="Play" FontSize="24" TextAlignment="Center" TextWrapping="Wrap"/>
+      <TextBlock x:Name="Text_LVL_Name_Title" Text="RECRUIT" Width="130" Height="20" Margin="131,89,1659,893" FontFamily="Play" TextWrapping="Wrap"/>
+      <TextBlock x:Name="TEXT_LVL_EXP_VAL_CurrMax" Text="4579 / 10000000" Width="130" Height="20" Margin="131,109,1659,873" FontFamily="Play" TextWrapping="Wrap"/>
+      <TextBlock x:Name="TEXT_CHAR_NAME" Text="Mazafaka11995" Width="264" Height="50" Margin="306,84,1350,868" Padding="0,8,0,8" FontFamily="Play" FontSize="24" TextAlignment="Center" TextWrapping="Wrap"/>
+      <Image x:Name="Image_PlayGame_Options_Plate" Source="Assets/MainMenu/Home/PlayGame_Opt.png" Width="66" Height="63" Margin="50,783,1804,156"/>
+      <Image x:Name="Image_PlayGame_Plate" Source="Assets/MainMenu/Home/PlayGame_Plate.png" Width="467" Height="63" Margin="116,783,1337,156"/>
+      <Image x:Name="Image_PlayGame_Options_Ico" Source="Assets/MainMenu/Home/PlayGame_Ico.png" Width="38" Height="38" Margin="64,796,1818,169"/>
+      <TextBlock x:Name="Text_PlayGame" Text="Play Game" Width="264" Height="50" Margin="218,790,1439,162" Padding="0,8,0,8" FontFamily="Play" FontSize="24" TextAlignment="Center" TextWrapping="Wrap"/>
+    </Grid>
   </Grid>
 </Window>
