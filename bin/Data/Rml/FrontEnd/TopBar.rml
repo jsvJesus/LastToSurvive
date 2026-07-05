@@ -67,6 +67,7 @@
 		</div>
 
 		<div class="topbar_actions">
+
 			<button id="nav_awards" class="topbar_action_button action_awards">
 				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/awards.png"/>
 				<div class="topbar_tooltip">AWARDS</div>
@@ -86,6 +87,7 @@
 				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/exit.png"/>
 				<div class="topbar_tooltip">EXIT</div>
 			</button>
+
 		</div>
 
 		<div class="topbar_runtime_values">

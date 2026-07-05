@@ -3230,6 +3230,7 @@ void r3dFrameQueryRelease()
 	}
 }
 
+void ( *r3dDeviceLostCallback )() = NULL ;
 void ( *r3dDeviceResetCallback )() = NULL ;
 
 int r3dRenderLayer::TryToRestoreDevice()
@@ -3286,6 +3287,9 @@ int r3dRenderLayer::TryToRestoreDevice()
 		// all locked resources should now be unlocked.
 
 		r3dOutToLog("d3d: starting to reset device\n");
+
+		if( r3dDeviceLostCallback )
+			r3dDeviceLostCallback();
 
 		r3dFrameQueryRelease();
 		
@@ -3438,6 +3442,9 @@ void r3dRenderLayer::UpdateSettings()
 		r3dOutToLog("UpdateSettings: changing resolution to width: %d height: %d\n", r_width->GetInt(), r_height->GetInt());
 		d3dpp.BackBufferWidth	= mode.Width;
 		d3dpp.BackBufferHeight	= mode.Height;
+
+		if( r3dDeviceLostCallback )
+			r3dDeviceLostCallback();
 
 		CurRenderPipeline->DestroyResolutionBoundResources();
 

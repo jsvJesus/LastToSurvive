@@ -133,6 +133,9 @@ extern void UnregisterMsgProc(
 	bool (*proc)(UINT uMsg, WPARAM wParam, LPARAM lParam)
 );
 
+extern void (*r3dDeviceLostCallback)();
+extern void (*r3dDeviceResetCallback)();
+
 static bool g_StudioResizePending = false;
 static int g_StudioPendingWidth = 0;
 static int g_StudioPendingHeight = 0;
@@ -218,17 +221,14 @@ bool ProcessStudioPendingResize(
 
 	if (RmlRuntime::Get().IsInitialized())
 	{
-		RmlRuntime::Get().OnDeviceReset(
-			Width,
-			Height
-		);
+		RmlRuntime::Get().OnDeviceLost();
 	}
 	else if (
 		ActiveRmlUI &&
 		ActiveRmlUI->IsInitialized()
 	)
 	{
-		ActiveRmlUI->OnDeviceReset();
+		ActiveRmlUI->OnDeviceLost();
 	}
 
 	const D3DPRESENT_PARAMETERS OldParameters =
@@ -304,6 +304,71 @@ bool ProcessStudioPendingResize(
 	);
 
 	return true;
+}
+
+static void (*g_PrevDeviceLostCallback)() = NULL;
+static void (*g_PrevDeviceResetCallback)() = NULL;
+static bool g_RmlDeviceCallbacksInstalled = false;
+
+static void StudioRmlDeviceLostCallback()
+{
+	if( g_PrevDeviceLostCallback )
+		g_PrevDeviceLostCallback();
+
+	if( RmlRuntime::Get().IsInitialized() )
+	{
+		r3dOutToLog("[RmlUI][DX9] Pre device reset: OnDeviceLost\n");
+		RmlRuntime::Get().OnDeviceLost();
+	}
+}
+
+static void StudioRmlDeviceResetCallback()
+{
+	if( g_PrevDeviceResetCallback )
+		g_PrevDeviceResetCallback();
+
+	if( RmlRuntime::Get().IsInitialized() && r3dRenderer )
+	{
+		const int Width =
+			static_cast<int>(r3dRenderer->d3dpp.BackBufferWidth);
+
+		const int Height =
+			static_cast<int>(r3dRenderer->d3dpp.BackBufferHeight);
+
+		r3dOutToLog(
+			"[RmlUI][DX9] Post device reset: OnDeviceReset %dx%d\n",
+			Width,
+			Height
+		);
+
+		RmlRuntime::Get().OnDeviceReset(
+			Width,
+			Height
+		);
+	}
+}
+
+static void InstallRmlDeviceCallbacks()
+{
+	if( g_RmlDeviceCallbacksInstalled )
+		return;
+
+	g_PrevDeviceLostCallback =
+		r3dDeviceLostCallback;
+
+	g_PrevDeviceResetCallback =
+		r3dDeviceResetCallback;
+
+	r3dDeviceLostCallback =
+		&StudioRmlDeviceLostCallback;
+
+	r3dDeviceResetCallback =
+		&StudioRmlDeviceResetCallback;
+
+	g_RmlDeviceCallbacksInstalled =
+		true;
+
+	r3dOutToLog("[RmlUI][DX9] Device callbacks installed\n");
 }
 
 static void EnableStudioWindowResize(HWND WindowHandle)
@@ -485,6 +550,8 @@ void InitRender(int bUseSet = 0)
 			exit( 0 );
 		}
 	}
+
+	InstallRmlDeviceCallbacks();
 
 	EnableStudioWindowResize(win::hWnd);
 	ApplyStudioDarkTitleBar(win::hWnd);

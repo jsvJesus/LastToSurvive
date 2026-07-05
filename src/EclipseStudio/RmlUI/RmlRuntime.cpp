@@ -1014,6 +1014,16 @@ void RmlRuntime::RenderContext(
 		return;
 	}
 
+	if (
+		!r3dRenderer ||
+		!r3dRenderer->pd3ddev ||
+		!r3dRenderer->DeviceAvailable ||
+		r3dRenderer->IsDeviceLost()
+	)
+	{
+		return;
+	}
+
 	if (bRenderFrameOpen)
 	{
 		r3dOutToLog(
@@ -1070,7 +1080,11 @@ void RmlRuntime::OnDeviceLost()
 	if (!bInitialized || !RenderInterface)
 		return;
 
-	bRenderFrameOpen = false;
+	if (bRenderFrameOpen)
+	{
+		RenderInterface->EndFrame();
+		bRenderFrameOpen = false;
+	}
 
 	RenderInterface->OnDeviceLost();
 }

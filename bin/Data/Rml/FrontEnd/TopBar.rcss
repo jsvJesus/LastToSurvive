@@ -356,18 +356,21 @@
 	color: #ffffff;
 }
 
-/* RIGHT ACTIONS */
+/* ============================================================
+   ACTION ICONS - XAML MATCH
+   Button: 64x78
+   Icon:   32x32
+   ============================================================ */
 
 .topbar_actions {
 	position: absolute;
-	left: 1594px;
+	left: 0px;
 	top: 0px;
 
-	width: 256px;
+	width: 1920px;
 	height: 78px;
 
 	overflow: visible;
-	z-index: 5;
 }
 
 .topbar_action_button {
@@ -375,7 +378,7 @@
 	top: 0px;
 
 	width: 64px;
-	height: 64px;
+	height: 78px;
 
 	margin: 0px;
 	padding: 0px;
@@ -389,6 +392,7 @@
 	color: rgba(0, 0, 0, 0);
 	font-size: 0px;
 	line-height: 0px;
+
 	text-shadow: none;
 	filter: none;
 
@@ -400,67 +404,41 @@
 .topbar_action_button:focus {
 	background-color: rgba(0, 0, 0, 0);
 	decorator: none;
+
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
+
 	color: rgba(0, 0, 0, 0);
 	text-shadow: none;
 	filter: none;
 }
 
-.topbar_action_button.action_awards {
-	left: 0px;
-	top: 0px;
-	height: 78px;
+.action_awards {
+	left: 1594px;
 }
 
-.topbar_action_button.action_rating {
-	left: 64px;
-	top: 0px;
-	height: 78px;
+.action_rating {
+	left: 1658px;
 }
 
-.topbar_action_button.action_options {
-	left: 128px;
-	top: 0px;
-	height: 78px;
+.action_options {
+	left: 1722px;
 }
 
-.topbar_action_button.action_exit {
-	left: 192px;
-	top: 0px;
-	height: 78px;
+.action_exit {
+	left: 1786px;
 }
 
+/* Image Width="32" Height="32", centered in 64x78 */
 .topbar_action_icon {
 	position: absolute;
 	left: 16px;
-	top: 16px;
+	top: 23px;
 
 	width: 32px;
 	height: 32px;
 
-	opacity: 1.00;
 	pointer-events: none;
-}
-
-.topbar_action_button.action_awards .topbar_action_icon {
-	top: 23px;
-}
-
-.topbar_action_button.action_rating .topbar_action_icon {
-	top: 23px;
-}
-
-.topbar_action_button.action_options .topbar_action_icon {
-	top: 23px;
-}
-
-.topbar_action_button.action_exit .topbar_action_icon {
-	top: 23px;
-}
-
-.topbar_action_button:hover .topbar_action_icon {
-	opacity: 0.82;
 }
 
 /* TOOLTIP */
@@ -468,7 +446,7 @@
 .topbar_tooltip {
 	position: absolute;
 	left: -34px;
-	top: 62px;
+	top: 78px;
 
 	width: 132px;
 	height: 26px;
@@ -489,13 +467,9 @@
 	white-space: nowrap;
 
 	opacity: 0.00;
+
 	z-index: 100;
 	pointer-events: none;
-}
-
-.topbar_action_button.action_exit .topbar_tooltip {
-	left: -48px;
-	width: 100px;
 }
 
 .topbar_action_button:hover .topbar_tooltip {
