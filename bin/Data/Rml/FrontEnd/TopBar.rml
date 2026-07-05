@@ -28,30 +28,42 @@
 		</div>
 
 		<div class="topbar_tabs">
-			<button id="nav_home" class="topbar_tab active tab_home">
-				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_1.png"/>
+
+			<button id="nav_home" class="topbar_tab topbar_tab_1 active">
+				<img class="topbar_tab_img normal" src="../Assets/MainMenu/top_panel/Btn/Button_1.png"/>
+				<img class="topbar_tab_img hover" src="../Assets/MainMenu/top_panel/Btn/Button_1_hover.png"/>
+				<img class="topbar_tab_img active_img" src="../Assets/MainMenu/top_panel/Btn/Button_1_active.png"/>
 				<div class="topbar_tab_label">HOME</div>
 			</button>
 
-			<button id="nav_skills" class="topbar_tab tab_skills">
-				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_2.png"/>
+			<button id="nav_skills" class="topbar_tab topbar_tab_2">
+				<img class="topbar_tab_img normal" src="../Assets/MainMenu/top_panel/Btn/Button_2.png"/>
+				<img class="topbar_tab_img hover" src="../Assets/MainMenu/top_panel/Btn/Button_2_hover.png"/>
+				<img class="topbar_tab_img active_img" src="../Assets/MainMenu/top_panel/Btn/Button_2_active.png"/>
 				<div class="topbar_tab_label">SKILLS</div>
 			</button>
 
-			<button id="nav_equipment" class="topbar_tab tab_equipment">
-				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_3.png"/>
+			<button id="nav_equipment" class="topbar_tab topbar_tab_3">
+				<img class="topbar_tab_img normal" src="../Assets/MainMenu/top_panel/Btn/Button_3.png"/>
+				<img class="topbar_tab_img hover" src="../Assets/MainMenu/top_panel/Btn/Button_3_hover.png"/>
+				<img class="topbar_tab_img active_img" src="../Assets/MainMenu/top_panel/Btn/Button_3_active.png"/>
 				<div class="topbar_tab_label">EQUIPMENT</div>
 			</button>
 
-			<button id="nav_shop" class="topbar_tab tab_shop">
-				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_4.png"/>
+			<button id="nav_shop" class="topbar_tab topbar_tab_4">
+				<img class="topbar_tab_img normal" src="../Assets/MainMenu/top_panel/Btn/Button_4.png"/>
+				<img class="topbar_tab_img hover" src="../Assets/MainMenu/top_panel/Btn/Button_4_hover.png"/>
+				<img class="topbar_tab_img active_img" src="../Assets/MainMenu/top_panel/Btn/Button_4_active.png"/>
 				<div class="topbar_tab_label">SHOP</div>
 			</button>
 
-			<button id="nav_clan" class="topbar_tab tab_clan">
-				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_5.png"/>
+			<button id="nav_clan" class="topbar_tab topbar_tab_5">
+				<img class="topbar_tab_img normal" src="../Assets/MainMenu/top_panel/Btn/Button_5.png"/>
+				<img class="topbar_tab_img hover" src="../Assets/MainMenu/top_panel/Btn/Button_5_hover.png"/>
+				<img class="topbar_tab_img active_img" src="../Assets/MainMenu/top_panel/Btn/Button_5_active.png"/>
 				<div class="topbar_tab_label">CLAN</div>
 			</button>
+
 		</div>
 
 		<div class="topbar_actions">

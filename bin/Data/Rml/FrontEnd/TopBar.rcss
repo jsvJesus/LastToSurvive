@@ -169,18 +169,20 @@
 	pointer-events: none;
 }
 
-/* CENTER NAVIGATION */
+/* ============================================================
+   TOPBAR TABS
+   each button has own normal / hover / active image
+   ============================================================ */
 
 .topbar_tabs {
 	position: absolute;
-	left: 460px;
+	left: 469px;
 	top: 0px;
 
 	width: 1000px;
 	height: 78px;
 
 	overflow: visible;
-	z-index: 4;
 }
 
 .topbar_tab {
@@ -193,19 +195,21 @@
 	margin: 0px;
 	padding: 0px;
 
-	color: #e1e9ed;
 	background-color: rgba(0, 0, 0, 0);
 	decorator: none;
 
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
 
+	color: #d8dce1;
+
 	font-size: 0px;
 	line-height: 0px;
+
 	text-shadow: none;
 	filter: none;
 
-	overflow: hidden;
+	overflow: visible;
 }
 
 .topbar_tab:hover,
@@ -213,34 +217,37 @@
 .topbar_tab:focus {
 	background-color: rgba(0, 0, 0, 0);
 	decorator: none;
+
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
+
 	color: #ffffff;
+
 	text-shadow: none;
 	filter: none;
 }
 
-.topbar_tab.tab_home {
+.topbar_tab_1 {
 	left: 0px;
 }
 
-.topbar_tab.tab_skills {
+.topbar_tab_2 {
 	left: 200px;
 }
 
-.topbar_tab.tab_equipment {
+.topbar_tab_3 {
 	left: 400px;
 }
 
-.topbar_tab.tab_shop {
+.topbar_tab_4 {
 	left: 600px;
 }
 
-.topbar_tab.tab_clan {
+.topbar_tab_5 {
 	left: 800px;
 }
 
-.topbar_tab_bg {
+.topbar_tab_img {
 	position: absolute;
 	left: 0px;
 	top: 0px;
@@ -248,9 +255,73 @@
 	width: 200px;
 	height: 78px;
 
+	pointer-events: none;
+}
+
+.topbar_tab_img.normal {
 	opacity: 1.00;
 	z-index: 1;
-	pointer-events: none;
+}
+
+.topbar_tab_img.hover {
+	opacity: 0.00;
+	z-index: 2;
+}
+
+.topbar_tab_img.active_img {
+	opacity: 0.00;
+	z-index: 3;
+}
+
+/* hover state */
+.topbar_tab:hover .topbar_tab_img.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab:hover .topbar_tab_img.hover {
+	opacity: 1.00;
+}
+
+.topbar_tab:hover .topbar_tab_img.active_img {
+	opacity: 0.00;
+}
+
+/* mouse pressed state */
+.topbar_tab:active .topbar_tab_img.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab:active .topbar_tab_img.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab:active .topbar_tab_img.active_img {
+	opacity: 1.00;
+}
+
+/* selected screen state */
+.topbar_tab.active .topbar_tab_img.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab.active .topbar_tab_img.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab.active .topbar_tab_img.active_img {
+	opacity: 1.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_img.normal {
+	opacity: 0.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_img.hover {
+	opacity: 0.00;
+}
+
+.topbar_tab.active:hover .topbar_tab_img.active_img {
+	opacity: 1.00;
 }
 
 .topbar_tab_label {
@@ -261,35 +332,27 @@
 	width: 200px;
 	height: 78px;
 
-	padding-top: 0px;
-	padding-bottom: 0px;
-	padding-left: 0px;
-	padding-right: 0px;
-
 	color: inherit;
 
 	font-size: 24px;
 	font-weight: normal;
 	line-height: 78px;
-	letter-spacing: 2px;
 	text-align: center;
-	white-space: nowrap;
 
-	text-shadow: 0px 1px 2px rgba(0, 0, 0, 230);
+	letter-spacing: 4px;
+
+	text-shadow: 0px 1px 2px rgba(0, 0, 0, 220);
+
 	z-index: 10;
+
 	pointer-events: none;
 }
 
-.topbar_tab.tab_home .topbar_tab_label {
-	padding-left: 8px;
-}
-
-.topbar_tab:hover .topbar_tab_bg {
-	opacity: 0.90;
-}
-
-.topbar_tab:hover .topbar_tab_label,
 .topbar_tab.active .topbar_tab_label {
+	color: #ffffff;
+}
+
+.topbar_tab:hover .topbar_tab_label {
 	color: #ffffff;
 }
 
@@ -347,16 +410,19 @@
 .topbar_action_button.action_awards {
 	left: 0px;
 	top: 0px;
+	height: 78px;
 }
 
 .topbar_action_button.action_rating {
 	left: 64px;
 	top: 0px;
+	height: 78px;
 }
 
 .topbar_action_button.action_options {
 	left: 128px;
 	top: 0px;
+	height: 78px;
 }
 
 .topbar_action_button.action_exit {
@@ -375,6 +441,18 @@
 
 	opacity: 1.00;
 	pointer-events: none;
+}
+
+.topbar_action_button.action_awards .topbar_action_icon {
+	top: 23px;
+}
+
+.topbar_action_button.action_rating .topbar_action_icon {
+	top: 23px;
+}
+
+.topbar_action_button.action_options .topbar_action_icon {
+	top: 23px;
 }
 
 .topbar_action_button.action_exit .topbar_action_icon {
