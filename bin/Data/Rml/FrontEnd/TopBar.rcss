@@ -183,6 +183,7 @@
 	height: 78px;
 
 	overflow: visible;
+	z-index: 20;
 }
 
 .topbar_tab {
@@ -210,6 +211,7 @@
 	filter: none;
 
 	overflow: visible;
+	z-index: 21;
 }
 
 .topbar_tab:hover,
@@ -364,13 +366,14 @@
 
 .topbar_actions {
 	position: absolute;
-	left: 0px;
+	left: 1594px;
 	top: 0px;
 
-	width: 1920px;
+	width: 256px;
 	height: 78px;
 
 	overflow: visible;
+	z-index: 30;
 }
 
 .topbar_action_button {
@@ -414,19 +417,19 @@
 }
 
 .action_awards {
-	left: 1594px;
+	left: 0px;
 }
 
 .action_rating {
-	left: 1658px;
+	left: 64px;
 }
 
 .action_options {
-	left: 1722px;
+	left: 128px;
 }
 
 .action_exit {
-	left: 1786px;
+	left: 192px;
 }
 
 /* Image Width="32" Height="32", centered in 64x78 */
