@@ -6,122 +6,86 @@
 </head>
 
 <body class="topbar_body">
-
 	<div class="topbar_root">
-
-		<img class="topbar_background" src="../Assets/MainMenu/Top_Bar.png"/>
-
-		<div class="topbar_level_block">
-			<img class="topbar_level_badge" src="../Assets/MainMenu/badge_lvl/topbar_lvl_badge.png"/>
-
-			<div id="top_level_value" class="topbar_level_value">5</div>
-
-			<div id="top_survivor_name" class="topbar_character_name">
-				ES3N1N
-			</div>
-		</div>
+		<img class="topbar_background" src="../Assets/MainMenu/top_panel/top_panel_bg.png"/>
 
 		<div class="topbar_money">
-			<div class="topbar_money_item money_gc">
-				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zc.png"/>
-				<div class="topbar_money_value_wrap">
-					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
-					<div id="balance_gc" class="topbar_money_value">99 999</div>
-				</div>
-			</div>
-
-			<div class="topbar_money_item money_gd">
-				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zd.png"/>
-				<div class="topbar_money_value_wrap">
-					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
-					<div id="balance_gd" class="topbar_money_value">99 999</div>
-				</div>
-			</div>
-
-			<div class="topbar_money_item money_zlt">
+			<div class="topbar_money_item money_zc">
 				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zlt.png"/>
-				<div class="topbar_money_value_wrap">
-					<img class="topbar_money_value_bg" src="../Assets/MainMenu/topbar_money_bg.png"/>
-					<div id="balance_zlt" class="topbar_money_value">0</div>
-				</div>
+				<button id="btn_buy_gc" class="topbar_money_add">
+					<img class="topbar_money_add_icon" src="../Assets/MainMenu/top_panel/Btn/button_plus.png"/>
+				</button>
+				<div id="balance_gc" class="topbar_money_value">999999999</div>
 			</div>
 
-			<div id="balance_ltc" class="runtime_hidden_value">0</div>
+			<div class="topbar_money_item money_zd">
+				<img class="topbar_money_icon" src="../Assets/MainMenu/btn_money/btn_money_zd.png"/>
+				<button id="btn_buy_gd" class="topbar_money_add">
+					<img class="topbar_money_add_icon" src="../Assets/MainMenu/top_panel/Btn/button_plus.png"/>
+				</button>
+				<div id="balance_gd" class="topbar_money_value">999999999</div>
+			</div>
 		</div>
 
 		<div class="topbar_tabs">
-			<button id="nav_home" class="topbar_tab active">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
+			<button id="nav_home" class="topbar_tab active tab_home">
+				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_1.png"/>
 				<div class="topbar_tab_label">HOME</div>
 			</button>
 
-			<button id="nav_skills" class="topbar_tab">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
+			<button id="nav_skills" class="topbar_tab tab_skills">
+				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_2.png"/>
 				<div class="topbar_tab_label">SKILLS</div>
 			</button>
 
-			<button id="nav_equipment" class="topbar_tab">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
+			<button id="nav_equipment" class="topbar_tab tab_equipment">
+				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_3.png"/>
 				<div class="topbar_tab_label">EQUIPMENT</div>
 			</button>
 
-			<button id="nav_shop" class="topbar_tab">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
+			<button id="nav_shop" class="topbar_tab tab_shop">
+				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_4.png"/>
 				<div class="topbar_tab_label">SHOP</div>
 			</button>
 
-			<button id="nav_clan" class="topbar_tab">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
+			<button id="nav_clan" class="topbar_tab tab_clan">
+				<img class="topbar_tab_bg" src="../Assets/MainMenu/top_panel/Btn/Button_5.png"/>
 				<div class="topbar_tab_label">CLAN</div>
-			</button>
-
-			<button id="nav_friends" class="topbar_tab">
-				<img class="topbar_tab_bg normal" src="../Assets/MainMenu/btn_tabs/button_top_bar.png"/>
-				<img class="topbar_tab_bg hover" src="../Assets/MainMenu/btn_tabs/button_hover_top_bar.png"/>
-				<img class="topbar_tab_bg active_img" src="../Assets/MainMenu/btn_tabs/button_active_top_bar.png"/>
-				<div class="topbar_tab_label">FRIENDS</div>
 			</button>
 		</div>
 
 		<div class="topbar_actions">
-
-			<button id="btn_change_name" class="topbar_action_button">
-				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_change_name.png"/>
-				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_change_name_hover.png"/>
-				<div class="topbar_tooltip">CHANGE NAME</div>
+			<button id="nav_awards" class="topbar_action_button action_awards">
+				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/awards.png"/>
+				<div class="topbar_tooltip">AWARDS</div>
 			</button>
 
-			<button id="btn_rewards" class="topbar_action_button">
-				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_rating.png"/>
-				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_rating_hover.png"/>
+			<button id="btn_rewards" class="topbar_action_button action_rating">
+				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/rating.png"/>
 				<div class="topbar_tooltip">RATING</div>
 			</button>
 
-			<button id="btn_settings" class="topbar_action_button">
-				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_settings.png"/>
-				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_settings_hover.png"/>
+			<button id="btn_settings" class="topbar_action_button action_options">
+				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/options.png"/>
 				<div class="topbar_tooltip">OPTIONS</div>
 			</button>
 
-			<button id="btn_frontend_exit" class="topbar_action_button">
-				<img class="topbar_action_image normal" src="../Assets/MainMenu/btn_actions/btn_frontend_exit.png"/>
-				<img class="topbar_action_image hover" src="../Assets/MainMenu/btn_actions/btn_frontend_exit_hover.png"/>
+			<button id="btn_frontend_exit" class="topbar_action_button action_exit">
+				<img class="topbar_action_icon" src="../Assets/MainMenu/top_panel/Btn/exit.png"/>
 				<div class="topbar_tooltip">EXIT</div>
 			</button>
-
 		</div>
 
+		<div class="topbar_runtime_values">
+			<div id="balance_ltc">0</div>
+			<div id="balance_zlt">0</div>
+			<div id="top_level_value">0</div>
+			<div id="top_survivor_name">SURVIVOR</div>
+			<div id="top_survivor_role">SURVIVOR</div>
+			<div id="survivor_nickname">SURVIVOR</div>
+			<div id="survivor_class">SURVIVOR</div>
+			<div id="survivor_state">READY</div>
+		</div>
 	</div>
-
 </body>
 </rml>

@@ -1,5 +1,7 @@
 /* ============================================================
-   TOP BAR - NOESIS CONVERTED FOR RMLUI
+   TOP BAR - MAINMENU.XAML REDESIGN FOR RMLUI
+   Source design: tools/Noesis/MainMenu.xaml
+   Target runtime: bin/Data/Rml/FrontEnd/TopBar.rml
    ============================================================ */
 
 .topbar_body {
@@ -14,7 +16,6 @@
 	padding: 0px;
 
 	overflow: visible;
-
 	background-color: rgba(0, 0, 0, 0);
 }
 
@@ -27,7 +28,6 @@
 	height: 78px;
 
 	overflow: visible;
-
 	background-color: rgba(0, 0, 0, 0);
 }
 
@@ -39,91 +39,19 @@
 	width: 1920px;
 	height: 78px;
 
-	opacity: 0.72;
-
+	opacity: 1.00;
 	pointer-events: none;
 }
-
-
-/* LEVEL / CHARACTER */
-
-.topbar_level_block {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-
-	width: 240px;
-	height: 78px;
-
-	overflow: visible;
-}
-
-.topbar_level_badge {
-	position: absolute;
-	left: 12px;
-	top: 9px;
-
-	width: 67px;
-	height: 62px;
-
-	pointer-events: none;
-}
-
-.topbar_level_value {
-	position: absolute;
-	left: 20px;
-	top: 14px;
-
-	width: 50px;
-	height: 50px;
-
-	padding-top: 10px;
-	padding-bottom: 10px;
-
-	color: #ffffff;
-
-	font-size: 24px;
-	font-weight: normal;
-	line-height: 30px;
-	text-align: center;
-
-	pointer-events: none;
-}
-
-.topbar_character_name {
-	position: absolute;
-	left: 94px;
-	top: 14px;
-
-	width: 125px;
-	height: 50px;
-
-	padding-top: 10px;
-
-	overflow: hidden;
-
-	color: #ffffff;
-
-	font-size: 24px;
-	font-weight: normal;
-	line-height: 30px;
-	text-align: center;
-
-	white-space: nowrap;
-
-	pointer-events: none;
-}
-
 
 /* MONEY */
 
 .topbar_money {
 	position: absolute;
-	left: 240px;
-	top: 21px;
+	left: 56px;
+	top: 0px;
 
-	width: 410px;
-	height: 36px;
+	width: 349px;
+	height: 78px;
 
 	overflow: visible;
 }
@@ -132,90 +60,116 @@
 	position: absolute;
 	top: 0px;
 
-	width: 111px;
-	height: 36px;
+	width: 164px;
+	height: 78px;
 
 	overflow: visible;
 }
 
-.topbar_money_item.money_gc {
+.topbar_money_item.money_zc {
 	left: 0px;
 }
 
-.topbar_money_item.money_gd {
-	left: 120px;
-}
-
-.topbar_money_item.money_zlt {
-	left: 240px;
+.topbar_money_item.money_zd {
+	left: 185px;
 }
 
 .topbar_money_icon {
 	position: absolute;
 	left: 0px;
-	top: 0px;
+	top: 7px;
 
-	width: 36px;
-	height: 36px;
+	width: 64px;
+	height: 64px;
 
 	pointer-events: none;
 }
 
-.topbar_money_value_wrap {
+.topbar_money_add {
 	position: absolute;
-	left: 36px;
-	top: 8px;
+	left: 45px;
+	top: 32px;
 
-	width: 75px;
-	height: 20px;
+	width: 14px;
+	height: 14px;
 
-	overflow: hidden;
+	margin: 0px;
+	padding: 0px;
+
+	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
+
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+
+	color: rgba(0, 0, 0, 0);
+	font-size: 0px;
+	line-height: 0px;
+
+	overflow: visible;
 }
 
-.topbar_money_value_bg {
+.topbar_money_add:hover,
+.topbar_money_add:active,
+.topbar_money_add:focus {
+	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	color: rgba(0, 0, 0, 0);
+}
+
+.topbar_money_add_icon {
 	position: absolute;
 	left: 0px;
 	top: 0px;
 
-	width: 75px;
-	height: 20px;
+	width: 14px;
+	height: 14px;
 
 	pointer-events: none;
+}
+
+.topbar_money_add:hover .topbar_money_add_icon {
+	opacity: 0.82;
 }
 
 .topbar_money_value {
 	position: absolute;
-	left: 10px;
-	top: 0px;
+	left: 64px;
+	top: 23px;
 
-	width: 65px;
-	height: 20px;
+	width: 100px;
+	height: 32px;
 
-	padding-left: 5px;
-	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-left: 0px;
+	padding-right: 0px;
 
-	color: #ffffff;
+	color: #e1e9ed;
 
-	font-size: 14px;
+	font-family: "Exo 2", Tahoma, Arial;
+	font-size: 18px;
 	font-weight: normal;
-	line-height: 20px;
-	text-align: right;
+	line-height: 22px;
+	text-align: center;
 
 	white-space: nowrap;
+	overflow: hidden;
 
 	pointer-events: none;
 }
 
-
-/* TABS */
+/* CENTER NAVIGATION */
 
 .topbar_tabs {
 	position: absolute;
-	left: 650px;
-	top: 18px;
+	left: 460px;
+	top: 0px;
 
-	width: 1020px;
-	height: 43px;
+	width: 1000px;
+	height: 78px;
 
 	overflow: visible;
 }
@@ -224,43 +178,57 @@
 	position: absolute;
 	top: 0px;
 
-	width: 150px;
-	height: 43px;
+	width: 200px;
+	height: 78px;
 
 	margin: 0px;
 	padding: 0px;
 
 	color: #e1e9ed;
-
 	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
 
 	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
 
 	font-size: 0px;
+	line-height: 0px;
+	text-shadow: none;
+	filter: none;
+
+	overflow: visible;
 }
 
-#nav_home {
+.topbar_tab:hover,
+.topbar_tab:active,
+.topbar_tab:focus {
+	background-color: rgba(0, 0, 0, 0);
+	decorator: none;
+	border-width: 0px;
+	border-color: rgba(0, 0, 0, 0);
+	color: #ffffff;
+	text-shadow: none;
+	filter: none;
+}
+
+.topbar_tab.tab_home {
 	left: 0px;
 }
 
-#nav_skills {
-	left: 170px;
+.topbar_tab.tab_skills {
+	left: 200px;
 }
 
-#nav_equipment {
-	left: 340px;
+.topbar_tab.tab_equipment {
+	left: 400px;
 }
 
-#nav_shop {
-	left: 510px;
+.topbar_tab.tab_shop {
+	left: 600px;
 }
 
-#nav_clan {
-	left: 680px;
-}
-
-#nav_friends {
-	left: 850px;
+.topbar_tab.tab_clan {
+	left: 800px;
 }
 
 .topbar_tab_bg {
@@ -268,62 +236,19 @@
 	left: 0px;
 	top: 0px;
 
-	width: 150px;
-	height: 43px;
+	width: 200px;
+	height: 78px;
 
+	opacity: 1.00;
 	pointer-events: none;
 }
 
-.topbar_tab_bg.normal {
+.topbar_tab:hover .topbar_tab_bg {
+	opacity: 0.90;
+}
+
+.topbar_tab.active .topbar_tab_bg {
 	opacity: 1.00;
-}
-
-.topbar_tab_bg.hover {
-	opacity: 0.00;
-}
-
-.topbar_tab_bg.active_img {
-	opacity: 0.00;
-}
-
-.topbar_tab:hover .topbar_tab_bg.normal {
-	opacity: 0.00;
-}
-
-.topbar_tab:hover .topbar_tab_bg.hover {
-	opacity: 1.00;
-}
-
-.topbar_tab:hover .topbar_tab_bg.active_img {
-	opacity: 0.00;
-}
-
-.topbar_tab.active .topbar_tab_bg.normal {
-	opacity: 0.00;
-}
-
-.topbar_tab.active .topbar_tab_bg.hover {
-	opacity: 0.00;
-}
-
-.topbar_tab.active .topbar_tab_bg.active_img {
-	opacity: 1.00;
-}
-
-.topbar_tab.active:hover .topbar_tab_bg.normal {
-	opacity: 0.00;
-}
-
-.topbar_tab.active:hover .topbar_tab_bg.hover {
-	opacity: 0.00;
-}
-
-.topbar_tab.active:hover .topbar_tab_bg.active_img {
-	opacity: 1.00;
-}
-
-.topbar_tab.active {
-	color: #ffffff;
 }
 
 .topbar_tab_label {
@@ -331,29 +256,40 @@
 	left: 0px;
 	top: 0px;
 
-	width: 150px;
-	height: 43px;
+	width: 200px;
+	height: 78px;
+
+	padding-top: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
 
 	color: inherit;
 
+	font-family: Play, Tahoma, Arial;
 	font-size: 24px;
 	font-weight: normal;
-	line-height: 43px;
+	line-height: 78px;
 	text-align: center;
 
+	white-space: nowrap;
 	pointer-events: none;
 }
 
+.topbar_tab.active .topbar_tab_label,
+.topbar_tab:hover .topbar_tab_label {
+	color: #ffffff;
+}
 
-/* ACTIONS */
+/* RIGHT ACTIONS */
 
 .topbar_actions {
 	position: absolute;
-	left: 1708px;
-	top: 10px;
+	left: 1594px;
+	top: 0px;
 
-	width: 192px;
-	height: 58px;
+	width: 256px;
+	height: 78px;
 
 	overflow: visible;
 }
@@ -362,8 +298,8 @@
 	position: absolute;
 	top: 0px;
 
-	width: 48px;
-	height: 58px;
+	width: 64px;
+	height: 64px;
 
 	margin: 0px;
 	padding: 0px;
@@ -378,7 +314,6 @@
 	font-size: 0px;
 	line-height: 0px;
 	text-shadow: none;
-
 	filter: none;
 
 	overflow: visible;
@@ -389,66 +324,59 @@
 .topbar_action_button:focus {
 	background-color: rgba(0, 0, 0, 0);
 	decorator: none;
-
 	border-width: 0px;
 	border-color: rgba(0, 0, 0, 0);
-
 	color: rgba(0, 0, 0, 0);
 	text-shadow: none;
-
 	filter: none;
 }
 
-.topbar_action_button:nth-child(1) {
-	left: 0px;
-}
-
-.topbar_action_button:nth-child(2) {
-	left: 48px;
-}
-
-.topbar_action_button:nth-child(3) {
-	left: 96px;
-}
-
-.topbar_action_button:nth-child(4) {
-	left: 144px;
-}
-
-.topbar_action_image {
-	position: absolute;
+.topbar_action_button.action_awards {
 	left: 0px;
 	top: 0px;
+}
 
-	width: 48px;
-	height: 58px;
-	
-	background-color: rgba(0, 0, 0, 0);
+.topbar_action_button.action_rating {
+	left: 64px;
+	top: 0px;
+}
 
+.topbar_action_button.action_options {
+	left: 128px;
+	top: 0px;
+}
+
+.topbar_action_button.action_exit {
+	left: 192px;
+	top: 0px;
+	height: 78px;
+}
+
+.topbar_action_icon {
+	position: absolute;
+	left: 16px;
+	top: 16px;
+
+	width: 32px;
+	height: 32px;
+
+	opacity: 1.00;
 	pointer-events: none;
 }
 
-.topbar_action_image.normal {
-	opacity: 1.00;
+.topbar_action_button.action_exit .topbar_action_icon {
+	top: 23px;
 }
 
-.topbar_action_image.hover {
-	opacity: 0.00;
-}
-
-.topbar_action_button:hover .topbar_action_image.normal {
-	opacity: 0.00;
-}
-
-.topbar_action_button:hover .topbar_action_image.hover {
-	opacity: 1.00;
+.topbar_action_button:hover .topbar_action_icon {
+	opacity: 0.82;
 }
 
 /* TOOLTIP */
 
 .topbar_tooltip {
 	position: absolute;
-	left: -42px;
+	left: -34px;
 	top: 62px;
 
 	width: 132px;
@@ -470,16 +398,21 @@
 	white-space: nowrap;
 
 	opacity: 0.00;
-
 	z-index: 100;
 	pointer-events: none;
 }
 
-.topbar_action_button:nth-child(4) .topbar_tooltip {
-	left: -72px;
+.topbar_action_button.action_exit .topbar_tooltip {
+	left: -48px;
 	width: 100px;
 }
 
 .topbar_action_button:hover .topbar_tooltip {
 	opacity: 1.00;
+}
+
+/* VALUES KEPT FOR C++ COMPATIBILITY */
+
+.topbar_runtime_values {
+	display: none;
 }

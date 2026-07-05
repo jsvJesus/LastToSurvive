@@ -62,25 +62,25 @@
       </Button>
     </Grid>
     <Grid x:Name="MainMenu_Left_Actions">
-      <Button x:Name="nav_awards" Width="64" Height="64" Margin="1594,0,262,0" ToolTip="AWARDS" ToolTipService.Placement="Bottom" ToolTipService.InitialShowDelay="150">
+      <Button x:Name="nav_awards" Width="64" Height="64" Margin="1562,7,294,7">
         <Button.Background>
           <ImageBrush/>
         </Button.Background>
         <Image x:Name="Image_Awards" Source="Assets/MainMenu/top_panel/Btn/awards.png" Width="32" Height="32"/>
       </Button>
-      <Button x:Name="naw_rating" Width="64" Height="64" Margin="1658,0,198,0" ToolTip="RATING" ToolTipService.Placement="Bottom" ToolTipService.InitialShowDelay="150">
+      <Button x:Name="naw_rating" Width="64" Height="64" Margin="1626,7,230,7">
         <Button.Background>
           <ImageBrush/>
         </Button.Background>
         <Image x:Name="Image_Rating" Source="Assets/MainMenu/top_panel/Btn/rating.png" Width="32" Height="32"/>
       </Button>
-      <Button x:Name="nav_options" Width="64" Height="64" Margin="1722,0,134,0" ToolTip="OPTIONS" ToolTipService.Placement="Bottom" ToolTipService.InitialShowDelay="150">
+      <Button x:Name="nav_options" Width="64" Height="64" Margin="1690,7,166,7">
         <Button.Background>
           <ImageBrush/>
         </Button.Background>
         <Image x:Name="Image_Options" Source="Assets/MainMenu/top_panel/Btn/options.png" Width="32" Height="32"/>
       </Button>
-      <Button x:Name="nav_exit" Width="64" Height="78" Margin="1786,0,70,0" BorderBrush="{x:Null}" ToolTip="EXIT" ToolTipService.Placement="Bottom" ToolTipService.InitialShowDelay="150">
+      <Button x:Name="nav_exit" Width="64" Height="64" Margin="1754,7,102,7">
         <Button.Background>
           <ImageBrush/>
         </Button.Background>
