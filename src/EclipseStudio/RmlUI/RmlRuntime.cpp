@@ -343,6 +343,25 @@ bool RmlRuntime::InitializeCore(
 		"C:/Windows/Fonts/arial.ttf"
 	);
 
+	{
+		const Rml::String PlayRegularPath =
+			RmlRuntimeConvertToUTF8(
+				DataRoot +
+				L"\\Rml\\Fonts\\1_PlayRegular_Play.ttf"
+			);
+
+		const bool bPlayRegularLoaded =
+			Rml::LoadFontFace(
+				PlayRegularPath
+			);
+
+		r3dOutToLog(
+			"[RmlUI][Runtime][Fonts] Play Regular: %s (%s)\n",
+			bPlayRegularLoaded ? "loaded" : "FAILED",
+			PlayRegularPath.c_str()
+		);
+	}
+
 	r3dOutToLog(
 		"[RmlUI][Runtime][Init] Core initialized. DataRoot=%ls\n",
 		DataRoot.c_str()

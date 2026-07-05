@@ -7,21 +7,16 @@
 
 <body class="frontend_body main_menu_body">
 
-	<div
-		id="shop_background_stage"
-		class="frontend_static_background"
-	>
+	<div id="home_background_stage" class="home_background_stage">
 		<img
-			id="shop_background_image"
-			class="frontend_static_background_image"
+			id="home_background_image"
+			class="home_background_image"
 			src="../Assets/bg.png"
 		/>
-
-		<div class="frontend_static_background_shade"></div>
-		<div class="main_menu_scene_vignette"></div>
-		<div class="skills_scene_scrim"></div>
+		<div class="home_background_shadow"></div>
 	</div>
 
+	<!-- НЕ УДАЛЯТЬ: сюда C++ кладёт персонажа через rml://character-preview -->
 	<div
 		id="character_preview_stage"
 		class="main_menu_scene"
@@ -36,119 +31,96 @@
 		<div class="main_menu_scene_vignette"></div>
 	</div>
 
-	<div id="mainmenu_dashboard" class="mainmenu_dashboard">
+	<div id="home_xaml_root" class="home_xaml_root">
 
-		<div id="card_news" class="mm_card">
-			<div class="mm_card_line"></div>
+		<!-- LEVEL / EXP -->
+		<div id="home_level_panel" class="home_level_panel">
+			<img
+				class="home_level_bg"
+				src="../Assets/MainMenu/Home/Survivor_Level_Progress_bg.png"
+			/>
 
-			<div class="mm_card_top">
-				<div class="mm_card_kicker">NEWS</div>
-				<div class="mm_card_chip">LIVE</div>
+			<div class="home_level_fill_clip">
+				<div
+					id="top_level_xp_fill"
+					class="home_level_fill"
+				></div>
 			</div>
 
-			<div id="news_title" class="mm_card_title">SafeZone deployment online</div>
-
-			<div id="news_body" class="mm_card_text">
-				SafeZone is now the first deployment point. Open World access is routed through NPC transition.
+			<div
+				id="top_level_value"
+				class="home_level_number"
+			>
+				99
 			</div>
 
-			<button id="btn_news_more" class="mm_card_button">MORE</button>
+			<div
+				id="rank_title"
+				class="home_level_rank"
+			>
+				RECRUIT
+			</div>
+
+			<div
+				id="top_level_xp_text"
+				class="home_level_xp"
+			>
+				4579 / 10000000
+			</div>
+
+			<div
+				id="top_survivor_name"
+				class="home_character_name"
+			>
+				Mazafaka11995
+			</div>
 		</div>
 
-		<div id="card_featured_shop" class="mm_card">
-			<div class="mm_card_line"></div>
+		<!-- PREMIUM -->
+		<div id="home_premium_panel" class="home_premium_panel">
+			<img
+				class="home_premium_plate"
+				src="../Assets/MainMenu/Home/Survivor_Premium_Plate.png"
+			/>
 
-			<div class="mm_card_top">
-				<div class="mm_card_kicker">STORE</div>
-				<div id="featured_shop_badge" class="mm_card_chip accent">NEW</div>
+			<div class="home_premium_text">
+				PREMIUM NOT ACTIVE
 			</div>
 
-			<div id="featured_shop_name" class="mm_card_title">Featured item</div>
-
-			<div id="featured_shop_price" class="mm_card_text">0 ZC</div>
-
-			<button id="btn_featured_shop_open" class="mm_card_button">OPEN SHOP</button>
+			<img
+				class="home_premium_badge"
+				src="../Assets/MainMenu/Home/Survivor_Premium_Badge.png"
+			/>
 		</div>
 
-		<div id="card_rank" class="mm_card">
-			<div class="mm_card_line"></div>
-
-			<div class="mm_card_top">
-				<div class="mm_card_kicker">RANK</div>
-				<div id="rank_level" class="mm_card_chip">LVL 1</div>
-			</div>
-
-			<div id="rank_title" class="mm_card_title">RECRUIT</div>
-
-			<div class="mm_card_progress">
-				<div id="rank_xp_fill" class="mm_card_progress_fill"></div>
-			</div>
-
-			<div id="rank_xp_text" class="mm_card_text">0 / 100 XP</div>
-			<div id="rank_reward_text" class="mm_card_reward">Next reward: 250 ZD</div>
-		</div>
-
-		<div id="card_missions" class="mm_card">
-			<div class="mm_card_line"></div>
-
-			<div class="mm_card_top">
-				<div class="mm_card_kicker">MISSIONS</div>
-				<div class="mm_card_chip">MVP</div>
-			</div>
-
-			<div id="mission_title" class="mm_card_title">Daily contract unavailable</div>
-
-			<div id="mission_state" class="mm_card_text">
-				Mission API is not connected yet.
-			</div>
-
-			<div id="mission_reward" class="mm_card_reward">Reward: ZD / XP</div>
-
-			<button id="btn_missions_open" class="mm_card_button">MISSIONS</button>
-		</div>
-
-		<div id="card_battlepass" class="mm_card locked">
-			<div class="mm_card_line"></div>
-
-			<div class="mm_card_top">
-				<div class="mm_card_kicker">BATTLE PASS</div>
-				<div class="mm_card_chip locked">LOCKED</div>
-			</div>
-
-			<div class="mm_card_title">COMING SOON</div>
-
-			<div class="mm_card_text">
-				Season progression will be available later.
-			</div>
-
-			<button id="btn_battlepass_stub" class="mm_card_button disabled">LOCKED</button>
-		</div>
-
-	</div>
-
-	<div class="premium_badge">
-		PREMIUM NOT ACTIVE
-	</div>
-
-	<div class="bottom_play_area">
-
+		<!-- PLAY GAME -->
 		<button
 			id="btn_quick_join"
-			class="play_button"
+			class="home_play_button"
 		>
-			<div class="play_button_icon">
-				*
-			</div>
+			<img
+				class="home_play_options_plate"
+				src="../Assets/MainMenu/Home/PlayGame_Options_Plate.png"
+			/>
 
-			<div class="play_button_text">
-				PLAY
+			<img
+				class="home_play_plate"
+				src="../Assets/MainMenu/Home/PlayGame_Plate.png"
+			/>
+
+			<img
+				class="home_play_icon"
+				src="../Assets/MainMenu/Home/PlayGame_Ico.png"
+			/>
+
+			<div class="home_play_text">
+				Play Game
 			</div>
 		</button>
 
-		</div>
-
 	</div>
 
+	<!-- MODE SELECT MODAL: оставляем старую логику кнопки PLAY -->
 	<div
 		id="play_mode_modal"
 		class="play_mode_overlay"
@@ -237,86 +209,17 @@
 				</button>
 
 			</div>
-
 		</div>
 	</div>
 
-	<div id="frontend_notice_layer" class="frontend_notice_layer">
-		<div id="frontend_notice" class="frontend_notice info">
-			<div id="frontend_notice_title" class="frontend_notice_title">
-				SYSTEM
-			</div>
-
-			<div id="frontend_notice_text" class="frontend_notice_text">
-				Message
-			</div>
-		</div>
-	</div>
-
-	<div class="preview_help">
-		LMB ROTATE
-	</div>
-
-	<div class="main_menu_status_bar">
-
-		<div class="main_menu_status_left">
-			<div class="status_indicator"></div>
-
-			<div
-				id="main_menu_status"
-				class="frontend_status"
-			>
-				Loading survivor profile...
-			</div>
-		</div>
-
-		<div class="preview_server_information">
-
-			<div class="server_information_label">
-				REGION:
-			</div>
-
-			<div
-				id="footer_region"
-				class="server_information_value"
-			>
-				AUTO
-			</div>
-
-			<div class="server_information_separator">
-				|
-			</div>
-
-			<div class="server_information_label">
-				SERVER:
-			</div>
-
-			<div
-				id="footer_server"
-				class="server_information_value"
-			>
-				OFFLINE
-			</div>
-
-			<div class="connection_bars">
-				<div class="connection_bar bar_one"></div>
-				<div class="connection_bar bar_two"></div>
-				<div class="connection_bar bar_three"></div>
-			</div>
-
-		</div>
-
-	</div>
-
-	<div class="frontend_chat_bar">
-		<div class="chat_icon">...</div>
-		<div class="chat_hint">Press [ENTER] to open chat</div>
-	</div>
-
-	<div class="runtime_hidden_value">
-
-		<div id="account_name">ACCOUNT</div>
+	<!-- скрытые runtime id, чтобы C++ не ломался при SetElementText/SetInputValue -->
+	<div class="mainmenu_runtime_values">
+		<div id="account_name">SURVIVOR</div>
+		<div id="top_survivor_role">SURVIVOR</div>
+		<div id="survivor_nickname">SURVIVOR</div>
+		<div id="survivor_class">SURVIVOR</div>
 		<div id="selected_character">SURVIVOR</div>
+		<div id="survivor_state">READY</div>
 
 		<div id="stat_player_kills">0</div>
 		<div id="stat_zombie_kills">0</div>
@@ -325,26 +228,50 @@
 		<div id="stat_reputation">0</div>
 		<div id="stat_rank">UNRANKED</div>
 
-		<div id="survivor_level_value">1</div>
+		<div id="survivor_level_value">0</div>
 		<div id="survivor_level_xp_text">0 / 100</div>
 		<div id="survivor_level_xp_fill"></div>
 
-		<div id="top_level_value">1</div>
-		<div id="top_level_xp_text">0 / 100</div>
-		<div id="top_level_xp_fill"></div>
-		<div id="top_survivor_name">SURVIVOR</div>
-		<div id="top_survivor_role">EX MILITARY</div>
+		<div id="reward_rank_title">RECRUIT</div>
+		<div id="reward_xp_text">0 / 100</div>
+		<div id="reward_xp_fill"></div>
+
+		<div id="footer_region">AUTO</div>
+		<div id="footer_server">OFFLINE</div>
+
+		<div id="news_title">SafeZone deployment online</div>
+		<div id="news_body">SafeZone is now the first deployment point.</div>
+
+		<div id="card_featured_shop"></div>
+		<div id="featured_shop_badge">NEW</div>
+		<div id="featured_shop_name">M16</div>
+		<div id="featured_shop_price">1 ZC</div>
+		<button id="btn_featured_shop_open">OPEN SHOP</button>
+
+		<div id="card_rank"></div>
+		<div id="rank_level">LVL 1</div>
+		<div id="rank_xp_fill"></div>
+		<div id="rank_xp_text">0 / 100 XP</div>
+		<div id="rank_reward_text">Next reward: 250 ZD</div>
+
+		<div id="card_missions"></div>
+		<div id="mission_title">Daily contract unavailable</div>
+		<div id="mission_state">Mission API is not connected yet.</div>
+		<div id="mission_reward">Reward: ZD / XP</div>
+
+		<div id="card_battlepass"></div>
+		<button id="btn_battlepass_stub">LOCKED</button>
+
+		<button id="btn_news_more">MORE</button>
+		<button id="btn_missions_open">MISSIONS</button>
+		<button id="btn_rename_character">RENAME</button>
+		<button id="btn_refresh_profile">REFRESH</button>
 
 		<input
 			id="rename_character_name"
 			type="text"
-			maxlength="16"
+			value=""
 		/>
-
-		<button id="btn_rename_character">
-			APPLY NAME
-		</button>
-
 	</div>
 
 </body>
