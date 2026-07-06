@@ -40,15 +40,11 @@
 				src="../Assets/MainMenu/Home/Survivor_Level_Progress_bg.png"
 			/>
 
-			<div
+			<img
 				id="top_level_xp_fill"
-				class="home_level_fill_clip"
-			>
-				<img
-					class="home_level_fill_image"
-					src="../Assets/MainMenu/Home/Survivor_Level_Progress.png"
-				/>
-			</div>
+				class="home_level_fill_image"
+				src="../Assets/MainMenu/Home/Survivor_Level_Progress.png"
+			/>
 
 			<img
 				class="home_level_hover"
@@ -87,17 +83,30 @@
 		<!-- PREMIUM -->
 		<div id="home_premium_panel" class="home_premium_panel">
 			<img
-				class="home_premium_plate"
+				class="home_premium_plate normal"
 				src="../Assets/MainMenu/Home/Survivor_Premium_Plate.png"
 			/>
 
-			<div class="home_premium_text">
+			<img
+				class="home_premium_plate active"
+				src="../Assets/MainMenu/Home/Survivor_Premium_Plate_active.png"
+			/>
+
+			<div
+				id="home_premium_text"
+				class="home_premium_text"
+			>
 				PREMIUM NOT ACTIVE
 			</div>
 
 			<img
-				class="home_premium_badge"
+				class="home_premium_badge normal"
 				src="../Assets/MainMenu/Home/Survivor_Premium_Badge.png"
+			/>
+
+			<img
+				class="home_premium_badge active"
+				src="../Assets/MainMenu/Home/Survivor_Premium_Badge_active.png"
 			/>
 		</div>
 
