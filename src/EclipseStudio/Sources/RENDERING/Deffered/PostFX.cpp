@@ -129,6 +129,11 @@ PostFX::PushDefaultSettings()
 	mSettingsPushed = 0;
 }
 
+bool PostFX::TryRenderExternal(r3dScreenBuffer* dest, r3dScreenBuffer* src)
+{
+	return TryRenderExternalImpl( dest, src );
+}
+
 //------------------------------------------------------------------------
 
 /*virtual*/
@@ -136,4 +141,9 @@ void
 PostFX::PushDefaultSettingsImpl()
 {
 	
+}
+
+bool PostFX::TryRenderExternalImpl(r3dScreenBuffer* dest, r3dScreenBuffer* src)
+{
+	return false;
 }

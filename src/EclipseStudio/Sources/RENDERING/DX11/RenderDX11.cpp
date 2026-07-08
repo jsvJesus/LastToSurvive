@@ -229,6 +229,13 @@ namespace
 	ID3D11Device*			gDX11Device = 0;
 	ID3D11DeviceContext*	gDX11Context = 0;
 
+	ID3D11VertexShader*		gDX11SunGlareVS = 0;
+	ID3D11PixelShader*		gDX11SunGlarePS = 0;
+	ID3D11Buffer*			gDX11SunGlareCB = 0;
+	ID3D11SamplerState*		gDX11SunGlareBorderSampler = 0;
+
+	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
+
 	ID3D11Texture2D*		gDX11GBufferColorTexture = 0;
 	ID3D11Texture2D*		gDX11GBufferNormalTexture = 0;
 	ID3D11Texture2D*		gDX11GBufferDepthLinearTexture = 0;
@@ -1018,6 +1025,8 @@ namespace
 
 	void RenderDX11_ReleaseStates()
 	{
+		RenderDX11_SafeRelease(gDX11SunGlareBorderSampler);
+
 		RenderDX11_SafeRelease(gDX11SamplerLinearClamp);
 		RenderDX11_SafeRelease(gDX11SamplerLinearWrap);
 
@@ -1034,6 +1043,9 @@ namespace
 
 	void RenderDX11_ReleaseShaders()
 	{
+		RenderDX11_SafeRelease(gDX11SunGlarePS);
+		RenderDX11_SafeRelease(gDX11SunGlareVS);
+
 		RenderDX11_SafeRelease(gDX11TerrainInputLayout);
 		RenderDX11_SafeRelease(gDX11TerrainPS);
 		RenderDX11_SafeRelease(gDX11TerrainVS);
@@ -1113,6 +1125,8 @@ namespace
 
 	void RenderDX11_ReleaseConstantBuffers()
 	{
+		RenderDX11_SafeRelease(gDX11SunGlareCB);
+
 		RenderDX11_SafeRelease(gDX11GrassCB);
 		RenderDX11_SafeRelease(gDX11WaterCB);
 		RenderDX11_SafeRelease(gDX11ShadowCB);
@@ -1250,8 +1264,18 @@ namespace
 			return false;
 		}
 
+		if (!RenderDX11_CreateDynamicConstantBuffer(
+			sizeof(RenderDX11SunGlareSettings),
+			"SunGlareCB",
+			&gDX11SunGlareCB
+		))
+		{
+			RenderDX11_ReleaseConstantBuffers();
+			return false;
+		}
+
 		OutputDebugStringA(
-			"[DX11][Render] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7)\n"
+			"[DX11][Render] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7), SunGlareCB(b8)\n"
 		);
 
 		return true;
@@ -1780,6 +1804,10 @@ namespace
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
 		gDX11Terrain2AtlasRefreshCount = 0;
 		gDX11Terrain2AtlasRefreshPendingCount = 0;
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11SunGlareMaskBridge
+		);
 	}
 
 	bool RenderDX11_TranslateTerrain2TextureFormat(
@@ -4640,6 +4668,39 @@ namespace
 			return false;
 		}
 
+		Desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		Desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+		Desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+		Desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+		Desc.MipLODBias = 0.0f;
+		Desc.MaxAnisotropy = 1;
+		Desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		Desc.BorderColor[0] = 0.0f;
+		Desc.BorderColor[1] = 0.0f;
+		Desc.BorderColor[2] = 0.0f;
+		Desc.BorderColor[3] = 0.0f;
+		Desc.MinLOD = 0.0f;
+		Desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		Hr =
+			gDX11Device->CreateSamplerState(
+				&Desc,
+				&gDX11SunGlareBorderSampler
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Create SunGlare border sampler failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+			return false;
+		}
+
 		return true;
 	}
 
@@ -5276,6 +5337,225 @@ namespace
 
 		return true;
 	}
+
+	bool RenderDX11_CompileShaderFromMemory(
+		const char* DebugName,
+		const char* Source,
+		const char* EntryPoint,
+		const char* Target,
+		ID3DBlob** OutBlob
+	)
+	{
+		if (!Source || !EntryPoint || !Target || !OutBlob)
+			return false;
+
+		*OutBlob = 0;
+
+		ID3DBlob* ErrorBlob = 0;
+
+		UINT Flags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+	#if defined(_DEBUG)
+		Flags |= D3DCOMPILE_DEBUG;
+		Flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	#endif
+
+		HRESULT Hr =
+			D3DCompile(
+				Source,
+				strlen(Source),
+				DebugName ? DebugName : "memory",
+				0,
+				0,
+				EntryPoint,
+				Target,
+				Flags,
+				0,
+				OutBlob,
+				&ErrorBlob
+			);
+
+		if (FAILED(Hr))
+		{
+			if (ErrorBlob)
+			{
+				const char* ErrorText =
+					reinterpret_cast<const char*>(
+						ErrorBlob->GetBufferPointer()
+					);
+
+				char Text[2048] = {};
+				sprintf_s(
+					Text,
+					"[DX11][SunGlare] Shader compile failed: %s\n%s\n",
+					DebugName ? DebugName : "unknown",
+					ErrorText ? ErrorText : ""
+				);
+
+				OutputDebugStringA(Text);
+			}
+			else
+			{
+				char Text[256] = {};
+				sprintf_s(
+					Text,
+					"[DX11][SunGlare] Shader compile failed: %s HRESULT=0x%08X\n",
+					DebugName ? DebugName : "unknown",
+					static_cast<unsigned int>(Hr)
+				);
+
+				OutputDebugStringA(Text);
+			}
+
+			RenderDX11_SafeRelease(ErrorBlob);
+			RenderDX11_SafeRelease(*OutBlob);
+			return false;
+		}
+
+		RenderDX11_SafeRelease(ErrorBlob);
+		return true;
+	}
+
+	bool RenderDX11_CreateSunGlareShaders()
+	{
+		if (gDX11SunGlareVS && gDX11SunGlarePS)
+			return true;
+
+		if (!gDX11Device)
+			return false;
+
+		static const char* SunGlareShaderSource =
+			"Texture2D gMaskTex : register(t0);\n"
+			"SamplerState gMaskSampler : register(s0);\n"
+			"\n"
+			"cbuffer SunGlareCB : register(b8)\n"
+			"{\n"
+			"	float4 gThreshold;\n"
+			"	float4 gTint[10];\n"
+			"	float4 gTexTransform[10];\n"
+			"	float4 gParams;\n"
+			"};\n"
+			"\n"
+			"struct VSOut\n"
+			"{\n"
+			"	float4 Pos : SV_POSITION;\n"
+			"	float2 UV  : TEXCOORD0;\n"
+			"};\n"
+			"\n"
+			"VSOut VSMain(uint VertexID : SV_VertexID)\n"
+			"{\n"
+			"	VSOut o;\n"
+			"	float2 pos;\n"
+			"	pos.x = (VertexID == 2) ? 3.0f : -1.0f;\n"
+			"	pos.y = (VertexID == 1) ? 3.0f : -1.0f;\n"
+			"	o.Pos = float4(pos, 0.0f, 1.0f);\n"
+			"	o.UV = float2(pos.x * 0.5f + 0.5f, -pos.y * 0.5f + 0.5f);\n"
+			"	return o;\n"
+			"}\n"
+			"\n"
+			"float4 PSMain(VSOut i) : SV_TARGET\n"
+			"{\n"
+			"	float3 color = float3(0.0f, 0.0f, 0.0f);\n"
+			"	float alpha = 0.0f;\n"
+			"	int count = clamp((int)gParams.x, 1, 10);\n"
+			"\n"
+			"	[loop]\n"
+			"	for(int n = 0; n < count; ++n)\n"
+			"	{\n"
+			"		float2 uv = i.UV * gTexTransform[n].xy + gTexTransform[n].zw;\n"
+			"		float mask = gMaskTex.Sample(gMaskSampler, uv).r;\n"
+			"		float threshold = gThreshold[min(n, 3)];\n"
+			"		float glare = saturate((mask - threshold) / max(1.0f - threshold, 0.001f));\n"
+			"		color += glare * gTint[n].rgb;\n"
+			"		alpha += glare * gTint[n].a;\n"
+			"	}\n"
+			"\n"
+			"	return float4(color, saturate(alpha));\n"
+			"}\n";
+
+		ID3DBlob* VSBlob = 0;
+		ID3DBlob* PSBlob = 0;
+
+		if (!RenderDX11_CompileShaderFromMemory(
+			"DX11_SunGlareVS",
+			SunGlareShaderSource,
+			"VSMain",
+			"vs_4_0",
+			&VSBlob
+		))
+		{
+			return false;
+		}
+
+		if (!RenderDX11_CompileShaderFromMemory(
+			"DX11_SunGlarePS",
+			SunGlareShaderSource,
+			"PSMain",
+			"ps_4_0",
+			&PSBlob
+		))
+		{
+			RenderDX11_SafeRelease(VSBlob);
+			return false;
+		}
+
+		HRESULT Hr =
+			gDX11Device->CreateVertexShader(
+				VSBlob->GetBufferPointer(),
+				VSBlob->GetBufferSize(),
+				0,
+				&gDX11SunGlareVS
+			);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][SunGlare] CreateVertexShader failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+
+			RenderDX11_SafeRelease(VSBlob);
+			RenderDX11_SafeRelease(PSBlob);
+			return false;
+		}
+
+		Hr =
+			gDX11Device->CreatePixelShader(
+				PSBlob->GetBufferPointer(),
+				PSBlob->GetBufferSize(),
+				0,
+				&gDX11SunGlarePS
+			);
+
+		RenderDX11_SafeRelease(VSBlob);
+		RenderDX11_SafeRelease(PSBlob);
+
+		if (FAILED(Hr))
+		{
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][SunGlare] CreatePixelShader failed. HRESULT=0x%08X\n",
+				static_cast<unsigned int>(Hr)
+			);
+
+			OutputDebugStringA(Text);
+
+			RenderDX11_SafeRelease(gDX11SunGlareVS);
+			RenderDX11_SafeRelease(gDX11SunGlarePS);
+			return false;
+		}
+
+		OutputDebugStringA(
+			"[DX11][SunGlare] Shaders created\n"
+		);
+
+		return true;
+	}
 }
 
 #include "DrawWorldDX11.hpp"
@@ -5416,6 +5696,173 @@ void RenderDX11_DrawDebugPreviewDX9()
 			(gDX11Terrain2SRVMask & DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE) ? 1 : 0
 		);
 	}
+}
+
+bool RenderDX11_ApplySunGlare(
+	const RenderDX11SunGlareSettings& Settings,
+	r3dTexture* ShadeTexture
+)
+{
+#if LTS_STUDIO_DX11_WORLD
+	if (
+		!gDX11Device ||
+		!gDX11Context ||
+		!gDX11GBufferColorRTV ||
+		!gDX11SunGlareCB ||
+		!ShadeTexture
+	)
+	{
+		return false;
+	}
+
+	if (!RenderDX11_CreateSunGlareShaders())
+		return false;
+
+	if (!RenderDX11_UploadTerrain2TextureToDX11(
+		gDX11SunGlareMaskBridge,
+		ShadeTexture,
+		"SunGlareMask"
+	))
+	{
+		return false;
+	}
+
+	if (!gDX11SunGlareMaskBridge.SRV)
+		return false;
+
+	if (!RenderDX11_UpdateConstantBuffer(
+		gDX11SunGlareCB,
+		&Settings,
+		sizeof(Settings),
+		"SunGlareCB"
+	))
+	{
+		return false;
+	}
+
+	ID3D11RenderTargetView* RTViews[1] =
+	{
+		gDX11GBufferColorRTV
+	};
+
+	gDX11Context->OMSetRenderTargets(
+		1,
+		RTViews,
+		0
+	);
+
+	gDX11Context->RSSetViewports(
+		1,
+		&gDX11Viewport
+	);
+
+	gDX11Context->OMSetDepthStencilState(
+		gDX11DepthDisabled,
+		0
+	);
+
+	const float BlendFactor[4] =
+	{
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f
+	};
+
+	// For stronger glare use additive.
+	gDX11Context->OMSetBlendState(
+		gDX11BlendAlpha,
+		BlendFactor,
+		0xffffffff
+	);
+
+	gDX11Context->RSSetState(
+		gDX11RasterSolidNoCull
+	);
+
+	gDX11Context->IASetInputLayout(0);
+	gDX11Context->IASetPrimitiveTopology(
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	);
+
+	UINT Stride = 0;
+	UINT Offset = 0;
+	ID3D11Buffer* NullVB = 0;
+
+	gDX11Context->IASetVertexBuffers(
+		0,
+		1,
+		&NullVB,
+		&Stride,
+		&Offset
+	);
+
+	gDX11Context->VSSetShader(
+		gDX11SunGlareVS,
+		0,
+		0
+	);
+
+	gDX11Context->PSSetShader(
+		gDX11SunGlarePS,
+		0,
+		0
+	);
+
+	gDX11Context->PSSetConstantBuffers(
+		8,
+		1,
+		&gDX11SunGlareCB
+	);
+
+	ID3D11ShaderResourceView* SRVs[1] =
+	{
+		gDX11SunGlareMaskBridge.SRV
+	};
+
+	gDX11Context->PSSetShaderResources(
+		0,
+		1,
+		SRVs
+	);
+
+	ID3D11SamplerState* Samplers[1] =
+	{
+		gDX11SunGlareBorderSampler
+		? gDX11SunGlareBorderSampler
+		: gDX11SamplerLinearClamp
+	};
+
+	gDX11Context->PSSetSamplers(
+		0,
+		1,
+		Samplers
+	);
+
+	gDX11Context->Draw(
+		3,
+		0
+	);
+
+	ID3D11ShaderResourceView* NullSRV[1] =
+	{
+		0
+	};
+
+	gDX11Context->PSSetShaderResources(
+		0,
+		1,
+		NullSRV
+	);
+
+	RenderDX11_ApplyDefaultStates();
+
+	return true;
+#else
+	(void)Settings;
+	(void)ShadeTexture;
+	return false;
+#endif
 }
 
 bool RenderDX11_Init()

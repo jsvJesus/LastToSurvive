@@ -43,6 +43,9 @@ private:
 	virtual void FinishImpl()							OVERRIDE;
 
 	// data
+protected:
+	virtual bool TryRenderExternalImpl(	r3dScreenBuffer* dest,
+										r3dScreenBuffer* src ) OVERRIDE;
 private:
 	r3dTexture*		mShadeTexture;
 	Settings		mSettings;
