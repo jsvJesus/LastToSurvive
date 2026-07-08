@@ -9,11 +9,12 @@ class r3dTexture;
 
 struct RenderDX11SunGlareSettings
 {
-    int NumSunglares;
-
     float Threshold[4];
     float Tint[10][4];
     float TexTransform[10][4];
+
+    // x = NumSunglares
+    // y/z/w = reserved
     float Params[4];
 };
 

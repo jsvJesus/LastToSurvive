@@ -151,13 +151,13 @@ bool PFX_SunGlare::TryRenderExternalImpl(r3dScreenBuffer* dest, r3dScreenBuffer*
 	RenderDX11SunGlareSettings dx11Settings;
 	memset( &dx11Settings, 0, sizeof dx11Settings );
 
-	dx11Settings.NumSunglares = mSettings.NumSunglares;
+	int numSunglares = mSettings.NumSunglares;
 
-	if( dx11Settings.NumSunglares < 1 )
-		dx11Settings.NumSunglares = 1;
+	if( numSunglares < 1 )
+		numSunglares = 1;
 
-	if( dx11Settings.NumSunglares > static_cast<int>( MAX_SUNGLARES ) )
-		dx11Settings.NumSunglares = static_cast<int>( MAX_SUNGLARES );
+	if( numSunglares > static_cast<int>( MAX_SUNGLARES ) )
+		numSunglares = static_cast<int>( MAX_SUNGLARES );
 
 	for( int i = 0; i < MAX_SUNGLARES; ++i )
 	{
@@ -192,7 +192,7 @@ bool PFX_SunGlare::TryRenderExternalImpl(r3dScreenBuffer* dest, r3dScreenBuffer*
 	}
 
 	dx11Settings.Params[ 0 ] =
-		static_cast<float>( dx11Settings.NumSunglares );
+	static_cast<float>( numSunglares );
 
 	dx11Settings.Params[ 1 ] = 0.0f;
 	dx11Settings.Params[ 2 ] = 0.0f;
