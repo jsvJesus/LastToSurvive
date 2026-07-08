@@ -27,14 +27,14 @@ obj_Barricade::~obj_Barricade()
 BOOL obj_Barricade::OnCreate()
 {
 	r3d_assert(m_ItemID > 0);
-	if(m_ItemID == WeaponConfig::ITEMID_BarbWireBarricade)
-		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Barricade_BarbWire_Built.sco", true, false, true, true );
-	else if(m_ItemID == WeaponConfig::ITEMID_WoodShieldBarricade)
-		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Barricade_WoodShield_Built.sco", true, false, true, true );
-	else if(m_ItemID == WeaponConfig::ITEMID_RiotShieldBarricade)
-		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Riot_Shield_01.sco", true, false, true, true );
-	else if(m_ItemID == WeaponConfig::ITEMID_SandbagBarricade)
-		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\item_barricade_Sandbag_built.sco", true, false, true, true );
+	if(m_ItemID == WeaponConfig::ITEMID_Barricade_BarbWire)
+		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_barbwire_deployed.sco", true, false, true, true );
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Wood_Shield)
+		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_shield_wood_01_deployed.sco", true, false, true, true );
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Metal_Shield)
+		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_shield_metal_01_deployed.sco", true, false, true, true );
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Spike_Mat)
+		m_PrivateModel = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_spike_mat_deployed.sco", true, false, true, true );
 
 	if(m_PrivateModel==NULL)
 		return FALSE;

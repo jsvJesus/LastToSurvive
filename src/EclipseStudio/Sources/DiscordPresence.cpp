@@ -19,8 +19,8 @@ static const char* DISCORD_LARGE_IMAGE_KEY = "lts_logo";
 
 static char gDiscordDetails[128] = "In Studio";
 static char gDiscordState[128] = "Main Menu";
-static char gDiscordLargeText[128] = "GameStudioGame Editor";
-static char gDiscordSmallText[128] = "WarZ Editor";
+static char gDiscordLargeText[128] = "Last To Survive";
+static char gDiscordSmallText[128] = "Game Editor";
 static bool gDiscordPresenceDirty = false;
 static bool gDiscordReady = false;
 static bool gDiscordStarted = false;
@@ -195,7 +195,7 @@ static bool DiscordPresence_IpcSendActivity(bool clearPresence)
 		sprintf(startTime, "%I64d", gDiscordStartTime);
 
 		json += "{\"type\":0";
-		json += ",\"name\":\"GameStudioGame Editor\"";
+		json += ",\"name\":\"Last To Survive\"";
 		json += ",\"details\":\"" + DiscordPresence_JsonEscape(gDiscordDetails) + "\"";
 		json += ",\"state\":\"" + DiscordPresence_JsonEscape(gDiscordState) + "\"";
 		json += ",\"timestamps\":{\"start\":";
@@ -464,7 +464,7 @@ void DiscordPresence_SetGame(const char* serverName, const char* mapName)
 	char state[128];
 	sprintf(state, "%s - %s", serverName, DiscordPresence_CleanMapName(mapName));
 
-	DiscordPresence_Copy(gDiscordDetails, sizeof(gDiscordDetails), "Playing WarZ");
+	DiscordPresence_Copy(gDiscordDetails, sizeof(gDiscordDetails), "Playing LTS");
 	DiscordPresence_Copy(gDiscordState, sizeof(gDiscordState), state);
 	DiscordPresence_Copy(gDiscordLargeText, sizeof(gDiscordLargeText), DiscordPresence_CleanMapName(mapName));
 	DiscordPresence_Copy(gDiscordSmallText, sizeof(gDiscordSmallText), serverName);

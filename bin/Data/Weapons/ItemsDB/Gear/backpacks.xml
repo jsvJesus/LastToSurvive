@@ -1,43 +1,293 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <BackpackArmory>
-	<Backpack itemID="20175" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/gear_backpack_16slots.sco" />
-		<Store name="Medium Backpack" icon="$Data/Weapons/StoreIcons/gear_backpack_16slots.dds" desc="A medium sized backpack with plenty of space and durability." slotW="2" slotH="2" />
-		<Desc maxSlots="18" maxWeight="15" />
-	</Backpack>
-	<Backpack itemID="20176" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_8slots.sco" />
-		<Store name="Small Backpack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_8slots.dds" desc="A small backpack allowing some storage for essential items and equipment." slotW="2" slotH="2" />
-		<Desc maxSlots="12" maxWeight="10" />
-	</Backpack>
-	<Backpack itemID="20179" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_Med_01.sco" />
-		<Store name="Large Backpack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_Med_01.dds" desc="24 item backpack. Big enough for a few weeks of adventuring" slotW="2" slotH="2" />
-		<Desc maxSlots="24" maxWeight="20" />
-	</Backpack>
-	<Backpack itemID="20180" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/gear_backpack_32slots.sco" />
-		<Store name="Military Ruck" icon="$Data/Weapons/StoreIcons/gear_backpack_32slots.dds" desc="The mother of all backpacks. Carry 32 items at once!" slotW="2" slotH="2" />
-		<Desc maxSlots="32" maxWeight="30" />
-	</Backpack>
-	<Backpack itemID="20181" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/gear_backpack_teddybear.sco" />
-		<Store name="Teddy Bear backpack" icon="$Data/Weapons/StoreIcons/gear_backpack_teddybear.dds" desc="Roman's favorite accessory" slotW="2" slotH="2" />
-		<Desc maxSlots="12" maxWeight="10" />
-	</Backpack>
-	<Backpack itemID="20185" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_Med_01_black.sco" />
-		<Store name="ALICE Rucksack" icon="$Data/Weapons/StoreIcons/Gear_Backpack_Med_01_black.dds" desc="Large backpack that fits everything you will need. The All-purpose Lightweight Individual Carrying Equipment.  Dont forget the poo tickets!" slotW="2" slotH="2" />
-		<Desc maxSlots="28" maxWeight="25" />
-	</Backpack>
-	<Backpack itemID="20196" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Gear_Backpack_GameSpot.sco" />
-		<Store name="Gear_Backpack_GameSpot" icon="$Data/Weapons/StoreIcons/Gear_Backpack_GameSpot.dds" desc="" slotW="2" slotH="2" />
-		<Desc maxSlots="20" maxWeight="15" />
-	</Backpack>
-	<Backpack itemID="20200" category="12" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Gear_SantaBag_01.sco" />
-		<Store name="Santa's Sack" icon="$Data/Weapons/StoreIcons/Gear_SantaBag_01.dds" desc="With presents for everyone! Well, mostly zombies. And bandits." slotW="2" slotH="2" />
-		<Desc maxSlots="28" maxWeight="25" />
-	</Backpack>
+  <Backpack itemID="21700" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/WZBackpack_L_01.sco" />
+    <Store name="$wzBackpack_L_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="21701" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_01.sco" />
+    <Store name="$wzBackpack_M_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_M_01.dds" desc="$Backpack_M_01_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21702" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_02.sco" />
+    <Store name="$wzbackpack_M_02" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_02.dds" desc="$backpack_M_02_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21703" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_03.sco" />
+    <Store name="$wzbackpack_M_03" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_03.dds" desc="$backpack_M_03_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21704" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_04.sco" />
+    <Store name="$wzbackpack_M_04" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_04.dds" desc="$backpack_M_04_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21705" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_05.sco" />
+    <Store name="$wzbackpack_M_05" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_05.dds" desc="$backpack_M_05_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21706" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_06.sco" />
+    <Store name="$wzbackpack_M_06" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_06.dds" desc="$backpack_M_06_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21707" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_M_07.sco" />
+    <Store name="$wzbackpack_M_07" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_07.dds" desc="$backpack_M_07_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="21708" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/WZBackpack_L_01.sco" />
+    <Store name="$wzBackpack_L_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="21709" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzBackpack_L_02.sco" />
+    <Store name="$wzBackpack_L_02" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_02.dds" desc="$Backpack_L_02_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="21710" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzBackpack_L_03.sco" />
+    <Store name="$wzBackpack_L_03" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_03.dds" desc="$Backpack_L_03_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="21711" category="12" Weight="1000">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzBackpack_L_04.sco" />
+    <Store name="$wzBackpack_L_04" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="$Backpack_L_04_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="21712" category="12" Weight="500">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/wzbackpack_sling_01.sco" />
+    <Store name="$wzbackpack_sling_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_sling_01.dds" desc="$backpack_sling_desc" />
+    <Desc maxSlots="16" maxWeight="24" />
+  </Backpack>
+  <Backpack itemID="20632" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_01.sco" />
+    <Store name="$Backpack_L_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20633" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_02.sco" />
+    <Store name="$Backpack_L_02" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_02.dds" desc="$Backpack_L_02_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20634" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_03.sco" />
+    <Store name="$Backpack_L_03" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_03.dds" desc="$Backpack_L_03_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20635" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_04.sco" />
+    <Store name="$Backpack_L_04" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="$Backpack_L_04_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20636" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_01.sco" />
+    <Store name="$backpack_M_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_01.dds" desc="$backpack_M_01_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20637" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_02.sco" />
+    <Store name="$backpack_M_02" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_02.dds" desc="$backpack_M_02_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20638" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_03.sco" />
+    <Store name="$backpack_M_03" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_03.dds" desc="$backpack_M_03_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20639" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_04.sco" />
+    <Store name="$backpack_M_04" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_04.dds" desc="$backpack_M_04_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20640" category="12" Weight="500" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Pouch_Belt_01.sco" />
+    <Store name="$Pouch_Belt_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Pouch_Belt_01.dds" desc="$Pouch_Belt_01_desc" />
+    <Desc maxSlots="12" maxWeight="30" />
+  </Backpack>
+  <Backpack itemID="20699" category="12" Weight="100" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_04.sco" />
+    <Store name="DEV_BACKPACK" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="DEV_BACKPACK_TEST" />
+    <Desc maxSlots="63" maxWeight="90" />
+  </Backpack>
+  <Backpack itemID="20706" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_01.sco" />
+    <Store name="$Backpack_L_01_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_V2_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20707" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_01.sco" />
+    <Store name="$Backpack_L_01_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_V3_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20708" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_01.sco" />
+    <Store name="$Backpack_L_01_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_01.dds" desc="$Backpack_L_01_V4_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20709" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_02.sco" />
+    <Store name="$Backpack_L_02_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_02.dds" desc="$Backpack_L_02_V2_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20710" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_02.sco" />
+    <Store name="$Backpack_L_02_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_02.dds" desc="$Backpack_L_02_V3_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20711" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_02.sco" />
+    <Store name="$Backpack_L_02_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_02.dds" desc="$Backpack_L_02_V4_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20712" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_03.sco" />
+    <Store name="$Backpack_L_03_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_03.dds" desc="$Backpack_L_03_V2_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20713" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_03.sco" />
+    <Store name="$Backpack_L_03_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_03.dds" desc="$Backpack_L_03_V3_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20714" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_03.sco" />
+    <Store name="$Backpack_L_03_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_03.dds" desc="$Backpack_L_03_V4_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20715" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_04.sco" />
+    <Store name="$Backpack_L_04_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="$Backpack_L_04_V2_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20716" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_04.sco" />
+    <Store name="$Backpack_L_04_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="$Backpack_L_04_V3_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20717" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/Backpack_L_04.sco" />
+    <Store name="$Backpack_L_04_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/Backpack_L_04.dds" desc="$Backpack_L_04_V4_desc" />
+    <Desc maxSlots="42" maxWeight="68" />
+  </Backpack>
+  <Backpack itemID="20718" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_01.sco" />
+    <Store name="$backpack_M_01_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_01.dds" desc="$backpack_M_01_V2_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20719" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_01.sco" />
+    <Store name="$backpack_M_01_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_01.dds" desc="$backpack_M_01_V3_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20720" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_01.sco" />
+    <Store name="$backpack_M_01_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_01.dds" desc="$backpack_M_01_V4_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20721" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_02.sco" />
+    <Store name="$backpack_M_02_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_02.dds" desc="$backpack_M_02_V2_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20722" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_02.sco" />
+    <Store name="$backpack_M_02_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_02.dds" desc="$backpack_M_02_V3_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20723" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_02.sco" />
+    <Store name="$backpack_M_02_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_02.dds" desc="$backpack_M_02_V4_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20724" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_03.sco" />
+    <Store name="$backpack_M_03_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_03.dds" desc="$backpack_M_03_V2_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20725" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_03.sco" />
+    <Store name="$backpack_M_03_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_03.dds" desc="$backpack_M_03_V3_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20726" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_03.sco" />
+    <Store name="$backpack_M_03_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_03.dds" desc="$backpack_M_03_V4_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20727" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_04.sco" />
+    <Store name="$backpack_M_04_V2" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_04.dds" desc="$backpack_M_04_V2_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20728" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_04.sco" />
+    <Store name="$backpack_M_04_V3" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_04.dds" desc="$backpack_M_04_V3_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20729" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_04.sco" />
+    <Store name="$backpack_M_04_V4" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_04.dds" desc="$backpack_M_04_V4_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20918" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_05.sco" />
+    <Store name="$backpack_M_05" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_05.dds" desc="$backpack_M_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20919" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_06.sco" />
+    <Store name="$backpack_M_06" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_06.dds" desc="$backpack_M_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20920" category="12" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_M_07.sco" />
+    <Store name="$backpack_M_07" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_M_07.dds" desc="$backpack_M_desc" />
+    <Desc maxSlots="20" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20995" category="12" Weight="500" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Skies_Survivor1/backpack_sling_01.sco" />
+    <Store name="$backpack_sling_01" icon="$Data/ObjectsDepot/CharactersNew/StoreIcons/backpack_sling_01.dds" desc="$backpack_sling_desc" />
+    <Desc maxSlots="16" maxWeight="24" />
+  </Backpack>
+  <Backpack itemID="20924" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/Backpack_01_00.sco" />
+    <Store name="$INB_backpack0" icon="$Data/Weapons/StoreIcons/Backpack_01_00.dds" desc="$INB_backpack0_desc" />
+    <Desc maxSlots="24" maxWeight="35" />
+  </Backpack>
+  <Backpack itemID="20925" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/Backpack_01_04.sco" />
+    <Store name="$INB_backpack4" icon="$Data/Weapons/StoreIcons/Backpack_01_04.dds" desc="$INB_backpack4_desc" />
+    <Desc maxSlots="40" maxWeight="55" />
+  </Backpack>
+  <Backpack itemID="20926" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/INB_Backpack_Alice.sco" />
+    <Store name="$INB_Backpack_Alice" icon="$Data/Weapons/StoreIcons/INB_Backpack_Alice.dds" desc="$INB_Backpack_Alice_desc" />
+    <Desc maxSlots="46" maxWeight="70" />
+  </Backpack>
+  <Backpack itemID="20927" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/INB_Backpack_Medium.sco" />
+    <Store name="$INB_Backpack_Medium" icon="$Data/Weapons/StoreIcons/INB_Backpack_Medium.dds" desc="$INB_Backpack_Medium_desc" />
+    <Desc maxSlots="20" maxWeight="30" />
+  </Backpack>
+  <Backpack itemID="20928" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/Backpack_01_01.sco" />
+    <Store name="$INB_backpack1" icon="$Data/Weapons/StoreIcons/Backpack_01_01.dds" desc="$INB_backpack1_desc" />
+    <Desc maxSlots="28" maxWeight="40" />
+  </Backpack>
+  <Backpack itemID="20929" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/Backpack_01_02.sco" />
+    <Store name="$INB_backpack2" icon="$Data/Weapons/StoreIcons/Backpack_01_02.dds" desc="$INB_backpack2_desc" />
+    <Desc maxSlots="32" maxWeight="45" />
+  </Backpack>
+  <Backpack itemID="20830" category="12" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleAftermath/Backpack_01_03.sco" />
+    <Store name="$INB_backpack3" icon="$Data/Weapons/StoreIcons/Backpack_01_03.dds" desc="$INB_backpack3_desc" />
+    <Desc maxSlots="36" maxWeight="50" />
+  </Backpack>
 </BackpackArmory>

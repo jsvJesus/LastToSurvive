@@ -562,7 +562,7 @@ CREATE TABLE [dbo].[DBG_UserRoundResults] (
   [CaptureNeutralPoints] int DEFAULT 0 NOT NULL,
   [CaptureEnemyPoints] int DEFAULT 0 NOT NULL,
   [TimePlayed] int DEFAULT 0 NOT NULL,
-  [GameReportTime] datetime DEFAULT (1)/(1))/(1970 NOT NULL,
+  [GameReportTime] datetime DEFAULT ('19700101') NOT NULL,
   [GameDollars] int DEFAULT 0 NOT NULL,
   [TeamID] int DEFAULT 2 NOT NULL,
   [MapID] int DEFAULT 255 NOT NULL,
@@ -719,530 +719,184 @@ GO
 
 -- ----------------------------
 -- Records of Items_Attachments
--- ----------------------------
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400000', N'ATTM_Grip_01', N'3', N'Forward Grip', N'The bottom rail grip will allow the shooter more control of the weapon by use of the attached grip.', N'', N'', N'0', N'0', N'0', N'0', N'-5', N'0', N'0', N'', N'Grip', N'1001', N'19', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'9', N'600')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410215', N'Mag_9mm_01', N'4', N'$Mag_9mm_01', N'$Mag_9mm_01_desc', N'', N'0', N'0', N'0', N'100', N'0', N'0', N'12', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400001', N'ATTM_Mag_AK74_30_01', N'4', N'5.45 AK 30', N'This is a standard 5.45x39mm 30 rounds clip for the russian AK 74M family of rifles', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'4200', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'8500', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410219', N'IS_ASR_AK12', N'1', N'$IS_ASR_AK12', N'$IS_ASR_AK12_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400003', N'ATTM_Optic_Acog_01', N'1', N'ACOG', N'The Acog is a rail mounted telescopic sight used to extend a shooters accuracy on medium to long range shots.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'50', N'acog_fps', N'ASR_Scar', N'5001', N'19', N'0', N'0', N'0', N'195', N'0', N'0', N'0', N'0', N'0', N'20', N'500')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410475', N'Muzzle_Silencer_01', N'0', N'$Muzzle_Silencer_01', N'$Muzzle_Silencer_01_desc', N'muzzle_asr_noflash', N'Sounds/Weapons/Guns/Generic/Silencer/Silencer', N'0', N'0', N'0', N'0', N'-0.05', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400004', N'ATTM_Side_Laser_01', N'2', N'Rifle Laser', N'The Laser attachment mounts onto the side of a weapon and allows the shooter to mark the target with the laser.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'3001', N'19', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'18', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410476', N'Muzzle_Silencer_HG_01', N'0', N'$Muzzle_Silencer_HG_01', N'$Muzzle_Silencer_HG_01_desc', N'muzzle_asr_noflash', N'Sounds/Weapons/Guns/Generic/Silencer/Silencer', N'0', N'0', N'0', N'0', N'-0.05', N'0', N'0', N'', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400005', N'ATTM_Optic_Eotech_01', N'1', N'Holographic', N'The Holosight is a rail mounted holographic sight used to extend a shooters accuracy at close and medium ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'35', N'eotech_fps', N'ASR_Scar', N'5001', N'19', N'0', N'0', N'0', N'155', N'0', N'0', N'0', N'0', N'0', N'15', N'500')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410491', N'Muzzle_Silencer_HG_02', N'0', N'$Muzzle_Silencer_HG_02', N'$Muzzle_Silencer_HG_02_desc', N'muzzle_asr_noflash', N'Sounds/Weapons/Guns/Generic/Silencer/Silencer', N'0', N'0', N'0', N'0', N'-0.05', N'0', N'0', N'', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400006', N'ATTM_Optic_Iron_Scar', N'1', N'SCAR IS', N'This is the improved flip up iron sight system for the Scar assault rifle. It attachess onto the upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'ASR_Scar', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410498', N'Muzzle_FlashHider_01', N'0', N'$Muzzle_FlashHider_01', N'$Muzzle_FlashHider_01_desc', N'', N'0', N'0', N'0', N'0', N'-0.05', N'0', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400007', N'ATTM_Optic_Kobra_01', N'1', N'Kobra', N'The Kobra is a rail mounted red dot sight used to extend a shooters accuracy at close and medium range targets.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'20', N'kobra_red_dot_fps', N'ASR_Scar', N'5001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'10500', N'0', N'5', N'400')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410499', N'SR_IRLaser_02', N'2', N'$SR_IR_01', N'$SR_IR_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400008', N'ATTM_Optic_Scope6x_01', N'1', N'Tactical Sniper Scope', N'8x rail mounted scope designed to be used used atmedium ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'90', N'psg1', N'', N'6001', N'19', N'0', N'0', N'0', N'275', N'0', N'0', N'0', N'0', N'0', N'0', N'600')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410500', N'SR_IRLaser_01', N'2', N'$SR_IRLaser_01', N'$SR_IRLaser_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400009', N'ATTM_Grip_Mp7_01', N'3', N'SMG Grip', N'The M 7 grip provides a shooter with more control and accuracy when firing a weapon at a high rate of fire.', N'', N'', N'0', N'0', N'0', N'0', N'-5', N'0', N'0', N'', N'Grip', N'1002', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1500', N'0', N'21', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410501', N'BR_Grip_01', N'3', N'$BR_Grip_01', N'$BR_Grip_01_desc', N'', N'0', N'0', N'0', N'0', N'-0.15', N'-0.07', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1000')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400010', N'ATTM_Mag_M4_60rnd_01', N'4', N'STANAG 60', N'Large 60 round clip of 5.45x45mm NATO rounds for use with the M4 and M16', N'', N'', N'0', N'0', N'0', N'0', N'10', N'60', N'0', N'', N'', N'4001', N'19', N'0', N'0', N'0', N'180', N'0', N'0', N'0', N'0', N'0', N'25', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410503', N'SR_Flashlight_01', N'2', N'$SR_Flashlight_01', N'$SR_Flashlight_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400012', N'ATTM_Muzzle_FlashHider_01', N'0', N'Flash Hider', N'The Muzzle FlashHider will lower the visual flash of a weapon when fired at normal or rapid speeds.', N'muzzle_asr_noflash', N'', N'0', N'-5', N'0', N'0', N'0', N'0', N'0', N'', N'', N'2001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'4500', N'0', N'15', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410639', N'IS_ASR_AR_01', N'1', N'$IS_ASR_AR_01', N'$IS_ASR_AR_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400013', N'ATTM_Muzzle_Silencer_01', N'0', N'Silencer ', N'The Silencer will lower the sound of a weapons discharge when fired at normal or rapid speeds.', N'muzzle_asr_noflash', N'Sounds/NewWeapons/SMG/HK_MP5SD', N'-20', N'-10', N'0', N'0', N'0', N'0', N'0', N'', N'', N'2001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'293', N'0', N'21', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410640', N'IS_ASR_HB', N'1', N'$IS_ASR_HB', N'$IS_ASR_HB_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400015', N'ATTM_Mag_M4_40rnd_01', N'4', N'STANAG 45', N'Medium 45 round clip of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles', N'', N'', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'', N'', N'4001', N'19', N'0', N'0', N'0', N'145', N'0', N'0', N'0', N'0', N'0', N'15', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410641', N'IS_ASR_HB_01', N'1', N'$IS_ASR_HB_01', N'$IS_ASR_HB_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400016', N'ATTM_Mag_M4_30rnd_01', N'4', N'STANAG 30', N'Standard 30 round clip of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'4001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410642', N'IS_ASR_MXZ5', N'1', N'$IS_ASR_MXZ5', N'$IS_ASR_MXZ5_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400017', N'ATTM_Mag_C-Mag_01', N'4', N'STANAG C-Mag', N'Maximum size100 round drum of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles', N'', N'', N'0', N'0', N'0', N'0', N'20', N'100', N'0', N'', N'', N'4001', N'19', N'0', N'0', N'0', N'210', N'0', N'0', N'0', N'0', N'0', N'35', N'800')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410643', N'IS_ASR_SHRAM', N'1', N'$IS_ASR_SHRAM', N'$IS_ASR_SHRAM_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400018', N'ATTM_Side_Flashlight_01', N'2', N'Rifle Flashlight', N'The Flashlight can be used to light dark areas and temporarily blind a shooters opponent.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'3001', N'19', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'14', N'600')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410644', N'IS_HG_9mm', N'1', N'$IS_HG_9B', N'$IS_HG_9B_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400019', N'ATTM_Optic_SwissCompact_01', N'1', N'Compact Scope', N'The Swiss Compact Sight is a rail mounted scope used to extend a shooters accuracy at close and medium ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'60', N'aw50', N'', N'5001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'40', N'600')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410645', N'IS_HG_45c', N'1', N'$IS_HG_45c', N'$IS_HG_45c_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400020', N'ATTM_Optic_SwissRedDot_01', N'1', N'Red Dot SP', N'The Swiss Red Dot Sight is a rail mounted sight used to extend a shooters accuracy at close and medium range targets', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'35', N'swiss_red_dot_fps', N'ASR_Scar', N'5001', N'19', N'0', N'0', N'0', N'235', N'0', N'0', N'0', N'0', N'0', N'30', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410646', N'IS_HG_RV50c', N'1', N'$IS_HG_RV50c', N'$IS_HG_RV50c_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400021', N'ATTM_Pistol_Laser_01', N'2', N'Pistol laser', N'The Pistol Laser is mounted on the left side of a handgun and used to target the enemy with a laser light.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'3002', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'4500', N'0', N'18', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410647', N'IS_LMG_HMG_01', N'1', N'$IS_LMG_HMG_01', N'$IS_LMG_HMG_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400022', N'ATTM_Pistol_flashlight_WL1', N'2', N'Pistol Flashlight', N'The Pistol Flashlight can be used to light dark areas and temporarily blind a shooters opponent.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'3002', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'4500', N'0', N'14', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410648', N'IS_LMG_NG100', N'1', N'$IS_LMG_NG100', N'$IS_LMG_NG100_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400023', N'ATTM_Optic_Reflex_01', N'1', N'Reflex Sight', N'The Reflex Sight is a rail mounted scope used to extend a shooters accuracy at medium and long ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'20', N'reflex_fps', N'ASR_Scar', N'5001', N'19', N'0', N'0', N'0', N'140', N'0', N'0', N'0', N'0', N'0', N'5', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410649', N'IS_SHG_Saiga', N'1', N'$IS_SHG_Saiga', N'$IS_SHG_Saiga_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400024', N'ATTM_Optic_Iron_M4FFH', N'1', N'M4 IS', N'This is the improved flip up iron sight system for the M4 Blackwater. It attachess onto the upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'ASR_Scar', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410650', N'IS_SHG_SP12', N'1', N'$IS_SHG_SP12', N'$IS_SHG_SP12_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400025', N'ATTM_Optic_Iron_SG556', N'1', N'SIG 556 IS', N'This is the improved flip up iron sight system for the SG 555. It attachess onto the upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'ASR_Scar', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410651', N'IS_SMG_Bizon', N'1', N'$IS_SMG_Bizon', N'$IS_SMG_Bizon_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400026', N'ATTM_Optic_Iron_Mp7', N'1', N'MP7 IS', N'This is the improved flip up iron sight system for the Mp 7. It attachess onto the upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'ASR_Scar', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410652', N'IS_SMG_EVO', N'1', N'$IS_SMG_EVO', N'$IS_SMG_EVO_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400027', N'ATTM_Optic_PSO1_01', N'1', N'PSO-1', N'The PSO1 is a rail mounted telescopic sight used to extend a shooters accuracy on medium to long range shots.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'70', N'pso1', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410653', N'IS_SMG_HB_02', N'1', N'$IS_SMG_HB_02', N'$IS_SMG_HB_02_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400029', N'ATTM_Mag_SG556_30rnd_01', N'4', N'G36 ammo', N'This is a 30 round magazine of 5.56x45mm specially designed for the G36 Assault Rifle', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'4100', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410654', N'IS_SMG_HSE', N'1', N'$IS_SMG_HSE', N'$IS_SMG_HSE_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400030', N'ATTM_MAG_Vintorez_20', N'4', N'VSS-20', N'"Specially designed high power 9x39mm low velocity, high penetration subsonic round for VSS Vintorez sniper rifle. Extended 20 rounds magazine."', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'', N'', N'4002', N'19', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'40', N'500')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410655', N'IS_SMG_Kris', N'1', N'$IS_SMG_Kris', N'$IS_SMG_Kris_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400031', N'ATTM_MAG_Vintorez_10', N'4', N'VSS-10', N'"Specially designed high power 9x39mm low velocity, high penetration subsonic round for VSS Vintorez sniper rifle. Standard 10 rounds magazine."', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'4002', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410659', N'IS_SUP_AT4', N'1', N'$IS_SUP_AT4', N'$IS_SUP_AT4_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400032', N'ATTM_Mag_Mp7_60rnd_01', N'4', N'MP7 40', N'HK 4.6&times;30mm 40 rounds extended magazine for MP7 submachine gun.', N'', N'', N'0', N'0', N'0', N'0', N'10', N'40', N'0', N'', N'', N'4003', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'25000', N'0', N'25', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410661', N'IS_SUP_RPG7', N'1', N'$IS_SUP_RPG7', N'$IS_SUP_RPG7_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400033', N'ATTM_Mag_Mp7_30rnd_01', N'4', N'MP7 30', N'HK 4.6&times;30mm 30 rounds magazine for MP7 submachine gun.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'4003', N'19', N'0', N'0', N'0', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410662', N'Mag_45ACP_25r_01', N'4', N'$Mag_45ACP_25r_01', N'$Mag_45ACP_25r_01_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'12', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400034', N'ATTM_Mag_SIGP226', N'4', N'9x19 Para Mag', N'18 rounds 9x19mm Parabellum magazine specially designed for Sig Sauer P226 handgun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'18', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'400')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410663', N'Mag_45ACP_50r_01', N'4', N'$Mag_45ACP_50r_01', N'$Mag_45ACP_50r_01_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'20', N'0', N'', N'', N'48', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400035', N'ATTM_Optic_Iron_M249', N'1', N'M249 IS', N'This is the improved flip up iron sight system for the M249 machine gun. It attachess onto the upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410664', N'Mag_AK_30', N'4', N'$Mag_AK_30', N'$Mag_AK_30_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400036', N'ATTM_Optic_Iron_Keltech', N'1', N'KT IS', N'This is the improved flip up iron sight system for the Keltech shotgun that attaches on it''s upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410665', N'Mag_AK_45', N'4', N'$Mag_AK_45', N'$Mag_AK_45_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'45', N'0', N'', N'', N'30', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400038', N'ATTM_Optic_BW_LongRange_01', N'1', N'Blackwater Long Range', N'The Blackwater Long Range scope is a 10x rail mounted scope designed to be used used  at long ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'120', N'sv98', N'', N'6001', N'19', N'0', N'0', N'0', N'350', N'0', N'0', N'0', N'0', N'0', N'45', N'800')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410666', N'Mag_AK_Drum', N'4', N'$Mag_AK_Drum', N'$Mag_AK_Drum_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'100', N'0', N'', N'', N'30', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400039', N'ATTM_Optic_MultiRail_01', N'1', N'Swiss Arms Scope 8x', N'The Swiss Arms multirail scope is a rail mounted scope used to extend a shooters accuracy at medium and long ranges.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'70', N's50hs', N'', N'6001', N'19', N'0', N'0', N'0', N'235', N'0', N'0', N'0', N'0', N'0', N'25', N'700')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410667', N'Mag_ArchAngel_01', N'4', N'$Mag_AAR_01', N'$Mag_AAR_01_desc', N'', N'0', N'0', N'0', N'500', N'0', N'0', N'3', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400040', N'ATTM_Optic_Iron_AK74M', N'1', N'Iron AK74M', N'This is the improved flip up iron sight system for the AK-74M n that attaches on it''s upper rail.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410668', N'Mag_ArchAngel_02', N'4', N'$Mag_AAR_02', N'$Mag_AAR_02_desc', N'', N'0', N'0', N'0', N'500', N'0', N'0', N'6', N'0', N'', N'', N'32', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400042', N'ATTM_Optic_Iron_G36', N'1', N'Iron G36', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410669', N'Mag_ASR_AR_01', N'4', N'$Mag_ASR_AR_01', N'$Mag_ASR_AR_01_desc', N'', N'0', N'0', N'0', N'25', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400043', N'ATTM_Mag_AW50_10rnd_01', N'4', N'AWM .338 Magnum ammo', N'8.6x70mm specialized rimless bottlenecked centerfire 10 rounds cartridge. Specifically designed for AWM rifle', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'110', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410670', N'MAG_ASR_HB_01', N'4', N'$MAG_ASR_HB_01', N'$MAG_ASR_HB_01_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400046', N'ATTM_Mag_P90_50rnd_01', N'4', N'P90 50 rounds', N'P90 Compact Assault rifle rounds. 50 round clip', N'', N'', N'0', N'0', N'0', N'0', N'0', N'50', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'145', N'0', N'0', N'0', N'0', N'0', N'0', N'550')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410673', N'Mag_HG_RV50c', N'4', N'$Mag_HG_RV50c', N'$Mag_HG_RV50c_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'4', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400047', N'ATTM_Mag_Bizon_01', N'4', N'Bizon 64 ammo', N'Bizon sub machine gun clip. Clip contains 64 rounds of 9x18mm ammo', N'', N'', N'0', N'0', N'0', N'0', N'0', N'64', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'20000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410675', N'Mag_LMG_HMG_01', N'4', N'$Mag_LMG_HMG_01', N'$Mag_LMG_HMG_01_desc', N'', N'0', N'0', N'0', N'25', N'0', N'0', N'200', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400048', N'ATTM_Mag_SVD_10Rnd_01', N'4', N'SVD ammo', N'10 round magazine of 7.62x54mm ammo for the SVD (Dragunov Sniper Rifle)', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'4004', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410676', N'Mag_LMG_NG100', N'4', N'$Mag_LMG_NG100', N'$Mag_LMG_NG100_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'100', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400049', N'ATTM_Mag_scorpionevo3_01', N'4', N'CZ Scorpion EVO-3 ammo', N'30 rounds of 9x19mm ammo for the CZ Scorpion EVO-3 submachine gun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410677', N'Mag_missile_at4_01', N'4', N'$Mag_missile_at4_01', N'$Mag_missile_at4_01_desc', N'', N'0', N'0', N'0', N'700', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400050', N'ATTM_Mag_usas12_Drum_01', N'4', N'AA-12 Drum', N'12 gauge 20 rounds drum magazine for AA-12 shotgun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410678', N'MAG_Missile_RPG7_01', N'4', N'$MAG_Missile_RPG7_01', N'$MAG_Missile_RPG7_01_desc', N'', N'0', N'0', N'0', N'900', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400051', N'ATTM_Optic_Iron_ScorpionEVO3', N'1', N'EVO-3 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410679', N'MAG_Missle_Eliminator_01', N'4', N'$MAG_Missle_Eliminator_01', N'$MAG_Missle_Eliminator_01_desc', N'', N'0', N'0', N'0', N'800', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400052', N'ATTM_Optic_Iron_Bizon', N'1', N'Bizon IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410680', N'MAG_SHG_Saiga', N'4', N'$MAG_SHG_Saiga', N'$MAG_SHG_Saiga_desc', N'', N'0', N'0', N'0', N'300', N'0', N'0', N'5', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400053', N'ATTM_Optic_Iron_Usas12', N'1', N'USS-12 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410681', N'MAG_SHG_Saiga_High', N'4', N'$MAG_SHG_Saiga_High', N'$MAG_SHG_Saiga_High_desc', N'', N'0', N'0', N'0', N'300', N'0', N'0', N'10', N'0', N'', N'', N'88', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400054', N'ATTM_Optic_Iron_P90', N'1', N'P90 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410682', N'Mag_SHG_SP12', N'4', N'$Mag_SHG_SP12', N'$Mag_SHG_SP12_desc', N'', N'0', N'0', N'0', N'300', N'0', N'0', N'8', N'-1', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400055', N'ATTM_Optic_Iron_Pecheneg', N'1', N'Pecheneg IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410683', N'MAG_SMG_Bizon', N'4', N'$MAG_SMG_Bizon', N'$MAG_SMG_Bizon_desc', N'', N'0', N'0', N'0', N'100', N'0', N'0', N'64', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400056', N'ATTM_Optic_Iron_PKM', N'1', N'PKM IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410684', N'MAG_SMG_EVO_01', N'4', N'$MAG_SMG_EVO_01', N'$MAG_SMG_EVO_01_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400058', N'ATTM_Optic_Iron_Sig516', N'1', N'SIG516 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410685', N'MAG_SMG_EVO_02', N'4', N'$MAG_SMG_EVO_02', N'$MAG_SMG_EVO_02_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'60', N'0', N'', N'', N'77', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400059', N'ATTM_Optic_Iron_tar21', N'1', N'TAR21 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410686', N'MAG_SMG_HB_02', N'4', N'$MAG_SMG_HB_02', N'$MAG_SMG_HB_02_desc', N'', N'0', N'0', N'0', N'100', N'0', N'0', N'14', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400060', N'ATTM_Optic_Iron_RPK', N'1', N'RPK IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410687', N'MAG_SMG_HSE', N'4', N'$MAG_SMG_HSE', N'$MAG_SMG_HSE_desc', N'', N'0', N'0', N'0', N'100', N'0', N'0', N'32', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400061', N'ATTM_Optic_Iron_RPO', N'1', N'RPO IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410688', N'MAG_SMG_Kris', N'4', N'$MAG_SMG_Kris', N'$MAG_SMG_Kris_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400062', N'ATTM_Optic_Iron_An94', N'1', N'AN94 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410689', N'MAG_SNP_ARS', N'4', N'$MAG_SNP_ARS', N'$MAG_SNP_ARS_desc', N'', N'0', N'0', N'0', N'500', N'0', N'0', N'3', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400065', N'ATTM_Optic_Iron_SUP_AT4', N'1', N'AT4 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410690', N'MAG_SNP_LM7', N'4', N'$MAG_SNP_LM7', N'$MAG_SNP_LM7_desc', N'', N'0', N'150', N'250', N'500', N'15', N'1', N'3', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400066', N'ATTM_Optic_Iron_AacHoneyBadger', N'1', N'M4 IS2', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410691', N'MAG_Stanag_30', N'4', N'$MAG_Stanag_30', N'$MAG_Stanag_30_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400069', N'ATTM_Mag_AN94_01', N'4', N'5.45 AK 45 ', N'This is a standard 5.45x39mm 45 rounds clip for the russian AK74 family of rifles', N'', N'', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'', N'', N'4200', N'19', N'0', N'0', N'0', N'145', N'0', N'0', N'0', N'0', N'0', N'15', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410692', N'MAG_Stanag_60', N'4', N'$MAG_Stanag_60', N'$MAG_Stanag_60_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'60', N'0', N'', N'', N'35', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400070', N'ATTM_Mag_AW_01', N'4', N'.308 Winchester Sniper rifle amm', N'7.62x51mm NATO sniper rifle clip for use with the .308 Winchester Sniple Rifle. Magazine holds 10 rounds', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410693', N'MAG_Stanag_Drum', N'4', N'$MAG_Stanag_Drum', N'$MAG_Stanag_Drum_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'100', N'0', N'', N'', N'35', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400071', N'ATTM_Mag_Jericho', N'4', N'9mm Mag', N'"15 rounds magazine of 9mm ammo for use with: B92, B93R and Jericho handguns"', N'', N'', N'0', N'0', N'0', N'0', N'0', N'13', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410694', N'Muzzle_FlashHider_HG_01', N'0', N'$Muzzle_FlashHider_HG_01', N'$Muzzle_FlashHider_HG_01_desc', N'', N'0', N'0', N'0', N'0', N'-0.05', N'0', N'0', N'0', N'', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400073', N'ATTM_Mag_Saiga_01', N'4', N'Saiga 10 ammo', N'12 gauge 10 rounds magazine for SAIGA shotgun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'105', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410695', N'Muzzle_Compensator_01', N'0', N'$Muzzle_Compensator_01', N'$Muzzle_Compensator_01_desc', N'muzzle_asr_noflash', N'0', N'0', N'0', N'0', N'-0.15', N'-0.05', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400074', N'ATTM_Muzzle_AacHoneyBadger_01', N'0', N'standard muzzle', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410696', N'Muzzle_Standard_01', N'0', N'$Muzzle_Standard_01', N'$Muzzle_Standard_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'999', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400079', N'ATTM_Mag_MP5A4_01', N'4', N'MP5 10mm Mag', N'10mm Auto 30 rounds cartridge for MP5/10 submachine gun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'400')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410697', N'Muzzle_Standard_Saiga_01', N'0', N'$Muzzle_Standard_Saiga_01', N'$Muzzle_Standard_Saiga_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'', N'999', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400080', N'ATTM_Optic_Iron_Saiga', N'1', N'SAIGA IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410698', N'Optic_Acog_01', N'1', N'$Optic_Acog_01', N'$Optic_Acog_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'35', N'Scope_Acog1', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400081', N'ATTM_Optic_Iron_MP5A4', N'1', N'XA5 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410699', N'Optic_Eliminator', N'1', N'$Optic_Eliminator', N'$Optic_Eliminator_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'5', N'sniper4_SW', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400082', N'ATTM_Optic_Iron_Mossberg590_01', N'1', N'M590 Is', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410700', N'Optic_Holographic_01', N'1', N'$Optic_Holographic_01', N'$Optic_Holographic_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'10', N'Scope_Reflex1', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400083', N'ATTM_Optic_Iron_Sr-1_Veresk', N'1', N'Veresk IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410701', N'Optic_Holographic_HG_01', N'1', N'$Optic_Holographic_HG_01', N'$Optic_Holographic_HG_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'5', N'Scope_HG_Reflex', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400084', N'ATTM_Mag_Sr-1_Veresk_01', N'4', N'SMG-20 ammo', N'9x19mm Para 20 rounds magazine specially designed for Uzi and Veresk smg.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'', N'', N'4006', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'7500', N'0', N'0', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410702', N'Optic_LongRange_01', N'1', N'$Optic_LongRange_01', N'$Optic_LongRange_01_desc', N'', N'0', N'0', N'0', N'0', N'-0.4', N'-0.15', N'0', N'100', N'Scope_Sniper_LR', N'', N'3', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400085', N'ATTM_Mag_Sr-1_Veresk_02', N'4', N'SMG-40 ammo', N'9x19mm Para 40 rounds magazine specially designed for Uzi and Veresk smg.', N'', N'', N'0', N'0', N'0', N'0', N'-10', N'40', N'0', N'', N'', N'4006', N'19', N'0', N'0', N'0', N'100', N'0', N'0', N'0', N'0', N'0', N'20', N'500')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410703', N'Optic_MediumRange_01', N'1', N'$Optic_MediumRange_01', N'$Optic_MediumRange_01_desc', N'', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'0', N'75', N'Scope_Sniper_M', N'', N'3', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400086', N'ATTM_Mag_Desert_Eagle_01', N'4', N'Desert Eagle ammo', N'.50 Action Express 7 round magazine for Desert Eagle handgun.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'7', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'350')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410704', N'Optic_RedDot_HG_01', N'1', N'$Optic_RedDot_HG_01', N'$Optic_RedDot_HG_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'10', N'Scope_HG_Red', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400087', N'ATTM_Mag_FN57', N'4', N'5.7 FN M240 Mag', N'FN (M240) machine gun round magazine. 20 rounds of 5.7&times;28mm ammo', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410706', N'SR_Flashlight_HG_01', N'2', N'$SR_Flashlight_HG_01', N'$SR_Flashlight_HG_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400088', N'ATTM_Grip_Sr-1_Veresk_01', N'3', N'Modular Aluminum Combat Grip', N'', N'', N'', N'0', N'0', N'0', N'0', N'-5', N'0', N'0', N'', N'Grip', N'1003', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1500', N'0', N'21', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410707', N'SR_FlashlightWide_01', N'2', N'$SR_FlashlightWide_01', N'$SR_FlashlightWide_01_desc', N'Muzzle_flashlight_wide_01', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400099', N'ATTM_Mag_C-Mag_01', N'4', N'G36 C-Mag', N'"This is a 5.56x45mm, 100 round drum magazine specially designed for for the G36 Assault Rifle"', N'', N'', N'0', N'0', N'0', N'0', N'20', N'100', N'0', N'', N'', N'4100', N'19', N'0', N'0', N'0', N'210', N'0', N'0', N'0', N'0', N'0', N'35', N'800')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410708', N'SR_Laser_01', N'2', N'$SR_Laser_01', N'$SR_Laser_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400100', N'ATTM_Mag_AK74_Drum_01', N'4', N'5.45 AK Drum', N'100 rounds drum for AK74 and RPK machine guns', N'', N'', N'0', N'0', N'0', N'0', N'20', N'100', N'0', N'', N'', N'4200', N'19', N'0', N'0', N'0', N'210', N'0', N'0', N'0', N'0', N'0', N'35', N'800')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410709', N'SR_Laser_HG_01', N'2', N'$SR_Laser_HG_01', N'$SR_Laser_HG_01_desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.02', N'0', N'0', N'', N'', N'2', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400101', N'ATTM_Mag_RPK_01', N'4', N'7.62 AKM clip', N'AKM Assault Rifle magazine. 40 7.62x39mm rounds', N'', N'', N'0', N'0', N'0', N'0', N'10', N'40', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'25', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410839', N'Optic_MediumRange_01', N'1', N'$Optic_MediumRange_01_ASR', N'$Optic_MediumRange_01_ASR_desc', N'', N'0', N'0', N'0', N'0', N'-0.1', N'-0.15', N'0', N'50', N'Scope_Sniper_ASR', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400119', N'ATTM_Optic_Iron_Mossada', N'1', N'MASADA IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410840', N'Mag_SMG_ChangFeng', N'4', N'$Mag_SMG_ChangFeng', N'$Mag_SMG_ChangFeng_desc', N'', N'0', N'0', N'0', N'100', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400121', N'ATTM_Optic_Iron_Usas12', N'1', N'USS-12 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410841', N'Mag_ASR_ASh12', N'4', N'$Mag_ASR_ASh12', N'$Mag_ASR_ASh12_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400127', N'ATTM_Optic_Iron_M16', N'1', N'M16 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410843', N'Mag_HG_AP50', N'4', N'$Mag_HG_AP50', N'$Mag_HG_AP50_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'7', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400128', N'ATTM_Optic_Iron_AKM', N'1', N'AKM IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410844', N'Mag_SHG_M1216', N'4', N'$Mag_SHG_M1216', N'$Mag_SHG_M1216_desc', N'', N'0', N'0', N'0', N'300', N'0', N'0', N'15', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400129', N'ATTM_Optic_Iron_AKS74U', N'1', N'AKS IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410845', N'Mag_HG_MicroUzi', N'4', N'$Mag_HG_MicroUzi', N'$Mag_HG_MicroUzi_desc', N'', N'0', N'0', N'0', N'101', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400133', N'ATTM_Mag_M82', N'4', N'.50 BMG', N'12.7x99mm NATO anti material rounds for M107A1 rifle. 5 rounds per magazine', N'', N'', N'0', N'0', N'0', N'0', N'0', N'5', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'110', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410846', N'Mag_SNP_Bullistic', N'4', N'$Mag_SNP_Bullistic', N'$Mag_SNP_Bullistic_desc', N'', N'0', N'0', N'0', N'500', N'0', N'0', N'4', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400134', N'Attm_Optic_Iron_UZI', N'1', N'UZI IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410847', N'IS_ASR_ASh12', N'1', N'$IS_ASR_ASh12', N'$IS_ASR_ASh12_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400135', N'ATTM_Mag_Jericho', N'4', N'.45 ACP STI Eagle Elite ammo', N'.45 ACP 10 rounds magazine for the STI Eagle Elite handgun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'15000', N'0', N'0', N'300')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410848', N'IS_SHG_M1216', N'1', N'$IS_SHG_M1216', N'$IS_SHG_M1216_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400136', N'ATTM_Mag_Shotgun_8x', N'4', N'12 Gauge Slug', N'8 slugs for use in the Mossberg and KT Decider shotguns', N'', N'', N'0', N'0', N'0', N'0', N'0', N'8', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410849', N'IS_SMG_ChangFeng', N'1', N'$IS_SMG_ChangFeng', N'$IS_SMG_ChangFeng_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400137', N'ATTM_Mag_Shotgun_2x', N'4', N'2x 12gauge ', N'Ammo for use with the double barrel shotgun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'2', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410850', N'IS_HG_AP50', N'1', N'$IS_HG_AP50', N'$IS_HG_AP50_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400139', N'ATTM_Mag_Arrow_Exp_01', N'4', N'Arrow Explosive', N'Explosive bolt (arrow) for the crossbow', N'', N'', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410851', N'IS_HG_MicroUzi', N'1', N'$IS_HG_MicroUzi', N'$IS_HG_MicroUzi_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400140', N'ATTM_Mag_Arrow_Reg_01', N'4', N'Arrow', N'A sharp arrow for use with compound crossbows and other string drawn weapons', N'', N'', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'25', N'0', N'0', N'0', N'0', N'0', N'0', N'200')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410852', N'Optic_RedDot_M4S', N'1', N'$Optic_RedDot_M4S', N'$Optic_RedDot_M4S_Desc', N'', N'0', N'0', N'0', N'0', N'0', N'-0.15', N'0', N'10', N'Scope_Red1', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400141', N'ATTM_Mag_Shotgun_2x', N'4', N'Shotgun shell 2x', N'2 Shells for use in the double barrel', N'', N'', N'0', N'0', N'0', N'0', N'0', N'2', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'200')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410853', N'IS_ASR_Tar30', N'1', N'$IS_ASR_Tar30', N'$IS_ASR_Tar30_desc', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400142', N'ATTM_Mag_Shotgun_8x', N'4', N'Shotgun shell 8x', N'8 Shells for use in standard shotguns', N'', N'', N'0', N'0', N'0', N'0', N'0', N'8', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410854', N'Mag_ASR_Tar30', N'4', N'$Mag_ASR_Tar30', N'$Mag_ASR_Tar30_desc', N'', N'0', N'0', N'0', N'110', N'0', N'0', N'30', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'250')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400143', N'ATTM_Mag_M249_Box_TPS_01', N'4', N'M249 Ammo Box', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'210', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
+INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'410874', N'BR_Grip_02', N'3', N'$BR_Grip_02', N'$BR_Grip_02_desc', N'', N'0', N'0', N'0', N'0', N'-0.07', N'-0.15', N'0', N'0', N'', N'', N'1', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1000')
 
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400144', N'ATTM_Mag_Ruger', N'4', N'Clip for Ruger', N'10 round, 22 cal ammo clip for Ruger pistols and rifles', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400145', N'ATTM_Mag_Colt_Anaconda', N'4', N'Anaconda clip', N'6 rounds for the Anaconda', N'', N'', N'0', N'0', N'0', N'0', N'0', N'6', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400146', N'ATTM_Mag_RugerASR_Big', N'4', N'Large Kruger Rifle clip', N'30 round rotary loaded mag', N'', N'', N'0', N'0', N'0', N'0', N'0', N'30', N'0', N'', N'', N'7001', N'19', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'0', N'600')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400147', N'ATTM_Mag_RugerASR_Mid', N'4', N'Medium Kruger Rifle clip', N'20 round rotary loaded magazine', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'', N'', N'7001', N'19', N'0', N'0', N'0', N'95', N'0', N'0', N'0', N'0', N'0', N'0', N'500')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400148', N'ATTM_Mag_RugerASR_Small', N'4', N'Standard Kruger .22 Rifle Clip', N'Standard issue 10 round rotary loaded magazine.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'7001', N'19', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400149', N'ATTM_Optic_Iron_RugerASR', N'1', N'Kruger Rifle IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'7100', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400150', N'ATTM_Mag_Mini14', N'4', N'Kruger Mini-14 clip', N'Standard size clip for the Kruger Mini-14', N'', N'', N'0', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'7020', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'450')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400151', N'ATTM_Optic_Iron_Mini14', N'1', N'Kruger Mini-14 IS', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'default', N'', N'7200', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400152', N'ATTM_Mag_Flare', N'4', N'Flare clip', N'Ammo for the flare gun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400153', N'ATTM_Mag_Mosin', N'4', N'Standard Mosin Magazine', N'Standard internally fed 5 round magazine designed for use in the Mosin rifle', N'', N'', N'0', N'0', N'0', N'0', N'0', N'5', N'0', N'', N'', N'7030', N'19', N'0', N'0', N'0', N'55', N'0', N'0', N'0', N'0', N'0', N'0', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400154', N'ATTM_Mag_Colt_1911', N'4', N'.40 caliber 1911 Mag', N'7 round single-stack magazine for the 1911', N'', N'', N'0', N'0', N'0', N'0', N'0', N'7', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'200')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400155', N'ATTM_Optic_Iron_Mosin', N'1', N'Mozin IS', N'Iron sights for the Mozin rifle.', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'10', N'default', N'', N'5001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400156', N'ATTM_Muzzle_Silencer_02', N'0', N'Pistol Silencer', N'Lowers the sound of pistols being fired', N'muzzle_asr_noflash', N'Sounds/NewWeapons/SMG/HK_MP5SD', N'-20', N'-10', N'0', N'0', N'0', N'0', N'0', N'', N'', N'8001', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Attachments] ([ItemID], [FNAME], [Type], [Name], [Description], [MuzzleParticle], [FireSound], [Damage], [Range], [Firerate], [Recoil], [Spread], [Clipsize], [ScopeMag], [ScopeType], [AnimPrefix], [SpecID], [Category], [Price1], [Price7], [Price30], [PriceP], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [IsNew], [LevelRequired], [Weight]) VALUES (N'400157', N'Attm_Mag_Nailgun', N'4', N'Nail Strip', N'Connected strip of nails for use in the Nail Gun', N'', N'', N'0', N'0', N'0', N'0', N'0', N'35', N'0', N'', N'', N'0', N'19', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'300')
-GO
-
-
--- ----------------------------
--- Table structure for Items_Gear
--- ----------------------------
-IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[Items_Gear]') AND type IN ('U'))
-	DROP TABLE [dbo].[Items_Gear]
-GO
-
-CREATE TABLE [dbo].[Items_Gear] (
-  [ItemID] int  NOT NULL,
-  [FNAME] varchar(64) COLLATE Cyrillic_General_CI_AS DEFAULT 'ITEM000' NOT NULL,
-  [Name] nvarchar(32) COLLATE Cyrillic_General_CI_AS DEFAULT '' NOT NULL,
-  [Description] nvarchar(256) COLLATE Cyrillic_General_CI_AS DEFAULT '' NOT NULL,
-  [Category] int DEFAULT 0 NOT NULL,
-  [Weight] int DEFAULT 0 NOT NULL,
-  [DamagePerc] int DEFAULT 0 NOT NULL,
-  [DamageMax] int DEFAULT 0 NOT NULL,
-  [Bulkiness] int DEFAULT 0 NOT NULL,
-  [Inaccuracy] int DEFAULT 0 NOT NULL,
-  [Stealth] int DEFAULT 0 NOT NULL,
-  [Price1] int DEFAULT 0 NOT NULL,
-  [Price7] int DEFAULT 0 NOT NULL,
-  [Price30] int DEFAULT 0 NOT NULL,
-  [PriceP] int DEFAULT 0 NOT NULL,
-  [IsNew] int DEFAULT 0 NOT NULL,
-  [ProtectionLevel] int DEFAULT 1 NOT NULL,
-  [LevelRequired] int DEFAULT 0 NOT NULL,
-  [GPrice1] int DEFAULT 0 NOT NULL,
-  [GPrice7] int DEFAULT 0 NOT NULL,
-  [GPrice30] int DEFAULT 0 NOT NULL,
-  [GPriceP] int DEFAULT 0 NOT NULL
-)
-GO
-
-ALTER TABLE [dbo].[Items_Gear] SET (LOCK_ESCALATION = TABLE)
-GO
-
-
--- ----------------------------
--- Records of Items_Gear
--- ----------------------------
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20006', N'HEADHELMET', N'K. Style Helmet', N'The good ol'' Turtle Head is guaranteed to protect your brain. (Well, at least a little bit)\r\nLevel 2 Protection', N'13', N'1000', N'30', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'200', N'0', N'2', N'20', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20015', N'ARMOR_Rebel_Heavy', N'Custom Guerilla', N'Custom designed guerilla field gear and body armor that allows for decent protection under fast moving conditions. Level 2 Protection', N'11', N'4000', N'25', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'115', N'0', N'2', N'20', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20022', N'HGEAR_Beret', N'Beret Cover', N'This cover is a stylish military fashion statement which stands out smashingly in a combat zone!', N'13', N'300', N'0', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20023', N'HGEAR_Boonie', N'Boonie Cover', N'This Jungle Boonie cover is high speed, great for blending in and blocking out the sun and bugs but it won''t stop bullets.', N'13', N'200', N'0', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20025', N'HGEAR_Shadow', N'Shadow', N'This head gear was designed to not only make you look scary but also to protect your pretty face.', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20032', N'HGEAR_Mask_Black_01', N'Black Mask', N'The frightening Black Mask of Death, sure to give your enemies the chills.', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'5', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20033', N'HGEAR_Mask_Clown_01', N'Clown Mask', N'For all of you Jokers out there, we bring you the Clown Mask.', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'0', N'10', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20034', N'HGEAR_Mask_Hockey_01', N'Jason Mask', N'Hiding a monster, this mask strikes real horror in those who face it.', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'20', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20035', N'HGEAR_Mask_Skull_01', N'Skull Mask', N'The Skull Mask shows you know how to Grin and Bear it!', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'30', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20036', N'HGEAR_Mask_Slash_01', N'Slash Mask', N'While not just another pretty face, the Slash Mask is a cut above the rest! Get it and look the part of a killer.', N'13', N'100', N'10', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'40', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20041', N'HGEAR_Boonie_Hat_Desert', N'Boonie Desert', N'This boonie hat is great for desert ops, keeping you out of the sun and foiling those pesky bugs.', N'13', N'100', N'0', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20042', N'HGEAR_Boonie_Hat_MilGreen', N'Boonie Green', N'While not a bullet stopper this boonie hat will keep you cool and in camo in the wild places.', N'13', N'100', N'0', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20043', N'HGEAR_M9_Helmet_Black_01', N'M9 helmet black', N'The M9 helmet gives a good standard of head protection. This one in black.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'5', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20046', N'HGEAR_M9_Helmet_Desert_02', N'M9 Helmet with Goggles', N'The M9 helmet gives a good standard of head protection. This one with goggles.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'25', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20047', N'HGEAR_M9_Helmet_MilGreen_01', N'M9 Helmet Green', N'The M9 helmet gives a good standard of head protection. This one in green.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'25', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20048', N'HGEAR_M9_Helmet_Urban_01', N'M9 Helmet Urban', N'The M9 helmet gives a good standard of head protection. This one in Urban camo.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'30', N'0', N'0', N'0', N'5500')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20049', N'HGEAR_M9_Helmet_forest_01', N'M9 Helmet Forest 1', N'The M9 helmet gives a good standard of head protection. This one in a special forest pattern.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'35', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20050', N'HGEAR_M9_Helmet_forest_02', N'M9 Helmet Goggles 1', N'The M9 helmet gives a good standard of head protection. This one with goggles.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'40', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20054', N'Armor_IBA_01_Sand', N'IBA Sand', N'Special IBA release gear in Sand toned pattern with Level 2 protection.', N'11', N'2000', N'20', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'95', N'0', N'2', N'10', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20056', N'Armor_MTV_01_Forest', N'MTV Forest', N'Limited edition MTV release Forest patterned gear with Level 2 protection.', N'11', N'3000', N'20', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'95', N'0', N'2', N'15', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20059', N'ARMOR_Light_Forest', N'Light Gear Forest', N'Light weight Level 1 protection in a Green Forest pattern.', N'11', N'2000', N'15', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'75', N'0', N'1', N'10', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20067', N'Hgear_KStyle_NVG_01', N'NVG Goggles', N'Standard K style helmet rigged with NVG set up for night ops.', N'13', N'1000', N'25', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'265', N'0', N'2', N'20', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20096', N'HGEAR_Boonie_hat_Leather_01', N'Boonie Hat Leather', N'This is the boonie hat that comes with a bit of sophistication. It is all leather, which is bound to be a hit, but it will not stop one!', N'13', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'45', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20097', N'HGEAR_Fireman_Helmet_01', N'Fireman Helmet', N'The traditional Firefighters helmet has been saving men for years. Give it a try if you want to be different in the battlezone.', N'13', N'500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'55', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20098', N'HGEAR_HardHat_01', N'Hard Hat', N'The traditional construction hard hat is just the ticket for knocking around old buildings and showing your enemies that you are tough!', N'13', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'4000')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20170', N'Zombie', N'Basic Zombie Character', N'', N'16', N'-1', N'0', N'0', N'5', N'5', N'5', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20171', N'UpperBody_Shirt_01', N'', N'', N'14', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20172', N'LowerBody_Jeans_01', N'', N'', N'14', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20173', N'Head_Bald_01', N'', N'', N'14', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20174', N'RegularGuy', N'Ex Military', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20175', N'gear_backpack_16slots', N'Medium Backpack', N'A medium sized backpack with plenty of space and durability.', N'12', N'0', N'0', N'0', N'18', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'4500')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20176', N'Gear_Backpack_8slots', N'Small Backpack', N'A small backpack allowing some storage for essential items and equipment.', N'12', N'0', N'0', N'0', N'12', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1500')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20177', N'HGear_GasMask_01', N'Gas Mask', N'A mask put over your face to protect from inhaling airborn pollutants and toxic gasses', N'13', N'500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'4000')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20178', N'HGear_GasMask_02', N'Gas Mask 2', N'A mask put over your face to protect from inhaling airborn pollutants and toxic gasses', N'13', N'500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'100', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20179', N'Gear_Backpack_Med_01', N'Large Backpack', N'24 item backpack. Big enough for a few weeks of adventuring', N'12', N'0', N'0', N'0', N'24', N'20', N'0', N'0', N'0', N'0', N'160', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20180', N'gear_backpack_32slots', N'Military Ruck', N'The mother of all backpacks. Carry 32 items at once!', N'12', N'0', N'0', N'0', N'32', N'30', N'0', N'0', N'0', N'0', N'250', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20181', N'gear_backpack_teddybear', N'Teddy Bear backpack', N'Roman''s favorite accessory', N'12', N'0', N'0', N'0', N'12', N'10', N'0', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20182', N'MohawkGuy', N'Ex cage fighter', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20183', N'Zombie_Woman', N'Zombie_Woman', N'', N'16', N'-1', N'0', N'0', N'5', N'5', N'5', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20184', N'AsianGirl', N'Hunter', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20185', N'Gear_Backpack_Med_01_black', N'ALICE Rucksack', N'Large backpack that fits everything you will need. The All-purpose Lightweight Individual Carrying Equipment.  Dont forget the poo tickets!', N'12', N'0', N'0', N'0', N'28', N'25', N'0', N'0', N'0', N'0', N'220', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20186', N'Zombie_man', N'Zombie man', N'', N'16', N'-1', N'0', N'0', N'5', N'5', N'5', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20187', N'HGEAR_NV_Mil_01', N'Night vision military', N'Otherwise known as NVD''s. These enhance light allowing the user to see in almost total darkness', N'13', N'1000', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'270', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20188', N'HGEAR_NV_Civ_01', N'Night vision civilian', N'Night vision for everyone, these affordable goggles allow you to see at night while remaining hidden in the darkness', N'13', N'1000', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'25400')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20189', N'CharacterMale_01', N'Male Character', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20190', N'Zombie_Military', N'Zombie Military', N'', N'16', N'-1', N'0', N'0', N'5', N'5', N'5', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20191', N'Zombie_man_02', N'Zombie Man 2', N'', N'16', N'-1', N'0', N'0', N'5', N'5', N'5', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20192', N'HGear_Pumpkin_01', N'Halloween Special!', N'A unique mask to celebrate the eve of the hallows. Eat, Drink and be Scary! Wuhahahahaaa!', N'13', N'1000', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20193', N'CharacterMale_02', N'Average Joe', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20194', N'CharacterFemale_01', N'CharacterFemale_01', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20195', N'CharacterFemale_02', N'CharacterFemale_02', N'', N'16', N'0', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20196', N'Gear_Backpack_GameSpot', N'Gear_Backpack_GameSpot', N'', N'12', N'0', N'0', N'0', N'20', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20197', N'HGear_Santa_Beard_01', N'Christmas Special', N'A yule tide treat', N'13', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20198', N'HGear_Xmas_Elf', N'Santa''s Lil Helper', N'Makin presents for all the good girls and boys!', N'13', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20199', N'HGear_Xmas_Snowman', N'Captain Jack Frost', N'With a corncob pipe and a button nose...', N'13', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20200', N'Gear_SantaBag_01', N'Santa''s Sack', N'With presents for everyone! Well, mostly zombies. And bandits.', N'12', N'0', N'0', N'0', N'28', N'25', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Gear] ([ItemID], [FNAME], [Name], [Description], [Category], [Weight], [DamagePerc], [DamageMax], [Bulkiness], [Inaccuracy], [Stealth], [Price1], [Price7], [Price30], [PriceP], [IsNew], [ProtectionLevel], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP]) VALUES (N'20201', N'CharacterMale_Asian', N'Asian Male', N'', N'16', N'-1', N'0', N'0', N'4', N'4', N'4', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0')
-GO
-
-
--- ----------------------------
 -- Table structure for Items_Generic
 -- ----------------------------
 IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[Items_Generic]') AND type IN ('U'))
@@ -1276,87 +930,65 @@ GO
 -- ----------------------------
 -- Records of Items_Generic
 -- ----------------------------
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301118', N'Loot_Drop_Premium_01', N'7', N'WEAP - Melee', N'spawns of War Z Weapons', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301119', N'Loot_Drop_Premium_02', N'7', N'WEAP - Civilian', N'This crate contains a variation of premium and rare gear and outfits', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301120', N'Loot_Drop_Premium_03', N'7', N'WEAP - Law', N'This crate contains a variation of prermium and rare items to give you an advantage on the battlefield', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301121', N'Loot_Drop_Reg_01', N'7', N'WEAP - Military', N'This crate contains a variation of weapons, including the chance of unlocking an Elite gun', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301122', N'Loot_Drop_Reg_02', N'7', N'WEAP - Ammo Civilian', N'This crate contains a variation of gear and outfits', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301123', N'Loot_Drop_Reg_03', N'7', N'WEAP - Ammo Military', N'This crate contains a variation of items and boosts to give you an advantage on the battlefield', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301124', N'Loot_Drop_Premium_01', N'7', N'GEAR - Armor', N'Most Epic of all loot crates, this crate contains only Elite and Epic guns. Very rare and can be only found when you kill enemy who''s 10 or more levels higher than you', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301125', N'Item_LootBox', N'7', N'GEAR - Medical', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301126', N'Item_LootBox', N'7', N'FOOD - Generic', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301127', N'Item_LootBox', N'7', N'FOOD - Advanced Meal', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301128', N'Item_LootBox', N'7', N'FOOD - GC Grade', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301129', N'Item_LootBox', N'7', N'WEAP - Ammo Law', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301130', N'Item_LootBox', N'7', N'SPAWN - Camping', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301132', N'Item_LootBox', N'7', N'SPAWN - Rural - Residential', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301133', N'Item_LootBox', N'7', N'SPAWN - Rural - Commercial', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301134', N'Item_LootBox', N'7', N'SPAWN - Rural - Law', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301135', N'Item_LootBox', N'7', N'SPAWN - Military 1', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301136', N'Item_LootBox', N'7', N'ZOMBIE- Money', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301137', N'Item_LootBox', N'7', N'GEAR - Survival', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
-GO
-
 INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301151', N'Account_ClanCreate', N'1', N'Account_ClanCreate', N'clan create item', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301152', N'Account_ClanUpg1', N'1', N'Account_ClanUpg1', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301152', N'Account_ClanUpg1', N'1', N'Account_ClanUpg1', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301153', N'Account_ClanUpg2', N'1', N'Account_ClanUpg2', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301153', N'Account_ClanUpg2', N'1', N'Account_ClanUpg2', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301154', N'Account_ClanUpg3', N'1', N'Account_ClanUpg3', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301154', N'Account_ClanUpg3', N'1', N'Account_ClanUpg3', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301155', N'Account_ClanUpg4', N'1', N'Account_ClanUpg4', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301155', N'Account_ClanUpg4', N'1', N'Account_ClanUpg4', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301156', N'Account_ClanUpg5', N'1', N'Account_ClanUpg5', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301156', N'Account_ClanUpg5', N'1', N'Account_ClanUpg5', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301157', N'Account_ClanUpg6', N'1', N'Account_ClanUpg6', N'buy price is in permanent GC ($) \r\nNOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301157', N'Account_ClanUpg6', N'1', N'Account_ClanUpg6', N'buy price is in permanent GC ($)
+NOTE- number of added clan members is in **permanent GD** price', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301159', N'Char_Revive', N'1', N'Char_Revive', N'item for char revive before time, price is permanent GC', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
 GO
 
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301257', N'Account_PremoumSubscribe', N'1', N'Premium Subscription', N'one month subscription for premium servers', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'301399', N'Char_NameChange', N'1', N'Char_NameChange', N'item for character renaming', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462901', N'$Pistol_Ammo9mm', N'40', N'$AmmoBox_HG_SMG_HP', N'$AmmoBox_HG_SMG_HP_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462904', N'$Pistol_Ammo45', N'40', N'$AmmoBox_HG_HP', N'$AmmoBox_HG_HP_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462906', N'$Pistol_Ammo50', N'40', N'$AmmoBox_HG_AP', N'$AmmoBox_HG_AP_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462908', N'$ASR_Ammo', N'40', N'$AmmoBox_ASR_HP', N'$AmmoBox_ASR_HP_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462914', N'$Shotgun_Ammo', N'40', N'$AmmoBox_ShotGun_Buckshot', N'$AmmoBox_ShotGun_Buckshot_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462926', N'$Sniper_Ammo', N'40', N'$SniperRound_MLR', N'$SniperRound_MLR_desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462936', N'$AT4_Ammo', N'40', N'$AT4_Rocket_Base', N'$AT4_Rocket_Base_Desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
+
+INSERT INTO [dbo].[Items_Generic] ([ItemID], [FNAME], [Category], [Name], [Description], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [Weight]) VALUES (N'462944', N'$RPG7_Ammo', N'40', N'$RPG7_Rocket_Base', N'$RPG7_Rocket_Base_Desc', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'5')
+GO
 
 -- ----------------------------
 -- Table structure for Items_LootData
@@ -1568,22 +1200,21 @@ GO
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'61', N'301124', N'1000', N'-1', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'62', N'301125', N'5', N'101304', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'62', N'301125', N'5', N'109506', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'63', N'301125', N'7', N'101302', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'64', N'301125', N'10', N'101262', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'64', N'301125', N'10', N'109505', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'65', N'301125', N'30', N'101256', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'66', N'301125', N'60', N'101300', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'66', N'301125', N'60', N'109504', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'67', N'301125', N'80', N'101261', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'67', N'301125', N'80', N'109505', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'68', N'301125', N'200', N'-1', N'0', N'0')
@@ -1781,10 +1412,10 @@ GO
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'132', N'301136', N'40', N'-1', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'133', N'301137', N'1', N'101316', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'133', N'301137', N'1', N'112995', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'134', N'301137', N'1', N'101317', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'134', N'301137', N'1', N'112999', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'135', N'301137', N'20', N'20179', N'0', N'0')
@@ -1994,22 +1625,21 @@ GO
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'61', N'301124', N'1000', N'-1', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'62', N'301125', N'5', N'101304', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'62', N'301125', N'5', N'109506', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'63', N'301125', N'7', N'101302', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'64', N'301125', N'10', N'101262', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'64', N'301125', N'10', N'109505', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'65', N'301125', N'30', N'101256', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'66', N'301125', N'60', N'101300', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'66', N'301125', N'60', N'109504', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'67', N'301125', N'80', N'101261', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'67', N'301125', N'80', N'109505', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'68', N'301125', N'200', N'-1', N'0', N'0')
@@ -2207,10 +1837,10 @@ GO
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'132', N'301136', N'40', N'-1', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'133', N'301137', N'1', N'101316', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'133', N'301137', N'1', N'112995', N'0', N'0')
 GO
 
-INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'134', N'301137', N'1', N'101317', N'0', N'0')
+INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'134', N'301137', N'1', N'112999', N'0', N'0')
 GO
 
 INSERT INTO [dbo].[Items_LootData] ([RecordID], [LootID], [Chance], [ItemID], [GDMin], [GDMax]) VALUES (N'135', N'301137', N'20', N'20179', N'0', N'0')
@@ -2327,463 +1957,376 @@ GO
 
 -- ----------------------------
 -- Records of Items_Weapons
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'109503', N'MedKit_Military', N'28', N'MedKit_Military', N'$MedKit_Military_desc', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'95', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'3', N'4', N'2', N'30', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'4', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'250')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'109504', N'SS_Med_Antibiotics_01', N'28', N'SS_Med_Antibiotics_01', N'$SS_Med_Antibiotics_01_desc', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'45', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'3', N'4', N'2', N'30', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'4', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'250')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'109505', N'SS_Med_Bandage_Fac_01', N'28', N'SS_Med_Bandage_Fac_01', N'$SS_Med_Bandage_Fac_01_desc', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'45', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'3', N'4', N'2', N'30', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'4', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'250')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'109506', N'MedKit_Civilian', N'28', N'$MedKit_Civilian', N'$MedKit_Civilian_desc', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'75', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'3', N'4', N'2', N'30', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'4', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'250')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112993', N'SS_Barricade_Shield_Metal_01', N'28', N'$Barricade_Metal_Shield', N'$Barricade_Metal_Shield_desc', N'0 0 0', N'muzzle_asr', N'assault', N'melee', N'', N'', N'400', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'SS_Barricade_Shield_Metal_01', N'1000')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112995', N'SS_Barricade_BarbWire', N'28', N'$Barricade_BarbWire', N'$Barricade_BarbWire_desc', N'0 0 0', N'muzzle_asr', N'assault', N'melee', N'', N'', N'400', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'SS_Barricade_Shield_wood_01', N'500')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112999', N'SS_Barricade_Shield_Wood_01', N'28', N'$Barricade_Wood_Shield', N'$Barricade_Wood_Shield_desc', N'0 0 0', N'muzzle_asr', N'assault', N'melee', N'', N'', N'400', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'SS_Barricade_Shield_wood_01', N'500')
+
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113008', N'SS_Barricade_Spike_Mat', N'28', N'$Barricade_Spike_Mat', N'$Barricade_Spike_Mat_desc', N'0 0 0', N'muzzle_asr', N'', N'ClaymoreMine', N'', N'', N'1.5', N'1', N'200', N'0.5', N'0', N'11', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'11', N'0', N'', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'500')
+
 -- ----------------------------
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101002', N'ASR_M16', N'20', N'M16', N'The M16 rifle is a gas operated standard infantry assault rifle, chambered for 5.56x45mm NATO round.', N'0 0 0', N'muzzle_asr', N'assault', N'5.56', N'Sounds/NewWeapons/Assault/ColtM16', N'Sounds/Weapons/New Reloads/M16-Reload', N'27', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'625', N'9', N'7', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400127', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_M16', N'4000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'103110', N'SNP_LM7_Mk6_1', N'21', N'$SNP_LM7_Mk6_1', N'$SNP_LM7_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/LM7/LM7_A', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'150', N'0', N'1.3', N'800', N'600', N'0', N'0', N'0', N'0', N'1', N'3', N'0.43', N'4', N'3', N'28.35', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410702', N'0', N'0', N'410690', N'0', N'0', N'0', N'0', N'SNP_LM7', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101004', N'HG_FN57', N'25', N'FN FiveSeven', N'The FN Five Seven is a standard issue handgun that was designed to fire a 5.7 mm round. It is an effective weapon against close range targets.', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/Glock9mm', N'Sounds/Weapons/HG/HG_Generic_Reload', N'32', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'8', N'3', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400087', N'0', N'0', N'0', N'0', N'HG_FN57', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'111398', N'MEL_UNARMED', N'29', N'$MEL_UNARMED', N'$MEL_UNARMED_desc', N'0 0 0', N'', N'melee', N'melee', N'Sounds/Weapons/Melee/Fists/Melee', N'', N'7', N'1', N'10', N'521', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_UNARMED', N'0')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101005', N'ASR_G36', N'20', N'G36', N'The MTAC X36 assault rifle fires a 5.56 mm round. Its high rate of fire and medium recoil deliver a reasonably tight spread on impact of targets up to medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/HK_G36', N'Sounds/Weapons/New Reloads/G36-Reload', N'30', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'650', N'9', N'8', N'0', N'asr_grenade', N'111', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'23', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4100', N'0', N'0', N'0', N'0', N'0', N'400042', N'0', N'0', N'400029', N'0', N'0', N'0', N'0', N'ASR_G36', N'3300')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112461', N'HG_9B_Tier1', N'25', N'$HG_9B_Mk1', N'$HG_9B_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload', N'23', N'0', N'2.4', N'351', N'32', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'221', N'3.25', N'15.11', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410644', N'0', N'0', N'410215', N'0', N'0', N'0', N'0', N'HG_9mm', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101022', N'ASR_AK74M', N'20', N'AK-74M', N'The AK-74M assault rifle is an upgrade of the AK 74 design with a slightly increased rate of fire. It fires a 5.45 x 39 mm round accurately at medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/Kalashnikov_AK74', N'Sounds/Weapons/ASR/ASR_Generic_Reload', N'32', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'3', N'0', N'625', N'12', N'16', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4200', N'0', N'0', N'0', N'0', N'0', N'400040', N'0', N'0', N'400001', N'0', N'0', N'0', N'0', N'ASR_AK74m', N'3400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112463', N'SNP_ARS_Tier2', N'21', N'$SNP_ARS_Mk4', N'$SNP_ARS_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'90', N'0', N'2.4', N'250', N'350', N'0', N'0', N'0', N'0', N'1', N'4.76', N'2.8', N'8', N'5.5', N'26.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'2018', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410689', N'0', N'0', N'0', N'0', N'SNP_ARS', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101032', N'ASR_AKM', N'20', N'AKM', N'The AKM is an assault rifle that was designed as a simplified version of the AK-47 rifle. It fires a 7.62 x 39 mm round and is relatively effective at medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'7.62', N'Sounds/NewWeapons/Assault/Kalashnikov_AKM', N'Sounds/Weapons/ASR/ASR_Generic_Reload', N'34', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'3', N'0', N'600', N'14', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400128', N'0', N'0', N'400101', N'0', N'0', N'0', N'0', N'ASR_AKM', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112816', N'SHG_M1216_Tier2', N'22', N'$SHG_M1216_Mk3', N'$SHG_M1216_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload', N'30', N'0', N'1', N'251', N'8', N'0', N'0', N'0', N'0', N'1', N'3', N'3.2', N'23', N'7.4', N'16.61', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410848', N'0', N'0', N'410844', N'0', N'0', N'0', N'0', N'SHG_M1216', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101035', N'ASR_AKS74U', N'26', N'AKS-74U', N'The AKS-74U is a shortened gas operated carbine version of the AKS-74 assault rifle. It fires a 5.45 x 39 mm round and is very effective at medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/AKS-74U', N'Sounds/Weapons/ASR/ASR_Generic_Reload', N'27', N'0', N'1', N'500', N'55', N'0', N'0', N'0', N'0', N'1', N'3', N'0', N'650', N'12', N'5', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'32', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4200', N'0', N'0', N'0', N'0', N'0', N'400129', N'0', N'0', N'400001', N'0', N'0', N'0', N'0', N'ASR_AKS74U', N'2700')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112817', N'SMG_Bizon_Tier1', N'26', N'$SMG_Bizon_Mk1', N'$SMG_Bizon_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5', N'15.25', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101040', N'ASR_SIG516', N'20', N'M4 Semi', N'The civilian M4 semi auto rifle, chambered for 5.56x45mm NATO round.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/HK_416', N'Sounds/Weapons/New Reloads/M16-Reload', N'35', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'650', N'9', N'9', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'46', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400058', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_SIG516', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112891', N'ASR_AK12_Tier1', N'20', N'$ASR_AK12_Mk1', N'$ASR_AK12_Mk1_Desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6.4', N'18', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'0', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101055', N'ASR_M4FFH', N'20', N'M4', N'The M4 is a versitile, light weight, commando style assault rifle that is gas operated and fires a 5.56 x 45 mm round effectively in both close and medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/ColtM4', N'Sounds/Weapons/New Reloads/M16-Reload', N'34', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'625', N'9', N'12', N'0', N'asr_grenade', N'111', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'35', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400024', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_M4FFH', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112949', N'ASR_ASh12_Tier2', N'20', N'$ASR_ASh12_Mk3', N'$ASR_ASh12_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload', N'20.5', N'0', N'1', N'321', N'45', N'0', N'0', N'0', N'0', N'1', N'2.93', N'2.43', N'291', N'5.4', N'16.25', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410847', N'0', N'0', N'410841', N'0', N'0', N'0', N'0', N'ASR_ASh12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101060', N'MG_PKM', N'23', N'PKM', N'The PKM machine gun was designed to fire a 7.62 mm rounds from a linked system and is reasonably accurate out to medium ranged targets.', N'0 0 0', N'muzzle_asr', N'assault', N'7.62', N'Sounds/NewWeapons/LightMachineGun/Kalashnikov_PKM', N'Sounds/Weapons/MG/MG_Generic_Reload', N'36', N'0', N'1', N'600', N'300', N'0', N'0', N'0', N'0', N'1', N'5', N'2', N'625', N'15', N'10', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'34', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400056', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MG_PKM', N'8000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112950', N'ASR_WDX_Tier1', N'20', N'$ASR_WDX_Mk1', N'$ASR_WDX_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'290', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'3', N'14.72', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101063', N'SMG_MP7', N'26', N'MP7', N'The RA TR7 submachine gun is a special issue weapon that fires a 4.6 mm standard cartridge from a 30 round magazine. It is effective at close range targets.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/HK_UMP', N'Sounds/Weapons/New Reloads/M7-Reload', N'24', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'11', N'6', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'32', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1002', N'4003', N'0', N'0', N'0', N'0', N'0', N'400026', N'0', N'0', N'400033', N'0', N'0', N'0', N'0', N'SMG_MP7', N'2000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112951', N'ASR_HB_Tier1', N'20', N'$ASR_HB_Mk1', N'$ASR_HB_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'1.43', N'381', N'3.7', N'14.71', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101064', N'SMG_UZI', N'26', N'UZI', N'The special issue UZI submachine gun is a open bolt, blow back design that fires 9 mm rounds from its magazine housed in the weapons pistol grip.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/Uzi', N'Sounds/Weapons/New Reloads/Uzi-Reload', N'26', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'700', N'15', N'9', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'0', N'3001', N'0', N'4006', N'0', N'0', N'0', N'0', N'0', N'400134', N'0', N'0', N'400084', N'0', N'0', N'0', N'0', N'SMG_UZI', N'3500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112954', N'HG_45APC_Tier1', N'25', N'$HG_45c_Mk1', N'$HG_45c_Mk1_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/45c', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload', N'22', N'0', N'1', N'351', N'27', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'330', N'4', N'11.25', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'48', N'0', N'0', N'0', N'0', N'0', N'410645', N'0', N'0', N'410662', N'0', N'0', N'0', N'0', N'HG_45c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101068', N'SNP_SVD_PSO', N'21', N'SVD ', N'The SVD sniper rifle was designed to fire a 7.62 mm round from a 10 round clip. Combined with an Optical Sniper Scope it is extremely accurate.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/SV98', N'Sounds/Weapons/New Reloads/SVD-Reload', N'70', N'0', N'1', N'800', N'600', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'80', N'3', N'3', N'0', N'asr_grenade', N'100', N'30', N'pso1', N'70', N'0', N'0', N'0', N'2', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'4004', N'0', N'0', N'0', N'0', N'0', N'400027', N'0', N'0', N'400048', N'0', N'0', N'0', N'0', N'SNP_SVD_PSO', N'5000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112955', N'HG_AP50_Tier2', N'25', N'$HG_AP50_Mk4', N'$HG_AP50_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/AP50/AP50', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload', N'26', N'0', N'1', N'351', N'25', N'0', N'0', N'0', N'0', N'1', N'2.2', N'1.2', N'120', N'3.5', N'7.5', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410850', N'0', N'0', N'410843', N'0', N'0', N'0', N'0', N'HG_AP50', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101084', N'SNP_Vintorez', N'21', N'VSS VINTOREZ', N'The VSS Vintorez sniper rifle was designed to fire a 9 x 39 mm round using a gas operated, rotating bolt firing system. It is designed to be effective at medium distances.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/VSS_Vintorez', N'Sounds/Weapons/ASR/ASR_Generic_Reload', N'125', N'0', N'2', N'700', N'200', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'200', N'2', N'5', N'0', N'asr_grenade', N'101', N'30', N'pso1', N'60', N'0', N'0', N'0', N'2', N'1', N'45', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'3001', N'0', N'4002', N'0', N'0', N'0', N'0', N'0', N'400027', N'0', N'0', N'400031', N'0', N'0', N'0', N'0', N'SNP_Vintorez', N'2500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112956', N'PDW_HB2_Tier1', N'25', N'$SMG_HB_02_Mk2', N'$SMG_HB_02_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/HB_02_SMG/HB_02', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'21', N'0', N'1', N'310', N'33', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'281', N'4', N'15.1', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410653', N'0', N'0', N'410686', N'0', N'0', N'0', N'0', N'SMG_HB_02', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101085', N'SNP_AW', N'21', N'MAUSER SP66', N'The Mauser SP66 sniper rifle was designed to fire a .308W round from a 5 round clip. It is highly accurate at long ranges when combined with a good scope.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/SNP_AW', N'Sounds/Weapons/New Reloads/SNP_AW_reload', N'105', N'0', N'1', N'1000', N'600', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'60', N'3', N'3', N'0', N'asr_grenade', N'100', N'30', N'aw50', N'80', N'0', N'0', N'0', N'2', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400008', N'0', N'0', N'400070', N'0', N'0', N'0', N'0', N'SNP_AW', N'6000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112957', N'HG_RV50_Tier2', N'25', N'$HG_RV50_Mk4', N'$HG_RV50_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload', N'37', N'0', N'1', N'371', N'25', N'0', N'0', N'0', N'0', N'1', N'4.14', N'2.2', N'90', N'4.5', N'29.15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410646', N'0', N'0', N'410673', N'0', N'0', N'0', N'0', N'HG_RV50c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101087', N'SNP_AW50', N'21', N'AW Magnum', N'The AWM sniper rifle fires a custom .338W magnum round with devastating accuracy and effect. Each of its rounds deal a very high amount of damage.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/SNP_AW50', N'Sounds/Weapons/New Reloads/SNP_AW_reload', N'180', N'0', N'2', N'800', N'1000', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'30', N'3', N'4', N'0', N'asr_grenade', N'100', N'30', N's50hs', N'90', N'0', N'0', N'0', N'2', N'1', N'32', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400008', N'0', N'0', N'400043', N'0', N'0', N'0', N'0', N'SNP_AW50', N'6500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112958', N'LMG_HMG_Mk6_1', N'23', N'$LMG_HMG_01_Mk6_1', N'$LMG_HMG_01_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/LargeMachine Guns/HMG_01/HMG_01', N'Sounds/Weapons/Guns/LargeMachine Guns/HMG_01/HMG_01_Reload', N'35', N'0', N'1', N'500', N'87', N'0', N'0', N'0', N'0', N'1', N'6.24', N'4.1', N'421', N'4.5', N'20', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410647', N'0', N'0', N'410675', N'0', N'0', N'0', N'0', N'LMG_HMG_01', N'8000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101088', N'SNP_M82', N'21', N'M107', N'The M107  sniper rifle fires a .50 caliber round that strikes with deadly effect at extreme ranges. It has a 10 round clip that allows for a high rate of fire.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/0.50Caliber', N'Sounds/Weapons/New Reloads/M107-Reload', N'150', N'0', N'2', N'800', N'900', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'60', N'5', N'7', N'0', N'asr_grenade', N'100', N'30', N'sniper', N'110', N'0', N'0', N'0', N'2', N'1', N'40', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400008', N'0', N'0', N'400133', N'0', N'0', N'0', N'0', N'SNP_M82', N'11000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112959', N'LMG_NG100_Tier2', N'23', N'$LMG_NG100_Mk3', N'$LMG_NG100_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/NG100', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/LMGNG100Reload_v2', N'33', N'0', N'1', N'600', N'41', N'0', N'0', N'0', N'0', N'1', N'6.24', N'2.43', N'341', N'5.1', N'17', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410648', N'0', N'0', N'410676', N'0', N'0', N'0', N'0', N'LMG_NG100', N'5000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101093', N'MG_RPK', N'23', N'RPK-74 ', N'The RPK-74 machine gun fires a 5.45 mm high velocity round that delivers a reasonably accurate rate of fire onto targets out to medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/LightMachineGun/Kalashnikov_RPK74', N'Sounds/Weapons/New Reloads/MG_RPK_reload', N'34', N'0', N'1', N'600', N'300', N'0', N'0', N'0', N'0', N'1', N'4', N'2', N'600', N'14', N'10', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'4200', N'0', N'0', N'0', N'0', N'0', N'400060', N'0', N'0', N'400100', N'0', N'0', N'0', N'0', N'MG_RPK', N'5000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112960', N'SHG_Saiga_Tier1', N'22', N'$SHG_Saiga_Mk1', N'$SHG_Saiga_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/Saiga/Saiga', N'Sounds/Weapons/Guns/Shotguns/Saiga/SaigaReload', N'25.5', N'0', N'1', N'221', N'6', N'0', N'0', N'0', N'0', N'1', N'3.92', N'1.2', N'40', N'7.4', N'18.61', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'88', N'0', N'0', N'0', N'0', N'410697', N'410649', N'0', N'0', N'410680', N'0', N'0', N'0', N'0', N'SHG_Saiga', N'3400')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101095', N'MG_M249_SAW', N'23', N'FN M249 ', N'The FN M249 machine gun fires a 5.56 mm round from a belt fed system. It is highly effective against targets at close and medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/LightMachineGun/FN_M249', N'Sounds/Weapons/New Reloads/MG_M240_SAW_Reload', N'31', N'0', N'1', N'600', N'300', N'0', N'0', N'0', N'0', N'1', N'6', N'2', N'600', N'14', N'5', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'25', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400035', N'0', N'0', N'400143', N'0', N'0', N'0', N'0', N'MG_M249', N'10000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112961', N'SMG_CF10_Tier2', N'26', N'$SMG_CF-10_Mk3', N'$SMG_CF-10_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/ChangFeng', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/SMGBizonReload', N'21', N'0', N'1', N'341', N'24', N'0', N'0', N'0', N'0', N'1', N'3.51', N'0.43', N'271', N'6.65', N'15.15', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410849', N'0', N'0', N'410840', N'0', N'0', N'0', N'0', N'SMG_ChangFeng', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101098', N'SHG_Saiga', N'22', N'SAIGA', N'The Saiga was developed as a 12 gauge shotgun with a 8 round storage tube. It inflicts a substancial amount of damage on targets at a close range.', N'0 0 0', N'muzzle_sh1', N'assault', N'buckshot', N'Sounds/NewWeapons/Shotgun/Shotgun', N'Sounds/Weapons/SHOTGUN/SHG_Generic_Reload', N'27', N'0', N'1', N'300', N'10', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'100', N'20', N'15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'25', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400080', N'0', N'0', N'400073', N'0', N'0', N'0', N'0', N'SHG_SAIGA', N'3500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112962', N'SMG_EVO_Tier1', N'26', N'$SMG_EVO_Mk1', N'$SMG_EVO_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'24', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'4.7', N'19.1', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101103', N'SMG_MP5A4', N'26', N'MP5/10', N'The MP5/10 submachine gun was designed to fire a 10 mm Auto rounds from a 30 round clip effectively against close ranged targets.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/HK_MP5', N'Sounds/Weapons/New Reloads/G36-Reload', N'23', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'700', N'11', N'7', N'0', N'asr_grenade', N'111', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400081', N'0', N'0', N'400079', N'0', N'0', N'0', N'0', N'SMG_MP5A4', N'2800')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112963', N'SMG_Kris_Tier2', N'26', N'$SMG_Kris_Mk4', N'$SMG_Kris_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo45', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/KRIS', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/SMGKrisReload', N'24.06', N'0', N'1', N'371', N'38', N'0', N'0', N'0', N'0', N'1', N'4.2', N'0.43', N'331', N'5.3', N'17.95', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410655', N'0', N'0', N'410688', N'0', N'0', N'0', N'0', N'SMG_Kris', N'3300')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101106', N'SMG_AacHoneyBadger_01', N'26', N'Honey Badger', N'The Honey Badger submachine gun fires a .300 round at a medium rate of fire causing a good amount of damage on close range targets.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/HK_MP5SD', N'Sounds/Weapons/New Reloads/M16-Reload', N'26', N'0', N'1', N'500', N'45', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'780', N'12', N'7', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'52', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'400074', N'400066', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'SMG_AacHoneyBadger_01', N'4000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112966', N'SNP_FWS15_Tier2', N'21', N'$SNP_FWS15_Mk3', N'$SNP_FWS15_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/SNPArsReload', N'120', N'0', N'1.2', N'671', N'541', N'0', N'0', N'0', N'0', N'1', N'5.4', N'0.43', N'5', N'5', N'23.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410846', N'0', N'0', N'0', N'0', N'SNP_Bullistic', N'5200')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101107', N'SMG_P90', N'26', N'FN P90 ', N'The FN P90 submachine gun was designed to fire 9 mm rounds from a large 50 round magazine. It is very effective on close range targets.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/FN_P90', N'Sounds/Weapons/New Reloads/G36-Reload', N'26', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'900', N'10', N'8', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'36', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400054', N'0', N'0', N'400046', N'0', N'0', N'0', N'0', N'smg_p90', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112967', N'SNP_LM7_Tier2', N'21', N'$SNP_LM7_Mk4', N'$SNP_LM7_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/LM7/LM7_A', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'150', N'0', N'2.6', N'800', N'600', N'0', N'0', N'0', N'0', N'1', N'5', N'0.43', N'5', N'3', N'28.35', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410702', N'0', N'0', N'410690', N'0', N'0', N'0', N'0', N'SNP_LM7', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101108', N'SMG_ScorpionEVO3', N'26', N'EVO-3', N'The EVO-3 submachine gun was designed to effectively fire 9 mm rounds from a 25 round magazine at close ranged targets at a very high rate of fire..', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/Scorpion_EVO3', N'Sounds/Weapons/New Reloads/G36-Reload', N'26', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'11', N'10', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'24', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400051', N'0', N'0', N'400049', N'0', N'0', N'0', N'0', N'SMG_ScorpionEVO3', N'3250')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112968', N'SUP_AT4_Tier2', N'24', N'$SUP_AT4_Mk5', N'$SUP_AT4_Mk5_desc', N'0 0 0', N'muzzle_sup_at4_basic_01', N'assault', N'$AT4_Ammo', N'Sounds/Weapons/Guns/Support/AT4/AT4_B', N'Sounds/Weapons/Guns/Support/AT4/AT4Reload', N'1', N'0', N'1', N'175', N'1', N'7', N'0.25', N'75', N'0', N'1', N'2.67', N'0', N'60', N'3.25', N'10.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410659', N'0', N'0', N'410677', N'0', N'0', N'0', N'0', N'SUP_AT4', N'5600')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101109', N'SMG_Bizon', N'26', N'BIZON', N'The Bizon submachine gun was designed to fire a 9 mm round from a 64 round magazine delivering accurate fire on close range targets.', N'0 0 0', N'muzzle_asr', N'smg', N'5.45', N'Sounds/NewWeapons/SMG/Bizon', N'Sounds/Weapons/New Reloads/G36-Reload', N'26', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'900', N'11', N'8', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'43', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400052', N'0', N'0', N'400047', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'2000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112970', N'SUP_Eliminator_Tier2', N'24', N'$SUP_Eliminator_Mk5', N'$SUP_Eliminator_Mk5_desc', N'0 0 0', N'muzzle_sup_at4_basic_01', N'assault', N'$AT4_Ammo', N'Sounds/Weapons/Guns/Support/Eliminator/Eliminator', N'Sounds/Weapons/Guns/Support/Eliminator/EliminatorReload', N'1', N'0', N'0.5', N'200', N'1', N'8', N'0.25', N'100', N'0', N'1', N'2.77', N'0', N'60', N'3.25', N'10.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410699', N'0', N'0', N'410679', N'0', N'0', N'0', N'0', N'SUP_Eliminator', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101111', N'HG_Beretta92F', N'25', N'B92', N'The B92 handgun was specially designed to fire a 9mm round and is reasonably effective agains close range targets.', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/Beretta92', N'Sounds/Weapons/HG/HG_Generic_Reload', N'33', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'8', N'3', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400071', N'0', N'0', N'0', N'0', N'HG_beretta92f', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112972', N'SUP_RPG7_Tier2', N'24', N'$SUP_RPG7_Mk5', N'$SUP_RPG7_Mk5_desc', N'0 0 0', N'muzzle_sup_rpg7_basic_01', N'assault', N'$RPG7_Ammo', N'Sounds/Weapons/Guns/Support/RPG7/RPG7', N'Sounds/Weapons/Guns/Support/RPG7/RPG7Reload', N'71', N'0', N'0.5', N'371', N'71', N'6', N'0.25', N'75', N'0', N'1', N'3.75', N'0', N'60', N'3.25', N'17.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410661', N'0', N'0', N'410678', N'0', N'0', N'0', N'0', N'SUP_RPG7', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101112', N'HG_Beretta93R', N'25', N'B93R ', N'The B93R handgun was designed to fire a 9mm parabellum round from a 20 round clip. It is a relatively effective weapon against close ranged targets.', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/Beretta93R', N'Sounds/Weapons/HG/HG_Generic_Reload', N'30', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'8', N'5', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400071', N'0', N'0', N'0', N'0', N'HG_Beretta93R', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112979', N'SHG_SP12_Tier1', N'22', N'$SHG_SP12_Mk1', N'$SHG_SP12_Mk1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet', N'36', N'0', N'1', N'179', N'6', N'0', N'0', N'0', N'0', N'1', N'8', N'1.2', N'21', N'6.1', N'11.61', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410650', N'0', N'0', N'410682', N'0', N'0', N'0', N'0', N'SHG_SP12', N'3300')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101115', N'HG_Jericho', N'25', N'Jericho 9mm', N'The Jericho was designed as a universal self-loading pistol which fires a 9mm Parabellum round and is highly effective at close range.', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/H&K_USP', N'Sounds/Weapons/HG/HG_Generic_Reload', N'35', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'9', N'3', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'17', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400071', N'0', N'0', N'0', N'0', N'HG_Jericho', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112980', N'SNP_AAR_Tier2', N'21', N'$SNP_AAR_Mk3', N'$SNP_AAR_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Archangel/R13', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'115', N'0', N'2.4', N'750', N'375', N'0', N'0', N'0', N'0', N'1', N'4.3', N'0.43', N'6', N'2', N'21.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'32', N'2024', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410667', N'0', N'0', N'0', N'0', N'SNP_ArchAngel', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101120', N'HG_SigP226', N'25', N'Sig Sauer P226', N'The SIG P226 is a full-sized, service-type pistol made by SIG Sauer. It been designed to fire a 9 x 19 mm round that makes it an effective weapon against close ranged targets.', N'0 0 0', N'muzzle_hg', N'pistol', N'9mm', N'Sounds/NewWeapons/Handgun/Beretta92', N'Sounds/Weapons/HG/HG_Generic_Reload', N'35', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'8', N'3', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'26', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400034', N'0', N'0', N'0', N'0', N'HG_SIGP226', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'112998', N'ASR_TRX4_Tier2', N'20', N'$ASR_TRX4_Mk3', N'$ASR_TRX4_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'24', N'0', N'1', N'471', N'56', N'0', N'0', N'0', N'0', N'1', N'5', N'0.43', N'381', N'4.9', N'15.3', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410853', N'0', N'0', N'410854', N'0', N'0', N'0', N'0', N'ASR_Tar30', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101158', N'SHG_Mossberg590_01', N'22', N'MOSSBERG 590', N'The Mossberg 590 is a 12 gauge shotgun which has a 8 round storage tube. It is known to do an extremely high amount of damage at close range.', N'0 0 0', N'muzzle_sh1', N'assault', N'buckshot', N'Sounds/NewWeapons/Shotgun/Mossberg', N'Sounds/Weapons/New Reloads/Mossberg_reload', N'24', N'0', N'1', N'300', N'12', N'0', N'0', N'0', N'0', N'1', N'8', N'1', N'60', N'20', N'15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400082', N'0', N'0', N'400136', N'0', N'0', N'0', N'0', N'SHG_Mossberg590_01', N'2500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113003', N'HG_MicroUzi_Tier2', N'25', N'$HG_MicroUzi_Mk3', N'$HG_MicroUzi_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'23', N'0', N'1', N'341', N'35', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'241', N'4.5', N'17.31', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410851', N'0', N'0', N'410845', N'0', N'0', N'0', N'0', N'HG_MicroUzi', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101169', N'ASR_Mossada', N'20', N'MASADA', N'The Masada was designed for close combat operations and is a gas operated assault rifle that fires a chambered for 5.56x45mm NATO round. It is highly effective at close ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/AEK971', N'Sounds/Weapons/New Reloads/G36-Reload', N'28', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'700', N'9', N'5', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'43', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400119', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_Mossada', N'4000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113004', N'PDW_HSE_Tier2', N'25', N'$SMG_HSE_Mk3', N'$SMG_HSE_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'24', N'0', N'1', N'431', N'34', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'351', N'5.1', N'14.61', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410654', N'0', N'0', N'410687', N'0', N'0', N'0', N'0', N'SMG_HSE', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101172', N'ASR_SIG_SG556', N'20', N'SIG SAUER 556', N'The 556 is a gas operated, rotating bolt assault rifle that fires a 5.56 x 45 mm round and was designed for special operations. It is very effective out to medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/SIG_551', N'Sounds/Weapons/New Reloads/ASR_SIG_SG556_Reload', N'27', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'650', N'6', N'6', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400025', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_SIG_SG556', N'4000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113012', N'ASR_AK12_Tier1', N'20', N'$ASR_AK12_Mk2', N'$ASR_AK12_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6', N'15', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'0', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101173', N'ASR_tar21', N'20', N'IMI TAR-21', N'The TAR-21 is an unique gas operated, rotating bolt, bullpup design assault rifle that fires a 5.56 x 45 mm round. It is extremely effective at close and medium range.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/HK_G11', N'Sounds/Weapons/New Reloads/G36-Reload', N'33', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'700', N'6', N'7', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'39', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'0', N'0', N'4001', N'0', N'0', N'0', N'0', N'0', N'400059', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_tar21', N'3300')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113013', N'ASR_AK12_Tier2', N'20', N'$ASR_AK12_Mk3', N'$ASR_AK12_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6', N'16', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'2000', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101180', N'HG_Desert_Eagle', N'25', N'Desert Eagle', N'The Desert Eagle handgun was designed to fire a .50 caliber round and deals a substancial amount of damage to targets at close ranges.', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/DesertEagle', N'Sounds/Weapons/HG/HG_Generic_Reload', N'50', N'0', N'1', N'500', N'40', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'12', N'22', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'45', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400086', N'0', N'0', N'0', N'0', N'HG_Desert_Eagle', N'1750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113014', N'ASR_AK12_Tier2', N'20', N'$ASR_AK12_Mk4', N'$ASR_AK12_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6', N'18', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'2000', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101183', N'SHG_Keltech', N'22', N'KT DECIDER', N'The KT Decider is a bull-pup shotgun design that has two magazine feed tubes, each side capable of holding 7 shells, for a total capacity of 14+1.', N'0 0 0', N'muzzle_sh1', N'assault', N'buckshot', N'Sounds/NewWeapons/Shotgun/SHG_Keltech', N'Sounds/Weapons/New Reloads/SHG_Keltech_reload', N'25', N'0', N'1', N'300', N'15', N'0', N'0', N'0', N'0', N'1', N'8', N'1', N'50', N'20', N'15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'35', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400036', N'0', N'0', N'400136', N'0', N'0', N'0', N'0', N'SHG_Keltech', N'4000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113015', N'ASR_AK12_Tier2', N'20', N'$ASR_AK12_Mk5', N'$ASR_AK12_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6', N'18', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'2000', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101193', N'ASR_Fn_scar', N'20', N'FN SCAR CQC', N'The SCAR 16 CQC is an advanced assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.56', N'Sounds/NewWeapons/Assault/FN_SCAR', N'Sounds/Weapons/New Reloads/M16-Reload', N'30', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'1', N'625', N'7', N'3', N'0', N'asr_grenade', N'111', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'30', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400006', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'ASR_Scar', N'3500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113016', N'ASR_AK12_Mk6_1', N'20', N'$ASR_AK12_Mk6_1', N'$ASR_AK12_Mk6_1_Desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/AK12/AK12', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'371', N'65', N'0', N'0', N'0', N'0', N'1', N'3.7', N'0.43', N'341', N'6.6', N'18.75', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'30', N'0', N'0', N'0', N'0', N'410696', N'410219', N'0', N'0', N'410664', N'0', N'0', N'0', N'0', N'ASR_AK12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101197', N'MG_G36MG', N'23', N'RA H23', N'The RA LMG36 was designed to fire a 7.62 mm standard round. This machine gun delivers a reasonable amount of accurate fire onto targets at medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/HK_G36_CMag', N'Sounds/Weapons/New Reloads/MG_G36MG_Reload', N'31', N'0', N'1', N'600', N'300', N'0', N'0', N'0', N'0', N'1', N'4', N'2', N'650', N'15', N'5', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'49', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400042', N'0', N'0', N'400017', N'0', N'0', N'0', N'0', N'MG_G36MG', N'6000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113017', N'ASR_WDX_Tier1', N'20', N'$ASR_WDX_Mk2', N'$ASR_WDX_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'4', N'14.67', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101200', N'SHG_Usas12', N'22', N'AA-12', N'The AA-12 gauge automatic shotgun was designed to fire 12 gauge rounds from a 20 round storage system. It causes a reasonable amount of damage per round.', N'0 0 0', N'muzzle_sh1', N'assault', N'buckshot', N'Sounds/NewWeapons/Shotgun/Shotgun', N'Sounds/Weapons/SHOTGUN/SHG_Generic_Reload', N'22', N'0', N'1', N'300', N'10', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'150', N'20', N'25', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'45', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'3001', N'1001', N'0', N'0', N'0', N'0', N'0', N'0', N'400121', N'0', N'0', N'400050', N'0', N'0', N'0', N'0', N'SHG_Usas12', N'5000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113018', N'ASR_WDX_Tier2', N'20', N'$ASR_WDX_Mk3', N'$ASR_WDX_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'4.5', N'14.62', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'2002', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101201', N'SMG_SR-1_Veresk', N'26', N'VERESK SR-2', N'The MTAC Flasher submachine gun was designed to fire a standard 9 mm round at a high rate of fire with reasonable accuracy at close range targets.', N'0 0 0', N'muzzle_asr', N'assault', N'9mm', N'Sounds/NewWeapons/Assault/Kalashnikov_AK74', N'Sounds/Weapons/New Reloads/M7-Reload', N'23', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'11', N'5', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'27', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'4006', N'0', N'0', N'0', N'0', N'0', N'400083', N'0', N'0', N'400084', N'0', N'0', N'0', N'0', N'SMG_SR-1_Veresk', N'1600')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113019', N'ASR_WDX_Tier2', N'20', N'$ASR_WDX_Mk4', N'$ASR_WDX_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'4', N'14.53', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'2002', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101210', N'ASR_Fn_scar_NightCamo', N'20', N'FN SCAR NIGHT STALKER', N'The Scar 17 CQC Nightstalker is a assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/FN_SCAR', N'Sounds/Weapons/New Reloads/M16-Reload', N'32', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'625', N'7', N'3', N'0', N'asr_grenade', N'111', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'58', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'1001', N'4001', N'0', N'0', N'0', N'0', N'0', N'400006', N'0', N'0', N'400016', N'0', N'0', N'0', N'0', N'asr_scar', N'3500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113020', N'ASR_WDX_Tier2', N'20', N'$ASR_WDX_Mk5', N'$ASR_WDX_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'4', N'14.48', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'2002', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101217', N'SNP_AW_Des', N'21', N'MAUSER SRG DESERT', N'The Mauser SP66 Desert sniper rifle fires a .308W round.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/SNP_AW', N'Sounds/Weapons/New Reloads/SNP_AW_reload', N'110', N'0', N'1', N'800', N'600', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'60', N'3', N'3', N'0', N'asr_grenade', N'100', N'30', N'sv98', N'90', N'0', N'0', N'0', N'2', N'0', N'28', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400008', N'0', N'0', N'400070', N'0', N'0', N'0', N'0', N'SNP_AW', N'7000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113021', N'ASR_WDX_Mk6_1', N'20', N'$ASR_WDX_Mk6_1', N'$ASR_WDX_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'220', N'3.9', N'14.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410641', N'0', N'0', N'410670', N'0', N'0', N'0', N'0', N'ASR_HB_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101224', N'HG_Jericho', N'25', N'STI Eagle Elite .45 ACP', N'The STI Eagle Elite handgun is an upgraded version of the STI Eagle and is designed to fire a .45 ACP round effectively at close ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Handgun/DesertEagle', N'Sounds/Weapons/HG/HG_Generic_Reload', N'36', N'0', N'1', N'500', N'45', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'9', N'9', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'HG_Jericho', N'1500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113022', N'ASR_HB_Tier1', N'20', N'$ASR_HB_Mk2', N'$ASR_HB_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'0.43', N'381', N'5', N'16', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101246', N'SMG_PS90', N'26', N'FN P90 S', N'The FN P90S submachine gun is a highly effective weapon that carries a unique 50 round magazine. It fires a standard 5.56 mm round.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/SMG/FN_P90', N'Sounds/Weapons/New Reloads/G36-Reload', N'26', N'0', N'1', N'500', N'40', N'0', N'0', N'0', N'0', N'1', N'2', N'2', N'900', N'11', N'8', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'58', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400054', N'0', N'0', N'400046', N'0', N'0', N'0', N'0', N'smg_p90', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113023', N'ASR_HB_Tier2', N'20', N'$ASR_HB_Mk3', N'$ASR_HB_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'0.43', N'381', N'5', N'16', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2003', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101247', N'SNP_Blaser_LRS2_01', N'21', N'BLASER R93', N'The Blaser is a bolt action sniper rifle, designed to fire a .308W round from a 5 round clip. It is a highly accurate weapon at longer ranges.', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Sniper/SNP_Blaser', N'Sounds/Weapons/New Reloads/SNP_Blaser_reload', N'125', N'0', N'1', N'800', N'800', N'0', N'0', N'0', N'0', N'1', N'3', N'2', N'45', N'3', N'2', N'0', N'asr_grenade', N'100', N'30', N'psg1', N'70', N'0', N'0', N'0', N'2', N'0', N'38', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'6001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400008', N'0', N'0', N'400070', N'0', N'0', N'0', N'0', N'snp_blaser_lrs2_01', N'6000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113024', N'ASR_HB_Tier2', N'20', N'$ASR_HB_Mk4', N'$ASR_HB_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'0.43', N'381', N'5', N'16', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2003', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101256', N'Consumables_Med_01', N'28', N'Antibiotics', N'Over the counter antibiotics that aid in curing colds and other minor ailments.', N'0 0 0', N'muzzle_asr', N'mine', N'5.45', N'', N'', N'25', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'4500', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'100')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113025', N'ASR_HB_Tier2', N'20', N'$ASR_HB_Mk5', N'$ASR_HB_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'0.43', N'381', N'5', N'16', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2003', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101261', N'Item_bandage_01', N'28', N'Bandages ', N'Common bandages which heal minor wounds and stops excessive bleeding.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'10', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'20', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'4000', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113026', N'ASR_HB_Mk6_1', N'20', N'$ASR_HB_Mk6_1', N'$ASR_HB_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'25', N'0', N'1', N'341', N'80', N'0', N'0', N'0', N'0', N'1', N'3.9', N'0.43', N'381', N'5', N'16', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410640', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_HB', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101262', N'Item_bandage_02', N'28', N'Bandages DX', N'Medical bandages which heal moderate wounds and stops excessive bleeding.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'45', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'5', N'4', N'2', N'30', N'20', N'20', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'100')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113027', N'HG_9B_Tier1', N'25', N'$HG_9B_Mk2', N'$HG_9B_Mk2_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload', N'1.05', N'0', N'1', N'500', N'1', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'360', N'9.9', N'11.01', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410644', N'0', N'0', N'410215', N'0', N'0', N'0', N'0', N'HG_9mm', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101267', N'MEL_Knife_01', N'29', N'Tactical Knife', N'A standard issue knife with an 8" fixed blade, this knife was first designed in 1985 for the United States Army and was later adapted by several other countries as well as mercenary groups throughout the world due to its sturdy design and stopping power.', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Knife', N'600')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113028', N'HG_9B_Tier2', N'25', N'$HG_9B_Mk3', N'$HG_9B_Mk3_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload', N'23', N'0', N'1', N'351', N'32', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'221', N'3.15', N'15.96', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'3', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'2006', N'0', N'0', N'0', N'0', N'410644', N'0', N'0', N'410215', N'0', N'0', N'0', N'0', N'HG_9mm', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101278', N'MEL_BaseballBat_01', N'29', N'Bat', N'Handy for those times when you need to beat the crap outta something or somebody.', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'25', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'3000', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Knife', N'750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113029', N'HG_9B_Mk6_1', N'25', N'$HG_9B_Mk6_1', N'$HG_9B_Mk6_1_Desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload', N'23', N'0', N'1', N'351', N'32', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'221', N'3.65', N'15.91', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410644', N'0', N'0', N'410215', N'0', N'0', N'0', N'0', N'HG_9mm', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101283', N'consumables_bag_chips_01', N'30', N'Bag of Chips', N'A bag of potato chips.  Relieves minor hunger. BBQ Flavor!', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'-5', N'10', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113030', N'HG_45APC_Tier2', N'25', N'$HG_45c_Mk3', N'$HG_45c_Mk3_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/45c', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload', N'22', N'0', N'1', N'351', N'27', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'330', N'4.5', N'11.15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'3', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'48', N'0', N'0', N'0', N'0', N'0', N'410645', N'0', N'0', N'410662', N'0', N'0', N'0', N'0', N'HG_45c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101284', N'Consumables_Bag_MRE_01', N'30', N'Bag MRE', N'Meals Ready-to-Eat.  Extremely convenient! An MRE can be eaten cold, right out of the pouch but they always taste better hot. Each serving size substantially relieves hunger and thirst', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'25', N'0', N'0', N'60', N'100', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113031', N'HG_45APC_Tier2', N'25', N'$HG_45c_Mk4', N'$HG_45c_Mk4_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo45', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/45c', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload', N'22', N'0', N'1', N'351', N'27', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'330', N'4.2', N'11.05', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'7', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'48', N'0', N'0', N'0', N'0', N'0', N'410645', N'0', N'0', N'410662', N'0', N'0', N'0', N'0', N'HG_45c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101285', N'Consumables_Bag_Oat_01', N'30', N'Instant Oatmeal', N'A heart warming way to start your day. Classic Maple and Brown Sugar. Relieves a moderate amount of hunger.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'5', N'15', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'450', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'220')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113032', N'HG_45APC_Mk6_1', N'25', N'$HG_45c_Mk6_1', N'$HG_45c_Mk6_1_desc', N'0 0 0', N'muzzle_asr_basic_01', N'assault', N'$Pistol_Ammo45', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/45c', N'Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload', N'22', N'0', N'1', N'351', N'27', N'0', N'0', N'0', N'0', N'1', N'3.1', N'1.2', N'330', N'4.6', N'11.95', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'48', N'0', N'0', N'0', N'0', N'0', N'410645', N'0', N'0', N'410662', N'0', N'0', N'0', N'0', N'HG_45c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101286', N'Consumables_Coconutwater_01', N'33', N'Coconut Water', N'A bottle of delicious coconut water that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'5', N'5', N'0', N'0', N'55', N'0', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'85', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113033', N'PDW_HB2_Tier2', N'25', N'$SMG_HB_02_Mk3', N'$SMG_HB_02_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/HB_02_SMG/HB_02', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'23', N'0', N'1', N'341', N'31', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'330', N'4', N'11.01', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410653', N'0', N'0', N'410686', N'0', N'0', N'0', N'0', N'SMG_HB_02', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101288', N'Consumables_Bar_Chocolate_01', N'30', N'Chocolate Bar', N'A milk chocolate candy bar. The finest in gourmet chocolate. Each serving size provides minor sustenance.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'220')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113034', N'PDW_HSE_Tier2', N'25', N'$SMG_HSE_Mk4', N'$SMG_HSE_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'24', N'0', N'0.5', N'451', N'35', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'351', N'4', N'14.56', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410654', N'0', N'0', N'410687', N'0', N'0', N'0', N'0', N'SMG_HSE', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101289', N'Consumables_Bar_Granola_01', N'30', N'Granola Bar', N'An organic granola bar.  Each serving size helps relieve moderate hunger.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'25', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'10', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'400', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'220')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113035', N'PDW_HSE_Tier2', N'25', N'$SMG_HSE_Mk5', N'$SMG_HSE_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'24', N'0', N'0.5', N'451', N'35', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'351', N'4', N'14.51', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410654', N'0', N'0', N'410687', N'0', N'0', N'0', N'0', N'SMG_HSE', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101290', N'Consumables_Can_Pasta_01', N'30', N'Can of Pasta', N'A can of delicious Pasta-O''s. Fortified with iron and vitamins. Low sugar and low fat. Suitable for Vegetarians. \r\nGluten Free', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'35', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'1450', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113036', N'SMG_Bizon_Tier1', N'26', N'$SMG_Bizon_Mk2', N'$SMG_Bizon_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5.7', N'15.2', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101291', N'Consumables_Can_Soup_01', N'30', N'Can of Soup', N'A can of creamy tomato soup. No need to add water. Relieves moderate hunger.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'10', N'35', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113037', N'SMG_Bizon_Tier2', N'26', N'$SMG_Bizon_Mk3', N'$SMG_Bizon_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5.65', N'15.15', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2013', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101292', N'Consumables_Can_Spam_01', N'30', N'Can of Ham', N'Mechanically separated Spiced Ham in a 5-ounce cans. May contain pig parts. Relieves moderate hunger.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'35', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'1950', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113038', N'SMG_Bizon_Tier2', N'26', N'$SMG_Bizon_Mk4', N'$SMG_Bizon_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5.65', N'15.1', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2013', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101293', N'Consumables_Can_Tuna_01', N'30', N'Can of Tuna', N'Chunk lite savory tuna in water.  Firm, flaky, fresh tasting that you can really tear into. Each serving relieves moderate hunger.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'10', N'35', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113039', N'SMG_Bizon_Tier2', N'26', N'$SMG_Bizon_Mk5', N'$SMG_Bizon_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5.65', N'15.05', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2013', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101294', N'Consumables_Energydrink_01', N'33', N'Energy drink', N'A caffeine jump-start that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'20', N'0', N'0', N'0', N'5', N'10', N'0', N'0', N'20', N'-5', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'220')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113040', N'SMG_Bizon_Mk6_1', N'26', N'$SMG_Bizon_Mk6_1', N'$SMG_Bizon_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/BIZON_mod', N'Sounds/Weapons/Guns/SubMachine Guns/Bizon/SMGBizonReload', N'23', N'0', N'1', N'350', N'35', N'0', N'0', N'0', N'0', N'1', N'4.6', N'0.43', N'391', N'5', N'15.95', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410651', N'0', N'0', N'410683', N'0', N'0', N'0', N'0', N'SMG_Bizon', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101295', N'Consumables_gatorade_01', N'33', N'Electro-AID', N'A flavored drink with electrolytes that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'50', N'0', N'0', N'0', N'5', N'5', N'0', N'0', N'60', N'5', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113041', N'SMG_EVO_Tier1', N'26', N'$SMG_EVO_Mk2', N'$SMG_EVO_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'23', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'3', N'14', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101296', N'Consumables_soda_01', N'33', N'Can of soda', N'A carbonated beverage that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'6', N'0', N'0', N'0', N'15', N'5', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113042', N'SMG_EVO_Tier2', N'26', N'$SMG_EVO_Mk3', N'$SMG_EVO_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'24', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'3', N'14', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101297', N'Consumables_Tetrapack_Juice_01', N'33', N'Juice', N'A healthy drink that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'30', N'10', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'3500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113043', N'SMG_EVO_Tier2', N'26', N'$SMG_EVO_Mk4', N'$SMG_EVO_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'24', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'3', N'14', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101298', N'Consumables_water_L_01', N'33', N'Water 1L', N'A large bottle of water that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'50', N'0', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'3500', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'1000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113044', N'SMG_EVO_Tier2', N'26', N'$SMG_EVO_Mk5', N'$SMG_EVO_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'24', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'3', N'14', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101299', N'Consumables_water_S_01', N'33', N'Water 375ml', N'A small bottle of water that when consumed quenches moderate thirst.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'25', N'0', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'2000', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'375')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113045', N'SMG_EVO_Mk6_1', N'26', N'$SMG_EVO_Mk6_1', N'$SMG_EVO_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/EVO_mod', N'Sounds/Weapons/Guns/SubMachine Guns/EVO/SMBEvoReload', N'24', N'0', N'1', N'410', N'35', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'321', N'3', N'14', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'77', N'0', N'0', N'0', N'0', N'410696', N'410652', N'0', N'0', N'410684', N'0', N'0', N'0', N'0', N'SMG_EVO', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101300', N'Consumables_PainKiller_01', N'28', N'Pain killers', N'Over the counter pain killers that counter-act the effects of pain on the body.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'15', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'6000', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'100')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113046', N'SNP_AAR_Tier2', N'21', N'$SNP_AAR_Mk4', N'$SNP_AAR_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Archangel/R13', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'115', N'0', N'1.1', N'650', N'650', N'0', N'0', N'0', N'0', N'1', N'3', N'0.43', N'6', N'2', N'21.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'32', N'2024', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410667', N'0', N'0', N'0', N'0', N'SNP_ArchAngel', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101301', N'Consumables_ZombieRepellent_01', N'28', N'Zombie Repellent', N'A spray on solution that when applied to the skin, it enters the blood stream and masks the smell of fresh blood.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'20', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113047', N'SNP_ARS_Tier2', N'21', N'$SNP_ARS_Mk5', N'$SNP_ARS_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'90', N'0', N'1.1', N'500', N'451', N'0', N'0', N'0', N'0', N'1', N'4.76', N'0.43', N'8', N'3', N'26.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'2018', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410689', N'0', N'0', N'0', N'0', N'SNP_ARS', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101302', N'Item_Syringe_01_Vaccine', N'28', N'C01-Vaccine', N'An early prototype vaccine that when injected into your bloodstream fights off the infection and lowers blood toxicity levels. Its effectiveness is low however in comparison to later developed vaccines.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'20', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'12500', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113048', N'SNP_ARS_Mk6_1', N'21', N'$SNP_ARS_Mk6_1', N'$SNP_ARS_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'90', N'0', N'1.1', N'500', N'451', N'0', N'0', N'0', N'0', N'1', N'4.76', N'0.43', N'8', N'3.4', N'26.95', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410689', N'0', N'0', N'0', N'0', N'SNP_ARS', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101303', N'Item_Syringe_01_GC_Vaccine', N'28', N'C04-Vaccine', N'A cure to the infection that was developed only weeks after the initial signs of the infection.   Having had only a few weeks of production before the infected had taken over, supply is very low and demand is extremely high for these valuable vaccines.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'100', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113049', N'SHG_SP12_Tier1', N'22', N'$SHG_SP12_Mk2', N'$SHG_SP12_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet', N'36.1', N'0', N'1', N'179', N'6', N'0', N'0', N'0', N'0', N'1', N'2.74', N'1.2', N'21', N'8.2', N'15.51', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410650', N'0', N'0', N'410682', N'0', N'0', N'0', N'0', N'SHG_SP12', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101304', N'item_medkit_01', N'28', N'Medkit', N'A standard field medical kit commonly used by Medics to heal wounded soldiers on the battlefield. Very effective', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'100', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113050', N'SHG_SP12_Mk6_1', N'22', N'$SHG_SP12_Mk6_1', N'$SHG_SP12_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12', N'Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet', N'36', N'0', N'1', N'179', N'6', N'0', N'0', N'0', N'0', N'1', N'2.74', N'1.2', N'6', N'8.9', N'17.41', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410650', N'0', N'0', N'410682', N'0', N'0', N'0', N'0', N'SHG_SP12', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101305', N'Item_MsgBottle', N'28', N'Time Capsule', N'Write a message and leave it anywhere in the world for others to find', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'20', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'1', N'5', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'450')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113051', N'SHG_M1216_Tier2', N'22', N'$SHG_M1216_Mk4', N'$SHG_M1216_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload', N'30', N'0', N'1', N'251', N'1', N'0', N'0', N'0', N'0', N'1', N'3', N'1.2', N'23', N'7.7', N'16.56', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410848', N'0', N'0', N'410844', N'0', N'0', N'0', N'0', N'SHG_M1216', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101306', N'MEL_Flashlight', N'29', N'Flashlight', N'Flashlight for night time, also blinds other players and doubles as a last resort blunt object to bash in the heads of the infected', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'15', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Flashlight', N'650')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113052', N'SHG_M1216_Tier2', N'22', N'$SHG_M1216_Mk5', N'$SHG_M1216_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload', N'30', N'0', N'1', N'251', N'8', N'0', N'0', N'0', N'0', N'1', N'3', N'1.2', N'23', N'5.9', N'16.51', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410848', N'0', N'0', N'410844', N'0', N'0', N'0', N'0', N'SHG_M1216', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101307', N'MEL_Hammer', N'29', N'Hammer', N'Go with the funk, it is said. If you cant groove to this then you probably are dead. Stop, Hammer time.', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'35', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Hammer', N'700')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113054', N'ASR_ACX10_Tier2', N'20', N'$ASR_ACX10_Mk3', N'$ASR_ACX10_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'27', N'0', N'1', N'421', N'41', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'300', N'3.75', N'14.35', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2007', N'0', N'0', N'0', N'410696', N'410639', N'0', N'0', N'410669', N'0', N'0', N'0', N'0', N'ASR_AR_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101308', N'MEL_Hatchet', N'29', N'Hatchet', N'Cold-Steel, drop forged head with differential heat treatment. American Hickory Handle.  Sharp corners will easily pierce the thickest skull and the razor sharp edge will shear through flesh and bone like it was white bread.', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'50', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Hatchet', N'600')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113055', N'ASR_ACX10_Tier2', N'20', N'$ASR_ACX10_Mk4', N'$ASR_ACX10_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'27', N'0', N'1', N'421', N'1', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'300', N'3.85', N'14.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2007', N'0', N'0', N'0', N'410696', N'410639', N'0', N'0', N'410669', N'0', N'0', N'0', N'0', N'ASR_AR_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101309', N'MEL_Pickaxe', N'29', N'Pickaxe', N'Spiked head, flat chisel. Has a good chance of getting stuck in the skull. Awkward to use in tight quarters.', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Pickaxe', N'1000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113056', N'ASR_ACX10_Tier2', N'20', N'$ASR_ACX10_Mk5', N'$ASR_ACX10_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'27', N'0', N'1', N'421', N'1', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'300', N'3.65', N'14.25', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'2007', N'0', N'0', N'0', N'410696', N'410639', N'0', N'0', N'410669', N'0', N'0', N'0', N'0', N'ASR_AR_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101310', N'EXP_M26', N'27', N'Frag Grenade', N'The fragmentation grenade is used to spray shrapnel upon exploding. Pull the pin and dont forget to throw it far.. Fire in the hole!', N'0 0 0', N'', N'grenade', N'grenade', N'', N'', N'50', N'0', N'10', N'20', N'50', N'10', N'4', N'0', N'1', N'1', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'EXP_M26', N'180')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113057', N'ASR_ACX10_Mk6_1', N'20', N'$ASR_ACX10_Mk6_1', N'$ASR_ACX10_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger', N'Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload', N'27', N'0', N'1', N'421', N'41', N'0', N'0', N'0', N'0', N'1', N'3.8', N'0.43', N'300', N'3.15', N'14.15', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410639', N'0', N'0', N'410669', N'0', N'0', N'0', N'0', N'ASR_AR_01', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101311', N'Item_Chemlight', N'27', N'Chemlight White', N'A white glow stick', N'0 0 0', N'', N'grenade', N'ChemLight', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'1500', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113058', N'ASR_ASh12_Tier2', N'20', N'$ASR_ASh12_Mk4', N'$ASR_ASh12_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload', N'21', N'0', N'1', N'500', N'1', N'0', N'0', N'0', N'0', N'1', N'2.93', N'0.43', N'291', N'4.65', N'16.15', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410847', N'0', N'0', N'410841', N'0', N'0', N'0', N'0', N'ASR_ASh12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101312', N'EXP_Flare', N'27', N'Flare', N'Throw these to light up an area for a few minutes, also handy as a way to occupy the infected', N'0 0 0', N'', N'grenade', N'Flare', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'58', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'EXP_Flare', N'50')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113059', N'ASR_ASh12_Tier2', N'20', N'$ASR_ASh12_Mk5', N'$ASR_ASh12_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload', N'21', N'0', N'1', N'321', N'35', N'0', N'0', N'0', N'0', N'1', N'2.93', N'0.43', N'291', N'4.65', N'16.15', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410847', N'0', N'0', N'410841', N'0', N'0', N'0', N'0', N'ASR_ASh12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101313', N'MEL_BaseballBat_Spikes_01', N'29', N'Spiked Bat', N'Just your traditional baseball bat. With spikes. Razor sharp, sure to leave a mark.', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'45', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_BaseballBat_Spikes_01', N'900')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113060', N'ASR_ASh12_Mk6_1', N'20', N'$ASR_ASh12_Mk6_1', N'$ASR_ASh12_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12', N'Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload', N'20.5', N'0', N'1', N'321', N'35', N'0', N'0', N'0', N'0', N'1', N'2.93', N'0.43', N'291', N'4.65', N'16.05', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410847', N'0', N'0', N'410841', N'0', N'0', N'0', N'0', N'ASR_ASh12', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101314', N'MEL_BaseballBat_02', N'29', N'Metal Bat', N'Aluminum, will never rust. Heads bounce off faster. Not suitable for major league destruction.', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'6500', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_BaseballBat_02', N'800')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113062', N'ASR_MXZ5_Tier2', N'20', N'$ASR_MXZ5_Mk3', N'$ASR_MXZ5_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload', N'26', N'0', N'1', N'451', N'1', N'0', N'0', N'0', N'0', N'1', N'3.4', N'0.43', N'321', N'5.3', N'17.3', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2004', N'0', N'0', N'0', N'410696', N'410642', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_MXZ5', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101315', N'Item_Binocular', N'28', N'Binoculars', N'A great way to checkout if an area is safe before entering, keep an eye out for infected and bandits', N'0 0 0', N'', N'assault', N'5.45', N'', N'', N'0', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'60', N'0', N'0', N'0', N'asr_grenade', N'100', N'30', N'binoculars', N'80', N'0', N'0', N'0', N'100', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Binocular', N'200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113063', N'ASR_MXZ5_Tier2', N'20', N'$ASR_MXZ5_Mk4', N'$ASR_MXZ5_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload', N'24', N'0', N'1', N'451', N'1', N'0', N'0', N'0', N'0', N'1', N'3.4', N'0.43', N'321', N'4.1', N'14.2', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2004', N'0', N'0', N'0', N'410696', N'410642', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_MXZ5', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101316', N'Item_Barricade_BarbWire', N'28', N'Barb wire barricade', N'Drag this across a doorway to barricade the entrance leaving you safe inside, unless something is already inside with you!', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'500', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'200', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Barricade_BarbWire', N'500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113064', N'ASR_MXZ5_Tier2', N'20', N'$ASR_MXZ5_Mk5', N'$ASR_MXZ5_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload', N'24', N'0', N'1', N'451', N'1', N'0', N'0', N'0', N'0', N'1', N'3.4', N'0.43', N'321', N'4.1', N'14.1', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'2004', N'0', N'0', N'0', N'410696', N'410642', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_MXZ5', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101317', N'Item_Barricade_WoodShield', N'28', N'Wood shield barricade', N'Great for blocking doorways to keep out those pesky infected', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'250', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'200', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Barricade_WoodShield', N'700')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113065', N'ASR_MXZ5_Mk6_1', N'20', N'$ASR_MXZ5_Mk6_1', N'$ASR_MXZ5_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5', N'Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload', N'24', N'0', N'1', N'451', N'56', N'0', N'0', N'0', N'0', N'1', N'3.4', N'0.43', N'321', N'4.1', N'14', N'0', N'asr_grenade', N'111', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410642', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_MXZ5', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101318', N'Item_Riot_Shield_Crate_01', N'28', N'Riot Shield', N'Its a riot shield! Hide behind it for safety', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'400', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'350', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Riot_Shield_Crate_01', N'900')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113067', N'ASR_THOR5_Tier2', N'20', N'$ASR_THOR-5_Mk3', N'$ASR_THOR-5_Mk3_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'25', N'0', N'1', N'341', N'53', N'0', N'0', N'0', N'0', N'1', N'4.95', N'0.43', N'270', N'13.7', N'18.3', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410643', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_SHRAM', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101319', N'Item_RangeFinder', N'28', N'Range Finder', N'Need to know how far away something is? The range finder can be your best friend when sneaking around searching for survival items', N'0 0 0', N'', N'assault', N'5.45', N'', N'', N'0', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'60', N'0', N'0', N'0', N'asr_grenade', N'100', N'30', N'rangefinder', N'80', N'0', N'0', N'0', N'350', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_RangeFinder', N'500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113068', N'ASR_THOR5_Tier2', N'20', N'$ASR_THOR-5_Mk4', N'$ASR_THOR-5_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'351', N'66', N'0', N'0', N'0', N'0', N'1', N'4.95', N'0.43', N'391', N'4.65', N'15.25', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410643', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_SHRAM', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101320', N'HG_FlareGun', N'25', N'Flare Gun', N'', N'0 0 0', N'muzzle_hg', N'pistol', N'Flare', N'Sounds/NewWeapons/SMG/HK_MP5SD', N'Sounds/Weapons/HG/HG_Generic_Reload', N'5', N'0', N'10', N'50', N'50', N'0', N'180', N'0', N'0', N'1', N'2', N'2', N'60', N'15', N'5', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400152', N'0', N'0', N'0', N'0', N'HG_FlareGun', N'1000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113069', N'ASR_THOR5_Tier2', N'20', N'$ASR_THOR-5_Mk5', N'$ASR_THOR-5_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'351', N'66', N'0', N'0', N'0', N'0', N'1', N'4.95', N'0.43', N'391', N'4.65', N'15.2', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410643', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_SHRAM', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101321', N'SHG_DoubleBarrel', N'22', N'Double Barrel', N'Also known as Doubles or Broomsticks, this powerful shotgun allows two shots to be fired in quick succession before reloading', N'0 0 0', N'muzzle_sh1', N'assault', N'buckshot', N'Sounds/NewWeapons/Shotgun/Shotgun', N'Sounds/Weapons/New Reloads/SH_Double_barrel_reload', N'20', N'0', N'1', N'300', N'10', N'0', N'0', N'0', N'0', N'1', N'2', N'1', N'120', N'20', N'25', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400141', N'0', N'0', N'0', N'0', N'SHG_DoubleBarrel', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113070', N'ASR_THOR5_Mk6_1', N'20', N'$ASR_THOR-5_Mk6_1', N'$ASR_THOR-5_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'451', N'67', N'0', N'0', N'0', N'0', N'1', N'4.95', N'0.43', N'391', N'4.65', N'15.1', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410643', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_SHRAM', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101322', N'SNP_CrossBow', N'20', N'Compound Crossbow', N'String drawn compound hunting crossbow for silent kills. Uses bow arrows for ammo', N'0 0 0', N'', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Special/Crossbow', N'Sounds/Weapons/New Reloads/Crossbow-Reload', N'20', N'1', N'1', N'600', N'50', N'0', N'0', N'0', N'0', N'1', N'2', N'2', N'60', N'2', N'2', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'5001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400140', N'0', N'0', N'0', N'0', N'SNP_CrossBow', N'3500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113071', N'ASR_TRX4_Tier2', N'20', N'$ASR_TRX4_Mk4', N'$ASR_TRX4_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'24', N'0', N'1', N'471', N'56', N'0', N'0', N'0', N'0', N'1', N'5', N'0.43', N'381', N'4.9', N'15.25', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410853', N'0', N'0', N'410854', N'0', N'0', N'0', N'0', N'ASR_Tar30', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101323', N'Item_Airhorn', N'28', N'Air horn', N'Do your friends keep getting attacked?  Be the hero and blow your air horn to make the infected come after you instead.', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'0', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'60', N'0', N'0', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Airhorn', N'100')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113072', N'ASR_TRX4_Tier2', N'20', N'$ASR_TRX4_Mk5', N'$ASR_TRX4_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'24', N'0', N'1', N'471', N'56', N'0', N'0', N'0', N'0', N'1', N'5', N'0.43', N'381', N'4.9', N'15.2', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410853', N'0', N'0', N'410854', N'0', N'0', N'0', N'0', N'ASR_Tar30', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101324', N'item_barricade_sandbag', N'28', N'Sandbag barricade', N'These should keep out the undead.. until they learn to climb that is', N'0 0 0', N'', N'assault', N'5.45', N'', N'', N'500', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'200', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'item_barricade_sandbag', N'1000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113073', N'ASR_TRX4_Mk6_1', N'20', N'$ASR_TRX4_Mk6_1', N'$ASR_TRX4_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'24', N'0', N'1', N'471', N'56', N'0', N'0', N'0', N'0', N'1', N'5', N'0.43', N'381', N'4.9', N'15.15', N'0', N'asr_grenade', N'111', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'410696', N'410853', N'0', N'0', N'410854', N'0', N'0', N'0', N'0', N'ASR_Tar30', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101325', N'Item_Chemlight_blue', N'27', N'Chemlight blue', N'A blue glowstick', N'0 0 0', N'', N'grenade', N'ChemLight_blue', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'46', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113074', N'SNP_LM7_Tier2', N'21', N'$SNP_LM7_Mk5', N'$SNP_LM7_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/LM7/LM7_A', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'150', N'0', N'1.3', N'800', N'600', N'0', N'0', N'0', N'0', N'1', N'3', N'0.43', N'4', N'3', N'28.35', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410702', N'0', N'0', N'410690', N'0', N'0', N'0', N'0', N'SNP_LM7', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101326', N'Item_Chemlight_green', N'27', N'Chemlight green', N'A green glowstick. Ravers favorite color', N'0 0 0', N'', N'grenade', N'ChemLight_green', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'46', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113075', N'SNP_FWS15_Tier2', N'21', N'$SNP_FWS15_Mk4', N'$SNP_FWS15_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/SNPArsReload', N'120', N'0', N'1.2', N'671', N'1', N'0', N'0', N'0', N'0', N'1', N'5.4', N'0.43', N'5', N'3', N'28.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410846', N'0', N'0', N'0', N'0', N'SNP_Bullistic', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101327', N'Item_Chemlight_orange', N'27', N'Chemlight orange', N'An orange glowstick', N'0 0 0', N'', N'grenade', N'ChemLight_orange', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'46', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113076', N'SNP_FWS15_Tier2', N'21', N'$SNP_FWS15_Mk5', N'$SNP_FWS15_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/SNPArsReload', N'120', N'0', N'1.2', N'671', N'1', N'0', N'0', N'0', N'0', N'1', N'5.4', N'0.43', N'5', N'3', N'23.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410846', N'0', N'0', N'0', N'0', N'SNP_Bullistic', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101328', N'Item_Chemlight_red', N'27', N'Chemlight red', N'A red glowstick', N'0 0 0', N'', N'grenade', N'ChemLight_red', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'46', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113077', N'SNP_FWS15_Mk6_1', N'21', N'$SNP_FWS15_Mk6_1', N'$SNP_FWS15_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/ARS', N'Sounds/Weapons/Guns/Sniper Rifles/Bullistic/SNPArsReload', N'120', N'0', N'1.2', N'671', N'541', N'0', N'0', N'0', N'0', N'1', N'5.4', N'0.43', N'5', N'3', N'23.95', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410846', N'0', N'0', N'0', N'0', N'SNP_Bullistic', N'6000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101329', N'Item_Chemlight_yellow', N'27', N'Chemlight yellow', N'A yellow glowstick', N'0 0 0', N'', N'grenade', N'ChemLight_yellow', N'', N'', N'0', N'0', N'10', N'20', N'50', N'0', N'180', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'1500', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Chemlight', N'30')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113078', N'SHG_Saiga_Tier1', N'22', N'$SHG_Saiga_Mk2', N'$SHG_Saiga_Mk2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/Saiga/Saiga', N'Sounds/Weapons/Guns/Shotguns/Saiga/SaigaReload', N'25.5', N'0', N'1', N'221', N'1', N'0', N'0', N'0', N'0', N'1', N'3.92', N'1.2', N'40', N'5.4', N'18.51', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'88', N'0', N'0', N'0', N'0', N'410697', N'410649', N'0', N'0', N'410680', N'0', N'0', N'0', N'0', N'SHG_Saiga', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101330', N'HG_Ruger', N'25', N'Ruger', N'Reliable and relatively common, the lower powered Kruger .22 is a household staple, allowing for low cost practice with firm control', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/Ruger22', N'Sounds/Weapons/HG/HG_Generic_Reload', N'20', N'0', N'1', N'500', N'35', N'0', N'0', N'0', N'0', N'1', N'2', N'2', N'800', N'9', N'3', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400144', N'0', N'0', N'0', N'0', N'HG_Ruger', N'600')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113079', N'LMG_NG100_Tier2', N'23', N'$LMG_NG100_Mk4', N'$LMG_NG100_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/NG100', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/LMGNG100Reload_v2', N'36', N'0', N'1', N'600', N'45', N'0', N'0', N'0', N'0', N'1', N'6.24', N'0', N'341', N'5', N'17', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410648', N'0', N'0', N'410676', N'0', N'0', N'0', N'0', N'LMG_NG100', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101331', N'HG_Colt_Anaconda', N'25', N'Colt Anaconda', N'Introduced in 1990, the Colt Anaconda is a large double action .44 caliber revolver featuring a six round cylinder, designed and produced by the Colt''s Manufacturing Company', N'0 0 0', N'muzzle_hg', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/DesertEagle', N'Sounds/Weapons/HG/HG_Generic_Reload', N'45', N'0', N'1', N'500', N'40', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'10', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400145', N'0', N'0', N'0', N'0', N'HG_Colt_Anaconda', N'1750')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113080', N'LMG_NG100_Tier2', N'23', N'$LMG_NG100_Mk5', N'$LMG_NG100_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/NG100', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/LMGNG100Reload_v2', N'36', N'0', N'1', N'451', N'45', N'0', N'0', N'0', N'0', N'1', N'6.24', N'0', N'341', N'5', N'17', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410648', N'0', N'0', N'410676', N'0', N'0', N'0', N'0', N'LMG_NG100', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101332', N'ASR_Ruger_Rifle', N'20', N'Kruger .22 Rifle', N'Semi-automatic .22 Long Rifle with removable rotary magazine', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/Ruger22', N'Sounds/Weapons/New Reloads/ASR_Ruger_rifle_reload', N'25', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'650', N'9', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'7001', N'0', N'0', N'0', N'0', N'0', N'400149', N'0', N'0', N'400148', N'0', N'0', N'0', N'0', N'ASR_Ruger_Rifle', N'2500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113081', N'LMG_NG100_Mk6_1', N'23', N'$LMG_NG100_Mk6_1', N'$LMG_NG100_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/NG100', N'Sounds/Weapons/Guns/LargeMachine Guns/NG100/LMGNG100Reload_v2', N'36', N'0', N'1', N'600', N'45', N'0', N'0', N'0', N'0', N'1', N'6.24', N'0', N'341', N'5', N'17', N'0', N'asr_grenade', N'001', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410648', N'0', N'0', N'410676', N'0', N'0', N'0', N'0', N'LMG_NG100', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101334', N'ASR_Mini14', N'20', N'Kruger Mini-14', N'The Kruger''s short size makes it ideal for all situations where ease of maneuverability is a priority, whether it be on the ranch or the deep woods.', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'Sounds/NewWeapons/Assault/Ruger22', N'Sounds/Weapons/New Reloads/ASR_Mini14_reload', N'25', N'0', N'1', N'500', N'300', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'650', N'9', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'3001', N'0', N'7020', N'0', N'0', N'0', N'0', N'0', N'400151', N'0', N'0', N'400150', N'0', N'0', N'0', N'0', N'ASR_Mini14', N'3100')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113082', N'HG_AP50_Tier2', N'25', N'$HG_AP50_Mk5', N'$HG_AP50_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/AP50/AP50', N'', N'45', N'0', N'1', N'341', N'11', N'0', N'0', N'0', N'0', N'1', N'2.7', N'1.2', N'89', N'5.5', N'26.15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410850', N'0', N'0', N'410843', N'0', N'0', N'0', N'0', N'HG_AP50', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101335', N'MEL_CandyCane_01', N'29', N'Kandy Kane', N'For yuletide slaughtering in style!', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'15', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'65', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_CandyCane_01', N'800')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113083', N'HG_AP50_Mk6_1', N'25', N'$HG_AP50_Mk6_1', N'$HG_AP50_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/AP50/AP50', N'', N'45', N'0', N'1', N'341', N'11', N'0', N'0', N'0', N'0', N'1', N'2.7', N'1.2', N'89', N'5.5', N'26.85', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410850', N'0', N'0', N'410843', N'0', N'0', N'0', N'0', N'HG_AP50', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101336', N'mel_katana_01', N'29', N'Katana', N'Ancient deadly sharp Samurai weapon, hand made to cleave your foe cleanly in two. Or three...or four....', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'50', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'mel_katana_01', N'1200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113084', N'HG_RV50_Tier2', N'25', N'$HG_RV50_Mk5', N'$HG_RV50_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload', N'37', N'0', N'1', N'371', N'25', N'0', N'0', N'0', N'0', N'1', N'4.14', N'1.2', N'90', N'5.5', N'29.15', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410646', N'0', N'0', N'410673', N'0', N'0', N'0', N'0', N'HG_RV50c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101337', N'mel_katana_01_special', N'29', N'Jokoto Katana', N'Among the most ancient blades, the Jokoto Katana''s were manufactured for only the most elite and honorable of warriors. Carrying such a blade imparts great responsibility.', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'50', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'mel_katana_01', N'1200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113085', N'HG_RV50_Mk6_1', N'25', N'$HG_RV50_Mk6_1', N'$HG_RV50_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo50', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c', N'Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload', N'37', N'0', N'1', N'371', N'25', N'0', N'0', N'0', N'0', N'1', N'4.14', N'1.2', N'90', N'5.5', N'29.85', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410646', N'0', N'0', N'410673', N'0', N'0', N'0', N'0', N'HG_RV50c', N'1800')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101338', N'MEL_katana_02_special', N'29', N'Wakizashi', N'Shorter than its counterpart, the wakizashi is designed for closer combat and even ritual suicide.', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'mel_katana_01', N'600')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113086', N'HG_MicroUzi_Tier2', N'25', N'$HG_MicroUzi_Mk4', N'$HG_MicroUzi_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'23', N'0', N'1', N'341', N'1', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'300', N'4.6', N'15.21', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410851', N'0', N'0', N'410845', N'0', N'0', N'0', N'0', N'HG_MicroUzi', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101339', N'MEL_Machete_01', N'29', N'Machete', N'A rough but sharp blade used for clearing brush', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'50', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'120', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'mel_machete_01', N'800')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113087', N'HG_MicroUzi_Tier2', N'25', N'$HG_MicroUzi_Mk5', N'$HG_MicroUzi_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi', N'Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload', N'23', N'0', N'1', N'341', N'35', N'0', N'0', N'0', N'0', N'1', N'3.01', N'1.2', N'300', N'4.6', N'15.21', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2', N'2', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410851', N'0', N'0', N'410845', N'0', N'0', N'0', N'0', N'HG_MicroUzi', N'2500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101340', N'Consumables_MiniSaints_01', N'30', N'MiniSaints', N'Creamy, moist and delectable, MiniSaints are a delicious treat the whole family can enjoy! Best consumed while watching family movies, possibly involving snow and dogs.', N'', N'', N'', N'', N'', N'', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'5', N'0', N'0', N'0', N'5', N'15', N'0', N'', N'', N'30', N'', N'0', N'0', N'0', N'0', N'41', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113088', N'SMG_Kris_Tier2', N'26', N'$SMG_Kris_Mk5', N'$SMG_Kris_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo45', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/KRIS', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/SMGKrisReload', N'24', N'0', N'1', N'371', N'1', N'0', N'0', N'0', N'0', N'1', N'4.2', N'0.43', N'331', N'10.9', N'11.9', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410655', N'0', N'0', N'410688', N'0', N'0', N'0', N'0', N'SMG_Kris', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101341', N'ASR_Mosin_Rifle', N'20', N'Mosin', N'A Russian bolt action rifle with an internally fed magazine, this reliable rifle has been in popular use through countless wars since 1891', N'0 0 0', N'muzzle_asr', N'assault', N'Sniper5.45', N'Sounds/NewWeapons/Assault/Mosin', N'Sounds/Weapons/New Reloads/Mosin-reload', N'50', N'0', N'1', N'500', N'500', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'40', N'2', N'8', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'2001', N'5001', N'0', N'0', N'7030', N'0', N'0', N'0', N'0', N'0', N'400155', N'0', N'0', N'400153', N'0', N'0', N'0', N'0', N'ASR_Mosin_Rifle', N'3000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113089', N'SMG_Kris_Mk6_1', N'26', N'$SMG_Kris_Mk6_1', N'$SMG_Kris_Mk6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo45', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/KRIS', N'Sounds/Weapons/Guns/SubMachine Guns/Kris/SMGKrisReload', N'24', N'0', N'1', N'371', N'1', N'0', N'0', N'0', N'0', N'1', N'4.2', N'0.43', N'331', N'10.9', N'11.75', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410655', N'0', N'0', N'410688', N'0', N'0', N'0', N'0', N'SMG_Kris', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101342', N'HG_colt_1911', N'25', N'1911', N'Standard US service pistol known for its minimal recoil and light weight', N'0 0 0', N'muzzle_hg', N'pistol', N'Sniper5.45', N'Sounds/NewWeapons/Handgun/9mmGeneric', N'Sounds/Weapons/HG/HG_Generic_Reload', N'35', N'0', N'1', N'500', N'40', N'0', N'0', N'0', N'0', N'1', N'2', N'0', N'800', N'4', N'2', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'8001', N'0', N'3002', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400154', N'0', N'0', N'0', N'0', N'HG_colt_1911', N'650')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113090', N'SMG_CF10_Tier2', N'26', N'$SMG_CF-10_Mk4', N'$SMG_CF-10_Mk4_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/ChangFeng', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/SMGBizonReload', N'21', N'0', N'1', N'341', N'31', N'0', N'0', N'0', N'0', N'1', N'3.51', N'0.43', N'251', N'4.1', N'12.1', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410849', N'0', N'0', N'410840', N'0', N'0', N'0', N'0', N'SMG_ChangFeng', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101343', N'MEL_BrassKnuckles', N'29', N'Brass Knuckles', N'A tried and true classic. Pummel your enemies into submission!', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'mel_machete', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113091', N'SMG_CF10_Tier2', N'26', N'$SMG_CF-10_Mk5', N'$SMG_CF-10_Mk5_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Pistol_Ammo9mm', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/ChangFeng', N'Sounds/Weapons/Guns/SubMachine Guns/ChangFeng/SMGBizonReload', N'21', N'0', N'1', N'341', N'31', N'0', N'0', N'0', N'0', N'1', N'3.51', N'0.43', N'251', N'4.1', N'14.05', N'0', N'asr_grenade', N'101', N'30', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'410696', N'410849', N'0', N'0', N'410840', N'0', N'0', N'0', N'0', N'SMG_ChangFeng', N'3500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101344', N'MEL_Canoe_paddle', N'29', N'Canoe Paddle', N'Wooden canoe paddle', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Canoe_paddle', N'1000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113092', N'MEL_Knife_MK1', N'29', N'$MEL_Knife_MK1', N'$MEL_Knife_MK1_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101345', N'MEL_Cricket_bat', N'29', N'Cricket bat', N'Score some runs and crush some skulls!', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'35', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Cricket_bat', N'800')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113093', N'MEL_Knife_MK2', N'29', N'$MEL_Knife_MK2', N'$MEL_Knife_MK2_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'5', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101346', N'MEL_Shovel', N'29', N'Shovel', N'Practical AND deadly', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Shovel', N'700')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113094', N'MEL_Knife_MK3', N'29', N'$MEL_Knife_MK3', N'$MEL_Knife_MK3_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'10', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101347', N'MEL_Chainsaw', N'29', N'Chainsaw', N'Tear through undead and living alike with this fearsome household tool', N'0 0 0', N'', N'melee', N'melee', N'', N'', N'50', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Chainsaw', N'1200')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113095', N'MEL_Knife_MK4', N'29', N'$MEL_Knife_MK4', N'$MEL_Knife_MK4_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'15', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101348', N'Item_Lockbox_01_Crate', N'28', N'Personal locker', N'Placeable personal storage unit', N'0 0 0', N'muzzle_asr', N'assault', N'5.45', N'', N'', N'20', N'1', N'10', N'300', N'50', N'0', N'0', N'0', N'0', N'1', N'4', N'2', N'10', N'20', N'20', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'300', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Item_Lockbox_01_Crate', N'5000')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113096', N'MEL_Knife_MK5', N'29', N'$MEL_Knife_MK5', N'$MEL_Knife_MK5_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101352', N'Block_Door_Wood_2M_01', N'28', N'Wooden door block', N'2 meters high', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'250', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113098', N'ASR_THOR5_Mk6_2', N'20', N'$ASR_THOR-5_Mk6_2', N'$ASR_THOR-5_Mk6_2_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$ASR_Ammo', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM', N'Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload', N'26', N'0', N'1', N'321', N'65', N'0', N'0', N'0', N'0', N'1', N'3.95', N'0.43', N'241', N'4.8', N'15.05', N'0', N'asr_grenade', N'101', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'30', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'1', N'1', N'1', N'1', N'35', N'0', N'0', N'0', N'0', N'410696', N'410643', N'0', N'0', N'410691', N'0', N'0', N'0', N'0', N'ASR_SHRAM', N'4500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101353', N'Block_Wall_Metal_2M_01', N'28', N'Metal wall block', N'2 meters high', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'500', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'500')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113101', N'MEL_Knife_MK6', N'29', N'$MEL_Knife_MK6', N'$MEL_Knife_MK6_desc', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/Weapons/Melee/Knife/Melee_Knife', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'100', N'6', N'12', N'0', N'asr_grenade', N'001', N'15', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'MEL_Tactical_Knife', N'500')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101354', N'Block_Wall_Brick_Tall_01', N'28', N'Tall brick wall block', N'Large brick wall piece', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'250', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113102', N'SUP_RPG7_Tier2', N'24', N'$Alien_Missile', N'Projectile attack for aliens', N'0 0 0', N'muzzle_asr', N'assault', N'$Alien_projectile', N'', N'', N'1', N'0', N'0.01', N'15', N'1', N'6', N'0.25', N'10', N'0', N'1', N'3.75', N'0', N'60', N'7', N'15', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'SUP_RPG7', N'1')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101355', N'Block_Wall_Wood_2M_01', N'28', N'Wooden wall piece, 2M', N'2 meter tall wooden wall piece', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'250', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113105', N'SHG_M1216_MK6_1', N'22', N'$SHG_M1216_MK6_1', N'$SHG_M1216_MK6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Shotgun_Ammo', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216', N'Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload', N'30', N'0', N'1', N'251', N'8', N'0', N'0', N'0', N'0', N'1', N'3', N'3.2', N'23', N'7.4', N'16.61', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410848', N'0', N'0', N'410844', N'0', N'0', N'0', N'0', N'SHG_M1216', N'3000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101356', N'Block_Wall_Brick_Short_01', N'28', N'Short brick wall piece', N'Short brick wall block', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'500', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113106', N'SUP_RPG7_MK6_1', N'24', N'$SUP_RPG7_Mk6_1', N'$SUP_RPG7_Mk6_1_desc', N'0 0 0', N'muzzle_sup_rpg7_basic_01', N'assault', N'$RPG7_Ammo', N'Sounds/Weapons/Guns/Support/RPG7/RPG7', N'Sounds/Weapons/Guns/Support/RPG7/RPG7Reload', N'1', N'0', N'0.5', N'190', N'1', N'6', N'0.25', N'75', N'0', N'1', N'3.75', N'0', N'60', N'3.25', N'10.3', N'0', N'asr_grenade', N'100', N'50', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'410661', N'0', N'0', N'410678', N'0', N'0', N'0', N'0', N'SUP_RPG7', N'4000')
 GO
 
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101357', N'Block_Farm_01', N'28', N'Farm Block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'250', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'400')
+INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'113107', N'SNP_AAR_MK6_1', N'21', N'$SNP_AAR_MK6_1', N'$SNP_AAR_MK6_1_desc', N'0 0 0', N'muzzle_asr', N'assault', N'$Sniper_Ammo', N'Sounds/Weapons/Guns/Sniper Rifles/Archangel/R13', N'Sounds/Weapons/Guns/Sniper Rifles/ARS/SNPArsReload', N'115', N'0', N'1.1', N'750', N'400', N'0', N'0', N'0', N'0', N'1', N'3', N'0.43', N'5', N'2', N'21.25', N'0', N'asr_grenade', N'100', N'35', N'default', N'0', N'0', N'0', N'0', N'0', N'1', N'20', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'1', N'0', N'0', N'32', N'0', N'0', N'0', N'0', N'0', N'410703', N'0', N'0', N'410667', N'0', N'0', N'0', N'0', N'SNP_ArchAngel', N'6000')
 GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101358', N'Block_PowerGen_Indust_01', N'28', N'Industrial power generator', N'Industrial strength power generator', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'500')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101359', N'Block_PowerGen_01_Small', N'28', N'Small Power Generator', N'Small Power Generator', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'200', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101360', N'Block_SolarWater_01', N'28', N'Solar Water Purifier', N'Small solar powered water purifier', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'200', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'500')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101361', N'Block_Light_01', N'28', N'Placeable light', N'Moveable, placeable light source', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'200', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'200')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101362', N'Block_Farm_ChipBag_01', N'28', N'Bag of Chips farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'200', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101363', N'Block_Veg_Apple_01', N'28', N'Apple farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'200', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101364', N'Block_Veg_Banana_01', N'28', N'Banana farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101365', N'Block_Veg_Carrot_01', N'28', N'Carrot farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101366', N'Block_Veg_Lettuce', N'28', N'Lettuce farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101367', N'Block_Veg_PineApple_01', N'28', N'Pineapple farm block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101368', N'Block_Veg_Potato_01', N'28', N'Potato Farm Block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101369', N'Block_Veg_Tomato_01', N'28', N'Tomato Farm Block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101370', N'Block_Veg_WaterMelon_01', N'28', N'Watermelon Farm Block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101371', N'Block_Door_Wood_2M_01_Crate', N'28', N'Wood Door Crate 2M', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'350')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101372', N'Block_Farm_01_Crate', N'28', N'Farm Block Crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101373', N'Block_Light_01_Crate', N'28', N'Light block crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101374', N'Block_PowerGen_01_Crate', N'28', N'Power Generator Block Crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101375', N'Block_PowerGen_Indust_01_Crate', N'28', N'Industrial Power Generator block', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101376', N'Block_SolarWater_01_Crate', N'28', N'Solar Water Power block crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101377', N'Block_Wall_Brick_Short_01_Crate', N'28', N'Short Brick Wall crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101378', N'Block_Wall_Brick_Tall_01_Crate', N'28', N'Tall Brick wall crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101379', N'Block_Wall_Metal_2M_01_Crate', N'28', N'Tall 2M Metal Wall Block crate', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101380', N'Block_Wall_Wood_2M_01_Crate', N'28', N'Wood Wall block crate, 2M', N'', N'0 0 0', N'', N'assault', N'melee', N'', N'', N'300', N'1', N'10', N'60', N'1', N'0', N'0', N'0', N'1', N'5', N'1', N'0', N'60', N'1', N'1', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'300')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101381', N'Mel_ButterflyKnife', N'29', N'Butterfly Knife', N'A folding knife with two handles counter rotating around the blade so that when its closed the blade concealed', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_ButterflyKnife', N'400')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101382', N'Mel_Crowbar', N'29', N'Crowbar', N'A multi use household tool, useful for construction or surviving an apocalyptic event', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_Crowbar', N'600')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101383', N'Mel_FireAxe', N'29', N'Fire Axe', N'Standard issue axe used by firefighters to enter buildings and remove dangerous debris', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_FireAxe', N'1200')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101384', N'Mel_FryingPan', N'29', N'Frying Pan', N'Whether frying an egg or flattening a face, the common household frying pan has many uses', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_FryingPan', N'1100')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101385', N'Mel_GardenShears', N'29', N'Garden Shears', N'Whether shortening hedges or heads these shears are sure to come in handy', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_GardenShears', N'1000')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101386', N'Mel_Golf_Club', N'29', N'Golf Club', N'Best used for long drives. FORE!', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_Golf_Club', N'800')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101388', N'Mel_Pitchfork', N'29', N'Pitchfork', N'Designed to move hay economically, its intimidating design suits it well to sticking some undead', N'0 0 0', N'', N'melee', N'melee_sharp', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'Mel_Pitchfork', N'1400')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101389', N'Mel_PoliceBaton', N'29', N'Police Baton', N'Used by law enforcement as an aid in hand to hand combat, often to subdue unruly or resistant suspects', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'30', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'700')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101390', N'Mel_Power_Drill', N'29', N'Power Drill', N'Battery powered and unconventional, the drill is quite effective at dispatching enemies in the grisliest way', N'0 0 0', N'', N'melee', N'melee_sharp', N'', N'', N'40', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'120', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'900')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101391', N'Mel_Wrench', N'29', N'Wrench', N'Loved by plumbers around the world, this hefty tool can easily collapse the skulls of your foes', N'0 0 0', N'', N'melee', N'melee', N'Sounds/NewWeapons/Melee/Melee_Whoosh', N'', N'20', N'1', N'10', N'300', N'1', N'0', N'0', N'0', N'0', N'1', N'0', N'0', N'90', N'0', N'0', N'0', N'asr_grenade', N'001', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'', N'1200')
-GO
-
-INSERT INTO [dbo].[Items_Weapons] ([ItemID], [FNAME], [Category], [Name], [Description], [MuzzleOffset], [MuzzleParticle], [Animation], [BulletID], [Sound_Shot], [Sound_Reload], [Damage], [isImmediate], [Mass], [Speed], [DamageDecay], [Area], [Delay], [Timeout], [NumClips], [Clipsize], [ReloadTime], [ActiveReloadTick], [RateOfFire], [Spread], [Recoil], [NumGrenades], [GrenadeName], [Firemode], [DetectionRadius], [ScopeType], [ScopeZoom], [Price1], [Price7], [Price30], [PriceP], [IsNew], [LevelRequired], [GPrice1], [GPrice7], [GPrice30], [GPriceP], [ShotsFired], [ShotsHits], [KillsCQ], [KillsDM], [KillsSB], [IsUpgradeable], [IsFPS], [FPSSpec0], [FPSSpec1], [FPSSpec2], [FPSSpec3], [FPSSpec4], [FPSSpec5], [FPSSpec6], [FPSSpec7], [FPSSpec8], [FPSAttach0], [FPSAttach1], [FPSAttach2], [FPSAttach3], [FPSAttach4], [FPSAttach5], [FPSAttach6], [FPSAttach7], [FPSAttach8], [AnimPrefix], [Weight]) VALUES (N'101392', N'Mel_NailGun', N'25', N'Nail Gun', N'Commonly used in construction', N'0 0 0', N'', N'pistol', N'5.45', N'Sounds/NewWeapons/Handgun/Nailgun', N'Sounds/Weapons/New Reloads/Nailgun-reload', N'10', N'0', N'10', N'300', N'5', N'0', N'0', N'0', N'0', N'1', N'3', N'1', N'120', N'15', N'5', N'0', N'asr_grenade', N'100', N'30', N'default', N'0', N'0', N'0', N'0', N'2', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'1', N'1', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'0', N'400157', N'0', N'0', N'0', N'0', N'Mel_NailGun', N'0')
-GO
-
 
 -- ----------------------------
 -- Table structure for Leaderboard
@@ -2947,7 +2490,7 @@ GO
 CREATE TABLE [dbo].[Logins] (
   [LoginID] int  IDENTITY(1,1) NOT NULL,
   [CustomerID] int DEFAULT 0 NOT NULL,
-  [LoginTime] datetime DEFAULT (12)/(1))/(1973 NOT NULL,
+  [LoginTime] datetime DEFAULT ('19731201') NOT NULL,
   [IP] varchar(16) COLLATE Cyrillic_General_CI_AS DEFAULT '1.1.1.1' NOT NULL,
   [LoginSource] int DEFAULT 0 NOT NULL
 )
@@ -3680,7 +3223,7 @@ GO
 
 CREATE TABLE [dbo].[MasterServerInfo] (
   [ServerID] int DEFAULT 0 NOT NULL,
-  [LastUpdated] datetime DEFAULT (1)/(1))/(1970 NOT NULL,
+  [LastUpdated] datetime DEFAULT ('19700101') NOT NULL,
   [CreateGameKey] int DEFAULT 0 NOT NULL,
   [IP] varchar(64) COLLATE Cyrillic_General_CI_AS DEFAULT '0.0.0.0' NOT NULL
 )
@@ -3771,10 +3314,12 @@ CREATE TABLE [dbo].[UsersChars] (
   [CustomerID] int  NOT NULL,
   [Hardcore] int  NOT NULL,
   [Gamertag] nvarchar(64) COLLATE Cyrillic_General_CI_AS  NOT NULL,
-  [HeroItemID] int DEFAULT 20170 NOT NULL,
+  [HeroItemID] int DEFAULT 20754 NOT NULL,
   [HeadIdx] int  NOT NULL,
   [BodyIdx] int  NOT NULL,
   [LegsIdx] int  NOT NULL,
+  [HairIdx] int DEFAULT 0 NOT NULL,
+  [FeetIdx] int DEFAULT 0 NOT NULL,
   [Alive] int DEFAULT 3 NOT NULL,
   [DeathUtcTime] datetime DEFAULT '1/1/1973' NOT NULL,
   [XP] int DEFAULT 0 NOT NULL,
@@ -3788,8 +3333,8 @@ CREATE TABLE [dbo].[UsersChars] (
   [Water] float(53) DEFAULT 0 NOT NULL,
   [Toxic] float(53) DEFAULT 0 NOT NULL,
   [Reputation] int DEFAULT 0 NOT NULL,
-  [BackpackID] int DEFAULT 20176 NOT NULL,
-  [BackpackSize] int DEFAULT 12 NOT NULL,
+  [BackpackID] int DEFAULT 21712 NOT NULL,
+  [BackpackSize] int DEFAULT 16 NOT NULL,
   [Attachment1] varchar(256) COLLATE Cyrillic_General_CI_AS DEFAULT '' NOT NULL,
   [Attachment2] varchar(256) COLLATE Cyrillic_General_CI_AS DEFAULT '' NOT NULL,
   [Stat00] int DEFAULT 0 NOT NULL,
@@ -3817,7 +3362,7 @@ GO
 SET IDENTITY_INSERT [dbo].[UsersChars] ON
 GO
 
-INSERT INTO [dbo].[UsersChars] ([CharID], [CustomerID], [Hardcore], [Gamertag], [HeroItemID], [HeadIdx], [BodyIdx], [LegsIdx], [Alive], [DeathUtcTime], [XP], [TimePlayed], [GameMapId], [GameServerId], [GamePos], [GameFlags], [Health], [Food], [Water], [Toxic], [Reputation], [BackpackID], [BackpackSize], [Attachment1], [Attachment2], [Stat00], [Stat01], [Stat02], [Stat03], [Stat04], [Stat05], [LastUpdateDate], [CreateDate], [ClanID], [ClanRank], [ClanContributedXP], [ClanContributedGP]) VALUES (N'3', N'1000000', N'0', N'ES3N1N', N'20174', N'0', N'0', N'0', N'1', N'1973-01-01 00:00:00.000', N'0', N'60', N'2', N'1', N'7178.074 162.786 2267.629 37', N'0', N'100', N'1', N'1', N'0', N'0', N'20176', N'12', N'0 0 0 0 0 0 0 0', N'0 0 0 0 0 0 0 0', N'0', N'0', N'0', N'0', N'0', N'0', N'2026-06-26 23:25:39.710', N'2026-06-16 17:32:07.013', N'0', N'99', N'0', N'0')
+INSERT INTO [dbo].[UsersChars] ([CharID], [CustomerID], [Hardcore], [Gamertag], [HeroItemID], [HeadIdx], [BodyIdx], [LegsIdx], [HairIdx], [FeetIdx], [Alive], [DeathUtcTime], [XP], [TimePlayed], [GameMapId], [GameServerId], [GamePos], [GameFlags], [Health], [Food], [Water], [Toxic], [Reputation], [BackpackID], [BackpackSize], [Attachment1], [Attachment2], [Stat00], [Stat01], [Stat02], [Stat03], [Stat04], [Stat05], [LastUpdateDate], [CreateDate], [ClanID], [ClanRank], [ClanContributedXP], [ClanContributedGP]) VALUES (N'3', N'1000000', N'0', N'ES3N1N', N'20754', N'0', N'0', N'0', N'0', N'0', N'1', N'1973-01-01 00:00:00.000', N'0', N'60', N'2', N'1', N'7178.074 162.786 2267.629 37', N'0', N'100', N'1', N'1', N'0', N'0', N'21712', N'16', N'0 0 0 0 0 0 0 0', N'0 0 0 0 0 0 0 0', N'0', N'0', N'0', N'0', N'0', N'0', N'2026-06-26 23:25:39.710', N'2026-06-16 17:32:07.013', N'0', N'99', N'0', N'0')
 GO
 
 SET IDENTITY_INSERT [dbo].[UsersChars] OFF
@@ -3904,7 +3449,7 @@ GO
 INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'12', N'1000000', N'3', N'1', N'101306', N'2020-01-01 00:00:00.000', N'1', N'0', N'-1')
 GO
 
-INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'13', N'1000000', N'3', N'2', N'101261', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1')
+INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'13', N'1000000', N'3', N'2', N'109505', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1')
 GO
 
 INSERT INTO [dbo].[UsersInventory] ([InventoryID], [CustomerID], [CharID], [BackpackSlot], [ItemID], [LeasedUntil], [Quantity], [Var1], [Var2]) VALUES (N'14', N'1000000', N'3', N'3', N'101296', N'2020-01-01 00:00:00.000', N'1', N'-1', N'-1')
@@ -3968,11 +3513,11 @@ BEGIN
 	declare @AccountType int = 0
 	declare @BanCount int = 0
 	declare @BanReason nvarchar(512)
-	select 
-		@AccountStatus=AccountStatus, 
+	select
+		@AccountStatus=AccountStatus,
 		@accountType=AccountType,
-		@BanCount=BanCount, 
-		@BanReason=BanReason 
+		@BanCount=BanCount,
+		@BanReason=BanReason
 	from UsersData where CustomerID=@in_CustomerID
 	if(@AccountStatus = 200 or @AccountStatus = 201) begin
 		select 0 as ResultCode, 'already banned' as ResultMsg, @email as 'email'
@@ -3981,7 +3526,7 @@ BEGIN
 
 	-- clear his login session
 	update dbo.LoginSessions set SessionID=0 where CustomerID=@in_CustomerID
-	
+
 	-- set his all alive chars to respawned mode
 	update dbo.UsersChars set Alive=2 where CustomerID=@in_CustomerID and Alive=1
 
@@ -3993,15 +3538,15 @@ BEGIN
 		set @BanReason = '[GUEST_BAN] ' + @BanReason
 		set @BanCount  = 99;
 	end
-	
+
 	-- ban
-	if(@BanCount > 0) 
+	if(@BanCount > 0)
 	begin
 		insert into dbo.DBG_BanLog values (@in_CustomerID, GETDATE(), 2000, @in_BanReason)
 
-		update UsersData set 
-			AccountStatus=200, 
-			BanReason=@BanReason, 
+		update UsersData set
+			AccountStatus=200,
+			BanReason=@BanReason,
 			BanTime=GETDATE(),
 			BanCount=(BanCount+1),
 			BanExpireDate='2030-1-1'
@@ -4016,9 +3561,9 @@ BEGIN
 
 		insert into dbo.DBG_BanLog values (@in_CustomerID, GETDATE(), @BanTime, @in_BanReason)
 
-		update UsersData set 
-			AccountStatus=201, 
-			BanReason=@BanReason, 
+		update UsersData set
+			AccountStatus=201,
+			BanReason=@BanReason,
 			BanTime=GETDATE(),
 			BanCount=(BanCount+1),
 			BanExpireDate=DATEADD(hour, @BanTime, GETDATE())
@@ -4039,20 +3584,20 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[AD
 GO
 
 CREATE PROCEDURE [dbo].[ADMIN_BanWeaponHackers]
-AS  
-BEGIN  
-	SET NOCOUNT ON;  
-	declare @hacks TABLE 
+AS
+BEGIN
+	SET NOCOUNT ON;
+	declare @hacks TABLE
 	(
 		CustomerID int,
 		data varchar(512)
 	)
-	
+
 	declare @dt1 date = DATEADD(day, -1, GETDATE())
 
 	-- select all hack attempts to table
-	insert into @hacks 
-		select CustomerID, data from DBG_SrvLogInfo where 
+	insert into @hacks
+		select CustomerID, data from DBG_SrvLogInfo where
 			ReportTime >= @dt1 and IsProcessed=0 and CheatID=5 and (data like 'id:%')
 
 	-- clear them
@@ -4064,33 +3609,33 @@ BEGIN
 	--
 	declare @CustomerID int
 	declare @HackData varchar(512)
-	
-	DECLARE t_cursor CURSOR FOR 
-		select customerid, data from @hacks 
+
+	DECLARE t_cursor CURSOR FOR
+		select customerid, data from @hacks
 
 	OPEN t_cursor
 	FETCH NEXT FROM t_cursor into @CustomerID, @HackData
-	while @@FETCH_STATUS = 0 
+	while @@FETCH_STATUS = 0
 	begin
 		declare @AccountStatus int
-		
+
 		-- start banning
 		select @AccountStatus=AccountStatus from dbo.UsersData where CustomerID=@CustomerID
 
 		if(@AccountStatus = 100)
 		begin
 			declare @BanReason varchar(512) = ''
-			set @BanReason = 'WH[' + 
-				convert(varchar(128), MONTH(GETDATE())) + 
-				'/' + 
-				convert(varchar(128), DAY(GETDATE())) + 
+			set @BanReason = 'WH[' +
+				convert(varchar(128), MONTH(GETDATE())) +
+				'/' +
+				convert(varchar(128), DAY(GETDATE())) +
 				'] ' + @HackData
-			
+
 			print @CustomerID
 			print @BanReason
 			exec ADMIN_BanUser @CustomerID, @BanReason
 		end
-		
+
 		FETCH NEXT FROM t_cursor into @CustomerID, @HackData
 	end
 	close t_cursor
@@ -4145,12 +3690,12 @@ BEGIN
 	--delete from GamersfirstUserIDMap
 	--where not exists (select * from LoginID where LoginID.CustomerID = GamersfirstUserIDMap.CustomerID)
 	--select @@RowCount as Deleted, 'GamersfirstUserIDMap' as FromTable
-	
+
 	-- purge inventory
 	declare @InvCleanDate datetime = DATEADD(day, -30, GETDATE())
 	delete from Inventory where LeasedUntil<@InvCleanDate
 	delete from Inventory_FPS where LeasedUntil<@InvCleanDate
-	
+
 END
 GO
 
@@ -4169,7 +3714,7 @@ CREATE PROCEDURE [dbo].[DBG_RegisterIISCall]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	select 0 as ResultCode
 	/*
 	update DBG_IISApiStats set Hits=Hits+1, BytesIn=BytesIn+@in_BytesIn, BytesOut=BytesOut+@in_BytesOut where API=@in_API
@@ -4195,7 +3740,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[FN
 	DROP PROCEDURE [dbo].[FN_ADD_SECURITY_LOG]
 GO
 
-CREATE PROCEDURE [dbo].[FN_ADD_SECURITY_LOG] 
+CREATE PROCEDURE [dbo].[FN_ADD_SECURITY_LOG]
 	-- Add the parameters for the stored procedure here
 	@EventID int,
 	@IP varchar(64),
@@ -4208,8 +3753,8 @@ BEGIN
 	SET NOCOUNT ON;
 
 	INSERT INTO SecurityLog
-		(EventID, Date, IP, CustomerID, EventData) 
-	VALUES 
+		(EventID, Date, IP, CustomerID, EventData)
+	VALUES
 		(@EventID, GETDATE(), @IP, @CustomerID, @EventData)
 
 END
@@ -4234,22 +3779,22 @@ BEGIN
 	declare @InventoryID bigint = 0
 	declare @LeasedUntil datetime
 	declare @CurDate datetime = GETDATE()
-	
+
 	-- check if this is stackable item, if so - get buying stack size.
 	-- stackable item defined where NumClips>0, Quantity is ClipSize
 	declare @BuyStackSize int = 1
 	select @BuyStackSize=ClipSize from Items_Weapons where ItemID=@in_ItemID and NumClips>0
-	
+
 	-- see if we already have that item in inventory without modification vars
-	select @InventoryID=InventoryID, @LeasedUntil=LeasedUntil from UsersInventory 
+	select @InventoryID=InventoryID, @LeasedUntil=LeasedUntil from UsersInventory
 		where (CustomerID=@in_CustomerID and CharID=0 and ItemID=@in_ItemID and Var1<0)
-	if(@InventoryID = 0) 
+	if(@InventoryID = 0)
 	begin
 		INSERT INTO UsersInventory (
 			CustomerID,
 			CharID,
-			ItemID, 
-			LeasedUntil, 
+			ItemID,
+			LeasedUntil,
 			Quantity
 		)
 		VALUES (
@@ -4261,21 +3806,21 @@ BEGIN
 		)
 		return
 	end
-       
+
 	if(@LeasedUntil < @CurDate)
 		set @LeasedUntil = DATEADD(day, @in_ExpDays, @CurDate)
 	else
 		set @LeasedUntil = DATEADD(day, @in_ExpDays, @LeasedUntil)
-		
+
 	if(@LeasedUntil > '2020-1-1')
 		set @LeasedUntil = '2020-1-1'
 
 	-- all items is stackable by default
-	UPDATE UsersInventory SET 
+	UPDATE UsersInventory SET
 		LeasedUntil=@LeasedUntil,
 		Quantity=(Quantity+@BuyStackSize)
 	WHERE InventoryID=@InventoryID
-	
+
 	return
 END
 GO
@@ -4295,10 +3840,10 @@ CREATE PROCEDURE [dbo].[FN_AlterUserGP]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	if(@in_GP = 0)
 		return
-		
+
 	declare @GamePoints int = 0
 	select @GamePoints=GamePoints from UsersData where CustomerID=@in_CustomerID
 
@@ -4315,7 +3860,7 @@ BEGIN
 		@in_Reason,
 		@GamePoints
 	)
-	
+
 	update UsersData set GamePoints=(GamePoints + @in_GP) where CustomerID=@in_CustomerID
 
 END
@@ -4329,14 +3874,14 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[FN
 	DROP PROCEDURE [dbo].[FN_BackpackValidateItem]
 GO
 
-CREATE PROCEDURE [dbo].[FN_BackpackValidateItem] 
+CREATE PROCEDURE [dbo].[FN_BackpackValidateItem]
 	@in_CharID int,
 	@in_ItemID int,
 	@in_EquipIdx int
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	if @in_ItemID = 0
 		return 0
 
@@ -4377,7 +3922,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[FN
 	DROP PROCEDURE [dbo].[FN_LevelUpBonus]
 GO
 
-CREATE PROCEDURE [dbo].[FN_LevelUpBonus] 
+CREATE PROCEDURE [dbo].[FN_LevelUpBonus]
        @in_CustomerID int,
        @in_LevelUp int
 AS
@@ -4411,37 +3956,37 @@ CREATE PROCEDURE [dbo].[sp_alterdiagram]
 	AS
 	BEGIN
 		set nocount on
-	
+
 		declare @theId 			int
 		declare @retval 		int
 		declare @IsDbo 			int
-		
+
 		declare @UIDFound 		int
 		declare @DiagId			int
 		declare @ShouldChangeUID	int
-	
+
 		if(@diagramname is null)
 		begin
 			RAISERROR ('Invalid ARG', 16, 1)
 			return -1
 		end
-	
+
 		execute as caller;
-		select @theId = DATABASE_PRINCIPAL_ID();	 
-		select @IsDbo = IS_MEMBER(N'db_owner'); 
+		select @theId = DATABASE_PRINCIPAL_ID();
+		select @IsDbo = IS_MEMBER(N'db_owner');
 		if(@owner_id is null)
 			select @owner_id = @theId;
 		revert;
-	
+
 		select @ShouldChangeUID = 0
-		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
-		
+		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname
+
 		if(@DiagId IS NULL or (@IsDbo = 0 and @theId <> @UIDFound))
 		begin
 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1);
 			return -3
 		end
-	
+
 		if(@IsDbo <> 0)
 		begin
 			if(@UIDFound is null or USER_NAME(@UIDFound) is null) -- invalid principal_id
@@ -4450,7 +3995,7 @@ CREATE PROCEDURE [dbo].[sp_alterdiagram]
 			end
 		end
 
-		-- update dds data			
+		-- update dds data
 		update dbo.sysdiagrams set definition = @definition where diagram_id = @DiagId ;
 
 		-- change owner
@@ -4476,7 +4021,7 @@ GO
 CREATE PROCEDURE [dbo].[sp_creatediagram]
 	(
 		@diagramname 	sysname,
-		@owner_id		int	= null, 	
+		@owner_id		int	= null,
 		@version 		int,
 		@definition 	varbinary(max)
 	)
@@ -4484,7 +4029,7 @@ CREATE PROCEDURE [dbo].[sp_creatediagram]
 	AS
 	BEGIN
 		set nocount on
-	
+
 		declare @theId int
 		declare @retval int
 		declare @IsDbo	int
@@ -4494,12 +4039,12 @@ CREATE PROCEDURE [dbo].[sp_creatediagram]
 			RAISERROR (N'E_INVALIDARG', 16, 1);
 			return -1
 		end
-	
+
 		execute as caller;
-		select @theId = DATABASE_PRINCIPAL_ID(); 
+		select @theId = DATABASE_PRINCIPAL_ID();
 		select @IsDbo = IS_MEMBER(N'db_owner');
-		revert; 
-		
+		revert;
+
 		if @owner_id is null
 		begin
 			select @owner_id = @theId;
@@ -4522,11 +4067,11 @@ CREATE PROCEDURE [dbo].[sp_creatediagram]
 			RAISERROR ('The name is already used.', 16, 1);
 			return -2
 		end
-	
+
 		insert into dbo.sysdiagrams(name, principal_id , version, definition)
 				VALUES(@diagramname, @theId, @version, @definition) ;
-		
-		select @retval = @@IDENTITY 
+
+		select @retval = @@IDENTITY
 		return @retval
 	END
 GO
@@ -4550,32 +4095,32 @@ CREATE PROCEDURE [dbo].[sp_dropdiagram]
 		set nocount on
 		declare @theId 			int
 		declare @IsDbo 			int
-		
+
 		declare @UIDFound 		int
 		declare @DiagId			int
-	
+
 		if(@diagramname is null)
 		begin
 			RAISERROR ('Invalid value', 16, 1);
 			return -1
 		end
-	
+
 		EXECUTE AS CALLER;
 		select @theId = DATABASE_PRINCIPAL_ID();
-		select @IsDbo = IS_MEMBER(N'db_owner'); 
+		select @IsDbo = IS_MEMBER(N'db_owner');
 		if(@owner_id is null)
 			select @owner_id = @theId;
-		REVERT; 
-		
-		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
+		REVERT;
+
+		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname
 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId))
 		begin
 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1)
 			return -3
 		end
-	
+
 		delete from dbo.sysdiagrams where diagram_id = @DiagId;
-	
+
 		return 0;
 	END
 GO
@@ -4591,7 +4136,7 @@ GO
 CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition]
 	(
 		@diagramname 	sysname,
-		@owner_id	int	= null 		
+		@owner_id	int	= null
 	)
 	WITH EXECUTE AS N'dbo'
 	AS
@@ -4602,20 +4147,20 @@ CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition]
 		declare @IsDbo 		int
 		declare @DiagId		int
 		declare @UIDFound	int
-	
+
 		if(@diagramname is null)
 		begin
 			RAISERROR (N'E_INVALIDARG', 16, 1);
 			return -1
 		end
-	
+
 		execute as caller;
 		select @theId = DATABASE_PRINCIPAL_ID();
 		select @IsDbo = IS_MEMBER(N'db_owner');
 		if(@owner_id is null)
 			select @owner_id = @theId;
-		revert; 
-	
+		revert;
+
 		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname;
 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId ))
 		begin
@@ -4623,7 +4168,7 @@ CREATE PROCEDURE [dbo].[sp_helpdiagramdefinition]
 			return -3
 		end
 
-		select version, definition FROM dbo.sysdiagrams where diagram_id = @DiagId ; 
+		select version, definition FROM dbo.sysdiagrams where diagram_id = @DiagId ;
 		return 0
 	END
 GO
@@ -4680,7 +4225,7 @@ CREATE PROCEDURE [dbo].[sp_renamediagram]
 		@diagramname 		sysname,
 		@owner_id		int	= null,
 		@new_diagramname	sysname
-	
+
 	)
 	WITH EXECUTE AS 'dbo'
 	AS
@@ -4688,7 +4233,7 @@ CREATE PROCEDURE [dbo].[sp_renamediagram]
 		set nocount on
 		declare @theId 			int
 		declare @IsDbo 			int
-		
+
 		declare @UIDFound 		int
 		declare @DiagId			int
 		declare @DiagIdTarg		int
@@ -4698,37 +4243,37 @@ CREATE PROCEDURE [dbo].[sp_renamediagram]
 			RAISERROR ('Invalid value', 16, 1);
 			return -1
 		end
-	
+
 		EXECUTE AS CALLER;
 		select @theId = DATABASE_PRINCIPAL_ID();
-		select @IsDbo = IS_MEMBER(N'db_owner'); 
+		select @IsDbo = IS_MEMBER(N'db_owner');
 		if(@owner_id is null)
 			select @owner_id = @theId;
 		REVERT;
-	
+
 		select @u_name = USER_NAME(@owner_id)
-	
-		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname 
+
+		select @DiagId = diagram_id, @UIDFound = principal_id from dbo.sysdiagrams where principal_id = @owner_id and name = @diagramname
 		if(@DiagId IS NULL or (@IsDbo = 0 and @UIDFound <> @theId))
 		begin
 			RAISERROR ('Diagram does not exist or you do not have permission.', 16, 1)
 			return -3
 		end
-	
+
 		-- if((@u_name is not null) and (@new_diagramname = @diagramname))	-- nothing will change
 		--	return 0;
-	
+
 		if(@u_name is null)
 			select @DiagIdTarg = diagram_id from dbo.sysdiagrams where principal_id = @theId and name = @new_diagramname
 		else
 			select @DiagIdTarg = diagram_id from dbo.sysdiagrams where principal_id = @owner_id and name = @new_diagramname
-	
+
 		if((@DiagIdTarg is not null) and  @DiagId <> @DiagIdTarg)
 		begin
 			RAISERROR ('The name is already used.', 16, 1);
 			return -2
-		end		
-	
+		end
+
 		if(@u_name is null)
 			update dbo.sysdiagrams set [name] = @new_diagramname, principal_id = @theId where diagram_id = @DiagId
 		else
@@ -4750,14 +4295,14 @@ CREATE PROCEDURE [dbo].[sp_upgraddiagrams]
 	BEGIN
 		IF OBJECT_ID(N'dbo.sysdiagrams') IS NOT NULL
 			return 0;
-	
+
 		CREATE TABLE dbo.sysdiagrams
 		(
 			name sysname NOT NULL,
 			principal_id int NOT NULL,	-- we may change it to varbinary(85)
 			diagram_id int PRIMARY KEY IDENTITY,
 			version int,
-	
+
 			definition varbinary(max)
 			CONSTRAINT UK_principal_name UNIQUE
 			(
@@ -4789,16 +4334,16 @@ CREATE PROCEDURE [dbo].[sp_upgraddiagrams]
 				[version],
 				[definition]
 			)
-			select	 
+			select
 				convert(sysname, dgnm.[uvalue]),
 				DATABASE_PRINCIPAL_ID(N'dbo'),			-- will change to the sid of sa
 				0,							-- zero for old format, dgdef.[version],
 				dgdef.[lvalue]
 			from dbo.[dtproperties] dgnm
-				inner join dbo.[dtproperties] dggd on dggd.[property] = 'DtgSchemaGUID' and dggd.[objectid] = dgnm.[objectid]	
+				inner join dbo.[dtproperties] dggd on dggd.[property] = 'DtgSchemaGUID' and dggd.[objectid] = dgnm.[objectid]
 				inner join dbo.[dtproperties] dgdef on dgdef.[property] = 'DtgSchemaDATA' and dgdef.[objectid] = dgnm.[objectid]
-				
-			where dgnm.[property] = 'DtgSchemaNAME' and dggd.[uvalue] like N'_EA3E6268-D998-11CE-9454-00AA00A3F36E_' 
+
+			where dgnm.[property] = 'DtgSchemaNAME' and dggd.[uvalue] like N'_EA3E6268-D998-11CE-9454-00AA00A3F36E_'
 			return 2;
 		end
 		return 1;
@@ -4819,18 +4364,18 @@ CREATE PROCEDURE [dbo].[TEMP_AddGPToUser]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	--
 	-- used in account.thewarz.com/admin/gpadd
-	-- 
-	
+	--
+
 	declare @CustomerID int = 0
 	select @CustomerID=CustomerID from dbo.Accounts where email=@in_email
 	if(@@ROWCOUNT = 0) begin
 		select 0 as 'CustomerID'
 		return
 	end
-		
+
 	declare @GamePoints int = 0
 	select @GamePoints=GamePoints from UsersData where CustomerID=@CustomerID
 
@@ -4847,7 +4392,7 @@ BEGIN
 		'ADMIN_ADD',
 		@GamePoints
 	)
-	
+
 	update UsersData set GamePoints=(GamePoints + @in_GP) where CustomerID=@CustomerID
 	select @CustomerID as 'CustomerID', (@GamePoints+@in_GP) as 'GamePoints'
 
@@ -4868,24 +4413,24 @@ CREATE PROCEDURE [dbo].[WZ_ACCOUNT_APPLYKEY]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	declare @AccountType int = -1
 	select @AccountType=AccountType from dbo.UsersData where CustomerID=@in_CustomerID
 	if(@@ROWCOUNT = 0) begin
 		select 6 as ResultCode, 'no user' as ResultMsg;
 		return
 	end
-	
+
 	-- only guest accounts can be extended
 	if(@AccountType <> 3) begin
 		select 2 as ResultCode, 'bad account type' as ResultMsg;
 		return
 	end
-	
+
 	--
 	-- add new return codes in CUpdater::DoApplyNewKey
 	--
-	
+
 -- check for serial key
 	declare @keyResultCode int = 99
 	declare @keyCustomerID int = 99
@@ -4905,7 +4450,7 @@ BEGIN
 		select 4 as ResultCode, 'Serial already used' as ResultMsg;
 		return
 	end
-	
+
 -- update account type and expiration time
 	declare @DateActiveUntil datetime = '2030-1-1'
 	if(@keySerialType = 3) begin
@@ -4913,7 +4458,7 @@ BEGIN
 		set @DateActiveUntil = DATEADD(hour, 48, GETDATE())
 	end
 	update UsersData set DateActiveUntil=@DateActiveUntil, AccountType=@keySerialType where CustomerID=@in_CustomerID
-	
+
 -- register CustomerID in BreezeNet
 	exec [BreezeNet].[dbo].[BN_WarZ_SerialSetCustomerID] @in_SerialKey, @in_CustomerID
 
@@ -4927,7 +4472,7 @@ BEGIN
 		-- pioneer package, 15$ 1GC=142
 		update UsersData set GamePoints=(GamePoints+2139) where CustomerID=@in_CustomerID
 	end
-	
+
 	-- success
 	select 0 as ResultCode
 	select @in_CustomerID as CustomerID, @keySerialType as 'AccountType'
@@ -4945,7 +4490,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 GO
 
 CREATE PROCEDURE [dbo].[WZ_ACCOUNT_ChangePassword]
-	@in_CustomerID int, 
+	@in_CustomerID int,
 	@in_NewPassword varchar(100)
 AS
 BEGIN
@@ -4955,7 +4500,7 @@ BEGIN
 	declare @MD5FromPwd varchar(100)
 	exec FN_CreateMD5Password @in_NewPassword, @MD5FromPwd OUTPUT
 	update Accounts set MD5Password=@MD5FromPwd where CustomerID=@in_CustomerID
-	
+
 	insert into DBG_PasswordResets (
 		CustomerID,
 		ResetDate,
@@ -4983,14 +4528,14 @@ CREATE PROCEDURE [dbo].[WZ_ACCOUNT_DELETE]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- success
 	select 0 as ResultCode
-	
+
 	delete from dbo.UsersChars where CustomerID=@in_CustomerID
 	delete from dbo.UsersData where CustomerID=@in_CustomerID
 	delete from dbo.UsersInventory where CustomerID=@in_CustomerID
-	
+
 	update dbo.Accounts set AccountStatus=999 where CustomerID=@in_CustomerID
 
 	return
@@ -5007,21 +4552,21 @@ GO
 
 CREATE PROCEDURE [dbo].[WZ_ACCOUNT_LOGIN]
 	@in_IP varchar(100),
-	@in_EMail varchar(100), 
+	@in_EMail varchar(100),
 	@in_Password varchar(100)
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	declare @CustomerID int
 	declare @MD5Password varchar(100)
 	declare @AccountStatus int = 0	-- this is Accounts.AccountStatus
 
 	-- this call is always valid
 	select 0 as ResultCode
-	
+
 	-- search for record with username
-	SELECT 
+	SELECT
 		@CustomerID=CustomerID,
 		@MD5Password=MD5Password,
 		@AccountStatus=AccountStatus
@@ -5045,7 +4590,7 @@ BEGIN
 			0 as AccountStatus
 		return
 	end
-	
+
 	-- check if deleted account because of refund
 	if(@AccountStatus = 999) begin
 		select
@@ -5054,7 +4599,7 @@ BEGIN
 			999 as AccountStatus
 		return
 	end
-	
+
 	-- perform actual login
 	exec WZ_ACCOUNT_LOGIN_EXEC @in_IP, @CustomerID
 END
@@ -5074,11 +4619,11 @@ CREATE PROCEDURE [dbo].[WZ_ACCOUNT_LOGIN_EXEC]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	--
 	-- helper function that perform actual user login
 	--
-	
+
 	declare @IsDeveloper int = 0
 	declare @AccountStatus int
 	declare @DateActiveUntil datetime
@@ -5086,11 +4631,11 @@ BEGIN
 	declare @lastgamedate datetime
 	declare @GameServerId int
 	select
-		@AccountStatus=AccountStatus, 
-		@IsDeveloper=IsDeveloper, 
+		@AccountStatus=AccountStatus,
+		@IsDeveloper=IsDeveloper,
 		@DateActiveUntil=DateActiveUntil,
 		@BanExpireDate=BanExpireDate,
-		@GameServerId=GameServerId, 
+		@GameServerId=GameServerId,
 		@lastgamedate=lastgamedate
 		from UsersData where CustomerID=@CustomerID
 	if(@@ROWCOUNT = 0) begin
@@ -5112,7 +4657,7 @@ BEGIN
 			0 as SessionID,
 			0 as IsDeveloper
 		return
-	end 
+	end
 
 	-- status equal to 201 means temporary ban
 	if (@AccountStatus = 201) begin
@@ -5143,7 +4688,7 @@ BEGIN
 			0 as IsDeveloper
 		return
 	end
-	
+
 	-- check if game is still active or 90sec passed from last update (COPYPASTE_GAMECHECK, search for others)
 	if(@GameServerId > 0 and DATEDIFF(second, @lastgamedate, GETDATE()) < 90) begin
 		select
@@ -5154,17 +4699,17 @@ BEGIN
 			0 as IsDeveloper
 		return
 	end
-	
+
 	-- update session key/id
 	declare @SessionKey varchar(50) = NEWID()
 	declare @SessionID int = checksum(@SessionKey)
 	if exists (SELECT CustomerID FROM LoginSessions WHERE CustomerID = @CustomerID)
 	begin
-		UPDATE LoginSessions SET 
-			SessionKey=@SessionKey, 
+		UPDATE LoginSessions SET
+			SessionKey=@SessionKey,
 			SessionID=@SessionID,
-			LoginIP=@in_IP, 
-			TimeLogged=GETDATE(), 
+			LoginIP=@in_IP,
+			TimeLogged=GETDATE(),
 			TimeUpdated=GETDATE()
 		WHERE CustomerID=@CustomerID
 	end
@@ -5172,23 +4717,23 @@ BEGIN
 	begin
 		INSERT INTO LoginSessions
 			(CustomerID, SessionKey, SessionID, LoginIP, TimeLogged, TimeUpdated)
-		VALUES 
+		VALUES
 			(@CustomerID, @SessionKey, @SessionID, @in_IP, GETDATE(), GETDATE())
 	end
 
 	-- update other tables
-	UPDATE Accounts SET 
-		lastlogindate=GETDATE(), 
+	UPDATE Accounts SET
+		lastlogindate=GETDATE(),
 		lastloginIP=@in_IP
 	WHERE CustomerID=@CustomerID
-	
-	INSERT INTO Logins 
-		(CustomerID, LoginTime, IP, LoginSource) 
-	VALUES 
+
+	INSERT INTO Logins
+		(CustomerID, LoginTime, IP, LoginSource)
+	VALUES
 		(@CustomerID, GETDATE(), @in_IP, 0)
 
 	-- return session info
-	SELECT 
+	SELECT
 		0 as LoginResult,
 		@CustomerID as CustomerID,
 		@AccountStatus as AccountStatus,
@@ -5205,7 +4750,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_Backpack_SRV_AddItem]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_AddItem] 
+CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_AddItem]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_Slot int,
@@ -5236,7 +4781,7 @@ BEGIN
 		CharID,
 		BackpackSlot,
 		ItemID,
-		LeasedUntil, 
+		LeasedUntil,
 		Quantity,
 		Var1,
 		Var2
@@ -5252,7 +4797,7 @@ BEGIN
 		@in_Var2
 	)
 	set @InventoryID = SCOPE_IDENTITY()
-	
+
 	select 0 as ResultCode
 	select @InventoryID as 'InventoryID'
 END
@@ -5266,7 +4811,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_Backpack_SRV_AlterItem]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_AlterItem] 
+CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_AlterItem]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_Slot int,
@@ -5284,21 +4829,21 @@ BEGIN
 		return
 	end
 
-	update UsersInventory set 
+	update UsersInventory set
 		ItemID=@in_ItemID,
 		Quantity=@in_Amount,
 		Var1=@in_Var1,
 		Var2=@in_Var2
 	where CharID=@in_CharID and BackpackSlot=@in_Slot
-	
+
 	if(@@ROWCOUNT = 0) begin
 		select 6 as ResultCode, 'alter item failed' as ResultMsg
 		return
 	end
-	
+
 	select 0 as ResultCode
 	return
-	
+
 END
 GO
 
@@ -5322,10 +4867,10 @@ BEGIN
 	--
 	-- _SRV_ function - no validity checks
 	--
-	
+
 	-- replace backpack size/id
 	update UsersChars set BackpackID=@in_BackpackID, BackpackSize=@in_BackpackSize where CharID=@in_CharID
-	
+
 	select 0 as ResultCode
 	select 0 as 'InventoryID'
 END
@@ -5339,7 +4884,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_Backpack_SRV_DeleteItem]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_DeleteItem] 
+CREATE PROCEDURE [dbo].[WZ_Backpack_SRV_DeleteItem]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_Slot int,
@@ -5356,10 +4901,10 @@ BEGIN
 		select 6 as ResultCode, 'delete item failed' as ResultMsg
 		return
 	end
-	
+
 	select 0 as ResultCode
 	return
-	
+
 END
 GO
 
@@ -5388,13 +4933,13 @@ BEGIN
 		select 6 as ResultCode, 'bad charid' as ResultMsg
 		return
 	end
-	
+
 	-- do not allow operations outside safe zone
 	if((@GameFlags & 1) = 0) begin
 		select 9 as ResultCode, 'outside safe zone' as ResultMsg
 		return
 	end
-	
+
 	-- check if game is still active or 90sec passed from last update (COPYPASTE_GAMECHECK, search for others)
 	declare @lastgamedate datetime
 	declare @GameServerId int
@@ -5403,7 +4948,7 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	-- validate that we own that item
 	declare @InvItemID int = 0
 	declare @InvCustomerID int = 0
@@ -5426,7 +4971,7 @@ BEGIN
 		select 6 as ResultCode, 'no backpack' as ResultMsg
 		return
 	end
-	
+
 	-- move everything above current slots to inventory
 	update UsersInventory set CharID=0, BackpackSlot=-1 where CharID=@in_CharID and BackpackSlot>=@MaxSlots
 
@@ -5434,19 +4979,19 @@ BEGIN
 	set @InvQuantity = @InvQuantity - 1
 	if(@InvQuantity <= 0) begin
 		delete from UsersInventory where InventoryID=@in_InventoryID
-	end 
+	end
 	else begin
 		update UsersInventory set Quantity=@InvQuantity where InventoryID=@in_InventoryID
 	end
-	
+
 	-- place old backpack to inventory
 	declare @OldBackpackID int
 	select @OldBackpackID=BackpackID from UsersChars where CharID=@in_CharID
 	exec dbo.FN_AddItemToUser @CustomerID, @OldBackpackID, 2000
-	
+
 	-- replace backpack size/id
 	update UsersChars set BackpackID=@InvItemID, BackpackSize=@MaxSlots where CharID=@in_CharID
-	
+
 	select 0 as ResultCode
 	select 0 as 'InventoryID'
 END
@@ -5460,7 +5005,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_BackpackFromInv]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_BackpackFromInv] 
+CREATE PROCEDURE [dbo].[WZ_BackpackFromInv]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_InventoryID bigint,
@@ -5469,7 +5014,7 @@ CREATE PROCEDURE [dbo].[WZ_BackpackFromInv]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	if(@in_Amount <= 0) begin
 		select 6 as ResultCode, 'bad amount' as ResultMsg
 		return
@@ -5483,7 +5028,7 @@ BEGIN
 		select 6 as ResultCode, 'bad charid' as ResultMsg
 		return
 	end
-	
+
 	-- check if game is still active or 90sec passed from last update (COPYPASTE_GAMECHECK, search for others)
 	declare @lastgamedate datetime
 	declare @GameServerId int
@@ -5492,7 +5037,7 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	-- check if we have that item in inventory
 	declare @InvCustomerID int
 	declare @InvInventoryID bigint
@@ -5501,10 +5046,10 @@ BEGIN
 	declare @InvQuantity int
 	declare @InvVar1 int
 	declare @InvVar2 int
-	select 
+	select
 		@InvCustomerID=CustomerID,
 		@InvInventoryID=InventoryID,
-		@InvItemID=ItemID, 
+		@InvItemID=ItemID,
 		@InvQuantity=Quantity,
 		@InvLeasedUntil=LeasedUntil,
 		@InvVar1=Var1,
@@ -5514,12 +5059,12 @@ BEGIN
 		select 6 as ResultCode, 'bad inventoryid' as ResultMsg
 		return
 	end
-	
+
 	if(@in_Amount > @InvQuantity) begin
 		select 6 as ResultCode, 'bad quantity' as ResultMsg
 		return
 	end
-	
+
 	-- validate backpack slot number
 	if(@in_Slot < 0 or @in_Slot >= @BackpackSize) begin
 		select 6 as ResultCode, 'bad slot' as ResultMsg
@@ -5528,7 +5073,7 @@ BEGIN
 	-- validate itemid in that slot
 	declare @BackpackInventoryID bigint = 0
 	declare @BackpackItemID int = 0
-	select 
+	select
 		@BackpackInventoryID=InventoryID,
 		@BackpackItemID=ItemID
 	from UsersInventory where CharID=@in_CharID and BackpackSlot=@in_Slot
@@ -5558,7 +5103,7 @@ BEGIN
 			CharID,
 			ItemID,
 			BackpackSlot,
-			LeasedUntil, 
+			LeasedUntil,
 			Quantity,
 			Var1,
 			Var2
@@ -5579,16 +5124,16 @@ BEGIN
 	begin
 		update UsersInventory set Quantity=(Quantity+@in_Amount) where InventoryID=@BackpackInventoryID
 	end
-	
+
 	-- from inventory
 	set @InvQuantity = @InvQuantity - @in_Amount
 	if(@InvQuantity <= 0) begin
 		delete from UsersInventory where InventoryID=@InvInventoryID
-	end 
+	end
 	else begin
 		update UsersInventory set Quantity=@InvQuantity where InventoryID=@InvInventoryID
 	end
-	
+
 	select 0 as ResultCode;
 	select @BackpackInventoryID as 'InventoryID'
 END
@@ -5628,14 +5173,14 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	-- check from slot
 	declare @FromItemID int
 	declare @FromQuantity int
 	declare @FromVar1 int
 	declare @FromVar2 int
-	select 
-		@FromItemID=ItemID, 
+	select
+		@FromItemID=ItemID,
 		@FromQuantity=Quantity,
 		@FromVar1=Var1,
 		@FromVar2=Var2
@@ -5644,14 +5189,14 @@ BEGIN
 		select 6 as ResultCode, 'bad slot1' as ResultMsg
 		return
 	end
-	
+
 	-- check to slot
 	declare @ToItemID int
 	declare @ToQuantity int
 	declare @ToVar1 int
 	declare @ToVar2 int
-	select 
-		@ToItemID=ItemID, 
+	select
+		@ToItemID=ItemID,
 		@ToQuantity=Quantity,
 		@ToVar1=Var1,
 		@ToVar2=Var2
@@ -5660,16 +5205,16 @@ BEGIN
 		select 6 as ResultCode, 'bad slot2' as ResultMsg
 		return
 	end
-	
+
 	if(@ToItemID <> @FromItemID or @FromVar1 >= 0 or @ToVar1 >= 0) begin
 		select 6 as ResultCode, 'bad join' as ResultMsg
 		return
 	end
-	
+
 	-- swap slots. operation will silently be ok if there is no item in that slot
 	update UsersInventory set Quantity=Quantity+@FromQuantity where CharID=@in_CharID and BackpackSlot=@in_SlotTo
 	delete from UsersInventory where CharID=@in_CharID and BackpackSlot=@in_SlotFrom
-	
+
 	select 0 as ResultCode
 	select 0 as 'InventoryID'
 END
@@ -5683,7 +5228,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_BackpackGridSwap]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_BackpackGridSwap] 
+CREATE PROCEDURE [dbo].[WZ_BackpackGridSwap]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_SlotFrom int,
@@ -5700,7 +5245,7 @@ BEGIN
 		select 6 as ResultCode, 'bad charid' as ResultMsg
 		return
 	end
-	
+
 	-- check if game is still active or 90sec passed from last update (COPYPASTE_GAMECHECK, search for others)
 	declare @lastgamedate datetime
 	declare @GameServerId int
@@ -5709,7 +5254,7 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	-- validate backpack slot number
 	if(@in_SlotFrom < 0 or @in_SlotFrom >= @BackpackSize) begin
 		select 6 as ResultCode, 'bad slot' as ResultMsg
@@ -5719,7 +5264,7 @@ BEGIN
 		select 6 as ResultCode, 'bad slot' as ResultMsg
 		return
 	end
-	
+
 	-- get inventory ids of both slots
 	declare @InventoryIdFrom bigint = 0
 	declare @InventoryIdTo bigint = 0
@@ -5729,11 +5274,11 @@ BEGIN
 	-- swap slots. operation will silently be ok if there is no item in that slot
 	update UsersInventory set BackpackSlot=@in_SlotTo   where InventoryID=@InventoryIdFrom
 	update UsersInventory set BackpackSlot=@in_SlotFrom where InventoryID=@InventoryIdTo
-	
+
 	-- clear attachments if swapped items was in weapon slots
 	if(@in_SlotTo = 0 or @in_SlotFrom = 0) update UsersChars set Attachment1='' where CharID=@in_CharID
 	if(@in_SlotTo = 1 or @in_SlotFrom = 1) update UsersChars set Attachment2='' where CharID=@in_CharID
-	
+
 	select 0 as ResultCode
 	select 0 as 'InventoryID'
 END
@@ -5747,7 +5292,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_BackpackToInv]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_BackpackToInv] 
+CREATE PROCEDURE [dbo].[WZ_BackpackToInv]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_InventoryID bigint,	-- target inventory id where to put that item
@@ -5769,7 +5314,7 @@ BEGIN
 		select 6 as ResultCode, 'bad charid' as ResultMsg
 		return
 	end
-	
+
 	-- check if game is still active or 90sec passed from last update (COPYPASTE_GAMECHECK, search for others)
 	declare @lastgamedate datetime
 	declare @GameServerId int
@@ -5778,16 +5323,16 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	declare @BackpackInventoryID bigint
 	declare @BackpackItemID int
 	declare @BackpackLeasedUntil datetime
 	declare @BackpackQuantity int
 	declare @BackpackVar1 int
 	declare @BackpackVar2 int
-	select 
+	select
 		@BackpackInventoryID=InventoryID,
-		@BackpackItemID=ItemID, 
+		@BackpackItemID=ItemID,
 		@BackpackQuantity=Quantity,
 		@BackpackLeasedUntil=LeasedUntil,
 		@BackpackVar1=Var1,
@@ -5797,12 +5342,12 @@ BEGIN
 		select 6 as ResultCode, 'bad slot' as ResultMsg
 		return
 	end
-	
+
 	if(@in_Amount > @BackpackQuantity) begin
 		select 6 as ResultCode, 'bad quantity' as ResultMsg
 		return
 	end
-	
+
 	-- check for easy case, just switching to inventory
 	if(@in_InventoryID = 0 and @BackpackQuantity = @in_Amount) begin
 		update UsersInventory set BackpackSlot=-1, CharID=0 where InventoryID=@BackpackInventoryID
@@ -5811,19 +5356,19 @@ BEGIN
 		select @BackpackInventoryID as 'InventoryID'
 		return
 	end
-	
+
 	-- validate that we own that inventory slot and item can be moved there
-	if(@in_InventoryID > 0) 
+	if(@in_InventoryID > 0)
 	begin
 		declare @InvCustomerID int
 		declare @InvCharID int
 		declare @InvItemID int
 		declare @InvVar1 int
-		select 
+		select
 			@InvCustomerID=CustomerID,
-			@InvCharID=CharID, 
-			@InvItemID=ItemID, 
-			@InvVar1=Var1 
+			@InvCharID=CharID,
+			@InvItemID=ItemID,
+			@InvVar1=Var1
 			from UsersInventory where InventoryID=@in_InventoryID
 		if(@@ROWCOUNT = 0 or @InvCustomerID <> @in_CustomerID or @InvCharID <> 0 or @InvItemID <> @BackpackItemID) begin
 			select 6 as ResultCode, 'bad inventoryid' as ResultMsg
@@ -5841,8 +5386,8 @@ BEGIN
 		INSERT INTO UsersInventory (
 			CustomerID,
 			CharID,
-			ItemID, 
-			LeasedUntil, 
+			ItemID,
+			LeasedUntil,
 			Quantity,
 			Var1,
 			Var2
@@ -5866,11 +5411,11 @@ BEGIN
 	set @BackpackQuantity = @BackpackQuantity - @in_Amount
 	if(@BackpackQuantity <= 0) begin
 		delete from UsersInventory where InventoryID=@BackpackInventoryID
-	end 
+	end
 	else begin
 		update UsersInventory set Quantity=@BackpackQuantity where InventoryID=@BackpackInventoryID
 	end
-	
+
 	select 0 as ResultCode
 	select @InvInventoryID as 'InventoryID'
 END
@@ -5914,7 +5459,7 @@ BEGIN
 		select 6 as ResultCode, 'bad GetPrice' as ResultMsg
 		return
 	end
-	
+
 	-- check if enough money
 	if(@GameDollars < @FinalPrice) begin
 		set @smsg1 = LTRIM(STR(@in_ItemId)) + ' ' + LTRIM(STR(@in_BuyDays)) + ' '
@@ -5940,10 +5485,10 @@ BEGIN
 	declare @TType int = 0
 	if(@in_BuyDays = 2000) set @TType = 3001;
 	else set @TType = 2001;
-	
+
 	-- update transaction detail
 	INSERT INTO FinancialTransactions
-		VALUES (@in_CustomerID, 'INGAME', @TType, GETDATE(), 
+		VALUES (@in_CustomerID, 'INGAME', @TType, GETDATE(),
 				@FinalPrice, '1', 'APPROVED', @in_ItemId)
 
 	-- search for InventoryID of added item
@@ -5995,7 +5540,7 @@ BEGIN
 		select 6 as ResultCode, 'bad GetPrice' as ResultMsg
 		return
 	end
-	
+
 	-- check if enough money
 	if(@GamePoints < @FinalPrice) begin
 		set @smsg1 = LTRIM(STR(@in_ItemId)) + ' ' + LTRIM(STR(@in_BuyDays)) + ' '
@@ -6022,12 +5567,12 @@ BEGIN
 	declare @TType int = 0
 	if(@in_BuyDays = 2000) set @TType = 3000;
 	else set @TType = 2000;
-	
+
 	-- update transaction detail
 	INSERT INTO FinancialTransactions
-		VALUES (@in_CustomerID, 'INGAME', @TType, GETDATE(), 
+		VALUES (@in_CustomerID, 'INGAME', @TType, GETDATE(),
 				@FinalPrice, '1', 'APPROVED', @in_ItemId)
-				
+
 	-- search for InventoryID of added item
 	declare @InventoryID bigint = 0
 	select @InventoryID=InventoryID from UsersInventory
@@ -6055,7 +5600,7 @@ CREATE PROCEDURE [dbo].[WZ_BuyItemFN_Exec]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	--
 	--
 	-- main function for buying items in game, should be called from WZ_BuyItem2
@@ -6064,18 +5609,18 @@ BEGIN
 
 	-- set success by default
 	set @out_FNResult = 0
-	
+
 	--SAMPLE ITEM 10k GD
 	--if(@in_ItemId = 301107) begin
 	--	update UsersData set GameDollars=GameDollars+10000 where CustomerID=@in_CustomerID
 	--	return
 	--end
-	
+
 	-- clan items. NOTE: no item adding
 	if(@in_ItemId >= 301151 and @in_ItemId <= 301157) begin
 		return
 	end
-	
+
 	-- normal item
 	exec FN_AddItemToUser @in_CustomerID, @in_ItemId, @in_BuyDays
 	set @out_FNResult = 0
@@ -6100,7 +5645,7 @@ CREATE PROCEDURE [dbo].[WZ_BuyItemFN_GetPrice]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 --
 -- get prices from table based on itemID
 --
@@ -6116,28 +5661,28 @@ BEGIN
 
 	if(@in_ItemId >= 20000 and @in_ItemId < 99999)
 		SELECT
-		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP, 
+		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP,
 		   @GPrice1=GPrice1, @GPrice7=GPrice7, @GPrice30=GPrice30, @GPriceP=GPriceP
 		FROM Items_Gear where ItemID=@in_ItemID
 	else
 	if(@in_ItemId >= 100000 and @in_ItemId < 190000)
 		SELECT
-		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP, 
+		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP,
 		   @GPrice1=GPrice1, @GPrice7=GPrice7, @GPrice30=GPrice30, @GPriceP=GPriceP
 		FROM Items_Weapons where ItemID=@in_ItemID
-	else 
-	if(@in_ItemId >= 300000 and @in_ItemId < 390000) 
+	else
+	if(@in_ItemId >= 300000 and @in_ItemId < 390000)
 		SELECT
-		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP, 
+		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP,
 		   @GPrice1=GPrice1, @GPrice7=GPrice7, @GPrice30=GPrice30, @GPriceP=GPriceP
 		FROM Items_Generic where ItemID=@in_ItemID
-	else 
-	if(@in_ItemId >= 400000 and @in_ItemId < 490000) 
+	else
+	if(@in_ItemId >= 400000 and @in_ItemId < 490000)
 		SELECT
-		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP, 
+		   @Price1=Price1, @Price7=Price7, @Price30=Price30, @PriceP=PriceP,
 		   @GPrice1=GPrice1, @GPrice7=GPrice7, @GPrice30=GPrice30, @GPriceP=GPriceP
 		FROM Items_Attachments where ItemID=@in_ItemID
-	else 
+	else
 	begin
 		set @out_FNResult = 1
 		return
@@ -6146,7 +5691,7 @@ BEGIN
 		set @out_FNResult = 2
 		return
 	end
-	
+
 	     if(@in_Currency = 'GP' and @in_BuyDays = 1)    set @o_FinalPrice = @Price1
 	else if(@in_Currency = 'GP' and @in_BuyDays = 7)    set @o_FinalPrice = @Price7
 	else if(@in_Currency = 'GP' and @in_BuyDays = 30)   set @o_FinalPrice = @Price30
@@ -6165,7 +5710,7 @@ BEGIN
 		set @out_FNResult = 4
 		return
 	end
-	
+
 	set @out_FNResult = 0
 END
 GO
@@ -6186,7 +5731,7 @@ CREATE PROCEDURE [dbo].[WZ_Char_SRV_SetAttachments]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	--
 	-- this function should be called only by server, so we skip all validations
 	--
@@ -6229,11 +5774,11 @@ CREATE PROCEDURE [dbo].[WZ_Char_SRV_SetStatus]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	--
 	-- this function should be called only by server, so we skip all validations
 	--
-	
+
 	-- record last game update
 	update UsersData set GameDollars=@in_GameDollars, lastgamedate=GETDATE() where CustomerID=@in_CustomerID
 
@@ -6257,11 +5802,11 @@ BEGIN
 		Stat04=@in_Stat04,
 		Stat05=@in_Stat05
 	where CharID=@in_CharID
-	
+
 	if(@in_Alive = 0) begin
 		update UsersChars set DeathUtcTime=GETUTCDATE() where CharID=@in_CharID
 		-- set default backpack on death
-		update UsersChars set BackpackID=20176, BackpackSize=12 where CharID=@in_CharID
+		update UsersChars set BackpackID=21712, BackpackSize=16 where CharID=@in_CharID
 		-- delete stuff from backpack
 		delete from UsersInventory where CustomerID=@in_CustomerID and CharID=@in_CharID
 	end
@@ -6284,7 +5829,7 @@ CREATE PROCEDURE [dbo].[WZ_CharRevive]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- validate CharID/CustomerID pair
 	declare @CustomerID int = 0
 	select @CustomerID=CustomerID from UsersChars where CharID=@in_CharID
@@ -6292,7 +5837,7 @@ BEGIN
 		select 6 as ResultCode, 'bad charid' as ResultMsg
 		return
 	end
-	
+
 	-- get developer flag
 	declare @IsDeveloper int = 0
 	select @IsDeveloper=IsDeveloper from UsersData where CustomerID=@in_CustomerID
@@ -6300,7 +5845,7 @@ BEGIN
 	-- note that revive timer is 1hrs, change in WZ_GetAccountInfo1 as well
 	declare @SecToRevive int
 	declare @Alive int = 0
-	select 
+	select
 		@SecToRevive=DATEDIFF(second, GETUTCDATE(), DATEADD(hour, 1, DeathUtcTime)),
 		@Alive=Alive
 	from UsersChars where CharID=@in_CharID
@@ -6310,13 +5855,13 @@ BEGIN
 		select 6 as ResultCode, 'character is not dead' as ResultMsg
 		return
 	end
-	
+
 	-- do not allow early revive, give 2min grace
 	if(@SecToRevive > 120 and @IsDeveloper = 0) begin
 		select 6 as ResultCode, 'too early' as ResultMsg
 		return
 	end
-	
+
 	-- revive
 	update UsersChars set
 		Alive=2,
@@ -6345,7 +5890,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanAddClanMembers]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- clan id valudation of caller
 	declare @ClanID int = 0
 	declare @ClanRank int
@@ -6363,10 +5908,10 @@ BEGIN
 		select 6 as ResultCode, 'no price1' as ResultMsg
 		return
 	end
-	
+
 	-- update clan
 	update ClanData set MaxClanMembers=(MaxClanMembers+@GPriceP) where ClanID=@ClanID
-	
+
 	-- generate clan event
 	insert into ClanEvents (
 		ClanID,
@@ -6385,7 +5930,7 @@ BEGIN
 		@GPriceP,
 		@Gamertag
 	)
-	
+
 	-- success
 	select 0 as ResultCode
 
@@ -6419,7 +5964,7 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 	-- only leader and officers can answer application
 	if(@ClanRank > 1) begin
 		select 23 as ResultCode, 'no permission' as ResultMsg
@@ -6444,10 +5989,10 @@ BEGIN
 		select 6 as ResultCode, 'bad application id' as ResultMsg
 		return
 	end
-	
+
 	-- mark that application as processed
 	update ClanApplications set IsProcessed=1 where ClanApplicationID=@in_ClanApplicationID
-	
+
 	-- make sure that this guy isn't joined other clan somehow (race condition)
 	declare @AppGamertag nvarchar(64)
 	select @AppClanID=ClanID, @AppGamertag=Gamertag from UsersChars where CharID=@AppCharID
@@ -6464,11 +6009,11 @@ BEGIN
 		select 0 as ResultCode
 		return
 	end
-	
+
 	-- accept application, join player to clan
 	update ClanData set NumClanMembers=(NumClanMembers + 1) where ClanID=@ClanID
 	update UsersChars set ClanID=@ClanID, ClanRank=99 where CharID=@AppCharID
-	
+
 	-- clear all other applications
 	delete from ClanApplications where CharID=@AppCharID
 
@@ -6488,7 +6033,7 @@ BEGIN
 		@AppCharID,
 		@AppGamertag
 	)
-	
+
 	select 0 as ResultCode
 	return
 
@@ -6520,7 +6065,7 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 -- give list of applyers
 
 	-- only leader and officers can view application list
@@ -6531,8 +6076,8 @@ BEGIN
 
 	-- success
 	select 0 as ResultCode
-	
-	select 
+
+	select
 		a.ClanApplicationID,
 		a.ApplicationText,
 		DATEDIFF(mi, GETDATE(), a.ExpireTime) as MinutesLeft,
@@ -6540,9 +6085,9 @@ BEGIN
 	from ClanApplications a
 	join UsersChars c on (c.CharID=a.CharID)
 	where a.ClanID=@ClanID and GETDATE()<ExpireTime and IsProcessed=0
-	
+
 	return
-	
+
 END
 GO
 
@@ -6564,7 +6109,7 @@ BEGIN
 
 	declare @APPLY_EXPIRE_TIME_HOURS int = 72
 	declare @MAX_PENDING_APPS int = 5	-- can be maximum 5 pending invitations
-	
+
 -- sanity checks
 
 	-- player must be without clan
@@ -6580,7 +6125,7 @@ BEGIN
 		select 6 as ResultCode, 'no clanid' as ResultMsg
 		return
 	end
-	
+
 	-- see if we already have pending invidation
 	declare @AppExpireTime datetime
 	select @AppExpireTime=ExpireTime from ClanApplications where ClanID=@in_ClanID and CharID=@in_CharID and GETDATE()<ExpireTime
@@ -6588,15 +6133,15 @@ BEGIN
 		select 24 as ResultCode, 'pending application' as ResultMsg
 		return
 	end
-	
+
 	-- see if we already have too much applications
 	declare @AppTotalCounts int = 0
 	select @AppTotalCounts=COUNT(*) from ClanApplications where CharID=@in_CharID and GETDATE()<ExpireTime
 	if(@AppTotalCounts >= @MAX_PENDING_APPS) begin
 		select 25 as ResultCode, 'too many applications' as ResultMsg
-		return 
+		return
 	end
-	
+
 -- send application
 
 	insert into ClanApplications (
@@ -6616,7 +6161,7 @@ BEGIN
 	-- success
 	select 0 as ResultCode
 	return
-	
+
 END
 GO
 
@@ -6640,7 +6185,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanCreate]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	declare @DEFAULT_CLAN_SIZE int = 15
 
 	-- sanity check
@@ -6651,7 +6196,7 @@ BEGIN
 		select 6 as 'ResultCode', 'already have clan' as 'ResultMsg'
 		return
 	end
-	
+
 	-- check for 20 hour play time
 	declare @TimePlayedHours int = 0
 	select @TimePlayedHours=(TimePlayed/3600) from UsersData where CustomerID=@in_CustomerID
@@ -6662,7 +6207,7 @@ BEGIN
 
 	-- create clan!
 	insert into ClanData (
-		ClanName, ClanNameColor, 
+		ClanName, ClanNameColor,
 		ClanTag, ClanTagColor,
 		ClanEmblemID, ClanEmblemColor,
 		ClanXP,	ClanLevel, ClanGP,
@@ -6685,10 +6230,10 @@ BEGIN
 		select 6 as 'ResultCode', 'clan creation failed!' as 'ResultMsg'
 		return
 	end
-	
+
 	-- update owner clan data
 	update UsersChars set ClanID=@ClanID, ClanRank=0 where CharID=@in_CharID
-	
+
 	-- generate clan event
 	insert into ClanEvents (
 		ClanID,
@@ -6705,10 +6250,10 @@ BEGIN
 		@in_CharID,
 		@Gamertag
 	)
-	
+
 	-- success
 	select 0 as ResultCode
-	
+
 	select @ClanID as 'ClanID'
 END
 GO
@@ -6730,7 +6275,7 @@ BEGIN
 	-- this call is always valid
 	select 0 as ResultCode
 
-	-- doesn't need money yet	
+	-- doesn't need money yet
 	select 0 as NeedMoney
 
 	return
@@ -6760,7 +6305,7 @@ BEGIN
 		select 6 as ResultCode, 'already have clan' as ResultMsg
 		return
 	end
-	
+
 	-- check that name/tag is unique
 	if(exists(select * from ClanData where ClanName=@in_ClanName)) begin
 		select 27 as ResultCode, 'clan name' as ResultMsg
@@ -6791,7 +6336,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanDonateToClanGP]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 -- sanity checks
 	declare @ClanID int
 	declare @ClanRank int
@@ -6804,7 +6349,7 @@ BEGIN
 
 	declare @GamePoints int = 0
 	select @GamePoints=GamePoints from UsersData where CustomerID=@in_CustomerID
-	
+
 	if(@in_GP < 0) begin
 		select 6 as ResultCode, 'sneaky bastard...' as ResultMsg
 		return
@@ -6822,9 +6367,9 @@ BEGIN
 	update UsersChars set ClanContributedGP=(ClanContributedGP+@in_GP) where CharID=@in_CharID
 	-- and record that
 	INSERT INTO FinancialTransactions
-		VALUES (@in_CustomerID, 'CLAN_GPToClan', 4000, GETDATE(), 
+		VALUES (@in_CustomerID, 'CLAN_GPToClan', 4000, GETDATE(),
 				@in_GP, '1', 'APPROVED', @ClanID)
-	
+
 	-- add clan gp
 	update ClanData set ClanGP=(ClanGP+@in_GP) where ClanID=@ClanID
 
@@ -6867,7 +6412,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanDonateToMemberGP]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 -- sanity checks
 
 	-- clan id valudation of caller
@@ -6888,13 +6433,13 @@ BEGIN
 		select 6 as ResultCode, 'member in wrong clan' as ResultMsg
 		return
 	end
-	
+
 -- donating
 	if(@ClanRank > 0) begin
 		select 23 as ResultCode, 'no permission' as ResultMsg
 		return
 	end
-	
+
 	declare @ClanGP int = 0
 	select @ClanGP=ClanGP from ClanData where ClanID=@ClanID
 	if(@in_GP < 0) begin
@@ -6913,9 +6458,9 @@ BEGIN
 	exec FN_AlterUserGP @in_MemberID, @in_GP, 'fromclan'
 	-- and record that
 	INSERT INTO FinancialTransactions
-		VALUES (@in_MemberID, 'CLAN_GPToMember', 4001, GETDATE(), 
+		VALUES (@in_MemberID, 'CLAN_GPToMember', 4001, GETDATE(),
 				@in_GP, '1', 'APPROVED', @ClanID)
-	
+
 -- generate clan event
 	insert into ClanEvents (
 		ClanID,
@@ -6938,7 +6483,7 @@ BEGIN
 		@Gamertag,
 		@MemberGamertag
 	)
-	
+
 -- TODO: send message to player about donate
 
 	-- success
@@ -6959,13 +6504,13 @@ CREATE PROCEDURE [dbo].[WZ_ClanFN_DeleteClan]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	delete from ClanData where ClanID=@in_ClanID
 	delete from ClanApplications where ClanID=@in_ClanID
 	delete from ClanInvites where ClanID=@in_ClanID
 
 	update UsersChars set ClanID=0 where ClanID=@in_ClanID
-	
+
 	return
 END
 GO
@@ -6996,13 +6541,13 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 -- report clan log
 	select 0 as ResultCode
-	
+
 	declare @MinDate datetime = DATEADD(day, -@in_Days, GETDATE())
 	select * from ClanEvents where ClanID=@ClanID and EventDate>=@MinDate and @ClanRank <= EventRank order by EventDate asc
-	
+
 	return
 END
 GO
@@ -7024,22 +6569,22 @@ BEGIN
 
 	-- success
 	select 0 as ResultCode
-	
+
 	-- and report clan data
-	if(@in_ClanID > 0) 
+	if(@in_ClanID > 0)
 	begin
 		-- specific clan
-		select *, c.gamertag from ClanData 
+		select *, c.gamertag from ClanData
 			left join UsersChars c on c.CharID=ClanData.OwnerCharID
 			where ClanData.ClanID=@in_ClanID
 	end
-	else 
+	else
 	begin
 		-- all clans
 		select *, c.gamertag from ClanData
 			left join UsersChars c on c.CharID=ClanData.OwnerCharID
 	end
-		
+
 	-- if need to report members
 	if(@in_ClanID > 0 and @in_GetMembers > 0) begin
 		select UsersChars.* from UsersChars	where ClanID=@in_ClanID
@@ -7065,7 +6610,7 @@ BEGIN
 
 	-- success
 	select 0 as ResultCode
-	
+
 	-- report player clan id and current clan info
 	select c.ClanID, c.ClanRank, d.*
 		from UsersChars c
@@ -7102,7 +6647,7 @@ BEGIN
 		select 6 as ResultCode, 'already in clan' as ResultMsg
 		return
 	end
-	
+
 	-- have valid invitation id (get actual ClanID here)
 	declare @InvCharID int
 	select @ClanID=ClanID, @InvCharID=CharID from ClanInvites where ClanInviteID=@in_ClanInviteID
@@ -7119,7 +6664,7 @@ BEGIN
 
 	-- delete invite anyway
 	delete from ClanInvites where ClanInviteID=@in_ClanInviteID
-	
+
 	-- check if invite is denied
 	if(@in_Answer = 0) begin
 		select 0 as ResultCode
@@ -7135,7 +6680,7 @@ BEGIN
 		select 20 as 'ResultCode', 'not enough slots' as ResultMsg
 		return
 	end
-	
+
 	-- join the clan!
 	update ClanData set NumClanMembers=(NumClanMembers + 1) where ClanID=@ClanID
 	update UsersChars set ClanID=@ClanID, ClanRank=99 where CharID=@in_CharID
@@ -7156,7 +6701,7 @@ BEGIN
 		@in_CharID,
 		@Gamertag
 	)
-	
+
 	-- success
 	select 0 as ResultCode
 	select @ClanID as ClanID
@@ -7180,16 +6725,16 @@ BEGIN
 -- report all pending invites
 
 	select 0 as ResultCode
-	
-	select 
+
+	select
 		i.ClanInviteID,
-		c.Gamertag, 
+		c.Gamertag,
 		d.*
 	from ClanInvites i
 	left join UsersChars c on (c.CharID=i.InviterCharID)
 	join ClanData d on (d.ClanID=i.ClanID)
 	where i.CharID=@in_CharID and GETDATE()<ExpireTime
-	
+
 	return
 END
 GO
@@ -7219,7 +6764,7 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 -- validate that we can invite
 
 	-- only leader and officers can invite
@@ -7232,15 +6777,15 @@ BEGIN
 
 	-- success
 	select 0 as ResultCode
-	
-	select 
-		i.ClanInviteID, 
+
+	select
+		i.ClanInviteID,
 		c.Gamertag,
 		DATEDIFF(mi, GETDATE(), i.ExpireTime) as MinutesLeft
 	from ClanInvites i
 	join UsersChars c on (c.CharID=i.CharID)
 	where i.ClanID=@ClanID and GETDATE()<ExpireTime
-	
+
 	return
 END
 GO
@@ -7261,7 +6806,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	declare @INVITE_EXPIRE_TIME_HOURS int = 72
-	
+
 -- sanity checks
 
 	-- clan id valudation of caller
@@ -7273,7 +6818,7 @@ BEGIN
 		select 6 as ResultCode, 'not in clan' as ResultMsg
 		return
 	end
-	
+
 -- validate that we can invite
 
 	-- only leader and officers can invite
@@ -7281,12 +6826,12 @@ BEGIN
 		select 23 as ResultCode, 'no permission' as ResultMsg
 		return
 	end
-	
+
 	-- check if we have enough slots in clan
 	declare @MaxClanMembers int
 	declare @NumClanMembers int
 	select @MaxClanMembers=MaxClanMembers, @NumClanMembers=NumClanMembers from ClanData where ClanID=@ClanID
-	
+
 	declare @PendingInvites int = 0
 	--DISABLED FOR NOW: select @PendingInvites=COUNT(*) from ClanInvites where ClanID=@ClanID and GETDATE()<ExpireTime
 	if((@NumClanMembers + @PendingInvites) >= @MaxClanMembers) begin
@@ -7294,7 +6839,7 @@ BEGIN
 		return
 	end
 
-	-- check if user exists	
+	-- check if user exists
 	declare @InvCharID int
 	declare @InvClanID int
 	select @InvCharID=CharID, @InvClanID=ClanID from UsersChars where Gamertag=@in_InvGamertag
@@ -7307,13 +6852,13 @@ BEGIN
 		select 21 as ResultCode, 'already in clan' as ResultMsg
 		return
 	end
-	
+
 	-- check if we have pending invite
 	if(exists(select * from ClanInvites where ClanID=@ClanID and CharID=@InvCharID and GETDATE()<ExpireTime)) begin
 		select 24 as ResultCode, 'already invited' as ResultMsg
 		return
 	end
-	
+
 -- invite
 	insert into ClanInvites (
 		ClanID,
@@ -7346,7 +6891,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanKickMember]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 -- sanity checks
 	if(@in_CharID = @in_MemberID) begin
 		select 6 as 'ResultCode', 'cant kick himselft' as 'ResultMsg'
@@ -7362,7 +6907,7 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 	-- clan id validation of member
 	declare @MemberClanID int = 0
 	declare @MemberGamerTag nvarchar(64)
@@ -7372,7 +6917,7 @@ BEGIN
 		select 6 as ResultCode, 'member in wrong clan' as ResultMsg
 		return
 	end
-	
+
 -- validate that we can kick
 
 	-- only leader and officers can kick
@@ -7386,11 +6931,11 @@ BEGIN
 		select 6 as ResultCode, 'cant kick highter rank' as ResultMsg
 		return
 	end
-	
+
 -- update clan info and kick player
 	update ClanData set NumClanMembers=(NumClanMembers-1) where ClanID=@ClanID
 	update UsersChars set ClanID=0, ClanContributedGP=0, ClanContributedXP=0 where CharID=@in_MemberID
-	
+
 -- generate clan event
 	insert into ClanEvents (
 		ClanID,
@@ -7411,9 +6956,9 @@ BEGIN
 		@Gamertag,
 		@MemberGamertag
 	)
-	
+
 	-- TODO: send message to player about kick
-	
+
 	-- success
 	select 0 as ResultCode
 END
@@ -7432,7 +6977,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanLeave]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 -- sanity checks
 	declare @ClanID int
 	declare @ClanRank int
@@ -7442,9 +6987,9 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
--- leader is leaving clan	
-	if(@ClanRank = 0) 
+
+-- leader is leaving clan
+	if(@ClanRank = 0)
 	begin
 		declare @NumClanMembers int
 		select @NumClanMembers=COUNT(*) from UsersChars where ClanID=@ClanID
@@ -7469,10 +7014,10 @@ BEGIN
 			@in_CharID,
 			@Gamertag
 		)
-		
+
 		-- and delete clan
 		exec WZ_ClanFN_DeleteClan @ClanID
-		
+
 		select 0 as ResultCode
 		return
 	end
@@ -7497,7 +7042,7 @@ BEGIN
 		@in_CharID,
 		@Gamertag
 	)
-	
+
 	-- success
 	select 0 as ResultCode
 END
@@ -7517,7 +7062,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanSetLore]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- clan id valudation of caller
 	declare @ClanID int = 0
 	declare @ClanRank int = 99
@@ -7527,13 +7072,13 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 	-- only leader and officers can change lore
 	if(@ClanRank > 1) begin
 		select 23 as ResultCode, 'no permission' as ResultMsg
 		return
 	end
-	
+
 	update ClanData set ClanLore=@in_Lore where ClanID=@ClanID
 
 	-- success
@@ -7556,7 +7101,7 @@ CREATE PROCEDURE [dbo].[WZ_ClanSetMemberRank]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 -- sanity checks
 	if(@in_CharID = @in_MemberID) begin
 		select 6 as 'ResultCode', 'can not set own rank' as 'ResultMsg'
@@ -7572,7 +7117,7 @@ BEGIN
 		select 6 as ResultCode, 'no clan' as ResultMsg
 		return
 	end
-	
+
 	-- clan id validation of member
 	declare @MemberClanID int = 0
 	declare @MemberGamerTag nvarchar(64)
@@ -7583,7 +7128,7 @@ BEGIN
 		select 6 as ResultCode, 'member in wrong clan' as ResultMsg
 		return
 	end
-	
+
 -- validate that we can change rank
 
 	-- only leader and officers can change ranks
@@ -7597,21 +7142,21 @@ BEGIN
 		select 6 as ResultCode, 'cant change highter rank' as ResultMsg
 		return
 	end
-	
+
 	if(@ClanRank > 0 and @ClanRank >= @in_Rank) begin
 		select 6 as ResultCode, 'cant set same rank' as ResultMsg
 		return
 	end
-	
+
 -- code for changing clan ownership, owner becomes officer
 	if(@ClanRank = 0 and @in_Rank = 0) begin
 		update UsersChars set ClanRank=1 where CharID=@in_CharID
 		update ClanData set OwnerCharID=@in_MemberID, OwnerCustomerID=@MemberCustomerID where ClanID=@ClanID
 	end
-	
+
 -- update target member
 	update UsersChars set ClanRank=@in_Rank where CharID=@in_MemberID
-	
+
 -- generate clan set rank event
 	insert into ClanEvents (
 		ClanID,
@@ -7634,9 +7179,9 @@ BEGIN
 		@Gamertag,
 		@MemberGamertag
 	)
-	
+
 	-- TODO: send message to player about rank change
-	
+
 	-- success
 	select 0 as ResultCode
 END
@@ -7651,10 +7196,10 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 GO
 
 CREATE PROCEDURE [dbo].[WZ_DB_GenerateDailyLeaderboard]
-AS  
-BEGIN  
-	SET NOCOUNT ON;  
-	
+AS
+BEGIN
+	SET NOCOUNT ON;
+
 	/*
 	The Query Processor estimates that implementing the following index could improve the query cost by 13.035%.
 	NOTE: using index IX_DBG_UserRoundResults_LBIdx1 on DBG_UserRoundResults
@@ -7665,11 +7210,11 @@ BEGIN
 	-- reset table with zero seed
 	delete from Leaderboard1
 	DBCC CHECKIDENT (Leaderboard1, RESEED, 0)
-	
+
 	-- insert all ordered by honorpoints
 	insert into Leaderboard1 (
 			CustomerID, gamertag, HonorPoints,
-			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit, 
+			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit,
 			TimePlayed,
 			Rank,
 			HavePremium)
@@ -7682,7 +7227,7 @@ BEGIN
 			-- not need rank now
 			0, --(select top(1) rank from DataRankPoints where LoginID.HonorPoints<DataRankPoints.HonorPoints order by HonorPoints asc),
 			-- check if have premium
-			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE()) 
+			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE())
 				then 1
 				else 0
 			end)
@@ -7703,29 +7248,29 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 GO
 
 CREATE PROCEDURE [dbo].[WZ_DB_GenerateLeaderboard]
-AS  
-BEGIN  
-	SET NOCOUNT ON;  
-	
+AS
+BEGIN
+	SET NOCOUNT ON;
+
 	-- reset table with zero seed
 	delete from Leaderboard
 	DBCC CHECKIDENT (Leaderboard, RESEED, 0)
-	
+
 	-- insert all ordered by honorpoints
 	insert into Leaderboard (
 			CustomerID, gamertag, HonorPoints,
-			Kills, Deaths, Wins, Losses ,ShotsFired, ShotsHit, 
+			Kills, Deaths, Wins, Losses ,ShotsFired, ShotsHit,
 			TimePlayed,
 			Rank,
 			HavePremium)
 		select
 			LoginID.CustomerID, gamertag, HonorPoints,
-			Stats.Kills, Stats.Deaths, Stats.Wins, Stats.Losses, Stats.ShotsFired, Stats.ShotsHits, 
+			Stats.Kills, Stats.Deaths, Stats.Wins, Stats.Losses, Stats.ShotsFired, Stats.ShotsHits,
 			Stats.TimePlayed,
 			-- get rank from table
 			(select top(1) rank from DataRankPoints where LoginID.HonorPoints<DataRankPoints.HonorPoints order by HonorPoints asc),
 			-- check if have premium
-			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=LoginID.CustomerID and LeasedUntil>GETDATE()) 
+			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=LoginID.CustomerID and LeasedUntil>GETDATE())
 				then 1
 				else 0
 			end)
@@ -7746,15 +7291,15 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 GO
 
 CREATE PROCEDURE [dbo].[WZ_DB_GenerateLeaderboard30]
-AS  
-BEGIN  
-	SET NOCOUNT ON;  
+AS
+BEGIN
+	SET NOCOUNT ON;
 
 	/*
 	The Query Processor estimates that implementing the following index could improve the query cost by 13.035%.
 	NOTE: using index IX_DBG_UserRoundResults_LBIdx1 on DBG_UserRoundResults
 	*/
-	
+
 	-- assemble start date of this month
 	declare @StartDay date = '2000-01-01'
 	set @StartDay = DATEADD(year, YEAR(GETDATE()) - 2000, @StartDay)
@@ -7763,11 +7308,11 @@ BEGIN
 	-- reset table with zero seed
 	delete from Leaderboard30
 	DBCC CHECKIDENT (Leaderboard30, RESEED, 0)
-	
+
 	-- insert all ordered by honorpoints
 	insert into Leaderboard30 (
 			CustomerID, gamertag, HonorPoints,
-			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit, 
+			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit,
 			TimePlayed,
 			Rank,
 			HavePremium)
@@ -7780,7 +7325,7 @@ BEGIN
 			-- not need rank now
 			0, --(select top(1) rank from DataRankPoints where LoginID.HonorPoints<DataRankPoints.HonorPoints order by HonorPoints asc),
 			-- check if have premium
-			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE()) 
+			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE())
 				then 1
 				else 0
 			end)
@@ -7801,15 +7346,15 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 GO
 
 CREATE PROCEDURE [dbo].[WZ_DB_GenerateLeaderboard7]
-AS  
-BEGIN  
-	SET NOCOUNT ON;  
+AS
+BEGIN
+	SET NOCOUNT ON;
 
 	/*
 	The Query Processor estimates that implementing the following index could improve the query cost by 13.035%.
 	NOTE: using index IX_DBG_UserRoundResults_LBIdx1 on DBG_UserRoundResults
 	*/
-	
+
 	-- assemble start date of this week
 	declare @StartDay date = GETDATE()
 	set @StartDay = DATEADD(day, -(DATEPART(weekday, @StartDay) - 1), @StartDay)
@@ -7817,16 +7362,16 @@ BEGIN
 	-- reset table with zero seed
 	delete from Leaderboard7
 	DBCC CHECKIDENT (Leaderboard7, RESEED, 0)
-	
+
 	-- insert all ordered by honorpoints
 	insert into Leaderboard7 (
 			CustomerID, gamertag, HonorPoints,
-			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit, 
+			Kills, Deaths, Wins, Losses, ShotsFired, ShotsHit,
 			TimePlayed,
 			Rank,
 			HavePremium)
 		select
-			urr.CustomerID, 
+			urr.CustomerID,
 			l.Gamertag,
 			sum(urr.HonorPoints),
 			sum(Kills), sum(Deaths), sum(Wins), sum(Losses), sum(ShotsFired), sum(ShotsHits),
@@ -7834,7 +7379,7 @@ BEGIN
 			-- not need rank now
 			0, --(select top(1) rank from DataRankPoints where LoginID.HonorPoints<DataRankPoints.HonorPoints order by HonorPoints asc),
 			-- check if have premium
-			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE()) 
+			(case when exists (select * from Inventory where ItemID=301004 and Inventory.CustomerID=urr.CustomerID and LeasedUntil>GETDATE())
 				then 1
 				else 0
 			end)
@@ -7854,7 +7399,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_GetAccountInfo1]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_GetAccountInfo1] 
+CREATE PROCEDURE [dbo].[WZ_GetAccountInfo1]
 	@in_CustomerID int,
 	@in_CharID int
 AS
@@ -7867,38 +7412,38 @@ BEGIN
 		select 6 as ResultCode
 		return;
 	end
-	
+
 	if(@in_CharID > 0) begin
 		update UsersData set lastjoineddate=GETDATE() where CustomerID=@in_CustomerID
 	end
 
 	select 0 as ResultCode
 
-	SELECT 
+	SELECT
 		UsersData.*,
 		DATEDIFF(ss, lastgamedate, GETDATE()) as 'SecFromLastGame',
 		ClanData.ClanTag, ClanData.ClanTagColor
-	FROM UsersData 
+	FROM UsersData
 	left JOIN ClanData on (UsersData.ClanID = ClanData.ClanID)
 	where UsersData.CustomerID=@in_CustomerID
-	
+
 --
 -- report chars
 --
-	if(@in_CharID > 0) 
+	if(@in_CharID > 0)
 	begin
 		-- single character, version called from server
-		select 
-			0 as 'SecToRevive', 
-			* 
+		select
+			0 as 'SecToRevive',
+			*
 		from UsersChars where CustomerID=@in_CustomerID and CharID=@in_CharID
 	end
-	else 
+	else
 	begin
 		-- note that revive timer is 1hrs, change in WZ_CharRevive as well
-		select 
+		select
 			DATEDIFF(second, GETUTCDATE(), DATEADD(hour, 1, DeathUtcTime)) as 'SecToRevive',
-			* 
+			*
 		from UsersChars where CustomerID=@in_CustomerID order by CharID asc
 	end
 
@@ -7908,7 +7453,7 @@ BEGIN
 	select *
 	from UsersInventory
 	where CustomerID=@in_CustomerID and CharID=0
-	
+
 --
 -- report backpacks
 --
@@ -7931,7 +7476,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_GetAccountInfo2]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_GetAccountInfo2] 
+CREATE PROCEDURE [dbo].[WZ_GetAccountInfo2]
 	@in_CustomerID int,
 	@in_CharID int
 AS
@@ -7944,37 +7489,37 @@ BEGIN
 		select 6 as ResultCode
 		return;
 	end
-	
+
 	if(@in_CharID > 0) begin
 		update UsersData set lastjoineddate=GETDATE() where CustomerID=@in_CustomerID
 	end
 
 	select 0 as ResultCode
 
-	SELECT 
+	SELECT
 		UsersData.*,
 		DATEDIFF(ss, lastgamedate, GETDATE()) as 'SecFromLastGame'
-	FROM UsersData 
+	FROM UsersData
 	where UsersData.CustomerID=@in_CustomerID
-	
+
 --
 -- report chars
 --
-	if(@in_CharID > 0) 
+	if(@in_CharID > 0)
 	begin
 		-- single character, version called from server
-		select 
-			0 as 'SecToRevive', 
+		select
+			0 as 'SecToRevive',
 			c.*,
 			ClanData.ClanTag, ClanData.ClanTagColor
 		from UsersChars c
 		left JOIN ClanData on (c.ClanID = ClanData.ClanID)
 		where CustomerID=@in_CustomerID and CharID=@in_CharID
 	end
-	else 
+	else
 	begin
 		-- note that revive timer is 1hrs, change in WZ_CharRevive as well
-		select 
+		select
 			DATEDIFF(second, GETUTCDATE(), DATEADD(hour, 1, DeathUtcTime)) as 'SecToRevive',
 			c.*,
 			ClanData.ClanTag, ClanData.ClanTagColor
@@ -7989,7 +7534,7 @@ BEGIN
 	select *
 	from UsersInventory
 	where CustomerID=@in_CustomerID and CharID=0
-	
+
 --
 -- report backpacks
 --
@@ -8014,8 +7559,8 @@ GO
 
 CREATE PROCEDURE [dbo].[WZ_GetDataGameRewards]
 AS
-BEGIN  
-	SET NOCOUNT ON;  
+BEGIN
+	SET NOCOUNT ON;
 
 	select 0 as ResultCode
 	select * from DataGameRewards
@@ -8030,17 +7575,45 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_GetItemsData]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_GetItemsData] 
+CREATE PROCEDURE [dbo].[WZ_GetItemsData]
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	select 0 as ResultCode
-	
+
 	select * from Items_Gear
 	select * from Items_Weapons;
 	select * from Items_Generic
-	
+	select
+		cast(0 as int) as ItemID,
+		cast('' as nvarchar(32)) as Name,
+		cast('' as varchar(32)) as FNAME,
+		cast('' as nvarchar(512)) as Description,
+		cast(0 as int) as AddGP,
+		cast(0 as int) as AddSP,
+		cast(0 as int) as Item1_ID,
+		cast(0 as int) as Item1_Exp,
+		cast(0 as int) as Item2_ID,
+		cast(0 as int) as Item2_Exp,
+		cast(0 as int) as Item3_ID,
+		cast(0 as int) as Item3_Exp,
+		cast(0 as int) as Item4_ID,
+		cast(0 as int) as Item4_Exp,
+		cast(0 as int) as Item5_ID,
+		cast(0 as int) as Item5_Exp,
+		cast(0 as int) as Item6_ID,
+		cast(0 as int) as Item6_Exp,
+		cast(0 as int) as Price1,
+		cast(0 as int) as Price7,
+		cast(0 as int) as Price30,
+		cast(0 as int) as PriceP,
+		cast(0 as int) as GPrice1,
+		cast(0 as int) as GPrice7,
+		cast(0 as int) as GPrice30,
+		cast(0 as int) as GPriceP
+	where 1 = 0
+
 END
 GO
 
@@ -8052,19 +7625,19 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_GetShopInfo1]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_GetShopInfo1] 
+CREATE PROCEDURE [dbo].[WZ_GetShopInfo1]
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	select 0 as ResultCode
-	
+
 	-- select all shop items
 	      SELECT ItemID, Category, IsNew, Price1, Price7, Price30, PriceP, GPrice1, GPrice7, GPrice30, GPriceP FROM Items_Gear
 	union SELECT ItemID, Category, IsNew, Price1, Price7, Price30, PriceP, GPrice1, GPrice7, GPrice30, GPriceP	FROM Items_Weapons
 	union SELECT ItemID, Category, IsNew, Price1, Price7, Price30, PriceP, GPrice1, GPrice7, GPrice30, GPriceP	FROM Items_Generic
 	union SELECT ItemID, Category, IsNew, Price1, Price7, Price30, PriceP, GPrice1, GPrice7, GPrice30, GPriceP	FROM Items_Attachments
-	
+
 END
 GO
 
@@ -8093,10 +7666,10 @@ BEGIN
 
 	IF @in_Type = 5 -- Heroes
 	BEGIN
-		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos, 
+		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos,
 			CEILING(COUNT(*) / @rowsPerPage) AS PageCount
 		FROM UsersChars
-		WHERE Hardcore = @in_Hardcore AND Reputation >= 0		
+		WHERE Hardcore = @in_Hardcore AND Reputation >= 0
 
 		;WITH LeaderboardData AS
 		(
@@ -8112,11 +7685,11 @@ BEGIN
 	END
 	ELSE IF @in_Type = 6 -- Villains
 	BEGIN
-		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos, 
+		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos,
 			CEILING(COUNT(*) / @rowsPerPage) AS PageCount
 		FROM UsersChars
-		WHERE Hardcore = @in_Hardcore AND Reputation < 0	
-	
+		WHERE Hardcore = @in_Hardcore AND Reputation < 0
+
 		;WITH LeaderboardData AS
 		(
 			SELECT TOP (@rowLimit) Gamertag, Alive, Reputation AS Data,
@@ -8131,7 +7704,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos, 
+		SELECT TOP (@rowLimit) (@startPos + 1) AS StartPos,
 			CEILING(COUNT(*) / @rowsPerPage) AS PageCount
 		FROM UsersChars
 		WHERE Hardcore = @in_Hardcore
@@ -8165,7 +7738,7 @@ BEGIN
 		FROM LeaderboardData
 		WHERE Pos > @startPos AND Pos <= @startPos + @rowsPerPage
 	END
-	
+
 END
 GO
 
@@ -8215,14 +7788,14 @@ CREATE PROCEDURE [dbo].[WZ_SRV_AddLogInfo]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- see if this event is recurring inside single game session
 	--declare @RecordID int
 	--select @RecordID=RecordID from DBG_SrvLogInfo where
-	--	GameSessionID=@in_GameSessionID 
+	--	GameSessionID=@in_GameSessionID
 	--	and CustomerID=@in_CustomerID
 	--	and (@in_CheatID > 0 and CheatID=@in_CheatID)
-	--	and @in_Msg=Msg 
+	--	and @in_Msg=Msg
 	--	and @in_Data=Data
 	--if(@@ROWCOUNT > 0) begin
 	--	-- increase count
@@ -8230,7 +7803,7 @@ BEGIN
 	--	select 0 as ResultCode
 	--	return
 	--end
-	
+
 	insert into DBG_SrvLogInfo (
 		ReportTime,
 		IsProcessed,
@@ -8255,7 +7828,7 @@ BEGIN
 		1,
 		@in_Msg,
 		@in_Data)
-		
+
 	-- we're done
 	select 0 as ResultCode
 END
@@ -8269,7 +7842,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_SRV_AddWeaponStats]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_SRV_AddWeaponStats] 
+CREATE PROCEDURE [dbo].[WZ_SRV_AddWeaponStats]
 	@in_ItemID int,
 	@in_ShotsFired int,
 	@in_ShotsHits int,
@@ -8334,7 +7907,7 @@ BEGIN
 		@in_TextSubj
 	)
 	declare @NoteID int = SCOPE_IDENTITY()
-		
+
 	-- we're done
 	select 0 as ResultCode
 	select @NoteID as 'NoteID'
@@ -8359,7 +7932,7 @@ BEGIN
 	select 0 as ResultCode
 
 	delete from ServerNotesData where GameServerId=@in_GameServerID and GETUTCDATE()>[ExpireUtcDate]
-	
+
 	select GETUTCDATE() as 'CurUtcDate'
 	select * from ServerNotesData where GameServerId=@in_GameServerID
 END
@@ -8373,7 +7946,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[WZ
 	DROP PROCEDURE [dbo].[WZ_SRV_UserJoinedGame]
 GO
 
-CREATE PROCEDURE [dbo].[WZ_SRV_UserJoinedGame] 
+CREATE PROCEDURE [dbo].[WZ_SRV_UserJoinedGame]
 	@in_CustomerID int,
 	@in_CharID int,
 	@in_GameMapId int,
@@ -8382,19 +7955,19 @@ CREATE PROCEDURE [dbo].[WZ_SRV_UserJoinedGame]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- store current user server location
-	update UsersData set 
+	update UsersData set
 		lastgamedate=GETDATE(),
 		GameServerId=@in_GameServerId
 	where CustomerID=@in_CustomerID
-	
+
 	-- per char info
-	update UsersChars set 
+	update UsersChars set
 		GameMapId=@in_GameMapId,
 		GameServerId=@in_GameServerId
 	where CharID=@in_CharID
-		
+
 	-- we're done
 	select 0 as ResultCode
 
@@ -8426,19 +7999,19 @@ BEGIN
 		select 7 as ResultCode, 'game still active' as ResultMsg
 		return
 	end
-	
+
 	-- store current user server location
-	update UsersData set 
+	update UsersData set
 		lastgamedate=GETDATE(),
 		GameServerId=@in_GameServerId
 	where CustomerID=@in_CustomerID
-	
+
 	-- per char info
-	update UsersChars set 
+	update UsersChars set
 		GameMapId=@in_GameMapId,
 		GameServerId=@in_GameServerId
 	where CharID=@in_CharID
-		
+
 	-- we're done
 	select 0 as ResultCode
 
@@ -8462,16 +8035,16 @@ CREATE PROCEDURE [dbo].[WZ_SRV_UserLeftGame]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	-- store current user server location
-	update UsersData set 
+	update UsersData set
 		lastgamedate=GETDATE(),
 		GameServerId=0,
 		TimePlayed=(TimePlayed+@in_TimePlayed)
 	where CustomerID=@in_CustomerID
-	
+
 	-- update some stats here
-	
+
 	-- we're done
 	select 0 as ResultCode
 
@@ -8498,9 +8071,9 @@ BEGIN
 	if not exists (select * from Achievements where (AchID=@in_AchID and CustomerID=@in_CustomerID))
 	begin
 		INSERT INTO Achievements(
-			CustomerID, 
-			AchID, 
-			Value, 
+			CustomerID,
+			AchID,
+			Value,
 			Unlocked
 		)
 		VALUES (
@@ -8512,19 +8085,19 @@ BEGIN
 	end
 	else
 	begin
-		UPDATE Achievements SET 
+		UPDATE Achievements SET
 			Value=@in_AchValue,
 			Unlocked=@in_AchUnlocked
 		WHERE AchID=@in_AchID and CustomerID=@in_CustomerID
     end
 
     select 0 as ResultCode
-    
+
     -- check for steamID
     declare @SteamID bigint = 0
 	--select @SteamID=SteamID from SteamUserIDMap where CustomerID=@in_CustomerID
 	--select @SteamID as 'SteamID'
-	
+
 END
 GO
 
@@ -8543,11 +8116,11 @@ CREATE PROCEDURE [dbo].[WZ_UpdateLoginSession]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	
+
 	declare @SessionID int
 
-	-- check if we have record for that user          
-	SELECT 
+	-- check if we have record for that user
+	SELECT
 		@SessionID=LoginSessions.SessionID
 	FROM LoginSessions
 	WHERE CustomerID=@in_CustomerID
@@ -8556,17 +8129,17 @@ BEGIN
 		return
 	end
 
-	-- compare session key. if it's different, supplied sesson is invalid	
+	-- compare session key. if it's different, supplied sesson is invalid
 	if(@in_SessionID <> @SessionID) begin
 		select 1 as ResultCode
 		return
 	end
-	
+
 	-- update last ping time
-	UPDATE LoginSessions SET 
+	UPDATE LoginSessions SET
 		LoginSessions.TimeUpdated=GETDATE()
 	WHERE CustomerID=@in_CustomerID
-	
+
 	select 0 as ResultCode
 END
 GO
@@ -8604,7 +8177,7 @@ set @CCU = (select count(*) from LoginSessions where TimeUpdated > DATEADD(minut
 
 INSERT INTO VitalStats_V1 VALUES (@today, @Sales, @TUsers, @DAU, @CCU, @Revenues );
 
-	    
+
 END
 GO
 
@@ -8616,7 +8189,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[dbo].[fn
 	DROP FUNCTION [dbo].[fn_diagramobjects]
 GO
 
-CREATE FUNCTION [dbo].[fn_diagramobjects]() 
+CREATE FUNCTION [dbo].[fn_diagramobjects]()
 	RETURNS int
 	WITH EXECUTE AS N'dbo'
 	AS
@@ -8627,7 +8200,7 @@ CREATE FUNCTION [dbo].[fn_diagramobjects]()
 		declare @id_helpdiagramdefinition	int
 		declare @id_creatediagram	int
 		declare @id_renamediagram	int
-		declare @id_alterdiagram 	int 
+		declare @id_alterdiagram 	int
 		declare @id_dropdiagram		int
 		declare @InstalledObjects	int
 
@@ -8639,7 +8212,7 @@ CREATE FUNCTION [dbo].[fn_diagramobjects]()
 			@id_helpdiagramdefinition = object_id(N'dbo.sp_helpdiagramdefinition'),
 			@id_creatediagram = object_id(N'dbo.sp_creatediagram'),
 			@id_renamediagram = object_id(N'dbo.sp_renamediagram'),
-			@id_alterdiagram = object_id(N'dbo.sp_alterdiagram'), 
+			@id_alterdiagram = object_id(N'dbo.sp_alterdiagram'),
 			@id_dropdiagram = object_id(N'dbo.sp_dropdiagram')
 
 		if @id_upgraddiagrams is not null
@@ -8658,8 +8231,8 @@ CREATE FUNCTION [dbo].[fn_diagramobjects]()
 			select @InstalledObjects = @InstalledObjects + 64
 		if @id_dropdiagram is not null
 			select @InstalledObjects = @InstalledObjects + 128
-		
-		return @InstalledObjects 
+
+		return @InstalledObjects
 	END
 GO
 
@@ -8733,7 +8306,7 @@ BEGIN
     END;
 
     /*
-        Разрешены только:
+        Р В Р В°Р В·РЎР‚Р ВµРЎв‚¬Р ВµР Р…РЎвЂ№ РЎвЂљР С•Р В»РЎРЉР С”Р С•:
         A-Z
         a-z
         0-9
@@ -8782,7 +8355,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         /* ----------------------------------------------------
-           Старый refunded аккаунт освобождает Email
+           Р РЋРЎвЂљР В°РЎР‚РЎвЂ№Р в„– refunded Р В°Р С”Р С”Р В°РЎС“Р Р…РЎвЂљ Р С•РЎРѓР Р†Р С•Р В±Р С•Р В¶Р Т‘Р В°Р ВµРЎвЂљ Email
            ---------------------------------------------------- */
 
         DECLARE @RefundCustomerID int = 0;
@@ -8837,7 +8410,7 @@ BEGIN
         END;
 
         /* ----------------------------------------------------
-           Email уже используется
+           Email РЎС“Р В¶Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµРЎвЂљРЎРѓРЎРЏ
            ---------------------------------------------------- */
 
         IF EXISTS
@@ -8862,7 +8435,7 @@ BEGIN
         END;
 
         /* ----------------------------------------------------
-           NickName уже используется
+           NickName РЎС“Р В¶Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµРЎвЂљРЎРѓРЎРЏ
            ---------------------------------------------------- */
 
         IF EXISTS
@@ -8887,7 +8460,7 @@ BEGIN
         END;
 
         /* ----------------------------------------------------
-           Пароль
+           Р СџР В°РЎР‚Р С•Р В»РЎРЉ
            ---------------------------------------------------- */
 
         DECLARE @MD5Password varchar(100);
@@ -8961,11 +8534,11 @@ BEGIN
         );
 
         /* ----------------------------------------------------
-           Постоянный стартовый персонаж
+           Р СџР С•РЎРѓРЎвЂљР С•РЎРЏР Р…Р Р…РЎвЂ№Р в„– РЎРѓРЎвЂљР В°РЎР‚РЎвЂљР С•Р Р†РЎвЂ№Р в„– Р С—Р ВµРЎР‚РЎРѓР С•Р Р…Р В°Р В¶
 
-           HeroItemID: 20174
-           Name: Ex Military
-           FNAME: RegularGuy
+           HeroItemID: 20754
+           Name: LMS Character
+           FNAME: char_lms
            ---------------------------------------------------- */
 
         INSERT INTO dbo.UsersChars
@@ -8977,6 +8550,10 @@ BEGIN
             HeadIdx,
             BodyIdx,
             LegsIdx,
+            HairIdx,
+            FeetIdx,
+            BackpackID,
+            BackpackSize,
             Alive,
             GameFlags,
             CreateDate
@@ -8986,10 +8563,14 @@ BEGIN
             @CustomerID,
             0,
             @in_NickName,
-            20174,
+            20754,
             0,
             0,
             0,
+            0,
+            0,
+            21712,
+            16,
             3,
             1,
             GETDATE()
@@ -9002,7 +8583,7 @@ BEGIN
             );
 
         /* ----------------------------------------------------
-           Стартовые предметы персонажа
+           Р РЋРЎвЂљР В°РЎР‚РЎвЂљР С•Р Р†РЎвЂ№Р Вµ Р С—РЎР‚Р ВµР Т‘Р СР ВµРЎвЂљРЎвЂ№ Р С—Р ВµРЎР‚РЎРѓР С•Р Р…Р В°Р В¶Р В°
            ---------------------------------------------------- */
 
         INSERT INTO dbo.UsersInventory
@@ -9044,7 +8625,7 @@ BEGIN
             @CustomerID,
             @CharID,
             2,
-            101261,
+            109505,
             '2020-01-01',
             1,
             -1,
@@ -9139,7 +8720,9 @@ CREATE PROCEDURE [dbo].[WZ_CharCreate]
     @in_HeroItemID int,
     @in_HeadIdx int,
     @in_BodyIdx int,
-    @in_LegsIdx int
+    @in_LegsIdx int,
+    @in_HairIdx int = 0,
+    @in_FeetIdx int = 0
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -9358,9 +8941,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Accounts
 -- ----------------------------
-ALTER TABLE [dbo].[Accounts] ADD CONSTRAINT [PK__Accounts__A4AE64B8B0DE684C] PRIMARY KEY CLUSTERED ([CustomerID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Accounts]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Accounts] ADD CONSTRAINT [PK__Accounts__A4AE64B8B0DE684C] PRIMARY KEY CLUSTERED ([CustomerID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9383,9 +8974,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table CharsStats
 -- ----------------------------
-ALTER TABLE [dbo].[CharsStats] ADD CONSTRAINT [PK__CharsSta__AA7BC254060E9AFF] PRIMARY KEY CLUSTERED ([CharID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[CharsStats]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[CharsStats] ADD CONSTRAINT [PK__CharsSta__AA7BC254060E9AFF] PRIMARY KEY CLUSTERED ([CharID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9399,9 +8998,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table CheatLog
 -- ----------------------------
-ALTER TABLE [dbo].[CheatLog] ADD CONSTRAINT [PK__CheatLog__3214EC27AD854B8A] PRIMARY KEY CLUSTERED ([ID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[CheatLog]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[CheatLog] ADD CONSTRAINT [PK__CheatLog__3214EC27AD854B8A] PRIMARY KEY CLUSTERED ([ID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9431,9 +9038,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table ClanApplications
 -- ----------------------------
-ALTER TABLE [dbo].[ClanApplications] ADD CONSTRAINT [PK__ClanAppl__581126780A62D8BB] PRIMARY KEY CLUSTERED ([ClanApplicationID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[ClanApplications]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[ClanApplications] ADD CONSTRAINT [PK__ClanAppl__581126780A62D8BB] PRIMARY KEY CLUSTERED ([ClanApplicationID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9447,9 +9062,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table ClanData
 -- ----------------------------
-ALTER TABLE [dbo].[ClanData] ADD CONSTRAINT [PK__ClanData__EC03AA443BA8773C] PRIMARY KEY CLUSTERED ([ClanID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[ClanData]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[ClanData] ADD CONSTRAINT [PK__ClanData__EC03AA443BA8773C] PRIMARY KEY CLUSTERED ([ClanID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9473,9 +9096,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table ClanEvents
 -- ----------------------------
-ALTER TABLE [dbo].[ClanEvents] ADD CONSTRAINT [PK__ClanEven__DEFA879C27361266] PRIMARY KEY CLUSTERED ([ClanEventID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[ClanEvents]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[ClanEvents] ADD CONSTRAINT [PK__ClanEven__DEFA879C27361266] PRIMARY KEY CLUSTERED ([ClanEventID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9511,27 +9142,51 @@ GO
 -- ----------------------------
 -- Primary Key structure for table ClanInvites
 -- ----------------------------
-ALTER TABLE [dbo].[ClanInvites] ADD CONSTRAINT [PK__ClanInvi__E1FC20BD1DD3EA00] PRIMARY KEY CLUSTERED ([ClanInviteID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[ClanInvites]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[ClanInvites] ADD CONSTRAINT [PK__ClanInvi__E1FC20BD1DD3EA00] PRIMARY KEY CLUSTERED ([ClanInviteID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table DataGameRewards
 -- ----------------------------
-ALTER TABLE [dbo].[DataGameRewards] ADD CONSTRAINT [PK__DataGame__3214EC27CBD420B5] PRIMARY KEY CLUSTERED ([ID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[DataGameRewards]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[DataGameRewards] ADD CONSTRAINT [PK__DataGame__3214EC27CBD420B5] PRIMARY KEY CLUSTERED ([ID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table DataSkill2Price
 -- ----------------------------
-ALTER TABLE [dbo].[DataSkill2Price] ADD CONSTRAINT [PK__DataSkil__DFA091E756613E10] PRIMARY KEY CLUSTERED ([SkillID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[DataSkill2Price]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[DataSkill2Price] ADD CONSTRAINT [PK__DataSkil__DFA091E756613E10] PRIMARY KEY CLUSTERED ([SkillID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9552,18 +9207,34 @@ GO
 -- ----------------------------
 -- Primary Key structure for table DBG_GPTransactions
 -- ----------------------------
-ALTER TABLE [dbo].[DBG_GPTransactions] ADD CONSTRAINT [PK__DBG_GPTr__55433A4B84E4D86E] PRIMARY KEY CLUSTERED ([TransactionID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[DBG_GPTransactions]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[DBG_GPTransactions] ADD CONSTRAINT [PK__DBG_GPTr__55433A4B84E4D86E] PRIMARY KEY CLUSTERED ([TransactionID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table DBG_IISApiStats
 -- ----------------------------
-ALTER TABLE [dbo].[DBG_IISApiStats] ADD CONSTRAINT [PK__DBG_IISA__C690DF23040CDCB5] PRIMARY KEY CLUSTERED ([API])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[DBG_IISApiStats]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[DBG_IISApiStats] ADD CONSTRAINT [PK__DBG_IISA__C690DF23040CDCB5] PRIMARY KEY CLUSTERED ([API])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9594,9 +9265,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table DBG_PasswordResets
 -- ----------------------------
-ALTER TABLE [dbo].[DBG_PasswordResets] ADD CONSTRAINT [PK__DBG_Pass__783CF7AD4DA8E84C] PRIMARY KEY CLUSTERED ([ResetID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[DBG_PasswordResets]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[DBG_PasswordResets] ADD CONSTRAINT [PK__DBG_Pass__783CF7AD4DA8E84C] PRIMARY KEY CLUSTERED ([ResetID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9679,27 +9358,51 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Items_Attachments
 -- ----------------------------
-ALTER TABLE [dbo].[Items_Attachments] ADD CONSTRAINT [PK__Items_At__727E83EBA918A1E5] PRIMARY KEY CLUSTERED ([ItemID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Items_Attachments]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Items_Attachments] ADD CONSTRAINT [PK__Items_At__727E83EBA918A1E5] PRIMARY KEY CLUSTERED ([ItemID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table Items_Gear
 -- ----------------------------
-ALTER TABLE [dbo].[Items_Gear] ADD CONSTRAINT [PK__Items_Ge__727E83EBCA3951D6] PRIMARY KEY CLUSTERED ([ItemID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Items_Gear]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Items_Gear] ADD CONSTRAINT [PK__Items_Ge__727E83EBCA3951D6] PRIMARY KEY CLUSTERED ([ItemID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table Items_Generic
 -- ----------------------------
-ALTER TABLE [dbo].[Items_Generic] ADD CONSTRAINT [PK__Items_Ge__727E83EBDA6A021A] PRIMARY KEY CLUSTERED ([ItemID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Items_Generic]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Items_Generic] ADD CONSTRAINT [PK__Items_Ge__727E83EBDA6A021A] PRIMARY KEY CLUSTERED ([ItemID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9713,9 +9416,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Items_Weapons
 -- ----------------------------
-ALTER TABLE [dbo].[Items_Weapons] ADD CONSTRAINT [PK__Items_We__727E83EB5034428B] PRIMARY KEY CLUSTERED ([ItemID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Items_Weapons]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Items_Weapons] ADD CONSTRAINT [PK__Items_We__727E83EB5034428B] PRIMARY KEY CLUSTERED ([ItemID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9739,9 +9450,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Leaderboard
 -- ----------------------------
-ALTER TABLE [dbo].[Leaderboard] ADD CONSTRAINT [PK__Leaderbo__C570494845918EA5] PRIMARY KEY CLUSTERED ([Pos])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Leaderboard]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Leaderboard] ADD CONSTRAINT [PK__Leaderbo__C570494845918EA5] PRIMARY KEY CLUSTERED ([Pos])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9765,9 +9484,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Leaderboard1
 -- ----------------------------
-ALTER TABLE [dbo].[Leaderboard1] ADD CONSTRAINT [PK__Leaderbo__C5704948FA123E6C] PRIMARY KEY CLUSTERED ([Pos])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Leaderboard1]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Leaderboard1] ADD CONSTRAINT [PK__Leaderbo__C5704948FA123E6C] PRIMARY KEY CLUSTERED ([Pos])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9791,9 +9518,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Leaderboard30
 -- ----------------------------
-ALTER TABLE [dbo].[Leaderboard30] ADD CONSTRAINT [PK__Leaderbo__C5704948181769EA] PRIMARY KEY CLUSTERED ([Pos])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Leaderboard30]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Leaderboard30] ADD CONSTRAINT [PK__Leaderbo__C5704948181769EA] PRIMARY KEY CLUSTERED ([Pos])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9817,9 +9552,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Leaderboard7
 -- ----------------------------
-ALTER TABLE [dbo].[Leaderboard7] ADD CONSTRAINT [PK__Leaderbo__C5704948EB679321] PRIMARY KEY CLUSTERED ([Pos])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Leaderboard7]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Leaderboard7] ADD CONSTRAINT [PK__Leaderbo__C5704948EB679321] PRIMARY KEY CLUSTERED ([Pos])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9844,27 +9587,51 @@ GO
 -- ----------------------------
 -- Primary Key structure for table Logins
 -- ----------------------------
-ALTER TABLE [dbo].[Logins] ADD CONSTRAINT [PK__Logins__4DDA283838F352C2] PRIMARY KEY CLUSTERED ([LoginID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[Logins]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[Logins] ADD CONSTRAINT [PK__Logins__4DDA283838F352C2] PRIMARY KEY CLUSTERED ([LoginID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table LoginSessions
 -- ----------------------------
-ALTER TABLE [dbo].[LoginSessions] ADD CONSTRAINT [PK__LoginSes__A4AE64B8F7320361] PRIMARY KEY CLUSTERED ([CustomerID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[LoginSessions]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[LoginSessions] ADD CONSTRAINT [PK__LoginSes__A4AE64B8F7320361] PRIMARY KEY CLUSTERED ([CustomerID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
 -- ----------------------------
 -- Primary Key structure for table MasterServerInfo
 -- ----------------------------
-ALTER TABLE [dbo].[MasterServerInfo] ADD CONSTRAINT [PK__MasterSe__C56AC886D304456A] PRIMARY KEY CLUSTERED ([ServerID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[MasterServerInfo]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[MasterServerInfo] ADD CONSTRAINT [PK__MasterSe__C56AC886D304456A] PRIMARY KEY CLUSTERED ([ServerID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9878,9 +9645,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table SecurityLog
 -- ----------------------------
-ALTER TABLE [dbo].[SecurityLog] ADD CONSTRAINT [PK__Security__3214EC2734928AFF] PRIMARY KEY CLUSTERED ([ID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[SecurityLog]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[SecurityLog] ADD CONSTRAINT [PK__Security__3214EC2734928AFF] PRIMARY KEY CLUSTERED ([ID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9904,9 +9679,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table ServerNotesData
 -- ----------------------------
-ALTER TABLE [dbo].[ServerNotesData] ADD CONSTRAINT [PK__ServerNo__EACE357F0213EBC8] PRIMARY KEY CLUSTERED ([NoteID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[ServerNotesData]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[ServerNotesData] ADD CONSTRAINT [PK__ServerNo__EACE357F0213EBC8] PRIMARY KEY CLUSTERED ([NoteID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9948,9 +9731,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table UsersChars
 -- ----------------------------
-ALTER TABLE [dbo].[UsersChars] ADD CONSTRAINT [PK__UsersCha__AA7BC254FE43FB8F] PRIMARY KEY CLUSTERED ([CharID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[UsersChars]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[UsersChars] ADD CONSTRAINT [PK__UsersCha__AA7BC254FE43FB8F] PRIMARY KEY CLUSTERED ([CharID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -9967,9 +9758,17 @@ GO
 -- ----------------------------
 -- Primary Key structure for table UsersData
 -- ----------------------------
-ALTER TABLE [dbo].[UsersData] ADD CONSTRAINT [PK__UsersDat__A4AE64B89F077481] PRIMARY KEY CLUSTERED ([CustomerID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[UsersData]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[UsersData] ADD CONSTRAINT [PK__UsersDat__A4AE64B89F077481] PRIMARY KEY CLUSTERED ([CustomerID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
 
 
@@ -10006,8 +9805,15 @@ GO
 -- ----------------------------
 -- Primary Key structure for table UsersInventory
 -- ----------------------------
-ALTER TABLE [dbo].[UsersInventory] ADD CONSTRAINT [PK__UsersInv__F5FDE6D35B217B6D] PRIMARY KEY CLUSTERED ([InventoryID])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
-ON [PRIMARY]
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE parent_object_id = OBJECT_ID(N'[dbo].[UsersInventory]')
+      AND [type] = 'PK'
+)
+BEGIN
+    ALTER TABLE [dbo].[UsersInventory] ADD CONSTRAINT [PK__UsersInv__F5FDE6D35B217B6D] PRIMARY KEY CLUSTERED ([InventoryID])
+    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+    ON [PRIMARY]
+END
 GO
-

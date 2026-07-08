@@ -1,223 +1,213 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <AttachmentArmory>
-	<Attachment itemID="400003" category="19" type="1" SpecID="5001" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Acog_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="ACOG" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Acog_01.dds" desc="The Acog is a rail mounted telescopic sight used to extend a shooters accuracy on medium to long range shots." LevelRequired="20" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="50" ScopeType="acog_fps" />
-	</Attachment>
-	<Attachment itemID="400005" category="19" type="1" SpecID="5001" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Eotech_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="Holographic" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Eotech_01.dds" desc="The Holosight is a rail mounted holographic sight used to extend a shooters accuracy at close and medium ranges." LevelRequired="15" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="35" ScopeType="eotech_fps" />
-	</Attachment>
-	<Attachment itemID="400006" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Scar.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="SCAR IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Scar.dds" desc="This is the improved flip up iron sight system for the Scar assault rifle. It attachess onto the upper rail." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400007" category="19" type="1" SpecID="5001" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Kobra_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="Kobra" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Kobra_01.dds" desc="The Kobra is a rail mounted red dot sight used to extend a shooters accuracy at close and medium range targets." LevelRequired="5" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="20" ScopeType="kobra_red_dot_fps" />
-	</Attachment>
-	<Attachment itemID="400008" category="19" type="1" SpecID="6001" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Scope6x_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Tactical Sniper Scope" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Scope6x_01.dds" desc="8x rail mounted scope designed to be used used atmedium ranges." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="90" ScopeType="psg1" />
-	</Attachment>
-	<Attachment itemID="400019" category="19" type="1" SpecID="5001" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_SwissCompact_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Compact Scope" icon="$Data/Weapons/StoreIcons/ATTM_Optic_SwissCompact_01.dds" desc="The Swiss Compact Sight is a rail mounted scope used to extend a shooters accuracy at close and medium ranges." LevelRequired="40" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="60" ScopeType="aw50" />
-	</Attachment>
-	<Attachment itemID="400020" category="19" type="1" SpecID="5001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_SwissRedDot_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="Red Dot SP" icon="$Data/Weapons/StoreIcons/ATTM_Optic_SwissRedDot_01.dds" desc="The Swiss Red Dot Sight is a rail mounted sight used to extend a shooters accuracy at close and medium range targets" LevelRequired="30" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="35" ScopeType="swiss_red_dot_fps" />
-	</Attachment>
-	<Attachment itemID="400023" category="19" type="1" SpecID="5001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Reflex_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="Reflex Sight" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Reflex_01.dds" desc="The Reflex Sight is a rail mounted scope used to extend a shooters accuracy at medium and long ranges." LevelRequired="5" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="20" ScopeType="reflex_fps" />
-	</Attachment>
-	<Attachment itemID="400024" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M4FFH.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="M4 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M4FFH.dds" desc="This is the improved flip up iron sight system for the M4 Blackwater. It attachess onto the upper rail." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400025" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_SG556.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="SIG 556 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_SG556.dds" desc="This is the improved flip up iron sight system for the SG 555. It attachess onto the upper rail." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400026" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mp7.sco" MuzzleParticle="" FireSound="" ScopeAnim="ASR_Scar" />
-		<Store name="MP7 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mp7.dds" desc="This is the improved flip up iron sight system for the Mp 7. It attachess onto the upper rail." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400027" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_PSO1_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="PSO-1" icon="$Data/Weapons/StoreIcons/ATTM_Optic_PSO1_01.dds" desc="The PSO1 is a rail mounted telescopic sight used to extend a shooters accuracy on medium to long range shots." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="70" ScopeType="pso1" />
-	</Attachment>
-	<Attachment itemID="400035" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M249.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="M249 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M249.dds" desc="This is the improved flip up iron sight system for the M249 machine gun. It attachess onto the upper rail." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400036" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Keltech.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="KT IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Keltech.dds" desc="This is the improved flip up iron sight system for the Keltech shotgun that attaches on it's upper rail." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400038" category="19" type="1" SpecID="6001" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_BW_LongRange_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Blackwater Long Range" icon="$Data/Weapons/StoreIcons/ATTM_Optic_BW_LongRange_01.dds" desc="The Blackwater Long Range scope is a 10x rail mounted scope designed to be used used  at long ranges." LevelRequired="45" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="120" ScopeType="sv98" />
-	</Attachment>
-	<Attachment itemID="400039" category="19" type="1" SpecID="6001" Weight="700">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_MultiRail_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Swiss Arms Scope 8x" icon="$Data/Weapons/StoreIcons/ATTM_Optic_MultiRail_01.dds" desc="The Swiss Arms multirail scope is a rail mounted scope used to extend a shooters accuracy at medium and long ranges." LevelRequired="25" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="70" ScopeType="s50hs" />
-	</Attachment>
-	<Attachment itemID="400040" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AK74M.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Iron AK74M" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AK74M.dds" desc="This is the improved flip up iron sight system for the AK-74M n that attaches on it's upper rail." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400042" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_G36.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Iron G36" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_G36.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400051" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_ScorpionEVO3.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="EVO-3 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_ScorpionEVO3.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400052" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Bizon.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Bizon IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Bizon.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400053" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Usas12.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="USS-12 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Usas12.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400054" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_P90.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="P90 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_P90.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400055" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Pecheneg.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Pecheneg IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Pecheneg.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400056" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_PKM.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="PKM IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_PKM.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400058" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Sig516.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="SIG516 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Sig516.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400059" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_tar21.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="TAR21 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_tar21.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400060" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RPK.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="RPK IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RPK.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400061" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RPO.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="RPO IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RPO.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400062" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_An94.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AN94 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_An94.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400065" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_SUP_AT4.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AT4 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_SUP_AT4.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400066" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AacHoneyBadger.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="M4 IS2" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AacHoneyBadger.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400080" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Saiga.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="SAIGA IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Saiga.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400081" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_MP5A4.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="XA5 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_MP5A4.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400082" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mossberg590_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="M590 Is" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mossberg590_01.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400083" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Sr-1_Veresk.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Veresk IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Sr-1_Veresk.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400119" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mossada.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="MASADA IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mossada.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400121" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Usas12.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="USS-12 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Usas12.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400127" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_M16.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="M16 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_M16.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400128" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AKM.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AKM IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AKM.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400129" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_AKS74U.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AKS IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_AKS74U.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400134" category="19" type="1" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/Attm_Optic_Iron_UZI.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="UZI IS" icon="$Data/Weapons/StoreIcons/Attm_Optic_Iron_UZI.dds" desc="" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400149" category="19" type="1" SpecID="7100" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_RugerASR.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Kruger Rifle IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_RugerASR.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400151" category="19" type="1" SpecID="7200" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mini14.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Kruger Mini-14 IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mini14.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" />
-	</Attachment>
-	<Attachment itemID="400155" category="19" type="1" SpecID="5001" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Optic_Iron_Mosin.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Mozin IS" icon="$Data/Weapons/StoreIcons/ATTM_Optic_Iron_Mosin.dds" desc="Iron sights for the Mozin rifle." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="10" ScopeType="default" />
-	</Attachment>
+  <Attachment itemID="410219" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_AK12.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_AK12" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_AK12.dds" desc="$IS_ASR_AK12_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410639" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_AR_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_AR_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_AR_01.dds" desc="$IS_ASR_AR_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410640" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_HB.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_HB" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_HB.dds" desc="$IS_ASR_HB_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410641" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_HB_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_HB_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_HB_01.dds" desc="$IS_ASR_HB_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410642" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_MXZ5.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_MXZ5" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_MXZ5.dds" desc="$IS_ASR_MXZ5_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410643" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_SHRAM.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_SHRAM" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_SHRAM.dds" desc="$IS_ASR_SHRAM_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410644" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_HG_9mm.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_HG_9B" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_HG_9mm.dds" desc="$IS_HG_9B_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410645" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_HG_45c.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_HG_45c" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_HG_45c.dds" desc="$IS_HG_45c_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410646" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_HG_RV50c.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_HG_RV50c" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_HG_RV50c.dds" desc="$IS_HG_RV50c_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410647" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_LMG_HMG_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_LMG_HMG_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_LMG_HMG_01.dds" desc="$IS_LMG_HMG_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410648" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_LMG_NG100.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_LMG_NG100" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_LMG_NG100.dds" desc="$IS_LMG_NG100_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410649" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SHG_Saiga.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SHG_Saiga" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SHG_Saiga.dds" desc="$IS_SHG_Saiga_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410650" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SHG_SP12.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SHG_SP12" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SHG_SP12.dds" desc="$IS_SHG_SP12_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410651" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_Bizon.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_Bizon" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_Bizon.dds" desc="$IS_SMG_Bizon_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410652" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_EVO.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_EVO" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_EVO.dds" desc="$IS_SMG_EVO_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410653" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_HB_02.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_HB_02" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_HB_02.dds" desc="$IS_SMG_HB_02_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410654" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_HSE.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_HSE" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_HSE.dds" desc="$IS_SMG_HSE_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410655" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_Kris.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_Kris" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_Kris.dds" desc="$IS_SMG_Kris_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410659" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SUP_AT4.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SUP_AT4" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SUP_AT4.dds" desc="$IS_SUP_AT4_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410661" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SUP_RPG7.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SUP_RPG7" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SUP_RPG7.dds" desc="$IS_SUP_RPG7_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410698" category="19" type="1" SpecID="1" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_Acog_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_Acog_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_Acog_01.dds" desc="$Optic_Acog_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-0.15" clipsize="0" ScopeMag="35" ScopeType="Scope_Acog1" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410699" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_Eliminator.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_Eliminator" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_Eliminator.dds" desc="$Optic_Eliminator_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="5" ScopeType="sniper4_SW" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410700" category="19" type="1" SpecID="1" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_Holographic_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_Holographic_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_Holographic_01.dds" desc="$Optic_Holographic_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-0.15" clipsize="0" ScopeMag="10" ScopeType="Scope_Reflex1" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410701" category="19" type="1" SpecID="2" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_Holographic_HG_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_Holographic_HG_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_Holographic_HG_01.dds" desc="$Optic_Holographic_HG_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-0.15" clipsize="0" ScopeMag="5" ScopeType="Scope_HG_Reflex" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410702" category="19" type="1" SpecID="3" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_LongRange_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_LongRange_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_LongRange_01.dds" desc="$Optic_LongRange_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="-0.4" spread="-0.15" clipsize="0" ScopeMag="100" ScopeType="Scope_Sniper_LR" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410703" category="19" type="1" SpecID="3" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_MediumRange_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_MediumRange_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_MediumRange_01.dds" desc="$Optic_MediumRange_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="-0.15" spread="0" clipsize="0" ScopeMag="75" ScopeType="Scope_Sniper_M" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410704" category="19" type="1" SpecID="2" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_RedDot_HG_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_RedDot_HG_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_RedDot_HG_01.dds" desc="$Optic_RedDot_HG_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-0.15" clipsize="0" ScopeMag="10" ScopeType="Scope_HG_Red" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410839" category="19" type="1" SpecID="1" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_MediumRange_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_MediumRange_01_ASR" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_MediumRange_01.dds" desc="$Optic_MediumRange_01_ASR_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="-0.1" spread="-0.15" clipsize="0" ScopeMag="50" ScopeType="Scope_Sniper_ASR" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410847" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_ASh12.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_ASh12" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_ASh12.dds" desc="$IS_ASR_ASh12_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410848" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SHG_M1216.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SHG_M1216" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SHG_M1216.dds" desc="$IS_SHG_M1216_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410849" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_SMG_ChangFeng.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_SMG_ChangFeng" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_SMG_ChangFeng.dds" desc="$IS_SMG_ChangFeng_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410850" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_HG_AP50.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_HG_AP50" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_HG_AP50.dds" desc="$IS_HG_AP50_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410851" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_HG_MicroUzi.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_HG_MicroUzi" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_HG_MicroUzi.dds" desc="$IS_HG_MicroUzi_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410852" category="19" type="1" SpecID="1" Weight="500" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Optic_RedDot_M4S.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Optic_RedDot_M4S" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Optic_RedDot_M4S.dds" desc="$Optic_RedDot_M4S_Desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-0.15" clipsize="0" ScopeMag="10" ScopeType="Scope_Red1" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410853" category="19" type="1" SpecID="0" Weight="0" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/IS_ASR_Tar30.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$IS_ASR_Tar30" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/IS_ASR_Tar30.dds" desc="$IS_ASR_Tar30_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="0" ScopeMag="0" ScopeType="default" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
 </AttachmentArmory>

@@ -1,53 +1,102 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WeaponsArmory>
-	<Weapon itemID="101098" category="22" upgrade="1" FNAME="SHG_Saiga" Weight="3500">
-		<Model file="Data/ObjectsDepot/Weapons/SHG_Saiga.sco" AnimPrefix="SHG_SAIGA" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_sh1" />
-		<HudIcon file="$Data/Weapons/HudIcons/SHG_Saiga.dds" />
-		<Store name="SAIGA" icon="$Data/Weapons/StoreIcons/SHG_Saiga.dds" desc="The Saiga was developed as a 12 gauge shotgun with a 8 round storage tube. It inflicts a substancial amount of damage on targets at a close range." LevelRequired="25" slotW="4" slotH="2" />
-		<PrimaryFire bullet="buckshot" damage="27" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1.43" rateOfFire="100" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/SHOTGUN/SHG_Generic_Reload" />
-		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400080" d2="0" d3="0" d4="400073" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101158" category="22" upgrade="1" FNAME="SHG_Mossberg590_01" Weight="2500">
-		<Model file="Data/ObjectsDepot/Weapons/SHG_Mossberg590_01.sco" AnimPrefix="SHG_Mossberg590_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_sh1" />
-		<HudIcon file="$Data/Weapons/HudIcons/SHG_Mossberg590_01.dds" />
-		<Store name="MOSSBERG 590" icon="$Data/Weapons/StoreIcons/SHG_Mossberg590_01.dds" desc="The Mossberg 590 is a 12 gauge shotgun which has a 8 round storage tube. It is known to do an extremely high amount of damage at close range." LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="buckshot" damage="24" immediate="false" mass="1" decay="12" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="8" activeReloadTick="1.43" rateOfFire="60" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Shotgun/Mossberg" reload="Sounds/Weapons/New Reloads/Mossberg_reload" />
-		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400082" d2="0" d3="0" d4="400136" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101183" category="22" upgrade="1" FNAME="SHG_Keltech" Weight="4000">
-		<Model file="Data/ObjectsDepot/Weapons/SHG_Keltech.sco" AnimPrefix="SHG_Keltech" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_sh1" />
-		<HudIcon file="$Data/Weapons/HudIcons/SHG_Keltech.dds" />
-		<Store name="KT DECIDER" icon="$Data/Weapons/StoreIcons/SHG_Keltech.dds" desc="The KT Decider is a bull-pup shotgun design that has two magazine feed tubes, each side capable of holding 7 shells, for a total capacity of 14+1." LevelRequired="35" slotW="4" slotH="2" />
-		<PrimaryFire bullet="buckshot" damage="25" immediate="false" mass="1" decay="15" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="8" activeReloadTick="1.43" rateOfFire="50" spread="20" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Shotgun/SHG_Keltech" reload="Sounds/Weapons/New Reloads/SHG_Keltech_reload" />
-		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400036" d2="0" d3="0" d4="400136" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101200" category="22" upgrade="1" FNAME="SHG_Usas12" Weight="5000">
-		<Model file="Data/ObjectsDepot/Weapons/SHG_Usas12.sco" AnimPrefix="SHG_Usas12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_sh1" />
-		<HudIcon file="$Data/Weapons/HudIcons/SHG_Usas12.dds" />
-		<Store name="AA-12" icon="$Data/Weapons/StoreIcons/SHG_Usas12.dds" desc="The AA-12 gauge automatic shotgun was designed to fire 12 gauge rounds from a 20 round storage system. It causes a reasonable amount of damage per round." LevelRequired="45" slotW="4" slotH="2" />
-		<PrimaryFire bullet="buckshot" damage="22" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.5" activeReloadTick="1.43" rateOfFire="150" spread="20" recoil="25" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/SHOTGUN/SHG_Generic_Reload" />
-		<FPS IsFPS="1" i0="0" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400121" d2="0" d3="0" d4="400050" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101321" category="22" upgrade="1" FNAME="SHG_DoubleBarrel" Weight="3000">
-		<Model file="Data/ObjectsDepot/Weapons/SHG_DoubleBarrel.sco" AnimPrefix="SHG_DoubleBarrel" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_sh1" />
-		<HudIcon file="$Data/Weapons/HudIcons/SHG_DoubleBarrel.dds" />
-		<Store name="Double Barrel" icon="$Data/Weapons/StoreIcons/SHG_DoubleBarrel.dds" desc="Also known as Doubles or Broomsticks, this powerful shotgun allows two shots to be fired in quick succession before reloading" LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="buckshot" damage="20" immediate="false" mass="1" decay="10" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="1.43" rateOfFire="120" spread="20" recoil="25" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Shotgun/Shotgun" reload="Sounds/Weapons/New Reloads/SH_Double_barrel_reload" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400141" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
+  <Weapon itemID="112816" category="22" upgrade="1" FNAME="SHG_M1216_Tier2" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2.sco" AnimPrefix="SHG_M1216" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_M1216_Tier2.dds" />
+    <Store name="$SHG_M1216_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_M1216_Tier2.dds" desc="$SHG_M1216_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="30" immediate="false" mass="1" decay="8" speed="251" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="3.2" rateOfFire="23" spread="7.4" recoil="16.61" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="4.5" spreadRight="4.5" spreadUp="2" spreadDown="2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/M1216/M1216" reload="Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410848" d2="0" d3="0" d4="410844" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="112960" category="22" upgrade="1" FNAME="SHG_Saiga_Tier1" Weight="3400" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_Saiga_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_Saiga_Tier1.sco" AnimPrefix="SHG_Saiga" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_Saiga_Tier1.dds" />
+    <Store name="$SHG_Saiga_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_Saiga_Tier1.dds" desc="$SHG_Saiga_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="25.5" immediate="false" mass="1" decay="6" speed="221" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.92" activeReloadTick="1.2" rateOfFire="40" spread="7.4" recoil="18.61" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="5" spreadRight="5" spreadUp="1" spreadDown="2" recoilUp="0.6" recoilDown="-0.59" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/Saiga/Saiga" reload="Sounds/Weapons/Guns/Shotguns/Saiga/SaigaReload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="88" i5="0" i6="0" i7="0" i8="0" d0="410697" d1="410649" d2="0" d3="0" d4="410680" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112979" category="22" upgrade="1" FNAME="SHG_SP12_Tier1" Weight="3300" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Tier1.sco" AnimPrefix="SHG_SP12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_SP12_Tier1.dds" />
+    <Store name="$SHG_SP12_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_SP12_Tier1.dds" desc="$SHG_SP12_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="36" immediate="false" mass="1" decay="6" speed="179" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="8" activeReloadTick="1.2" rateOfFire="21" spread="6.1" recoil="11.61" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="4" spreadRight="4" spreadUp="1.5" spreadDown="1.5" recoilUp="0.8" recoilDown="-0.79" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/SP12/SP12" reload="Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410650" d2="0" d3="0" d4="410682" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113049" category="22" upgrade="1" FNAME="SHG_SP12_Tier1" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Tier1.sco" AnimPrefix="SHG_SP12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_SP12_Tier1.dds" />
+    <Store name="$SHG_SP12_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_SP12_Tier1.dds" desc="$SHG_SP12_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="36.1" immediate="false" mass="1" decay="6" speed="179" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.74" activeReloadTick="1.2" rateOfFire="21" spread="8.2" recoil="15.51" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="1.4" spreadDown="1.4" recoilUp="0.8" recoilDown="-0.79" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/SP12/SP12" reload="Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410650" d2="0" d3="0" d4="410682" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113050" category="22" upgrade="1" FNAME="SHG_SP12_Mk6_1" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_SP12_Mk6_1.sco" AnimPrefix="SHG_SP12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_SP12_Mk6_1.dds" />
+    <Store name="$SHG_SP12_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_SP12_Mk6_1.dds" desc="$SHG_SP12_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="36" immediate="false" mass="1" decay="6" speed="179" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.74" activeReloadTick="1.2" rateOfFire="6" spread="8.9" recoil="17.41" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.5" spreadRight="2.5" spreadUp="1.25" spreadDown="1.25" recoilUp="0.8" recoilDown="-0.79" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/SP12/SP12" reload="Sounds/Weapons/Guns/Shotguns/SP12/SP12Reload_Bullet" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410650" d2="0" d3="0" d4="410682" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="5" />
+  </Weapon>
+  <Weapon itemID="113051" category="22" upgrade="1" FNAME="SHG_M1216_Tier2" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2.sco" AnimPrefix="SHG_M1216" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_M1216_Tier2.dds" />
+    <Store name="$SHG_M1216_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_M1216_Tier2.dds" desc="$SHG_M1216_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="30" immediate="false" mass="1" decay="1" speed="251" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1.2" rateOfFire="23" spread="7.7" recoil="16.56" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3.75" spreadRight="3.75" spreadUp="1.9" spreadDown="1.9" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/M1216/M1216" reload="Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410848" d2="0" d3="0" d4="410844" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113052" category="22" upgrade="1" FNAME="SHG_M1216_Tier2" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_Tier2.sco" AnimPrefix="SHG_M1216" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_M1216_Tier2.dds" />
+    <Store name="$SHG_M1216_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_M1216_Tier2.dds" desc="$SHG_M1216_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="30" immediate="false" mass="1" decay="8" speed="251" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1.2" rateOfFire="23" spread="5.9" recoil="16.51" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="1.75" spreadDown="1.75" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/M1216/M1216" reload="Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410848" d2="0" d3="0" d4="410844" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113078" category="22" upgrade="1" FNAME="SHG_Saiga_Tier1" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_Saiga_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_Saiga_Tier1.sco" AnimPrefix="SHG_Saiga" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_Saiga_Tier1.dds" />
+    <Store name="$SHG_Saiga_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_Saiga_Tier1.dds" desc="$SHG_Saiga_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="25.5" immediate="false" mass="1" decay="1" speed="221" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.92" activeReloadTick="1.2" rateOfFire="40" spread="5.4" recoil="18.51" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="5" spreadRight="5" spreadUp="1.4" spreadDown="1.4" recoilUp="0.6" recoilDown="-0.59" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/Saiga/Saiga" reload="Sounds/Weapons/Guns/Shotguns/Saiga/SaigaReload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="88" i5="0" i6="0" i7="0" i8="0" d0="410697" d1="410649" d2="0" d3="0" d4="410680" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113105" category="22" upgrade="1" FNAME="SHG_M1216_MK6_1" Weight="3000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_MK6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SHG/SHG_M1216_MK6_1.sco" AnimPrefix="SHG_M1216" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/SHG_M1216_MK6_1.dds" />
+    <Store name="$SHG_M1216_MK6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_SHG/StoreIcons/SHG_M1216_MK6_1.dds" desc="$SHG_M1216_MK6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Shotgun_Ammo" ScopeType="default" damage="30" immediate="false" mass="1" decay="8" speed="251" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="3.2" rateOfFire="23" spread="7.4" recoil="16.61" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="4.5" spreadRight="4.5" spreadUp="2" spreadDown="2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Shotguns/M1216/M1216" reload="Sounds/Weapons/Guns/Shotguns/M1216/M1216_Reload" />
+    <FPS IsFPS="1" i0="0" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410848" d2="0" d3="0" d4="410844" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="5" />
+  </Weapon>
 </WeaponsArmory>

@@ -89,6 +89,10 @@ extern int bRenderRefraction;
 #include "Rendering\DX9\RenderDX9.h"
 #include "Rendering\Deffered\RenderDeffered.h"
 
-#define GLOBAL_ANIM_FOLDER "data\\Animations5"
+#define GLOBAL_ANIM_FOLDER "data\\Animations"
+#define PLAYER_BIND_SKELETON_FILE "data\\ObjectsDepot\\Characters\\ProperScale_AndBiped_new.skl"
+#define PLAYER_RAGDOLL_FILE "data\\ObjectsDepot\\Characters\\ragdoll_new.RepX"
+#define PLAYER_UPPER_BLEND_FILE "Data\\Animations\\AnimUpperBlendStartSKY.xml"
+#define PLAYER_ANIMATION_LIST_FILE "Data\\Animations\\Animation List SKY.csv"
 
 #endif __GAMECOMMON_H

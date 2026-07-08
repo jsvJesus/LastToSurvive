@@ -11,6 +11,57 @@
 
 //////////////////////////////////////////////////////////////////////////
 	r3dAnimPool*	g_CharactersAnimationsPool = NULL;
+
+static bool IsEmptyAnimToken(const char* token)
+{
+	return token == NULL || token[0] == 0 || stricmp(token, "none") == 0;
+}
+
+static const char* AnimToken(const char* token)
+{
+	return IsEmptyAnimToken(token) ? "" : token;
+}
+
+static const char* XmlAnimAttr(pugi::xml_node node, const char* name, const char* fallback)
+{
+	const char* value = node.attribute(name).value();
+	return value && value[0] ? value : fallback;
+}
+
+static int ParseCsvLine(char* line, const char** tokens, int maxTokens)
+{
+	bool inQuotes = false;
+	char* out = line;
+	char* tokenStart = out;
+	int count = 0;
+
+	if(maxTokens > 0)
+		tokens[count++] = tokenStart;
+
+	for(char* in = line; *in; ++in)
+	{
+		char c = *in;
+		if(c == '"')
+		{
+			inQuotes = !inQuotes;
+			continue;
+		}
+		if(c == ',' && !inQuotes)
+		{
+			*out++ = 0;
+			if(count < maxTokens)
+				tokens[count++] = out;
+			continue;
+		}
+		if((c == '\r' || c == '\n') && !inQuotes)
+			break;
+
+		*out++ = c;
+	}
+
+	*out = 0;
+	return count;
+}
 	
 CUberData::CUberData()
 {
@@ -122,76 +173,77 @@ void CUberData::LoadLowerAnimations()
 
 	int* i;
 	i = aid_.crouch;
-	i[0] = AddAnimation("Crouch_Aim_Stand");
-	i[1] = AddAnimation("Crouch_Str");
-	i[2] = AddAnimation("Crouch_StrLeft");
-	i[3] = AddAnimation("Crouch_StrRight");
-	i[4] = AddAnimation("Crouch_Left");
-	i[5] = AddAnimation("Crouch_Right");
-	i[6] = AddAnimation("Crouch_Back");
-	i[7] = AddAnimation("Crouch_BackLeft");
-	i[8] = AddAnimation("Crouch_BackRight");
+	i[0] = AddAnimation("idle_crouch_1");
+	i[1] = AddAnimation("run_crouch_F");
+	i[2] = AddAnimation("run_crouch_FL");
+	i[3] = AddAnimation("run_crouch_FR");
+	i[4] = AddAnimation("run_crouch_L");
+	i[5] = AddAnimation("run_crouch_R");
+	i[6] = AddAnimation("run_crouch_B");
+	i[7] = AddAnimation("run_crouch_BL");
+	i[8] = AddAnimation("run_crouch_BR");
 
 	i = aid_.walk;
-	i[0] = AddAnimation("Walk_Aim_Stand_01");
-	i[1] = AddAnimation("Walk_Str");
-	i[2] = AddAnimation("Walk_StrLeft");
-	i[3] = AddAnimation("Walk_StrRight");
-	i[4] = AddAnimation("Walk_Left");
-	i[5] = AddAnimation("Walk_Right");
-	i[6] = AddAnimation("Walk_Back");
-	i[7] = AddAnimation("Walk_BackLeft");
-	i[8] = AddAnimation("Walk_BackRight");
+	i[0] = AddAnimation("walk_stand_F");
+	i[1] = AddAnimation("walk_stand_F");
+	i[2] = AddAnimation("walk_stand_FL");
+	i[3] = AddAnimation("walk_stand_FR");
+	i[4] = AddAnimation("walk_stand_L");
+	i[5] = AddAnimation("walk_stand_R");
+	i[6] = AddAnimation("walk_stand_B");
+	i[7] = AddAnimation("walk_stand_BL");
+	i[8] = AddAnimation("walk_stand_BR");
 
 	i = aid_.prone;
-	i[0] = AddAnimation("Prone_Idle");
-	i[1] = AddAnimation("Prone_Str");
-	i[2] = AddAnimation("Prone_StrLeft");
-	i[3] = AddAnimation("Prone_StrRight");
-	i[4] = AddAnimation("Prone_Left");
-	i[5] = AddAnimation("Prone_Right");
-	i[6] = AddAnimation("Prone_Back");
-	i[7] = AddAnimation("Prone_BackLeft");
-	i[8] = AddAnimation("Prone_BackRight");
+	i[0] = AddAnimation("aimIdle_prone_SUP_GLX");
+	i[1] = AddAnimation("run_prone_F");
+	i[2] = AddAnimation("run_prone_L");
+	i[3] = AddAnimation("run_prone_R");
+	i[4] = AddAnimation("run_prone_L");
+	i[5] = AddAnimation("run_prone_R");
+	i[6] = AddAnimation("run_prone_B");
+	i[7] = AddAnimation("run_prone_B");
+	i[8] = AddAnimation("run_prone_B");
 
-	aid_.prone_up_weapon = AddAnimation("Prone_Up_Weapon");
-	aid_.prone_down_weapon = AddAnimation("Prone_Down_Weapon");
-	aid_.prone_up_noweapon = AddAnimation("Prone_Up_NoWeapon");
-	aid_.prone_down_noweapon = AddAnimation("Prone_Down_NoWeapon");
+	aid_.prone_up_weapon = AddAnimation("idleProne_to_idleStand_W");
+	aid_.prone_down_weapon = AddAnimation("idleStand_to_idleProne_W");
+	aid_.prone_up_noweapon = AddAnimation("idleProne_to_idleStand");
+	aid_.prone_down_noweapon = AddAnimation("idleStand_to_idleProne");
 
 	i = aid_.run;
-	i[1] = AddAnimation("Run_Str");
-	i[2] = AddAnimation("Run_StrLeft");
-	i[3] = AddAnimation("Run_StrRight");
-	i[4] = AddAnimation("Run_Left");
-	i[5] = AddAnimation("Run_Right");
-	i[6] = AddAnimation("Run_Back");
-	i[7] = AddAnimation("Run_BackLeft");
-	i[8] = AddAnimation("Run_BackRight");
+	i[1] = AddAnimation("run_stand_F");
+	i[2] = AddAnimation("run_stand_FL");
+	i[3] = AddAnimation("run_stand_FR");
+	i[4] = AddAnimation("run_stand_B");
+	i[5] = AddAnimation("run_stand_F");
+	i[6] = AddAnimation("run_stand_B");
+	i[7] = AddAnimation("run_stand_BL");
+	i[8] = AddAnimation("run_stand_BR");
 
 	i = aid_.sprint;
-	i[1] = AddAnimation("Sprint_Str");
-	i[2] = AddAnimation("Sprint_StrLeft");
-	i[3] = AddAnimation("Sprint_StrRight");
+	i[1] = AddAnimation("sprint_stand_F");
+	i[2] = AddAnimation("sprint_stand_FL");
+	i[3] = AddAnimation("sprint_stand_FR");
 	
 	i = aid_.turnins;
-	i[0] = AddAnimation("Walk_Str_TurnIn", "Walk_Str");
-	i[1] = AddAnimation("Crouch_Str_TurnIn", "Crouch_Str");
+	i[0] = AddAnimation("walk_stand_BL");
+	i[1] = AddAnimation("Crouch_Str");
+	i[2] = AddAnimation("walk_stand_F");
 }
 
-void CUberData::LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT], const char* names[AIDX_COUNT])
+void CUberData::LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT], const char* names[AIDX_COUNT], const char* fpsNames[AIDX_COUNT])
 {
 	for(int i=0; i<AIDX_COUNT; i++)
 	{
 		wid[i] = -1;
 		wid_fps[i] = -1;
 		
-		if(*names[i] == 0)
+		if(IsEmptyAnimToken(names[i]))
 			continue;
 			
 		// we need to create dummy upper body anim for idle and stand
 		char aname[128];
-		sprintf(aname, names[i]);
+		sprintf(aname, "%s", names[i]);
 		if(i == AIDX_IdleUpper || i == AIDX_StandUpper)
 			strcat(aname, "_Upper");
 		wid[i] = TryToAddAnimation(aname, names[i]);
@@ -203,16 +255,29 @@ void CUberData::LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT
 			enableAnimBones(blendStartBones_[i].c_str(), bindSkeleton_, ad, true);
 		}
 
-		// load fps anims
-		sprintf(aname, "FPS_%s", names[i]);
-		wid_fps[i] = TryToAddAnimation(aname);
+		if(fpsNames)
+		{
+			if(IsEmptyAnimToken(fpsNames[i]))
+				wid_fps[i] = wid[i];
+			else
+				wid_fps[i] = TryToAddAnimation(fpsNames[i], fpsNames[i]);
+		}
+		else
+		{
+			// load fps anims
+			sprintf(aname, "%s", names[i]); // FPS_%s
+			wid_fps[i] = TryToAddAnimation(aname);
+		}
+
+		if(wid_fps[i] == -1)
+			wid_fps[i] = wid[i];
 
 		if(i >= AIDX_IdleUpper && wid_fps[i]!=-1)
 		{
 			// those animations is upper body
 			r3dAnimData* ad = animPool_.Get(wid_fps[i]);
 			if(i == AIDX_ProneBlend) // Patrick's request
-				enableAnimBones("Bip01_Spine2", bindSkeleton_, ad, true);
+				enableAnimBones("Bip01_Spine3", bindSkeleton_, ad, true); // Bip01_Spine2
 			else
 				enableAnimBones(blendStartBones_[i].c_str(), bindSkeleton_, ad, true);
 		}
@@ -222,15 +287,15 @@ void CUberData::LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT
 void CUberData::LoadGrenadeAnim()
 {
 	const static char* grenadeAnims[12] = {
-		"Crouch_Grenade_Throw_01_A_Pullback",	// 0
-		"Crouch_Blend_Grenade_Hold_01",		// 1
-		"Crouch_Grenade_Throw_01_B_Release",	// 2 
-		"Run_Grenade_Throw_01_A_Pullback",	// 3
-		"Run_Blend_Grenade_Hold_01",		// 4
-		"Run_Grenade_Throw_01_B_Release",	// 5
-		"Stand_Grenade_Throw_01_B_Pullback",	// 6
-		"Stand_Aim_Grenade_Hold_01",		// 7
-		"Stand_Grenade_Throw_01_D_Release",	// 8
+		"Crouch_Pull_EXP_M26",		// 0
+		"Crouch_Hold_EXP_M26",		// 1
+		"Crouch_Release_EXP_M26",	// 2
+		"Run_Blend_Pull_EXP_M26",	// 3
+		"Run_Blend_Hold_EXP_M26",	// 4
+		"Run_Blend_Release_EXP_M26",	// 5
+		"Stand_Pull_EXP_M26",		// 6
+		"Stand_Hold_EXP_M26",		// 7
+		"Stand_Release_EXP_M26",		// 8
 		"Walk_Grenade_Throw_01_A_Pullback",	// 9
 		"Walk_Aim_Grenade_Hold_01",		// 10
 		"Walk_Grenade_Throw_01_B_Release",	// 11
@@ -241,68 +306,64 @@ void CUberData::LoadGrenadeAnim()
 		AddAnimationWithFPS(grenadeAnims[i], aid_.grenades_tps[i], aid_.grenades_fps[i]);
 		
 		r3dAnimData* ad = animPool_.Get(aid_.grenades_tps[i]);
-		enableAnimBones("Bip01_Spine1", bindSkeleton_, ad, true);
+		enableAnimBones("Bip01_Spine", bindSkeleton_, ad, true);
 		
 		if(aid_.grenades_tps[i] != aid_.grenades_fps[i])
 		{
 			ad = animPool_.Get(aid_.grenades_fps[i]);
-			enableAnimBones("Bip01_Spine1", bindSkeleton_, ad, true);
+			enableAnimBones("Bip01_Spine", bindSkeleton_, ad, true);
 		}
 	}
-
-	/*const static char* bombsAnims[] = {
-		"Stand_Place_Bomb_01_A_ground_A_Plant",	// 0
-		"Stand_Place_Bomb_01_A_ground_B_Set",	// 1
-		"Stand_Place_Bomb_01_A_ground_C_Stand",	// 2
-		// same order as enums in GRENADE_ANIM_. Check index in StartGrenadeThrowAnimation() as well
-		"Stand_Place_Bomb_01_B_C4",		// GRENADE_ANIM_Claymore
-		"Stand_Place_VS50",			// GRENADE_ANIM_VS50
-		"Stand_Place_Valmara69",		// GRENADE_ANIM_V69
-	};
-	
-	for(int i=0; i<R3D_ARRAYSIZE(bombsAnims); i++)
-	{
-		AddAnimationWithFPS(bombsAnims[i], aid_.bombs_tps[i], aid_.bombs_fps[i]);
-	}*/
 }
 
 void CUberData::LoadJumpAnim()
 {
-	aid_.jumps[ 0] = AddAnimation("Jump_Stand_t1_Start");
-	aid_.jumps[ 1] = AddAnimation("Jump_Stand_t1_Air");
-	aid_.jumps[ 2] = AddAnimation("Jump_Stand_t1_Landing");
-	aid_.jumps[ 3] = AddAnimation("Jump_Walk_t1_Start");
-	aid_.jumps[ 4] = AddAnimation("Jump_Walk_t1_Air");
-	aid_.jumps[ 5] = AddAnimation("Jump_Walk_t1_Landing");
-	aid_.jumps[ 6] = AddAnimation("Jump_Run_t1_Start");
-	aid_.jumps[ 7] = AddAnimation("Jump_Run_t1_Air");
-	aid_.jumps[ 8] = AddAnimation("Jump_Run_t1_Landing");
-	aid_.jumps[ 9] = AddAnimation("Jump_Sprint_t1_Start");
-	aid_.jumps[10] = AddAnimation("Jump_Sprint_t1_Air");
-	aid_.jumps[11] = AddAnimation("Jump_Sprint_t1_Landing");
+	aid_.jumps[ 0] = AddAnimation("Jump_ASR_Idle_S");
+	aid_.jumps[ 1] = AddAnimation("Jump_Hand_Run_A");
+	aid_.jumps[ 2] = AddAnimation("Jump_Hand_Idle_L");
+	aid_.jumps[ 3] = AddAnimation("Jump_Hand_Run_S");
+	aid_.jumps[ 4] = AddAnimation("Jump_Hand_Run_A");
+	aid_.jumps[ 5] = AddAnimation("Jump_Hand_Run_L");
+	aid_.jumps[ 6] = AddAnimation("Jump_Hand_Run_S");
+	aid_.jumps[ 7] = AddAnimation("Jump_Hand_Run_A");
+	aid_.jumps[ 8] = AddAnimation("Jump_Hand_Run_L");
+	aid_.jumps[ 9] = AddAnimation("Jump_Hand_Sprint_S");
+	aid_.jumps[10] = AddAnimation("Jump_Hand_Sprint_A");
+	aid_.jumps[11] = AddAnimation("Jump_Hand_Sprint_L");
 
-	/*
-	for(int i=0; i<12; i++)
-	{
-		r3dAnimData* ad = animPool_.Get(aid_.jumps[i]);
-	}*/
+	aid_.jumpsASR[ 0] = AddAnimation("Jump_ASR_Idle_S");
+	aid_.jumpsASR[ 1] = AddAnimation("Jump_ASR_Idle_A");
+	aid_.jumpsASR[ 2] = AddAnimation("Jump_ASR_Idle_L");
+	aid_.jumpsASR[ 3] = AddAnimation("Jump_ASR_Run_S");
+	aid_.jumpsASR[ 4] = AddAnimation("Jump_ASR_Run_A");
+	aid_.jumpsASR[ 5] = AddAnimation("Jump_ASR_Run_L");
+	aid_.jumpsASR[ 6] = AddAnimation("Jump_ASR_Run_S");
+	aid_.jumpsASR[ 7] = AddAnimation("Jump_ASR_Run_A");
+	aid_.jumpsASR[ 8] = AddAnimation("Jump_ASR_Run_L");
+	aid_.jumpsASR[ 9] = AddAnimation("Jump_ASR_Sprint_S");
+	aid_.jumpsASR[10] = AddAnimation("Jump_ASR_Sprint_A");
+	aid_.jumpsASR[11] = AddAnimation("Jump_ASR_Sprint_L");
+
+	aid_.jumpsDeployable[0] = AddAnimation("Jump_Hand_Idle_S");
+	aid_.jumpsDeployable[ 1] = AddAnimation("Jump_Deployable_Run_A");
+	aid_.jumpsDeployable[ 2] = AddAnimation("Jump_Hand_Idle_L");
+	aid_.jumpsDeployable[ 3] = AddAnimation("Jump_Deployable_Run_S");
+	aid_.jumpsDeployable[ 4] = AddAnimation("Jump_Deployable_Run_A");
+	aid_.jumpsDeployable[ 5] = AddAnimation("Jump_Deployable_Run_L");
+	aid_.jumpsDeployable[ 6] = AddAnimation("Jump_Deployable_Run_S");
+	aid_.jumpsDeployable[ 7] = AddAnimation("Jump_Deployable_Run_A");
+	aid_.jumpsDeployable[ 8] = AddAnimation("Jump_Deployable_Run_L");
+	aid_.jumpsDeployable[ 9] = AddAnimation("Jump_Deployable_Sprint_S");
+	aid_.jumpsDeployable[10] = AddAnimation("Jump_Deployable_Sprint_A");
+	aid_.jumpsDeployable[11] = AddAnimation("Jump_Deployable_Sprint_L");
+
+	aid_.jumpsFallingDown[0] = AddAnimation("Jump_Hand_Run_F");
+	aid_.jumpsFallingDown[1] = AddAnimation("Jump_Hand_Sprint_F");
+	aid_.jumpsFallingDown[2] = AddAnimation("Jump_Hand_Idle_L");
 }
 
 void CUberData::LoadDeathAnim()
 {
-	/* all this animations is very very wierd
-	aid_.deaths[ 0] = AddAnimation("Death_03_t1_SUP_AT4");
-	aid_.deaths[ 1] = AddAnimation("Death_04_t1_SUP_RPG");
-	aid_.deaths[ 2] = AddAnimation("Death_05_v1_Exp");
-	aid_.deaths[ 3] = AddAnimation("Death_01");
-	aid_.deaths[ 4] = AddAnimation("Death_01_v2_t1");
-	aid_.deaths[ 5] = AddAnimation("Death_01_v2_t2");
-	aid_.deaths[ 6] = AddAnimation("Death_01_v5_t1");
-	aid_.deaths[ 7] = AddAnimation("Death_01_v6_t1");
-	aid_.deaths[ 8] = AddAnimation("Death_01_v7_t1");
-	aid_.deaths[ 9] = AddAnimation("Death_01_v8_t1");
-	aid_.deaths[10] = AddAnimation("Death_01_v9_t1");
-	*/
 	aid_.deaths[11] = AddAnimation("Death_02_t1");
 }
 
@@ -310,10 +371,10 @@ void CUberData::LoadUpperBlendStartBones()
 {
 	// init defaults
 	for(int i=0; i<AIDX_COUNT; i++) {
-		blendStartBones_[i] = "Bip01_Spine2";
+		blendStartBones_[i] = "Bip01"; // Bip01_Spine2
 	}
 
-	const char* xml_file = "Data\\Animations5\\AnimUpperBlendStart.xml";
+	const char* xml_file = PLAYER_UPPER_BLEND_FILE;
 	r3dFile* f = r3d_open(xml_file, "rb");
 	if(!f) {
 		r3dError("Failed to open: %s\n", xml_file);
@@ -330,23 +391,25 @@ void CUberData::LoadUpperBlendStartBones()
 		r3dError("Failed to parse XML %s, error: %s", xml_file, parseResult.description());
 
 	pugi::xml_node xmlBlends = xmlFile.child("UpperBlendStart");
-	blendStartBones_[AIDX_CrouchBlend] = xmlBlends.attribute("AIDX_CrouchBlend").value();
-	blendStartBones_[AIDX_CrouchAim]   = xmlBlends.attribute("AIDX_CrouchAim").value();
-	blendStartBones_[AIDX_WalkBlend]   = xmlBlends.attribute("AIDX_WalkBlend").value();
-	blendStartBones_[AIDX_WalkAim]     = xmlBlends.attribute("AIDX_WalkAim").value();
-	blendStartBones_[AIDX_RunBlend]    = xmlBlends.attribute("AIDX_RunBlend").value();
-	blendStartBones_[AIDX_SprintBlend] = xmlBlends.attribute("AIDX_SprintBlend").value();
-	blendStartBones_[AIDX_ReloadWalk]  = xmlBlends.attribute("AIDX_Reload").value();
-	blendStartBones_[AIDX_ReloadIdle]  = xmlBlends.attribute("AIDX_Reload").value();
-	blendStartBones_[AIDX_ReloadCrouch]= xmlBlends.attribute("AIDX_Reload").value();
-	blendStartBones_[AIDX_ShootWalk]   = xmlBlends.attribute("AIDX_Shoot").value();
-	blendStartBones_[AIDX_ShootAim]    = xmlBlends.attribute("AIDX_Shoot").value();
-	blendStartBones_[AIDX_ShootCrouch] = xmlBlends.attribute("AIDX_Shoot").value();
-	blendStartBones_[AIDX_ProneBlend] = xmlBlends.attribute("AIDX_ProneBlend").value();
-	blendStartBones_[AIDX_ProneAim] = xmlBlends.attribute("AIDX_ProneAim").value();
-	blendStartBones_[AIDX_ReloadProne] = xmlBlends.attribute("AIDX_Reload").value();
-	blendStartBones_[AIDX_ShootProne] = xmlBlends.attribute("AIDX_Shoot").value();
-	blendStartBones_[AIDX_IdleProne] = xmlBlends.attribute("AIDX_ProneIdle").value();
+	blendStartBones_[AIDX_IdleUpper]	= XmlAnimAttr(xmlBlends, "AIDX_StandIdle", "Bip01_Spine2");
+	blendStartBones_[AIDX_StandUpper]	= XmlAnimAttr(xmlBlends, "AIDX_StandIdleAim", "Bip01_Spine2");
+	blendStartBones_[AIDX_CrouchBlend]	= xmlBlends.attribute("AIDX_CrouchBlend").value();
+	blendStartBones_[AIDX_CrouchAim]	= xmlBlends.attribute("AIDX_CrouchAim").value();
+	blendStartBones_[AIDX_WalkBlend]	= xmlBlends.attribute("AIDX_WalkBlend").value();
+	blendStartBones_[AIDX_WalkAim]		= xmlBlends.attribute("AIDX_WalkAim").value();
+	blendStartBones_[AIDX_RunBlend]		= xmlBlends.attribute("AIDX_RunBlend").value();
+	blendStartBones_[AIDX_SprintBlend]	= xmlBlends.attribute("AIDX_SprintBlend").value();
+	blendStartBones_[AIDX_ReloadWalk]	= xmlBlends.attribute("AIDX_ReloadWalk").value();
+	blendStartBones_[AIDX_ReloadIdle]	= xmlBlends.attribute("AIDX_ReloadIdle").value();
+	blendStartBones_[AIDX_ReloadCrouch]	= xmlBlends.attribute("AIDX_ReloadCrouch").value();
+	blendStartBones_[AIDX_ShootWalk]	= xmlBlends.attribute("AIDX_ShootWalk").value();
+	blendStartBones_[AIDX_ShootAim]		= xmlBlends.attribute("AIDX_ShootAim").value();
+	blendStartBones_[AIDX_ShootCrouch]	= xmlBlends.attribute("AIDX_ShootCrouch").value();
+	blendStartBones_[AIDX_ProneBlend]	= xmlBlends.attribute("AIDX_ProneBlend").value();
+	blendStartBones_[AIDX_ProneAim]		= xmlBlends.attribute("AIDX_ProneAim").value();
+	blendStartBones_[AIDX_ReloadProne]	= xmlBlends.attribute("AIDX_ReloadProne").value();
+	blendStartBones_[AIDX_ShootProne]	= xmlBlends.attribute("AIDX_ShootProne").value();
+	blendStartBones_[AIDX_IdleProne]	= xmlBlends.attribute("AIDX_ProneIdle").value();
 
 		
 	delete[] fileBuffer;
@@ -363,53 +426,53 @@ void CUberData::LoadAnimations()
 	LoadUpperBlendStartBones();
 	
 	// add zero index default anim
-	AddAnimation("default", "Stand_Aim_ASR_M4");
+	AddAnimation("default", "idle_stand_MEL_Hands");
 
 	LoadLowerAnimations();
 	LoadGrenadeAnim();
 	LoadJumpAnim();
 	LoadDeathAnim();
 	
-	aid_.UI_IdleNoWeapon = AddAnimation("UI_NoWeapon_Idle");
+	aid_.UI_IdleNoWeapon = AddAnimation("idle_stand_MEL_Hands");
 
-	aid_.attmMenuRiseWeapon[0] = AddAnimation("FPS_Attch_Raise_ASR");
-	aid_.attmMenuRiseWeapon[1] = AddAnimation("FPS_Attch_Raise_SNP");
-	aid_.attmMenuRiseWeapon[2] = AddAnimation("FPS_Attch_Raise_SHTG");
-	aid_.attmMenuRiseWeapon[3] = AddAnimation("FPS_Attch_Raise_MG");
-	aid_.attmMenuRiseWeapon[4] = AddAnimation("FPS_Attch_Raise_HG");
-	aid_.attmMenuRiseWeapon[5] = AddAnimation("FPS_Attch_Raise_SMG");
+	aid_.attmMenuRiseWeapon[0] = AddAnimation("FPS_attach_Raise_ASR_ASh12");
+	aid_.attmMenuRiseWeapon[1] = AddAnimation("FPS_Attach_Raise_SNP_ARS");
+	aid_.attmMenuRiseWeapon[2] = AddAnimation("FPS_Attach_Raise_SHG_SP12");
+	aid_.attmMenuRiseWeapon[3] = AddAnimation("FPS_Attach_Raise_LMG");
+	aid_.attmMenuRiseWeapon[4] = AddAnimation("FPS_Attach_Idle_HG_Auto");
+	aid_.attmMenuRiseWeapon[5] = AddAnimation("FPS_Attach_Raise_SMG_HSE");
 
-	aid_.attmMenuIdleWeapon[0] = AddAnimation("FPS_Attch_Idle_ASR");
-	aid_.attmMenuIdleWeapon[1] = AddAnimation("FPS_Attch_Idle_SNP");
-	aid_.attmMenuIdleWeapon[2] = AddAnimation("FPS_Attch_Idle_SHTG");
-	aid_.attmMenuIdleWeapon[3] = AddAnimation("FPS_Attch_Idle_MG");
-	aid_.attmMenuIdleWeapon[4] = AddAnimation("FPS_Attch_Idle_HG");
-	aid_.attmMenuIdleWeapon[5] = AddAnimation("FPS_Attch_Idle_SMG");
+	aid_.attmMenuIdleWeapon[0] = AddAnimation("FPS_attach_Idle_ASR_ASh12");
+	aid_.attmMenuIdleWeapon[1] = AddAnimation("FPS_Attach_Idle_SNP_ARS");
+	aid_.attmMenuIdleWeapon[2] = AddAnimation("FPS_Attach_Idle_SHG_SP12");
+	aid_.attmMenuIdleWeapon[3] = AddAnimation("FPS_Attach_Idle_LMG");
+	aid_.attmMenuIdleWeapon[4] = AddAnimation("FPS_Attach_Idle_HG_Auto");
+	aid_.attmMenuIdleWeapon[5] = AddAnimation("FPS_Attach_Idle_SMG_HSE");
 
 	// add default weapon anim
 	const char* names1[] = {
-		"UI_NoWeapon_Idle",
-		"Idle_Hands_01",
-		"Stand_Aim_Hands_01",
-		"Idle_Hands_01",
-		"Stand_Aim_Hands_01",
-		"Crouch_Blend_Hands_01",
-		"Crouch_Aim_Hands_01",
-		"Walk_Blend_Hands_01",
-		"Walk_Aim_Hands_01", //"Walk_Aim_ASR_M4",
-		"Run_Blend_Hands_01",
-		"Sprint_Blend_Hands_01",
-		"Reload_Idle_ASR_M4_01",
-		"Reload_Idle_ASR_M4_01",
-		"Reload_Idle_ASR_M4_01",
-		"Stand_Shooting_ASR_M4_Single",
-		"Stand_Shooting_ASR_M4_Single",
-		"Stand_Shooting_ASR_M4_Single",
-		"Prone_Blend_Hands_01",
-		"Prone_Blend_Hands_01",
-		"Reload_Idle_ASR_M4_01",
-		"Stand_Shooting_ASR_M4_Single",
-		"Prone_Idle_Hands_01",
+		"idle_stand_1",
+		"idle_stand_1",
+		"idle_stand_MEL_Hands",
+		"idle_stand_MEL_Hands",
+		"FPS_Crouch_Blend_MEL_Hands",
+		"Crouch_Blend_MEL_Hands",
+		"FPS_Attach_Idle_SMG_Bizon",
+		"Run_Blend_MEL_Hands",
+		"Run_Blend_MEL_Hands",
+		"Run_Blend_MEL_Hands",
+		"Sprint_Blend_MEL_Hands",
+		"reload_standIdle_ASR_AK12",
+		"reload_standIdle_ASR_AK12",
+		"reload_standIdle_ASR_AK12",
+		"shoot_stand_ASR_SHRAM",
+		"shoot_stand_ASR_SHRAM",
+		"shoot_stand_ASR_SHRAM",
+		"FPS_Attach_Idle_SMG_Bizon",
+		"FPS_Attach_Idle_SMG_Bizon",
+		"reload_standIdle_ASR_AK12",
+		"FPS_Attach_Idle_SMG_Bizon",
+		"Prone_MEL_Hands",
 	};
 	
 	COMPILE_ASSERT( R3D_ARRAYSIZE(names1) == AIDX_COUNT ) ;
@@ -419,7 +482,7 @@ void CUberData::LoadAnimations()
 
 void CUberData::LoadSkeleton()
 {
-	const char* skel_fname = "data/ObjectsDepot/Characters/ProperScale_AndBiped.skl";
+	const char* skel_fname = PLAYER_BIND_SKELETON_FILE;
 	r3dSkeleton* skel = new r3dSkeleton();
 	skel->LoadBinary(skel_fname);
 
@@ -484,6 +547,9 @@ static void checkIfAllWeaponsHaveAnimation()
 		const WeaponConfig* config = g_pWeaponArmory->getWeaponConfig(itemID);
 		if(config)
 		{
+			if(config->category == storecat_UsableItem)
+				continue;
+
 			const char* name = strrchr(config->m_StoreIcon, '/') + 1;
 
 			if(!config->m_animationIds)
@@ -499,14 +565,39 @@ static void checkIfAllWeaponsHaveAnimation()
 		r3dShowArtBugs();
 }
 
+static const WeaponConfig* findTPSAnimFallback()
+{
+	const WeaponConfig* firstWithAnimations = NULL;
+
+	g_pWeaponArmory->startItemSearch();
+	while(g_pWeaponArmory->searchNextItem())
+	{
+		uint32_t itemID = g_pWeaponArmory->getCurrentSearchItemID();
+		const WeaponConfig* config = g_pWeaponArmory->getWeaponConfig(itemID);
+		if(!config || !config->m_animationIds)
+			continue;
+
+		if(config->FNAME && strcmp(config->FNAME, "MEL_UNARMED") == 0)
+			return config;
+
+		if(!firstWithAnimations)
+			firstWithAnimations = config;
+	}
+
+	return firstWithAnimations;
+}
+
 static void fixUsableItemTPSAnim()
 {
 	// ok, here is idea. 
-	// to avoid copying animation files for TPS version of usable items, we'll use EXP_Claymore animation for them
-	// it will look crappy, but still it's better that nothing
-	const WeaponConfig* wpn2 = g_pWeaponArmory->getWeaponConfig(101256);
-	if(!wpn2) r3dError("fixTPSUsableItemAnim: no itemid");
-	if(!wpn2->m_animationIds) r3dError("fixTPSUsableItemAnim: no animations");
+	// to avoid copying animation files for TPS version of usable items, reuse any valid weapon animation set.
+	// New item databases may not contain the old hardcoded consumable IDs.
+	const WeaponConfig* wpn2 = findTPSAnimFallback();
+	if(!wpn2)
+	{
+		r3dOutToLog("fixTPSUsableItemAnim: no animation fallback, skipped\n");
+		return;
+	}
 	
 	g_pWeaponArmory->startItemSearch();
 	while(g_pWeaponArmory->searchNextItem())
@@ -531,13 +622,13 @@ void CUberData::LoadWeaponTable()
 #endif
    	float t1 = r3dGetTime();
 
-	const char* alist_file = "Data\\Animations5\\Animation List.csv";
+	const char* alist_file = PLAYER_ANIMATION_LIST_FILE;
 	r3dFile* f = r3d_open(alist_file, "rb");
 	if(!f)
 		r3dError("failed to open %s\n", alist_file);
 
 	// skip first line = there is header descriptions
-	char buf[4096] = "";
+	char buf[16384] = "";
 	fgets(buf, sizeof(buf), f);
 	
 	while(!feof(f))
@@ -552,21 +643,14 @@ void CUberData::LoadWeaponTable()
 		if(buf[slen-1] == 0xD) { buf[slen-1] = 0; slen--; }
 			
 		// parse .CSV string
-		const int expectedTokens = 21;
-		const char* t[32];
+		const int expectedTokens = 86;
+		const char* t[96];
 		for(int i=0; i<expectedTokens; i++)
 		  t[i] = "";
 		
-		int n = 0;
-		char* token = strtok(buf, ",");
-		while(token != NULL) {
-			t[n++] = token;
-			token = strtok(NULL, ",");
-			if(token && strcmp(token, "none")==0) // we need special work to skip empty spaces in CSV file, otherwise if we have ,,,, in CSV, strtok will skip all of them
-				token = "";
-		}
+		int n = ParseCsvLine(buf, t, R3D_ARRAYSIZE(t));
 		
-		if(n == 0) {
+		if(n == 0 || IsEmptyAnimToken(t[0])) {
 			// empty line
 			continue;
 		}
@@ -584,34 +668,59 @@ void CUberData::LoadWeaponTable()
 		
 		// create anim list table
 		const char* names[] = {
-		  t[2], //AIDX_UIIdle 
-		  t[1], //AIDX_IdleLower,
-		  t[3], //AIDX_StandLower,
-		  t[1], //AIDX_IdleUpper,
-		  t[3], //AIDX_StandUpper,
-		  t[6], //AIDX_CrouchBlend,
-		  t[7], //AIDX_CrouchAim,
-		  t[4], //AIDX_WalkBlend,
-		  t[5], //AIDX_WalkAim,
-		  t[8], //AIDX_RunBlend,
-		  t[9], //AIDX_SprintBlend,
-		  t[10], //AIDX_ReloadWalk,
-		  t[11], //AIDX_ReloadIdle,
-		  t[12], //AIDX_ReloadCrouch,
-		  t[13], //AIDX_ShootWalk,
-		  t[14],    //AIDX_ShootAim,
-		  t[15],	 //AIDX_ShootCrouch
-		  t[16],	//AIDX_ProneBlend
-		  t[17],	//AIDX_ProneAim
-		  t[18],	//AIDX_ProneReload
-		  t[19],	//AIDX_ProneShoot
-		  t[20],	//AIDX_ProneIdle
+		  AnimToken(t[2]), //AIDX_UIIdle
+		  AnimToken(t[2]), //AIDX_IdleLower,
+		  AnimToken(t[2]), //AIDX_StandLower,
+		  AnimToken(t[2]), //AIDX_IdleUpper,
+		  AnimToken(t[8]), //AIDX_StandUpper,
+		  AnimToken(t[4]), //AIDX_CrouchBlend,
+		  AnimToken(t[12]), //AIDX_CrouchAim,
+		  AnimToken(t[4]), //AIDX_WalkBlend,
+		  AnimToken(t[8]), //AIDX_WalkAim,
+		  AnimToken(t[32]), //AIDX_RunBlend,
+		  AnimToken(t[34]), //AIDX_SprintBlend,
+		  AnimToken(t[18]), //AIDX_ReloadWalk,
+		  AnimToken(t[16]), //AIDX_ReloadIdle,
+		  AnimToken(t[20]), //AIDX_ReloadCrouch,
+		  AnimToken(t[24]), //AIDX_ShootWalk,
+		  AnimToken(t[24]), //AIDX_ShootAim,
+		  AnimToken(t[28]), //AIDX_ShootCrouch
+		  AnimToken(t[38]), //AIDX_ProneBlend
+		  AnimToken(t[6]), //AIDX_ProneAim
+		  AnimToken(t[22]), //AIDX_ProneReload
+		  AnimToken(t[30]), //AIDX_ProneShoot
+		  AnimToken(t[6]), //AIDX_ProneIdle
+		};
+		const char* fpsNames[] = {
+		  AnimToken(t[3]), //AIDX_UIIdle
+		  AnimToken(t[3]), //AIDX_IdleLower,
+		  AnimToken(t[3]), //AIDX_StandLower,
+		  AnimToken(t[3]), //AIDX_IdleUpper,
+		  AnimToken(t[3]), //AIDX_StandUpper,
+		  AnimToken(t[5]), //AIDX_CrouchBlend,
+		  AnimToken(t[3]), //AIDX_CrouchAim,
+		  AnimToken(t[5]), //AIDX_WalkBlend,
+		  AnimToken(t[3]), //AIDX_WalkAim,
+		  AnimToken(t[33]), //AIDX_RunBlend,
+		  AnimToken(t[35]), //AIDX_SprintBlend,
+		  AnimToken(t[19]), //AIDX_ReloadWalk,
+		  AnimToken(t[17]), //AIDX_ReloadIdle,
+		  AnimToken(t[21]), //AIDX_ReloadCrouch,
+		  AnimToken(t[27]), //AIDX_ShootWalk,
+		  AnimToken(t[25]), //AIDX_ShootAim,
+		  AnimToken(t[29]), //AIDX_ShootCrouch
+		  AnimToken(t[39]), //AIDX_ProneBlend
+		  AnimToken(t[15]), //AIDX_ProneAim
+		  AnimToken(t[23]), //AIDX_ProneReload
+		  AnimToken(t[31]), //AIDX_ProneShoot
+		  AnimToken(t[7]), //AIDX_ProneIdle
 		};
 		COMPILE_ASSERT( R3D_ARRAYSIZE(names) == AIDX_COUNT ) ;
+		COMPILE_ASSERT( R3D_ARRAYSIZE(fpsNames) == AIDX_COUNT ) ;
 		
 		int wid[AIDX_COUNT];
 		int wid_fps[AIDX_COUNT];
-		LoadWeaponAnim(wid, wid_fps, names);
+		LoadWeaponAnim(wid, wid_fps, names, fpsNames);
 
 		setWeaponAnimByFNAME(t[0], wid, wid_fps);
    	}
@@ -660,12 +769,15 @@ int CUberData::GetGrenadeAnimId(bool IsFPS, int PlayerState, int GrenadeState)
 		return aid_.grenades_tps[idx + GrenadeState];
 }
 
-int CUberData::GetJumpAnimId(int PlayerState, int JumpState)
+int CUberData::GetJumpAnimId(int PlayerState, int JumpState, bool FallingDown)
 {
 	// JumpState
 	//  0 - start
 	//  1 - air
 	//  2 - landing
+
+	if(FallingDown)
+		return aid_.jumpsFallingDown[JumpState];
 
 	int idx = 6;
 	switch(PlayerState) 
@@ -689,6 +801,75 @@ int CUberData::GetJumpAnimId(int PlayerState, int JumpState)
 	}
 	
 	return aid_.jumps[idx + JumpState];
+}
+
+int CUberData::GetJumpAnimIdASR(int PlayerState, int JumpState, bool FallingDown)
+{
+	// JumpState
+	//  0 - start
+	//  1 - air
+	//  2 - landing
+
+	if(FallingDown)
+		return aid_.jumpsFallingDownASR[JumpState];
+
+	int idx = 6;
+	switch(PlayerState)
+	{
+		default:
+		case PLAYER_IDLE:
+		case PLAYER_IDLEAIM:
+		case PLAYER_MOVE_CROUCH:
+		case PLAYER_MOVE_CROUCH_AIM:
+			idx = 0;
+			break;
+		case PLAYER_MOVE_WALK_AIM:
+			idx = 3;
+			break;
+		case PLAYER_MOVE_RUN:
+			idx = 6;
+			break;
+		case PLAYER_MOVE_SPRINT:
+			idx = 9;
+			break;
+	}
+
+	return aid_.jumpsASR[idx + JumpState];
+}
+
+int CUberData::GetJumpAnimUsableItems(int PlayerState, int JumpState, bool FallingDown)
+{
+	// JumpState
+	//  0 - start
+	//  1 - air
+	//  2 - landing
+
+	if (FallingDown)
+	{
+		return aid_.jumpsFallingDownASR[JumpState];
+	}
+
+	int idx = 6;
+	switch(PlayerState) //AnimMoveDir
+	{
+	default:
+	case PLAYER_IDLE:
+	case PLAYER_IDLEAIM:
+	case PLAYER_MOVE_CROUCH:
+	case PLAYER_MOVE_CROUCH_AIM:
+		idx = 0;
+		break;
+	case PLAYER_MOVE_WALK_AIM:
+		idx = 3;
+		break;
+	case PLAYER_MOVE_RUN:
+		idx = 6;
+		break;
+	case PLAYER_MOVE_SPRINT:
+		idx = 9;
+		break;
+	}
+	return aid_.jumpsDeployable[idx + JumpState];
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -749,13 +930,126 @@ r3dMesh* CUberEquip::getSlotMesh(ESlot slotId)
 	return NULL;
 }
 
+static bool ShouldHideHairSlot(const CUberEquip::slot_s* slots)
+{
+	for(int i = 0; i < SLOT_Max; ++i)
+	{
+		if(slots[i].gear && slots[i].gear->getCategory() == storecat_Helmet)
+			return true;
+	}
+
+	return false;
+}
+
+static r3dSkeleton* GetReadyWeaponSkeleton(Weapon* wpn, bool first_person)
+{
+	if(!wpn)
+		return NULL;
+
+	r3dMesh* msh = wpn->getModel(true, first_person);
+	if(!msh || !msh->IsSkeletal())
+		return NULL;
+
+	if(!first_person)
+	{
+		wpn->getConfig()->ensureSkeleton();
+		return wpn->getConfig()->getSkeleton();
+	}
+
+	wpn->checkForSkeleton();
+	if(!wpn->getConfig()->getSkeleton() || !wpn->getAnimation())
+		return NULL;
+
+	r3dSkeleton* wpnSkel = wpn->getAnimation()->pSkeleton;
+	if(!wpnSkel)
+		return NULL;
+
+	wpn->getAnimation()->Recalc();
+	return wpnSkel;
+}
+
+static bool GetWeaponAttachmentWorldTM(const r3dSkeleton* wpnSkeleton, int attachmentIndex, D3DXMATRIX* out, const D3DXMATRIX& weaponWorld)
+{
+	if(!wpnSkeleton || attachmentIndex < 0 || attachmentIndex >= WPN_ATTM_MAX)
+		return false;
+
+	const int boneId = wpnSkeleton->GetBoneID(WeaponAttachmentBoneNames[attachmentIndex]);
+	if(boneId == -1)
+		return false;
+
+	wpnSkeleton->GetBoneWorldTM(boneId, out, weaponWorld);
+	return true;
+}
+
+static bool IsNewCharacterSkeleton(const r3dSkeleton* skel)
+{
+	const char* skelFile = skel ? skel->GetFileName() : NULL;
+	return skelFile &&
+		(stristr(skelFile, "ProperScale_AndBiped_new") ||
+		stristr(skelFile, "CharactersNew"));
+}
+
+static void ApplyLegacyWeaponRotation(D3DXMATRIX* world)
+{
+	D3DXMATRIX mr1;
+	D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI/2, 0);
+	*world = mr1 * *world;
+}
+
 D3DXMATRIX CUberEquip::getWeaponBone(const r3dSkeleton* skel, const D3DXMATRIX& offset)
 {
-	D3DXMATRIX mr1, world;
-	D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI/2, 0);
-	skel->GetBoneWorldTM("PrimaryWeaponBone", &world, offset);
-	world = mr1 * world;
-	return world;
+	if(!skel)
+		return offset;
+
+	if(IsNewCharacterSkeleton(skel))
+	{
+		D3DXMATRIX mr1, world; 
+		D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI / 2, 0);
+
+		D3DXMATRIX RotateMatrix, rt2;
+		D3DXMatrixRotationYawPitchRoll(&RotateMatrix, 0, R3D_DEG2RAD(-90), 0);
+		D3DXMatrixMultiply(&rt2, &mr1, &RotateMatrix);
+
+		skel->GetBoneWorldTM("PrimaryWeaponBone", &world, offset);
+		world = rt2 * world;
+		return world;
+	}
+
+	struct WeaponBoneCandidate
+	{
+		const char* name;
+		bool useLegacyRotation;
+	};
+
+	const WeaponBoneCandidate candidates[] =
+	{
+		{ "PrimaryWeaponBone", true },
+		{ "PrimaryWeapon", false },
+		{ "Weapon1", false },
+		{ "Bone_Weapon", false },
+		{ "Bip01_R_Hand", true },
+	};
+
+	D3DXMATRIX world;
+	D3DXMatrixIdentity(&world);
+
+	for(int i = 0; i < _countof(candidates); ++i)
+	{
+		const int boneId = skel->GetBoneID(candidates[i].name);
+		if(boneId == -1)
+			continue;
+
+		skel->GetBoneWorldTM(boneId, &world, offset);
+
+		if(candidates[i].useLegacyRotation)
+		{
+			ApplyLegacyWeaponRotation(&world);
+		}
+
+		return world;
+	}
+
+	return offset;
 }
 
 r3dPoint3D CUberEquip::getBonePos(int BoneID, const r3dSkeleton* skel, const D3DXMATRIX& offset)
@@ -789,9 +1083,11 @@ void CUberEquip::DrawSlot(ESlot slotId, const D3DXMATRIX& world, DrawType dt, bo
 {
 	if(slotId == SLOT_WeaponSide)
 		return;
+	if(slotId == SLOT_Hair && ShouldHideHairSlot(slots_))
+		return;
 	if(draw_firstperson)
 	{
-		if(slotId == SLOT_Armor || slotId == SLOT_LowerBody || slotId == SLOT_Head || slotId == SLOT_Helmet || slotId == SLOT_Backpack)
+		if(slotId == SLOT_Armor || slotId == SLOT_LowerBody || slotId == SLOT_Head || slotId == SLOT_Hair || slotId == SLOT_Feet || slotId == SLOT_Helmet || slotId == SLOT_Backpack)
 			return;
 	}
 
@@ -816,9 +1112,15 @@ void CUberEquip::DrawSlot(ESlot slotId, const D3DXMATRIX& world, DrawType dt, bo
 		Weapon* wpn = slots_[slotId].wpn;
 		for(int i=0; i<WPN_ATTM_MAX; ++i)
 		{
-			mesh = wpn->getWeaponAttachmentMesh((WeaponAttachmentTypeEnum)i, player->m_isAiming && (i==WPN_ATTM_UPPER_RAIL));
+			bool HaveClip = wpn->getPlayerItem().Var2 != 0;
+
+			if (i==WPN_ATTM_CLIP && !HaveClip)
+				continue;
+
+			mesh = wpn->getWeaponAttachmentMesh((WeaponAttachmentTypeEnum)i, player->m_isAiming && (i==WPN_ATTM_UPPER_RAIL) && g_camera_mode->GetInt()==2 && player->NetworkLocal);
 			if(mesh && mesh->IsDrawable())
 			{
+				//wpn->getPlayerItem()
 				D3DXMATRIX attmWorld;
 				wpnSkeleton->GetBoneWorldTM(WeaponAttachmentBoneNames[i], &attmWorld, world);
 				DrawSlotMesh(mesh, attmWorld, dt, false);
@@ -837,8 +1139,6 @@ void CUberEquip::DrawSlotMesh(r3dMesh* mesh, const D3DXMATRIX& world, DrawType d
 	{
 		mesh->SetVSConsts_Localized(world);
 
-		// NOTE : needed for transparent camo only..
-		// float4   WorldScale  		: register(c24);
 		D3DXVECTOR4 scale(mesh->unpackScale.x, mesh->unpackScale.y, mesh->unpackScale.z, 0.f) ;
 		D3D_V(r3dRenderer->pd3ddev->SetVertexShaderConstantF(24, (float*)&scale, 1)) ;
 	}
@@ -907,12 +1207,17 @@ void CUberEquip::AppendSlotShadowRenderables(
 	if (slotId == SLOT_WeaponSide)
 		return;
 
+	if (slotId == SLOT_Hair && ShouldHideHairSlot(slots_))
+		return;
+
 	if (draw_firstperson)
 	{
 		if (
 			slotId == SLOT_Armor ||
 			slotId == SLOT_LowerBody ||
 			slotId == SLOT_Head ||
+			slotId == SLOT_Hair ||
+			slotId == SLOT_Feet ||
 			slotId == SLOT_Helmet ||
 			slotId == SLOT_Backpack
 		)
@@ -954,26 +1259,29 @@ void CUberEquip::AppendSlotShadowRenderables(
 
 		for (int i = 0; i < WPN_ATTM_MAX; ++i)
 		{
+			const bool useAimAttachment =
+				player &&
+				player->m_isAiming &&
+				i == WPN_ATTM_UPPER_RAIL &&
+				g_camera_mode->GetInt() == 2 &&
+				player->NetworkLocal;
 			mesh = wpn->getWeaponAttachmentMesh(
 				(WeaponAttachmentTypeEnum)i,
-				player->m_isAiming && (i == WPN_ATTM_UPPER_RAIL)
+				useAimAttachment
 			);
 
 			if (mesh && mesh->IsDrawable())
 			{
 				D3DXMATRIX attmWorld;
-				wpnSkeleton->GetBoneWorldTM(
-					WeaponAttachmentBoneNames[i],
-					&attmWorld,
-					world
-				);
-
-				AppendSlotMeshShadowRenderables(
-					renderArray,
-					mesh,
-					attmWorld,
-					NULL
-				);
+				if (GetWeaponAttachmentWorldTM(wpnSkeleton, i, &attmWorld, world))
+				{
+					AppendSlotMeshShadowRenderables(
+						renderArray,
+						mesh,
+						attmWorld,
+						NULL
+					);
+				}
 			}
 		}
 	}
@@ -983,9 +1291,11 @@ void CUberEquip::AppendSlotRenderables( RenderArray& renderArray, ESlot slotId, 
 {
 	if(slotId == SLOT_WeaponSide)
 		return;
+	if(slotId == SLOT_Hair && ShouldHideHairSlot(slots_))
+		return;
 	if(draw_firstperson)
 	{
-		if(slotId == SLOT_Armor || slotId == SLOT_LowerBody || slotId == SLOT_Head || slotId == SLOT_Helmet || slotId == SLOT_Backpack)
+		if(slotId == SLOT_Armor || slotId == SLOT_LowerBody || slotId == SLOT_Head || slotId == SLOT_Hair || slotId == SLOT_Feet || slotId == SLOT_Helmet || slotId == SLOT_Backpack)
 			return;
 	}
 
@@ -1005,12 +1315,18 @@ void CUberEquip::AppendSlotRenderables( RenderArray& renderArray, ESlot slotId, 
 		Weapon* wpn = slots_[slotId].wpn;
 		for(int i=0; i<WPN_ATTM_MAX; ++i)
 		{
-			mesh = wpn->getWeaponAttachmentMesh((WeaponAttachmentTypeEnum)i, player->m_isAiming && (i==WPN_ATTM_UPPER_RAIL));
+			const bool useAimAttachment =
+				player &&
+				player->m_isAiming &&
+				i == WPN_ATTM_UPPER_RAIL &&
+				g_camera_mode->GetInt() == 2 &&
+				player->NetworkLocal;
+			mesh = wpn->getWeaponAttachmentMesh((WeaponAttachmentTypeEnum)i, useAimAttachment);
 			if(mesh && mesh->IsDrawable())
 			{
 				D3DXMATRIX attmWorld;
-				wpnSkeleton->GetBoneWorldTM(WeaponAttachmentBoneNames[i], &attmWorld, world);
-				AppendSlotMeshRenderables(renderArray, mesh, attmWorld, NULL);
+				if(GetWeaponAttachmentWorldTM(wpnSkeleton, i, &attmWorld, world))
+					AppendSlotMeshRenderables(renderArray, mesh, attmWorld, NULL);
 			}
 		}
 	}
@@ -1046,6 +1362,11 @@ void CUberEquip::Draw(const r3dSkeleton* skel, const D3DXMATRIX& CharMat, bool d
 				skel->GetBoneWorldTM("Weapon_BackRight", &world, CharMat);
 				DrawSlot(SLOT_WeaponBackRight, world, dt, false, first_person, NULL);
 			}
+			if(slots_[SLOT_Weapon_BackRPG].wpn)
+			{
+				skel->GetBoneWorldTM("Weapon_BackRPG", &world, CharMat);
+				DrawSlot(SLOT_Weapon_BackRPG, world, dt, false, first_person, NULL);
+			}
 			if(slots_[SLOT_WeaponSide].wpn)
 			{
 				skel->GetBoneWorldTM("Weapon_Side", &world, CharMat);
@@ -1061,12 +1382,10 @@ void CUberEquip::Draw(const r3dSkeleton* skel, const D3DXMATRIX& CharMat, bool d
 			Weapon* wpn = slots_[SLOT_Weapon].wpn;
 			if(wpn)
 			{
-				r3dMesh* msh = wpn->getModel(true, first_person);
-				if(msh->IsSkeletal() && wpn->getConfig()->getSkeleton())
+				wpnSkel = GetReadyWeaponSkeleton(wpn, first_person);
+				if(wpnSkel)
 				{
-					wpn->getAnimation()->Recalc();
-					wpn->getAnimation()->pSkeleton->SetShaderConstants();
-					wpnSkel = wpn->getAnimation()->pSkeleton;
+					wpnSkel->SetShaderConstants();
 					skinned = true;
 				}
 			}
@@ -1093,6 +1412,11 @@ void CUberEquip::AppendDeferredRenderables( RenderArray& renderArray, const r3dS
 			skel->GetBoneWorldTM("Weapon_BackRight", &world, CharMat);
 			AppendSlotRenderables(renderArray, SLOT_WeaponBackRight, world, false, first_person, NULL, NULL);
 		}
+		if(slots_[SLOT_Weapon_BackRPG].wpn)
+		{
+			skel->GetBoneWorldTM("Weapon_BackRPG", &world, CharMat);
+			AppendSlotRenderables(renderArray, SLOT_Weapon_BackRPG, world, false, first_person, NULL, NULL);
+		}
 		if(slots_[SLOT_WeaponSide].wpn)
 		{
 			skel->GetBoneWorldTM("Weapon_Side", &world, CharMat);
@@ -1108,11 +1432,9 @@ void CUberEquip::AppendDeferredRenderables( RenderArray& renderArray, const r3dS
 		Weapon* wpn = slots_[SLOT_Weapon].wpn;
 		if(wpn)
 		{
-			r3dMesh* msh = wpn->getModel(true, first_person);
-			if(msh->IsSkeletal() && wpn->getConfig()->getSkeleton())
+			wpnSkel = GetReadyWeaponSkeleton(wpn, first_person);
+			if(wpnSkel)
 			{
-				wpn->getAnimation()->Recalc();
-				wpnSkel = wpn->getAnimation()->pSkeleton;
 				skinned = true;
 			}
 		}
@@ -1163,6 +1485,21 @@ void CUberEquip::AppendShadowRenderables(
 			);
 		}
 
+		if (slots_[SLOT_Weapon_BackRPG].wpn)
+		{
+			skel->GetBoneWorldTM("Weapon_BackRPG", &world, CharMat);
+
+			AppendSlotShadowRenderables(
+				renderArray,
+				SLOT_Weapon_BackRPG,
+				world,
+				false,
+				first_person,
+				NULL,
+				NULL
+			);
+		}
+
 		if (slots_[SLOT_WeaponSide].wpn)
 		{
 			skel->GetBoneWorldTM("Weapon_Side", &world, CharMat);
@@ -1190,12 +1527,9 @@ void CUberEquip::AppendShadowRenderables(
 
 		if (wpn)
 		{
-			r3dMesh* msh = wpn->getModel(true, first_person);
-
-			if (msh && msh->IsSkeletal() && wpn->getConfig()->getSkeleton())
+			wpnSkel = GetReadyWeaponSkeleton(wpn, first_person);
+			if (wpnSkel)
 			{
-				wpn->getAnimation()->Recalc();
-				wpnSkel = wpn->getAnimation()->pSkeleton;
 				skinned = true;
 			}
 		}
@@ -1238,6 +1572,8 @@ CUberAnim::CUberAnim(obj_Player* in_player, CUberData* in_data)
 	jumpMoveTrackID2		= INVALID_TRACK_ID;
 	jumpState               = -1;
 	jumpAirTime             = 0;
+	//jumpWeInAir             = false;
+	//FallingDown             = false;
 	
 	scaleReloadAnimTime     = 1;
 
@@ -1305,17 +1641,19 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 	{
 		if(CurrentWeapon == NULL)
 		{
+			int aid;
+			
 			if(anim.AnimTracks.size() > 0)
-				anim.StartAnimation(data_->aid_.UI_IdleNoWeapon, ANIMFLAG_RemoveOtherFade | ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
+				anim.StartAnimation(aid, ANIMFLAG_RemoveOtherFade | ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
 			else
-				anim.StartAnimation(data_->aid_.UI_IdleNoWeapon, ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
+				anim.StartAnimation(aid, ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
 		}
 		else
 		{
 			if(anim.AnimTracks.size() > 0)
-				anim.StartAnimation(wids[CUberData::AIDX_UIIdle], ANIMFLAG_RemoveOtherFade | ANIMFLAG_Looped, 0.0f, 1.0f, 0.2f);
+				anim.StartAnimation(wids[CUberData::AIDX_IdleLower], ANIMFLAG_RemoveOtherFade | ANIMFLAG_Looped, 0.0f, 1.0f, 0.2f);
 			else
-				anim.StartAnimation(wids[CUberData::AIDX_UIIdle], ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
+				anim.StartAnimation(wids[CUberData::AIDX_IdleLower], ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
 		}
 		return;
 	}
@@ -1323,9 +1661,18 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 	// new animation idx
 	int a1 = -1;
 	int a2 = -1;
+	// transition animation idx
+	int t1 = -1;
+	int t2 = -1;
 	// lower/upper current frame numbers if we're switching to same anim
 	float f1 = -1;
 	float f2 = -1;
+	// lower/upper current frame numbers if we're switching to synchronized anim
+	float f3 = -1;
+	float f4 = -1;
+
+	if(player && player->m_isAiming && player->NetworkLocal && IsFPSMode())
+		PlayerState = PLAYER_IDLEAIM;
 	
 	switch(PlayerState)
 	{
@@ -1340,6 +1687,12 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		case PLAYER_IDLE:
 			a1 = wids[CUberData::AIDX_IdleLower];
 			a2 = wids[CUberData::AIDX_IdleUpper];
+
+			if (!IsFPSMode() && jumpState > -1)
+				a2 = -1;
+
+			if(!IsFPSMode() && FallingDown == true)
+				a2 = -1;
 			break;
 		case PLAYER_IDLEAIM:
 			a1 = wids[CUberData::AIDX_StandLower];
@@ -1394,10 +1747,17 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		case PLAYER_MOVE_WALK_AIM:
 			a1 = aid.walk[MoveDir];
 			a2 = wids[CUberData::AIDX_WalkAim];
+			//if(!IsFPSMode() && jumpState > -1)
+				//a2 = -1;
 			break;
 		case PLAYER_MOVE_RUN:
 			a1 = aid.run[MoveDir];
 			a2 = wids[CUberData::AIDX_RunBlend];
+			if(!IsFPSMode() && jumpState > -1)
+				a2 = -1;
+			if(!IsFPSMode() && FallingDown == true)
+				a2 = -1;
+		
 			//ANIM_HACK: because we can move in air, we can switch from to any moving direction in this pose
 			if(a1 == -1)
 				a1 = aid.run[CUberData::ANIMDIR_Str];
@@ -1405,6 +1765,11 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		case PLAYER_MOVE_SPRINT:
 			a1 = aid.sprint[MoveDir];
 			a2 = wids[CUberData::AIDX_SprintBlend];
+			if(!IsFPSMode() && jumpState > -1)
+				a2 = -1;
+			if(!IsFPSMode() && FallingDown == true)
+				a2 = -1;
+		
 			//ANIM_HACK: because we can move in air, we can switch from to any moving direction in this pose
 			if(a1 == -1)
 				a1 = aid.sprint[CUberData::ANIMDIR_Str];
@@ -1432,6 +1797,7 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 	float fAnimSpeed = AnimSpeedStates[PlayerState];
 	if(PlayerState == PLAYER_MOVE_RUN && MoveDir == CUberData::ANIMDIR_Str)
 		fAnimSpeed = AnimSpeedRunFwd;
+	
 
 	float inf1 = 0.0f; // start influence
 	float inf2 = 1.0f; // end influence
@@ -1483,6 +1849,21 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 			ai.fSpeed = fAnimSpeed;
 			continue;
 		}
+		
+		// different anim, but they are synchronized, so save the frame
+		if( ( ( AnimMoveDir == CUberData::ANIMDIR_Str && ( MoveDir == CUberData::ANIMDIR_StrLeft || MoveDir == CUberData::ANIMDIR_StrRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_StrLeft && ( MoveDir == CUberData::ANIMDIR_Str || MoveDir == CUberData::ANIMDIR_StrRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_StrRight && ( MoveDir == CUberData::ANIMDIR_Str || MoveDir == CUberData::ANIMDIR_StrLeft ) )
+			  ) ||
+			  ( ( AnimMoveDir == CUberData::ANIMDIR_Back && ( MoveDir == CUberData::ANIMDIR_BackLeft || MoveDir == CUberData::ANIMDIR_BackRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_BackLeft && ( MoveDir == CUberData::ANIMDIR_Back || MoveDir == CUberData::ANIMDIR_BackRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_BackRight && ( MoveDir == CUberData::ANIMDIR_Back || MoveDir == CUberData::ANIMDIR_BackLeft ) )
+			  )
+			)
+		{
+			f3 = ai.fCurFrame;
+		}
+		
 		ai.dwStatus    |= ANIMSTATUS_Expiring;
 		ai.fExpireTime  = inf3;
 	}
@@ -1501,6 +1882,19 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 			// update speed for aim/walk states
 			ai.fSpeed = fAnimSpeed;
 			continue;
+		}
+		
+		if (( ( ( AnimMoveDir == CUberData::ANIMDIR_Str && ( MoveDir == CUberData::ANIMDIR_StrLeft || MoveDir == CUberData::ANIMDIR_StrRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_StrLeft && ( MoveDir == CUberData::ANIMDIR_Str || MoveDir == CUberData::ANIMDIR_StrRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_StrRight && ( MoveDir == CUberData::ANIMDIR_Str || MoveDir == CUberData::ANIMDIR_StrLeft ) )
+			  ) ||
+			  ( ( AnimMoveDir == CUberData::ANIMDIR_Back && ( MoveDir == CUberData::ANIMDIR_BackLeft || MoveDir == CUberData::ANIMDIR_BackRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_BackLeft && ( MoveDir == CUberData::ANIMDIR_Back || MoveDir == CUberData::ANIMDIR_BackRight ) ) ||
+				( AnimMoveDir == CUberData::ANIMDIR_BackRight && ( MoveDir == CUberData::ANIMDIR_Back || MoveDir == CUberData::ANIMDIR_BackLeft ) )
+			  ))
+			)
+		{
+			f4 = ai.fCurFrame;
 		}
 		ai.dwStatus    |= ANIMSTATUS_Expiring;
 		ai.fExpireTime  = inf3;
@@ -1534,6 +1928,10 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		// sync changed lower body anim with saved upper body frame
 		if(f2 >= 0)
 			ai.fCurFrame = f2;
+
+		// sync changed lower body anim with new lower body anim
+		if(f3 >= 0)
+			ai.fCurFrame = f3;
 			
 		if(PlayerState == PLAYER_IDLE)
 			ai.fCurFrame = fIdleAnimFrame;
@@ -1545,6 +1943,16 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 	if(jumpAnim.pAnim) 
 	{
 		anim.AnimTracks.push_back(jumpAnim);
+	}
+
+	// Transitions must be last of lower anims.  Since there is no transition to jump atm, jump will not be affected.
+	if( t1 != -1 )
+	{
+		uint32_t animFlag = 0;
+		anim.StartAnimation(t1, animFlag, inf1, inf2, inf3);
+		r3dAnimation::r3dAnimInfo& ai = anim.AnimTracks[anim.AnimTracks.size() - 1];
+		ai.fCurFrame = 0;
+		ai.fSpeed = fAnimSpeed;
 	}
 
 	//
@@ -1563,6 +1971,10 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		// sync changed upper body anim with saved lower body frame
 		if(f1 >= 0)
 			ai.fCurFrame = f1;
+
+		// sync changed upper body anim with new upper body anim
+		if(f4 >= 0)
+			ai.fCurFrame = f4;
 			
 		if(PlayerState == PLAYER_IDLE)
 			ai.fCurFrame = fIdleAnimFrame;
@@ -1595,7 +2007,37 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 				}
 			}
 		}
+
+		if((PlayerState == PLAYER_MOVE_WALK_AIM || PlayerState == PLAYER_IDLEAIM))
+		{
+			// need to scan all animations, because switching from crouch_aim move to stand does not restart upper body anim
+			for(size_t i = 0, size = anim.AnimTracks.size(); i < size; i++)
+			{
+				r3dAnimation::r3dAnimInfo& ai = anim.AnimTracks[i];
+				if(ai.pAnim->iAnimId == wids[CUberData::AIDX_WalkAim] || ai.pAnim->iAnimId == wids[CUberData::AIDX_StandUpper])
+				{
+					ai.fCurFrame = 1.0f;
+					ai.dwStatus  |= ANIMSTATUS_Paused;
+				}
+			}
+		}
 	}
+
+	/*if(!IsFPSMode())
+	{
+		if(PlayerState == PLAYER_MOVE_WALK_AIM || PlayerState == PLAYER_IDLEAIM)
+		{
+			for(size_t i = 0, size = anim.AnimTracks.size(); i < size; i++)
+			{
+				r3dAnimation::r3dAnimInfo& ai = anim.AnimTracks[i];
+				if(ai.pAnim->iAnimId == wids[CUberData::AIDX_WalkAim] || ai.pAnim->iAnimId == wids[CUberData::AIDX_StandUpper])
+				{
+					ai.fCurFrame = 1.0f;
+					ai.dwStatus |= ANIMSTATUS_Paused;
+				}
+			}
+		}
+	}*/
 
 	//
 	// 3. add all top anims
@@ -1604,15 +2046,15 @@ void CUberAnim::SwitchToState(int PlayerState, int MoveDir)
 		anim.AnimTracks.push_back(*it);
 	}
 	
-	
-	/*r3dOutToLog("NEW STACK\n");
-        for(size_t i=0; i<anim.AnimTracks.size(); i++) 
-        {
-          const r3dAnimation::r3dAnimInfo& ai = anim.AnimTracks[i];
-	  r3dOutToLog("%p:%s: %.2f, f:%.1f, %04X\n", 
-	    ai.pAnim, ai.pAnim->pAnimName, ai.fInfluence, ai.fCurFrame, ai.dwStatus);
-	}*/
-	
+	// Transitions must be last of upper anims.  Since there is no transition to jump atm, jump will not be affected.
+	if( t2 != -1 )
+	{
+		uint32_t animFlag = 0;
+		anim.StartAnimation(t2, animFlag, inf1, inf2, inf3);
+		r3dAnimation::r3dAnimInfo& ai = anim.AnimTracks[anim.AnimTracks.size() - 1];
+		ai.fCurFrame = 0;
+		ai.fSpeed = fAnimSpeed;
+	}
 		
 	return;
 }
@@ -1811,23 +2253,6 @@ void CUberAnim::UpdateTurnInPlaceAnim()
 	}
 }
 
-/*void CUberAnim::StartBombPlantingAnimation(int bombState) // bombState: 0-start, 1-loop, 2-end, 3-stop everything
-{
-	if(bombPlantingTrackID != INVALID_TRACK_ID)
-	{
-		anim.FadeOut(bombPlantingTrackID, 0.1f);
-		bombPlantingTrackID = INVALID_TRACK_ID;
-	}
-
-	const int* bidx = IsFPSMode() ? data_->aid_.bombs_fps : data_->aid_.bombs_tps;
-	if(bombState == 0)
-		bombPlantingTrackID = anim.StartAnimation(bidx[0], ANIMFLAG_PauseOnEnd, 0.0f, 1.0f, 0.1f);
-	else if(bombState == 1)
-		bombPlantingTrackID = anim.StartAnimation(bidx[1], ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
-	else if(bombState == 2)
-		bombPlantingTrackID = anim.StartAnimation(bidx[2], ANIMFLAG_PauseOnEnd, 1.0f, 1.0f, 0.0f);
-}*/
-
 float CUberAnim::GetGrenadeLaunchFrame()
 {
 	if(!CurrentWeapon)
@@ -1904,17 +2329,6 @@ void CUberAnim::StartGrenadeThrowAnimation()
 {
 	StopGrenadeAnimations();
 
-// 	// check for mine special case
-// 	if(CurrentWeapon && CurrentWeapon->getConfig()->isMine())
-// 	{
-// 		const int* bidx = IsFPSMode() ? data_->aid_.bombs_fps : data_->aid_.bombs_tps;
-// 		int atype = CurrentWeapon->getConfig()->getGrenadeAnimType();
-// 		int grIdx1 = bidx[2 + atype];
-// 
-// 		grenadeThrowTrackID = anim.StartAnimation(grIdx1, 0, 0.0f, 1.0f, 0.1f);
-// 		return;
-// 	}
-	
 	// note, no fading in, start with full influence
 	int grIdx = data_->GetGrenadeAnimId(IsFPSMode(), AnimPlayerState, 2);
 	grenadeThrowTrackID = anim.StartAnimation(grIdx, 0, 1.0f, 1.0f, 0.0f);
@@ -2141,17 +2555,25 @@ void CUberAnim::StartJump()
 		jumpStartTime = jumpStartTimeByState[1];
 
 	int idx = data_->GetJumpAnimId(AnimPlayerState, 0);
+
+	if (CurrentWeapon && CurrentWeapon->getCategory() >=storecat_ASR && CurrentWeapon->getCategory()<=storecat_SMG  && CurrentWeapon->getCategory() != storecat_HG)
+		idx = data_->GetJumpAnimIdASR(AnimPlayerState, 0);
+
+	if (CurrentWeapon && CurrentWeapon->getCategory() == storecat_UsableItem)
+		idx = data_->GetJumpAnimUsableItems(AnimPlayerState, 0);
+
+	r3dAnimData* ad = data_->animPool_.Get(idx);
 	jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_PauseOnEnd, 0.0f, 1.0f, 0.1f);
 	jumpState   = 0;
-	jumpWeInAir = false;
+	jumpWeInAir = true;
+	FallingDown = false;
 	jumpPlayerState = AnimPlayerState;
-	anim.GetTrack(jumpTrackID)->fSpeed = jumpAnimSpeed;
 
 	// resync animation, so jump track will be relocated to top of lower bodys anim
 	SwitchToState(AnimPlayerState, AnimMoveDir);
 }
 
-void CUberAnim::UpdateJump(bool bOnGround)
+void CUberAnim::UpdateJump(bool bOnGround, float fHeightAboveGround)
 {
 	if(IsFPSMode()) // no need for jump in FPS mode
 		return;
@@ -2159,6 +2581,30 @@ void CUberAnim::UpdateJump(bool bOnGround)
 	// check if we're in air
 	if(!jumpWeInAir && !bOnGround)
 		jumpWeInAir = true;
+
+	//bool FallingDown = false;
+	if(!jumpWeInAir && !bOnGround && jumpState == -1 && fHeightAboveGround>4.5f)
+	{
+		if(AnimPlayerState == PLAYER_IDLE || AnimPlayerState == PLAYER_IDLEAIM)
+			jumpStartTime = jumpStartTimeByState[0];
+		else
+			jumpStartTime = jumpStartTimeByState[1];
+
+		int idx = data_->GetJumpAnimId(jumpPlayerState, 0,true);
+
+		if (CurrentWeapon && CurrentWeapon->getCategory() >=storecat_ASR && CurrentWeapon->getCategory()<=storecat_SMG  && CurrentWeapon->getCategory() != storecat_HG)
+			idx = data_->GetJumpAnimIdASR(AnimPlayerState, 0,true);
+
+		if (CurrentWeapon && CurrentWeapon->getCategory() == storecat_UsableItem)
+			idx = data_->GetJumpAnimUsableItems(AnimPlayerState, 0,true);
+
+		r3dAnimData* ad = data_->animPool_.Get(idx);
+		jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_PauseOnEnd, 0.0f, 1.0f, 0.1f);
+		jumpState   = 0;
+		FallingDown = true; // false
+		jumpPlayerState = AnimPlayerState;
+		SwitchToState(AnimPlayerState, AnimMoveDir);
+	}
 	
 	// update air time - used in free fall detection
 	if(!bOnGround) {
@@ -2174,12 +2620,22 @@ void CUberAnim::UpdateJump(bool bOnGround)
 		if(!ai || (ai->dwStatus & ANIMSTATUS_Finished)) 
 		{
 			// switch to AIR
-			int idx = data_->GetJumpAnimId(jumpPlayerState, 1);
+			if (!jumpWeInAir)
+				FallingDown = true;
+
+			int idx = data_->GetJumpAnimId(jumpPlayerState, 1,FallingDown);
+			if (CurrentWeapon && CurrentWeapon->getCategory() >=storecat_ASR && CurrentWeapon->getCategory()<=storecat_SMG  && CurrentWeapon->getCategory() != storecat_HG)
+				idx = data_->GetJumpAnimIdASR(AnimPlayerState, 1,FallingDown);
+
+			if (CurrentWeapon && CurrentWeapon->getCategory() == storecat_UsableItem)
+				idx = data_->GetJumpAnimUsableItems(AnimPlayerState, 1,FallingDown);
+
 			anim.Stop(jumpTrackID);
-			jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_Looped, 1.0f, 1.0f, 0.0f);
+			jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_PauseOnEnd, 0.0f, 1.0f, 0.1f);
 			jumpState   = 1;
-	
-			// resync animation, so jump track will be relocated to top of lower bodys anim
+			if (!FallingDown)
+				jumpWeInAir = true; // after initial jump, set us to in-air no matter what, in case if for some reason we jumped in such a way that we need left the ground, we would be stuck in first jump animation forever
+			
 			SwitchToState(AnimPlayerState, AnimMoveDir);
 		}
 		return;
@@ -2189,15 +2645,19 @@ void CUberAnim::UpdateJump(bool bOnGround)
 	if(jumpState == 1)
 	{
 		// switch to landing only when we actually started to jump
-		if(jumpWeInAir && bOnGround)
+		if(jumpWeInAir && bOnGround || FallingDown && bOnGround)
 		{
-			int idx = data_->GetJumpAnimId(jumpPlayerState, 2);
+			int idx = data_->GetJumpAnimId(jumpPlayerState, 2,FallingDown);
+			if (CurrentWeapon && CurrentWeapon->getCategory() >=storecat_ASR && CurrentWeapon->getCategory()<=storecat_SMG  && CurrentWeapon->getCategory() != storecat_HG)
+				idx = data_->GetJumpAnimIdASR(AnimPlayerState, 2,FallingDown);
+
+			if (CurrentWeapon && CurrentWeapon->getCategory() == storecat_UsableItem)
+				idx = data_->GetJumpAnimUsableItems(AnimPlayerState, 2,FallingDown);
+
 			anim.Stop(jumpTrackID);
 			jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_PauseOnEnd, 1.0f, 1.0f, 0.0f);
 			jumpState   = 2;
-			
-			anim.GetTrack(jumpTrackID)->fSpeed = jumpAnimSpeed;
-	
+
 			// resync animation, so jump track will be relocated to top of lower bodys anim
 			SwitchToState(AnimPlayerState, AnimMoveDir);
 
@@ -2212,13 +2672,15 @@ void CUberAnim::UpdateJump(bool bOnGround)
 						anim.AnimTracks[i-1].dwStatus |= ANIMSTATUS_Paused;
 						jumpMoveTrackID = anim.AnimTracks[i-1].iTrackId;
 						// upper
-						anim.AnimTracks[i+1].fCurFrame = 1.0f;
-						anim.AnimTracks[i+1].dwStatus |= ANIMSTATUS_Paused;
-						jumpMoveTrackID2 = anim.AnimTracks[i+1].iTrackId;
+						if (i+1<anim.AnimTracks.size())
+						{
+							anim.AnimTracks[i+1].fCurFrame = 1.0f;
+							anim.AnimTracks[i+1].dwStatus |= ANIMSTATUS_Paused;
+							jumpMoveTrackID2 = anim.AnimTracks[i+1].iTrackId;
+						}
 					}
 				}
 			}
-
 		}
 		return;
 	}
@@ -2239,6 +2701,8 @@ void CUberAnim::UpdateJump(bool bOnGround)
 			anim.FadeOut(jumpTrackID, 0.1f);
 			jumpTrackID = INVALID_TRACK_ID;
 			jumpState   = -1;
+			jumpWeInAir = false;
+			FallingDown = false;
 
 			// resume walking animation
 			r3dAnimation::r3dAnimInfo* ai2 = anim.GetTrack(jumpMoveTrackID);
@@ -2255,21 +2719,5 @@ void CUberAnim::UpdateJump(bool bOnGround)
 		
 		return;
 	}
-	
-/*DISABLED for now: cause troubles with walking downside on ramps. need to have raycast down or something
-	// we're falling from something without jump starting - switch to AIR
-	if(jumpState == -1 && !bOnGround && jumpAirTime > 0.1f)
-	{
-		int idx = data_->GetJumpAnimId(AnimPlayerState, 1);
-		jumpTrackID = anim.StartAnimation(idx, ANIMFLAG_Looped, 0.0f, 1.0f, 0.1f);
-		jumpState   = 1;
-		jumpWeInAir = true;
-		jumpPlayerState = AnimPlayerState;
-	
-		// resync animation, so jump track will be relocated to top of lower bodys anim
-		SwitchToState(AnimPlayerState, AnimMoveDir);
-		return;
-	}
-*/	
 }
 

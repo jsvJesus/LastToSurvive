@@ -9,6 +9,8 @@ private:
 	mutable std::vector<r3dMesh*> m_LegsMeshes;
 	mutable std::vector<r3dMesh*> m_BodyMeshes;
 	mutable std::vector<r3dMesh*> m_BodyMeshesFPS;
+	mutable std::vector<r3dMesh*> m_HairMeshes;
+	mutable std::vector<r3dMesh*> m_FeetMeshes;
 
 	char*				m_BaseModelName;
 public:
@@ -36,8 +38,12 @@ public:
 	r3dMesh*	getHeadMesh(int index) const ;
 	r3dMesh*	getLegMesh(int index) const ;
 	r3dMesh*	getBodyMesh(int index, bool isFPS) const;
+	r3dMesh*	getHairMesh(int index) const;
+	r3dMesh*	getFeetMesh(int index) const;
 
 	size_t		getNumHeads() const;
 	size_t		getNumLegs() const;
 	size_t		getNumBodys() const;
+	size_t		getNumHair() const;
+	size_t		getNumFeet() const;
 };

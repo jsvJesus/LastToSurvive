@@ -153,16 +153,16 @@ const r3dPoint3D gCameraPosProneScope(0.0f, -0.6f, 0.0f);
 
 // THIRD PERSON CAMERA, CROSS HAIR IN THE CENTER OF THE SCREEN!
 const r3dPoint3D gCameraPosIdle2(0.5f, -0.2f, -2.0f);
-const r3dPoint3D gCameraPosIdleAim2(0.73f, -0.32f, -1.05f);
+const r3dPoint3D gCameraPosIdleAim2(0.73f, -0.20f, -1.65f);
 const r3dPoint3D gCameraPosScope2(0.0f, -0.32f, 0.0f);
 const r3dPoint3D gCameraPosSprint2(0.5f, -0.2f, -2.52f);
 
 const r3dPoint3D gCameraPosCrouch2(0.5f,-0.7f,-1.5f);
-const r3dPoint3D gCameraPosCrouchAim2(0.57f, -0.7f, -1.05f);
+const r3dPoint3D gCameraPosCrouchAim2(0.57f, -0.6f, -1.65f);
 const r3dPoint3D gCameraPosCrouchScope2(0.15f, -0.7f, 0.0f);
 
 const r3dPoint3D gCameraPosProne2(0.5f,-1.1f,-1.5f);
-const r3dPoint3D gCameraPosProneAim2(0.57f, -1.3f, -1.05f);
+const r3dPoint3D gCameraPosProneAim2(0.57f, -1.2f, -1.65f);
 const r3dPoint3D gCameraPosProneScope2(0.15f, -1.3f, 0.0f);
 
 // FIRST PERSON CAMERA, CROSS HAIR IN THE CENTER OF THE SCREEN!
@@ -195,7 +195,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle2,
 			gCameraPosScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			70.0f, -70.0f, false, RigEffect_Clear
 		},	
@@ -203,7 +203,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdleAim2,
 			gCameraPosScope2,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			70.0f, -70.0f, true, RigEffect_Clear
 		},
@@ -212,7 +212,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosCrouch2,
 			gCameraPosCrouchScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			60.0f, -60.0f, false, RigEffect_Clear
 		},
@@ -221,7 +221,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosCrouchAim2,
 			gCameraPosCrouchScope2,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			60.0f, -60.0f, true, RigEffect_Clear
 		},
@@ -230,7 +230,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdleAim2,
 			gCameraPosScope2,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f,gMaximumScopeSens,
 			60.0f, -60.0f, true, RigEffect_Clear
 		},
@@ -239,7 +239,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle2,
 			gCameraPosScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f,
 			60.0f, -60.0f, false, RigEffect_Clear
 		},
@@ -248,7 +248,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosSprint2,
 			gCameraPosScope2,
-			65.0f, 65.0f, 50,
+			68.0f, 68.0f, 68,
 			0.15f,0.15f,
 			20.0f, -20.0f, false, RigEffect_SprintBlur
 		},
@@ -256,7 +256,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne2,
 			gCameraPosProneScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -265,7 +265,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProneAim2,
 			gCameraPosProneScope2,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			20.0f, -20.0f, true, RigEffect_Clear
 		},
@@ -274,7 +274,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle2,
 			gCameraPosScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -282,7 +282,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne2,
 			gCameraPosProneScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -291,7 +291,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne2,
 			gCameraPosProneScope2,
-			60, 60, 60,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -300,7 +300,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosSprint2,
 			gCameraPosScope2,
-			47, 47, 50,
+			68, 68, 68,
 			0.26f,0.26f,
 			20.0f, -20.0f, false, RigEffect_Clear
 		}
@@ -312,7 +312,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle,
 			gCameraPosScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			70.0f, -70.0f, false, RigEffect_Clear
 		},	
@@ -320,7 +320,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdleAim,
 			gCameraPosScope,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			70.0f, -70.0f, true, RigEffect_Clear
 		},
@@ -329,7 +329,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosCrouch,
 			gCameraPosCrouchScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			60.0f, -60.0f, false, RigEffect_Clear
 		},
@@ -338,7 +338,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosCrouchAim,
 			gCameraPosCrouchScope,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			60.0f, -60.0f, true, RigEffect_Clear
 		},
@@ -347,7 +347,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdleAim,
 			gCameraPosScope,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f,gMaximumScopeSens,
 			60.0f, -60.0f, true, RigEffect_Clear
 		},
@@ -356,7 +356,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle,
 			gCameraPosScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f,
 			60.0f, -60.0f, false, RigEffect_Clear
 		},
@@ -365,7 +365,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosSprint,
 			gCameraPosScope,
-			55.0f, 55.0f, 50,
+			68.0f, 68.0f, 68,
 			0.15f,0.15f,
 			20.0f, -20.0f, false, RigEffect_SprintBlur
 		},
@@ -374,7 +374,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne,
 			gCameraPosProneScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -383,7 +383,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProneAim,
 			gCameraPosProneScope,
-			30, gMaximumScopeFov, 30,
+			50, gMaximumScopeFov, 50,
 			0.1f, gMaximumScopeSens,
 			20.0f, -20.0f, true, RigEffect_Clear
 		},
@@ -392,7 +392,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosIdle,
 			gCameraPosScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -401,7 +401,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne,
 			gCameraPosProneScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -410,7 +410,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosProne,
 			gCameraPosProneScope,
-			50, 50, 50,
+			68, 68, 68,
 			0.26f,0.26f, 
 			20.0f, -20.0f, false, RigEffect_Clear
 		},
@@ -419,7 +419,7 @@ PlayerStateVars_s TPSHudCameras[3][PLAYER_NUM_STATES] =
 		{
 			gCameraPosSprint,
 			gCameraPosScope,
-			47, 47, 50,
+			68, 68, 68,
 			0.26f,0.26f,
 			20.0f, -20.0f, false, RigEffect_Clear
 		}
@@ -980,11 +980,13 @@ obj_Player* EditorGameHUD::AddPlayer( int bControllable )
 	wpn2.itemID = SelectRandomWeapon( storecat_SNP );
 	
 	wiCharDataFull slot;
-	slot.HeroItemID       = 20174; //SelectRandomHero(storecat_HeroPackage);
+	slot.HeroItemID       = 20754; //SelectRandomHero(storecat_HeroPackage);
 	const HeroConfig* heroConf = g_pWeaponArmory->getHeroConfig(slot.HeroItemID);
 	slot.HeadIdx			= rand()%heroConf->getNumHeads();
 	slot.BodyIdx			= rand()%heroConf->getNumBodys();
 	slot.LegsIdx			= rand()%heroConf->getNumLegs();
+	slot.HairIdx			= rand()%heroConf->getNumHair();
+	slot.FeetIdx			= rand()%heroConf->getNumFeet();
 	slot.Items[wiCharDataFull::CHAR_LOADOUT_ARMOR].itemID		= SelectRandomGear( storecat_Armor );
 	slot.Items[wiCharDataFull::CHAR_LOADOUT_HEADGEAR].itemID	= SelectRandomGear( storecat_Helmet );
 	slot.Items[0] = wpn1;

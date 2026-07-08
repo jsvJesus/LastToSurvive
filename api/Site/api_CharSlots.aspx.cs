@@ -10,6 +10,15 @@ using System.Data.SqlClient;
 
 public partial class api_CharSlots : WOApiWebPage
 {
+    string OptionalParam(string paramName, string defaultValue)
+    {
+        string value = Request.Form[paramName];
+        if (value == null)
+            value = Request.QueryString[paramName];
+
+        return value ?? defaultValue;
+    }
+
     void CharRevive()
     {
         string CustomerID = web.CustomerID();
@@ -53,6 +62,8 @@ public partial class api_CharSlots : WOApiWebPage
         sqcmd.Parameters.AddWithValue("@in_HeadIdx", web.Param("HeadIdx"));
         sqcmd.Parameters.AddWithValue("@in_BodyIdx", web.Param("BodyIdx"));
         sqcmd.Parameters.AddWithValue("@in_LegsIdx", web.Param("LegsIdx"));
+        sqcmd.Parameters.AddWithValue("@in_HairIdx", OptionalParam("HairIdx", "0"));
+        sqcmd.Parameters.AddWithValue("@in_FeetIdx", OptionalParam("FeetIdx", "0"));
 
         if (!CallWOApi(sqcmd))
             return;

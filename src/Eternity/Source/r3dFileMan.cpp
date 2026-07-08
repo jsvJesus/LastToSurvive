@@ -530,9 +530,7 @@ bool CreateConfigPath(char* dest)
 {
 	if( SUCCEEDED(SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS | CSIDL_FLAG_CREATE, NULL, 0, dest)) ) 
 	{
-		strcat( dest, "\\Arktos\\" );
-		mkdir( dest );
-		strcat( dest, "WarZ\\" );
+		strcat( dest, "\\LTS\\" );
 		mkdir( dest );
 
 		return true;
@@ -545,9 +543,7 @@ bool CreateWorkPath(char* dest)
 {
 	if( SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, dest)) ) 
 	{
-		strcat( dest, "\\Arktos\\" );
-		mkdir( dest );
-		strcat( dest, "WarZ\\" );
+		strcat( dest, "\\LTS\\" );
 		mkdir( dest );
 
 		return true;

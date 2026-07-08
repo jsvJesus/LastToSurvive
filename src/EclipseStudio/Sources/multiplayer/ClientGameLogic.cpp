@@ -393,10 +393,7 @@ IMPL_PACKET_FUNC(ClientGameLogic, PKT_S2C_UpdateGearData)
 
 IMPL_PACKET_FUNC(ClientGameLogic, PKT_S2C_CreateNetObject)
 {
-	if(n.itemID == WeaponConfig::ITEMID_BarbWireBarricade ||
-		n.itemID == WeaponConfig::ITEMID_WoodShieldBarricade ||
-		n.itemID == WeaponConfig::ITEMID_RiotShieldBarricade ||
-		n.itemID == WeaponConfig::ITEMID_SandbagBarricade)
+	if(WeaponConfig::isBarricadeItem(n.itemID))
 	{
 		obj_Barricade* shield= (obj_Barricade*)srv_CreateGameObject("obj_Barricade", "shield", n.pos);
 		shield->m_ItemID	= n.itemID;
@@ -546,6 +543,8 @@ IMPL_PACKET_FUNC(ClientGameLogic, PKT_S2C_CreatePlayer)
 		slot.HeadIdx    = n.HeadIdx;
 		slot.BodyIdx    = n.BodyIdx;
 		slot.LegsIdx    = n.LegsIdx;
+		slot.HairIdx    = n.HairIdx;
+		slot.FeetIdx    = n.FeetIdx;
 		slot.BackpackID = n.BackpackID;
 		slot.Items[wiCharDataFull::CHAR_LOADOUT_WEAPON1 ].itemID = n.WeaponID0;
 		slot.Items[wiCharDataFull::CHAR_LOADOUT_WEAPON2 ].itemID = n.WeaponID1;

@@ -36,7 +36,7 @@ r3dMesh* WeaponAttachmentConfig::getMesh( bool allow_async_loading, bool aim_mod
 	{
 		if(m_Model_AIM == 0)
 		{
-			char aim_model[512]; 
+			char aim_model[512];
 			r3dscpy(aim_model, m_ModelPath);
 			int len = strlen(aim_model);
 			r3dscpy(&aim_model[len-4], "_AIM.sco");
@@ -246,6 +246,7 @@ Weapon::Weapon(obj_Player* owner, int backpackIdx, const WeaponConfig* conf, boo
 ,m_AnimTrack_idle(-1)
 ,m_AnimTrack_fire(-1)
 ,m_animationIds_FPS(NULL)
+,m_animationIds_FPS_Scope(NULL)
 ,m_LaserPointerParticle(NULL)
 ,m_FlashlightParticle(NULL)
 ,m_MuzzleParticle(NULL)
@@ -340,6 +341,8 @@ Weapon::~Weapon()
 	}
 
 	SAFE_DELETE(m_WeaponAnim_FPS);
+	SAFE_DELETE_ARRAY(m_animationIds_FPS);
+	SAFE_DELETE_ARRAY(m_animationIds_FPS_Scope);
 }
 
 void Weapon::reloadMuzzleParticle()
@@ -382,6 +385,116 @@ void Weapon::reloadMuzzleParticle()
 		m_MuzzleParticle = 0;
 }
 
+static bool FindWeaponFPSAnimFile(char* outFile, const char* animPrefix, const char* suffix)
+{
+	sprintf(outFile, "%s\\%s_FPS_%s.anm", GLOBAL_ANIM_FOLDER, animPrefix, suffix);
+	if(r3dFileExists(outFile))
+		return true;
+
+	char basePrefix[128];
+	r3dscpy(basePrefix, animPrefix);
+	int len = strlen(basePrefix);
+	if(len > 3 && basePrefix[len - 3] == '_' &&
+		basePrefix[len - 2] >= '0' && basePrefix[len - 2] <= '9' &&
+		basePrefix[len - 1] >= '0' && basePrefix[len - 1] <= '9')
+	{
+		basePrefix[len - 3] = 0;
+		sprintf(outFile, "%s\\%s_FPS_%s.anm", GLOBAL_ANIM_FOLDER, basePrefix, suffix);
+		if(r3dFileExists(outFile))
+			return true;
+	}
+
+	sprintf(outFile, "%s\\FPS_IS_%s_%s.anm", GLOBAL_ANIM_FOLDER, animPrefix, suffix);
+	if(r3dFileExists(outFile))
+		return true;
+
+	if(stricmp(suffix, "Idle") == 0)
+	{
+		sprintf(outFile, "%s\\FPS_aimIdle_standIdle_%s.anm", GLOBAL_ANIM_FOLDER, animPrefix);
+		if(r3dFileExists(outFile))
+			return true;
+	}
+	else if(stricmp(suffix, "Fire") == 0)
+	{
+		sprintf(outFile, "%s\\FPS_aimShoot_standIdle_%s.anm", GLOBAL_ANIM_FOLDER, animPrefix);
+		if(r3dFileExists(outFile))
+			return true;
+	}
+	else if(stricmp(suffix, "Reload") == 0)
+	{
+		sprintf(outFile, "%s\\FPS_Reload_standIdle_%s.anm", GLOBAL_ANIM_FOLDER, animPrefix);
+		if(r3dFileExists(outFile))
+			return true;
+	}
+
+	return false;
+}
+
+static int AddWeaponFPSAnim(r3dAnimPool* animPool, const char* animName, const char* animPrefix, const char* suffix, const char* fallbackFile)
+{
+	char animFile[MAX_PATH];
+	if(FindWeaponFPSAnimFile(animFile, animPrefix, suffix))
+		return animPool->Add(animName, animFile);
+
+	if(fallbackFile && fallbackFile[0])
+		return animPool->Add(animName, fallbackFile);
+
+	return -1;
+}
+
+static void DisableInvalidWeaponAnimTracks(r3dAnimData* anim, const r3dSkeleton* skel)
+{
+	if(!anim || !skel)
+		return;
+
+	int disabledTracks = 0;
+	for(int i = 0; i < anim->NumTracks; ++i)
+	{
+		const char* boneName = anim->pTracks[i].boneName;
+		const bool isRootMove = boneName && stricmp(boneName, "Bone_Root") == 0;
+		const bool missingBone = !boneName || !boneName[0] || skel->GetBoneID(boneName) == -1;
+
+		if(isRootMove || missingBone)
+		{
+			if(anim->pTracks[i].bEnabled)
+				++disabledTracks;
+			anim->pTracks[i].bEnabled = false;
+		}
+	}
+
+#ifndef FINAL_BUILD
+	if(disabledTracks > 0)
+		r3dOutToLog("Weapon anim %s: disabled %d incompatible tracks for skeleton %s\n", anim->GetAnimName(), disabledTracks, skel->GetFileName());
+#endif
+}
+
+static void SanitizeWeaponAnimPool(r3dAnimPool* animPool, const r3dSkeleton* skel)
+{
+	if(!animPool || !skel)
+		return;
+
+	for(int i = 0; i < (int)animPool->Anims.size(); ++i)
+		DisableInvalidWeaponAnimTracks(animPool->Anims[i], skel);
+}
+
+static bool GetWeaponAttachmentWorldTM(const r3dSkeleton* wpnSkeleton, int attachmentIndex, D3DXMATRIX* out, const D3DXMATRIX& weaponWorld)
+{
+	if(!wpnSkeleton || attachmentIndex < 0 || attachmentIndex >= WPN_ATTM_MAX)
+		return false;
+
+	const int boneId = wpnSkeleton->GetBoneID(WeaponAttachmentBoneNames[attachmentIndex]);
+	if(boneId == -1)
+		return false;
+
+	wpnSkeleton->GetBoneWorldTM(boneId, out, weaponWorld);
+	return true;
+}
+
+void WeaponConfig::ensureSkeleton() const
+{
+	// TODO:
+}
+
 void Weapon::checkForSkeleton()
 {
 	extern bool g_bEditMode;
@@ -400,8 +513,8 @@ void Weapon::checkForSkeleton()
 	{
 		m_pConfig->m_Model_FPS_Skeleton = new r3dSkeleton();
 		char tmpStr[512];
-		r3dscpy(tmpStr, m_pConfig->m_ModelPath);
-		r3dscpy(&tmpStr[strlen(tmpStr)-4], "_FPS.skl");
+		r3dscpy(tmpStr, m_pConfig->m_ModelPath_FPS); // old "m_pConfig->m_ModelPath"
+		r3dscpy(&tmpStr[strlen(tmpStr)-4], ".skl"); // old "_FPS.skl"
 		m_pConfig->m_Model_FPS_Skeleton->LoadBinary(tmpStr);
 
 		m_pConfig->m_AnimPool_FPS = new r3dAnimPool();
@@ -427,6 +540,51 @@ void Weapon::checkForSkeleton()
 	}
 
 }
+
+/*void Weapon::checkForSkeleton()
+{
+	extern bool g_bEditMode;
+	if(!g_bEditMode)
+		if(!m_pConfig->IsFPS)
+			return;
+
+	// should be called for FPS mode only
+	if(!m_pConfig->hasFPSModel())
+		return;
+	if(!m_pConfig->isFPSModelSkeletal())
+		return;
+
+	//m_pConfig->ensureSkeleton();
+
+	// check if mesh needs animations
+	if(m_pConfig->m_AnimPool_FPS==NULL)
+	{
+		m_pConfig->m_AnimPool_FPS = new r3dAnimPool();
+
+		char tmpStr[512];
+		FindWeaponFPSAnimFile(tmpStr, m_pConfig->m_AnimPrefix, "Idle");
+		int idleAid = m_pConfig->m_AnimPool_FPS->Add("Idle", tmpStr);
+		if(idleAid == -1)
+			r3dError("can't add FPS idle anim %s", tmpStr);
+
+		AddWeaponFPSAnim(m_pConfig->m_AnimPool_FPS, "Fire", m_pConfig->m_AnimPrefix, "Fire", tmpStr);
+		AddWeaponFPSAnim(m_pConfig->m_AnimPool_FPS, "Reload", m_pConfig->m_AnimPrefix, "Reload", tmpStr);
+		SanitizeWeaponAnimPool(m_pConfig->m_AnimPool_FPS, m_pConfig->getSkeleton());
+	}
+
+	if(m_WeaponAnim_FPS==NULL)
+	{
+		m_WeaponAnim_FPS = new r3dAnimation();
+		m_WeaponAnim_FPS->Init(m_pConfig->m_Model_FPS_Skeleton, m_pConfig->m_AnimPool_FPS);
+
+		// start idle
+		m_AnimTrack_idle = m_WeaponAnim_FPS->StartAnimation(0, ANIMFLAG_Looped, 0.0f, 0.0f, 0.0f);
+
+		D3DXMATRIX identM; D3DXMatrixIdentity(&identM);
+		m_WeaponAnim_FPS->Update(0.0f, r3dPoint3D(0, 0, 0), identM);
+	}
+
+}*/
 
 void Weapon::Reset()
 {
@@ -462,7 +620,7 @@ void Weapon::Reset()
 
 	m_Owner->uberAnim_->StopShootAnim();
 
-	if(m_pConfig->m_itemID == 101306) // hard coded for melee flashlight
+	if(m_pConfig->m_itemID == 101306) // melee flashlight
 	{
 		if(m_FlashlightParticle) {
 			m_FlashlightParticle->bKill = true;
@@ -497,7 +655,7 @@ void Weapon::Reset()
 		m_Flashlight.SSSBParams.PhysRange = 43.12f;
 		m_Flashlight.SSSBParams.Radius = 10.0f;
 		m_Flashlight.SSSBParams.Sense = 635.18f;
-		m_Flashlight.ProjectMap = r3dRenderer->LoadTexture("data\\ProjectionTextures\\flashlight_01.dds");
+		m_Flashlight.ProjectMap = r3dRenderer->LoadTexture("data\\ProjectionTextures\\flashlight_02.dds");
 
 		m_Flashlight.TurnOff();
 		WorldLightSystem.Add(&m_Flashlight); 
@@ -825,20 +983,18 @@ void Weapon::Update(const D3DXMATRIX& weaponBone)
 		{
 			if(m_LaserPointerParticle)
 			{
-				D3DXMATRIX mr1, world;
-				D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI/2, 0);
-				player->GetSkeleton()->GetBoneWorldTM("PrimaryWeaponBone", &world, player->DrawFullMatrix);
-				world = mr1 * world;
+				D3DXMATRIX world = player->uberEquip_->getWeaponBone(player->GetSkeleton(), player->DrawFullMatrix);
 
 				// point laser particle in direction of actual model
 				D3DXMATRIX attmWorld;
-				wpnSkel->GetBoneWorldTM(WeaponAttachmentBoneNames[WPN_ATTM_LEFT_RAIL], &attmWorld, world);
+				if(!GetWeaponAttachmentWorldTM(wpnSkel, WPN_ATTM_LEFT_RAIL, &attmWorld, world))
+					attmWorld = world;
 
 				float laserLeftOffset = 0.0162f;
 				float laserDirOffset = -0.05f;
 				float laserUpOffset = 0.0f;
 				r3d_assert(m_Attachments[WPN_ATTM_LEFT_RAIL]);
-				if(m_Attachments[WPN_ATTM_LEFT_RAIL]->m_itemID == 400021) // pistol laser
+				if(WeaponConfig::isPistolLaserAttachment(m_Attachments[WPN_ATTM_LEFT_RAIL]->m_itemID))
 				{
 					laserLeftOffset = 0.001f;
 					laserDirOffset = 0.03f;
@@ -876,18 +1032,16 @@ void Weapon::Update(const D3DXMATRIX& weaponBone)
 			}
 			if(m_FlashlightParticle)
 			{
-				D3DXMATRIX mr1, world;
-				D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI/2, 0);
-				player->GetSkeleton()->GetBoneWorldTM("PrimaryWeaponBone", &world, player->DrawFullMatrix);
-				world = mr1 * world;
+				D3DXMATRIX world = player->uberEquip_->getWeaponBone(player->GetSkeleton(), player->DrawFullMatrix);
 
 				D3DXMATRIX attmWorld;
-				wpnSkel->GetBoneWorldTM(WeaponAttachmentBoneNames[WPN_ATTM_LEFT_RAIL], &attmWorld, world);
+				if(!GetWeaponAttachmentWorldTM(wpnSkel, WPN_ATTM_LEFT_RAIL, &attmWorld, world))
+					attmWorld = world;
 
 				float flashLeftOffset = 0.0162f;
 				float flashDirOffset = -0.05f;
 				float flashUpOffset = -0.03f;
-				if(m_Attachments[WPN_ATTM_LEFT_RAIL]->m_itemID == 400022) // pistol flashlight
+				if(WeaponConfig::isPistolFlashlightAttachment(m_Attachments[WPN_ATTM_LEFT_RAIL]->m_itemID))
 				{
 					flashLeftOffset = 0.0f;
 					flashDirOffset = -0.05f;
@@ -1449,13 +1603,11 @@ bool Weapon::getWeaponAttachmentPos(WeaponAttachmentTypeEnum attm_type, D3DXMATR
 			wpnSkel = getAnimation()->GetCurrentSkeleton() ;
 		if(wpnSkel)
 		{
-			D3DXMATRIX mr1, world;
-			D3DXMatrixRotationYawPitchRoll(&mr1, 0, R3D_PI/2, 0);
-			m_Owner->GetSkeleton()->GetBoneWorldTM("PrimaryWeaponBone", &world, m_Owner->DrawFullMatrix);
-			world = mr1 * world;
+			D3DXMATRIX world = m_Owner->uberEquip_->getWeaponBone(m_Owner->GetSkeleton(), m_Owner->DrawFullMatrix);
 
 			D3DXMATRIX attmWorld;
-			wpnSkel->GetBoneWorldTM(WeaponAttachmentBoneNames[(int)attm_type], &attmWorld, world);
+			if(!GetWeaponAttachmentWorldTM(wpnSkel, (int)attm_type, &attmWorld, world))
+				return false;
 
 			res = attmWorld;
 			return true;
@@ -1527,7 +1679,7 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 			// load new one
 			if(wpnAttmConfig)
 			{
-				if(wpnAttmConfig->m_itemID == 400004 || wpnAttmConfig->m_itemID == 400021) // laser attachment, hard coded for now
+				if(WeaponConfig::isLaserAttachment(wpnAttmConfig->m_itemID))
 				{
 					r3d_assert(m_LaserPointerParticle == NULL);
 					if(m_Owner->NetworkLocal) // load only for local player
@@ -1539,7 +1691,7 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 						}
 					}
 				}
-				if(wpnAttmConfig->m_itemID == 400018 || wpnAttmConfig->m_itemID == 400022) // flashlight attachment, hard coded for now
+				if(WeaponConfig::isFlashlightAttachment(wpnAttmConfig->m_itemID))
 				{
 					r3d_assert(m_FlashlightParticle == NULL);
 					{
@@ -1583,13 +1735,18 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 					m_animationIds_FPS = new int[CUberData::AIDX_COUNT];
 					memcpy(m_animationIds_FPS, m_pConfig->m_animationIds_FPS, sizeof(int[CUberData::AIDX_COUNT]));
 				}
+				if(m_animationIds_FPS_Scope == NULL)
+				{
+					m_animationIds_FPS_Scope = new int[CUberData::AIDX_COUNT];
+					memcpy(m_animationIds_FPS_Scope, m_pConfig->m_animationIds_FPS, sizeof(int[CUberData::AIDX_COUNT]));
+				}
 
 #ifndef FINAL_BUILD
 				r3dOutToLog("Trying to load zoom anims for: %s, %s\n", m_pConfig->FNAME, m_pConfig->m_StoreName);
 #endif
 				// now replace aim anims
 				char aname[128];
-				sprintf(aname, "FPS_Zoom_%s_Walk", m_pConfig->m_AnimPrefix);
+				sprintf(aname, "FPS_IS_%s_Walk", m_pConfig->m_AnimPrefix);
 				int animID = AI_Player_UberData->TryToAddAnimation(aname);
 				if(animID!=-1)
 				{
@@ -1601,7 +1758,18 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 					}
 				}
 
-				sprintf(aname, "FPS_Zoom_%s_Fire", m_pConfig->m_AnimPrefix);
+				sprintf(aname, "FPS_Zoom_%s_Walk", m_pConfig->m_AnimPrefix);
+				animID = AI_Player_UberData->TryToAddAnimation(aname);
+				if(animID!=-1)
+				{
+					m_animationIds_FPS_Scope[CUberData::AIDX_ProneAim] = m_animationIds_FPS_Scope[CUberData::AIDX_CrouchAim] = m_animationIds_FPS_Scope[CUberData::AIDX_WalkAim] = animID;
+					{
+						r3dAnimData* ad = AI_Player_UberData->animPool_.Get(m_animationIds_FPS_Scope[CUberData::AIDX_WalkAim]);
+						enableAnimBones(AI_Player_UberData->blendStartBones_[CUberData::AIDX_WalkAim].c_str(), AI_Player_UberData->bindSkeleton_, ad, true);
+					}
+				}
+
+				sprintf(aname, "FPS_IS_%s_Fire", m_pConfig->m_AnimPrefix);
 				animID = AI_Player_UberData->TryToAddAnimation(aname);
 				if(animID!=-1)
 				{
@@ -1612,7 +1780,19 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 						enableAnimBones(AI_Player_UberData->blendStartBones_[CUberData::AIDX_ShootAim].c_str(), AI_Player_UberData->bindSkeleton_, ad, true);
 					}
 				}
-				sprintf(aname, "FPS_Zoom_%s_Idle", m_pConfig->m_AnimPrefix);
+
+				sprintf(aname, "FPS_Zoom_%s_Fire", m_pConfig->m_AnimPrefix);
+				animID = AI_Player_UberData->TryToAddAnimation(aname);
+				if(animID!=-1)
+				{
+					m_animationIds_FPS_Scope[CUberData::AIDX_ShootAim] = animID;
+					{
+						r3dAnimData* ad = AI_Player_UberData->animPool_.Get(m_animationIds_FPS_Scope[CUberData::AIDX_ShootAim]);
+						enableAnimBones(AI_Player_UberData->blendStartBones_[CUberData::AIDX_ShootAim].c_str(), AI_Player_UberData->bindSkeleton_, ad, true);
+					}
+				}
+
+				sprintf(aname, "FPS_IS_%s_Idle", m_pConfig->m_AnimPrefix);
 				animID = AI_Player_UberData->TryToAddAnimation(aname);
 				if(animID!=-1)
 				{
@@ -1620,6 +1800,17 @@ void Weapon::setWeaponAttachments(const WeaponAttachmentConfig** wpnAttmConfigs)
 					{
 						// those animations is upper body
 						r3dAnimData* ad = AI_Player_UberData->animPool_.Get(m_animationIds_FPS[CUberData::AIDX_StandUpper]);
+						enableAnimBones(AI_Player_UberData->blendStartBones_[CUberData::AIDX_StandUpper].c_str(), AI_Player_UberData->bindSkeleton_, ad, true);
+					}
+				}
+
+				sprintf(aname, "FPS_Zoom_%s_Idle", m_pConfig->m_AnimPrefix);
+				animID = AI_Player_UberData->TryToAddAnimation(aname);
+				if(animID!=-1)
+				{
+					m_animationIds_FPS_Scope[CUberData::AIDX_StandUpper] = animID;
+					{
+						r3dAnimData* ad = AI_Player_UberData->animPool_.Get(m_animationIds_FPS_Scope[CUberData::AIDX_StandUpper]);
 						enableAnimBones(AI_Player_UberData->blendStartBones_[CUberData::AIDX_StandUpper].c_str(), AI_Player_UberData->bindSkeleton_, ad, true);
 					}
 				}
@@ -1782,25 +1973,42 @@ float Weapon::getWeaponScopeZoom() const
 
 bool Weapon::hasScopeMode(bool isFPS) const
 {
-	bool hasBaseScope = m_pConfig->m_scopeConfig->hasScopeMode;
+	// old_src SKY behavior: in TPS mode scopes are shown only for sniper rifles.
+	bool hasBaseScope = m_pConfig->m_scopeConfig && m_pConfig->m_scopeConfig->hasScopeMode;
 	if(m_Attachments[WPN_ATTM_UPPER_RAIL])
 	{
-		return isFPS?m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfig->hasScopeMode:m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfigTPS->hasScopeMode;
+		if(!isFPS && m_pConfig->category != storecat_SNP)
+			return false;
+
+		const ScopeConfig* scopeConfig = isFPS ?
+			m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfig :
+			m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfigTPS;
+
+		return scopeConfig && scopeConfig->hasScopeMode;
 	}
-	return hasBaseScope;
+
+	if(m_pConfig->category == storecat_SNP || m_pConfig->category == storecat_UsableItem)
+		return hasBaseScope;
+
+	return isFPS ? hasBaseScope : false;
 }
 
 const ScopeConfig* Weapon::getScopeConfig(bool isFPS) const
 {
 	if(m_Attachments[WPN_ATTM_UPPER_RAIL])
 	{
-		return isFPS?m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfig:m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfigTPS;
+		return isFPS ?
+			m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfig :
+			m_Attachments[WPN_ATTM_UPPER_RAIL]->m_scopeConfigTPS;
 	}
 	return m_pConfig->m_scopeConfig;
 }
 
 const int* Weapon::getWeaponAnimID_FPS() const
 {
+	if(m_Attachments[WPN_ATTM_UPPER_RAIL] && hasScopeMode(true) && m_animationIds_FPS_Scope)
+		return m_animationIds_FPS_Scope;
+
 	if(m_animationIds_FPS)
 		return m_animationIds_FPS;
 

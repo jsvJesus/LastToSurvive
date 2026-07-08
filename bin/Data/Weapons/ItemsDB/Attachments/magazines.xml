@@ -1,243 +1,225 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <AttachmentArmory>
-	<Attachment itemID="400001" category="19" type="4" SpecID="4200" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_AK74_30_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="5.45 AK 30" icon="$Data/Weapons/StoreIcons/ATTM_Mag_AK74_30_01.dds" desc="This is a standard 5.45x39mm 30 rounds clip for the russian AK 74M family of rifles" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400010" category="19" type="4" SpecID="4001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_M4_60rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="STANAG 60" icon="$Data/Weapons/StoreIcons/ATTM_Mag_M4_60rnd_01.dds" desc="Large 60 round clip of 5.45x45mm NATO rounds for use with the M4 and M16" LevelRequired="25" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="10" clipsize="60" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400015" category="19" type="4" SpecID="4001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_M4_40rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="STANAG 45" icon="$Data/Weapons/StoreIcons/ATTM_Mag_M4_40rnd_01.dds" desc="Medium 45 round clip of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles" LevelRequired="15" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="45" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400016" category="19" type="4" SpecID="4001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_M4_30rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="STANAG 30" icon="$Data/Weapons/StoreIcons/ATTM_Mag_M4_30rnd_01.dds" desc="Standard 30 round clip of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400017" category="19" type="4" SpecID="4001" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_C-Mag_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="STANAG C-Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_C-Mag_01.dds" desc="Maximum size100 round drum of 5.45x45mm NATO rounds for use with the M4 and M16 Assault Rifles" LevelRequired="35" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="20" clipsize="100" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400029" category="19" type="4" SpecID="4100" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_SG556_30rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="G36 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_SG556_30rnd_01.dds" desc="This is a 30 round magazine of 5.56x45mm specially designed for the G36 Assault Rifle" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400030" category="19" type="4" SpecID="4002" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_MAG_Vintorez_20.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="VSS-20" icon="$Data/Weapons/StoreIcons/ATTM_MAG_Vintorez_20.dds" desc="Specially designed high power 9x39mm low velocity, high penetration subsonic round for VSS Vintorez sniper rifle. Extended 20 rounds magazine." LevelRequired="40" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400031" category="19" type="4" SpecID="4002" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_MAG_Vintorez_10.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="VSS-10" icon="$Data/Weapons/StoreIcons/ATTM_MAG_Vintorez_10.dds" desc="Specially designed high power 9x39mm low velocity, high penetration subsonic round for VSS Vintorez sniper rifle. Standard 10 rounds magazine." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400032" category="19" type="4" SpecID="4003" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Mp7_60rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="MP7 40" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Mp7_60rnd_01.dds" desc="HK 4.6&amp;times;30mm 40 rounds extended magazine for MP7 submachine gun." LevelRequired="25" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="10" clipsize="40" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400033" category="19" type="4" SpecID="4003" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Mp7_30rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="MP7 30" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Mp7_30rnd_01.dds" desc="HK 4.6&amp;times;30mm 30 rounds magazine for MP7 submachine gun." LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400034" category="19" type="4" SpecID="0" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_SIGP226.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="9x19 Para Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_SIGP226.dds" desc="18 rounds 9x19mm Parabellum magazine specially designed for Sig Sauer P226 handgun" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="18" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400043" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_AW50_10rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AWM .338 Magnum ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_AW50_10rnd_01.dds" desc="8.6x70mm specialized rimless bottlenecked centerfire 10 rounds cartridge. Specifically designed for AWM rifle" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400046" category="19" type="4" SpecID="0" Weight="550">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_P90_50rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="P90 50 rounds" icon="$Data/Weapons/StoreIcons/ATTM_Mag_P90_50rnd_01.dds" desc="P90 Compact Assault rifle rounds. 50 round clip" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="50" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400047" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Bizon_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Bizon 64 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Bizon_01.dds" desc="Bizon sub machine gun clip. Clip contains 64 rounds of 9x18mm ammo" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="64" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400048" category="19" type="4" SpecID="4004" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_SVD_10Rnd_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="SVD ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_SVD_10Rnd_01.dds" desc="10 round magazine of 7.62x54mm ammo for the SVD (Dragunov Sniper Rifle)" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400049" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_scorpionevo3_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="CZ Scorpion EVO-3 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_scorpionevo3_01.dds" desc="30 rounds of 9x19mm ammo for the CZ Scorpion EVO-3 submachine gun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400050" category="19" type="4" SpecID="0" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_usas12_Drum_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="AA-12 Drum" icon="$Data/Weapons/StoreIcons/ATTM_Mag_usas12_Drum_01.dds" desc="12 gauge 20 rounds drum magazine for AA-12 shotgun" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400069" category="19" type="4" SpecID="4200" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_AN94_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="5.45 AK 45 " icon="$Data/Weapons/StoreIcons/ATTM_Mag_AN94_01.dds" desc="This is a standard 5.45x39mm 45 rounds clip for the russian AK74 family of rifles" LevelRequired="15" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="45" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400070" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_AW_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name=".308 Winchester Sniper rifle amm" icon="$Data/Weapons/StoreIcons/ATTM_Mag_AW_01.dds" desc="7.62x51mm NATO sniper rifle clip for use with the .308 Winchester Sniple Rifle. Magazine holds 10 rounds" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400071" category="19" type="4" SpecID="0" Weight="300">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Jericho.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="9mm Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Jericho.dds" desc="15 rounds magazine of 9mm ammo for use with: B92, B93R and Jericho handguns" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="13" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400073" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Saiga_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Saiga 10 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Saiga_01.dds" desc="12 gauge 10 rounds magazine for SAIGA shotgun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400079" category="19" type="4" SpecID="0" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_MP5A4_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="MP5 10mm Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_MP5A4_01.dds" desc="10mm Auto 30 rounds cartridge for MP5/10 submachine gun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400084" category="19" type="4" SpecID="4006" Weight="300">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Sr-1_Veresk_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="SMG-20 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Sr-1_Veresk_01.dds" desc="9x19mm Para 20 rounds magazine specially designed for Uzi and Veresk smg." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400085" category="19" type="4" SpecID="4006" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Sr-1_Veresk_02.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="SMG-40 ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Sr-1_Veresk_02.dds" desc="9x19mm Para 40 rounds magazine specially designed for Uzi and Veresk smg." LevelRequired="20" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="-10" clipsize="40" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400086" category="19" type="4" SpecID="0" Weight="350">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Desert_Eagle_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Desert Eagle ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Desert_Eagle_01.dds" desc=".50 Action Express 7 round magazine for Desert Eagle handgun." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="7" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400087" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_FN57.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="5.7 FN M240 Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_FN57.dds" desc="FN (M240) machine gun round magazine. 20 rounds of 5.7&amp;times;28mm ammo" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400099" category="19" type="4" SpecID="4100" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_C-Mag_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="G36 C-Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_C-Mag_01.dds" desc="This is a 5.56x45mm, 100 round drum magazine specially designed for for the G36 Assault Rifle" LevelRequired="35" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="20" clipsize="100" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400100" category="19" type="4" SpecID="4200" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_AK74_Drum_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="5.45 AK Drum" icon="$Data/Weapons/StoreIcons/ATTM_Mag_AK74_Drum_01.dds" desc="100 rounds drum for AK74 and RPK machine guns" LevelRequired="35" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="20" clipsize="100" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400101" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_RPK_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="7.62 AKM clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_RPK_01.dds" desc="AKM Assault Rifle magazine. 40 7.62x39mm rounds" LevelRequired="25" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="10" clipsize="40" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400133" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_M82.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name=".50 BMG" icon="$Data/Weapons/StoreIcons/ATTM_Mag_M82.dds" desc="12.7x99mm NATO anti material rounds for M107A1 rifle. 5 rounds per magazine" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="5" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400135" category="19" type="4" SpecID="0" Weight="300">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Jericho.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name=".45 ACP STI Eagle Elite ammo" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Jericho.dds" desc=".45 ACP 10 rounds magazine for the STI Eagle Elite handgun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400136" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_8x.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="12 Gauge Slug" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_8x.dds" desc="8 slugs for use in the Mossberg and KT Decider shotguns" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="8" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400137" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_2x.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="2x 12gauge " icon="$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_2x.dds" desc="Ammo for use with the double barrel shotgun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="2" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400139" category="19" type="4" SpecID="0" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Arrow_Exp_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Arrow Explosive" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Arrow_Exp_01.dds" desc="Explosive bolt (arrow) for the crossbow" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400140" category="19" type="4" SpecID="0" Weight="200">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Arrow_Reg_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Arrow" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Arrow_Reg_01.dds" desc="A sharp arrow for use with compound crossbows and other string drawn weapons" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400141" category="19" type="4" SpecID="0" Weight="200">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_2x.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Shotgun shell 2x" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_2x.dds" desc="2 Shells for use in the double barrel" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="2" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400142" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Shotgun_8x.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Shotgun shell 8x" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Shotgun_8x.dds" desc="8 Shells for use in standard shotguns" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="8" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400143" category="19" type="4" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_M249_Box_TPS_01.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="M249 Ammo Box" icon="$Data/Weapons/StoreIcons/ATTM_Mag_M249_Box_TPS_01.dds" desc="" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="100" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400144" category="19" type="4" SpecID="0" Weight="300">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Ruger.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Clip for Ruger" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Ruger.dds" desc="10 round, 22 cal ammo clip for Ruger pistols and rifles" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400145" category="19" type="4" SpecID="0" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Colt_Anaconda.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Anaconda clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Colt_Anaconda.dds" desc="6 rounds for the Anaconda" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="6" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400146" category="19" type="4" SpecID="7001" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Big.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Large Kruger Rifle clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Big.dds" desc="30 round rotary loaded mag" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400147" category="19" type="4" SpecID="7001" Weight="500">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Mid.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Medium Kruger Rifle clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Mid.dds" desc="20 round rotary loaded magazine" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400148" category="19" type="4" SpecID="7001" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_RugerASR_Small.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Standard Kruger .22 Rifle Clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_RugerASR_Small.dds" desc="Standard issue 10 round rotary loaded magazine." LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400150" category="19" type="4" SpecID="7020" Weight="450">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Mini14.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Kruger Mini-14 clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Mini14.dds" desc="Standard size clip for the Kruger Mini-14" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400152" category="19" type="4" SpecID="0" Weight="0">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Flare.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Flare clip" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Flare.dds" desc="Ammo for the flare gun" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400153" category="19" type="4" SpecID="7030" Weight="350">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Mosin.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Standard Mosin Magazine" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Mosin.dds" desc="Standard internally fed 5 round magazine designed for use in the Mosin rifle" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="5" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400154" category="19" type="4" SpecID="0" Weight="200">
-		<Model file="Data/ObjectsDepot/Weapons/ATTM_Mag_Colt_1911.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name=".40 caliber 1911 Mag" icon="$Data/Weapons/StoreIcons/ATTM_Mag_Colt_1911.dds" desc="7 round single-stack magazine for the 1911" LevelRequired="0" slotW="2" slotH="1" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="7" ScopeMag="0" ScopeType="" />
-	</Attachment>
-	<Attachment itemID="400157" category="19" type="4" SpecID="0" Weight="300">
-		<Model file="Data/ObjectsDepot/Weapons/Attm_Mag_Nailgun.sco" MuzzleParticle="" FireSound="" ScopeAnim="" />
-		<Store name="Nail Strip" icon="$Data/Weapons/StoreIcons/Attm_Mag_Nailgun.dds" desc="Connected strip of nails for use in the Nail Gun" LevelRequired="0" slotW="1" slotH="2" />
-		<Upgrade damage="0" range="0" firerate="0" recoil="0" spread="0" clipsize="35" ScopeMag="0" ScopeType="" />
-	</Attachment>
+  <Attachment itemID="410215" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_9mm_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_9mm_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_9mm_01.dds" desc="$Mag_9mm_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="100" recoil="0" spread="0" clipsize="12" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410662" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_45ACP_25r_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_45ACP_25r_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_45ACP_25r_01.dds" desc="$Mag_45ACP_25r_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="12" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410663" category="19" type="4" SpecID="48" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_45ACP_50r_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_45ACP_50r_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_45ACP_50r_01.dds" desc="$Mag_45ACP_50r_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="20" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410664" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_AK_30.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_AK_30" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_AK_30.dds" desc="$Mag_AK_30_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410665" category="19" type="4" SpecID="30" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_AK_45.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_AK_45" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_AK_45.dds" desc="$Mag_AK_45_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="45" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410666" category="19" type="4" SpecID="30" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_AK_Drum.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_AK_Drum" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_AK_Drum.dds" desc="$Mag_AK_Drum_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="100" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410667" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_ArchAngel_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_AAR_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_ArchAngel_01.dds" desc="$Mag_AAR_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="500" recoil="0" spread="0" clipsize="3" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410668" category="19" type="4" SpecID="32" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_ArchAngel_02.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_AAR_02" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_ArchAngel_02.dds" desc="$Mag_AAR_02_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="500" recoil="0" spread="0" clipsize="6" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410669" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_ASR_AR_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_ASR_AR_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_ASR_AR_01.dds" desc="$Mag_ASR_AR_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="25" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410670" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_ASR_HB_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_ASR_HB_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_ASR_HB_01.dds" desc="$MAG_ASR_HB_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410673" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_HG_RV50c.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_HG_RV50c" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_HG_RV50c.dds" desc="$Mag_HG_RV50c_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="4" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410675" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_LMG_HMG_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_LMG_HMG_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_LMG_HMG_01.dds" desc="$Mag_LMG_HMG_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="25" recoil="0" spread="0" clipsize="200" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410676" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_LMG_NG100.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_LMG_NG100" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_LMG_NG100.dds" desc="$Mag_LMG_NG100_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="100" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410677" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_missile_at4_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_missile_at4_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_missile_at4_01.dds" desc="$Mag_missile_at4_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="700" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410678" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_Missile_RPG7_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_Missile_RPG7_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_Missile_RPG7_01.dds" desc="$MAG_Missile_RPG7_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="900" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410679" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_Missle_Eliminator_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_Missle_Eliminator_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_Missle_Eliminator_01.dds" desc="$MAG_Missle_Eliminator_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="800" recoil="0" spread="0" clipsize="1" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410680" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SHG_Saiga.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SHG_Saiga" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SHG_Saiga.dds" desc="$MAG_SHG_Saiga_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="300" recoil="0" spread="0" clipsize="5" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410681" category="19" type="4" SpecID="88" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SHG_Saiga_High.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SHG_Saiga_High" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SHG_Saiga_High.dds" desc="$MAG_SHG_Saiga_High_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="300" recoil="0" spread="0" clipsize="10" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410682" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_SHG_SP12.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_SHG_SP12" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_SHG_SP12.dds" desc="$Mag_SHG_SP12_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="300" recoil="0" spread="0" clipsize="8" ScopeMag="-1" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410683" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_Bizon.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_Bizon" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_Bizon.dds" desc="$MAG_SMG_Bizon_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="100" recoil="0" spread="0" clipsize="64" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410684" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_EVO_01.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_EVO_01" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_EVO_01.dds" desc="$MAG_SMG_EVO_01_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410685" category="19" type="4" SpecID="77" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_EVO_02.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_EVO_02" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_EVO_02.dds" desc="$MAG_SMG_EVO_02_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="60" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410686" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_HB_02.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_HB_02" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_HB_02.dds" desc="$MAG_SMG_HB_02_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="100" recoil="0" spread="0" clipsize="14" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410687" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_HSE.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_HSE" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_HSE.dds" desc="$MAG_SMG_HSE_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="100" recoil="0" spread="0" clipsize="32" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410688" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SMG_Kris.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SMG_Kris" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SMG_Kris.dds" desc="$MAG_SMG_Kris_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410689" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SNP_ARS.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SNP_ARS" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SNP_ARS.dds" desc="$MAG_SNP_ARS_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="500" recoil="0" spread="0" clipsize="3" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410690" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_SNP_LM7.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_SNP_LM7" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_SNP_LM7.dds" desc="$MAG_SNP_LM7_desc" LevelRequired="0" />
+			<Upgrade damage="150" range="250" firerate="500" recoil="15" spread="1" clipsize="3" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410691" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_Stanag_30.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_Stanag_30" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_Stanag_30.dds" desc="$MAG_Stanag_30_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410692" category="19" type="4" SpecID="35" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_Stanag_60.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_Stanag_60" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_Stanag_60.dds" desc="$MAG_Stanag_60_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="60" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410693" category="19" type="4" SpecID="35" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/MAG_Stanag_Drum.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$MAG_Stanag_Drum" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/MAG_Stanag_Drum.dds" desc="$MAG_Stanag_Drum_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="100" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410840" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_SMG_ChangFeng.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_SMG_ChangFeng" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_SMG_ChangFeng.dds" desc="$Mag_SMG_ChangFeng_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="100" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410841" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_ASR_ASh12.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_ASR_ASh12" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_ASR_ASh12.dds" desc="$Mag_ASR_ASh12_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410843" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_HG_AP50.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_HG_AP50" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_HG_AP50.dds" desc="$Mag_HG_AP50_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="7" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410844" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_SHG_M1216.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_SHG_M1216" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_SHG_M1216.dds" desc="$Mag_SHG_M1216_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="300" recoil="0" spread="0" clipsize="15" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410845" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_HG_MicroUzi.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_HG_MicroUzi" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_HG_MicroUzi.dds" desc="$Mag_HG_MicroUzi_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="101" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410846" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_SNP_Bullistic.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_SNP_Bullistic" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_SNP_Bullistic.dds" desc="$Mag_SNP_Bullistic_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="500" recoil="0" spread="0" clipsize="4" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
+  <Attachment itemID="410854" category="19" type="4" SpecID="0" Weight="250" IsSecondary="0" NewChar="1">
+			<Model file="Data/ObjectsDepot/G3_Weapons_Att/Mag_ASR_Tar30.sco" MuzzleParticle="" MuzzleParticleFPS="" FireSound="0" ScopeAnim="" />
+			<Store name="$Mag_ASR_Tar30" icon="$Data/ObjectsDepot/G3_Weapons_Att/StoreIcons/Mag_ASR_Tar30.dds" desc="$Mag_ASR_Tar30_desc" LevelRequired="0" />
+			<Upgrade damage="0" range="0" firerate="110" recoil="0" spread="0" clipsize="30" ScopeMag="0" ScopeType="" AggroModifier="0" />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="" />
+		</Attachment>
 </AttachmentArmory>

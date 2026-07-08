@@ -1944,8 +1944,8 @@ void game::MainLoop()
 #ifndef FINAL_BUILD
 	case	Menu_AppSelect::bUpdateDB:
 		g_bEditMode = false;
-		UpdateDB(g_api_ip->GetString(), "Data/Weapons/itemsDB.xml");
-		MessageBox(0, "Successfully updated English DB!", "Result", MB_OK);
+		UpdateDB(g_api_ip->GetString(), "Data/Weapons/ItemsDB/api_itemsDB_dump.xml");
+		MessageBox(0, "Successfully dumped English DB!", "Result", MB_OK);
 		break;
 #endif
 

@@ -40,10 +40,18 @@ bool WeaponConfig::loadBaseFromXml(pugi::xml_node& xmlWeapon)
 	FNAME = strdup(xmlWeapon.attribute("FNAME").value());
 
 	{
-		int len = strlen(m_ModelPath);
-		m_ModelPath_1st = (char*)malloc(sizeof(char)*(len+32));
-		r3dscpy(m_ModelPath_1st, m_ModelPath);
-		r3dscpy(&m_ModelPath_1st[len-4], "_FPS.sco");
+		if(xmlWeapon.child("Model").attribute("file_fps").empty())
+		{
+			int len = strlen(m_ModelPath);
+			m_ModelPath_1st = (char*)malloc(sizeof(char)*(len+32));
+			r3dscpy(m_ModelPath_1st, m_ModelPath);
+			r3dscpy(&m_ModelPath_1st[len-4], "_FPS.sco");
+		}
+		else {
+			int len = strlen(m_ModelPath_FPS);
+			m_ModelPath_1st = (char*)malloc(sizeof(char)*(len+32));
+			r3dscpy(m_ModelPath_1st, m_ModelPath_FPS);
+		}
 	}
 
 	m_AnimPrefix = strdup(xmlWeapon.child("Model").attribute("AnimPrefix").value());
@@ -63,6 +71,8 @@ bool WeaponConfig::loadBaseFromXml(pugi::xml_node& xmlWeapon)
 	m_AmmoArea = xmlWeapon.child("PrimaryFire").attribute("area").as_float();
 	m_AmmoDelay = xmlWeapon.child("PrimaryFire").attribute("delay").as_float();
 	m_AmmoTimeout = xmlWeapon.child("PrimaryFire").attribute("timeout").as_float();
+
+	const char* bullet = xmlWeapon.child("PrimaryFire").attribute("bullet").value();
 
 	m_isConsumable = category==storecat_UsableItem;
 	m_ShopStackSize = xmlWeapon.child("PrimaryFire").attribute("clipSize").as_int();

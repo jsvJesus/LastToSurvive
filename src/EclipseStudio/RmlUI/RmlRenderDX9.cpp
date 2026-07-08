@@ -3691,6 +3691,49 @@ static void RmlDx9AddCandidate(std::vector<std::wstring>& Candidates, const std:
     Candidates.push_back(Normalized);
 }
 
+static void RmlDx9AddObjectsDepotStoreIconCandidates(
+    std::vector<std::wstring>& Candidates,
+    const std::wstring& DataRoot,
+    const std::wstring& FileName
+)
+{
+    if (DataRoot.empty() || FileName.empty())
+        return;
+
+    static const wchar_t* const StoreIconFolders[] =
+    {
+        L"ObjectsDepot\\CharactersNew\\StoreIcons",
+        L"ObjectsDepot\\G3_Gear_Hats\\StoreIcons",
+        L"ObjectsDepot\\G3_Gear_Masks\\StoreIcons",
+    	L"ObjectsDepot\\G3_Weapons_Att\\StoreIcons",
+        L"ObjectsDepot\\G3_Weapons_Melee\\StoreIcons",
+        L"ObjectsDepot\\NightVisionSkyes\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Consumables\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_ASR\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_HG\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_KNIFE\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_LMG\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_SHG\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_SMG\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_SNP\\StoreIcons",
+        L"ObjectsDepot\\ROTB_Weapons_SUP\\StoreIcons",
+        L"ObjectsDepot\\SS_Ammo\\StoreIcons",
+        L"ObjectsDepot\\SS_Armor\\StoreIcons",
+        L"ObjectsDepot\\SS_Loot\\StoreIcons",
+    	L"ObjectsDepot\\SS_Medical\\StoreIcons",
+        L"ObjectsDepot\\SS_Monsters\\StoreIcons",
+        L"ObjectsDepot\\SS_Monsters_CrawlerMob\\StoreIcons",
+        L"ObjectsDepot\\SS_Monsters_Scout\\StoreIcons",
+    	L"ObjectsDepot\\SS_Survival\\StoreIcons",
+        L"ObjectsDepot\\Taunts\\StoreIcons",
+        L"ObjectsDepot\\Taunts\\WarZStoreIcons",
+        L"ObjectsDepot\\WZ_Animals\\StoreIcons",
+    };
+
+    for (const wchar_t* Folder : StoreIconFolders)
+        RmlDx9AddCandidate(Candidates, DataRoot + L"\\" + Folder + L"\\" + FileName);
+}
+
 std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
 {
     if (path.empty())
@@ -3774,7 +3817,10 @@ std::wstring RmlRenderDX9::ResolvePathW(const Rml::String& path) const
     // 5. Shop generated item icon fallback:
     //    xxx.png => DataRoot/Weapons/StoreIcons/xxx.png
     if (!FileName.empty())
+    {
+        RmlDx9AddObjectsDepotStoreIconCandidates(Candidates, DataRoot, FileName);
         RmlDx9AddCandidate(Candidates, DataRoot + L"\\Weapons\\StoreIcons\\" + FileName);
+    }
 
     // 6. RML asset filename fallback:
     //    xxx.png => DataRoot/Rml/Assets/xxx.png

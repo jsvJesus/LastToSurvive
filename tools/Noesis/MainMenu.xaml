@@ -9,7 +9,7 @@
   Background="#FF4D5052"
   Foreground="#FFE1E9ED" d:DesignWidth="1920" d:DesignHeight="1080">
   <Grid x:Name="MainMenu" Height="78" Margin="0,0,0,1002">
-    <Image x:Name="MainMenu_Background" Source="Assets/MainMenu/top_panel/top_panel_bg.png" Stretch="None">
+    <Image x:Name="MainMenu_Background" Source="Assets/MainMenu/top_panel/top_panel_bg.png" Stretch="None" Opacity="0.5">
       <Image.Resources>
         <ResourceDictionary/>
       </Image.Resources>

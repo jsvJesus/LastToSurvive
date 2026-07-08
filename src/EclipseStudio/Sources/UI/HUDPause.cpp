@@ -199,10 +199,7 @@ void HUDPause::eventBackpackUseItem(r3dScaleformMovie* pMovie, const Scaleform::
 		// todo
 		return;
 	}
-	else if(wi.itemID == WeaponConfig::ITEMID_BarbWireBarricade ||
-		wi.itemID == WeaponConfig::ITEMID_WoodShieldBarricade ||
-		wi.itemID == WeaponConfig::ITEMID_RiotShieldBarricade ||
-		wi.itemID == WeaponConfig::ITEMID_SandbagBarricade)
+	else if(WeaponConfig::isBarricadeItem(wi.itemID))
 	{
 		Scaleform::GFx::Value var[3];
 		var[0].SetString("Place barricade into quick slot and use it from there");
@@ -213,9 +210,7 @@ void HUDPause::eventBackpackUseItem(r3dScaleformMovie* pMovie, const Scaleform::
 	}
 	else
 	{
-		if((wi.itemID == WeaponConfig::ITEMID_Bandages || wi.itemID == WeaponConfig::ITEMID_Bandages2 || wi.itemID == WeaponConfig::ITEMID_Antibiotics ||
-			wi.itemID == WeaponConfig::ITEMID_Painkillers || wi.itemID == WeaponConfig::ITEMID_Medkit) 
-			&& plr->CurLoadout.Health > 99)
+		if(WeaponConfig::isMedicalItem(wi.itemID) && plr->CurLoadout.Health > 99)
 		{
 			Scaleform::GFx::Value var[3];
 			var[0].SetString("Maximum health already");

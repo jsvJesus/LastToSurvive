@@ -15,9 +15,14 @@ bool BaseItemConfig::loadBaseFromXml(pugi::xml_node& xmlItem)
 	category = (STORE_CATEGORIES)xmlItem.attribute("category").as_int();
 
 	m_Weight = xmlItem.attribute("Weight").as_float()/1000.0f; // convert from grams into kg
+	m_ModelFile = strdup(xmlItem.child("Model").attribute("file").value());
+	m_ModelFile_FPS = strdup(xmlItem.child("Model").attribute("file_fps").value());
 
 	pugi::xml_node xmlStore =
 		xmlItem.child("Store");
+
+	if(strcmp(m_ModelFile,"") == 0)
+		m_ModelFile = strdup(xmlItem.child("Model").attribute("file_tps").value());
 
 	m_StoreIcon = strdup(xmlStore.attribute("icon").value());
 	m_StoreSlotWidth = xmlStore.attribute("slotW")
@@ -69,7 +74,12 @@ bool ModelItemConfig::loadBaseFromXml(pugi::xml_node& xmlItem)
 {
 	BaseItemConfig::loadBaseFromXml(xmlItem);
 	r3d_assert(m_ModelPath==NULL);
-	m_ModelPath = strdup(xmlItem.child("Model").attribute("file").value());
+	if(!xmlItem.child("Model").attribute("file").empty())
+		m_ModelPath = strdup(xmlItem.child("Model").attribute("file").value());
+	else if(!xmlItem.child("Model").attribute("file_tps").empty())
+		m_ModelPath = strdup(xmlItem.child("Model").attribute("file_tps").value());
+	if(!xmlItem.child("Model").attribute("file_fps").empty())
+		m_ModelPath_FPS = strdup(xmlItem.child("Model").attribute("file_fps").value());
 
 	return true;
 }

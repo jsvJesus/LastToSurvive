@@ -121,10 +121,10 @@ bool WeaponArmory::Init()
 
 	// load ammo firstly
 	{
-		r3dFile* f = r3d_open("Data/Weapons/AmmoDB.xml", "rb");
+		r3dFile* f = r3d_open("Data/Weapons/AmmoDB_new.xml", "rb");
 		if ( !f )
 		{
-			r3dOutToLog("Failed to open Data/Weapons/AmmoDB.xml\n");
+			r3dOutToLog("Failed to open Data/Weapons/AmmoDB_new.xml\n");
 			return false;
 		}
 
@@ -172,36 +172,35 @@ bool WeaponArmory::Init()
 
 bool WeaponArmory::LoadItemsDatabase()
 {
-    const char* ManifestFile =
+    const char* NewManifestFile =
         "Data/Weapons/ItemsDB/items_manifest.xml";
 
-    r3dFile* ManifestCheck =
+    r3dFile* NewManifestCheck =
         r3d_open(
-            ManifestFile,
+            NewManifestFile,
             "rb"
         );
 
-    if (!ManifestCheck)
+    if (NewManifestCheck)
     {
+        fclose(NewManifestCheck);
+
         r3dOutToLog(
-            "[ItemsDB] Split manifest not found, fallback to Data/Weapons/itemsDB.xml\n"
+            "[ItemsDB] Loading split database manifest: %s\n",
+            NewManifestFile
         );
 
-        return LoadItemsDatabaseSingleFile(
-            "Data/Weapons/itemsDB.xml"
+        return LoadItemsDatabaseManifest(
+            NewManifestFile
         );
     }
 
-    fclose(ManifestCheck);
-
-    r3dOutToLog(
-        "[ItemsDB] Loading split manifest: %s\n",
-        ManifestFile
+    r3dError(
+        "Failed to open items database manifest %s\n",
+        NewManifestFile
     );
 
-    return LoadItemsDatabaseManifest(
-        ManifestFile
-    );
+    return false;
 }
 
 bool WeaponArmory::LoadItemsDatabaseSingleFile(
@@ -840,7 +839,7 @@ WeaponConfig* WeaponArmory::loadWeapon(pugi::xml_node& xmlWeapon)
 	weapon->m_PrimaryAmmo = getAmmo(bulletName);
 	if(weapon->m_PrimaryAmmo == NULL)
 	{
-		r3dArtBug("Failed to find ammo '%s'. Make sure that you added it into AmmoDB.xml\n", bulletName);
+		r3dArtBug("Failed to find ammo '%s'. Make sure that you added it into AmmoDB_new.xml\n", bulletName);
 		delete weapon;
 		return NULL;
 	}

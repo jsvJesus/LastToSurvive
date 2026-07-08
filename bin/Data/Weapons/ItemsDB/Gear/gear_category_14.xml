@@ -1,18 +1,345 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <GearArmory>
-	<Gear itemID="20171" category="14" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/UpperBody_Shirt_01.sco" />
-		<Store name="" icon="$Data/Weapons/StoreIcons/UpperBody_Shirt_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
-		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
-	</Gear>
-	<Gear itemID="20172" category="14" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/LowerBody_Jeans_01.sco" />
-		<Store name="" icon="$Data/Weapons/StoreIcons/LowerBody_Jeans_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
-		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
-	</Gear>
-	<Gear itemID="20173" category="14" Weight="0">
-		<Model file="Data/ObjectsDepot/Characters/Head_Bald_01.sco" />
-		<Store name="" icon="$Data/Weapons/StoreIcons/Head_Bald_01.dds" desc="" LevelRequired="0" slotW="1" slotH="1" />
-		<Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
-	</Gear>
+  <Gear itemID="20514" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Goggles_01_Black.sco" />
+    <Store name="$FGear_Goggles_01_Black" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Goggles_01_Black.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20580" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Goggles_01_BlackNight.sco" />
+    <Store name="$FGear_Goggles_01_BlackNight" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Goggles_01_BlackNight.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20581" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Goggles_01_Desert.sco" />
+    <Store name="$FGear_Goggles_01_Desert" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Goggles_01_Desert.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20582" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Goggles_01_DigitalGray.sco" />
+    <Store name="$FGear_Goggles_01_DigitalGray" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Goggles_01_DigitalGray.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20583" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Goggles_01_Green.sco" />
+    <Store name="$FGear_Goggles_01_Green" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Goggles_01_Green.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20584" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Clown_01.sco" />
+    <Store name="$fgear_Mask_Clown_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Clown_01.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20585" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Clown_02.sco" />
+    <Store name="$fgear_Mask_Clown_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Clown_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20586" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Clown_03.sco" />
+    <Store name="$fgear_Mask_Clown_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Clown_03.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20587" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Clown_04.sco" />
+    <Store name="$fgear_Mask_Clown_04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Clown_04.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20588" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Military_01.sco" />
+    <Store name="$Fgear_Mask_Military_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Military_01.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20589" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Military_02.sco" />
+    <Store name="$Fgear_Mask_Military_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Military_02.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20591" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Military_04.sco" />
+    <Store name="$Fgear_Mask_Military_04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Military_04.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20592" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Scavenger_01.sco" />
+    <Store name="$Fgear_Mask_Scavenger_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Scavenger_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20593" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Scavenger_02.sco" />
+    <Store name="$Fgear_Mask_Scavenger_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Scavenger_02.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20594" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Scavenger_03.sco" />
+    <Store name="$Fgear_Mask_Scavenger_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Scavenger_03.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20595" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Scavenger_04.sco" />
+    <Store name="$Fgear_Mask_Scavenger_04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Scavenger_04.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20596" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Skull_01.sco" />
+    <Store name="$fgear_Mask_Skull_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Skull_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20597" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Skull_02.sco" />
+    <Store name="$fgear_Mask_Skull_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Skull_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20598" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Mask_Skull_03.sco" />
+    <Store name="$fgear_Mask_Skull_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Mask_Skull_03.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20599" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask01.sco" />
+    <Store name="$fgear_mask01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20600" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask02.sco" />
+    <Store name="$fgear_mask02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20601" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask03.sco" />
+    <Store name="$fgear_mask03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask03.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20602" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask04.sco" />
+    <Store name="$fgear_mask04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask04.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20603" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask05.sco" />
+    <Store name="$fgear_mask05" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask05.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20604" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask06.sco" />
+    <Store name="$fgear_mask06" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask06.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20605" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask07.sco" />
+    <Store name="$fgear_mask07" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask07.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20606" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_mask08.sco" />
+    <Store name="$fgear_mask08" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_mask08.dds" desc="$Mask_Rare" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20612" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_skimask_01.sco" />
+    <Store name="$fgear_skimask_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_skimask_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20613" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_skimask_02.sco" />
+    <Store name="$fgear_skimask_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_skimask_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20614" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_skimask_03.sco" />
+    <Store name="$fgear_skimask_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_skimask_03.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20615" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_skimask_04.sco" />
+    <Store name="$fgear_skimask_04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_skimask_04.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20616" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Sunglass_01.sco" />
+    <Store name="$fgear_Sunglass_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Sunglass_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20617" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Sunglass_02.sco" />
+    <Store name="$fgear_Sunglass_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Sunglass_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20618" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Sunglass_03.sco" />
+    <Store name="$fgear_Sunglass_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Sunglass_03.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20619" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_Sunglass_04.sco" />
+    <Store name="$fgear_Sunglass_04" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_Sunglass_04.dds" desc="$Mask_Common" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20733" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Military_04_1.sco" />
+    <Store name="$Fgear_Mask_Military_04_1" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Military_04_1.dds" desc="$Account_Epic_Ultimate" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="3" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20734" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Military_04_2.sco" />
+    <Store name="$Fgear_Mask_Military_04_2" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Military_04_2.dds" desc="$Account_Epic_Ultimate" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="3" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20735" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_goggles_01_gold.sco" />
+    <Store name="$fgear_goggles_01_gold" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_goggles_01_gold.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20736" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/fgear_sunglass_05.sco" />
+    <Store name="$fgear_sunglass_05" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/fgear_sunglass_05.dds" desc="$Mask_Legendary" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20737" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_DominionWhite.sco" />
+    <Store name="$Fgear_Mask_WarlordSet" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_DominionWhite.dds" desc="$PVP_1000Rating_Desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="2" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20755" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Sportsglasses_01.sco" />
+    <Store name="$FGear_Sportsglasses_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Sportsglasses_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20756" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Sunglasses_Aviator_01.sco" />
+    <Store name="$FGear_Sunglasses_Aviator_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Sunglasses_Aviator_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20777" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Blindfold_01.sco" />
+    <Store name="$FGear_Blindfold_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Blindfold_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20778" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Face_Bandana_01.sco" />
+    <Store name="$FGear_Face_Bandana_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Face_Bandana_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20779" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Welding_01.sco" />
+    <Store name="$FGear_Mask_Welding_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Welding_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20780" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Monocle_01.sco" />
+    <Store name="$FGear_Monocle_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Monocle_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20781" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Zorro_01.sco" />
+    <Store name="$FGear_Zorro_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Zorro_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20821" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Snake_01.sco" />
+    <Store name="$FGear_Mask_Snake_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Snake_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20822" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Snake_02.sco" />
+    <Store name="$FGear_Mask_Snake_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Snake_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20823" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Snake_03.sco" />
+    <Store name="$FGear_Mask_Snake_03" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Snake_03.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20824" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Tactical_01.sco" />
+    <Store name="$Fgear_Mask_Tactical_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Tactical_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20825" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_Mask_Tactical_02.sco" />
+    <Store name="$Fgear_Mask_Tactical_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_Mask_Tactical_02.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20826" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_HellJazz_01.sco" />
+    <Store name="$FGear_Mask_HellJazz_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_HellJazz_01.dds" desc="$Mask_Common" LevelRequired="0" gameMode="0" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" Rarity="0" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20930" category="14" Weight="200" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Ternimator_01.sco" />
+    <Store name="$FGear_mask_terminator_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Ternimator_01.dds" desc="$Get_Crate_Winter2016_desc" LevelRequired="0" gameMode="3" Rarity="3" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20831" category="14" Weight="0" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Bird_01.sco" />
+    <Store name="$FGear_Mask_Bird_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Bird_01.dds" desc="$Get_Crate_Winter2016_desc" LevelRequired="0" gameMode="3" Rarity="2" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20832" category="14" Weight="200" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/Fgear_ClownNose_01.sco" />
+    <Store name="$Fgear_ClownNose_01" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/Fgear_ClownNose_01.dds" desc="$Get_Crate_Masks_01_desc" LevelRequired="0" gameMode="3" Rarity="2" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
+  <Gear itemID="20838" category="14" Weight="200" NewChar="1">
+    <Model file="Data/ObjectsDepot/G3_Gear_Masks/FGear_Mask_Bird_02.sco" />
+    <Store name="$FGear_Mask_Bird_02" icon="$Data/ObjectsDepot/G3_Gear_Masks/StoreIcons/FGear_Mask_Bird_02.dds" desc="$Get_Crate_Winter2016_desc" LevelRequired="0" gameMode="3" Rarity="3" />
+    <Armor damagePerc="0" damageMax="0" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" MaxRepairs="-1" RepairToolsCost="-1" RepairPartsCost="-1" />
+    <Dur u="0" r1="33" r2="90" r3="105" r4="" r5="" r6="-1" />
+  </Gear>
 </GearArmory>

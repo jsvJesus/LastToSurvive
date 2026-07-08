@@ -179,11 +179,16 @@ public:
 	float		bodyAdjust_x;		// rotation
 	float		bodyAdjust_y[2];	// bend [cur, target]
 
+	int		boneId_Bip01_Spine;
 	int		boneId_Bip01_Spine1;
 	int		boneId_Bip01_Spine2;
+	int		boneId_Bip01_Spine3;
+	int		boneId_Bip01_Pelvis;
+	int		boneId_Bip01_L_Clavicle;
+	int		boneId_Bip01_R_Clavicle;
 	int		boneId_Bip01_Neck;
-	int		boneId_Bip01_LUpperArm;
-	int		boneId_Bip01_RUpperArm;
+	int		boneId_Bip01_L_UpperArm;
+	int		boneId_Bip01_R_UpperArm;
 	int		boneId_Bip01_Head;
 
 	int		boneId_Bip01_R_Hand;

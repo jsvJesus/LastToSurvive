@@ -1,5 +1,6 @@
 ﻿#include "r3dpch.h"
 #include "r3d.h"
+#include "GameCommon.h"
 
 #include "AI_Player.h"
 #include "AI_PlayerAnim.h"
@@ -141,7 +142,7 @@ void AddCachedPhysSkeleton()
 {
 	PhysSkeletonCacheEntry entry ;
 
-	entry.Skel	= new r3dPhysSkeleton( "data/ObjectsDepot/Characters/RagDoll.RepX" ) ;
+	entry.Skel	= new r3dPhysSkeleton( PLAYER_RAGDOLL_FILE ) ;
 	entry.Taken	= 0 ;
 
 	g_PhysSkeletonCache.PushBack( entry ) ;
@@ -675,8 +676,12 @@ void _player_AdjustBoneCallback(uintptr_t dwData, int boneId, D3DXMATRIX &mp, D3
 	{
 		if(boneId == npc->boneId_Bip01_Spine1 || boneId == npc->boneId_Bip01_Neck) 
 		{
+			float RotLegsX = (npc->PlayerState==PLAYER_MOVE_RUN && npc->PlayerMoveDir>3 && npc->PlayerMoveDir<6 && boneId == npc->boneId_Bip01_Spine1)?75.0f:0.0f; //test
 			float xRot = npc->bodyAdjust_x;
 			float yRot = npc->bodyAdjust_y[0];
+
+			if(npc->PlayerState == PLAYER_PRONE_DOWN || npc->PlayerState == PLAYER_PRONE_UP || npc->PlayerState == PLAYER_MOVE_PRONE || npc->PlayerState == PLAYER_PRONE_IDLE || npc->PlayerState == PLAYER_PRONE_AIM)
+				yRot = 0; //test
 
 			// add recoil for spine1
 			if(boneId == npc->boneId_Bip01_Spine1)
@@ -701,7 +706,26 @@ void _player_AdjustBoneCallback(uintptr_t dwData, int boneId, D3DXMATRIX &mp, D3
 			mp._42 = vv.y;
 			mp._43 = vv.z;
 		}
-		else if(boneId == npc->boneId_Bip01_LUpperArm || boneId == npc->boneId_Bip01_RUpperArm)
+		else if(((boneId == npc->boneId_Bip01_L_UpperArm || boneId == npc->boneId_Bip01_R_UpperArm)) || ((boneId == npc->boneId_Bip01_L_Clavicle || boneId == npc->boneId_Bip01_R_Clavicle)))
+		{
+			float xRot = npc->RecoilViewMod.x*0.1f;
+			float yRot = npc->RecoilViewMod.y*0.5f;
+
+			xRot = 0;//-R3D_MIN(xRot, 0.5f);
+			yRot = R3D_MIN(yRot, 0.1f);
+
+			D3DXMATRIX r1, r2;
+
+			// rotate previous matrix, with saved position
+			r3dPoint3D vv = r3dPoint3D(mp._41, mp._42, mp._43);
+			D3DXMatrixRotationY(&r2, xRot/2);
+			D3DXMatrixRotationAxis(&r1, npc->GetvRightDraw().d3dx(), -yRot/2);
+			mp = mp * (r1 * r2);
+			mp._41 = vv.x;
+			mp._42 = vv.y;
+			mp._43 = vv.z;
+		}
+		/*else if(boneId == npc->boneId_Bip01_LUpperArm || boneId == npc->boneId_Bip01_RUpperArm)
 		{
 			float xRot = npc->RecoilViewMod.x*0.1f;
 			float yRot = npc->RecoilViewMod.y*0.5f;
@@ -719,7 +743,7 @@ void _player_AdjustBoneCallback(uintptr_t dwData, int boneId, D3DXMATRIX &mp, D3
 			mp._41 = vv.x;
 			mp._42 = vv.y;
 			mp._43 = vv.z;
-		}
+		}*/
 	}
 
 	return;    
@@ -763,12 +787,21 @@ void obj_Player::UpdateLoadoutSlot(const wiCharDataFull& slot)
 	uberEquip_->SetSlot(SLOT_Weapon, m_Weapons[m_SelectedWeapon]);
 	uberEquip_->SetSlot(SLOT_WeaponBackRight, (Weapon*)NULL);
 	uberEquip_->SetSlot(SLOT_WeaponSide, (Weapon*)NULL);
+	uberEquip_->SetSlot(SLOT_Weapon_BackRPG, (Weapon*)NULL);
 
 	if(m_Weapons[m_SelectedWeapon] && !forcedEmptyHands)
 		m_Weapons[m_SelectedWeapon]->OnEquip();
 
 	if(m_Weapons[1] && m_SelectedWeapon != 1)
 		uberEquip_->SetSlot(SLOT_WeaponSide, m_Weapons[1]);
+
+	if(m_Weapons[0] && m_SelectedWeapon != 0)
+	{
+		if(m_Weapons[0]->getCategory() == storecat_RPG)
+			uberEquip_->SetSlot(SLOT_Weapon_BackRPG, m_Weapons[0]);
+		else
+			uberEquip_->SetSlot(SLOT_WeaponBackRight, m_Weapons[0]);
+	}
 
 	const HeroConfig* heroConfig = g_pWeaponArmory->getHeroConfig(CurLoadout.HeroItemID);
 	loadHeroMeshes(heroConfig);
@@ -824,28 +857,43 @@ void obj_Player::loadHeroMeshes(const HeroConfig* heroConfig)
 	bool isFirstPerson = g_camera_mode->GetInt()==2 && NetworkLocal;
 	if(heroConfig)
 	{
-		uberEquip_->SetSlot(SLOT_UpperBody, heroConfig->getBodyMesh(CurLoadout.BodyIdx, isFirstPerson));
-		uberEquip_->SetSlot(SLOT_LowerBody, heroConfig->getLegMesh(CurLoadout.LegsIdx));
-		uberEquip_->SetSlot(SLOT_Head, heroConfig->getHeadMesh(CurLoadout.HeadIdx));
+		int bodyIdx = R3D_MIN(R3D_MAX(CurLoadout.BodyIdx, 0), (int)heroConfig->getNumBodys() - 1);
+		int legsIdx = R3D_MIN(R3D_MAX(CurLoadout.LegsIdx, 0), (int)heroConfig->getNumLegs() - 1);
+		int headIdx = R3D_MIN(R3D_MAX(CurLoadout.HeadIdx, 0), (int)heroConfig->getNumHeads() - 1);
+		int hairIdx = R3D_MIN(R3D_MAX(CurLoadout.HairIdx, 0), (int)heroConfig->getNumHair() - 1);
+		int feetIdx = R3D_MIN(R3D_MAX(CurLoadout.FeetIdx, 0), (int)heroConfig->getNumFeet() - 1);
+
+		uberEquip_->SetSlot(SLOT_UpperBody, heroConfig->getBodyMesh(bodyIdx, isFirstPerson));
+		uberEquip_->SetSlot(SLOT_LowerBody, heroConfig->getLegMesh(legsIdx));
+		uberEquip_->SetSlot(SLOT_Head, heroConfig->getHeadMesh(headIdx));
+		uberEquip_->SetSlot(SLOT_Hair, heroConfig->getNumHair() > 0 ? heroConfig->getHairMesh(hairIdx) : (r3dMesh*)NULL);
+		uberEquip_->SetSlot(SLOT_Feet, heroConfig->getNumFeet() > 0 ? heroConfig->getFeetMesh(feetIdx) : (r3dMesh*)NULL);
 	}
 	else
 	{
 		uberEquip_->SetSlot(SLOT_UpperBody, (r3dMesh*)NULL);
 		uberEquip_->SetSlot(SLOT_LowerBody, (r3dMesh*)NULL);
 		uberEquip_->SetSlot(SLOT_Head, (r3dMesh*)NULL);
+		uberEquip_->SetSlot(SLOT_Hair, (r3dMesh*)NULL);
+		uberEquip_->SetSlot(SLOT_Feet, (r3dMesh*)NULL);
 	}
 }
 
 obj_Player::obj_Player()
 : footStepsSnd(0)
 , currentFootStepsSoundID(-1)
+, boneId_Bip01_Spine(-1)
 , boneId_Bip01_Spine1(-1)
+, boneId_Bip01_Spine2(-1)
+, boneId_Bip01_Spine3(-1)
 , boneId_Bip01_Neck(-1)
-, boneId_Bip01_LUpperArm(-1)
-, boneId_Bip01_RUpperArm(-1)
+, boneId_Bip01_L_UpperArm(-1)
+, boneId_Bip01_R_UpperArm(-1)
 , boneId_Bip01_Head(-1)
 , boneId_Bip01_R_Hand(-1)
 , boneId_Bip01_L_Hand(-1)
+, boneId_Bip01_R_Clavicle(-1)
+, boneId_Bip01_L_Clavicle(-1)
 , m_AuraType(AT_NONE)
 , netMover(this, _ai_NetPosUpdateDelta, (float)PKT_C2C_MoveSetCell_s::PLAYER_CELL_RADIUS)
 , m_enableRendering(true)
@@ -1119,9 +1167,16 @@ BOOL obj_Player::OnCreate()
 
 	boneId_Bip01_Spine1    = uberAnim_->GetBoneID("Bip01_Spine1");
 	boneId_Bip01_Spine2    = uberAnim_->GetBoneID("Bip01_Spine2");
+
+	boneId_Bip01_Spine = uberAnim_->GetBoneID("Bip01_Spine");
+	boneId_Bip01_Spine3 = uberAnim_->GetBoneID("Bip01_Spine3");
+	boneId_Bip01_Pelvis = uberAnim_->GetBoneID("Bip01_Pelvis");
+	boneId_Bip01_L_Clavicle = uberAnim_->GetBoneID("Bip01_L_Clavicle");
+	boneId_Bip01_R_Clavicle = uberAnim_->GetBoneID("Bip01_R_Clavicle");
+	
 	boneId_Bip01_Neck      = uberAnim_->GetBoneID("Bip01_Neck");
-	boneId_Bip01_LUpperArm = uberAnim_->GetBoneID("Bip01_L_UpperArm");
-	boneId_Bip01_RUpperArm = uberAnim_->GetBoneID("Bip01_R_UpperArm");
+	boneId_Bip01_L_UpperArm = uberAnim_->GetBoneID("Bip01_L_UpperArm");
+	boneId_Bip01_R_UpperArm = uberAnim_->GetBoneID("Bip01_R_UpperArm");
 	boneId_Bip01_Head      = uberAnim_->GetBoneID("Bip01_Head");
 	boneId_Bip01_R_Hand	   = uberAnim_->GetBoneID("Bip01_R_Hand");
 	boneId_Bip01_L_Hand	   = uberAnim_->GetBoneID("Bip01_L_Hand");
@@ -1175,9 +1230,9 @@ BOOL obj_Player::OnCreate()
 		SoundSys.Stop(m_sndInPain);
 		r3d_assert(m_sndInPain);
 
-		m_sndClothMovementSprint = SoundSys.Play(SoundSys.GetEventIDByPath("Sounds/WarZ/PlayerSounds/PLAYER_PANTS_MOVE"), GetPosition(), true);
+		m_sndClothMovementSprint = SoundSys.Play(SoundSys.GetEventIDByPath("Sounds/ViralHZ/Footsteps/SprintFoley"), GetPosition(), true);
 		SoundSys.Stop(m_sndClothMovementSprint);
-		r3d_assert(m_sndClothMovementSprint);
+		//r3d_assert(m_sndClothMovementSprint);
 
 		m_sndSniperBreath = SoundSys.Play(SoundSys.GetEventIDByPath(m_isFemaleHero?"Sounds/WarZ/PlayerSounds/PLAYER_SNIPER_BREATHE_F":"Sounds/WarZ/PlayerSounds/PLAYER_SNIPER_BREATHE_M"), GetPosition(), true);
 		SoundSys.Stop(m_sndSniperBreath);
@@ -1346,6 +1401,7 @@ void obj_Player::UpdateUpperBodyAngLegs()
 {
 	float fTimePassed = r3dGetFrameTime();
 	const float fMaxBodyAngle = R3D_DEG2RAD(45.0f);
+	const float BodyMaxHeadAngle = R3D_DEG2RAD(66.2f);
 
 	// turn firstly upper body only and only then legs
 	float fY = getMinimumAngleDistance(m_fPlayerRotation, m_fPlayerRotationTarget);
@@ -1363,7 +1419,7 @@ void obj_Player::UpdateUpperBodyAngLegs()
 		{
 			if(R3D_ABS(bodyAdjust_x) > fMaxBodyAngle)
 			{
-				uberAnim_->StartTurnInPlaceAnim();
+				uberAnim_->StartTurnInPlaceAnim(); // можно отключить для Камеры осмотра
 				bodyAdjust_x = R3D_CLAMP(bodyAdjust_x, -fMaxBodyAngle, fMaxBodyAngle);
 			}
 		}
@@ -1422,8 +1478,9 @@ void obj_Player::UpdateRotation()
 			D3DXMATRIX tmp, res;
 			D3DXMatrixIdentity(&tmp);
 			uberAnim_->anim.GetCurrentSkeleton()->GetBoneWorldTM(boneId_Bip01_Head, &res, tmp);
-			hands_height = res._42;
+			hands_height = res._42-0.0409f;
 		}
+
 		// weapon movement when turning
 		D3DXMATRIX m3, m4;
 		float limit = 2.0f;
@@ -1434,16 +1491,16 @@ void obj_Player::UpdateRotation()
 			limit = 0.0f;
 		float fRot = -R3D_CLAMP(getMinimumAngleDistance(fPrevRotation, m_fPlayerRotation)*10.0f, -limit, limit);
 		static float EMAPrev = 0.0f;
-		
+
 		float EMACur = EMAPrev + 0.20f * (fRot - EMAPrev); // exponential moving average of about 15 prev.values
 		EMAPrev = EMACur;
 
 		D3DXMatrixRotationYawPitchRoll(&m3, R3D_DEG2RAD(EMACur), 0, 0);
 
-		D3DXMatrixTranslation(&m4, 0, -hands_height, 0.1f);
+		D3DXMatrixTranslation(&m4, 0.0053f, -hands_height, 0.1f);
 		D3DXMatrixMultiply(&DrawFullMatrix, &m3, &m4);
-		
-		D3DXMatrixMultiply(&DrawFullMatrix_Localized, &DrawFullMatrix, &r3dRenderer->InvViewMatrix_Localized);		
+
+		D3DXMatrixMultiply(&DrawFullMatrix_Localized, &DrawFullMatrix, &r3dRenderer->InvViewMatrix_Localized);
 
 		D3DXMatrixMultiply(&DrawFullMatrix, &DrawFullMatrix, &r3dRenderer->InvViewMatrix);
 	}
@@ -1760,22 +1817,22 @@ BYTE obj_Player::getBodyNameFromBoneName(const char* boneName)
 		const char* bone;
 	};
 	const static boneToBodyPart_s map[] = {
-	  {1, "Bip01_Head"},
-	  {2, "Bip01_L_UpperArm"},
-	  {2, "Bip01_L_Forearm"},
-	  {2, "Bip01_L_Hand"},
-	  {2, "Bip01_R_UpperArm"},
-	  {2, "Bip01_R_Forearm"},
-	  {2, "Bip01_R_Hand"},
-	  {3, "Bip01_L_Thigh"},
-	  {3, "Bip01_L_Calf"},
-	  {3, "Bip01_L_Foot"},
-	  {3, "Bip01_L_Toe0"},
-	  {3, "Bip01_R_Thigh"},
-	  {3, "Bip01_R_Calf"},
-	  {3, "Bip01_R_Foot"},
-	  {3, "Bip01_R_Toe0"},
-	};
+		{1, "Bip01_Head"},
+		{2, "Bip01_L_UpperArm"},
+		{2, "Bip01_L_Forearm"},
+		{2, "Bip01_L_Hand"},
+		{2, "Bip01_R_UpperArm"},
+		{2, "Bip01_R_Forearm"},
+		{2, "Bip01_R_Hand"},
+		{3, "Bip01_L_Thigh"},
+		{3, "Bip01_L_Calf"},
+		{3, "Bip01_L_Foot"},
+		{3, "Bip01_L_Toe0"},
+		{3, "Bip01_R_Thigh"},
+		{3, "Bip01_R_Calf"},
+		{3, "Bip01_R_Foot"},
+		{3, "Bip01_R_Toe0"},
+	  };
 	
 	// not optimal, but numbers CAN change, because of skeleton modification
 	for(int i=0; i<R3D_ARRAYSIZE(map); i++)
@@ -1909,10 +1966,7 @@ void obj_Player::CheckFireWeapon()
 				wiInventoryItem wi = wpn->getPlayerItem(); // COPY of item, not reference. because it can be reset in Fire()
 				if(wi.quantity > 0 && wpn->isReadyToFire(true, false)) // consumables have rate of fire (cooldown)
 				{
-					if(wpn->getItemID() == WeaponConfig::ITEMID_BarbWireBarricade || 
-						wpn->getItemID() == WeaponConfig::ITEMID_WoodShieldBarricade ||
-						wpn->getItemID() == WeaponConfig::ITEMID_RiotShieldBarricade ||
-						wpn->getItemID() == WeaponConfig::ITEMID_SandbagBarricade )
+					if(WeaponConfig::isBarricadeItem(wpn->getItemID()))
 					{
 						if(m_needToDrawBarricadePlacement == 0)
 						{
@@ -1931,9 +1985,7 @@ void obj_Player::CheckFireWeapon()
 						}
 					}
 
-					if((wpn->getItemID() == WeaponConfig::ITEMID_Bandages || wpn->getItemID() == WeaponConfig::ITEMID_Bandages2 || wpn->getItemID() == WeaponConfig::ITEMID_Antibiotics ||
-						wpn->getItemID() == WeaponConfig::ITEMID_Painkillers || wpn->getItemID() == WeaponConfig::ITEMID_Medkit) 
-						&& CurLoadout.Health > 99)
+					if(WeaponConfig::isMedicalItem(wpn->getItemID()) && CurLoadout.Health > 99)
 					{
 						if(hudMain) hudMain->showMessage(gLangMngr.getString("InfoMsg_MaxHealthAlready"));
 						return;
@@ -1957,10 +2009,7 @@ void obj_Player::CheckFireWeapon()
 					float var1 = 0.0f;
 					r3dPoint3D pos       = GetPosition() + GetvForw()*1.0f + r3dPoint3D(0,1,0);
 					bool needCorrectPos = false; // those objects require precise position, otherwise there will be desync between client\server (mainly spawn beacon problem)
-					if(wi.itemID == WeaponConfig::ITEMID_BarbWireBarricade ||
-						wi.itemID == WeaponConfig::ITEMID_WoodShieldBarricade ||
-						wi.itemID == WeaponConfig::ITEMID_RiotShieldBarricade || 
-						wi.itemID == WeaponConfig::ITEMID_SandbagBarricade)
+					if(WeaponConfig::isBarricadeItem(wi.itemID))
 					{
 						var1 = (m_fPlayerRotation) + R3D_RAD2DEG(bodyAdjust_x) + 180;
 						needCorrectPos = true; 
@@ -2523,7 +2572,7 @@ void obj_Player::DoDeath(int networdIDKiller, bool forced_by_server, STORE_CATEG
 	grenadeReadyTime = 0;
 
 	// if we have not default backpack - remove it as it will be dropped as item on server
-	if(CurLoadout.BackpackID != 20176) {
+	if(CurLoadout.BackpackID != 21712) {
 		uberEquip_->SetSlot(SLOT_Backpack, (r3dMesh*)NULL);
 	}
 
@@ -2658,7 +2707,7 @@ void obj_Player::SyncAnimation(bool force)
 		isInAttmMenu = true;
 
 	uberAnim_->SyncAnimation(PlayerState, PlayerMoveDir, force, wpn, isInAttmMenu); // firstly sync to update weapon pointer and only then update jump
-	uberAnim_->UpdateJump(bOnGround);
+	uberAnim_->UpdateJump(bOnGround, fHeightAboveGround);
 }
 
 static float accumLastDamageRcvd = 0;
@@ -2766,20 +2815,21 @@ void obj_Player::UpdateCharWeaponMeshes()
 
 	bool isFirstPerson = g_camera_mode->GetInt()==2 && NetworkLocal;
 	uberEquip_->SetSlot(SLOT_Weapon, m_Weapons[m_SelectedWeapon]);
-	if(m_SelectedWeapon==0)
-	{
-		uberEquip_->SetSlot(SLOT_WeaponBackRight, (Weapon*)NULL);
-	}
-	else
+	uberEquip_->SetSlot(SLOT_WeaponBackRight, (Weapon*)NULL);
+	uberEquip_->SetSlot(SLOT_Weapon_BackRPG, (Weapon*)NULL);
+	uberEquip_->SetSlot(SLOT_WeaponSide, (Weapon*)NULL);
+
+	if(m_SelectedWeapon != 0)
 	{
 		if(m_Weapons[0])
 		{
-			uberEquip_->SetSlot(SLOT_WeaponBackRight, m_Weapons[0]);
+			if(m_Weapons[0]->getCategory() == storecat_RPG)
+				uberEquip_->SetSlot(SLOT_Weapon_BackRPG, m_Weapons[0]);
+			else
+				uberEquip_->SetSlot(SLOT_WeaponBackRight, m_Weapons[0]);
 		}
 	}
-	if(m_SelectedWeapon==1)
-		uberEquip_->SetSlot(SLOT_WeaponSide, (Weapon*)NULL);
-	else
+	if(m_SelectedWeapon != 1)
 	{
 		if(m_Weapons[1])
 			uberEquip_->SetSlot(SLOT_WeaponSide, m_Weapons[1]);
@@ -2933,6 +2983,7 @@ void obj_Player::UpdateLocalPlayerMovement()
 	vel.Y  += RealAcceleration.Y;
 	
 	// send some info to server about fast movement
+	if(!gUserProfile.ProfileData.isDevAccount)
 	{
 		static float lastUpd = -999;
 		r3dPoint3D velXZ(vel.x, 0, vel.z);
@@ -3073,8 +3124,7 @@ void obj_Player::localPlayer_UseItem(int slotID, uint32_t itemID, const r3dPoint
 
 		m_Stamina += GPP->c_fSprintMaxEnergy*fc->Stamina;
 	}
-	if (itemID==WeaponConfig::ITEMID_Antibiotics||itemID==WeaponConfig::ITEMID_Bandages||itemID==WeaponConfig::ITEMID_Bandages2||
-		itemID==WeaponConfig::ITEMID_Painkillers||itemID==WeaponConfig::ITEMID_Medkit)
+	if(WeaponConfig::isMedicalItem(itemID))
 	{
 		if(var4!=0)
 		{
@@ -3702,9 +3752,8 @@ void obj_Player::UpdateActionUI()
 		uint32_t wpnItemID = 0;
 		if(m_Weapons[m_SelectedWeapon])
 			wpnItemID = m_Weapons[m_SelectedWeapon]->getItemID();
-		selectHumans = wpnItemID==WeaponConfig::ITEMID_Antibiotics||wpnItemID==WeaponConfig::ITEMID_Bandages||wpnItemID==WeaponConfig::ITEMID_Bandages2||
-			wpnItemID==WeaponConfig::ITEMID_Painkillers||wpnItemID==WeaponConfig::ITEMID_ZombieRepellent||wpnItemID==WeaponConfig::ITEMID_C01Vaccine||
-			wpnItemID==WeaponConfig::ITEMID_C04Vaccine||wpnItemID==WeaponConfig::ITEMID_Medkit;
+		selectHumans = WeaponConfig::isMedicalItem(wpnItemID) || wpnItemID==WeaponConfig::ITEMID_ZombieRepellent || wpnItemID==WeaponConfig::ITEMID_C01Vaccine ||
+			wpnItemID==WeaponConfig::ITEMID_C04Vaccine;
 		if(m_Weapons[m_SelectedWeapon])
 		{
 			wiInventoryItem wi = CurLoadout.Items[m_Weapons[m_SelectedWeapon]->m_BackpackIdx];
@@ -4565,8 +4614,8 @@ void obj_Player::DrawReticle()
 			if(plr->forcedEmptyHands)
 				continue;
 			int attmID = plr->m_Weapons[plr->m_SelectedWeapon]->getWeaponAttachmentID(WPN_ATTM_LEFT_RAIL);
-			bool hasFlashlight = attmID == 400018 || attmID == 400022 || plr->m_Weapons[plr->m_SelectedWeapon]->getItemID()==101306;
-			bool hasLaser = attmID == 400004 || attmID == 400021;
+			bool hasFlashlight = WeaponConfig::isFlashlightAttachment(attmID) || plr->m_Weapons[plr->m_SelectedWeapon]->getItemID()==101306;
+			bool hasLaser = WeaponConfig::isLaserAttachment(attmID);
 
 			if( hasFlashlight || hasLaser ) // laser, flashlight
 			{
@@ -4620,7 +4669,7 @@ void obj_Player::DrawReticle()
 							float scale = viewDot*0.5f;
 							if(distToCamera < 10.0f)
 								scale = scale * (1.0f+2.0f*R3D_CLAMP((distToCamera/10.0f), 0.0f, 1.0f));
-							else if(attmID == 400018 || attmID == 400022) // flashlight, max range 20m
+							else if(WeaponConfig::isFlashlightAttachment(attmID)) // flashlight, max range 20m
 								scale = scale * (3.0f-(3*(R3D_CLAMP((distToCamera-10.0f)/10.0f, 0.0f, 0.95f))));
 							else // laser, max range 40m
 								scale = scale * (3.0f-(3*(R3D_CLAMP((distToCamera-10.0f)/30.0f, 0.0f, 1.0f))));
@@ -4645,7 +4694,8 @@ void obj_Player::DrawReticle()
 		scopeRendering = true;
 	}
 
-	r3d_assert(scopeConfig);
+	if(scopeRendering && !scopeConfig)
+		scopeRendering = false;
 
 	if(scopeRendering) 	// draw sniper scope
 	{
@@ -4672,7 +4722,7 @@ void obj_Player::DrawReticle()
 		gPFX_ScopeEffect.SetScopeScale(scaleScope);
 	}
 #ifndef FINAL_BUILD
-	else if(g_bEditMode && r_show_player_debug_data->GetBool() && scopeConfig->reticule) // draw reticule only in editor, in game reticule is in flash
+	else if(g_bEditMode && r_show_player_debug_data->GetBool() && scopeConfig && scopeConfig->reticule) // draw reticule only in editor, in game reticule is in flash
 	{
 		float rw = (float)scopeConfig->reticule->GetWidth();
 		float rh = (float)scopeConfig->reticule->GetHeight();
@@ -5520,7 +5570,7 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 		}
 		else
 		{
-			r_first_person_render_z_start->SetFloat(0.1f);
+			r_first_person_render_z_start->SetFloat(0.01f);
 			r_first_person_render_z_end->SetFloat(1.5f);
 		}
 	}
@@ -5585,28 +5635,28 @@ obj_Player::AppendRenderables( RenderArray ( & render_arrays  )[ rsCount ], cons
 			if(m_needToDrawBarricadePlacement)
 			{
 				r3dMesh* riotMesh = NULL;
-				if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_BarbWireBarricade)
+				if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_Barricade_BarbWire)
 				{
 					if(m_BarricadeMeshPlacement == NULL)
-						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Barricade_BarbWire_Built.sco", true, false, true, true );
+						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_barbwire_deployed.sco", true, false, true, true );
 					riotMesh = m_BarricadeMeshPlacement;
 				}
-				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_WoodShieldBarricade)
+				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_Barricade_Wood_Shield)
 				{
 					if(m_BarricadeMeshPlacement == NULL)
-						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Barricade_WoodShield_Built.sco", true, false, true, true );
+						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_shield_wood_01_deployed.sco", true, false, true, true );
 					riotMesh = m_BarricadeMeshPlacement;
 				}
-				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_RiotShieldBarricade)
+				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_Barricade_Metal_Shield)
 				{
 					if(m_BarricadeMeshPlacement == NULL)
-						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\Item_Riot_Shield_01.sco", true, false, true, true );
+						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_shield_metal_01_deployed.sco", true, false, true, true );
 					riotMesh = m_BarricadeMeshPlacement;
 				}
-				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_SandbagBarricade)
+				else if(m_needToDrawBarricadePlacement == WeaponConfig::ITEMID_Barricade_Spike_Mat)
 				{
 					if(m_BarricadeMeshPlacement == NULL)
-						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\Weapons\\item_barricade_Sandbag_built.sco", true, false, true, true );
+						m_BarricadeMeshPlacement = r3dGOBAddMesh("Data\\ObjectsDepot\\SS_Survival\\ss_barricade_spike_mat_deployed.sco", true, false, true, true );
 					riotMesh = m_BarricadeMeshPlacement;
 				}
 				if(riotMesh->IsDrawable())
@@ -6363,7 +6413,7 @@ void ProcessCharacterEditor(obj_Player* pl, float left, float top, float height)
 
 		int numItemsInWeaponList = g_pWeaponArmory->getNumWeapons() + 1;
 		weaponDB_idList = new uint32_t[numItemsInWeaponList];
-		weaponDB_idList[0] = -1;
+		weaponDB_idList[0] = 0;
 		for(int i=1; i<numItemsInWeaponList; ++i)
 		{
 			const WeaponConfig* config = allWpns[i-1];
@@ -6636,10 +6686,40 @@ void ProcessCharacterEditor(obj_Player* pl, float left, float top, float height)
 
 	//if(imgui_Button(500, 550, 300, 30, "Apply Changes"))
 	{
-		wiCharDataFull loadout;
+		wiCharDataFull loadout = pl->CurLoadout;
 		loadout.Health = 100;
-		loadout.Items[0].itemID = weaponDB_idList[selectedPrimaryWeaponIndex];
-		loadout.Items[1].itemID = weaponDB_idList[selectedSecondaryWeaponIndex];
+
+		const uint32_t primaryWeaponId = weaponDB_idList[selectedPrimaryWeaponIndex];
+		const uint32_t secondaryWeaponId = weaponDB_idList[selectedSecondaryWeaponIndex];
+		const bool primaryWeaponChanged = loadout.Items[0].itemID != primaryWeaponId;
+		const bool secondaryWeaponChanged = loadout.Items[1].itemID != secondaryWeaponId;
+
+		if(primaryWeaponId == 0)
+			loadout.Items[0].Reset();
+		else if(primaryWeaponChanged)
+		{
+			loadout.Items[0].Reset();
+			loadout.Items[0].itemID = primaryWeaponId;
+			loadout.Items[0].quantity = 1;
+		}
+		else if(loadout.Items[0].quantity <= 0)
+		{
+			loadout.Items[0].quantity = 1;
+		}
+
+		if(secondaryWeaponId == 0)
+			loadout.Items[1].Reset();
+		else if(secondaryWeaponChanged)
+		{
+			loadout.Items[1].Reset();
+			loadout.Items[1].itemID = secondaryWeaponId;
+			loadout.Items[1].quantity = 1;
+		}
+		else if(loadout.Items[1].quantity <= 0)
+		{
+			loadout.Items[1].quantity = 1;
+		}
+
 		loadout.Items[6].itemID = armorDBids[selectedArmorIndex];
 		loadout.Items[7].itemID = headarmorDBids[selectedHeadArmorIndex];
 
@@ -6653,12 +6733,22 @@ void ProcessCharacterEditor(obj_Player* pl, float left, float top, float height)
 		loadout.Attachment[0].attachments[WPN_ATTM_LEFT_RAIL] = attachmentDB_leftRail_idList[selectedPrimaryWeapon_LeftRail];
 		loadout.Attachment[0].attachments[WPN_ATTM_BOTTOM_RAIL] = attachmentDB_bottomRail_idList[selectedPrimaryWeapon_BottomRail];
 		loadout.Attachment[0].attachments[WPN_ATTM_CLIP] = attachmentDB_clip_idList[selectedPrimaryWeapon_Clip];
+		if(primaryWeaponChanged || pl->CurLoadout.Attachment[0].attachments[WPN_ATTM_CLIP] != loadout.Attachment[0].attachments[WPN_ATTM_CLIP])
+		{
+			loadout.Items[0].Var1 = -1;
+			loadout.Items[0].Var2 = -1;
+		}
 
 		loadout.Attachment[1].attachments[WPN_ATTM_MUZZLE] = attachmentDB_muzzle_idList[selectedSecondaryWeapon_Muzzle];
 		loadout.Attachment[1].attachments[WPN_ATTM_UPPER_RAIL] = attachmentDB_upperRail_idList[selectedSecondaryWeapon_UpperRail];
 		loadout.Attachment[1].attachments[WPN_ATTM_LEFT_RAIL] = attachmentDB_leftRail_idList[selectedSecondaryWeapon_LeftRail];
 		loadout.Attachment[1].attachments[WPN_ATTM_BOTTOM_RAIL] = attachmentDB_bottomRail_idList[selectedSecondaryWeapon_BottomRail];
 		loadout.Attachment[1].attachments[WPN_ATTM_CLIP] = attachmentDB_clip_idList[selectedSecondaryWeapon_Clip];
+		if(secondaryWeaponChanged || pl->CurLoadout.Attachment[1].attachments[WPN_ATTM_CLIP] != loadout.Attachment[1].attachments[WPN_ATTM_CLIP])
+		{
+			loadout.Items[1].Var1 = -1;
+			loadout.Items[1].Var2 = -1;
+		}
 
 		if(pl->CurLoadout.Items[0].itemID != loadout.Items[0].itemID ||
 		   pl->CurLoadout.Items[1].itemID != loadout.Items[1].itemID ||
@@ -6673,6 +6763,12 @@ void ProcessCharacterEditor(obj_Player* pl, float left, float top, float height)
 		)
 		{
 			pl->UpdateLoadoutSlot(loadout);
+			if(loadout.Items[0].itemID)
+				pl->ChangeWeaponByIndex(0);
+			else if(loadout.Items[1].itemID)
+				pl->ChangeWeaponByIndex(1);
+			else
+				pl->UpdateCharWeaponMeshes();
 		}
 	}
 

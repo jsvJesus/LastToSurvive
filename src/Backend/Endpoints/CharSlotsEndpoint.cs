@@ -265,6 +265,14 @@ public static class CharSlotsEndpoint
         int legsIndex =
             parameters.GetRequiredInt32("LegsIdx");
 
+        int hairIndex =
+            ReadOptionalInt32(
+                parameters.GetOptional("HairIdx"));
+
+        int feetIndex =
+            ReadOptionalInt32(
+                parameters.GetOptional("FeetIdx"));
+
         await using var command =
             new SqlCommand(
                 "dbo.WZ_CharCreate",
@@ -302,6 +310,14 @@ public static class CharSlotsEndpoint
         command.Parameters.Add(
             "@in_LegsIdx",
             SqlDbType.Int).Value = legsIndex;
+
+        command.Parameters.Add(
+            "@in_HairIdx",
+            SqlDbType.Int).Value = hairIndex;
+
+        command.Parameters.Add(
+            "@in_FeetIdx",
+            SqlDbType.Int).Value = feetIndex;
 
         await using SqlDataReader reader =
             await command.ExecuteReaderAsync(
@@ -572,6 +588,27 @@ public static class CharSlotsEndpoint
                 $"bad int field {columnName}",
                 exception);
         }
+    }
+
+    private static int ReadOptionalInt32(
+        string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return 0;
+        }
+
+        if (!int.TryParse(
+                value,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out int result))
+        {
+            throw new LegacyApiException(
+                "bad integer parameter");
+        }
+
+        return result;
     }
 
     private static string? TryReadString(

@@ -192,6 +192,7 @@ private:
 
 	// replacement anims for FPS mode, when weapon has scope attached
 	int*		m_animationIds_FPS;
+	int*		m_animationIds_FPS_Scope;
 
 	int getWeaponFireSound();
 	void reloadMuzzleParticle();

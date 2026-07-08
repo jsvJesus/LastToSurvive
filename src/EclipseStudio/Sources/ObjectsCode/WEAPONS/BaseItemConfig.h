@@ -12,6 +12,8 @@ public:
 	uint32_t m_itemID;
 	STORE_CATEGORIES category;
 
+	char* m_ModelFile;
+	char* m_ModelFile_FPS;
 	char* m_Description;
 	char* m_StoreIcon;
 	char* m_StoreName;
@@ -68,6 +70,7 @@ protected:
 	mutable r3dMesh* m_Model;
 public:
 	char* m_ModelPath;
+	char* m_ModelPath_FPS;
 
 	ModelItemConfig(uint32_t id) : BaseItemConfig(id)
 	{

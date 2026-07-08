@@ -302,7 +302,7 @@ BOOL obj_Zombie::OnCreate()
 	if(!heroConfig) r3dError("there is no zombie hero %d", CreateParams.HeroItemID);
 	
 	zombieParts[0] = heroConfig->getHeadMesh(CreateParams.HeadIdx);
-	zombieParts[1] = heroConfig->getBodyMesh(CreateParams.HeadIdx, false);
+	zombieParts[1] = heroConfig->getBodyMesh(CreateParams.BodyIdx, false);
 	zombieParts[2] = heroConfig->getLegMesh(CreateParams.LegsIdx);
 
 	if(HalloweenZombie)

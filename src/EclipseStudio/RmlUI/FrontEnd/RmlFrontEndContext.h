@@ -395,7 +395,7 @@ private:
 	char RenameGamertag[64]{};
 	char CreateGamertag[64]{};
 
-	int CreateHeroItemID = 20201;
+	int CreateHeroItemID = 20754;
 	int CreateHardcore = 0;
 
 	int LastSeenDeviceResetCount = -1;

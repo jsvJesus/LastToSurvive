@@ -1,37 +1,81 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <GearArmory>
-	<Gear itemID="20015" category="11" Weight="4000">
-		<Model file="Data/ObjectsDepot/Characters/ARMOR_Rebel_Heavy.sco" />
-		<Store name="Custom Guerilla" icon="$Data/Weapons/StoreIcons/ARMOR_Rebel_Heavy.dds" desc="Custom designed guerilla field gear and body armor that allows for decent protection under fast moving conditions. Level 2 Protection" LevelRequired="20" slotW="2" slotH="3" />
-		<Armor damagePerc="25" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
-	</Gear>
-	<Gear itemID="20054" category="11" Weight="2000">
-		<Model file="Data/ObjectsDepot/Characters/Armor_IBA_01_Sand.sco" />
-		<Store name="IBA Sand" icon="$Data/Weapons/StoreIcons/Armor_IBA_01_Sand.dds" desc="Special IBA release gear in Sand toned pattern with Level 2 protection." LevelRequired="10" slotW="2" slotH="3" />
-		<Armor damagePerc="20" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
-	</Gear>
-	<Gear itemID="20056" category="11" Weight="3000">
-		<Model file="Data/ObjectsDepot/Characters/Armor_MTV_01_Forest.sco" />
-		<Store 
-			name="MTV Forest" 
-			icon="$Data/Weapons/StoreIcons/Armor_MTV_01_Forest.dds" 
-			desc="Limited edition MTV release Forest patterned gear with Level 2 protection." 
-			LevelRequired="15" 
-			slotW="2" 
-			slotH="3" 
-		/>
-		<Armor damagePerc="20" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="2" />
-	</Gear>
-	<Gear itemID="20059" category="11" Weight="2000">
-		<Model file="Data/ObjectsDepot/Characters/ARMOR_Light_Forest.sco" />
-		<Store 
-			name="Light Gear Forest" 
-			icon="$Data/Weapons/StoreIcons/ARMOR_Light_Forest.dds" 
-			desc="Light weight Level 1 protection in a Green Forest pattern." 
-			LevelRequired="10" 
-			slotW="2" 
-			slotH="3" 
-		/>
-		<Armor damagePerc="15" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="1" />
-	</Gear>
+  <Gear itemID="20620" category="11" Weight="1500" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Hard_01.sco" />
+    <Store name="$Armor_Hard_01" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Hard_01.dds" desc="$Armor_Hard_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="30" damageMax="400" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20621" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleROTB/Armor_01.sco" />
+    <Store name="$Armor_01" icon="$Data/Weapons/StoreIcons/Armor_01.dds" desc="$Armor_01_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="30" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20622" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleROTB/Armor_02.sco" />
+    <Store name="$Armor_02" icon="$Data/Weapons/StoreIcons/Armor_02.dds" desc="$Armor_02_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="30" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20623" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/CharactersNew/Char_MaleROTB/Armor_03.sco" />
+    <Store name="$Armor_03" icon="$Data/Weapons/StoreIcons/Armor_03.dds" desc="$Armor_03_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="30" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20641" category="11" Weight="2000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Hard_02.sco" />
+    <Store name="$Armor_Hard_02" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Hard_02.dds" desc="$Armor_Hard_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="32" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="1" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20642" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Soft_01.sco" />
+    <Store name="$Armor_Soft_01" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Soft_01.dds" desc="$Armor_Soft_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="20" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20643" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Soft_02.sco" />
+    <Store name="$Armor_Soft_02" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Soft_02.dds" desc="$Armor_Soft_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="23" damageMax="450" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20644" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Craft_01.sco" />
+    <Store name="$Armor_03" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Craft_01.dds" desc="$Armor_03_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="25" damageMax="150" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20645" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Craft_02.sco" />
+    <Store name="$Armor_04" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Craft_02.dds" desc="$Armor_04_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="30" damageMax="300" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20646" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Craft_03.sco" />
+    <Store name="$Armor_05" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Craft_03.dds" desc="$Armor_05_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="35" damageMax="450" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="1" RepairToolsCost="0" RepairPartsCost="1" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="1" />
+  </Gear>
+  <Gear itemID="20647" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Craft_04.sco" />
+    <Store name="$Armor_06" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Craft_04.dds" desc="$Armor_06_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="40" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="2" RepairToolsCost="0" RepairPartsCost="1" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="2" />
+  </Gear>
+  <Gear itemID="20827" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Hard_03.sco" />
+    <Store name="$Armor_Hard_03" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Hard_03.dds" desc="$Armor_Hard_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="35" damageMax="800" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="1" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
+  <Gear itemID="20828" category="11" Weight="1000" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Armor/Armor_Soft_03.sco" />
+    <Store name="$Armor_Soft_03" icon="$Data/ObjectsDepot/SS_Armor/StoreIcons/Armor_Soft_03.dds" desc="$Armor_Soft_desc" LevelRequired="0" gameMode="1" />
+    <Armor damagePerc="27" damageMax="600" bulkiness="0" inaccuracy="0" stealth="0" ProtectionLevel="0" MaxRepairs="0" RepairToolsCost="0" RepairPartsCost="0" Rarity="0" />
+    <Dur u="0" r1="0" r2="0" r3="0" r4="" r5="" r6="0" />
+  </Gear>
 </GearArmory>

@@ -17,7 +17,7 @@ BulletShell::~BulletShell()
 	r3d_assert(m_physObj==0);
 }
 
-const float BULLET_LIFETIME = 15.0f;
+const float BULLET_LIFETIME = 0.5f;
 
 void BulletShell::Init(const r3dPoint3D& pos, const r3dPoint3D& vel,  const PhysicsObjectConfig& config, r3dMesh* mesh, BulletShellType type, const D3DXMATRIX& rotation)
 {
@@ -76,22 +76,76 @@ void BulletShell::OnCollide(PhysicsCallbackObject *obj, CollisionInfo &trace)
 }
 
 //////////////////////////////////////////////////////////////////////////
+static r3dMesh* LoadShellMesh(const char* const* paths, int numPaths)
+{
+	for(int i = 0; i < numPaths; ++i)
+	{
+		bool fileExists = r3dFileExists(paths[i]);
+		if(!fileExists)
+		{
+			char scbPath[MAX_PATH];
+			r3dscpy(scbPath, paths[i]);
+			char* ext = strrchr(scbPath, '.');
+			if(ext)
+			{
+				r3dscpy(ext, ".scb");
+				fileExists = r3dFileExists(scbPath);
+			}
+		}
+
+		if(!fileExists)
+			continue;
+
+		return r3dGOBAddMesh(paths[i], true, false, false, true);
+	}
+
+	return NULL;
+}
+
 BulletShellMngr::BulletShellMngr()
 {
 	m_numActiveShells = 0;
 
-	m_shellMeshes[0] = r3dGOBAddMesh("Data/ObjectsDepot/Weapons/Shell_Pistol.sco", true, false, false, true); r3d_assert(m_shellMeshes[0]);
-	m_shellMeshes[1] = r3dGOBAddMesh("Data/ObjectsDepot/Weapons/Shell_Rifle.sco", true, false, false, true); r3d_assert(m_shellMeshes[1]);
-	m_shellMeshes[2] = r3dGOBAddMesh("Data/ObjectsDepot/Weapons/Shell_Shotgun.sco", true, false, false, true); r3d_assert(m_shellMeshes[2]);
+	const char* pistolShells[] = {
+		"Data/ObjectsDepot/ROTB_Weapons_HG/Shell_Pistol.sco",
+		"Data/ObjectsDepot/SS_Ammo/Shell_Pistol.sco",
+	};
+	const char* rifleShells[] = {
+		"Data/ObjectsDepot/ROTB_Weapons_ASR/Shell_Rifle.sco",
+		"Data/ObjectsDepot/SS_Ammo/Shell_Rifle.sco",
+	};
+	const char* shotgunShells[] = {
+		"Data/ObjectsDepot/ROTB_Weapons_SHG/Shell_Shotgun.sco",
+		"Data/ObjectsDepot/SS_Ammo/Shell_Shotgun.sco",
+	};
 
-	GameObject::LoadPhysicsConfig(m_shellMeshes[0]->FileName.c_str(), m_shellPhysConfigs[0]); r3d_assert(m_shellPhysConfigs[0].ready);
-	GameObject::LoadPhysicsConfig(m_shellMeshes[1]->FileName.c_str(), m_shellPhysConfigs[1]); r3d_assert(m_shellPhysConfigs[1].ready);
-	GameObject::LoadPhysicsConfig(m_shellMeshes[2]->FileName.c_str(), m_shellPhysConfigs[2]); r3d_assert(m_shellPhysConfigs[2].ready);
-	m_shellPhysConfigs[0].group = PHYSCOLL_TINY_GEOMETRY;
-	m_shellPhysConfigs[1].group = PHYSCOLL_TINY_GEOMETRY;
-	m_shellPhysConfigs[2].group = PHYSCOLL_TINY_GEOMETRY;
+	m_shellMeshes[0] = LoadShellMesh(pistolShells, _countof(pistolShells));
+	m_shellMeshes[1] = LoadShellMesh(rifleShells, _countof(rifleShells));
+	m_shellMeshes[2] = LoadShellMesh(shotgunShells, _countof(shotgunShells));
 
-	m_shellPhysConfigs[0].isFastMoving = m_shellPhysConfigs[1].isFastMoving = m_shellPhysConfigs[2].isFastMoving = true;
+	for(int i = 0; i < BST_NumElements; ++i)
+	{
+		if(!m_shellMeshes[i])
+			r3dOutToLog("BulletShellMngr: shell mesh %d is missing, shell ejection disabled for this type\n", i);
+	}
+
+	for(int i = 0; i < BST_NumElements; ++i)
+	{
+		if(!m_shellMeshes[i])
+			continue;
+
+		GameObject::LoadPhysicsConfig(m_shellMeshes[i]->FileName.c_str(), m_shellPhysConfigs[i]);
+		if(!m_shellPhysConfigs[i].ready)
+		{
+			r3dOutToLog("BulletShellMngr: shell physics config is missing for '%s'\n", m_shellMeshes[i]->FileName.c_str());
+			m_shellMeshes[i] = NULL;
+			continue;
+		}
+
+		m_shellPhysConfigs[i].group = PHYSCOLL_TINY_GEOMETRY;
+		m_shellPhysConfigs[i].isFastMoving = true;
+	}
+
 };
 
 BulletShellMngr::~BulletShellMngr()
@@ -102,6 +156,12 @@ BulletShellMngr::~BulletShellMngr()
 
 void BulletShellMngr::AddShell(const r3dPoint3D& pos, const r3dPoint3D& vel, const D3DXMATRIX& rotation, BulletShellType shellType)
 {
+	if(shellType < 0 || shellType >= BST_NumElements)
+		return;
+
+	if(!m_shellMeshes[(int)shellType] || !m_shellPhysConfigs[(int)shellType].ready)
+		return;
+
 	// PT: sometimes animation has QNAN in it, not sure where is it coming from. Seems like in some cases quaternion becomes fucked up and not able to transform it into a matrix. As all other data in skeleton is fine
 	if(!(r3d_float_isFinite(vel.x) && r3d_float_isFinite(vel.y) && r3d_float_isFinite(vel.z)))
 		return;
@@ -148,13 +208,17 @@ void BulletShellMngr::AppendRenderables(RenderArray(&render_arrays)[rsCount], co
 		if(!m_Shells[i].Active())
 			continue;
 
+		r3dMesh* shellMesh = m_shellMeshes[(int)m_Shells[i].m_Type];
+		if(!shellMesh)
+			continue;
+
 		float distSq = (Cam - m_Shells[i].getPosition()).LengthSq();
 		float dist = sqrtf( distSq );
 
 		int idist = R3D_MIN( (int)dist, 0xffff );
 
 		uint32_t prevCount = render_arrays[ rsFillGBuffer ].Count();
-		m_shellMeshes[(int)m_Shells[i].m_Type]->AppendRenderablesDeferred( render_arrays[ rsFillGBuffer ], r3dColor::white);
+		shellMesh->AppendRenderablesDeferred( render_arrays[ rsFillGBuffer ], r3dColor::white);
 		for( uint32_t j = prevCount, e = render_arrays[ rsFillGBuffer ].Count(); j < e; j++ )
 		{
 			BulletShellDeferredRenderable& rend = static_cast<BulletShellDeferredRenderable&>( render_arrays[ rsFillGBuffer ][j] ) ;

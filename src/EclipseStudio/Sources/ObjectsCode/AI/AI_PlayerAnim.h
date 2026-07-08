@@ -108,6 +108,10 @@ static	int		GetMoveDirFromAcceleration(const r3dPoint3D& accel);
 	  //int		bombs_tps[20];
 	  //int		bombs_fps[20];
 	  int		jumps[20];
+	  int		jumpsASR[20];
+		int		jumpsDeployable[20];
+	  int		jumpsFallingDown[3];
+	  int		jumpsFallingDownASR[3];
 	  int		deaths[20];
 	  int		UI_IdleNoWeapon;
 
@@ -116,7 +120,9 @@ static	int		GetMoveDirFromAcceleration(const r3dPoint3D& accel);
 	};
 	animIndices_s	aid_;
 	int		GetGrenadeAnimId(bool IsFPS, int PlayerState, int GrenadeState);
-	int		GetJumpAnimId(int PlayerState, int JumpState);
+	int		GetJumpAnimId(int PlayerState, int JumpState, bool FallingDown = false);
+	int		GetJumpAnimIdASR(int PlayerState, int JumpState, bool FallingDown = false);
+	int		GetJumpAnimUsableItems(int PlayerState, int JumpState, bool FallingDown=false);
 	
 	// default weapon animation indices
 	int		wpn1[AIDX_COUNT];
@@ -134,7 +140,7 @@ static	int		GetMoveDirFromAcceleration(const r3dPoint3D& accel);
 
 	void		LoadAnimations();
 	void		 LoadLowerAnimations();
-	void		 LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT], const char* names[AIDX_COUNT]);
+	void		 LoadWeaponAnim(int (&wid)[AIDX_COUNT], int (&wid_fps)[AIDX_COUNT], const char* names[AIDX_COUNT], const char* fpsNames[AIDX_COUNT] = NULL);
 	void		 LoadGrenadeAnim();
 	void		 LoadJumpAnim();
 	void		 LoadDeathAnim();
@@ -158,12 +164,15 @@ enum ESlot
 	SLOT_UpperBody = 0,
 	SLOT_LowerBody,
 	SLOT_Head,
+	SLOT_Hair,
+	SLOT_Feet,
 	SLOT_Armor,
 	SLOT_Helmet,
 	SLOT_Backpack,
 	SLOT_Weapon,
 	SLOT_WeaponBackRight,
 	SLOT_WeaponSide,
+	SLOT_Weapon_BackRPG,
 	SLOT_Max,
 };
 
@@ -250,6 +259,7 @@ class CUberAnim
 	int		jumpState;
 	int		jumpPlayerState; // state when player started to jump (keep to avoid starting jump idle then switch to run)
 	bool		jumpWeInAir;     // flag that we finally in air (started to jump upward)
+	bool		FallingDown;
 	float		jumpAirTime;
 	int		jumpMoveTrackID; // track id of underlying lower body anim
 	int		jumpMoveTrackID2;// track id of underlying upper body anim
@@ -306,7 +316,7 @@ class CUberAnim
 	float		jumpStartTimeByState[2];
 	float		jumpStartTime;
 	void		StartJump();
-	void		UpdateJump(bool bOnGround);
+	void		UpdateJump(bool bOnGround, float fHeightAboveGround);
 	
 	void		StartDeathAnim();
 

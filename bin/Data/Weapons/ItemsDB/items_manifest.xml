@@ -1,28 +1,23 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <ItemDatabase version="1" basePath="Data/Weapons/ItemsDB" cellSize="64">
-	<Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/grips.xml" count="3" />
-	<Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/magazines.xml" count="48" />
-	<Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/muzzle.xml" count="4" />
-	<Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/optics.xml" count="44" />
-	<Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/side_rail.xml" count="4" />
-	<Armory type="FoodArmory" file="Data/Weapons/ItemsDB/Consumables/food.xml" count="10" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Consumables/medicine_weapons.xml" count="8" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Consumables/placeable_weapons.xml" count="35" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Consumables/usable_weapons.xml" count="3" />
-	<Armory type="FoodArmory" file="Data/Weapons/ItemsDB/Consumables/water.xml" count="7" />
-	<Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/armor.xml" count="4" />
-	<Armory type="BackpackArmory" file="Data/Weapons/ItemsDB/Gear/backpacks.xml" count="8" />
-	<Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/gear_category_14.xml" count="3" />
-	<Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/helmets.xml" count="29" />
-	<Armory type="HeroArmory" file="Data/Weapons/ItemsDB/Gear/heroes.xml" count="13" />
-	<Armory type="ItemsDB" file="Data/Weapons/ItemsDB/Other/account_items.xml" count="8" />
-	<Armory type="LootBoxDB" file="Data/Weapons/ItemsDB/Other/lootboxes.xml" count="76" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/assault_rifles.xml" count="15" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/grenades.xml" count="8" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/handguns.xml" count="12" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/machine_guns.xml" count="4" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/melee.xml" count="28" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/shotguns.xml" count="5" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/sniper_rifles.xml" count="7" />
-	<Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/submachine_guns.xml" count="10" />
+  <Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/muzzle.xml" count="8" />
+  <Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/optics.xml" count="35" />
+  <Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/side_rail.xml" count="7" />
+  <Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/grips.xml" count="2" />
+  <Armory type="AttachmentArmory" file="Data/Weapons/ItemsDB/Attachments/magazines.xml" count="37" />
+  <Armory type="BackpackArmory" file="Data/Weapons/ItemsDB/Gear/backpacks.xml" count="58" />
+  <Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/armor.xml" count="13" />
+  <Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/gear_category_14.xml" count="57" />
+  <Armory type="GearArmory" file="Data/Weapons/ItemsDB/Gear/helmets.xml" count="75" />
+  <Armory type="HeroArmory" file="Data/Weapons/ItemsDB/Gear/heroes.xml" count="11" />
+  <Armory type="ItemsDB" file="Data/Weapons/ItemsDB/Other/account_items.xml" count="10" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/consumables.xml" count="8" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/assault_rifles.xml" count="39" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/category_24.xml" count="5" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/handguns.xml" count="22" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/machine_guns.xml" count="5" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/melee.xml" count="7" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/shotguns.xml" count="9" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/sniper_rifles.xml" count="13" />
+  <Armory type="WeaponsArmory" file="Data/Weapons/ItemsDB/Weapons/submachine_guns.xml" count="18" />
 </ItemDatabase>

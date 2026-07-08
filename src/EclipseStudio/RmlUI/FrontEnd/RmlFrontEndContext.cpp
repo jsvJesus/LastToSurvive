@@ -91,7 +91,7 @@ namespace
 		"!@#$%^&*()-=+_<>,./?'\":;|{}[]";
 
 	constexpr int DefaultHeroItemID =
-		20201;
+		20754;
 
 	constexpr int AppearanceVariantCount =
 		4;
@@ -470,14 +470,10 @@ namespace
 	{
 		static const uint32_t MedicineItemIds[] =
 		{
-			101256,
-			101261,
-			101262,
-			101300,
-			101301,
-			101302,
-			101303,
-			101304
+			109503,
+			109504,
+			109505,
+			109506
 		};
 
 		return IsOneOfItemIds(
@@ -514,10 +510,10 @@ namespace
 		static const uint32_t PlaceableItemIds[] =
 		{
 			101305,
-			101316,
-			101317,
-			101318,
-			101324,
+			112993,
+			112995,
+			112999,
+			113008,
 			101348,
 			101352,
 			101353,
@@ -1183,8 +1179,8 @@ namespace
 	{
 		switch (HeroItemID)
 		{
-		case 20174:
-			return "EX MILITARY";
+		case 20754:
+			return "LMS CHARACTER";
 
 		default:
 			return "SURVIVOR";
@@ -3240,13 +3236,13 @@ void RmlFrontEndContext::ResetCharacterCreate()
 	SetElementText(
 		CharacterCreateDocument,
 		"create_hero_name",
-		"ASIAN MALE"
+		"LMS CHARACTER"
 	);
 
 	SetElementText(
 		CharacterCreateDocument,
 		"create_hero_item",
-		"20201"
+		"20754"
 	);
 
 	SetElementText(

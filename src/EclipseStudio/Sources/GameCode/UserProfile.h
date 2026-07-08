@@ -41,6 +41,7 @@ enum STORE_CATEGORIES
 	storecat_SNP		= 21,	// Sniper rifles
 	storecat_SHTG		= 22,	// Shotguns
 	storecat_MG			= 23,	// Machine guns
+	storecat_RPG		= 24,	// Support/RPG weapons
 	storecat_HG			= 25,	// handguns
 	storecat_SMG		= 26,	// submachineguns
 	storecat_GRENADE	= 27,	// grenades and everything that you can throw. Mines shouldn't be in this group!!!
@@ -196,6 +197,8 @@ struct wiCharDataFull
 	int		HeadIdx;
 	int		BodyIdx;
 	int		LegsIdx;
+	int		HairIdx;
+	int		FeetIdx;
 	uint32_t	BackpackID; // itemID of backpack to render
 
 	// vars that is used only on client/server
@@ -333,7 +336,7 @@ class CClientUserProfile : public CUserProfile
 	int		ApiGetItemsInfo();
 	int		ApiBuyItem(int itemId, int buyIdx, __int64* out_InventoryID);
 
-	int		ApiCharCreate(const char* Gamertag, int Hardcore, int HeroItemID, int HeadIdx, int BodyIdx, int LegsIdx);
+	int		ApiCharCreate(const char* Gamertag, int Hardcore, int HeroItemID, int HeadIdx, int BodyIdx, int LegsIdx, int HairIdx = 0, int FeetIdx = 0);
 	int		ApiCharRename(const char* Gamertag);
 	int		ApiCharDelete();
 	int		ApiCharRevive();

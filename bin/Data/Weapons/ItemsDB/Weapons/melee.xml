@@ -1,283 +1,80 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <WeaponsArmory>
-	<Weapon itemID="101267" category="29" upgrade="1" FNAME="MEL_Knife_01" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Knife_01.sco" AnimPrefix="MEL_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_01.dds" />
-		<Store name="Tactical Knife" icon="$Data/Weapons/StoreIcons/MEL_Knife_01.dds" desc="A standard issue knife with an 8&quot; fixed blade, this knife was first designed in 1985 for the United States Army and was later adapted by several other countries as well as mercenary groups throughout the world due to its sturdy design and stopping power." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101278" category="29" upgrade="1" FNAME="MEL_BaseballBat_01" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_BaseballBat_01.sco" AnimPrefix="MEL_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_BaseballBat_01.dds" />
-		<Store name="Bat" icon="$Data/Weapons/StoreIcons/MEL_BaseballBat_01.dds" desc="Handy for those times when you need to beat the crap outta something or somebody." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="25" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101306" category="29" upgrade="1" FNAME="MEL_Flashlight" Weight="650">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Flashlight.sco" AnimPrefix="MEL_Flashlight" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Flashlight.dds" />
-		<Store name="Flashlight" icon="$Data/Weapons/StoreIcons/MEL_Flashlight.dds" desc="Flashlight for night time, also blinds other players and doubles as a last resort blunt object to bash in the heads of the infected" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="15" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101307" category="29" upgrade="1" FNAME="MEL_Hammer" Weight="700">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Hammer.sco" AnimPrefix="MEL_Hammer" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Hammer.dds" />
-		<Store name="Hammer" icon="$Data/Weapons/StoreIcons/MEL_Hammer.dds" desc="Go with the funk, it is said. If you cant groove to this then you probably are dead. Stop, Hammer time." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="35" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101308" category="29" upgrade="1" FNAME="MEL_Hatchet" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Hatchet.sco" AnimPrefix="MEL_Hatchet" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Hatchet.dds" />
-		<Store name="Hatchet" icon="$Data/Weapons/StoreIcons/MEL_Hatchet.dds" desc="Cold-Steel, drop forged head with differential heat treatment. American Hickory Handle.  Sharp corners will easily pierce the thickest skull and the razor sharp edge will shear through flesh and bone like it was white bread." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="50" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101309" category="29" upgrade="1" FNAME="MEL_Pickaxe" Weight="1000">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Pickaxe.sco" AnimPrefix="MEL_Pickaxe" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Pickaxe.dds" />
-		<Store name="Pickaxe" icon="$Data/Weapons/StoreIcons/MEL_Pickaxe.dds" desc="Spiked head, flat chisel. Has a good chance of getting stuck in the skull. Awkward to use in tight quarters." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101313" category="29" upgrade="1" FNAME="MEL_BaseballBat_Spikes_01" Weight="900">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_BaseballBat_Spikes_01.sco" AnimPrefix="MEL_BaseballBat_Spikes_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_BaseballBat_Spikes_01.dds" />
-		<Store name="Spiked Bat" icon="$Data/Weapons/StoreIcons/MEL_BaseballBat_Spikes_01.dds" desc="Just your traditional baseball bat. With spikes. Razor sharp, sure to leave a mark." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="45" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101314" category="29" upgrade="1" FNAME="MEL_BaseballBat_02" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_BaseballBat_02.sco" AnimPrefix="MEL_BaseballBat_02" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_BaseballBat_02.dds" />
-		<Store name="Metal Bat" icon="$Data/Weapons/StoreIcons/MEL_BaseballBat_02.dds" desc="Aluminum, will never rust. Heads bounce off faster. Not suitable for major league destruction." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101335" category="29" upgrade="1" FNAME="MEL_CandyCane_01" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_CandyCane_01.sco" AnimPrefix="MEL_CandyCane_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_CandyCane_01.dds" />
-		<Store name="Kandy Kane" icon="$Data/Weapons/StoreIcons/MEL_CandyCane_01.dds" desc="For yuletide slaughtering in style!" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="15" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101336" category="29" upgrade="1" FNAME="mel_katana_01" Weight="1200">
-		<Model file="Data/ObjectsDepot/Weapons/mel_katana_01.sco" AnimPrefix="mel_katana_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/mel_katana_01.dds" />
-		<Store name="Katana" icon="$Data/Weapons/StoreIcons/mel_katana_01.dds" desc="Ancient deadly sharp Samurai weapon, hand made to cleave your foe cleanly in two. Or three...or four...." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="50" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101337" category="29" upgrade="1" FNAME="mel_katana_01_special" Weight="1200">
-		<Model file="Data/ObjectsDepot/Weapons/mel_katana_01_special.sco" AnimPrefix="mel_katana_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/mel_katana_01_special.dds" />
-		<Store name="Jokoto Katana" icon="$Data/Weapons/StoreIcons/mel_katana_01_special.dds" desc="Among the most ancient blades, the Jokoto Katana's were manufactured for only the most elite and honorable of warriors. Carrying such a blade imparts great responsibility." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="50" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101338" category="29" upgrade="1" FNAME="MEL_katana_02_special" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_katana_02_special.sco" AnimPrefix="mel_katana_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_katana_02_special.dds" />
-		<Store name="Wakizashi" icon="$Data/Weapons/StoreIcons/MEL_katana_02_special.dds" desc="Shorter than its counterpart, the wakizashi is designed for closer combat and even ritual suicide." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101339" category="29" upgrade="1" FNAME="MEL_Machete_01" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Machete_01.sco" AnimPrefix="mel_machete_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Machete_01.dds" />
-		<Store name="Machete" icon="$Data/Weapons/StoreIcons/MEL_Machete_01.dds" desc="A rough but sharp blade used for clearing brush" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="50" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101343" category="29" upgrade="1" FNAME="MEL_BrassKnuckles" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_BrassKnuckles.sco" AnimPrefix="mel_machete" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_BrassKnuckles.dds" />
-		<Store name="Brass Knuckles" icon="$Data/Weapons/StoreIcons/MEL_BrassKnuckles.dds" desc="A tried and true classic. Pummel your enemies into submission!" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101344" category="29" upgrade="1" FNAME="MEL_Canoe_paddle" Weight="1000">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Canoe_paddle.sco" AnimPrefix="MEL_Canoe_paddle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Canoe_paddle.dds" />
-		<Store name="Canoe Paddle" icon="$Data/Weapons/StoreIcons/MEL_Canoe_paddle.dds" desc="Wooden canoe paddle" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101345" category="29" upgrade="1" FNAME="MEL_Cricket_bat" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Cricket_bat.sco" AnimPrefix="MEL_Cricket_bat" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Cricket_bat.dds" />
-		<Store name="Cricket bat" icon="$Data/Weapons/StoreIcons/MEL_Cricket_bat.dds" desc="Score some runs and crush some skulls!" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="35" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101346" category="29" upgrade="1" FNAME="MEL_Shovel" Weight="700">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Shovel.sco" AnimPrefix="MEL_Shovel" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Shovel.dds" />
-		<Store name="Shovel" icon="$Data/Weapons/StoreIcons/MEL_Shovel.dds" desc="Practical AND deadly" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101347" category="29" upgrade="1" FNAME="MEL_Chainsaw" Weight="1200">
-		<Model file="Data/ObjectsDepot/Weapons/MEL_Chainsaw.sco" AnimPrefix="MEL_Chainsaw" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/MEL_Chainsaw.dds" />
-		<Store name="Chainsaw" icon="$Data/Weapons/StoreIcons/MEL_Chainsaw.dds" desc="Tear through undead and living alike with this fearsome household tool" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="50" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101381" category="29" upgrade="1" FNAME="Mel_ButterflyKnife" Weight="400">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_ButterflyKnife.sco" AnimPrefix="Mel_ButterflyKnife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_ButterflyKnife.dds" />
-		<Store name="Butterfly Knife" icon="$Data/Weapons/StoreIcons/Mel_ButterflyKnife.dds" desc="A folding knife with two handles counter rotating around the blade so that when its closed the blade concealed" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101382" category="29" upgrade="1" FNAME="Mel_Crowbar" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_Crowbar.sco" AnimPrefix="Mel_Crowbar" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_Crowbar.dds" />
-		<Store name="Crowbar" icon="$Data/Weapons/StoreIcons/Mel_Crowbar.dds" desc="A multi use household tool, useful for construction or surviving an apocalyptic event" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101383" category="29" upgrade="1" FNAME="Mel_FireAxe" Weight="1200">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_FireAxe.sco" AnimPrefix="Mel_FireAxe" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_FireAxe.dds" />
-		<Store name="Fire Axe" icon="$Data/Weapons/StoreIcons/Mel_FireAxe.dds" desc="Standard issue axe used by firefighters to enter buildings and remove dangerous debris" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101384" category="29" upgrade="1" FNAME="Mel_FryingPan" Weight="1100">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_FryingPan.sco" AnimPrefix="Mel_FryingPan" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_FryingPan.dds" />
-		<Store name="Frying Pan" icon="$Data/Weapons/StoreIcons/Mel_FryingPan.dds" desc="Whether frying an egg or flattening a face, the common household frying pan has many uses" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101385" category="29" upgrade="1" FNAME="Mel_GardenShears" Weight="1000">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_GardenShears.sco" AnimPrefix="Mel_GardenShears" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_GardenShears.dds" />
-		<Store name="Garden Shears" icon="$Data/Weapons/StoreIcons/Mel_GardenShears.dds" desc="Whether shortening hedges or heads these shears are sure to come in handy" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101386" category="29" upgrade="1" FNAME="Mel_Golf_Club" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_Golf_Club.sco" AnimPrefix="Mel_Golf_Club" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_Golf_Club.dds" />
-		<Store name="Golf Club" icon="$Data/Weapons/StoreIcons/Mel_Golf_Club.dds" desc="Best used for long drives. FORE!" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101388" category="29" upgrade="1" FNAME="Mel_Pitchfork" Weight="1400">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_Pitchfork.sco" AnimPrefix="Mel_Pitchfork" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_Pitchfork.dds" />
-		<Store name="Pitchfork" icon="$Data/Weapons/StoreIcons/Mel_Pitchfork.dds" desc="Designed to move hay economically, its intimidating design suits it well to sticking some undead" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101389" category="29" upgrade="1" FNAME="Mel_PoliceBaton" Weight="700">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_PoliceBaton.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_PoliceBaton.dds" />
-		<Store name="Police Baton" icon="$Data/Weapons/StoreIcons/Mel_PoliceBaton.dds" desc="Used by law enforcement as an aid in hand to hand combat, often to subdue unruly or resistant suspects" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="30" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101390" category="29" upgrade="1" FNAME="Mel_Power_Drill" Weight="900">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_Power_Drill.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_Power_Drill.dds" />
-		<Store name="Power Drill" icon="$Data/Weapons/StoreIcons/Mel_Power_Drill.dds" desc="Battery powered and unconventional, the drill is quite effective at dispatching enemies in the grisliest way" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee_sharp" damage="40" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="120" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101391" category="29" upgrade="1" FNAME="Mel_Wrench" Weight="1200">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_Wrench.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_Wrench.dds" />
-		<Store name="Wrench" icon="$Data/Weapons/StoreIcons/Mel_Wrench.dds" desc="Loved by plumbers around the world, this hefty tool can easily collapse the skulls of your foes" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="melee" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="90" spread="0" recoil="0" numgrenades="0" grenadename="asr_grenade" firemode="001" ScopeType="default" ScopeZoom="0" />
-		<Animation type="melee" />
-		<Sound shoot="Sounds/NewWeapons/Melee/Melee_Whoosh" reload="" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
+  <Weapon itemID="111398" category="29" upgrade="1" FNAME="MEL_UNARMED" Weight="0" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/G3_Weapons_Melee/MEL_UNARMED_lod1.sco" file_fps="Data/ObjectsDepot/G3_Weapons_Melee/MEL_UNARMED.sco" AnimPrefix="MEL_UNARMED" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_UNARMED.dds" />
+    <Store name="$MEL_UNARMED" icon="$Data/ObjectsDepot/G3_Weapons_Melee/StoreIcons/MEL_UNARMED.dds" desc="$MEL_UNARMED_desc" LevelRequired="0" gameMode="0" />
+    <PrimaryFire bullet="melee" damage="7" ScopeType="default" immediate="true" mass="10" decay="1" speed="521" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Fists/Melee" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="0" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113092" category="29" upgrade="1" FNAME="MEL_Knife_MK1" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK1.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK1.dds" />
+    <Store name="$MEL_Knife_MK1" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK1.dds" desc="$MEL_Knife_MK1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113093" category="29" upgrade="1" FNAME="MEL_Knife_MK2" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK2.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK2.dds" />
+    <Store name="$MEL_Knife_MK2" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK2.dds" desc="$MEL_Knife_MK2_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113094" category="29" upgrade="1" FNAME="MEL_Knife_MK3" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK3_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK3.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK3.dds" />
+    <Store name="$MEL_Knife_MK3" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK3.dds" desc="$MEL_Knife_MK3_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113095" category="29" upgrade="1" FNAME="MEL_Knife_MK4" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK4_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK4.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK4.dds" />
+    <Store name="$MEL_Knife_MK4" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK4.dds" desc="$MEL_Knife_MK4_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113096" category="29" upgrade="1" FNAME="MEL_Knife_MK5" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK5_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK5.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK5.dds" />
+    <Store name="$MEL_Knife_MK5" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK5.dds" desc="$MEL_Knife_MK5_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113101" category="29" upgrade="1" FNAME="MEL_Knife_MK6" Weight="500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK6_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_KNIFE/MEL_Knife_MK6.sco" AnimPrefix="MEL_Tactical_Knife" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/MEL_Knife_MK6.dds" />
+    <Store name="$MEL_Knife_MK6" icon="$Data/ObjectsDepot/ROTB_Weapons_KNIFE/StoreIcons/MEL_Knife_MK6.dds" desc="$MEL_Knife_MK6_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="melee_sharp" ScopeType="default" damage="20" immediate="true" mass="10" decay="1" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="0" activeReloadTick="0" rateOfFire="100" spread="6" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="0" recoilLeft="1" recoilRight="0" rofMult="1" aggroRadius="15" />
+    <Animation type="melee" />
+    <Sound shoot="Sounds/Weapons/Melee/Knife/Melee_Knife" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="2000" r1="40" r2="60" r3="100" r4="0" r5="0" r6="0" />
+  </Weapon>
 </WeaponsArmory>

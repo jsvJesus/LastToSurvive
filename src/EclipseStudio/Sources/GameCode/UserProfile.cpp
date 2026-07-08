@@ -249,6 +249,8 @@ void CUserProfile::ParseLoadouts(pugi::xml_node& xmlItem)
 		w.HeadIdx     = xmlItem.attribute("HeadIdx").as_int();
 		w.BodyIdx     = xmlItem.attribute("BodyIdx").as_int();
 		w.LegsIdx     = xmlItem.attribute("LegsIdx").as_int();
+		w.HairIdx     = xmlItem.attribute("HairIdx").as_int();
+		w.FeetIdx     = xmlItem.attribute("FeetIdx").as_int();
 
 		w.ClanID      = xmlItem.attribute("ClanID").as_int();
 		w.ClanRank    = xmlItem.attribute("ClanRank").as_int();
@@ -497,11 +499,12 @@ static void replaceItemNameParams(T* itm, pugi::xml_node& xmlNode)
 		itm->m_StoreNameW = wcsdup(utf8ToWide(itm->m_StoreName));
 	}
 	
-	// replace store icon (FNAME)
-	char storeIcon[256];
-	sprintf(storeIcon, "$Data/Weapons/StoreIcons/%s.dds", fname);
-	if(strcmp(storeIcon, itm->m_StoreIcon) != 0)
+	// Keep the icon path from the items database. New items can store icons next to
+	// their asset folders, e.g. Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons.
+	if(!itm->m_StoreIcon || !itm->m_StoreIcon[0])
 	{
+		char storeIcon[256];
+		sprintf(storeIcon, "$Data/Weapons/StoreIcons/%s.dds", fname);
 		free(itm->m_StoreIcon);
 		itm->m_StoreIcon = strdup(storeIcon);
 	}
@@ -601,7 +604,7 @@ int CClientUserProfile::ApiGetItemsInfo()
 	return 0;
 }
 
-int CClientUserProfile::ApiCharCreate(const char* Gamertag, int Hardcore, int HeroItemID, int HeadIdx, int BodyIdx, int LegsIdx)
+int CClientUserProfile::ApiCharCreate(const char* Gamertag, int Hardcore, int HeroItemID, int HeadIdx, int BodyIdx, int LegsIdx, int HairIdx, int FeetIdx)
 {
 	CWOBackendReq req(this, "api_CharSlots.aspx");
 	req.AddParam("func",       "create");
@@ -611,6 +614,8 @@ int CClientUserProfile::ApiCharCreate(const char* Gamertag, int Hardcore, int He
 	req.AddParam("HeadIdx",    HeadIdx);
 	req.AddParam("BodyIdx",    BodyIdx);
 	req.AddParam("LegsIdx",    LegsIdx);
+	req.AddParam("HairIdx",    HairIdx);
+	req.AddParam("FeetIdx",    FeetIdx);
 	if(!req.Issue())
 	{
 		r3dOutToLog("ApiCharCreate failed: %d", req.resultCode_);

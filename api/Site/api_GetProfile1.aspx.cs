@@ -42,6 +42,8 @@ public partial class api_GetProfile1 : WOApiWebPage
             xml.Append(xml_attr("HeadIdx", reader["HeadIdx"]));
             xml.Append(xml_attr("BodyIdx", reader["BodyIdx"]));
             xml.Append(xml_attr("LegsIdx", reader["LegsIdx"]));
+            xml.Append(xml_attr("HairIdx", reader["HairIdx"]));
+            xml.Append(xml_attr("FeetIdx", reader["FeetIdx"]));
             xml.Append(xml_attr("BackpackSize", reader["BackpackSize"]));
             xml.Append(xml_attr("BackpackID", reader["BackpackID"]));
             xml.Append(xml_attr("ClanID", reader["ClanID"]));

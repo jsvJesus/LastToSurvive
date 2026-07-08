@@ -44,24 +44,24 @@ BOOL obj_ServerBarricade::OnCreate()
 	
 	// set FileName based on itemid for ReadPhysicsConfig() in OnCreate() 
 	r3dPoint3D bsize(1, 1, 1);
-	if(m_ItemID == WeaponConfig::ITEMID_BarbWireBarricade)
+	if(m_ItemID == WeaponConfig::ITEMID_Barricade_BarbWire)
 	{
-		FileName = "Data\\ObjectsDepot\\Weapons\\Item_Barricade_BarbWire_Built.sco";
+		FileName = "Data\\ObjectsDepot\\SS_Survival\\SS_Barricade_BarbWire.sco";
 		bsize    = r3dPoint3D(5.320016f, 1.842704f, 1.540970f);
 	}
-	else if(m_ItemID == WeaponConfig::ITEMID_WoodShieldBarricade)
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Wood_Shield)
 	{
-		FileName = "Data\\ObjectsDepot\\Weapons\\Item_Barricade_WoodShield_Built.sco";
+		FileName = "Data\\ObjectsDepot\\SS_Survival\\SS_Barricade_Shield_Wood_01.sco";
 		bsize    = r3dPoint3D(1.582400f, 2.083451f, 0.708091f);
 	}
-	else if(m_ItemID == WeaponConfig::ITEMID_RiotShieldBarricade)
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Metal_Shield)
 	{
-		FileName = "Data\\ObjectsDepot\\Weapons\\Item_Riot_Shield_01.sco";
+		FileName = "Data\\ObjectsDepot\\SS_Survival\\SS_Barricade_Shield_Metal_01.sco";
 		bsize    = r3dPoint3D(1.726829f, 2.136024f, 0.762201f);
 	}
-	else if(m_ItemID == WeaponConfig::ITEMID_SandbagBarricade)
+	else if(m_ItemID == WeaponConfig::ITEMID_Barricade_Spike_Mat)
 	{
-		FileName = "Data\\ObjectsDepot\\Weapons\\item_barricade_Sandbag_built.sco";
+		FileName = "Data\\ObjectsDepot\\SS_Survival\\SS_Barricade_Spike_Mat.sco";
 		bsize    = r3dPoint3D(1.513974f, 1.057301f, 1.111396f);
 	}
 	else

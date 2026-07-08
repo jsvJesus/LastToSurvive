@@ -111,24 +111,64 @@ public:
 	// PTUMIK: if adding new skill based items, make sure to add them to DB FN_VALIDATE_LOADOUT proc and also to CUserProfile::isValidInventoryItem()
 	enum EUsableItemIDs
 	{
-		ITEMID_Antibiotics  = 101256, 
-		ITEMID_Bandages  = 101261,
-		ITEMID_Bandages2 = 101262,
-		ITEMID_Painkillers = 101300,
+		ITEMID_Antibiotics  = 109504,
+		ITEMID_Bandages  = 109505,
 		ITEMID_ZombieRepellent = 101301,
 		ITEMID_C01Vaccine = 101302,
 		ITEMID_C04Vaccine = 101303,
-		ITEMID_Medkit = 101304,
+		ITEMID_Medkit = 109506,
+		ITEMID_MedkitMilitary = 109503,
 		ITEMID_PieceOfPaper = 101305,	// used to create world notes
 		ITEMID_AirHorn = 101323,
 		ITEMID_Binoculars = 101315,
 		ITEMID_RangeFinder = 101319,
 
-		ITEMID_BarbWireBarricade = 101316,
-		ITEMID_WoodShieldBarricade = 101317,
-		ITEMID_RiotShieldBarricade = 101318,
-		ITEMID_SandbagBarricade = 101324,
+		ITEMID_Barricade_Metal_Shield = 112993,
+		ITEMID_Barricade_BarbWire = 112995,
+		ITEMID_Barricade_Wood_Shield = 112999,
+		ITEMID_Barricade_Spike_Mat = 113008,
 	};
+
+	static bool isMedicalItem(uint32_t itemID)
+	{
+		return itemID == ITEMID_MedkitMilitary ||
+			itemID == ITEMID_Antibiotics ||
+			itemID == ITEMID_Bandages ||
+			itemID == ITEMID_Medkit;
+	}
+
+	static bool isBarricadeItem(uint32_t itemID)
+	{
+		return itemID == ITEMID_Barricade_Metal_Shield ||
+			itemID == ITEMID_Barricade_BarbWire ||
+			itemID == ITEMID_Barricade_Wood_Shield ||
+			itemID == ITEMID_Barricade_Spike_Mat;
+	}
+
+	static bool isLaserAttachment(uint32_t itemID)
+	{
+		return itemID == 410499 ||
+			itemID == 410500 ||
+			itemID == 410708 ||
+			itemID == 410709;
+	}
+
+	static bool isPistolLaserAttachment(uint32_t itemID)
+	{
+		return itemID == 410709;
+	}
+
+	static bool isFlashlightAttachment(uint32_t itemID)
+	{
+		return itemID == 410503 ||
+			itemID == 410706 ||
+			itemID == 410707;
+	}
+
+	static bool isPistolFlashlightAttachment(uint32_t itemID)
+	{
+		return itemID == 410706;
+	}
 
 	char* m_MuzzleParticle;
 
@@ -344,6 +384,7 @@ public:
 	r3dMesh* getMesh( bool allow_async_loading, bool first_person ) const;
 
 	int getConfigMeshRefs() const ;
+	void ensureSkeleton() const;
 
 	// called when unloading level
 	virtual void resetMesh() { 

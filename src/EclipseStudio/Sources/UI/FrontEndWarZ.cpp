@@ -506,11 +506,13 @@ static void LoadFrontendGameData(FrontendWarZ* UI)
 		// work around for loading fps model sometimes instead of proper tps model
 		plr->UpdateLoadoutSlot(plr->CurLoadout);
 		// switch player to UI idle mode
-		plr->uberAnim_->IsInUI = true;
+		plr->uberAnim_->IsInUI = false;
 		plr->uberAnim_->AnimPlayerState = -1;
 		plr->uberAnim_->anim.StopAll();	// prevent animation blending on loadout switch
 		plr->SyncAnimation(true);
 		UI->SetLoadedThings(plr);
+
+		PFX_3DLUTColorCorrection::s_damageHitColorCorrectionVal = 0.0f;
 	}
 }
 

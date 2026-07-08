@@ -19,7 +19,7 @@ class GameObject;
 #pragma pack(push)
 #pragma pack(1)
 
-#define P2PNET_VERSION		(0x0000004A + GBWEAPINFO_VERSION + GBGAMEINFO_VERSION + GAMEPLAYPARAM_VERSION)
+#define P2PNET_VERSION		(0x0000004B + GBWEAPINFO_VERSION + GBGAMEINFO_VERSION + GAMEPLAYPARAM_VERSION)
 
 #define NETID_PLAYERS_START	1		// players [1--255]
 #define NETID_OBJECTS_START	300		// various spawned objects [400-0xffff]
@@ -258,6 +258,8 @@ struct PKT_S2C_CreatePlayer_s : public DefaultPacketMixin<PKT_S2C_CreatePlayer>
 	BYTE		HeadIdx;
 	BYTE		BodyIdx;
 	BYTE		LegsIdx;
+	BYTE		HairIdx;
+	BYTE		FeetIdx;
 	
 	// equipped things
 	DWORD		WeaponID0;

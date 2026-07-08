@@ -219,7 +219,7 @@ void obj_ServerPlayer::DoDeath()
 	}
 	
 	// drop not-default backpack as well
-	if(loadout_->BackpackID != 20176)
+	if(loadout_->BackpackID != 21712)
 	{
 		// create network object
 		obj_DroppedItem* obj = (obj_DroppedItem*)srv_CreateGameObject("obj_DroppedItem", "obj_DroppedItem", GetRandomPosForItemDrop());
@@ -1434,8 +1434,8 @@ void obj_ServerPlayer::OnNetPacket(const PKT_C2C_PlayerUseItem_s& n)
 		return;
 	}
 
-	bool useOnOtherPlayer = usedItemId==WeaponConfig::ITEMID_Antibiotics||usedItemId==WeaponConfig::ITEMID_Bandages||usedItemId==WeaponConfig::ITEMID_Bandages2||
-		usedItemId==WeaponConfig::ITEMID_Painkillers||usedItemId==WeaponConfig::ITEMID_ZombieRepellent||usedItemId==WeaponConfig::ITEMID_C01Vaccine||
+	bool useOnOtherPlayer = usedItemId==WeaponConfig::ITEMID_Antibiotics||usedItemId==WeaponConfig::ITEMID_Bandages||
+		usedItemId==WeaponConfig::ITEMID_ZombieRepellent||usedItemId==WeaponConfig::ITEMID_C01Vaccine||
 		usedItemId==WeaponConfig::ITEMID_C04Vaccine||usedItemId==WeaponConfig::ITEMID_Medkit;
 	if(useOnOtherPlayer && n.var4!=0)
 	{
@@ -1462,9 +1462,7 @@ void obj_ServerPlayer::UseItem_ApplyEffect(const PKT_C2C_PlayerUseItem_s& n, uin
 	{
 		case WeaponConfig::ITEMID_Medkit:
 		case WeaponConfig::ITEMID_Bandages:
-		case WeaponConfig::ITEMID_Bandages2:
 		case WeaponConfig::ITEMID_Antibiotics:
-		case WeaponConfig::ITEMID_Painkillers:
 			{
 				const WeaponConfig* wc = g_pWeaponArmory->getWeaponConfig(itemID);
 				if(!wc) {
@@ -1493,10 +1491,10 @@ void obj_ServerPlayer::UseItem_ApplyEffect(const PKT_C2C_PlayerUseItem_s& n, uin
 				r3dOutToLog("vaccine used, %f\n", vaccineEffect);
 			}
 			break;
-		case WeaponConfig::ITEMID_BarbWireBarricade:
-		case WeaponConfig::ITEMID_WoodShieldBarricade:
-		case WeaponConfig::ITEMID_RiotShieldBarricade:
-		case WeaponConfig::ITEMID_SandbagBarricade:
+		case WeaponConfig::ITEMID_Barricade_BarbWire:
+		case WeaponConfig::ITEMID_Barricade_Wood_Shield:
+		case WeaponConfig::ITEMID_Barricade_Metal_Shield:
+		case WeaponConfig::ITEMID_Barricade_Spike_Mat:
 			UseItem_Barricade(n.pos, n.var1, itemID);
 			break;
 
@@ -2196,6 +2194,8 @@ DefaultPacket* obj_ServerPlayer::NetGetCreatePacket(int* out_size)
 	n.HeadIdx    = (BYTE)slot.HeadIdx;
 	n.BodyIdx    = (BYTE)slot.BodyIdx;
 	n.LegsIdx    = (BYTE)slot.LegsIdx;
+	n.HairIdx    = (BYTE)slot.HairIdx;
+	n.FeetIdx    = (BYTE)slot.FeetIdx;
 	n.WeaponID0  = slot.Items[wiCharDataFull::CHAR_LOADOUT_WEAPON1].itemID;
 	n.WeaponID1  = slot.Items[wiCharDataFull::CHAR_LOADOUT_WEAPON2].itemID;
 	n.ArmorID    = slot.Items[wiCharDataFull::CHAR_LOADOUT_ARMOR].itemID;

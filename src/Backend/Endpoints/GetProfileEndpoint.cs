@@ -465,6 +465,14 @@ public static class GetProfileEndpoint
                 reader["LegsIdx"]));
 
             xml.Append(XmlAttribute(
+                "HairIdx",
+                reader["HairIdx"]));
+
+            xml.Append(XmlAttribute(
+                "FeetIdx",
+                reader["FeetIdx"]));
+
+            xml.Append(XmlAttribute(
                 "BackpackSize",
                 reader["BackpackSize"]));
 

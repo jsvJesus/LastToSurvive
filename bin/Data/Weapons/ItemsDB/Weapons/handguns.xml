@@ -1,123 +1,245 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <WeaponsArmory>
-	<Weapon itemID="101004" category="25" upgrade="1" FNAME="HG_FN57" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_FN57.sco" AnimPrefix="HG_FN57" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_FN57.dds" />
-		<Store name="FN FiveSeven" icon="$Data/Weapons/StoreIcons/HG_FN57.dds" desc="The FN Five Seven is a standard issue handgun that was designed to fire a 5.7 mm round. It is an effective weapon against close range targets." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Glock9mm" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400087" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101111" category="25" upgrade="1" FNAME="HG_Beretta92F" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Beretta92F.sco" AnimPrefix="HG_beretta92f" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Beretta92F.dds" />
-		<Store name="B92" icon="$Data/Weapons/StoreIcons/HG_Beretta92F.dds" desc="The B92 handgun was specially designed to fire a 9mm round and is reasonably effective agains close range targets." LevelRequired="5" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="33" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta92" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101112" category="25" upgrade="1" FNAME="HG_Beretta93R" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Beretta93R.sco" AnimPrefix="HG_Beretta93R" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Beretta93R.dds" />
-		<Store name="B93R " icon="$Data/Weapons/StoreIcons/HG_Beretta93R.dds" desc="The B93R handgun was designed to fire a 9mm parabellum round from a 20 round clip. It is a relatively effective weapon against close ranged targets." LevelRequired="15" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="30" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta93R" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101115" category="25" upgrade="1" FNAME="HG_Jericho" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Jericho.sco" AnimPrefix="HG_Jericho" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Jericho.dds" />
-		<Store name="Jericho 9mm" icon="$Data/Weapons/StoreIcons/HG_Jericho.dds" desc="The Jericho was designed as a universal self-loading pistol which fires a 9mm Parabellum round and is highly effective at close range." LevelRequired="17" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="35" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="9" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/H&amp;K_USP" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400071" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101120" category="25" upgrade="1" FNAME="HG_SigP226" Weight="750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_SigP226.sco" AnimPrefix="HG_SIGP226" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_SigP226.dds" />
-		<Store name="Sig Sauer P226" icon="$Data/Weapons/StoreIcons/HG_SigP226.dds" desc="The SIG P226 is a full-sized, service-type pistol made by SIG Sauer. It been designed to fire a 9 x 19 mm round that makes it an effective weapon against close ranged targets." LevelRequired="26" slotW="2" slotH="2" />
-		<PrimaryFire bullet="9mm" damage="35" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="8" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Beretta92" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400034" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101180" category="25" upgrade="1" FNAME="HG_Desert_Eagle" Weight="1750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Desert_Eagle.sco" AnimPrefix="HG_Desert_Eagle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Desert_Eagle.dds" />
-		<Store name="Desert Eagle" icon="$Data/Weapons/StoreIcons/HG_Desert_Eagle.dds" desc="The Desert Eagle handgun was designed to fire a .50 caliber round and deals a substancial amount of damage to targets at close ranges." LevelRequired="45" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="50" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="12" recoil="22" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400086" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101224" category="25" upgrade="1" FNAME="HG_Jericho" Weight="1500">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Jericho.sco" AnimPrefix="HG_Jericho" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Jericho.dds" />
-		<Store name="STI Eagle Elite .45 ACP" icon="$Data/Weapons/StoreIcons/HG_Jericho.dds" desc="The STI Eagle Elite handgun is an upgraded version of the STI Eagle and is designed to fire a .45 ACP round effectively at close ranges." LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="36" immediate="false" mass="1" decay="45" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="9" recoil="9" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS />
-	</Weapon>
-	<Weapon itemID="101320" category="25" upgrade="1" FNAME="HG_FlareGun" Weight="1000">
-		<Model file="Data/ObjectsDepot/Weapons/HG_FlareGun.sco" AnimPrefix="HG_FlareGun" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_FlareGun.dds" />
-		<Store name="Flare Gun" icon="$Data/Weapons/StoreIcons/HG_FlareGun.dds" desc="" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="Flare" damage="5" immediate="false" mass="10" decay="50" speed="50" area="0" delay="180" timeout="0" numShells="0" clipSize="1" reloadTime="2" activeReloadTick="2" rateOfFire="60" spread="15" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/SMG/HK_MP5SD" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400152" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101330" category="25" upgrade="1" FNAME="HG_Ruger" Weight="600">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Ruger.sco" AnimPrefix="HG_Ruger" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Ruger.dds" />
-		<Store name="Ruger" icon="$Data/Weapons/StoreIcons/HG_Ruger.dds" desc="Reliable and relatively common, the lower powered Kruger .22 is a household staple, allowing for low cost practice with firm control" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="20" immediate="false" mass="1" decay="35" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="2" rateOfFire="800" spread="9" recoil="3" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Ruger22" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400144" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101331" category="25" upgrade="1" FNAME="HG_Colt_Anaconda" Weight="1750">
-		<Model file="Data/ObjectsDepot/Weapons/HG_Colt_Anaconda.sco" AnimPrefix="HG_Colt_Anaconda" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_Colt_Anaconda.dds" />
-		<Store name="Colt Anaconda" icon="$Data/Weapons/StoreIcons/HG_Colt_Anaconda.dds" desc="Introduced in 1990, the Colt Anaconda is a large double action .44 caliber revolver featuring a six round cylinder, designed and produced by the Colt's Manufacturing Company" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="45" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="800" spread="10" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/DesertEagle" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400145" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101342" category="25" upgrade="1" FNAME="HG_colt_1911" Weight="650">
-		<Model file="Data/ObjectsDepot/Weapons/HG_colt_1911.sco" AnimPrefix="HG_colt_1911" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_hg" />
-		<HudIcon file="$Data/Weapons/HudIcons/HG_colt_1911.dds" />
-		<Store name="1911" icon="$Data/Weapons/StoreIcons/HG_colt_1911.dds" desc="Standard US service pistol known for its minimal recoil and light weight" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="Sniper5.45" damage="35" immediate="false" mass="1" decay="40" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.2" activeReloadTick="0.4" rateOfFire="800" spread="4" recoil="2" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/9mmGeneric" reload="Sounds/Weapons/HG/HG_Generic_Reload" />
-		<FPS IsFPS="1" i0="8001" i1="0" i2="3002" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400154" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101392" category="25" upgrade="1" FNAME="Mel_NailGun" Weight="800">
-		<Model file="Data/ObjectsDepot/Weapons/Mel_NailGun.sco" AnimPrefix="Mel_NailGun" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/Mel_NailGun.dds" />
-		<Store name="Nail Gun" icon="$Data/Weapons/StoreIcons/Mel_NailGun.dds" desc="Commonly used in construction" LevelRequired="0" slotW="2" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="10" immediate="false" mass="10" decay="5" speed="300" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="1" rateOfFire="120" spread="15" recoil="5" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="pistol" />
-		<Sound shoot="Sounds/NewWeapons/Handgun/Nailgun" reload="Sounds/Weapons/New Reloads/Nailgun-reload" />
-		<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400157" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
+  <Weapon itemID="112461" category="25" upgrade="1" FNAME="HG_9B_Tier1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier1.sco" AnimPrefix="HG_9mm" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_9B_Tier1.dds" />
+    <Store name="$HG_9B_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_9B_Tier1.dds" desc="$HG_9B_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="2.4" decay="32" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="221" spread="3.25" recoil="15.11" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2.5" spreadRight="2.5" spreadUp="2.5" spreadDown="1.25" recoilUp="0.35" recoilDown="-0.34" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm" reload="Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410644" d2="0" d3="0" d4="410215" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112954" category="25" upgrade="1" FNAME="HG_45APC_Tier1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier1.sco" AnimPrefix="HG_45c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_45APC_Tier1.dds" />
+    <Store name="$HG_45c_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_45APC_Tier1.dds" desc="$HG_45c_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="22" immediate="false" mass="1" decay="27" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="330" spread="4" recoil="11.25" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2.4" spreadRight="2.4" spreadUp="2.4" spreadDown="1.2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.12" recoilRight="0.12" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_45c/45c" reload="Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="48" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410645" d2="0" d3="0" d4="410662" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112955" category="25" upgrade="1" FNAME="HG_AP50_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Tier2.sco" AnimPrefix="HG_AP50" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_AP50_Tier2.dds" />
+    <Store name="$HG_AP50_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_AP50_Tier2.dds" desc="$HG_AP50_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="26" immediate="false" mass="1" decay="25" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.2" activeReloadTick="1.2" rateOfFire="120" spread="3.5" recoil="7.5" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/AP50/AP50" reload="Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410850" d2="0" d3="0" d4="410843" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="112956" category="25" upgrade="1" FNAME="PDW_HB2_Tier1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HB2_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HB2_Tier1.sco" AnimPrefix="SMG_HB_02" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/PDW_HB2_Tier1.dds" />
+    <Store name="$SMG_HB_02_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/PDW_HB2_Tier1.dds" desc="$SMG_HB_02_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="21" immediate="false" mass="1" decay="33" speed="310" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="281" spread="4" recoil="15.1" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.45" spreadLeft="5" spreadRight="5" spreadUp="5" spreadDown="2.5" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/HB_02_SMG/HB_02" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410653" d2="0" d3="0" d4="410686" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112957" category="25" upgrade="1" FNAME="HG_RV50_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Tier2.sco" AnimPrefix="HG_RV50c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_RV50_Tier2.dds" />
+    <Store name="$HG_RV50_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_RV50_Tier2.dds" desc="$HG_RV50_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="37" immediate="false" mass="1" decay="25" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.14" activeReloadTick="2.2" rateOfFire="90" spread="4.5" recoil="29.15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/RV50c/RV50c" reload="Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload" />
+    <FPS IsFPS="1" i0="0" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410646" d2="0" d3="0" d4="410673" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113003" category="25" upgrade="1" FNAME="HG_MicroUzi_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2.sco" AnimPrefix="HG_MicroUzi" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_MicroUzi_Tier2.dds" />
+    <Store name="$HG_MicroUzi_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_MicroUzi_Tier2.dds" desc="$HG_MicroUzi_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="35" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="241" spread="4.5" recoil="17.31" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="0.4" spreadLeft="5.75" spreadRight="5.75" spreadUp="5.75" spreadDown="2.75" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.6" recoilRight="0.6" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410851" d2="0" d3="0" d4="410845" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113004" category="25" upgrade="1" FNAME="PDW_HSE_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2.sco" AnimPrefix="SMG_HSE" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/PDW_HSE_Tier2.dds" />
+    <Store name="$SMG_HSE_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/PDW_HSE_Tier2.dds" desc="$SMG_HSE_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="24" immediate="false" mass="1" decay="34" speed="431" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="351" spread="5.1" recoil="14.61" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="0.4" spreadLeft="6.5" spreadRight="6.5" spreadUp="6.5" spreadDown="3.25" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.75" recoilRight="0.75" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410654" d2="0" d3="0" d4="410687" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113027" category="25" upgrade="1" FNAME="HG_9B_Tier1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier1.sco" AnimPrefix="HG_9mm" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_9B_Tier1.dds" />
+    <Store name="$HG_9B_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_9B_Tier1.dds" desc="$HG_9B_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="1.05" immediate="false" mass="1" decay="1" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="360" spread="9.9" recoil="11.01" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.45" spreadLeft="2.4" spreadRight="2.4" spreadUp="2.4" spreadDown="1.25" recoilUp="0.35" recoilDown="-0.34" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm" reload="Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410644" d2="0" d3="0" d4="410215" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113028" category="25" upgrade="1" FNAME="HG_9B_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Tier2.sco" AnimPrefix="HG_9mm" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_9B_Tier2.dds" />
+    <Store name="$HG_9B_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_9B_Tier2.dds" desc="$HG_9B_Mk3_desc" LevelRequired="3" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="32" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="221" spread="3.15" recoil="15.96" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.5" spreadRight="2.5" spreadUp="2.5" spreadDown="1.25" recoilUp="0.35" recoilDown="-0.34" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm" reload="Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="2006" i6="0" i7="0" i8="0" d0="0" d1="410644" d2="0" d3="0" d4="410215" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113029" category="25" upgrade="1" FNAME="HG_9B_Mk6_1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_9B_Mk6_1.sco" AnimPrefix="HG_9mm" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_9B_Mk6_1.dds" />
+    <Store name="$HG_9B_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_9B_Mk6_1.dds" desc="$HG_9B_Mk6_1_Desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="32" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="221" spread="3.65" recoil="15.91" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2" spreadRight="2.5" spreadUp="2.5" spreadDown="1.25" recoilUp="0.35" recoilDown="-0.34" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_9mm/9mm" reload="Sounds/Weapons/Guns/Pistols/Pistol_9mm/HG_9mm_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410644" d2="0" d3="0" d4="410215" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="3" />
+  </Weapon>
+  <Weapon itemID="113030" category="25" upgrade="1" FNAME="HG_45APC_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier2.sco" AnimPrefix="HG_45c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_45APC_Tier2.dds" />
+    <Store name="$HG_45c_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_45APC_Tier2.dds" desc="$HG_45c_Mk3_desc" LevelRequired="3" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="22" immediate="false" mass="1" decay="27" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="330" spread="4.5" recoil="11.15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.3" spreadRight="2.3" spreadUp="2.3" spreadDown="1.2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.12" recoilRight="0.12" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_45c/45c" reload="Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="48" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410645" d2="0" d3="0" d4="410662" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113031" category="25" upgrade="1" FNAME="HG_45APC_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Tier2.sco" AnimPrefix="HG_45c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_45APC_Tier2.dds" />
+    <Store name="$HG_45c_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_45APC_Tier2.dds" desc="$HG_45c_Mk4_desc" LevelRequired="7" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo45" ScopeType="default" damage="22" immediate="false" mass="1" decay="27" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="330" spread="4.2" recoil="11.05" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.2" spreadRight="2.2" spreadUp="2.2" spreadDown="1.2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.12" recoilRight="0.12" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_45c/45c" reload="Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="48" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410645" d2="0" d3="0" d4="410662" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113032" category="25" upgrade="1" FNAME="HG_45APC_Mk6_1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_45APC_Mk6_1.sco" AnimPrefix="HG_45c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr_basic_01" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_45APC_Mk6_1.dds" />
+    <Store name="$HG_45c_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_45APC_Mk6_1.dds" desc="$HG_45c_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo45" ScopeType="default" damage="22" immediate="false" mass="1" decay="27" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.1" activeReloadTick="1.2" rateOfFire="330" spread="4.6" recoil="11.95" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1.2" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.12" recoilRight="0.12" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/Pistol_45c/45c" reload="Sounds/Weapons/Guns/Pistols/Pistol_45c/HG_45c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="48" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410645" d2="0" d3="0" d4="410662" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="3" />
+  </Weapon>
+  <Weapon itemID="113033" category="25" upgrade="1" FNAME="PDW_HB2_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HB2_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HB2_Tier2.sco" AnimPrefix="SMG_HB_02" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/PDW_HB2_Tier2.dds" />
+    <Store name="$SMG_HB_02_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/PDW_HB2_Tier2.dds" desc="$SMG_HB_02_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="31" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="330" spread="4" recoil="11.01" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="4.6" spreadRight="4.6" spreadUp="4.6" spreadDown="2.35" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/HB_02_SMG/HB_02" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410653" d2="0" d3="0" d4="410686" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113034" category="25" upgrade="1" FNAME="PDW_HSE_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2.sco" AnimPrefix="SMG_HSE" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/PDW_HSE_Tier2.dds" />
+    <Store name="$SMG_HSE_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/PDW_HSE_Tier2.dds" desc="$SMG_HSE_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="24" immediate="false" mass="0.5" decay="35" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="351" spread="4" recoil="14.56" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="6.1" spreadRight="6.1" spreadUp="6.1" spreadDown="3.15" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.75" recoilRight="0.75" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410654" d2="0" d3="0" d4="410687" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113035" category="25" upgrade="1" FNAME="PDW_HSE_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/PDW_HSE_Tier2.sco" AnimPrefix="SMG_HSE" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/PDW_HSE_Tier2.dds" />
+    <Store name="$SMG_HSE_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/PDW_HSE_Tier2.dds" desc="$SMG_HSE_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="24" immediate="false" mass="0.5" decay="35" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="351" spread="4" recoil="14.51" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="5.8" spreadRight="5.8" spreadUp="5.8" spreadDown="3" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.75" recoilRight="0.75" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/SubMachine Guns/HSE/Uzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410654" d2="0" d3="0" d4="410687" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113082" category="25" upgrade="1" FNAME="HG_AP50_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Tier2.sco" AnimPrefix="HG_AP50" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_AP50_Tier2.dds" />
+    <Store name="$HG_AP50_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_AP50_Tier2.dds" desc="$HG_AP50_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="45" immediate="false" mass="1" decay="11" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.7" activeReloadTick="1.2" rateOfFire="89" spread="5.5" recoil="26.15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/AP50/AP50" reload="" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410850" d2="0" d3="0" d4="410843" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113083" category="25" upgrade="1" FNAME="HG_AP50_Mk6_1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_AP50_Mk6_1.sco" AnimPrefix="HG_AP50" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_AP50_Mk6_1.dds" />
+    <Store name="$HG_AP50_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_AP50_Mk6_1.dds" desc="$HG_AP50_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="45" immediate="false" mass="1" decay="11" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.7" activeReloadTick="1.2" rateOfFire="89" spread="5.5" recoil="26.85" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/AP50/AP50" reload="" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410850" d2="0" d3="0" d4="410843" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="3" />
+  </Weapon>
+  <Weapon itemID="113084" category="25" upgrade="1" FNAME="HG_RV50_Tier2" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Tier2.sco" AnimPrefix="HG_RV50c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_RV50_Tier2.dds" />
+    <Store name="$HG_RV50_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_RV50_Tier2.dds" desc="$HG_RV50_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="37" immediate="false" mass="1" decay="25" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.14" activeReloadTick="1.2" rateOfFire="90" spread="5.5" recoil="29.15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/RV50c/RV50c" reload="Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410646" d2="0" d3="0" d4="410673" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113085" category="25" upgrade="1" FNAME="HG_RV50_Mk6_1" Weight="1800" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_RV50_Mk6_1.sco" AnimPrefix="HG_RV50c" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_RV50_Mk6_1.dds" />
+    <Store name="$HG_RV50_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_RV50_Mk6_1.dds" desc="$HG_RV50_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo50" ScopeType="default" damage="37" immediate="false" mass="1" decay="25" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.14" activeReloadTick="1.2" rateOfFire="90" spread="5.5" recoil="29.85" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1" recoilUp="1.4" recoilDown="-1.35" recoilLeft="0.05" recoilRight="0.05" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/RV50c/RV50c" reload="Sounds/Weapons/Guns/Pistols/RV50c/RV50c_Reload" />
+    <FPS IsFPS="1" i0="0" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410646" d2="0" d3="0" d4="410673" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="3" />
+  </Weapon>
+  <Weapon itemID="113086" category="25" upgrade="1" FNAME="HG_MicroUzi_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2.sco" AnimPrefix="HG_MicroUzi" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_MicroUzi_Tier2.dds" />
+    <Store name="$HG_MicroUzi_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_MicroUzi_Tier2.dds" desc="$HG_MicroUzi_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="1" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="300" spread="4.6" recoil="15.21" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="0.4" spreadLeft="5.5" spreadRight="5.5" spreadUp="5.5" spreadDown="2.65" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.6" recoilRight="0.6" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410851" d2="0" d3="0" d4="410845" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113087" category="25" upgrade="1" FNAME="HG_MicroUzi_Tier2" Weight="2500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_HG/HG_MicroUzi_Tier2.sco" AnimPrefix="HG_MicroUzi" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/HG_MicroUzi_Tier2.dds" />
+    <Store name="$HG_MicroUzi_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_HG/StoreIcons/HG_MicroUzi_Tier2.dds" desc="$HG_MicroUzi_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$Pistol_Ammo9mm" ScopeType="default" damage="23" immediate="false" mass="1" decay="35" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.01" activeReloadTick="1.2" rateOfFire="300" spread="4.6" recoil="15.21" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="0.4" spreadLeft="5.25" spreadRight="5.25" spreadUp="5.25" spreadDown="2.45" recoilUp="0.5" recoilDown="-0.49" recoilLeft="0.6" recoilRight="0.6" rofMult="1" aggroRadius="30" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Pistols/MicroUzi/MicroUzi" reload="Sounds/Weapons/Guns/SubMachine Guns/HSE/UziReload" />
+    <FPS IsFPS="1" i0="2" i1="2" i2="2" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410851" d2="0" d3="0" d4="410845" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="0" r2="0" r3="0" r4="0" r5="5" r6="4" />
+  </Weapon>
 </WeaponsArmory>

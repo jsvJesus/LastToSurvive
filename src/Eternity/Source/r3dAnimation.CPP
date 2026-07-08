@@ -63,6 +63,22 @@ static BipedBoneIds_s _BipedBones[] =
   1,         "Item3"
 };
 
+static bool IsExpectedExternalAnimBone(const char* boneName)
+{
+	if(!boneName || !boneName[0])
+		return false;
+
+	return strnicmp(boneName, "Bone_", 5) == 0 ||
+		strnicmp(boneName, "MXZ5_Bone_", 10) == 0 ||
+		strnicmp(boneName, "CameraPos_", 10) == 0 ||
+		strnicmp(boneName, "PrimaryWeaponBone", 17) == 0;
+}
+
+static bool IsPlayerBindSkeletonFile(const char* fileName)
+{
+	return fileName && strstr(fileName, "ProperScale_AndBiped") != NULL;
+}
+
 
 
 	//cr3dAnimData
@@ -349,10 +365,14 @@ void r3dAnimData::BindSkeleton(r3dSkeleton *pSkeleton, r3dSkeleton::BoneRemap_s 
     int boneId = pSkeleton->GetBoneID(pTracks[i].boneName);
     if(boneId == -1) {
 #ifndef FINAL_BUILD
+	  if(!pTracks[i].bEnabled)
+		  continue;
       // [semi-hack] do not show that warning for ai_player deleted bones!
       if(strstr(pTracks[i].boneName, "Nub") != NULL)
         continue;
 	  if(strstr(pTracks[i].boneName, "Dummy") != NULL)
+		  continue;
+	  if(IsPlayerBindSkeletonFile(pSkeleton->GetFileName()) && IsExpectedExternalAnimBone(pTracks[i].boneName))
 		  continue;
       r3dOutToLog("r3dAnimData(%s): unable to bind bone %s to skeleton %s\n", pAnimName, pTracks[i].boneName, pSkeleton->GetFileName() );
 #endif

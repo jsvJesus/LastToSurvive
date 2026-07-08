@@ -1,153 +1,432 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <WeaponsArmory>
-	<Weapon itemID="101002" category="20" upgrade="1" FNAME="ASR_M16" Weight="4000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_M16.sco" AnimPrefix="ASR_M16" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_M16.dds" />
-		<Store name="M16" icon="$Data/Weapons/StoreIcons/ASR_M16.dds" desc="The M16 rifle is a gas operated standard infantry assault rifle, chambered for 5.56x45mm NATO round." LevelRequired="0" slotW="4" slotH="2" sort="100" featured="1" />
-		<PrimaryFire bullet="5.56" damage="27" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="9" recoil="7.0035" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/ColtM16" reload="Sounds/Weapons/New Reloads/M16-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400127" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101005" category="20" upgrade="1" FNAME="ASR_G36" Weight="3300">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_G36.sco" AnimPrefix="ASR_G36" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_G36.dds" />
-		<Store name="G36" icon="$Data/Weapons/StoreIcons/ASR_G36.dds" desc="The MTAC X36 assault rifle fires a 5.56 mm round. Its high rate of fire and medium recoil deliver a reasonably tight spread on impact of targets up to medium ranges." LevelRequired="23" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="30" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="8.004" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/HK_G36" reload="Sounds/Weapons/New Reloads/G36-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4100" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400042" d2="0" d3="0" d4="400029" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101022" category="20" upgrade="1" FNAME="ASR_AK74M" Weight="3400">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_AK74M.sco" AnimPrefix="ASR_AK74m" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_AK74M.dds" />
-		<Store name="AK-74M" icon="$Data/Weapons/StoreIcons/ASR_AK74M.dds" desc="The AK-74M assault rifle is an upgrade of the AK 74 design with a slightly increased rate of fire. It fires a 5.45 x 39 mm round accurately at medium ranges." LevelRequired="20" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="0.43" rateOfFire="625" spread="12" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/Kalashnikov_AK74" reload="Sounds/Weapons/ASR/ASR_Generic_Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4200" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400040" d2="0" d3="0" d4="400001" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101032" category="20" upgrade="1" FNAME="ASR_AKM" Weight="3000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_AKM.sco" AnimPrefix="ASR_AKM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_AKM.dds" />
-		<Store name="AKM" icon="$Data/Weapons/StoreIcons/ASR_AKM.dds" desc="The AKM is an assault rifle that was designed as a simplified version of the AK-47 rifle. It fires a 7.62 x 39 mm round and is relatively effective at medium ranges." LevelRequired="10" slotW="4" slotH="2" />
-		<PrimaryFire bullet="7.62" damage="34" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3" activeReloadTick="0.43" rateOfFire="600" spread="14" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/Kalashnikov_AKM" reload="Sounds/Weapons/ASR/ASR_Generic_Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400128" d2="0" d3="0" d4="400101" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101040" category="20" upgrade="1" FNAME="ASR_SIG516" Weight="3000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_SIG516.sco" AnimPrefix="ASR_SIG516" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_SIG516.dds" />
-		<Store name="M4 Semi" icon="$Data/Weapons/StoreIcons/ASR_SIG516.dds" desc="The civilian M4 semi auto rifle, chambered for 5.56x45mm NATO round." LevelRequired="46" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="35" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="9" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/HK_416" reload="Sounds/Weapons/New Reloads/M16-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400058" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101055" category="20" upgrade="1" FNAME="ASR_M4FFH" Weight="3000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_M4FFH.sco" AnimPrefix="ASR_M4FFH" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_M4FFH.dds" />
-		<Store name="M4" icon="$Data/Weapons/StoreIcons/ASR_M4FFH.dds" desc="The M4 is a versitile, light weight, commando style assault rifle that is gas operated and fires a 5.56 x 45 mm round effectively in both close and medium ranges." LevelRequired="35" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="34" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="9" recoil="12" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/ColtM4" reload="Sounds/Weapons/New Reloads/M16-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400024" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101169" category="20" upgrade="1" FNAME="ASR_Mossada" Weight="4000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Mossada.sco" AnimPrefix="ASR_Mossada" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mossada.dds" />
-		<Store name="MASADA" icon="$Data/Weapons/StoreIcons/ASR_Mossada.dds" desc="The Masada was designed for close combat operations and is a gas operated assault rifle that fires a chambered for 5.56x45mm NATO round. It is highly effective at close ranges." LevelRequired="43" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="28" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="9" recoil="5.0025" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/AEK971" reload="Sounds/Weapons/New Reloads/G36-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400119" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101172" category="20" upgrade="1" FNAME="ASR_SIG_SG556" Weight="4000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_SIG_SG556.sco" AnimPrefix="ASR_SIG_SG556" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_SIG_SG556.dds" />
-		<Store name="SIG SAUER 556" icon="$Data/Weapons/StoreIcons/ASR_SIG_SG556.dds" desc="The 556 is a gas operated, rotating bolt assault rifle that fires a 5.56 x 45 mm round and was designed for special operations. It is very effective out to medium ranges." LevelRequired="15" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="27" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="6" recoil="6.50325" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/SIG_551" reload="Sounds/Weapons/New Reloads/ASR_SIG_SG556_Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400025" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101173" category="20" upgrade="1" FNAME="ASR_tar21" Weight="3300">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_tar21.sco" AnimPrefix="ASR_tar21" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_tar21.dds" />
-		<Store name="IMI TAR-21" icon="$Data/Weapons/StoreIcons/ASR_tar21.dds" desc="The TAR-21 is an unique gas operated, rotating bolt, bullpup design assault rifle that fires a 5.56 x 45 mm round. It is extremely effective at close and medium range." LevelRequired="39" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="33" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="700" spread="6" recoil="7.0035" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/HK_G11" reload="Sounds/Weapons/New Reloads/G36-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="0" i3="0" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400059" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101193" category="20" upgrade="1" FNAME="ASR_Fn_scar" Weight="3500">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Fn_scar.sco" AnimPrefix="ASR_Scar" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Fn_scar.dds" />
-		<Store name="FN SCAR CQC" icon="$Data/Weapons/StoreIcons/ASR_Fn_scar.dds" desc="The SCAR 16 CQC is an advanced assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges." LevelRequired="30" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.56" damage="30" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="1.5" rateOfFire="625" spread="7" recoil="3.0015" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/FN_SCAR" reload="Sounds/Weapons/New Reloads/M16-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400006" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101210" category="20" upgrade="1" FNAME="ASR_Fn_scar_NightCamo" Weight="3500">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Fn_scar_NightCamo.sco" AnimPrefix="asr_scar" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Fn_scar_NightCamo.dds" />
-		<Store name="FN SCAR NIGHT STALKER" icon="$Data/Weapons/StoreIcons/ASR_Fn_scar_NightCamo.dds" desc="The Scar 17 CQC Nightstalker is a assault rifle that fires standard 5.56 x 45 mm rounds effectively out to medium ranges." LevelRequired="58" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="32" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="625" spread="7" recoil="3.0015" numgrenades="0" grenadename="asr_grenade" firemode="111" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/FN_SCAR" reload="Sounds/Weapons/New Reloads/M16-Reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="1001" i4="4001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400006" d2="0" d3="0" d4="400016" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101322" category="20" upgrade="1" FNAME="SNP_CrossBow" Weight="3500">
-		<Model file="Data/ObjectsDepot/Weapons/SNP_CrossBow.sco" AnimPrefix="SNP_CrossBow" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="" />
-		<HudIcon file="$Data/Weapons/HudIcons/SNP_CrossBow.dds" />
-		<Store name="Compound Crossbow" icon="$Data/Weapons/StoreIcons/SNP_CrossBow.dds" desc="String drawn compound hunting crossbow for silent kills. Uses bow arrows for ammo" LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="Sniper5.45" damage="20" immediate="true" mass="1" decay="50" speed="600" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="2" rateOfFire="60" spread="2" recoil="2" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Special/Crossbow" reload="Sounds/Weapons/New Reloads/Crossbow-Reload" />
-		<FPS IsFPS="1" i0="0" i1="5001" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="400140" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101332" category="20" upgrade="1" FNAME="ASR_Ruger_Rifle" Weight="2500">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Ruger_Rifle.sco" AnimPrefix="ASR_Ruger_Rifle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Ruger_Rifle.dds" />
-		<Store name="Kruger .22 Rifle" icon="$Data/Weapons/StoreIcons/ASR_Ruger_Rifle.dds" desc="Semi-automatic .22 Long Rifle with removable rotary magazine" LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="25" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/Ruger22" reload="Sounds/Weapons/New Reloads/ASR_Ruger_rifle_reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="7001" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400149" d2="0" d3="0" d4="400148" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101334" category="20" upgrade="1" FNAME="ASR_Mini14" Weight="3100">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Mini14.sco" AnimPrefix="ASR_Mini14" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mini14.dds" />
-		<Store name="Kruger Mini-14" icon="$Data/Weapons/StoreIcons/ASR_Mini14.dds" desc="The Kruger's short size makes it ideal for all situations where ease of maneuverability is a priority, whether it be on the ranch or the deep woods." LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="5.45" damage="25" immediate="false" mass="1" decay="300" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.43" rateOfFire="650" spread="9" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/Ruger22" reload="Sounds/Weapons/New Reloads/ASR_Mini14_reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="3001" i3="0" i4="7020" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400151" d2="0" d3="0" d4="400150" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
-	<Weapon itemID="101341" category="20" upgrade="1" FNAME="ASR_Mosin_Rifle" Weight="3000">
-		<Model file="Data/ObjectsDepot/Weapons/ASR_Mosin_Rifle.sco" AnimPrefix="ASR_Mosin_Rifle" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
-		<MuzzleModel file="muzzle_asr" />
-		<HudIcon file="$Data/Weapons/HudIcons/ASR_Mosin_Rifle.dds" />
-		<Store name="Mosin" icon="$Data/Weapons/StoreIcons/ASR_Mosin_Rifle.dds" desc="A Russian bolt action rifle with an internally fed magazine, this reliable rifle has been in popular use through countless wars since 1891" LevelRequired="0" slotW="4" slotH="2" />
-		<PrimaryFire bullet="Sniper5.45" damage="50" immediate="false" mass="1" decay="500" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.5" activeReloadTick="0.5" rateOfFire="40" spread="2" recoil="8" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
-		<Animation type="assault" />
-		<Sound shoot="Sounds/NewWeapons/Assault/Mosin" reload="Sounds/Weapons/New Reloads/Mosin-reload" />
-		<FPS IsFPS="1" i0="2001" i1="5001" i2="0" i3="0" i4="7030" i5="0" i6="0" i7="0" i8="0" d0="0" d1="400155" d2="0" d3="0" d4="400153" d5="0" d6="0" d7="0" d8="0" />
-	</Weapon>
+  <Weapon itemID="112891" category="20" upgrade="1" FNAME="ASR_AK12_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier1.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Tier1.dds" />
+    <Store name="$ASR_AK12_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Tier1.dds" desc="$ASR_AK12_Mk1_Desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6.4" recoil="18" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.5" spreadLeft="5" spreadRight="5" spreadUp="4.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112949" category="20" upgrade="1" FNAME="ASR_ASh12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2.sco" AnimPrefix="ASR_ASh12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="muzzle_asr" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ASh12_Tier2.dds" />
+    <Store name="$ASR_ASh12_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ASh12_Tier2.dds" desc="$ASR_ASh12_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="20.5" immediate="false" mass="1" decay="45" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.93" activeReloadTick="2.43" rateOfFire="291" spread="5.4" recoil="16.25" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12" reload="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload" />
+    <FPS IsFPS="1" i0="1" i1="0" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410847" d2="0" d3="0" d4="410841" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="112950" category="20" upgrade="1" FNAME="ASR_WDX_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier1.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Tier1.dds" />
+    <Store name="$ASR_WDX_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Tier1.dds" desc="$ASR_WDX_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="290" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="3" recoil="14.72" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.5" spreadLeft="2.8" spreadRight="2.8" spreadUp="4" spreadDown="1.85" recoilUp="0.9" recoilDown="-0.85" recoilLeft="0.26" recoilRight="0.26" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112951" category="20" upgrade="1" FNAME="ASR_HB_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier1.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Tier1.dds" />
+    <Store name="$ASR_HB_Mk1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Tier1.dds" desc="$ASR_HB_Mk1_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="1.43" rateOfFire="381" spread="3.7" recoil="14.71" numgrenades="0" grenadename="asr_grenade" firemode="001" spreadMult="1" spreadCurve="0.5" spreadLeft="4" spreadRight="4" spreadUp="4" spreadDown="1.65" recoilUp="0.85" recoilDown="-0.8" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="112998" category="20" upgrade="1" FNAME="ASR_TRX4_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2.sco" AnimPrefix="ASR_Tar30" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_TRX4_Tier2.dds" />
+    <Store name="$ASR_TRX4_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_TRX4_Tier2.dds" desc="$ASR_TRX4_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="56" speed="471" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="5" activeReloadTick="0.43" rateOfFire="381" spread="4.9" recoil="15.3" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3" spreadRight="3" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410853" d2="0" d3="0" d4="410854" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113012" category="20" upgrade="1" FNAME="ASR_AK12_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier1.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Tier1.dds" />
+    <Store name="$ASR_AK12_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Tier1.dds" desc="$ASR_AK12_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.45" spreadLeft="4.75" spreadRight="4.75" spreadUp="4.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113013" category="20" upgrade="1" FNAME="ASR_AK12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Tier2.dds" />
+    <Store name="$ASR_AK12_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Tier2.dds" desc="$ASR_AK12_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="4.5" spreadRight="4.5" spreadUp="4.25" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="2000" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="1" r6="2" />
+  </Weapon>
+  <Weapon itemID="113014" category="20" upgrade="1" FNAME="ASR_AK12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Tier2.dds" />
+    <Store name="$ASR_AK12_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Tier2.dds" desc="$ASR_AK12_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6" recoil="18" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="4" spreadRight="4" spreadUp="4" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="2000" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="1" r6="3" />
+  </Weapon>
+  <Weapon itemID="113015" category="20" upgrade="1" FNAME="ASR_AK12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Tier2.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Tier2.dds" />
+    <Store name="$ASR_AK12_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Tier2.dds" desc="$ASR_AK12_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6" recoil="18" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.75" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="2000" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="2" r6="4" />
+  </Weapon>
+  <Weapon itemID="113016" category="20" upgrade="1" FNAME="ASR_AK12_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_AK12_Mk6_1.sco" AnimPrefix="ASR_AK12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_AK12_Mk6_1.dds" />
+    <Store name="$ASR_AK12_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_AK12_Mk6_1.dds" desc="$ASR_AK12_Mk6_1_Desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="371" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.7" activeReloadTick="0.43" rateOfFire="341" spread="6.6" recoil="18.75" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3" spreadRight="3" spreadUp="3" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.3" recoilRight="0.3" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/AK12/AK12" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="30" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410219" d2="0" d3="0" d4="410664" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="5" />
+  </Weapon>
+  <Weapon itemID="113017" category="20" upgrade="1" FNAME="ASR_WDX_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier1.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Tier1.dds" />
+    <Store name="$ASR_WDX_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Tier1.dds" desc="$ASR_WDX_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="4" recoil="14.67" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.45" spreadLeft="2.6" spreadRight="2.6" spreadUp="4" spreadDown="1.85" recoilUp="0.9" recoilDown="-0.85" recoilLeft="0.26" recoilRight="0.26" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113018" category="20" upgrade="1" FNAME="ASR_WDX_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Tier2.dds" />
+    <Store name="$ASR_WDX_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Tier2.dds" desc="$ASR_WDX_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="4.5" recoil="14.62" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.5" spreadRight="2.5" spreadUp="3.4" spreadDown="1.7" recoilUp="0.9" recoilDown="-0.85" recoilLeft="0.26" recoilRight="0.26" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="2002" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113019" category="20" upgrade="1" FNAME="ASR_WDX_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Tier2.dds" />
+    <Store name="$ASR_WDX_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Tier2.dds" desc="$ASR_WDX_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="4" recoil="14.53" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.4" spreadRight="2.4" spreadUp="3.4" spreadDown="1.7" recoilUp="0.9" recoilDown="-0.85" recoilLeft="0.24" recoilRight="0.24" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="2002" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113020" category="20" upgrade="1" FNAME="ASR_WDX_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Tier2.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Tier2.dds" />
+    <Store name="$ASR_WDX_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Tier2.dds" desc="$ASR_WDX_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="4" recoil="14.48" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.25" spreadRight="2.25" spreadUp="3.2" spreadDown="1.7" recoilUp="0.9" recoilDown="-0.85" recoilLeft="0.24" recoilRight="0.24" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="2002" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113021" category="20" upgrade="1" FNAME="ASR_WDX_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_WDX_Mk6_1.sco" AnimPrefix="ASR_HB_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_WDX_Mk6_1.dds" />
+    <Store name="$ASR_WDX_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_WDX_Mk6_1.dds" desc="$ASR_WDX_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="220" spread="3.9" recoil="14.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2" spreadRight="2" spreadUp="2.8" spreadDown="1.7" recoilUp="0.85" recoilDown="-0.85" recoilLeft="0.2" recoilRight="0.2" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HB_01_Wolf/HB_Wolf" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410641" d2="0" d3="0" d4="410670" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113022" category="20" upgrade="1" FNAME="ASR_HB_Tier1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier1.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Tier1.dds" />
+    <Store name="$ASR_HB_Mk2" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Tier1.dds" desc="$ASR_HB_Mk2_desc" LevelRequired="1" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="0.43" rateOfFire="381" spread="5" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.45" spreadLeft="4" spreadRight="4" spreadUp="4" spreadDown="1.65" recoilUp="0.85" recoilDown="-0.8" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="600" r1="33" r2="90" r3="1800" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113023" category="20" upgrade="1" FNAME="ASR_HB_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Tier2.dds" />
+    <Store name="$ASR_HB_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Tier2.dds" desc="$ASR_HB_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="0.43" rateOfFire="381" spread="5" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.65" recoilUp="0.85" recoilDown="-0.8" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2003" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113024" category="20" upgrade="1" FNAME="ASR_HB_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Tier2.dds" />
+    <Store name="$ASR_HB_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Tier2.dds" desc="$ASR_HB_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="0.43" rateOfFire="381" spread="5" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.25" spreadRight="3.25" spreadUp="3.25" spreadDown="1.65" recoilUp="0.85" recoilDown="-0.8" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2003" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113025" category="20" upgrade="1" FNAME="ASR_HB_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Tier2.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Tier2.dds" />
+    <Store name="$ASR_HB_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Tier2.dds" desc="$ASR_HB_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="0.43" rateOfFire="381" spread="5" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.1" spreadRight="3.1" spreadUp="3.1" spreadDown="1.65" recoilUp="0.85" recoilDown="-0.8" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2003" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113026" category="20" upgrade="1" FNAME="ASR_HB_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_HB_Mk6_1.sco" AnimPrefix="ASR_HB" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_HB_Mk6_1.dds" />
+    <Store name="$ASR_HB_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_HB_Mk6_1.dds" desc="$ASR_HB_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="80" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.9" activeReloadTick="0.43" rateOfFire="381" spread="5" recoil="16" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.45" spreadLeft="2.9" spreadRight="2.9" spreadUp="2.9" spreadDown="1.65" recoilUp="0.95" recoilDown="-0.85" recoilLeft="0.23" recoilRight="0.23" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410640" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113054" category="20" upgrade="1" FNAME="ASR_ACX10_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2.sco" AnimPrefix="ASR_AR_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ACX10_Tier2.dds" />
+    <Store name="$ASR_ACX10_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ACX10_Tier2.dds" desc="$ASR_ACX10_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="27" immediate="false" mass="1" decay="41" speed="421" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="300" spread="3.75" recoil="14.35" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="3.2" spreadRight="3.2" spreadUp="3.2" spreadDown="1.75" recoilUp="0.95" recoilDown="-0.9" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="0" i4="0" i5="2007" i6="0" i7="0" i8="0" d0="410696" d1="410639" d2="0" d3="0" d4="410669" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113055" category="20" upgrade="1" FNAME="ASR_ACX10_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2.sco" AnimPrefix="ASR_AR_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ACX10_Tier2.dds" />
+    <Store name="$ASR_ACX10_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ACX10_Tier2.dds" desc="$ASR_ACX10_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="27" immediate="false" mass="1" decay="1" speed="421" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="300" spread="3.85" recoil="14.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.9" spreadRight="2.9" spreadUp="2.9" spreadDown="1.75" recoilUp="0.95" recoilDown="-0.9" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="0" i4="0" i5="2007" i6="0" i7="0" i8="0" d0="410696" d1="410639" d2="0" d3="0" d4="410669" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113056" category="20" upgrade="1" FNAME="ASR_ACX10_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Tier2.sco" AnimPrefix="ASR_AR_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ACX10_Tier2.dds" />
+    <Store name="$ASR_ACX10_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ACX10_Tier2.dds" desc="$ASR_ACX10_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="27" immediate="false" mass="1" decay="1" speed="421" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="300" spread="3.65" recoil="14.25" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2.5" spreadRight="2.5" spreadUp="2.5" spreadDown="1.75" recoilUp="0.95" recoilDown="-0.9" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="0" i4="0" i5="2007" i6="0" i7="0" i8="0" d0="410696" d1="410639" d2="0" d3="0" d4="410669" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113057" category="20" upgrade="1" FNAME="ASR_ACX10_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ACX10_Mk6_1.sco" AnimPrefix="ASR_AR_01" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ACX10_Mk6_1.dds" />
+    <Store name="$ASR_ACX10_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ACX10_Mk6_1.dds" desc="$ASR_ACX10_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="27" immediate="false" mass="1" decay="41" speed="421" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.8" activeReloadTick="0.43" rateOfFire="300" spread="3.15" recoil="14.15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="0.4" spreadLeft="2" spreadRight="2" spreadUp="2" spreadDown="1.75" recoilUp="0.95" recoilDown="-0.9" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/Honeybadger" reload="Sounds/Weapons/Guns/Assault Rifles/HoneyBadger/HoneyBadgerReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410639" d2="0" d3="0" d4="410669" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="5000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="5" />
+  </Weapon>
+  <Weapon itemID="113058" category="20" upgrade="1" FNAME="ASR_ASh12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2.sco" AnimPrefix="ASR_ASh12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ASh12_Tier2.dds" />
+    <Store name="$ASR_ASh12_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ASh12_Tier2.dds" desc="$ASR_ASh12_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="21" immediate="false" mass="1" decay="1" speed="500" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.93" activeReloadTick="0.43" rateOfFire="291" spread="4.65" recoil="16.15" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12" reload="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload" />
+    <FPS IsFPS="1" i0="1" i1="0" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410847" d2="0" d3="0" d4="410841" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113059" category="20" upgrade="1" FNAME="ASR_ASh12_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Tier2.sco" AnimPrefix="ASR_ASh12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ASh12_Tier2.dds" />
+    <Store name="$ASR_ASh12_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ASh12_Tier2.dds" desc="$ASR_ASh12_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="21" immediate="false" mass="1" decay="35" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.93" activeReloadTick="0.43" rateOfFire="291" spread="4.65" recoil="16.15" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12" reload="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload" />
+    <FPS IsFPS="1" i0="1" i1="0" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410847" d2="0" d3="0" d4="410841" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113060" category="20" upgrade="1" FNAME="ASR_ASh12_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_ASh12_Mk6_1.sco" AnimPrefix="ASR_ASh12" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_ASh12_Mk6_1.dds" />
+    <Store name="$ASR_ASh12_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_ASh12_Mk6_1.dds" desc="$ASR_ASh12_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="20.5" immediate="false" mass="1" decay="35" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="2.93" activeReloadTick="0.43" rateOfFire="291" spread="4.65" recoil="16.05" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.95" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12" reload="Sounds/Weapons/Guns/Assault Rifles/Ash12/Ash12_Reload" />
+    <FPS IsFPS="1" i0="1" i1="0" i2="1" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410847" d2="0" d3="0" d4="410841" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113062" category="20" upgrade="1" FNAME="ASR_MXZ5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2.sco" AnimPrefix="ASR_MXZ5" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_MXZ5_Tier2.dds" />
+    <Store name="$ASR_MXZ5_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_MXZ5_Tier2.dds" desc="$ASR_MXZ5_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="1" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.4" activeReloadTick="0.43" rateOfFire="321" spread="5.3" recoil="17.3" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.3" spreadRight="3.3" spreadUp="3.3" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5" reload="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2004" i6="0" i7="0" i8="0" d0="410696" d1="410642" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113063" category="20" upgrade="1" FNAME="ASR_MXZ5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2.sco" AnimPrefix="ASR_MXZ5" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_MXZ5_Tier2.dds" />
+    <Store name="$ASR_MXZ5_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_MXZ5_Tier2.dds" desc="$ASR_MXZ5_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="1" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.4" activeReloadTick="0.43" rateOfFire="321" spread="4.1" recoil="14.2" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.1" spreadRight="3.1" spreadUp="3.1" spreadDown="1.65" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5" reload="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2004" i6="0" i7="0" i8="0" d0="410696" d1="410642" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113064" category="20" upgrade="1" FNAME="ASR_MXZ5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Tier2.sco" AnimPrefix="ASR_MXZ5" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_MXZ5_Tier2.dds" />
+    <Store name="$ASR_MXZ5_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_MXZ5_Tier2.dds" desc="$ASR_MXZ5_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="1" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.4" activeReloadTick="0.43" rateOfFire="321" spread="4.1" recoil="14.1" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3" spreadRight="3" spreadUp="3" spreadDown="1.55" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5" reload="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="2004" i6="0" i7="0" i8="0" d0="410696" d1="410642" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113065" category="20" upgrade="1" FNAME="ASR_MXZ5_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_MXZ5_Mk6_1.sco" AnimPrefix="ASR_MXZ5" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_MXZ5_Mk6_1.dds" />
+    <Store name="$ASR_MXZ5_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_MXZ5_Mk6_1.dds" desc="$ASR_MXZ5_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="56" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.4" activeReloadTick="0.43" rateOfFire="321" spread="4.1" recoil="14" numgrenades="0" grenadename="asr_grenade" firemode="111" spreadMult="1" spreadCurve="0.4" spreadLeft="2.75" spreadRight="2.75" spreadUp="2.75" spreadDown="1.5" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5" reload="Sounds/Weapons/Guns/Assault Rifles/MXZ5/MXZ5Reload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410642" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113067" category="20" upgrade="1" FNAME="ASR_THOR5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2.sco" AnimPrefix="ASR_SHRAM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_THOR5_Tier2.dds" />
+    <Store name="$ASR_THOR-5_Mk3" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_THOR5_Tier2.dds" desc="$ASR_THOR-5_Mk3_desc" LevelRequired="5" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="25" immediate="false" mass="1" decay="53" speed="341" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.95" activeReloadTick="0.43" rateOfFire="270" spread="13.7" recoil="18.3" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.45" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410643" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113068" category="20" upgrade="1" FNAME="ASR_THOR5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2.sco" AnimPrefix="ASR_SHRAM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_THOR5_Tier2.dds" />
+    <Store name="$ASR_THOR-5_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_THOR5_Tier2.dds" desc="$ASR_THOR-5_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="66" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.95" activeReloadTick="0.43" rateOfFire="391" spread="4.65" recoil="15.25" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410643" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113069" category="20" upgrade="1" FNAME="ASR_THOR5_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Tier2.sco" AnimPrefix="ASR_SHRAM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_THOR5_Tier2.dds" />
+    <Store name="$ASR_THOR-5_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_THOR5_Tier2.dds" desc="$ASR_THOR-5_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="66" speed="351" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.95" activeReloadTick="0.43" rateOfFire="391" spread="4.65" recoil="15.2" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410643" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113070" category="20" upgrade="1" FNAME="ASR_THOR5_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Mk6_1.sco" AnimPrefix="ASR_SHRAM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_THOR5_Mk6_1.dds" />
+    <Store name="$ASR_THOR-5_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_THOR5_Mk6_1.dds" desc="$ASR_THOR-5_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="67" speed="451" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="4.95" activeReloadTick="0.43" rateOfFire="391" spread="4.65" recoil="15.1" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410643" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113071" category="20" upgrade="1" FNAME="ASR_TRX4_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2.sco" AnimPrefix="ASR_Tar30" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_TRX4_Tier2.dds" />
+    <Store name="$ASR_TRX4_Mk4" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_TRX4_Tier2.dds" desc="$ASR_TRX4_Mk4_desc" LevelRequired="10" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="56" speed="471" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="5" activeReloadTick="0.43" rateOfFire="381" spread="4.9" recoil="15.25" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="2.75" spreadRight="2.75" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410853" d2="0" d3="0" d4="410854" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="2" />
+  </Weapon>
+  <Weapon itemID="113072" category="20" upgrade="1" FNAME="ASR_TRX4_Tier2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Tier2.sco" AnimPrefix="ASR_Tar30" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_TRX4_Tier2.dds" />
+    <Store name="$ASR_TRX4_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_TRX4_Tier2.dds" desc="$ASR_TRX4_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="56" speed="471" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="5" activeReloadTick="0.43" rateOfFire="381" spread="4.9" recoil="15.2" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="2.5" spreadRight="2.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410853" d2="0" d3="0" d4="410854" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="1000" r1="33" r2="90" r3="1800" r4="0" r5="5" r6="4" />
+  </Weapon>
+  <Weapon itemID="113073" category="20" upgrade="1" FNAME="ASR_TRX4_Mk6_1" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Mk6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_TRX4_Mk6_1.sco" AnimPrefix="ASR_Tar30" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_TRX4_Mk6_1.dds" />
+    <Store name="$ASR_TRX4_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_TRX4_Mk6_1.dds" desc="$ASR_TRX4_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="24" immediate="false" mass="1" decay="56" speed="471" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="5" activeReloadTick="0.43" rateOfFire="381" spread="4.9" recoil="15.15" numgrenades="0" grenadename="asr_grenade" firemode="111" spreadMult="1" spreadCurve="0.4" spreadLeft="2.25" spreadRight="2.25" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/Tar30/Tar39" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="0" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410853" d2="0" d3="0" d4="410854" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="6000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
+  <Weapon itemID="113098" category="20" upgrade="1" FNAME="ASR_THOR5_Mk6_2" Weight="4500" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Mk6_2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_ASR/ASR_THOR5_Mk6_2.sco" AnimPrefix="ASR_SHRAM" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="" />
+    <HudIcon file="$Data/Weapons/HudIcons/ASR_THOR5_Mk6_2.dds" />
+    <Store name="$ASR_THOR-5_Mk6_2" icon="$Data/ObjectsDepot/ROTB_Weapons_ASR/StoreIcons/ASR_THOR5_Mk6_2.dds" desc="$ASR_THOR-5_Mk6_2_desc" LevelRequired="30" gameMode="0" />
+    <PrimaryFire bullet="$ASR_Ammo" ScopeType="default" damage="26" immediate="false" mass="1" decay="65" speed="321" area="0" delay="0" timeout="0" numShells="0" clipSize="1" reloadTime="3.95" activeReloadTick="0.43" rateOfFire="241" spread="4.8" recoil="15.05" numgrenades="0" grenadename="asr_grenade" firemode="101" spreadMult="1" spreadCurve="0.4" spreadLeft="3.5" spreadRight="3.5" spreadUp="3.5" spreadDown="1.75" recoilUp="1" recoilDown="-0.8" recoilLeft="0.5" recoilRight="0.5" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Assault Rifles/SHRAM/SHRAM" reload="Sounds/Weapons/Guns/Assault Rifles/SHRAM/ShramReload" />
+    <FPS IsFPS="1" i0="1" i1="1" i2="1" i3="1" i4="35" i5="0" i6="0" i7="0" i8="0" d0="410696" d1="410643" d2="0" d3="0" d4="410691" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="7000" r1="33" r2="90" r3="1800" r4="0" r5="10" r6="5" />
+  </Weapon>
 </WeaponsArmory>
