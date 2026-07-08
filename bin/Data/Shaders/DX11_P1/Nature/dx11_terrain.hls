@@ -180,8 +180,8 @@ bool Terrain2HasAtlasNormalTexture()
 float2 Terrain2GetLayerUV(float3 WorldPos, float2 Scale)
 {
 	return float2(
-		WorldPos.x * Scale.x * 2.0f,
-		WorldPos.z * Scale.y * 2.0f
+		WorldPos.x * Scale.x,
+		WorldPos.z * Scale.y
 	);
 }
 
@@ -291,9 +291,12 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 			).rgb;
 	}
 
+	float3 MaskDebug = float3(0.0f, 0.0f, 0.0f);
+	float MaskSumDebug = 0.0f;
+
 	if (Terrain2HasLayer0DiffuseTexture())
 	{
-		float2 LayerUV =
+		float2 Layer0UV =
 			Terrain2GetLayer0UV(
 				Input.WorldPos
 			);
@@ -301,24 +304,61 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 		float3 Layer0Color =
 			gTerrainLayer0DiffuseTexture.Sample(
 				gTerrainWrapSampler,
-				LayerUV
-			).rgb;
+				Layer0UV
+			).rgb *
+			TerrainColorMod;
 
 		FinalColor =
 			saturate(
-				Layer0Color *
-				TerrainColorMod
+				Layer0Color
 			);
 
 		if (Terrain2HasMask0Texture())
 		{
 			float3 Mask =
-				gTerrainMask0Texture.Sample(
-					gTerrainClampSampler,
-					Terrain2GetMaskUV(
-						Input.WorldPos
-					)
-				).rgb;
+				saturate(
+					gTerrainMask0Texture.Sample(
+						gTerrainClampSampler,
+						Terrain2GetMaskUV(
+							Input.WorldPos
+						)
+					).rgb
+				);
+
+			MaskDebug = Mask;
+			MaskSumDebug =
+				saturate(
+					Mask.r + Mask.g + Mask.b
+				);
+
+			float W1 =
+				Terrain2HasLayer1DiffuseTexture()
+				? Mask.r
+				: 0.0f;
+
+			float W2 =
+				Terrain2HasLayer2DiffuseTexture()
+				? Mask.g
+				: 0.0f;
+
+			float W3 =
+				Terrain2HasLayer3DiffuseTexture()
+				? Mask.b
+				: 0.0f;
+
+			float W0 =
+				saturate(
+					1.0f - W1 - W2 - W3
+				);
+
+			float WeightSum =
+				max(
+					W0 + W1 + W2 + W3,
+					0.0001f
+				);
+
+			float3 BlendColor =
+				Layer0Color * W0;
 
 			if (Terrain2HasLayer1DiffuseTexture())
 			{
@@ -332,12 +372,8 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 					).rgb *
 					TerrainColorMod;
 
-				FinalColor =
-					lerp(
-						FinalColor,
-						Layer1Color,
-						saturate(Mask.r)
-					);
+				BlendColor +=
+					Layer1Color * W1;
 			}
 
 			if (Terrain2HasLayer2DiffuseTexture())
@@ -352,12 +388,8 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 					).rgb *
 					TerrainColorMod;
 
-				FinalColor =
-					lerp(
-						FinalColor,
-						Layer2Color,
-						saturate(Mask.g)
-					);
+				BlendColor +=
+					Layer2Color * W2;
 			}
 
 			if (Terrain2HasLayer3DiffuseTexture())
@@ -372,21 +404,21 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 					).rgb *
 					TerrainColorMod;
 
-				FinalColor =
-					lerp(
-						FinalColor,
-						Layer3Color,
-						saturate(Mask.b)
-					);
+				BlendColor +=
+					Layer3Color * W3;
 			}
 
 			FinalColor =
 				saturate(
-					FinalColor
+					BlendColor / WeightSum
 				);
 		}
 	}
 
+	// Disabled for now.
+	// The DX11 atlas path currently hides the real layer/mask result.
+	// Re-enable only after direct layer/mask blending matches DX9.
+	/*
 	if (Terrain2HasAtlasDiffuseTexture())
 	{
 		float2 AtlasUV =
@@ -412,6 +444,7 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 				);
 		}
 	}
+	*/
 
 	Output.Color = float4(
 		FinalColor,
@@ -420,7 +453,12 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 	
 	Output.Normal = float4(Normal * 0.5f + 0.5f, 1.0f);
 	Output.DepthLinear = DepthLinear;
-	Output.Aux = float4(DepthLinear, HeightTint, Slope, 1.0f);
+	Output.Aux = float4(
+		MaskDebug.r,
+		MaskDebug.g,
+		MaskDebug.b,
+		MaskSumDebug
+	);
 
 	return Output;
 }

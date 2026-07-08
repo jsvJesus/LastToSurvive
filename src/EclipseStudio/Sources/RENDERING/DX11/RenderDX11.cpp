@@ -4154,18 +4154,19 @@ namespace
 				}
 
 				case DX11_PREVIEW_TERRAIN_MASK:
-				{
-					const unsigned char* Pixel =
-						Row + SourceX * 4;
+					{
+						const unsigned char* Pixel =
+							Row + SourceX * 4;
 
-					PackedColor =
-						RenderDX11_PackPreviewGray(
-							static_cast<float>(Pixel[3]) /
-							255.0f
-						);
+						PackedColor =
+							RenderDX11_PackPreviewColor(
+								static_cast<unsigned int>(Pixel[0]),
+								static_cast<unsigned int>(Pixel[1]),
+								static_cast<unsigned int>(Pixel[2])
+							);
 
-					break;
-				}
+						break;
+					}
 
 				case DX11_PREVIEW_COLOR:
 				default:
