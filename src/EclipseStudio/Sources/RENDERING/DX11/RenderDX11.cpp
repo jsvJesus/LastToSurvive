@@ -26,6 +26,7 @@
 #include "rendering/DX11/RenderDX11Core.h"
 #include "rendering/DX11/RenderDX11FrameTargets.h"
 #include "rendering/DX11/RenderDX11States.h"
+#include "rendering/DX11/RenderDX11ConstantBuffers.h"
 
 #include "GameLevel.h"
 
@@ -170,6 +171,33 @@ static void RenderDX11_LogText(
 
 #define gDX11SunGlareBorderSampler \
 	(RenderDX11_GetStates().SunGlareBorderSampler())
+
+#define gDX11FrameCB \
+	(RenderDX11_GetConstantBuffers().Frame())
+
+#define gDX11TerrainCB \
+	(RenderDX11_GetConstantBuffers().Terrain())
+
+#define gDX11ObjectCB \
+	(RenderDX11_GetConstantBuffers().Object())
+
+#define gDX11MaterialCB \
+	(RenderDX11_GetConstantBuffers().Material())
+
+#define gDX11LightCB \
+	(RenderDX11_GetConstantBuffers().Light())
+
+#define gDX11ShadowCB \
+	(RenderDX11_GetConstantBuffers().Shadow())
+
+#define gDX11WaterCB \
+	(RenderDX11_GetConstantBuffers().Water())
+
+#define gDX11GrassCB \
+	(RenderDX11_GetConstantBuffers().Grass())
+
+#define gDX11SunGlareCB \
+	(RenderDX11_GetConstantBuffers().SunGlare())
 
 namespace
 {
@@ -449,7 +477,6 @@ namespace
 
 	ID3D11VertexShader*		gDX11SunGlareVS = 0;
 	ID3D11PixelShader*		gDX11SunGlarePS = 0;
-	ID3D11Buffer*			gDX11SunGlareCB = 0;
 
 	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
 
@@ -539,15 +566,6 @@ namespace
 	int						gDX11Terrain2AtlasSkipSRVCount = 0;
 	int						gDX11Terrain2AtlasRefreshCount = 0;
 	int						gDX11Terrain2AtlasRefreshPendingCount = 0;
-
-	ID3D11Buffer*			gDX11FrameCB = 0;
-	ID3D11Buffer*			gDX11TerrainCB = 0;
-	ID3D11Buffer*			gDX11ObjectCB = 0;
-	ID3D11Buffer*			gDX11MaterialCB = 0;
-	ID3D11Buffer*			gDX11LightCB = 0;
-	ID3D11Buffer*			gDX11ShadowCB = 0;
-	ID3D11Buffer*			gDX11WaterCB = 0;
-	ID3D11Buffer*			gDX11GrassCB = 0;
 	
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
@@ -1373,160 +1391,44 @@ namespace
 
 	void RenderDX11_ReleaseConstantBuffers()
 	{
-		RenderDX11_SafeRelease(gDX11SunGlareCB);
-
-		RenderDX11_SafeRelease(gDX11GrassCB);
-		RenderDX11_SafeRelease(gDX11WaterCB);
-		RenderDX11_SafeRelease(gDX11ShadowCB);
-		RenderDX11_SafeRelease(gDX11LightCB);
-		RenderDX11_SafeRelease(gDX11MaterialCB);
-		RenderDX11_SafeRelease(gDX11ObjectCB);
-		RenderDX11_SafeRelease(gDX11TerrainCB);
-		RenderDX11_SafeRelease(gDX11FrameCB);
-	}
-
-	bool RenderDX11_CreateDynamicConstantBuffer(
-	UINT ByteWidth,
-	const char* DebugName,
-	ID3D11Buffer** OutBuffer
-)
-	{
-		if (!gDX11Device || !OutBuffer)
-			return false;
-
-		*OutBuffer = 0;
-
-		D3D11_BUFFER_DESC Desc = {};
-		Desc.ByteWidth = ByteWidth;
-		Desc.Usage = D3D11_USAGE_DYNAMIC;
-		Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		Desc.MiscFlags = 0;
-		Desc.StructureByteStride = 0;
-
-		HRESULT Hr =
-			gDX11Device->CreateBuffer(
-				&Desc,
-				0,
-				OutBuffer
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s constant buffer failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "unknown",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
+		RenderDX11_GetConstantBuffers().Shutdown();
 	}
 
 	bool RenderDX11_CreateConstantBuffers()
 	{
-		RenderDX11_ReleaseConstantBuffers();
+		RenderDX11ConstantBuffersCreateDesc Desc;
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11FrameCB),
-			"FrameCB",
-			&gDX11FrameCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.FrameByteWidth =
+			sizeof(WorldDX11FrameCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11TerrainCB),
-			"TerrainCB",
-			&gDX11TerrainCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.TerrainByteWidth =
+			sizeof(WorldDX11TerrainCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11ObjectCB),
-			"ObjectCB",
-			&gDX11ObjectCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.ObjectByteWidth =
+			sizeof(WorldDX11ObjectCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11MaterialCB),
-			"MaterialCB",
-			&gDX11MaterialCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.MaterialByteWidth =
+			sizeof(WorldDX11MaterialCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11LightCB),
-			"LightCB",
-			&gDX11LightCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.LightByteWidth =
+			sizeof(WorldDX11LightCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11ShadowCB),
-			"ShadowCB",
-			&gDX11ShadowCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.ShadowByteWidth =
+			sizeof(WorldDX11ShadowCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11WaterCB),
-			"WaterCB",
-			&gDX11WaterCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.WaterByteWidth =
+			sizeof(WorldDX11WaterCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11GrassCB),
-			"GrassCB",
-			&gDX11GrassCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.GrassByteWidth =
+			sizeof(WorldDX11GrassCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(RenderDX11SunGlareSettings),
-			"SunGlareCB",
-			&gDX11SunGlareCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.SunGlareByteWidth =
+			sizeof(RenderDX11SunGlareSettings);
 
-		OutputDebugStringA(
-			"[DX11][Render] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7), SunGlareCB(b8)\n"
-		);
-
-		return true;
+		return
+			RenderDX11_GetConstantBuffers().Initialize(
+				Desc
+			);
 	}
 
 	void RenderDX11_SetIdentityMatrix(
@@ -1562,38 +1464,12 @@ namespace
 
 	void RenderDX11_BindFrameCB()
 	{
-		if (!gDX11Context || !gDX11FrameCB)
-			return;
-
-		gDX11Context->VSSetConstantBuffers(
-			0,
-			1,
-			&gDX11FrameCB
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			0,
-			1,
-			&gDX11FrameCB
-		);
+		RenderDX11_GetConstantBuffers().BindFrame();
 	}
 
 	void RenderDX11_BindTerrainCB()
 	{
-		if (!gDX11Context || !gDX11TerrainCB)
-			return;
-
-		gDX11Context->VSSetConstantBuffers(
-			1,
-			1,
-			&gDX11TerrainCB
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			1,
-			1,
-			&gDX11TerrainCB
-		);
+		RenderDX11_GetConstantBuffers().BindTerrain();
 	}
 
 	bool RenderDX11_UpdateConstantBuffer(
@@ -1603,76 +1479,18 @@ namespace
 		const char* DebugName
 	)
 	{
-		if (!gDX11Context || !Buffer || !Data || DataSize == 0)
-			return false;
-
-		D3D11_MAPPED_SUBRESOURCE Mapped = {};
-
-		HRESULT Hr =
-			gDX11Context->Map(
+		return
+			RenderDX11_GetConstantBuffers().Update(
 				Buffer,
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&Mapped
+				Data,
+				DataSize,
+				DebugName
 			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Map %s constant buffer failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "unknown",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		memcpy(
-			Mapped.pData,
-			Data,
-			DataSize
-		);
-
-		gDX11Context->Unmap(
-			Buffer,
-			0
-		);
-
-		return true;
 	}
 
 	void RenderDX11_BindWorldConstantBuffers()
 	{
-		if (!gDX11Context)
-			return;
-
-		ID3D11Buffer* Buffers[8] =
-		{
-			gDX11FrameCB,
-			gDX11TerrainCB,
-			gDX11ObjectCB,
-			gDX11MaterialCB,
-			gDX11LightCB,
-			gDX11ShadowCB,
-			gDX11WaterCB,
-			gDX11GrassCB
-		};
-
-		gDX11Context->VSSetConstantBuffers(
-			0,
-			8,
-			Buffers
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			0,
-			8,
-			Buffers
-		);
+		RenderDX11_GetConstantBuffers().BindWorld();
 	}
 
 	void RenderDX11_UpdateDefaultWorldCBs()
@@ -6781,6 +6599,16 @@ bool RenderDX11_Present()
 
 	return RenderDX11_GetCore().Present();
 }
+
+#undef gDX11SunGlareCB
+#undef gDX11GrassCB
+#undef gDX11WaterCB
+#undef gDX11ShadowCB
+#undef gDX11LightCB
+#undef gDX11MaterialCB
+#undef gDX11ObjectCB
+#undef gDX11TerrainCB
+#undef gDX11FrameCB
 
 #undef gDX11SunGlareBorderSampler
 #undef gDX11SamplerLinearClamp
