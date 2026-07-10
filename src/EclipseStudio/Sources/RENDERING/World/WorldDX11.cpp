@@ -104,6 +104,15 @@ bool WorldDX11_Render(
 #endif
 }
 
+bool WorldDX11_Present()
+{
+#if LTS_STUDIO_DX11_WORLD
+	return RenderDX11_Present();
+#else
+	return false;
+#endif
+}
+
 void WorldDX11_DrawDebugPreviewDX9()
 {
 #if LTS_STUDIO_DX11_WORLD

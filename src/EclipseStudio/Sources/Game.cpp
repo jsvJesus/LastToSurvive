@@ -6,6 +6,7 @@
 #include "r3dBudgeter.h"
 
 #include "r3dBackgroundTaskDispatcher.h"
+#include "r3dDeviceQueue.h"
 
 #include "r3dDebug.h"
 
@@ -959,14 +960,23 @@ void GameStateGameLoop()
 	R3DPROFILE_START("EndRender");
 	r3dRenderer->EndFrame();
 
-	UpdateD3DAntiCheatPrePresent();
+	const bool bDX11OwnsPresentation =
+		WorldRender_PresentDX11();
 
-	r3dRenderer->EndRender(true);
+	if (!bDX11OwnsPresentation)
+	{
+		UpdateD3DAntiCheatPrePresent();
+		r3dRenderer->EndRender(true);
+		UpdateD3DAntiCheatPostPresent();
+	}
+	else
+	{
+		++gRenderFrameCounter;
+		ProcessDeviceQueue(r3dGetTime(), 0.033f);
+	}
 	R3DPROFILE_END("EndRender");
 
-	UpdateD3DAntiCheatPostPresent();
-
-	if( r3dRenderer->DeviceAvailable )
+	if( r3dRenderer->DeviceAvailable && !bDX11OwnsPresentation )
 	{
 		r3dUpdateScreenShot();
 		if(Keyboard->WasPressed(kbsPrtScr) && !Keyboard->IsPressed(kbsLeftControl) )

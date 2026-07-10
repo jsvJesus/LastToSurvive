@@ -79,6 +79,20 @@ static inline bool WorldRender_WantsDX11()
 	return CachedValue != 0;
 }
 
+static inline bool WorldRender_WantsDX11Present()
+{
+	static int CachedValue = -1;
+
+	if (CachedValue < 0)
+	{
+		CachedValue =
+			WorldRender_CommandLineHasSwitch("-dx11present") ||
+			WorldRender_CommandLineHasSwitch("/dx11present");
+	}
+
+	return CachedValue != 0;
+}
+
 static inline bool WorldRender_IsDX11Compiled()
 {
 #if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
@@ -170,6 +184,7 @@ static inline bool WorldRender_TryRenderDX11()
 	Desc.Height = r3dRenderer ? static_cast<int>(r3dRenderer->ScreenH) : 1;
 	Desc.NearClip = r3dRenderer ? r3dRenderer->NearClip : 0.1f;
 	Desc.FarClip = r3dRenderer ? r3dRenderer->FarClip : 10000.0f;
+	Desc.DirectPresent = WorldRender_WantsDX11Present();
 
 	return WorldDX11_Render(Desc);
 #else
@@ -185,6 +200,42 @@ static inline void WorldRender_DrawDX11DebugPreview()
 		WorldDX11_DrawDebugPreviewDX9();
 	}
 #endif
+}
+
+static inline bool WorldRender_PresentDX11()
+{
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+	if (
+		WorldRender_IsDX11Active() &&
+		WorldRender_WantsDX11Present()
+	)
+	{
+		const bool bPresented =
+			WorldDX11_Present();
+
+		if (!bPresented)
+		{
+			static bool bPresentFailureLogged = false;
+
+			if (!bPresentFailureLogged)
+			{
+				bPresentFailureLogged = true;
+				WorldRender_LogText(
+					"[DX11][WorldRenderer] DX11 Present did not produce "
+					"a frame. DX9 Present remains suppressed to prevent "
+					"the stale menu backbuffer from replacing the world.\n"
+				);
+			}
+		}
+
+		// This return value means that DX11 owns presentation for the frame.
+		// A transient DX11 Present failure must not let the old DX9 swap chain
+		// replace the window contents with its last (menu) backbuffer.
+		return true;
+	}
+#endif
+
+	return false;
 }
 
 static inline void WorldRender_Shutdown()

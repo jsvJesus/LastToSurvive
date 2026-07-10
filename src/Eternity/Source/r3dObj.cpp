@@ -951,10 +951,9 @@ void r3dMesh::DoFillBuffers()
 	}
 
 
-	SAFE_DELETE_ARRAY(VertexNormals);
-	SAFE_DELETE_ARRAY(VertexUVs);
-	SAFE_DELETE_ARRAY(VertexTangents);
-	SAFE_DELETE_ARRAY(VertexTangentWs);
+	// Positions and indices already remain in system memory. Keep normals,
+	// UVs, tangents, and handedness as backend-neutral mesh source data so
+	// DX11 can build its own buffers without reading D3D9 resources back.
 	SAFE_DELETE_ARRAY(VertexColors);
 
 	InterlockedExchange( &m_Drawable, 1 ) ;

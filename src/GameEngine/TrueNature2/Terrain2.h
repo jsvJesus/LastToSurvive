@@ -225,6 +225,10 @@ public:
 		float WorldX;
 		float WorldZ;
 		float WorldDim;
+
+		int VertexDim;
+		int TileSizeCells;
+		float CellSize;
 	};
 
 	typedef r3dTL::TFixedArray< float, NUM_QUALITY_LAYERS > LayerFloats;
@@ -342,6 +346,7 @@ public:
 	int						GetDX11VisibleAtlasTileCount() const;
 	bool					GetDX11VisibleAtlasTileInfo( int idx, DX11AtlasTileInfo* oInfo ) const;
 	void					UpdateDX11VisibleAtlasTiles();
+	int						BuildDX11TileIndices( const DX11AtlasTileInfo& info, unsigned short* indices, int capacity ) const;
 	int						GetDX11AtlasVolumeCount() const;
 	r3dTexture*				GetDX11AtlasDiffuseTexture( int volumeIdx ) const;
 	r3dTexture*				GetDX11AtlasNormalTexture( int volumeIdx ) const;

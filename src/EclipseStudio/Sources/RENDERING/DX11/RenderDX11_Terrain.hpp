@@ -241,7 +241,13 @@ void RenderDX11_BeginTerrainCacheFrame()
 			gDX11TerrainPatchCache[i].TileX = 0;
 			gDX11TerrainPatchCache[i].TileZ = 0;
 			gDX11TerrainPatchCache[i].L = 0;
+			gDX11TerrainPatchCache[i].ConFlags = 0;
+			gDX11TerrainPatchCache[i].VertexDim = 0;
 			gDX11TerrainPatchCache[i].PatchSize = 0.0f;
+			gDX11TerrainPatchCache[i].VertexCapacity =
+				DX11_TERRAIN_VERTEX_COUNT;
+			gDX11TerrainPatchCache[i].IndexCapacity = 0;
+			gDX11TerrainPatchCache[i].IndexCount = 0;
 			gDX11TerrainPatchCache[i].Valid = false;
 			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
@@ -659,6 +665,671 @@ void RenderDX11_BeginTerrainCacheFrame()
 		return true;
 	}
 
+	void RenderDX11_ReleaseTerrainV3HeightSamples()
+	{
+		delete [] gDX11TerrainV3HeightSamples;
+		gDX11TerrainV3HeightSamples = 0;
+		gDX11TerrainV3HeightSampleCountX = 0;
+		gDX11TerrainV3HeightSampleCountZ = 0;
+	}
+
+	bool RenderDX11_LoadTerrainV3HeightSamples(
+		const char* HomeDir
+	)
+	{
+		RenderDX11_ReleaseTerrainV3HeightSamples();
+
+		if (
+			!gDX11TerrainV3Desc.UseRawHeightGrid ||
+			!gDX11TerrainV3Desc.HeightFile[0]
+		)
+		{
+			return false;
+		}
+
+		char HeightPath[512] = {};
+		sprintf_s(
+			HeightPath,
+			"%s\\TerrainV3\\%s",
+			HomeDir,
+			gDX11TerrainV3Desc.HeightFile
+		);
+
+		FILE* HeightFile = fopen(HeightPath, "rb");
+		if (!HeightFile)
+			return false;
+
+		unsigned int Magic = 0;
+		unsigned int Version = 0;
+		unsigned int Width = 0;
+		unsigned int Height = 0;
+		float CellSize = 0.0f;
+		float HeightAmplitude = 0.0f;
+
+		if (
+			fread(&Magic, sizeof(Magic), 1, HeightFile) != 1 ||
+			fread(&Version, sizeof(Version), 1, HeightFile) != 1 ||
+			fread(&Width, sizeof(Width), 1, HeightFile) != 1 ||
+			fread(&Height, sizeof(Height), 1, HeightFile) != 1 ||
+			fread(&CellSize, sizeof(CellSize), 1, HeightFile) != 1 ||
+			fread(&HeightAmplitude, sizeof(HeightAmplitude), 1, HeightFile) != 1
+		)
+		{
+			fclose(HeightFile);
+			return false;
+		}
+
+		if (
+			Magic != 0x33485654 ||
+			Version != 1 ||
+			Width < 2 ||
+			Height < 2 ||
+			Width > 16385 ||
+			Height > 16385
+		)
+		{
+			fclose(HeightFile);
+			r3dOutToLog(
+				"[DX11][TerrainV3] Invalid height file header: %s\n",
+				HeightPath
+			);
+			return false;
+		}
+
+		const unsigned long long SampleCount64 =
+			static_cast<unsigned long long>(Width) *
+			static_cast<unsigned long long>(Height);
+		const size_t SampleCount =
+			static_cast<size_t>(SampleCount64);
+
+		float* Samples = new float[SampleCount];
+		if (!Samples)
+		{
+			fclose(HeightFile);
+			return false;
+		}
+
+		if (fread(Samples, sizeof(float), SampleCount, HeightFile) != SampleCount)
+		{
+			fclose(HeightFile);
+			delete [] Samples;
+			r3dOutToLog(
+				"[DX11][TerrainV3] Failed to read height samples: %s\n",
+				HeightPath
+			);
+			return false;
+		}
+
+		fclose(HeightFile);
+
+		gDX11TerrainV3HeightSamples = Samples;
+		gDX11TerrainV3HeightSampleCountX = static_cast<int>(Width);
+		gDX11TerrainV3HeightSampleCountZ = static_cast<int>(Height);
+
+		gDX11TerrainV3Desc.HeightWidth = static_cast<int>(Width);
+		gDX11TerrainV3Desc.HeightHeight = static_cast<int>(Height);
+
+		r3dOutToLog(
+			"[DX11][TerrainV3] Loaded raw height grid: %s (%ux%u)\n",
+			HeightPath,
+			Width,
+			Height
+		);
+		return true;
+	}
+
+	void RenderDX11_EnsureTerrainV3Desc()
+	{
+		const char* HomeDir =
+			r3dGameLevel::GetHomeDir();
+
+		if (!HomeDir)
+			HomeDir = "";
+
+		if (
+			gDX11TerrainV3Desc.Initialized &&
+			strcmp(gDX11TerrainV3Desc.SourceDir, HomeDir) == 0
+		)
+		{
+			return;
+		}
+
+		RenderDX11_ReleaseTerrainV3HeightSamples();
+
+		memset(
+			&gDX11TerrainV3Desc,
+			0,
+			sizeof(gDX11TerrainV3Desc)
+		);
+		gDX11TerrainV3Desc.Initialized = true;
+		r3dscpy(
+			gDX11TerrainV3Desc.SourceDir,
+			HomeDir
+		);
+		gDX11TerrainV3PathLogged = false;
+		gDX11TerrainV3Desc.SizeX =
+			DX11_TERRAIN_V3_DEFAULT_WORLD_SIZE;
+		gDX11TerrainV3Desc.SizeZ =
+			DX11_TERRAIN_V3_DEFAULT_WORLD_SIZE;
+		gDX11TerrainV3Desc.CellSize =
+			DX11_TERRAIN_V3_DEFAULT_CELL_SIZE;
+		gDX11TerrainV3Desc.ChunkCells =
+			DX11_TERRAIN_V3_DEFAULT_CHUNK_CELLS;
+		gDX11TerrainV3Desc.BaseHeight = 0.0f;
+		gDX11TerrainV3Desc.HeightAmplitude = 42.0f;
+		gDX11TerrainV3Desc.MinHeight = -80.0f;
+		gDX11TerrainV3Desc.MaxHeight = 120.0f;
+		r3dscpy(
+			gDX11TerrainV3Desc.HeightFile,
+			"height.v3"
+		);
+
+		char DescPath[512] = {};
+		sprintf_s(
+			DescPath,
+			"%s\\TerrainV3\\terrain_v3.desc",
+			HomeDir
+		);
+
+		FILE* DescFile = fopen(DescPath, "rt");
+		if (DescFile)
+		{
+			char Key[128] = {};
+			char Value[256] = {};
+
+			while (fscanf(DescFile, "%127s %255s", Key, Value) == 2)
+			{
+				if (strcmp(Key, "size_x") == 0)
+					gDX11TerrainV3Desc.SizeX = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "size_z") == 0)
+					gDX11TerrainV3Desc.SizeZ = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "cell_size") == 0)
+					gDX11TerrainV3Desc.CellSize = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "chunk_cells") == 0)
+					gDX11TerrainV3Desc.ChunkCells = atoi(Value);
+				else if (strcmp(Key, "base_height") == 0)
+					gDX11TerrainV3Desc.BaseHeight = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "height_amplitude") == 0)
+					gDX11TerrainV3Desc.HeightAmplitude = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "min_height") == 0)
+					gDX11TerrainV3Desc.MinHeight = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "max_height") == 0)
+					gDX11TerrainV3Desc.MaxHeight = static_cast<float>(atof(Value));
+				else if (strcmp(Key, "height_source") == 0)
+					gDX11TerrainV3Desc.UseRawHeightGrid = strcmp(Value, "raw_f32_grid") == 0;
+				else if (strcmp(Key, "height_file") == 0)
+					r3dscpy(gDX11TerrainV3Desc.HeightFile, Value);
+				else if (strcmp(Key, "height_width") == 0)
+					gDX11TerrainV3Desc.HeightWidth = atoi(Value);
+				else if (strcmp(Key, "height_height") == 0)
+					gDX11TerrainV3Desc.HeightHeight = atoi(Value);
+			}
+
+			fclose(DescFile);
+		}
+
+		if (gDX11TerrainV3Desc.SizeX <= 1.0f)
+			gDX11TerrainV3Desc.SizeX =
+				DX11_TERRAIN_V3_DEFAULT_WORLD_SIZE;
+
+		if (gDX11TerrainV3Desc.SizeZ <= 1.0f)
+			gDX11TerrainV3Desc.SizeZ =
+				DX11_TERRAIN_V3_DEFAULT_WORLD_SIZE;
+
+		if (gDX11TerrainV3Desc.CellSize <= 0.01f)
+			gDX11TerrainV3Desc.CellSize =
+				DX11_TERRAIN_V3_DEFAULT_CELL_SIZE;
+
+		if (gDX11TerrainV3Desc.ChunkCells <= 0)
+			gDX11TerrainV3Desc.ChunkCells =
+				DX11_TERRAIN_V3_DEFAULT_CHUNK_CELLS;
+
+		RenderDX11_LoadTerrainV3HeightSamples(HomeDir);
+
+		for (int i = 0; i < DX11_TERRAIN_PATCH_CACHE_COUNT; ++i)
+			gDX11TerrainPatchCache[i].Valid = false;
+
+		OutputDebugStringA(
+			"[DX11][TerrainV3] Initialized independent TerrainV3 "
+			"descriptor: no TerrainV2/Terrain2 data provider\n"
+		);
+	}
+
+	float RenderDX11_TerrainV3Height(
+		float WorldX,
+		float WorldZ
+	)
+	{
+		RenderDX11_EnsureTerrainV3Desc();
+
+		if (
+			gDX11TerrainV3HeightSamples &&
+			gDX11TerrainV3HeightSampleCountX > 1 &&
+			gDX11TerrainV3HeightSampleCountZ > 1 &&
+			gDX11TerrainV3Desc.CellSize > 0.01f
+		)
+		{
+			const float GridX =
+				R3D_MAX(
+					0.0f,
+					R3D_MIN(
+						WorldX / gDX11TerrainV3Desc.CellSize,
+						static_cast<float>(gDX11TerrainV3HeightSampleCountX - 1)
+					)
+				);
+			const float GridZ =
+				R3D_MAX(
+					0.0f,
+					R3D_MIN(
+						WorldZ / gDX11TerrainV3Desc.CellSize,
+						static_cast<float>(gDX11TerrainV3HeightSampleCountZ - 1)
+					)
+				);
+
+			const int X0 =
+				RenderDX11_ClampInt(
+					static_cast<int>(floorf(GridX)),
+					0,
+					gDX11TerrainV3HeightSampleCountX - 1
+				);
+			const int Z0 =
+				RenderDX11_ClampInt(
+					static_cast<int>(floorf(GridZ)),
+					0,
+					gDX11TerrainV3HeightSampleCountZ - 1
+				);
+			const int X1 =
+				RenderDX11_ClampInt(
+					X0 + 1,
+					0,
+					gDX11TerrainV3HeightSampleCountX - 1
+				);
+			const int Z1 =
+				RenderDX11_ClampInt(
+					Z0 + 1,
+					0,
+					gDX11TerrainV3HeightSampleCountZ - 1
+				);
+
+			const float Fx = GridX - static_cast<float>(X0);
+			const float Fz = GridZ - static_cast<float>(Z0);
+
+			const int Row0 =
+				Z0 * gDX11TerrainV3HeightSampleCountX;
+			const int Row1 =
+				Z1 * gDX11TerrainV3HeightSampleCountX;
+
+			const float H00 =
+				gDX11TerrainV3HeightSamples[Row0 + X0];
+			const float H10 =
+				gDX11TerrainV3HeightSamples[Row0 + X1];
+			const float H01 =
+				gDX11TerrainV3HeightSamples[Row1 + X0];
+			const float H11 =
+				gDX11TerrainV3HeightSamples[Row1 + X1];
+
+			const float H0 =
+				H00 + (H10 - H00) * Fx;
+			const float H1 =
+				H01 + (H11 - H01) * Fx;
+
+			return H0 + (H1 - H0) * Fz;
+		}
+
+		const float Amp =
+			gDX11TerrainV3Desc.HeightAmplitude;
+
+		const float Low =
+			sinf(WorldX * 0.0017f) *
+			cosf(WorldZ * 0.0013f);
+
+		const float Mid =
+			sinf((WorldX + WorldZ) * 0.0031f) * 0.35f;
+
+		const float Detail =
+			cosf(WorldX * 0.009f + WorldZ * 0.004f) * 0.08f;
+
+		return
+			gDX11TerrainV3Desc.BaseHeight +
+			(Low + Mid + Detail) * Amp;
+	}
+
+	r3dPoint3D RenderDX11_TerrainV3Normal(
+		float WorldX,
+		float WorldZ
+	)
+	{
+		RenderDX11_EnsureTerrainV3Desc();
+
+		float Step = gDX11TerrainV3Desc.CellSize;
+		if (Step <= 0.01f)
+			Step = 1.0f;
+
+		const float HeightL =
+			RenderDX11_TerrainV3Height(
+				WorldX - Step,
+				WorldZ
+			);
+		const float HeightR =
+			RenderDX11_TerrainV3Height(
+				WorldX + Step,
+				WorldZ
+			);
+		const float HeightB =
+			RenderDX11_TerrainV3Height(
+				WorldX,
+				WorldZ - Step
+			);
+		const float HeightF =
+			RenderDX11_TerrainV3Height(
+				WorldX,
+				WorldZ + Step
+			);
+
+		r3dPoint3D Normal(
+			HeightL - HeightR,
+			Step * 2.0f,
+			HeightB - HeightF
+		);
+
+		if (!RenderDX11_NormalizeTerrainNormal(Normal))
+		{
+			Normal.Assign(
+				0.0f,
+				1.0f,
+				0.0f
+			);
+		}
+
+		return Normal;
+	}
+
+	bool RenderDX11_WriteTerrainV3CB()
+	{
+		if (!gDX11Context || !gDX11TerrainCB)
+			return false;
+
+		RenderDX11_EnsureTerrainV3Desc();
+
+		WorldDX11TerrainCB TerrainCB = {};
+
+		TerrainCB.BaseColor[0] = 0.12f;
+		TerrainCB.BaseColor[1] = 0.28f;
+		TerrainCB.BaseColor[2] = 0.10f;
+		TerrainCB.BaseColor[3] = 1.0f;
+
+		TerrainCB.ColorScale[0] = 0.22f;
+		TerrainCB.ColorScale[1] = 0.18f;
+		TerrainCB.ColorScale[2] = 0.18f;
+		TerrainCB.ColorScale[3] = 1.0f;
+
+		const float HeightRange =
+			R3D_MAX(
+				gDX11TerrainV3Desc.MaxHeight -
+				gDX11TerrainV3Desc.MinHeight,
+				1.0f
+			);
+
+		TerrainCB.DebugParams[0] =
+			-gDX11TerrainV3Desc.MinHeight;
+		TerrainCB.DebugParams[1] =
+			1.0f / HeightRange;
+		TerrainCB.DebugParams[2] = 0.0f;
+		TerrainCB.DebugParams[3] = 0.0f;
+
+		TerrainCB.TerrainSize[0] =
+			gDX11TerrainV3Desc.SizeX;
+		TerrainCB.TerrainSize[1] =
+			gDX11TerrainV3Desc.SizeZ;
+		TerrainCB.TerrainSize[2] =
+			gDX11TerrainV3Desc.SizeX > 0.01f
+			? 1.0f / gDX11TerrainV3Desc.SizeX
+			: 1.0f;
+		TerrainCB.TerrainSize[3] =
+			gDX11TerrainV3Desc.SizeZ > 0.01f
+			? 1.0f / gDX11TerrainV3Desc.SizeZ
+			: 1.0f;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+		HRESULT Hr =
+			gDX11Context->Map(
+				gDX11TerrainCB,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+			return false;
+
+		memcpy(
+			Mapped.pData,
+			&TerrainCB,
+			sizeof(TerrainCB)
+		);
+
+		gDX11Context->Unmap(
+			gDX11TerrainCB,
+			0
+		);
+
+		RenderDX11_BindTerrainCB();
+		return true;
+	}
+
+	bool RenderDX11_EnsureTerrainV3VertexBuffer(
+		WorldDX11TerrainPatchCacheEntry& Entry
+	)
+	{
+		if (!gDX11Device)
+			return false;
+
+		if (
+			Entry.VertexBuffer &&
+			Entry.VertexCapacity >= DX11_TERRAIN_VERTEX_COUNT
+		)
+		{
+			return true;
+		}
+
+		RenderDX11_SafeRelease(Entry.VertexBuffer);
+
+		D3D11_BUFFER_DESC VBDesc = {};
+		VBDesc.ByteWidth =
+			sizeof(WorldDX11TerrainVertex) *
+			DX11_TERRAIN_VERTEX_COUNT;
+		VBDesc.Usage = D3D11_USAGE_DYNAMIC;
+		VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		if (FAILED(gDX11Device->CreateBuffer(
+			&VBDesc,
+			0,
+			&Entry.VertexBuffer
+		)))
+		{
+			Entry.VertexCapacity = 0;
+			return false;
+		}
+
+		Entry.VertexCapacity = DX11_TERRAIN_VERTEX_COUNT;
+		return true;
+	}
+
+	bool RenderDX11_UpdateTerrainV3ChunkVertices(
+		ID3D11Buffer* VertexBuffer,
+		int ChunkX,
+		int ChunkZ,
+		float ChunkSize
+	)
+	{
+		if (!gDX11Context || !VertexBuffer)
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE Mapped = {};
+		HRESULT Hr =
+			gDX11Context->Map(
+				VertexBuffer,
+				0,
+				D3D11_MAP_WRITE_DISCARD,
+				0,
+				&Mapped
+			);
+
+		if (FAILED(Hr))
+			return false;
+
+		WorldDX11TerrainVertex* Vertices =
+			reinterpret_cast<WorldDX11TerrainVertex*>(
+				Mapped.pData
+			);
+
+		const float BaseX =
+			static_cast<float>(ChunkX) *
+			ChunkSize;
+
+		const float BaseZ =
+			static_cast<float>(ChunkZ) *
+			ChunkSize;
+
+		const float Step =
+			ChunkSize /
+			static_cast<float>(DX11_TERRAIN_GRID_DIM - 1);
+
+		int VertexIndex = 0;
+
+		for (int z = 0; z < DX11_TERRAIN_GRID_DIM; ++z)
+		{
+			for (int x = 0; x < DX11_TERRAIN_GRID_DIM; ++x)
+			{
+				const float WorldX =
+					BaseX +
+					static_cast<float>(x) * Step;
+
+				const float WorldZ =
+					BaseZ +
+					static_cast<float>(z) * Step;
+
+				const float Height =
+					RenderDX11_TerrainV3Height(
+						WorldX,
+						WorldZ
+					);
+
+				const r3dPoint3D Normal =
+					RenderDX11_TerrainV3Normal(
+						WorldX,
+						WorldZ
+					);
+
+				Vertices[VertexIndex].Position[0] = WorldX;
+				Vertices[VertexIndex].Position[1] = Height;
+				Vertices[VertexIndex].Position[2] = WorldZ;
+
+				Vertices[VertexIndex].Normal[0] = Normal.x;
+				Vertices[VertexIndex].Normal[1] = Normal.y;
+				Vertices[VertexIndex].Normal[2] = Normal.z;
+
+				++VertexIndex;
+			}
+		}
+
+		gDX11Context->Unmap(
+			VertexBuffer,
+			0
+		);
+
+		return true;
+	}
+
+	bool RenderDX11_EnsureTerrainV3Chunk(
+		int CacheIndex,
+		int ChunkX,
+		int ChunkZ,
+		float ChunkSize
+	)
+	{
+		if (
+			CacheIndex < 0 ||
+			CacheIndex >= DX11_TERRAIN_PATCH_CACHE_COUNT
+		)
+		{
+			return false;
+		}
+
+		WorldDX11TerrainPatchCacheEntry& Entry =
+			gDX11TerrainPatchCache[CacheIndex];
+
+		if (!RenderDX11_EnsureTerrainV3VertexBuffer(Entry))
+			return false;
+
+		if (
+			Entry.Valid &&
+			Entry.TileX == ChunkX &&
+			Entry.TileZ == ChunkZ &&
+			Entry.L == DX11_TERRAIN_V3_CACHE_L &&
+			fabsf(Entry.PatchSize - ChunkSize) <= 0.01f
+		)
+		{
+			Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
+			return true;
+		}
+
+		if (!RenderDX11_UpdateTerrainV3ChunkVertices(
+			Entry.VertexBuffer,
+			ChunkX,
+			ChunkZ,
+			ChunkSize
+		))
+		{
+			Entry.Valid = false;
+			return false;
+		}
+
+		Entry.TileX = ChunkX;
+		Entry.TileZ = ChunkZ;
+		Entry.L = DX11_TERRAIN_V3_CACHE_L;
+		Entry.ConFlags = 0;
+		Entry.VertexDim = DX11_TERRAIN_GRID_DIM - 1;
+		Entry.PatchSize = ChunkSize;
+		Entry.IndexCount = DX11_TERRAIN_INDEX_COUNT;
+		Entry.Valid = true;
+		Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
+
+		++gDX11TerrainPatchUpdateCount;
+		return true;
+	}
+
+	bool RenderDX11_BuildTerrainV3ChunkBounds(
+		int ChunkX,
+		int ChunkZ,
+		float ChunkSize,
+		WorldDX11TerrainPatchBounds* OutBounds
+	)
+	{
+		if (!OutBounds)
+			return false;
+
+		RenderDX11_EnsureTerrainV3Desc();
+
+		const float MinX =
+			static_cast<float>(ChunkX) *
+			ChunkSize;
+		const float MinZ =
+			static_cast<float>(ChunkZ) *
+			ChunkSize;
+
+		OutBounds->MinX = MinX;
+		OutBounds->MinY = gDX11TerrainV3Desc.MinHeight;
+		OutBounds->MinZ = MinZ;
+		OutBounds->MaxX = MinX + ChunkSize;
+		OutBounds->MaxY = gDX11TerrainV3Desc.MaxHeight;
+		OutBounds->MaxZ = MinZ + ChunkSize;
+
+		return true;
+	}
+
 	bool RenderDX11_UpdateTerrainVertices(
 		ID3D11Buffer* VertexBuffer,
 		int TileX,
@@ -724,6 +1395,29 @@ void RenderDX11_BeginTerrainCacheFrame()
 		const r3dTerrainDesc& TerrainDesc =
 			Terrain->GetDesc();
 
+		const float CellSize =
+			TerrainDesc.CellSize > 0.01f
+			? TerrainDesc.CellSize
+			: 1.0f;
+
+		const int BaseCellX =
+			static_cast<int>(
+				floorf(BaseX / CellSize + 0.5f)
+			);
+
+		const int BaseCellZ =
+			static_cast<int>(
+				floorf(BaseZ / CellSize + 0.5f)
+			);
+
+		const int CellStep =
+			R3D_MAX(
+				static_cast<int>(
+					floorf(Step / CellSize + 0.5f)
+				),
+				1
+			);
+
 		float NormalSampleStep =
 			TerrainDesc.CellSize;
 
@@ -736,6 +1430,18 @@ void RenderDX11_BeginTerrainCacheFrame()
 		{
 			for (int x = 0; x < DX11_TERRAIN_GRID_DIM; ++x)
 			{
+				const int HeightCellX =
+					R3D_MIN(
+						BaseCellX + x * CellStep,
+						TerrainDesc.CellCountX - 1
+					);
+
+				const int HeightCellZ =
+					R3D_MIN(
+						BaseCellZ + z * CellStep,
+						TerrainDesc.CellCountZ - 1
+					);
+
 				const float WorldX =
 					BaseX +
 					static_cast<float>(x) * Step;
@@ -744,16 +1450,17 @@ void RenderDX11_BeginTerrainCacheFrame()
 					BaseZ +
 					static_cast<float>(z) * Step;
 
+				const float Height =
+					Terrain->GetHeight(
+						HeightCellX,
+						HeightCellZ
+					);
+
 				r3dPoint3D Pos(
 					WorldX,
-					0.0f,
+					Height,
 					WorldZ
 				);
-
-				const float Height =
-					Terrain->GetHeight(Pos);
-
-				Pos.y = Height;
 
 				r3dPoint3D Normal;
 
@@ -800,15 +1507,662 @@ void RenderDX11_BeginTerrainCacheFrame()
 		return true;
 	}
 
+	bool RenderDX11_EnsureTerrain2HeightSamples()
+	{
+		if (!Terrain2)
+			return false;
+
+		const r3dTerrainDesc& TerrainDesc =
+			Terrain2->GetDesc();
+
+		const int SampleCountX =
+			TerrainDesc.CellCountX;
+		const int SampleCountZ =
+			TerrainDesc.CellCountZ;
+		const int SampleCount =
+			SampleCountX * SampleCountZ;
+
+		if (
+			SampleCountX <= 0 ||
+			SampleCountZ <= 0 ||
+			SampleCount <= 0
+		)
+		{
+			return false;
+		}
+
+		if (
+			gDX11Terrain2HeightSource == Terrain2 &&
+			gDX11Terrain2HeightSampleCountX == SampleCountX &&
+			gDX11Terrain2HeightSampleCountZ == SampleCountZ &&
+			gDX11Terrain2HeightSamples.Count() == SampleCount
+		)
+		{
+			return true;
+		}
+
+		gDX11Terrain2HeightSamples.Resize(SampleCount);
+		Terrain2->SaveHeightField(
+			&gDX11Terrain2HeightSamples
+		);
+
+		if (gDX11Terrain2HeightSamples.Count() != SampleCount)
+		{
+			gDX11Terrain2HeightSamples.Clear();
+			gDX11Terrain2HeightSource = 0;
+			gDX11Terrain2HeightSampleCountX = 0;
+			gDX11Terrain2HeightSampleCountZ = 0;
+			return false;
+		}
+
+		gDX11Terrain2HeightSource = Terrain2;
+		gDX11Terrain2HeightSampleCountX = SampleCountX;
+		gDX11Terrain2HeightSampleCountZ = SampleCountZ;
+
+		char Text[256] = {};
+		sprintf_s(
+			Text,
+			"[DX11][Render] Terrain2 height field cached: %dx%d "
+			"(native world-space samples)\n",
+			SampleCountX,
+			SampleCountZ
+		);
+		OutputDebugStringA(Text);
+
+		return true;
+	}
+
+	float RenderDX11_GetTerrain2HeightSample(
+		int CellX,
+		int CellZ
+	)
+	{
+		CellX = RenderDX11_ClampInt(
+			CellX,
+			0,
+			gDX11Terrain2HeightSampleCountX - 1
+		);
+		CellZ = RenderDX11_ClampInt(
+			CellZ,
+			0,
+			gDX11Terrain2HeightSampleCountZ - 1
+		);
+
+		return gDX11Terrain2HeightSamples[
+			CellZ * gDX11Terrain2HeightSampleCountX +
+			CellX
+		];
+	}
+
+	void RenderDX11_WriteTerrain2NativeVertex(
+		WorldDX11TerrainVertex* Vertex,
+		int CellX,
+		int CellZ,
+		float CellSize
+	)
+	{
+		const float HeightL =
+			RenderDX11_GetTerrain2HeightSample(
+				CellX - 1,
+				CellZ
+			);
+		const float HeightR =
+			RenderDX11_GetTerrain2HeightSample(
+				CellX + 1,
+				CellZ
+			);
+		const float HeightB =
+			RenderDX11_GetTerrain2HeightSample(
+				CellX,
+				CellZ - 1
+			);
+		const float HeightF =
+			RenderDX11_GetTerrain2HeightSample(
+				CellX,
+				CellZ + 1
+			);
+
+		float NormalX = HeightL - HeightR;
+		float NormalY = CellSize * 2.0f;
+		float NormalZ = HeightB - HeightF;
+		const float NormalLength =
+			sqrtf(
+				NormalX * NormalX +
+				NormalY * NormalY +
+				NormalZ * NormalZ
+			);
+
+		if (NormalLength > 0.00001f)
+		{
+			const float InvNormalLength =
+				1.0f / NormalLength;
+			NormalX *= InvNormalLength;
+			NormalY *= InvNormalLength;
+			NormalZ *= InvNormalLength;
+		}
+		else
+		{
+			NormalX = 0.0f;
+			NormalY = 1.0f;
+			NormalZ = 0.0f;
+		}
+
+		Vertex->Position[0] = CellX * CellSize;
+		Vertex->Position[1] =
+			RenderDX11_GetTerrain2HeightSample(
+				CellX,
+				CellZ
+			);
+		Vertex->Position[2] = CellZ * CellSize;
+		Vertex->Normal[0] = NormalX;
+		Vertex->Normal[1] = NormalY;
+		Vertex->Normal[2] = NormalZ;
+	}
+
+	void RenderDX11_WriteTerrain2SkirtVertex(
+		WorldDX11TerrainVertex* Vertex,
+		int CellX,
+		int CellZ,
+		float CellSize,
+		float SkirtBottomY
+	)
+	{
+		Vertex->Position[0] = CellX * CellSize;
+		Vertex->Position[1] = SkirtBottomY;
+		Vertex->Position[2] = CellZ * CellSize;
+
+		// Negative Y is used by the DX11 terrain VS to keep skirt vertices
+		// from being snapped back to the height texture surface.
+		Vertex->Normal[0] = 0.0f;
+		Vertex->Normal[1] = -1.0f;
+		Vertex->Normal[2] = 0.0f;
+	}
+
+	int RenderDX11_GetTerrain2SkirtIndexCount(
+		int VertexDim
+	)
+	{
+		return VertexDim > 0
+			? VertexDim * 4 * 6
+			: 0;
+	}
+
+	int RenderDX11_GetTerrain2SkirtVertexCount(
+		int VertexDim
+	)
+	{
+		return VertexDim > 0
+			? (VertexDim + 1) * 4
+			: 0;
+	}
+
+	void RenderDX11_AppendTerrain2SkirtQuad(
+		unsigned short* Indices,
+		int& IndexWrite,
+		int IndexCapacity,
+		int Top0,
+		int Top1,
+		int Bottom0,
+		int Bottom1
+	)
+	{
+		if (IndexWrite + 6 > IndexCapacity)
+			return;
+
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Top0);
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Bottom0);
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Top1);
+
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Top1);
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Bottom0);
+		Indices[IndexWrite++] =
+			static_cast<unsigned short>(Bottom1);
+	}
+
+	void RenderDX11_AppendTerrain2SkirtIndices(
+		unsigned short* Indices,
+		int& IndexWrite,
+		int IndexCapacity,
+		int VertexDim,
+		int SkirtVertexStart
+	)
+	{
+		if (
+			!Indices ||
+			VertexDim <= 0 ||
+			SkirtVertexStart <= 0
+		)
+		{
+			return;
+		}
+
+		const int Side = VertexDim + 1;
+		int Bottom = SkirtVertexStart;
+
+		// North edge: z = 0
+		for (int x = 0; x < VertexDim; ++x)
+		{
+			RenderDX11_AppendTerrain2SkirtQuad(
+				Indices,
+				IndexWrite,
+				IndexCapacity,
+				x,
+				x + 1,
+				Bottom + x,
+				Bottom + x + 1
+			);
+		}
+
+		// South edge: z = VertexDim
+		Bottom += Side;
+		for (int x = 0; x < VertexDim; ++x)
+		{
+			RenderDX11_AppendTerrain2SkirtQuad(
+				Indices,
+				IndexWrite,
+				IndexCapacity,
+				VertexDim * Side + x,
+				VertexDim * Side + x + 1,
+				Bottom + x,
+				Bottom + x + 1
+			);
+		}
+
+		// West edge: x = 0
+		Bottom += Side;
+		for (int z = 0; z < VertexDim; ++z)
+		{
+			RenderDX11_AppendTerrain2SkirtQuad(
+				Indices,
+				IndexWrite,
+				IndexCapacity,
+				z * Side,
+				(z + 1) * Side,
+				Bottom + z,
+				Bottom + z + 1
+			);
+		}
+
+		// East edge: x = VertexDim
+		Bottom += Side;
+		for (int z = 0; z < VertexDim; ++z)
+		{
+			RenderDX11_AppendTerrain2SkirtQuad(
+				Indices,
+				IndexWrite,
+				IndexCapacity,
+				z * Side + VertexDim,
+				(z + 1) * Side + VertexDim,
+				Bottom + z,
+				Bottom + z + 1
+			);
+		}
+	}
+
+	bool RenderDX11_UpdateTerrain2NativeTile(
+		int CacheIndex,
+		int VisibleTileIndex,
+		const r3dTerrain2::DX11AtlasTileInfo& TileInfo
+	)
+	{
+		if (
+			!Terrain2 ||
+			!gDX11Device ||
+			!gDX11Context ||
+			CacheIndex < 0 ||
+			CacheIndex >= DX11_TERRAIN_PATCH_CACHE_COUNT ||
+			TileInfo.VertexDim <= 0 ||
+			TileInfo.VertexDim > 128 ||
+			TileInfo.TileSizeCells <= 0 ||
+			TileInfo.CellSize <= 0.0f
+		)
+		{
+			return false;
+		}
+
+		if (!RenderDX11_EnsureTerrain2HeightSamples())
+			return false;
+
+		WorldDX11TerrainPatchCacheEntry& Entry =
+			gDX11TerrainPatchCache[CacheIndex];
+
+		const int Side = TileInfo.VertexDim + 1;
+		const bool UseSkirts = false;
+		const int SkirtVertexCount =
+			UseSkirts
+			? RenderDX11_GetTerrain2SkirtVertexCount(
+				TileInfo.VertexDim
+			)
+			: 0;
+		const int VertexCount =
+			Side * Side +
+			(TileInfo.ConFlags ? TileInfo.VertexDim * 4 : 0) +
+			SkirtVertexCount;
+
+		const int NativeIndexCount =
+			Terrain2->BuildDX11TileIndices(
+				TileInfo,
+				0,
+				0
+			);
+		const int SkirtIndexCount =
+			UseSkirts
+			? RenderDX11_GetTerrain2SkirtIndexCount(
+				TileInfo.VertexDim
+			)
+			: 0;
+		const int IndexCount =
+			NativeIndexCount + SkirtIndexCount;
+
+		if (
+			VertexCount <= 0 ||
+			VertexCount > 65535 ||
+			NativeIndexCount <= 0 ||
+			IndexCount <= 0
+		)
+		{
+			return false;
+		}
+
+		if (
+			!Entry.VertexBuffer ||
+			Entry.VertexCapacity < VertexCount
+		)
+		{
+			RenderDX11_SafeRelease(Entry.VertexBuffer);
+
+			D3D11_BUFFER_DESC Desc = {};
+			Desc.ByteWidth =
+				sizeof(WorldDX11TerrainVertex) * VertexCount;
+			Desc.Usage = D3D11_USAGE_DYNAMIC;
+			Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+			if (FAILED(gDX11Device->CreateBuffer(
+				&Desc,
+				0,
+				&Entry.VertexBuffer
+			)))
+			{
+				return false;
+			}
+
+			Entry.VertexCapacity = VertexCount;
+		}
+
+		if (
+			!Entry.IndexBuffer ||
+			Entry.IndexCapacity < IndexCount
+		)
+		{
+			RenderDX11_SafeRelease(Entry.IndexBuffer);
+
+			D3D11_BUFFER_DESC Desc = {};
+			Desc.ByteWidth =
+				sizeof(unsigned short) * IndexCount;
+			Desc.Usage = D3D11_USAGE_DYNAMIC;
+			Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+			if (FAILED(gDX11Device->CreateBuffer(
+				&Desc,
+				0,
+				&Entry.IndexBuffer
+			)))
+			{
+				return false;
+			}
+
+			Entry.IndexCapacity = IndexCount;
+		}
+
+		D3D11_MAPPED_SUBRESOURCE VertexMap = {};
+		if (FAILED(gDX11Context->Map(
+			Entry.VertexBuffer,
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&VertexMap
+		)))
+		{
+			return false;
+		}
+
+		WorldDX11TerrainVertex* Vertices =
+			static_cast<WorldDX11TerrainVertex*>(VertexMap.pData);
+
+		const int CellStep =
+			TileInfo.TileSizeCells / TileInfo.VertexDim;
+
+		if (CellStep <= 0)
+		{
+			gDX11Context->Unmap(Entry.VertexBuffer, 0);
+			return false;
+		}
+
+		int VertexIndex = 0;
+
+		for (int z = 0; z <= TileInfo.VertexDim; ++z)
+		{
+			for (int x = 0; x <= TileInfo.VertexDim; ++x)
+			{
+				const int CellX =
+					TileInfo.X * TileInfo.TileSizeCells +
+					x * CellStep;
+				const int CellZ =
+					TileInfo.Z * TileInfo.TileSizeCells +
+					z * CellStep;
+
+				RenderDX11_WriteTerrain2NativeVertex(
+					&Vertices[VertexIndex],
+					CellX,
+					CellZ,
+					TileInfo.CellSize
+				);
+				++VertexIndex;
+			}
+		}
+
+		if (TileInfo.ConFlags)
+		{
+			const int HalfStep = CellStep / 2;
+			const int StartX =
+				TileInfo.X * TileInfo.TileSizeCells;
+			const int StartZ =
+				TileInfo.Z * TileInfo.TileSizeCells;
+			const int EndX = StartX + TileInfo.TileSizeCells;
+			const int EndZ = StartZ + TileInfo.TileSizeCells;
+
+			if (HalfStep <= 0)
+			{
+				gDX11Context->Unmap(Entry.VertexBuffer, 0);
+				return false;
+			}
+
+			const int EdgeCellX[4] =
+			{
+				StartX,
+				StartX,
+				StartX,
+				EndX
+			};
+			const int EdgeCellZ[4] =
+			{
+				StartZ,
+				EndZ,
+				StartZ,
+				StartZ
+			};
+
+			for (int Edge = 0; Edge < 4; ++Edge)
+			{
+				for (int i = 0; i < TileInfo.VertexDim; ++i)
+				{
+					const bool Horizontal = Edge < 2;
+					const int CellX =
+						Horizontal
+						? EdgeCellX[Edge] + i * CellStep + HalfStep
+						: EdgeCellX[Edge];
+					const int CellZ =
+						Horizontal
+						? EdgeCellZ[Edge]
+						: EdgeCellZ[Edge] + i * CellStep + HalfStep;
+
+					RenderDX11_WriteTerrain2NativeVertex(
+						&Vertices[VertexIndex],
+						CellX,
+						CellZ,
+						TileInfo.CellSize
+					);
+					++VertexIndex;
+				}
+			}
+		}
+
+		if (SkirtVertexCount > 0)
+		{
+			const r3dTerrainDesc& TerrainDesc =
+				Terrain2->GetDesc();
+			const float SkirtBottomY =
+				TerrainDesc.MinHeight -
+				R3D_MAX(
+					TerrainDesc.MaxHeight -
+					TerrainDesc.MinHeight,
+					128.0f
+				);
+			const int StartX =
+				TileInfo.X * TileInfo.TileSizeCells;
+			const int StartZ =
+				TileInfo.Z * TileInfo.TileSizeCells;
+			const int EndX =
+				StartX + TileInfo.TileSizeCells;
+			const int EndZ =
+				StartZ + TileInfo.TileSizeCells;
+
+			for (int x = 0; x <= TileInfo.VertexDim; ++x)
+			{
+				RenderDX11_WriteTerrain2SkirtVertex(
+					&Vertices[VertexIndex++],
+					StartX + x * CellStep,
+					StartZ,
+					TileInfo.CellSize,
+					SkirtBottomY
+				);
+			}
+
+			for (int x = 0; x <= TileInfo.VertexDim; ++x)
+			{
+				RenderDX11_WriteTerrain2SkirtVertex(
+					&Vertices[VertexIndex++],
+					StartX + x * CellStep,
+					EndZ,
+					TileInfo.CellSize,
+					SkirtBottomY
+				);
+			}
+
+			for (int z = 0; z <= TileInfo.VertexDim; ++z)
+			{
+				RenderDX11_WriteTerrain2SkirtVertex(
+					&Vertices[VertexIndex++],
+					StartX,
+					StartZ + z * CellStep,
+					TileInfo.CellSize,
+					SkirtBottomY
+				);
+			}
+
+			for (int z = 0; z <= TileInfo.VertexDim; ++z)
+			{
+				RenderDX11_WriteTerrain2SkirtVertex(
+					&Vertices[VertexIndex++],
+					EndX,
+					StartZ + z * CellStep,
+					TileInfo.CellSize,
+					SkirtBottomY
+				);
+			}
+		}
+
+		gDX11Context->Unmap(Entry.VertexBuffer, 0);
+
+		if (VertexIndex != VertexCount)
+			return false;
+
+		D3D11_MAPPED_SUBRESOURCE IndexMap = {};
+		if (FAILED(gDX11Context->Map(
+			Entry.IndexBuffer,
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&IndexMap
+		)))
+		{
+			return false;
+		}
+
+		const int WrittenIndices =
+			Terrain2->BuildDX11TileIndices(
+				TileInfo,
+				static_cast<unsigned short*>(IndexMap.pData),
+				Entry.IndexCapacity
+			);
+
+		int TotalWrittenIndices = WrittenIndices;
+
+		if (
+			WrittenIndices == NativeIndexCount &&
+			SkirtIndexCount > 0
+		)
+		{
+			const int SkirtVertexStart =
+				Side * Side +
+				(TileInfo.ConFlags ? TileInfo.VertexDim * 4 : 0);
+
+			RenderDX11_AppendTerrain2SkirtIndices(
+				static_cast<unsigned short*>(IndexMap.pData),
+				TotalWrittenIndices,
+				Entry.IndexCapacity,
+				TileInfo.VertexDim,
+				SkirtVertexStart
+			);
+		}
+
+		gDX11Context->Unmap(Entry.IndexBuffer, 0);
+
+		if (TotalWrittenIndices != IndexCount)
+			return false;
+
+		Entry.TileX = TileInfo.X;
+		Entry.TileZ = TileInfo.Z;
+		Entry.L = TileInfo.L;
+		Entry.ConFlags = TileInfo.ConFlags;
+		Entry.VertexDim = TileInfo.VertexDim;
+		Entry.PatchSize = TileInfo.WorldDim;
+		Entry.IndexCount = IndexCount;
+		Entry.Valid = true;
+		Entry.LastUsedFrame = gDX11TerrainCacheFrameId;
+		++gDX11TerrainPatchUpdateCount;
+
+		(void)VisibleTileIndex;
+		return true;
+	}
+
 	bool RenderDX11_BindTerrainGeometry(
-		ID3D11Buffer* VertexBuffer
+		ID3D11Buffer* VertexBuffer,
+		ID3D11Buffer* IndexBuffer = 0
 	)
 	{
 		if (
 			!gDX11Context ||
 			!gDX11TerrainInputLayout ||
 			!VertexBuffer ||
-			!gDX11TerrainIB
+			(!IndexBuffer && !gDX11TerrainIB)
 		)
 		{
 			return false;
@@ -834,7 +2188,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 		);
 
 		gDX11Context->IASetIndexBuffer(
-			gDX11TerrainIB,
+			IndexBuffer ? IndexBuffer : gDX11TerrainIB,
 			DXGI_FORMAT_R16_UINT,
 			0
 		);
@@ -857,6 +2211,241 @@ void RenderDX11_BeginTerrainCacheFrame()
 			0,
 			DX11_TERRAIN_PATCH_CACHE_COUNT - 1
 		);
+	}
+
+	bool RenderDX11_DrawTerrainV3()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11TerrainIB
+		)
+		{
+			return false;
+		}
+
+		RenderDX11_EnsureTerrainV3Desc();
+
+		const float ChunkSize =
+			gDX11TerrainV3Desc.CellSize *
+			static_cast<float>(gDX11TerrainV3Desc.ChunkCells);
+
+		if (ChunkSize <= 1.0f)
+			return false;
+
+		const int MaxChunkX =
+			RenderDX11_ClampInt(
+				static_cast<int>(
+					floorf(
+						R3D_MAX(
+							gDX11TerrainV3Desc.SizeX - ChunkSize,
+							0.0f
+						) /
+						ChunkSize
+					)
+				),
+				0,
+				0x7fffffff
+			);
+
+		const int MaxChunkZ =
+			RenderDX11_ClampInt(
+				static_cast<int>(
+					floorf(
+						R3D_MAX(
+							gDX11TerrainV3Desc.SizeZ - ChunkSize,
+							0.0f
+						) /
+						ChunkSize
+					)
+				),
+				0,
+				0x7fffffff
+			);
+
+		const int PatchSide =
+			RenderDX11_GetTerrainPatchSide();
+
+		const int ChunkCountX =
+			RenderDX11_ClampInt(
+				PatchSide,
+				1,
+				MaxChunkX + 1
+			);
+
+		const int ChunkCountZ =
+			RenderDX11_ClampInt(
+				PatchSide,
+				1,
+				MaxChunkZ + 1
+			);
+
+		const int CenterChunkX =
+			RenderDX11_ClampInt(
+				static_cast<int>(floorf(gCam.x / ChunkSize)),
+				0,
+				MaxChunkX
+			);
+
+		const int CenterChunkZ =
+			RenderDX11_ClampInt(
+				static_cast<int>(floorf(gCam.z / ChunkSize)),
+				0,
+				MaxChunkZ
+			);
+
+		int StartChunkX =
+			CenterChunkX -
+			ChunkCountX / 2;
+
+		int StartChunkZ =
+			CenterChunkZ -
+			ChunkCountZ / 2;
+
+		StartChunkX =
+			RenderDX11_ClampInt(
+				StartChunkX,
+				0,
+				MaxChunkX - ChunkCountX + 1
+			);
+
+		StartChunkZ =
+			RenderDX11_ClampInt(
+				StartChunkZ,
+				0,
+				MaxChunkZ - ChunkCountZ + 1
+			);
+
+		int RequestChunkXs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestChunkZs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestChunkLs[DX11_TERRAIN_PATCH_COUNT] = {};
+		int RequestChunkCount = 0;
+
+		for (int z = 0; z < ChunkCountZ; ++z)
+		{
+			for (int x = 0; x < ChunkCountX; ++x)
+			{
+				if (RequestChunkCount >= DX11_TERRAIN_PATCH_COUNT)
+					return false;
+
+				RequestChunkXs[RequestChunkCount] =
+					StartChunkX + x;
+				RequestChunkZs[RequestChunkCount] =
+					StartChunkZ + z;
+				RequestChunkLs[RequestChunkCount] =
+					DX11_TERRAIN_V3_CACHE_L;
+
+				++RequestChunkCount;
+			}
+		}
+
+		const bool bTerrainCullingEnabled =
+			RenderDX11_WantsTerrainCullEnabled();
+
+		WorldDX11FrustumPlane FrustumPlanes[6] = {};
+		const bool bHasFrustum =
+			bTerrainCullingEnabled &&
+			RenderDX11_BuildFrameFrustum(
+				FrustumPlanes
+			);
+
+		if (!RenderDX11_WriteTerrainV3CB())
+			return false;
+
+		if (!gDX11TerrainV3PathLogged)
+		{
+			gDX11TerrainV3PathLogged = true;
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][TerrainV3] Active: independent chunk grid "
+				"coverage=%dx%d chunkSize=%.1f; TerrainV2 bypassed\n",
+				ChunkCountX,
+				ChunkCountZ,
+				ChunkSize
+			);
+			OutputDebugStringA(Text);
+		}
+
+		gDX11TerrainPatchDrawCount = 0;
+		gDX11TerrainPatchCullCount = 0;
+
+		for (int i = 0; i < RequestChunkCount; ++i)
+		{
+			const int ChunkX =
+				RequestChunkXs[i];
+			const int ChunkZ =
+				RequestChunkZs[i];
+
+			WorldDX11TerrainPatchBounds Bounds = {};
+			if (
+				RenderDX11_BuildTerrainV3ChunkBounds(
+					ChunkX,
+					ChunkZ,
+					ChunkSize,
+					&Bounds
+				) &&
+				bHasFrustum &&
+				!RenderDX11_IsTerrainPatchVisible(
+					FrustumPlanes,
+					Bounds
+				)
+			)
+			{
+				++gDX11TerrainPatchCullCount;
+				continue;
+			}
+
+			int CacheIndex =
+				RenderDX11_FindTerrainCacheSlot(
+					ChunkX,
+					ChunkZ,
+					DX11_TERRAIN_V3_CACHE_L
+				);
+
+			if (CacheIndex < 0)
+			{
+				CacheIndex =
+					RenderDX11_FindTerrainCacheSlotForWrite(
+						RequestChunkXs,
+						RequestChunkZs,
+						RequestChunkLs,
+						RequestChunkCount
+					);
+			}
+
+			if (CacheIndex < 0)
+				return false;
+
+			if (!RenderDX11_EnsureTerrainV3Chunk(
+				CacheIndex,
+				ChunkX,
+				ChunkZ,
+				ChunkSize
+			))
+			{
+				return false;
+			}
+
+			WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[CacheIndex];
+
+			if (!RenderDX11_BindTerrainGeometry(
+				Entry.VertexBuffer
+			))
+			{
+				return false;
+			}
+
+			gDX11Context->DrawIndexed(
+				DX11_TERRAIN_INDEX_COUNT,
+				0,
+				0
+			);
+
+			++gDX11TerrainPatchDrawCount;
+		}
+
+		return gDX11TerrainPatchDrawCount > 0;
 	}
 
 	bool RenderDX11_DrawTerrain2AtlasTiles()
@@ -887,64 +2476,23 @@ void RenderDX11_BeginTerrainCacheFrame()
 		if (VisibleTileCount <= 0)
 			return false;
 
-		const int AtlasVolumeCount =
-			Terrain2->GetDX11AtlasVolumeCount();
-
-		if (!RenderDX11_EnsureTerrain2AtlasBridgeCount(
-			AtlasVolumeCount
-		))
+		static bool bNativeTerrain2PathLogged = false;
+		if (!bNativeTerrain2PathLogged)
 		{
-			return false;
-		}
-
-		if (gDX11Terrain2AtlasVisibleSignatures)
-		{
-			memset(
-				gDX11Terrain2AtlasVisibleSignatures,
-				0,
-				sizeof(unsigned int) * AtlasVolumeCount
+			bNativeTerrain2PathLogged = true;
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Native Terrain2 tile path active: "
+				"visible=%d, density and ConFlags preserved\n",
+				VisibleTileCount
 			);
-
-			for (int i = 0; i < VisibleTileCount; ++i)
-			{
-				r3dTerrain2::DX11AtlasTileInfo TileInfo = {};
-
-				if (
-					!Terrain2->GetDX11VisibleAtlasTileInfo(
-						i,
-						&TileInfo
-					)
-				)
-				{
-					continue;
-				}
-
-				if (
-					TileInfo.AtlasVolumeID < 0 ||
-					TileInfo.AtlasVolumeID >= AtlasVolumeCount
-				)
-				{
-					continue;
-				}
-
-				unsigned int& Signature =
-					gDX11Terrain2AtlasVisibleSignatures[
-						TileInfo.AtlasVolumeID
-					];
-
-				if (!Signature)
-					Signature = 2166136261u;
-
-				Signature =
-					RenderDX11_HashTerrain2AtlasTile(
-						Signature,
-						TileInfo
-					);
-			}
+			OutputDebugStringA(Text);
 		}
 
 		gDX11TerrainPatchDrawCount = 0;
 		gDX11TerrainPatchCullCount = 0;
+		gDX11Terrain2ActiveAtlasSRVMask = 0;
 
 		for (int i = 0; i < VisibleTileCount; ++i)
 		{
@@ -960,24 +2508,6 @@ void RenderDX11_BeginTerrainCacheFrame()
 				++gDX11Terrain2AtlasSkipInfoCount;
 				continue;
 			}
-
-			const int AtlasMask =
-				RenderDX11_EnsureTerrain2AtlasVolumeSRVs(
-					TileInfo.AtlasVolumeID
-				);
-
-			if (!(AtlasMask & DX11_TERRAIN2_TEXTURE_ATLAS_DIFFUSE))
-			{
-				++gDX11Terrain2AtlasSkipSRVCount;
-				continue;
-			}
-
-			gDX11Terrain2ActiveAtlasSRVMask =
-				AtlasMask;
-
-			RenderDX11_BindTerrain2AtlasTextureSlots(
-				TileInfo.AtlasVolumeID
-			);
 
 			if (!RenderDX11_WriteTerrainCB(&TileInfo))
 				return false;
@@ -1000,27 +2530,42 @@ void RenderDX11_BeginTerrainCacheFrame()
 			if (CacheIndex < 0)
 				return false;
 
+			WorldDX11TerrainPatchCacheEntry& Entry =
+				gDX11TerrainPatchCache[CacheIndex];
+
+			const bool NeedsMeshUpdate =
+				!Entry.Valid ||
+				!Entry.VertexBuffer ||
+				!Entry.IndexBuffer ||
+				Entry.TileX != TileInfo.X ||
+				Entry.TileZ != TileInfo.Z ||
+				Entry.L != TileInfo.L ||
+				Entry.ConFlags != TileInfo.ConFlags ||
+				Entry.VertexDim != TileInfo.VertexDim;
+
 			if (
-				!RenderDX11_EnsureTerrainCacheTile(
+				NeedsMeshUpdate &&
+				!RenderDX11_UpdateTerrain2NativeTile(
 					CacheIndex,
-					TileInfo.X,
-					TileInfo.Z,
-					TileInfo.L,
-					TileInfo.WorldDim
+					i,
+					TileInfo
 				)
 			)
 			{
 				return false;
 			}
 
-			WorldDX11TerrainPatchCacheEntry& Entry =
-				gDX11TerrainPatchCache[CacheIndex];
+			Entry.LastUsedFrame =
+				gDX11TerrainCacheFrameId;
 
-			if (!RenderDX11_BindTerrainGeometry(Entry.VertexBuffer))
+			if (!RenderDX11_BindTerrainGeometry(
+				Entry.VertexBuffer,
+				Entry.IndexBuffer
+			))
 				return false;
 
 			gDX11Context->DrawIndexed(
-				DX11_TERRAIN_INDEX_COUNT,
+				Entry.IndexCount,
 				0,
 				0
 			);
@@ -1053,10 +2598,12 @@ void RenderDX11_BeginTerrainCacheFrame()
 		if (CellSize <= 0.01f)
 			CellSize = 1.0f;
 
-		int CellsPerPatch = TerrainDesc.CellCountPerTile;
-
-		if (CellsPerPatch <= 0)
-			CellsPerPatch = DX11_TERRAIN_GRID_DIM - 1;
+		// The Terrain2 quadtree needs its native density-dependent index
+		// buffers and ConFlags edge vertices. Until those are ported, use
+		// one uniform grid per patch. Mixing the fixed DX11 grid
+		// with native Terrain2 LOD tiles creates overlapping cliffs.
+		int CellsPerPatch =
+			DX11_TERRAIN_GRID_DIM - 1;
 
 		float PatchSize =
 			CellSize *
@@ -1179,6 +2726,23 @@ void RenderDX11_BeginTerrainCacheFrame()
 		gDX11TerrainPatchDrawCount = 0;
 		gDX11TerrainPatchCullCount = 0;
 
+		static bool bUniformTerrainPathLogged = false;
+		if (!bUniformTerrainPathLogged)
+		{
+			bUniformTerrainPathLogged = true;
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Terrain uniform-grid path active: "
+				"coverage=%dx%d patches patchSize=%.1f; "
+				"native Terrain2 LOD atlas geometry bypassed\n",
+				TileCountX,
+				TileCountZ,
+				PatchSize
+			);
+			OutputDebugStringA(Text);
+		}
+
 		for (int i = 0; i < RequestTileCount; ++i)
 		{
 			const int TileX =
@@ -1275,8 +2839,6 @@ void RenderDX11_BeginTerrainCacheFrame()
 			return false;
 		}
 
-		RenderDX11_UpdateTerrainCB();
-
 		gDX11Context->VSSetShader(
 			gDX11TerrainVS,
 			0,
@@ -1293,12 +2855,7 @@ void RenderDX11_BeginTerrainCacheFrame()
 			0
 		);
 
-		if (RenderDX11_DrawTerrain2AtlasTiles())
-			return true;
-
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
 
-		RenderDX11_WriteTerrainCB(0);
-
-		return RenderDX11_DrawTerrainPatchSet();
+		return RenderDX11_DrawTerrainV3();
 	}

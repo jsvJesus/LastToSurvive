@@ -701,10 +701,11 @@ body
 #label_map_name { left: 22px; top: 102px; }
 #label_terrain { left: 22px; top: 184px; }
 #label_terrain_v2 { left: 300px; top: 184px; }
+#label_terrain_v3 { left: 578px; top: 184px; }
 #label_cell_size { left: 22px; top: 266px; }
 #label_terrain_height { left: 300px; top: 266px; }
 #label_terrain_size { left: 578px; top: 102px; }
-#label_splat_size { left: 578px; top: 184px; }
+#label_splat_size { left: 578px; top: 266px; }
 
 .text_input,
 .small_input
@@ -786,13 +787,14 @@ body
 
 #btn_appmain_terrain_toggle { left: 22px; top: 210px; }
 #btn_appmain_terrain2_toggle { left: 300px; top: 210px; }
+#btn_appmain_terrain3_toggle { left: 578px; top: 210px; }
 #btn_appmain_terrain_size { left: 578px; top: 128px; }
-#btn_appmain_splat_size { left: 578px; top: 210px; }
+#btn_appmain_splat_size { left: 578px; top: 292px; }
 
 #btn_appmain_create_level
 {
 	left: 578px;
-	top: 292px;
+	top: 358px;
 	width: 250px;
 	height: 44px;
 }

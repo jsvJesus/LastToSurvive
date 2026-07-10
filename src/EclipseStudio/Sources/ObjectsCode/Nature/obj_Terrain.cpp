@@ -39,6 +39,24 @@ BOOL obj_Terrain::Load(const char* fname)
 	r3dOutToLog ("TERRAIN:  LOADING %s\n", Str);
 
 	char filePath[ 512 ] ;
+
+	sprintf( filePath, "%s\\TerrainV3\\terrain_v3.desc", r3dGameLevel::GetHomeDir() ) ;
+	if( r3dFileExists( filePath ) )
+	{
+		r3dOutToLog( "TERRAIN:  TerrainV3 descriptor found, using independent DX11 TerrainV3 path: %s\n", filePath ) ;
+
+		Terrain = NULL ;
+		Terrain1 = NULL ;
+		Terrain2 = NULL ;
+		r_terrain2->SetInt( 0 ) ;
+		FileName = "terra3" ;
+
+		r3dOutToLog ("TERRAIN:  LOADED TerrainV3 marker\n");
+
+		objTerrain = this;
+		return TRUE;
+	}
+
 	sprintf( filePath, "%s\\terrain.heightmap", r3dGameLevel::GetHomeDir() ) ;
 
 	bool have_terrain1 = r3dFileExists( filePath ) ;

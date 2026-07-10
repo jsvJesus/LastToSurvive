@@ -32,6 +32,7 @@ bool RenderDX11_RenderWorld(
     const WorldDX11FrameDesc& Desc
 );
 
+bool RenderDX11_Present();
 void RenderDX11_DrawDebugPreviewDX9();
 
 #endif // LTS_STUDIO_DX11

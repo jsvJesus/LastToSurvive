@@ -2903,7 +2903,9 @@ bool r3dTerrain2::GetDX11VisibleAtlasTileInfo(
 	oInfo->X = tile->X;
 	oInfo->Z = tile->Z;
 	oInfo->L = tile->L;
-	oInfo->ConFlags = tile->ConFlags;
+	oInfo->ConFlags =
+		static_cast<unsigned char>( tile->ConFlags ) &
+		( TERRA_CONNECTION_TYPE_COUNT - 1 );
 	oInfo->AtlasVolumeID = tile->AtlasVolumeID;
 	oInfo->AtlasTileID = tile->AtlasTileID;
 
@@ -2958,12 +2960,68 @@ bool r3dTerrain2::GetDX11VisibleAtlasTileInfo(
 	oInfo->WorldZ =
 		tile->Z * oInfo->WorldDim;
 
+	int density =
+		m_QualitySettings.TileVertexDensities[ tile->L ];
+
+	oInfo->VertexDim =
+		m_QualitySettings.VertexTileDim *
+		( 1 << density );
+
+	oInfo->TileSizeCells =
+		m_QualitySettings.VertexTileDim *
+		( 1 << tile->L );
+
+	oInfo->CellSize =
+		m_CellSize;
+
 	return true;
 }
 
 void r3dTerrain2::UpdateDX11VisibleAtlasTiles()
 {
 	UpdateVisibleTiles();
+}
+
+int r3dTerrain2::BuildDX11TileIndices(
+	const DX11AtlasTileInfo& info,
+	unsigned short* indices,
+	int capacity
+) const
+{
+#if R3D_TERRAIN_V2_GRAPHICS
+	const int conFlags =
+		info.ConFlags &
+		( TERRA_CONNECTION_TYPE_COUNT - 1 );
+
+	if( info.VertexDim <= 0 )
+		return 0;
+
+	const int indexCount =
+		CountConnectionIndices(
+			info.VertexDim,
+			conFlags
+		);
+
+	if( !indices )
+		return indexCount;
+
+	if( capacity < indexCount )
+		return 0;
+
+	const int written =
+		ConstructConnectionIndices(
+			indices,
+			info.VertexDim,
+			conFlags
+		);
+
+	return written == indexCount ? written : 0;
+#else
+	(void)info;
+	(void)indices;
+	(void)capacity;
+	return 0;
+#endif
 }
 
 int r3dTerrain2::GetDX11AtlasVolumeCount() const

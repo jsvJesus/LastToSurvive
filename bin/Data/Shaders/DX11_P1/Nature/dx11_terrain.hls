@@ -14,8 +14,9 @@ cbuffer TerrainCB : register(b1)
 	float4 gTerrainColorScale;
 	float4 gTerrainDebugParams;
 	float4 gTerrainSize;
-	float4 gTerrainLayerScale0;
-	float4 gTerrainLayerScale1;
+
+	float4 gTerrainLayerScale[13];
+
 	float4 gTerrainAtlasTexTransform;
 	float4 gTerrainAtlasWorld;
 };
@@ -71,11 +72,25 @@ Texture2D gTerrainLayer0DiffuseTexture : register(t3);
 Texture2D gTerrainLayer0NormalTexture : register(t4);
 
 Texture2D gTerrainMask0Texture : register(t5);
-Texture2D gTerrainLayer1DiffuseTexture : register(t6);
-Texture2D gTerrainLayer2DiffuseTexture : register(t7);
-Texture2D gTerrainLayer3DiffuseTexture : register(t8);
-Texture2D gTerrainAtlasDiffuseTexture : register(t9);
-Texture2D gTerrainAtlasNormalTexture : register(t10);
+Texture2D gTerrainMask1Texture : register(t6);
+Texture2D gTerrainMask2Texture : register(t7);
+Texture2D gTerrainMask3Texture : register(t8);
+
+Texture2D gTerrainLayer1DiffuseTexture  : register(t9);
+Texture2D gTerrainLayer2DiffuseTexture  : register(t10);
+Texture2D gTerrainLayer3DiffuseTexture  : register(t11);
+Texture2D gTerrainLayer4DiffuseTexture  : register(t12);
+Texture2D gTerrainLayer5DiffuseTexture  : register(t13);
+Texture2D gTerrainLayer6DiffuseTexture  : register(t14);
+Texture2D gTerrainLayer7DiffuseTexture  : register(t15);
+Texture2D gTerrainLayer8DiffuseTexture  : register(t16);
+Texture2D gTerrainLayer9DiffuseTexture  : register(t17);
+Texture2D gTerrainLayer10DiffuseTexture : register(t18);
+Texture2D gTerrainLayer11DiffuseTexture : register(t19);
+Texture2D gTerrainLayer12DiffuseTexture : register(t20);
+
+Texture2D gTerrainAtlasDiffuseTexture : register(t21);
+Texture2D gTerrainAtlasNormalTexture  : register(t22);
 
 SamplerState gTerrainWrapSampler : register(s0);
 SamplerState gTerrainClampSampler : register(s1);
@@ -179,17 +194,27 @@ bool Terrain2HasAtlasNormalTexture()
 
 float2 Terrain2GetLayerUV(float3 WorldPos, float2 Scale)
 {
+	// Terrain2::ShaderScale is stored as Scale * 0.5 / terrainSize.
+	// The DX9 atlas VS multiplies world position by 2 * ShaderScale.
 	return float2(
-		WorldPos.x * Scale.x,
-		WorldPos.z * Scale.y
+		WorldPos.x * Scale.x * 2.0f,
+		WorldPos.z * Scale.y * 2.0f
+	);
+}
+
+float2 Terrain2GetLayerUVByIndex(float3 WorldPos, int LayerIndex)
+{
+	return Terrain2GetLayerUV(
+		WorldPos,
+		gTerrainLayerScale[LayerIndex].xy
 	);
 }
 
 float2 Terrain2GetLayer0UV(float3 WorldPos)
 {
-	return Terrain2GetLayerUV(
+	return Terrain2GetLayerUVByIndex(
 		WorldPos,
-		gTerrainLayerScale0.xy
+		0
 	);
 }
 
@@ -200,6 +225,32 @@ float2 Terrain2GetTerrainUV(float3 WorldPos)
 			WorldPos.x * gTerrainSize.z,
 			WorldPos.z * gTerrainSize.w
 		)
+	);
+}
+
+float2 Terrain2GetHeightUV(float3 WorldPos)
+{
+	uint Width = 1;
+	uint Height = 1;
+
+	gTerrainHeightTexture.GetDimensions(
+		Width,
+		Height
+	);
+
+	float2 HalfTexel =
+		0.5f /
+		max(
+			float2(
+				(float)Width,
+				(float)Height
+			),
+			float2(1.0f, 1.0f)
+		);
+
+	return saturate(
+		Terrain2GetTerrainUV(WorldPos) +
+		HalfTexel
 	);
 }
 
@@ -234,14 +285,156 @@ VS_OUTPUT VSMain(VS_INPUT Input)
 {
 	VS_OUTPUT Output;
 
-	Output.WorldPos = Input.Position;
+	float3 WorldPos = Input.Position;
+
+	// Terrain V3/native DX11 terrain sends final world-space CPU heightfield
+	// vertices. Re-snapping geometry from the height texture causes filtering
+	// mismatch on chunk borders and visible LOD/seam tearing.
+	const bool AllowTextureHeightSnap = false;
+	if (AllowTextureHeightSnap && Terrain2HasHeightTexture())
+	{
+		float Height01 =
+			gTerrainHeightTexture.SampleLevel(
+				gTerrainClampSampler,
+				Terrain2GetHeightUV(WorldPos),
+				0.0f
+			).r;
+
+		WorldPos.y =
+			gTerrainDebugParams.x +
+			Height01 * gTerrainDebugParams.y;
+	}
+
+	Output.WorldPos = WorldPos;
 	Output.Normal = TerrainSafeNormalize(
 		Input.Normal,
 		float3(0.0f, 1.0f, 0.0f)
 	);
-	Output.Position = mul(float4(Input.Position, 1.0f), gViewProj);
+	Output.Position = mul(float4(WorldPos, 1.0f), gViewProj);
 
 	return Output;
+}
+
+float3 Terrain2SampleLayerDiffuse(
+	int LayerIndex,
+	float3 WorldPos,
+	float3 TerrainColorMod
+)
+{
+	float2 UV =
+		Terrain2GetLayerUVByIndex(
+			WorldPos,
+			LayerIndex
+		);
+
+	float3 Color = float3(0.0f, 0.0f, 0.0f);
+
+	if (LayerIndex == 0)
+	{
+		Color =
+			gTerrainLayer0DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 1)
+	{
+		Color =
+			gTerrainLayer1DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 2)
+	{
+		Color =
+			gTerrainLayer2DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 3)
+	{
+		Color =
+			gTerrainLayer3DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 4)
+	{
+		Color =
+			gTerrainLayer4DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 5)
+	{
+		Color =
+			gTerrainLayer5DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 6)
+	{
+		Color =
+			gTerrainLayer6DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 7)
+	{
+		Color =
+			gTerrainLayer7DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 8)
+	{
+		Color =
+			gTerrainLayer8DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 9)
+	{
+		Color =
+			gTerrainLayer9DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 10)
+	{
+		Color =
+			gTerrainLayer10DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 11)
+	{
+		Color =
+			gTerrainLayer11DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+	else if (LayerIndex == 12)
+	{
+		Color =
+			gTerrainLayer12DiffuseTexture.Sample(
+				gTerrainWrapSampler,
+				UV
+			).rgb;
+	}
+
+	return Color * TerrainColorMod;
 }
 
 PS_OUTPUT PSMain(VS_OUTPUT Input)
@@ -264,6 +457,20 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 		Input.Normal,
 		float3(0.0f, 1.0f, 0.0f)
 	);
+
+	if (Terrain2HasNormalTexture())
+	{
+		Normal =
+			TerrainSafeNormalize(
+				gTerrainNormalTexture.Sample(
+					gTerrainClampSampler,
+					Terrain2GetTerrainUV(
+						Input.WorldPos
+					)
+				).xyz * 2.0f - 1.0f,
+				Normal
+			);
+	}
 
 	float Slope = saturate(1.0f - Normal.y);
 
@@ -296,129 +503,207 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 
 	if (Terrain2HasLayer0DiffuseTexture())
 	{
-		float2 Layer0UV =
-			Terrain2GetLayer0UV(
-				Input.WorldPos
-			);
+	float2 MaskUV =
+		Terrain2GetMaskUV(
+			Input.WorldPos
+		);
 
-		float3 Layer0Color =
-			gTerrainLayer0DiffuseTexture.Sample(
-				gTerrainWrapSampler,
-				Layer0UV
-			).rgb *
-			TerrainColorMod;
+	float3 Mask0 =
+		saturate(
+			gTerrainMask0Texture.Sample(
+				gTerrainClampSampler,
+				MaskUV
+			).rgb
+		);
 
-		FinalColor =
-			saturate(
-				Layer0Color
-			);
+	float3 Mask1 =
+		saturate(
+			gTerrainMask1Texture.Sample(
+				gTerrainClampSampler,
+				MaskUV
+			).rgb
+		);
 
-		if (Terrain2HasMask0Texture())
-		{
-			float3 Mask =
-				saturate(
-					gTerrainMask0Texture.Sample(
-						gTerrainClampSampler,
-						Terrain2GetMaskUV(
-							Input.WorldPos
-						)
-					).rgb
-				);
+	float3 Mask2 =
+		saturate(
+			gTerrainMask2Texture.Sample(
+				gTerrainClampSampler,
+				MaskUV
+			).rgb
+		);
 
-			MaskDebug = Mask;
-			MaskSumDebug =
-				saturate(
-					Mask.r + Mask.g + Mask.b
-				);
+	float3 Mask3 =
+		saturate(
+			gTerrainMask3Texture.Sample(
+				gTerrainClampSampler,
+				MaskUV
+			).rgb
+		);
 
-			float W1 =
-				Terrain2HasLayer1DiffuseTexture()
-				? Mask.r
-				: 0.0f;
+	// layer0 = base
+	// layer1..3   = mask0.rgb
+	// layer4..6   = mask1.rgb
+	// layer7..9   = mask2.rgb
+	// layer10..12 = mask3.rgb
+	float W1  = Mask0.r;
+	float W2  = Mask0.g;
+	float W3  = Mask0.b;
 
-			float W2 =
-				Terrain2HasLayer2DiffuseTexture()
-				? Mask.g
-				: 0.0f;
+	float W4  = Mask1.r;
+	float W5  = Mask1.g;
+	float W6  = Mask1.b;
 
-			float W3 =
-				Terrain2HasLayer3DiffuseTexture()
-				? Mask.b
-				: 0.0f;
+	float W7  = Mask2.r;
+	float W8  = Mask2.g;
+	float W9  = Mask2.b;
 
-			float W0 =
-				saturate(
-					1.0f - W1 - W2 - W3
-				);
+	float W10 = Mask3.r;
+	float W11 = Mask3.g;
+	float W12 = Mask3.b;
 
-			float WeightSum =
-				max(
-					W0 + W1 + W2 + W3,
-					0.0001f
-				);
+	float PaintedSum =
+		W1 + W2 + W3 +
+		W4 + W5 + W6 +
+		W7 + W8 + W9 +
+		W10 + W11 + W12;
 
-			float3 BlendColor =
-				Layer0Color * W0;
+	float3 BlendColor =
+		Terrain2SampleLayerDiffuse(
+			0,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		);
 
-			if (Terrain2HasLayer1DiffuseTexture())
-			{
-				float3 Layer1Color =
-					gTerrainLayer1DiffuseTexture.Sample(
-						gTerrainWrapSampler,
-						Terrain2GetLayerUV(
-							Input.WorldPos,
-							gTerrainLayerScale0.zw
-						)
-					).rgb *
-					TerrainColorMod;
+	// Terrain2 generates its atlas by alpha-compositing painted layers in
+	// order. Reproduce that behavior for the non-atlas fallback as well.
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			1,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W1
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			2,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W2
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			3,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W3
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			4,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W4
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			5,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W5
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			6,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W6
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			7,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W7
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			8,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W8
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			9,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W9
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			10,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W10
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			11,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W11
+	);
+	BlendColor = lerp(
+		BlendColor,
+		Terrain2SampleLayerDiffuse(
+			12,
+			Input.WorldPos,
+			float3(1.0f, 1.0f, 1.0f)
+		),
+		W12
+	);
 
-				BlendColor +=
-					Layer1Color * W1;
-			}
+	FinalColor = saturate(BlendColor * TerrainColorMod);
 
-			if (Terrain2HasLayer2DiffuseTexture())
-			{
-				float3 Layer2Color =
-					gTerrainLayer2DiffuseTexture.Sample(
-						gTerrainWrapSampler,
-						Terrain2GetLayerUV(
-							Input.WorldPos,
-							gTerrainLayerScale1.xy
-						)
-					).rgb *
-					TerrainColorMod;
+	// Debug preview.
+	// RGB shows combined weights from all 4 mask textures.
+	MaskDebug =
+		saturate(
+			float3(
+				W1 + W4 + W7 + W10,
+				W2 + W5 + W8 + W11,
+				W3 + W6 + W9 + W12
+			)
+		);
 
-				BlendColor +=
-					Layer2Color * W2;
-			}
-
-			if (Terrain2HasLayer3DiffuseTexture())
-			{
-				float3 Layer3Color =
-					gTerrainLayer3DiffuseTexture.Sample(
-						gTerrainWrapSampler,
-						Terrain2GetLayerUV(
-							Input.WorldPos,
-							gTerrainLayerScale1.zw
-						)
-					).rgb *
-					TerrainColorMod;
-
-				BlendColor +=
-					Layer3Color * W3;
-			}
-
-			FinalColor =
-				saturate(
-					BlendColor / WeightSum
-				);
-		}
+	MaskSumDebug =
+		saturate(
+			PaintedSum
+		);
 	}
 
-	// Disabled for now.
-	// The DX11 atlas path currently hides the real layer/mask result.
-	// Re-enable only after direct layer/mask blending matches DX9.
-	/*
 	if (Terrain2HasAtlasDiffuseTexture())
 	{
 		float2 AtlasUV =
@@ -444,7 +729,6 @@ PS_OUTPUT PSMain(VS_OUTPUT Input)
 				);
 		}
 	}
-	*/
 
 	Output.Color = float4(
 		FinalColor,

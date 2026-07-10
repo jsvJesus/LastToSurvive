@@ -187,6 +187,10 @@ void RmlUISystem::FAppMainClickListener::ProcessEvent(Rml::Event& Event)
 	{
 		Owner->AppMainCallback("terrain2_toggle", "");
 	}
+	else if (Id == "btn_appmain_terrain3_toggle")
+	{
+		Owner->AppMainCallback("terrain3_toggle", "");
+	}
 	else if (Id == "btn_appmain_terrain_size")
 	{
 		Owner->AppMainCallback("terrain_size", "");
@@ -1797,6 +1801,7 @@ void RmlUISystem::AttachAppMainEvents()
 		"btn_appmain_exit",
 		"btn_appmain_terrain_toggle",
 		"btn_appmain_terrain2_toggle",
+		"btn_appmain_terrain3_toggle",
 		"btn_appmain_terrain_size",
 		"btn_appmain_splat_size",
 		"btn_appmain_scroll_up",
@@ -1836,6 +1841,7 @@ void RmlUISystem::DetachAppMainEvents()
 		"btn_appmain_exit",
 		"btn_appmain_terrain_toggle",
 		"btn_appmain_terrain2_toggle",
+		"btn_appmain_terrain3_toggle",
 		"btn_appmain_terrain_size",
 		"btn_appmain_splat_size",
 		"btn_appmain_scroll_up",
@@ -2085,6 +2091,7 @@ static void RmlGetInputText(Rml::ElementDocument* Document, const char* Id, char
 void RmlUISystem::SetAppMainCreateOptions(
 	bool bHaveTerrain,
 	bool bTerrainV2,
+	bool bTerrainV3,
 	int TerrainSizeIndex,
 	int SplatSizeIndex,
 	float CellSize,
@@ -2116,6 +2123,9 @@ void RmlUISystem::SetAppMainCreateOptions(
 	sprintf_s(Text, "Terrain V2: %s", bTerrainV2 ? "ON" : "OFF");
 	SetElementText(AppMainDocument, "btn_appmain_terrain2_toggle", Text);
 
+	sprintf_s(Text, "Terrain V3: %s", bTerrainV3 ? "ON" : "OFF");
+	SetElementText(AppMainDocument, "btn_appmain_terrain3_toggle", Text);
+
 	sprintf_s(Text, "Terrain Size: %d", SizeValues[TerrainSizeIndex]);
 	SetElementText(AppMainDocument, "btn_appmain_terrain_size", Text);
 
@@ -2142,6 +2152,7 @@ bool RmlUISystem::GetAppMainCreateData(
 	int OutNameSize,
 	bool& bOutHaveTerrain,
 	bool& bOutTerrainV2,
+	bool& bOutTerrainV3,
 	int& OutTerrainSizeIndex,
 	int& OutSplatSizeIndex,
 	float& OutCellSize,
@@ -2155,6 +2166,7 @@ bool RmlUISystem::GetAppMainCreateData(
 
 	bOutHaveTerrain = false;
 	bOutTerrainV2 = false;
+	bOutTerrainV3 = false;
 
 	OutTerrainSizeIndex = 0;
 	OutSplatSizeIndex = 0;

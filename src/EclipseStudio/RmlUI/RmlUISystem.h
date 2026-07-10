@@ -70,6 +70,7 @@ public:
 	void SetAppMainCreateOptions(
 		bool bHaveTerrain,
 		bool bTerrainV2,
+		bool bTerrainV3,
 		int TerrainSizeIndex,
 		int SplatSizeIndex,
 		float CellSize,
@@ -81,6 +82,7 @@ public:
 		int OutNameSize,
 		bool& bOutHaveTerrain,
 		bool& bOutTerrainV2,
+		bool& bOutTerrainV3,
 		int& OutTerrainSizeIndex,
 		int& OutSplatSizeIndex,
 		float& OutCellSize,
