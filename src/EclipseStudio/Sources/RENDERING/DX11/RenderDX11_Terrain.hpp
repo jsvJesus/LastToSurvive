@@ -832,6 +832,8 @@ void RenderDX11_BeginTerrainCacheFrame()
 		);
 
 		FILE* DescFile = fopen(DescPath, "rt");
+		gDX11TerrainV3Desc.DescriptorFound = DescFile != 0;
+
 		if (DescFile)
 		{
 			char Key[128] = {};
@@ -2828,34 +2830,36 @@ void RenderDX11_BeginTerrainCacheFrame()
 		return RequestTileCount > 0;
 	}
 
-	bool RenderDX11_DrawTerrainDepth()
+bool RenderDX11_DrawTerrainDepth()
+{
+	if (
+		!gDX11Context ||
+		!gDX11TerrainVS ||
+		!RenderDX11_CreateTerrainResources()
+	)
 	{
-		if (
-			!gDX11Context ||
-			!gDX11TerrainVS ||
-			!RenderDX11_CreateTerrainResources()
-		)
-		{
-			return false;
-		}
-
-		gDX11Context->VSSetShader(
-			gDX11TerrainVS,
-			0,
-			0
-		);
-
-		gDX11Context->RSSetState(
-			gDX11RasterSolidNoCull
-		);
-
-		gDX11Context->PSSetShader(
-			0,
-			0,
-			0
-		);
-
-		gDX11Terrain2ActiveAtlasSRVMask = 0;
-
-		return RenderDX11_DrawTerrainV3();
+		return false;
 	}
+
+	gDX11Context->VSSetShader(
+		gDX11TerrainVS,
+		0,
+		0
+	);
+
+	gDX11Context->RSSetState(
+		gDX11RasterSolidNoCull
+	);
+
+	gDX11Context->PSSetShader(
+		0,
+		0,
+		0
+	);
+
+	gDX11Terrain2ActiveAtlasSRVMask = 0;
+
+	return RenderDX11_DrawSelectedTerrain(
+		false
+	);
+}

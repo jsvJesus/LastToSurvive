@@ -305,6 +305,7 @@ namespace
 	struct WorldDX11TerrainV3Desc
 	{
 		bool Initialized;
+		bool DescriptorFound;
 		char SourceDir[256];
 		float SizeX;
 		float SizeZ;
@@ -629,6 +630,24 @@ namespace
 			CachedValue =
 				RenderDX11_CommandLineHasSwitch("-dx11smoke") ||
 				RenderDX11_CommandLineHasSwitch("/dx11smoke");
+		}
+
+		return CachedValue != 0;
+	}
+
+	bool RenderDX11_WantsTerrainV3()
+	{
+		static int CachedValue = -1;
+
+		if (CachedValue < 0)
+		{
+			CachedValue =
+				RenderDX11_CommandLineHasSwitch(
+					"-dx11terrainv3"
+				) ||
+				RenderDX11_CommandLineHasSwitch(
+					"/dx11terrainv3"
+				);
 		}
 
 		return CachedValue != 0;
@@ -4455,7 +4474,140 @@ namespace
 
 	////////////////////////////////////////////////////
 
+	bool RenderDX11_DrawSelectedTerrain(
+		bool GBufferPass
+	);
+
 #include "RenderDX11_Terrain.hpp"
+
+	bool RenderDX11_HasLoadedLegacyTerrain()
+	{
+		return
+			Terrain != 0 &&
+			Terrain->IsLoaded();
+	}
+
+	bool RenderDX11_HasTerrainV3()
+	{
+		RenderDX11_EnsureTerrainV3Desc();
+
+		return
+			gDX11TerrainV3Desc.DescriptorFound;
+	}
+
+	bool RenderDX11_ShouldUseTerrainV3()
+	{
+		const bool HasTerrainV3 =
+			RenderDX11_HasTerrainV3();
+
+		const bool HasLegacyTerrain =
+			RenderDX11_HasLoadedLegacyTerrain();
+
+		/*
+		 * Явное принудительное включение V3.
+		 */
+		if (RenderDX11_WantsTerrainV3())
+		{
+			if (!HasTerrainV3)
+			{
+				static bool bMissingV3Logged = false;
+
+				if (!bMissingV3Logged)
+				{
+					bMissingV3Logged = true;
+
+					OutputDebugStringA(
+						"[DX11][Terrain] -dx11terrainv3 requested, "
+						"but TerrainV3 descriptor was not found. "
+						"Using legacy terrain.\n"
+					);
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
+		/*
+		 * Смешанная карта V2 + V3:
+		 * пока V3 разрабатывается, используем рабочий V2.
+		 */
+		if (HasLegacyTerrain)
+			return false;
+
+		/*
+		 * V3-only карта.
+		 */
+		return HasTerrainV3;
+	}
+
+	bool RenderDX11_DrawSelectedTerrain(
+		bool GBufferPass
+	)
+	{
+		if (RenderDX11_ShouldUseTerrainV3())
+		{
+			static bool bTerrainV3SelectedLogged = false;
+
+			if (!bTerrainV3SelectedLogged)
+			{
+				bTerrainV3SelectedLogged = true;
+
+				OutputDebugStringA(
+					"[DX11][Terrain] Selected source: TerrainV3\n"
+				);
+			}
+
+			return RenderDX11_DrawTerrainV3();
+		}
+
+		if (!RenderDX11_HasLoadedLegacyTerrain())
+		{
+			OutputDebugStringA(
+				"[DX11][Terrain] No loaded terrain source\n"
+			);
+
+			return false;
+		}
+
+		static bool bLegacyTerrainSelectedLogged = false;
+
+		if (!bLegacyTerrainSelectedLogged)
+		{
+			bLegacyTerrainSelectedLogged = true;
+
+			OutputDebugStringA(
+				Terrain2
+				? "[DX11][Terrain] Selected source: Terrain2\n"
+				: "[DX11][Terrain] Selected source: Terrain1\n"
+			);
+		}
+
+		/*
+		 * Подготавливаем Terrain1/Terrain2 constant buffer.
+		 */
+		RenderDX11_UpdateTerrainCB();
+
+		if (GBufferPass)
+		{
+			RenderDX11_BindTerrain2TextureSlots();
+		}
+
+		/*
+		 * Сначала используем полноценный native Terrain2 atlas path.
+		 */
+		if (Terrain2)
+		{
+			if (RenderDX11_DrawTerrain2AtlasTiles())
+				return true;
+		}
+
+		/*
+		 * Terrain1 или fallback для Terrain2.
+		 */
+		return RenderDX11_DrawTerrainPatchSet();
+	}
 
 	//////////////////////////////////////
 
@@ -4489,7 +4641,9 @@ namespace
 
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
 
-		return RenderDX11_DrawTerrainV3();
+		return RenderDX11_DrawSelectedTerrain(
+			true
+		);
 	}
 
 	WorldDX11StaticMeshCacheEntry*
