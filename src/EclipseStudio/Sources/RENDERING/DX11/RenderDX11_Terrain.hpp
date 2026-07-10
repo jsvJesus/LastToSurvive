@@ -1,5 +1,9 @@
 #pragma once
 
+bool RenderDX11_DrawSelectedTerrain(
+	bool GBufferPass
+);
+
 bool RenderDX11_NormalizeTerrainNormal(
 	r3dPoint3D& Normal
 );

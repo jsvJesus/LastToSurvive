@@ -4474,10 +4474,6 @@ namespace
 
 	////////////////////////////////////////////////////
 
-	bool RenderDX11_DrawSelectedTerrain(
-		bool GBufferPass
-	);
-
 #include "RenderDX11_Terrain.hpp"
 
 	bool RenderDX11_HasLoadedLegacyTerrain()
