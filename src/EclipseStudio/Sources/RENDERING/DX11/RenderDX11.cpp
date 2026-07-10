@@ -25,6 +25,7 @@
 #include "rendering/DX11/RenderDX11.h"
 #include "rendering/DX11/RenderDX11Core.h"
 #include "rendering/DX11/RenderDX11FrameTargets.h"
+#include "rendering/DX11/RenderDX11States.h"
 
 #include "GameLevel.h"
 
@@ -139,6 +140,36 @@ static void RenderDX11_LogText(
 
 #define gDX11FrameHeight \
 	(RenderDX11_GetFrameTargets().FrameHeight())
+
+#define gDX11DepthWriteLessEqual \
+	(RenderDX11_GetStates().DepthWriteLessEqual())
+
+#define gDX11DepthReadLessEqual \
+	(RenderDX11_GetStates().DepthReadLessEqual())
+
+#define gDX11DepthDisabled \
+	(RenderDX11_GetStates().DepthDisabled())
+
+#define gDX11RasterSolidBackCull \
+	(RenderDX11_GetStates().RasterSolidBackCull())
+
+#define gDX11RasterSolidNoCull \
+	(RenderDX11_GetStates().RasterSolidNoCull())
+
+#define gDX11BlendOpaque \
+	(RenderDX11_GetStates().BlendOpaque())
+
+#define gDX11BlendAlpha \
+	(RenderDX11_GetStates().BlendAlpha())
+
+#define gDX11SamplerLinearWrap \
+	(RenderDX11_GetStates().SamplerLinearWrap())
+
+#define gDX11SamplerLinearClamp \
+	(RenderDX11_GetStates().SamplerLinearClamp())
+
+#define gDX11SunGlareBorderSampler \
+	(RenderDX11_GetStates().SunGlareBorderSampler())
 
 namespace
 {
@@ -419,7 +450,6 @@ namespace
 	ID3D11VertexShader*		gDX11SunGlareVS = 0;
 	ID3D11PixelShader*		gDX11SunGlarePS = 0;
 	ID3D11Buffer*			gDX11SunGlareCB = 0;
-	ID3D11SamplerState*		gDX11SunGlareBorderSampler = 0;
 
 	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
 
@@ -518,19 +548,6 @@ namespace
 	ID3D11Buffer*			gDX11ShadowCB = 0;
 	ID3D11Buffer*			gDX11WaterCB = 0;
 	ID3D11Buffer*			gDX11GrassCB = 0;
-
-	ID3D11DepthStencilState* gDX11DepthWriteLessEqual = 0;
-	ID3D11DepthStencilState* gDX11DepthReadLessEqual = 0;
-	ID3D11DepthStencilState* gDX11DepthDisabled = 0;
-
-	ID3D11RasterizerState*	gDX11RasterSolidBackCull = 0;
-	ID3D11RasterizerState*	gDX11RasterSolidNoCull = 0;
-
-	ID3D11BlendState*		gDX11BlendOpaque = 0;
-	ID3D11BlendState*		gDX11BlendAlpha = 0;
-
-	ID3D11SamplerState*		gDX11SamplerLinearWrap = 0;
-	ID3D11SamplerState*		gDX11SamplerLinearClamp = 0;
 	
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
@@ -1240,20 +1257,7 @@ namespace
 
 	void RenderDX11_ReleaseStates()
 	{
-		RenderDX11_SafeRelease(gDX11SunGlareBorderSampler);
-
-		RenderDX11_SafeRelease(gDX11SamplerLinearClamp);
-		RenderDX11_SafeRelease(gDX11SamplerLinearWrap);
-
-		RenderDX11_SafeRelease(gDX11BlendAlpha);
-		RenderDX11_SafeRelease(gDX11BlendOpaque);
-
-		RenderDX11_SafeRelease(gDX11RasterSolidNoCull);
-		RenderDX11_SafeRelease(gDX11RasterSolidBackCull);
-
-		RenderDX11_SafeRelease(gDX11DepthDisabled);
-		RenderDX11_SafeRelease(gDX11DepthReadLessEqual);
-		RenderDX11_SafeRelease(gDX11DepthWriteLessEqual);
+		RenderDX11_GetStates().Shutdown();
 	}
 
 	void RenderDX11_ReleaseShaders()
@@ -5687,370 +5691,14 @@ namespace
 		}
 	}
 
-	bool RenderDX11_CreateDepthStates()
-	{
-		D3D11_DEPTH_STENCIL_DESC Desc = {};
-		Desc.DepthEnable = TRUE;
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		Desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		Desc.StencilEnable = FALSE;
-
-		HRESULT Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthWriteLessEqual
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth write state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-
-		Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthReadLessEqual
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth read state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.DepthEnable = FALSE;
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		Desc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-
-		Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthDisabled
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth disabled state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateRasterizerStates()
-	{
-		D3D11_RASTERIZER_DESC Desc = {};
-		Desc.FillMode = D3D11_FILL_SOLID;
-		Desc.CullMode = D3D11_CULL_BACK;
-		Desc.FrontCounterClockwise = FALSE;
-		Desc.DepthBias = 0;
-		Desc.DepthBiasClamp = 0.0f;
-		Desc.SlopeScaledDepthBias = 0.0f;
-		Desc.DepthClipEnable = TRUE;
-		Desc.ScissorEnable = FALSE;
-		Desc.MultisampleEnable = FALSE;
-		Desc.AntialiasedLineEnable = FALSE;
-
-		HRESULT Hr =
-			gDX11Device->CreateRasterizerState(
-				&Desc,
-				&gDX11RasterSolidBackCull
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create raster back-cull state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.CullMode = D3D11_CULL_NONE;
-
-		Hr =
-			gDX11Device->CreateRasterizerState(
-				&Desc,
-				&gDX11RasterSolidNoCull
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create raster no-cull state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateBlendStates()
-	{
-		D3D11_BLEND_DESC Desc = {};
-		Desc.AlphaToCoverageEnable = FALSE;
-		Desc.IndependentBlendEnable = FALSE;
-
-		Desc.RenderTarget[0].BlendEnable = FALSE;
-		Desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-		Desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		Desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].RenderTargetWriteMask =
-			D3D11_COLOR_WRITE_ENABLE_ALL;
-
-		HRESULT Hr =
-			gDX11Device->CreateBlendState(
-				&Desc,
-				&gDX11BlendOpaque
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create opaque blend state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.RenderTarget[0].BlendEnable = TRUE;
-		Desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		Desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		Desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-		Desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-		Hr =
-			gDX11Device->CreateBlendState(
-				&Desc,
-				&gDX11BlendAlpha
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create alpha blend state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateSamplerStates()
-	{
-		D3D11_SAMPLER_DESC Desc = {};
-		Desc.Filter = D3D11_FILTER_ANISOTROPIC;
-		Desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.MipLODBias = 0.0f;
-		Desc.MaxAnisotropy = 8;
-		Desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		Desc.BorderColor[0] = 0.0f;
-		Desc.BorderColor[1] = 0.0f;
-		Desc.BorderColor[2] = 0.0f;
-		Desc.BorderColor[3] = 0.0f;
-		Desc.MinLOD = 0.0f;
-		Desc.MaxLOD = D3D11_FLOAT32_MAX;
-
-		HRESULT Hr =
-			gDX11Device->CreateSamplerState(
-				&Desc,
-				&gDX11SamplerLinearWrap
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create linear wrap sampler failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		Desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		Desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-
-		Hr =
-			gDX11Device->CreateSamplerState(
-				&Desc,
-				&gDX11SamplerLinearClamp
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create linear clamp sampler failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		Desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
-		Desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
-		Desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
-		Desc.MipLODBias = 0.0f;
-		Desc.MaxAnisotropy = 1;
-		Desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		Desc.BorderColor[0] = 0.0f;
-		Desc.BorderColor[1] = 0.0f;
-		Desc.BorderColor[2] = 0.0f;
-		Desc.BorderColor[3] = 0.0f;
-		Desc.MinLOD = 0.0f;
-		Desc.MaxLOD = D3D11_FLOAT32_MAX;
-
-		Hr =
-			gDX11Device->CreateSamplerState(
-				&Desc,
-				&gDX11SunGlareBorderSampler
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create SunGlare border sampler failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
 	bool RenderDX11_CreateStates()
 	{
-		RenderDX11_ReleaseStates();
-
-		if (!RenderDX11_CreateDepthStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateRasterizerStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateBlendStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateSamplerStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		OutputDebugStringA(
-			"[DX11][Render] Render states created\n"
-		);
-
-		return true;
+		return RenderDX11_GetStates().Initialize();
 	}
 
 	void RenderDX11_ApplyDefaultStates()
 	{
-		if (!gDX11Context)
-			return;
-
-		gDX11Context->OMSetDepthStencilState(
-			gDX11DepthWriteLessEqual,
-			0
-		);
-
-		const float BlendFactor[4] =
-		{
-			0.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		gDX11Context->OMSetBlendState(
-			gDX11BlendOpaque,
-			BlendFactor,
-			0xffffffff
-		);
-
-		gDX11Context->RSSetState(
-			gDX11RasterSolidBackCull
-		);
-
-		ID3D11SamplerState* Samplers[1] =
-		{
-			gDX11SamplerLinearWrap
-		};
-
-		gDX11Context->PSSetSamplers(
-			0,
-			1,
-			Samplers
-		);
+		RenderDX11_GetStates().ApplyDefaults();
 	}
 
 	int RenderDX11_ClampSize(int Value)
@@ -7133,6 +6781,17 @@ bool RenderDX11_Present()
 
 	return RenderDX11_GetCore().Present();
 }
+
+#undef gDX11SunGlareBorderSampler
+#undef gDX11SamplerLinearClamp
+#undef gDX11SamplerLinearWrap
+#undef gDX11BlendAlpha
+#undef gDX11BlendOpaque
+#undef gDX11RasterSolidNoCull
+#undef gDX11RasterSolidBackCull
+#undef gDX11DepthDisabled
+#undef gDX11DepthReadLessEqual
+#undef gDX11DepthWriteLessEqual
 
 #undef gDX11FrameHeight
 #undef gDX11FrameWidth
