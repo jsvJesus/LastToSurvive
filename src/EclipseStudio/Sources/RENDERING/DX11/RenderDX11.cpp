@@ -7,7 +7,6 @@
 
 #include <D3D11.h>
 #include <DXGI.h>
-#include <D3Dcompiler.h>
 
 #include <ctype.h>
 #include <math.h>
@@ -27,6 +26,7 @@
 #include "rendering/DX11/RenderDX11FrameTargets.h"
 #include "rendering/DX11/RenderDX11States.h"
 #include "rendering/DX11/RenderDX11ConstantBuffers.h"
+#include "rendering/DX11/RenderDX11Shaders.h"
 
 #include "GameLevel.h"
 
@@ -198,6 +198,48 @@ static void RenderDX11_LogText(
 
 #define gDX11SunGlareCB \
 	(RenderDX11_GetConstantBuffers().SunGlare())
+
+#define gDX11ClearVS \
+	(RenderDX11_GetShaders().ClearVS())
+
+#define gDX11ClearPS \
+	(RenderDX11_GetShaders().ClearPS())
+
+#define gDX11LightingVS \
+	(RenderDX11_GetShaders().LightingVS())
+
+#define gDX11LightingPS \
+	(RenderDX11_GetShaders().LightingPS())
+
+#define gDX11TonemapVS \
+	(RenderDX11_GetShaders().TonemapVS())
+
+#define gDX11TonemapPS \
+	(RenderDX11_GetShaders().TonemapPS())
+
+#define gDX11TerrainVS \
+	(RenderDX11_GetShaders().TerrainVS())
+
+#define gDX11TerrainPS \
+	(RenderDX11_GetShaders().TerrainPS())
+
+#define gDX11TerrainInputLayout \
+	(RenderDX11_GetShaders().TerrainInputLayout())
+
+#define gDX11StaticMeshVS \
+	(RenderDX11_GetShaders().StaticMeshVS())
+
+#define gDX11StaticMeshPS \
+	(RenderDX11_GetShaders().StaticMeshPS())
+
+#define gDX11StaticMeshInputLayout \
+	(RenderDX11_GetShaders().StaticMeshInputLayout())
+
+#define gDX11SunGlareVS \
+	(RenderDX11_GetShaders().SunGlareVS())
+
+#define gDX11SunGlarePS \
+	(RenderDX11_GetShaders().SunGlarePS())
 
 namespace
 {
@@ -475,24 +517,7 @@ namespace
 		(sizeof(WorldDX11GrassCB) % 16) == 0 ? 1 : -1
 	];
 
-	ID3D11VertexShader*		gDX11SunGlareVS = 0;
-	ID3D11PixelShader*		gDX11SunGlarePS = 0;
-
 	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
-
-	ID3D11VertexShader*		gDX11ClearVS = 0;
-	ID3D11PixelShader*		gDX11ClearPS = 0;
-	ID3D11VertexShader*		gDX11LightingVS = 0;
-	ID3D11PixelShader*		gDX11LightingPS = 0;
-	ID3D11VertexShader*		gDX11TonemapVS = 0;
-	ID3D11PixelShader*		gDX11TonemapPS = 0;
-
-	ID3D11VertexShader*		gDX11TerrainVS = 0;
-	ID3D11PixelShader*		gDX11TerrainPS = 0;
-	ID3D11InputLayout*		gDX11TerrainInputLayout = 0;
-	ID3D11VertexShader*		gDX11StaticMeshVS = 0;
-	ID3D11PixelShader*		gDX11StaticMeshPS = 0;
-	ID3D11InputLayout*		gDX11StaticMeshInputLayout = 0;
 
 	WorldDX11StaticMeshCacheEntry
 							gDX11StaticMeshCache[DX11_STATIC_MESH_CACHE_COUNT] = {};
@@ -1156,123 +1181,6 @@ namespace
 		}
 	}
 
-	class RenderDX11IncludeHandler : public ID3DInclude
-	{
-	public:
-		explicit RenderDX11IncludeHandler(
-			const char* ShaderFileName
-		)
-		{
-			BasePath[0] = 0;
-
-			if (!ShaderFileName || !ShaderFileName[0])
-				return;
-
-			r3dscpy(BasePath, ShaderFileName);
-
-			for (char* It = BasePath; *It; ++It)
-			{
-				if (*It == '/')
-					*It = '\\';
-			}
-
-			char* LastSlash = strrchr(BasePath, '\\');
-
-			if (LastSlash)
-				*LastSlash = 0;
-			else
-				BasePath[0] = 0;
-		}
-
-		STDMETHOD(Open)(
-			D3D_INCLUDE_TYPE IncludeType,
-			LPCSTR pFileName,
-			LPCVOID pParentData,
-			LPCVOID* ppData,
-			UINT* pBytes
-		)
-		{
-			(void)IncludeType;
-			(void)pParentData;
-
-			if (!ppData || !pBytes || !pFileName)
-				return E_FAIL;
-
-			*ppData = 0;
-			*pBytes = 0;
-
-			char FileName[MAX_PATH] = {};
-
-			if (BasePath[0])
-			{
-				sprintf_s(
-					FileName,
-					"%s\\%s",
-					BasePath,
-					pFileName
-				);
-			}
-			else
-			{
-				sprintf_s(
-					FileName,
-					"%s",
-					pFileName
-				);
-			}
-
-			r3dFile* File =
-				r3d_open(
-					FileName,
-					"rb"
-				);
-
-			if (!File)
-			{
-				char Text[512] = {};
-				sprintf_s(
-					Text,
-					"[DX11][Render] Missing shader include: %s\n",
-					FileName
-				);
-
-				OutputDebugStringA(Text);
-				return E_FAIL;
-			}
-
-			char* Data =
-				new char[File->size + 1];
-
-			const size_t ReadSize =
-				fread(
-					Data,
-					1,
-					File->size,
-					File
-				);
-
-			fclose(File);
-
-			Data[ReadSize] = 0;
-
-			*ppData = Data;
-			*pBytes = static_cast<UINT>(ReadSize);
-
-			return S_OK;
-		}
-
-		STDMETHOD(Close)(
-			LPCVOID pData
-		)
-		{
-			delete[] reinterpret_cast<const char*>(pData);
-			return S_OK;
-		}
-
-	private:
-		char BasePath[MAX_PATH];
-	};
-
 	void RenderDX11_ReleaseStates()
 	{
 		RenderDX11_GetStates().Shutdown();
@@ -1280,25 +1188,7 @@ namespace
 
 	void RenderDX11_ReleaseShaders()
 	{
-		RenderDX11_SafeRelease(gDX11SunGlarePS);
-		RenderDX11_SafeRelease(gDX11SunGlareVS);
-
-		RenderDX11_SafeRelease(gDX11TerrainInputLayout);
-		RenderDX11_SafeRelease(gDX11TerrainPS);
-		RenderDX11_SafeRelease(gDX11TerrainVS);
-
-		RenderDX11_SafeRelease(gDX11StaticMeshInputLayout);
-		RenderDX11_SafeRelease(gDX11StaticMeshPS);
-		RenderDX11_SafeRelease(gDX11StaticMeshVS);
-
-		RenderDX11_SafeRelease(gDX11LightingPS);
-		RenderDX11_SafeRelease(gDX11LightingVS);
-
-		RenderDX11_SafeRelease(gDX11TonemapPS);
-		RenderDX11_SafeRelease(gDX11TonemapVS);
-
-		RenderDX11_SafeRelease(gDX11ClearPS);
-		RenderDX11_SafeRelease(gDX11ClearVS);
+		RenderDX11_GetShaders().Shutdown();
 	}
 
 	void RenderDX11_ReleaseTerrainResources()
@@ -3852,395 +3742,7 @@ namespace
 
 	bool RenderDX11_CreateShaders()
 	{
-		RenderDX11_ReleaseShaders();
-
-		ID3DBlob* VSBlob = 0;
-		ID3DBlob* PSBlob = 0;
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_clear.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		HRESULT Hr =
-			gDX11Device->CreateVertexShader(
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				0,
-				&gDX11ClearVS
-			);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create clear VS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_clear.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreatePixelShader(
-				PSBlob->GetBufferPointer(),
-				PSBlob->GetBufferSize(),
-				0,
-				&gDX11ClearPS
-			);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create clear PS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_directional_light.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreateVertexShader(
-			VSBlob->GetBufferPointer(),
-			VSBlob->GetBufferSize(),
-			0,
-			&gDX11LightingVS
-		);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			OutputDebugStringA(
-				"[DX11][Render] Create directional lighting VS failed\n"
-			);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_directional_light.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreatePixelShader(
-			PSBlob->GetBufferPointer(),
-			PSBlob->GetBufferSize(),
-			0,
-			&gDX11LightingPS
-		);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			OutputDebugStringA(
-				"[DX11][Render] Create directional lighting PS failed\n"
-			);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_tonemap.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreateVertexShader(
-			VSBlob->GetBufferPointer(),
-			VSBlob->GetBufferSize(),
-			0,
-			&gDX11TonemapVS
-		);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			OutputDebugStringA(
-				"[DX11][Render] Create tonemap VS failed\n"
-			);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_tonemap.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreatePixelShader(
-			PSBlob->GetBufferPointer(),
-			PSBlob->GetBufferSize(),
-			0,
-			&gDX11TonemapPS
-		);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			OutputDebugStringA(
-				"[DX11][Render] Create tonemap PS failed\n"
-			);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"Nature\\dx11_terrain.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreateVertexShader(
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				0,
-				&gDX11TerrainVS
-			);
-
-		if (FAILED(Hr))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain VS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		const D3D11_INPUT_ELEMENT_DESC TerrainLayoutDesc[] =
-		{
-			{
-				"POSITION",
-				0,
-				DXGI_FORMAT_R32G32B32_FLOAT,
-				0,
-				0,
-				D3D11_INPUT_PER_VERTEX_DATA,
-				0
-			},
-			{
-				"NORMAL",
-				0,
-				DXGI_FORMAT_R32G32B32_FLOAT,
-				0,
-				sizeof(float) * 3,
-				D3D11_INPUT_PER_VERTEX_DATA,
-				0
-			}
-		};
-
-		Hr =
-			gDX11Device->CreateInputLayout(
-				TerrainLayoutDesc,
-				_countof(TerrainLayoutDesc),
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				&gDX11TerrainInputLayout
-			);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain input layout failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"Nature\\dx11_terrain.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreatePixelShader(
-				PSBlob->GetBufferPointer(),
-				PSBlob->GetBufferSize(),
-				0,
-				&gDX11TerrainPS
-			);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain PS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_static_mesh.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreateVertexShader(
-			VSBlob->GetBufferPointer(),
-			VSBlob->GetBufferSize(),
-			0,
-			&gDX11StaticMeshVS
-		);
-
-		if (FAILED(Hr))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			return false;
-		}
-
-		const D3D11_INPUT_ELEMENT_DESC StaticMeshLayout[] =
-		{
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,
-				0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-			{
-				"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,
-				0, sizeof(float) * 3,
-				D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-			{
-				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,
-				0, sizeof(float) * 6,
-				D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-			{
-				"TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,
-				0, sizeof(float) * 8,
-				D3D11_INPUT_PER_VERTEX_DATA, 0
-			}
-		};
-
-		Hr = gDX11Device->CreateInputLayout(
-			StaticMeshLayout,
-			_countof(StaticMeshLayout),
-			VSBlob->GetBufferPointer(),
-			VSBlob->GetBufferSize(),
-			&gDX11StaticMeshInputLayout
-		);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-			return false;
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_static_mesh.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr = gDX11Device->CreatePixelShader(
-			PSBlob->GetBufferPointer(),
-			PSBlob->GetBufferSize(),
-			0,
-			&gDX11StaticMeshPS
-		);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-			return false;
-
-		OutputDebugStringA(
-			"[DX11][Render] Shaders created\n"
-		);
-
-		return true;
+		return RenderDX11_GetShaders().Initialize();
 	}
 
 	void RenderDX11_BindClearShaders()
@@ -5753,143 +5255,7 @@ namespace
 
 	bool RenderDX11_CreateSunGlareShaders()
 	{
-		if (gDX11SunGlareVS && gDX11SunGlarePS)
-			return true;
-
-		if (!gDX11Device)
-			return false;
-
-		static const char* SunGlareShaderSource =
-			"Texture2D gMaskTex : register(t0);\n"
-			"SamplerState gMaskSampler : register(s0);\n"
-			"\n"
-			"cbuffer SunGlareCB : register(b8)\n"
-			"{\n"
-			"	float4 gThreshold;\n"
-			"	float4 gTint[10];\n"
-			"	float4 gTexTransform[10];\n"
-			"	float4 gParams;\n"
-			"};\n"
-			"\n"
-			"struct VSOut\n"
-			"{\n"
-			"	float4 Pos : SV_POSITION;\n"
-			"	float2 UV  : TEXCOORD0;\n"
-			"};\n"
-			"\n"
-			"VSOut VSMain(uint VertexID : SV_VertexID)\n"
-			"{\n"
-			"	VSOut o;\n"
-			"	float2 pos;\n"
-			"	pos.x = (VertexID == 2) ? 3.0f : -1.0f;\n"
-			"	pos.y = (VertexID == 1) ? 3.0f : -1.0f;\n"
-			"	o.Pos = float4(pos, 0.0f, 1.0f);\n"
-			"	o.UV = float2(pos.x * 0.5f + 0.5f, -pos.y * 0.5f + 0.5f);\n"
-			"	return o;\n"
-			"}\n"
-			"\n"
-			"float4 PSMain(VSOut i) : SV_TARGET\n"
-			"{\n"
-			"	float3 color = float3(0.0f, 0.0f, 0.0f);\n"
-			"	float alpha = 0.0f;\n"
-			"	int count = clamp((int)gParams.x, 1, 10);\n"
-			"\n"
-			"	[loop]\n"
-			"	for(int n = 0; n < count; ++n)\n"
-			"	{\n"
-			"		float2 uv = i.UV * gTexTransform[n].xy + gTexTransform[n].zw;\n"
-			"		float mask = gMaskTex.Sample(gMaskSampler, uv).r;\n"
-			"		float threshold = gThreshold[min(n, 3)];\n"
-			"		float glare = saturate((mask - threshold) / max(1.0f - threshold, 0.001f));\n"
-			"		color += glare * gTint[n].rgb;\n"
-			"		alpha += glare * gTint[n].a;\n"
-			"	}\n"
-			"\n"
-			"	return float4(color, saturate(alpha));\n"
-			"}\n";
-
-		ID3DBlob* VSBlob = 0;
-		ID3DBlob* PSBlob = 0;
-
-		if (!RenderDX11_CompileShaderFromMemory(
-			"DX11_SunGlareVS",
-			SunGlareShaderSource,
-			"VSMain",
-			"vs_4_0",
-			&VSBlob
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromMemory(
-			"DX11_SunGlarePS",
-			SunGlareShaderSource,
-			"PSMain",
-			"ps_4_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			return false;
-		}
-
-		HRESULT Hr =
-			gDX11Device->CreateVertexShader(
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				0,
-				&gDX11SunGlareVS
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][SunGlare] CreateVertexShader failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-
-			RenderDX11_SafeRelease(VSBlob);
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreatePixelShader(
-				PSBlob->GetBufferPointer(),
-				PSBlob->GetBufferSize(),
-				0,
-				&gDX11SunGlarePS
-			);
-
-		RenderDX11_SafeRelease(VSBlob);
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][SunGlare] CreatePixelShader failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-
-			RenderDX11_SafeRelease(gDX11SunGlareVS);
-			RenderDX11_SafeRelease(gDX11SunGlarePS);
-			return false;
-		}
-
-		OutputDebugStringA(
-			"[DX11][SunGlare] Shaders created\n"
-		);
-
-		return true;
+		return RenderDX11_GetShaders().EnsureSunGlare();
 	}
 
 	bool RenderDX11_DrawDirectionalLighting()
@@ -6599,6 +5965,26 @@ bool RenderDX11_Present()
 
 	return RenderDX11_GetCore().Present();
 }
+
+#undef gDX11SunGlarePS
+#undef gDX11SunGlareVS
+
+#undef gDX11StaticMeshInputLayout
+#undef gDX11StaticMeshPS
+#undef gDX11StaticMeshVS
+
+#undef gDX11TerrainInputLayout
+#undef gDX11TerrainPS
+#undef gDX11TerrainVS
+
+#undef gDX11TonemapPS
+#undef gDX11TonemapVS
+
+#undef gDX11LightingPS
+#undef gDX11LightingVS
+
+#undef gDX11ClearPS
+#undef gDX11ClearVS
 
 #undef gDX11SunGlareCB
 #undef gDX11GrassCB
