@@ -24,6 +24,7 @@
 #include "TrueNature2/Terrain2.h"
 #include "rendering/DX11/RenderDX11.h"
 #include "rendering/DX11/RenderDX11Core.h"
+#include "rendering/DX11/RenderDX11FrameTargets.h"
 
 #include "GameLevel.h"
 
@@ -72,6 +73,72 @@ static void RenderDX11_LogText(
 
 #define gDX11Initialized \
 	(RenderDX11_GetCore().IsReady())
+
+#define gDX11GBufferColorTexture \
+	(RenderDX11_GetFrameTargets().GBufferColorTexture())
+
+#define gDX11GBufferNormalTexture \
+	(RenderDX11_GetFrameTargets().GBufferNormalTexture())
+
+#define gDX11GBufferDepthLinearTexture \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearTexture())
+
+#define gDX11GBufferAuxTexture \
+	(RenderDX11_GetFrameTargets().GBufferAuxTexture())
+
+#define gDX11SceneColorTexture \
+	(RenderDX11_GetFrameTargets().SceneColorTexture())
+
+#define gDX11FinalColorTexture \
+	(RenderDX11_GetFrameTargets().FinalColorTexture())
+
+#define gDX11DepthTexture \
+	(RenderDX11_GetFrameTargets().DepthTexture())
+
+#define gDX11SmokeReadbackTexture \
+	(RenderDX11_GetFrameTargets().SmokeReadbackTexture())
+
+#define gDX11GBufferColorRTV \
+	(RenderDX11_GetFrameTargets().GBufferColorRTV())
+
+#define gDX11GBufferNormalRTV \
+	(RenderDX11_GetFrameTargets().GBufferNormalRTV())
+
+#define gDX11GBufferDepthLinearRTV \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearRTV())
+
+#define gDX11GBufferAuxRTV \
+	(RenderDX11_GetFrameTargets().GBufferAuxRTV())
+
+#define gDX11SceneColorRTV \
+	(RenderDX11_GetFrameTargets().SceneColorRTV())
+
+#define gDX11FinalColorRTV \
+	(RenderDX11_GetFrameTargets().FinalColorRTV())
+
+#define gDX11DepthDSV \
+	(RenderDX11_GetFrameTargets().DepthDSV())
+
+#define gDX11GBufferColorSRV \
+	(RenderDX11_GetFrameTargets().GBufferColorSRV())
+
+#define gDX11GBufferNormalSRV \
+	(RenderDX11_GetFrameTargets().GBufferNormalSRV())
+
+#define gDX11GBufferDepthLinearSRV \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearSRV())
+
+#define gDX11SceneColorSRV \
+	(RenderDX11_GetFrameTargets().SceneColorSRV())
+
+#define gDX11Viewport \
+	(RenderDX11_GetFrameTargets().Viewport())
+
+#define gDX11FrameWidth \
+	(RenderDX11_GetFrameTargets().FrameWidth())
+
+#define gDX11FrameHeight \
+	(RenderDX11_GetFrameTargets().FrameHeight())
 
 namespace
 {
@@ -355,28 +422,6 @@ namespace
 
 	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
 
-	ID3D11Texture2D*		gDX11GBufferColorTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferNormalTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferDepthLinearTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferAuxTexture = 0;
-	ID3D11Texture2D*		gDX11SceneColorTexture = 0;
-	ID3D11Texture2D*		gDX11FinalColorTexture = 0;
-	ID3D11Texture2D*		gDX11DepthTexture = 0;
-	ID3D11Texture2D*		gDX11SmokeReadbackTexture = 0;
-
-	ID3D11RenderTargetView*	gDX11GBufferColorRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferNormalRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferDepthLinearRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferAuxRTV = 0;
-	ID3D11RenderTargetView*	gDX11SceneColorRTV = 0;
-	ID3D11RenderTargetView*	gDX11FinalColorRTV = 0;
-	ID3D11DepthStencilView*	gDX11DepthDSV = 0;
-
-	ID3D11ShaderResourceView* gDX11GBufferColorSRV = 0;
-	ID3D11ShaderResourceView* gDX11GBufferNormalSRV = 0;
-	ID3D11ShaderResourceView* gDX11GBufferDepthLinearSRV = 0;
-	ID3D11ShaderResourceView* gDX11SceneColorSRV = 0;
-
 	ID3D11VertexShader*		gDX11ClearVS = 0;
 	ID3D11PixelShader*		gDX11ClearPS = 0;
 	ID3D11VertexShader*		gDX11LightingVS = 0;
@@ -473,8 +518,6 @@ namespace
 	ID3D11Buffer*			gDX11WaterCB = 0;
 	ID3D11Buffer*			gDX11GrassCB = 0;
 
-	D3D11_VIEWPORT			gDX11Viewport = {};
-
 	ID3D11DepthStencilState* gDX11DepthWriteLessEqual = 0;
 	ID3D11DepthStencilState* gDX11DepthReadLessEqual = 0;
 	ID3D11DepthStencilState* gDX11DepthDisabled = 0;
@@ -487,9 +530,6 @@ namespace
 
 	ID3D11SamplerState*		gDX11SamplerLinearWrap = 0;
 	ID3D11SamplerState*		gDX11SamplerLinearClamp = 0;
-
-	int						gDX11FrameWidth = 0;
-	int						gDX11FrameHeight = 0;
 	
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
@@ -5876,72 +5916,25 @@ namespace
 
 	void RenderDX11_ReleaseFrameTargets()
 	{
-		if (gDX11Context)
-		{
-			ID3D11RenderTargetView* NullRTV[4] =
-			{
-				0,
-				0,
-				0,
-				0
-			};
+		RenderDX11_GetFrameTargets().Release();
 
-			gDX11Context->OMSetRenderTargets(
-				4,
-				NullRTV,
-				0
-			);
+		/*
+		 * Preview readback зависит от выбранного debug-режима
+		 * и пока остаётся частью preview subsystem.
+		 */
+		RenderDX11_SafeRelease(
+			gDX11PreviewReadbackTexture
+		);
 
-			ID3D11ShaderResourceView* NullSRV[4] =
-			{
-				0,
-				0,
-				0,
-				0
-			};
+		gDX11PreviewReadbackFormat =
+			DXGI_FORMAT_UNKNOWN;
 
-			gDX11Context->PSSetShaderResources(
-				0,
-				4,
-				NullSRV
-			);
-		}
-
-		RenderDX11_SafeRelease(gDX11GBufferAuxRTV);
-		RenderDX11_SafeRelease(gDX11GBufferDepthLinearRTV);
-		RenderDX11_SafeRelease(gDX11GBufferNormalRTV);
-		RenderDX11_SafeRelease(gDX11GBufferColorRTV);
-		RenderDX11_SafeRelease(gDX11SceneColorRTV);
-		RenderDX11_SafeRelease(gDX11FinalColorRTV);
-		RenderDX11_SafeRelease(gDX11DepthDSV);
-
-		RenderDX11_SafeRelease(gDX11SceneColorSRV);
-		RenderDX11_SafeRelease(gDX11GBufferDepthLinearSRV);
-		RenderDX11_SafeRelease(gDX11GBufferNormalSRV);
-		RenderDX11_SafeRelease(gDX11GBufferColorSRV);
-
-		RenderDX11_SafeRelease(gDX11SmokeReadbackTexture);
-		RenderDX11_SafeRelease(gDX11PreviewReadbackTexture);
-
-		gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
 		gDX11PreviewReadbackWidth = 0;
 		gDX11PreviewReadbackHeight = 0;
 
-		RenderDX11_SafeRelease(gDX11GBufferAuxTexture);
-		RenderDX11_SafeRelease(gDX11GBufferDepthLinearTexture);
-		RenderDX11_SafeRelease(gDX11GBufferNormalTexture);
-		RenderDX11_SafeRelease(gDX11GBufferColorTexture);
-		RenderDX11_SafeRelease(gDX11SceneColorTexture);
-		RenderDX11_SafeRelease(gDX11FinalColorTexture);
-		RenderDX11_SafeRelease(gDX11DepthTexture);
-
-		gDX11FrameWidth = 0;
-		gDX11FrameHeight = 0;
 		gDX11SmokeReadbackLogged = false;
 		gDX11TerrainGBufferReadbackLogged = false;
 		gDX11PreviewValid = false;
-
-		gDX11Viewport = D3D11_VIEWPORT();
 	}
 
 	void RenderDX11_LogFrameTargetFailureOnce(
@@ -5959,297 +5952,6 @@ namespace
 
 		gDX11FrameTargetsFailedLogged = true;
 		OutputDebugStringA(Text);
-	}
-
-	bool RenderDX11_CreateGBufferTarget(
-		int Width,
-		int Height,
-		DXGI_FORMAT Format,
-		const char* DebugName,
-		ID3D11Texture2D** OutTexture,
-		ID3D11RenderTargetView** OutRTV
-	)
-	{
-		if (!OutTexture || !OutRTV)
-			return false;
-
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = Format;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-		TextureDesc.BindFlags =
-			D3D11_BIND_RENDER_TARGET |
-			D3D11_BIND_SHADER_RESOURCE;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				OutTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s texture failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "gbuffer",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreateRenderTargetView(
-				*OutTexture,
-				0,
-				OutRTV
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s RTV failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "gbuffer",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateGBufferTargets(
-		int Width,
-		int Height
-	)
-	{
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			"GBufferColor",
-			&gDX11GBufferColorTexture,
-			&gDX11GBufferColorRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			"GBufferNormal",
-			&gDX11GBufferNormalTexture,
-			&gDX11GBufferNormalRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R32_FLOAT,
-			"GBufferDepthLinear",
-			&gDX11GBufferDepthLinearTexture,
-			&gDX11GBufferDepthLinearRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			"GBufferAux",
-			&gDX11GBufferAuxTexture,
-			&gDX11GBufferAuxRTV
-		))
-		{
-			return false;
-		}
-
-		HRESULT Hr = gDX11Device->CreateShaderResourceView(
-			gDX11GBufferColorTexture,
-			0,
-			&gDX11GBufferColorSRV
-		);
-
-		if (FAILED(Hr))
-			return false;
-
-		Hr = gDX11Device->CreateShaderResourceView(
-			gDX11GBufferNormalTexture,
-			0,
-			&gDX11GBufferNormalSRV
-		);
-
-		if (FAILED(Hr))
-			return false;
-
-		Hr = gDX11Device->CreateShaderResourceView(
-			gDX11GBufferDepthLinearTexture,
-			0,
-			&gDX11GBufferDepthLinearSRV
-		);
-
-		if (FAILED(Hr))
-			return false;
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			"SceneColor",
-			&gDX11SceneColorTexture,
-			&gDX11SceneColorRTV
-		))
-		{
-			return false;
-		}
-
-		Hr = gDX11Device->CreateShaderResourceView(
-			gDX11SceneColorTexture,
-			0,
-			&gDX11SceneColorSRV
-		);
-
-		if (FAILED(Hr))
-			return false;
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			"FinalColor",
-			&gDX11FinalColorTexture,
-			&gDX11FinalColorRTV
-		))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateDepthTarget(
-		int Width,
-		int Height
-	)
-	{
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-		TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				&gDX11DepthTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth texture failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
-		DSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		DSVDesc.Texture2D.MipSlice = 0;
-
-		Hr =
-			gDX11Device->CreateDepthStencilView(
-				gDX11DepthTexture,
-				&DSVDesc,
-				&gDX11DepthDSV
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth DSV failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateSmokeReadbackTarget(
-		int Width,
-		int Height
-	)
-	{
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_STAGING;
-		TextureDesc.BindFlags = 0;
-		TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		TextureDesc.MiscFlags = 0;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				&gDX11SmokeReadbackTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create smoke readback texture failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
 	}
 
 	void RenderDX11_LogOffscreenOnlyModeOnce()
@@ -6279,206 +5981,38 @@ namespace
 	}
 
 	bool RenderDX11_EnsureFrameTargets(
-		const WorldDX11FrameDesc& Desc
-	)
+	const WorldDX11FrameDesc& Desc
+)
 	{
-		const int Width =
-			RenderDX11_ClampSize(Desc.Width);
+		const bool Ready =
+			RenderDX11_GetFrameTargets().Ensure(
+				Desc.Width,
+				Desc.Height,
+				RenderDX11_WantsSmokeDebug()
+			);
 
-		const int Height =
-			RenderDX11_ClampSize(Desc.Height);
-
-		if (
-			gDX11GBufferColorTexture &&
-			gDX11GBufferNormalTexture &&
-			gDX11GBufferDepthLinearTexture &&
-			gDX11GBufferAuxTexture &&
-			gDX11SceneColorTexture &&
-			gDX11FinalColorTexture &&
-			gDX11DepthTexture &&
-			gDX11GBufferColorRTV &&
-			gDX11GBufferNormalRTV &&
-			gDX11GBufferDepthLinearRTV &&
-			gDX11GBufferAuxRTV &&
-			gDX11SceneColorRTV &&
-			gDX11FinalColorRTV &&
-			gDX11DepthDSV &&
-			gDX11GBufferColorSRV &&
-			gDX11GBufferNormalSRV &&
-			gDX11GBufferDepthLinearSRV &&
-			gDX11SceneColorSRV &&
-			gDX11FrameWidth == Width &&
-			gDX11FrameHeight == Height &&
-			(
-				!RenderDX11_WantsSmokeDebug() ||
-				gDX11SmokeReadbackTexture
-			)
-		)
+		if (Ready)
 		{
-			return true;
+			gDX11FrameTargetsFailedLogged = false;
 		}
 
-		RenderDX11_ReleaseFrameTargets();
-
-		if (!RenderDX11_CreateGBufferTargets(Width, Height))
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		if (!RenderDX11_CreateDepthTarget(Width, Height))
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		if (
-			RenderDX11_WantsSmokeDebug() &&
-			!RenderDX11_CreateSmokeReadbackTarget(Width, Height)
-		)
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		gDX11Viewport.TopLeftX = 0.0f;
-		gDX11Viewport.TopLeftY = 0.0f;
-		gDX11Viewport.Width = static_cast<float>(Width);
-		gDX11Viewport.Height = static_cast<float>(Height);
-		gDX11Viewport.MinDepth = 0.0f;
-		gDX11Viewport.MaxDepth = 1.0f;
-
-		gDX11FrameWidth = Width;
-		gDX11FrameHeight = Height;
-		gDX11FrameTargetsFailedLogged = false;
-
-		char Text[256] = {};
-		sprintf_s(
-			Text,
-			"[DX11][Render] GBuffer targets ready %dx%d\n",
-			Width,
-			Height
-		);
-
-		OutputDebugStringA(Text);
-
-		return true;
+		return Ready;
 	}
 
 	void RenderDX11_BindFrameTargets()
 	{
-		ID3D11RenderTargetView* RTViews[4] =
-		{
-			gDX11GBufferColorRTV,
-			gDX11GBufferNormalRTV,
-			gDX11GBufferDepthLinearRTV,
-			gDX11GBufferAuxRTV
-		};
-
-		gDX11Context->OMSetRenderTargets(
-			4,
-			RTViews,
-			gDX11DepthDSV
-		);
-
-		gDX11Context->RSSetViewports(
-			1,
-			&gDX11Viewport
-		);
-
+		RenderDX11_GetFrameTargets().BindGBuffer();
 		RenderDX11_ApplyDefaultStates();
 	}
 
 	void RenderDX11_ClearFrameTargets()
 	{
-		const float ClearColorAlbedo[4] =
-		{
-			0.02f,
-			0.04f,
-			0.06f,
-			1.0f
-		};
-
-		const float ClearNormal[4] =
-		{
-			0.5f,
-			0.5f,
-			1.0f,
-			1.0f
-		};
-
-		const float ClearDepthLinear[4] =
-		{
-			1.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		const float ClearAux[4] =
-		{
-			0.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferColorRTV,
-			ClearColorAlbedo
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11SceneColorRTV,
-			ClearColorAlbedo
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11FinalColorRTV,
-			ClearColorAlbedo
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferNormalRTV,
-			ClearNormal
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferDepthLinearRTV,
-			ClearDepthLinear
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferAuxRTV,
-			ClearAux
-		);
-
-		gDX11Context->ClearDepthStencilView(
-			gDX11DepthDSV,
-			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-			1.0f,
-			0
-		);
+		RenderDX11_GetFrameTargets().Clear();
 	}
 
 	void RenderDX11_UnbindFrameTargets()
 	{
-		if (!gDX11Context)
-			return;
-
-		ID3D11RenderTargetView* NullRTV[4] =
-		{
-			0,
-			0,
-			0,
-			0
-		};
-
-		gDX11Context->OMSetRenderTargets(
-			4,
-			NullRTV,
-			0
-		);
+		RenderDX11_GetFrameTargets().Unbind();
 	}
 
 	bool RenderDX11_FailWorldFrame(
@@ -7450,10 +6984,37 @@ bool RenderDX11_Present()
 	return RenderDX11_GetCore().Present();
 }
 
+#undef gDX11FrameHeight
+#undef gDX11FrameWidth
+#undef gDX11Viewport
+
+#undef gDX11SceneColorSRV
+#undef gDX11GBufferDepthLinearSRV
+#undef gDX11GBufferNormalSRV
+#undef gDX11GBufferColorSRV
+
+#undef gDX11DepthDSV
+#undef gDX11FinalColorRTV
+#undef gDX11SceneColorRTV
+#undef gDX11GBufferAuxRTV
+#undef gDX11GBufferDepthLinearRTV
+#undef gDX11GBufferNormalRTV
+#undef gDX11GBufferColorRTV
+
+#undef gDX11SmokeReadbackTexture
+#undef gDX11DepthTexture
+#undef gDX11FinalColorTexture
+#undef gDX11SceneColorTexture
+#undef gDX11GBufferAuxTexture
+#undef gDX11GBufferDepthLinearTexture
+#undef gDX11GBufferNormalTexture
+#undef gDX11GBufferColorTexture
+
 #undef gDX11Initialized
 #undef gDX11FeatureLevel
 #undef gDX11Context
 #undef gDX11Device
+
 #undef OutputDebugStringA
 
 #endif // LTS_STUDIO_DX11
