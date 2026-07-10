@@ -1,6 +1,5 @@
 #include "r3dPCH.h"
 #include "r3d.h"
-#include "r3dRenderDX11.h"
 
 #include "r3dRendererConfig.h"
 
@@ -15,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../../../Eternity/Source/r3dRenderDX11.inl"
-
 #include "GameCommon.h"
 #include "r3dAtmosphere.h"
 #include "gameobjects/GameObj.h"
@@ -26,6 +23,7 @@
 #include "TrueNature/ITerrain.h"
 #include "TrueNature2/Terrain2.h"
 #include "rendering/DX11/RenderDX11.h"
+#include "rendering/DX11/RenderDX11Core.h"
 
 #include "GameLevel.h"
 
@@ -53,6 +51,27 @@ static void RenderDX11_LogText(
 }
 
 #define OutputDebugStringA RenderDX11_LogText
+
+/*
+ * Временный compatibility layer.
+ *
+ * Он позволяет не менять сразу тысячи обращений
+ * gDX11Device->... и gDX11Context->...
+ *
+ * Позже эти макросы удалим вместе с разделением
+ * RenderDX11.cpp на отдельные подсистемы.
+ */
+#define gDX11Device \
+	(RenderDX11_GetCore().GetDevice())
+
+#define gDX11Context \
+	(RenderDX11_GetCore().GetContext())
+
+#define gDX11FeatureLevel \
+	(RenderDX11_GetCore().GetFeatureLevel())
+
+#define gDX11Initialized \
+	(RenderDX11_GetCore().IsReady())
 
 namespace
 {
@@ -329,9 +348,6 @@ namespace
 		(sizeof(WorldDX11GrassCB) % 16) == 0 ? 1 : -1
 	];
 
-	ID3D11Device*			gDX11Device = 0;
-	ID3D11DeviceContext*	gDX11Context = 0;
-
 	ID3D11VertexShader*		gDX11SunGlareVS = 0;
 	ID3D11PixelShader*		gDX11SunGlarePS = 0;
 	ID3D11Buffer*			gDX11SunGlareCB = 0;
@@ -474,10 +490,7 @@ namespace
 
 	int						gDX11FrameWidth = 0;
 	int						gDX11FrameHeight = 0;
-
-	D3D_FEATURE_LEVEL		gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
-
-	bool					gDX11Initialized = false;
+	
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
 	bool					gDX11PreviewValid = false;
@@ -7169,38 +7182,50 @@ bool RenderDX11_ApplySunGlare(
 
 bool RenderDX11_Init()
 {
-	if (gDX11Initialized)
+	RenderDX11Core& Core =
+		RenderDX11_GetCore();
+
+	if (Core.IsReady())
 		return true;
 
-	r3dDX11DeviceCreateParams Params;
-	Params.Window = r3dRenderer ? r3dRenderer->HLibWin : 0;
-	Params.Width =
-		r3dRenderer ? static_cast<unsigned int>(r3dRenderer->ScreenW) : 1;
-	Params.Height =
-		r3dRenderer ? static_cast<unsigned int>(r3dRenderer->ScreenH) : 1;
-	Params.Windowed = r3dRenderer ? r3dRenderer->bFullScreen == 0 : true;
+	RenderDX11CoreCreateDesc CoreDesc;
+
+	CoreDesc.Window =
+		r3dRenderer
+		? r3dRenderer->HLibWin
+		: 0;
+
+	CoreDesc.Width =
+		r3dRenderer
+		? static_cast<unsigned int>(
+			r3dRenderer->ScreenW
+		)
+		: 1;
+
+	CoreDesc.Height =
+		r3dRenderer
+		? static_cast<unsigned int>(
+			r3dRenderer->ScreenH
+		)
+		: 1;
+
+	CoreDesc.Windowed =
+		r3dRenderer
+		? r3dRenderer->bFullScreen == 0
+		: true;
+
 #if defined(_DEBUG)
-	Params.EnableDebugLayer = true;
+	CoreDesc.EnableDebugLayer = true;
 #endif
 
-	r3dRenderDX11& GraphicsDevice = r3dGetRenderDX11();
-
-	if (!GraphicsDevice.Initialize(Params))
+	if (!Core.Initialize(CoreDesc))
 	{
 		OutputDebugStringA(
-			"[DX11][Render] Engine DX11 device initialization failed\n"
+			"[DX11][Render] DX11 core initialization failed\n"
 		);
+
 		return false;
 	}
-
-	gDX11Device = GraphicsDevice.GetDevice();
-	gDX11Context = GraphicsDevice.GetContext();
-	gDX11FeatureLevel = GraphicsDevice.GetFeatureLevel();
-
-	// RenderDX11 keeps references while its resources are alive. The engine
-	// graphics device remains the actual owner of device creation and Present.
-	gDX11Device->AddRef();
-	gDX11Context->AddRef();
 
 	if (!RenderDX11_CreateStates())
 	{
@@ -7232,13 +7257,14 @@ bool RenderDX11_Init()
 		return false;
 	}
 
-	gDX11Initialized = true;
-
 	char Text[256] = {};
+
 	sprintf_s(
 		Text,
 		"[DX11][Render] Initialized. FeatureLevel=%s\n",
-		RenderDX11_FeatureLevelToString(gDX11FeatureLevel)
+		RenderDX11_FeatureLevelToString(
+			Core.GetFeatureLevel()
+		)
 	);
 
 	OutputDebugStringA(Text);
@@ -7248,25 +7274,18 @@ bool RenderDX11_Init()
 
 void RenderDX11_Shutdown()
 {
+	/*
+	 * Сначала уничтожаем все ресурсы верхнего уровня,
+	 * пока DX11 device ещё существует.
+	 */
 	RenderDX11_ReleasePreviewTexture();
 	RenderDX11_ReleaseFrameTargets();
 	RenderDX11_ReleaseTerrainResources();
-
-	if (gDX11Context)
-	{
-		gDX11Context->ClearState();
-		gDX11Context->Flush();
-	}
 
 	RenderDX11_ReleaseShaders();
 	RenderDX11_ReleaseConstantBuffers();
 	RenderDX11_ReleaseStates();
 
-	RenderDX11_SafeRelease(gDX11Context);
-	RenderDX11_SafeRelease(gDX11Device);
-
-	gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
-	gDX11Initialized = false;
 	gDX11OffscreenOnlyLogged = false;
 	gDX11WorldFallbackLogged = false;
 	gDX11WorldFrameFailureLogged = false;
@@ -7275,7 +7294,11 @@ void RenderDX11_Shutdown()
 	gDX11FrameReadyToPresent = false;
 	gDX11DirectPresentLogged = false;
 
-	r3dGetRenderDX11().Shutdown();
+	/*
+	 * Только после освобождения renderer resources
+	 * уничтожаем context/device/swap chain.
+	 */
+	RenderDX11_GetCore().Shutdown();
 
 	OutputDebugStringA(
 		"[DX11][Render] Shutdown\n"
@@ -7284,10 +7307,7 @@ void RenderDX11_Shutdown()
 
 bool RenderDX11_IsReady()
 {
-	return
-		gDX11Initialized &&
-		gDX11Device != 0 &&
-		gDX11Context != 0;
+	return RenderDX11_GetCore().IsReady();
 }
 
 bool RenderDX11_RenderWorld(
@@ -7376,14 +7396,20 @@ bool RenderDX11_RenderWorld(
 
 	if (Desc.DirectPresent)
 	{
-		r3dRenderDX11& GraphicsDevice = r3dGetRenderDX11();
+		RenderDX11Core& Core = RenderDX11_GetCore();
 
 		if (
-			!GraphicsDevice.Resize(
-				static_cast<unsigned int>(gDX11FrameWidth),
-				static_cast<unsigned int>(gDX11FrameHeight)
+			!Core.Resize(
+				static_cast<unsigned int>(
+					gDX11FrameWidth
+				),
+				static_cast<unsigned int>(
+					gDX11FrameHeight
+				)
 			) ||
-			!GraphicsDevice.CopyToBackBuffer(gDX11FinalColorTexture)
+			!Core.CopyToBackBuffer(
+				gDX11FinalColorTexture
+			)
 		)
 		{
 			OutputDebugStringA(
@@ -7420,9 +7446,14 @@ bool RenderDX11_Present()
 		return false;
 
 	gDX11FrameReadyToPresent = false;
-	return r3dGetRenderDX11().Present();
+
+	return RenderDX11_GetCore().Present();
 }
 
+#undef gDX11Initialized
+#undef gDX11FeatureLevel
+#undef gDX11Context
+#undef gDX11Device
 #undef OutputDebugStringA
 
 #endif // LTS_STUDIO_DX11
