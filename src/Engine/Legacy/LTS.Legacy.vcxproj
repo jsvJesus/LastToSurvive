@@ -59,17 +59,8 @@
         /utf-8
         %(AdditionalOptions)
       </AdditionalOptions>
-      <PreprocessorDefinitions>
-        NOMINMAX;
-        WIN32_LEAN_AND_MEAN;
-        ENGINE_BUILD_RELEASE=1;
-        %(PreprocessorDefinitions)
-      </PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        $(ProjectDir)Public;
-        $(ProjectDir)..\Core\Public;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -102,18 +93,8 @@
         /utf-8
         %(AdditionalOptions)
       </AdditionalOptions>
-      <PreprocessorDefinitions>
-        NOMINMAX;
-        WIN32_LEAN_AND_MEAN;
-        ENGINE_BUILD_FINAL=1;
-        FINAL_BUILD=1;
-        %(PreprocessorDefinitions)
-      </PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        $(ProjectDir)Public;
-        $(ProjectDir)..\Core\Public;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -135,6 +116,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\Legacy\LoggingBridge.h" />
+    <ClInclude Include="Public\Legacy\PointConversion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\LoggingBridge.cpp" />
@@ -142,6 +124,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\LTS.Core.vcxproj">
       <Project>{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Math\LTS.Math.vcxproj">
+      <Project>{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "Core/Log.h"
 #include "Core/Version.h"
 #include "Legacy/LoggingBridge.h"
+#include "Legacy/PointConversion.h"
 
 #include <cstdio>
 #endif
@@ -811,6 +812,39 @@ void game::PreInit()
 		static_cast<unsigned>(coreVersion.minor),
 		static_cast<unsigned>(coreVersion.patch),
 		static_cast<unsigned>(coreVersion.build)
+	);
+
+	const r3dPoint3D legacyAxis(
+		0.0f,
+		1.0f,
+		0.0f
+	);
+
+	const engine::math::Vector3 modernAxis =
+		engine::legacy::ToVector3(
+			legacyAxis
+		);
+
+	const r3dPoint3D roundTripAxis =
+	engine::legacy::ToLegacyPoint3D<r3dPoint3D>(
+		modernAxis
+	);
+
+	char mathMessage[128] = {};
+
+	std::snprintf(
+		mathMessage,
+		sizeof(mathMessage),
+		"Point bridge ready: (%.1f, %.1f, %.1f)",
+		roundTripAxis.x,
+		roundTripAxis.y,
+		roundTripAxis.z
+	);
+
+	engine::core::GetLogger().Write(
+		engine::core::LogLevel::Information,
+		"Math",
+		mathMessage
 	);
 
 	engine::core::GetLogger().Write(

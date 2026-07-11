@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Core", "..\Engine\Core\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Legacy", "..\Engine\Legacy\LTS.Legacy.vcxproj", "{D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Math", "..\Engine\Math\LTS.Math.vcxproj", "{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -100,7 +102,17 @@ Global
 		{CC60C741-FAC1-4DFC-AD20-4E213359A6C5}.Release|x64.ActiveCfg = Release|x64
 		{CC60C741-FAC1-4DFC-AD20-4E213359A6C5}.Release|x64.Build.0 = Release|x64
 		{D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}.Release|x64.ActiveCfg = Release|x64
-        {D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}.Release|x64.Build.0 = Release|x64
+								{D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}.Release|x64.Build.0 = Release|x64
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Debug|Win32.ActiveCfg = Debug|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Debug|Win32.Build.0 = Debug|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Final|Win32.ActiveCfg = Debug|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Final|Win32.Build.0 = Debug|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Release|Win32.ActiveCfg = Release|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Release|Win32.Build.0 = Release|Win32
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Release|x64.ActiveCfg = Release|x64
+		{372287CF-8D5D-4132-B76A-0A3C48E5E202}.Release|x64.Build.0 = Release|x64
+		{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}.Release|x64.ActiveCfg = Release|x64
+        {4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
