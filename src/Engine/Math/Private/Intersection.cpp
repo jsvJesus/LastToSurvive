@@ -316,6 +316,8 @@ namespace engine::math
             return PlaneIntersectionType::Intersecting;
         }
 
+        const float safeEpsilon = Abs(epsilon);
+
         const float signedDistance =
             plane.SignedDistanceTo(
                 sphere.center
@@ -326,8 +328,8 @@ namespace engine::math
             plane.normal.Length();
 
         if (
-            signedDistance >
-            projectedRadius + epsilon
+            signedDistance >=
+            projectedRadius + safeEpsilon
         )
         {
             return PlaneIntersectionType::Front;
@@ -335,7 +337,7 @@ namespace engine::math
 
         if (
             signedDistance <
-            -projectedRadius - epsilon
+            -projectedRadius - safeEpsilon
         )
         {
             return PlaneIntersectionType::Back;
@@ -357,36 +359,55 @@ namespace engine::math
             return PlaneIntersectionType::Intersecting;
         }
 
-        const Vector3 center =
-            box.Center();
+        const float safeEpsilon =
+            Abs(epsilon);
 
-        const Vector3 extents =
-            box.Extents();
-
-        const float projectedRadius =
-            (Abs(plane.normal.x) * extents.x) +
-            (Abs(plane.normal.y) * extents.y) +
-            (Abs(plane.normal.z) * extents.z);
-
-        const float signedDistance =
-            plane.SignedDistanceTo(
-                center
-            );
-
-        if (
-            signedDistance >
-            projectedRadius + epsilon
-        )
+        const Vector3 positiveVertex
         {
-            return PlaneIntersectionType::Front;
-        }
+            plane.normal.x >= 0.0f
+                ? box.maximum.x
+                : box.minimum.x,
+
+            plane.normal.y >= 0.0f
+                ? box.maximum.y
+                : box.minimum.y,
+
+            plane.normal.z >= 0.0f
+                ? box.maximum.z
+                : box.minimum.z
+        };
+
+        const Vector3 negativeVertex
+        {
+            plane.normal.x >= 0.0f
+                ? box.minimum.x
+                : box.maximum.x,
+
+            plane.normal.y >= 0.0f
+                ? box.minimum.y
+                : box.maximum.y,
+
+            plane.normal.z >= 0.0f
+                ? box.minimum.z
+                : box.maximum.z
+        };
 
         if (
-            signedDistance <
-            -projectedRadius - epsilon
+            plane.SignedDistanceTo(
+                positiveVertex
+            ) < -safeEpsilon
         )
         {
             return PlaneIntersectionType::Back;
+        }
+
+        if (
+            plane.SignedDistanceTo(
+                negativeVertex
+            ) >= safeEpsilon
+        )
+        {
+            return PlaneIntersectionType::Front;
         }
 
         return PlaneIntersectionType::Intersecting;

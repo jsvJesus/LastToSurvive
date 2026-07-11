@@ -151,7 +151,8 @@ namespace
         const VisibilityInfoEnum modernResult =
             ToLegacyVisibility(
                 modernFrustum.Classify(
-                    sphere
+					sphere,
+				0.0f
                 )
             );
 
@@ -208,7 +209,8 @@ namespace
         const VisibilityInfoEnum modernResult =
             ToLegacyVisibility(
                 modernFrustum.Classify(
-                    modernBox
+					modernBox,
+				0.0f
                 )
             );
 

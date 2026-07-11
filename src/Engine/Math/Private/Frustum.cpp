@@ -212,11 +212,7 @@ namespace engine::math
         const Vector3& point,
         const float epsilon) const noexcept
     {
-        const float safeEpsilon =
-            Max(
-                Abs(epsilon),
-                DefaultEpsilon
-            );
+        const float safeEpsilon = Abs(epsilon);
 
         if (!IsValid(safeEpsilon))
         {
@@ -241,11 +237,7 @@ namespace engine::math
         const Sphere& sphere,
         const float epsilon) const noexcept
     {
-        const float safeEpsilon =
-            Max(
-                Abs(epsilon),
-                DefaultEpsilon
-            );
+        const float safeEpsilon = Abs(epsilon);
 
         if (
             !IsValid(safeEpsilon) ||
@@ -295,11 +287,7 @@ namespace engine::math
         const BoundingBox& box,
         const float epsilon) const noexcept
     {
-        const float safeEpsilon =
-            Max(
-                Abs(epsilon),
-                DefaultEpsilon
-            );
+        const float safeEpsilon = Abs(epsilon);
 
         if (
             !IsValid(safeEpsilon) ||

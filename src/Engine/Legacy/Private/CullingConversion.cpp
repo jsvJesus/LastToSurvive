@@ -49,11 +49,17 @@ namespace engine::legacy
             };
         }
 
-        return math::Frustum::TryFromPlanes(
-            convertedPlanes,
-            result,
-            epsilon
-        );
+        math::Frustum candidate;
+        candidate.planes =
+            convertedPlanes;
+
+        if (!candidate.IsValid(epsilon))
+        {
+            return false;
+        }
+
+        result = candidate;
+        return true;
     }
 
     bool ToD3DXPlanes(
