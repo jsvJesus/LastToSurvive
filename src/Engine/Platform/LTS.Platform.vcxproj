@@ -112,14 +112,18 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Platform\DynamicLibrary.h" />
+    <ClInclude Include="Public\Platform\MessagePump.h" />
     <ClInclude Include="Public\Platform\Path.h" />
     <ClInclude Include="Public\Platform\SystemInfo.h" />
+    <ClInclude Include="Public\Platform\Window.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\Windows\DynamicLibraryWin32.cpp" />
+    <ClCompile Include="Private\Windows\MessagePumpWin32.cpp" />
     <ClCompile Include="Private\Windows\PathWin32.cpp" />
     <ClCompile Include="Private\Windows\SystemInfoWin32.cpp" />
+    <ClCompile Include="Private\Windows\WindowWin32.cpp" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -7,6 +7,8 @@
 #include "Legacy/LoggingBridge.h"
 #include "Legacy/PointConversion.h"
 
+#include <Platform/MessagePump.h>
+#include <Platform/Window.h>
 #include <Platform/DynamicLibrary.h>
 #include <Platform/Path.h>
 #include <Platform/SystemInfo.h>
@@ -493,6 +495,77 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 	);
 }
 
+#if defined(_WIN64)
+static void ValidatePlatformWindowBridge()
+{
+	static bool validated = false;
+
+	if (validated)
+	{
+		return;
+	}
+
+	validated = true;
+
+	const auto nativeHandle =
+		engine::platform::NativeWindowHandle::FromValue(
+			reinterpret_cast<std::uintptr_t>(
+				win::hWnd));
+
+	engine::platform::Window studioWindow(
+		nativeHandle);
+
+	const engine::platform::WindowSize clientSize =
+		studioWindow.GetClientSize();
+
+	const std::wstring title =
+		studioWindow.GetTitle();
+
+	const bool pendingMessages =
+		engine::platform::MessagePump::
+			HasPendingMessages();
+
+	r3dOutToLog(
+		"[Platform] Window bridge: valid=%d, "
+		"client=%ux%u, visible=%d, minimized=%d, "
+		"maximized=%d, foreground=%d, titleLength=%u\n",
+		studioWindow.IsValid() ? 1 : 0,
+		clientSize.width,
+		clientSize.height,
+		studioWindow.IsVisible() ? 1 : 0,
+		studioWindow.IsMinimized() ? 1 : 0,
+		studioWindow.IsMaximized() ? 1 : 0,
+		studioWindow.IsForeground() ? 1 : 0,
+		static_cast<unsigned int>(
+			title.size()));
+
+	r3dOutToLog(
+		"[Platform] MessagePump foundation: pending=%d\n",
+		pendingMessages ? 1 : 0);
+
+	r3d_assert(
+		studioWindow.IsValid());
+
+	r3d_assert(
+		!clientSize.IsEmpty());
+
+	const engine::platform::NativeWindowHandle detachedHandle =
+		studioWindow.Detach();
+
+	r3d_assert(
+		!studioWindow.IsValid());
+
+	studioWindow.Attach(
+		detachedHandle);
+
+	r3d_assert(
+		studioWindow.IsValid());
+
+	r3dOutToLog(
+		"[Platform] Window attach/detach: success\n");
+}
+#endif
+
 void InitRender(int bUseSet = 0)
 {
 	r_out_of_vmem_encountered->SetChangeCallback( &SaveSettingsCallback ) ;
@@ -574,6 +647,10 @@ void InitRender(int bUseSet = 0)
 
 	ShowWindow(win::hWnd, TRUE);
 	UpdateWindow(win::hWnd);
+
+#if defined(_WIN64)
+	ValidatePlatformWindowBridge();
+#endif
 
 	r3dInitShaders();
 
