@@ -117,6 +117,8 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Math\Color.h" />
+    <ClInclude Include="Public\Math\Matrix4.h" />
+    <ClInclude Include="Public\Math\Quaternion.h" />
     <ClInclude Include="Public\Math\Scalar.h" />
     <ClInclude Include="Public\Math\Vector2.h" />
     <ClInclude Include="Public\Math\Vector3.h" />
@@ -125,6 +127,7 @@
 
   <ItemGroup>
     <ClCompile Include="Private\MathModule.cpp" />
+    <ClCompile Include="Private\Matrix4.cpp" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

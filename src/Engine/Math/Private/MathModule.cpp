@@ -4,6 +4,9 @@
 #include "Math/Vector3.h"
 #include "Math/Vector4.h"
 
+#include "Math/Matrix4.h"
+#include "Math/Quaternion.h"
+
 #include <type_traits>
 
 static_assert(
@@ -111,9 +114,78 @@ static_assert(
     >
 );
 
+static_assert(
+    sizeof(engine::math::Quaternion) ==
+    sizeof(float) * 4U
+);
+
+static_assert(
+    sizeof(engine::math::Matrix4) ==
+    sizeof(float) * 16U
+);
+
+static_assert(
+    std::is_standard_layout_v<
+        engine::math::Quaternion
+    >
+);
+
+static_assert(
+    std::is_standard_layout_v<
+        engine::math::Matrix4
+    >
+);
+
+static_assert(
+    std::is_trivially_copyable_v<
+        engine::math::Quaternion
+    >
+);
+
+static_assert(
+    std::is_trivially_copyable_v<
+        engine::math::Matrix4
+    >
+);
+
 namespace engine::math::detail
 {
     void AnchorMathModule() noexcept
     {
     }
+}
+
+namespace
+{
+    constexpr engine::math::Matrix4 TranslationTest =
+        engine::math::Matrix4::CreateTranslation(
+            {2.0f, 3.0f, 4.0f}
+        );
+
+    constexpr engine::math::Vector3 TranslatedPoint =
+        TranslationTest.TransformPoint(
+            {1.0f, 2.0f, 3.0f}
+        );
+
+    static_assert(TranslatedPoint.x == 3.0f);
+    static_assert(TranslatedPoint.y == 5.0f);
+    static_assert(TranslatedPoint.z == 7.0f);
+
+    constexpr engine::math::Matrix4 CompositionTest =
+        engine::math::Matrix4::CreateScale(
+            {2.0f, 3.0f, 4.0f}
+        ) *
+        engine::math::Matrix4::CreateTranslation(
+            {1.0f, 2.0f, 3.0f}
+        );
+
+    constexpr engine::math::Vector3 ComposedPoint =
+        CompositionTest.TransformPoint(
+            {1.0f, 1.0f, 1.0f}
+        );
+
+    // Сначала scale, затем translation.
+    static_assert(ComposedPoint.x == 3.0f);
+    static_assert(ComposedPoint.y == 5.0f);
+    static_assert(ComposedPoint.z == 7.0f);
 }
