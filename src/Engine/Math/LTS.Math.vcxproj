@@ -116,9 +116,11 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="Public\Math\Color.h" />
     <ClInclude Include="Public\Math\Scalar.h" />
     <ClInclude Include="Public\Math\Vector2.h" />
     <ClInclude Include="Public\Math\Vector3.h" />
+    <ClInclude Include="Public\Math\Vector4.h" />
   </ItemGroup>
 
   <ItemGroup>
