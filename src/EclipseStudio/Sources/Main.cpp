@@ -8,12 +8,14 @@
 #include "Legacy/PointConversion.h"
 
 #include <Platform/MessagePump.h>
+#include <Platform/File.h>
 #include <Platform/Window.h>
 #include <Platform/DynamicLibrary.h>
 #include <Platform/Path.h>
 #include <Platform/SystemInfo.h>
 
 #include <cstdio>
+#include <array>
 #include <string>
 #include <utility>
 #endif
@@ -876,6 +878,108 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 
 CHWInfo g_HardwareInfo;
 
+#if defined(_WIN64)
+static void ValidatePlatformFileFoundation()
+{
+    const engine::platform::Path executablePath =
+        engine::platform::GetExecutablePath();
+
+    engine::platform::File executableFile(
+        executablePath,
+        engine::platform::FileAccess::Read,
+        engine::platform::FileCreation::OpenExisting);
+
+    const bool opened =
+        executableFile.IsOpen();
+
+    const std::optional<std::uint64_t> fileSize =
+        executableFile.GetSize();
+
+    std::array<unsigned char, 2> signature{};
+
+    const engine::platform::FileIoResult readResult =
+        executableFile.Read(
+            signature.data(),
+            signature.size());
+
+    const bool validExecutableSignature =
+        readResult.success &&
+        readResult.bytesTransferred ==
+            signature.size() &&
+        signature[0] == 'M' &&
+        signature[1] == 'Z';
+
+    const bool seekSucceeded =
+        executableFile.Seek(
+            0,
+            engine::platform::FileSeekOrigin::Begin);
+
+    const std::optional<std::uint64_t> position =
+        executableFile.GetPosition();
+
+    const unsigned long long fileSizeValue =
+        static_cast<unsigned long long>(
+            fileSize.value_or(0));
+
+    const unsigned long long positionValue =
+        static_cast<unsigned long long>(
+            position.value_or(
+                static_cast<std::uint64_t>(-1)));
+
+    const unsigned int errorCode =
+        static_cast<unsigned int>(
+            executableFile.GetLastErrorCode());
+
+    r3dOutToLog(
+        "[Platform] File: opened=%d, size=%llu, "
+        "read=%u, signature=%c%c, seek=%d, "
+        "position=%llu, error=%u\n",
+        opened ? 1 : 0,
+        fileSizeValue,
+        static_cast<unsigned int>(
+            readResult.bytesTransferred),
+        signature[0],
+        signature[1],
+        seekSucceeded ? 1 : 0,
+        positionValue,
+        errorCode);
+
+    r3d_assert(opened);
+    r3d_assert(fileSize.has_value());
+    r3d_assert(fileSizeValue > 0);
+    r3d_assert(readResult.success);
+    r3d_assert(validExecutableSignature);
+    r3d_assert(seekSucceeded);
+    r3d_assert(position.has_value());
+    r3d_assert(positionValue == 0);
+
+    engine::platform::File movedFile(
+        std::move(executableFile));
+
+    const bool sourceReleased =
+        !executableFile.IsOpen();
+
+    const bool destinationOwnsFile =
+        movedFile.IsOpen();
+
+    r3dOutToLog(
+        "[Platform] File move: source released=%d, "
+        "destination owns=%d\n",
+        sourceReleased ? 1 : 0,
+        destinationOwnsFile ? 1 : 0);
+
+    r3d_assert(sourceReleased);
+    r3d_assert(destinationOwnsFile);
+
+    movedFile.Close();
+
+    r3d_assert(!movedFile.IsOpen());
+
+    r3dOutToLog(
+        "[Platform] File close: success\n");
+}
+#endif
+
 // This function called by engine before main app window created, before any IO initialized. 
 void game::PreInit()
 {
@@ -1012,6 +1116,8 @@ void game::PreInit()
 
 	r3dOutToLog(
 		"[Platform] DynamicLibrary unload: success\n");
+
+	ValidatePlatformFileFoundation();
 #endif
 
 	u_srand(GetTickCount());
