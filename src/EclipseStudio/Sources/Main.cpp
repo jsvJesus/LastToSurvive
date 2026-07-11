@@ -1872,6 +1872,10 @@ void game::Shutdown()
 
 	ClientGameLogic::DeleteInstance();
 	GameWorld_Destroy();
+
+#if defined(_WIN64)
+	engine::legacy::ShutdownLoggingBridge();
+#endif
 }
 
 
