@@ -3,7 +3,6 @@
 
 #if defined(_WIN64) && defined(LTS_CULLING_PARITY)
 #include "Legacy/CullingConversion.h"
-#include "Legacy/MatrixConversion.h"
 
 #include <atomic>
 #endif
@@ -55,7 +54,7 @@ namespace
         32U;
 
     constexpr unsigned CullingParityPeriodicLogRate =
-        1024U;
+        1000000U;
 
     engine::math::Frustum g_ModernRenderFrustum;
 
@@ -103,60 +102,37 @@ namespace
             ) == 0U;
     }
 
-    void RebuildModernRenderFrustum(
-        const D3DXMATRIX& viewProjection,
-        const bool reversedDepth) noexcept
+	void RebuildModernRenderFrustum(
+	const D3DXPLANE (&planes)[6]) noexcept
     {
-        g_ModernRenderFrustumValid =
-            false;
+    	g_ModernRenderFrustumValid =
+			engine::legacy::ToFrustum(
+				planes,
+				_countof(planes),
+				g_ModernRenderFrustum
+			);
 
-        engine::math::Frustum candidate;
+    	if (g_ModernRenderFrustumValid)
+    	{
+    		return;
+    	}
 
-        const engine::math::Matrix4 modernMatrix =
-            engine::legacy::ToMatrix4(
-                viewProjection
-            );
+    	const unsigned failureNumber =
+			g_ModernFrustumBuildFailureCount.fetch_add(
+				1U,
+				std::memory_order_relaxed
+			) +
+			1U;
 
-        const engine::math::FrustumDepthMode depthMode =
-            reversedDepth
-                ? engine::math::FrustumDepthMode::Reversed
-                : engine::math::FrustumDepthMode::Forward;
-
-        if (
-            !engine::math::Frustum::
-                TryFromViewProjection(
-                    modernMatrix,
-                    candidate,
-                    depthMode
-                )
-        )
-        {
-            const unsigned failureNumber =
-                g_ModernFrustumBuildFailureCount.fetch_add(
-                    1U,
-                    std::memory_order_relaxed
-                ) +
-                1U;
-
-            if (failureNumber <= 4U)
-            {
-                r3dOutToLog(
-                    "[CullingParity] "
-                    "Failed to build modern frustum "
-                    "(failure %u, reversed=%d)\n",
-                    failureNumber,
-                    reversedDepth ? 1 : 0
-                );
-            }
-
-            return;
-        }
-
-        g_ModernRenderFrustum =
-            candidate;
-
-        g_ModernRenderFrustumValid =
-            true;
+    	if (failureNumber <= 4U)
+    	{
+    		r3dOutToLog(
+				"[CullingParity] "
+				"Failed to convert legacy frustum planes "
+				"(failure %u)\n",
+				failureNumber
+			);
+    	}
     }
 
     void CompareSphereCullingParity(
@@ -2731,8 +2707,7 @@ void r3dRenderLayer::SetCamera( const r3dCamera &Cam, bool asDistanceCullReferen
 #if defined(_WIN64) && defined(LTS_CULLING_PARITY)
 
 	RebuildModernRenderFrustum(
-		ViewProjMatrix,
-		ZDir == ZDIR_INVERSED
+		FrustumPlanes
 	);
 
 #endif
@@ -2832,9 +2807,18 @@ void r3dRenderLayer::SetCameraEx(const D3DXMATRIX& view, const D3DXMATRIX& proj,
 	D3DXPlaneFromPoints( &FrustumPlanes[2], &FrustumCorners[2], &FrustumCorners[6], &FrustumCorners[4] ); // Left
 	D3DXPlaneFromPoints( &FrustumPlanes[3], &FrustumCorners[7], &FrustumCorners[3], &FrustumCorners[5] ); // Right
 	D3DXPlaneFromPoints( &FrustumPlanes[4], &FrustumCorners[2], &FrustumCorners[3], &FrustumCorners[6] ); // Top
+	
 	D3DXPlaneFromPoints( &FrustumPlanes[5], &FrustumCorners[1], &FrustumCorners[0], &FrustumCorners[4] ); // Bottom
 
 	CameraPosition = camPos;
+
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	RebuildModernRenderFrustum(
+		FrustumPlanes
+	);
+
+#endif
 }
 
 void r3dRenderLayer::BuildMatrixPerspectiveFovLH( D3DXMATRIX *pOut, FLOAT fovy, FLOAT Aspect, FLOAT zn, FLOAT zf )
