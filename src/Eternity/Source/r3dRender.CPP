@@ -1,6 +1,13 @@
 #include	"r3dPCH.h"
 #include	"r3d.h"
 
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+#include "Legacy/CullingConversion.h"
+#include "Legacy/MatrixConversion.h"
+
+#include <atomic>
+#endif
+
 #pragma warning(disable:4996)
 
 #include <ddraw.h>
@@ -39,6 +46,240 @@ static	int		RModeStackTop;
 float 		__r3dGlobalAspect = 1.0f;
 
 int gResetCount = 0;
+
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+namespace
+{
+    constexpr unsigned CullingParityInitialLogLimit =
+        32U;
+
+    constexpr unsigned CullingParityPeriodicLogRate =
+        1024U;
+
+    engine::math::Frustum g_ModernRenderFrustum;
+
+    bool g_ModernRenderFrustumValid =
+        false;
+
+    std::atomic<unsigned>
+        g_ModernFrustumBuildFailureCount{0U};
+
+    std::atomic<unsigned>
+        g_ModernSphereMismatchCount{0U};
+
+    std::atomic<unsigned>
+        g_ModernBoxMismatchCount{0U};
+
+    [[nodiscard]]
+    VisibilityInfoEnum ToLegacyVisibility(
+        const engine::math::ContainmentType value) noexcept
+    {
+        return static_cast<VisibilityInfoEnum>(
+            engine::legacy::ToLegacyVisibilityValue(
+                value
+            )
+        );
+    }
+
+    [[nodiscard]]
+    bool ShouldLogCullingParityMismatch(
+        std::atomic<unsigned>& counter,
+        unsigned& mismatchNumber) noexcept
+    {
+        mismatchNumber =
+            counter.fetch_add(
+                1U,
+                std::memory_order_relaxed
+            ) +
+            1U;
+
+        return
+            mismatchNumber <=
+                CullingParityInitialLogLimit ||
+            (
+                mismatchNumber %
+                CullingParityPeriodicLogRate
+            ) == 0U;
+    }
+
+    void RebuildModernRenderFrustum(
+        const D3DXMATRIX& viewProjection,
+        const bool reversedDepth) noexcept
+    {
+        g_ModernRenderFrustumValid =
+            false;
+
+        engine::math::Frustum candidate;
+
+        const engine::math::Matrix4 modernMatrix =
+            engine::legacy::ToMatrix4(
+                viewProjection
+            );
+
+        const engine::math::FrustumDepthMode depthMode =
+            reversedDepth
+                ? engine::math::FrustumDepthMode::Reversed
+                : engine::math::FrustumDepthMode::Forward;
+
+        if (
+            !engine::math::Frustum::
+                TryFromViewProjection(
+                    modernMatrix,
+                    candidate,
+                    depthMode
+                )
+        )
+        {
+            const unsigned failureNumber =
+                g_ModernFrustumBuildFailureCount.fetch_add(
+                    1U,
+                    std::memory_order_relaxed
+                ) +
+                1U;
+
+            if (failureNumber <= 4U)
+            {
+                r3dOutToLog(
+                    "[CullingParity] "
+                    "Failed to build modern frustum "
+                    "(failure %u, reversed=%d)\n",
+                    failureNumber,
+                    reversedDepth ? 1 : 0
+                );
+            }
+
+            return;
+        }
+
+        g_ModernRenderFrustum =
+            candidate;
+
+        g_ModernRenderFrustumValid =
+            true;
+    }
+
+    void CompareSphereCullingParity(
+        const char* scope,
+        const VisibilityInfoEnum legacyResult,
+        const engine::math::Frustum& modernFrustum,
+        const r3dPoint3D& center,
+        const float radius) noexcept
+    {
+        const engine::math::Sphere sphere =
+            engine::legacy::ToSphere(
+                center,
+                radius
+            );
+
+        const VisibilityInfoEnum modernResult =
+            ToLegacyVisibility(
+                modernFrustum.Classify(
+                    sphere
+                )
+            );
+
+        if (modernResult == legacyResult)
+        {
+            return;
+        }
+
+        unsigned mismatchNumber = 0U;
+
+        if (
+            !ShouldLogCullingParityMismatch(
+                g_ModernSphereMismatchCount,
+                mismatchNumber
+            )
+        )
+        {
+            return;
+        }
+
+        const bool visibilityChanged =
+            (legacyResult == VI_OUTSIDE) !=
+            (modernResult == VI_OUTSIDE);
+
+        r3dOutToLog(
+            "[CullingParity][Sphere][%s][%s] "
+            "mismatch=%u legacy=%d modern=%d "
+            "center=(%.4f, %.4f, %.4f) radius=%.4f\n",
+            scope,
+            visibilityChanged
+                ? "VISIBILITY"
+                : "CLASSIFICATION",
+            mismatchNumber,
+            static_cast<int>(legacyResult),
+            static_cast<int>(modernResult),
+            center.x,
+            center.y,
+            center.z,
+            radius
+        );
+    }
+
+    void CompareBoxCullingParity(
+        const char* scope,
+        const VisibilityInfoEnum legacyResult,
+        const engine::math::Frustum& modernFrustum,
+        const r3dBoundBox& box) noexcept
+    {
+        const engine::math::BoundingBox modernBox =
+            engine::legacy::ToBoundingBox(
+                box
+            );
+
+        const VisibilityInfoEnum modernResult =
+            ToLegacyVisibility(
+                modernFrustum.Classify(
+                    modernBox
+                )
+            );
+
+        if (modernResult == legacyResult)
+        {
+            return;
+        }
+
+        unsigned mismatchNumber = 0U;
+
+        if (
+            !ShouldLogCullingParityMismatch(
+                g_ModernBoxMismatchCount,
+                mismatchNumber
+            )
+        )
+        {
+            return;
+        }
+
+        const bool visibilityChanged =
+            (legacyResult == VI_OUTSIDE) !=
+            (modernResult == VI_OUTSIDE);
+
+        r3dOutToLog(
+            "[CullingParity][Box][%s][%s] "
+            "mismatch=%u legacy=%d modern=%d "
+            "origin=(%.4f, %.4f, %.4f) "
+            "size=(%.4f, %.4f, %.4f)\n",
+            scope,
+            visibilityChanged
+                ? "VISIBILITY"
+                : "CLASSIFICATION",
+            mismatchNumber,
+            static_cast<int>(legacyResult),
+            static_cast<int>(modernResult),
+            box.Org.x,
+            box.Org.y,
+            box.Org.z,
+            box.Size.x,
+            box.Size.y,
+            box.Size.z
+        );
+    }
+}
+
+#endif
 
 r3dTexture*	__r3dShadeTexture[16];
 #ifndef FINAL_BUILD
@@ -2482,9 +2723,19 @@ void r3dRenderLayer::SetCamera( const r3dCamera &Cam, bool asDistanceCullReferen
 	D3DXPlaneFromPoints( &FrustumPlanes[2], &FrustumCorners[2], &FrustumCorners[6], &FrustumCorners[4] ); // Left
 	D3DXPlaneFromPoints( &FrustumPlanes[3], &FrustumCorners[7], &FrustumCorners[3], &FrustumCorners[5] ); // Right
 	D3DXPlaneFromPoints( &FrustumPlanes[4], &FrustumCorners[2], &FrustumCorners[3], &FrustumCorners[6] ); // Top
+	
 	D3DXPlaneFromPoints( &FrustumPlanes[5], &FrustumCorners[1], &FrustumCorners[0], &FrustumCorners[4] ); // Bottom
 
 	CameraPosition = Cam;
+
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	RebuildModernRenderFrustum(
+		ViewProjMatrix,
+		ZDir == ZDIR_INVERSED
+	);
+
+#endif
 
 	if ( m_CameraStack.Count() )
 	{
@@ -4535,25 +4786,110 @@ R3D_FORCEINLINE VisibilityInfoEnum r3dRenderLayer::IsSphereInsideFrustum_PARABOL
 
 //////////////////////////////////////////////////////////////////////////
 
-VisibilityInfoEnum r3dRenderLayer::IsSphereInsideCustomFrustum(const r3dPoint3D& c, float r, const D3DXPLANE (&planes)[6])
+VisibilityInfoEnum
+r3dRenderLayer::IsSphereInsideCustomFrustum(
+	const r3dPoint3D& center,
+	const float radius,
+	const D3DXPLANE (&planes)[6]
+)
 {
-	return IsSphereInsideFrustum_NORMAL( c, r, planes ) ;
+	const VisibilityInfoEnum legacyResult =
+		IsSphereInsideFrustum_NORMAL(
+			center,
+			radius,
+			planes
+		);
+
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	engine::math::Frustum modernFrustum;
+
+	if (
+		engine::legacy::ToFrustum(
+			planes,
+			_countof(planes),
+			modernFrustum
+		)
+	)
+	{
+		CompareSphereCullingParity(
+			"Custom",
+			legacyResult,
+			modernFrustum,
+			center,
+			radius
+		);
+	}
+
+#endif
+
+	return legacyResult;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-VisibilityInfoEnum r3dRenderLayer::IsSphereInsideFrustum(const r3dPoint3D& c, float r)
+VisibilityInfoEnum
+r3dRenderLayer::IsSphereInsideFrustum(
+	const r3dPoint3D& center,
+	const float radius
+)
 {
-	switch( FrustumType )
+	VisibilityInfoEnum legacyResult =
+		VI_INSIDE;
+
+	switch (FrustumType)
 	{
 	case R3D_FRUSTUM_NORMAL:
-		return IsSphereInsideFrustum_NORMAL( c, r, FrustumPlanes ) ;
+		{
+			legacyResult =
+				IsSphereInsideFrustum_NORMAL(
+					center,
+					radius,
+					FrustumPlanes
+				);
+
+			break;
+		}
+
 	case R3D_FRUSTUM_PARABOLOID:
-		return IsSphereInsideFrustum_PARABOLOID( c, r, FrustumPlanes ) ;
+		{
+			legacyResult =
+				IsSphereInsideFrustum_PARABOLOID(
+					center,
+					radius,
+					FrustumPlanes
+				);
+
+			break;
+		}
+
+	default:
+		{
+			r3d_assert(false);
+			return VI_INSIDE;
+		}
 	}
 
-	r3d_assert( false ) ;
-	return VI_INSIDE ;
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	if (
+		FrustumType ==
+			R3D_FRUSTUM_NORMAL &&
+		g_ModernRenderFrustumValid
+	)
+	{
+		CompareSphereCullingParity(
+			"Main",
+			legacyResult,
+			g_ModernRenderFrustum,
+			center,
+			radius
+		);
+	}
+
+#endif
+
+	return legacyResult;
 }
 
 R3D_FORCEINLINE VisibilityInfoEnum r3dRenderLayer::IsBoxInsideFrustum_NORMAL(const r3dBoundBox& BBox, const D3DXPLANE (&planes)[6])
@@ -4656,32 +4992,71 @@ R3D_FORCEINLINE VisibilityInfoEnum r3dRenderLayer::IsBoxInsideFrustum_PARABOLOID
 
 //////////////////////////////////////////////////////////////////////////
 
-VisibilityInfoEnum r3dRenderLayer::IsBoxInsideCustomFrustum(const r3dBoundBox& BBox, const D3DXPLANE (&planes)[6])
+VisibilityInfoEnum
+r3dRenderLayer::IsBoxInsideCustomFrustum(
+	const r3dBoundBox& box,
+	const D3DXPLANE (&planes)[6]
+)
 {
-	return IsBoxInsideFrustum_NORMAL(BBox, planes);
+	const VisibilityInfoEnum legacyResult =
+		IsBoxInsideFrustum_NORMAL(
+			box,
+			planes
+		);
+
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	engine::math::Frustum modernFrustum;
+
+	if (
+		engine::legacy::ToFrustum(
+			planes,
+			_countof(planes),
+			modernFrustum
+		)
+	)
+	{
+		CompareBoxCullingParity(
+			"Custom",
+			legacyResult,
+			modernFrustum,
+			box
+		);
+	}
+
+#endif
+
+	return legacyResult;
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-VisibilityInfoEnum r3dRenderLayer::IsBoxInsideFrustum(const r3dBoundBox& BBox)
+VisibilityInfoEnum
+r3dRenderLayer::IsBoxInsideFrustum(
+	const r3dBoundBox& box
+)
 {
-#if 0
-	switch( FrustumType )
-	{
-	case R3D_FRUSTUM_NORMAL:
-		return IsBoxInsideFrustum_NORMAL2( BBox ) ;
-		break ;
+	const VisibilityInfoEnum legacyResult =
+		IsBoxInsideFrustum_NORMAL(
+			box,
+			FrustumPlanes
+		);
 
-	case R3D_FRUSTUM_PARABOLOID:
-		return IsBoxInsideFrustum_PARABOLOID( BBox ) ;
-		break ;
+#if defined(_WIN64) && defined(LTS_CULLING_PARITY)
+
+	if (g_ModernRenderFrustumValid)
+	{
+		CompareBoxCullingParity(
+			"Main",
+			legacyResult,
+			g_ModernRenderFrustum,
+			box
+		);
 	}
 
-	r3d_assert( false ) ;
-	return VI_INSIDE ;
-#else
-	return IsBoxInsideFrustum_NORMAL(BBox, FrustumPlanes);
 #endif
+
+	return legacyResult;
 }
 
 bool r3dRenderLayer::DoesBoxIntersectNearPlane(const r3dBoundBox& BBox)
