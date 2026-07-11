@@ -15,7 +15,8 @@
             %(AdditionalIncludeDirectories)
         </AdditionalIncludeDirectories>
         <PreprocessorDefinitions>
-            LTS_CULLING_PARITY=1;
+            LTS_CULLING_MODERN=1;
+            LTS_CULLING_PARITY=0;
             WIN32;
             WIN64;
             _WIN64;
