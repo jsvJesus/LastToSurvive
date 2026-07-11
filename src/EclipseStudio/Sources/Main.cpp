@@ -1,5 +1,10 @@
 ﻿#include "r3dPCH.h"
 #include "r3d.h"
+
+#if defined(_WIN64)
+#include "Core/Version.h"
+#endif
+
 #include "r3dNetwork.h"
 #include "shellapi.h"
 #include "resource.h"
@@ -786,7 +791,57 @@ CHWInfo g_HardwareInfo;
 // This function called by engine before main app window created, before any IO initialized. 
 void game::PreInit()
 {
+#if defined(_WIN64)
+	const engine::core::Version CoreVersion =
+		engine::core::GetEngineVersion();
+
+	r3dOutToLog(
+		"[Core] Module initialized: %u.%u.%u.%u\n",
+		static_cast<unsigned>(CoreVersion.major),
+		static_cast<unsigned>(CoreVersion.minor),
+		static_cast<unsigned>(CoreVersion.patch),
+		static_cast<unsigned>(CoreVersion.build)
+	);
+#endif
+
 	u_srand(GetTickCount());
+
+	g_HardwareInfo.Grab();
+
+	win::hWinIcon =
+		::LoadIcon(
+			win::hInstance,
+			MAKEINTRESOURCE(IDI_WARZ)
+		);
+
+	win::szWinName = GetApplicationWindowTitle();
+
+#ifdef FINAL_BUILD
+	win::hWinIcon =
+		::LoadIcon(
+			win::hInstance,
+			MAKEINTRESOURCE(IDI_WARZ)
+		);
+
+	if (
+		strstr(__r3dCmdLine, "-WOUpdatedOk") == NULL &&
+		strstr(__r3dCmdLine, "-gna") == NULL
+	)
+	{
+		MessageBox(
+			NULL,
+			"Please run WarZ launcher.",
+			g_szApplicationName,
+			MB_OK
+		);
+
+		ExitProcess(0);
+	}
+#endif
+
+#ifdef _DEBUG
+	r3dOutToLog("cmd: %s\n", __r3dCmdLine);
+#endif
 
 	g_HardwareInfo.Grab();
 
