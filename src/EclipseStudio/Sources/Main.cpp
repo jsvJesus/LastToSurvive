@@ -2,7 +2,11 @@
 #include "r3d.h"
 
 #if defined(_WIN64)
+#include "Core/Log.h"
 #include "Core/Version.h"
+#include "Legacy/LoggingBridge.h"
+
+#include <cstdio>
 #endif
 
 #include "r3dNetwork.h"
@@ -792,15 +796,27 @@ CHWInfo g_HardwareInfo;
 void game::PreInit()
 {
 #if defined(_WIN64)
-	const engine::core::Version CoreVersion =
+	engine::legacy::InitializeLoggingBridge();
+
+	const engine::core::Version coreVersion =
 		engine::core::GetEngineVersion();
 
-	r3dOutToLog(
-		"[Core] Module initialized: %u.%u.%u.%u\n",
-		static_cast<unsigned>(CoreVersion.major),
-		static_cast<unsigned>(CoreVersion.minor),
-		static_cast<unsigned>(CoreVersion.patch),
-		static_cast<unsigned>(CoreVersion.build)
+	char versionMessage[128] = {};
+
+	std::snprintf(
+		versionMessage,
+		sizeof(versionMessage),
+		"Module initialized: %u.%u.%u.%u",
+		static_cast<unsigned>(coreVersion.major),
+		static_cast<unsigned>(coreVersion.minor),
+		static_cast<unsigned>(coreVersion.patch),
+		static_cast<unsigned>(coreVersion.build)
+	);
+
+	engine::core::GetLogger().Write(
+		engine::core::LogLevel::Information,
+		"Core",
+		versionMessage
 	);
 #endif
 

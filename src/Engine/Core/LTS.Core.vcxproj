@@ -195,11 +195,13 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Core\BuildConfig.h" />
+    <ClInclude Include="Public\Core\Log.h" />
     <ClInclude Include="Public\Core\Logger.h" />
     <ClInclude Include="Public\Core\Version.h" />
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Private\Log.cpp" />
     <ClCompile Include="Private\Logger.cpp" />
     <ClCompile Include="Private\Version.cpp" />
   </ItemGroup>

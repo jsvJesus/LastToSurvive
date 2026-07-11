@@ -166,6 +166,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>
         ..\Engine\Core\Public;
+        ..\Engine\Legacy\Public;
         $(WindowsSDK_IncludePath);
         ..\..\External;
         ..\..\External\PhysX\physx\include;
@@ -1078,6 +1079,23 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
   <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ProjectReference Include="..\Engine\Core\LTS.Core.vcxproj">
       <Project>{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ProjectReference Include="..\Engine\Core\LTS.Core.vcxproj">
+      <Project>
+        {A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}
+      </Project>
+
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Legacy\LTS.Legacy.vcxproj">
+      <Project>
+        {D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}
+      </Project>
+
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
