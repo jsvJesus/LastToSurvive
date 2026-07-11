@@ -115,11 +115,13 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Legacy\CullingConversion.h" />
     <ClInclude Include="Public\Legacy\LoggingBridge.h" />
     <ClInclude Include="Public\Legacy\MatrixConversion.h" />
     <ClInclude Include="Public\Legacy\PointConversion.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Private\CullingConversion.cpp" />
     <ClCompile Include="Private\LoggingBridge.cpp" />
     <ClCompile Include="Private\MatrixConversion.cpp" />
   </ItemGroup>

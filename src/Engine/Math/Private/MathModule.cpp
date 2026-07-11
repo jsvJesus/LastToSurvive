@@ -15,6 +15,8 @@
 #include "Math/Ray.h"
 #include "Math/Sphere.h"
 
+#include "Math/Frustum.h"
+
 #include <type_traits>
 
 static_assert(
@@ -239,6 +241,42 @@ static_assert(
     std::is_trivially_copyable_v<
         engine::math::BoundingBox
     >
+);
+
+static_assert(
+    sizeof(engine::math::Frustum) ==
+    sizeof(engine::math::Plane) *
+    engine::math::FrustumPlaneCount
+);
+
+static_assert(
+    std::is_standard_layout_v<
+        engine::math::Frustum
+    >
+);
+
+static_assert(
+    std::is_trivially_copyable_v<
+        engine::math::Frustum
+    >
+);
+
+static_assert(
+    static_cast<std::uint8_t>(
+        engine::math::ContainmentType::Outside
+    ) == 0U
+);
+
+static_assert(
+    static_cast<std::uint8_t>(
+        engine::math::ContainmentType::Inside
+    ) == 1U
+);
+
+static_assert(
+    static_cast<std::uint8_t>(
+        engine::math::ContainmentType::Intersecting
+    ) == 2U
 );
 
 namespace engine::math::detail

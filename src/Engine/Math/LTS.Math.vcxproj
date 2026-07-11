@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="Public\Math\BoundingBox.h" />
     <ClInclude Include="Public\Math\Color.h" />
+    <ClInclude Include="Public\Math\Frustum.h" />
     <ClInclude Include="Public\Math\Intersection.h" />
     <ClInclude Include="Public\Math\Matrix4.h" />
     <ClInclude Include="Public\Math\Plane.h" />
@@ -132,6 +133,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Private\Frustum.cpp" />
     <ClCompile Include="Private\Intersection.cpp" />
     <ClCompile Include="Private\MathModule.cpp" />
     <ClCompile Include="Private\Matrix4.cpp" />
