@@ -124,6 +124,8 @@ packages/
 # Keep only selected runtime data under root bin
 !/bin/
 /bin/*
+!/tools/
+/tools/*
 !/bin/Data/
 /bin/Data/*
 !/bin/Data/Rml/
