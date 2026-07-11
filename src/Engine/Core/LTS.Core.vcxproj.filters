@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{C46015BE-41F4-4892-A223-8BB9D39B6C19}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Private">
+      <UniqueIdentifier>{824574CE-2619-4F47-8868-9B413C96F20D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Core\BuildConfig.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Core\Logger.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Core\Version.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\Logger.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\Version.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+</Project>

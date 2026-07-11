@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SupervisorServer", "..\..\s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameServer", "..\..\server\WO_GameServer\GameServer.vcxproj", "{32AD275B-9E09-431E-94D7-41780F91B239}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Core", "..\Engine\Core\LTS.Core.vcxproj", "{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -77,6 +79,16 @@ Global
 		{32AD275B-9E09-431E-94D7-41780F91B239}.Release|Win32.Build.0 = Release|Win32
 		{32AD275B-9E09-431E-94D7-41780F91B239}.Release|x64.ActiveCfg = Release|x64
 		{32AD275B-9E09-431E-94D7-41780F91B239}.Release|x64.Build.0 = Release|x64
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Debug|Win32.ActiveCfg = Debug|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Debug|Win32.Build.0 = Debug|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Final|Win32.ActiveCfg = Debug|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Final|Win32.Build.0 = Debug|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Release|Win32.ActiveCfg = Release|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Release|Win32.Build.0 = Release|Win32
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Release|x64.ActiveCfg = Release|x64
+		{95D2DE2E-3365-4CAB-86DF-7B7CF0227857}.Release|x64.Build.0 = Release|x64
+		{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}.Release|x64.ActiveCfg = Release|x64
+        {A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
