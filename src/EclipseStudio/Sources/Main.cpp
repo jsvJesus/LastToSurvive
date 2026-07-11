@@ -13,10 +13,12 @@
 #include <Platform/DynamicLibrary.h>
 #include <Platform/Path.h>
 #include <Platform/SystemInfo.h>
+#include <Platform/Process.h>
 
 #include <cstdio>
 #include <array>
 #include <string>
+#include <optional>
 #include <utility>
 #endif
 
@@ -978,6 +980,102 @@ static void ValidatePlatformFileFoundation()
     r3dOutToLog(
         "[Platform] File close: success\n");
 }
+
+static void ValidatePlatformProcessFoundation()
+{
+    const std::uint32_t currentProcessId =
+        engine::platform::GetCurrentProcessId();
+
+    const engine::platform::Path currentProcessPath =
+        engine::platform::GetCurrentProcessPath();
+
+    engine::platform::ProcessStartInfo startInfo;
+    startInfo.executablePath = L"cmd.exe";
+    startInfo.arguments =
+        L"/D /S /C \"exit 37\"";
+    startInfo.windowMode =
+        engine::platform::ProcessWindowMode::NoWindow;
+
+    engine::platform::Process childProcess;
+
+    const bool started =
+        childProcess.Start(startInfo);
+
+    const std::uint32_t childProcessId =
+        childProcess.GetId();
+
+    engine::platform::Process movedProcess(
+        std::move(childProcess));
+
+    const bool sourceReleased =
+        !childProcess.IsValid();
+
+    const bool destinationOwnsProcess =
+        movedProcess.IsValid();
+
+    r3dOutToLog(
+        "[Platform] Process: currentId=%u, "
+        "currentPathValid=%d, started=%d, childId=%u, "
+        "source released=%d, destination owns=%d\n",
+        static_cast<unsigned int>(
+            currentProcessId),
+        currentProcessPath.empty() ? 0 : 1,
+        started ? 1 : 0,
+        static_cast<unsigned int>(
+            childProcessId),
+        sourceReleased ? 1 : 0,
+        destinationOwnsProcess ? 1 : 0);
+
+    r3d_assert(currentProcessId != 0);
+    r3d_assert(!currentProcessPath.empty());
+    r3d_assert(started);
+    r3d_assert(childProcessId != 0);
+    r3d_assert(sourceReleased);
+    r3d_assert(destinationOwnsProcess);
+
+    const engine::platform::ProcessWaitResult waitResult =
+        movedProcess.Wait(5000);
+
+    const std::optional<std::uint32_t> exitCode =
+        movedProcess.GetExitCode();
+
+    const bool running =
+        movedProcess.IsRunning();
+
+    const unsigned int exitCodeValue =
+        static_cast<unsigned int>(
+            exitCode.value_or(
+                0xFFFFFFFFu));
+
+    const unsigned int errorCode =
+        static_cast<unsigned int>(
+            movedProcess.GetLastErrorCode());
+
+    r3dOutToLog(
+        "[Platform] Process wait: result=%s, "
+        "exitCode=%u, running=%d, error=%u\n",
+        engine::platform::ToString(
+            waitResult),
+        exitCodeValue,
+        running ? 1 : 0,
+        errorCode);
+
+    r3d_assert(
+        waitResult ==
+        engine::platform::ProcessWaitResult::Completed);
+
+    r3d_assert(exitCode.has_value());
+    r3d_assert(exitCodeValue == 37);
+    r3d_assert(!running);
+    r3d_assert(errorCode == 0);
+
+    movedProcess.Close();
+
+    r3d_assert(!movedProcess.IsValid());
+
+    r3dOutToLog(
+        "[Platform] Process close: success\n");
+}
 #endif
 
 // This function called by engine before main app window created, before any IO initialized. 
@@ -1118,6 +1216,7 @@ void game::PreInit()
 		"[Platform] DynamicLibrary unload: success\n");
 
 	ValidatePlatformFileFoundation();
+	ValidatePlatformProcessFoundation();
 #endif
 
 	u_srand(GetTickCount());
