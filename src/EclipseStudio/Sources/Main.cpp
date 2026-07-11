@@ -7,13 +7,14 @@
 #include "Legacy/LoggingBridge.h"
 #include "Legacy/PointConversion.h"
 
+#include <Platform/DynamicLibrary.h>
 #include <Platform/Path.h>
 #include <Platform/SystemInfo.h>
 
 #include <cstdio>
-#endif
-
 #include <string>
+#include <utility>
+#endif
 
 #include "r3dNetwork.h"
 #include "shellapi.h"
@@ -885,6 +886,55 @@ void game::PreInit()
 	r3dOutToLog(
 		"[Platform] Executable: %s\n",
 		executablePathUtf8.c_str());
+
+	engine::platform::DynamicLibrary systemLibrary;
+
+	const bool libraryLoaded =
+		systemLibrary.Load(L"kernel32.dll");
+
+	const bool functionFound =
+		libraryLoaded &&
+		systemLibrary.HasFunction(
+			"GetCurrentProcessId");
+
+	const unsigned int loadError =
+		static_cast<unsigned int>(
+			systemLibrary.GetLastErrorCode());
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary: loaded=%d, "
+		"GetCurrentProcessId=%d, error=%u\n",
+		libraryLoaded ? 1 : 0,
+		functionFound ? 1 : 0,
+		loadError);
+
+	r3d_assert(libraryLoaded);
+	r3d_assert(functionFound);
+
+	engine::platform::DynamicLibrary movedLibrary(
+		std::move(systemLibrary));
+
+	const bool sourceReleased =
+		!systemLibrary.IsLoaded();
+
+	const bool destinationOwnsLibrary =
+		movedLibrary.IsLoaded();
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary move: "
+		"source released=%d, destination owns=%d\n",
+		sourceReleased ? 1 : 0,
+		destinationOwnsLibrary ? 1 : 0);
+
+	r3d_assert(sourceReleased);
+	r3d_assert(destinationOwnsLibrary);
+
+	movedLibrary.Unload();
+
+	r3d_assert(!movedLibrary.IsLoaded());
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary unload: success\n");
 #endif
 
 	u_srand(GetTickCount());
