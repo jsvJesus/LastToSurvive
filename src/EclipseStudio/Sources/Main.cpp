@@ -7,8 +7,13 @@
 #include "Legacy/LoggingBridge.h"
 #include "Legacy/PointConversion.h"
 
+#include <Platform/Path.h>
+#include <Platform/SystemInfo.h>
+
 #include <cstdio>
 #endif
+
+#include <string>
 
 #include "r3dNetwork.h"
 #include "shellapi.h"
@@ -852,6 +857,34 @@ void game::PreInit()
 		"Core",
 		versionMessage
 	);
+
+	const engine::platform::SystemInfo platformInfo =
+		engine::platform::QuerySystemInfo();
+
+	const engine::platform::Path executablePath =
+		engine::platform::GetExecutablePath();
+
+	const std::string executablePathUtf8 =
+		executablePath.u8string();
+
+	constexpr unsigned long long bytesPerMegabyte =
+		1024ull * 1024ull;
+
+	const unsigned long long totalMemoryMegabytes =
+		static_cast<unsigned long long>(
+			platformInfo.totalPhysicalMemoryBytes / bytesPerMegabyte);
+
+	r3dOutToLog(
+		"[Platform] Module initialized: architecture=%s, "
+		"logical processors=%u, page size=%u, memory=%llu MB\n",
+		engine::platform::ToString(platformInfo.architecture),
+		platformInfo.logicalProcessorCount,
+		platformInfo.pageSize,
+		totalMemoryMegabytes);
+
+	r3dOutToLog(
+		"[Platform] Executable: %s\n",
+		executablePathUtf8.c_str());
 #endif
 
 	u_srand(GetTickCount());

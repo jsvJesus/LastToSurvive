@@ -168,6 +168,7 @@
         ..\Engine\Core\Public;
         ..\Engine\Math\Public;
         ..\Engine\Legacy\Public;
+        ..\Engine\Platform\Public;
         $(WindowsSDK_IncludePath);
         ..\..\External;
         ..\..\External\PhysX\physx\include;
@@ -1091,6 +1092,10 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ProjectReference Include="..\Engine\Legacy\LTS.Legacy.vcxproj">
       <Project>{D64C6B88-0FA6-4EE3-9706-8D3DB3C92031}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Platform\LTS.Platform.vcxproj">
+      <Project>{B1C3E5A7-9D2F-4F6A-8B10-2C4D6E8F1357}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

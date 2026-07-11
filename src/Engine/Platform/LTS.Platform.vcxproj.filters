@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{66C817D4-B5EA-4E8F-89B8-C922B8CE81D2}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Public\Platform">
+      <UniqueIdentifier>{6EB99D0F-C248-4541-B120-1FFBB825BF57}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Private">
+      <UniqueIdentifier>{DE252104-5C97-480B-BD28-95C5C01B27A1}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Private\Windows">
+      <UniqueIdentifier>{BA743E28-A8D6-4752-9DFB-7D5D7AF30F87}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Platform\Path.h">
+      <Filter>Public\Platform</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Platform\SystemInfo.h">
+      <Filter>Public\Platform</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\Windows\PathWin32.cpp">
+      <Filter>Private\Windows</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\Windows\SystemInfoWin32.cpp">
+      <Filter>Private\Windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
