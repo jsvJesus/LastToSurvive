@@ -6,6 +6,7 @@
 
 #include "Math/Matrix4.h"
 #include "Math/Quaternion.h"
+#include "Math/Transform.h"
 
 #include <type_traits>
 
@@ -145,6 +146,23 @@ static_assert(
 static_assert(
     std::is_trivially_copyable_v<
         engine::math::Matrix4
+    >
+);
+
+static_assert(
+    sizeof(engine::math::Transform) ==
+    sizeof(float) * 10U
+);
+
+static_assert(
+    std::is_standard_layout_v<
+        engine::math::Transform
+    >
+);
+
+static_assert(
+    std::is_trivially_copyable_v<
+        engine::math::Transform
     >
 );
 

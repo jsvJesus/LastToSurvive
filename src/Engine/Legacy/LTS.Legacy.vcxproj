@@ -116,10 +116,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\Legacy\LoggingBridge.h" />
+    <ClInclude Include="Public\Legacy\MatrixConversion.h" />
     <ClInclude Include="Public\Legacy\PointConversion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\LoggingBridge.cpp" />
+    <ClCompile Include="Private\MatrixConversion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\LTS.Core.vcxproj">

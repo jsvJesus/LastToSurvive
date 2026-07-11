@@ -340,6 +340,29 @@ namespace engine::math
         }
 
         [[nodiscard]]
+        constexpr bool IsAffine(
+            const float epsilon = DefaultEpsilon) const noexcept
+        {
+            return
+                NearlyEqual(m[0][3], 0.0f, epsilon) &&
+                NearlyEqual(m[1][3], 0.0f, epsilon) &&
+                NearlyEqual(m[2][3], 0.0f, epsilon) &&
+                NearlyEqual(m[3][3], 1.0f, epsilon);
+        }
+
+        [[nodiscard]]
+        bool TryInverse(
+            Matrix4& inverse,
+            float epsilon = DefaultEpsilon) const noexcept;
+
+        [[nodiscard]]
+        bool Decompose(
+            Vector3& translation,
+            Quaternion& rotation,
+            Vector3& scale,
+            float epsilon = DefaultEpsilon) const noexcept;
+
+        [[nodiscard]]
         constexpr bool IsNearlyEqual(
             const Matrix4& other,
             const float epsilon = DefaultEpsilon) const noexcept
