@@ -8,14 +8,15 @@
 #include "Legacy/PointConversion.h"
 
 #include <Platform/Clock.h>
-#include <Platform/Thread.h>
-#include <Platform/MessagePump.h>
-#include <Platform/File.h>
-#include <Platform/Window.h>
 #include <Platform/DynamicLibrary.h>
+#include <Platform/File.h>
+#include <Platform/MessagePump.h>
 #include <Platform/Path.h>
-#include <Platform/SystemInfo.h>
 #include <Platform/Process.h>
+#include <Platform/SystemInfo.h>
+#include <Platform/Synchronization.h>
+#include <Platform/Thread.h>
+#include <Platform/Window.h>
 
 #include <cstdio>
 #include <array>
@@ -569,6 +570,180 @@ static void ValidatePlatformWindowBridge()
 
 	r3dOutToLog(
 		"[Platform] Window attach/detach: success\n");
+}
+
+static void ValidatePlatformSynchronizationFoundation()
+{
+    engine::platform::Mutex mutex;
+
+    {
+        engine::platform::MutexLockGuard lock(
+            mutex);
+    }
+
+    const bool mutexTryLockSucceeded =
+        mutex.TryLock();
+
+    if (mutexTryLockSucceeded)
+    {
+        mutex.Unlock();
+    }
+
+    engine::platform::Event manualEvent(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    const engine::platform::WaitResult
+        manualInitialWait =
+            manualEvent.Wait(0);
+
+    const bool manualSignalSucceeded =
+        manualEvent.Signal();
+
+    const engine::platform::WaitResult
+        manualFirstWait =
+            manualEvent.Wait(0);
+
+    const engine::platform::WaitResult
+        manualSecondWait =
+            manualEvent.Wait(0);
+
+    const bool manualResetSucceeded =
+        manualEvent.Reset();
+
+    const engine::platform::WaitResult
+        manualAfterResetWait =
+            manualEvent.Wait(0);
+
+    engine::platform::Event automaticEvent(
+        engine::platform::EventResetMode::Automatic,
+        true);
+
+    const engine::platform::WaitResult
+        automaticFirstWait =
+            automaticEvent.Wait(0);
+
+    const engine::platform::WaitResult
+        automaticSecondWait =
+            automaticEvent.Wait(0);
+
+    engine::platform::Semaphore semaphore(
+        0,
+        2);
+
+    const engine::platform::WaitResult
+        semaphoreInitialWait =
+            semaphore.Wait(0);
+
+    const bool semaphoreReleaseSucceeded =
+        semaphore.Release(2);
+
+    const engine::platform::WaitResult
+        semaphoreFirstWait =
+            semaphore.Wait(0);
+
+    const engine::platform::WaitResult
+        semaphoreSecondWait =
+            semaphore.Wait(0);
+
+    const engine::platform::WaitResult
+        semaphoreThirdWait =
+            semaphore.Wait(0);
+
+    r3dOutToLog(
+        "[Platform] Mutex: tryLock=%d\n",
+        mutexTryLockSucceeded ? 1 : 0);
+
+    r3dOutToLog(
+        "[Platform] ManualEvent: valid=%d, "
+        "initial=%s, signal=%d, first=%s, "
+        "second=%s, reset=%d, afterReset=%s, "
+        "error=%u\n",
+        manualEvent.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            manualInitialWait),
+        manualSignalSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            manualFirstWait),
+        engine::platform::ToString(
+            manualSecondWait),
+        manualResetSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            manualAfterResetWait),
+        static_cast<unsigned int>(
+            manualEvent.GetLastErrorCode()));
+
+    r3dOutToLog(
+        "[Platform] AutomaticEvent: valid=%d, "
+        "first=%s, second=%s, error=%u\n",
+        automaticEvent.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            automaticFirstWait),
+        engine::platform::ToString(
+            automaticSecondWait),
+        static_cast<unsigned int>(
+            automaticEvent.GetLastErrorCode()));
+
+    r3dOutToLog(
+        "[Platform] Semaphore: valid=%d, "
+        "initial=%s, release=%d, first=%s, "
+        "second=%s, third=%s, error=%u\n",
+        semaphore.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            semaphoreInitialWait),
+        semaphoreReleaseSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            semaphoreFirstWait),
+        engine::platform::ToString(
+            semaphoreSecondWait),
+        engine::platform::ToString(
+            semaphoreThirdWait),
+        static_cast<unsigned int>(
+            semaphore.GetLastErrorCode()));
+
+    r3d_assert(mutexTryLockSucceeded);
+
+    r3d_assert(manualEvent.IsValid());
+    r3d_assert(
+        manualInitialWait ==
+        engine::platform::WaitResult::Timeout);
+    r3d_assert(manualSignalSucceeded);
+    r3d_assert(
+        manualFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        manualSecondWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(manualResetSucceeded);
+    r3d_assert(
+        manualAfterResetWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(automaticEvent.IsValid());
+    r3d_assert(
+        automaticFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        automaticSecondWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(semaphore.IsValid());
+    r3d_assert(
+        semaphoreInitialWait ==
+        engine::platform::WaitResult::Timeout);
+    r3d_assert(semaphoreReleaseSucceeded);
+    r3d_assert(
+        semaphoreFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        semaphoreSecondWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        semaphoreThirdWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3dOutToLog(
+        "[Platform] Synchronization foundation: success\n");
 }
 #endif
 
@@ -1291,6 +1466,7 @@ void game::PreInit()
 	ValidatePlatformFileFoundation();
 	ValidatePlatformProcessFoundation();
 	ValidatePlatformClockAndThreadFoundation();
+	ValidatePlatformSynchronizationFoundation();
 #endif
 
 	u_srand(GetTickCount());
