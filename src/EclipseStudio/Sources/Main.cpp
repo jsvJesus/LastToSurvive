@@ -27,9 +27,13 @@
 #include <Tasks/TaskFence.h>
 #include <Tasks/JobSystem.h>
 
+#include <Runtime/Engine.h>
+#include <Runtime/RuntimeModule.h>
+
 #include <atomic>
 #include <cstdio>
 #include <array>
+#include <memory>
 #include <string>
 #include <optional>
 #include <utility>
@@ -2081,6 +2085,385 @@ static void ValidatePlatformInputFoundation()
 
     r3d_assert(frameResetSucceeded);
 }
+
+namespace
+{
+    struct RuntimeValidationService final
+    {
+        std::uint32_t value = 42;
+    };
+
+    struct RuntimeValidationTrace final
+    {
+        std::array<std::uint32_t, 16> values{};
+
+        std::size_t count = 0;
+
+        void Push(
+            const std::uint32_t value) noexcept
+        {
+            if (count < values.size())
+            {
+                values[count] = value;
+                ++count;
+            }
+        }
+    };
+
+    class RuntimeValidationModule final
+        : public engine::runtime::RuntimeModule
+    {
+    public:
+        RuntimeValidationModule(
+            const std::uint32_t moduleId,
+            RuntimeValidationTrace& trace,
+            RuntimeValidationService* service,
+            const bool registerService,
+            const bool requireService) noexcept
+            : moduleId_(moduleId),
+              trace_(trace),
+              service_(service),
+              registerService_(registerService),
+              requireService_(requireService)
+        {
+        }
+
+        const char*
+            GetName() const noexcept override
+        {
+            return moduleId_ == 1
+                ? "Validation.ModuleA"
+                : "Validation.ModuleB";
+        }
+
+        bool Initialize(
+            engine::runtime::Engine& engine) override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 1);
+
+            if (requireService_)
+            {
+                RuntimeValidationService* const
+                    registeredService =
+                        engine.GetServices().
+                            TryGet<
+                                RuntimeValidationService>();
+
+                if (
+                    registeredService == nullptr ||
+                    registeredService->value != 42
+                )
+                {
+                    return false;
+                }
+            }
+
+            if (registerService_)
+            {
+                if (
+                    service_ == nullptr ||
+                    !engine.GetServices().
+                        Register<
+                            RuntimeValidationService>(
+                                *service_)
+                )
+                {
+                    return false;
+                }
+            }
+
+            initialized_ = true;
+
+            return true;
+        }
+
+        void Shutdown(
+            engine::runtime::Engine& engine) noexcept override
+        {
+            if (!initialized_)
+            {
+                return;
+            }
+
+            trace_.Push(
+                moduleId_ * 10 + 4);
+
+            if (
+                registerService_ &&
+                service_ != nullptr
+            )
+            {
+                (void)engine.GetServices().
+                    Unregister<
+                        RuntimeValidationService>(
+                            service_);
+            }
+
+            initialized_ = false;
+        }
+
+        void BeginFrame(
+            engine::runtime::Engine&,
+            const engine::runtime::
+                FrameContext&) noexcept override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 2);
+        }
+
+        void EndFrame(
+            engine::runtime::Engine&,
+            const engine::runtime::
+                FrameContext&) noexcept override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 3);
+        }
+
+    private:
+        std::uint32_t moduleId_ = 0;
+
+        RuntimeValidationTrace& trace_;
+
+        RuntimeValidationService* service_ =
+            nullptr;
+
+        bool registerService_ = false;
+
+        bool requireService_ = false;
+
+        bool initialized_ = false;
+    };
+}
+
+static void ValidateRuntimeFoundation()
+{
+    RuntimeValidationTrace trace;
+
+    RuntimeValidationService service;
+
+    engine::runtime::Engine engine;
+
+    const bool firstModuleAdded =
+        engine.AddModule(
+            std::make_unique<
+                RuntimeValidationModule>(
+                    1,
+                    trace,
+                    &service,
+                    true,
+                    false));
+
+    const bool secondModuleAdded =
+        engine.AddModule(
+            std::make_unique<
+                RuntimeValidationModule>(
+                    2,
+                    trace,
+                    nullptr,
+                    false,
+                    true));
+
+    r3d_assert(firstModuleAdded);
+    r3d_assert(secondModuleAdded);
+
+    engine::runtime::EngineConfig config;
+
+    config.applicationName =
+        "Studio.Runtime.Validation";
+
+    config.mode =
+        engine::runtime::EngineMode::Studio;
+
+    config.rendererBackend =
+        engine::runtime::RendererBackend::D3D9;
+
+    config.enableValidation = true;
+
+    config.enableMainThreadChecks = true;
+
+    const bool initialized =
+        engine.Initialize(
+            std::move(config));
+
+    const RuntimeValidationService*
+        registeredService =
+            engine.GetServices().
+                TryGet<RuntimeValidationService>();
+
+    r3dOutToLog(
+        "[Runtime] Lifecycle: "
+        "initialized=%d, state=%s, "
+        "mode=%s, renderer=%s, "
+        "modules=%u, initializedModules=%u, "
+        "services=%u, ownerThread=%u\n",
+        initialized ? 1 : 0,
+        engine::runtime::ToString(
+            engine.GetState()),
+        engine::runtime::ToString(
+            engine.GetConfig().mode),
+        engine::runtime::ToString(
+            engine.GetConfig().rendererBackend),
+        static_cast<unsigned int>(
+            engine.GetModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetInitializedModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetServices().
+                GetServiceCount()),
+        static_cast<unsigned int>(
+            engine.GetOwnerThreadId()));
+
+    r3d_assert(initialized);
+    r3d_assert(engine.IsInitialized());
+    r3d_assert(engine.IsOwnerThread());
+
+    r3d_assert(
+        engine.GetModuleCount() == 2);
+
+    r3d_assert(
+        engine.GetInitializedModuleCount() == 2);
+
+    /*
+     * Engine + ServiceRegistry +
+     * RuntimeValidationService.
+     */
+    r3d_assert(
+        engine.GetServices().
+            GetServiceCount() == 3);
+
+    r3d_assert(
+        registeredService != nullptr);
+
+    r3d_assert(
+        registeredService->value == 42);
+
+    const bool frameBegan =
+        engine.BeginFrame(
+            1.0 / 60.0);
+
+    const bool frameEnded =
+        engine.EndFrame();
+
+    const engine::runtime::FrameContext
+        frameContext =
+            engine.GetFrameContext();
+
+    r3dOutToLog(
+        "[Runtime] Frame: "
+        "begin=%d, end=%d, active=%d, "
+        "index=%llu, delta=%.6f, "
+        "elapsed=%.6f\n",
+        frameBegan ? 1 : 0,
+        frameEnded ? 1 : 0,
+        engine.IsFrameActive() ? 1 : 0,
+        static_cast<unsigned long long>(
+            frameContext.frameIndex),
+        frameContext.deltaSeconds,
+        frameContext.elapsedSeconds);
+
+    r3d_assert(frameBegan);
+    r3d_assert(frameEnded);
+    r3d_assert(!engine.IsFrameActive());
+
+    r3d_assert(
+        frameContext.frameIndex == 1);
+
+    r3d_assert(
+        frameContext.deltaSeconds > 0.016);
+
+    r3d_assert(
+        frameContext.deltaSeconds < 0.017);
+
+    engine.RequestExit();
+
+    r3d_assert(
+        engine.IsExitRequested());
+
+    engine.Shutdown();
+
+    r3dOutToLog(
+        "[Runtime] Shutdown: "
+        "state=%s, initializedModules=%u, "
+        "services=%u, trace="
+        "%u,%u,%u,%u,%u,%u,%u,%u\n",
+        engine::runtime::ToString(
+            engine.GetState()),
+        static_cast<unsigned int>(
+            engine.GetInitializedModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetServices().
+                GetServiceCount()),
+        static_cast<unsigned int>(
+            trace.values[0]),
+        static_cast<unsigned int>(
+            trace.values[1]),
+        static_cast<unsigned int>(
+            trace.values[2]),
+        static_cast<unsigned int>(
+            trace.values[3]),
+        static_cast<unsigned int>(
+            trace.values[4]),
+        static_cast<unsigned int>(
+            trace.values[5]),
+        static_cast<unsigned int>(
+            trace.values[6]),
+        static_cast<unsigned int>(
+            trace.values[7]));
+
+    r3d_assert(
+        engine.GetState() ==
+        engine::runtime::EngineState::Stopped);
+
+    r3d_assert(
+        engine.GetInitializedModuleCount() == 0);
+
+    r3d_assert(
+        engine.GetServices().
+            GetServiceCount() == 0);
+
+    r3d_assert(trace.count == 8);
+
+    /*
+     * Initialize:
+     * ModuleA, ModuleB
+     *
+     * Begin:
+     * ModuleA, ModuleB
+     *
+     * End:
+     * ModuleB, ModuleA
+     *
+     * Shutdown:
+     * ModuleB, ModuleA
+     */
+    const std::uint32_t expectedTrace[] =
+    {
+        11,
+        21,
+        12,
+        22,
+        23,
+        13,
+        24,
+        14
+    };
+
+    for (
+        std::size_t index = 0;
+        index < 8;
+        ++index
+    )
+    {
+        r3d_assert(
+            trace.values[index] ==
+            expectedTrace[index]);
+    }
+
+    r3dOutToLog(
+        "[Runtime] Foundation validation: success\n");
+}
 #endif
 
 // This function called by engine before main app window created, before any IO initialized. 
@@ -2228,6 +2611,7 @@ void game::PreInit()
 	ValidatePlatformInputFoundation();
 	ValidateTasksFoundation();
 	ValidateJobSystemFoundation();
+	ValidateRuntimeFoundation();
 #endif
 
 	u_srand(GetTickCount());

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{1C3E54F2-7D4B-42C5-9330-869F8A147D21}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Public\Runtime">
+      <UniqueIdentifier>{E2B3A867-16F1-4C8C-8B60-D7D92281053C}</UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Private">
+      <UniqueIdentifier>{9D720FC5-A849-42E2-A2B1-85A3F47E6C19}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Runtime\Engine.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\EngineConfig.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\EngineMode.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\FrameContext.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\RendererBackend.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\RuntimeModule.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Runtime\ServiceRegistry.h">
+      <Filter>Public\Runtime</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\Engine.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\EngineMode.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\RendererBackend.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\ServiceRegistry.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
