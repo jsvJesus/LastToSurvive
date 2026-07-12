@@ -197,6 +197,16 @@ bool r3dSubmitBackgroundTask(
 	const r3dBackgroundTaskDispatcher::
 		TaskDescriptor& descriptor);
 
+/*
+ * Временный compatibility helper для старого
+ * фиксированного пула pointer-параметров.
+ *
+ * Пользователи больше не должны обращаться
+ * напрямую к g_pBackgroundTaskDispatcher.
+ */
+r3dTaskPtrParams*
+	r3dAllocBackgroundTaskPtrParam();
+
 //------------------------------------------------------------------------
 
 void r3dFinishBackGroundTasks() ;

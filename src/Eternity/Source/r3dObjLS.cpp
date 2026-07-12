@@ -499,8 +499,7 @@ bool r3dMesh::Load(const char* fname, bool use_default_material /*= false*/, boo
 	if (
 		g_async_loading->GetInt() &&
 		R3D_IS_MAIN_THREAD() &&
-		!force_sync &&
-		g_pBackgroundTaskDispatcher
+		!force_sync
 	)
 	{
 		r3dBackgroundTaskDispatcher::

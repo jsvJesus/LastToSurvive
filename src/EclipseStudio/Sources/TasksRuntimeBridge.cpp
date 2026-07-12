@@ -72,6 +72,9 @@ namespace
     std::atomic<std::uint64_t>
         g_finishedLegacyTaskCount{0};
 
+    std::atomic<std::uint64_t>
+        g_peakOutstandingLegacyTaskCount{0};
+
     std::uint32_t
         g_ownerThreadId = 0;
 
@@ -257,6 +260,26 @@ namespace
             TaskDescriptor descriptor_;
     };
 
+    void UpdatePeakOutstandingTaskCount(
+    const std::uint64_t currentCount) noexcept
+    {
+        std::uint64_t currentPeak =
+            g_peakOutstandingLegacyTaskCount.load(
+                std::memory_order_relaxed);
+
+        while (
+            currentPeak < currentCount &&
+            !g_peakOutstandingLegacyTaskCount.
+                compare_exchange_weak(
+                    currentPeak,
+                    currentCount,
+                    std::memory_order_relaxed,
+                    std::memory_order_relaxed)
+        )
+        {
+        }
+    }
+
     [[nodiscard]] bool SubmitLegacyBackgroundTask(
         const r3dBackgroundTaskDispatcher::
             TaskDescriptor& descriptor)
@@ -273,9 +296,13 @@ namespace
             return false;
         }
 
+        const std::uint64_t outstandingCount =
         g_outstandingLegacyTaskCount.fetch_add(
             1,
-            std::memory_order_acq_rel);
+            std::memory_order_acq_rel) + 1;
+
+            UpdatePeakOutstandingTaskCount(
+                outstandingCount);
 
         try
         {
@@ -610,6 +637,10 @@ namespace studio
                 0,
                 std::memory_order_release);
 
+            g_peakOutstandingLegacyTaskCount.store(
+                0,
+                std::memory_order_release);
+
             g_finishedLegacyTaskCount.store(
                 0,
                 std::memory_order_release);
@@ -793,6 +824,7 @@ namespace studio
             "modernCancelled=%llu, "
             "legacySubmitted=%llu, "
             "legacyFinished=%llu, "
+            "legacyPeak=%llu, "
             "legacyOutstanding=%llu, "
             "abandonedCallbacks=%u\n",
             static_cast<unsigned long long>(
@@ -810,6 +842,9 @@ namespace studio
                     std::memory_order_acquire)),
             static_cast<unsigned long long>(
                 g_finishedLegacyTaskCount.load(
+                    std::memory_order_acquire)),
+                    static_cast<unsigned long long>(
+                g_peakOutstandingLegacyTaskCount.load(
                     std::memory_order_acquire)),
             static_cast<unsigned long long>(
                 g_outstandingLegacyTaskCount.load(

@@ -714,38 +714,89 @@ r3dTexture::LoadTexture( struct r3dTaskParams* taskParams )
 	params->Loadee->DoLoad( params->TargetTexFormat, params->DownScale, params->DownScaleMinDim, params->Pool ) ;
 }
 
-int r3dTexture::Load( const char* fname, D3DFORMAT targetTexFormat, int downScale /*= 1*/, int downScaleMinDim /*= 1*/, D3DPOOL pool /*= D3DPOOL_MANAGED*/ )
+int r3dTexture::Load(
+	const char* fname,
+	D3DFORMAT targetTexFormat,
+	int downScale,
+	int downScaleMinDim,
+	D3DPOOL pool)
 {
-	sprintf(Location.FileName, "%s", fname);
-	strlwr(&Location.FileName[0]);
+	sprintf(
+		Location.FileName,
+		"%s",
+		fname);
 
-	InterlockedExchange( &m_IsLoading, 1 ) ;
+	strlwr(
+		&Location.FileName[0]);
 
-	if( g_async_loading->GetInt() && R3D_IS_MAIN_THREAD() && g_pBackgroundTaskDispatcher)
+	InterlockedExchange(
+		&m_IsLoading,
+		1);
+
+	bool submitted = false;
+
+	if (
+		g_async_loading->GetInt() &&
+		R3D_IS_MAIN_THREAD()
+	)
 	{
-		r3dBackgroundTaskDispatcher::TaskDescriptor td ;
+		TextureLoadTaskParams* params =
+			g_TextureLoadTaskParams.Alloc();
 
-		TextureLoadTaskParams* params = g_TextureLoadTaskParams.Alloc() ;
+		params->TargetTexFormat =
+			targetTexFormat;
 
-		params->TargetTexFormat = targetTexFormat;
-		params->DownScale		= downScale;
-		params->DownScaleMinDim = downScaleMinDim;
-		params->Pool			= pool;
+		params->DownScale =
+			downScale;
 
-		params->Loadee			= this ;
+		params->DownScaleMinDim =
+			downScaleMinDim;
 
-		td.Params = params ;
-		td.Fn = LoadTexture ;
-		td.CompletionFlag	= 0 ;
+		params->Pool =
+			pool;
 
-		g_pBackgroundTaskDispatcher->AddTask( td ) ;
+		params->Loadee =
+			this;
+
+		r3dBackgroundTaskDispatcher::
+			TaskDescriptor descriptor;
+
+		descriptor.Params =
+			params;
+
+		descriptor.Fn =
+			LoadTexture;
+
+		descriptor.CompletionFlag =
+			0;
+
+		submitted =
+			r3dSubmitBackgroundTask(
+				descriptor);
+
+		if (!submitted)
+		{
+			/*
+			 * Ни новый bridge, ни старый dispatcher
+			 * не приняли задачу. Возвращаем элемент
+			 * в фиксированный parameter pool.
+			 */
+			InterlockedExchange(
+				&params->Taken,
+				0L);
+		}
 	}
-	else
+
+	if (!submitted)
 	{
-		DoLoad( targetTexFormat, downScale, downScaleMinDim, pool );
+		DoLoad(
+			targetTexFormat,
+			downScale,
+			downScaleMinDim,
+			pool);
 	}
 
-	return 1 ;	
+	return 1;
 }
 
 void r3dTexture::DestroyInternal()

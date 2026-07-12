@@ -202,6 +202,19 @@ bool r3dSubmitBackgroundTask(
 	return true;
 }
 
+r3dTaskPtrParams*
+	r3dAllocBackgroundTaskPtrParam()
+{
+	if (!g_pBackgroundTaskDispatcher)
+	{
+		return 0;
+	}
+
+	return
+		g_pBackgroundTaskDispatcher->
+			AllocPtrTaskParam();
+}
+
 //------------------------------------------------------------------------
 
 void r3dFinishBackGroundTasks()

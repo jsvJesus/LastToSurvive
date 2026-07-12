@@ -857,26 +857,50 @@ r3dMesh::FillMeshBuffers( r3dTaskParams* params )
 void r3dMesh::FillBuffersAsync()
 {
 #if R3D_ALLOW_ASYNC_MESH_LOADING
-	if( g_async_loading->GetInt() && R3D_IS_MAIN_THREAD() && g_pBackgroundTaskDispatcher )
+	if (
+		g_async_loading->GetInt() &&
+		R3D_IS_MAIN_THREAD()
+	)
 	{
-		r3dBackgroundTaskDispatcher::TaskDescriptor td ;
+		r3dTaskPtrParams* params =
+			r3dAllocBackgroundTaskPtrParam();
 
-		/**	Function to execute. */
-		td.Fn				= FillMeshBuffers ;
+		if (params)
+		{
+			params->Ptr =
+				this;
 
-		r3dTaskPtrParams* tpp = g_pBackgroundTaskDispatcher->AllocPtrTaskParam() ;
-		tpp->Ptr = this ;
+			r3dBackgroundTaskDispatcher::
+				TaskDescriptor descriptor;
 
-		td.Params			= tpp ;
-		td.CompletionFlag	= NULL ;
+			descriptor.Fn =
+				FillMeshBuffers;
 
-		g_pBackgroundTaskDispatcher->AddTask( td ) ;
+			descriptor.Params =
+				params;
+
+			descriptor.CompletionFlag =
+				NULL;
+
+			if (r3dSubmitBackgroundTask(
+					descriptor))
+			{
+				return;
+			}
+
+			/*
+			 * Submission не состоялся.
+			 * Задача не выполнится, поэтому slot
+			 * необходимо освободить здесь.
+			 */
+			InterlockedExchange(
+				&params->Taken,
+				0L);
+		}
 	}
-	else
 #endif
-	{
-		DoFillBuffers() ;
-	}
+
+	DoFillBuffers();
 }
 
 void r3dMesh::FillBuffers()
