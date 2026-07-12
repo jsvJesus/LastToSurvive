@@ -3749,26 +3749,14 @@ void game::MainLoop()
 	r3d_assert(
 		studio::IsPlatformInputBridgeInitialized());
 
-	const bool tasksRuntimeInitialized =
-		studio::
-			InitializeTasksRuntimeBridge();
 
-	r3dOutToLog(
-		"[Tasks] Studio runtime connection: "
-		"initialized=%d\n",
-		tasksRuntimeInitialized ? 1 : 0);
-
-	if (!tasksRuntimeInitialized)
-	{
-		r3dOutToLog(
-			"[Tasks] LTS.Tasks unavailable; "
-			"legacy background dispatcher "
-			"remains active\n");
-	}
-
+	/*
+	 * Studio Runtime создаёт Engine и TaskRuntimeModule.
+	 * Поэтому он должен запускаться раньше
+	 * compatibility TasksRuntimeBridge.
+	 */
 	const bool studioRuntimeInitialized =
-		studio::
-			InitializeStudioRuntimeBridge();
+		studio::InitializeStudioRuntimeBridge();
 
 	r3dOutToLog(
 		"[Runtime] Studio runtime connection: "
@@ -3781,6 +3769,45 @@ void game::MainLoop()
 			"[Runtime] Studio continues through "
 			"legacy lifecycle\n");
 	}
+
+
+	/*
+	 * TasksRuntimeBridge теперь получает JobSystem
+	 * и MainThreadDispatcher из Runtime ServiceRegistry.
+	 */
+	const bool tasksRuntimeInitialized =
+		studioRuntimeInitialized &&
+		studio::InitializeTasksRuntimeBridge();
+
+	r3dOutToLog(
+		"[Tasks] Studio runtime connection: "
+		"initialized=%d\n",
+		tasksRuntimeInitialized ? 1 : 0);
+
+	if (!tasksRuntimeInitialized)
+	{
+		if (!studioRuntimeInitialized)
+		{
+			r3dOutToLog(
+				"[Tasks] Compatibility bridge was not "
+				"started because Studio Runtime "
+				"is unavailable\n");
+		}
+		else
+		{
+			r3dOutToLog(
+				"[Tasks] LTS.Tasks compatibility bridge "
+				"is unavailable; legacy background "
+				"dispatcher remains active\n");
+		}
+	}
+
+	r3dOutToLog(
+		"[Runtime] Connections: "
+		"input=%d, runtime=%d, tasks=%d\n",
+		platformInputBridgeInitialized ? 1 : 0,
+		studioRuntimeInitialized ? 1 : 0,
+		tasksRuntimeInitialized ? 1 : 0);
 #endif
 
 	RegisterMsgProc(
