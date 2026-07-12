@@ -7,6 +7,8 @@
 #include "Legacy/LoggingBridge.h"
 #include "Legacy/PointConversion.h"
 
+#include <Platform/Clock.h>
+#include <Platform/Thread.h>
 #include <Platform/MessagePump.h>
 #include <Platform/File.h>
 #include <Platform/Window.h>
@@ -1093,6 +1095,60 @@ static void ValidatePlatformProcessFoundation()
     r3dOutToLog(
         "[Platform] Process close: success\n");
 }
+
+static void ValidatePlatformClockAndThreadFoundation()
+{
+	const engine::platform::Clock::Tick frequency =
+		engine::platform::Clock::Frequency();
+
+	const std::uint32_t threadId =
+		engine::platform::GetCurrentThreadId();
+
+	const bool threadNamed =
+		engine::platform::SetCurrentThreadName(
+			L"StudioStartup");
+
+	const engine::platform::Clock::Tick start =
+		engine::platform::Clock::Now();
+
+	engine::platform::SleepForMilliseconds(20);
+
+	const engine::platform::Clock::Tick end =
+		engine::platform::Clock::Now();
+
+	const double elapsedMilliseconds =
+		engine::platform::Clock::
+			ElapsedMilliseconds(
+				start,
+				end);
+
+	engine::platform::YieldCurrentThread();
+
+	r3dOutToLog(
+		"[Platform] Clock: frequency=%llu, "
+		"start=%llu, end=%llu, elapsed=%.3f ms\n",
+		static_cast<unsigned long long>(
+			frequency),
+		static_cast<unsigned long long>(
+			start),
+		static_cast<unsigned long long>(
+			end),
+		elapsedMilliseconds);
+
+	r3dOutToLog(
+		"[Platform] Thread: id=%u, named=%d, "
+		"yield=success\n",
+		static_cast<unsigned int>(
+			threadId),
+		threadNamed ? 1 : 0);
+
+	r3d_assert(frequency != 0);
+	r3d_assert(start != 0);
+	r3d_assert(end > start);
+	r3d_assert(elapsedMilliseconds > 0.0);
+	r3d_assert(elapsedMilliseconds < 1000.0);
+	r3d_assert(threadId != 0);
+}
 #endif
 
 // This function called by engine before main app window created, before any IO initialized. 
@@ -1234,6 +1290,7 @@ void game::PreInit()
 
 	ValidatePlatformFileFoundation();
 	ValidatePlatformProcessFoundation();
+	ValidatePlatformClockAndThreadFoundation();
 #endif
 
 	u_srand(GetTickCount());
