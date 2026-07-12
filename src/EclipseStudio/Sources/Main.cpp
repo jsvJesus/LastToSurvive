@@ -10,6 +10,7 @@
 #include <Platform/Clock.h>
 #include <Platform/DynamicLibrary.h>
 #include <Platform/File.h>
+#include <Platform/Input.h>
 #include <Platform/MessagePump.h>
 #include <Platform/Path.h>
 #include <Platform/Process.h>
@@ -1324,6 +1325,226 @@ static void ValidatePlatformClockAndThreadFoundation()
 	r3d_assert(elapsedMilliseconds < 1000.0);
 	r3d_assert(threadId != 0);
 }
+
+static void ValidatePlatformInputFoundation()
+{
+    engine::platform::InputSystem input;
+
+    input.BeginFrame();
+
+    const bool focusHandled =
+        input.HandleNativeMessage(
+            WM_SETFOCUS,
+            0,
+            0);
+
+    const bool keyDownHandled =
+        input.HandleNativeMessage(
+            WM_KEYDOWN,
+            static_cast<std::uintptr_t>('A'),
+            0);
+
+    const bool textHandled =
+        input.HandleNativeMessage(
+            WM_CHAR,
+            static_cast<std::uintptr_t>('A'),
+            0);
+
+    const LPARAM firstMousePosition =
+        MAKELPARAM(
+            120,
+            80);
+
+    const LPARAM secondMousePosition =
+        MAKELPARAM(
+            125,
+            90);
+
+    const bool firstMoveHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEMOVE,
+            0,
+            static_cast<std::intptr_t>(
+                firstMousePosition));
+
+    const bool secondMoveHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEMOVE,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const bool mouseDownHandled =
+        input.HandleNativeMessage(
+            WM_LBUTTONDOWN,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const WPARAM wheelParameter =
+        MAKEWPARAM(
+            0,
+            WHEEL_DELTA);
+
+    const bool wheelHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEWHEEL,
+            static_cast<std::uintptr_t>(
+                wheelParameter),
+            0);
+
+    const std::uintptr_t keyReleaseBits =
+        (std::uintptr_t{1} << 30) |
+        (std::uintptr_t{1} << 31);
+
+    const bool keyUpHandled =
+        input.HandleNativeMessage(
+            WM_KEYUP,
+            static_cast<std::uintptr_t>('A'),
+            static_cast<std::intptr_t>(
+                keyReleaseBits));
+
+    const bool mouseUpHandled =
+        input.HandleNativeMessage(
+            WM_LBUTTONUP,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const engine::platform::MousePosition mousePosition =
+        input.GetMousePosition();
+
+    const engine::platform::MouseDelta mouseDelta =
+        input.GetMouseDelta();
+
+    bool textEventFound = false;
+
+    for (std::size_t index = 0;
+         index < input.GetEventCount();
+         ++index)
+    {
+        const engine::platform::InputEvent* event =
+            input.GetEvent(index);
+
+        if (event != nullptr &&
+            event->type ==
+                engine::platform::InputEventType::TextInput &&
+            event->codepoint ==
+                static_cast<std::uint32_t>('A'))
+        {
+            textEventFound = true;
+        }
+    }
+
+    r3dOutToLog(
+        "[Platform] Input: focus=%d, "
+        "keyPressed=%d, keyReleased=%d, "
+        "mousePressed=%d, mouseReleased=%d\n",
+        input.HasFocus() ? 1 : 0,
+        input.WasKeyPressed(
+            engine::platform::KeyCode::A) ? 1 : 0,
+        input.WasKeyReleased(
+            engine::platform::KeyCode::A) ? 1 : 0,
+        input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left) ? 1 : 0,
+        input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left) ? 1 : 0);
+
+    r3dOutToLog(
+        "[Platform] Input mouse: "
+        "position=%d,%d, delta=%d,%d, "
+        "wheel=%d\n",
+        mousePosition.x,
+        mousePosition.y,
+        mouseDelta.x,
+        mouseDelta.y,
+        input.GetMouseWheelDelta());
+
+    r3dOutToLog(
+        "[Platform] Input events: count=%u, "
+        "dropped=%u, text=%d\n",
+        static_cast<unsigned int>(
+            input.GetEventCount()),
+        static_cast<unsigned int>(
+            input.GetDroppedEventCount()),
+        textEventFound ? 1 : 0);
+
+    r3d_assert(focusHandled);
+    r3d_assert(keyDownHandled);
+    r3d_assert(textHandled);
+    r3d_assert(firstMoveHandled);
+    r3d_assert(secondMoveHandled);
+    r3d_assert(mouseDownHandled);
+    r3d_assert(wheelHandled);
+    r3d_assert(keyUpHandled);
+    r3d_assert(mouseUpHandled);
+
+    r3d_assert(input.HasFocus());
+
+    r3d_assert(
+        !input.IsKeyDown(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        input.WasKeyPressed(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        input.WasKeyReleased(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        !input.IsMouseButtonDown(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(
+        input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(
+        input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(mousePosition.x == 125);
+    r3d_assert(mousePosition.y == 90);
+
+    r3d_assert(mouseDelta.x == 5);
+    r3d_assert(mouseDelta.y == 10);
+
+    r3d_assert(
+        input.GetMouseWheelDelta() ==
+        WHEEL_DELTA);
+
+    r3d_assert(textEventFound);
+
+    r3d_assert(
+        input.GetEventCount() == 9);
+
+    r3d_assert(
+        input.GetDroppedEventCount() == 0);
+
+    input.BeginFrame();
+
+    const bool frameResetSucceeded =
+        !input.WasKeyPressed(
+            engine::platform::KeyCode::A) &&
+        !input.WasKeyReleased(
+            engine::platform::KeyCode::A) &&
+        !input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left) &&
+        !input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left) &&
+        input.GetMouseDelta().x == 0 &&
+        input.GetMouseDelta().y == 0 &&
+        input.GetMouseWheelDelta() == 0 &&
+        input.GetEventCount() == 0;
+
+    r3dOutToLog(
+        "[Platform] Input frame reset: success=%d\n",
+        frameResetSucceeded ? 1 : 0);
+
+    r3d_assert(frameResetSucceeded);
+}
 #endif
 
 // This function called by engine before main app window created, before any IO initialized. 
@@ -1467,6 +1688,7 @@ void game::PreInit()
 	ValidatePlatformProcessFoundation();
 	ValidatePlatformClockAndThreadFoundation();
 	ValidatePlatformSynchronizationFoundation();
+	ValidatePlatformInputFoundation();
 #endif
 
 	u_srand(GetTickCount());

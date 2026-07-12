@@ -114,6 +114,7 @@
     <ClInclude Include="Public\Platform\Clock.h" />
     <ClInclude Include="Public\Platform\DynamicLibrary.h" />
     <ClInclude Include="Public\Platform\File.h" />
+    <ClInclude Include="Public\Platform\Input.h" />
     <ClInclude Include="Public\Platform\MessagePump.h" />
     <ClInclude Include="Public\Platform\Path.h" />
     <ClInclude Include="Public\Platform\Process.h" />
@@ -127,6 +128,7 @@
     <ClCompile Include="Private\Windows\ClockWin32.cpp" />
     <ClCompile Include="Private\Windows\DynamicLibraryWin32.cpp" />
     <ClCompile Include="Private\Windows\FileWin32.cpp" />
+    <ClCompile Include="Private\Windows\InputWin32.cpp" />
     <ClCompile Include="Private\Windows\MessagePumpWin32.cpp" />
     <ClCompile Include="Private\Windows\PathWin32.cpp" />
     <ClCompile Include="Private\Windows\ProcessWin32.cpp" />
