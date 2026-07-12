@@ -117,6 +117,7 @@
     <ClInclude Include="Public\Platform\MessagePump.h" />
     <ClInclude Include="Public\Platform\Path.h" />
     <ClInclude Include="Public\Platform\Process.h" />
+    <ClInclude Include="Public\Platform\Synchronization.h" />
     <ClInclude Include="Public\Platform\SystemInfo.h" />
     <ClInclude Include="Public\Platform\Thread.h" />
     <ClInclude Include="Public\Platform\Window.h" />
@@ -129,6 +130,7 @@
     <ClCompile Include="Private\Windows\MessagePumpWin32.cpp" />
     <ClCompile Include="Private\Windows\PathWin32.cpp" />
     <ClCompile Include="Private\Windows\ProcessWin32.cpp" />
+    <ClCompile Include="Private\Windows\SynchronizationWin32.cpp" />
     <ClCompile Include="Private\Windows\SystemInfoWin32.cpp" />
     <ClCompile Include="Private\Windows\ThreadWin32.cpp" />
     <ClCompile Include="Private\Windows\WindowWin32.cpp" />
