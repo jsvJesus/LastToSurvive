@@ -1001,6 +1001,10 @@ static void ValidatePlatformProcessFoundation()
     const bool started =
         childProcess.Start(startInfo);
 
+	const unsigned int startError =
+	static_cast<unsigned int>(
+		childProcess.GetLastErrorCode());
+
     const std::uint32_t childProcessId =
         childProcess.GetId();
 
@@ -1013,18 +1017,31 @@ static void ValidatePlatformProcessFoundation()
     const bool destinationOwnsProcess =
         movedProcess.IsValid();
 
-    r3dOutToLog(
-        "[Platform] Process: currentId=%u, "
-        "currentPathValid=%d, started=%d, childId=%u, "
-        "source released=%d, destination owns=%d\n",
-        static_cast<unsigned int>(
-            currentProcessId),
-        currentProcessPath.empty() ? 0 : 1,
-        started ? 1 : 0,
-        static_cast<unsigned int>(
-            childProcessId),
-        sourceReleased ? 1 : 0,
-        destinationOwnsProcess ? 1 : 0);
+	r3dOutToLog(
+	"[Platform] Process: currentId=%u, "
+	"currentPathValid=%d, started=%d, "
+	"startError=%u, childId=%u\n",
+	static_cast<unsigned int>(
+		currentProcessId),
+	currentProcessPath.empty() ? 0 : 1,
+	started ? 1 : 0,
+	startError,
+	static_cast<unsigned int>(
+		childProcessId));
+
+	r3d_assert(currentProcessId != 0);
+	r3d_assert(!currentProcessPath.empty());
+	r3d_assert(started);
+
+	if (!started)
+	{
+		r3dOutToLog(
+			"[Platform] Process validation aborted: "
+			"CreateProcess failed with error=%u\n",
+			startError);
+
+		return;
+	}
 
     r3d_assert(currentProcessId != 0);
     r3d_assert(!currentProcessPath.empty());

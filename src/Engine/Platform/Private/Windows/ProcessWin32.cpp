@@ -59,26 +59,103 @@ namespace engine::platform
             }
         }
 
+        [[nodiscard]] bool ResolveExecutablePath(
+        const Path& executablePath,
+        Path& resolvedPath,
+        DWORD& errorCode)
+        {
+            if (executablePath.empty())
+            {
+                errorCode = ERROR_INVALID_PARAMETER;
+                return false;
+            }
+
+            /*
+             * Полный путь либо путь с указанием каталога
+             * передаём как есть.
+             *
+             * Примеры:
+             *   C:\Tools\Tool.exe
+             *   .\Tools\Tool.exe
+             *   Tools\Tool.exe
+             */
+            if (executablePath.is_absolute() ||
+                executablePath.has_parent_path())
+            {
+                resolvedPath = executablePath;
+                errorCode = ERROR_SUCCESS;
+                return true;
+            }
+
+            /*
+             * Простое имя вроде cmd.exe или tool.exe
+             * разрешаем в полный путь до CreateProcessW.
+             */
+            std::wstring buffer(
+                MAX_PATH,
+                L'\0');
+
+            const wchar_t* extension =
+                executablePath.has_extension()
+                    ? nullptr
+                    : L".exe";
+
+            for (;;)
+            {
+                const DWORD length =
+                    ::SearchPathW(
+                        nullptr,
+                        executablePath.c_str(),
+                        extension,
+                        static_cast<DWORD>(
+                            buffer.size()),
+                        buffer.data(),
+                        nullptr);
+
+                if (length == 0)
+                {
+                    errorCode = ::GetLastError();
+                    return false;
+                }
+
+                if (length < buffer.size())
+                {
+                    buffer.resize(
+                        static_cast<std::size_t>(
+                            length));
+
+                    resolvedPath =
+                        Path(std::move(buffer));
+
+                    errorCode = ERROR_SUCCESS;
+                    return true;
+                }
+
+                buffer.resize(
+                    static_cast<std::size_t>(
+                        length) + 1);
+            }
+        }
+
         [[nodiscard]] std::wstring BuildCommandLine(
-            const ProcessStartInfo& startInfo)
+        const Path& executablePath,
+        const std::wstring& arguments)
         {
             std::wstring commandLine;
 
             commandLine.reserve(
-                startInfo.executablePath.native().size() +
-                startInfo.arguments.size() +
+                executablePath.native().size() +
+                arguments.size() +
                 4);
 
             commandLine += L'"';
-            commandLine +=
-                startInfo.executablePath.native();
+            commandLine += executablePath.native();
             commandLine += L'"';
 
-            if (!startInfo.arguments.empty())
+            if (!arguments.empty())
             {
                 commandLine += L' ';
-                commandLine +=
-                    startInfo.arguments;
+                commandLine += arguments;
             }
 
             return commandLine;
@@ -171,7 +248,7 @@ namespace engine::platform
     }
 
     bool Process::Start(
-        const ProcessStartInfo& startInfo)
+    const ProcessStartInfo& startInfo)
     {
         Close();
 
@@ -184,8 +261,25 @@ namespace engine::platform
             return false;
         }
 
+        Path resolvedExecutablePath;
+        DWORD resolveError = ERROR_SUCCESS;
+
+        if (!ResolveExecutablePath(
+                startInfo.executablePath,
+                resolvedExecutablePath,
+                resolveError))
+        {
+            lastErrorCode_ =
+                static_cast<std::uint32_t>(
+                    resolveError);
+
+            return false;
+        }
+
         std::wstring commandLine =
-            BuildCommandLine(startInfo);
+            BuildCommandLine(
+                resolvedExecutablePath,
+                startInfo.arguments);
 
         STARTUPINFOW startupInfo{};
 
@@ -202,7 +296,7 @@ namespace engine::platform
 
         const BOOL created =
             ::CreateProcessW(
-                startInfo.executablePath.c_str(),
+                resolvedExecutablePath.c_str(),
                 commandLine.data(),
                 nullptr,
                 nullptr,
