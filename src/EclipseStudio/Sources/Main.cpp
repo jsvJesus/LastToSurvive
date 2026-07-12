@@ -1,6 +1,8 @@
 ﻿#include "r3dPCH.h"
 #include "r3d.h"
 
+#include "PlatformInputBridge.h"
+
 #if defined(_WIN64)
 #include "Core/Log.h"
 #include "Core/Version.h"
@@ -2811,6 +2813,21 @@ void game::MainLoop()
 
 	InitDesktopSystem();
 
+#if defined(_WIN64)
+	const bool platformInputBridgeInitialized =
+		studio::InitializePlatformInputBridge();
+
+	r3dOutToLog(
+		"[Platform] Input live connection: initialized=%d\n",
+		platformInputBridgeInitialized ? 1 : 0);
+
+	r3d_assert(
+		platformInputBridgeInitialized);
+
+	r3d_assert(
+		studio::IsPlatformInputBridgeInitialized());
+#endif
+
 	RegisterMsgProc(
 		StudioWindowResizeMsgProc
 	);
@@ -3019,6 +3036,13 @@ void game::MainLoop()
 	UnregisterMsgProc(
 		StudioWindowResizeMsgProc
 	);
+
+#if defined(_WIN64)
+	studio::ShutdownPlatformInputBridge();
+
+	r3d_assert(
+		!studio::IsPlatformInputBridgeInitialized());
+#endif
 
 	DoneDrawCollections();
 

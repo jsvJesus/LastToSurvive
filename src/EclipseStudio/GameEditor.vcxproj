@@ -704,6 +704,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\ObjectsCode\WORLD\waterAnim\fft.cpp" />
     <ClCompile Include="Sources\ObjectsCode\WORLD\waterAnim\wavesGenerator.cpp" />
     <ClCompile Include="Sources\ObjectsCode\WORLD\WaterPlane.CPP" />
+    <ClCompile Include="Sources\PlatformInputBridge.cpp" />
     <ClCompile Include="Sources\r3dAtmosphere.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\CommonPostFX.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\D3DMiscFunctions.cpp" />
@@ -971,6 +972,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\ObjectsCode\WORLD\waterAnim\fft.h" />
     <ClInclude Include="Sources\ObjectsCode\WORLD\waterAnim\wavesGenerator.h" />
     <ClInclude Include="Sources\ObjectsCode\WORLD\WaterPlane.H" />
+    <ClInclude Include="Sources\PlatformInputBridge.h" />
     <ClInclude Include="Sources\r3dAtmosphere.h" />
     <ClInclude Include="Sources\RENDERING\Deffered\CommonPostFX.h" />
     <ClInclude Include="Sources\RENDERING\Deffered\D3DMiscFunctions.h" />

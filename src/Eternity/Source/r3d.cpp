@@ -918,19 +918,38 @@ float r3dGetAveragedFrameTime()
 	return R3D_MIN(_r3d_AverageFrameTime, 0.1f);
 }
 
+/*
+ * Temporary engine migration hook.
+ *
+ * Позволяет новым runtime-системам начинать кадр,
+ * не создавая зависимости Eternity -> LTS.Platform.
+ */
+void (*r3dFrameStartCallback)() = NULL;
+
 void r3dStartFrame()
 {
-	if(r3dRenderer && r3dRenderer->DeviceAvailable)
-		r3dRenderer->ResetQueryCounters();
+	if (r3dFrameStartCallback)
+	{
+		r3dFrameStartCallback();
+	}
 
-  _r3d_StartFrameTime = r3dGetTime();
+	if (r3dRenderer &&
+		r3dRenderer->DeviceAvailable)
+	{
+		r3dRenderer->ResetQueryCounters();
+	}
+
+	_r3d_StartFrameTime =
+		r3dGetTime();
 
 #if !DISABLE_PROFILER
-  if(r3dProfiler::Instance())
-	  r3dProfiler::Instance()->StartFrame();
+	if (r3dProfiler::Instance())
+	{
+		r3dProfiler::Instance()->StartFrame();
+	}
 #endif
 
-  r3dMaterial::ResetMaterialFilter();
+	r3dMaterial::ResetMaterialFilter();
 }
 
 static double FPSSum = 0;
