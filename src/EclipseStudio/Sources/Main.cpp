@@ -3,6 +3,7 @@
 
 #include "PlatformInputBridge.h"
 #include "TasksRuntimeBridge.h"
+#include "StudioRuntimeBridge.h"
 
 #if defined(_WIN64)
 #include "Core/Log.h"
@@ -3764,6 +3765,22 @@ void game::MainLoop()
 			"legacy background dispatcher "
 			"remains active\n");
 	}
+
+	const bool studioRuntimeInitialized =
+		studio::
+			InitializeStudioRuntimeBridge();
+
+	r3dOutToLog(
+		"[Runtime] Studio runtime connection: "
+		"initialized=%d\n",
+		studioRuntimeInitialized ? 1 : 0);
+
+	if (!studioRuntimeInitialized)
+	{
+		r3dOutToLog(
+			"[Runtime] Studio continues through "
+			"legacy lifecycle\n");
+	}
 #endif
 
 	RegisterMsgProc(
@@ -3971,11 +3988,13 @@ void game::MainLoop()
 
 #if defined(_WIN64)
 	studio::
+		ShutdownStudioRuntimeBridge();
+
+	studio::
 		ShutdownTasksRuntimeBridge();
 
-	r3d_assert(
-		!studio::
-			IsTasksRuntimeBridgeInitialized());
+	studio::
+		ShutdownPlatformInputBridge();
 #endif
 	
 	ReleaseDesktopSystem();
@@ -3983,13 +4002,6 @@ void game::MainLoop()
 	UnregisterMsgProc(
 		StudioWindowResizeMsgProc
 	);
-
-#if defined(_WIN64)
-	studio::ShutdownPlatformInputBridge();
-
-	r3d_assert(
-		!studio::IsPlatformInputBridgeInitialized());
-#endif
 
 	DoneDrawCollections();
 

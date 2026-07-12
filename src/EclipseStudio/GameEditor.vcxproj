@@ -769,6 +769,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp" />
     <ClCompile Include="Sources\RENDERING\World\WorldDX11.cpp" />
     <ClCompile Include="Sources\SteamHelper.cpp" />
+    <ClCompile Include="Sources\StudioRuntimeBridge.cpp" />
     <ClCompile Include="Sources\TasksRuntimeBridge.cpp" />
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp" />
     <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
@@ -1046,6 +1047,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\World\WorldRenderer.h" />
     <ClInclude Include="Sources\resource.h" />
     <ClInclude Include="Sources\SteamHelper.h" />
+    <ClInclude Include="Sources\StudioRuntimeBridge.h" />
     <ClInclude Include="Sources\TasksRuntimeBridge.h" />
     <ClInclude Include="Sources\UIFilters\NightVisionController.h" />
     <ClInclude Include="Sources\UI\HUDCameraEffects.h" />

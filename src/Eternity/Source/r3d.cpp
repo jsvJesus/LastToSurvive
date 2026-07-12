@@ -925,6 +925,7 @@ float r3dGetAveragedFrameTime()
  * не создавая зависимости Eternity -> LTS.Platform.
  */
 void (*r3dFrameStartCallback)() = NULL;
+void (*r3dFrameEndCallback)() = NULL;
 
 void r3dStartFrame()
 {
@@ -1008,7 +1009,12 @@ void r3dEndFrame()
 // 	  AVGFps = 1.f / r3dGetFrameTime();
 //   }
 
-  r3dUpdateWindowCaption();
+	r3dUpdateWindowCaption();
+
+	if (r3dFrameEndCallback)
+	{
+		r3dFrameEndCallback();
+	}
 }
 
 void r3dResetFrameTime()
