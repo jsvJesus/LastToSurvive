@@ -21,6 +21,10 @@
 #include <Platform/Thread.h>
 #include <Platform/Window.h>
 
+#include <Tasks/CancellationToken.h>
+#include <Tasks/MainThreadDispatcher.h>
+#include <Tasks/TaskFence.h>
+
 #include <cstdio>
 #include <array>
 #include <string>
@@ -747,6 +751,216 @@ static void ValidatePlatformSynchronizationFoundation()
 
     r3dOutToLog(
         "[Platform] Synchronization foundation: success\n");
+}
+
+static void ValidateTasksFoundation()
+{
+    engine::tasks::CancellationSource
+        cancellationSource;
+
+    const engine::tasks::CancellationToken
+        originalToken =
+            cancellationSource.GetToken();
+
+    const bool cancellationBefore =
+        originalToken.IsCancellationRequested();
+
+    const bool firstCancellation =
+        cancellationSource.Cancel();
+
+    const bool secondCancellation =
+        cancellationSource.Cancel();
+
+    cancellationSource.Reset();
+
+    const engine::tasks::CancellationToken
+        replacementToken =
+            cancellationSource.GetToken();
+
+    const bool originalAfterReset =
+        originalToken.IsCancellationRequested();
+
+    const bool replacementAfterReset =
+        replacementToken.IsCancellationRequested();
+
+    r3dOutToLog(
+        "[Tasks] Cancellation: valid=%d, "
+        "before=%d, first=%d, second=%d, "
+        "originalAfterReset=%d, "
+        "replacementAfterReset=%d\n",
+        originalToken.IsValid() ? 1 : 0,
+        cancellationBefore ? 1 : 0,
+        firstCancellation ? 1 : 0,
+        secondCancellation ? 1 : 0,
+        originalAfterReset ? 1 : 0,
+        replacementAfterReset ? 1 : 0);
+
+    r3d_assert(originalToken.IsValid());
+    r3d_assert(!cancellationBefore);
+    r3d_assert(firstCancellation);
+    r3d_assert(!secondCancellation);
+    r3d_assert(originalAfterReset);
+    r3d_assert(!replacementAfterReset);
+
+    engine::tasks::TaskFence fence;
+
+    const bool fenceInitiallyComplete =
+        fence.IsComplete();
+
+    const bool fenceAdded =
+        fence.Add(2);
+
+    const engine::platform::WaitResult
+        waitBeforeCompletion =
+            fence.Wait(0);
+
+    const bool firstTaskCompleted =
+        fence.Complete();
+
+    const engine::platform::WaitResult
+        waitAfterFirstTask =
+            fence.Wait(0);
+
+    const bool secondTaskCompleted =
+        fence.Complete();
+
+    const engine::platform::WaitResult
+        waitAfterSecondTask =
+            fence.Wait(0);
+
+    r3dOutToLog(
+        "[Tasks] Fence: valid=%d, "
+        "initiallyComplete=%d, add=%d, "
+        "before=%s, firstComplete=%d, "
+        "middle=%s, secondComplete=%d, "
+        "final=%s, pending=%u\n",
+        fence.IsValid() ? 1 : 0,
+        fenceInitiallyComplete ? 1 : 0,
+        fenceAdded ? 1 : 0,
+        engine::platform::ToString(
+            waitBeforeCompletion),
+        firstTaskCompleted ? 1 : 0,
+        engine::platform::ToString(
+            waitAfterFirstTask),
+        secondTaskCompleted ? 1 : 0,
+        engine::platform::ToString(
+            waitAfterSecondTask),
+        static_cast<unsigned int>(
+            fence.GetPendingCount()));
+
+    r3d_assert(fence.IsValid());
+    r3d_assert(fenceInitiallyComplete);
+    r3d_assert(fenceAdded);
+
+    r3d_assert(
+        waitBeforeCompletion ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(firstTaskCompleted);
+
+    r3d_assert(
+        waitAfterFirstTask ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(secondTaskCompleted);
+
+    r3d_assert(
+        waitAfterSecondTask ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(fence.IsComplete());
+    r3d_assert(fence.GetPendingCount() == 0);
+
+    engine::tasks::MainThreadDispatcher
+        dispatcher;
+
+    const bool dispatcherInitialized =
+        dispatcher.Initialize();
+
+    std::uint32_t executionMask = 0;
+
+    const bool firstPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x1u;
+            });
+
+    const bool secondPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x2u;
+            });
+
+    const bool thirdPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x4u;
+            });
+
+    const std::size_t firstDispatchCount =
+        dispatcher.Dispatch(2);
+
+    const std::size_t pendingAfterFirstDispatch =
+        dispatcher.GetPendingCount();
+
+    const std::size_t secondDispatchCount =
+        dispatcher.Dispatch();
+
+    const std::size_t pendingAfterSecondDispatch =
+        dispatcher.GetPendingCount();
+
+    dispatcher.Shutdown();
+
+    const bool rejectedAfterShutdown =
+        !dispatcher.Post(
+            []()
+            {
+            });
+
+    r3dOutToLog(
+        "[Tasks] MainThreadDispatcher: "
+        "initialized=%d, owner=%d, "
+        "posted=%d%d%d, first=%u, "
+        "pendingMiddle=%u, second=%u, "
+        "pendingFinal=%u, mask=%u, "
+        "rejectedAfterShutdown=%d\n",
+        dispatcherInitialized ? 1 : 0,
+        dispatcherInitialized ? 1 : 0,
+        firstPosted ? 1 : 0,
+        secondPosted ? 1 : 0,
+        thirdPosted ? 1 : 0,
+        static_cast<unsigned int>(
+            firstDispatchCount),
+        static_cast<unsigned int>(
+            pendingAfterFirstDispatch),
+        static_cast<unsigned int>(
+            secondDispatchCount),
+        static_cast<unsigned int>(
+            pendingAfterSecondDispatch),
+        static_cast<unsigned int>(
+            executionMask),
+        rejectedAfterShutdown ? 1 : 0);
+
+    r3d_assert(dispatcherInitialized);
+    r3d_assert(firstPosted);
+    r3d_assert(secondPosted);
+    r3d_assert(thirdPosted);
+
+    r3d_assert(firstDispatchCount == 2);
+    r3d_assert(pendingAfterFirstDispatch == 1);
+
+    r3d_assert(secondDispatchCount == 1);
+    r3d_assert(pendingAfterSecondDispatch == 0);
+
+    r3d_assert(executionMask == 0x7u);
+    r3d_assert(rejectedAfterShutdown);
+    r3d_assert(!dispatcher.IsInitialized());
+
+    r3dOutToLog(
+        "[Tasks] Foundation validation: success\n");
 }
 #endif
 
@@ -1686,11 +1900,13 @@ void game::PreInit()
 	r3dOutToLog(
 		"[Platform] DynamicLibrary unload: success\n");
 
+	// Validate
 	ValidatePlatformFileFoundation();
 	ValidatePlatformProcessFoundation();
 	ValidatePlatformClockAndThreadFoundation();
 	ValidatePlatformSynchronizationFoundation();
 	ValidatePlatformInputFoundation();
+	ValidateTasksFoundation();
 #endif
 
 	u_srand(GetTickCount());
