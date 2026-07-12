@@ -24,7 +24,9 @@
 #include <Tasks/CancellationToken.h>
 #include <Tasks/MainThreadDispatcher.h>
 #include <Tasks/TaskFence.h>
+#include <Tasks/JobSystem.h>
 
+#include <atomic>
 #include <cstdio>
 #include <array>
 #include <string>
@@ -961,6 +963,323 @@ static void ValidateTasksFoundation()
 
     r3dOutToLog(
         "[Tasks] Foundation validation: success\n");
+}
+
+static void ValidateJobSystemFoundation()
+{
+    engine::tasks::JobSystem jobSystem;
+
+    engine::tasks::JobSystemConfig config;
+    config.workerCount = 1;
+    config.workerNamePrefix =
+        L"LTS.ValidationWorker";
+
+    const bool initialized =
+        jobSystem.Initialize(config);
+
+    r3d_assert(initialized);
+
+    if (!initialized)
+    {
+        return;
+    }
+
+    engine::platform::Event blockerStarted(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    engine::platform::Event blockerRelease(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    const engine::tasks::TaskHandle blocker =
+        jobSystem.Submit(
+            [&blockerStarted, &blockerRelease](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                (void)blockerStarted.Signal();
+
+                (void)blockerRelease.Wait(
+                    5000);
+            },
+            engine::tasks::TaskPriority::Normal);
+
+    r3d_assert(blocker.IsValid());
+
+    const engine::platform::WaitResult
+        blockerStartedResult =
+            blockerStarted.Wait(5000);
+
+    r3d_assert(
+        blockerStartedResult ==
+        engine::platform::WaitResult::Success);
+
+    engine::platform::Mutex orderMutex;
+
+    std::array<std::uint32_t, 4>
+        executionOrder{};
+
+    std::size_t executionCount = 0;
+
+    auto recordExecution =
+        [&orderMutex,
+         &executionOrder,
+         &executionCount](
+            const std::uint32_t value)
+        {
+            engine::platform::MutexLockGuard lock(
+                orderMutex);
+
+            if (executionCount <
+                executionOrder.size())
+            {
+                executionOrder[
+                    executionCount] =
+                        value;
+
+                ++executionCount;
+            }
+        };
+
+    engine::tasks::TaskFence priorityFence;
+
+    const engine::tasks::TaskHandle lowTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(1);
+            },
+            engine::tasks::TaskPriority::Low,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle criticalTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(4);
+            },
+            engine::tasks::TaskPriority::Critical,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle normalTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(2);
+            },
+            engine::tasks::TaskPriority::Normal,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle highTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(3);
+            },
+            engine::tasks::TaskPriority::High,
+            {},
+            &priorityFence);
+
+    r3d_assert(lowTask.IsValid());
+    r3d_assert(criticalTask.IsValid());
+    r3d_assert(normalTask.IsValid());
+    r3d_assert(highTask.IsValid());
+
+    (void)blockerRelease.Signal();
+
+    const engine::platform::WaitResult
+        blockerWait =
+            blocker.Wait(5000);
+
+    const engine::platform::WaitResult
+        priorityWait =
+            priorityFence.Wait(5000);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem: initialized=%d, "
+        "workers=%u, blocker=%s, fence=%s, "
+        "order=%u,%u,%u,%u\n",
+        initialized ? 1 : 0,
+        static_cast<unsigned int>(
+            jobSystem.GetWorkerCount()),
+        engine::platform::ToString(
+            blockerWait),
+        engine::platform::ToString(
+            priorityWait),
+        static_cast<unsigned int>(
+            executionOrder[0]),
+        static_cast<unsigned int>(
+            executionOrder[1]),
+        static_cast<unsigned int>(
+            executionOrder[2]),
+        static_cast<unsigned int>(
+            executionOrder[3]));
+
+    r3d_assert(
+        blockerWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(
+        priorityWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(executionCount == 4);
+
+    r3d_assert(executionOrder[0] == 4);
+    r3d_assert(executionOrder[1] == 3);
+    r3d_assert(executionOrder[2] == 2);
+    r3d_assert(executionOrder[3] == 1);
+
+    r3d_assert(
+        lowTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        normalTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        highTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        criticalTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    engine::tasks::CancellationSource
+        cancellationSource;
+
+    (void)cancellationSource.Cancel();
+
+    std::atomic<std::uint32_t>
+        cancelledCallbackRuns{0};
+
+    const engine::tasks::TaskHandle
+        cancelledTask =
+            jobSystem.Submit(
+                [&cancelledCallbackRuns](
+                    const engine::tasks::
+                        CancellationToken&)
+                {
+                    cancelledCallbackRuns.fetch_add(
+                        1,
+                        std::memory_order_relaxed);
+                },
+                engine::tasks::TaskPriority::Normal,
+                cancellationSource.GetToken());
+
+    const engine::platform::WaitResult
+        cancelledWait =
+            cancelledTask.Wait(0);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem cancellation: "
+        "wait=%s, state=%s, callbackRuns=%u\n",
+        engine::platform::ToString(
+            cancelledWait),
+        engine::tasks::ToString(
+            cancelledTask.GetState()),
+        static_cast<unsigned int>(
+            cancelledCallbackRuns.load(
+                std::memory_order_acquire)));
+
+    r3d_assert(cancelledTask.IsValid());
+
+    r3d_assert(
+        cancelledWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(
+        cancelledTask.GetState() ==
+        engine::tasks::TaskState::Cancelled);
+
+    r3d_assert(
+        cancelledCallbackRuns.load(
+            std::memory_order_acquire) == 0);
+
+    const engine::tasks::JobSystemStats stats =
+        jobSystem.GetStats();
+
+    r3dOutToLog(
+        "[Tasks] JobSystem stats: submitted=%llu, "
+        "completed=%llu, cancelled=%llu, "
+        "failed=%llu, running=%u, pending=%u\n",
+        static_cast<unsigned long long>(
+            stats.submittedTaskCount),
+        static_cast<unsigned long long>(
+            stats.completedTaskCount),
+        static_cast<unsigned long long>(
+            stats.cancelledTaskCount),
+        static_cast<unsigned long long>(
+            stats.failedTaskCount),
+        static_cast<unsigned int>(
+            stats.runningTaskCount),
+        static_cast<unsigned int>(
+            stats.pendingTaskCount));
+
+    r3d_assert(
+        stats.submittedTaskCount == 6);
+
+    r3d_assert(
+        stats.completedTaskCount == 5);
+
+    r3d_assert(
+        stats.cancelledTaskCount == 1);
+
+    r3d_assert(
+        stats.failedTaskCount == 0);
+
+    r3d_assert(
+        stats.runningTaskCount == 0);
+
+    r3d_assert(
+        stats.pendingTaskCount == 0);
+
+    jobSystem.Shutdown();
+
+    const engine::tasks::TaskHandle
+        rejectedTask =
+            jobSystem.Submit(
+                [](
+                    const engine::tasks::
+                        CancellationToken&)
+                {
+                });
+
+    const bool rejectedAfterShutdown =
+        !rejectedTask.IsValid();
+
+    r3dOutToLog(
+        "[Tasks] JobSystem shutdown: "
+        "initialized=%d, accepting=%d, "
+        "rejected=%d\n",
+        jobSystem.IsInitialized() ? 1 : 0,
+        jobSystem.IsAcceptingTasks() ? 1 : 0,
+        rejectedAfterShutdown ? 1 : 0);
+
+    r3d_assert(
+        !jobSystem.IsInitialized());
+
+    r3d_assert(
+        !jobSystem.IsAcceptingTasks());
+
+    r3d_assert(
+        rejectedAfterShutdown);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem validation: success\n");
 }
 #endif
 
@@ -1907,6 +2226,7 @@ void game::PreInit()
 	ValidatePlatformSynchronizationFoundation();
 	ValidatePlatformInputFoundation();
 	ValidateTasksFoundation();
+	ValidateJobSystemFoundation();
 #endif
 
 	u_srand(GetTickCount());
