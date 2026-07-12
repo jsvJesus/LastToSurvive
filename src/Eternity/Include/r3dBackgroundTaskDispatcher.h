@@ -170,6 +170,33 @@ private:
 
 extern r3dBackgroundTaskDispatcher* g_pBackgroundTaskDispatcher;
 
+/*
+ * Optional migration bridge.
+ *
+ * Eternity не зависит от LTS.Tasks.
+ * Studio может установить эти callback во время runtime.
+ */
+typedef bool (*r3dBackgroundTaskSubmitBridge)(
+	const r3dBackgroundTaskDispatcher::
+		TaskDescriptor& descriptor);
+
+typedef void (*r3dBackgroundTaskWaitBridge)();
+
+extern r3dBackgroundTaskSubmitBridge
+	g_r3dBackgroundTaskSubmitBridge;
+
+extern r3dBackgroundTaskWaitBridge
+	g_r3dBackgroundTaskWaitBridge;
+
+/*
+ * Сначала пробует новый runtime bridge.
+ * При его отсутствии или отказе использует
+ * старый r3dBackgroundTaskDispatcher.
+ */
+bool r3dSubmitBackgroundTask(
+	const r3dBackgroundTaskDispatcher::
+		TaskDescriptor& descriptor);
+
 //------------------------------------------------------------------------
 
 void r3dFinishBackGroundTasks() ;

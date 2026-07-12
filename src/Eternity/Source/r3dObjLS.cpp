@@ -496,25 +496,53 @@ bool r3dMesh::Load(const char* fname, bool use_default_material /*= false*/, boo
 	MeshLoaded ( FileName.c_str () );
 
 #if R3D_ALLOW_ASYNC_MESH_LOADING
-	if( g_async_loading->GetInt() && R3D_IS_MAIN_THREAD() && !force_sync && g_pBackgroundTaskDispatcher )
+	if (
+		g_async_loading->GetInt() &&
+		R3D_IS_MAIN_THREAD() &&
+		!force_sync &&
+		g_pBackgroundTaskDispatcher
+	)
 	{
-		r3dBackgroundTaskDispatcher::TaskDescriptor td ;
+		r3dBackgroundTaskDispatcher::
+			TaskDescriptor descriptor;
 
-		MeshLoadParams* params = g_MeshLoadParamsArray.Alloc() ;
+		MeshLoadParams* params =
+			g_MeshLoadParamsArray.Alloc();
 
-		params->Loadee = this ;
-		params->UseDefaultMaterial = use_default_material ;
+		params->Loadee =
+			this;
 
-		td.Fn				= DoLoadMesh ;
-		td.Params			= params ;
-		td.CompletionFlag	= NULL ;
+		params->UseDefaultMaterial =
+			use_default_material;
 
-		g_pBackgroundTaskDispatcher->AddTask( td ) ;
+		descriptor.Fn =
+			DoLoadMesh;
 
-		return TRUE ;
+		descriptor.Params =
+			params;
+
+		descriptor.CompletionFlag =
+			NULL;
+
+		if (r3dSubmitBackgroundTask(
+				descriptor))
+		{
+			return TRUE;
+		}
+
+		/*
+		 * Ни новый, ни старый dispatcher
+		 * не приняли задачу. Возвращаем slot
+		 * в pool и выполняем загрузку синхронно.
+		 */
+		InterlockedExchange(
+			&params->Taken,
+			0L);
 	}
-	else
 #endif
+
+	return DoLoad(
+		use_default_material);
 	{
 		return DoLoad( use_default_material ) ;
 	}

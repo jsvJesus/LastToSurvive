@@ -2,6 +2,7 @@
 #include "r3d.h"
 
 #include "PlatformInputBridge.h"
+#include "TasksRuntimeBridge.h"
 
 #if defined(_WIN64)
 #include "Core/Log.h"
@@ -3362,6 +3363,23 @@ void game::MainLoop()
 
 	r3d_assert(
 		studio::IsPlatformInputBridgeInitialized());
+
+	const bool tasksRuntimeInitialized =
+		studio::
+			InitializeTasksRuntimeBridge();
+
+	r3dOutToLog(
+		"[Tasks] Studio runtime connection: "
+		"initialized=%d\n",
+		tasksRuntimeInitialized ? 1 : 0);
+
+	if (!tasksRuntimeInitialized)
+	{
+		r3dOutToLog(
+			"[Tasks] LTS.Tasks unavailable; "
+			"legacy background dispatcher "
+			"remains active\n");
+	}
 #endif
 
 	RegisterMsgProc(
@@ -3567,6 +3585,15 @@ void game::MainLoop()
 
 	g_pDefaultConsole = NULL;
 
+#if defined(_WIN64)
+	studio::
+		ShutdownTasksRuntimeBridge();
+
+	r3d_assert(
+		!studio::
+			IsTasksRuntimeBridgeInitialized());
+#endif
+	
 	ReleaseDesktopSystem();
 
 	UnregisterMsgProc(

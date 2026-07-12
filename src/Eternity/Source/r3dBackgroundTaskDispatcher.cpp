@@ -18,6 +18,12 @@ extern CRITICAL_SECTION g_ResourceCritSection ;
 // g_pBackgroundTaskDispatcher will be NULL in other project that do not create it!
 r3dBackgroundTaskDispatcher *g_pBackgroundTaskDispatcher = 0;
 
+r3dBackgroundTaskSubmitBridge
+	g_r3dBackgroundTaskSubmitBridge = 0;
+
+r3dBackgroundTaskWaitBridge
+	g_r3dBackgroundTaskWaitBridge = 0;
+
 //////////////////////////////////////////////////////////////////////////
 
 namespace
@@ -172,16 +178,74 @@ r3dBackgroundTaskDispatcher::GetTaskCount() const
 
 //------------------------------------------------------------------------
 
+bool r3dSubmitBackgroundTask(
+	const r3dBackgroundTaskDispatcher::
+		TaskDescriptor& descriptor)
+{
+	if (g_r3dBackgroundTaskSubmitBridge)
+	{
+		if (g_r3dBackgroundTaskSubmitBridge(
+				descriptor))
+		{
+			return true;
+		}
+	}
+
+	if (!g_pBackgroundTaskDispatcher)
+	{
+		return false;
+	}
+
+	g_pBackgroundTaskDispatcher->AddTask(
+		descriptor);
+
+	return true;
+}
+
+//------------------------------------------------------------------------
+
 void r3dFinishBackGroundTasks()
 {
-	if(g_pBackgroundTaskDispatcher == NULL)
-		return;
-		
-	// wait for all background tasks to finish
-	for( ; g_pBackgroundTaskDispatcher->GetTaskCount() ; )
+	for (;;)
 	{
-		// loading tasks may issude d3d commands into main thread
-		ProcessDeviceQueue( r3dGetTime(), 1.0f ) ;
+		/*
+		 * Сначала вычищаем старую очередь.
+		 */
+		if (g_pBackgroundTaskDispatcher)
+		{
+			while (
+				g_pBackgroundTaskDispatcher->
+					GetTaskCount())
+			{
+				/*
+				 * Loading tasks могут отправлять
+				 * D3D9-команды в main thread.
+				 */
+				ProcessDeviceQueue(
+					r3dGetTime(),
+					1.0f);
+			}
+		}
+
+		/*
+		 * Затем ждём задачи, уже переведённые
+		 * на LTS.Tasks.
+		 */
+		if (g_r3dBackgroundTaskWaitBridge)
+		{
+			g_r3dBackgroundTaskWaitBridge();
+		}
+
+		/*
+		 * Новая задача могла во время выполнения
+		 * добавить работу обратно в старую очередь.
+		 */
+		if (!g_pBackgroundTaskDispatcher ||
+			g_pBackgroundTaskDispatcher->
+				GetTaskCount() == 0)
+		{
+			break;
+		}
 	}
 }
 
