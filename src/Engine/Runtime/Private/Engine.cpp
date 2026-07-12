@@ -37,6 +37,8 @@ namespace engine::runtime
         }
     }
 
+    Engine::Engine() = default;
+
     Engine::~Engine() noexcept
     {
         Shutdown();

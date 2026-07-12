@@ -30,7 +30,7 @@ namespace engine::runtime
     class Engine final
     {
     public:
-        Engine() = default;
+        Engine();
 
         ~Engine() noexcept;
 
