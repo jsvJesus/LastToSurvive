@@ -5,6 +5,7 @@
 #include "TasksRuntimeBridge.h"
 
 #include <Runtime/Engine.h>
+#include <Runtime/TaskRuntimeModule.h>
 
 #include <Tasks/JobSystem.h>
 #include <Tasks/MainThreadDispatcher.h>
@@ -39,13 +40,6 @@ namespace
 
     FrameCallback
         g_previousFrameEndCallback = nullptr;
-
-    engine::tasks::JobSystem*
-        g_registeredJobSystem = nullptr;
-
-    engine::tasks::MainThreadDispatcher*
-        g_registeredMainThreadDispatcher =
-            nullptr;
 
     bool g_initialized = false;
     bool g_shuttingDown = false;
@@ -207,104 +201,6 @@ namespace
         }
     }
 
-    [[nodiscard]] bool RegisterTaskServices(
-        engine::runtime::Engine& engine) noexcept
-    {
-        engine::tasks::JobSystem* const jobSystem =
-            studio::TryGetJobSystem();
-
-        engine::tasks::MainThreadDispatcher* const
-            mainThreadDispatcher =
-                studio::
-                    TryGetMainThreadDispatcher();
-
-        /*
-         * Runtime может работать и без task bridge.
-         * Это сохраняет fallback на legacy режим.
-         */
-        if (
-            jobSystem == nullptr ||
-            mainThreadDispatcher == nullptr
-        )
-        {
-            r3dOutToLog(
-                "[Runtime] Task services unavailable; "
-                "Runtime continues without registered "
-                "LTS.Tasks services\n");
-
-            return true;
-        }
-
-        engine::runtime::ServiceRegistry& services =
-            engine.GetServices();
-
-        if (!services.Register<
-                engine::tasks::JobSystem>(
-                    *jobSystem))
-        {
-            r3dOutToLog(
-                "[Runtime] Failed to register "
-                "JobSystem service\n");
-
-            return false;
-        }
-
-        if (!services.Register<
-                engine::tasks::
-                    MainThreadDispatcher>(
-                        *mainThreadDispatcher))
-        {
-            (void)services.Unregister<
-                engine::tasks::JobSystem>(
-                    jobSystem);
-
-            r3dOutToLog(
-                "[Runtime] Failed to register "
-                "MainThreadDispatcher service\n");
-
-            return false;
-        }
-
-        g_registeredJobSystem =
-            jobSystem;
-
-        g_registeredMainThreadDispatcher =
-            mainThreadDispatcher;
-
-        return true;
-    }
-
-    void UnregisterTaskServices(
-        engine::runtime::Engine& engine) noexcept
-    {
-        engine::runtime::ServiceRegistry& services =
-            engine.GetServices();
-
-        if (
-            g_registeredMainThreadDispatcher !=
-            nullptr
-        )
-        {
-            (void)services.Unregister<
-                engine::tasks::
-                    MainThreadDispatcher>(
-                        g_registeredMainThreadDispatcher);
-
-            g_registeredMainThreadDispatcher =
-                nullptr;
-        }
-
-        if (g_registeredJobSystem != nullptr)
-        {
-            (void)services.Unregister<
-                engine::tasks::JobSystem>(
-                    g_registeredJobSystem);
-
-            g_registeredJobSystem =
-                nullptr;
-        }
-    }
-
     void RestoreFrameCallbacks() noexcept
     {
         if (
@@ -353,6 +249,39 @@ namespace studio
                 std::make_unique<
                     engine::runtime::Engine>();
 
+            engine::runtime::TaskRuntimeConfig
+    taskRuntimeConfig;
+
+            taskRuntimeConfig.
+                jobSystemConfig.workerCount = 0;
+
+            taskRuntimeConfig.
+                jobSystemConfig.workerNamePrefix =
+                    L"LTS.Worker";
+
+            taskRuntimeConfig.
+                maximumCallbacksPerFrame = 1024;
+
+            taskRuntimeConfig.
+                maximumCallbacksPerShutdownBatch = 1024;
+
+            const bool taskModuleAdded =
+                runtimeEngine->AddModule(
+                    std::make_unique<
+                        engine::runtime::
+                            TaskRuntimeModule>(
+                                std::move(
+                                    taskRuntimeConfig)));
+
+            if (!taskModuleAdded)
+            {
+                r3dOutToLog(
+                    "[Runtime] Failed to add "
+                    "TaskRuntimeModule\n");
+
+                return false;
+            }
+
             engine::runtime::EngineConfig config;
 
             config.applicationName =
@@ -388,16 +317,19 @@ namespace studio
                 return false;
             }
 
-            if (!RegisterTaskServices(
-                    *runtimeEngine))
-            {
-                runtimeEngine->Shutdown();
-
-                return false;
-            }
-
             g_runtimeEngine =
                 std::move(runtimeEngine);
+
+            engine::runtime::ServiceRegistry&
+                services =
+                    g_runtimeEngine->GetServices();
+
+            const bool taskServicesRegistered =
+                services.TryGet<
+                    engine::tasks::JobSystem>() != nullptr &&
+                services.TryGet<
+                    engine::tasks::
+                        MainThreadDispatcher>() != nullptr;
 
             g_previousFrameStartCallback =
                 r3dFrameStartCallback;
@@ -462,9 +394,7 @@ namespace studio
                     g_runtimeEngine->
                         GetServices().
                             GetServiceCount()),
-                g_registeredJobSystem != nullptr &&
-                        g_registeredMainThreadDispatcher !=
-                            nullptr
+                            taskServicesRegistered
                     ? 1
                     : 0);
 
@@ -474,19 +404,11 @@ namespace studio
         {
             if (g_runtimeEngine != nullptr)
             {
-                UnregisterTaskServices(
-                    *g_runtimeEngine);
-
                 g_runtimeEngine->Shutdown();
                 g_runtimeEngine.reset();
             }
 
             RestoreFrameCallbacks();
-
-            g_registeredJobSystem = nullptr;
-
-            g_registeredMainThreadDispatcher =
-                nullptr;
 
             g_initialized = false;
             g_shuttingDown = false;
@@ -549,9 +471,6 @@ namespace studio
                     ++g_endFrameFailureCount;
                 }
             }
-
-            UnregisterTaskServices(
-                *g_runtimeEngine);
 
             g_runtimeEngine->Shutdown();
         }

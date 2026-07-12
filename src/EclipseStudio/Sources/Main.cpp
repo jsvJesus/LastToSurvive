@@ -3988,10 +3988,10 @@ void game::MainLoop()
 
 #if defined(_WIN64)
 	studio::
-		ShutdownStudioRuntimeBridge();
+		ShutdownTasksRuntimeBridge();
 
 	studio::
-		ShutdownTasksRuntimeBridge();
+		ShutdownStudioRuntimeBridge();
 
 	studio::
 		ShutdownPlatformInputBridge();

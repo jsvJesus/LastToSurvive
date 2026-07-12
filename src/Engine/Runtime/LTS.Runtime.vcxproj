@@ -134,6 +134,7 @@
     <ClInclude Include="Public\Runtime\RendererBackend.h" />
     <ClInclude Include="Public\Runtime\RuntimeModule.h" />
     <ClInclude Include="Public\Runtime\ServiceRegistry.h" />
+    <ClInclude Include="Public\Runtime\TaskRuntimeModule.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -141,6 +142,7 @@
     <ClCompile Include="Private\EngineMode.cpp" />
     <ClCompile Include="Private\RendererBackend.cpp" />
     <ClCompile Include="Private\ServiceRegistry.cpp" />
+    <ClCompile Include="Private\TaskRuntimeModule.cpp" />
   </ItemGroup>
 
   <ItemGroup>
