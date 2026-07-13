@@ -25,6 +25,10 @@ namespace engine::graphics::d3d11::detail
         bool depthShaderResource,
         DXGI_FORMAT& outFormat) noexcept;
 
+    [[nodiscard]] GraphicsResult ConvertVertexFormat(
+        Format format,
+        DXGI_FORMAT& outFormat) noexcept;
+
     [[nodiscard]] GraphicsResult ConvertTextureUsage(
         const TextureDesc& desc,
         D3D11_USAGE& outUsage,
