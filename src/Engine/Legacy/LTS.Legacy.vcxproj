@@ -60,7 +60,17 @@
         %(AdditionalOptions)
       </AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+        $(ProjectDir)Public;
+        $(ProjectDir)..\Core\Public;
+        $(ProjectDir)..\Math\Public;
+        $(ProjectDir)..\Graphics\Public;
+        $(ProjectDir)..\GraphicsDX9\Public;
+        $(ProjectDir)..\Platform\Public;
+        $(ProjectDir)..\..\Eternity\Include;
+        $(ProjectDir)..\..\External\dxsdk\Include;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -94,7 +104,17 @@
         %(AdditionalOptions)
       </AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+        $(ProjectDir)Public;
+        $(ProjectDir)..\Core\Public;
+        $(ProjectDir)..\Math\Public;
+        $(ProjectDir)..\Graphics\Public;
+        $(ProjectDir)..\GraphicsDX9\Public;
+        $(ProjectDir)..\Platform\Public;
+        $(ProjectDir)..\..\Eternity\Include;
+        $(ProjectDir)..\..\External\dxsdk\Include;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -116,12 +136,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\Legacy\CullingConversion.h" />
+    <ClInclude Include="Public\Legacy\Graphics\D3D9RendererBridge.h" />
     <ClInclude Include="Public\Legacy\LoggingBridge.h" />
     <ClInclude Include="Public\Legacy\MatrixConversion.h" />
     <ClInclude Include="Public\Legacy\PointConversion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\CullingConversion.cpp" />
+    <ClCompile Include="Private\Graphics\D3D9RendererBridge.cpp" />
     <ClCompile Include="Private\LoggingBridge.cpp" />
     <ClCompile Include="Private\MatrixConversion.cpp" />
   </ItemGroup>
@@ -133,6 +155,11 @@
 
     <ProjectReference Include="..\Math\LTS.Math.vcxproj">
       <Project>{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\GraphicsDX9\LTS.Graphics.DX9.vcxproj">
+      <Project>{48B9A4F3-4D95-4E0D-8D61-93273B3A1E20}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>

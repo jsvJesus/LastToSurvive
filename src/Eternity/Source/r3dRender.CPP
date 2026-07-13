@@ -1,6 +1,10 @@
 #include	"r3dPCH.h"
 #include	"r3d.h"
 
+#if defined(_WIN64)
+#include "Legacy/Graphics/D3D9RendererBridge.h"
+#endif
+
 #ifndef LTS_CULLING_MODERN
 #define LTS_CULLING_MODERN 0
 #endif
@@ -1037,6 +1041,13 @@ int r3dRenderLayer::Close()
 	}
 	*/
 
+#if defined(_WIN64)
+
+	engine::legacy::graphics::
+		ShutdownD3D9RendererBridge();
+
+#endif
+
 	if(pd3ddev) {
 		refcnt = pd3ddev->Release();
 		if(!refcnt) SetD3DDev( NULL );
@@ -2050,6 +2061,28 @@ int r3dRenderLayer::SetMode(int XRes, int YRes, int BPP, int Flags, int RenderPa
 	}
 
 	SetD3DDev( dev );
+
+#if defined(_WIN64)
+
+	if (
+		!engine::legacy::graphics::
+			InitializeD3D9RendererBridge(dev)
+	)
+	{
+		r3dOutToLog(
+			"[LTS.Graphics.DX9] "
+			"Unable to attach compatibility adapter.\n"
+		);
+	}
+	else
+	{
+		r3dOutToLog(
+			"[LTS.Graphics.DX9] "
+			"Compatibility adapter attached to legacy device.\n"
+		);
+	}
+
+#endif
 
 #ifndef WO_SERVER
 	if( this->NVApiActive )
@@ -3632,6 +3665,13 @@ int r3dRenderLayer::TryToRestoreDevice()
 			r3dOutToLog( "Device lost during Reset attempt, hence all resources are already released!\n" );
 		}
 
+#if defined(_WIN64)
+
+		engine::legacy::graphics::
+			NotifyD3D9DeviceLost();
+
+#endif
+
 		hr = r3dRenderer->pd3ddev->Reset(&d3dpp);
 
 		if( hr == D3DERR_DEVICELOST )
@@ -3642,12 +3682,34 @@ int r3dRenderLayer::TryToRestoreDevice()
 		}
 
 
-		if(hr != D3D_OK) {
-			r3dError("unable to reset d3d device, 0x%X\n", hr);
+		if(hr != D3D_OK)
+		{
+			r3dError(
+				"unable to reset d3d device, 0x%X\n",
+				hr
+			);
+
 			return 0;
 		}
 
-		gResetCount ++ ;
+#if defined(_WIN64)
+
+		if (
+			!engine::legacy::graphics::
+				NotifyD3D9DeviceReset(
+					r3dRenderer->pd3ddev
+				)
+		)
+		{
+			r3dOutToLog(
+				"[LTS.Graphics.DX9] "
+				"Compatibility resources were not restored "
+				"after device reset.\n"
+			);
+		}
+		
+#endif
+		gResetCount ++;
 
 		r3dOutToLog("reseted\n");
 
@@ -3759,10 +3821,18 @@ void r3dRenderLayer::UpdateSettings()
 
 		r3dFrameQueryRelease();
 
-		HRESULT hr ;
+#if defined(_WIN64)
+
+		engine::legacy::graphics::
+			NotifyD3D9DeviceLost();
+
+#endif
+
+		HRESULT hr;
+
 		for( ; ; )
 		{
-			hr = pd3ddev->Reset( &d3dpp ) ;
+			hr = pd3ddev->Reset(&d3dpp);
 
 			if( hr != D3DERR_DEVICELOST )
 				break ;
@@ -3772,10 +3842,29 @@ void r3dRenderLayer::UpdateSettings()
 			Sleep( 250 ) ;
 		}
 
-		if( hr != S_OK )
+		if(hr != S_OK)
 		{
-			r3dError( "Unable to Reset d3d device after settings change!\n");
+			r3dError(
+				"Unable to Reset d3d device "
+				"after settings change!\n"
+			);
 		}
+
+#if defined(_WIN64)
+
+		if (
+			!engine::legacy::graphics::
+				NotifyD3D9DeviceReset(pd3ddev)
+		)
+		{
+			r3dOutToLog(
+				"[LTS.Graphics.DX9] "
+				"Compatibility resources were not restored "
+				"after settings reset.\n"
+			);
+		}
+
+#endif
 
 		AquireMainRT();
 		RTs[ 0 ] = MainRT ;
