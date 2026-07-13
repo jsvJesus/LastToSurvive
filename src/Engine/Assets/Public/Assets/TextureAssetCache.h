@@ -63,6 +63,10 @@ namespace engine::assets
     class TextureAssetCache final
     {
     public:
+        // Public only as an incomplete PIMPL type so translation-unit helpers
+        // can remain strongly typed. No implementation details are exposed.
+        class Impl;
+
         TextureAssetCache() noexcept;
         ~TextureAssetCache() noexcept;
 
@@ -124,7 +128,6 @@ namespace engine::assets
         [[nodiscard]] std::size_t GetCount() const noexcept;
 
     private:
-        class Impl;
         std::unique_ptr<Impl> impl_;
     };
 }
