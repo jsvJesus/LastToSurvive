@@ -9,12 +9,14 @@
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
+struct ID3D11DeviceChild;
 struct ID3D11Resource;
 struct ID3D11Buffer;
 struct ID3D11ShaderResourceView;
 struct ID3D11RenderTargetView;
 struct ID3D11DepthStencilView;
 struct ID3D11UnorderedAccessView;
+struct ID3D11InputLayout;
 struct IDXGIFactory2;
 
 namespace engine::graphics::d3d11
@@ -62,6 +64,27 @@ namespace engine::graphics::d3d11
         [[nodiscard]] GraphicsResult DestroyBuffer(
             BufferHandle buffer) noexcept override;
 
+        [[nodiscard]] GraphicsResult CreateShader(
+            const ShaderDesc& desc,
+            ShaderHandle& outShader) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyShader(
+            ShaderHandle shader) noexcept override;
+
+        [[nodiscard]] GraphicsResult CreateInputLayout(
+            const InputLayoutDesc& desc,
+            InputLayoutHandle& outInputLayout) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyInputLayout(
+            InputLayoutHandle inputLayout) noexcept override;
+
+        [[nodiscard]] GraphicsResult CreateGraphicsPipeline(
+            const GraphicsPipelineDesc& desc,
+            PipelineStateHandle& outPipeline) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyGraphicsPipeline(
+            PipelineStateHandle pipeline) noexcept override;
+
         [[nodiscard]] ID3D11Device* GetNativeDevice() const noexcept;
         [[nodiscard]] ID3D11DeviceContext*
             GetNativeImmediateContext() const noexcept;
@@ -93,8 +116,17 @@ namespace engine::graphics::d3d11
         [[nodiscard]] ID3D11UnorderedAccessView* GetBufferUnorderedAccessView(
             BufferHandle buffer) const noexcept;
 
+        [[nodiscard]] ID3D11DeviceChild* GetNativeShader(
+            ShaderHandle shader) const noexcept;
+
+        [[nodiscard]] ID3D11InputLayout* GetNativeInputLayout(
+            InputLayoutHandle inputLayout) const noexcept;
+
         [[nodiscard]] std::size_t GetTextureCount() const noexcept;
         [[nodiscard]] std::size_t GetBufferCount() const noexcept;
+        [[nodiscard]] std::size_t GetShaderCount() const noexcept;
+        [[nodiscard]] std::size_t GetInputLayoutCount() const noexcept;
+        [[nodiscard]] std::size_t GetGraphicsPipelineCount() const noexcept;
 
     private:
         class Impl;
