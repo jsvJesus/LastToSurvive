@@ -19,6 +19,18 @@ namespace engine::graphics::d3d9
         detail::D3D9ResourceRegistry resources;
     };
 
+    namespace
+    {
+        [[nodiscard]] bool IsDestroyState(
+            const DeviceState state) noexcept
+        {
+            return
+                state == DeviceState::Ready ||
+                state == DeviceState::Lost ||
+                state == DeviceState::Recovering;
+        }
+    }
+
     D3D9Device::D3D9Device()
         : impl_(new (std::nothrow) Impl())
     {
@@ -91,12 +103,12 @@ namespace engine::graphics::d3d9
 
     std::size_t D3D9Device::GetTextureCount() const noexcept
     {
-        return impl_ ? impl_->resources.GetTextureCount() : 0;
+        return impl_ ? impl_->resources.GetTextureCount() : 0U;
     }
 
     std::size_t D3D9Device::GetBufferCount() const noexcept
     {
-        return impl_ ? impl_->resources.GetBufferCount() : 0;
+        return impl_ ? impl_->resources.GetBufferCount() : 0U;
     }
 
     void D3D9Device::OnDeviceLost() noexcept
@@ -251,10 +263,7 @@ namespace engine::graphics::d3d9
     GraphicsResult D3D9Device::DestroyTexture(
         const TextureHandle texture) noexcept
     {
-        if (!impl_ ||
-            (impl_->state != DeviceState::Ready &&
-             impl_->state != DeviceState::Lost &&
-             impl_->state != DeviceState::Recovering))
+        if (!impl_ || !IsDestroyState(impl_->state))
         {
             return GraphicsResult::InvalidState;
         }
@@ -284,14 +293,98 @@ namespace engine::graphics::d3d9
     GraphicsResult D3D9Device::DestroyBuffer(
         const BufferHandle buffer) noexcept
     {
-        if (!impl_ ||
-            (impl_->state != DeviceState::Ready &&
-             impl_->state != DeviceState::Lost &&
-             impl_->state != DeviceState::Recovering))
+        if (!impl_ || !IsDestroyState(impl_->state))
         {
             return GraphicsResult::InvalidState;
         }
 
         return impl_->resources.DestroyBuffer(buffer);
+    }
+
+    GraphicsResult D3D9Device::CreateShader(
+        const ShaderDesc& desc,
+        ShaderHandle& outShader) noexcept
+    {
+        outShader = ShaderHandle{};
+
+        if (!impl_ || impl_->state != DeviceState::Ready)
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return desc.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
+    }
+
+    GraphicsResult D3D9Device::DestroyShader(
+        const ShaderHandle shader) noexcept
+    {
+        if (!impl_ || !IsDestroyState(impl_->state))
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return shader.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
+    }
+
+    GraphicsResult D3D9Device::CreateInputLayout(
+        const InputLayoutDesc& desc,
+        InputLayoutHandle& outInputLayout) noexcept
+    {
+        outInputLayout = InputLayoutHandle{};
+
+        if (!impl_ || impl_->state != DeviceState::Ready)
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return desc.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
+    }
+
+    GraphicsResult D3D9Device::DestroyInputLayout(
+        const InputLayoutHandle inputLayout) noexcept
+    {
+        if (!impl_ || !IsDestroyState(impl_->state))
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return inputLayout.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
+    }
+
+    GraphicsResult D3D9Device::CreateGraphicsPipeline(
+        const GraphicsPipelineDesc& desc,
+        PipelineStateHandle& outPipeline) noexcept
+    {
+        outPipeline = PipelineStateHandle{};
+
+        if (!impl_ || impl_->state != DeviceState::Ready)
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return desc.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
+    }
+
+    GraphicsResult D3D9Device::DestroyGraphicsPipeline(
+        const PipelineStateHandle pipeline) noexcept
+    {
+        if (!impl_ || !IsDestroyState(impl_->state))
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        return pipeline.IsValid()
+            ? GraphicsResult::Unsupported
+            : GraphicsResult::InvalidArgument;
     }
 }
