@@ -22,6 +22,7 @@ namespace engine::graphics::d3d11
         D3D11SwapChain(const D3D11SwapChain&) = delete;
         D3D11SwapChain& operator=(const D3D11SwapChain&) = delete;
 
+        [[nodiscard]] GraphicsBackend GetBackend() const noexcept override;
         [[nodiscard]] SwapChainHandle GetHandle() const noexcept override;
         [[nodiscard]] const SwapChainDesc& GetDesc() const noexcept override;
 
