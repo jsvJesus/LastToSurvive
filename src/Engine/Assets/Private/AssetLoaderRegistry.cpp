@@ -137,7 +137,7 @@ namespace engine::assets
     AssetResult AssetLoaderRegistry::Load(
         const AssetMetadata& metadata,
         const AssetData& source,
-        std::unique_ptr<LoadedAsset>& outAsset) const noexcept
+        std::unique_ptr<LoadedAsset>& outAsset) noexcept
     {
         outAsset.reset();
 
@@ -151,7 +151,7 @@ namespace engine::assets
             return AssetResult::InvalidMetadata;
         }
 
-        const AssetLoader* const loader = Find(metadata.type);
+        AssetLoader* const loader = Find(metadata.type);
 
         if (loader == nullptr)
         {
