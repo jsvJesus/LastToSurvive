@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Tasks", "..\Engine\Task
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Runtime", "..\Engine\Runtime\LTS.Runtime.vcxproj", "{700433FB-EECA-46F8-B4FF-8D29554DAACB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Graphics", "..\Engine\Graphics\LTS.Graphics.vcxproj", "{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -107,6 +109,14 @@ Global
 		{700433FB-EECA-46F8-B4FF-8D29554DAACB}.Release|Win32.Build.0 = Release|Win32
 		{700433FB-EECA-46F8-B4FF-8D29554DAACB}.Release|x64.ActiveCfg = Release|x64
 		{700433FB-EECA-46F8-B4FF-8D29554DAACB}.Release|x64.Build.0 = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Debug|Win32.ActiveCfg = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Debug|Win32.Build.0 = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Final|Win32.ActiveCfg = Final|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Final|Win32.Build.0 = Final|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Release|Win32.ActiveCfg = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Release|Win32.Build.0 = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Release|x64.ActiveCfg = Release|x64
+		{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
