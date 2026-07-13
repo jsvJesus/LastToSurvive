@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Graphics\Buffer.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\CommandContext.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\Format.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\GraphicsBackend.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\GraphicsResult.h"><Filter>Public\Graphics</Filter></ClInclude>
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <ClCompile Include="Private\Buffer.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\CommandContext.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\Format.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\GraphicsBackend.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\GraphicsResult.cpp"><Filter>Private</Filter></ClCompile>
