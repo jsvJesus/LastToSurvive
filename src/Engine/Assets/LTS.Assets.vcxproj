@@ -216,6 +216,7 @@
     <ClInclude Include="Public\Assets\AssetType.h" />
     <ClInclude Include="Public\Assets\DdsTextureDecoder.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
+    <ClInclude Include="Public\Assets\GpuTexture.h" />
     <ClInclude Include="Public\Assets\TextureAsset.h" />
   </ItemGroup>
 
@@ -230,6 +231,7 @@
     <ClCompile Include="Private\AssetType.cpp" />
     <ClCompile Include="Private\DdsTextureDecoder.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
+    <ClCompile Include="Private\GpuTexture.cpp" />
     <ClCompile Include="Private\TextureAsset.cpp" />
   </ItemGroup>
 

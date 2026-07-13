@@ -518,7 +518,6 @@ namespace engine::assets
         }
 
         [[nodiscard]] AssetResult BuildLayouts(
-            const std::byte* sourceData,
             const std::size_t sourceSize,
             const std::size_t pixelDataOffset,
             const engine::graphics::TextureDesc& desc,
@@ -1034,7 +1033,6 @@ namespace engine::assets
 
         AssetResult result =
             BuildLayouts(
-                bytes,
                 byteCount,
                 offset,
                 desc,
