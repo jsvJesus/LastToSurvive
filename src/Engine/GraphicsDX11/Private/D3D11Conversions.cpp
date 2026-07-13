@@ -94,6 +94,51 @@ namespace engine::graphics::d3d11::detail
         return GraphicsResult::Success;
     }
 
+    GraphicsResult ConvertVertexFormat(
+        const Format format,
+        DXGI_FORMAT& outFormat) noexcept
+    {
+        switch (format)
+        {
+        case Format::R8UNorm:
+            outFormat = DXGI_FORMAT_R8_UNORM;
+            return GraphicsResult::Success;
+        case Format::R8G8UNorm:
+            outFormat = DXGI_FORMAT_R8G8_UNORM;
+            return GraphicsResult::Success;
+        case Format::R8G8B8A8UNorm:
+            outFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+            return GraphicsResult::Success;
+        case Format::R16UNorm:
+            outFormat = DXGI_FORMAT_R16_UNORM;
+            return GraphicsResult::Success;
+        case Format::R16Float:
+            outFormat = DXGI_FORMAT_R16_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R16G16Float:
+            outFormat = DXGI_FORMAT_R16G16_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R16G16B16A16Float:
+            outFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R32Float:
+            outFormat = DXGI_FORMAT_R32_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R32G32Float:
+            outFormat = DXGI_FORMAT_R32G32_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R32G32B32Float:
+            outFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+            return GraphicsResult::Success;
+        case Format::R32G32B32A32Float:
+            outFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+            return GraphicsResult::Success;
+        default:
+            outFormat = DXGI_FORMAT_UNKNOWN;
+            return GraphicsResult::Unsupported;
+        }
+    }
+
     GraphicsResult ConvertTextureUsage(
         const TextureDesc& desc,
         D3D11_USAGE& outUsage,
