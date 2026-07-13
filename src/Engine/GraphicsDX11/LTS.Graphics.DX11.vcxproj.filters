@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public"><UniqueIdentifier>{C585B20B-D816-4A7E-B08F-3D330A9EAB12}</UniqueIdentifier></Filter>
+    <Filter Include="Public\GraphicsDX11"><UniqueIdentifier>{4EBD74C0-B4AA-4E2E-AFA2-92E1897C95AA}</UniqueIdentifier></Filter>
+    <Filter Include="Private"><UniqueIdentifier>{0FE6C0E8-B691-4718-B476-30E1BE634DB1}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\GraphicsDX11\D3D11Context.h"><Filter>Public\GraphicsDX11</Filter></ClInclude>
+    <ClInclude Include="Public\GraphicsDX11\D3D11Device.h"><Filter>Public\GraphicsDX11</Filter></ClInclude>
+    <ClInclude Include="Public\GraphicsDX11\D3D11SwapChain.h"><Filter>Public\GraphicsDX11</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11Buffer.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11ComPtr.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11Conversions.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11Debug.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11HandlePool.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11ResourceRegistry.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11ResourceTypes.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11Texture.h"><Filter>Private</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\D3D11Buffer.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Context.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Conversions.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Debug.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Device.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11ResourceRegistry.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11SwapChain.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Texture.cpp"><Filter>Private</Filter></ClCompile>
+  </ItemGroup>
+</Project>
