@@ -204,6 +204,7 @@
     <ClInclude Include="Public\Assets\AssetData.h" />
     <ClInclude Include="Public\Assets\AssetHandle.h" />
     <ClInclude Include="Public\Assets\AssetId.h" />
+    <ClInclude Include="Public\Assets\AssetManager.h" />
     <ClInclude Include="Public\Assets\AssetMetadata.h" />
     <ClInclude Include="Public\Assets\AssetPath.h" />
     <ClInclude Include="Public\Assets\AssetRegistry.h" />
@@ -217,12 +218,21 @@
   <ItemGroup>
     <ClCompile Include="Private\AssetData.cpp" />
     <ClCompile Include="Private\AssetId.cpp" />
+    <ClCompile Include="Private\AssetManager.cpp" />
     <ClCompile Include="Private\AssetPath.cpp" />
     <ClCompile Include="Private\AssetRegistry.cpp" />
     <ClCompile Include="Private\AssetResult.cpp" />
     <ClCompile Include="Private\AssetState.cpp" />
     <ClCompile Include="Private\AssetType.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform\LTS.Platform.vcxproj">
+      <Project>{B1C3E5A7-9D2F-4F6A-8B10-2C4D6E8F1357}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

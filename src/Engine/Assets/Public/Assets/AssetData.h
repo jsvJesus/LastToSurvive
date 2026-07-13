@@ -23,6 +23,9 @@ namespace engine::assets
 
         void Clear() noexcept;
 
+        void Swap(
+            AssetData& other) noexcept;
+
         [[nodiscard]] bool IsEmpty() const noexcept;
 
         [[nodiscard]] std::size_t GetSize() const noexcept;

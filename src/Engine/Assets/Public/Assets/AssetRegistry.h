@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Assets/AssetHandle.h"
 #include "Assets/AssetId.h"
 #include "Assets/AssetMetadata.h"

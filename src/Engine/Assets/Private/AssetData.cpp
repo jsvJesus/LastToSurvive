@@ -27,6 +27,11 @@ namespace engine::assets
         bytes_.clear();
     }
 
+    void AssetData::Swap(AssetData& other) noexcept
+    {
+        bytes_.swap(other.bytes_);
+    }
+
     bool AssetData::IsEmpty() const noexcept
     {
         return bytes_.empty();
