@@ -121,6 +121,7 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Graphics\Buffer.h" />
+    <ClInclude Include="Public\Graphics\CommandContext.h" />
     <ClInclude Include="Public\Graphics\Format.h" />
     <ClInclude Include="Public\Graphics\GraphicsBackend.h" />
     <ClInclude Include="Public\Graphics\GraphicsResult.h" />
@@ -137,6 +138,7 @@
 
   <ItemGroup>
     <ClCompile Include="Private\Buffer.cpp" />
+    <ClCompile Include="Private\CommandContext.cpp" />
     <ClCompile Include="Private\Format.cpp" />
     <ClCompile Include="Private\GraphicsBackend.cpp" />
     <ClCompile Include="Private\GraphicsResult.cpp" />
