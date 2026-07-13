@@ -218,6 +218,7 @@
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
     <ClInclude Include="Public\Assets\GpuTexture.h" />
     <ClInclude Include="Public\Assets\TextureAsset.h" />
+    <ClInclude Include="Public\Assets\TextureAssetCache.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -233,6 +234,7 @@
     <ClCompile Include="Private\FileAssetSource.cpp" />
     <ClCompile Include="Private\GpuTexture.cpp" />
     <ClCompile Include="Private\TextureAsset.cpp" />
+    <ClCompile Include="Private\TextureAssetCache.cpp" />
   </ItemGroup>
 
   <ItemGroup>

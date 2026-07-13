@@ -46,6 +46,12 @@ namespace engine::assets
         case AssetResult::FileTooLarge:
             return "FileTooLarge";
 
+        case AssetResult::TypeMismatch:
+            return "TypeMismatch";
+
+        case AssetResult::ReferenceOverflow:
+            return "ReferenceOverflow";
+
         case AssetResult::OutOfMemory:
             return "OutOfMemory";
 

@@ -23,6 +23,9 @@ namespace engine::assets
 
         IoError,
         FileTooLarge,
+
+        TypeMismatch,
+        ReferenceOverflow,
         
         OutOfMemory,
         InternalError
