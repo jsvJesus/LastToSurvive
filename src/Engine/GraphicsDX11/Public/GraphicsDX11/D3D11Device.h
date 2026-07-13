@@ -43,6 +43,12 @@ namespace engine::graphics::d3d11
 
         void Shutdown() noexcept override;
 
+        [[nodiscard]] CommandContext*
+            GetImmediateCommandContext() noexcept override;
+
+        [[nodiscard]] const CommandContext*
+            GetImmediateCommandContext() const noexcept override;
+
         [[nodiscard]] GraphicsResult CreateSwapChain(
             const SwapChainDesc& desc,
             std::unique_ptr<SwapChain>& outSwapChain) noexcept override;
