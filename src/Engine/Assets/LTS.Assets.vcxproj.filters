@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>
+        {B52F73A4-9D21-46C8-A30E-174D6E8F92B5}
+      </UniqueIdentifier>
+    </Filter>
+
+    <Filter Include="Private">
+      <UniqueIdentifier>
+        {E17A64B2-5F39-4D8C-AB70-263E9C51F4D8}
+      </UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Assets\AssetHandle.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetId.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetMetadata.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetPath.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetRegistry.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetResult.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetState.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+
+    <ClInclude Include="Public\Assets\AssetType.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\AssetId.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\AssetPath.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\AssetRegistry.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\AssetResult.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\AssetState.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+
+    <ClCompile Include="Private\AssetType.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+</Project>
