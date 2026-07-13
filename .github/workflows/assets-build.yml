@@ -8,6 +8,8 @@ on:
       - "src/Engine/Assets/**"
       - "src/Engine/AssetsTests/**"
       - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/Legacy/**"
       - "src/Engine/Platform/**"
       - ".github/workflows/assets-build.yml"
   pull_request:
@@ -15,6 +17,8 @@ on:
       - "src/Engine/Assets/**"
       - "src/Engine/AssetsTests/**"
       - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/Legacy/**"
       - "src/Engine/Platform/**"
       - ".github/workflows/assets-build.yml"
 
@@ -54,3 +58,15 @@ jobs:
         shell: pwsh
         run: |
           & "$env:GITHUB_WORKSPACE\build\x64\Release\Bin\LTS.Assets.Tests.exe"
+
+      - name: Build Legacy Bridge Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Legacy Bridge Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
