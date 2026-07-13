@@ -18,6 +18,9 @@ namespace engine::assets
         StaleHandle,
         IdCollision,
 
+        IoError,
+        FileTooLarge,
+        
         OutOfMemory,
         InternalError
     };

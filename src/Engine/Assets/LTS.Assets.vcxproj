@@ -18,16 +18,12 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
 
-    <ProjectGuid>
-      {C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}
-    </ProjectGuid>
+    <ProjectGuid>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</ProjectGuid>
 
     <RootNamespace>LTSAssets</RootNamespace>
     <ProjectName>LTS.Assets</ProjectName>
 
-    <WindowsTargetPlatformVersion>
-      10.0
-    </WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -80,14 +76,8 @@
   <PropertyGroup Label="UserMacros" />
 
   <PropertyGroup>
-    <OutDir>
-      $(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\
-    </OutDir>
-
-    <IntDir>
-      $(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\
-    </IntDir>
-
+    <OutDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir>
+    <IntDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
     <TargetName>LTS.Assets</TargetName>
   </PropertyGroup>
 
@@ -118,6 +108,7 @@
 
       <AdditionalIncludeDirectories>
         $(ProjectDir)Public;
+        $(ProjectDir)..\Platform\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -137,17 +128,13 @@
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <FloatingPointModel>Precise</FloatingPointModel>
 
-      <DebugInformationFormat>
-        ProgramDatabase
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
 
     <Lib>
-      <OutputFile>
-        $(OutDir)$(TargetName)$(TargetExt)
-      </OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
 
@@ -179,6 +166,7 @@
 
       <AdditionalIncludeDirectories>
         $(ProjectDir)Public;
+        $(ProjectDir)..\Platform\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -213,23 +201,28 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="Public\Assets\AssetData.h" />
     <ClInclude Include="Public\Assets\AssetHandle.h" />
     <ClInclude Include="Public\Assets\AssetId.h" />
     <ClInclude Include="Public\Assets\AssetMetadata.h" />
     <ClInclude Include="Public\Assets\AssetPath.h" />
     <ClInclude Include="Public\Assets\AssetRegistry.h" />
     <ClInclude Include="Public\Assets\AssetResult.h" />
+    <ClInclude Include="Public\Assets\AssetSource.h" />
     <ClInclude Include="Public\Assets\AssetState.h" />
     <ClInclude Include="Public\Assets\AssetType.h" />
+    <ClInclude Include="Public\Assets\FileAssetSource.h" />
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Private\AssetData.cpp" />
     <ClCompile Include="Private\AssetId.cpp" />
     <ClCompile Include="Private\AssetPath.cpp" />
     <ClCompile Include="Private\AssetRegistry.cpp" />
     <ClCompile Include="Private\AssetResult.cpp" />
     <ClCompile Include="Private\AssetState.cpp" />
     <ClCompile Include="Private\AssetType.cpp" />
+    <ClCompile Include="Private\FileAssetSource.cpp" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

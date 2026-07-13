@@ -34,6 +34,12 @@ namespace engine::assets
         case AssetResult::IdCollision:
             return "IdCollision";
 
+        case AssetResult::IoError:
+            return "IoError";
+
+        case AssetResult::FileTooLarge:
+            return "FileTooLarge";
+
         case AssetResult::OutOfMemory:
             return "OutOfMemory";
 
