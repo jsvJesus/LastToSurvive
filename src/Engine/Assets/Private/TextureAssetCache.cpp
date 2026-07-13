@@ -400,30 +400,39 @@ namespace engine::assets
         }
 
         entry->referenceCount = 1U;
-        Impl::Entry* insertedEntry = entry.get();
+        Impl::Entry* insertedEntry = nullptr;
 
         try
         {
-            const auto insertResult = impl_->entries.emplace(
-                cacheKey,
-                std::move(entry));
+            const auto insertResult =
+                impl_->entries.try_emplace(cacheKey);
 
             if (!insertResult.second)
             {
-                ReleaseEntryBestEffort(*impl_, *insertedEntry);
+                ReleaseEntryBestEffort(*impl_, *entry);
                 return TextureCacheResult::FromAsset(
                     AssetResult::AlreadyExists);
             }
+
+            insertResult.first->second = std::move(entry);
+            insertedEntry = insertResult.first->second.get();
         }
         catch (const std::bad_alloc&)
         {
-            ReleaseEntryBestEffort(*impl_, *insertedEntry);
+            ReleaseEntryBestEffort(*impl_, *entry);
             return TextureCacheResult::FromAsset(
                 AssetResult::OutOfMemory);
         }
         catch (...)
         {
-            ReleaseEntryBestEffort(*impl_, *insertedEntry);
+            ReleaseEntryBestEffort(*impl_, *entry);
+            return TextureCacheResult::FromAsset(
+                AssetResult::InternalError);
+        }
+
+        if (insertedEntry == nullptr)
+        {
+            impl_->entries.erase(cacheKey);
             return TextureCacheResult::FromAsset(
                 AssetResult::InternalError);
         }
