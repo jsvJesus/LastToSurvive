@@ -6,22 +6,22 @@
 
 namespace engine::assets
 {
+    namespace
+    {
+        using LoaderKey = std::uint8_t;
+
+        [[nodiscard]] constexpr LoaderKey ToKey(
+            const AssetType type) noexcept
+        {
+            return static_cast<LoaderKey>(type);
+        }
+    }
+
     class AssetLoaderRegistry::Impl final
     {
     public:
-        using Key = std::uint8_t;
-
-        std::unordered_map<Key, AssetLoader*> loaders;
+        std::unordered_map<LoaderKey, AssetLoader*> loaders;
     };
-
-    namespace
-    {
-        [[nodiscard]] constexpr AssetLoaderRegistry::Impl::Key ToKey(
-            const AssetType type) noexcept
-        {
-            return static_cast<AssetLoaderRegistry::Impl::Key>(type);
-        }
-    }
 
     AssetLoaderRegistry::AssetLoaderRegistry() noexcept
     {
