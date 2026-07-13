@@ -39,18 +39,26 @@ namespace engine::graphics::d3d11
     {
         outSwapChain.reset();
         if (device == nullptr || factory == nullptr || !desc.IsValid())
+        {
             return GraphicsResult::InvalidArgument;
+        }
         if (desc.bufferCount < 2)
+        {
             return GraphicsResult::Unsupported;
+        }
         if (desc.enableTearing && !tearingSupported)
+        {
             return GraphicsResult::Unsupported;
+        }
 
         try
         {
             std::unique_ptr<D3D11SwapChain> swapChain(
                 new (std::nothrow) D3D11SwapChain());
             if (!swapChain || !swapChain->impl_)
+            {
                 return GraphicsResult::OutOfMemory;
+            }
 
             DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
             GraphicsResult conversionResult = detail::ConvertFormat(
@@ -58,7 +66,10 @@ namespace engine::graphics::d3d11
                 detail::TextureViewKind::Resource,
                 false,
                 format);
-            if (Failed(conversionResult)) return conversionResult;
+            if (Failed(conversionResult))
+            {
+                return conversionResult;
+            }
 
             DXGI_SWAP_CHAIN_DESC1 nativeDesc{};
             nativeDesc.Width = desc.width;
@@ -73,13 +84,21 @@ namespace engine::graphics::d3d11
             nativeDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
             nativeDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
             nativeDesc.Flags = desc.enableTearing
-                ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+                ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+                : 0U;
 
             const HWND window = reinterpret_cast<HWND>(desc.window.Value());
-            HRESULT result = factory->CreateSwapChainForHwnd(
-                device, window, &nativeDesc, nullptr, nullptr,
+            const HRESULT result = factory->CreateSwapChainForHwnd(
+                device,
+                window,
+                &nativeDesc,
+                nullptr,
+                nullptr,
                 swapChain->impl_->swapChain.Put());
-            if (FAILED(result)) return detail::ConvertFailure(result);
+            if (FAILED(result))
+            {
+                return detail::ConvertFailure(result);
+            }
 
             factory->MakeWindowAssociation(window, DXGI_MWA_NO_ALT_ENTER);
             swapChain->impl_->device.CopyFrom(device);
@@ -87,7 +106,10 @@ namespace engine::graphics::d3d11
             swapChain->impl_->tearingSupported = tearingSupported;
 
             conversionResult = swapChain->RecreateBackBuffer();
-            if (Failed(conversionResult)) return conversionResult;
+            if (Failed(conversionResult))
+            {
+                return conversionResult;
+            }
 
             outSwapChain = std::move(swapChain);
             return GraphicsResult::Success;
@@ -98,21 +120,25 @@ namespace engine::graphics::d3d11
         }
     }
 
-
     GraphicsResult D3D11SwapChain::RecreateBackBuffer() noexcept
     {
         if (!impl_ || !impl_->device || !impl_->swapChain)
+        {
             return GraphicsResult::InvalidState;
+        }
 
         HRESULT result = impl_->swapChain.Get()->GetBuffer(
             0,
             __uuidof(ID3D11Texture2D),
             reinterpret_cast<void**>(impl_->backBuffer.Put()));
         if (FAILED(result))
+        {
             return detail::ConvertFailure(result);
+        }
 
         result = impl_->device.Get()->CreateRenderTargetView(
-            impl_->backBuffer.Get(), nullptr,
+            impl_->backBuffer.Get(),
+            nullptr,
             impl_->renderTargetView.Put());
         if (FAILED(result))
         {
@@ -120,6 +146,11 @@ namespace engine::graphics::d3d11
             return detail::ConvertFailure(result);
         }
         return GraphicsResult::Success;
+    }
+
+    GraphicsBackend D3D11SwapChain::GetBackend() const noexcept
+    {
+        return GraphicsBackend::D3D11;
     }
 
     SwapChainHandle D3D11SwapChain::GetHandle() const noexcept
@@ -138,17 +169,26 @@ namespace engine::graphics::d3d11
         const std::uint32_t height) noexcept
     {
         if (!impl_ || !impl_->swapChain || width == 0 || height == 0)
+        {
             return GraphicsResult::InvalidArgument;
+        }
 
         impl_->renderTargetView.Reset();
         impl_->backBuffer.Reset();
 
         const UINT flags = impl_->desc.enableTearing
-            ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+            ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+            : 0U;
         const HRESULT result = impl_->swapChain.Get()->ResizeBuffers(
-            0, width, height, DXGI_FORMAT_UNKNOWN, flags);
+            0,
+            width,
+            height,
+            DXGI_FORMAT_UNKNOWN,
+            flags);
         if (FAILED(result))
+        {
             return detail::ConvertFailure(result);
+        }
 
         impl_->desc.width = width;
         impl_->desc.height = height;
@@ -160,15 +200,19 @@ namespace engine::graphics::d3d11
     {
         outStatus = PresentStatus::Failed;
         if (!impl_ || !impl_->swapChain)
+        {
             return GraphicsResult::InvalidState;
+        }
 
         const UINT syncInterval =
             impl_->desc.presentMode == PresentMode::VSync ? 1U : 0U;
         const UINT flags =
-            impl_->desc.enableTearing && syncInterval == 0
-                ? DXGI_PRESENT_ALLOW_TEARING : 0U;
+            impl_->desc.enableTearing && syncInterval == 0U
+                ? DXGI_PRESENT_ALLOW_TEARING
+                : 0U;
         const HRESULT result = impl_->swapChain.Get()->Present(
-            syncInterval, flags);
+            syncInterval,
+            flags);
 
         if (result == DXGI_STATUS_OCCLUDED)
         {
@@ -186,7 +230,9 @@ namespace engine::graphics::d3d11
             return GraphicsResult::DeviceRemoved;
         }
         if (FAILED(result))
+        {
             return detail::ConvertFailure(result);
+        }
 
         outStatus = PresentStatus::Presented;
         return GraphicsResult::Success;
