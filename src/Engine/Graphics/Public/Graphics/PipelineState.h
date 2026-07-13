@@ -94,7 +94,7 @@ namespace engine::graphics
         Green = 1U << 1U,
         Blue = 1U << 2U,
         Alpha = 1U << 3U,
-        All = Red | Green | Blue | Alpha
+        All = 0x0FU
     };
 
     [[nodiscard]] constexpr ColorWriteMask operator|(
