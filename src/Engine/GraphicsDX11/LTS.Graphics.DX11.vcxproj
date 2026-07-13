@@ -67,8 +67,10 @@
     <ClInclude Include="Private\D3D11Conversions.h" />
     <ClInclude Include="Private\D3D11Debug.h" />
     <ClInclude Include="Private\D3D11HandlePool.h" />
+    <ClInclude Include="Private\D3D11PipelineState.h" />
     <ClInclude Include="Private\D3D11ResourceRegistry.h" />
     <ClInclude Include="Private\D3D11ResourceTypes.h" />
+    <ClInclude Include="Private\D3D11Shader.h" />
     <ClInclude Include="Private\D3D11Texture.h" />
   </ItemGroup>
   <ItemGroup>
@@ -77,7 +79,9 @@
     <ClCompile Include="Private\D3D11Conversions.cpp" />
     <ClCompile Include="Private\D3D11Debug.cpp" />
     <ClCompile Include="Private\D3D11Device.cpp" />
+    <ClCompile Include="Private\D3D11PipelineState.cpp" />
     <ClCompile Include="Private\D3D11ResourceRegistry.cpp" />
+    <ClCompile Include="Private\D3D11Shader.cpp" />
     <ClCompile Include="Private\D3D11SwapChain.cpp" />
     <ClCompile Include="Private\D3D11Texture.cpp" />
   </ItemGroup>
