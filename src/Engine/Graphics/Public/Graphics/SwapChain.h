@@ -49,6 +49,8 @@ namespace engine::graphics
         SwapChain(SwapChain&&) = delete;
         SwapChain& operator=(SwapChain&&) = delete;
 
+        [[nodiscard]] virtual GraphicsBackend GetBackend() const noexcept = 0;
+
         [[nodiscard]] virtual SwapChainHandle GetHandle() const noexcept = 0;
 
         [[nodiscard]] virtual const SwapChainDesc& GetDesc() const noexcept = 0;
