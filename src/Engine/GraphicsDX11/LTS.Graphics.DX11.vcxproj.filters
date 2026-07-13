@@ -14,8 +14,10 @@
     <ClInclude Include="Private\D3D11Conversions.h"><Filter>Private</Filter></ClInclude>
     <ClInclude Include="Private\D3D11Debug.h"><Filter>Private</Filter></ClInclude>
     <ClInclude Include="Private\D3D11HandlePool.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11PipelineState.h"><Filter>Private</Filter></ClInclude>
     <ClInclude Include="Private\D3D11ResourceRegistry.h"><Filter>Private</Filter></ClInclude>
     <ClInclude Include="Private\D3D11ResourceTypes.h"><Filter>Private</Filter></ClInclude>
+    <ClInclude Include="Private\D3D11Shader.h"><Filter>Private</Filter></ClInclude>
     <ClInclude Include="Private\D3D11Texture.h"><Filter>Private</Filter></ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -24,7 +26,9 @@
     <ClCompile Include="Private\D3D11Conversions.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\D3D11Debug.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\D3D11Device.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11PipelineState.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\D3D11ResourceRegistry.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\D3D11Shader.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\D3D11SwapChain.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\D3D11Texture.cpp"><Filter>Private</Filter></ClCompile>
   </ItemGroup>
