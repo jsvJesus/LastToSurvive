@@ -1,5 +1,7 @@
 #include "Legacy/Graphics/D3D9RendererBridge.h"
 
+#include "Legacy/Assets/LegacyTextureAssetBridge.h"
+
 #include "Graphics/GraphicsBackend.h"
 #include "Graphics/GraphicsResult.h"
 #include "Graphics/RenderDevice.h"
@@ -16,22 +18,35 @@ namespace engine::legacy::graphics
 
         CompatibilityDevice* g_compatibilityDevice = nullptr;
 
-        // Остаётся true, пока native Reset не завершится успешно.
+        // Remains true until the native Reset finishes successfully.
         bool g_deviceLostNotificationPending = false;
 
         void DestroyCompatibilityDevice() noexcept
         {
             if (g_compatibilityDevice == nullptr)
             {
+                engine::legacy::assets::AbandonLegacyTextureAssetBridge();
                 g_deviceLostNotificationPending = false;
                 return;
+            }
+
+            const engine::legacy::assets::LegacyTextureBridgeResult
+                assetShutdownResult =
+                    engine::legacy::assets::
+                        ShutdownLegacyTextureAssetBridge();
+
+            if (!assetShutdownResult.Succeeded())
+            {
+                // The adapter is about to clear its own registry. Drop bridge
+                // handles so they can never outlive the compatibility device.
+                engine::legacy::assets::
+                    AbandonLegacyTextureAssetBridge();
             }
 
             g_compatibilityDevice->Shutdown();
 
             delete g_compatibilityDevice;
             g_compatibilityDevice = nullptr;
-
             g_deviceLostNotificationPending = false;
         }
     }
@@ -44,13 +59,12 @@ namespace engine::legacy::graphics
             return false;
         }
 
-        // Повторная инициализация тем же работающим устройством.
+        // Reinitialization with the same working device.
         if (g_compatibilityDevice != nullptr)
         {
             if (
                 g_compatibilityDevice->GetNativeDevice() == device &&
-                g_compatibilityDevice->IsReady()
-            )
+                g_compatibilityDevice->IsReady())
             {
                 return true;
             }
@@ -79,7 +93,7 @@ namespace engine::legacy::graphics
         deviceDesc.backend =
             engine::graphics::GraphicsBackend::D3D9;
 
-        // Пока adapter работает только как compatibility bridge.
+        // The adapter currently works only as a compatibility bridge.
         deviceDesc.enableValidation = false;
         deviceDesc.enableDebugMarkers = false;
 
@@ -108,13 +122,12 @@ namespace engine::legacy::graphics
     {
         if (
             g_compatibilityDevice == nullptr ||
-            g_deviceLostNotificationPending
-        )
+            g_deviceLostNotificationPending)
         {
             return;
         }
 
-        // Перед native Reset adapter должен находиться в Ready.
+        // Before native Reset the adapter must still be Ready.
         if (!g_compatibilityDevice->IsReady())
         {
             return;
@@ -129,8 +142,7 @@ namespace engine::legacy::graphics
     {
         if (
             g_compatibilityDevice == nullptr ||
-            !g_deviceLostNotificationPending
-        )
+            !g_deviceLostNotificationPending)
         {
             return false;
         }
@@ -140,8 +152,7 @@ namespace engine::legacy::graphics
 
         if (engine::graphics::Failed(resetResult))
         {
-            // Adapter остаётся в состоянии Lost.
-            // Следующая успешная попытка native Reset снова вызовет эту функцию.
+            // Adapter remains Lost. A later successful native Reset can retry.
             return false;
         }
 
