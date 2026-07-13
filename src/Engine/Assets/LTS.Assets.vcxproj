@@ -109,6 +109,7 @@
       <AdditionalIncludeDirectories>
         $(ProjectDir)Public;
         $(ProjectDir)..\Platform\Public;
+        $(ProjectDir)..\Graphics\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -167,6 +168,7 @@
       <AdditionalIncludeDirectories>
         $(ProjectDir)Public;
         $(ProjectDir)..\Platform\Public;
+        $(ProjectDir)..\Graphics\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -212,7 +214,9 @@
     <ClInclude Include="Public\Assets\AssetSource.h" />
     <ClInclude Include="Public\Assets\AssetState.h" />
     <ClInclude Include="Public\Assets\AssetType.h" />
+    <ClInclude Include="Public\Assets\DdsTextureDecoder.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
+    <ClInclude Include="Public\Assets\TextureAsset.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -224,12 +228,20 @@
     <ClCompile Include="Private\AssetResult.cpp" />
     <ClCompile Include="Private\AssetState.cpp" />
     <ClCompile Include="Private\AssetType.cpp" />
+    <ClCompile Include="Private\DdsTextureDecoder.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
+    <ClCompile Include="Private\TextureAsset.cpp" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Platform\LTS.Platform.vcxproj">
       <Project>{B1C3E5A7-9D2F-4F6A-8B10-2C4D6E8F1357}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Graphics\LTS.Graphics.vcxproj">
+      <Project>{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>

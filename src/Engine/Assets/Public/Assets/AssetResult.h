@@ -18,6 +18,9 @@ namespace engine::assets
         StaleHandle,
         IdCollision,
 
+        UnsupportedFormat,
+        CorruptData,
+
         IoError,
         FileTooLarge,
         

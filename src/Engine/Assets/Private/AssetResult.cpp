@@ -34,6 +34,12 @@ namespace engine::assets
         case AssetResult::IdCollision:
             return "IdCollision";
 
+        case AssetResult::UnsupportedFormat:
+            return "UnsupportedFormat";
+
+        case AssetResult::CorruptData:
+            return "CorruptData";
+
         case AssetResult::IoError:
             return "IoError";
 
