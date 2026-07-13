@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/Buffer.h"
+#include "Graphics/CommandContext.h"
 #include "Graphics/GraphicsBackend.h"
 #include "Graphics/GraphicsResult.h"
 #include "Graphics/InputLayout.h"
@@ -46,6 +47,18 @@ namespace engine::graphics
             const RenderDeviceDesc& desc) noexcept = 0;
 
         virtual void Shutdown() noexcept = 0;
+
+        [[nodiscard]] virtual CommandContext*
+            GetImmediateCommandContext() noexcept
+        {
+            return nullptr;
+        }
+
+        [[nodiscard]] virtual const CommandContext*
+            GetImmediateCommandContext() const noexcept
+        {
+            return nullptr;
+        }
 
         [[nodiscard]] virtual GraphicsResult CreateSwapChain(
             const SwapChainDesc& desc,
