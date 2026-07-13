@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
@@ -10,6 +10,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -18,59 +19,53 @@
     <ProjectName>LTS.Legacy</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
+
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+
   <PropertyGroup Label="UserMacros" />
+
   <PropertyGroup>
     <OutDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir>
     <IntDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
     <TargetName>LTS.Legacy</TargetName>
   </PropertyGroup>
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>
-        /permissive-
-        /Zc:__cplusplus
-        /Zc:inline
-        /utf-8
-        %(AdditionalOptions)
-      </AdditionalOptions>
+      <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        $(ProjectDir)Public;
-        $(ProjectDir)..\Core\Public;
-        $(ProjectDir)..\Math\Public;
-        $(ProjectDir)..\Graphics\Public;
-        $(ProjectDir)..\GraphicsDX9\Public;
-        $(ProjectDir)..\Platform\Public;
-        $(ProjectDir)..\..\Eternity\Include;
-        $(ProjectDir)..\..\External\dxsdk\Include;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\GraphicsDX9\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -90,31 +85,16 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>
-        /permissive-
-        /Zc:__cplusplus
-        /Zc:inline
-        /utf-8
-        %(AdditionalOptions)
-      </AdditionalOptions>
+      <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;DISABLE_PHYSX;_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        $(ProjectDir)Public;
-        $(ProjectDir)..\Core\Public;
-        $(ProjectDir)..\Math\Public;
-        $(ProjectDir)..\Graphics\Public;
-        $(ProjectDir)..\GraphicsDX9\Public;
-        $(ProjectDir)..\Platform\Public;
-        $(ProjectDir)..\..\Eternity\Include;
-        $(ProjectDir)..\..\External\dxsdk\Include;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Core\Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\GraphicsDX9\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\Eternity\Include;$(ProjectDir)..\..\External\dxsdk\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -134,35 +114,43 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Lib>
   </ItemDefinitionGroup>
+
   <ItemGroup>
+    <ClInclude Include="Public\Legacy\Assets\LegacyTextureAssetBridge.h" />
     <ClInclude Include="Public\Legacy\CullingConversion.h" />
     <ClInclude Include="Public\Legacy\Graphics\D3D9RendererBridge.h" />
     <ClInclude Include="Public\Legacy\LoggingBridge.h" />
     <ClInclude Include="Public\Legacy\MatrixConversion.h" />
     <ClInclude Include="Public\Legacy\PointConversion.h" />
   </ItemGroup>
+
   <ItemGroup>
+    <ClCompile Include="Private\Assets\LegacyTextureAssetBridge.cpp" />
     <ClCompile Include="Private\CullingConversion.cpp" />
     <ClCompile Include="Private\Graphics\D3D9RendererBridge.cpp" />
     <ClCompile Include="Private\LoggingBridge.cpp" />
     <ClCompile Include="Private\MatrixConversion.cpp" />
   </ItemGroup>
+
   <ItemGroup>
+    <ProjectReference Include="..\Assets\LTS.Assets.vcxproj">
+      <Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
     <ProjectReference Include="..\Core\LTS.Core.vcxproj">
       <Project>{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-
     <ProjectReference Include="..\Math\LTS.Math.vcxproj">
       <Project>{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-
     <ProjectReference Include="..\GraphicsDX9\LTS.Graphics.DX9.vcxproj">
       <Project>{48B9A4F3-4D95-4E0D-8D61-93273B3A1E20}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
