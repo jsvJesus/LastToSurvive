@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WeaponsArmory>
+  <Weapon itemID="109503" category="28" upgrade="1" FNAME="MedKit_Military" Weight="250" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Medical/MedKit_Military.sco" file_fps="Data/ObjectsDepot/SS_Medical/MedKit_Military.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+			<MuzzleModel file="muzzle_asr" />
+			<HudIcon file="$Data/ObjectsDepot/SS_Medical/StoreIcons/MedKit_Military.dds" />
+			<Store name="MedKit_Military" icon="$Data/ObjectsDepot/SS_Medical/StoreIcons/MedKit_Military.dds" desc="$MedKit_Military_desc" LevelRequired="4" />
+			<PrimaryFire bullet="5.45" damage="95" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="3" reloadTime="4" activeReloadTick="2" rateOfFire="30" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+		</Weapon>
+  <Weapon itemID="109504" category="28" upgrade="1" FNAME="SS_Med_Antibiotics_01" Weight="250" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Medical/SS_Med_Antibiotics_01.sco" file_fps="Data/ObjectsDepot/SS_Medical/SS_Med_Antibiotics_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+			<MuzzleModel file="muzzle_asr" />
+			<HudIcon file="$Data/ObjectsDepot/SS_Medical/StoreIcons/SS_Med_Antibiotics_01.dds" />
+			<Store name="SS_Med_Antibiotics_01" icon="$Data/ObjectsDepot/SS_Medical/StoreIcons/SS_Med_Antibiotics_01.dds" desc="$SS_Med_Antibiotics_01_desc" LevelRequired="4" />
+			<PrimaryFire bullet="5.45" damage="45" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="3" reloadTime="4" activeReloadTick="2" rateOfFire="30" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+		</Weapon>
+  <Weapon itemID="109505" category="28" upgrade="1" FNAME="SS_Med_Bandage_Fac_01" Weight="250" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Medical/SS_Med_Bandage_Fac_01.sco" file_fps="Data/ObjectsDepot/SS_Medical/SS_Med_Bandage_Fac_01.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+			<MuzzleModel file="muzzle_asr" />
+			<HudIcon file="$Data/ObjectsDepot/SS_Medical/StoreIcons/SS_Med_Bandage_Fac_01.dds" />
+			<Store name="SS_Med_Bandage_Fac_01" icon="$Data/ObjectsDepot/SS_Medical/StoreIcons/SS_Med_Bandage_Fac_01.dds" desc="$SS_Med_Bandage_Fac_01_desc" LevelRequired="4" />
+			<PrimaryFire bullet="5.45" damage="45" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="3" reloadTime="4" activeReloadTick="2" rateOfFire="30" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+		</Weapon>
+  <Weapon itemID="109506" category="28" upgrade="1" FNAME="MedKit_Civilian" Weight="250" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Medical/MedKit_Civilian.sco" file_fps="Data/ObjectsDepot/SS_Medical/MedKit_Civilian.sco" AnimPrefix="" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+			<MuzzleModel file="muzzle_asr" />
+			<HudIcon file="$Data/ObjectsDepot/SS_Medical/StoreIcons/MedKit_Civilian.dds" />
+			<Store name="$MedKit_Civilian" icon="$Data/ObjectsDepot/SS_Medical/StoreIcons/MedKit_Civilian.dds" desc="$MedKit_Civilian_desc" LevelRequired="4" />
+			<PrimaryFire bullet="5.45" damage="75" immediate="true" mass="10" decay="50" speed="300" area="0" delay="0" timeout="0" numShells="1" clipSize="3" reloadTime="4" activeReloadTick="2" rateOfFire="30" spread="20" recoil="20" numgrenades="0" grenadename="asr_grenade" firemode="101" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+		</Weapon>
+  <Weapon itemID="112993" category="28" upgrade="0" FNAME="SS_Barricade_Shield_Metal_01" Weight="1000" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Shield_Metal_01.sco" file_fps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Shield_Metal_01.sco" AnimPrefix="SS_Barricade_Shield_Metal_01" muzzlerOffset.x="" muzzlerOffset.y="" muzzlerOffset.z="" />
+			<MuzzleModel file="muzzle_asr" file_fps="_fps" />
+			<HudIcon file="$Data/Weapons/HudIcons/SS_Barricade_Shield_Metal_01.dds" />
+			<Store name="$Barricade_Metal_Shield" icon="$Data/ObjectsDepot/SS_Survival/StoreIcons/SS_Barricade_Shield_Metal_01.dds" desc="$Barricade_Metal_Shield_desc" LevelRequired="0" gameMode="0" />
+			<PrimaryFire bullet="melee" damage="400" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+		</Weapon>
+  <Weapon itemID="112995" category="28" upgrade="0" FNAME="SS_Barricade_BarbWire" Weight="500" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Survival/SS_Barricade_BarbWire.sco" file_fps="Data/ObjectsDepot/SS_Survival/SS_Barricade_BarbWire.sco" AnimPrefix="SS_Barricade_Shield_wood_01" muzzlerOffset.x="" muzzlerOffset.y="" muzzlerOffset.z="" />
+			<MuzzleModel file="muzzle_asr" file_fps="_fps" />
+			<HudIcon file="$Data/Weapons/HudIcons/SS_Barricade_BarbWire.dds" />
+			<Store name="$Barricade_BarbWire" icon="$Data/ObjectsDepot/SS_Survival/StoreIcons/SS_Barricade_BarbWire.dds" desc="$Barricade_BarbWire_desc" LevelRequired="0" gameMode="0" />
+			<PrimaryFire bullet="melee" damage="400" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+		</Weapon>
+  <Weapon itemID="112999" category="28" upgrade="0" FNAME="SS_Barricade_Shield_Wood_01" Weight="500" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Shield_Wood_01.sco" file_fps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Shield_Wood_01.sco" AnimPrefix="SS_Barricade_Shield_wood_01" muzzlerOffset.x="" muzzlerOffset.y="" muzzlerOffset.z="" />
+			<MuzzleModel file="muzzle_asr" file_fps="_fps" />
+			<HudIcon file="$Data/Weapons/HudIcons/SS_Barricade_Shield_Wood_01.dds" />
+			<Store name="$Barricade_Wood_Shield" icon="$Data/ObjectsDepot/SS_Survival/StoreIcons/SS_Barricade_Shield_Wood_01.dds" desc="$Barricade_Wood_Shield_desc" LevelRequired="0" gameMode="0" />
+			<PrimaryFire bullet="melee" damage="400" immediate="true" mass="10" decay="1" speed="60" area="0" delay="0" timeout="0" numShells="1" clipSize="5" reloadTime="1" activeReloadTick="0" rateOfFire="60" spread="1" recoil="1" numgrenades="0" grenadename="asr_grenade" firemode="100" ScopeType="default" ScopeZoom="0" />
+			<Animation type="assault" />
+			<Sound shoot="" reload="" />
+			<FPS />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+		</Weapon>
+  <Weapon itemID="113008" category="28" upgrade="0" FNAME="SS_Barricade_Spike_Mat" Weight="500" NewChar="1">
+			<Model file_tps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Spike_Mat.sco" file_fps="Data/ObjectsDepot/SS_Survival/SS_Barricade_Spike_Mat.sco" AnimPrefix="" muzzlerOffset.x="" muzzlerOffset.y="" muzzlerOffset.z="" />
+			<MuzzleModel file="muzzle_asr" file_fps="_fps" />
+			<HudIcon file="$Data/Weapons/HudIcons/SS_Barricade_Spike_Mat.dds" />
+			<Store name="$Barricade_Spike_Mat" icon="$Data/ObjectsDepot/SS_Survival/StoreIcons/SS_Barricade_Spike_Mat.dds" desc="$Barricade_Spike_Mat_desc" LevelRequired="0" gameMode="0" />
+			<PrimaryFire bullet="ClaymoreMine" ScopeType="default" damage="1.5" immediate="true" mass="200" decay="0" speed="0.5" area="11" delay="0" timeout="0" numShells="0" clipSize="0" reloadTime="0" activeReloadTick="0" rateOfFire="0" spread="0" recoil="11" numgrenades="0" grenadename="" firemode="100" spreadMult="0" spreadCurve="0" spreadLeft="0" spreadRight="0" spreadUp="0" spreadDown="0" recoilUp="0" recoilDown="0" recoilLeft="0" recoilRight="0" rofMult="0" aggroRadius="0" /> 
+			<Animation type="" />
+			<Sound shoot="" reload="" />
+			<FPS />
+			<Dur u="0" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+		</Weapon>
+</WeaponsArmory>

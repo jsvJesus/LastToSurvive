@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ItemDatabaseExtra source="Data/Weapons/itemsDB_new.xml">
+  <Armory type="AmmoArmory" file="Data/Weapons/ItemsDB/Extra/ammo.xml" count="8" />
+  <Armory type="HeroTauntArmory" file="Data/Weapons/ItemsDB/Extra/hero_taunts.xml" count="48" />
+  <Armory type="LootCrateSpecial" file="Data/Weapons/ItemsDB/Extra/loot_crate_special.xml" count="0" />
+</ItemDatabaseExtra>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WeaponsArmory>
+  <Weapon itemID="112968" category="24" upgrade="1" FNAME="SUP_AT4_Tier2" Weight="5600" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_AT4_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_AT4_Tier2.sco" AnimPrefix="SUP_AT4" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_sup_at4_basic_01" file_fps="muzzle_sup_at4_basic_01_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/SUP_AT4_Tier2.dds" />
+    <Store name="$SUP_AT4_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_SUP/StoreIcons/SUP_AT4_Tier2.dds" desc="$SUP_AT4_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$AT4_Ammo" ScopeType="default" damage="1" immediate="false" mass="1" decay="1" speed="175" area="7" delay="0.25" timeout="75" numShells="0" clipSize="1" reloadTime="2.67" activeReloadTick="0" rateOfFire="60" spread="3.25" recoil="10.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="1" spreadLeft="0.25" spreadRight="0.25" spreadUp="0.25" spreadDown="0.25" recoilUp="0.1" recoilDown="-1" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Support/AT4/AT4_B" reload="Sounds/Weapons/Guns/Support/AT4/AT4Reload" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410659" d2="0" d3="0" d4="410677" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="20" r1="0" r2="0" r3="0" r4="0" r5="10" r6="1" />
+  </Weapon>
+  <Weapon itemID="112970" category="24" upgrade="1" FNAME="SUP_Eliminator_Tier2" Weight="4000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_Eliminator_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_Eliminator_Tier2.sco" AnimPrefix="SUP_Eliminator" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_sup_at4_basic_01" file_fps="muzzle_sup_at4_basic_01_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/SUP_Eliminator_Tier2.dds" />
+    <Store name="$SUP_Eliminator_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_SUP/StoreIcons/SUP_Eliminator_Tier2.dds" desc="$SUP_Eliminator_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$AT4_Ammo" ScopeType="default" damage="1" immediate="false" mass="0.5" decay="1" speed="200" area="8" delay="0.25" timeout="100" numShells="0" clipSize="1" reloadTime="2.77" activeReloadTick="0" rateOfFire="60" spread="3.25" recoil="10.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="1" spreadLeft="0.25" spreadRight="0.25" spreadUp="0.25" spreadDown="0.25" recoilUp="0.1" recoilDown="-1" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Support/Eliminator/Eliminator" reload="Sounds/Weapons/Guns/Support/Eliminator/EliminatorReload" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410699" d2="0" d3="0" d4="410679" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="20" r1="0" r2="0" r3="0" r4="0" r5="10" r6="1" />
+  </Weapon>
+  <Weapon itemID="112972" category="24" upgrade="1" FNAME="SUP_RPG7_Tier2" Weight="4000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_Tier2.sco" AnimPrefix="SUP_RPG7" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_sup_rpg7_basic_01" file_fps="muzzle_sup_rpg7_basic_01_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/SUP_RPG7_Tier2.dds" />
+    <Store name="$SUP_RPG7_Mk5" icon="$Data/ObjectsDepot/ROTB_Weapons_SUP/StoreIcons/SUP_RPG7_Tier2.dds" desc="$SUP_RPG7_Mk5_desc" LevelRequired="15" gameMode="0" />
+    <PrimaryFire bullet="$RPG7_Ammo" ScopeType="default" damage="71" immediate="false" mass="0.5" decay="71" speed="371" area="6" delay="0.25" timeout="75" numShells="0" clipSize="1" reloadTime="3.75" activeReloadTick="0" rateOfFire="60" spread="3.25" recoil="17.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="1" spreadLeft="0.25" spreadRight="0.25" spreadUp="0.25" spreadDown="0.25" recoilUp="0.1" recoilDown="-1" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Support/RPG7/RPG7" reload="Sounds/Weapons/Guns/Support/RPG7/RPG7Reload" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410661" d2="0" d3="0" d4="410678" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="20" r1="0" r2="0" r3="0" r4="0" r5="10" r6="1" />
+  </Weapon>
+  <Weapon itemID="113102" category="24" upgrade="1" FNAME="SUP_RPG7_Tier2" Weight="1" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_Tier2_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_Tier2.sco" AnimPrefix="SUP_RPG7" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_asr" file_fps="_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/SUP_RPG7_Tier2.dds" />
+    <Store name="$Alien_Missile" icon="$Data/ObjectsDepot/ROTB_Weapons_SUP/StoreIcons/SUP_RPG7_Tier2.dds" desc="Projectile attack for aliens" LevelRequired="0" gameMode="0" />
+    <PrimaryFire bullet="$Alien_projectile" ScopeType="default" damage="1" immediate="false" mass="0.01" decay="1" speed="15" area="6" delay="0.25" timeout="10" numShells="0" clipSize="1" reloadTime="3.75" activeReloadTick="0" rateOfFire="60" spread="7" recoil="15" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="1" spreadLeft="1" spreadRight="1" spreadUp="1" spreadDown="1" recoilUp="1" recoilDown="1" recoilLeft="1" recoilRight="1" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="" reload="" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="0" d2="0" d3="0" d4="0" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="8" r1="0" r2="0" r3="0" r4="0" r5="0" r6="0" />
+  </Weapon>
+  <Weapon itemID="113106" category="24" upgrade="1" FNAME="SUP_RPG7_MK6_1" Weight="4000" NewChar="1">
+    <Model file_tps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_MK6_1_lod1.sco" file_fps="Data/ObjectsDepot/ROTB_Weapons_SUP/SUP_RPG7_MK6_1.sco" AnimPrefix="SUP_RPG7" muzzlerOffset.x="0" muzzlerOffset.y="0" muzzlerOffset.z="0" />
+    <MuzzleModel file="muzzle_sup_rpg7_basic_01" file_fps="muzzle_sup_rpg7_basic_01_fps" />
+    <HudIcon file="$Data/Weapons/HudIcons/SUP_RPG7_MK6_1.dds" />
+    <Store name="$SUP_RPG7_Mk6_1" icon="$Data/ObjectsDepot/ROTB_Weapons_SUP/StoreIcons/SUP_RPG7_MK6_1.dds" desc="$SUP_RPG7_Mk6_1_desc" LevelRequired="20" gameMode="0" />
+    <PrimaryFire bullet="$RPG7_Ammo" ScopeType="default" damage="1" immediate="false" mass="0.5" decay="1" speed="190" area="6" delay="0.25" timeout="75" numShells="0" clipSize="1" reloadTime="3.75" activeReloadTick="0" rateOfFire="60" spread="3.25" recoil="10.3" numgrenades="0" grenadename="asr_grenade" firemode="100" spreadMult="1" spreadCurve="1" spreadLeft="0.25" spreadRight="0.25" spreadUp="0.25" spreadDown="0.25" recoilUp="0.1" recoilDown="-1" recoilLeft="0.1" recoilRight="0.1" rofMult="1" aggroRadius="50" />
+    <Animation type="assault" />
+    <Sound shoot="Sounds/Weapons/Guns/Support/RPG7/RPG7" reload="Sounds/Weapons/Guns/Support/RPG7/RPG7Reload" />
+    <FPS IsFPS="1" i0="0" i1="0" i2="0" i3="0" i4="0" i5="0" i6="0" i7="0" i8="0" d0="0" d1="410661" d2="0" d3="0" d4="410678" d5="0" d6="0" d7="0" d8="0" />
+    <Dur u="50" r1="0" r2="0" r3="0" r4="0" r5="10" r6="2" />
+  </Weapon>
+</WeaponsArmory>

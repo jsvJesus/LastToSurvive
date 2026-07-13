@@ -1,0 +1,124 @@
+cbuffer FrameCB : register(b0)
+{
+	row_major float4x4 gViewProj;
+	row_major float4x4 gView;
+	row_major float4x4 gProj;
+	float4 gCameraPos;
+	float4 gScreenSize;
+	float4 gNearFar;
+};
+
+cbuffer ObjectCB : register(b2)
+{
+	row_major float4x4 gWorld;
+	row_major float4x4 gPrevWorld;
+	float4 gObjectColor;
+	float4 gObjectParams;
+};
+
+cbuffer MaterialCB : register(b3)
+{
+	float4 gDiffuseScale;
+	float4 gNormalScale;
+	float4 gSpecularGloss;
+	float4 gMaterialParams;
+};
+
+Texture2D gDiffuseTexture : register(t0);
+Texture2D gNormalTexture : register(t1);
+SamplerState gMaterialSampler : register(s0);
+
+struct VS_INPUT
+{
+	float3 Position : POSITION;
+	float3 Normal : NORMAL;
+	float2 TexCoord : TEXCOORD0;
+	float4 Tangent : TANGENT;
+};
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float3 WorldPos : TEXCOORD0;
+	float3 Normal : TEXCOORD1;
+	float2 TexCoord : TEXCOORD2;
+	float4 Tangent : TEXCOORD3;
+};
+
+struct PS_OUTPUT
+{
+	float4 Color : SV_Target0;
+	float4 Normal : SV_Target1;
+	float DepthLinear : SV_Target2;
+	float4 Aux : SV_Target3;
+};
+
+VS_OUTPUT VSMain(VS_INPUT Input)
+{
+	VS_OUTPUT Output;
+
+	const float4 WorldPosition =
+		mul(float4(Input.Position, 1.0f), gWorld);
+
+	Output.Position = mul(WorldPosition, gViewProj);
+	Output.WorldPos = WorldPosition.xyz;
+	Output.Normal = normalize(mul(Input.Normal, (float3x3)gWorld));
+	Output.TexCoord = Input.TexCoord;
+	Output.Tangent.xyz =
+		normalize(mul(Input.Tangent.xyz, (float3x3)gWorld));
+	Output.Tangent.w = Input.Tangent.w;
+	return Output;
+}
+
+PS_OUTPUT PSMain(
+	VS_OUTPUT Input,
+	bool IsFrontFace : SV_IsFrontFace
+)
+{
+	float4 Diffuse = gDiffuseScale;
+
+	if (gMaterialParams.x > 0.5f)
+		Diffuse *= gDiffuseTexture.Sample(gMaterialSampler, Input.TexCoord);
+
+	Diffuse *= gObjectColor;
+
+	if (gMaterialParams.z > 0.5f)
+		clip(Diffuse.a - gMaterialParams.w);
+
+	float3 Normal =
+		normalize(Input.Normal) *
+		(IsFrontFace ? 1.0f : -1.0f);
+
+	if (gMaterialParams.y > 0.5f)
+	{
+		const float3 Tangent = normalize(Input.Tangent.xyz);
+		const float3 Bitangent =
+			normalize(cross(Normal, Tangent)) * Input.Tangent.w;
+		float3 TangentNormal =
+			gNormalTexture.Sample(gMaterialSampler, Input.TexCoord).xyz *
+			2.0f - 1.0f;
+		TangentNormal.xy *= gNormalScale.x;
+		TangentNormal = normalize(TangentNormal);
+
+		Normal = normalize(
+			Tangent * TangentNormal.x +
+			Bitangent * TangentNormal.y +
+			Normal * TangentNormal.z
+		);
+	}
+	const float CameraDistance = length(Input.WorldPos - gCameraPos.xyz);
+
+	PS_OUTPUT Output;
+	Output.Color = Diffuse;
+	Output.Normal = float4(Normal * 0.5f + 0.5f, 1.0f);
+	Output.DepthLinear = saturate(
+		CameraDistance / max(gNearFar.y, 1.0f)
+	);
+	Output.Aux = float4(
+		gSpecularGloss.x,
+		gSpecularGloss.y,
+		0.0f,
+		1.0f
+	);
+	return Output;
+}
