@@ -94,6 +94,7 @@ namespace engine::graphics
     struct TextureHandleTag final {};
     struct BufferHandleTag final {};
     struct ShaderHandleTag final {};
+    struct InputLayoutHandleTag final {};
     struct SamplerHandleTag final {};
     struct PipelineStateHandleTag final {};
     struct RenderTargetHandleTag final {};
@@ -103,15 +104,20 @@ namespace engine::graphics
     using TextureHandle = ResourceHandle<TextureHandleTag>;
     using BufferHandle = ResourceHandle<BufferHandleTag>;
     using ShaderHandle = ResourceHandle<ShaderHandleTag>;
+    using InputLayoutHandle = ResourceHandle<InputLayoutHandleTag>;
     using SamplerHandle = ResourceHandle<SamplerHandleTag>;
     using PipelineStateHandle = ResourceHandle<PipelineStateHandleTag>;
     using RenderTargetHandle = ResourceHandle<RenderTargetHandleTag>;
     using DepthStencilHandle = ResourceHandle<DepthStencilHandleTag>;
     using SwapChainHandle = ResourceHandle<SwapChainHandleTag>;
 
-    static_assert(
-        std::is_trivially_copyable_v<TextureHandle>);
+    static_assert(std::is_trivially_copyable_v<TextureHandle>);
+    static_assert(std::is_trivially_copyable_v<ShaderHandle>);
+    static_assert(std::is_trivially_copyable_v<InputLayoutHandle>);
+    static_assert(std::is_trivially_copyable_v<PipelineStateHandle>);
 
-    static_assert(
-        sizeof(TextureHandle) == sizeof(std::uint64_t));
+    static_assert(sizeof(TextureHandle) == sizeof(std::uint64_t));
+    static_assert(sizeof(ShaderHandle) == sizeof(std::uint64_t));
+    static_assert(sizeof(InputLayoutHandle) == sizeof(std::uint64_t));
+    static_assert(sizeof(PipelineStateHandle) == sizeof(std::uint64_t));
 }
