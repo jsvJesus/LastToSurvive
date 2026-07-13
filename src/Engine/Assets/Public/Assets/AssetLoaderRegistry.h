@@ -37,7 +37,7 @@ namespace engine::assets
         [[nodiscard]] AssetResult Load(
             const AssetMetadata& metadata,
             const AssetData& source,
-            std::unique_ptr<LoadedAsset>& outAsset) const noexcept;
+            std::unique_ptr<LoadedAsset>& outAsset) noexcept;
 
         [[nodiscard]] bool Contains(
             AssetType type) const noexcept;
