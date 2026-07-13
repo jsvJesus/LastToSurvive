@@ -86,6 +86,30 @@ namespace engine::graphics::d3d9
         [[nodiscard]] GraphicsResult DestroyBuffer(
             BufferHandle buffer) noexcept override;
 
+        // Shader and pipeline migration for DX9 is intentionally deferred.
+        // The compatibility backend reports Unsupported instead of silently
+        // routing new graphics resources through legacy shader state.
+        [[nodiscard]] GraphicsResult CreateShader(
+            const ShaderDesc& desc,
+            ShaderHandle& outShader) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyShader(
+            ShaderHandle shader) noexcept override;
+
+        [[nodiscard]] GraphicsResult CreateInputLayout(
+            const InputLayoutDesc& desc,
+            InputLayoutHandle& outInputLayout) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyInputLayout(
+            InputLayoutHandle inputLayout) noexcept override;
+
+        [[nodiscard]] GraphicsResult CreateGraphicsPipeline(
+            const GraphicsPipelineDesc& desc,
+            PipelineStateHandle& outPipeline) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroyGraphicsPipeline(
+            PipelineStateHandle pipeline) noexcept override;
+
     private:
         class Impl;
         std::unique_ptr<Impl> impl_;
