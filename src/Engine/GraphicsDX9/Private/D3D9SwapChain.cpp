@@ -59,6 +59,11 @@ namespace engine::graphics::d3d9::detail
     {
     }
 
+    GraphicsBackend D3D9SwapChain::GetBackend() const noexcept
+    {
+        return GraphicsBackend::D3D9;
+    }
+
     SwapChainHandle D3D9SwapChain::GetHandle() const noexcept
     {
         return handle_;
@@ -114,21 +119,21 @@ namespace engine::graphics::d3d9::detail
             }
         }
 
-        HRESULT hr = native_.Get()->Present(
+        const HRESULT result = native_.Get()->Present(
             nullptr,
             nullptr,
             nullptr,
             nullptr,
             0);
 
-        if (hr == D3DERR_DEVICELOST)
+        if (result == D3DERR_DEVICELOST)
         {
             native_.Reset();
             outStatus = PresentStatus::DeviceLost;
             return GraphicsResult::DeviceLost;
         }
 
-        if (FAILED(hr))
+        if (FAILED(result))
         {
             outStatus = PresentStatus::Failed;
             return GraphicsResult::BackendFailure;
@@ -148,13 +153,13 @@ namespace engine::graphics::d3d9::detail
         }
 
         IDirect3DSwapChain9* swapChain = nullptr;
-        const HRESULT hr = device_->GetSwapChain(0, &swapChain);
+        const HRESULT result = device_->GetSwapChain(0, &swapChain);
         native_.Attach(swapChain);
 
-        if (FAILED(hr) || !native_)
+        if (FAILED(result) || !native_)
         {
             native_.Reset();
-            return hr == D3DERR_DEVICELOST
+            return result == D3DERR_DEVICELOST
                 ? GraphicsResult::DeviceLost
                 : GraphicsResult::BackendFailure;
         }
