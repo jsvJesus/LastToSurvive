@@ -69,25 +69,46 @@ namespace engine::graphics
             BufferHandle buffer) noexcept = 0;
 
         [[nodiscard]] virtual GraphicsResult CreateShader(
-            const ShaderDesc& desc,
-            ShaderHandle& outShader) noexcept = 0;
+            const ShaderDesc&,
+            ShaderHandle& outShader) noexcept
+        {
+            outShader = ShaderHandle{};
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult DestroyShader(
-            ShaderHandle shader) noexcept = 0;
+            ShaderHandle) noexcept
+        {
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult CreateInputLayout(
-            const InputLayoutDesc& desc,
-            InputLayoutHandle& outInputLayout) noexcept = 0;
+            const InputLayoutDesc&,
+            InputLayoutHandle& outInputLayout) noexcept
+        {
+            outInputLayout = InputLayoutHandle{};
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult DestroyInputLayout(
-            InputLayoutHandle inputLayout) noexcept = 0;
+            InputLayoutHandle) noexcept
+        {
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult CreateGraphicsPipeline(
-            const GraphicsPipelineDesc& desc,
-            PipelineStateHandle& outPipeline) noexcept = 0;
+            const GraphicsPipelineDesc&,
+            PipelineStateHandle& outPipeline) noexcept
+        {
+            outPipeline = PipelineStateHandle{};
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult DestroyGraphicsPipeline(
-            PipelineStateHandle pipeline) noexcept = 0;
+            PipelineStateHandle) noexcept
+        {
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] bool IsReady() const noexcept
         {
