@@ -21,6 +21,7 @@ namespace engine::graphics::d3d9::detail
 
         ~D3D9SwapChain() noexcept override = default;
 
+        [[nodiscard]] GraphicsBackend GetBackend() const noexcept override;
         [[nodiscard]] SwapChainHandle GetHandle() const noexcept override;
         [[nodiscard]] const SwapChainDesc& GetDesc() const noexcept override;
 
