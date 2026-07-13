@@ -1,5 +1,6 @@
 #include "Assets/TextureAssetCache.h"
 
+#include "Assets/AssetLoaderRegistry.h"
 #include "Assets/AssetMetadata.h"
 #include "Assets/AssetType.h"
 #include "Assets/GpuTexture.h"
@@ -19,12 +20,9 @@ namespace engine::assets
             const engine::graphics::GraphicsResult result) noexcept
         {
             return
-                result ==
-                    engine::graphics::GraphicsResult::Success ||
-                result ==
-                    engine::graphics::GraphicsResult::NotFound ||
-                result ==
-                    engine::graphics::GraphicsResult::DeviceRemoved;
+                result == engine::graphics::GraphicsResult::Success ||
+                result == engine::graphics::GraphicsResult::NotFound ||
+                result == engine::graphics::GraphicsResult::DeviceRemoved;
         }
 
         [[nodiscard]] TextureCacheResult MakeSuccess() noexcept
@@ -42,23 +40,73 @@ namespace engine::assets
         {
             TextureAsset textureAsset;
             GpuTexture gpuTexture;
-
             std::uint32_t referenceCount = 0U;
         };
 
         AssetManager* assetManager = nullptr;
+        engine::graphics::RenderDevice* renderDevice = nullptr;
 
-        engine::graphics::RenderDevice* renderDevice =
-            nullptr;
+        DdsTextureLoader ddsTextureLoader;
+        AssetLoaderRegistry loaderRegistry;
 
-        DdsTextureDecodeOptions decodeOptions;
-
-        std::unordered_map<
-            CacheKey,
-            std::unique_ptr<Entry>> entries;
-
+        std::unordered_map<CacheKey, std::unique_ptr<Entry>> entries;
         bool initialized = false;
     };
+
+    namespace
+    {
+        [[nodiscard]] AssetResult DecodeTexture(
+            TextureAssetCache::Impl& impl,
+            const AssetMetadata& metadata,
+            const AssetData& source,
+            TextureAsset& outTexture) noexcept
+        {
+            outTexture.Clear();
+
+            std::unique_ptr<LoadedAsset> loadedAsset;
+
+            const AssetResult loadResult = impl.loaderRegistry.Load(
+                metadata,
+                source,
+                loadedAsset);
+
+            if (Failed(loadResult))
+            {
+                return loadResult;
+            }
+
+            if (
+                !loadedAsset ||
+                loadedAsset->GetType() != AssetType::Texture)
+            {
+                return AssetResult::TypeMismatch;
+            }
+
+            auto* const texturePayload =
+                static_cast<TextureLoadedAsset*>(loadedAsset.get());
+
+            outTexture = texturePayload->ReleaseTexture();
+
+            return outTexture.IsValid()
+                ? AssetResult::Success
+                : AssetResult::CorruptData;
+        }
+
+        void ReleaseEntryBestEffort(
+            TextureAssetCache::Impl& impl,
+            TextureAssetCache::Impl::Entry& entry) noexcept
+        {
+            if (
+                impl.renderDevice != nullptr &&
+                entry.gpuTexture.IsValid())
+            {
+                const engine::graphics::GraphicsResult result =
+                    entry.gpuTexture.Release(*impl.renderDevice);
+
+                (void)result;
+            }
+        }
+    }
 
     TextureAssetCache::TextureAssetCache() noexcept
     {
@@ -74,8 +122,6 @@ namespace engine::assets
 
     TextureAssetCache::~TextureAssetCache() noexcept
     {
-        // Деструктор не имеет права обращаться к потенциально уже
-        // уничтоженному RenderDevice.
         Abandon();
     }
 
@@ -98,26 +144,35 @@ namespace engine::assets
 
         if (
             !assetManager.IsInitialized() ||
-            !renderDevice.IsReady()
-        )
+            !renderDevice.IsReady())
         {
             return TextureCacheResult::FromAsset(
                 AssetResult::InvalidState);
         }
 
         impl_->entries.clear();
+        impl_->loaderRegistry.Clear();
 
-        impl_->assetManager = &assetManager;
-        impl_->renderDevice = &renderDevice;
-
-        impl_->decodeOptions = decodeOptions;
-
-        // BC7 допускается только на DX11.
-        impl_->decodeOptions.allowBc7 =
+        DdsTextureDecodeOptions effectiveOptions = decodeOptions;
+        effectiveOptions.allowBc7 =
             decodeOptions.allowBc7 &&
             renderDevice.GetBackend() ==
                 engine::graphics::GraphicsBackend::D3D11;
 
+        impl_->ddsTextureLoader.SetOptions(effectiveOptions);
+
+        const AssetResult registerResult =
+            impl_->loaderRegistry.Register(
+                impl_->ddsTextureLoader);
+
+        if (Failed(registerResult))
+        {
+            impl_->loaderRegistry.Clear();
+            return TextureCacheResult::FromAsset(registerResult);
+        }
+
+        impl_->assetManager = &assetManager;
+        impl_->renderDevice = &renderDevice;
         impl_->initialized = true;
 
         return MakeSuccess();
@@ -142,64 +197,48 @@ namespace engine::assets
                 AssetResult::InvalidState);
         }
 
-        TextureCacheResult firstFailure =
-            MakeSuccess();
-
+        TextureCacheResult firstFailure = MakeSuccess();
         auto iterator = impl_->entries.begin();
 
         while (iterator != impl_->entries.end())
         {
-            Impl::Entry& entry =
-                *iterator->second;
+            Impl::Entry& entry = *iterator->second;
 
-            const engine::graphics::GraphicsResult
-                releaseResult =
-                    entry.gpuTexture.Release(
-                        *impl_->renderDevice);
+            const engine::graphics::GraphicsResult releaseResult =
+                entry.gpuTexture.Release(*impl_->renderDevice);
 
             if (IsTerminalReleaseResult(releaseResult))
             {
                 if (
                     releaseResult ==
-                        engine::graphics::GraphicsResult::
-                            DeviceRemoved &&
-                    firstFailure.Succeeded()
-                )
+                        engine::graphics::GraphicsResult::DeviceRemoved &&
+                    firstFailure.Succeeded())
                 {
                     firstFailure =
-                        TextureCacheResult::FromGraphics(
-                            releaseResult);
+                        TextureCacheResult::FromGraphics(releaseResult);
                 }
 
-                iterator =
-                    impl_->entries.erase(iterator);
-
+                iterator = impl_->entries.erase(iterator);
                 continue;
             }
 
             if (firstFailure.Succeeded())
             {
                 firstFailure =
-                    TextureCacheResult::FromGraphics(
-                        releaseResult);
+                    TextureCacheResult::FromGraphics(releaseResult);
             }
 
             ++iterator;
         }
 
-        // При ошибке release оставляем cache и зависимости,
-        // чтобы освобождение можно было повторить.
         if (!impl_->entries.empty())
         {
             return firstFailure;
         }
 
+        impl_->loaderRegistry.Clear();
         impl_->assetManager = nullptr;
         impl_->renderDevice = nullptr;
-
-        impl_->decodeOptions =
-            DdsTextureDecodeOptions{};
-
         impl_->initialized = false;
 
         return firstFailure;
@@ -221,13 +260,9 @@ namespace engine::assets
         }
 
         impl_->entries.clear();
-
+        impl_->loaderRegistry.Clear();
         impl_->assetManager = nullptr;
         impl_->renderDevice = nullptr;
-
-        impl_->decodeOptions =
-            DdsTextureDecodeOptions{};
-
         impl_->initialized = false;
     }
 
@@ -237,16 +272,15 @@ namespace engine::assets
             impl_ != nullptr &&
             impl_->initialized &&
             impl_->assetManager != nullptr &&
-            impl_->renderDevice != nullptr;
+            impl_->renderDevice != nullptr &&
+            impl_->loaderRegistry.Contains(AssetType::Texture);
     }
 
     TextureCacheResult TextureAssetCache::Acquire(
         const AssetHandle assetHandle,
-        engine::graphics::TextureHandle&
-            outTextureHandle) noexcept
+        engine::graphics::TextureHandle& outTextureHandle) noexcept
     {
-        outTextureHandle =
-            engine::graphics::TextureHandle{};
+        outTextureHandle = engine::graphics::TextureHandle{};
 
         if (!IsInitialized())
         {
@@ -260,22 +294,17 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const Impl::CacheKey cacheKey =
-            assetHandle.Value();
+        const Impl::CacheKey cacheKey = assetHandle.Value();
+        const auto existing = impl_->entries.find(cacheKey);
 
-        const auto existingIterator =
-            impl_->entries.find(cacheKey);
-
-        if (existingIterator != impl_->entries.end())
+        if (existing != impl_->entries.end())
         {
-            Impl::Entry& entry =
-                *existingIterator->second;
+            Impl::Entry& entry = *existing->second;
 
             if (
                 entry.referenceCount == 0U ||
                 !entry.textureAsset.IsValid() ||
-                !entry.gpuTexture.IsValid()
-            )
+                !entry.gpuTexture.IsValid())
             {
                 return TextureCacheResult::FromAsset(
                     AssetResult::InternalError);
@@ -283,33 +312,26 @@ namespace engine::assets
 
             if (
                 entry.referenceCount ==
-                (std::numeric_limits<
-                    std::uint32_t>::max)()
-            )
+                (std::numeric_limits<std::uint32_t>::max)())
             {
                 return TextureCacheResult::FromAsset(
                     AssetResult::ReferenceOverflow);
             }
 
             ++entry.referenceCount;
-
-            outTextureHandle =
-                entry.gpuTexture.GetHandle();
-
+            outTextureHandle = entry.gpuTexture.GetHandle();
             return MakeSuccess();
         }
 
         AssetMetadata metadata;
 
-        AssetResult assetResult =
-            impl_->assetManager->GetMetadata(
-                assetHandle,
-                metadata);
+        AssetResult assetResult = impl_->assetManager->GetMetadata(
+            assetHandle,
+            metadata);
 
         if (Failed(assetResult))
         {
-            return TextureCacheResult::FromAsset(
-                assetResult);
+            return TextureCacheResult::FromAsset(assetResult);
         }
 
         if (metadata.type != AssetType::Texture)
@@ -318,27 +340,20 @@ namespace engine::assets
                 AssetResult::TypeMismatch);
         }
 
-        assetResult =
-            impl_->assetManager->Load(
-                assetHandle);
+        assetResult = impl_->assetManager->Load(assetHandle);
 
         if (Failed(assetResult))
         {
-            return TextureCacheResult::FromAsset(
-                assetResult);
+            return TextureCacheResult::FromAsset(assetResult);
         }
 
         const AssetData* sourceData = nullptr;
 
-        assetResult =
-            impl_->assetManager->GetData(
-                assetHandle,
-                sourceData);
+        assetResult = impl_->assetManager->GetData(
+            assetHandle,
+            sourceData);
 
-        if (
-            Failed(assetResult) ||
-            sourceData == nullptr
-        )
+        if (Failed(assetResult) || sourceData == nullptr)
         {
             return TextureCacheResult::FromAsset(
                 Failed(assetResult)
@@ -346,12 +361,11 @@ namespace engine::assets
                     : AssetResult::InternalError);
         }
 
-        std::unique_ptr<Impl::Entry> newEntry;
+        std::unique_ptr<Impl::Entry> entry;
 
         try
         {
-            newEntry =
-                std::make_unique<Impl::Entry>();
+            entry = std::make_unique<Impl::Entry>();
         }
         catch (const std::bad_alloc&)
         {
@@ -364,83 +378,61 @@ namespace engine::assets
                 AssetResult::InternalError);
         }
 
-        assetResult =
-            DdsTextureDecoder::Decode(
-                *sourceData,
-                impl_->decodeOptions,
-                newEntry->textureAsset);
+        assetResult = DecodeTexture(
+            *impl_,
+            metadata,
+            *sourceData,
+            entry->textureAsset);
 
         if (Failed(assetResult))
         {
-            return TextureCacheResult::FromAsset(
-                assetResult);
+            return TextureCacheResult::FromAsset(assetResult);
         }
 
-        newEntry->referenceCount = 1U;
+        const engine::graphics::GraphicsResult uploadResult =
+            entry->gpuTexture.Upload(
+                *impl_->renderDevice,
+                entry->textureAsset);
 
-        Impl::Entry* insertedEntry = nullptr;
+        if (engine::graphics::Failed(uploadResult))
+        {
+            return TextureCacheResult::FromGraphics(uploadResult);
+        }
+
+        entry->referenceCount = 1U;
+        Impl::Entry* insertedEntry = entry.get();
 
         try
         {
-            const auto insertResult =
-                impl_->entries.emplace(
-                    cacheKey,
-                    std::move(newEntry));
+            const auto insertResult = impl_->entries.emplace(
+                cacheKey,
+                std::move(entry));
 
             if (!insertResult.second)
             {
+                ReleaseEntryBestEffort(*impl_, *insertedEntry);
                 return TextureCacheResult::FromAsset(
-                    AssetResult::InternalError);
+                    AssetResult::AlreadyExists);
             }
-
-            insertedEntry =
-                insertResult.first->second.get();
         }
         catch (const std::bad_alloc&)
         {
+            ReleaseEntryBestEffort(*impl_, *insertedEntry);
             return TextureCacheResult::FromAsset(
                 AssetResult::OutOfMemory);
         }
         catch (...)
         {
+            ReleaseEntryBestEffort(*impl_, *insertedEntry);
             return TextureCacheResult::FromAsset(
                 AssetResult::InternalError);
         }
 
-        if (insertedEntry == nullptr)
-        {
-            impl_->entries.erase(cacheKey);
-
-            return TextureCacheResult::FromAsset(
-                AssetResult::InternalError);
-        }
-
-        const engine::graphics::GraphicsResult
-            uploadResult =
-                insertedEntry->gpuTexture.Upload(
-                    *impl_->renderDevice,
-                    insertedEntry->textureAsset);
-
-        if (engine::graphics::Failed(uploadResult))
-        {
-            impl_->entries.erase(cacheKey);
-
-            return TextureCacheResult::FromGraphics(
-                uploadResult);
-        }
-
-        outTextureHandle =
-            insertedEntry->gpuTexture.GetHandle();
+        outTextureHandle = insertedEntry->gpuTexture.GetHandle();
 
         if (!outTextureHandle.IsValid())
         {
-            const engine::graphics::GraphicsResult
-                cleanupResult =
-                    insertedEntry->gpuTexture.Release(
-                        *impl_->renderDevice);
-
-            (void)cleanupResult;
-
+            ReleaseEntryBestEffort(*impl_, *insertedEntry);
             impl_->entries.erase(cacheKey);
 
             return TextureCacheResult::FromAsset(
@@ -453,13 +445,10 @@ namespace engine::assets
     TextureCacheResult TextureAssetCache::AcquireById(
         const AssetId assetId,
         AssetHandle& outAssetHandle,
-        engine::graphics::TextureHandle&
-            outTextureHandle) noexcept
+        engine::graphics::TextureHandle& outTextureHandle) noexcept
     {
         outAssetHandle = AssetHandle{};
-
-        outTextureHandle =
-            engine::graphics::TextureHandle{};
+        outTextureHandle = engine::graphics::TextureHandle{};
 
         if (!IsInitialized())
         {
@@ -467,40 +456,34 @@ namespace engine::assets
                 AssetResult::InvalidState);
         }
 
-        const AssetResult findResult =
-            impl_->assetManager->FindById(
-                assetId,
-                outAssetHandle);
+        const AssetResult findResult = impl_->assetManager->FindById(
+            assetId,
+            outAssetHandle);
 
         if (Failed(findResult))
         {
-            return TextureCacheResult::FromAsset(
-                findResult);
+            return TextureCacheResult::FromAsset(findResult);
         }
 
-        const TextureCacheResult acquireResult =
-            Acquire(
-                outAssetHandle,
-                outTextureHandle);
+        const TextureCacheResult result = Acquire(
+            outAssetHandle,
+            outTextureHandle);
 
-        if (!acquireResult.Succeeded())
+        if (!result.Succeeded())
         {
             outAssetHandle = AssetHandle{};
         }
 
-        return acquireResult;
+        return result;
     }
 
     TextureCacheResult TextureAssetCache::AcquireByPath(
         const AssetPath& path,
         AssetHandle& outAssetHandle,
-        engine::graphics::TextureHandle&
-            outTextureHandle) noexcept
+        engine::graphics::TextureHandle& outTextureHandle) noexcept
     {
         outAssetHandle = AssetHandle{};
-
-        outTextureHandle =
-            engine::graphics::TextureHandle{};
+        outTextureHandle = engine::graphics::TextureHandle{};
 
         if (!IsInitialized())
         {
@@ -508,28 +491,25 @@ namespace engine::assets
                 AssetResult::InvalidState);
         }
 
-        const AssetResult findResult =
-            impl_->assetManager->FindByPath(
-                path,
-                outAssetHandle);
+        const AssetResult findResult = impl_->assetManager->FindByPath(
+            path,
+            outAssetHandle);
 
         if (Failed(findResult))
         {
-            return TextureCacheResult::FromAsset(
-                findResult);
+            return TextureCacheResult::FromAsset(findResult);
         }
 
-        const TextureCacheResult acquireResult =
-            Acquire(
-                outAssetHandle,
-                outTextureHandle);
+        const TextureCacheResult result = Acquire(
+            outAssetHandle,
+            outTextureHandle);
 
-        if (!acquireResult.Succeeded())
+        if (!result.Succeeded())
         {
             outAssetHandle = AssetHandle{};
         }
 
-        return acquireResult;
+        return result;
     }
 
     TextureCacheResult TextureAssetCache::Reload(
@@ -547,9 +527,7 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const auto iterator =
-            impl_->entries.find(
-                assetHandle.Value());
+        const auto iterator = impl_->entries.find(assetHandle.Value());
 
         if (iterator == impl_->entries.end())
         {
@@ -557,40 +535,48 @@ namespace engine::assets
                 AssetResult::NotFound);
         }
 
-        Impl::Entry& entry =
-            *iterator->second;
+        Impl::Entry& entry = *iterator->second;
 
         if (
             entry.referenceCount == 0U ||
             !entry.textureAsset.IsValid() ||
-            !entry.gpuTexture.IsValid()
-        )
+            !entry.gpuTexture.IsValid())
         {
             return TextureCacheResult::FromAsset(
                 AssetResult::InternalError);
         }
 
-        AssetResult assetResult =
-            impl_->assetManager->Reload(
-                assetHandle);
+        AssetMetadata metadata;
+
+        AssetResult assetResult = impl_->assetManager->GetMetadata(
+            assetHandle,
+            metadata);
 
         if (Failed(assetResult))
         {
+            return TextureCacheResult::FromAsset(assetResult);
+        }
+
+        if (metadata.type != AssetType::Texture)
+        {
             return TextureCacheResult::FromAsset(
-                assetResult);
+                AssetResult::TypeMismatch);
+        }
+
+        assetResult = impl_->assetManager->Reload(assetHandle);
+
+        if (Failed(assetResult))
+        {
+            return TextureCacheResult::FromAsset(assetResult);
         }
 
         const AssetData* sourceData = nullptr;
 
-        assetResult =
-            impl_->assetManager->GetData(
-                assetHandle,
-                sourceData);
+        assetResult = impl_->assetManager->GetData(
+            assetHandle,
+            sourceData);
 
-        if (
-            Failed(assetResult) ||
-            sourceData == nullptr
-        )
+        if (Failed(assetResult) || sourceData == nullptr)
         {
             return TextureCacheResult::FromAsset(
                 Failed(assetResult)
@@ -600,35 +586,28 @@ namespace engine::assets
 
         TextureAsset replacementAsset;
 
-        assetResult =
-            DdsTextureDecoder::Decode(
-                *sourceData,
-                impl_->decodeOptions,
-                replacementAsset);
+        assetResult = DecodeTexture(
+            *impl_,
+            metadata,
+            *sourceData,
+            replacementAsset);
 
         if (Failed(assetResult))
         {
-            // Текущая GPU texture и текущий TextureAsset
-            // остаются действительными.
-            return TextureCacheResult::FromAsset(
-                assetResult);
+            return TextureCacheResult::FromAsset(assetResult);
         }
 
-        const engine::graphics::GraphicsResult
-            replaceResult =
-                entry.gpuTexture.Replace(
-                    *impl_->renderDevice,
-                    replacementAsset);
+        const engine::graphics::GraphicsResult replaceResult =
+            entry.gpuTexture.Replace(
+                *impl_->renderDevice,
+                replacementAsset);
 
         if (engine::graphics::Failed(replaceResult))
         {
-            return TextureCacheResult::FromGraphics(
-                replaceResult);
+            return TextureCacheResult::FromGraphics(replaceResult);
         }
 
-        entry.textureAsset =
-            std::move(replacementAsset);
-
+        entry.textureAsset = std::move(replacementAsset);
         return MakeSuccess();
     }
 
@@ -647,9 +626,7 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const auto iterator =
-            impl_->entries.find(
-                assetHandle.Value());
+        const auto iterator = impl_->entries.find(assetHandle.Value());
 
         if (iterator == impl_->entries.end())
         {
@@ -657,8 +634,7 @@ namespace engine::assets
                 AssetResult::NotFound);
         }
 
-        Impl::Entry& entry =
-            *iterator->second;
+        Impl::Entry& entry = *iterator->second;
 
         if (entry.referenceCount == 0U)
         {
@@ -672,49 +648,31 @@ namespace engine::assets
             return MakeSuccess();
         }
 
-        const engine::graphics::GraphicsResult
-            releaseResult =
-                entry.gpuTexture.Release(
-                    *impl_->renderDevice);
+        const engine::graphics::GraphicsResult releaseResult =
+            entry.gpuTexture.Release(*impl_->renderDevice);
 
         if (!IsTerminalReleaseResult(releaseResult))
         {
-            return TextureCacheResult::FromGraphics(
-                releaseResult);
+            return TextureCacheResult::FromGraphics(releaseResult);
         }
 
         impl_->entries.erase(iterator);
 
-        // NotFound означает, что backend уже не содержит ресурс.
         if (
             releaseResult ==
-                engine::graphics::GraphicsResult::NotFound
-        )
+            engine::graphics::GraphicsResult::DeviceRemoved)
         {
-            return MakeSuccess();
-        }
-
-        if (
-            releaseResult ==
-                engine::graphics::GraphicsResult::
-                    DeviceRemoved
-        )
-        {
-            return TextureCacheResult::FromGraphics(
-                releaseResult);
+            return TextureCacheResult::FromGraphics(releaseResult);
         }
 
         return MakeSuccess();
     }
 
-    TextureCacheResult
-    TextureAssetCache::GetTextureHandle(
+    TextureCacheResult TextureAssetCache::GetTextureHandle(
         const AssetHandle assetHandle,
-        engine::graphics::TextureHandle&
-            outTextureHandle) const noexcept
+        engine::graphics::TextureHandle& outTextureHandle) const noexcept
     {
-        outTextureHandle =
-            engine::graphics::TextureHandle{};
+        outTextureHandle = engine::graphics::TextureHandle{};
 
         if (!IsInitialized())
         {
@@ -728,9 +686,7 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const auto iterator =
-            impl_->entries.find(
-                assetHandle.Value());
+        const auto iterator = impl_->entries.find(assetHandle.Value());
 
         if (iterator == impl_->entries.end())
         {
@@ -738,20 +694,17 @@ namespace engine::assets
                 AssetResult::NotFound);
         }
 
-        const Impl::Entry& entry =
-            *iterator->second;
+        const Impl::Entry& entry = *iterator->second;
 
         if (
             entry.referenceCount == 0U ||
-            !entry.gpuTexture.IsValid()
-        )
+            !entry.gpuTexture.IsValid())
         {
             return TextureCacheResult::FromAsset(
                 AssetResult::InternalError);
         }
 
-        outTextureHandle =
-            entry.gpuTexture.GetHandle();
+        outTextureHandle = entry.gpuTexture.GetHandle();
 
         return outTextureHandle.IsValid()
             ? MakeSuccess()
@@ -759,8 +712,7 @@ namespace engine::assets
                 AssetResult::InternalError);
     }
 
-    TextureCacheResult
-    TextureAssetCache::GetTextureAsset(
+    TextureCacheResult TextureAssetCache::GetTextureAsset(
         const AssetHandle assetHandle,
         const TextureAsset*& outTextureAsset) const noexcept
     {
@@ -778,9 +730,7 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const auto iterator =
-            impl_->entries.find(
-                assetHandle.Value());
+        const auto iterator = impl_->entries.find(assetHandle.Value());
 
         if (iterator == impl_->entries.end())
         {
@@ -788,26 +738,21 @@ namespace engine::assets
                 AssetResult::NotFound);
         }
 
-        const Impl::Entry& entry =
-            *iterator->second;
+        const Impl::Entry& entry = *iterator->second;
 
         if (
             entry.referenceCount == 0U ||
-            !entry.textureAsset.IsValid()
-        )
+            !entry.textureAsset.IsValid())
         {
             return TextureCacheResult::FromAsset(
                 AssetResult::InternalError);
         }
 
-        outTextureAsset =
-            &entry.textureAsset;
-
+        outTextureAsset = &entry.textureAsset;
         return MakeSuccess();
     }
 
-    TextureCacheResult
-    TextureAssetCache::GetReferenceCount(
+    TextureCacheResult TextureAssetCache::GetReferenceCount(
         const AssetHandle assetHandle,
         std::uint32_t& outReferenceCount) const noexcept
     {
@@ -825,9 +770,7 @@ namespace engine::assets
                 AssetResult::InvalidArgument);
         }
 
-        const auto iterator =
-            impl_->entries.find(
-                assetHandle.Value());
+        const auto iterator = impl_->entries.find(assetHandle.Value());
 
         if (iterator == impl_->entries.end())
         {
@@ -835,8 +778,7 @@ namespace engine::assets
                 AssetResult::NotFound);
         }
 
-        const Impl::Entry& entry =
-            *iterator->second;
+        const Impl::Entry& entry = *iterator->second;
 
         if (entry.referenceCount == 0U)
         {
@@ -844,33 +786,22 @@ namespace engine::assets
                 AssetResult::InternalError);
         }
 
-        outReferenceCount =
-            entry.referenceCount;
-
+        outReferenceCount = entry.referenceCount;
         return MakeSuccess();
     }
 
     bool TextureAssetCache::Contains(
         const AssetHandle assetHandle) const noexcept
     {
-        if (
-            !IsInitialized() ||
-            !assetHandle.IsValid()
-        )
-        {
-            return false;
-        }
-
         return
-            impl_->entries.find(
-                assetHandle.Value()) !=
-            impl_->entries.end();
+            IsInitialized() &&
+            assetHandle.IsValid() &&
+            impl_->entries.find(assetHandle.Value()) !=
+                impl_->entries.end();
     }
 
     std::size_t TextureAssetCache::GetCount() const noexcept
     {
-        return IsInitialized()
-            ? impl_->entries.size()
-            : 0U;
+        return IsInitialized() ? impl_->entries.size() : 0U;
     }
 }
