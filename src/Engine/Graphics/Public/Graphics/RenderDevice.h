@@ -3,7 +3,10 @@
 #include "Graphics/Buffer.h"
 #include "Graphics/GraphicsBackend.h"
 #include "Graphics/GraphicsResult.h"
+#include "Graphics/InputLayout.h"
+#include "Graphics/PipelineState.h"
 #include "Graphics/ResourceHandle.h"
+#include "Graphics/Shader.h"
 #include "Graphics/SwapChain.h"
 #include "Graphics/Texture.h"
 
@@ -64,6 +67,27 @@ namespace engine::graphics
 
         [[nodiscard]] virtual GraphicsResult DestroyBuffer(
             BufferHandle buffer) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult CreateShader(
+            const ShaderDesc& desc,
+            ShaderHandle& outShader) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult DestroyShader(
+            ShaderHandle shader) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult CreateInputLayout(
+            const InputLayoutDesc& desc,
+            InputLayoutHandle& outInputLayout) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult DestroyInputLayout(
+            InputLayoutHandle inputLayout) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult CreateGraphicsPipeline(
+            const GraphicsPipelineDesc& desc,
+            PipelineStateHandle& outPipeline) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult DestroyGraphicsPipeline(
+            PipelineStateHandle pipeline) noexcept = 0;
 
         [[nodiscard]] bool IsReady() const noexcept
         {
