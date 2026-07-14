@@ -3716,11 +3716,19 @@ void game::MainLoop()
 	if (studio::WantsDX11Shell())
 	{
 		r3dOutToLog("[Graphics] DX11 Studio shell requested\n");
-		if (studio::RunDX11Shell(
-				reinterpret_cast<std::uintptr_t>(win::hWnd)))
+		const studio::StudioGraphicsShellResult shellResult =
+			studio::RunDX11Shell(
+				reinterpret_cast<std::uintptr_t>(win::hWnd));
+		r3dOutToLog("[Graphics] DX11 Studio shell exited: %s\n",
+			studio::ToString(shellResult));
+		if (shellResult == studio::StudioGraphicsShellResult::Completed ||
+			shellResult == studio::StudioGraphicsShellResult::FrameFailed ||
+			shellResult == studio::StudioGraphicsShellResult::DeviceLost ||
+			shellResult == studio::StudioGraphicsShellResult::DeviceRemoved)
 		{
 			return;
 		}
+		r3dOutToLog("[Graphics] DX11 initialization fallback; starting DX9 Studio backend\n");
 	}
 	r3dOutToLog("[Graphics] Selected DX9 Studio backend\n");
 #endif

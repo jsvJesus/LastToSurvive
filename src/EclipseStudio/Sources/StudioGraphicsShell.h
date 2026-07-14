@@ -4,10 +4,22 @@
 
 namespace studio
 {
+    enum class StudioGraphicsShellResult : std::uint8_t
+    {
+        NotRequested = 0,
+        Completed,
+        InitializationFailed,
+        RuntimeInitializationFailed,
+        FrameFailed,
+        DeviceLost,
+        DeviceRemoved
+    };
+
     [[nodiscard]] bool WantsDX11Shell() noexcept;
 
-    // Returns true when DX11 owned the Studio window until shutdown. A false
-    // result leaves the caller free to start the unchanged DX9 path.
-    [[nodiscard]] bool RunDX11Shell(
+    [[nodiscard]] StudioGraphicsShellResult RunDX11Shell(
         std::uintptr_t nativeWindow) noexcept;
+
+    [[nodiscard]] const char* ToString(
+        StudioGraphicsShellResult result) noexcept;
 }

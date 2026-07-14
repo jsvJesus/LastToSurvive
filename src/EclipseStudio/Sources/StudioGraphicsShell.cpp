@@ -11,49 +11,48 @@
 #include <Graphics/Viewport.h>
 #include <GraphicsDX11/D3D11Device.h>
 #include <Platform/MessagePump.h>
+#include <Platform/Clock.h>
 #include <Platform/Window.h>
 #include <Runtime/RendererBackend.h>
 #include <Runtime/Engine.h>
 
 #include <algorithm>
-#include <cctype>
+#include <cmath>
 #include <memory>
-#include <string>
 
 extern void RegisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
 extern void UnregisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
+extern char __r3dCmdLine[1024];
+PCHAR* CommandLineToArgvA(PCHAR commandLine, int* argumentCount);
 
 namespace
 {
     using engine::graphics::GraphicsResult;
+    using studio::StudioGraphicsShellResult;
 
     bool HasCommandLineSwitch(const char* switchName) noexcept
     {
         if (switchName == nullptr || *switchName == '\0')
             return false;
 
-        std::string commandLine = GetCommandLineA();
-        std::string wanted = switchName;
-        std::transform(commandLine.begin(), commandLine.end(), commandLine.begin(),
-            [](unsigned char value) { return static_cast<char>(std::tolower(value)); });
-        std::transform(wanted.begin(), wanted.end(), wanted.begin(),
-            [](unsigned char value) { return static_cast<char>(std::tolower(value)); });
-
-        std::string::size_type position = 0;
-        while ((position = commandLine.find(wanted, position)) != std::string::npos)
+        int argumentCount = 0;
+        PCHAR* const arguments = CommandLineToArgvA(
+            __r3dCmdLine, &argumentCount);
+        if (arguments == nullptr)
+            return false;
+        bool found = false;
+        for (int index = 0; index < argumentCount; ++index)
         {
-            const bool leftBoundary = position == 0 ||
-                std::isspace(static_cast<unsigned char>(commandLine[position - 1])) != 0;
-            const std::string::size_type end = position + wanted.size();
-            const bool rightBoundary = end == commandLine.size() ||
-                std::isspace(static_cast<unsigned char>(commandLine[end])) != 0;
-            if (leftBoundary && rightBoundary)
-                return true;
-            position = end;
+            if (_stricmp(arguments[index], switchName) == 0)
+            {
+                found = true;
+                break;
+            }
         }
-        return false;
+        GlobalFree(arguments);
+        return found;
     }
 
     class StudioDX11Shell final
@@ -66,25 +65,8 @@ namespace
             if (windowHandle == nullptr)
                 return Fail("invalid Studio HWND", GraphicsResult::InvalidArgument);
 
-            LONG_PTR style = GetWindowLongPtr(windowHandle, GWL_STYLE);
-            style |= WS_OVERLAPPEDWINDOW | WS_THICKFRAME | WS_MAXIMIZEBOX;
-            SetWindowLongPtr(windowHandle, GWL_STYLE, style);
-
-            RECT clientRect = {};
-            GetClientRect(windowHandle, &clientRect);
-            if (clientRect.right - clientRect.left < 640 ||
-                clientRect.bottom - clientRect.top < 480)
-            {
-                RECT windowRect = {0, 0, 1024, 768};
-                AdjustWindowRect(&windowRect, static_cast<DWORD>(style), FALSE);
-                SetWindowPos(windowHandle, nullptr, 0, 0,
-                    windowRect.right - windowRect.left,
-                    windowRect.bottom - windowRect.top,
-                    SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-            }
-            SetWindowPos(windowHandle, nullptr, 0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-                SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            if (!ApplyResizableWindowStyle(windowHandle))
+                return Fail("Studio window style", GraphicsResult::BackendFailure);
 
             window_ = engine::platform::Window(
                 engine::platform::NativeWindowHandle::FromValue(nativeWindow));
@@ -95,6 +77,8 @@ namespace
             engine::graphics::RenderDeviceDesc deviceDesc;
             deviceDesc.backend = engine::graphics::GraphicsBackend::D3D11;
             deviceDesc.enableValidation = true;
+            // Development-only fallback validation switch. It is inert unless
+            // explicitly supplied and forces failure before device creation.
             if (HasCommandLineSwitch("-dx11shell-fail"))
                 deviceDesc.backend = engine::graphics::GraphicsBackend::None;
 
@@ -124,8 +108,9 @@ namespace
             minimized_ = false;
             initialized_ = true;
             r3dOutToLog("[Graphics] Selected DX11 Studio shell backend\n");
-            r3dOutToLog("[Graphics][DX11] Device created: featureLevel=0x%04x\n",
-                static_cast<unsigned int>(device_.GetFeatureLevel()));
+            r3dOutToLog("[Graphics][DX11] Device created: featureLevel=0x%04x, debugLayer=%s\n",
+                static_cast<unsigned int>(device_.GetFeatureLevel()),
+                deviceDesc.enableValidation ? "enabled" : "disabled");
             r3dOutToLog("[Graphics][DX11] Swap chain, backbuffer and depth buffer created: %ux%u\n",
                 width_, height_);
             return true;
@@ -148,15 +133,40 @@ namespace
             pendingHeight_ = height;
             resizePending_ = true;
             if (minimized_)
+            {
                 r3dOutToLog("[Graphics][DX11] Studio window restored\n");
+                resetTimer_ = true;
+            }
             minimized_ = false;
         }
 
-        void RequestClose() noexcept { closeRequested_ = true; }
+        void RequestClose() noexcept
+        {
+            if (!closeRequested_)
+                r3dOutToLog("[Graphics][DX11] Normal user close requested\n");
+            closeRequested_ = true;
+        }
 
         [[nodiscard]] bool IsCloseRequested() const noexcept
         {
             return closeRequested_;
+        }
+
+        [[nodiscard]] bool ShouldWaitForMessage() const noexcept
+        {
+            return minimized_ || occluded_;
+        }
+
+        [[nodiscard]] bool ConsumeTimerReset() noexcept
+        {
+            const bool reset = resetTimer_;
+            resetTimer_ = false;
+            return reset;
+        }
+
+        [[nodiscard]] StudioGraphicsShellResult GetFailureResult() const noexcept
+        {
+            return failureResult_;
         }
 
         bool RenderFrame() noexcept
@@ -174,26 +184,45 @@ namespace
             clearColor.blue = 0.085F;
             clearColor.alpha = 1.0F;
 
-            GraphicsResult result = context_->ClearDepthStencilTarget(
+            GraphicsResult result = context_->SetSwapChainRenderTarget(
+                *swapChain_, depth_);
+            if (engine::graphics::Failed(result))
+                return FailFrame("backbuffer/depth bind", result);
+            result = context_->ClearSwapChainColor(*swapChain_, clearColor);
+            if (engine::graphics::Failed(result))
+                return FailFrame("backbuffer clear", result);
+            result = context_->ClearDepthStencilTarget(
                 depth_, engine::graphics::ClearDepthStencilFlags::Depth |
                 engine::graphics::ClearDepthStencilFlags::Stencil, 1.0F, 0);
             if (engine::graphics::Failed(result))
                 return FailFrame("depth clear", result);
-            result = context_->SetSwapChainRenderTarget(*swapChain_);
-            if (engine::graphics::Failed(result))
-                return FailFrame("backbuffer bind", result);
-            result = context_->ClearSwapChainColor(*swapChain_, clearColor);
-            if (engine::graphics::Failed(result))
-                return FailFrame("backbuffer clear", result);
 
             engine::graphics::PresentStatus status;
             result = swapChain_->Present(status);
+            if (status == engine::graphics::PresentStatus::Occluded)
+            {
+                if (!occluded_)
+                    r3dOutToLog("[Graphics][DX11] Studio window occluded\n");
+                occluded_ = true;
+                return true;
+            }
+            if (occluded_)
+            {
+                r3dOutToLog("[Graphics][DX11] Studio window visible after occlusion\n");
+                occluded_ = false;
+                resetTimer_ = true;
+            }
             if (engine::graphics::Failed(result) ||
                 status == engine::graphics::PresentStatus::DeviceLost ||
                 status == engine::graphics::PresentStatus::DeviceRemoved)
             {
                 r3dOutToLog("[Graphics][DX11] Present failure: result=%s, status=%s\n",
                     engine::graphics::ToString(result), engine::graphics::ToString(status));
+                failureResult_ = status == engine::graphics::PresentStatus::DeviceLost
+                    ? StudioGraphicsShellResult::DeviceLost
+                    : status == engine::graphics::PresentStatus::DeviceRemoved
+                        ? StudioGraphicsShellResult::DeviceRemoved
+                        : StudioGraphicsShellResult::FrameFailed;
                 return false;
             }
             return true;
@@ -211,18 +240,94 @@ namespace
             swapChain_.reset();
             context_ = nullptr;
             device_.Shutdown();
+            RestoreWindowStyle();
             if (initialized_)
                 r3dOutToLog("[Graphics][DX11] Studio shell backend shutdown\n");
             initialized_ = false;
             resizePending_ = false;
             minimized_ = false;
+            occluded_ = false;
+            resetTimer_ = true;
             closeRequested_ = false;
+            failureResult_ = StudioGraphicsShellResult::FrameFailed;
             width_ = height_ = 0;
         }
 
         ~StudioDX11Shell() noexcept { Shutdown(); }
 
     private:
+        bool ApplyResizableWindowStyle(HWND const windowHandle) noexcept
+        {
+            SetLastError(ERROR_SUCCESS);
+            const LONG_PTR currentStyle =
+                GetWindowLongPtr(windowHandle, GWL_STYLE);
+            if (currentStyle == 0 && GetLastError() != ERROR_SUCCESS)
+            {
+                r3dOutToLog("[Graphics][DX11] GetWindowLongPtr failed: error=%lu\n",
+                    static_cast<unsigned long>(GetLastError()));
+                return false;
+            }
+
+            windowHandle_ = windowHandle;
+            originalWindowStyle_ = currentStyle;
+            const LONG_PTR requiredStyle = currentStyle |
+                WS_THICKFRAME | WS_MAXIMIZEBOX;
+            if (requiredStyle == currentStyle)
+                return true;
+
+            SetLastError(ERROR_SUCCESS);
+            const LONG_PTR previousStyle = SetWindowLongPtr(
+                windowHandle, GWL_STYLE, requiredStyle);
+            if (previousStyle == 0 && GetLastError() != ERROR_SUCCESS)
+            {
+                r3dOutToLog("[Graphics][DX11] SetWindowLongPtr failed: error=%lu\n",
+                    static_cast<unsigned long>(GetLastError()));
+                windowHandle_ = nullptr;
+                return false;
+            }
+
+            styleChanged_ = true;
+            if (SetWindowPos(windowHandle, nullptr, 0, 0, 0, 0,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                        SWP_NOACTIVATE | SWP_FRAMECHANGED) == FALSE)
+            {
+                r3dOutToLog("[Graphics][DX11] Applying window frame failed: error=%lu\n",
+                    static_cast<unsigned long>(GetLastError()));
+                RestoreWindowStyle();
+                return false;
+            }
+            return true;
+        }
+
+        void RestoreWindowStyle() noexcept
+        {
+            if (!styleChanged_ || windowHandle_ == nullptr)
+            {
+                windowHandle_ = nullptr;
+                styleChanged_ = false;
+                return;
+            }
+
+            SetLastError(ERROR_SUCCESS);
+            const LONG_PTR previousStyle = SetWindowLongPtr(
+                windowHandle_, GWL_STYLE, originalWindowStyle_);
+            const DWORD styleError = GetLastError();
+            if (previousStyle == 0 && styleError != ERROR_SUCCESS)
+            {
+                r3dOutToLog("[Graphics][DX11] Restoring window style failed: error=%lu\n",
+                    static_cast<unsigned long>(styleError));
+            }
+            else if (SetWindowPos(windowHandle_, nullptr, 0, 0, 0, 0,
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                             SWP_NOACTIVATE | SWP_FRAMECHANGED) == FALSE)
+            {
+                r3dOutToLog("[Graphics][DX11] Restoring window frame failed: error=%lu\n",
+                    static_cast<unsigned long>(GetLastError()));
+            }
+            windowHandle_ = nullptr;
+            styleChanged_ = false;
+        }
+
         bool CreateSizeDependentResources(const std::uint32_t width,
             const std::uint32_t height) noexcept
         {
@@ -294,6 +399,11 @@ namespace
         {
             r3dOutToLog("[Graphics][DX11] Frame failure at %s: %s\n",
                 operation, engine::graphics::ToString(result));
+            failureResult_ = result == GraphicsResult::DeviceLost
+                ? StudioGraphicsShellResult::DeviceLost
+                : result == GraphicsResult::DeviceRemoved
+                    ? StudioGraphicsShellResult::DeviceRemoved
+                    : StudioGraphicsShellResult::FrameFailed;
             return false;
         }
 
@@ -305,7 +415,11 @@ namespace
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;
         bool initialized_ = false, minimized_ = false, resizePending_ = false;
-        bool closeRequested_ = false;
+        bool closeRequested_ = false, occluded_ = false, resetTimer_ = true;
+        HWND windowHandle_ = nullptr;
+        LONG_PTR originalWindowStyle_ = 0;
+        bool styleChanged_ = false;
+        StudioGraphicsShellResult failureResult_ = StudioGraphicsShellResult::FrameFailed;
     };
 
     StudioDX11Shell* g_activeShell = nullptr;
@@ -336,19 +450,38 @@ namespace studio
             HasCommandLineSwitch("-dx11shell-fail");
     }
 
-    bool RunDX11Shell(const std::uintptr_t nativeWindow) noexcept
+    const char* ToString(const StudioGraphicsShellResult result) noexcept
     {
+        switch (result)
+        {
+        case StudioGraphicsShellResult::NotRequested: return "NotRequested";
+        case StudioGraphicsShellResult::Completed: return "Completed";
+        case StudioGraphicsShellResult::InitializationFailed: return "InitializationFailed";
+        case StudioGraphicsShellResult::RuntimeInitializationFailed: return "RuntimeInitializationFailed";
+        case StudioGraphicsShellResult::FrameFailed: return "FrameFailed";
+        case StudioGraphicsShellResult::DeviceLost: return "DeviceLost";
+        case StudioGraphicsShellResult::DeviceRemoved: return "DeviceRemoved";
+        default: return "Unknown";
+        }
+    }
+
+    StudioGraphicsShellResult RunDX11Shell(
+        const std::uintptr_t nativeWindow) noexcept
+    {
+        if (!WantsDX11Shell())
+            return StudioGraphicsShellResult::NotRequested;
+
         StudioDX11Shell shell;
         if (!shell.Initialize(nativeWindow))
         {
-            r3dOutToLog("[Graphics] Falling back to DX9 Studio backend\n");
-            return false;
+            return StudioGraphicsShellResult::InitializationFailed;
         }
 
         if (!InitializeStudioRuntimeBridge(engine::runtime::RendererBackend::D3D11))
         {
-            r3dOutToLog("[Graphics][DX11] Runtime initialization failed; falling back to DX9\n");
-            return false;
+            r3dOutToLog("[Graphics][DX11] Runtime initialization failed\n");
+            shell.Shutdown();
+            return StudioGraphicsShellResult::RuntimeInitializationFailed;
         }
 
         g_activeShell = &shell;
@@ -358,25 +491,60 @@ namespace studio
 
         bool frameSucceeded = true;
         bool quitRequested = false;
+        engine::platform::Clock::Tick previousTick = engine::platform::Clock::Now();
+        bool timerInitialized = previousTick != 0;
         while (!quitRequested && frameSucceeded)
         {
+            if (shell.ShouldWaitForMessage())
+            {
+                const bool waitSucceeded =
+                    engine::platform::MessagePump::WaitForMessage();
+                if (!waitSucceeded)
+                    r3dOutToLog("[Graphics][DX11] Message wait failed\n");
+            }
             const engine::platform::MessagePumpResult messages =
                 engine::platform::MessagePump::ProcessPendingMessages();
             quitRequested = messages.quitRequested || shell.IsCloseRequested();
             if (!quitRequested)
             {
+                const engine::platform::Clock::Tick currentTick =
+                    engine::platform::Clock::Now();
+                double deltaSeconds = 0.0;
+                if (shell.ConsumeTimerReset())
+                    timerInitialized = false;
+                if (timerInitialized && currentTick != 0)
+                    deltaSeconds = engine::platform::Clock::ElapsedSeconds(
+                        previousTick, currentTick);
+                if (!std::isfinite(deltaSeconds) || deltaSeconds < 0.0)
+                    deltaSeconds = 0.0;
+                deltaSeconds = (std::min)(deltaSeconds, 0.25);
+                previousTick = currentTick;
+                timerInitialized = currentTick != 0;
                 engine::runtime::Engine* const runtime = TryGetRuntimeEngine();
-                const bool beganFrame = runtime != nullptr && runtime->BeginFrame(0.0);
+                const bool beganFrame = runtime != nullptr &&
+                    runtime->BeginFrame(deltaSeconds);
                 frameSucceeded = beganFrame && shell.RenderFrame();
+                if (!beganFrame)
+                    r3dOutToLog("[Graphics][DX11] Runtime BeginFrame failed\n");
                 if (beganFrame && !runtime->EndFrame())
+                {
+                    r3dOutToLog("[Graphics][DX11] Runtime EndFrame failed\n");
                     frameSucceeded = false;
+                }
             }
         }
 
         UnregisterMsgProc(StudioDX11ShellMsgProc);
         g_activeShell = nullptr;
-        shell.Shutdown();
         ShutdownStudioRuntimeBridge();
-        return true;
+        const StudioGraphicsShellResult result = quitRequested
+            ? StudioGraphicsShellResult::Completed
+            : shell.GetFailureResult();
+        if (result == StudioGraphicsShellResult::Completed)
+            r3dOutToLog("[Graphics][DX11] Normal user close completed\n");
+        shell.Shutdown();
+        r3dOutToLog("[Graphics][DX11] Final shell result: %s\n", ToString(result));
+        r3dOutToLog("[Graphics][DX11] Shutdown completed\n");
+        return result;
     }
 }

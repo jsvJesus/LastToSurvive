@@ -4,13 +4,18 @@
 #include "Graphics/PipelineState.h"
 #include "Graphics/RenderDevice.h"
 #include "Graphics/Shader.h"
+#include "Graphics/SwapChain.h"
+#include "Graphics/Texture.h"
 #include "GraphicsDX11/D3D11Context.h"
 #include "GraphicsDX11/D3D11Device.h"
+#include "Platform/Window.h"
 
 #include <d3dcompiler.h>
+#include <windows.h>
 
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 namespace
 {
@@ -366,11 +371,127 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
+    HWND const testWindow = CreateWindowExW(
+        0, L"STATIC", L"LTS DX11 Tests", WS_OVERLAPPED,
+        0, 0, 320, 240, nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
+    if (!Check(testWindow != nullptr, "create test window"))
+    {
+        return 1;
+    }
+
+    SwapChainDesc swapChainDesc;
+    swapChainDesc.window = engine::platform::NativeWindowHandle::FromValue(
+        reinterpret_cast<std::uintptr_t>(testWindow));
+    swapChainDesc.width = 320;
+    swapChainDesc.height = 240;
+    swapChainDesc.presentMode = PresentMode::Immediate;
+    std::unique_ptr<SwapChain> swapChain;
+    if (!Check(
+            Succeeded(device.CreateSwapChain(swapChainDesc, swapChain)) &&
+                swapChain != nullptr,
+            "create test swap chain"))
+    {
+        DestroyWindow(testWindow);
+        return 1;
+    }
+
+    TextureDesc depthDesc;
+    depthDesc.width = 320;
+    depthDesc.height = 240;
+    depthDesc.format = Format::D24UNormS8UInt;
+    depthDesc.bindFlags = TextureBindFlags::DepthStencil;
+    TextureHandle depth;
+    if (!Check(
+            Succeeded(device.CreateTexture(depthDesc, nullptr, 0U, depth)),
+            "create depth target"))
+    {
+        DestroyWindow(testWindow);
+        return 1;
+    }
+
+    TextureDesc colorDesc;
+    colorDesc.width = 320;
+    colorDesc.height = 240;
+    colorDesc.format = Format::R8G8B8A8UNorm;
+    colorDesc.bindFlags = TextureBindFlags::RenderTarget;
+    TextureHandle color;
+    if (!Check(
+            Succeeded(device.CreateTexture(colorDesc, nullptr, 0U, color)),
+            "create non-depth target"))
+    {
+        DestroyWindow(testWindow);
+        return 1;
+    }
+
+    if (!Check(
+            context->SetSwapChainRenderTarget(*swapChain) ==
+                GraphicsResult::Success &&
+            context->SetSwapChainRenderTarget(*swapChain, TextureHandle{}) ==
+                GraphicsResult::InvalidArgument &&
+            context->SetSwapChainRenderTarget(*swapChain, color) ==
+                GraphicsResult::InvalidArgument,
+            "validate invalid and non-depth DSV handles"))
+    {
+        return 1;
+    }
+
+    const TextureHandle staleDepth = depth;
+    if (!Check(
+            Succeeded(context->SetSwapChainRenderTarget(*swapChain, depth)) &&
+                Succeeded(context->ClearSwapChainColor(*swapChain, ClearColor{})) &&
+                Succeeded(context->ClearDepthStencilTarget(
+                    depth, ClearDepthStencilFlags::Depth |
+                        ClearDepthStencilFlags::Stencil, 1.0F, 0U)),
+            "bind and clear swap-chain RTV with valid DSV"))
+    {
+        return 1;
+    }
+
+    context->ClearState();
+    if (!Check(
+            Succeeded(context->SetSwapChainRenderTarget(*swapChain, depth)),
+            "bind after ClearState"))
+    {
+        return 1;
+    }
+    context->UnbindRenderTargets();
+    if (!Check(
+            Succeeded(device.DestroyTexture(depth)) &&
+                context->SetSwapChainRenderTarget(*swapChain, staleDepth) ==
+                    GraphicsResult::NotFound,
+            "reject stale destroyed depth handle"))
+    {
+        return 1;
+    }
+
+    depthDesc.width = 400;
+    depthDesc.height = 300;
+    if (!Check(
+            Succeeded(swapChain->Resize(400U, 300U)) &&
+                Succeeded(device.CreateTexture(depthDesc, nullptr, 0U, depth)) &&
+                Succeeded(context->SetSwapChainRenderTarget(*swapChain, depth)),
+            "bind recreated depth after swap-chain resize"))
+    {
+        return 1;
+    }
+
+    context->UnbindRenderTargets();
+    if (!Check(
+            Succeeded(device.DestroyTexture(depth)) &&
+                Succeeded(device.DestroyTexture(color)),
+            "destroy test render targets"))
+    {
+        return 1;
+    }
+    swapChain.reset();
+    DestroyWindow(testWindow);
+
+    device.Shutdown();
     device.Shutdown();
 
     if (!Check(
             device.GetState() == DeviceState::Stopped,
-            "shutdown D3D11 device"))
+            "repeated shutdown D3D11 device"))
     {
         return 1;
     }

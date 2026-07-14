@@ -33,6 +33,10 @@ namespace engine::graphics::d3d11
         [[nodiscard]] GraphicsResult SetSwapChainRenderTarget(
             SwapChain& swapChain) noexcept override;
 
+        [[nodiscard]] GraphicsResult SetSwapChainRenderTarget(
+            SwapChain& swapChain,
+            TextureHandle depthStencilTarget) noexcept override;
+
         [[nodiscard]] GraphicsResult SetRenderTargets(
             const TextureHandle* colorTargets,
             std::size_t colorTargetCount,

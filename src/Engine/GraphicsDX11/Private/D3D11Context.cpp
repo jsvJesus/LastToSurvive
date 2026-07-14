@@ -78,6 +78,33 @@ namespace engine::graphics::d3d11
         {
             return GraphicsResult::InvalidArgument;
         }
+        auto& d3d11SwapChain = static_cast<D3D11SwapChain&>(swapChain);
+        ID3D11RenderTargetView* const renderTarget =
+            d3d11SwapChain.GetBackBufferRenderTargetView();
+        if (renderTarget == nullptr)
+        {
+            return GraphicsResult::InvalidState;
+        }
+        context_->OMSetRenderTargets(1U, &renderTarget, nullptr);
+        return GraphicsResult::Success;
+    }
+
+    GraphicsResult D3D11Context::SetSwapChainRenderTarget(
+        SwapChain& swapChain,
+        const TextureHandle depthStencilTarget) noexcept
+    {
+        if (!IsValid())
+        {
+            return GraphicsResult::InvalidState;
+        }
+        if (swapChain.GetBackend() != GraphicsBackend::D3D11)
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+        if (!depthStencilTarget.IsValid())
+        {
+            return GraphicsResult::InvalidArgument;
+        }
 
         auto& d3d11SwapChain = static_cast<D3D11SwapChain&>(swapChain);
         ID3D11RenderTargetView* const renderTarget =
@@ -88,7 +115,22 @@ namespace engine::graphics::d3d11
             return GraphicsResult::InvalidState;
         }
 
-        context_->OMSetRenderTargets(1U, &renderTarget, nullptr);
+        ID3D11DepthStencilView* depthStencil = nullptr;
+        {
+            const detail::D3D11TextureResource* const resource =
+                resources_->GetTexture(depthStencilTarget);
+            if (resource == nullptr)
+            {
+                return GraphicsResult::NotFound;
+            }
+            if (!resource->depthStencilView)
+            {
+                return GraphicsResult::InvalidArgument;
+            }
+            depthStencil = resource->depthStencilView.Get();
+        }
+
+        context_->OMSetRenderTargets(1U, &renderTarget, depthStencil);
         return GraphicsResult::Success;
     }
 

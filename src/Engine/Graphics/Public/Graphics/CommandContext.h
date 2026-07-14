@@ -112,6 +112,10 @@ namespace engine::graphics
         [[nodiscard]] virtual GraphicsResult SetSwapChainRenderTarget(
             SwapChain& swapChain) noexcept = 0;
 
+        [[nodiscard]] virtual GraphicsResult SetSwapChainRenderTarget(
+            SwapChain& swapChain,
+            TextureHandle depthStencilTarget) noexcept = 0;
+
         [[nodiscard]] virtual GraphicsResult SetRenderTargets(
             const TextureHandle* colorTargets,
             std::size_t colorTargetCount,
