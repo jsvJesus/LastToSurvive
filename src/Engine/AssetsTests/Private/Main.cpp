@@ -5,6 +5,10 @@
 #include "Assets/AssetRegistry.h"
 #include "Assets/AssetSource.h"
 #include "Assets/DdsTextureLoader.h"
+#include "Assets/GpuMesh.h"
+#include "Assets/MaterialAssetLoader.h"
+#include "Assets/MeshAssetBuilder.h"
+#include "Assets/MeshAssetLoader.h"
 #include "Assets/TextureAssetCache.h"
 
 #include "Graphics/RenderDevice.h"
@@ -14,6 +18,7 @@
 #include <cstdio>
 #include <cstring>
 #include <memory>
+#include <limits>
 #include <unordered_set>
 #include <vector>
 
@@ -40,6 +45,25 @@ namespace
         const std::uint32_t value) noexcept
     {
         std::memcpy(data + offset, &value, sizeof(value));
+    }
+    void WriteU64(std::byte* d,std::size_t o,std::uint64_t v) noexcept{std::memcpy(d+o,&v,8U);}
+    void WriteF32(std::byte* d,std::size_t o,float v) noexcept{std::memcpy(d+o,&v,4U);}
+
+    [[nodiscard]] assets::AssetResult BuildTestMesh(assets::AssetData& out,bool use32=false) noexcept
+    {
+        constexpr std::size_t vo=160U,vs=144U,io=304U,so16=312U,so32=316U;
+        const std::size_t is=use32?12U:6U,so=use32?so32:so16,total=so+16U;
+        auto r=out.Resize(total);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,total);std::memcpy(b,"LTSMESH\0",8);
+        WriteU32(b,8,1);WriteU32(b,12,0x01020304);WriteU32(b,16,160);WriteU32(b,20,48);WriteU32(b,24,use32?2:1);WriteU32(b,28,3);WriteU32(b,32,3);WriteU32(b,36,1);WriteU32(b,40,1);
+        WriteU64(b,48,vo);WriteU64(b,56,vs);WriteU64(b,64,io);WriteU64(b,72,is);WriteU64(b,80,so);WriteU64(b,88,16);
+        WriteF32(b,96,-1);WriteF32(b,108,1);WriteF32(b,112,1);WriteF32(b,124,0.5F);WriteF32(b,132,2.0F);
+        assets::StaticMeshVertex v[3]={};v[0].position={-1,0,0};v[1].position={1,0,0};v[2].position={0,1,0};for(auto&x:v){x.normal={0,0,1};x.tangent={1,0,0,1};}std::memcpy(b+vo,v,sizeof(v));
+        if(use32){const std::uint32_t idx[]={0,1,2};std::memcpy(b+io,idx,sizeof(idx));}else{const std::uint16_t idx[]={0,1,2};std::memcpy(b+io,idx,sizeof(idx));}
+        WriteU32(b,so,0);WriteU32(b,so+4,3);WriteU32(b,so+8,0);WriteU32(b,so+12,0);return assets::AssetResult::Success;
+    }
+    [[nodiscard]] assets::AssetResult BuildTestMaterial(assets::AssetData& out,const char* path=nullptr) noexcept
+    {
+        const std::size_t ps=path?std::strlen(path):0,total=160U+ps;auto r=out.Resize(total);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,total);std::memcpy(b,"LTSMAT\0\0",8);WriteU32(b,8,1);WriteU32(b,12,0x01020304);WriteU32(b,16,160);WriteU32(b,24,path?2:0);for(int i=0;i<4;++i)WriteF32(b,28+i*4,1);WriteF32(b,60,1);WriteF32(b,64,0.5F);WriteU32(b,68,1);WriteU32(b,72,0);WriteU32(b,76,0);WriteU32(b,80,0);WriteU32(b,88,1);WriteU32(b,92,7);WriteF32(b,116,(std::numeric_limits<float>::max)());WriteU64(b,120,160);WriteU32(b,128,static_cast<std::uint32_t>(ps));if(ps)std::memcpy(b+160,path,ps);return assets::AssetResult::Success;
     }
 
     [[nodiscard]] assets::AssetResult BuildTestDds(
@@ -172,6 +196,7 @@ namespace
         void Shutdown() noexcept override
         {
             textures_.clear();
+            buffers_.clear();
             backend_ = graphics::GraphicsBackend::None;
             state_ = graphics::DeviceState::Stopped;
         }
@@ -244,19 +269,24 @@ namespace
         }
 
         [[nodiscard]] graphics::GraphicsResult CreateBuffer(
-            const graphics::BufferDesc&,
-            const graphics::BufferInitialData*,
+            const graphics::BufferDesc& desc,
+            const graphics::BufferInitialData* data,
             graphics::BufferHandle& outBuffer) noexcept override
         {
             outBuffer = graphics::BufferHandle{};
-            return graphics::GraphicsResult::Unsupported;
+            if(failBufferCreate_!=0U&&++bufferCreateCalls_==failBufferCreate_)return graphics::GraphicsResult::OutOfMemory;
+            if(!desc.IsValid()||!data||!data->IsValid())return graphics::GraphicsResult::InvalidArgument;
+            outBuffer=graphics::BufferHandle::FromParts(nextBufferIndex_++,1U);try{buffers_.insert(outBuffer.Value());}catch(...){outBuffer={};return graphics::GraphicsResult::OutOfMemory;}return graphics::GraphicsResult::Success;
         }
 
         [[nodiscard]] graphics::GraphicsResult DestroyBuffer(
-            const graphics::BufferHandle) noexcept override
+            const graphics::BufferHandle buffer) noexcept override
         {
-            return graphics::GraphicsResult::Unsupported;
+            return buffers_.erase(buffer.Value())?graphics::GraphicsResult::Success:graphics::GraphicsResult::NotFound;
         }
+
+        void FailBufferCreate(std::uint32_t call) noexcept{bufferCreateCalls_=0;failBufferCreate_=call;}
+        [[nodiscard]] std::size_t GetBufferCount()const noexcept{return buffers_.size();}
 
         [[nodiscard]] std::size_t GetTextureCount() const noexcept
         {
@@ -271,7 +301,9 @@ namespace
             graphics::DeviceState::Uninitialized;
 
         std::uint32_t nextTextureIndex_ = 1U;
+        std::uint32_t nextBufferIndex_=1U,bufferCreateCalls_=0U,failBufferCreate_=0U;
         std::unordered_set<std::uint64_t> textures_;
+        std::unordered_set<std::uint64_t> buffers_;
     };
 }
 
@@ -308,6 +340,8 @@ int main()
     }
 
     assets::DdsTextureLoader ddsLoader;
+    assets::MeshAssetLoader meshLoader;
+    assets::MaterialAssetLoader materialLoader;
     assets::AssetLoaderRegistry loaderRegistry;
 
     if (!Check(
@@ -316,6 +350,30 @@ int main()
     {
         return 1;
     }
+    if(!Check(assets::Succeeded(loaderRegistry.Register(meshLoader))&&assets::Succeeded(loaderRegistry.Register(materialLoader)),"mesh/material loader registration"))return 1;
+
+    assets::AssetData mesh16,mesh32,materialData,materialTextureData;
+    if(!Check(assets::Succeeded(BuildTestMesh(mesh16))&&assets::Succeeded(BuildTestMesh(mesh32,true))&&assets::Succeeded(BuildTestMaterial(materialData))&&assets::Succeeded(BuildTestMaterial(materialTextureData,"textures/test.dds")),"mesh/material fixtures"))return 1;
+    assets::AssetPath meshPath,materialPath; (void)assets::AssetPath::TryCreate("meshes/test.ltsmesh",meshPath);(void)assets::AssetPath::TryCreate("materials/test.ltsmat",materialPath);
+    assets::AssetMetadata meshMetadata;meshMetadata.path=meshPath;meshMetadata.id=meshPath.GetId();meshMetadata.type=assets::AssetType::Mesh;meshMetadata.sourceSize=mesh16.GetSize();
+    assets::AssetMetadata materialMetadata;materialMetadata.path=materialPath;materialMetadata.id=materialPath.GetId();materialMetadata.type=assets::AssetType::Material;materialMetadata.sourceSize=materialData.GetSize();
+    std::unique_ptr<assets::LoadedAsset> foundationAsset;
+    if(!Check(assets::Succeeded(loaderRegistry.Load(meshMetadata,mesh16,foundationAsset))&&foundationAsset&&foundationAsset->GetType()==assets::AssetType::Mesh,"valid UInt16 mesh load"))return 1;
+    if(!Check(assets::Succeeded(loaderRegistry.Load(meshMetadata,mesh32,foundationAsset)),"valid UInt32 mesh load"))return 1;
+    if(!Check(assets::Succeeded(loaderRegistry.Load(materialMetadata,materialData,foundationAsset))&&foundationAsset->GetType()==assets::AssetType::Material,"valid material load"))return 1;
+    if(!Check(assets::Succeeded(loaderRegistry.Load(materialMetadata,materialTextureData,foundationAsset)),"material texture path load"))return 1;
+    assets::AssetData malformed; (void)malformed.Resize(mesh16.GetSize());std::memcpy(malformed.GetData(),mesh16.GetData(),mesh16.GetSize());malformed.GetData()[0]=std::byte{'X'};
+    if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,malformed,foundationAsset)),"wrong mesh magic rejected"))return 1;
+    (void)malformed.Resize(80U);if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,malformed,foundationAsset)),"truncated mesh rejected"))return 1;
+    (void)malformed.Resize(materialData.GetSize());std::memcpy(malformed.GetData(),materialData.GetData(),materialData.GetSize());WriteU32(malformed.GetData(),20,99U);
+    if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,malformed,foundationAsset)),"invalid material enum rejected"))return 1;
+    const auto rejectMesh=[&](std::size_t offset,std::uint32_t value,const char* message){assets::AssetData bad;if(assets::Failed(bad.Resize(mesh16.GetSize())))return false;std::memcpy(bad.GetData(),mesh16.GetData(),mesh16.GetSize());WriteU32(bad.GetData(),offset,value);return Check(assets::Failed(loaderRegistry.Load(meshMetadata,bad,foundationAsset)),message);};
+    if(!rejectMesh(8U,2U,"unsupported mesh version")||!rejectMesh(28U,0xFFFFFFFFU,"overflowed mesh count")||!rejectMesh(304U,99U,"mesh index outside range")||!rejectMesh(316U,99U,"invalid submesh range")||!rejectMesh(324U,4U,"invalid material slot"))return 1;
+    assets::AssetData badBounds;(void)badBounds.Resize(mesh16.GetSize());std::memcpy(badBounds.GetData(),mesh16.GetData(),mesh16.GetSize());WriteF32(badBounds.GetData(),96,(std::numeric_limits<float>::quiet_NaN)());if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,badBounds,foundationAsset)),"invalid mesh bounds"))return 1;
+    const auto rejectMaterial=[&](std::size_t offset,std::uint32_t value,const char* message){assets::AssetData bad;if(assets::Failed(bad.Resize(materialData.GetSize())))return false;std::memcpy(bad.GetData(),materialData.GetData(),materialData.GetSize());WriteU32(bad.GetData(),offset,value);return Check(assets::Failed(loaderRegistry.Load(materialMetadata,bad,foundationAsset)),message);};
+    if(!rejectMaterial(8U,2U,"unsupported material version")||!rejectMaterial(68U,99U,"invalid material sampler"))return 1;
+    assets::AssetData badScalar;(void)badScalar.Resize(materialData.GetSize());std::memcpy(badScalar.GetData(),materialData.GetData(),materialData.GetSize());WriteF32(badScalar.GetData(),60,(std::numeric_limits<float>::infinity)());if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,badScalar,foundationAsset)),"invalid material scalar"))return 1;
+    assets::AssetData truncatedPath;(void)truncatedPath.Resize(materialTextureData.GetSize()-1U);std::memcpy(truncatedPath.GetData(),materialTextureData.GetData(),truncatedPath.GetSize());if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,truncatedPath,foundationAsset)),"truncated material path"))return 1;
 
     assets::AssetMetadata metadata;
     metadata.path = path;
@@ -376,6 +434,21 @@ int main()
     {
         return 1;
     }
+
+    (void)loaderRegistry.Load(meshMetadata,mesh16,foundationAsset);
+    assets::MeshAsset gpuSource=static_cast<assets::MeshLoadedAsset*>(foundationAsset.get())->ReleaseMesh();
+    assets::GpuMesh gpuMesh;
+    if(!Check(graphics::Succeeded(gpuMesh.Upload(renderDevice,gpuSource))&&gpuMesh.IsValid()&&renderDevice.GetBufferCount()==2U,"GpuMesh upload"))return 1;
+    if(!Check(graphics::Succeeded(gpuMesh.Replace(renderDevice,gpuSource))&&renderDevice.GetBufferCount()==2U,"GpuMesh replace"))return 1;
+    if(!Check(graphics::Succeeded(gpuMesh.Release(renderDevice))&&renderDevice.GetBufferCount()==0U,"GpuMesh release"))return 1;
+    renderDevice.FailBufferCreate(2U);assets::GpuMesh failedMesh;
+    if(!Check(graphics::Failed(failedMesh.Upload(renderDevice,gpuSource))&&!failedMesh.IsValid()&&renderDevice.GetBufferCount()==0U,"GpuMesh partial upload cleanup"))return 1;
+    renderDevice.FailBufferCreate(0U);
+
+    MemoryAssetSource meshSource(meshPath,mesh16);assets::AssetManager meshManager;assets::AssetHandle meshHandle;
+    if(!Check(assets::Succeeded(meshManager.Initialize(meshSource))&&assets::Succeeded(meshManager.Register(meshMetadata,meshHandle))&&assets::Succeeded(meshManager.Load(meshHandle)),"AssetManager mesh load"))return 1;
+    const assets::AssetData* managedMesh=nullptr;if(!Check(assets::Succeeded(meshManager.GetData(meshHandle,managedMesh))&&managedMesh&&assets::Succeeded(loaderRegistry.Load(meshMetadata,*managedMesh,foundationAsset)),"AssetManager to MeshAssetLoader path"))return 1;
+    meshManager.Shutdown();
 
     assets::TextureAssetCache textureCache;
 

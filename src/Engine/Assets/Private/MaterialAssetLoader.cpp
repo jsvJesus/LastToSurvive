@@ -1,0 +1,14 @@
+#include "Assets/MaterialAssetLoader.h"
+#include <cstring>
+#include <new>
+namespace engine::assets
+{
+    namespace{constexpr std::size_t H=160U;std::uint32_t U(const std::byte*p,std::size_t o)noexcept{std::uint32_t v;std::memcpy(&v,p+o,4);return v;}std::uint64_t Q(const std::byte*p,std::size_t o)noexcept{std::uint64_t v;std::memcpy(&v,p+o,8);return v;}float F(const std::byte*p,std::size_t o)noexcept{float v;std::memcpy(&v,p+o,4);return v;}}
+    AssetResult MaterialAssetLoader::Load(const AssetMetadata& md,const AssetData& src,std::unique_ptr<LoadedAsset>& out)noexcept
+    {
+        out.reset();if(!md.IsValid())return AssetResult::InvalidMetadata;if(md.type!=AssetType::Material)return AssetResult::TypeMismatch;if(src.GetSize()<H)return AssetResult::CorruptData;const auto*b=src.GetData();const char magic[8]={'L','T','S','M','A','T','\0','\0'};if(std::memcmp(b,magic,8))return AssetResult::UnsupportedFormat;if(U(b,8)!=1U)return AssetResult::UnsupportedFormat;if(U(b,12)!=0x01020304U||U(b,16)<H||U(b,16)>src.GetSize())return AssetResult::CorruptData;
+        const auto alpha=U(b,20),flags=U(b,24);if(alpha>2U||(flags&~3U))return AssetResult::CorruptData;MaterialAssetDesc d;for(std::size_t i=0;i<4;++i)d.baseColorFactor[i]=F(b,28+i*4);for(std::size_t i=0;i<3;++i)d.emissiveFactor[i]=F(b,44+i*4);d.metallicFactor=F(b,56);d.roughnessFactor=F(b,60);d.alphaCutoff=F(b,64);d.alphaMode=static_cast<MaterialAlphaMode>(alpha);d.doubleSided=(flags&1U)!=0;
+        d.sampler.filter=static_cast<engine::graphics::TextureFilter>(U(b,68));d.sampler.addressU=static_cast<engine::graphics::TextureAddressMode>(U(b,72));d.sampler.addressV=static_cast<engine::graphics::TextureAddressMode>(U(b,76));d.sampler.addressW=static_cast<engine::graphics::TextureAddressMode>(U(b,80));d.sampler.mipLodBias=F(b,84);d.sampler.maximumAnisotropy=U(b,88);d.sampler.comparisonFunction=static_cast<engine::graphics::ComparisonFunction>(U(b,92));for(std::size_t i=0;i<4;++i)d.sampler.borderColor[i]=F(b,96+i*4);d.sampler.minimumLod=F(b,112);d.sampler.maximumLod=F(b,116);
+        const std::uint64_t po=Q(b,120);const std::uint32_t ps=U(b,128);const bool has=(flags&2U)!=0;if(has!=(ps!=0U)||po<H||po>src.GetSize()||ps>AssetPath::MaximumLength||ps>src.GetSize()-po||po+ps!=src.GetSize())return AssetResult::CorruptData;if(has){AssetPath p;const auto r=AssetPath::TryCreate(std::string_view(reinterpret_cast<const char*>(b+po),ps),p);if(Failed(r))return r;d.baseColorTexture=std::move(p);}else if(src.GetSize()!=H)return AssetResult::CorruptData;d.debugName=md.path.String();MaterialAsset m;auto r=m.Initialize(std::move(d));if(Failed(r))return AssetResult::CorruptData;try{out=std::make_unique<MaterialLoadedAsset>(std::move(m));}catch(const std::bad_alloc&){return AssetResult::OutOfMemory;}catch(...){return AssetResult::InternalError;}return AssetResult::Success;
+    }
+}

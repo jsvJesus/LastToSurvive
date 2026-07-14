@@ -133,6 +133,12 @@
     <ClInclude Include="Public\Assets\DdsTextureLoader.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
     <ClInclude Include="Public\Assets\GpuTexture.h" />
+    <ClInclude Include="Public\Assets\GpuMesh.h" />
+    <ClInclude Include="Public\Assets\MaterialAsset.h" />
+    <ClInclude Include="Public\Assets\MaterialAssetLoader.h" />
+    <ClInclude Include="Public\Assets\MeshAsset.h" />
+    <ClInclude Include="Public\Assets\MeshAssetBuilder.h" />
+    <ClInclude Include="Public\Assets\MeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\TextureAsset.h" />
     <ClInclude Include="Public\Assets\TextureAssetCache.h" />
   </ItemGroup>
@@ -151,6 +157,12 @@
     <ClCompile Include="Private\DdsTextureLoader.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
     <ClCompile Include="Private\GpuTexture.cpp" />
+    <ClCompile Include="Private\GpuMesh.cpp" />
+    <ClCompile Include="Private\MaterialAsset.cpp" />
+    <ClCompile Include="Private\MaterialAssetLoader.cpp" />
+    <ClCompile Include="Private\MeshAsset.cpp" />
+    <ClCompile Include="Private\MeshAssetBuilder.cpp" />
+    <ClCompile Include="Private\MeshAssetLoader.cpp" />
     <ClCompile Include="Private\TextureAsset.cpp" />
     <ClCompile Include="Private\TextureAssetCache.cpp" />
   </ItemGroup>

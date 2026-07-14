@@ -167,6 +167,7 @@
       <AdditionalIncludeDirectories>
         ..\Engine\Core\Public;
         ..\Engine\Math\Public;
+        ..\Engine\Assets\Public;
         ..\Engine\Legacy\Public;
         ..\Engine\Platform\Public;
         ..\Engine\Tasks\Public;
@@ -1098,6 +1099,11 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
 
     <ProjectReference Include="..\Engine\Math\LTS.Math.vcxproj">
       <Project>{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Assets\LTS.Assets.vcxproj">
+      <Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
 

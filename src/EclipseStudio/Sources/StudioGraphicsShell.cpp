@@ -4,6 +4,10 @@
 #include "StudioGraphicsShell.h"
 #include "StudioRuntimeBridge.h"
 
+#include <Assets/GpuMesh.h>
+#include <Assets/MaterialAsset.h>
+#include <Assets/MeshAssetBuilder.h>
+
 #include <Graphics/Buffer.h>
 #include <Graphics/CommandContext.h>
 #include <Graphics/InputLayout.h>
@@ -19,6 +23,8 @@
 #include <Platform/Window.h>
 #include <Runtime/RendererBackend.h>
 #include <Runtime/Engine.h>
+#include <Math/Matrix4.h>
+#include <Math/Vector3.h>
 
 #include <d3dcompiler.h>
 
@@ -43,28 +49,37 @@ namespace
     constexpr const char* StudioBindingShaderSource = R"hlsl(
 cbuffer FrameConstants : register(b0)
 {
-    row_major float4x4 transform;
+    row_major float4x4 worldViewProjection;
+    row_major float4x4 world;
+    float4 frameData;
+};
+cbuffer MaterialConstants : register(b0)
+{
+    float4 baseColorFactor;
+    float4 emissiveMetallic;
+    float4 roughnessAlpha;
 };
 
 struct VertexInput
 {
     float3 position : POSITION;
-    float4 color : COLOR0;
+    float3 normal : NORMAL;
+    float4 tangent : TANGENT;
     float2 texcoord : TEXCOORD0;
 };
 
 struct VertexOutput
 {
     float4 position : SV_Position;
-    float4 color : COLOR0;
+    float3 worldNormal : NORMAL;
     float2 texcoord : TEXCOORD0;
 };
 
 VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
-    output.position = mul(float4(input.position, 1.0f), transform);
-    output.color = input.color;
+    output.position = mul(float4(input.position, 1.0f), worldViewProjection);
+    output.worldNormal = normalize(mul(float4(input.normal, 0.0f), world).xyz);
     output.texcoord = input.texcoord;
     return output;
 }
@@ -74,22 +89,22 @@ SamplerState checkerboardSampler : register(s0);
 
 float4 PSMain(VertexOutput input) : SV_Target0
 {
-    return checkerboardTexture.Sample(checkerboardSampler, input.texcoord) *
-        input.color;
+    float3 lightDirection = normalize(float3(-0.45f, 0.75f, -0.55f));
+    float lighting = 0.22f + 0.78f * saturate(dot(input.worldNormal, lightDirection));
+    float4 color = checkerboardTexture.Sample(checkerboardSampler, input.texcoord) * baseColorFactor;
+    return float4(color.rgb * lighting + emissiveMetallic.rgb, color.a);
 }
 )hlsl";
 
-    struct StudioQuadVertex final
-    {
-        float position[3];
-        float color[4];
-        float texcoord[2];
-    };
-
     struct alignas(16) StudioFrameConstants final
     {
-        float transform[16];
+        float worldViewProjection[16];
+        float world[16];
+        float frameData[4];
     };
+
+    struct alignas(16) StudioMaterialConstants final
+    { float baseColor[4]; float emissiveMetallic[4]; float roughnessAlpha[4]; };
 
     static_assert(sizeof(StudioFrameConstants) % 16U == 0U);
 
@@ -379,6 +394,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
             {
                 (void)context_->UnbindConstantBuffers(
                     engine::graphics::ShaderStage::Vertex, 0U, 1U);
+                (void)context_->UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Pixel, 0U, 1U);
                 (void)context_->UnbindShaderResources(
                     engine::graphics::ShaderStage::Pixel, 0U, 1U);
                 (void)context_->UnbindSamplers(
@@ -406,6 +423,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
             closeRequested_ = false;
             firstDrawLogged_ = false;
             elapsedSeconds_ = 0.0F;
+            meshAsset_.Clear();
+            materialAsset_.Clear();
             failureResult_ = StudioGraphicsShellResult::FrameFailed;
             width_ = height_ = 0;
         }
@@ -447,10 +466,12 @@ float4 PSMain(VertexOutput input) : SV_Target0
             const engine::graphics::VertexElementDesc elements[] = {
                 {"POSITION", 0U, engine::graphics::Format::R32G32B32Float,
                     0U, 0U, engine::graphics::VertexInputRate::PerVertex, 0U},
-                {"COLOR", 0U, engine::graphics::Format::R32G32B32A32Float,
+                {"NORMAL", 0U, engine::graphics::Format::R32G32B32Float,
                     0U, 12U, engine::graphics::VertexInputRate::PerVertex, 0U},
+                {"TANGENT", 0U, engine::graphics::Format::R32G32B32A32Float,
+                    0U, 24U, engine::graphics::VertexInputRate::PerVertex, 0U},
                 {"TEXCOORD", 0U, engine::graphics::Format::R32G32Float,
-                    0U, 28U, engine::graphics::VertexInputRate::PerVertex, 0U}};
+                    0U, 40U, engine::graphics::VertexInputRate::PerVertex, 0U}};
             engine::graphics::InputLayoutDesc inputLayoutDesc;
             inputLayoutDesc.vertexShader = vertexShader_;
             inputLayoutDesc.elements = elements;
@@ -466,7 +487,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
             pipelineDesc.pixelShader = pixelShader_;
             pipelineDesc.inputLayout = inputLayout_;
             pipelineDesc.topology = engine::graphics::PrimitiveTopology::TriangleList;
-            pipelineDesc.rasterizer.cullMode = engine::graphics::CullMode::None;
+            pipelineDesc.rasterizer.cullMode = engine::graphics::CullMode::Back;
             pipelineDesc.rasterizer.scissorEnable = true;
             pipelineDesc.blend.renderTargets[0].blendEnable = false;
             pipelineDesc.depthStencil.depthEnable = true;
@@ -479,44 +500,39 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return Fail("quad pipeline creation", result);
             r3dOutToLog("[Graphics][DX11] Quad pipeline created\n");
 
-            constexpr StudioQuadVertex vertices[] = {
-                {{-0.55F, 0.55F, 0.5F}, {1, 1, 1, 1}, {0, 0}},
-                {{0.55F, 0.55F, 0.5F}, {1, 1, 1, 1}, {1, 0}},
-                {{0.55F, -0.55F, 0.5F}, {1, 1, 1, 1}, {1, 1}},
-                {{-0.55F, -0.55F, 0.5F}, {1, 1, 1, 1}, {0, 1}}};
-            engine::graphics::BufferDesc vertexBufferDesc;
-            vertexBufferDesc.byteSize = sizeof(vertices);
-            vertexBufferDesc.stride = sizeof(StudioQuadVertex);
-            vertexBufferDesc.usage = engine::graphics::ResourceUsage::Immutable;
-            vertexBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Vertex;
-            engine::graphics::BufferInitialData vertexData;
-            vertexData.data = reinterpret_cast<const std::byte*>(vertices);
-            vertexData.dataSize = sizeof(vertices);
-            result = device_.CreateBuffer(
-                vertexBufferDesc, &vertexData, vertexBuffer_);
-            if (engine::graphics::Failed(result))
-                return Fail("quad vertex buffer creation", result);
-            r3dOutToLog("[Graphics][DX11] Quad vertex buffer created\n");
-
-            constexpr std::uint16_t indices[] = {0U, 1U, 2U, 0U, 2U, 3U};
-            engine::graphics::BufferDesc indexBufferDesc;
-            indexBufferDesc.byteSize = sizeof(indices);
-            indexBufferDesc.stride = sizeof(std::uint16_t);
-            indexBufferDesc.usage = engine::graphics::ResourceUsage::Immutable;
-            indexBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Index;
-            indexBufferDesc.indexFormat = engine::graphics::IndexFormat::UInt16;
-            engine::graphics::BufferInitialData indexData;
-            indexData.data = reinterpret_cast<const std::byte*>(indices);
-            indexData.dataSize = sizeof(indices);
-            result = device_.CreateBuffer(indexBufferDesc, &indexData, indexBuffer_);
-            if (engine::graphics::Failed(result))
-                return Fail("quad index buffer creation", result);
-            r3dOutToLog("[Graphics][DX11] Quad index buffer created\n");
+            using V = engine::assets::StaticMeshVertex;
+            constexpr V vertices[] = {
+                {{-1,-1,-1},{0,0,-1},{1,0,0,1},{0,1}},{{-1,1,-1},{0,0,-1},{1,0,0,1},{0,0}},{{1,1,-1},{0,0,-1},{1,0,0,1},{1,0}},{{1,-1,-1},{0,0,-1},{1,0,0,1},{1,1}},
+                {{1,-1,1},{0,0,1},{-1,0,0,1},{0,1}},{{1,1,1},{0,0,1},{-1,0,0,1},{0,0}},{{-1,1,1},{0,0,1},{-1,0,0,1},{1,0}},{{-1,-1,1},{0,0,1},{-1,0,0,1},{1,1}},
+                {{-1,-1,1},{-1,0,0},{0,0,-1,1},{0,1}},{{-1,1,1},{-1,0,0},{0,0,-1,1},{0,0}},{{-1,1,-1},{-1,0,0},{0,0,-1,1},{1,0}},{{-1,-1,-1},{-1,0,0},{0,0,-1,1},{1,1}},
+                {{1,-1,-1},{1,0,0},{0,0,1,1},{0,1}},{{1,1,-1},{1,0,0},{0,0,1,1},{0,0}},{{1,1,1},{1,0,0},{0,0,1,1},{1,0}},{{1,-1,1},{1,0,0},{0,0,1,1},{1,1}},
+                {{-1,1,-1},{0,1,0},{1,0,0,1},{0,1}},{{-1,1,1},{0,1,0},{1,0,0,1},{0,0}},{{1,1,1},{0,1,0},{1,0,0,1},{1,0}},{{1,1,-1},{0,1,0},{1,0,0,1},{1,1}},
+                {{-1,-1,1},{0,-1,0},{1,0,0,1},{0,1}},{{-1,-1,-1},{0,-1,0},{1,0,0,1},{0,0}},{{1,-1,-1},{0,-1,0},{1,0,0,1},{1,0}},{{1,-1,1},{0,-1,0},{1,0,0,1},{1,1}}};
+            constexpr std::uint16_t indices[] = {0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23};
+            constexpr engine::assets::MeshSubmesh submesh{0U,36U,0,0U};
+            const auto assetResult = engine::assets::MeshAssetBuilder::Build(vertices,24U,indices,36U,&submesh,1U,1U,"studio/cube",meshAsset_);
+            if (engine::assets::Failed(assetResult)) return Fail("MeshAsset creation", GraphicsResult::InvalidArgument);
+            result = gpuMesh_.Upload(device_, meshAsset_);
+            if (engine::graphics::Failed(result)) return Fail("GpuMesh upload", result);
+            r3dOutToLog("[Graphics][DX11] MeshAsset created: vertices=24 indices=36 submeshes=1 materials=1\n");
+            const auto& bounds=meshAsset_.GetBounds();
+            r3dOutToLog("[Graphics][DX11] Mesh bounds: min=(%.2f,%.2f,%.2f) max=(%.2f,%.2f,%.2f) radius=%.2f\n",bounds.minimum[0],bounds.minimum[1],bounds.minimum[2],bounds.maximum[0],bounds.maximum[1],bounds.maximum[2],bounds.sphereRadius);
+            r3dOutToLog("[Graphics][DX11] GpuMesh uploaded\n");
             return true;
         }
 
         bool CreateBindingResources() noexcept
         {
+            engine::assets::MaterialAssetDesc materialDesc;
+            materialDesc.baseColorFactor = {1.0F, 0.95F, 0.9F, 1.0F};
+            materialDesc.emissiveFactor = {0.015F, 0.02F, 0.025F};
+            materialDesc.sampler.filter = engine::graphics::TextureFilter::Linear;
+            materialDesc.sampler.addressU = engine::graphics::TextureAddressMode::Wrap;
+            materialDesc.sampler.addressV = engine::graphics::TextureAddressMode::Wrap;
+            materialDesc.sampler.addressW = engine::graphics::TextureAddressMode::Wrap;
+            materialDesc.debugName = "Studio cube material";
+            const auto materialResult = materialAsset_.Initialize(std::move(materialDesc));
+            if (engine::assets::Failed(materialResult)) return Fail("MaterialAsset validation", GraphicsResult::InvalidArgument);
             constexpr std::uint32_t checkerboardPixels[16] = {
                 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
                 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU,
@@ -539,11 +555,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return Fail("checkerboard texture creation", result);
             r3dOutToLog("[Graphics][DX11] Checkerboard texture created\n");
 
-            engine::graphics::SamplerDesc samplerDesc;
-            samplerDesc.filter = engine::graphics::TextureFilter::Linear;
-            samplerDesc.addressU = engine::graphics::TextureAddressMode::Wrap;
-            samplerDesc.addressV = engine::graphics::TextureAddressMode::Wrap;
-            samplerDesc.addressW = engine::graphics::TextureAddressMode::Wrap;
+            engine::graphics::SamplerDesc samplerDesc = materialAsset_.GetDesc().sampler;
             samplerDesc.debugName = "Studio DX11 Checkerboard Sampler";
             result = device_.CreateSampler(samplerDesc, sampler_);
             if (engine::graphics::Failed(result))
@@ -560,6 +572,17 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (engine::graphics::Failed(result))
                 return Fail("frame constant buffer creation", result);
             r3dOutToLog("[Graphics][DX11] Dynamic frame constant buffer created\n");
+            constantBufferDesc.byteSize = sizeof(StudioMaterialConstants);
+            result = device_.CreateBuffer(constantBufferDesc, nullptr, materialConstantBuffer_);
+            if (engine::graphics::Failed(result)) return Fail("material constant buffer creation", result);
+            const auto& md = materialAsset_.GetDesc();
+            StudioMaterialConstants constants{};
+            std::memcpy(constants.baseColor, md.baseColorFactor.data(), sizeof(constants.baseColor));
+            std::memcpy(constants.emissiveMetallic, md.emissiveFactor.data(), sizeof(float)*3U);
+            constants.emissiveMetallic[3]=md.metallicFactor; constants.roughnessAlpha[0]=md.roughnessFactor; constants.roughnessAlpha[1]=md.alphaCutoff;
+            result=context_->UpdateBuffer(materialConstantBuffer_,&constants,sizeof(constants));
+            if(engine::graphics::Failed(result))return Fail("material constant buffer update",result);
+            r3dOutToLog("[Graphics][DX11] MaterialAsset and material resources created\n");
             return true;
         }
 
@@ -571,17 +594,16 @@ float4 PSMain(VertexOutput input) : SV_Target0
             elapsedSeconds_ += static_cast<float>(deltaSeconds);
             if (elapsedSeconds_ > 1000.0F)
                 elapsedSeconds_ = std::fmod(elapsedSeconds_, 1000.0F);
-            const float sine = std::sin(elapsedSeconds_ * 0.65F);
-            const float cosine = std::cos(elapsedSeconds_ * 0.65F);
             const float aspect = static_cast<float>(width_) /
                 static_cast<float>(height_);
-            const float scaleX = aspect > 1.0F ? 1.0F / aspect : 1.0F;
-            const float scaleY = aspect < 1.0F ? aspect : 1.0F;
-            const StudioFrameConstants constants = {{
-                cosine * scaleX, sine * scaleY, 0.0F, 0.0F,
-                -sine * scaleX, cosine * scaleY, 0.0F, 0.0F,
-                0.0F, 0.0F, 1.0F, 0.0F,
-                0.0F, 0.0F, 0.0F, 1.0F}};
+            const engine::math::Matrix4 world=engine::math::Matrix4::CreateRotationY(elapsedSeconds_*0.55F)*engine::math::Matrix4::CreateRotationX(elapsedSeconds_*0.31F);
+            const engine::math::Matrix4 view=engine::math::Matrix4::CreateTranslation({0.0F,0.0F,4.2F});
+            const float yScale=1.0F/std::tan(0.55F),xScale=yScale/aspect,zn=0.1F,zf=100.0F;
+            const engine::math::Matrix4 projection{xScale,0,0,0,0,yScale,0,0,0,0,zf/(zf-zn),1,0,0,-zn*zf/(zf-zn),0};
+            const engine::math::Matrix4 wvp=world*view*projection;
+            StudioFrameConstants constants{};
+            std::memcpy(constants.worldViewProjection,wvp.Data(),sizeof(constants.worldViewProjection));
+            std::memcpy(constants.world,world.Data(),sizeof(constants.world)); constants.frameData[0]=elapsedSeconds_;
             const GraphicsResult result = context_->UpdateBuffer(
                 constantBuffer_, &constants, sizeof(constants));
             if (engine::graphics::Failed(result))
@@ -591,8 +613,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         void DestroyBindingResources() noexcept
         {
-            const bool hadResources = sampler_.IsValid() ||
-                checkerboardTexture_.IsValid() || constantBuffer_.IsValid();
+            const bool hadResources = sampler_.IsValid() || checkerboardTexture_.IsValid() || constantBuffer_.IsValid() || materialConstantBuffer_.IsValid();
+            if(materialConstantBuffer_.IsValid()){(void)device_.DestroyBuffer(materialConstantBuffer_);materialConstantBuffer_={};}
             if (sampler_.IsValid())
             {
                 const GraphicsResult result = device_.DestroySampler(sampler_);
@@ -619,13 +641,12 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 constantBuffer_ = {};
             }
             if (hadResources)
-                r3dOutToLog("[Graphics][DX11] Binding resources destroyed\n");
+                r3dOutToLog("[Graphics][DX11] Material resources released\n");
         }
 
         bool DrawGeometry() noexcept
         {
-            if (!pipeline_.IsValid() || !vertexBuffer_.IsValid() ||
-                !indexBuffer_.IsValid())
+            if (!pipeline_.IsValid() || !gpuMesh_.IsValid() || !materialAsset_.IsValid())
             {
                 return FailFrame("quad resource validation",
                     GraphicsResult::InvalidState);
@@ -635,13 +656,13 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (engine::graphics::Failed(result))
                 return FailFrame("quad pipeline bind", result);
             engine::graphics::VertexBufferBinding vertexBinding;
-            vertexBinding.buffer = vertexBuffer_;
-            vertexBinding.stride = sizeof(StudioQuadVertex);
+            vertexBinding.buffer = gpuMesh_.GetVertexBuffer();
+            vertexBinding.stride = gpuMesh_.GetVertexStride();
             result = context_->SetVertexBuffers(0U, &vertexBinding, 1U);
             if (engine::graphics::Failed(result))
                 return FailFrame("quad vertex buffer bind", result);
             engine::graphics::IndexBufferBinding indexBinding;
-            indexBinding.buffer = indexBuffer_;
+            indexBinding.buffer = gpuMesh_.GetIndexBuffer();
             result = context_->SetIndexBuffer(indexBinding);
             if (engine::graphics::Failed(result))
                 return FailFrame("quad index buffer bind", result);
@@ -657,12 +678,12 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 engine::graphics::ShaderStage::Pixel, 0U, &sampler_, 1U);
             if (engine::graphics::Failed(result))
                 return FailFrame("quad sampler bind", result);
-            result = context_->DrawIndexed(6U, 0U, 0);
-            if (engine::graphics::Failed(result))
-                return FailFrame("quad DrawIndexed", result);
+            result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel,0U,&materialConstantBuffer_,1U);
+            if(engine::graphics::Failed(result))return FailFrame("material constant buffer bind",result);
+            for(std::size_t i=0;i<gpuMesh_.GetSubmeshCount();++i){const auto* s=gpuMesh_.GetSubmesh(i);if(!s||s->materialSlot!=0U)return FailFrame("submesh material slot",GraphicsResult::InvalidState);result=context_->DrawIndexed(s->indexCount,s->firstIndex,s->baseVertex);if(engine::graphics::Failed(result))return FailFrame("submesh DrawIndexed",result);}
             if (!firstDrawLogged_)
             {
-                r3dOutToLog("[Graphics][DX11] First textured quad DrawIndexed completed\n");
+                r3dOutToLog("[Graphics][DX11] First asset-driven submesh draw completed\n");
                 firstDrawLogged_ = true;
             }
             return true;
@@ -672,24 +693,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
         {
             const bool hadResources = vertexShader_.IsValid() ||
                 pixelShader_.IsValid() || inputLayout_.IsValid() ||
-                pipeline_.IsValid() || vertexBuffer_.IsValid() ||
-                indexBuffer_.IsValid();
-            if (indexBuffer_.IsValid())
-            {
-                const GraphicsResult result = device_.DestroyBuffer(indexBuffer_);
-                if (engine::graphics::Failed(result))
-                    r3dOutToLog("[Graphics][DX11] Index buffer destruction failed: %s\n",
-                        engine::graphics::ToString(result));
-                indexBuffer_ = {};
-            }
-            if (vertexBuffer_.IsValid())
-            {
-                const GraphicsResult result = device_.DestroyBuffer(vertexBuffer_);
-                if (engine::graphics::Failed(result))
-                    r3dOutToLog("[Graphics][DX11] Vertex buffer destruction failed: %s\n",
-                        engine::graphics::ToString(result));
-                vertexBuffer_ = {};
-            }
+                pipeline_.IsValid() || gpuMesh_.IsValid();
+            if(gpuMesh_.IsValid()){const auto result=gpuMesh_.Release(device_);if(engine::graphics::Failed(result))r3dOutToLog("[Graphics][DX11] GpuMesh release failed: %s\n",engine::graphics::ToString(result));else r3dOutToLog("[Graphics][DX11] GpuMesh released\n");}
             if (pipeline_.IsValid())
             {
                 const GraphicsResult result = device_.DestroyGraphicsPipeline(pipeline_);
@@ -886,9 +891,11 @@ float4 PSMain(VertexOutput input) : SV_Target0
         engine::graphics::ShaderHandle pixelShader_;
         engine::graphics::InputLayoutHandle inputLayout_;
         engine::graphics::PipelineStateHandle pipeline_;
-        engine::graphics::BufferHandle vertexBuffer_;
-        engine::graphics::BufferHandle indexBuffer_;
+        engine::assets::MeshAsset meshAsset_;
+        engine::assets::GpuMesh gpuMesh_;
+        engine::assets::MaterialAsset materialAsset_;
         engine::graphics::BufferHandle constantBuffer_;
+        engine::graphics::BufferHandle materialConstantBuffer_;
         engine::graphics::TextureHandle checkerboardTexture_;
         engine::graphics::SamplerHandle sampler_;
         std::uint32_t width_ = 0, height_ = 0;
