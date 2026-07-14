@@ -106,6 +106,7 @@ namespace engine::graphics::d3d11
 
         [[nodiscard]] std::uint32_t GetFeatureLevel() const noexcept;
         [[nodiscard]] bool IsTearingSupported() const noexcept;
+        [[nodiscard]] bool IsDebugLayerEnabled() const noexcept;
 
         // Checks GetDeviceRemovedReason and updates DeviceState when needed.
         [[nodiscard]] GraphicsResult CheckDeviceStatus() noexcept;

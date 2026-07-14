@@ -532,6 +532,11 @@ namespace engine::graphics::d3d11
         return impl_ && impl_->tearingSupported;
     }
 
+    bool D3D11Device::IsDebugLayerEnabled() const noexcept
+    {
+        return impl_ && impl_->debugLayerEnabled;
+    }
+
     GraphicsResult D3D11Device::CheckDeviceStatus() noexcept
     {
         if (!impl_ || !impl_->device)

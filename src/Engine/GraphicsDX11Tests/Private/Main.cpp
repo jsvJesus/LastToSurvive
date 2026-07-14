@@ -475,6 +475,113 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
+    ShaderHandle drawVertexShader;
+    ShaderHandle drawPixelShader;
+    InputLayoutHandle drawInputLayout;
+    PipelineStateHandle drawPipeline;
+    if (!Check(
+            Succeeded(device.CreateShader(vertexShaderDesc, drawVertexShader)) &&
+                Succeeded(device.CreateShader(pixelShaderDesc, drawPixelShader)),
+            "create draw shaders"))
+    {
+        return 1;
+    }
+    inputLayoutDesc.vertexShader = drawVertexShader;
+    if (!Check(
+            Succeeded(device.CreateInputLayout(inputLayoutDesc, drawInputLayout)),
+            "create draw input layout"))
+    {
+        return 1;
+    }
+    pipelineDesc.vertexShader = drawVertexShader;
+    pipelineDesc.pixelShader = drawPixelShader;
+    pipelineDesc.inputLayout = drawInputLayout;
+    pipelineDesc.rasterizer.cullMode = CullMode::None;
+    if (!Check(
+            Succeeded(device.CreateGraphicsPipeline(pipelineDesc, drawPipeline)),
+            "create draw pipeline"))
+    {
+        return 1;
+    }
+
+    constexpr float drawVertices[] = {
+        0.0F, 0.5F, 0.5F, 1.0F, 0.0F, 0.0F, 1.0F,
+        -0.5F, -0.5F, 0.5F, 0.0F, 1.0F, 0.0F, 1.0F,
+        0.5F, -0.5F, 0.5F, 0.0F, 0.0F, 1.0F, 1.0F};
+    constexpr std::uint16_t drawIndices[] = {0U, 1U, 2U};
+    BufferDesc vertexBufferDesc;
+    vertexBufferDesc.byteSize = sizeof(drawVertices);
+    vertexBufferDesc.stride = 7U * sizeof(float);
+    vertexBufferDesc.usage = ResourceUsage::Immutable;
+    vertexBufferDesc.bindFlags = BufferBindFlags::Vertex;
+    BufferInitialData vertexBufferData;
+    vertexBufferData.data = reinterpret_cast<const std::byte*>(drawVertices);
+    vertexBufferData.dataSize = sizeof(drawVertices);
+    BufferHandle drawVertexBuffer;
+    BufferDesc indexBufferDesc;
+    indexBufferDesc.byteSize = sizeof(drawIndices);
+    indexBufferDesc.stride = sizeof(std::uint16_t);
+    indexBufferDesc.usage = ResourceUsage::Immutable;
+    indexBufferDesc.bindFlags = BufferBindFlags::Index;
+    indexBufferDesc.indexFormat = IndexFormat::UInt16;
+    BufferInitialData indexBufferData;
+    indexBufferData.data = reinterpret_cast<const std::byte*>(drawIndices);
+    indexBufferData.dataSize = sizeof(drawIndices);
+    BufferHandle drawIndexBuffer;
+    if (!Check(
+            Succeeded(device.CreateBuffer(
+                vertexBufferDesc, &vertexBufferData, drawVertexBuffer)) &&
+                Succeeded(device.CreateBuffer(
+                    indexBufferDesc, &indexBufferData, drawIndexBuffer)),
+            "create draw vertex and index buffers"))
+    {
+        return 1;
+    }
+
+    VertexBufferBinding vertexBinding;
+    vertexBinding.buffer = drawVertexBuffer;
+    vertexBinding.stride = vertexBufferDesc.stride;
+    IndexBufferBinding indexBinding;
+    indexBinding.buffer = drawIndexBuffer;
+    PresentStatus presentStatus = PresentStatus::Failed;
+    if (!Check(
+            Succeeded(context->SetSwapChainRenderTarget(*swapChain, depth)) &&
+                Succeeded(context->SetGraphicsPipeline(drawPipeline)) &&
+                Succeeded(context->SetVertexBuffers(0U, &vertexBinding, 1U)) &&
+                Succeeded(context->SetIndexBuffer(indexBinding)) &&
+                Succeeded(context->DrawIndexed(3U, 0U, 0)) &&
+                Succeeded(swapChain->Present(presentStatus)),
+            "complete neutral indexed draw path"))
+    {
+        return 1;
+    }
+    context->Flush();
+    context->ClearState();
+
+    const BufferHandle staleVertexBuffer = drawVertexBuffer;
+    const PipelineStateHandle staleDrawPipeline = drawPipeline;
+    if (!Check(
+            Succeeded(device.DestroyBuffer(drawIndexBuffer)) &&
+                Succeeded(device.DestroyBuffer(drawVertexBuffer)) &&
+                Succeeded(device.DestroyGraphicsPipeline(drawPipeline)) &&
+                Succeeded(device.DestroyInputLayout(drawInputLayout)) &&
+                Succeeded(device.DestroyShader(drawPixelShader)) &&
+                Succeeded(device.DestroyShader(drawVertexShader)),
+            "destroy draw resources in ownership order"))
+    {
+        return 1;
+    }
+    vertexBinding.buffer = staleVertexBuffer;
+    if (!Check(
+            context->SetVertexBuffers(0U, &vertexBinding, 1U) ==
+                GraphicsResult::NotFound &&
+                context->SetGraphicsPipeline(staleDrawPipeline) ==
+                    GraphicsResult::NotFound,
+            "reject stale draw buffer and pipeline handles"))
+    {
+        return 1;
+    }
+
     context->UnbindRenderTargets();
     if (!Check(
             Succeeded(device.DestroyTexture(depth)) &&
@@ -496,6 +603,6 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
-    std::puts("LTS.Graphics.DX11 shader pipeline tests passed");
+    std::puts("LTS.Graphics.DX11 indexed draw tests passed");
     return 0;
 }

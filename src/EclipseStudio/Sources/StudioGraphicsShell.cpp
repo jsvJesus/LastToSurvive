@@ -4,8 +4,12 @@
 #include "StudioGraphicsShell.h"
 #include "StudioRuntimeBridge.h"
 
+#include <Graphics/Buffer.h>
 #include <Graphics/CommandContext.h>
+#include <Graphics/InputLayout.h>
+#include <Graphics/PipelineState.h>
 #include <Graphics/RenderDevice.h>
+#include <Graphics/Shader.h>
 #include <Graphics/SwapChain.h>
 #include <Graphics/Texture.h>
 #include <Graphics/Viewport.h>
@@ -16,8 +20,12 @@
 #include <Runtime/RendererBackend.h>
 #include <Runtime/Engine.h>
 
+#include <d3dcompiler.h>
+
 #include <algorithm>
+#include <cstddef>
 #include <cmath>
+#include <cstring>
 #include <memory>
 
 extern void RegisterMsgProc(
@@ -31,6 +39,103 @@ namespace
 {
     using engine::graphics::GraphicsResult;
     using studio::StudioGraphicsShellResult;
+
+    constexpr const char* StudioTriangleShaderSource = R"hlsl(
+struct VertexInput
+{
+    float3 position : POSITION;
+    float4 color : COLOR0;
+};
+
+struct VertexOutput
+{
+    float4 position : SV_Position;
+    float4 color : COLOR0;
+};
+
+VertexOutput VSMain(VertexInput input)
+{
+    VertexOutput output;
+    output.position = float4(input.position, 1.0f);
+    output.color = input.color;
+    return output;
+}
+
+float4 PSMain(VertexOutput input) : SV_Target0
+{
+    return input.color;
+}
+)hlsl";
+
+    struct StudioTriangleVertex final
+    {
+        float position[3];
+        float color[4];
+    };
+
+    class ShaderBlob final
+    {
+    public:
+        ~ShaderBlob() noexcept { Reset(); }
+        ShaderBlob() noexcept = default;
+        ShaderBlob(const ShaderBlob&) = delete;
+        ShaderBlob& operator=(const ShaderBlob&) = delete;
+
+        [[nodiscard]] ID3DBlob* Get() const noexcept { return blob_; }
+        [[nodiscard]] ID3DBlob** Put() noexcept
+        {
+            Reset();
+            return &blob_;
+        }
+
+    private:
+        void Reset() noexcept
+        {
+            if (blob_ != nullptr)
+            {
+                blob_->Release();
+                blob_ = nullptr;
+            }
+        }
+
+        ID3DBlob* blob_ = nullptr;
+    };
+
+    bool CompileStudioShader(
+        const char* const entryPoint,
+        const char* const target,
+        ShaderBlob& outBytecode) noexcept
+    {
+        ShaderBlob errors;
+        const HRESULT result = D3DCompile(
+            StudioTriangleShaderSource,
+            std::strlen(StudioTriangleShaderSource),
+            "StudioDX11Triangle.hlsl",
+            nullptr,
+            nullptr,
+            entryPoint,
+            target,
+            D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS,
+            0U,
+            outBytecode.Put(),
+            errors.Put());
+        if (SUCCEEDED(result))
+            return true;
+
+        if (errors.Get() != nullptr)
+        {
+            r3dOutToLog("[Graphics][DX11] Shader compiler error (%s): %.*s\n",
+                entryPoint,
+                static_cast<int>(errors.Get()->GetBufferSize()),
+                static_cast<const char*>(errors.Get()->GetBufferPointer()));
+        }
+        else
+        {
+            r3dOutToLog("[Graphics][DX11] Shader compilation failed (%s): HRESULT=0x%08lx\n",
+                entryPoint, static_cast<unsigned long>(result));
+        }
+        return false;
+    }
 
     bool HasCommandLineSwitch(const char* switchName) noexcept
     {
@@ -102,6 +207,8 @@ namespace
 
             if (!CreateSizeDependentResources(size.width, size.height))
                 return false;
+            if (!CreateGeometryResources())
+                return false;
 
             width_ = size.width;
             height_ = size.height;
@@ -110,7 +217,7 @@ namespace
             r3dOutToLog("[Graphics] Selected DX11 Studio shell backend\n");
             r3dOutToLog("[Graphics][DX11] Device created: featureLevel=0x%04x, debugLayer=%s\n",
                 static_cast<unsigned int>(device_.GetFeatureLevel()),
-                deviceDesc.enableValidation ? "enabled" : "disabled");
+                device_.IsDebugLayerEnabled() ? "enabled" : "disabled");
             r3dOutToLog("[Graphics][DX11] Swap chain, backbuffer and depth buffer created: %ux%u\n",
                 width_, height_);
             return true;
@@ -188,6 +295,18 @@ namespace
                 *swapChain_, depth_);
             if (engine::graphics::Failed(result))
                 return FailFrame("backbuffer/depth bind", result);
+            engine::graphics::Viewport viewport;
+            viewport.width = static_cast<float>(width_);
+            viewport.height = static_cast<float>(height_);
+            result = context_->SetViewport(viewport);
+            if (engine::graphics::Failed(result))
+                return FailFrame("viewport setup", result);
+            engine::graphics::ScissorRect scissor;
+            scissor.right = static_cast<std::int32_t>(width_);
+            scissor.bottom = static_cast<std::int32_t>(height_);
+            result = context_->SetScissorRect(scissor);
+            if (engine::graphics::Failed(result))
+                return FailFrame("scissor setup", result);
             result = context_->ClearSwapChainColor(*swapChain_, clearColor);
             if (engine::graphics::Failed(result))
                 return FailFrame("backbuffer clear", result);
@@ -196,6 +315,8 @@ namespace
                 engine::graphics::ClearDepthStencilFlags::Stencil, 1.0F, 0);
             if (engine::graphics::Failed(result))
                 return FailFrame("depth clear", result);
+            if (!DrawGeometry())
+                return false;
 
             engine::graphics::PresentStatus status;
             result = swapChain_->Present(status);
@@ -232,10 +353,13 @@ namespace
         {
             if (context_ != nullptr)
             {
+                context_->UnbindGraphicsPipeline();
+                context_->UnbindIndexBuffer();
                 context_->UnbindRenderTargets();
                 context_->ClearState();
                 context_->Flush();
             }
+            DestroyGeometryResources();
             DestroyDepth();
             swapChain_.reset();
             context_ = nullptr;
@@ -249,6 +373,7 @@ namespace
             occluded_ = false;
             resetTimer_ = true;
             closeRequested_ = false;
+            firstDrawLogged_ = false;
             failureResult_ = StudioGraphicsShellResult::FrameFailed;
             width_ = height_ = 0;
         }
@@ -256,6 +381,197 @@ namespace
         ~StudioDX11Shell() noexcept { Shutdown(); }
 
     private:
+        bool CreateGeometryResources() noexcept
+        {
+            ShaderBlob vertexBytecode;
+            ShaderBlob pixelBytecode;
+            if (!CompileStudioShader("VSMain", "vs_4_0", vertexBytecode) ||
+                !CompileStudioShader("PSMain", "ps_4_0", pixelBytecode))
+            {
+                return Fail("triangle shader compilation",
+                    GraphicsResult::BackendFailure);
+            }
+            r3dOutToLog("[Graphics][DX11] Triangle shader bytecode ready\n");
+
+            engine::graphics::ShaderDesc shaderDesc;
+            shaderDesc.stage = engine::graphics::ShaderStage::Vertex;
+            shaderDesc.bytecode.data = vertexBytecode.Get()->GetBufferPointer();
+            shaderDesc.bytecode.size = vertexBytecode.Get()->GetBufferSize();
+            shaderDesc.debugName = "Studio DX11 Triangle VS";
+            GraphicsResult result = device_.CreateShader(shaderDesc, vertexShader_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle vertex shader creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle vertex shader created\n");
+
+            shaderDesc.stage = engine::graphics::ShaderStage::Pixel;
+            shaderDesc.bytecode.data = pixelBytecode.Get()->GetBufferPointer();
+            shaderDesc.bytecode.size = pixelBytecode.Get()->GetBufferSize();
+            shaderDesc.debugName = "Studio DX11 Triangle PS";
+            result = device_.CreateShader(shaderDesc, pixelShader_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle pixel shader creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle pixel shader created\n");
+
+            const engine::graphics::VertexElementDesc elements[] = {
+                {"POSITION", 0U, engine::graphics::Format::R32G32B32Float,
+                    0U, 0U, engine::graphics::VertexInputRate::PerVertex, 0U},
+                {"COLOR", 0U, engine::graphics::Format::R32G32B32A32Float,
+                    0U, 12U, engine::graphics::VertexInputRate::PerVertex, 0U}};
+            engine::graphics::InputLayoutDesc inputLayoutDesc;
+            inputLayoutDesc.vertexShader = vertexShader_;
+            inputLayoutDesc.elements = elements;
+            inputLayoutDesc.elementCount = sizeof(elements) / sizeof(elements[0]);
+            inputLayoutDesc.debugName = "Studio DX11 Triangle Input Layout";
+            result = device_.CreateInputLayout(inputLayoutDesc, inputLayout_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle input layout creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle input layout created\n");
+
+            engine::graphics::GraphicsPipelineDesc pipelineDesc;
+            pipelineDesc.vertexShader = vertexShader_;
+            pipelineDesc.pixelShader = pixelShader_;
+            pipelineDesc.inputLayout = inputLayout_;
+            pipelineDesc.topology = engine::graphics::PrimitiveTopology::TriangleList;
+            pipelineDesc.rasterizer.cullMode = engine::graphics::CullMode::None;
+            pipelineDesc.rasterizer.scissorEnable = true;
+            pipelineDesc.blend.renderTargets[0].blendEnable = false;
+            pipelineDesc.depthStencil.depthEnable = true;
+            pipelineDesc.depthStencil.depthWriteEnable = true;
+            pipelineDesc.depthStencil.depthFunction =
+                engine::graphics::ComparisonFunction::LessEqual;
+            pipelineDesc.debugName = "Studio DX11 Triangle Pipeline";
+            result = device_.CreateGraphicsPipeline(pipelineDesc, pipeline_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle pipeline creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle pipeline created\n");
+
+            constexpr StudioTriangleVertex vertices[] = {
+                {{0.0F, 0.65F, 0.5F}, {1.0F, 0.15F, 0.1F, 1.0F}},
+                {{-0.65F, -0.55F, 0.5F}, {0.1F, 0.9F, 0.25F, 1.0F}},
+                {{0.65F, -0.55F, 0.5F}, {0.1F, 0.35F, 1.0F, 1.0F}}};
+            engine::graphics::BufferDesc vertexBufferDesc;
+            vertexBufferDesc.byteSize = sizeof(vertices);
+            vertexBufferDesc.stride = sizeof(StudioTriangleVertex);
+            vertexBufferDesc.usage = engine::graphics::ResourceUsage::Immutable;
+            vertexBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Vertex;
+            engine::graphics::BufferInitialData vertexData;
+            vertexData.data = reinterpret_cast<const std::byte*>(vertices);
+            vertexData.dataSize = sizeof(vertices);
+            result = device_.CreateBuffer(
+                vertexBufferDesc, &vertexData, vertexBuffer_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle vertex buffer creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle vertex buffer created\n");
+
+            constexpr std::uint16_t indices[] = {0U, 1U, 2U};
+            engine::graphics::BufferDesc indexBufferDesc;
+            indexBufferDesc.byteSize = sizeof(indices);
+            indexBufferDesc.stride = sizeof(std::uint16_t);
+            indexBufferDesc.usage = engine::graphics::ResourceUsage::Immutable;
+            indexBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Index;
+            indexBufferDesc.indexFormat = engine::graphics::IndexFormat::UInt16;
+            engine::graphics::BufferInitialData indexData;
+            indexData.data = reinterpret_cast<const std::byte*>(indices);
+            indexData.dataSize = sizeof(indices);
+            result = device_.CreateBuffer(indexBufferDesc, &indexData, indexBuffer_);
+            if (engine::graphics::Failed(result))
+                return Fail("triangle index buffer creation", result);
+            r3dOutToLog("[Graphics][DX11] Triangle index buffer created\n");
+            return true;
+        }
+
+        bool DrawGeometry() noexcept
+        {
+            if (!pipeline_.IsValid() || !vertexBuffer_.IsValid() ||
+                !indexBuffer_.IsValid())
+            {
+                return FailFrame("triangle resource validation",
+                    GraphicsResult::InvalidState);
+            }
+
+            GraphicsResult result = context_->SetGraphicsPipeline(pipeline_);
+            if (engine::graphics::Failed(result))
+                return FailFrame("triangle pipeline bind", result);
+            engine::graphics::VertexBufferBinding vertexBinding;
+            vertexBinding.buffer = vertexBuffer_;
+            vertexBinding.stride = sizeof(StudioTriangleVertex);
+            result = context_->SetVertexBuffers(0U, &vertexBinding, 1U);
+            if (engine::graphics::Failed(result))
+                return FailFrame("triangle vertex buffer bind", result);
+            engine::graphics::IndexBufferBinding indexBinding;
+            indexBinding.buffer = indexBuffer_;
+            result = context_->SetIndexBuffer(indexBinding);
+            if (engine::graphics::Failed(result))
+                return FailFrame("triangle index buffer bind", result);
+            result = context_->DrawIndexed(3U, 0U, 0);
+            if (engine::graphics::Failed(result))
+                return FailFrame("triangle DrawIndexed", result);
+            if (!firstDrawLogged_)
+            {
+                r3dOutToLog("[Graphics][DX11] First triangle DrawIndexed completed\n");
+                firstDrawLogged_ = true;
+            }
+            return true;
+        }
+
+        void DestroyGeometryResources() noexcept
+        {
+            const bool hadResources = vertexShader_.IsValid() ||
+                pixelShader_.IsValid() || inputLayout_.IsValid() ||
+                pipeline_.IsValid() || vertexBuffer_.IsValid() ||
+                indexBuffer_.IsValid();
+            if (indexBuffer_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyBuffer(indexBuffer_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Index buffer destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                indexBuffer_ = {};
+            }
+            if (vertexBuffer_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyBuffer(vertexBuffer_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Vertex buffer destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                vertexBuffer_ = {};
+            }
+            if (pipeline_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyGraphicsPipeline(pipeline_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Pipeline destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                pipeline_ = {};
+            }
+            if (inputLayout_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyInputLayout(inputLayout_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Input layout destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                inputLayout_ = {};
+            }
+            if (pixelShader_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyShader(pixelShader_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Pixel shader destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                pixelShader_ = {};
+            }
+            if (vertexShader_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyShader(vertexShader_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Vertex shader destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                vertexShader_ = {};
+            }
+            if (hadResources)
+                r3dOutToLog("[Graphics][DX11] Triangle geometry resources destroyed\n");
+        }
+
         bool ApplyResizableWindowStyle(HWND const windowHandle) noexcept
         {
             SetLastError(ERROR_SUCCESS);
@@ -412,6 +728,12 @@ namespace
         engine::graphics::CommandContext* context_ = nullptr;
         std::unique_ptr<engine::graphics::SwapChain> swapChain_;
         engine::graphics::TextureHandle depth_;
+        engine::graphics::ShaderHandle vertexShader_;
+        engine::graphics::ShaderHandle pixelShader_;
+        engine::graphics::InputLayoutHandle inputLayout_;
+        engine::graphics::PipelineStateHandle pipeline_;
+        engine::graphics::BufferHandle vertexBuffer_;
+        engine::graphics::BufferHandle indexBuffer_;
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;
         bool initialized_ = false, minimized_ = false, resizePending_ = false;
@@ -419,6 +741,7 @@ namespace
         HWND windowHandle_ = nullptr;
         LONG_PTR originalWindowStyle_ = 0;
         bool styleChanged_ = false;
+        bool firstDrawLogged_ = false;
         StudioGraphicsShellResult failureResult_ = StudioGraphicsShellResult::FrameFailed;
     };
 
