@@ -3,12 +3,14 @@
 namespace engine::runtime
 {
     class Engine;
+    enum class RendererBackend : unsigned char;
 }
 
 namespace studio
 {
     [[nodiscard]] bool
-        InitializeStudioRuntimeBridge() noexcept;
+        InitializeStudioRuntimeBridge(
+            engine::runtime::RendererBackend backend) noexcept;
 
     void ShutdownStudioRuntimeBridge() noexcept;
 

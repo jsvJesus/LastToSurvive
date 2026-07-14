@@ -171,6 +171,8 @@
         ..\Engine\Platform\Public;
         ..\Engine\Tasks\Public;
         ..\Engine\Runtime\Public;
+        ..\Engine\Graphics\Public;
+        ..\Engine\GraphicsDX11\Public;
         $(WindowsSDK_IncludePath);
         ..\..\External;
         ..\..\External\PhysX\physx\include;
@@ -770,6 +772,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\World\WorldDX11.cpp" />
     <ClCompile Include="Sources\SteamHelper.cpp" />
     <ClCompile Include="Sources\StudioRuntimeBridge.cpp" />
+    <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
     <ClCompile Include="Sources\TasksRuntimeBridge.cpp" />
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp" />
     <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
@@ -1048,6 +1051,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\resource.h" />
     <ClInclude Include="Sources\SteamHelper.h" />
     <ClInclude Include="Sources\StudioRuntimeBridge.h" />
+    <ClInclude Include="Sources\StudioGraphicsShell.h" />
     <ClInclude Include="Sources\TasksRuntimeBridge.h" />
     <ClInclude Include="Sources\UIFilters\NightVisionController.h" />
     <ClInclude Include="Sources\UI\HUDCameraEffects.h" />
@@ -1112,6 +1116,14 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
 
     <ProjectReference Include="..\Engine\Runtime\LTS.Runtime.vcxproj">
       <Project>{F2A9D6C4-7B31-4E88-A5D2-1C9F603B74E6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Graphics\LTS.Graphics.vcxproj">
+      <Project>{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj">
+      <Project>{91B4D7E8-3C6A-4A72-9F50-2D8E1B6C4A37}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

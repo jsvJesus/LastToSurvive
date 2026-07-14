@@ -14,7 +14,7 @@ struct IDirect3DIndexBuffer9;
 namespace engine::graphics::d3d9
 {
     // Compatibility adapter over the already existing Studio D3D9 device.
-    // The native device is non-owning: the legacy renderer remains its owner. by
+    // The native device is non-owning: the legacy renderer remains its owner.
     class D3D9Device final : public RenderDevice
     {
     public:

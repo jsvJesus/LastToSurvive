@@ -4,6 +4,7 @@
 #include "PlatformInputBridge.h"
 #include "TasksRuntimeBridge.h"
 #include "StudioRuntimeBridge.h"
+#include "StudioGraphicsShell.h"
 
 #if defined(_WIN64)
 #include "Core/Log.h"
@@ -3711,6 +3712,18 @@ extern int		_r3d_bTerminateOnZ;
 
 void game::MainLoop()
 {
+#if defined(_WIN64)
+	if (studio::WantsDX11Shell())
+	{
+		r3dOutToLog("[Graphics] DX11 Studio shell requested\n");
+		if (studio::RunDX11Shell(
+				reinterpret_cast<std::uintptr_t>(win::hWnd)))
+		{
+			return;
+		}
+	}
+	r3dOutToLog("[Graphics] Selected DX9 Studio backend\n");
+#endif
 	// init steam we need to initialize this before the renderer for the overlay.
 	{
 		gSteam.InitSteam();
@@ -3756,7 +3769,8 @@ void game::MainLoop()
 	 * compatibility TasksRuntimeBridge.
 	 */
 	const bool studioRuntimeInitialized =
-		studio::InitializeStudioRuntimeBridge();
+		studio::InitializeStudioRuntimeBridge(
+			engine::runtime::RendererBackend::D3D9);
 
 	r3dOutToLog(
 		"[Runtime] Studio runtime connection: "

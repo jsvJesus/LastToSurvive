@@ -231,7 +231,8 @@ namespace
 
 namespace studio
 {
-    bool InitializeStudioRuntimeBridge() noexcept
+    bool InitializeStudioRuntimeBridge(
+        const engine::runtime::RendererBackend backend) noexcept
     {
         if (g_initialized)
         {
@@ -295,9 +296,7 @@ namespace studio
              * Studio пока реально работает через
              * legacy DX9 renderer.
              */
-            config.rendererBackend =
-                engine::runtime::
-                    RendererBackend::D3D9;
+            config.rendererBackend = backend;
 
             config.enableValidation =
                 true;
