@@ -8,6 +8,76 @@
 
 #include <array>
 #include <cmath>
+#include <cstring>
+#include <type_traits>
+
+namespace
+{
+    [[nodiscard]] bool IsSlotRangeValid(
+        const std::uint32_t firstSlot,
+        const std::size_t count,
+        const std::size_t maximum) noexcept
+    {
+        return firstSlot <= maximum && count <= maximum - firstSlot;
+    }
+
+    template<typename Resource>
+    [[nodiscard]] bool SetStageResources(
+        ID3D11DeviceContext* const context,
+        const engine::graphics::ShaderStage stage,
+        const UINT firstSlot,
+        const UINT count,
+        Resource* const* resources) noexcept
+    {
+        switch (stage)
+        {
+        case engine::graphics::ShaderStage::Vertex:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->VSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->VSSetSamplers(firstSlot, count, resources);
+            else context->VSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        case engine::graphics::ShaderStage::Pixel:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->PSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->PSSetSamplers(firstSlot, count, resources);
+            else context->PSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        case engine::graphics::ShaderStage::Geometry:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->GSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->GSSetSamplers(firstSlot, count, resources);
+            else context->GSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        case engine::graphics::ShaderStage::Hull:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->HSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->HSSetSamplers(firstSlot, count, resources);
+            else context->HSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        case engine::graphics::ShaderStage::Domain:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->DSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->DSSetSamplers(firstSlot, count, resources);
+            else context->DSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        case engine::graphics::ShaderStage::Compute:
+            if constexpr (std::is_same_v<Resource, ID3D11ShaderResourceView>)
+                context->CSSetShaderResources(firstSlot, count, resources);
+            else if constexpr (std::is_same_v<Resource, ID3D11SamplerState>)
+                context->CSSetSamplers(firstSlot, count, resources);
+            else context->CSSetConstantBuffers(firstSlot, count, resources);
+            return true;
+        default:
+            return false;
+        }
+    }
+}
 
 namespace engine::graphics::d3d11
 {
@@ -506,6 +576,174 @@ namespace engine::graphics::d3d11
         {
             context_->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0U);
         }
+    }
+
+    GraphicsResult D3D11Context::SetShaderResources(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const TextureHandle* const textures,
+        const std::size_t textureCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (textureCount == 0U) return GraphicsResult::Success;
+        if (textures == nullptr ||
+            !IsSlotRangeValid(firstSlot, textureCount, MaxShaderResourceSlots))
+            return GraphicsResult::InvalidArgument;
+
+        std::array<ID3D11ShaderResourceView*, MaxShaderResourceSlots> views{};
+        for (std::size_t index = 0U; index < textureCount; ++index)
+        {
+            if (!textures[index].IsValid()) return GraphicsResult::InvalidArgument;
+            const detail::D3D11TextureResource* const resource =
+                resources_->GetTexture(textures[index]);
+            if (resource == nullptr) return GraphicsResult::NotFound;
+            if (!resource->shaderResourceView ||
+                !HasAnyFlag(resource->desc.bindFlags,
+                    TextureBindFlags::ShaderResource))
+                return GraphicsResult::InvalidArgument;
+            views[index] = resource->shaderResourceView.Get();
+        }
+        if (!SetStageResources(context_, stage, firstSlot,
+                static_cast<UINT>(textureCount), views.data()))
+            return GraphicsResult::Unsupported;
+        return GraphicsResult::Success;
+    }
+
+    GraphicsResult D3D11Context::UnbindShaderResources(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const std::size_t textureCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (textureCount == 0U) return GraphicsResult::Success;
+        if (!IsSlotRangeValid(firstSlot, textureCount, MaxShaderResourceSlots))
+            return GraphicsResult::InvalidArgument;
+        std::array<ID3D11ShaderResourceView*, MaxShaderResourceSlots> views{};
+        return SetStageResources(context_, stage, firstSlot,
+            static_cast<UINT>(textureCount), views.data())
+            ? GraphicsResult::Success : GraphicsResult::Unsupported;
+    }
+
+    GraphicsResult D3D11Context::SetSamplers(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const SamplerHandle* const samplers,
+        const std::size_t samplerCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (samplerCount == 0U) return GraphicsResult::Success;
+        if (samplers == nullptr ||
+            !IsSlotRangeValid(firstSlot, samplerCount, MaxSamplerSlots))
+            return GraphicsResult::InvalidArgument;
+        std::array<ID3D11SamplerState*, MaxSamplerSlots> states{};
+        for (std::size_t index = 0U; index < samplerCount; ++index)
+        {
+            if (!samplers[index].IsValid()) return GraphicsResult::InvalidArgument;
+            const detail::D3D11SamplerResource* const resource =
+                resources_->GetSampler(samplers[index]);
+            if (resource == nullptr) return GraphicsResult::NotFound;
+            if (!resource->native) return GraphicsResult::InvalidArgument;
+            states[index] = resource->native.Get();
+        }
+        if (!SetStageResources(context_, stage, firstSlot,
+                static_cast<UINT>(samplerCount), states.data()))
+            return GraphicsResult::Unsupported;
+        return GraphicsResult::Success;
+    }
+
+    GraphicsResult D3D11Context::UnbindSamplers(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const std::size_t samplerCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (samplerCount == 0U) return GraphicsResult::Success;
+        if (!IsSlotRangeValid(firstSlot, samplerCount, MaxSamplerSlots))
+            return GraphicsResult::InvalidArgument;
+        std::array<ID3D11SamplerState*, MaxSamplerSlots> states{};
+        return SetStageResources(context_, stage, firstSlot,
+            static_cast<UINT>(samplerCount), states.data())
+            ? GraphicsResult::Success : GraphicsResult::Unsupported;
+    }
+
+    GraphicsResult D3D11Context::SetConstantBuffers(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const BufferHandle* const buffers,
+        const std::size_t bufferCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (bufferCount == 0U) return GraphicsResult::Success;
+        if (buffers == nullptr ||
+            !IsSlotRangeValid(firstSlot, bufferCount, MaxConstantBufferSlots))
+            return GraphicsResult::InvalidArgument;
+        std::array<ID3D11Buffer*, MaxConstantBufferSlots> nativeBuffers{};
+        for (std::size_t index = 0U; index < bufferCount; ++index)
+        {
+            if (!buffers[index].IsValid()) return GraphicsResult::InvalidArgument;
+            const detail::D3D11BufferResource* const resource =
+                resources_->GetBuffer(buffers[index]);
+            if (resource == nullptr) return GraphicsResult::NotFound;
+            if (!resource->native ||
+                !HasAnyFlag(resource->desc.bindFlags, BufferBindFlags::Constant) ||
+                resource->desc.byteSize % 16U != 0U)
+                return GraphicsResult::InvalidArgument;
+            nativeBuffers[index] = resource->native.Get();
+        }
+        if (!SetStageResources(context_, stage, firstSlot,
+                static_cast<UINT>(bufferCount), nativeBuffers.data()))
+            return GraphicsResult::Unsupported;
+        return GraphicsResult::Success;
+    }
+
+    GraphicsResult D3D11Context::UnbindConstantBuffers(
+        const ShaderStage stage,
+        const std::uint32_t firstSlot,
+        const std::size_t bufferCount) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (bufferCount == 0U) return GraphicsResult::Success;
+        if (!IsSlotRangeValid(firstSlot, bufferCount, MaxConstantBufferSlots))
+            return GraphicsResult::InvalidArgument;
+        std::array<ID3D11Buffer*, MaxConstantBufferSlots> buffers{};
+        return SetStageResources(context_, stage, firstSlot,
+            static_cast<UINT>(bufferCount), buffers.data())
+            ? GraphicsResult::Success : GraphicsResult::Unsupported;
+    }
+
+    GraphicsResult D3D11Context::UpdateBuffer(
+        const BufferHandle buffer,
+        const void* const data,
+        const std::size_t dataSize) noexcept
+    {
+        if (!IsValid()) return GraphicsResult::InvalidState;
+        if (!buffer.IsValid() || data == nullptr || dataSize == 0U)
+            return GraphicsResult::InvalidArgument;
+        const detail::D3D11BufferResource* const resource =
+            resources_->GetBuffer(buffer);
+        if (resource == nullptr) return GraphicsResult::NotFound;
+        if (!resource->native || dataSize > resource->desc.byteSize ||
+            dataSize != resource->desc.byteSize)
+            return GraphicsResult::InvalidArgument;
+        if (resource->desc.usage == ResourceUsage::Immutable)
+            return GraphicsResult::InvalidArgument;
+        if (resource->desc.usage == ResourceUsage::Staging)
+            return GraphicsResult::Unsupported;
+        if (resource->desc.usage == ResourceUsage::Dynamic)
+        {
+            if (!HasAnyFlag(resource->desc.cpuAccess, CpuAccessFlags::Write))
+                return GraphicsResult::InvalidArgument;
+            D3D11_MAPPED_SUBRESOURCE mapped{};
+            const HRESULT result = context_->Map(resource->native.Get(), 0U,
+                D3D11_MAP_WRITE_DISCARD, 0U, &mapped);
+            if (FAILED(result)) return GraphicsResult::BackendFailure;
+            std::memcpy(mapped.pData, data, dataSize);
+            context_->Unmap(resource->native.Get(), 0U);
+            return GraphicsResult::Success;
+        }
+        context_->UpdateSubresource(
+            resource->native.Get(), 0U, nullptr, data, 0U, 0U);
+        return GraphicsResult::Success;
     }
 
     GraphicsResult D3D11Context::Draw(

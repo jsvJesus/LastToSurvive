@@ -114,10 +114,12 @@ namespace engine::graphics
     static_assert(std::is_trivially_copyable_v<TextureHandle>);
     static_assert(std::is_trivially_copyable_v<ShaderHandle>);
     static_assert(std::is_trivially_copyable_v<InputLayoutHandle>);
+    static_assert(std::is_trivially_copyable_v<SamplerHandle>);
     static_assert(std::is_trivially_copyable_v<PipelineStateHandle>);
 
     static_assert(sizeof(TextureHandle) == sizeof(std::uint64_t));
     static_assert(sizeof(ShaderHandle) == sizeof(std::uint64_t));
     static_assert(sizeof(InputLayoutHandle) == sizeof(std::uint64_t));
+    static_assert(sizeof(SamplerHandle) == sizeof(std::uint64_t));
     static_assert(sizeof(PipelineStateHandle) == sizeof(std::uint64_t));
 }

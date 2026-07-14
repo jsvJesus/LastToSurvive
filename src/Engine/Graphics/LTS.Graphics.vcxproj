@@ -130,6 +130,7 @@
     <ClInclude Include="Public\Graphics\RenderDevice.h" />
     <ClInclude Include="Public\Graphics\ResourceHandle.h" />
     <ClInclude Include="Public\Graphics\ResourceUsage.h" />
+    <ClInclude Include="Public\Graphics\Sampler.h" />
     <ClInclude Include="Public\Graphics\Shader.h" />
     <ClInclude Include="Public\Graphics\SwapChain.h" />
     <ClInclude Include="Public\Graphics\Texture.h" />

@@ -7,6 +7,7 @@
 #include "Graphics/InputLayout.h"
 #include "Graphics/PipelineState.h"
 #include "Graphics/ResourceHandle.h"
+#include "Graphics/Sampler.h"
 #include "Graphics/Shader.h"
 #include "Graphics/SwapChain.h"
 #include "Graphics/Texture.h"
@@ -80,6 +81,20 @@ namespace engine::graphics
 
         [[nodiscard]] virtual GraphicsResult DestroyBuffer(
             BufferHandle buffer) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult CreateSampler(
+            const SamplerDesc&,
+            SamplerHandle& outSampler) noexcept
+        {
+            outSampler = SamplerHandle{};
+            return GraphicsResult::Unsupported;
+        }
+
+        [[nodiscard]] virtual GraphicsResult DestroySampler(
+            SamplerHandle) noexcept
+        {
+            return GraphicsResult::Unsupported;
+        }
 
         [[nodiscard]] virtual GraphicsResult CreateShader(
             const ShaderDesc&,

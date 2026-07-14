@@ -382,6 +382,25 @@ namespace engine::graphics::d3d11
         return impl_->resources.DestroyBuffer(buffer);
     }
 
+    GraphicsResult D3D11Device::CreateSampler(
+        const SamplerDesc& desc,
+        SamplerHandle& outSampler) noexcept
+    {
+        outSampler = SamplerHandle{};
+        if (!impl_ || !impl_->device || impl_->state != DeviceState::Ready)
+            return GraphicsResult::InvalidState;
+        return impl_->resources.CreateSampler(
+            impl_->device.Get(), desc, outSampler);
+    }
+
+    GraphicsResult D3D11Device::DestroySampler(
+        const SamplerHandle sampler) noexcept
+    {
+        if (!impl_ || impl_->state != DeviceState::Ready)
+            return GraphicsResult::InvalidState;
+        return impl_->resources.DestroySampler(sampler);
+    }
+
     GraphicsResult D3D11Device::CreateShader(
         const ShaderDesc& desc,
         ShaderHandle& outShader) noexcept
@@ -701,6 +720,11 @@ namespace engine::graphics::d3d11
     std::size_t D3D11Device::GetBufferCount() const noexcept
     {
         return impl_ ? impl_->resources.GetBufferCount() : 0U;
+    }
+
+    std::size_t D3D11Device::GetSamplerCount() const noexcept
+    {
+        return impl_ ? impl_->resources.GetSamplerCount() : 0U;
     }
 
     std::size_t D3D11Device::GetShaderCount() const noexcept

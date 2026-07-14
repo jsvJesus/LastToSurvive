@@ -23,6 +23,7 @@
     <ClInclude Include="Public\Graphics\RenderDevice.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\ResourceHandle.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\ResourceUsage.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Sampler.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\Shader.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\SwapChain.h"><Filter>Public\Graphics</Filter></ClInclude>
     <ClInclude Include="Public\Graphics\Texture.h"><Filter>Public\Graphics</Filter></ClInclude>

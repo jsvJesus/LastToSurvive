@@ -76,6 +76,38 @@ namespace engine::graphics::d3d11
 
         void UnbindIndexBuffer() noexcept override;
 
+        [[nodiscard]] GraphicsResult SetShaderResources(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const TextureHandle* textures,
+            std::size_t textureCount) noexcept override;
+        [[nodiscard]] GraphicsResult UnbindShaderResources(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t textureCount) noexcept override;
+        [[nodiscard]] GraphicsResult SetSamplers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const SamplerHandle* samplers,
+            std::size_t samplerCount) noexcept override;
+        [[nodiscard]] GraphicsResult UnbindSamplers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t samplerCount) noexcept override;
+        [[nodiscard]] GraphicsResult SetConstantBuffers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const BufferHandle* buffers,
+            std::size_t bufferCount) noexcept override;
+        [[nodiscard]] GraphicsResult UnbindConstantBuffers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t bufferCount) noexcept override;
+        [[nodiscard]] GraphicsResult UpdateBuffer(
+            BufferHandle buffer,
+            const void* data,
+            std::size_t dataSize) noexcept override;
+
         [[nodiscard]] GraphicsResult Draw(
             std::uint32_t vertexCount,
             std::uint32_t firstVertex) noexcept override;

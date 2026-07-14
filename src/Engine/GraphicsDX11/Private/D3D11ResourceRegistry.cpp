@@ -6,10 +6,50 @@
 #include "D3D11Texture.h"
 
 #include <new>
+#include <cstring>
 #include <utility>
 
 namespace engine::graphics::d3d11::detail
 {
+    namespace
+    {
+        [[nodiscard]] D3D11_FILTER ConvertFilter(
+            const TextureFilter filter) noexcept
+        {
+            switch (filter)
+            {
+            case TextureFilter::Point: return D3D11_FILTER_MIN_MAG_MIP_POINT;
+            case TextureFilter::Linear: return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            case TextureFilter::Anisotropic: return D3D11_FILTER_ANISOTROPIC;
+            case TextureFilter::ComparisonPoint:
+                return D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+            case TextureFilter::ComparisonLinear:
+                return D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+            default: return D3D11_FILTER_MIN_MAG_MIP_POINT;
+            }
+        }
+
+        [[nodiscard]] D3D11_TEXTURE_ADDRESS_MODE ConvertAddress(
+            const TextureAddressMode address) noexcept
+        {
+            switch (address)
+            {
+            case TextureAddressMode::Wrap: return D3D11_TEXTURE_ADDRESS_WRAP;
+            case TextureAddressMode::Mirror: return D3D11_TEXTURE_ADDRESS_MIRROR;
+            case TextureAddressMode::Clamp: return D3D11_TEXTURE_ADDRESS_CLAMP;
+            case TextureAddressMode::Border: return D3D11_TEXTURE_ADDRESS_BORDER;
+            default: return D3D11_TEXTURE_ADDRESS_CLAMP;
+            }
+        }
+
+        [[nodiscard]] D3D11_COMPARISON_FUNC ConvertComparison(
+            const ComparisonFunction comparison) noexcept
+        {
+            return static_cast<D3D11_COMPARISON_FUNC>(
+                static_cast<unsigned int>(comparison) + 1U);
+        }
+    }
+
     GraphicsResult D3D11ResourceRegistry::CreateTexture(
         ID3D11Device* device,
         const TextureDesc& desc,
@@ -92,6 +132,70 @@ namespace engine::graphics::d3d11::detail
         const BufferHandle buffer) noexcept
     {
         return buffers_.Remove(buffer)
+            ? GraphicsResult::Success
+            : GraphicsResult::NotFound;
+    }
+
+    GraphicsResult D3D11ResourceRegistry::CreateSampler(
+        ID3D11Device* const device,
+        const SamplerDesc& desc,
+        SamplerHandle& outSampler) noexcept
+    {
+        outSampler = SamplerHandle{};
+        if (device == nullptr || !desc.IsValid())
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+
+        D3D11_SAMPLER_DESC nativeDesc{};
+        nativeDesc.Filter = ConvertFilter(desc.filter);
+        nativeDesc.AddressU = ConvertAddress(desc.addressU);
+        nativeDesc.AddressV = ConvertAddress(desc.addressV);
+        nativeDesc.AddressW = ConvertAddress(desc.addressW);
+        nativeDesc.MipLODBias = desc.mipLodBias;
+        nativeDesc.MaxAnisotropy = desc.maximumAnisotropy;
+        nativeDesc.ComparisonFunc = ConvertComparison(desc.comparisonFunction);
+        for (std::size_t index = 0U; index < desc.borderColor.size(); ++index)
+            nativeDesc.BorderColor[index] = desc.borderColor[index];
+        nativeDesc.MinLOD = desc.minimumLod;
+        nativeDesc.MaxLOD = desc.maximumLod;
+
+        D3D11SamplerResource resource;
+        const HRESULT result = device->CreateSamplerState(
+            &nativeDesc, resource.native.Put());
+        if (FAILED(result))
+        {
+            return GraphicsResult::BackendFailure;
+        }
+        resource.desc = desc;
+        if (desc.debugName != nullptr && *desc.debugName != '\0')
+        {
+            resource.native.Get()->SetPrivateData(
+                WKPDID_D3DDebugObjectName,
+                static_cast<UINT>(std::strlen(desc.debugName)),
+                desc.debugName);
+        }
+        try
+        {
+            outSampler = samplers_.Insert(std::move(resource));
+            return GraphicsResult::Success;
+        }
+        catch (const std::bad_alloc&)
+        {
+            return GraphicsResult::OutOfMemory;
+        }
+        catch (...)
+        {
+            return GraphicsResult::BackendFailure;
+        }
+    }
+
+    GraphicsResult D3D11ResourceRegistry::DestroySampler(
+        const SamplerHandle sampler) noexcept
+    {
+        if (!sampler.IsValid())
+            return GraphicsResult::InvalidArgument;
+        return samplers_.Remove(sampler)
             ? GraphicsResult::Success
             : GraphicsResult::NotFound;
     }
@@ -312,6 +416,7 @@ namespace engine::graphics::d3d11::detail
         graphicsPipelines_.Clear();
         inputLayouts_.Clear();
         shaders_.Clear();
+        samplers_.Clear();
         textures_.Clear();
         buffers_.Clear();
     }
@@ -326,6 +431,12 @@ namespace engine::graphics::d3d11::detail
         const BufferHandle buffer) const noexcept
     {
         return buffers_.Get(buffer);
+    }
+
+    const D3D11SamplerResource* D3D11ResourceRegistry::GetSampler(
+        const SamplerHandle sampler) const noexcept
+    {
+        return samplers_.Get(sampler);
     }
 
     const D3D11ShaderResource* D3D11ResourceRegistry::GetShader(
@@ -356,6 +467,11 @@ namespace engine::graphics::d3d11::detail
     std::size_t D3D11ResourceRegistry::GetBufferCount() const noexcept
     {
         return buffers_.Size();
+    }
+
+    std::size_t D3D11ResourceRegistry::GetSamplerCount() const noexcept
+    {
+        return samplers_.Size();
     }
 
     std::size_t D3D11ResourceRegistry::GetShaderCount() const noexcept

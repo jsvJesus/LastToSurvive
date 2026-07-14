@@ -3,6 +3,8 @@
 #include "Graphics/Buffer.h"
 #include "Graphics/GraphicsResult.h"
 #include "Graphics/ResourceHandle.h"
+#include "Graphics/Sampler.h"
+#include "Graphics/Shader.h"
 #include "Graphics/Viewport.h"
 
 #include <array>
@@ -14,6 +16,9 @@ namespace engine::graphics
     class SwapChain;
 
     inline constexpr std::size_t MaxVertexBufferSlots = 16U;
+    inline constexpr std::size_t MaxShaderResourceSlots = 128U;
+    inline constexpr std::size_t MaxSamplerSlots = 16U;
+    inline constexpr std::size_t MaxConstantBufferSlots = 14U;
 
     struct ClearColor final
     {
@@ -151,6 +156,44 @@ namespace engine::graphics
             const IndexBufferBinding& binding) noexcept = 0;
 
         virtual void UnbindIndexBuffer() noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult SetShaderResources(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const TextureHandle* textures,
+            std::size_t textureCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult UnbindShaderResources(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t textureCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult SetSamplers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const SamplerHandle* samplers,
+            std::size_t samplerCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult UnbindSamplers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t samplerCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult SetConstantBuffers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            const BufferHandle* buffers,
+            std::size_t bufferCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult UnbindConstantBuffers(
+            ShaderStage stage,
+            std::uint32_t firstSlot,
+            std::size_t bufferCount) noexcept = 0;
+
+        [[nodiscard]] virtual GraphicsResult UpdateBuffer(
+            BufferHandle buffer,
+            const void* data,
+            std::size_t dataSize) noexcept = 0;
 
         [[nodiscard]] virtual GraphicsResult Draw(
             std::uint32_t vertexCount,

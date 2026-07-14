@@ -40,38 +40,58 @@ namespace
     using engine::graphics::GraphicsResult;
     using studio::StudioGraphicsShellResult;
 
-    constexpr const char* StudioTriangleShaderSource = R"hlsl(
+    constexpr const char* StudioBindingShaderSource = R"hlsl(
+cbuffer FrameConstants : register(b0)
+{
+    row_major float4x4 transform;
+};
+
 struct VertexInput
 {
     float3 position : POSITION;
     float4 color : COLOR0;
+    float2 texcoord : TEXCOORD0;
 };
 
 struct VertexOutput
 {
     float4 position : SV_Position;
     float4 color : COLOR0;
+    float2 texcoord : TEXCOORD0;
 };
 
 VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
-    output.position = float4(input.position, 1.0f);
+    output.position = mul(float4(input.position, 1.0f), transform);
     output.color = input.color;
+    output.texcoord = input.texcoord;
     return output;
 }
 
+Texture2D checkerboardTexture : register(t0);
+SamplerState checkerboardSampler : register(s0);
+
 float4 PSMain(VertexOutput input) : SV_Target0
 {
-    return input.color;
+    return checkerboardTexture.Sample(checkerboardSampler, input.texcoord) *
+        input.color;
 }
 )hlsl";
 
-    struct StudioTriangleVertex final
+    struct StudioQuadVertex final
     {
         float position[3];
         float color[4];
+        float texcoord[2];
     };
+
+    struct alignas(16) StudioFrameConstants final
+    {
+        float transform[16];
+    };
+
+    static_assert(sizeof(StudioFrameConstants) % 16U == 0U);
 
     class ShaderBlob final
     {
@@ -108,9 +128,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
     {
         ShaderBlob errors;
         const HRESULT result = D3DCompile(
-            StudioTriangleShaderSource,
-            std::strlen(StudioTriangleShaderSource),
-            "StudioDX11Triangle.hlsl",
+            StudioBindingShaderSource,
+            std::strlen(StudioBindingShaderSource),
+            "StudioDX11Bindings.hlsl",
             nullptr,
             nullptr,
             entryPoint,
@@ -209,6 +229,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return false;
             if (!CreateGeometryResources())
                 return false;
+            if (!CreateBindingResources())
+                return false;
 
             width_ = size.width;
             height_ = size.height;
@@ -276,7 +298,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
             return failureResult_;
         }
 
-        bool RenderFrame() noexcept
+        bool RenderFrame(const double deltaSeconds) noexcept
         {
             if (!initialized_)
                 return false;
@@ -284,6 +306,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return false;
             if (minimized_)
                 return true;
+            if (!UpdateFrameConstants(deltaSeconds))
+                return false;
 
             engine::graphics::ClearColor clearColor;
             clearColor.red = 0.035F;
@@ -353,12 +377,19 @@ float4 PSMain(VertexOutput input) : SV_Target0
         {
             if (context_ != nullptr)
             {
+                (void)context_->UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex, 0U, 1U);
+                (void)context_->UnbindShaderResources(
+                    engine::graphics::ShaderStage::Pixel, 0U, 1U);
+                (void)context_->UnbindSamplers(
+                    engine::graphics::ShaderStage::Pixel, 0U, 1U);
                 context_->UnbindGraphicsPipeline();
                 context_->UnbindIndexBuffer();
                 context_->UnbindRenderTargets();
                 context_->ClearState();
                 context_->Flush();
             }
+            DestroyBindingResources();
             DestroyGeometryResources();
             DestroyDepth();
             swapChain_.reset();
@@ -374,6 +405,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
             resetTimer_ = true;
             closeRequested_ = false;
             firstDrawLogged_ = false;
+            elapsedSeconds_ = 0.0F;
             failureResult_ = StudioGraphicsShellResult::FrameFailed;
             width_ = height_ = 0;
         }
@@ -388,44 +420,46 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (!CompileStudioShader("VSMain", "vs_4_0", vertexBytecode) ||
                 !CompileStudioShader("PSMain", "ps_4_0", pixelBytecode))
             {
-                return Fail("triangle shader compilation",
+                return Fail("quad shader compilation",
                     GraphicsResult::BackendFailure);
             }
-            r3dOutToLog("[Graphics][DX11] Triangle shader bytecode ready\n");
+            r3dOutToLog("[Graphics][DX11] Textured quad shader bytecode ready\n");
 
             engine::graphics::ShaderDesc shaderDesc;
             shaderDesc.stage = engine::graphics::ShaderStage::Vertex;
             shaderDesc.bytecode.data = vertexBytecode.Get()->GetBufferPointer();
             shaderDesc.bytecode.size = vertexBytecode.Get()->GetBufferSize();
-            shaderDesc.debugName = "Studio DX11 Triangle VS";
+            shaderDesc.debugName = "Studio DX11 Textured Quad VS";
             GraphicsResult result = device_.CreateShader(shaderDesc, vertexShader_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle vertex shader creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle vertex shader created\n");
+                return Fail("quad vertex shader creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad vertex shader created\n");
 
             shaderDesc.stage = engine::graphics::ShaderStage::Pixel;
             shaderDesc.bytecode.data = pixelBytecode.Get()->GetBufferPointer();
             shaderDesc.bytecode.size = pixelBytecode.Get()->GetBufferSize();
-            shaderDesc.debugName = "Studio DX11 Triangle PS";
+            shaderDesc.debugName = "Studio DX11 Textured Quad PS";
             result = device_.CreateShader(shaderDesc, pixelShader_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle pixel shader creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle pixel shader created\n");
+                return Fail("quad pixel shader creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad pixel shader created\n");
 
             const engine::graphics::VertexElementDesc elements[] = {
                 {"POSITION", 0U, engine::graphics::Format::R32G32B32Float,
                     0U, 0U, engine::graphics::VertexInputRate::PerVertex, 0U},
                 {"COLOR", 0U, engine::graphics::Format::R32G32B32A32Float,
-                    0U, 12U, engine::graphics::VertexInputRate::PerVertex, 0U}};
+                    0U, 12U, engine::graphics::VertexInputRate::PerVertex, 0U},
+                {"TEXCOORD", 0U, engine::graphics::Format::R32G32Float,
+                    0U, 28U, engine::graphics::VertexInputRate::PerVertex, 0U}};
             engine::graphics::InputLayoutDesc inputLayoutDesc;
             inputLayoutDesc.vertexShader = vertexShader_;
             inputLayoutDesc.elements = elements;
             inputLayoutDesc.elementCount = sizeof(elements) / sizeof(elements[0]);
-            inputLayoutDesc.debugName = "Studio DX11 Triangle Input Layout";
+            inputLayoutDesc.debugName = "Studio DX11 Textured Quad Input Layout";
             result = device_.CreateInputLayout(inputLayoutDesc, inputLayout_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle input layout creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle input layout created\n");
+                return Fail("quad input layout creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad input layout created\n");
 
             engine::graphics::GraphicsPipelineDesc pipelineDesc;
             pipelineDesc.vertexShader = vertexShader_;
@@ -439,19 +473,20 @@ float4 PSMain(VertexOutput input) : SV_Target0
             pipelineDesc.depthStencil.depthWriteEnable = true;
             pipelineDesc.depthStencil.depthFunction =
                 engine::graphics::ComparisonFunction::LessEqual;
-            pipelineDesc.debugName = "Studio DX11 Triangle Pipeline";
+            pipelineDesc.debugName = "Studio DX11 Textured Quad Pipeline";
             result = device_.CreateGraphicsPipeline(pipelineDesc, pipeline_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle pipeline creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle pipeline created\n");
+                return Fail("quad pipeline creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad pipeline created\n");
 
-            constexpr StudioTriangleVertex vertices[] = {
-                {{0.0F, 0.65F, 0.5F}, {1.0F, 0.15F, 0.1F, 1.0F}},
-                {{-0.65F, -0.55F, 0.5F}, {0.1F, 0.9F, 0.25F, 1.0F}},
-                {{0.65F, -0.55F, 0.5F}, {0.1F, 0.35F, 1.0F, 1.0F}}};
+            constexpr StudioQuadVertex vertices[] = {
+                {{-0.55F, 0.55F, 0.5F}, {1, 1, 1, 1}, {0, 0}},
+                {{0.55F, 0.55F, 0.5F}, {1, 1, 1, 1}, {1, 0}},
+                {{0.55F, -0.55F, 0.5F}, {1, 1, 1, 1}, {1, 1}},
+                {{-0.55F, -0.55F, 0.5F}, {1, 1, 1, 1}, {0, 1}}};
             engine::graphics::BufferDesc vertexBufferDesc;
             vertexBufferDesc.byteSize = sizeof(vertices);
-            vertexBufferDesc.stride = sizeof(StudioTriangleVertex);
+            vertexBufferDesc.stride = sizeof(StudioQuadVertex);
             vertexBufferDesc.usage = engine::graphics::ResourceUsage::Immutable;
             vertexBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Vertex;
             engine::graphics::BufferInitialData vertexData;
@@ -460,10 +495,10 @@ float4 PSMain(VertexOutput input) : SV_Target0
             result = device_.CreateBuffer(
                 vertexBufferDesc, &vertexData, vertexBuffer_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle vertex buffer creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle vertex buffer created\n");
+                return Fail("quad vertex buffer creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad vertex buffer created\n");
 
-            constexpr std::uint16_t indices[] = {0U, 1U, 2U};
+            constexpr std::uint16_t indices[] = {0U, 1U, 2U, 0U, 2U, 3U};
             engine::graphics::BufferDesc indexBufferDesc;
             indexBufferDesc.byteSize = sizeof(indices);
             indexBufferDesc.stride = sizeof(std::uint16_t);
@@ -475,9 +510,116 @@ float4 PSMain(VertexOutput input) : SV_Target0
             indexData.dataSize = sizeof(indices);
             result = device_.CreateBuffer(indexBufferDesc, &indexData, indexBuffer_);
             if (engine::graphics::Failed(result))
-                return Fail("triangle index buffer creation", result);
-            r3dOutToLog("[Graphics][DX11] Triangle index buffer created\n");
+                return Fail("quad index buffer creation", result);
+            r3dOutToLog("[Graphics][DX11] Quad index buffer created\n");
             return true;
+        }
+
+        bool CreateBindingResources() noexcept
+        {
+            constexpr std::uint32_t checkerboardPixels[16] = {
+                0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
+                0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU,
+                0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
+                0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU};
+            engine::graphics::TextureDesc textureDesc;
+            textureDesc.width = 4U;
+            textureDesc.height = 4U;
+            textureDesc.format = engine::graphics::Format::R8G8B8A8UNorm;
+            textureDesc.usage = engine::graphics::ResourceUsage::Immutable;
+            textureDesc.bindFlags = engine::graphics::TextureBindFlags::ShaderResource;
+            engine::graphics::TextureSubresourceData textureData;
+            textureData.data = reinterpret_cast<const std::byte*>(checkerboardPixels);
+            textureData.dataSize = sizeof(checkerboardPixels);
+            textureData.rowPitch = 4U * sizeof(std::uint32_t);
+            textureData.slicePitch = sizeof(checkerboardPixels);
+            GraphicsResult result = device_.CreateTexture(
+                textureDesc, &textureData, 1U, checkerboardTexture_);
+            if (engine::graphics::Failed(result))
+                return Fail("checkerboard texture creation", result);
+            r3dOutToLog("[Graphics][DX11] Checkerboard texture created\n");
+
+            engine::graphics::SamplerDesc samplerDesc;
+            samplerDesc.filter = engine::graphics::TextureFilter::Linear;
+            samplerDesc.addressU = engine::graphics::TextureAddressMode::Wrap;
+            samplerDesc.addressV = engine::graphics::TextureAddressMode::Wrap;
+            samplerDesc.addressW = engine::graphics::TextureAddressMode::Wrap;
+            samplerDesc.debugName = "Studio DX11 Checkerboard Sampler";
+            result = device_.CreateSampler(samplerDesc, sampler_);
+            if (engine::graphics::Failed(result))
+                return Fail("checkerboard sampler creation", result);
+            r3dOutToLog("[Graphics][DX11] Checkerboard sampler created\n");
+
+            engine::graphics::BufferDesc constantBufferDesc;
+            constantBufferDesc.byteSize = sizeof(StudioFrameConstants);
+            constantBufferDesc.usage = engine::graphics::ResourceUsage::Dynamic;
+            constantBufferDesc.bindFlags = engine::graphics::BufferBindFlags::Constant;
+            constantBufferDesc.cpuAccess = engine::graphics::CpuAccessFlags::Write;
+            result = device_.CreateBuffer(
+                constantBufferDesc, nullptr, constantBuffer_);
+            if (engine::graphics::Failed(result))
+                return Fail("frame constant buffer creation", result);
+            r3dOutToLog("[Graphics][DX11] Dynamic frame constant buffer created\n");
+            return true;
+        }
+
+        bool UpdateFrameConstants(const double deltaSeconds) noexcept
+        {
+            if (!constantBuffer_.IsValid() || width_ == 0U || height_ == 0U)
+                return FailFrame("frame constant resource validation",
+                    GraphicsResult::InvalidState);
+            elapsedSeconds_ += static_cast<float>(deltaSeconds);
+            if (elapsedSeconds_ > 1000.0F)
+                elapsedSeconds_ = std::fmod(elapsedSeconds_, 1000.0F);
+            const float sine = std::sin(elapsedSeconds_ * 0.65F);
+            const float cosine = std::cos(elapsedSeconds_ * 0.65F);
+            const float aspect = static_cast<float>(width_) /
+                static_cast<float>(height_);
+            const float scaleX = aspect > 1.0F ? 1.0F / aspect : 1.0F;
+            const float scaleY = aspect < 1.0F ? aspect : 1.0F;
+            const StudioFrameConstants constants = {{
+                cosine * scaleX, sine * scaleY, 0.0F, 0.0F,
+                -sine * scaleX, cosine * scaleY, 0.0F, 0.0F,
+                0.0F, 0.0F, 1.0F, 0.0F,
+                0.0F, 0.0F, 0.0F, 1.0F}};
+            const GraphicsResult result = context_->UpdateBuffer(
+                constantBuffer_, &constants, sizeof(constants));
+            if (engine::graphics::Failed(result))
+                return FailFrame("frame constant buffer update", result);
+            return true;
+        }
+
+        void DestroyBindingResources() noexcept
+        {
+            const bool hadResources = sampler_.IsValid() ||
+                checkerboardTexture_.IsValid() || constantBuffer_.IsValid();
+            if (sampler_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroySampler(sampler_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Sampler destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                sampler_ = {};
+            }
+            if (checkerboardTexture_.IsValid())
+            {
+                const GraphicsResult result =
+                    device_.DestroyTexture(checkerboardTexture_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Checkerboard destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                checkerboardTexture_ = {};
+            }
+            if (constantBuffer_.IsValid())
+            {
+                const GraphicsResult result = device_.DestroyBuffer(constantBuffer_);
+                if (engine::graphics::Failed(result))
+                    r3dOutToLog("[Graphics][DX11] Constant buffer destruction failed: %s\n",
+                        engine::graphics::ToString(result));
+                constantBuffer_ = {};
+            }
+            if (hadResources)
+                r3dOutToLog("[Graphics][DX11] Binding resources destroyed\n");
         }
 
         bool DrawGeometry() noexcept
@@ -485,30 +627,42 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (!pipeline_.IsValid() || !vertexBuffer_.IsValid() ||
                 !indexBuffer_.IsValid())
             {
-                return FailFrame("triangle resource validation",
+                return FailFrame("quad resource validation",
                     GraphicsResult::InvalidState);
             }
 
             GraphicsResult result = context_->SetGraphicsPipeline(pipeline_);
             if (engine::graphics::Failed(result))
-                return FailFrame("triangle pipeline bind", result);
+                return FailFrame("quad pipeline bind", result);
             engine::graphics::VertexBufferBinding vertexBinding;
             vertexBinding.buffer = vertexBuffer_;
-            vertexBinding.stride = sizeof(StudioTriangleVertex);
+            vertexBinding.stride = sizeof(StudioQuadVertex);
             result = context_->SetVertexBuffers(0U, &vertexBinding, 1U);
             if (engine::graphics::Failed(result))
-                return FailFrame("triangle vertex buffer bind", result);
+                return FailFrame("quad vertex buffer bind", result);
             engine::graphics::IndexBufferBinding indexBinding;
             indexBinding.buffer = indexBuffer_;
             result = context_->SetIndexBuffer(indexBinding);
             if (engine::graphics::Failed(result))
-                return FailFrame("triangle index buffer bind", result);
-            result = context_->DrawIndexed(3U, 0U, 0);
+                return FailFrame("quad index buffer bind", result);
+            result = context_->SetConstantBuffers(
+                engine::graphics::ShaderStage::Vertex, 0U, &constantBuffer_, 1U);
             if (engine::graphics::Failed(result))
-                return FailFrame("triangle DrawIndexed", result);
+                return FailFrame("quad constant buffer bind", result);
+            result = context_->SetShaderResources(
+                engine::graphics::ShaderStage::Pixel, 0U, &checkerboardTexture_, 1U);
+            if (engine::graphics::Failed(result))
+                return FailFrame("quad texture bind", result);
+            result = context_->SetSamplers(
+                engine::graphics::ShaderStage::Pixel, 0U, &sampler_, 1U);
+            if (engine::graphics::Failed(result))
+                return FailFrame("quad sampler bind", result);
+            result = context_->DrawIndexed(6U, 0U, 0);
+            if (engine::graphics::Failed(result))
+                return FailFrame("quad DrawIndexed", result);
             if (!firstDrawLogged_)
             {
-                r3dOutToLog("[Graphics][DX11] First triangle DrawIndexed completed\n");
+                r3dOutToLog("[Graphics][DX11] First textured quad DrawIndexed completed\n");
                 firstDrawLogged_ = true;
             }
             return true;
@@ -569,7 +723,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 vertexShader_ = {};
             }
             if (hadResources)
-                r3dOutToLog("[Graphics][DX11] Triangle geometry resources destroyed\n");
+                r3dOutToLog("[Graphics][DX11] Quad geometry resources destroyed\n");
         }
 
         bool ApplyResizableWindowStyle(HWND const windowHandle) noexcept
@@ -734,6 +888,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
         engine::graphics::PipelineStateHandle pipeline_;
         engine::graphics::BufferHandle vertexBuffer_;
         engine::graphics::BufferHandle indexBuffer_;
+        engine::graphics::BufferHandle constantBuffer_;
+        engine::graphics::TextureHandle checkerboardTexture_;
+        engine::graphics::SamplerHandle sampler_;
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;
         bool initialized_ = false, minimized_ = false, resizePending_ = false;
@@ -742,6 +899,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         LONG_PTR originalWindowStyle_ = 0;
         bool styleChanged_ = false;
         bool firstDrawLogged_ = false;
+        float elapsedSeconds_ = 0.0F;
         StudioGraphicsShellResult failureResult_ = StudioGraphicsShellResult::FrameFailed;
     };
 
@@ -846,7 +1004,7 @@ namespace studio
                 engine::runtime::Engine* const runtime = TryGetRuntimeEngine();
                 const bool beganFrame = runtime != nullptr &&
                     runtime->BeginFrame(deltaSeconds);
-                frameSucceeded = beganFrame && shell.RenderFrame();
+                frameSucceeded = beganFrame && shell.RenderFrame(deltaSeconds);
                 if (!beganFrame)
                     r3dOutToLog("[Graphics][DX11] Runtime BeginFrame failed\n");
                 if (beganFrame && !runtime->EndFrame())

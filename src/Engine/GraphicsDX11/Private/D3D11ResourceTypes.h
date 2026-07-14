@@ -3,6 +3,7 @@
 #include "D3D11ComPtr.h"
 #include "Graphics/Buffer.h"
 #include "Graphics/PipelineState.h"
+#include "Graphics/Sampler.h"
 #include "Graphics/Shader.h"
 #include "Graphics/Texture.h"
 
@@ -47,6 +48,12 @@ namespace engine::graphics::d3d11::detail
         // Retained only for stages that need bytecode-dependent resources.
         // The first consumer is ID3D11InputLayout for vertex shaders.
         std::vector<std::byte> bytecode;
+    };
+
+    struct D3D11SamplerResource final
+    {
+        SamplerDesc desc;
+        ComPtr<ID3D11SamplerState> native;
     };
 
     struct D3D11InputLayoutResource final

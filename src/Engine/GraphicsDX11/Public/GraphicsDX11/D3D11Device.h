@@ -76,6 +76,13 @@ namespace engine::graphics::d3d11
         [[nodiscard]] GraphicsResult DestroyBuffer(
             BufferHandle buffer) noexcept override;
 
+        [[nodiscard]] GraphicsResult CreateSampler(
+            const SamplerDesc& desc,
+            SamplerHandle& outSampler) noexcept override;
+
+        [[nodiscard]] GraphicsResult DestroySampler(
+            SamplerHandle sampler) noexcept override;
+
         [[nodiscard]] GraphicsResult CreateShader(
             const ShaderDesc& desc,
             ShaderHandle& outShader) noexcept override;
@@ -137,6 +144,7 @@ namespace engine::graphics::d3d11
 
         [[nodiscard]] std::size_t GetTextureCount() const noexcept;
         [[nodiscard]] std::size_t GetBufferCount() const noexcept;
+        [[nodiscard]] std::size_t GetSamplerCount() const noexcept;
         [[nodiscard]] std::size_t GetShaderCount() const noexcept;
         [[nodiscard]] std::size_t GetInputLayoutCount() const noexcept;
         [[nodiscard]] std::size_t GetGraphicsPipelineCount() const noexcept;

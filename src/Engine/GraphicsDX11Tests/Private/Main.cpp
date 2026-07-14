@@ -3,6 +3,7 @@
 #include "Graphics/InputLayout.h"
 #include "Graphics/PipelineState.h"
 #include "Graphics/RenderDevice.h"
+#include "Graphics/Sampler.h"
 #include "Graphics/Shader.h"
 #include "Graphics/SwapChain.h"
 #include "Graphics/Texture.h"
@@ -117,29 +118,40 @@ int main()
     using engine::graphics::d3d11::D3D11Device;
 
     constexpr const char* shaderSource = R"hlsl(
+cbuffer FrameConstants : register(b0)
+{
+    row_major float4x4 transform;
+};
+
 struct VertexInput
 {
     float3 position : POSITION;
     float4 color : COLOR0;
+    float2 texcoord : TEXCOORD0;
 };
 
 struct VertexOutput
 {
     float4 position : SV_Position;
     float4 color : COLOR0;
+    float2 texcoord : TEXCOORD0;
 };
 
 VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
-    output.position = float4(input.position, 1.0f);
+    output.position = mul(float4(input.position, 1.0f), transform);
     output.color = input.color;
+    output.texcoord = input.texcoord;
     return output;
 }
 
+Texture2D sourceTexture : register(t0);
+SamplerState sourceSampler : register(s0);
+
 float4 PSMain(VertexOutput input) : SV_Target0
 {
-    return input.color;
+    return sourceTexture.Sample(sourceSampler, input.texcoord) * input.color;
 }
 )hlsl";
 
@@ -246,6 +258,15 @@ float4 PSMain(VertexOutput input) : SV_Target0
             Format::R32G32B32A32Float,
             0U,
             12U,
+            VertexInputRate::PerVertex,
+            0U
+        },
+        {
+            "TEXCOORD",
+            0U,
+            Format::R32G32Float,
+            0U,
+            28U,
             VertexInputRate::PerVertex,
             0U
         }
@@ -363,6 +384,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
+    TextureHandle invalidTexture;
     if (!Check(
             context->BindGraphicsPipeline(pipeline) ==
                 GraphicsResult::NotFound,
@@ -505,13 +527,13 @@ float4 PSMain(VertexOutput input) : SV_Target0
     }
 
     constexpr float drawVertices[] = {
-        0.0F, 0.5F, 0.5F, 1.0F, 0.0F, 0.0F, 1.0F,
-        -0.5F, -0.5F, 0.5F, 0.0F, 1.0F, 0.0F, 1.0F,
-        0.5F, -0.5F, 0.5F, 0.0F, 0.0F, 1.0F, 1.0F};
+        0.0F, 0.5F, 0.5F, 1.0F, 0.0F, 0.0F, 1.0F, 0.5F, 0.0F,
+        -0.5F, -0.5F, 0.5F, 0.0F, 1.0F, 0.0F, 1.0F, 0.0F, 1.0F,
+        0.5F, -0.5F, 0.5F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F};
     constexpr std::uint16_t drawIndices[] = {0U, 1U, 2U};
     BufferDesc vertexBufferDesc;
     vertexBufferDesc.byteSize = sizeof(drawVertices);
-    vertexBufferDesc.stride = 7U * sizeof(float);
+    vertexBufferDesc.stride = 9U * sizeof(float);
     vertexBufferDesc.usage = ResourceUsage::Immutable;
     vertexBufferDesc.bindFlags = BufferBindFlags::Vertex;
     BufferInitialData vertexBufferData;
@@ -538,6 +560,156 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
+    SamplerDesc invalidSamplerDesc;
+    invalidSamplerDesc.maximumAnisotropy = 0U;
+    SamplerHandle rejectedSampler;
+    SamplerDesc samplerDesc;
+    samplerDesc.filter = TextureFilter::Linear;
+    samplerDesc.addressU = TextureAddressMode::Wrap;
+    samplerDesc.addressV = TextureAddressMode::Wrap;
+    samplerDesc.addressW = TextureAddressMode::Wrap;
+    SamplerHandle drawSampler;
+    if (!Check(
+            device.CreateSampler(invalidSamplerDesc, rejectedSampler) ==
+                GraphicsResult::InvalidArgument &&
+                !rejectedSampler.IsValid() &&
+                Succeeded(device.CreateSampler(samplerDesc, drawSampler)) &&
+                device.GetSamplerCount() == 1U,
+            "validate and create sampler"))
+    {
+        return 1;
+    }
+
+    constexpr std::uint32_t texturePixels[4] = {
+        0xFFFFFFFFU, 0xFF0000FFU, 0xFF00FF00U, 0xFFFF0000U};
+    TextureDesc shaderTextureDesc;
+    shaderTextureDesc.width = 2U;
+    shaderTextureDesc.height = 2U;
+    shaderTextureDesc.format = Format::R8G8B8A8UNorm;
+    shaderTextureDesc.usage = ResourceUsage::Immutable;
+    shaderTextureDesc.bindFlags = TextureBindFlags::ShaderResource;
+    TextureSubresourceData shaderTextureData;
+    shaderTextureData.data = reinterpret_cast<const std::byte*>(texturePixels);
+    shaderTextureData.dataSize = sizeof(texturePixels);
+    shaderTextureData.rowPitch = 2U * sizeof(std::uint32_t);
+    shaderTextureData.slicePitch = sizeof(texturePixels);
+    TextureHandle shaderTexture;
+    if (!Check(
+            Succeeded(device.CreateTexture(
+                shaderTextureDesc, &shaderTextureData, 1U, shaderTexture)),
+            "create shader resource texture"))
+    {
+        return 1;
+    }
+
+    alignas(16) constexpr float identityConstants[16] = {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+    BufferDesc wrongConstantDesc;
+    wrongConstantDesc.byteSize = 20U;
+    wrongConstantDesc.bindFlags = BufferBindFlags::Constant;
+    BufferHandle rejectedConstant;
+    BufferDesc dynamicConstantDesc;
+    dynamicConstantDesc.byteSize = sizeof(identityConstants);
+    dynamicConstantDesc.usage = ResourceUsage::Dynamic;
+    dynamicConstantDesc.bindFlags = BufferBindFlags::Constant;
+    dynamicConstantDesc.cpuAccess = CpuAccessFlags::Write;
+    BufferHandle dynamicConstant;
+    BufferDesc immutableConstantDesc;
+    immutableConstantDesc.byteSize = sizeof(identityConstants);
+    immutableConstantDesc.usage = ResourceUsage::Immutable;
+    immutableConstantDesc.bindFlags = BufferBindFlags::Constant;
+    BufferInitialData constantInitialData;
+    constantInitialData.data = reinterpret_cast<const std::byte*>(identityConstants);
+    constantInitialData.dataSize = sizeof(identityConstants);
+    BufferHandle immutableConstant;
+    if (!Check(
+            device.CreateBuffer(wrongConstantDesc, nullptr, rejectedConstant) ==
+                GraphicsResult::InvalidArgument &&
+                Succeeded(device.CreateBuffer(
+                    dynamicConstantDesc, nullptr, dynamicConstant)) &&
+                Succeeded(device.CreateBuffer(
+                    immutableConstantDesc, &constantInitialData,
+                    immutableConstant)),
+            "validate and create constant buffers"))
+    {
+        return 1;
+    }
+
+    if (!Check(
+            Succeeded(context->UpdateBuffer(dynamicConstant,
+                identityConstants, sizeof(identityConstants))) &&
+                context->UpdateBuffer(dynamicConstant, nullptr,
+                    sizeof(identityConstants)) == GraphicsResult::InvalidArgument &&
+                context->UpdateBuffer(dynamicConstant, identityConstants,
+                    sizeof(identityConstants) + 16U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->UpdateBuffer(immutableConstant, identityConstants,
+                    sizeof(identityConstants)) == GraphicsResult::InvalidArgument,
+            "validate dynamic constant buffer updates"))
+    {
+        return 1;
+    }
+
+    if (!Check(
+            context->SetShaderResources(
+                ShaderStage::Pixel, 0U, nullptr, 0U) == GraphicsResult::Success &&
+                context->SetShaderResources(
+                    ShaderStage::Pixel, 0U, nullptr, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetShaderResources(
+                    ShaderStage::Pixel, 0U, &invalidTexture, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetShaderResources(
+                    ShaderStage::Pixel, 0U, &color, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetShaderResources(
+                    ShaderStage::Unknown, 0U, &shaderTexture, 1U) ==
+                    GraphicsResult::Unsupported &&
+                context->SetShaderResources(
+                    ShaderStage::Pixel,
+                    static_cast<std::uint32_t>(MaxShaderResourceSlots),
+                    &shaderTexture, 1U) == GraphicsResult::InvalidArgument,
+            "validate shader resource bindings"))
+    {
+        return 1;
+    }
+
+    SamplerHandle invalidSampler;
+    BufferHandle invalidBuffer;
+    if (!Check(
+            context->UpdateBuffer(invalidBuffer, identityConstants,
+                sizeof(identityConstants)) == GraphicsResult::InvalidArgument &&
+            context->SetSamplers(
+                ShaderStage::Pixel, 0U, &invalidSampler, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetConstantBuffers(
+                    ShaderStage::Vertex, 0U, &invalidBuffer, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetConstantBuffers(
+                    ShaderStage::Vertex, 0U, &drawVertexBuffer, 1U) ==
+                    GraphicsResult::InvalidArgument &&
+                context->SetSamplers(
+                    ShaderStage::Unknown, 0U, &drawSampler, 1U) ==
+                    GraphicsResult::Unsupported &&
+                context->SetSamplers(
+                    ShaderStage::Pixel,
+                    static_cast<std::uint32_t>(MaxSamplerSlots),
+                    &drawSampler, 1U) == GraphicsResult::InvalidArgument &&
+                context->SetConstantBuffers(
+                    ShaderStage::Unknown, 0U, &dynamicConstant, 1U) ==
+                    GraphicsResult::Unsupported &&
+                context->SetConstantBuffers(
+                    ShaderStage::Vertex,
+                    static_cast<std::uint32_t>(MaxConstantBufferSlots),
+                    &dynamicConstant, 1U) == GraphicsResult::InvalidArgument,
+            "reject invalid sampler and constant buffer bindings"))
+    {
+        return 1;
+    }
+
     VertexBufferBinding vertexBinding;
     vertexBinding.buffer = drawVertexBuffer;
     vertexBinding.stride = vertexBufferDesc.stride;
@@ -549,14 +721,59 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 Succeeded(context->SetGraphicsPipeline(drawPipeline)) &&
                 Succeeded(context->SetVertexBuffers(0U, &vertexBinding, 1U)) &&
                 Succeeded(context->SetIndexBuffer(indexBinding)) &&
+                Succeeded(context->SetConstantBuffers(
+                    ShaderStage::Vertex, 0U, &dynamicConstant, 1U)) &&
+                Succeeded(context->SetConstantBuffers(
+                    ShaderStage::Pixel, 0U, &dynamicConstant, 1U)) &&
+                Succeeded(context->SetShaderResources(
+                    ShaderStage::Pixel, 0U, &shaderTexture, 1U)) &&
+                Succeeded(context->SetSamplers(
+                    ShaderStage::Pixel, 0U, &drawSampler, 1U)) &&
                 Succeeded(context->DrawIndexed(3U, 0U, 0)) &&
                 Succeeded(swapChain->Present(presentStatus)),
             "complete neutral indexed draw path"))
     {
         return 1;
     }
+    if (!Check(
+            Succeeded(context->UnbindConstantBuffers(
+                ShaderStage::Vertex, 0U, 1U)) &&
+                Succeeded(context->UnbindConstantBuffers(
+                    ShaderStage::Pixel, 0U, 1U)) &&
+                Succeeded(context->UnbindShaderResources(
+                    ShaderStage::Pixel, 0U, 1U)) &&
+                Succeeded(context->UnbindSamplers(
+                    ShaderStage::Pixel, 0U, 1U)),
+            "unbind draw resources"))
+    {
+        return 1;
+    }
     context->Flush();
     context->ClearState();
+
+    const SamplerHandle staleSampler = drawSampler;
+    const TextureHandle staleShaderTexture = shaderTexture;
+    const BufferHandle staleConstant = dynamicConstant;
+    if (!Check(
+            Succeeded(device.DestroySampler(drawSampler)) &&
+                Succeeded(device.DestroyTexture(shaderTexture)) &&
+                Succeeded(device.DestroyBuffer(dynamicConstant)) &&
+                Succeeded(device.DestroyBuffer(immutableConstant)) &&
+                device.GetSamplerCount() == 0U &&
+                device.DestroySampler(staleSampler) == GraphicsResult::NotFound &&
+                context->SetSamplers(
+                    ShaderStage::Pixel, 0U, &staleSampler, 1U) ==
+                    GraphicsResult::NotFound &&
+                context->SetShaderResources(
+                    ShaderStage::Pixel, 0U, &staleShaderTexture, 1U) ==
+                    GraphicsResult::NotFound &&
+                context->SetConstantBuffers(
+                    ShaderStage::Vertex, 0U, &staleConstant, 1U) ==
+                    GraphicsResult::NotFound,
+            "destroy bindings and reject stale handles"))
+    {
+        return 1;
+    }
 
     const BufferHandle staleVertexBuffer = drawVertexBuffer;
     const PipelineStateHandle staleDrawPipeline = drawPipeline;
@@ -603,6 +820,6 @@ float4 PSMain(VertexOutput input) : SV_Target0
         return 1;
     }
 
-    std::puts("LTS.Graphics.DX11 indexed draw tests passed");
+    std::puts("LTS.Graphics.DX11 resource binding tests passed");
     return 0;
 }
