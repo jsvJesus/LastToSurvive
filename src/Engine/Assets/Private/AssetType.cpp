@@ -34,6 +34,9 @@ namespace engine::assets
         case AssetType::Data:
             return "Data";
 
+        case AssetType::StaticModel:
+            return "StaticModel";
+
         default:
             return "Unknown";
         }

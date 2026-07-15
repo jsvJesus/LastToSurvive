@@ -5,10 +5,14 @@
 #include "StudioRuntimeBridge.h"
 
 #include <Assets/GpuMesh.h>
+#include <Assets/GpuTexture.h>
 #include <Assets/AssetLoaderRegistry.h>
 #include <Assets/AssetManager.h>
 #include <Assets/FileAssetSource.h>
 #include <Assets/MeshAssetLoader.h>
+#include <Assets/MaterialAssetLoader.h>
+#include <Assets/DdsTextureLoader.h>
+#include <Assets/StaticModelAssetLoader.h>
 #include <Assets/MaterialAsset.h>
 #include <Assets/MeshAssetBuilder.h>
 
@@ -33,12 +37,15 @@
 #include <d3dcompiler.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cmath>
 #include <cstring>
 #include <memory>
 #include <filesystem>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 extern void RegisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
@@ -98,6 +105,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
     float3 lightDirection = normalize(float3(-0.45f, 0.75f, -0.55f));
     float lighting = 0.22f + 0.78f * saturate(dot(input.worldNormal, lightDirection));
     float4 color = checkerboardTexture.Sample(checkerboardSampler, input.texcoord) * baseColorFactor;
+    if (roughnessAlpha.z > 0.5f && roughnessAlpha.z < 1.5f)
+        clip(color.a - roughnessAlpha.y);
     return float4(color.rgb * lighting + emissiveMetallic.rgb, color.a);
 }
 )hlsl";
@@ -111,6 +120,21 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
     struct alignas(16) StudioMaterialConstants final
     { float baseColor[4]; float emissiveMetallic[4]; float roughnessAlpha[4]; };
+
+    struct StudioPreviewMaterial final
+    {
+        engine::assets::MaterialAsset asset;
+        std::unique_ptr<engine::assets::GpuTexture> texture;
+        engine::graphics::TextureHandle textureHandle;
+        engine::graphics::SamplerHandle sampler;
+        engine::graphics::BufferHandle constantBuffer;
+        bool fallbackTexture = true;
+        StudioPreviewMaterial() = default;
+        StudioPreviewMaterial(const StudioPreviewMaterial&) = delete;
+        StudioPreviewMaterial& operator=(const StudioPreviewMaterial&) = delete;
+        StudioPreviewMaterial(StudioPreviewMaterial&&) noexcept = default;
+        StudioPreviewMaterial& operator=(StudioPreviewMaterial&&) noexcept = default;
+    };
 
     static_assert(sizeof(StudioFrameConstants) % 16U == 0U);
 
@@ -443,9 +467,16 @@ float4 PSMain(VertexOutput input) : SV_Target0
             closeRequested_ = false;
             firstDrawLogged_ = false;
             externalMesh_ = false;
+            externalModel_ = false;
             elapsedSeconds_ = 0.0F;
             meshAsset_.Clear();
-            materialAsset_.Clear();
+            modelAsset_.Clear();
+            modelMaterials_.clear();
+            slotToPreview_.clear();
+            previewMaterials_.clear();
+            assetRegistry_.Clear();
+            assetManager_.Shutdown();
+            assetSource_.Shutdown();
             failureResult_ = StudioGraphicsShellResult::FrameFailed;
             width_ = height_ = 0;
         }
@@ -453,6 +484,104 @@ float4 PSMain(VertexOutput input) : SV_Target0
         ~StudioDX11Shell() noexcept { Shutdown(); }
 
     private:
+        engine::assets::AssetResult LoadCookedAsset(
+            const engine::assets::AssetPath& path,
+            const engine::assets::AssetType type,
+            std::unique_ptr<engine::assets::LoadedAsset>& outAsset) noexcept
+        {
+            engine::assets::AssetHandle handle;
+            auto result = assetManager_.FindByPath(path, handle);
+            if (result == engine::assets::AssetResult::NotFound)
+            {
+                engine::assets::AssetMetadata metadata;
+                metadata.path = path;
+                metadata.id = path.GetId();
+                metadata.type = type;
+                result = assetManager_.Register(metadata, handle);
+            }
+            if (engine::assets::Failed(result)) return result;
+            result = assetManager_.Load(handle);
+            if (engine::assets::Failed(result)) return result;
+            const engine::assets::AssetData* data = nullptr;
+            result = assetManager_.GetData(handle, data);
+            if (engine::assets::Failed(result) || data == nullptr) return engine::assets::AssetResult::IoError;
+            engine::assets::AssetMetadata metadata;
+            result = assetManager_.GetMetadata(handle, metadata);
+            if (engine::assets::Failed(result)) return result;
+            return assetRegistry_.Load(metadata, *data, outAsset);
+        }
+
+        bool TryLoadExternalModel() noexcept
+        {
+            const std::string modelValue = GetCommandLineValue("-dx11model=");
+            if (modelValue.empty()) return false;
+            const std::string rootValue = GetCommandLineValue("-dx11assetroot=");
+            if (rootValue.empty())
+            {
+                r3dOutToLog("[Graphics][DX11] -dx11model requires -dx11assetroot; trying lower-priority preview\n");
+                return false;
+            }
+            try
+            {
+                const std::filesystem::path root = std::filesystem::absolute(rootValue).lexically_normal();
+                std::filesystem::path requested = std::filesystem::u8path(modelValue);
+                if (requested.is_absolute()) requested = std::filesystem::relative(requested, root);
+                engine::assets::AssetPath modelPath;
+                if (engine::assets::Failed(engine::assets::AssetPath::TryCreate(requested.generic_u8string(), modelPath)) ||
+                    engine::assets::Failed(assetSource_.Initialize(root)) ||
+                    engine::assets::Failed(assetManager_.Initialize(assetSource_)) ||
+                    engine::assets::Failed(assetRegistry_.Register(staticModelLoader_)) ||
+                    engine::assets::Failed(assetRegistry_.Register(meshLoader_)) ||
+                    engine::assets::Failed(assetRegistry_.Register(materialLoader_)) ||
+                    engine::assets::Failed(assetRegistry_.Register(textureLoader_)))
+                {
+                    r3dOutToLog("[Graphics][DX11] Model asset setup failed; trying lower-priority preview\n");
+                    assetRegistry_.Clear(); assetManager_.Shutdown(); assetSource_.Shutdown();
+                    return false;
+                }
+                std::unique_ptr<engine::assets::LoadedAsset> loaded;
+                auto result = LoadCookedAsset(modelPath, engine::assets::AssetType::StaticModel, loaded);
+                if (engine::assets::Failed(result))
+                {
+                    r3dOutToLog("[Graphics][DX11] Model load failed (%s): %s\n", modelValue.c_str(), engine::assets::ToString(result));
+                    assetRegistry_.Clear(); assetManager_.Shutdown(); assetSource_.Shutdown(); return false;
+                }
+                modelAsset_ = static_cast<engine::assets::StaticModelLoadedAsset*>(loaded.get())->ReleaseModel();
+                result = LoadCookedAsset(modelAsset_.GetMeshPath(), engine::assets::AssetType::Mesh, loaded);
+                if (engine::assets::Failed(result)) return FailModelLoad("mesh", result);
+                meshAsset_ = static_cast<engine::assets::MeshLoadedAsset*>(loaded.get())->ReleaseMesh();
+                if (modelAsset_.GetMaterialCount() != meshAsset_.GetMaterialSlotCount())
+                    return FailModelLoad("material count mismatch", engine::assets::AssetResult::TypeMismatch);
+                modelMaterials_.clear();
+                modelMaterials_.reserve(modelAsset_.GetMaterialCount());
+                for (std::size_t index = 0U; index < modelAsset_.GetMaterialCount(); ++index)
+                {
+                    result = LoadCookedAsset(modelAsset_.GetMaterialPath(index), engine::assets::AssetType::Material, loaded);
+                    if (engine::assets::Failed(result)) return FailModelLoad("material", result);
+                    modelMaterials_.push_back(static_cast<engine::assets::MaterialLoadedAsset*>(loaded.get())->ReleaseMaterial());
+                }
+                externalMesh_ = true;
+                externalModel_ = true;
+                modelPathText_ = modelPath.String();
+                r3dOutToLog("[Graphics][DX11] Static model loaded through one AssetManager: %s\n", modelPathText_.c_str());
+                return true;
+            }
+            catch (...)
+            {
+                r3dOutToLog("[Graphics][DX11] Model load exception; trying lower-priority preview\n");
+                assetRegistry_.Clear(); assetManager_.Shutdown(); assetSource_.Shutdown();
+                return false;
+            }
+        }
+
+        bool FailModelLoad(const char* phase, const engine::assets::AssetResult result) noexcept
+        {
+            r3dOutToLog("[Graphics][DX11] Model %s failed: %s; trying lower-priority preview\n", phase, engine::assets::ToString(result));
+            modelAsset_.Clear(); modelMaterials_.clear(); meshAsset_.Clear();
+            assetRegistry_.Clear(); assetManager_.Shutdown(); assetSource_.Shutdown();
+            return false;
+        }
+
         bool TryLoadExternalMesh() noexcept
         {
             try
@@ -541,23 +670,33 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return Fail("quad input layout creation", result);
             r3dOutToLog("[Graphics][DX11] Quad input layout created\n");
 
-            engine::graphics::GraphicsPipelineDesc pipelineDesc;
-            pipelineDesc.vertexShader = vertexShader_;
-            pipelineDesc.pixelShader = pixelShader_;
-            pipelineDesc.inputLayout = inputLayout_;
-            pipelineDesc.topology = engine::graphics::PrimitiveTopology::TriangleList;
-            pipelineDesc.rasterizer.cullMode = engine::graphics::CullMode::Back;
-            pipelineDesc.rasterizer.scissorEnable = true;
-            pipelineDesc.blend.renderTargets[0].blendEnable = false;
-            pipelineDesc.depthStencil.depthEnable = true;
-            pipelineDesc.depthStencil.depthWriteEnable = true;
-            pipelineDesc.depthStencil.depthFunction =
-                engine::graphics::ComparisonFunction::LessEqual;
-            pipelineDesc.debugName = "Studio DX11 Textured Quad Pipeline";
-            result = device_.CreateGraphicsPipeline(pipelineDesc, pipeline_);
-            if (engine::graphics::Failed(result))
-                return Fail("quad pipeline creation", result);
-            r3dOutToLog("[Graphics][DX11] Quad pipeline created\n");
+            for (std::size_t alpha = 0U; alpha < 3U; ++alpha)
+                for (std::size_t sided = 0U; sided < 2U; ++sided)
+                {
+                    engine::graphics::GraphicsPipelineDesc pipelineDesc;
+                    pipelineDesc.vertexShader = vertexShader_;
+                    pipelineDesc.pixelShader = pixelShader_;
+                    pipelineDesc.inputLayout = inputLayout_;
+                    pipelineDesc.topology = engine::graphics::PrimitiveTopology::TriangleList;
+                    pipelineDesc.rasterizer.cullMode = sided ? engine::graphics::CullMode::None : engine::graphics::CullMode::Back;
+                    pipelineDesc.rasterizer.scissorEnable = true;
+                    pipelineDesc.depthStencil.depthEnable = true;
+                    pipelineDesc.depthStencil.depthWriteEnable = alpha != 2U;
+                    pipelineDesc.depthStencil.depthFunction = engine::graphics::ComparisonFunction::LessEqual;
+                    if (alpha == 2U)
+                    {
+                        auto& blend = pipelineDesc.blend.renderTargets[0];
+                        blend.blendEnable = true;
+                        blend.sourceColor = engine::graphics::BlendFactor::SourceAlpha;
+                        blend.destinationColor = engine::graphics::BlendFactor::InverseSourceAlpha;
+                        blend.sourceAlpha = engine::graphics::BlendFactor::One;
+                        blend.destinationAlpha = engine::graphics::BlendFactor::InverseSourceAlpha;
+                    }
+                    pipelineDesc.debugName = "Studio DX11 material pipeline";
+                    result = device_.CreateGraphicsPipeline(pipelineDesc, pipelines_[alpha * 2U + sided]);
+                    if (engine::graphics::Failed(result)) return Fail("material pipeline creation", result);
+                }
+            r3dOutToLog("[Graphics][DX11] Six material pipeline variants created\n");
 
             using V = engine::assets::StaticMeshVertex;
             constexpr V vertices[] = {
@@ -569,7 +708,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 {{-1,-1,1},{0,-1,0},{1,0,0,1},{0,1}},{{-1,-1,-1},{0,-1,0},{1,0,0,1},{0,0}},{{1,-1,-1},{0,-1,0},{1,0,0,1},{1,0}},{{1,-1,1},{0,-1,0},{1,0,0,1},{1,1}}};
             constexpr std::uint16_t indices[] = {0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23};
             constexpr engine::assets::MeshSubmesh submesh{0U,36U,0,0U};
-            if (!TryLoadExternalMesh())
+            if (!TryLoadExternalModel() && !TryLoadExternalMesh())
             {
                 const auto assetResult = engine::assets::MeshAssetBuilder::Build(vertices,24U,indices,36U,&submesh,1U,1U,"studio/cube",meshAsset_);
                 if (engine::assets::Failed(assetResult)) return Fail("MeshAsset creation", GraphicsResult::InvalidArgument);
@@ -585,16 +724,6 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         bool CreateBindingResources() noexcept
         {
-            engine::assets::MaterialAssetDesc materialDesc;
-            materialDesc.baseColorFactor = {1.0F, 0.95F, 0.9F, 1.0F};
-            materialDesc.emissiveFactor = {0.015F, 0.02F, 0.025F};
-            materialDesc.sampler.filter = engine::graphics::TextureFilter::Linear;
-            materialDesc.sampler.addressU = engine::graphics::TextureAddressMode::Wrap;
-            materialDesc.sampler.addressV = engine::graphics::TextureAddressMode::Wrap;
-            materialDesc.sampler.addressW = engine::graphics::TextureAddressMode::Wrap;
-            materialDesc.debugName = "Studio cube material";
-            const auto materialResult = materialAsset_.Initialize(std::move(materialDesc));
-            if (engine::assets::Failed(materialResult)) return Fail("MaterialAsset validation", GraphicsResult::InvalidArgument);
             constexpr std::uint32_t checkerboardPixels[16] = {
                 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
                 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU,
@@ -615,14 +744,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 textureDesc, &textureData, 1U, checkerboardTexture_);
             if (engine::graphics::Failed(result))
                 return Fail("checkerboard texture creation", result);
-            r3dOutToLog("[Graphics][DX11] Checkerboard texture created\n");
-
-            engine::graphics::SamplerDesc samplerDesc = materialAsset_.GetDesc().sampler;
-            samplerDesc.debugName = "Studio DX11 Checkerboard Sampler";
-            result = device_.CreateSampler(samplerDesc, sampler_);
-            if (engine::graphics::Failed(result))
-                return Fail("checkerboard sampler creation", result);
-            r3dOutToLog("[Graphics][DX11] Checkerboard sampler created\n");
+            r3dOutToLog("[Graphics][DX11] Shared fallback checkerboard created\n");
 
             engine::graphics::BufferDesc constantBufferDesc;
             constantBufferDesc.byteSize = sizeof(StudioFrameConstants);
@@ -634,17 +756,72 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (engine::graphics::Failed(result))
                 return Fail("frame constant buffer creation", result);
             r3dOutToLog("[Graphics][DX11] Dynamic frame constant buffer created\n");
-            constantBufferDesc.byteSize = sizeof(StudioMaterialConstants);
-            result = device_.CreateBuffer(constantBufferDesc, nullptr, materialConstantBuffer_);
-            if (engine::graphics::Failed(result)) return Fail("material constant buffer creation", result);
-            const auto& md = materialAsset_.GetDesc();
-            StudioMaterialConstants constants{};
-            std::memcpy(constants.baseColor, md.baseColorFactor.data(), sizeof(constants.baseColor));
-            std::memcpy(constants.emissiveMetallic, md.emissiveFactor.data(), sizeof(float)*3U);
-            constants.emissiveMetallic[3]=md.metallicFactor; constants.roughnessAlpha[0]=md.roughnessFactor; constants.roughnessAlpha[1]=md.alphaCutoff;
-            result=context_->UpdateBuffer(materialConstantBuffer_,&constants,sizeof(constants));
-            if(engine::graphics::Failed(result))return Fail("material constant buffer update",result);
-            r3dOutToLog("[Graphics][DX11] MaterialAsset and material resources created\n");
+            std::vector<engine::assets::MaterialAsset> sources;
+            if (externalModel_)
+                sources = std::move(modelMaterials_);
+            else
+            {
+                engine::assets::MaterialAssetDesc materialDesc;
+                materialDesc.baseColorFactor = {1.0F, 0.95F, 0.9F, 1.0F};
+                materialDesc.emissiveFactor = {0.015F, 0.02F, 0.025F};
+                materialDesc.sampler.filter = engine::graphics::TextureFilter::Linear;
+                materialDesc.sampler.addressU = materialDesc.sampler.addressV = materialDesc.sampler.addressW = engine::graphics::TextureAddressMode::Wrap;
+                materialDesc.debugName = "Studio fallback material";
+                engine::assets::MaterialAsset material;
+                if (engine::assets::Failed(material.Initialize(std::move(materialDesc)))) return Fail("fallback MaterialAsset", GraphicsResult::InvalidArgument);
+                sources.push_back(std::move(material));
+            }
+            try
+            {
+                previewMaterials_.clear(); slotToPreview_.clear();
+                slotToPreview_.resize(sources.size());
+                std::unordered_map<std::string, std::size_t> cache;
+                for (std::size_t slot = 0U; slot < sources.size(); ++slot)
+                {
+                    const std::string key = externalModel_ ? modelAsset_.GetMaterialPath(slot).String() : std::string("fallback");
+                    const auto found = cache.find(key);
+                    if (found != cache.end()) { slotToPreview_[slot] = found->second; continue; }
+                    const std::size_t previewIndex = previewMaterials_.size();
+                    cache.emplace(key, previewIndex);
+                    slotToPreview_[slot] = previewIndex;
+                    previewMaterials_.emplace_back();
+                    auto& preview = previewMaterials_.back();
+                    preview.asset = std::move(sources[slot]);
+                    const auto& md = preview.asset.GetDesc();
+                    preview.textureHandle = checkerboardTexture_;
+                    if (md.baseColorTexture)
+                    {
+                        std::unique_ptr<engine::assets::LoadedAsset> loaded;
+                        const auto assetResult = LoadCookedAsset(*md.baseColorTexture, engine::assets::AssetType::Texture, loaded);
+                        if (engine::assets::Failed(assetResult)) return Fail("DDS AssetManager load", GraphicsResult::InvalidArgument);
+                        engine::assets::TextureAsset texture = static_cast<engine::assets::TextureLoadedAsset*>(loaded.get())->ReleaseTexture();
+                        preview.texture = std::make_unique<engine::assets::GpuTexture>();
+                        result = preview.texture->Upload(device_, texture);
+                        if (engine::graphics::Failed(result)) return Fail("DDS GpuTexture upload", result);
+                        preview.textureHandle = preview.texture->GetHandle();
+                        preview.fallbackTexture = false;
+                    }
+                    engine::graphics::SamplerDesc samplerDesc = md.sampler;
+                    samplerDesc.debugName = "Studio preview material sampler";
+                    result = device_.CreateSampler(samplerDesc, preview.sampler);
+                    if (engine::graphics::Failed(result)) return Fail("material sampler creation", result);
+                    constantBufferDesc.byteSize = sizeof(StudioMaterialConstants);
+                    result = device_.CreateBuffer(constantBufferDesc, nullptr, preview.constantBuffer);
+                    if (engine::graphics::Failed(result)) return Fail("material constant buffer creation", result);
+                    StudioMaterialConstants constants{};
+                    std::memcpy(constants.baseColor, md.baseColorFactor.data(), sizeof(constants.baseColor));
+                    std::memcpy(constants.emissiveMetallic, md.emissiveFactor.data(), sizeof(float) * 3U);
+                    constants.emissiveMetallic[3] = md.metallicFactor;
+                    constants.roughnessAlpha[0] = md.roughnessFactor;
+                    constants.roughnessAlpha[1] = md.alphaCutoff;
+                    constants.roughnessAlpha[2] = static_cast<float>(md.alphaMode);
+                    result = context_->UpdateBuffer(preview.constantBuffer, &constants, sizeof(constants));
+                    if (engine::graphics::Failed(result)) return Fail("material constant buffer update", result);
+                }
+                if (!externalModel_) slotToPreview_.assign(meshAsset_.GetMaterialSlotCount(), 0U);
+            }
+            catch (...) { return Fail("preview material allocation", GraphicsResult::OutOfMemory); }
+            r3dOutToLog("[Graphics][DX11] Preview materials created: unique=%zu slots=%zu\n", previewMaterials_.size(), slotToPreview_.size());
             return true;
         }
 
@@ -679,16 +856,15 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         void DestroyBindingResources() noexcept
         {
-            const bool hadResources = sampler_.IsValid() || checkerboardTexture_.IsValid() || constantBuffer_.IsValid() || materialConstantBuffer_.IsValid();
-            if(materialConstantBuffer_.IsValid()){(void)device_.DestroyBuffer(materialConstantBuffer_);materialConstantBuffer_={};}
-            if (sampler_.IsValid())
+            const bool hadResources = !previewMaterials_.empty() || checkerboardTexture_.IsValid() || constantBuffer_.IsValid();
+            for (auto& material : previewMaterials_)
             {
-                const GraphicsResult result = device_.DestroySampler(sampler_);
-                if (engine::graphics::Failed(result))
-                    r3dOutToLog("[Graphics][DX11] Sampler destruction failed: %s\n",
-                        engine::graphics::ToString(result));
-                sampler_ = {};
+                if (material.texture) (void)material.texture->Release(device_);
+                if (material.sampler.IsValid()) (void)device_.DestroySampler(material.sampler);
+                if (material.constantBuffer.IsValid()) (void)device_.DestroyBuffer(material.constantBuffer);
             }
+            previewMaterials_.clear();
+            slotToPreview_.clear();
             if (checkerboardTexture_.IsValid())
             {
                 const GraphicsResult result =
@@ -712,15 +888,14 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         bool DrawGeometry() noexcept
         {
-            if (!pipeline_.IsValid() || !gpuMesh_.IsValid() || !materialAsset_.IsValid())
+            if (!gpuMesh_.IsValid() || previewMaterials_.empty())
             {
                 return FailFrame("quad resource validation",
                     GraphicsResult::InvalidState);
             }
 
-            GraphicsResult result = context_->SetGraphicsPipeline(pipeline_);
-            if (engine::graphics::Failed(result))
-                return FailFrame("quad pipeline bind", result);
+            for (const auto pipeline : pipelines_) if (!pipeline.IsValid()) return FailFrame("material pipeline validation", GraphicsResult::InvalidState);
+            GraphicsResult result;
             engine::graphics::VertexBufferBinding vertexBinding;
             vertexBinding.buffer = gpuMesh_.GetVertexBuffer();
             vertexBinding.stride = gpuMesh_.GetVertexStride();
@@ -736,33 +911,44 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 engine::graphics::ShaderStage::Vertex, 0U, &constantBuffer_, 1U);
             if (engine::graphics::Failed(result))
                 return FailFrame("quad constant buffer bind", result);
-            result = context_->SetShaderResources(
-                engine::graphics::ShaderStage::Pixel, 0U, &checkerboardTexture_, 1U);
-            if (engine::graphics::Failed(result))
-                return FailFrame("quad texture bind", result);
-            result = context_->SetSamplers(
-                engine::graphics::ShaderStage::Pixel, 0U, &sampler_, 1U);
-            if (engine::graphics::Failed(result))
-                return FailFrame("quad sampler bind", result);
-            result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel,0U,&materialConstantBuffer_,1U);
-            if(engine::graphics::Failed(result))return FailFrame("material constant buffer bind",result);
-            for (std::size_t index = 0U; index < gpuMesh_.GetSubmeshCount(); ++index)
+            std::array<std::size_t, 3U> drawCounts{};
+            for (std::size_t pass = 0U; pass < 3U; ++pass)
             {
-                const auto* const submesh = gpuMesh_.GetSubmesh(index);
-                if (submesh == nullptr ||
-                    submesh->materialSlot >= meshAsset_.GetMaterialSlotCount())
+                for (std::size_t index = 0U; index < gpuMesh_.GetSubmeshCount(); ++index)
                 {
-                    return FailFrame("submesh material slot",
-                        GraphicsResult::InvalidState);
+                    const auto* const submesh = gpuMesh_.GetSubmesh(index);
+                    if (submesh == nullptr || submesh->materialSlot >= slotToPreview_.size())
+                        return FailFrame("submesh material slot", GraphicsResult::InvalidState);
+                    const std::size_t previewIndex = slotToPreview_[submesh->materialSlot];
+                    if (previewIndex >= previewMaterials_.size()) return FailFrame("preview material index", GraphicsResult::InvalidState);
+                    auto& material = previewMaterials_[previewIndex];
+                    const std::size_t alpha = static_cast<std::size_t>(material.asset.GetDesc().alphaMode);
+                    if (alpha != pass) continue;
+                    const std::size_t pipelineIndex = alpha * 2U + (material.asset.GetDesc().doubleSided ? 1U : 0U);
+                    result = context_->SetGraphicsPipeline(pipelines_[pipelineIndex]);
+                    if (engine::graphics::Failed(result)) return FailFrame("material pipeline bind", result);
+                    result = context_->SetShaderResources(engine::graphics::ShaderStage::Pixel, 0U, &material.textureHandle, 1U);
+                    if (engine::graphics::Failed(result)) return FailFrame("material texture bind", result);
+                    result = context_->SetSamplers(engine::graphics::ShaderStage::Pixel, 0U, &material.sampler, 1U);
+                    if (engine::graphics::Failed(result)) return FailFrame("material sampler bind", result);
+                    result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel, 0U, &material.constantBuffer, 1U);
+                    if (engine::graphics::Failed(result)) return FailFrame("material constant buffer bind", result);
+                    result = context_->DrawIndexed(submesh->indexCount, submesh->firstIndex, submesh->baseVertex);
+                    if (engine::graphics::Failed(result)) return FailFrame("submesh DrawIndexed", result);
+                    ++drawCounts[alpha];
                 }
-                result = context_->DrawIndexed(submesh->indexCount,
-                    submesh->firstIndex, submesh->baseVertex);
-                if (engine::graphics::Failed(result))
-                    return FailFrame("submesh DrawIndexed", result);
             }
             if (!firstDrawLogged_)
             {
-                if (externalMesh_)
+                if (externalModel_)
+                {
+                    std::size_t ddsCount = 0U, fallbackCount = 0U;
+                    for (const auto& material : previewMaterials_) material.fallbackTexture ? ++fallbackCount : ++ddsCount;
+                    r3dOutToLog("[Graphics][DX11] First model draw: model=%s submeshes=%zu materials=%zu DDS=%zu fallback=%zu opaque=%zu mask=%zu blend=%zu\n",
+                        modelPathText_.c_str(), gpuMesh_.GetSubmeshCount(), slotToPreview_.size(), ddsCount, fallbackCount,
+                        drawCounts[0], drawCounts[1], drawCounts[2]);
+                }
+                else if (externalMesh_)
                     r3dOutToLog("[Graphics][DX11] First external mesh draw: submeshes=%zu triangles=%zu\n", gpuMesh_.GetSubmeshCount(), meshAsset_.GetIndexCount() / 3U);
                 else
                     r3dOutToLog("[Graphics][DX11] First asset-driven cube draw completed\n");
@@ -775,15 +961,16 @@ float4 PSMain(VertexOutput input) : SV_Target0
         {
             const bool hadResources = vertexShader_.IsValid() ||
                 pixelShader_.IsValid() || inputLayout_.IsValid() ||
-                pipeline_.IsValid() || gpuMesh_.IsValid();
+                pipelines_[0].IsValid() || gpuMesh_.IsValid();
             if(gpuMesh_.IsValid()){const auto result=gpuMesh_.Release(device_);if(engine::graphics::Failed(result))r3dOutToLog("[Graphics][DX11] GpuMesh release failed: %s\n",engine::graphics::ToString(result));else r3dOutToLog("[Graphics][DX11] GpuMesh released\n");}
-            if (pipeline_.IsValid())
+            for (auto& pipeline : pipelines_)
             {
-                const GraphicsResult result = device_.DestroyGraphicsPipeline(pipeline_);
-                if (engine::graphics::Failed(result))
-                    r3dOutToLog("[Graphics][DX11] Pipeline destruction failed: %s\n",
-                        engine::graphics::ToString(result));
-                pipeline_ = {};
+                if (pipeline.IsValid())
+                {
+                    const GraphicsResult result = device_.DestroyGraphicsPipeline(pipeline);
+                    if (engine::graphics::Failed(result)) r3dOutToLog("[Graphics][DX11] Pipeline destruction failed: %s\n", engine::graphics::ToString(result));
+                    pipeline = {};
+                }
             }
             if (inputLayout_.IsValid())
             {
@@ -972,14 +1159,23 @@ float4 PSMain(VertexOutput input) : SV_Target0
         engine::graphics::ShaderHandle vertexShader_;
         engine::graphics::ShaderHandle pixelShader_;
         engine::graphics::InputLayoutHandle inputLayout_;
-        engine::graphics::PipelineStateHandle pipeline_;
+        std::array<engine::graphics::PipelineStateHandle, 6U> pipelines_{};
         engine::assets::MeshAsset meshAsset_;
         engine::assets::GpuMesh gpuMesh_;
-        engine::assets::MaterialAsset materialAsset_;
         engine::graphics::BufferHandle constantBuffer_;
-        engine::graphics::BufferHandle materialConstantBuffer_;
         engine::graphics::TextureHandle checkerboardTexture_;
-        engine::graphics::SamplerHandle sampler_;
+        engine::assets::FileAssetSource assetSource_;
+        engine::assets::AssetManager assetManager_;
+        engine::assets::AssetLoaderRegistry assetRegistry_;
+        engine::assets::StaticModelAssetLoader staticModelLoader_;
+        engine::assets::MeshAssetLoader meshLoader_;
+        engine::assets::MaterialAssetLoader materialLoader_;
+        engine::assets::DdsTextureLoader textureLoader_;
+        engine::assets::StaticModelAsset modelAsset_;
+        std::vector<engine::assets::MaterialAsset> modelMaterials_;
+        std::vector<StudioPreviewMaterial> previewMaterials_;
+        std::vector<std::size_t> slotToPreview_;
+        std::string modelPathText_;
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;
         bool initialized_ = false, minimized_ = false, resizePending_ = false;
@@ -989,6 +1185,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         bool styleChanged_ = false;
         bool firstDrawLogged_ = false;
         bool externalMesh_ = false;
+        bool externalModel_ = false;
         float elapsedSeconds_ = 0.0F;
         StudioGraphicsShellResult failureResult_ = StudioGraphicsShellResult::FrameFailed;
     };

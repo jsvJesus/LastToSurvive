@@ -167,7 +167,18 @@ engine::assets::AssetResult LegacyScbMeshDecoder::Decode(const engine::assets::A
         std::int8_t sign = 0;
         if (!reader.Read(sign))
             return engine::assets::AssetResult::CorruptData;
-        vertices[index].tangent = {tangents[index][0], tangents[index][1], tangents[index][2], sign > 0 ? 1.0F : -1.0F};
+        auto& tangent = tangents[index];
+        const auto& normal = vertices[index].normal;
+        const float dot = tangent[0] * normal[0] + tangent[1] * normal[1] + tangent[2] * normal[2];
+        tangent[0] -= dot * normal[0];
+        tangent[1] -= dot * normal[1];
+        tangent[2] -= dot * normal[2];
+        const float lengthSquared = tangent[0] * tangent[0] + tangent[1] * tangent[1] + tangent[2] * tangent[2];
+        if (!Finite(lengthSquared) || lengthSquared <= 1.0e-12F)
+            return engine::assets::AssetResult::CorruptData;
+        const float inverseLength = 1.0F / std::sqrt(lengthSquared);
+        vertices[index].tangent = {tangent[0] * inverseLength, tangent[1] * inverseLength,
+                                   tangent[2] * inverseLength, sign > 0 ? 1.0F : -1.0F};
     }
 
     std::int32_t indexCountSigned = 0;
@@ -211,7 +222,7 @@ engine::assets::AssetResult LegacyScbMeshDecoder::Decode(const engine::assets::A
         std::int32_t start = 0, end = 0;
         std::string name;
         if (!reader.Read(start) || !reader.Read(end) || !ReadString(reader, name) || name.empty() || start < 0 ||
-            end <= start || end > indexCountSigned || start < previousEnd || (end - start) % 3 != 0)
+            end <= start || end > indexCountSigned || start != previousEnd || (end - start) % 3 != 0)
             return engine::assets::AssetResult::CorruptData;
         previousEnd = end;
         std::uint32_t slot = 0U;
@@ -233,6 +244,8 @@ engine::assets::AssetResult LegacyScbMeshDecoder::Decode(const engine::assets::A
             slot = found->second;
         submeshes.push_back({static_cast<std::uint32_t>(start), static_cast<std::uint32_t>(end - start), 0, slot});
     }
+    if (previousEnd != indexCountSigned)
+        return engine::assets::AssetResult::CorruptData;
     if ((flags & VertexColorsFlag) != 0U && !reader.Skip(vertexCount * 4U))
         return engine::assets::AssetResult::CorruptData;
     if (!reader.AtEnd())

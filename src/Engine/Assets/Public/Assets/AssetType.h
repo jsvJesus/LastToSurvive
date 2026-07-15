@@ -15,7 +15,8 @@ namespace engine::assets
         Animation,
         Effect,
         Audio,
-        Data
+        Data,
+        StaticModel
     };
 
     [[nodiscard]] const char* ToString(

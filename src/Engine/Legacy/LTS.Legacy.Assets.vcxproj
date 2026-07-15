@@ -8,8 +8,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup><OutDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir><IntDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir></PropertyGroup>
   <ItemDefinitionGroup><ClCompile><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode><AdditionalOptions>/permissive- /Zc:__cplusplus /utf-8 %(AdditionalOptions)</AdditionalOptions><AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Graphics\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><MultiProcessorCompilation>true</MultiProcessorCompilation></ClCompile></ItemDefinitionGroup>
-  <ItemGroup><ClInclude Include="Public\Legacy\Assets\LegacyScbMeshDecoder.h" /></ItemGroup>
-  <ItemGroup><ClCompile Include="Private\Assets\LegacyScbMeshDecoder.cpp" /></ItemGroup>
+  <ItemGroup><ClInclude Include="Public\Legacy\Assets\LegacyScbMeshDecoder.h" /><ClInclude Include="Public\Legacy\Assets\LegacyMaterialLibraryDecoder.h" /><ClInclude Include="Public\Legacy\Assets\LegacyMaterialConverter.h" /><ClInclude Include="Public\Legacy\Assets\LegacyMaterialTextureResolver.h" /></ItemGroup>
+  <ItemGroup><ClCompile Include="Private\Assets\LegacyScbMeshDecoder.cpp" /><ClCompile Include="Private\Assets\LegacyMaterialLibraryDecoder.cpp" /><ClCompile Include="Private\Assets\LegacyMaterialConverter.cpp" /><ClCompile Include="Private\Assets\LegacyMaterialTextureResolver.cpp" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\Assets\LTS.Assets.vcxproj"><Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference></ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

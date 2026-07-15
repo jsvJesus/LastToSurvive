@@ -1,4 +1,11 @@
+#include "Assets/DdsTextureDecoder.h"
+#include "Assets/LtsMaterialWriter.h"
 #include "Assets/LtsMeshWriter.h"
+#include "Assets/LtsStaticModelWriter.h"
+#include "Assets/StaticModelAsset.h"
+#include "Legacy/Assets/LegacyMaterialConverter.h"
+#include "Legacy/Assets/LegacyMaterialLibraryDecoder.h"
+#include "Legacy/Assets/LegacyMaterialTextureResolver.h"
 #include "Legacy/Assets/LegacyScbMeshDecoder.h"
 #include "Platform/File.h"
 
@@ -7,123 +14,292 @@
 #include <cstdio>
 #include <filesystem>
 #include <limits>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace
 {
 using engine::assets::AssetData;
 using engine::assets::AssetResult;
 
-AssetResult ReadFile(const std::filesystem::path &path, AssetData &output) noexcept
+AssetResult ReadFile(const std::filesystem::path& path, AssetData& output) noexcept
 {
     engine::platform::File file(path);
     const auto size = file.GetSize();
-    if (!file || !size)
-        return AssetResult::IoError;
-    if (*size > (std::numeric_limits<std::size_t>::max)())
-        return AssetResult::FileTooLarge;
+    if (!file || !size) return AssetResult::IoError;
+    if (*size > (std::numeric_limits<std::size_t>::max)()) return AssetResult::FileTooLarge;
     const AssetResult resize = output.Resize(static_cast<std::size_t>(*size));
-    if (engine::assets::Failed(resize))
-        return resize;
+    if (engine::assets::Failed(resize)) return resize;
     const auto read = file.Read(output.GetData(), output.GetSize());
-    if (!read || read.bytesTransferred != output.GetSize())
-    {
-        output.Clear();
-        return AssetResult::IoError;
-    }
+    if (!read || read.bytesTransferred != output.GetSize()) { output.Clear(); return AssetResult::IoError; }
     return AssetResult::Success;
 }
 
-AssetResult WriteAtomic(const std::filesystem::path &path, const AssetData &data, const bool force) noexcept
+AssetResult WriteAtomic(const std::filesystem::path& path, const AssetData& data, const bool force) noexcept
 {
     std::error_code error;
-    if (std::filesystem::exists(path, error) && !force)
-        return AssetResult::AlreadyExists;
+    if (std::filesystem::exists(path, error) && !force) return AssetResult::AlreadyExists;
     std::filesystem::create_directories(path.parent_path(), error);
-    if (error)
-        return AssetResult::IoError;
-    std::filesystem::path temporary = path;
-    temporary += L".tmp";
+    if (error) return AssetResult::IoError;
+    std::filesystem::path temporary = path; temporary += L".tmp";
     std::filesystem::remove(temporary, error);
-    engine::platform::File file(temporary, engine::platform::FileAccess::Write,
-                                engine::platform::FileCreation::CreateNew);
-    if (!file)
-        return AssetResult::IoError;
+    engine::platform::File file(temporary, engine::platform::FileAccess::Write, engine::platform::FileCreation::CreateNew);
+    if (!file) return AssetResult::IoError;
     const auto written = file.Write(data.GetData(), data.GetSize());
     if (!written || written.bytesTransferred != data.GetSize() || !file.Flush())
-    {
-        file.Close();
-        std::filesystem::remove(temporary, error);
-        return AssetResult::IoError;
-    }
+    { file.Close(); std::filesystem::remove(temporary, error); return AssetResult::IoError; }
     file.Close();
     const DWORD flags = MOVEFILE_WRITE_THROUGH | (force ? MOVEFILE_REPLACE_EXISTING : 0U);
     if (!MoveFileExW(temporary.c_str(), path.c_str(), flags))
-    {
-        std::filesystem::remove(temporary, error);
-        return AssetResult::IoError;
-    }
+    { std::filesystem::remove(temporary, error); return AssetResult::IoError; }
     return AssetResult::Success;
 }
 
-void Print(const engine::legacy::assets::LegacyStaticMeshData &data, const std::filesystem::path &source)
+void PrintMesh(const engine::legacy::assets::LegacyStaticMeshData& data, const std::filesystem::path& source)
 {
-    const auto &mesh = data.mesh;
-    std::wprintf(L"source: %ls\nversion: 0x%08X\n", source.c_str(),
-                 engine::legacy::assets::LegacyScbMeshDecoder::SupportedVersion);
+    const auto& mesh = data.mesh;
+    std::wprintf(L"source: %ls\nversion: 0x%08X\n", source.c_str(), engine::legacy::assets::LegacyScbMeshDecoder::SupportedVersion);
     std::printf("mesh: %s\nvertices: %zu\nindices: %zu\ntriangles: %zu\nsubmeshes: %zu\n", data.sourceName.c_str(),
                 mesh.GetVertexCount(), mesh.GetIndexCount(), mesh.GetIndexCount() / 3U, mesh.GetSubmeshCount());
-    for (std::size_t i = 0U; i < data.materialSlotNames.size(); ++i)
-        std::printf("material[%zu]: %s\n", i, data.materialSlotNames[i].c_str());
-    const auto &b = mesh.GetBounds();
-    std::printf("bounds: min %.3f %.3f %.3f, max %.3f %.3f %.3f, radius %.3f\n", b.minimum[0], b.minimum[1],
-                b.minimum[2], b.maximum[0], b.maximum[1], b.maximum[2], b.sphereRadius);
+    for (std::size_t i = 0U; i < data.materialSlotNames.size(); ++i) std::printf("material[%zu]: %s\n", i, data.materialSlotNames[i].c_str());
+    const auto& b = mesh.GetBounds();
+    std::printf("bounds: min %.3f %.3f %.3f, max %.3f %.3f %.3f, radius %.3f\n", b.minimum[0], b.minimum[1], b.minimum[2], b.maximum[0], b.maximum[1], b.maximum[2], b.sphereRadius);
 }
-} // namespace
 
-int wmain(int argc, wchar_t **argv)
+bool SamePath(const std::filesystem::path& left, const std::filesystem::path& right) noexcept
 {
+    return _wcsicmp(left.lexically_normal().c_str(), right.lexically_normal().c_str()) == 0;
+}
+bool Contained(const std::filesystem::path& root, const std::filesystem::path& child) noexcept
+{
+    const auto normalizedRoot = root.lexically_normal();
+    const auto normalizedChild = child.lexically_normal();
+    auto ri = normalizedRoot.begin(); const auto re = normalizedRoot.end();
+    auto ci = normalizedChild.begin(); const auto ce = normalizedChild.end();
+    for (; ri != re; ++ri, ++ci) if (ci == ce || _wcsicmp(ri->c_str(), ci->c_str()) != 0) return false;
+    return true;
+}
+std::string FileStem(const std::string& name)
+{
+    std::string output;
+    for (const unsigned char c : name)
+    {
+        if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) output.push_back(static_cast<char>(c));
+        else if (c >= 'A' && c <= 'Z') output.push_back(static_cast<char>(c - 'A' + 'a'));
+        else if (output.empty() || output.back() != '_') output.push_back('_');
+    }
+    while (!output.empty() && output.back() == '_') output.pop_back();
+    return output.empty() ? "material" : output;
+}
+const char* AlphaName(const engine::assets::MaterialAlphaMode mode) noexcept
+{
+    switch (mode) { case engine::assets::MaterialAlphaMode::Opaque: return "Opaque"; case engine::assets::MaterialAlphaMode::Mask: return "Mask"; case engine::assets::MaterialAlphaMode::Blend: return "Blend"; default: return "Invalid"; }
+}
+
+struct ModelOptions final
+{
+    std::filesystem::path input;
+    std::filesystem::path dataRoot;
+    std::filesystem::path outputRoot;
+    bool force = false;
+    bool allowMissingTextures = false;
+};
+bool ParseModelOptions(const int argc, wchar_t** argv, ModelOptions& options)
+{
+    for (int index = 2; index < argc; ++index)
+    {
+        const std::wstring_view key(argv[index]);
+        if (key == L"--force") { options.force = true; continue; }
+        if (key == L"--allow-missing-textures") { options.allowMissingTextures = true; continue; }
+        if (index + 1 >= argc) return false;
+        const std::filesystem::path value(argv[++index]);
+        if (key == L"--input") options.input = value;
+        else if (key == L"--data-root") options.dataRoot = value;
+        else if (key == L"--output-root") options.outputRoot = value;
+        else return false;
+    }
+    return !options.input.empty() && !options.dataRoot.empty() && !options.outputRoot.empty();
+}
+
+AssetResult ValidateDds(const std::filesystem::path& dataRoot, const engine::assets::AssetPath& path) noexcept
+{
+    AssetData bytes;
+    AssetResult result = ReadFile(dataRoot / std::filesystem::u8path(path.String()), bytes);
+    if (engine::assets::Failed(result)) return result;
+    engine::assets::TextureAsset texture;
+    return engine::assets::DdsTextureDecoder::Decode(bytes, {}, texture);
+}
+
+AssetResult CommitDirectory(const std::filesystem::path& temporary, const std::filesystem::path& destination,
+                            const bool force) noexcept
+{
+    std::error_code error;
+    if (!std::filesystem::exists(destination, error))
+    { std::filesystem::rename(temporary, destination, error); return error ? AssetResult::IoError : AssetResult::Success; }
+    if (!force) return AssetResult::AlreadyExists;
+    std::filesystem::path backup = destination; backup += L".backup." + std::to_wstring(GetCurrentProcessId());
+    std::filesystem::remove_all(backup, error); error.clear();
+    std::filesystem::rename(destination, backup, error);
+    if (error) return AssetResult::IoError;
+    std::filesystem::rename(temporary, destination, error);
+    if (error)
+    {
+        std::error_code ignored; std::filesystem::rename(backup, destination, ignored);
+        return AssetResult::IoError;
+    }
+    std::filesystem::remove_all(backup, error);
+    return AssetResult::Success;
+}
+
+int CookModel(const ModelOptions& rawOptions)
+{
+    const auto start = std::chrono::steady_clock::now();
+    std::error_code error;
+    const auto input = std::filesystem::absolute(rawOptions.input, error).lexically_normal(); if (error) return 2;
+    const auto dataRoot = std::filesystem::absolute(rawOptions.dataRoot, error).lexically_normal(); if (error) return 2;
+    const auto outputRoot = std::filesystem::absolute(rawOptions.outputRoot, error).lexically_normal(); if (error) return 2;
+    if (!Contained(dataRoot, input) || !Contained(dataRoot, outputRoot) || SamePath(input, outputRoot))
+    { std::fwprintf(stderr, L"input and output must be distinct paths contained by data root\n"); return 2; }
+
+    AssetData source;
+    AssetResult result = ReadFile(input, source);
+    engine::legacy::assets::LegacyStaticMeshData decoded;
+    if (engine::assets::Succeeded(result)) result = engine::legacy::assets::LegacyScbMeshDecoder::Decode(source, decoded);
+    if (engine::assets::Failed(result)) { std::fprintf(stderr, "SCB decode failed: %s\n", engine::assets::ToString(result)); return 3; }
+
+    std::filesystem::path temporary = outputRoot; temporary += L".tmp." + std::to_wstring(GetCurrentProcessId());
+    std::filesystem::remove_all(temporary, error); error.clear();
+    std::filesystem::create_directories(temporary, error);
+    if (error) return 4;
+    const auto fail = [&](const char* phase, const AssetResult failure) -> int
+    {
+        std::fprintf(stderr, "%s failed: %s\n", phase, engine::assets::ToString(failure));
+        std::error_code ignored; std::filesystem::remove_all(temporary, ignored); return 4;
+    };
+
+    AssetData meshBytes;
+    result = engine::assets::LtsMeshWriter::Encode(decoded.mesh, meshBytes);
+    if (engine::assets::Succeeded(result)) result = WriteAtomic(temporary / L"model.ltsmesh", meshBytes, true);
+    if (engine::assets::Failed(result)) return fail("mesh write", result);
+
+    engine::assets::AssetPath meshAssetPath;
+    const auto meshRelative = std::filesystem::relative(outputRoot / L"model.ltsmesh", dataRoot, error).generic_u8string();
+    result = error ? AssetResult::InvalidPath : engine::assets::AssetPath::TryCreate(meshRelative, meshAssetPath);
+    if (engine::assets::Failed(result)) return fail("mesh asset path", result);
+
+    std::vector<engine::assets::AssetPath> materialPaths;
+    std::set<std::string> filenames;
+    std::size_t missingCount = 0U;
+    try { materialPaths.reserve(decoded.materialSlotNames.size()); }
+    catch (...) { return fail("material allocation", AssetResult::OutOfMemory); }
+    PrintMesh(decoded, input);
+    for (std::size_t slot = 0U; slot < decoded.materialSlotNames.size(); ++slot)
+    {
+        const std::string& materialName = decoded.materialSlotNames[slot];
+        const auto materialFile = input.parent_path() / L"Materials" / std::filesystem::u8path(materialName + ".mat");
+        AssetData materialSource;
+        result = ReadFile(materialFile, materialSource);
+        if (engine::assets::Failed(result)) return fail("material library read", result);
+        engine::legacy::assets::LegacyMaterialLibraryData library;
+        result = engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(materialSource, library);
+        if (engine::assets::Failed(result)) return fail("material library decode", result);
+        const auto* record = library.FindMaterial(materialName);
+        if (record == nullptr) return fail("material name lookup", AssetResult::NotFound);
+
+        engine::legacy::assets::LegacyTextureResolution resolution;
+        const engine::assets::AssetPath* texturePath = nullptr;
+        if (!record->texture.empty())
+        {
+            result = engine::legacy::assets::LegacyMaterialTextureResolver::ResolveDiffuse(
+                dataRoot, materialFile, input, record->imagesDir, record->texture, resolution);
+            if (engine::assets::Succeeded(result))
+            {
+                result = ValidateDds(dataRoot, resolution.path);
+                if (engine::assets::Failed(result)) return fail("DDS validation", result);
+                texturePath = &resolution.path;
+            }
+            else if (result == AssetResult::NotFound && rawOptions.allowMissingTextures)
+            { ++missingCount; std::fprintf(stderr, "warning: missing diffuse texture for %s\n", materialName.c_str()); }
+            else return fail("diffuse texture resolution", result);
+        }
+
+        engine::assets::MaterialAsset material;
+        std::vector<std::string> diagnostics;
+        result = engine::legacy::assets::LegacyMaterialConverter::Convert(*record, texturePath, material, diagnostics);
+        if (engine::assets::Failed(result)) return fail("material conversion", result);
+        const std::string stem = FileStem(materialName);
+        if (!filenames.insert(stem).second) return fail("material filename collision", AssetResult::AlreadyExists);
+        const std::string filename = stem + ".ltsmat";
+        AssetData materialBytes;
+        result = engine::assets::LtsMaterialWriter::Encode(material, materialBytes);
+        if (engine::assets::Succeeded(result)) result = WriteAtomic(temporary / std::filesystem::u8path(filename), materialBytes, true);
+        if (engine::assets::Failed(result)) return fail("material write", result);
+        engine::assets::AssetPath cookedMaterialPath;
+        const auto relative = std::filesystem::relative(outputRoot / std::filesystem::u8path(filename), dataRoot, error).generic_u8string();
+        result = error ? AssetResult::InvalidPath : engine::assets::AssetPath::TryCreate(relative, cookedMaterialPath);
+        if (engine::assets::Failed(result)) return fail("material asset path", result);
+        materialPaths.push_back(cookedMaterialPath);
+        std::printf("slot[%zu]: %s -> %s -> %s, alpha=%s, doubleSided=%s\n", slot, materialName.c_str(),
+                    cookedMaterialPath.String().c_str(), texturePath ? texturePath->String().c_str() : "<fallback>",
+                    AlphaName(material.GetDesc().alphaMode), material.GetDesc().doubleSided ? "true" : "false");
+        for (const auto& diagnostic : diagnostics) std::printf("  diagnostic: %s\n", diagnostic.c_str());
+        std::wprintf(L"  material library: %ls\n", materialFile.c_str());
+    }
+
+    engine::assets::StaticModelAsset model;
+    result = model.Initialize(std::move(meshAssetPath), std::move(materialPaths), decoded.sourceName);
+    if (engine::assets::Failed(result)) return fail("model creation", result);
+    AssetData modelBytes;
+    result = engine::assets::LtsStaticModelWriter::Encode(model, modelBytes);
+    if (engine::assets::Succeeded(result)) result = WriteAtomic(temporary / L"model.ltsmodel", modelBytes, true);
+    if (engine::assets::Failed(result)) return fail("model write", result);
+    result = CommitDirectory(temporary, outputRoot, rawOptions.force);
+    if (engine::assets::Failed(result)) return fail("output commit", result);
+    const auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+    std::wprintf(L"output model: %ls\n", (outputRoot / L"model.ltsmodel").c_str());
+    std::printf("unique materials: %zu\nmissing textures: %zu\nelapsed ms: %.3f\n", decoded.materialSlotNames.size(), missingCount, elapsed);
+    return 0;
+}
+}
+
+int wmain(const int argc, wchar_t** argv)
+{
+    if (argc >= 2 && std::wstring_view(argv[1]) == L"model")
+    {
+        ModelOptions options;
+        if (!ParseModelOptions(argc, argv, options))
+        {
+            std::fwprintf(stderr, L"usage: LTS.AssetCooker model --input <mesh.scb> --data-root <Data> --output-root <directory> [--force] [--allow-missing-textures]\n");
+            return 2;
+        }
+        return CookModel(options);
+    }
     if (argc < 3)
     {
-        std::fwprintf(stderr, L"usage: LTS.AssetCooker inspect-mesh <input.scb> | "
-                              L"mesh <input.scb> <output.ltsmesh> [--force]\n");
+        std::fwprintf(stderr, L"usage: LTS.AssetCooker inspect-mesh <input.scb> | mesh <input.scb> <output.ltsmesh> [--force]\n");
         return 2;
     }
     const bool inspect = std::wstring_view(argv[1]) == L"inspect-mesh";
     const bool convert = std::wstring_view(argv[1]) == L"mesh";
-    if ((!inspect && !convert) || (inspect && argc != 3) || (convert && (argc < 4 || argc > 5)))
-        return 2;
+    if ((!inspect && !convert) || (inspect && argc != 3) || (convert && (argc < 4 || argc > 5))) return 2;
     const std::filesystem::path input = std::filesystem::absolute(argv[2]).lexically_normal();
-    const std::filesystem::path output =
-        convert ? std::filesystem::absolute(argv[3]).lexically_normal() : std::filesystem::path{};
+    const std::filesystem::path output = convert ? std::filesystem::absolute(argv[3]).lexically_normal() : std::filesystem::path{};
     const bool force = argc == 5 && std::wstring_view(argv[4]) == L"--force";
-    if (convert && input == output)
-    {
-        std::fwprintf(stderr, L"input and output must differ\n");
-        return 2;
-    }
+    if (convert && SamePath(input, output)) { std::fwprintf(stderr, L"input and output must differ\n"); return 2; }
     const auto start = std::chrono::steady_clock::now();
     AssetData source;
     AssetResult result = ReadFile(input, source);
     engine::legacy::assets::LegacyStaticMeshData decoded;
-    if (engine::assets::Succeeded(result))
-        result = engine::legacy::assets::LegacyScbMeshDecoder::Decode(source, decoded);
-    if (engine::assets::Failed(result))
-    {
-        std::fprintf(stderr, "decode failed: %s\n", engine::assets::ToString(result));
-        return 3;
-    }
-    Print(decoded, input);
+    if (engine::assets::Succeeded(result)) result = engine::legacy::assets::LegacyScbMeshDecoder::Decode(source, decoded);
+    if (engine::assets::Failed(result)) { std::fprintf(stderr, "decode failed: %s\n", engine::assets::ToString(result)); return 3; }
+    PrintMesh(decoded, input);
     if (convert)
     {
         AssetData cooked;
         result = engine::assets::LtsMeshWriter::Encode(decoded.mesh, cooked);
-        if (engine::assets::Succeeded(result))
-            result = WriteAtomic(output, cooked, force);
-        if (engine::assets::Failed(result))
-        {
-            std::fprintf(stderr, "write failed: %s\n", engine::assets::ToString(result));
-            return 4;
-        }
+        if (engine::assets::Succeeded(result)) result = WriteAtomic(output, cooked, force);
+        if (engine::assets::Failed(result)) { std::fprintf(stderr, "write failed: %s\n", engine::assets::ToString(result)); return 4; }
         std::printf("output bytes: %zu\n", cooked.GetSize());
     }
     const auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
