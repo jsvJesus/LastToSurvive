@@ -1,10 +1,6 @@
 #pragma once
 #include "rendering/World/WorldRenderer.h"
 
-#if LTS_STUDIO_DX11
-#include "rendering/DX11/LevelEditorStaticBridge.h"
-#endif
-
 inline DWORD F2DW( FLOAT f ) { return *((DWORD*)&f); }
 
 static void ClearFloatSurface( const D3DXVECTOR4& value ) ;
@@ -594,10 +590,6 @@ void RenderDeferredScene1()
 
 void RenderDeferredScene()
 {
-#if LTS_STUDIO_DX11
-	LevelEditorStaticBridge_LogLegacyPathsOnce();
-#endif
-
 	WorldRender_LogSelectedBackendOnce();
 
 	R3DPROFILE_START("Render: Scene");
