@@ -22,6 +22,7 @@ namespace engine::graphics
         GraphicsBackend backend = GraphicsBackend::None;
         bool enableValidation = true;
         bool enableDebugMarkers = true;
+        bool forceSoftwareAdapter = false;
 
         [[nodiscard]] constexpr bool IsValid() const noexcept
         {

@@ -24,7 +24,9 @@ The fixed header is 128 bytes.
 
 Canonical payload ordering is profile, entry point, optional debug name, then bytecode. Regions must be dense and non-overlapping, the bytecode begins with `DXBC`, and trailing bytes are rejected. Metadata is limited to 1024 bytes per string and bytecode to 16 MiB.
 
-The 64-bit FNV-1a source hash covers main source bytes, each include path and bytes in compiler-open order, entry point, profile, sorted definitions and their values. Cooked output uses strictness, warnings-as-errors and optimization level 3 without debug information or absolute source paths.
+The container version and the source-hash contract are independent. Container version 1 currently uses source-hash contract version 2. The 64-bit framed FNV-1a hash covers the main source path relative to the canonical include root, main source bytes, each relative include path and its bytes in compiler-open order, shader stage, entry point, profile, sorted definitions and their values, compiler flags, and the hash-contract version. Absolute checkout paths are never hashed. Cooked output uses strictness, warnings-as-errors and optimization level 3 without debug information or absolute source paths.
+
+`ID3DInclude::Open` and `Close` catch every C++ exception at the COM callback boundary. Allocation failures become `E_OUTOFMEMORY`; other failures become `E_FAIL`. Include sizes are checked against `UINT` before conversion and partially inserted callback state is rolled back.
 
 ## Cooker
 

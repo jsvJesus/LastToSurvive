@@ -29,7 +29,7 @@ VertexOutput VSMain(VertexInput i)
     float4 wp=mul(float4(i.position,1),world);
     o.position=mul(wp,viewProjection); o.worldPosition=wp.xyz;
     o.worldNormal=normalize(mul(float4(i.normal,0),normalMatrix).xyz);
-    o.worldTangent=float4(normalize(mul(float4(i.tangent.xyz,0),normalMatrix).xyz),i.tangent.w);
+    o.worldTangent=float4(normalize(mul(float4(i.tangent.xyz,0),normalMatrix).xyz),i.tangent.w*objectData.y);
     o.texcoord=i.texcoord; return o;
 }
 

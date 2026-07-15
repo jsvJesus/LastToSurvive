@@ -5,7 +5,17 @@
 #include <cstdint>
 namespace engine::renderer
 {
-    enum class MaterialDebugMode : std::uint8_t { Lit=0,BaseColor,WorldNormal,TangentNormal,Roughness,Specular,Emissive,Count };
+    enum class MaterialDebugMode : std::uint8_t
+    {
+        Lit=0,
+        BaseColor,
+        WorldNormal,
+        TangentNormal,
+        Roughness,
+        Specular,
+        Emissive,
+        Count
+    };
     struct RenderView final
     {
         engine::math::Matrix4 view;

@@ -34,6 +34,7 @@ namespace engine::graphics::d3d11
     {
         [[nodiscard]] HRESULT CreateNativeDevice(
             const bool requestDebug,
+            const bool forceSoftwareAdapter,
             ID3D11Device** outDevice,
             D3D_FEATURE_LEVEL* outFeatureLevel,
             ID3D11DeviceContext** outContext,
@@ -91,19 +92,20 @@ namespace engine::graphics::d3d11
                 return result;
             };
 
-            HRESULT result = createForDriver(
-                D3D_DRIVER_TYPE_HARDWARE,
-                flags);
+            const D3D_DRIVER_TYPE requestedDriver = forceSoftwareAdapter
+                ? D3D_DRIVER_TYPE_WARP
+                : D3D_DRIVER_TYPE_HARDWARE;
+            HRESULT result = createForDriver(requestedDriver, flags);
 
             if (FAILED(result) && requestDebug)
             {
                 flags &= ~D3D11_CREATE_DEVICE_DEBUG;
                 result = createForDriver(
-                    D3D_DRIVER_TYPE_HARDWARE,
+                    requestedDriver,
                     flags);
             }
 
-            if (FAILED(result))
+            if (FAILED(result) && requestedDriver != D3D_DRIVER_TYPE_WARP)
             {
                 result = createForDriver(
                     D3D_DRIVER_TYPE_WARP,
@@ -226,6 +228,7 @@ namespace engine::graphics::d3d11
 
         const HRESULT result = CreateNativeDevice(
             desc.enableValidation,
+            desc.forceSoftwareAdapter,
             impl_->device.Put(),
             &impl_->featureLevel,
             impl_->immediateContext.Put(),
