@@ -86,7 +86,7 @@ jobs:
         run: |
           $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
           msbuild src\Tools\LTS.AssetCooker.Tests\LTS.AssetCooker.Tests.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
-          & "$env:GITHUB_WORKSPACE\src\build\x64\Release\Bin\LTS.AssetCooker.Tests.exe"
+          & "$env:GITHUB_WORKSPACE\build\x64\Release\Bin\LTS.AssetCooker.Tests.exe"
 
       - name: Build Legacy Bridge Final x64
         shell: pwsh
