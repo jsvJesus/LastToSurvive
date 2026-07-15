@@ -56,7 +56,7 @@ int main()
         Read(paths.outputRoot / L"new.txt") == "new" && !fs::exists(paths.backup), "existing output force replace")) return 1;
     fs::remove_all(paths.outputRoot); fs::create_directories(paths.outputRoot); Write(paths.outputRoot / L"old.txt", "old");
     (void)lts::asset_cooker::PrepareTemporaryDirectory(paths, message); Write(paths.temporary / L"new.txt", "new");
-    if (!Check(lts::asset_cooker::CommitDirectory(paths, true, message, lts::asset_cooker::TransactionTestFailure::AfterBackup) == AssetResult::InvalidPath &&
+    if (!Check(lts::asset_cooker::CommitDirectory(paths, true, message, lts::asset_cooker::TransactionTestFailure::AfterBackup) == AssetResult::IoError &&
         Read(paths.outputRoot / L"old.txt") == "old" && !fs::exists(paths.temporary) && !fs::exists(paths.backup), "rollback restores old output")) return 1;
 
     const fs::path material = mesh.parent_path() / L"Materials" / L"Mat.mat"; Write(material);
