@@ -28,6 +28,7 @@ namespace engine::graphics::d3d11
         D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_9_1;
         bool tearingSupported = false;
         bool debugLayerEnabled = false;
+        bool ownsNativeDevice = true;
     };
 
     namespace
@@ -223,6 +224,7 @@ namespace engine::graphics::d3d11
             return GraphicsResult::InvalidState;
         }
 
+        impl_->ownsNativeDevice = true;
         impl_->state = DeviceState::Initializing;
         impl_->desc = desc;
 
@@ -259,6 +261,71 @@ namespace engine::graphics::d3d11
         return GraphicsResult::Success;
     }
 
+    GraphicsResult D3D11Device::AttachExternal(
+        ID3D11Device* device,
+        ID3D11DeviceContext* immediateContext,
+        const RenderDeviceDesc& desc) noexcept
+    {
+        if (!impl_)
+        {
+            return GraphicsResult::OutOfMemory;
+        }
+
+        if (
+            device == nullptr ||
+            immediateContext == nullptr ||
+            !desc.IsValid() ||
+            desc.backend != GraphicsBackend::D3D11)
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+
+        if (
+            impl_->state != DeviceState::Uninitialized &&
+            impl_->state != DeviceState::Stopped)
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        detail::ComPtr<ID3D11Device> contextDevice;
+        immediateContext->GetDevice(contextDevice.Put());
+
+        if (contextDevice.Get() != device)
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+
+        impl_->state = DeviceState::Initializing;
+        impl_->desc = desc;
+        impl_->ownsNativeDevice = false;
+        impl_->debugLayerEnabled = false;
+        impl_->tearingSupported = false;
+
+        impl_->device.CopyFrom(device);
+        impl_->immediateContext.CopyFrom(immediateContext);
+        impl_->featureLevel = device->GetFeatureLevel();
+
+        const GraphicsResult factoryResult = AcquireFactory(
+            impl_->device.Get(),
+            impl_->factory,
+            impl_->tearingSupported);
+
+        // Для external bridge factory не обязателен:
+        // swap chain остаётся собственностью старого RenderDX11Core.
+        if (Failed(factoryResult))
+        {
+            impl_->factory.Reset();
+            impl_->tearingSupported = false;
+        }
+
+        impl_->contextView.Attach(
+            impl_->immediateContext.Get(),
+            &impl_->resources);
+
+        impl_->state = DeviceState::Ready;
+        return GraphicsResult::Success;
+    }
+
     void D3D11Device::Shutdown() noexcept
     {
         if (!impl_)
@@ -273,7 +340,9 @@ namespace engine::graphics::d3d11
         impl_->immediateContext.Reset();
         impl_->factory.Reset();
 
-        if (impl_->debugLayerEnabled)
+        if (
+            impl_->debugLayerEnabled &&
+            impl_->ownsNativeDevice)
         {
             detail::ReportLiveObjects(impl_->device.Get());
         }
@@ -283,6 +352,7 @@ namespace engine::graphics::d3d11
         impl_->featureLevel = D3D_FEATURE_LEVEL_9_1;
         impl_->tearingSupported = false;
         impl_->debugLayerEnabled = false;
+        impl_->ownsNativeDevice = true;
         impl_->state = DeviceState::Stopped;
     }
 
@@ -295,6 +365,11 @@ namespace engine::graphics::d3d11
         if (!impl_ || impl_->state != DeviceState::Ready)
         {
             return GraphicsResult::InvalidState;
+        }
+        
+        if (!impl_->factory)
+        {
+            return GraphicsResult::Unsupported;
         }
 
         return D3D11SwapChain::Create(

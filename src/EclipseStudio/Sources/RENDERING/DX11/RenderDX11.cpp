@@ -28,6 +28,8 @@
 #include "rendering/DX11/RenderDX11ConstantBuffers.h"
 #include "rendering/DX11/RenderDX11Shaders.h"
 
+#include "rendering/DX11/LevelEditorStaticBridge.h"
+
 #include "GameLevel.h"
 
 bool RenderDX11_Init();
@@ -721,7 +723,8 @@ namespace
 		{
 			CachedValue =
 				RenderDX11_CommandLineHasSwitch("-dx11preview") ||
-				RenderDX11_CommandLineHasSwitch("/dx11preview");
+				RenderDX11_CommandLineHasSwitch("/dx11preview") ||
+				LevelEditorStaticBridge_IsRequested();
 		}
 
 		return CachedValue != 0;
@@ -1177,7 +1180,11 @@ namespace
 		default:
 			if (OutFormat)
 				*OutFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-			return gDX11GBufferColorTexture;
+
+			return
+				LevelEditorStaticBridge_IsActive()
+				? gDX11FinalColorTexture
+				: gDX11GBufferColorTexture;
 		}
 	}
 
@@ -4211,6 +4218,24 @@ namespace
 				continue;
 			}
 
+			static int LoggedBridgePaths = 0;
+
+			if (
+				RenderDX11_CommandLineHasSwitch("-dx11bridgelogpaths") &&
+				LoggedBridgePaths < 64)
+			{
+				++LoggedBridgePaths;
+
+				r3dOutToLog(
+					"[DX11][BridgeCandidate] %s\n",
+					Object->FileName.c_str());
+			}
+
+			if (LevelEditorStaticBridge_ShouldReplaceObject(Object))
+			{
+				continue;
+			}
+
 			r3dMesh* Mesh = Object->GetObjectLodMesh();
 
 			if (!Mesh)
@@ -5138,27 +5163,37 @@ void RenderDX11_DrawDebugPreviewDX9()
 		return;
 	}
 
+	const bool bridgeViewport =
+	LevelEditorStaticBridge_IsActive();
+
 	const float PreviewW =
-		r3dRenderer->ScreenW * 0.5f;
+		bridgeViewport
+		? r3dRenderer->ScreenW
+		: r3dRenderer->ScreenW * 0.5f;
 
 	const float PreviewH =
 		r3dRenderer->ScreenH;
 
 	const float X =
-		r3dRenderer->ScreenW * 0.5f;
+		bridgeViewport
+		? 0.0f
+		: r3dRenderer->ScreenW * 0.5f;
 
 	const float Y = 0.0f;
 
 	const float LabelY =
 		Y + 76.0f;
 
-	r3dDrawBox2D(
-		X,
-		Y,
-		PreviewW,
-		PreviewH,
-		r3dColor(0, 0, 0, 180)
-	);
+	if (!bridgeViewport)
+	{
+		r3dDrawBox2D(
+			X,
+			Y,
+			PreviewW,
+			PreviewH,
+			r3dColor(0, 0, 0, 180)
+		);
+	}
 
 	const bool bHasPreviewImage =
 		gDX11PreviewValid &&
@@ -5174,6 +5209,13 @@ void RenderDX11_DrawDebugPreviewDX9()
 			r3dColor(255, 255, 255, 255),
 			gDX11PreviewTexture
 		);
+	}
+
+	if (bridgeViewport)
+	{
+		// Настоящий старый Level Editor HUD будет отрисован позже
+		// поверх полноэкранного DX11 viewport.
+		return;
 	}
 
 	r3dDrawLine2D(
@@ -5510,6 +5552,16 @@ bool RenderDX11_Init()
 		return false;
 	}
 
+	if (
+	LevelEditorStaticBridge_IsRequested() &&
+	!LevelEditorStaticBridge_Initialize())
+	{
+		OutputDebugStringA(
+			"[DX11][StaticBridge] Initialization failed. "
+			"Legacy DX11 static object path remains active.\n"
+		);
+	}
+
 	char Text[256] = {};
 
 	sprintf_s(
@@ -5531,6 +5583,7 @@ void RenderDX11_Shutdown()
 	 * Сначала уничтожаем все ресурсы верхнего уровня,
 	 * пока DX11 device ещё существует.
 	 */
+	LevelEditorStaticBridge_Shutdown();
 	RenderDX11_ReleasePreviewTexture();
 	RenderDX11_ReleaseFrameTargets();
 	RenderDX11_ReleaseTerrainResources();
@@ -5621,13 +5674,25 @@ bool RenderDX11_RenderWorld(
 	{
 		return RenderDX11_FailWorldFrame("FillGBuffer");
 	}
-
-	RenderDX11_TerrainGBufferReadbackOnce();
-
+	
 	if (!DrawWorldDX11_Lighting(Desc))
 	{
 		return RenderDX11_FailWorldFrame("Lighting");
 	}
+
+	if (
+		LevelEditorStaticBridge_IsReady() &&
+		!LevelEditorStaticBridge_Render(
+			Desc,
+			gDX11SceneColorRTV,
+			gDX11DepthDSV,
+			gDX11Viewport))
+	{
+		return RenderDX11_FailWorldFrame(
+			"StaticModelRenderer bridge");
+	}
+
+	RenderDX11_ApplyDefaultStates();
 
 	if (!DrawWorldDX11_Transparent(Desc))
 	{
@@ -5638,6 +5703,8 @@ bool RenderDX11_RenderWorld(
 	{
 		return RenderDX11_FailWorldFrame("Post");
 	}
+
+	RenderDX11_TerrainGBufferReadbackOnce();
 
 	if (!DrawWorldDX11_EndFrame(Desc))
 	{

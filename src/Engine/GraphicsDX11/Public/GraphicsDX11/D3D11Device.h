@@ -41,6 +41,11 @@ namespace engine::graphics::d3d11
         [[nodiscard]] GraphicsResult Initialize(
             const RenderDeviceDesc& desc) noexcept override;
 
+        [[nodiscard]] GraphicsResult AttachExternal(
+            ID3D11Device* device,
+            ID3D11DeviceContext* immediateContext,
+            const RenderDeviceDesc& desc) noexcept;
+
         void Shutdown() noexcept override;
 
         [[nodiscard]] CommandContext*

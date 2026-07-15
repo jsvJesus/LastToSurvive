@@ -761,6 +761,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeferredPointLightsOptimized.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\RenderDeffered.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\VisibilityGrid.cpp" />
+    <ClCompile Include="Sources\RENDERING\DX11\LevelEditorStaticBridge.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11ConstantBuffers.cpp" />
     <ClCompile Include="Sources\RENDERING\DX11\RenderDX11Core.cpp" />
@@ -1036,6 +1037,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\RENDERING\Deffered\rendershadowmap.hpp" />
     <ClInclude Include="Sources\RENDERING\Deffered\VisibilityGrid.h" />
     <ClInclude Include="Sources\RENDERING\DX11\DrawWorldDX11.hpp" />
+    <ClInclude Include="Sources\RENDERING\DX11\LevelEditorStaticBridge.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11ConstantBuffers.h" />
     <ClInclude Include="Sources\RENDERING\DX11\RenderDX11Core.h" />
