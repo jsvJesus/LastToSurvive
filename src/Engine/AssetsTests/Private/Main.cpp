@@ -9,6 +9,9 @@
 #include "Assets/MaterialAssetLoader.h"
 #include "Assets/MeshAssetBuilder.h"
 #include "Assets/MeshAssetLoader.h"
+#include "Assets/LtsMeshWriter.h"
+#include "Assets/LtsMaterialWriter.h"
+#include "Legacy/Assets/LegacyScbMeshDecoder.h"
 #include "Assets/TextureAssetCache.h"
 
 #include "Graphics/RenderDevice.h"
@@ -64,6 +67,13 @@ namespace
     [[nodiscard]] assets::AssetResult BuildTestMaterial(assets::AssetData& out,const char* path=nullptr) noexcept
     {
         const std::size_t ps=path?std::strlen(path):0,total=160U+ps;auto r=out.Resize(total);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,total);std::memcpy(b,"LTSMAT\0\0",8);WriteU32(b,8,1);WriteU32(b,12,0x01020304);WriteU32(b,16,160);WriteU32(b,24,path?2:0);for(int i=0;i<4;++i)WriteF32(b,28+i*4,1);WriteF32(b,60,1);WriteF32(b,64,0.5F);WriteU32(b,68,1);WriteU32(b,72,0);WriteU32(b,76,0);WriteU32(b,80,0);WriteU32(b,88,1);WriteU32(b,92,7);WriteF32(b,116,(std::numeric_limits<float>::max)());WriteU64(b,120,160);WriteU32(b,128,static_cast<std::uint32_t>(ps));if(ps)std::memcpy(b+160,path,ps);return assets::AssetResult::Success;
+    }
+    [[nodiscard]] assets::AssetResult BuildTestScb(assets::AssetData& out) noexcept
+    {
+        constexpr std::size_t size=202U;auto r=out.Resize(size);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,size);std::size_t o=0U;
+        const auto u32=[&](std::uint32_t v){WriteU32(b,o,v);o+=4U;};const auto f32=[&](float v){WriteF32(b,o,v);o+=4U;};
+        u32(0xFADC0038U);u32(0U);u32(4U);std::memcpy(b+o,"test",4U);o+=4U;f32(0);f32(0);f32(0);u32(3U);
+        const float positions[]={-1,0,0,1,0,0,0,1,0};for(float v:positions)f32(v);const float uv[]={0,0,1,0,0.5F,1};for(float v:uv)f32(v);for(int i=0;i<3;++i){f32(0);f32(0);f32(1);}for(int i=0;i<3;++i){f32(1);f32(0);f32(0);}b[o++]=std::byte{0x7F};b[o++]=std::byte{0x7F};b[o++]=std::byte{0x7F};u32(3U);u32(0);u32(1);u32(2);u32(1);u32(0);u32(3);u32(3);std::memcpy(b+o,"mat",3U);o+=3U;return o==size?assets::AssetResult::Success:assets::AssetResult::InternalError;
     }
 
     [[nodiscard]] assets::AssetResult BuildTestDds(
@@ -362,6 +372,14 @@ int main()
     if(!Check(assets::Succeeded(loaderRegistry.Load(meshMetadata,mesh32,foundationAsset)),"valid UInt32 mesh load"))return 1;
     if(!Check(assets::Succeeded(loaderRegistry.Load(materialMetadata,materialData,foundationAsset))&&foundationAsset->GetType()==assets::AssetType::Material,"valid material load"))return 1;
     if(!Check(assets::Succeeded(loaderRegistry.Load(materialMetadata,materialTextureData,foundationAsset)),"material texture path load"))return 1;
+    (void)loaderRegistry.Load(meshMetadata,mesh16,foundationAsset);assets::MeshAsset roundMesh=static_cast<assets::MeshLoadedAsset*>(foundationAsset.get())->ReleaseMesh();assets::AssetData encodedMeshA,encodedMeshB;
+    if(!Check(assets::Succeeded(assets::LtsMeshWriter::Encode(roundMesh,encodedMeshA))&&assets::Succeeded(assets::LtsMeshWriter::Encode(roundMesh,encodedMeshB))&&encodedMeshA.GetSize()==encodedMeshB.GetSize()&&std::memcmp(encodedMeshA.GetData(),encodedMeshB.GetData(),encodedMeshA.GetSize())==0&&assets::Succeeded(loaderRegistry.Load(meshMetadata,encodedMeshA,foundationAsset)),"deterministic mesh writer round-trip"))return 1;
+    (void)loaderRegistry.Load(materialMetadata,materialTextureData,foundationAsset);assets::MaterialAsset roundMaterial=static_cast<assets::MaterialLoadedAsset*>(foundationAsset.get())->ReleaseMaterial();assets::AssetData encodedMaterial;
+    if(!Check(assets::Succeeded(assets::LtsMaterialWriter::Encode(roundMaterial,encodedMaterial))&&assets::Succeeded(loaderRegistry.Load(materialMetadata,encodedMaterial,foundationAsset)),"material writer round-trip"))return 1;
+    assets::AssetData scbData;if(!Check(assets::Succeeded(BuildTestScb(scbData)),"SCB fixture"))return 1;engine::legacy::assets::LegacyStaticMeshData legacyMesh;
+    if(!Check(assets::Succeeded(engine::legacy::assets::LegacyScbMeshDecoder::Decode(scbData,legacyMesh))&&legacyMesh.mesh.IsValid()&&legacyMesh.materialSlotNames.size()==1U,"legacy SCB decode"))return 1;assets::AssetData scbCooked;
+    if(!Check(assets::Succeeded(assets::LtsMeshWriter::Encode(legacyMesh.mesh,scbCooked))&&assets::Succeeded(loaderRegistry.Load(meshMetadata,scbCooked,foundationAsset)),"SCB to LTSMESH round-trip"))return 1;
+    assets::AssetData badScb;(void)badScb.Resize(scbData.GetSize());std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());WriteU32(badScb.GetData(),0U,1U);if(!Check(assets::Failed(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh))&&legacyMesh.IsEmpty(),"wrong SCB version leaves empty output"))return 1;std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());WriteU32(badScb.GetData(),4U,1U);if(!Check(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh)==assets::AssetResult::UnsupportedFeature&&legacyMesh.IsEmpty(),"SCB weights explicitly unsupported"))return 1;(void)badScb.Resize(scbData.GetSize()+1U);std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());badScb.GetData()[scbData.GetSize()]=std::byte{1};if(!Check(assets::Failed(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh))&&legacyMesh.IsEmpty(),"SCB trailing garbage rejected"))return 1;
     assets::AssetData malformed; (void)malformed.Resize(mesh16.GetSize());std::memcpy(malformed.GetData(),mesh16.GetData(),mesh16.GetSize());malformed.GetData()[0]=std::byte{'X'};
     if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,malformed,foundationAsset)),"wrong mesh magic rejected"))return 1;
     (void)malformed.Resize(80U);if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,malformed,foundationAsset)),"truncated mesh rejected"))return 1;
@@ -369,9 +387,11 @@ int main()
     if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,malformed,foundationAsset)),"invalid material enum rejected"))return 1;
     const auto rejectMesh=[&](std::size_t offset,std::uint32_t value,const char* message){assets::AssetData bad;if(assets::Failed(bad.Resize(mesh16.GetSize())))return false;std::memcpy(bad.GetData(),mesh16.GetData(),mesh16.GetSize());WriteU32(bad.GetData(),offset,value);return Check(assets::Failed(loaderRegistry.Load(meshMetadata,bad,foundationAsset)),message);};
     if(!rejectMesh(8U,2U,"unsupported mesh version")||!rejectMesh(28U,0xFFFFFFFFU,"overflowed mesh count")||!rejectMesh(304U,99U,"mesh index outside range")||!rejectMesh(316U,99U,"invalid submesh range")||!rejectMesh(324U,4U,"invalid material slot"))return 1;
+    if(!rejectMesh(16U,164U,"extended mesh header rejected")||!rejectMesh(44U,1U,"reserved mesh field rejected")||!rejectMesh(136U,1U,"reserved mesh bytes rejected")||!rejectMesh(64U,160U,"overlapping mesh regions rejected"))return 1;
     assets::AssetData badBounds;(void)badBounds.Resize(mesh16.GetSize());std::memcpy(badBounds.GetData(),mesh16.GetData(),mesh16.GetSize());WriteF32(badBounds.GetData(),96,(std::numeric_limits<float>::quiet_NaN)());if(!Check(assets::Failed(loaderRegistry.Load(meshMetadata,badBounds,foundationAsset)),"invalid mesh bounds"))return 1;
     const auto rejectMaterial=[&](std::size_t offset,std::uint32_t value,const char* message){assets::AssetData bad;if(assets::Failed(bad.Resize(materialData.GetSize())))return false;std::memcpy(bad.GetData(),materialData.GetData(),materialData.GetSize());WriteU32(bad.GetData(),offset,value);return Check(assets::Failed(loaderRegistry.Load(materialMetadata,bad,foundationAsset)),message);};
     if(!rejectMaterial(8U,2U,"unsupported material version")||!rejectMaterial(68U,99U,"invalid material sampler"))return 1;
+    if(!rejectMaterial(132U,1U,"reserved material bytes rejected"))return 1;
     assets::AssetData badScalar;(void)badScalar.Resize(materialData.GetSize());std::memcpy(badScalar.GetData(),materialData.GetData(),materialData.GetSize());WriteF32(badScalar.GetData(),60,(std::numeric_limits<float>::infinity)());if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,badScalar,foundationAsset)),"invalid material scalar"))return 1;
     assets::AssetData truncatedPath;(void)truncatedPath.Resize(materialTextureData.GetSize()-1U);std::memcpy(truncatedPath.GetData(),materialTextureData.GetData(),truncatedPath.GetSize());if(!Check(assets::Failed(loaderRegistry.Load(materialMetadata,truncatedPath,foundationAsset)),"truncated material path"))return 1;
 

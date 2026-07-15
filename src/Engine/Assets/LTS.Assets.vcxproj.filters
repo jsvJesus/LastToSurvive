@@ -27,6 +27,8 @@
     <ClInclude Include="Public\Assets\DdsTextureLoader.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\FileAssetSource.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\GpuTexture.h"><Filter>Public</Filter></ClInclude>
+    <ClInclude Include="Public\Assets\LtsMaterialWriter.h"><Filter>Public</Filter></ClInclude>
+    <ClInclude Include="Public\Assets\LtsMeshWriter.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\GpuMesh.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\MaterialAsset.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\MaterialAssetLoader.h"><Filter>Public</Filter></ClInclude>
@@ -51,6 +53,8 @@
     <ClCompile Include="Private\DdsTextureLoader.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\FileAssetSource.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\GpuTexture.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\LtsMaterialWriter.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\LtsMeshWriter.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\GpuMesh.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\MaterialAsset.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\MaterialAssetLoader.cpp"><Filter>Private</Filter></ClCompile>

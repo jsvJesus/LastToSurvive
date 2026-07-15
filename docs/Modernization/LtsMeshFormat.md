@@ -1,6 +1,6 @@
 # LTS Mesh format (`.ltsmesh`)
 
-Version 1 is a strictly little-endian cooked static-mesh format. Trailing bytes are forbidden. Readers must reject arithmetic overflow, overlapping/out-of-file regions, unreasonable counts, invalid bounds, indices, submeshes, and material slots.
+Version 1 is a strictly little-endian cooked static-mesh format. Its header size is exactly 160 bytes, offset 44 and bytes 136..159 are zero, and every data offset is at or after the preceding region. Trailing bytes are forbidden. Readers reject arithmetic overflow, overlap/reordering, out-of-file regions, unreasonable counts, non-finite vertices/bounds, invalid indices, submeshes, and material slots.
 
 ## Header (160 bytes)
 
@@ -20,4 +20,4 @@ Version 1 is a strictly little-endian cooked static-mesh format. Trailing bytes 
 
 Each 48-byte vertex is position f32x3, normal f32x3, tangent f32x4, UV0 f32x2. Indices are a packed array of the declared type. Each 16-byte submesh is `firstIndex u32`, `indexCount u32`, `baseVertex i32`, `materialSlot u32`.
 
-Version-1 limits are 10,000,000 vertices, 30,000,000 indices, and 65,536 submeshes/material slots. New compatible metadata may use reserved bytes with a later header/version; incompatible layout changes require a new version.
+Version-1 limits are 10,000,000 vertices, 30,000,000 indices, and 65,536 submeshes/material slots. Reserved fields cannot be repurposed without a new version; incompatible layout changes require a new version.

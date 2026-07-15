@@ -37,6 +37,9 @@ namespace engine::assets
         case AssetResult::UnsupportedFormat:
             return "UnsupportedFormat";
 
+        case AssetResult::UnsupportedFeature:
+            return "UnsupportedFeature";
+
         case AssetResult::CorruptData:
             return "CorruptData";
 

@@ -19,6 +19,7 @@ namespace engine::assets
         IdCollision,
 
         UnsupportedFormat,
+        UnsupportedFeature,
         CorruptData,
 
         IoError,

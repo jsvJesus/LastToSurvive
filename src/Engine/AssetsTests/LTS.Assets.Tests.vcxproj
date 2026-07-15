@@ -50,7 +50,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Legacy\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -73,6 +73,11 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Legacy\LTS.Legacy.Assets.vcxproj">
+      <Project>{8A14D54F-7E27-4C66-9C10-A64D1E3F270B}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
     <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>
 

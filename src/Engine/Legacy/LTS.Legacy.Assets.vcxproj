@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations"><ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration><ProjectConfiguration Include="Final|x64"><Configuration>Final</Configuration><Platform>x64</Platform></ProjectConfiguration></ItemGroup>
+  <PropertyGroup Label="Globals"><VCProjectVersion>17.0</VCProjectVersion><Keyword>Win32Proj</Keyword><ProjectGuid>{8A14D54F-7E27-4C66-9C10-A64D1E3F270B}</ProjectGuid><RootNamespace>LTSLegacyAssets</RootNamespace><ProjectName>LTS.Legacy.Assets</ProjectName><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>true</WholeProgramOptimization></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup><OutDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir><IntDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir></PropertyGroup>
+  <ItemDefinitionGroup><ClCompile><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode><AdditionalOptions>/permissive- /Zc:__cplusplus /utf-8 %(AdditionalOptions)</AdditionalOptions><AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Assets\Public;$(ProjectDir)..\Graphics\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><MultiProcessorCompilation>true</MultiProcessorCompilation></ClCompile></ItemDefinitionGroup>
+  <ItemGroup><ClInclude Include="Public\Legacy\Assets\LegacyScbMeshDecoder.h" /></ItemGroup>
+  <ItemGroup><ClCompile Include="Private\Assets\LegacyScbMeshDecoder.cpp" /></ItemGroup>
+  <ItemGroup><ProjectReference Include="..\Assets\LTS.Assets.vcxproj"><Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project><LinkLibraryDependencies>false</LinkLibraryDependencies></ProjectReference></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

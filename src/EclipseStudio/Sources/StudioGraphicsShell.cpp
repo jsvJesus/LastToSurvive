@@ -5,6 +5,10 @@
 #include "StudioRuntimeBridge.h"
 
 #include <Assets/GpuMesh.h>
+#include <Assets/AssetLoaderRegistry.h>
+#include <Assets/AssetManager.h>
+#include <Assets/FileAssetSource.h>
+#include <Assets/MeshAssetLoader.h>
 #include <Assets/MaterialAsset.h>
 #include <Assets/MeshAssetBuilder.h>
 
@@ -33,6 +37,8 @@
 #include <cmath>
 #include <cstring>
 #include <memory>
+#include <filesystem>
+#include <string>
 
 extern void RegisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
@@ -193,6 +199,20 @@ float4 PSMain(VertexOutput input) : SV_Target0
         }
         GlobalFree(arguments);
         return found;
+    }
+
+    std::string GetCommandLineValue(const char* prefix)
+    {
+        int count = 0;
+        PCHAR* const arguments = CommandLineToArgvA(__r3dCmdLine, &count);
+        if (arguments == nullptr) return {};
+        std::string result;
+        const std::size_t length = std::strlen(prefix);
+        for (int index = 0; index < count; ++index)
+            if (_strnicmp(arguments[index], prefix, length) == 0)
+            { result = arguments[index] + length; break; }
+        GlobalFree(arguments);
+        return result;
     }
 
     class StudioDX11Shell final
@@ -422,6 +442,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
             resetTimer_ = true;
             closeRequested_ = false;
             firstDrawLogged_ = false;
+            externalMesh_ = false;
             elapsedSeconds_ = 0.0F;
             meshAsset_.Clear();
             materialAsset_.Clear();
@@ -432,6 +453,44 @@ float4 PSMain(VertexOutput input) : SV_Target0
         ~StudioDX11Shell() noexcept { Shutdown(); }
 
     private:
+        bool TryLoadExternalMesh() noexcept
+        {
+            try
+            {
+                const std::string value = GetCommandLineValue("-dx11mesh=");
+                if (value.empty()) return false;
+                const std::filesystem::path path = std::filesystem::absolute(value).lexically_normal();
+                engine::assets::FileAssetSource source;
+                engine::assets::AssetManager manager;
+                engine::assets::AssetLoaderRegistry registry;
+                engine::assets::MeshAssetLoader loader;
+                engine::assets::AssetPath assetPath;
+                const std::string filename = path.filename().u8string();
+                if (engine::assets::Failed(source.Initialize(path.parent_path())) ||
+                    engine::assets::Failed(engine::assets::AssetPath::TryCreate(filename, assetPath)) ||
+                    engine::assets::Failed(manager.Initialize(source)) ||
+                    engine::assets::Failed(registry.Register(loader)))
+                { r3dOutToLog("[Graphics][DX11] External mesh setup failed; using cube fallback\n"); return false; }
+                engine::assets::AssetMetadata metadata;
+                metadata.path = assetPath; metadata.id = assetPath.GetId(); metadata.type = engine::assets::AssetType::Mesh;
+                metadata.sourceSize = std::filesystem::file_size(path);
+                engine::assets::AssetHandle handle;
+                if (engine::assets::Failed(manager.Register(metadata, handle)) || engine::assets::Failed(manager.Load(handle)))
+                { r3dOutToLog("[Graphics][DX11] External mesh read failed: %s; using cube fallback\n", value.c_str()); return false; }
+                const engine::assets::AssetData* data = nullptr;
+                std::unique_ptr<engine::assets::LoadedAsset> loaded;
+                if (engine::assets::Failed(manager.GetData(handle, data)) || data == nullptr ||
+                    engine::assets::Failed(registry.Load(metadata, *data, loaded)))
+                { r3dOutToLog("[Graphics][DX11] External mesh decode failed: %s; using cube fallback\n", value.c_str()); return false; }
+                meshAsset_ = static_cast<engine::assets::MeshLoadedAsset*>(loaded.get())->ReleaseMesh();
+                externalMesh_ = true;
+                r3dOutToLog("[Graphics][DX11] External .ltsmesh loaded through AssetManager: %s\n", value.c_str());
+                return true;
+            }
+            catch (...)
+            { r3dOutToLog("[Graphics][DX11] External mesh exception; using cube fallback\n"); return false; }
+        }
+
         bool CreateGeometryResources() noexcept
         {
             ShaderBlob vertexBytecode;
@@ -510,11 +569,14 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 {{-1,-1,1},{0,-1,0},{1,0,0,1},{0,1}},{{-1,-1,-1},{0,-1,0},{1,0,0,1},{0,0}},{{1,-1,-1},{0,-1,0},{1,0,0,1},{1,0}},{{1,-1,1},{0,-1,0},{1,0,0,1},{1,1}}};
             constexpr std::uint16_t indices[] = {0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23};
             constexpr engine::assets::MeshSubmesh submesh{0U,36U,0,0U};
-            const auto assetResult = engine::assets::MeshAssetBuilder::Build(vertices,24U,indices,36U,&submesh,1U,1U,"studio/cube",meshAsset_);
-            if (engine::assets::Failed(assetResult)) return Fail("MeshAsset creation", GraphicsResult::InvalidArgument);
+            if (!TryLoadExternalMesh())
+            {
+                const auto assetResult = engine::assets::MeshAssetBuilder::Build(vertices,24U,indices,36U,&submesh,1U,1U,"studio/cube",meshAsset_);
+                if (engine::assets::Failed(assetResult)) return Fail("MeshAsset creation", GraphicsResult::InvalidArgument);
+            }
             result = gpuMesh_.Upload(device_, meshAsset_);
             if (engine::graphics::Failed(result)) return Fail("GpuMesh upload", result);
-            r3dOutToLog("[Graphics][DX11] MeshAsset created: vertices=24 indices=36 submeshes=1 materials=1\n");
+            r3dOutToLog("[Graphics][DX11] MeshAsset created: vertices=%zu indices=%zu submeshes=%zu materials=%u\n",meshAsset_.GetVertexCount(),meshAsset_.GetIndexCount(),meshAsset_.GetSubmeshCount(),meshAsset_.GetMaterialSlotCount());
             const auto& bounds=meshAsset_.GetBounds();
             r3dOutToLog("[Graphics][DX11] Mesh bounds: min=(%.2f,%.2f,%.2f) max=(%.2f,%.2f,%.2f) radius=%.2f\n",bounds.minimum[0],bounds.minimum[1],bounds.minimum[2],bounds.maximum[0],bounds.maximum[1],bounds.maximum[2],bounds.sphereRadius);
             r3dOutToLog("[Graphics][DX11] GpuMesh uploaded\n");
@@ -596,9 +658,13 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 elapsedSeconds_ = std::fmod(elapsedSeconds_, 1000.0F);
             const float aspect = static_cast<float>(width_) /
                 static_cast<float>(height_);
-            const engine::math::Matrix4 world=engine::math::Matrix4::CreateRotationY(elapsedSeconds_*0.55F)*engine::math::Matrix4::CreateRotationX(elapsedSeconds_*0.31F);
-            const engine::math::Matrix4 view=engine::math::Matrix4::CreateTranslation({0.0F,0.0F,4.2F});
-            const float yScale=1.0F/std::tan(0.55F),xScale=yScale/aspect,zn=0.1F,zf=100.0F;
+            const auto& bounds=gpuMesh_.GetBounds();
+            const float radius=(std::max)(bounds.sphereRadius,0.001F);
+            const float distance=(std::min)((std::max)(radius*2.8F,0.05F),1000000.0F);
+            const engine::math::Matrix4 center=engine::math::Matrix4::CreateTranslation({-bounds.sphereCenter[0],-bounds.sphereCenter[1],-bounds.sphereCenter[2]});
+            const engine::math::Matrix4 world=center*engine::math::Matrix4::CreateRotationY(elapsedSeconds_*0.55F)*engine::math::Matrix4::CreateRotationX(elapsedSeconds_*0.31F);
+            const engine::math::Matrix4 view=engine::math::Matrix4::CreateTranslation({0.0F,0.0F,distance});
+            const float yScale=1.0F/std::tan(0.55F),xScale=yScale/aspect,zn=(std::max)(radius*0.01F,0.0001F),zf=(std::max)(distance+radius*4.0F,zn+1.0F);
             const engine::math::Matrix4 projection{xScale,0,0,0,0,yScale,0,0,0,0,zf/(zf-zn),1,0,0,-zn*zf/(zf-zn),0};
             const engine::math::Matrix4 wvp=world*view*projection;
             StudioFrameConstants constants{};
@@ -680,10 +746,26 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 return FailFrame("quad sampler bind", result);
             result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel,0U,&materialConstantBuffer_,1U);
             if(engine::graphics::Failed(result))return FailFrame("material constant buffer bind",result);
-            for(std::size_t i=0;i<gpuMesh_.GetSubmeshCount();++i){const auto* s=gpuMesh_.GetSubmesh(i);if(!s||s->materialSlot!=0U)return FailFrame("submesh material slot",GraphicsResult::InvalidState);result=context_->DrawIndexed(s->indexCount,s->firstIndex,s->baseVertex);if(engine::graphics::Failed(result))return FailFrame("submesh DrawIndexed",result);}
+            for (std::size_t index = 0U; index < gpuMesh_.GetSubmeshCount(); ++index)
+            {
+                const auto* const submesh = gpuMesh_.GetSubmesh(index);
+                if (submesh == nullptr ||
+                    submesh->materialSlot >= meshAsset_.GetMaterialSlotCount())
+                {
+                    return FailFrame("submesh material slot",
+                        GraphicsResult::InvalidState);
+                }
+                result = context_->DrawIndexed(submesh->indexCount,
+                    submesh->firstIndex, submesh->baseVertex);
+                if (engine::graphics::Failed(result))
+                    return FailFrame("submesh DrawIndexed", result);
+            }
             if (!firstDrawLogged_)
             {
-                r3dOutToLog("[Graphics][DX11] First asset-driven submesh draw completed\n");
+                if (externalMesh_)
+                    r3dOutToLog("[Graphics][DX11] First external mesh draw: submeshes=%zu triangles=%zu\n", gpuMesh_.GetSubmeshCount(), meshAsset_.GetIndexCount() / 3U);
+                else
+                    r3dOutToLog("[Graphics][DX11] First asset-driven cube draw completed\n");
                 firstDrawLogged_ = true;
             }
             return true;
@@ -906,6 +988,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         LONG_PTR originalWindowStyle_ = 0;
         bool styleChanged_ = false;
         bool firstDrawLogged_ = false;
+        bool externalMesh_ = false;
         float elapsedSeconds_ = 0.0F;
         StudioGraphicsShellResult failureResult_ = StudioGraphicsShellResult::FrameFailed;
     };
