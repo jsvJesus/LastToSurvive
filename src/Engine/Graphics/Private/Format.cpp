@@ -157,6 +157,19 @@ namespace engine::graphics
         return GetFormatInfo(format).srgb;
     }
 
+    Format ToSrgbFormat(const Format format) noexcept
+    {
+        switch(format){case Format::R8G8B8A8UNorm:return Format::R8G8B8A8UNormSrgb;case Format::B8G8R8A8UNorm:return Format::B8G8R8A8UNormSrgb;case Format::BC1UNorm:return Format::BC1UNormSrgb;case Format::BC2UNorm:return Format::BC2UNormSrgb;case Format::BC3UNorm:return Format::BC3UNormSrgb;case Format::BC7UNorm:return Format::BC7UNormSrgb;default:return IsSrgbFormat(format)?format:Format::Unknown;}
+    }
+
+    Format ToLinearFormat(const Format format) noexcept
+    {
+        switch(format){case Format::R8G8B8A8UNormSrgb:return Format::R8G8B8A8UNorm;case Format::B8G8R8A8UNormSrgb:return Format::B8G8R8A8UNorm;case Format::BC1UNormSrgb:return Format::BC1UNorm;case Format::BC2UNormSrgb:return Format::BC2UNorm;case Format::BC3UNormSrgb:return Format::BC3UNorm;case Format::BC7UNormSrgb:return Format::BC7UNorm;default:return IsColorFormat(format)&&!IsSrgbFormat(format)?format:Format::Unknown;}
+    }
+
+    bool AreBitCompatibleFormats(const Format left,const Format right) noexcept
+    { return left==right||(ToLinearFormat(left)!=Format::Unknown&&ToLinearFormat(left)==ToLinearFormat(right)); }
+
     std::size_t CalculateRowPitch(
         const Format format,
         const std::uint32_t width) noexcept

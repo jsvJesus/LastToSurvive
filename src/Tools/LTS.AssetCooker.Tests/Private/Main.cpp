@@ -1,8 +1,10 @@
 #include "AssetCooker/CookerTransaction.h"
+#include "AssetCooker/ShaderCooker.h"
 #include "Legacy/Assets/LegacyMaterialTextureResolver.h"
 
 #include <Windows.h>
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -36,6 +38,11 @@ int main()
     const fs::path mesh = data / L"ObjectsDepot" / L"Depot With Spaces" / L"model.scb";
     const fs::path output = data / L"CookedPreview" / L"Model";
     if (!Check(Write(mesh), "fixture setup")) return 1;
+    const fs::path shaderRoot=base/L"Shader Root";const fs::path shader=shaderRoot/L"test shader.hlsl";const fs::path include=shaderRoot/L"common.hlsli";
+    if(!Check(Write(include,"float4 Color(){return float4(1,0,0,1);}\n")&&Write(shader,"#include \"common.hlsli\"\nfloat4 VSMain(float4 p:POSITION):SV_Position{return p;}\nfloat4 PSMain():SV_Target{return Color();}\n"),"shader fixtures"))return 1;
+    lts::asset_cooker::ShaderCookOptions shaderOptions;shaderOptions.input=shader;shaderOptions.includeRoot=shaderRoot;shaderOptions.entryPoint="VSMain";shaderOptions.targetProfile="vs_4_0";shaderOptions.stage=engine::graphics::ShaderStage::Vertex;engine::assets::AssetData shaderA,shaderB;std::string shaderDiagnostics;
+    if(!Check(engine::assets::Succeeded(lts::asset_cooker::CookShader(shaderOptions,shaderA,shaderDiagnostics))&&engine::assets::Succeeded(lts::asset_cooker::CookShader(shaderOptions,shaderB,shaderDiagnostics))&&shaderA.GetSize()==shaderB.GetSize()&&std::memcmp(shaderA.GetData(),shaderB.GetData(),shaderA.GetSize())==0,"deterministic shader compile with include"))return 1;
+    shaderOptions.targetProfile="ps_4_0";if(!Check(engine::assets::Failed(lts::asset_cooker::CookShader(shaderOptions,shaderB,shaderDiagnostics)),"stage profile mismatch"))return 1;shaderOptions.targetProfile="vs_4_0";shaderOptions.entryPoint="Missing";if(!Check(engine::assets::Failed(lts::asset_cooker::CookShader(shaderOptions,shaderB,shaderDiagnostics)),"missing shader entry"))return 1;
     lts::asset_cooker::CookPaths paths; std::string message;
     const auto validate = [&](const fs::path& candidate) { return lts::asset_cooker::ValidateCookPaths(mesh, data, candidate, L"test", paths, message); };
     if (!Check(validate(data) == AssetResult::InvalidPath, "reject output=data root") ||

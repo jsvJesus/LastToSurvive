@@ -144,6 +144,9 @@
     <ClInclude Include="Public\Assets\LtsStaticModelWriter.h" />
     <ClInclude Include="Public\Assets\StaticModelAsset.h" />
     <ClInclude Include="Public\Assets\StaticModelAssetLoader.h" />
+    <ClInclude Include="Public\Assets\ShaderAsset.h" />
+    <ClInclude Include="Public\Assets\ShaderAssetLoader.h" />
+    <ClInclude Include="Public\Assets\LtsShaderWriter.h" />
     <ClInclude Include="Public\Assets\TextureAsset.h" />
     <ClInclude Include="Public\Assets\TextureAssetCache.h" />
   </ItemGroup>
@@ -173,6 +176,9 @@
     <ClCompile Include="Private\LtsStaticModelWriter.cpp" />
     <ClCompile Include="Private\StaticModelAsset.cpp" />
     <ClCompile Include="Private\StaticModelAssetLoader.cpp" />
+    <ClCompile Include="Private\ShaderAsset.cpp" />
+    <ClCompile Include="Private\ShaderAssetLoader.cpp" />
+    <ClCompile Include="Private\LtsShaderWriter.cpp" />
     <ClCompile Include="Private\TextureAsset.cpp" />
     <ClCompile Include="Private\TextureAssetCache.cpp" />
   </ItemGroup>

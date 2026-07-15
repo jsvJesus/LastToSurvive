@@ -10,6 +10,8 @@
 
 namespace engine::assets
 {
+    enum class RequestedColorSpace : std::uint8_t { Preserve = 0, Linear, Srgb };
+    struct GpuTextureUploadOptions final { RequestedColorSpace requestedColorSpace = RequestedColorSpace::Preserve; };
     // Backend-neutral GPU texture.
     //
     // Ресурс необходимо освободить через Release() до Shutdown()
@@ -28,13 +30,15 @@ namespace engine::assets
 
         [[nodiscard]] engine::graphics::GraphicsResult Upload(
             engine::graphics::RenderDevice& device,
-            const TextureAsset& textureAsset) noexcept;
+            const TextureAsset& textureAsset,
+            GpuTextureUploadOptions options = {}) noexcept;
 
         // Создаёт новую GPU texture до уничтожения старой.
         // При ошибке создания старый ресурс остаётся действительным.
         [[nodiscard]] engine::graphics::GraphicsResult Replace(
             engine::graphics::RenderDevice& device,
-            const TextureAsset& textureAsset) noexcept;
+            const TextureAsset& textureAsset,
+            GpuTextureUploadOptions options = {}) noexcept;
 
         [[nodiscard]] engine::graphics::GraphicsResult Release(
             engine::graphics::RenderDevice& device) noexcept;

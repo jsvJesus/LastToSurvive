@@ -13,6 +13,8 @@
 #include "Assets/LtsMaterialWriter.h"
 #include "Assets/LtsStaticModelWriter.h"
 #include "Assets/StaticModelAssetLoader.h"
+#include "Assets/ShaderAssetLoader.h"
+#include "Assets/LtsShaderWriter.h"
 #include "Legacy/Assets/LegacyMaterialConverter.h"
 #include "Legacy/Assets/LegacyMaterialLibraryDecoder.h"
 #include "Legacy/Assets/LegacyScbMeshDecoder.h"
@@ -349,6 +351,14 @@ namespace
 
 int main()
 {
+    if(!Check(graphics::ToSrgbFormat(graphics::Format::BC3UNorm)==graphics::Format::BC3UNormSrgb&&graphics::ToLinearFormat(graphics::Format::BC3UNormSrgb)==graphics::Format::BC3UNorm&&graphics::AreBitCompatibleFormats(graphics::Format::R8G8B8A8UNorm,graphics::Format::R8G8B8A8UNormSrgb)&&!graphics::AreBitCompatibleFormats(graphics::Format::BC1UNorm,graphics::Format::BC3UNorm),"color-space format compatibility helpers"))return 1;
+    {
+        assets::ShaderAssetDesc shaderDesc;shaderDesc.stage=graphics::ShaderStage::Vertex;shaderDesc.targetProfile="vs_4_0";shaderDesc.entryPoint="VSMain";shaderDesc.sourceHash=0x123456789abcdef0ULL;shaderDesc.debugName="test shader";shaderDesc.bytecode={std::byte{'D'},std::byte{'X'},std::byte{'B'},std::byte{'C'},std::byte{1},std::byte{2}};
+        assets::ShaderAsset shader;if(!Check(assets::Succeeded(shader.Initialize(std::move(shaderDesc))),"valid ShaderAsset"))return 1;assets::AssetData first,second;if(!Check(assets::Succeeded(assets::LtsShaderWriter::Encode(shader,first))&&assets::Succeeded(assets::LtsShaderWriter::Encode(shader,second))&&first.GetSize()==second.GetSize()&&std::memcmp(first.GetData(),second.GetData(),first.GetSize())==0,"deterministic ltsshader writer"))return 1;
+        assets::AssetPath shaderPath;(void)assets::AssetPath::TryCreate("shaders/test.ltsshader",shaderPath);assets::AssetMetadata metadata;metadata.path=shaderPath;metadata.id=shaderPath.GetId();metadata.type=assets::AssetType::Shader;assets::ShaderAssetLoader loader;std::unique_ptr<assets::LoadedAsset> loaded;if(!Check(assets::Succeeded(loader.Load(metadata,first,loaded))&&loaded&&static_cast<assets::ShaderLoadedAsset*>(loaded.get())->GetShader().GetSourceHash()==0x123456789abcdef0ULL,"ltsshader loader round-trip"))return 1;
+        const std::byte saved=first.GetData()[108];first.GetData()[108]=std::byte{1};if(!Check(assets::Failed(loader.Load(metadata,first,loaded)),"ltsshader reserved bytes rejected"))return 1;first.GetData()[108]=saved;first.GetData()[0]=std::byte{'X'};if(!Check(assets::Succeeded(loader.Load(metadata,second,loaded))&&assets::Failed(loader.Load(metadata,first,loaded)),"ltsshader magic rejected"))return 1;
+        assets::ShaderAssetDesc mismatch;mismatch.stage=graphics::ShaderStage::Vertex;mismatch.targetProfile="ps_4_0";mismatch.entryPoint="x";mismatch.sourceHash=1;mismatch.bytecode={std::byte{1}};assets::ShaderAsset invalid;if(!Check(assets::Failed(invalid.Initialize(std::move(mismatch))),"shader profile stage mismatch"))return 1;
+    }
     using namespace engine;
 
     assets::AssetPath path;

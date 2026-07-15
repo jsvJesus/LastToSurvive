@@ -174,6 +174,7 @@
         ..\Engine\Runtime\Public;
         ..\Engine\Graphics\Public;
         ..\Engine\GraphicsDX11\Public;
+        ..\Engine\Renderer\Public;
         $(WindowsSDK_IncludePath);
         ..\..\External;
         ..\..\External\PhysX\physx\include;
@@ -236,7 +237,6 @@
                 d3d9.lib;
                 d3d11.lib;
                 dxgi.lib;
-                d3dcompiler.lib;
                 windowscodecs.lib;
                 dinput8.lib;
                 dxguid.lib;
@@ -382,7 +382,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
                 d3d9.lib;
                 d3d11.lib;
                 dxgi.lib;
-                d3dcompiler.lib;
                 windowscodecs.lib;
                 dinput8.lib;
                 dxguid.lib;
@@ -1130,6 +1129,10 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     </ProjectReference>
     <ProjectReference Include="..\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj">
       <Project>{91B4D7E8-3C6A-4A72-9F50-2D8E1B6C4A37}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Renderer\LTS.Renderer.vcxproj">
+      <Project>{7A8D95E1-8F42-4CC1-A52B-513947E62D10}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

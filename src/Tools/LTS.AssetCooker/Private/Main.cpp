@@ -4,6 +4,7 @@
 #include "Assets/LtsStaticModelWriter.h"
 #include "Assets/StaticModelAsset.h"
 #include "AssetCooker/CookerTransaction.h"
+#include "AssetCooker/ShaderCooker.h"
 #include "Legacy/Assets/AsciiCaseInsensitive.h"
 #include "Legacy/Assets/LegacyMaterialConverter.h"
 #include "Legacy/Assets/LegacyMaterialLibraryDecoder.h"
@@ -100,6 +101,13 @@ struct ModelOptions final
     bool allowMissingTextures = false;
     bool relaxedTextureLookup = false;
 };
+
+int CookShaderCommand(const int argc,wchar_t** argv)
+{
+    lts::asset_cooker::ShaderCookOptions options;std::filesystem::path output;bool force=false;
+    for(int i=2;i<argc;++i){const std::wstring_view key(argv[i]);if(key==L"--force"){force=true;continue;}if(i+1>=argc)return 2;const std::filesystem::path value(argv[++i]);if(key==L"--input")options.input=value;else if(key==L"--include-root")options.includeRoot=value;else if(key==L"--entry")options.entryPoint=value.u8string();else if(key==L"--profile")options.targetProfile=value.u8string();else if(key==L"--output")output=value;else if(key==L"--stage"){const auto stage=value.u8string();if(stage=="vertex")options.stage=engine::graphics::ShaderStage::Vertex;else if(stage=="pixel")options.stage=engine::graphics::ShaderStage::Pixel;else return 2;}else if(key==L"--define"){const auto text=value.u8string();const auto equals=text.find('=');lts::asset_cooker::ShaderDefine define;define.name=text.substr(0U,equals);define.value=equals==std::string::npos?"1":text.substr(equals+1U);options.defines.push_back(std::move(define));}else return 2;}
+    if(output.empty()){std::fwprintf(stderr,L"shader output is required\n");return 2;}AssetData cooked;std::string diagnostics;const auto result=lts::asset_cooker::CookShader(options,cooked,diagnostics);if(engine::assets::Failed(result)){std::fprintf(stderr,"shader compile failed: %s\n%s\n",engine::assets::ToString(result),diagnostics.c_str());return 3;}const auto written=WriteAtomic(output,cooked,force);if(engine::assets::Failed(written)){std::fprintf(stderr,"shader write failed: %s\n",engine::assets::ToString(written));return 4;}std::wprintf(L"shader: %ls\n",output.c_str());std::printf("size: %zu bytes\n",cooked.GetSize());return 0;
+}
 bool ParseModelOptions(const int argc, wchar_t** argv, ModelOptions& options)
 {
     for (int index = 2; index < argc; ++index)
@@ -262,6 +270,7 @@ int CookModel(const ModelOptions& rawOptions)
 
 int wmain(const int argc, wchar_t** argv)
 {
+    if(argc>=2&&std::wstring_view(argv[1])==L"shader")return CookShaderCommand(argc,argv);
     if (argc >= 2 && std::wstring_view(argv[1]) == L"model")
     {
         ModelOptions options;

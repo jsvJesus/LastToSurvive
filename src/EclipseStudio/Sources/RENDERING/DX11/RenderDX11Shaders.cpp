@@ -12,6 +12,12 @@
 
 namespace
 {
+	HRESULT OfflineShaderCompilationUnavailable(
+		LPCVOID, SIZE_T, LPCSTR, const D3D_SHADER_MACRO*, ID3DInclude*,
+		LPCSTR, LPCSTR, UINT, UINT, ID3DBlob**, ID3DBlob**)
+	{
+		return E_NOTIMPL;
+	}
 	template <typename T>
 	void RenderDX11Shaders_SafeRelease(
 		T*& Object
@@ -447,7 +453,7 @@ bool RenderDX11Shaders::CompileFromFile(
 	);
 
 	const HRESULT Result =
-		D3DCompile(
+		OfflineShaderCompilationUnavailable(
 			SourceData,
 			SourceSize,
 			FileName,
@@ -550,7 +556,7 @@ bool RenderDX11Shaders::CompileFromMemory(
 	ID3DBlob* ErrorBlob = 0;
 
 	const HRESULT Result =
-		D3DCompile(
+		OfflineShaderCompilationUnavailable(
 			Source,
 			strlen(Source),
 			DebugName ? DebugName : "memory",

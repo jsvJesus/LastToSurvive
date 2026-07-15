@@ -74,6 +74,10 @@ namespace engine::graphics
     [[nodiscard]] bool IsSrgbFormat(
         Format format) noexcept;
 
+    [[nodiscard]] Format ToSrgbFormat(Format format) noexcept;
+    [[nodiscard]] Format ToLinearFormat(Format format) noexcept;
+    [[nodiscard]] bool AreBitCompatibleFormats(Format left, Format right) noexcept;
+
     [[nodiscard]] std::size_t CalculateRowPitch(
         Format format,
         std::uint32_t width) noexcept;

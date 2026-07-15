@@ -89,6 +89,7 @@ namespace engine::assets
         engine::graphics::GraphicsResult CreateTexture(
             engine::graphics::RenderDevice& device,
             const TextureAsset& textureAsset,
+            const GpuTextureUploadOptions options,
             engine::graphics::TextureHandle&
                 outHandle) noexcept
         {
@@ -127,10 +128,14 @@ namespace engine::assets
                 return buildResult;
             }
 
+            engine::graphics::TextureDesc uploadDesc=textureAsset.GetDesc();
+            if(options.requestedColorSpace==RequestedColorSpace::Linear)uploadDesc.format=engine::graphics::ToLinearFormat(uploadDesc.format);
+            else if(options.requestedColorSpace==RequestedColorSpace::Srgb)uploadDesc.format=engine::graphics::ToSrgbFormat(uploadDesc.format);
+            if(uploadDesc.format==engine::graphics::Format::Unknown||!engine::graphics::AreBitCompatibleFormats(uploadDesc.format,textureAsset.GetDesc().format))return engine::graphics::GraphicsResult::Unsupported;
             const engine::graphics::GraphicsResult
                 createResult =
                     device.CreateTexture(
-                        textureAsset.GetDesc(),
+                        uploadDesc,
                         initialData.data(),
                         initialData.size(),
                         outHandle);
@@ -173,7 +178,8 @@ namespace engine::assets
     engine::graphics::GraphicsResult
     GpuTexture::Upload(
         engine::graphics::RenderDevice& device,
-        const TextureAsset& textureAsset) noexcept
+        const TextureAsset& textureAsset,
+        const GpuTextureUploadOptions options) noexcept
     {
         if (
             handle_.IsValid() ||
@@ -192,6 +198,7 @@ namespace engine::assets
             CreateTexture(
                 device,
                 textureAsset,
+                options,
                 newHandle);
 
         if (engine::graphics::Failed(result))
@@ -201,6 +208,8 @@ namespace engine::assets
 
         handle_ = newHandle;
         desc_ = textureAsset.GetDesc();
+        if(options.requestedColorSpace==RequestedColorSpace::Linear)desc_.format=engine::graphics::ToLinearFormat(desc_.format);
+        else if(options.requestedColorSpace==RequestedColorSpace::Srgb)desc_.format=engine::graphics::ToSrgbFormat(desc_.format);
         backend_ = device.GetBackend();
 
         return
@@ -210,7 +219,8 @@ namespace engine::assets
     engine::graphics::GraphicsResult
     GpuTexture::Replace(
         engine::graphics::RenderDevice& device,
-        const TextureAsset& textureAsset) noexcept
+        const TextureAsset& textureAsset,
+        const GpuTextureUploadOptions options) noexcept
     {
         if (!IsValid())
         {
@@ -240,9 +250,10 @@ namespace engine::assets
         const engine::graphics::GraphicsResult
             createResult =
                 CreateTexture(
-                    device,
-                    textureAsset,
-                    replacementHandle);
+                device,
+                textureAsset,
+                options,
+                replacementHandle);
 
         if (
             engine::graphics::Failed(
@@ -277,6 +288,8 @@ namespace engine::assets
 
         handle_ = replacementHandle;
         desc_ = textureAsset.GetDesc();
+        if(options.requestedColorSpace==RequestedColorSpace::Linear)desc_.format=engine::graphics::ToLinearFormat(desc_.format);
+        else if(options.requestedColorSpace==RequestedColorSpace::Srgb)desc_.format=engine::graphics::ToSrgbFormat(desc_.format);
 
         return
             engine::graphics::GraphicsResult::Success;
