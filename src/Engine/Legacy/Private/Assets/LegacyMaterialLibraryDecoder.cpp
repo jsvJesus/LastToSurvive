@@ -1,4 +1,5 @@
 #include "Legacy/Assets/LegacyMaterialLibraryDecoder.h"
+#include "Legacy/Assets/AsciiCaseInsensitive.h"
 
 #include <algorithm>
 #include <charconv>
@@ -16,12 +17,9 @@ std::string_view Trim(std::string_view value) noexcept
     while (!value.empty() && (value.back() == ' ' || value.back() == '\t' || value.back() == '\r')) value.remove_suffix(1U);
     return value;
 }
-char Lower(const char value) noexcept { return value >= 'A' && value <= 'Z' ? static_cast<char>(value - 'A' + 'a') : value; }
 bool Equal(const std::string_view a, const std::string_view b) noexcept
 {
-    if (a.size() != b.size()) return false;
-    for (std::size_t i = 0U; i < a.size(); ++i) if (Lower(a[i]) != Lower(b[i])) return false;
-    return true;
+    return AsciiCaseInsensitiveEqual{}(a, b);
 }
 template<typename T> bool Number(const std::string_view source, T& value) noexcept
 {

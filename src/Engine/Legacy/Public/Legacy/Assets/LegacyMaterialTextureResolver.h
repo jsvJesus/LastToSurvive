@@ -8,11 +8,15 @@
 
 namespace engine::legacy::assets
 {
+    enum class LegacyTextureLookupPolicy : std::uint8_t { Strict = 0, Relaxed };
+
     struct LegacyTextureResolution final
     {
         engine::assets::AssetPath path;
         std::vector<std::filesystem::path> candidates;
-        void Clear() noexcept { path.Clear(); candidates.clear(); }
+        LegacyTextureLookupPolicy policy = LegacyTextureLookupPolicy::Strict;
+        bool usedRelaxedFallback = false;
+        void Clear() noexcept { path.Clear(); candidates.clear(); policy = LegacyTextureLookupPolicy::Strict; usedRelaxedFallback = false; }
     };
 
     class LegacyMaterialTextureResolver final
@@ -24,6 +28,7 @@ namespace engine::legacy::assets
             const std::filesystem::path& meshPath,
             const std::string& imagesDir,
             const std::string& texture,
+            LegacyTextureLookupPolicy policy,
             LegacyTextureResolution& outResolution) noexcept;
     };
 }

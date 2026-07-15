@@ -3,6 +3,8 @@
 #include "Assets/LtsMeshWriter.h"
 #include "Assets/LtsStaticModelWriter.h"
 #include "Assets/StaticModelAsset.h"
+#include "AssetCooker/CookerTransaction.h"
+#include "Legacy/Assets/AsciiCaseInsensitive.h"
 #include "Legacy/Assets/LegacyMaterialConverter.h"
 #include "Legacy/Assets/LegacyMaterialLibraryDecoder.h"
 #include "Legacy/Assets/LegacyMaterialTextureResolver.h"
@@ -71,15 +73,6 @@ bool SamePath(const std::filesystem::path& left, const std::filesystem::path& ri
 {
     return _wcsicmp(left.lexically_normal().c_str(), right.lexically_normal().c_str()) == 0;
 }
-bool Contained(const std::filesystem::path& root, const std::filesystem::path& child) noexcept
-{
-    const auto normalizedRoot = root.lexically_normal();
-    const auto normalizedChild = child.lexically_normal();
-    auto ri = normalizedRoot.begin(); const auto re = normalizedRoot.end();
-    auto ci = normalizedChild.begin(); const auto ce = normalizedChild.end();
-    for (; ri != re; ++ri, ++ci) if (ci == ce || _wcsicmp(ri->c_str(), ci->c_str()) != 0) return false;
-    return true;
-}
 std::string FileStem(const std::string& name)
 {
     std::string output;
@@ -104,6 +97,7 @@ struct ModelOptions final
     std::filesystem::path outputRoot;
     bool force = false;
     bool allowMissingTextures = false;
+    bool relaxedTextureLookup = false;
 };
 bool ParseModelOptions(const int argc, wchar_t** argv, ModelOptions& options)
 {
@@ -112,6 +106,7 @@ bool ParseModelOptions(const int argc, wchar_t** argv, ModelOptions& options)
         const std::wstring_view key(argv[index]);
         if (key == L"--force") { options.force = true; continue; }
         if (key == L"--allow-missing-textures") { options.allowMissingTextures = true; continue; }
+        if (key == L"--relaxed-texture-lookup") { options.relaxedTextureLookup = true; continue; }
         if (index + 1 >= argc) return false;
         const std::filesystem::path value(argv[++index]);
         if (key == L"--input") options.input = value;
@@ -122,56 +117,35 @@ bool ParseModelOptions(const int argc, wchar_t** argv, ModelOptions& options)
     return !options.input.empty() && !options.dataRoot.empty() && !options.outputRoot.empty();
 }
 
-AssetResult ValidateDds(const std::filesystem::path& dataRoot, const engine::assets::AssetPath& path) noexcept
+AssetResult DecodeDds(const std::filesystem::path& dataRoot, const engine::assets::AssetPath& path,
+                      engine::assets::TextureAsset& texture) noexcept
 {
     AssetData bytes;
     AssetResult result = ReadFile(dataRoot / std::filesystem::u8path(path.String()), bytes);
     if (engine::assets::Failed(result)) return result;
-    engine::assets::TextureAsset texture;
     return engine::assets::DdsTextureDecoder::Decode(bytes, {}, texture);
-}
-
-AssetResult CommitDirectory(const std::filesystem::path& temporary, const std::filesystem::path& destination,
-                            const bool force) noexcept
-{
-    std::error_code error;
-    if (!std::filesystem::exists(destination, error))
-    { std::filesystem::rename(temporary, destination, error); return error ? AssetResult::IoError : AssetResult::Success; }
-    if (!force) return AssetResult::AlreadyExists;
-    std::filesystem::path backup = destination; backup += L".backup." + std::to_wstring(GetCurrentProcessId());
-    std::filesystem::remove_all(backup, error); error.clear();
-    std::filesystem::rename(destination, backup, error);
-    if (error) return AssetResult::IoError;
-    std::filesystem::rename(temporary, destination, error);
-    if (error)
-    {
-        std::error_code ignored; std::filesystem::rename(backup, destination, ignored);
-        return AssetResult::IoError;
-    }
-    std::filesystem::remove_all(backup, error);
-    return AssetResult::Success;
 }
 
 int CookModel(const ModelOptions& rawOptions)
 {
     const auto start = std::chrono::steady_clock::now();
     std::error_code error;
-    const auto input = std::filesystem::absolute(rawOptions.input, error).lexically_normal(); if (error) return 2;
-    const auto dataRoot = std::filesystem::absolute(rawOptions.dataRoot, error).lexically_normal(); if (error) return 2;
-    const auto outputRoot = std::filesystem::absolute(rawOptions.outputRoot, error).lexically_normal(); if (error) return 2;
-    if (!Contained(dataRoot, input) || !Contained(dataRoot, outputRoot) || SamePath(input, outputRoot))
-    { std::fwprintf(stderr, L"input and output must be distinct paths contained by data root\n"); return 2; }
+    lts::asset_cooker::CookPaths paths;
+    std::string pathError;
+    AssetResult result = lts::asset_cooker::ValidateCookPaths(rawOptions.input, rawOptions.dataRoot, rawOptions.outputRoot,
+        std::to_wstring(GetCurrentProcessId()), paths, pathError);
+    if (engine::assets::Failed(result)) { std::fprintf(stderr, "unsafe output path: %s\n", pathError.c_str()); return 2; }
+    const auto& input = paths.input; const auto& dataRoot = paths.dataRoot; const auto& outputRoot = paths.outputRoot;
 
     AssetData source;
-    AssetResult result = ReadFile(input, source);
+    result = ReadFile(input, source);
     engine::legacy::assets::LegacyStaticMeshData decoded;
     if (engine::assets::Succeeded(result)) result = engine::legacy::assets::LegacyScbMeshDecoder::Decode(source, decoded);
     if (engine::assets::Failed(result)) { std::fprintf(stderr, "SCB decode failed: %s\n", engine::assets::ToString(result)); return 3; }
 
-    std::filesystem::path temporary = outputRoot; temporary += L".tmp." + std::to_wstring(GetCurrentProcessId());
-    std::filesystem::remove_all(temporary, error); error.clear();
-    std::filesystem::create_directories(temporary, error);
-    if (error) return 4;
+    result = lts::asset_cooker::PrepareTemporaryDirectory(paths, pathError);
+    if (engine::assets::Failed(result)) { std::fprintf(stderr, "temporary output failed: %s\n", pathError.c_str()); return 4; }
+    const auto& temporary = paths.temporary;
     const auto fail = [&](const char* phase, const AssetResult failure) -> int
     {
         std::fprintf(stderr, "%s failed: %s\n", phase, engine::assets::ToString(failure));
@@ -209,15 +183,21 @@ int CookModel(const ModelOptions& rawOptions)
 
         engine::legacy::assets::LegacyTextureResolution resolution;
         const engine::assets::AssetPath* texturePath = nullptr;
+        auto textureAlpha = engine::legacy::assets::LegacyTextureAlpha::NoAlpha;
         if (!record->texture.empty())
         {
             result = engine::legacy::assets::LegacyMaterialTextureResolver::ResolveDiffuse(
-                dataRoot, materialFile, input, record->imagesDir, record->texture, resolution);
+                dataRoot, materialFile, input, record->imagesDir, record->texture,
+                rawOptions.relaxedTextureLookup ? engine::legacy::assets::LegacyTextureLookupPolicy::Relaxed : engine::legacy::assets::LegacyTextureLookupPolicy::Strict,
+                resolution);
             if (engine::assets::Succeeded(result))
             {
-                result = ValidateDds(dataRoot, resolution.path);
+                engine::assets::TextureAsset decodedTexture;
+                result = DecodeDds(dataRoot, resolution.path, decodedTexture);
                 if (engine::assets::Failed(result)) return fail("DDS validation", result);
+                textureAlpha = engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(decodedTexture);
                 texturePath = &resolution.path;
+                if (resolution.usedRelaxedFallback) std::fprintf(stderr, "warning: relaxed texture fallback used for %s\n", materialName.c_str());
             }
             else if (result == AssetResult::NotFound && rawOptions.allowMissingTextures)
             { ++missingCount; std::fprintf(stderr, "warning: missing diffuse texture for %s\n", materialName.c_str()); }
@@ -226,10 +206,16 @@ int CookModel(const ModelOptions& rawOptions)
 
         engine::assets::MaterialAsset material;
         std::vector<std::string> diagnostics;
-        result = engine::legacy::assets::LegacyMaterialConverter::Convert(*record, texturePath, material, diagnostics);
+        result = engine::legacy::assets::LegacyMaterialConverter::Convert(*record, texturePath, textureAlpha, material, diagnostics);
         if (engine::assets::Failed(result)) return fail("material conversion", result);
-        const std::string stem = FileStem(materialName);
-        if (!filenames.insert(stem).second) return fail("material filename collision", AssetResult::AlreadyExists);
+        std::string stem = FileStem(materialName);
+        if (!filenames.insert(stem).second)
+        {
+            char suffix[24]{};
+            std::snprintf(suffix, sizeof(suffix), "_%08llx", static_cast<unsigned long long>(engine::legacy::assets::AsciiCaseInsensitiveHash{}(materialName) & 0xffffffffULL));
+            stem += suffix;
+            if (!filenames.insert(stem).second) return fail("deterministic material filename collision", AssetResult::AlreadyExists);
+        }
         const std::string filename = stem + ".ltsmat";
         AssetData materialBytes;
         result = engine::assets::LtsMaterialWriter::Encode(material, materialBytes);
@@ -254,8 +240,8 @@ int CookModel(const ModelOptions& rawOptions)
     result = engine::assets::LtsStaticModelWriter::Encode(model, modelBytes);
     if (engine::assets::Succeeded(result)) result = WriteAtomic(temporary / L"model.ltsmodel", modelBytes, true);
     if (engine::assets::Failed(result)) return fail("model write", result);
-    result = CommitDirectory(temporary, outputRoot, rawOptions.force);
-    if (engine::assets::Failed(result)) return fail("output commit", result);
+    result = lts::asset_cooker::CommitDirectory(paths, rawOptions.force, pathError);
+    if (engine::assets::Failed(result)) { std::fprintf(stderr, "output commit failed: %s (%s)\n", pathError.c_str(), engine::assets::ToString(result)); return 4; }
     const auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
     std::wprintf(L"output model: %ls\n", (outputRoot / L"model.ltsmodel").c_str());
     std::printf("unique materials: %zu\nmissing textures: %zu\nelapsed ms: %.3f\n", decoded.materialSlotNames.size(), missingCount, elapsed);
@@ -270,7 +256,7 @@ int wmain(const int argc, wchar_t** argv)
         ModelOptions options;
         if (!ParseModelOptions(argc, argv, options))
         {
-            std::fwprintf(stderr, L"usage: LTS.AssetCooker model --input <mesh.scb> --data-root <Data> --output-root <directory> [--force] [--allow-missing-textures]\n");
+            std::fwprintf(stderr, L"usage: LTS.AssetCooker model --input <mesh.scb> --data-root <Data> --output-root <directory> [--force] [--allow-missing-textures] [--relaxed-texture-lookup]\n");
             return 2;
         }
         return CookModel(options);

@@ -1,6 +1,7 @@
 #include "Legacy/Assets/LegacyScbMeshDecoder.h"
 
 #include "Assets/MeshAssetBuilder.h"
+#include "Legacy/Assets/AsciiCaseInsensitive.h"
 
 #include <algorithm>
 #include <cmath>
@@ -206,7 +207,7 @@ engine::assets::AssetResult LegacyScbMeshDecoder::Decode(const engine::assets::A
     if (!reader.Read(materialCount) || materialCount <= 0 || materialCount > MaximumMaterials)
         return engine::assets::AssetResult::CorruptData;
     std::vector<engine::assets::MeshSubmesh> submeshes;
-    std::unordered_map<std::string, std::uint32_t> slots;
+    std::unordered_map<std::string, std::uint32_t, AsciiCaseInsensitiveHash, AsciiCaseInsensitiveEqual> slots;
     try
     {
         submeshes.reserve(static_cast<std::size_t>(materialCount));

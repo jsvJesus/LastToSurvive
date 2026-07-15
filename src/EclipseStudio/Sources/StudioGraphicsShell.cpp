@@ -124,7 +124,6 @@ float4 PSMain(VertexOutput input) : SV_Target0
     struct StudioPreviewMaterial final
     {
         engine::assets::MaterialAsset asset;
-        std::unique_ptr<engine::assets::GpuTexture> texture;
         engine::graphics::TextureHandle textureHandle;
         engine::graphics::SamplerHandle sampler;
         engine::graphics::BufferHandle constantBuffer;
@@ -134,6 +133,18 @@ float4 PSMain(VertexOutput input) : SV_Target0
         StudioPreviewMaterial& operator=(const StudioPreviewMaterial&) = delete;
         StudioPreviewMaterial(StudioPreviewMaterial&&) noexcept = default;
         StudioPreviewMaterial& operator=(StudioPreviewMaterial&&) noexcept = default;
+    };
+
+    struct StudioTextureCacheEntry final
+    {
+        engine::assets::AssetPath path;
+        std::unique_ptr<engine::assets::GpuTexture> texture;
+        std::size_t bindingCount = 0U;
+        StudioTextureCacheEntry() = default;
+        StudioTextureCacheEntry(const StudioTextureCacheEntry&) = delete;
+        StudioTextureCacheEntry& operator=(const StudioTextureCacheEntry&) = delete;
+        StudioTextureCacheEntry(StudioTextureCacheEntry&&) noexcept = default;
+        StudioTextureCacheEntry& operator=(StudioTextureCacheEntry&&) noexcept = default;
     };
 
     static_assert(sizeof(StudioFrameConstants) % 16U == 0U);
@@ -507,8 +518,11 @@ float4 PSMain(VertexOutput input) : SV_Target0
             if (engine::assets::Failed(result) || data == nullptr) return engine::assets::AssetResult::IoError;
             engine::assets::AssetMetadata metadata;
             result = assetManager_.GetMetadata(handle, metadata);
+            if (engine::assets::Failed(result) || metadata.type != type) return engine::assets::AssetResult::TypeMismatch;
+            result = assetRegistry_.Load(metadata, *data, outAsset);
             if (engine::assets::Failed(result)) return result;
-            return assetRegistry_.Load(metadata, *data, outAsset);
+            if (!outAsset || outAsset->GetType() != type) { outAsset.reset(); return engine::assets::AssetResult::TypeMismatch; }
+            return engine::assets::AssetResult::Success;
         }
 
         bool TryLoadExternalModel() noexcept
@@ -724,6 +738,13 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         bool CreateBindingResources() noexcept
         {
+            try { return CreateBindingResourcesImpl(); }
+            catch (const std::bad_alloc&) { return Fail("preview material allocation", GraphicsResult::OutOfMemory); }
+            catch (...) { return Fail("preview material internal exception", GraphicsResult::BackendFailure); }
+        }
+
+        bool CreateBindingResourcesImpl()
+        {
             constexpr std::uint32_t checkerboardPixels[16] = {
                 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
                 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU,
@@ -771,11 +792,15 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 if (engine::assets::Failed(material.Initialize(std::move(materialDesc)))) return Fail("fallback MaterialAsset", GraphicsResult::InvalidArgument);
                 sources.push_back(std::move(material));
             }
-            try
-            {
-                previewMaterials_.clear(); slotToPreview_.clear();
+            previewMaterials_.clear(); slotToPreview_.clear(); textureCache_.clear();
                 slotToPreview_.resize(sources.size());
                 std::unordered_map<std::string, std::size_t> cache;
+                std::unordered_map<std::string, std::size_t> textureLookup;
+                previewMaterials_.reserve(sources.size());
+                textureCache_.reserve(sources.size());
+                cache.reserve(sources.size());
+                textureLookup.reserve(sources.size());
+                reusedDdsBindings_ = 0U;
                 for (std::size_t slot = 0U; slot < sources.size(); ++slot)
                 {
                     const std::string key = externalModel_ ? modelAsset_.GetMaterialPath(slot).String() : std::string("fallback");
@@ -791,14 +816,31 @@ float4 PSMain(VertexOutput input) : SV_Target0
                     preview.textureHandle = checkerboardTexture_;
                     if (md.baseColorTexture)
                     {
-                        std::unique_ptr<engine::assets::LoadedAsset> loaded;
-                        const auto assetResult = LoadCookedAsset(*md.baseColorTexture, engine::assets::AssetType::Texture, loaded);
-                        if (engine::assets::Failed(assetResult)) return Fail("DDS AssetManager load", GraphicsResult::InvalidArgument);
-                        engine::assets::TextureAsset texture = static_cast<engine::assets::TextureLoadedAsset*>(loaded.get())->ReleaseTexture();
-                        preview.texture = std::make_unique<engine::assets::GpuTexture>();
-                        result = preview.texture->Upload(device_, texture);
-                        if (engine::graphics::Failed(result)) return Fail("DDS GpuTexture upload", result);
-                        preview.textureHandle = preview.texture->GetHandle();
+                        const std::string textureKey = md.baseColorTexture->String();
+                        const auto cachedTexture = textureLookup.find(textureKey);
+                        if (cachedTexture != textureLookup.end())
+                        {
+                            auto& entry = textureCache_[cachedTexture->second];
+                            preview.textureHandle = entry.texture->GetHandle();
+                            ++entry.bindingCount; ++reusedDdsBindings_;
+                        }
+                        else
+                        {
+                            std::unique_ptr<engine::assets::LoadedAsset> loaded;
+                            const auto assetResult = LoadCookedAsset(*md.baseColorTexture, engine::assets::AssetType::Texture, loaded);
+                            if (engine::assets::Failed(assetResult)) return Fail("DDS AssetManager load", GraphicsResult::InvalidArgument);
+                            engine::assets::TextureAsset texture = static_cast<engine::assets::TextureLoadedAsset*>(loaded.get())->ReleaseTexture();
+                            StudioTextureCacheEntry entry;
+                            entry.path = *md.baseColorTexture;
+                            entry.texture = std::make_unique<engine::assets::GpuTexture>();
+                            result = entry.texture->Upload(device_, texture);
+                            if (engine::graphics::Failed(result)) return Fail("DDS GpuTexture upload", result);
+                            entry.bindingCount = 1U;
+                            preview.textureHandle = entry.texture->GetHandle();
+                            const std::size_t textureIndex = textureCache_.size();
+                            textureCache_.push_back(std::move(entry));
+                            textureLookup.emplace(textureKey, textureIndex);
+                        }
                         preview.fallbackTexture = false;
                     }
                     engine::graphics::SamplerDesc samplerDesc = md.sampler;
@@ -819,9 +861,8 @@ float4 PSMain(VertexOutput input) : SV_Target0
                     if (engine::graphics::Failed(result)) return Fail("material constant buffer update", result);
                 }
                 if (!externalModel_) slotToPreview_.assign(meshAsset_.GetMaterialSlotCount(), 0U);
-            }
-            catch (...) { return Fail("preview material allocation", GraphicsResult::OutOfMemory); }
-            r3dOutToLog("[Graphics][DX11] Preview materials created: unique=%zu slots=%zu\n", previewMaterials_.size(), slotToPreview_.size());
+            r3dOutToLog("[Graphics][DX11] Preview materials created: materialSlots=%zu uniqueMaterials=%zu uniqueDDS=%zu reusedDDS=%zu\n",
+                slotToPreview_.size(), previewMaterials_.size(), textureCache_.size(), reusedDdsBindings_);
             return true;
         }
 
@@ -859,12 +900,13 @@ float4 PSMain(VertexOutput input) : SV_Target0
             const bool hadResources = !previewMaterials_.empty() || checkerboardTexture_.IsValid() || constantBuffer_.IsValid();
             for (auto& material : previewMaterials_)
             {
-                if (material.texture) (void)material.texture->Release(device_);
                 if (material.sampler.IsValid()) (void)device_.DestroySampler(material.sampler);
                 if (material.constantBuffer.IsValid()) (void)device_.DestroyBuffer(material.constantBuffer);
             }
             previewMaterials_.clear();
             slotToPreview_.clear();
+            for (auto& entry : textureCache_) if (entry.texture) (void)entry.texture->Release(device_);
+            textureCache_.clear();
             if (checkerboardTexture_.IsValid())
             {
                 const GraphicsResult result =
@@ -942,10 +984,10 @@ float4 PSMain(VertexOutput input) : SV_Target0
             {
                 if (externalModel_)
                 {
-                    std::size_t ddsCount = 0U, fallbackCount = 0U;
-                    for (const auto& material : previewMaterials_) material.fallbackTexture ? ++fallbackCount : ++ddsCount;
+                    std::size_t fallbackCount = 0U;
+                    for (const auto& material : previewMaterials_) if (material.fallbackTexture) ++fallbackCount;
                     r3dOutToLog("[Graphics][DX11] First model draw: model=%s submeshes=%zu materials=%zu DDS=%zu fallback=%zu opaque=%zu mask=%zu blend=%zu\n",
-                        modelPathText_.c_str(), gpuMesh_.GetSubmeshCount(), slotToPreview_.size(), ddsCount, fallbackCount,
+                        modelPathText_.c_str(), gpuMesh_.GetSubmeshCount(), slotToPreview_.size(), textureCache_.size(), fallbackCount,
                         drawCounts[0], drawCounts[1], drawCounts[2]);
                 }
                 else if (externalMesh_)
@@ -1174,7 +1216,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
         engine::assets::StaticModelAsset modelAsset_;
         std::vector<engine::assets::MaterialAsset> modelMaterials_;
         std::vector<StudioPreviewMaterial> previewMaterials_;
+        std::vector<StudioTextureCacheEntry> textureCache_;
         std::vector<std::size_t> slotToPreview_;
+        std::size_t reusedDdsBindings_ = 0U;
         std::string modelPathText_;
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;

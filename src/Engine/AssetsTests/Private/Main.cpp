@@ -79,6 +79,23 @@ namespace
         u32(0xFADC0038U);u32(0U);u32(4U);std::memcpy(b+o,"test",4U);o+=4U;f32(0);f32(0);f32(0);u32(3U);
         const float positions[]={-1,0,0,1,0,0,0,1,0};for(float v:positions)f32(v);const float uv[]={0,0,1,0,0.5F,1};for(float v:uv)f32(v);for(int i=0;i<3;++i){f32(0);f32(0);f32(1);}for(int i=0;i<3;++i){f32(1);f32(0);f32(0);}b[o++]=std::byte{0x7F};b[o++]=std::byte{0x7F};b[o++]=std::byte{0x7F};u32(3U);u32(0);u32(1);u32(2);u32(1);u32(0);u32(3);u32(3);std::memcpy(b+o,"mat",3U);o+=3U;return o==size?assets::AssetResult::Success:assets::AssetResult::InternalError;
     }
+    [[nodiscard]] assets::AssetResult BuildCaseDedupScb(assets::AssetData& out) noexcept
+    {
+        constexpr std::size_t size=233U;auto r=out.Resize(size);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,size);std::size_t o=0U;
+        const auto u32=[&](std::uint32_t v){WriteU32(b,o,v);o+=4U;};const auto f32=[&](float v){WriteF32(b,o,v);o+=4U;};
+        u32(0xFADC0038U);u32(0U);u32(4U);std::memcpy(b+o,"test",4U);o+=4U;f32(0);f32(0);f32(0);u32(3U);
+        const float positions[]={-1,0,0,1,0,0,0,1,0};for(float v:positions)f32(v);const float uv[]={0,0,1,0,0.5F,1};for(float v:uv)f32(v);for(int i=0;i<3;++i){f32(0);f32(0);f32(1);}for(int i=0;i<3;++i){f32(1);f32(0);f32(0);}b[o++]=std::byte{1};b[o++]=std::byte{1};b[o++]=std::byte{1};
+        u32(6U);u32(0);u32(1);u32(2);u32(0);u32(2);u32(1);u32(2U);
+        u32(0);u32(3);u32(5);std::memcpy(b+o,"Metal",5U);o+=5U;u32(3);u32(6);u32(5);std::memcpy(b+o,"metal",5U);o+=5U;
+        return o==size?assets::AssetResult::Success:assets::AssetResult::InternalError;
+    }
+
+    [[nodiscard]] assets::AssetResult BuildBlockDds(assets::AssetData& out,const std::uint32_t fourCc,const std::uint64_t block) noexcept
+    {
+        const std::size_t blockSize=fourCc==0x31545844U?8U:16U;const std::size_t size=128U+blockSize;auto r=out.Resize(size);if(assets::Failed(r))return r;auto*b=out.GetData();std::memset(b,0,size);
+        WriteU32(b,0U,0x20534444U);WriteU32(b,4U,124U);WriteU32(b,12U,4U);WriteU32(b,16U,4U);WriteU32(b,20U,static_cast<std::uint32_t>(blockSize));WriteU32(b,28U,1U);
+        WriteU32(b,76U,32U);WriteU32(b,80U,4U);WriteU32(b,84U,fourCc);WriteU32(b,108U,0x1000U);std::memcpy(b+128U,&block,8U);return assets::AssetResult::Success;
+    }
 
     [[nodiscard]] assets::AssetResult TextData(const char* text, assets::AssetData& out) noexcept
     {
@@ -399,6 +416,7 @@ int main()
     std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());WriteF32(badScb.GetData(),128U,0.0F);if(!Check(assets::Failed(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh)),"zero SCB tangent rejected"))return 1;
     std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());WriteF32(badScb.GetData(),128U,(std::numeric_limits<float>::infinity)());if(!Check(assets::Failed(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh)),"non-finite SCB tangent rejected"))return 1;
     std::memcpy(badScb.GetData(),scbData.GetData(),scbData.GetSize());WriteF32(badScb.GetData(),128U,2.0F);if(!Check(assets::Succeeded(engine::legacy::assets::LegacyScbMeshDecoder::Decode(badScb,legacyMesh))&&legacyMesh.mesh.GetVertexData()[0].tangent[0]==1.0F,"SCB tangent normalized"))return 1;
+    assets::AssetData caseScb;if(!Check(assets::Succeeded(BuildCaseDedupScb(caseScb))&&assets::Succeeded(engine::legacy::assets::LegacyScbMeshDecoder::Decode(caseScb,legacyMesh))&&legacyMesh.materialSlotNames.size()==1U&&legacyMesh.materialSlotNames[0]=="Metal"&&legacyMesh.mesh.GetSubmeshCount()==2U&&legacyMesh.mesh.GetSubmesh(1U)->materialSlot==0U,"SCB material names deduplicate ASCII case-insensitively with first spelling"))return 1;
 
     assets::AssetData legacyMaterialText;
     const char* materialText="[MaterialBegin]\r\n Name = TestMat \r\nColor24=128 64 32\r\nDoubleSided=1\r\nAlphaTransparent=0\r\nForceTransparent=1\r\nTexture=diffuse.tga\r\nImagesDir=Data/Images\r\nSpecularPower=0.5\r\nUnknownField=ok\r\n[MaterialEnd]\r\n[MaterialBegin]\r\nName=Second\r\nTexture=NONE\r\n[MaterialEnd]\r\n";
@@ -406,6 +424,14 @@ int main()
     if(!Check(assets::Succeeded(TextData(materialText,legacyMaterialText))&&assets::Succeeded(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(legacyMaterialText,legacyLibrary))&&legacyLibrary.GetMaterialCount()==2U&&legacyLibrary.FindMaterial("testmat")!=nullptr,"legacy material CRLF/multiple/case-insensitive lookup"))return 1;
     const auto* legacyRecord=legacyLibrary.FindMaterial("TESTMAT");assets::MaterialAsset convertedMaterial;std::vector<std::string> conversionDiagnostics;
     if(!Check(legacyRecord&&assets::Succeeded(engine::legacy::assets::LegacyMaterialConverter::Convert(*legacyRecord,nullptr,convertedMaterial,conversionDiagnostics))&&convertedMaterial.GetDesc().alphaMode==assets::MaterialAlphaMode::Mask&&convertedMaterial.GetDesc().doubleSided&&!convertedMaterial.GetDesc().baseColorTexture,"legacy material conversion"))return 1;
+    assets::AssetData bc1OpaqueData,bc1AlphaData,bc3Data;assets::TextureAsset alphaTexture;
+    constexpr std::uint32_t dxt1=0x31545844U,dxt5=0x35545844U;
+    if(!Check(assets::Succeeded(BuildBlockDds(bc1OpaqueData,dxt1,0x000000000000FFFFULL))&&assets::Succeeded(assets::DdsTextureDecoder::Decode(bc1OpaqueData,alphaTexture))&&engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(alphaTexture)==engine::legacy::assets::LegacyTextureAlpha::NoAlpha,"BC1 opaque alpha detection"))return 1;
+    if(!Check(assets::Succeeded(BuildBlockDds(bc1AlphaData,dxt1,0xFFFFFFFF00000000ULL))&&assets::Succeeded(assets::DdsTextureDecoder::Decode(bc1AlphaData,alphaTexture))&&engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(alphaTexture)==engine::legacy::assets::LegacyTextureAlpha::HasAlpha,"BC1 one-bit alpha detection"))return 1;
+    if(!Check(assets::Succeeded(BuildBlockDds(bc3Data,dxt5,0ULL))&&assets::Succeeded(assets::DdsTextureDecoder::Decode(bc3Data,alphaTexture))&&engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(alphaTexture)==engine::legacy::assets::LegacyTextureAlpha::HasAlpha,"BC3 alpha-capable detection"))return 1;
+    engine::legacy::assets::LegacyMaterialRecord alphaRecord;alphaRecord.name="Alpha";
+    if(!Check(assets::Succeeded(engine::legacy::assets::LegacyMaterialConverter::Convert(alphaRecord,nullptr,engine::legacy::assets::LegacyTextureAlpha::HasAlpha,convertedMaterial,conversionDiagnostics))&&convertedMaterial.GetDesc().alphaMode==assets::MaterialAlphaMode::Mask,"texture alpha selects Mask"))return 1;
+    alphaRecord.alphaTransparent=true;if(!Check(assets::Succeeded(engine::legacy::assets::LegacyMaterialConverter::Convert(alphaRecord,nullptr,engine::legacy::assets::LegacyTextureAlpha::HasAlpha,convertedMaterial,conversionDiagnostics))&&convertedMaterial.GetDesc().alphaMode==assets::MaterialAlphaMode::Blend,"AlphaTransparent has Blend priority"))return 1;
     assets::AssetData invalidText;(void)TextData("[MaterialBegin]\nName=X\nColor24=1 2 nope\n[MaterialEnd]\n",invalidText);if(!Check(assets::Failed(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(invalidText,legacyLibrary)),"invalid Color24 rejected"))return 1;
     (void)TextData("[MaterialBegin]\nName=X\nDoubleSided=2\n[MaterialEnd]\n",invalidText);if(!Check(assets::Failed(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(invalidText,legacyLibrary)),"invalid bool rejected"))return 1;
     (void)TextData("[MaterialBegin]\nName=X\nSpecularPower=nan\n[MaterialEnd]\n",invalidText);if(!Check(assets::Failed(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(invalidText,legacyLibrary)),"NaN rejected"))return 1;
