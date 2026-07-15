@@ -16,7 +16,12 @@ namespace lts::asset_cooker
         std::filesystem::path backup;
     };
 
-    enum class TransactionTestFailure : std::uint8_t { None = 0, AfterBackup };
+    enum class TransactionTestFailure : std::uint8_t
+    {
+        None = 0,
+        AfterBackup,
+        AfterBackupAndRollback
+    };
 
     [[nodiscard]] engine::assets::AssetResult ValidateCookPaths(
         const std::filesystem::path& input,

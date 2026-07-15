@@ -1,5 +1,6 @@
 #include "AssetCooker/CookerTransaction.h"
 
+#include <Windows.h>
 #include <cwchar>
 #include <system_error>
 
@@ -27,6 +28,35 @@ bool UnsafeDerived(const CookPaths& paths, const std::filesystem::path& value) n
 {
     return Equal(value, paths.dataRoot) || Equal(value, paths.input.parent_path()) ||
         Contains(value, paths.input) || Contains(paths.input, value);
+}
+bool IsReparsePoint(const std::filesystem::path& path, std::error_code& error) noexcept
+{
+    const DWORD attributes = GetFileAttributesW(path.c_str());
+    if (attributes != INVALID_FILE_ATTRIBUTES)
+    {
+        error.clear();
+        return (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0;
+    }
+    const DWORD nativeError = GetLastError();
+    if (nativeError == ERROR_FILE_NOT_FOUND || nativeError == ERROR_PATH_NOT_FOUND)
+    {
+        error.clear();
+        return false;
+    }
+    error = std::error_code(static_cast<int>(nativeError), std::system_category());
+    return false;
+}
+bool RequireOrdinaryPath(const std::filesystem::path& path, std::error_code& error) noexcept
+{
+    if (!IsReparsePoint(path, error)) return !error;
+    error = std::make_error_code(std::errc::operation_not_permitted);
+    return false;
+}
+bool RemoveOrdinaryTree(const std::filesystem::path& path, std::error_code& error) noexcept
+{
+    if (!RequireOrdinaryPath(path, error)) return false;
+    std::filesystem::remove_all(path, error);
+    return !error;
 }
 }
 
@@ -79,8 +109,8 @@ engine::assets::AssetResult ValidateCookPaths(
 engine::assets::AssetResult PrepareTemporaryDirectory(const CookPaths& paths, std::string& outError) noexcept
 {
     outError.clear(); std::error_code error;
-    std::filesystem::remove_all(paths.temporary, error);
-    if (error) return Fail(outError, "failed to remove stale temporary directory", engine::assets::AssetResult::IoError);
+    if (!RemoveOrdinaryTree(paths.temporary, error))
+        return Fail(outError, "refusing to remove stale temporary reparse point or inaccessible directory", engine::assets::AssetResult::IoError);
     std::filesystem::create_directories(paths.temporary, error);
     if (error) return Fail(outError, "failed to create temporary output directory", engine::assets::AssetResult::IoError);
     return engine::assets::AssetResult::Success;
@@ -90,8 +120,10 @@ engine::assets::AssetResult CommitDirectory(const CookPaths& paths, const bool f
                                              const TransactionTestFailure testFailure) noexcept
 {
     outError.clear(); std::error_code error;
-    const auto cleanupTemporary = [&]() noexcept { std::error_code ignored; std::filesystem::remove_all(paths.temporary, ignored); };
+    const auto cleanupTemporary = [&]() noexcept { std::error_code ignored; (void)RemoveOrdinaryTree(paths.temporary, ignored); };
     if (!std::filesystem::exists(paths.temporary, error) || error) { cleanupTemporary(); return Fail(outError, "temporary output is missing", engine::assets::AssetResult::IoError); }
+    if (!RequireOrdinaryPath(paths.temporary, error))
+        return Fail(outError, "refusing to publish temporary reparse point", engine::assets::AssetResult::IoError);
     if (!std::filesystem::exists(paths.outputRoot, error))
     {
         std::filesystem::rename(paths.temporary, paths.outputRoot, error);
@@ -99,26 +131,33 @@ engine::assets::AssetResult CommitDirectory(const CookPaths& paths, const bool f
         return engine::assets::AssetResult::Success;
     }
     if (!force) { cleanupTemporary(); return engine::assets::AssetResult::AlreadyExists; }
-    std::filesystem::remove_all(paths.backup, error);
-    if (error) { cleanupTemporary(); return Fail(outError, "failed to remove stale backup directory", engine::assets::AssetResult::IoError); }
+    if (!RemoveOrdinaryTree(paths.backup, error))
+    { cleanupTemporary(); return Fail(outError, "refusing to remove stale backup reparse point or inaccessible directory", engine::assets::AssetResult::IoError); }
+    if (!RequireOrdinaryPath(paths.outputRoot, error))
+    { cleanupTemporary(); return Fail(outError, "refusing to preserve output reparse point", engine::assets::AssetResult::IoError); }
     std::filesystem::rename(paths.outputRoot, paths.backup, error);
     if (error) { cleanupTemporary(); return Fail(outError, "failed to preserve existing output as backup", engine::assets::AssetResult::IoError); }
 
-    if (testFailure != TransactionTestFailure::AfterBackup)
+    if (testFailure == TransactionTestFailure::None)
         std::filesystem::rename(paths.temporary, paths.outputRoot, error);
     else error = std::make_error_code(std::errc::permission_denied);
     if (error)
     {
         std::error_code rollbackError;
-        if (std::filesystem::exists(paths.outputRoot, rollbackError)) std::filesystem::remove_all(paths.outputRoot, rollbackError);
-        rollbackError.clear();
-        std::filesystem::rename(paths.backup, paths.outputRoot, rollbackError);
+        if (std::filesystem::exists(paths.outputRoot, rollbackError)) (void)RemoveOrdinaryTree(paths.outputRoot, rollbackError);
+        if (!rollbackError && testFailure != TransactionTestFailure::AfterBackupAndRollback)
+        {
+            if (RequireOrdinaryPath(paths.backup, rollbackError))
+                std::filesystem::rename(paths.backup, paths.outputRoot, rollbackError);
+        }
+        else if (!rollbackError)
+            rollbackError = std::make_error_code(std::errc::permission_denied);
         cleanupTemporary();
         if (rollbackError) return Fail(outError, "publish failed and rollback could not restore old output; backup was preserved", engine::assets::AssetResult::IoError);
         return Fail(outError, "publish failed; old output was restored", engine::assets::AssetResult::IoError);
     }
-    std::filesystem::remove_all(paths.backup, error);
-    if (error) return Fail(outError, "new output published but old backup cleanup failed", engine::assets::AssetResult::IoError);
+    if (!RemoveOrdinaryTree(paths.backup, error))
+        return Fail(outError, "new output published but old backup cleanup failed or backup became a reparse point", engine::assets::AssetResult::IoError);
     return engine::assets::AssetResult::Success;
 }
 }

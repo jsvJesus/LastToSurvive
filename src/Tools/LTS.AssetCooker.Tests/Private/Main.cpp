@@ -58,6 +58,24 @@ int main()
     (void)lts::asset_cooker::PrepareTemporaryDirectory(paths, message); Write(paths.temporary / L"new.txt", "new");
     if (!Check(lts::asset_cooker::CommitDirectory(paths, true, message, lts::asset_cooker::TransactionTestFailure::AfterBackup) == AssetResult::IoError &&
         Read(paths.outputRoot / L"old.txt") == "old" && !fs::exists(paths.temporary) && !fs::exists(paths.backup), "rollback restores old output")) return 1;
+    fs::remove_all(paths.outputRoot); fs::create_directories(paths.outputRoot); Write(paths.outputRoot / L"old.txt", "old");
+    (void)lts::asset_cooker::PrepareTemporaryDirectory(paths, message); Write(paths.temporary / L"new.txt", "new");
+    if (!Check(lts::asset_cooker::CommitDirectory(paths, true, message, lts::asset_cooker::TransactionTestFailure::AfterBackupAndRollback) == AssetResult::IoError &&
+        !fs::exists(paths.outputRoot) && !fs::exists(paths.temporary) && Read(paths.backup / L"old.txt") == "old", "failed rollback preserves backup")) return 1;
+    fs::rename(paths.backup, paths.outputRoot);
+
+    const fs::path reparseTarget = base / L"reparse-target"; fs::create_directories(reparseTarget); Write(reparseTarget / L"sentinel.txt", "safe");
+    error.clear(); fs::create_directory_symlink(reparseTarget, paths.temporary, error);
+    if (!Check(!error, "create temporary directory symlink") ||
+        !Check(lts::asset_cooker::PrepareTemporaryDirectory(paths, message) == AssetResult::IoError &&
+            Read(reparseTarget / L"sentinel.txt") == "safe" && fs::is_symlink(paths.temporary), "reject stale temporary reparse point")) return 1;
+    fs::remove(paths.temporary); error.clear();
+    (void)lts::asset_cooker::PrepareTemporaryDirectory(paths, message); Write(paths.temporary / L"new.txt", "new");
+    fs::create_directory_symlink(reparseTarget, paths.backup, error);
+    if (!Check(!error, "create backup directory symlink") ||
+        !Check(lts::asset_cooker::CommitDirectory(paths, true, message) == AssetResult::IoError &&
+            Read(reparseTarget / L"sentinel.txt") == "safe" && fs::is_symlink(paths.backup), "reject stale backup reparse point")) return 1;
+    fs::remove(paths.backup); error.clear();
 
     const fs::path material = mesh.parent_path() / L"Materials" / L"Mat.mat"; Write(material);
     const fs::path depotTexture = mesh.parent_path() / L"Textures" / L"Diffuse.DDS"; Write(depotTexture);
