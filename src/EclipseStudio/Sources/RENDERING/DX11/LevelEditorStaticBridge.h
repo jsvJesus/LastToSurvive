@@ -13,6 +13,8 @@ bool LevelEditorStaticBridge_IsRequested();
 bool LevelEditorStaticBridge_IsReady();
 bool LevelEditorStaticBridge_IsActive();
 
+void LevelEditorStaticBridge_LogLegacyPathsOnce();
+
 bool LevelEditorStaticBridge_Initialize();
 void LevelEditorStaticBridge_Shutdown();
 

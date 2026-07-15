@@ -135,7 +135,7 @@ const wchar_t* LanguageManager::getString(const char* id, bool return_null_on_fa
 			return NULL;
 
 #ifndef FINAL_BUILD
-		r3dOutToLog("!!!!!!!!! Localization: Failed to find string id='%s'\n", id);
+		//r3dOutToLog("!!!!!!!!! Localization: Failed to find string id='%s'\n", id); // Вывод ошибки ID-имни предмета
 #endif
 
 		// add new entry with translated string same as id

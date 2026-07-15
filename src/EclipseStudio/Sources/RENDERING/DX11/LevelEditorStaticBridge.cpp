@@ -1259,4 +1259,79 @@ bool LevelEditorStaticBridge_Render(
     return true;
 }
 
+void LevelEditorStaticBridge_LogLegacyPathsOnce()
+{
+    static bool logged = false;
+
+    if (logged)
+    {
+        return;
+    }
+
+    if (
+        !HasCommandLineSwitch("-dx11bridgelogpaths") &&
+        !HasCommandLineSwitch("/dx11bridgelogpaths"))
+    {
+        return;
+    }
+
+    if (!IsLevelEditorModeActive())
+    {
+        return;
+    }
+
+    ObjectManager& world = GameWorld();
+    const int objectCount = world.GetStaticObjectCount();
+
+    // Карта ещё не загрузилась — попробуем на следующем кадре.
+    if (objectCount <= 0)
+    {
+        return;
+    }
+
+    logged = true;
+
+    BridgeLog(
+        "[DX11][BridgeCandidate] Static object count: %d\n",
+        objectCount);
+
+    constexpr int MaximumLoggedPaths = 256;
+    int loggedPathCount = 0;
+
+    for (
+        int index = 0;
+        index < objectCount &&
+        loggedPathCount < MaximumLoggedPaths;
+        ++index)
+    {
+        const GameObject* object =
+            world.GetStaticObject(index);
+
+        if (!object)
+        {
+            continue;
+        }
+
+        const char* fileName =
+            object->FileName.c_str();
+
+        if (!fileName || !fileName[0])
+        {
+            continue;
+        }
+
+        BridgeLog(
+            "[DX11][BridgeCandidate] ID=%u FileName=%s\n",
+            object->GetHashID(),
+            fileName);
+
+        ++loggedPathCount;
+    }
+
+    BridgeLog(
+        "[DX11][BridgeCandidate] Logged: %d of %d\n",
+        loggedPathCount,
+        objectCount);
+}
+
 #endif

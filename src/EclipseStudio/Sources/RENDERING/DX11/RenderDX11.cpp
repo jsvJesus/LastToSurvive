@@ -5157,7 +5157,8 @@ void RenderDX11_DrawDebugPreviewDX9()
 {
 	if (
 		!RenderDX11_WantsDebugPreview() ||
-		!r3dRenderer
+		!r3dRenderer ||
+		!RenderDX11_IsReady()
 	)
 	{
 		return;
