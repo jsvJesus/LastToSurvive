@@ -18,12 +18,25 @@ namespace engine::legacy::assets
         bool forceTransparent = false;
         bool transparentShadows = false;
         std::string texture;
+        std::string normalMap;
+        std::string specularMap;
+        std::string envMap;
+        std::string glowMap;
+        std::string detailNormalMap;
+        std::string densityMap;
+        std::string camouflageMask;
+        std::string distortionMap;
+        std::string specularPowerMap;
         std::string imagesDir;
         float selfIllumMultiplier = 0.0F;
+        float normalScale = 1.0F;
         float lowQMetallness = 0.0F;
+        float lowQSelfIllum = 0.0F;
         float specularPower = 0.0F;
+        float specular1Power = 0.0F;
         float reflectionPower = 0.0F;
-        std::vector<std::string> deferredTextureSlots;
+        float detailScale = 0.0F;
+        float detailAmount = 0.0F;
         std::vector<std::string> diagnostics;
     };
 

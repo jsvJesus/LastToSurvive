@@ -27,6 +27,29 @@ base-color texture with a Linear/Wrap sampler. Specular/reflection/low-quality
 metalness, self illumination, and all other texture slots remain explicit
 diagnostics; no implicit PBR or emissive heuristic is applied.
 
+## Surface-map compatibility pass
+
+The cooker resolves every declared slot independently through the same bounded resolver. Strict lookup remains the default and `--allow-missing-textures` applies to every slot.
+
+| Legacy field/register | MaterialAsset v2 | Shader channel/formula | Fallback |
+|---|---|---|---|
+| Texture / s0 | BaseColor | sRGB RGB; alpha unchanged | white |
+| NormalMap / s1 | Normal | linear RGB, `rgb*2-1`, TBN | `(0.5,0.5,1)` |
+| SpecularMap / s2 | SpecularGloss | linear R × legacy `SpecularPower` strength | black |
+| EnvMap / s3 | Roughness | linear R × roughnessFactor; ReflectionPower remains separate | white |
+| GlowMap / s4 | Emissive | sRGB RGB × emissiveFactor × SelfIllumMultiplier | black |
+| SpecPowMap / s7 | SpecularPower | linear R modulates `Specular1Power` before exponent decoding | white |
+
+Legacy tangent handedness is decoded by the SCB reader and the compatibility shader uses `B = cross(N,T) * tangent.w`. The old high-quality shader does not invert the normal-map green channel, so the compatibility path does not invert it either. Double-sided rendering flips the geometric normal before building the back-face TBN.
+
+The legacy names are misleading: `SpecularPower` is the gloss/specular strength,
+while `Specular1Power` controls highlight size. The converter stores the latter as
+the decoded exponent `2^(1 + clamp(Specular1Power,0,1) * 10)`; the shader recovers
+the normalized control so `SpecPowMap.r` is applied before exponent decoding, as
+in the high-quality legacy fill/light passes. `ReflectionPower` and
+`SelfIllumMultiplier` remain explicit compatibility scalars. `lowQSelfIllum` and
+`lowQMetallness` remain diagnostics and are not inferred as modern PBR fields.
+
 ## Cooker output transaction
 
 Model output is accepted only as a dedicated nested directory below the canonical

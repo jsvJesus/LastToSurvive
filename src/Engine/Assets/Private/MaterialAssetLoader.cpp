@@ -1,119 +1,57 @@
 #include "Assets/MaterialAssetLoader.h"
 
+#include <array>
 #include <cstring>
+#include <limits>
 #include <new>
 
 namespace engine::assets
 {
 namespace
 {
-constexpr std::size_t HeaderSize = 160U;
-template <typename T> T Read(const std::byte *bytes, std::size_t offset) noexcept
+constexpr std::size_t V1HeaderSize=160U,V2HeaderSize=192U,EntrySize=24U;
+template<typename T>T Read(const std::byte* b,const std::size_t o)noexcept{T v{};std::memcpy(&v,b+o,sizeof(v));return v;}
+bool Zero(const std::byte* b,std::size_t first,const std::size_t end)noexcept{for(;first<end;++first)if(b[first]!=std::byte{})return false;return true;}
+bool BaseFields(const std::byte* b,MaterialAssetDesc& d)noexcept
 {
-    T value{};
-    std::memcpy(&value, bytes + offset, sizeof(value));
-    return value;
+    const auto alpha=Read<std::uint32_t>(b,20U),filter=Read<std::uint32_t>(b,68U),u=Read<std::uint32_t>(b,72U),v=Read<std::uint32_t>(b,76U),w=Read<std::uint32_t>(b,80U),comparison=Read<std::uint32_t>(b,92U);
+    if(alpha>2U||filter>static_cast<std::uint32_t>(engine::graphics::TextureFilter::ComparisonLinear)||u>3U||v>3U||w>3U||comparison>static_cast<std::uint32_t>(engine::graphics::ComparisonFunction::Always))return false;
+    for(std::size_t i=0;i<4;++i)d.baseColorFactor[i]=Read<float>(b,28U+i*4U);
+    for(std::size_t i=0;i<3;++i)d.emissiveFactor[i]=Read<float>(b,44U+i*4U);
+    d.metallicFactor=Read<float>(b,56U);d.roughnessFactor=Read<float>(b,60U);d.alphaCutoff=Read<float>(b,64U);d.alphaMode=static_cast<MaterialAlphaMode>(alpha);
+    d.sampler.filter=static_cast<engine::graphics::TextureFilter>(filter);d.sampler.addressU=static_cast<engine::graphics::TextureAddressMode>(u);d.sampler.addressV=static_cast<engine::graphics::TextureAddressMode>(v);d.sampler.addressW=static_cast<engine::graphics::TextureAddressMode>(w);
+    d.sampler.mipLodBias=Read<float>(b,84U);d.sampler.maximumAnisotropy=Read<std::uint32_t>(b,88U);d.sampler.comparisonFunction=static_cast<engine::graphics::ComparisonFunction>(comparison);
+    for(std::size_t i=0;i<4;++i)d.sampler.borderColor[i]=Read<float>(b,96U+i*4U);d.sampler.minimumLod=Read<float>(b,112U);d.sampler.maximumLod=Read<float>(b,116U);return true;
 }
-bool IsZero(const std::byte *bytes, std::size_t first, std::size_t end) noexcept
+std::optional<AssetPath>* Slot(MaterialAssetDesc& d,const std::uint32_t semantic)noexcept
 {
-    for (; first < end; ++first)
-        if (bytes[first] != std::byte{})
-            return false;
-    return true;
+    switch(static_cast<MaterialTextureSemantic>(semantic)){case MaterialTextureSemantic::BaseColor:return &d.baseColorTexture;case MaterialTextureSemantic::Normal:return &d.normalTexture;case MaterialTextureSemantic::SpecularGloss:return &d.specularGlossTexture;case MaterialTextureSemantic::Roughness:return &d.roughnessTexture;case MaterialTextureSemantic::Emissive:return &d.emissiveTexture;case MaterialTextureSemantic::SpecularPower:return &d.specularPowerTexture;default:return nullptr;}
 }
-} // namespace
-
-AssetResult MaterialAssetLoader::Load(const AssetMetadata &metadata, const AssetData &source,
-                                      std::unique_ptr<LoadedAsset> &outAsset) noexcept
+AssetResult Finish(const AssetMetadata& metadata,MaterialAssetDesc&& d,std::unique_ptr<LoadedAsset>& out)noexcept
 {
-    outAsset.reset();
-    if (!metadata.IsValid())
-        return AssetResult::InvalidMetadata;
-    if (metadata.type != AssetType::Material)
-        return AssetResult::TypeMismatch;
-    if (source.GetSize() < HeaderSize)
-        return AssetResult::CorruptData;
-    const std::byte *const bytes = source.GetData();
-    constexpr char Magic[8] = {'L', 'T', 'S', 'M', 'A', 'T', '\0', '\0'};
-    if (std::memcmp(bytes, Magic, 8U) != 0)
-        return AssetResult::UnsupportedFormat;
-    if (Read<std::uint32_t>(bytes, 8U) != 1U)
-        return AssetResult::UnsupportedFormat;
-    if (Read<std::uint32_t>(bytes, 12U) != 0x01020304U || Read<std::uint32_t>(bytes, 16U) != HeaderSize ||
-        !IsZero(bytes, 132U, HeaderSize))
-        return AssetResult::CorruptData;
-
-    const std::uint32_t alpha = Read<std::uint32_t>(bytes, 20U);
-    const std::uint32_t flags = Read<std::uint32_t>(bytes, 24U);
-    const std::uint32_t filter = Read<std::uint32_t>(bytes, 68U);
-    const std::uint32_t addressU = Read<std::uint32_t>(bytes, 72U);
-    const std::uint32_t addressV = Read<std::uint32_t>(bytes, 76U);
-    const std::uint32_t addressW = Read<std::uint32_t>(bytes, 80U);
-    const std::uint32_t comparison = Read<std::uint32_t>(bytes, 92U);
-    if (alpha > static_cast<std::uint32_t>(MaterialAlphaMode::Blend) || (flags & ~3U) != 0U ||
-        filter > static_cast<std::uint32_t>(engine::graphics::TextureFilter::ComparisonLinear) ||
-        addressU > static_cast<std::uint32_t>(engine::graphics::TextureAddressMode::Border) ||
-        addressV > static_cast<std::uint32_t>(engine::graphics::TextureAddressMode::Border) ||
-        addressW > static_cast<std::uint32_t>(engine::graphics::TextureAddressMode::Border) ||
-        comparison > static_cast<std::uint32_t>(engine::graphics::ComparisonFunction::Always))
-        return AssetResult::CorruptData;
-
-    MaterialAssetDesc desc;
-    for (std::size_t i = 0U; i < 4U; ++i)
-        desc.baseColorFactor[i] = Read<float>(bytes, 28U + i * 4U);
-    for (std::size_t i = 0U; i < 3U; ++i)
-        desc.emissiveFactor[i] = Read<float>(bytes, 44U + i * 4U);
-    desc.metallicFactor = Read<float>(bytes, 56U);
-    desc.roughnessFactor = Read<float>(bytes, 60U);
-    desc.alphaCutoff = Read<float>(bytes, 64U);
-    desc.alphaMode = static_cast<MaterialAlphaMode>(alpha);
-    desc.doubleSided = (flags & 1U) != 0U;
-    desc.sampler.filter = static_cast<engine::graphics::TextureFilter>(filter);
-    desc.sampler.addressU = static_cast<engine::graphics::TextureAddressMode>(addressU);
-    desc.sampler.addressV = static_cast<engine::graphics::TextureAddressMode>(addressV);
-    desc.sampler.addressW = static_cast<engine::graphics::TextureAddressMode>(addressW);
-    desc.sampler.mipLodBias = Read<float>(bytes, 84U);
-    desc.sampler.maximumAnisotropy = Read<std::uint32_t>(bytes, 88U);
-    desc.sampler.comparisonFunction = static_cast<engine::graphics::ComparisonFunction>(comparison);
-    for (std::size_t i = 0U; i < 4U; ++i)
-        desc.sampler.borderColor[i] = Read<float>(bytes, 96U + i * 4U);
-    desc.sampler.minimumLod = Read<float>(bytes, 112U);
-    desc.sampler.maximumLod = Read<float>(bytes, 116U);
-
-    const std::uint64_t pathOffset = Read<std::uint64_t>(bytes, 120U);
-    const std::uint32_t pathSize = Read<std::uint32_t>(bytes, 128U);
-    const bool hasPath = (flags & 2U) != 0U;
-    if (hasPath)
-    {
-        if (pathSize == 0U || pathSize > AssetPath::MaximumLength || pathOffset != HeaderSize ||
-            pathSize > source.GetSize() - HeaderSize || pathOffset + pathSize != source.GetSize())
-            return AssetResult::CorruptData;
-        AssetPath path;
-        const AssetResult pathResult =
-            AssetPath::TryCreate(std::string_view(reinterpret_cast<const char *>(bytes + HeaderSize), pathSize), path);
-        if (Failed(pathResult))
-            return pathResult;
-        desc.baseColorTexture = std::move(path);
-    }
-    else if (pathSize != 0U || (pathOffset != 0U && pathOffset != HeaderSize) || source.GetSize() != HeaderSize)
-        return AssetResult::CorruptData;
-
-    desc.debugName = metadata.path.String();
-    MaterialAsset material;
-    if (Failed(material.Initialize(std::move(desc))))
-        return AssetResult::CorruptData;
-    try
-    {
-        outAsset = std::make_unique<MaterialLoadedAsset>(std::move(material));
-    }
-    catch (const std::bad_alloc &)
-    {
-        return AssetResult::OutOfMemory;
-    }
-    catch (...)
-    {
-        return AssetResult::InternalError;
-    }
-    return AssetResult::Success;
+    try{d.debugName=metadata.path.String();MaterialAsset material;if(Failed(material.Initialize(std::move(d))))return AssetResult::CorruptData;out=std::make_unique<MaterialLoadedAsset>(std::move(material));}
+    catch(const std::bad_alloc&){return AssetResult::OutOfMemory;}catch(...){return AssetResult::InternalError;}return AssetResult::Success;
 }
-} // namespace engine::assets
+}
+AssetResult MaterialAssetLoader::Load(const AssetMetadata& metadata,const AssetData& source,std::unique_ptr<LoadedAsset>& out)noexcept
+{
+    out.reset();if(!metadata.IsValid())return AssetResult::InvalidMetadata;if(metadata.type!=AssetType::Material)return AssetResult::TypeMismatch;if(source.GetSize()<V1HeaderSize)return AssetResult::CorruptData;
+    const auto* b=source.GetData();if(std::memcmp(b,"LTSMAT\0\0",8U)!=0)return AssetResult::UnsupportedFormat;const auto version=Read<std::uint32_t>(b,8U);if(version!=1U&&version!=2U)return AssetResult::UnsupportedFormat;
+    if(Read<std::uint32_t>(b,12U)!=0x01020304U)return AssetResult::CorruptData;MaterialAssetDesc d;if(!BaseFields(b,d))return AssetResult::CorruptData;
+    const auto flags=Read<std::uint32_t>(b,24U);d.doubleSided=(flags&1U)!=0U;
+    if(version==1U)
+    {
+        if(Read<std::uint32_t>(b,16U)!=V1HeaderSize||(flags&~3U)!=0U||!Zero(b,132U,V1HeaderSize))return AssetResult::CorruptData;
+        const auto offset=Read<std::uint64_t>(b,120U);const auto size=Read<std::uint32_t>(b,128U);const bool has=(flags&2U)!=0U;
+        if(has){if(size==0U||size>AssetPath::MaximumLength||offset!=V1HeaderSize||size>source.GetSize()-V1HeaderSize||offset+size!=source.GetSize())return AssetResult::CorruptData;AssetPath path;const auto result=AssetPath::TryCreate(std::string_view(reinterpret_cast<const char*>(b+V1HeaderSize),size),path);if(Failed(result))return result;d.baseColorTexture=std::move(path);}
+        else if(size!=0U||(offset!=0U&&offset!=V1HeaderSize)||source.GetSize()!=V1HeaderSize)return AssetResult::CorruptData;
+        return Finish(metadata,std::move(d),out);
+    }
+    if(source.GetSize()<V2HeaderSize||Read<std::uint32_t>(b,16U)!=V2HeaderSize||(flags&~1U)!=0U||!Zero(b,152U,V2HeaderSize))return AssetResult::CorruptData;
+    d.normalScale=Read<float>(b,120U);d.specularIntensity=Read<float>(b,124U);d.specularPower=Read<float>(b,128U);d.reflectionFactor=Read<float>(b,132U);d.emissiveStrength=Read<float>(b,136U);
+    const auto count=Read<std::uint32_t>(b,140U);const auto table=Read<std::uint64_t>(b,144U);if(count>6U||(count==0U?(table!=0U||source.GetSize()!=V2HeaderSize):table!=V2HeaderSize))return AssetResult::CorruptData;
+    if(count!=0U&&count>(source.GetSize()-V2HeaderSize)/EntrySize)return AssetResult::CorruptData;const std::size_t pathsBegin=V2HeaderSize+static_cast<std::size_t>(count)*EntrySize;std::size_t expected=pathsBegin;std::uint32_t previous=0U;
+    for(std::uint32_t i=0;i<count;++i){const std::size_t e=V2HeaderSize+static_cast<std::size_t>(i)*EntrySize;const auto semantic=Read<std::uint32_t>(b,e);const auto offset=Read<std::uint64_t>(b,e+8U);const auto size=Read<std::uint32_t>(b,e+16U);if((i&&semantic<=previous)||semantic>=6U||!Zero(b,e+4U,e+8U)||!Zero(b,e+20U,e+24U)||size==0U||size>AssetPath::MaximumLength||offset!=expected||size>source.GetSize()-expected)return AssetResult::CorruptData;auto* slot=Slot(d,semantic);if(slot==nullptr||*slot)return AssetResult::CorruptData;AssetPath path;const auto result=AssetPath::TryCreate(std::string_view(reinterpret_cast<const char*>(b+expected),size),path);if(Failed(result))return result;*slot=std::move(path);expected+=size;previous=semantic;}
+    if(expected!=source.GetSize())return AssetResult::CorruptData;return Finish(metadata,std::move(d),out);
+}
+}

@@ -1,5 +1,7 @@
 #include "Legacy/Assets/LegacyMaterialConverter.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 
 namespace engine::legacy::assets
@@ -11,6 +13,18 @@ engine::assets::AssetResult LegacyMaterialConverter::Convert(
     engine::assets::MaterialAsset& outMaterial,
     std::vector<std::string>& outDiagnostics) noexcept
 {
+    LegacyResolvedMaterialTextures textures;
+    textures.baseColor = resolvedBaseColorTexture;
+    return Convert(source, textures, textureAlpha, outMaterial, outDiagnostics);
+}
+
+engine::assets::AssetResult LegacyMaterialConverter::Convert(
+    const LegacyMaterialRecord& source,
+    const LegacyResolvedMaterialTextures& textures,
+    const LegacyTextureAlpha textureAlpha,
+    engine::assets::MaterialAsset& outMaterial,
+    std::vector<std::string>& outDiagnostics) noexcept
+{
     outMaterial.Clear();
     outDiagnostics.clear();
     if (source.name.empty()) return engine::assets::AssetResult::InvalidArgument;
@@ -18,6 +32,7 @@ engine::assets::AssetResult LegacyMaterialConverter::Convert(
     for (std::size_t index = 0U; index < 3U; ++index)
         desc.baseColorFactor[index] = static_cast<float>(source.color24[index]) / 255.0F;
     desc.baseColorFactor[3] = 1.0F;
+    desc.emissiveFactor = {1.0F, 1.0F, 1.0F};
     desc.doubleSided = source.doubleSided;
     desc.alphaMode = source.alphaTransparent ? engine::assets::MaterialAlphaMode::Blend :
         (source.forceTransparent || source.transparentShadows || textureAlpha != LegacyTextureAlpha::NoAlpha ? engine::assets::MaterialAlphaMode::Mask :
@@ -25,6 +40,14 @@ engine::assets::AssetResult LegacyMaterialConverter::Convert(
     desc.alphaCutoff = 0.5F;
     desc.metallicFactor = 0.0F;
     desc.roughnessFactor = 1.0F;
+    desc.normalScale = source.normalScale;
+    // GlossMap.r * SpecularPower is the legacy specular strength.
+    // Specular1Power * SpecPowMap.r is decoded as 2^(1 + control * 10).
+    desc.specularIntensity = std::clamp(source.specularPower, 0.0F, 16.0F);
+    const float exponentControl = std::clamp(source.specular1Power, 0.0F, 1.0F);
+    desc.specularPower = std::exp2(1.0F + exponentControl * 10.0F);
+    desc.reflectionFactor = source.reflectionPower >= 0.0F ? source.reflectionPower : 0.0F;
+    desc.emissiveStrength = source.selfIllumMultiplier >= 0.0F ? source.selfIllumMultiplier : 0.0F;
     desc.sampler.filter = engine::graphics::TextureFilter::Linear;
     desc.sampler.addressU = engine::graphics::TextureAddressMode::Wrap;
     desc.sampler.addressV = engine::graphics::TextureAddressMode::Wrap;
@@ -32,13 +55,21 @@ engine::assets::AssetResult LegacyMaterialConverter::Convert(
     try
     {
         desc.debugName = source.name;
-        if (resolvedBaseColorTexture != nullptr && resolvedBaseColorTexture->IsValid()) desc.baseColorTexture = *resolvedBaseColorTexture;
+        const auto assign = [](const engine::assets::AssetPath* path, std::optional<engine::assets::AssetPath>& output)
+        { if (path != nullptr && path->IsValid()) output = *path; };
+        assign(textures.baseColor, desc.baseColorTexture);
+        assign(textures.normal, desc.normalTexture);
+        assign(textures.specularGloss, desc.specularGlossTexture);
+        assign(textures.roughness, desc.roughnessTexture);
+        assign(textures.emissive, desc.emissiveTexture);
+        assign(textures.specularPower, desc.specularPowerTexture);
         outDiagnostics = source.diagnostics;
-        if (source.selfIllumMultiplier != 0.0F) outDiagnostics.emplace_back("SelfIllumMultiplier deferred: emissive mapping is not proven");
         if (source.lowQMetallness != 0.0F) outDiagnostics.emplace_back("lowQMetallness deferred: no implicit PBR heuristic");
-        if (source.specularPower != 0.0F) outDiagnostics.emplace_back("SpecularPower deferred: no implicit PBR heuristic");
-        if (source.reflectionPower != 0.0F) outDiagnostics.emplace_back("ReflectionPower deferred: no implicit PBR heuristic");
-        for (const auto& slot : source.deferredTextureSlots) outDiagnostics.emplace_back("deferred texture slot: " + slot);
+        if (source.lowQSelfIllum != 0.0F) outDiagnostics.emplace_back("lowQSelfIllum deferred: high-quality path uses GlowMap");
+        if (!source.detailNormalMap.empty()) outDiagnostics.emplace_back("deferred texture slot: DetailNMap=" + source.detailNormalMap);
+        if (!source.densityMap.empty()) outDiagnostics.emplace_back("deferred texture slot: DensityMap=" + source.densityMap);
+        if (!source.camouflageMask.empty()) outDiagnostics.emplace_back("deferred texture slot: CamoMask=" + source.camouflageMask);
+        if (!source.distortionMap.empty()) outDiagnostics.emplace_back("deferred texture slot: DistortionMap=" + source.distortionMap);
         if (textureAlpha == LegacyTextureAlpha::Ambiguous)
             outDiagnostics.emplace_back("texture alpha is ambiguous; conservative Mask policy applied");
     }

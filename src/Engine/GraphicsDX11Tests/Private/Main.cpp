@@ -716,6 +716,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
     IndexBufferBinding indexBinding;
     indexBinding.buffer = drawIndexBuffer;
     PresentStatus presentStatus = PresentStatus::Failed;
+    const std::array<TextureHandle,6U> materialTextures={shaderTexture,shaderTexture,shaderTexture,shaderTexture,shaderTexture,shaderTexture};
     if (!Check(
             Succeeded(context->SetSwapChainRenderTarget(*swapChain, depth)) &&
                 Succeeded(context->SetGraphicsPipeline(drawPipeline)) &&
@@ -724,9 +725,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 Succeeded(context->SetConstantBuffers(
                     ShaderStage::Vertex, 0U, &dynamicConstant, 1U)) &&
                 Succeeded(context->SetConstantBuffers(
-                    ShaderStage::Pixel, 0U, &dynamicConstant, 1U)) &&
+                    ShaderStage::Pixel, 1U, &dynamicConstant, 1U)) &&
                 Succeeded(context->SetShaderResources(
-                    ShaderStage::Pixel, 0U, &shaderTexture, 1U)) &&
+                    ShaderStage::Pixel, 0U, materialTextures.data(), materialTextures.size())) &&
                 Succeeded(context->SetSamplers(
                     ShaderStage::Pixel, 0U, &drawSampler, 1U)) &&
                 Succeeded(context->DrawIndexed(3U, 0U, 0)) &&
@@ -739,9 +740,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
             Succeeded(context->UnbindConstantBuffers(
                 ShaderStage::Vertex, 0U, 1U)) &&
                 Succeeded(context->UnbindConstantBuffers(
-                    ShaderStage::Pixel, 0U, 1U)) &&
+                    ShaderStage::Pixel, 1U, 1U)) &&
                 Succeeded(context->UnbindShaderResources(
-                    ShaderStage::Pixel, 0U, 1U)) &&
+                    ShaderStage::Pixel, 0U, 6U)) &&
                 Succeeded(context->UnbindSamplers(
                     ShaderStage::Pixel, 0U, 1U)),
             "unbind draw resources"))

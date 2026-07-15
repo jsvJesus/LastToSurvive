@@ -1,7 +1,37 @@
 # LTS Material format (`.ltsmat`)
 
-Version 1 is a strictly little-endian, fixed-width material record with an optional normalized UTF-8 asset path. Header size is exactly 160 and bytes 132..159 are zero. Trailing bytes are forbidden.
+All integers and floats are little-endian and fixed-width. Runtime pointers, `bool`, `size_t`, C++ enum layouts and terminated strings are never serialized.
 
-The 160-byte header contains: magic `LTSMAT\0\0` (offset 0), version 1 (8), endian marker `0x01020304` (12), header size (16), alpha mode u32 (20: opaque/mask/blend), flags u32 (24: bit 0 double-sided, bit 1 base-color texture), base color f32x4 (28), emissive f32x3 (44), metallic/roughness/alpha cutoff f32 (56/60/64), sampler filter/address U/V/W u32 (68..80), mip bias f32 (84), anisotropy u32 (88), comparison u32 (92), border f32x4 (96), min/max LOD f32 (112/116), path offset u64 (120), and path byte length u32 (128). Bytes 132..159 are reserved and zero.
+## Version 1 compatibility
 
-When bit 1 is clear, path offset and length are zero and file size is exactly 160. When set, path offset is exactly 160; the path immediately follows the header, is 1..1024 bytes, has no terminator, and must pass `AssetPath` normalization rules. Runtime pointers, `bool`, `size_t`, enum object layouts, and C++ strings are never serialized. Unknown flags, comparison sampling, invalid enum/scalar ranges, non-finite values, gaps, and overlap are rejected. Incompatible changes require a new version.
+Version 1 remains readable without layout changes. Its header is exactly 160 bytes: magic `LTSMAT\0\0`, version at 8, endian marker `0x01020304` at 12, header size at 16, alpha/flags at 20/24, material and sampler fields at 28..119, one optional BaseColor path descriptor at 120..131, and zero reserved bytes at 132..159. Version 1 receives v2 defaults: normal scale 1, specular intensity 0, specular power 32, reflection factor 0, emissive strength 0, and no additional maps.
+
+## Version 2
+
+The v2 fixed header is exactly 192 bytes:
+
+| Offset | Type | Meaning |
+|---:|---|---|
+| 0 | char[8] | `LTSMAT\0\0` |
+| 8 | u32 | version = 2 |
+| 12 | u32 | endian = `0x01020304` |
+| 16 | u32 | header size = 192 |
+| 20 | u32 | alpha mode |
+| 24 | u32 | flags; bit 0 DoubleSided |
+| 28..119 | fixed fields | v1 color/material/sampler fields |
+| 120 | f32 | normalScale |
+| 124 | f32 | specularIntensity |
+| 128 | f32 | specularPower |
+| 132 | f32 | reflectionFactor |
+| 136 | f32 | emissiveStrength |
+| 140 | u32 | texture entry count, 0..6 |
+| 144 | u64 | table offset, 192 when non-empty, otherwise zero |
+| 152..191 | bytes | reserved zero |
+
+Each 24-byte table entry is `(semantic u32, reserved u32, pathOffset u64, pathLength u32, reserved u32)`. Semantics are 0 BaseColor, 1 Normal, 2 SpecularGloss, 3 Roughness, 4 Emissive and 5 SpecularPower. Entries are strictly increasing and paths immediately follow the complete table in entry order, with no gaps, overlaps or terminators. Duplicate paths across semantics are legal; duplicate semantics are not. Unknown flags/semantics, non-zero reserved fields, invalid paths/scalars, non-canonical ordering and trailing bytes are rejected. The writer always emits v2 deterministically.
+
+## Color space and compatibility
+
+BaseColor and Emissive are color data and are sampled as sRGB. Normal, SpecularGloss, Roughness and SpecularPower are linear data. Studio uses native sRGB formats where present and shader-side sRGB-to-linear conversion only for legacy UNorm color DDS. The cache key contains the color/data interpretation, preventing an incompatible view from being reused.
+
+This is a compatibility material, not metallic/roughness PBR. Legacy SpecularMap remains a specular/gloss control and never changes `metallicFactor`. EnvMap is the legacy roughness/environment-power scalar map. ReflectionPower is a compatibility factor, not a cubemap reflection strength.

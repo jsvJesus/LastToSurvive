@@ -66,11 +66,13 @@ cbuffer FrameConstants : register(b0)
     row_major float4x4 world;
     float4 frameData;
 };
-cbuffer MaterialConstants : register(b0)
+cbuffer MaterialConstants : register(b1)
 {
     float4 baseColorFactor;
-    float4 emissiveMetallic;
-    float4 roughnessAlpha;
+    float4 emissiveFactorStrength;
+    float4 surfaceParams; // roughness, alpha cutoff, alpha mode, normal scale
+    float4 specularParams; // intensity, power, reflection, debug mode
+    float4 textureFlags; // bit masks represented exactly as floats
 };
 
 struct VertexInput
@@ -85,6 +87,8 @@ struct VertexOutput
 {
     float4 position : SV_Position;
     float3 worldNormal : NORMAL;
+    float3 worldPosition : TEXCOORD1;
+    float4 worldTangent : TANGENT;
     float2 texcoord : TEXCOORD0;
 };
 
@@ -93,21 +97,57 @@ VertexOutput VSMain(VertexInput input)
     VertexOutput output;
     output.position = mul(float4(input.position, 1.0f), worldViewProjection);
     output.worldNormal = normalize(mul(float4(input.normal, 0.0f), world).xyz);
+    output.worldPosition = mul(float4(input.position, 1.0f), world).xyz;
+    output.worldTangent = float4(normalize(mul(float4(input.tangent.xyz, 0.0f), world).xyz), input.tangent.w);
     output.texcoord = input.texcoord;
     return output;
 }
 
-Texture2D checkerboardTexture : register(t0);
-SamplerState checkerboardSampler : register(s0);
+Texture2D baseColorTexture : register(t0);
+Texture2D normalTexture : register(t1);
+Texture2D specularGlossTexture : register(t2);
+Texture2D roughnessTexture : register(t3);
+Texture2D emissiveTexture : register(t4);
+Texture2D specularPowerTexture : register(t5);
+SamplerState materialSampler : register(s0);
 
-float4 PSMain(VertexOutput input) : SV_Target0
+float3 SrgbToLinear(float3 value) { return pow(max(value, 0.0f), 2.2f); }
+
+float4 PSMain(VertexOutput input, bool isFrontFace : SV_IsFrontFace) : SV_Target0
 {
-    float3 lightDirection = normalize(float3(-0.45f, 0.75f, -0.55f));
-    float lighting = 0.22f + 0.78f * saturate(dot(input.worldNormal, lightDirection));
-    float4 color = checkerboardTexture.Sample(checkerboardSampler, input.texcoord) * baseColorFactor;
-    if (roughnessAlpha.z > 0.5f && roughnessAlpha.z < 1.5f)
-        clip(color.a - roughnessAlpha.y);
-    return float4(color.rgb * lighting + emissiveMetallic.rgb, color.a);
+    float4 baseSample = baseColorTexture.Sample(materialSampler, input.texcoord);
+    if (textureFlags.x < 0.5f) baseSample.rgb = SrgbToLinear(baseSample.rgb);
+    float4 color = baseSample * baseColorFactor;
+    if (surfaceParams.z > 0.5f && surfaceParams.z < 1.5f) clip(color.a - surfaceParams.y);
+    float faceSign = input.worldTangent.w;
+    float3 n = normalize(input.worldNormal) * (isFrontFace ? 1.0f : -1.0f);
+    float3 t = normalize(input.worldTangent.xyz - n * dot(n, input.worldTangent.xyz));
+    float3 b = normalize(cross(n, t)) * faceSign;
+    float3 tangentNormal = normalTexture.Sample(materialSampler, input.texcoord).xyz * 2.0f - 1.0f;
+    tangentNormal.xy *= surfaceParams.w;
+    n = normalize(t * tangentNormal.x + b * tangentNormal.y + n * tangentNormal.z);
+    float gloss = specularGlossTexture.Sample(materialSampler, input.texcoord).r;
+    float roughness = saturate(surfaceParams.x * roughnessTexture.Sample(materialSampler, input.texcoord).r);
+    float powerControl = saturate((log2(max(specularParams.y, 2.0f)) - 1.0f) * 0.1f);
+    float exponent = exp2(1.0f + powerControl * specularPowerTexture.Sample(materialSampler, input.texcoord).r * 10.0f);
+    float3 l = normalize(float3(-0.45f, 0.75f, -0.55f));
+    float3 v = normalize(float3(0.0f, 0.0f, -frameData.y) - input.worldPosition);
+    float3 h = normalize(l + v);
+    float ndl = saturate(dot(n, l));
+    float specular = pow(saturate(dot(n, h)), lerp(exponent, max(1.0f, exponent * 0.125f), roughness));
+    specular *= specularParams.x * gloss;
+    float3 emissive = emissiveTexture.Sample(materialSampler, input.texcoord).rgb;
+    if (textureFlags.y < 0.5f) emissive = SrgbToLinear(emissive);
+    emissive *= emissiveFactorStrength.rgb * emissiveFactorStrength.a;
+    float3 lit = color.rgb * (0.22f + 0.78f * ndl) + specular.xxx + emissive;
+    int debugMode = (int)(specularParams.w + 0.5f);
+    if (debugMode == 1) lit = color.rgb;
+    else if (debugMode == 2) lit = n * 0.5f + 0.5f;
+    else if (debugMode == 3) lit = tangentNormal * 0.5f + 0.5f;
+    else if (debugMode == 4) lit = roughness.xxx;
+    else if (debugMode == 5) lit = (gloss * specularParams.x).xxx;
+    else if (debugMode == 6) lit = emissive;
+    return float4(lit, color.a);
 }
 )hlsl";
 
@@ -119,15 +159,16 @@ float4 PSMain(VertexOutput input) : SV_Target0
     };
 
     struct alignas(16) StudioMaterialConstants final
-    { float baseColor[4]; float emissiveMetallic[4]; float roughnessAlpha[4]; };
+    { float baseColor[4]; float emissiveFactorStrength[4]; float surfaceParams[4]; float specularParams[4]; float textureFlags[4]; };
 
     struct StudioPreviewMaterial final
     {
         engine::assets::MaterialAsset asset;
-        engine::graphics::TextureHandle textureHandle;
+        std::array<engine::graphics::TextureHandle, 6U> textureHandles{};
         engine::graphics::SamplerHandle sampler;
         engine::graphics::BufferHandle constantBuffer;
-        bool fallbackTexture = true;
+        std::array<bool, 6U> fallbackTextures{true,true,true,true,true,true};
+        std::array<bool, 6U> nativeSrgb{};
         StudioPreviewMaterial() = default;
         StudioPreviewMaterial(const StudioPreviewMaterial&) = delete;
         StudioPreviewMaterial& operator=(const StudioPreviewMaterial&) = delete;
@@ -138,6 +179,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
     struct StudioTextureCacheEntry final
     {
         engine::assets::AssetPath path;
+        bool color = false;
         std::unique_ptr<engine::assets::GpuTexture> texture;
         std::size_t bindingCount = 0U;
         StudioTextureCacheEntry() = default;
@@ -450,9 +492,9 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 (void)context_->UnbindConstantBuffers(
                     engine::graphics::ShaderStage::Vertex, 0U, 1U);
                 (void)context_->UnbindConstantBuffers(
-                    engine::graphics::ShaderStage::Pixel, 0U, 1U);
+                    engine::graphics::ShaderStage::Pixel, 1U, 1U);
                 (void)context_->UnbindShaderResources(
-                    engine::graphics::ShaderStage::Pixel, 0U, 1U);
+                    engine::graphics::ShaderStage::Pixel, 0U, 6U);
                 (void)context_->UnbindSamplers(
                     engine::graphics::ShaderStage::Pixel, 0U, 1U);
                 context_->UnbindGraphicsPipeline();
@@ -745,27 +787,37 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         bool CreateBindingResourcesImpl()
         {
-            constexpr std::uint32_t checkerboardPixels[16] = {
-                0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
-                0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU,
-                0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U,
-                0xFF3040D8U, 0xFF30D8FFU, 0xFF3040D8U, 0xFF30D8FFU};
+            const std::string debugMode=GetCommandLineValue("-dx11materialdebug=");
+            materialDebugMode_=0;
+            constexpr const char* modes[]={"lit","basecolor","worldnormal","tangentnormal","roughness","specular","emissive"};
+            if(!debugMode.empty())
+            {
+                bool found=false;for(std::size_t i=0U;i<std::size(modes);++i)if(debugMode==modes[i]){materialDebugMode_=static_cast<int>(i);found=true;break;}
+                if(!found)r3dOutToLog("[Graphics][DX11] Invalid material debug mode '%s'; using lit\n",debugMode.c_str());
+            }
+            r3dOutToLog("[Graphics][DX11] Material debug mode: %s\n",modes[materialDebugMode_]);
+            constexpr std::array<std::uint32_t, 6U> fallbackPixels = {
+                0xFFFFFFFFU, 0xFFFF8080U, 0xFF000000U, 0xFFFFFFFFU, 0xFF000000U, 0xFFFFFFFFU};
             engine::graphics::TextureDesc textureDesc;
-            textureDesc.width = 4U;
-            textureDesc.height = 4U;
+            textureDesc.width = 1U;
+            textureDesc.height = 1U;
             textureDesc.format = engine::graphics::Format::R8G8B8A8UNorm;
             textureDesc.usage = engine::graphics::ResourceUsage::Immutable;
             textureDesc.bindFlags = engine::graphics::TextureBindFlags::ShaderResource;
             engine::graphics::TextureSubresourceData textureData;
-            textureData.data = reinterpret_cast<const std::byte*>(checkerboardPixels);
-            textureData.dataSize = sizeof(checkerboardPixels);
-            textureData.rowPitch = 4U * sizeof(std::uint32_t);
-            textureData.slicePitch = sizeof(checkerboardPixels);
-            GraphicsResult result = device_.CreateTexture(
-                textureDesc, &textureData, 1U, checkerboardTexture_);
-            if (engine::graphics::Failed(result))
-                return Fail("checkerboard texture creation", result);
-            r3dOutToLog("[Graphics][DX11] Shared fallback checkerboard created\n");
+            textureData.dataSize = sizeof(std::uint32_t);
+            textureData.rowPitch = sizeof(std::uint32_t);
+            textureData.slicePitch = sizeof(std::uint32_t);
+            GraphicsResult result = GraphicsResult::Success;
+            constexpr const char* fallbackNames[]={"BaseColor white","Normal flat","SpecularGloss black","Roughness white","Emissive black","SpecularPower white"};
+            for (std::size_t semantic=0U;semantic<fallbackTextures_.size();++semantic)
+            {
+                textureData.data=reinterpret_cast<const std::byte*>(&fallbackPixels[semantic]);
+                result=device_.CreateTexture(textureDesc,&textureData,1U,fallbackTextures_[semantic]);
+                if(engine::graphics::Failed(result))return Fail("semantic fallback texture creation",result);
+                r3dOutToLog("[Graphics][DX11] Shared fallback created: %s\n",fallbackNames[semantic]);
+            }
+            r3dOutToLog("[Graphics][DX11] Six shared semantic fallback textures created\n");
 
             engine::graphics::BufferDesc constantBufferDesc;
             constantBufferDesc.byteSize = sizeof(StudioFrameConstants);
@@ -813,35 +865,41 @@ float4 PSMain(VertexOutput input) : SV_Target0
                     auto& preview = previewMaterials_.back();
                     preview.asset = std::move(sources[slot]);
                     const auto& md = preview.asset.GetDesc();
-                    preview.textureHandle = checkerboardTexture_;
-                    if (md.baseColorTexture)
+                    preview.textureHandles = fallbackTextures_;
+                    const std::array<const std::optional<engine::assets::AssetPath>*,6U> materialPaths={&md.baseColorTexture,&md.normalTexture,&md.specularGlossTexture,&md.roughnessTexture,&md.emissiveTexture,&md.specularPowerTexture};
+                    for(std::size_t semantic=0U;semantic<materialPaths.size();++semantic)
                     {
-                        const std::string textureKey = md.baseColorTexture->String();
+                        if(!*materialPaths[semantic])continue;
+                        const bool color=semantic==0U||semantic==4U;
+                        const std::string textureKey = (*materialPaths[semantic])->String()+(color?"|color":"|linear");
                         const auto cachedTexture = textureLookup.find(textureKey);
                         if (cachedTexture != textureLookup.end())
                         {
                             auto& entry = textureCache_[cachedTexture->second];
-                            preview.textureHandle = entry.texture->GetHandle();
+                            preview.textureHandles[semantic] = entry.texture->GetHandle();
+                            preview.nativeSrgb[semantic]=entry.color;
                             ++entry.bindingCount; ++reusedDdsBindings_;
                         }
                         else
                         {
                             std::unique_ptr<engine::assets::LoadedAsset> loaded;
-                            const auto assetResult = LoadCookedAsset(*md.baseColorTexture, engine::assets::AssetType::Texture, loaded);
+                            const auto assetResult = LoadCookedAsset(**materialPaths[semantic], engine::assets::AssetType::Texture, loaded);
                             if (engine::assets::Failed(assetResult)) return Fail("DDS AssetManager load", GraphicsResult::InvalidArgument);
                             engine::assets::TextureAsset texture = static_cast<engine::assets::TextureLoadedAsset*>(loaded.get())->ReleaseTexture();
+                            const bool nativeSrgb=engine::graphics::IsSrgbFormat(texture.GetDesc().format);
                             StudioTextureCacheEntry entry;
-                            entry.path = *md.baseColorTexture;
+                            entry.path = **materialPaths[semantic]; entry.color=nativeSrgb;
                             entry.texture = std::make_unique<engine::assets::GpuTexture>();
                             result = entry.texture->Upload(device_, texture);
                             if (engine::graphics::Failed(result)) return Fail("DDS GpuTexture upload", result);
                             entry.bindingCount = 1U;
-                            preview.textureHandle = entry.texture->GetHandle();
+                            preview.textureHandles[semantic] = entry.texture->GetHandle();
+                            preview.nativeSrgb[semantic]=nativeSrgb;
                             const std::size_t textureIndex = textureCache_.size();
                             textureCache_.push_back(std::move(entry));
                             textureLookup.emplace(textureKey, textureIndex);
                         }
-                        preview.fallbackTexture = false;
+                        preview.fallbackTextures[semantic] = false;
                     }
                     engine::graphics::SamplerDesc samplerDesc = md.sampler;
                     samplerDesc.debugName = "Studio preview material sampler";
@@ -852,11 +910,12 @@ float4 PSMain(VertexOutput input) : SV_Target0
                     if (engine::graphics::Failed(result)) return Fail("material constant buffer creation", result);
                     StudioMaterialConstants constants{};
                     std::memcpy(constants.baseColor, md.baseColorFactor.data(), sizeof(constants.baseColor));
-                    std::memcpy(constants.emissiveMetallic, md.emissiveFactor.data(), sizeof(float) * 3U);
-                    constants.emissiveMetallic[3] = md.metallicFactor;
-                    constants.roughnessAlpha[0] = md.roughnessFactor;
-                    constants.roughnessAlpha[1] = md.alphaCutoff;
-                    constants.roughnessAlpha[2] = static_cast<float>(md.alphaMode);
+                    std::memcpy(constants.emissiveFactorStrength, md.emissiveFactor.data(), sizeof(float) * 3U);
+                    constants.emissiveFactorStrength[3] = md.emissiveStrength;
+                    constants.surfaceParams[0] = md.roughnessFactor; constants.surfaceParams[1] = md.alphaCutoff;
+                    constants.surfaceParams[2] = static_cast<float>(md.alphaMode); constants.surfaceParams[3] = md.normalScale;
+                    constants.specularParams[0]=md.specularIntensity;constants.specularParams[1]=md.specularPower;constants.specularParams[2]=md.reflectionFactor;constants.specularParams[3]=static_cast<float>(materialDebugMode_);
+                    constants.textureFlags[0]=preview.nativeSrgb[0]?1.0F:0.0F;constants.textureFlags[1]=preview.nativeSrgb[4]?1.0F:0.0F;
                     result = context_->UpdateBuffer(preview.constantBuffer, &constants, sizeof(constants));
                     if (engine::graphics::Failed(result)) return Fail("material constant buffer update", result);
                 }
@@ -887,7 +946,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
             const engine::math::Matrix4 wvp=world*view*projection;
             StudioFrameConstants constants{};
             std::memcpy(constants.worldViewProjection,wvp.Data(),sizeof(constants.worldViewProjection));
-            std::memcpy(constants.world,world.Data(),sizeof(constants.world)); constants.frameData[0]=elapsedSeconds_;
+            std::memcpy(constants.world,world.Data(),sizeof(constants.world)); constants.frameData[0]=elapsedSeconds_; constants.frameData[1]=distance;
             const GraphicsResult result = context_->UpdateBuffer(
                 constantBuffer_, &constants, sizeof(constants));
             if (engine::graphics::Failed(result))
@@ -897,7 +956,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
 
         void DestroyBindingResources() noexcept
         {
-            const bool hadResources = !previewMaterials_.empty() || checkerboardTexture_.IsValid() || constantBuffer_.IsValid();
+            const bool hadResources = !previewMaterials_.empty() || fallbackTextures_[0].IsValid() || constantBuffer_.IsValid();
             for (auto& material : previewMaterials_)
             {
                 if (material.sampler.IsValid()) (void)device_.DestroySampler(material.sampler);
@@ -907,14 +966,14 @@ float4 PSMain(VertexOutput input) : SV_Target0
             slotToPreview_.clear();
             for (auto& entry : textureCache_) if (entry.texture) (void)entry.texture->Release(device_);
             textureCache_.clear();
-            if (checkerboardTexture_.IsValid())
+            for(auto& fallback:fallbackTextures_) if (fallback.IsValid())
             {
                 const GraphicsResult result =
-                    device_.DestroyTexture(checkerboardTexture_);
+                    device_.DestroyTexture(fallback);
                 if (engine::graphics::Failed(result))
-                    r3dOutToLog("[Graphics][DX11] Checkerboard destruction failed: %s\n",
+                        r3dOutToLog("[Graphics][DX11] Fallback texture destruction failed: %s\n",
                         engine::graphics::ToString(result));
-                checkerboardTexture_ = {};
+                fallback = {};
             }
             if (constantBuffer_.IsValid())
             {
@@ -969,11 +1028,11 @@ float4 PSMain(VertexOutput input) : SV_Target0
                     const std::size_t pipelineIndex = alpha * 2U + (material.asset.GetDesc().doubleSided ? 1U : 0U);
                     result = context_->SetGraphicsPipeline(pipelines_[pipelineIndex]);
                     if (engine::graphics::Failed(result)) return FailFrame("material pipeline bind", result);
-                    result = context_->SetShaderResources(engine::graphics::ShaderStage::Pixel, 0U, &material.textureHandle, 1U);
+                    result = context_->SetShaderResources(engine::graphics::ShaderStage::Pixel, 0U, material.textureHandles.data(), material.textureHandles.size());
                     if (engine::graphics::Failed(result)) return FailFrame("material texture bind", result);
                     result = context_->SetSamplers(engine::graphics::ShaderStage::Pixel, 0U, &material.sampler, 1U);
                     if (engine::graphics::Failed(result)) return FailFrame("material sampler bind", result);
-                    result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel, 0U, &material.constantBuffer, 1U);
+                    result = context_->SetConstantBuffers(engine::graphics::ShaderStage::Pixel, 1U, &material.constantBuffer, 1U);
                     if (engine::graphics::Failed(result)) return FailFrame("material constant buffer bind", result);
                     result = context_->DrawIndexed(submesh->indexCount, submesh->firstIndex, submesh->baseVertex);
                     if (engine::graphics::Failed(result)) return FailFrame("submesh DrawIndexed", result);
@@ -985,7 +1044,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
                 if (externalModel_)
                 {
                     std::size_t fallbackCount = 0U;
-                    for (const auto& material : previewMaterials_) if (material.fallbackTexture) ++fallbackCount;
+                    for (const auto& material : previewMaterials_) for(const bool fallback:material.fallbackTextures)if(fallback)++fallbackCount;
                     r3dOutToLog("[Graphics][DX11] First model draw: model=%s submeshes=%zu materials=%zu DDS=%zu fallback=%zu opaque=%zu mask=%zu blend=%zu\n",
                         modelPathText_.c_str(), gpuMesh_.GetSubmeshCount(), slotToPreview_.size(), textureCache_.size(), fallbackCount,
                         drawCounts[0], drawCounts[1], drawCounts[2]);
@@ -1205,7 +1264,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         engine::assets::MeshAsset meshAsset_;
         engine::assets::GpuMesh gpuMesh_;
         engine::graphics::BufferHandle constantBuffer_;
-        engine::graphics::TextureHandle checkerboardTexture_;
+        std::array<engine::graphics::TextureHandle,6U> fallbackTextures_{};
         engine::assets::FileAssetSource assetSource_;
         engine::assets::AssetManager assetManager_;
         engine::assets::AssetLoaderRegistry assetRegistry_;
@@ -1219,6 +1278,7 @@ float4 PSMain(VertexOutput input) : SV_Target0
         std::vector<StudioTextureCacheEntry> textureCache_;
         std::vector<std::size_t> slotToPreview_;
         std::size_t reusedDdsBindings_ = 0U;
+        int materialDebugMode_ = 0;
         std::string modelPathText_;
         std::uint32_t width_ = 0, height_ = 0;
         std::uint32_t pendingWidth_ = 0, pendingHeight_ = 0;

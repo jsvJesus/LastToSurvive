@@ -12,6 +12,7 @@
 #include "Platform/File.h"
 
 #include <Windows.h>
+#include <array>
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
@@ -181,32 +182,39 @@ int CookModel(const ModelOptions& rawOptions)
         const auto* record = library.FindMaterial(materialName);
         if (record == nullptr) return fail("material name lookup", AssetResult::NotFound);
 
-        engine::legacy::assets::LegacyTextureResolution resolution;
-        const engine::assets::AssetPath* texturePath = nullptr;
+        std::array<engine::legacy::assets::LegacyTextureResolution, 6U> resolutions;
+        const std::array<std::pair<const char*, const std::string*>, 6U> declared = {{{"BaseColor", &record->texture},
+            {"Normal", &record->normalMap}, {"SpecularGloss", &record->specularMap}, {"Roughness", &record->envMap},
+            {"Emissive", &record->glowMap}, {"SpecularPower", &record->specularPowerMap}}};
+        std::array<const engine::assets::AssetPath*, 6U> texturePaths{};
         auto textureAlpha = engine::legacy::assets::LegacyTextureAlpha::NoAlpha;
-        if (!record->texture.empty())
+        for (std::size_t semantic = 0U; semantic < declared.size(); ++semantic)
         {
+            if (declared[semantic].second->empty()) continue;
             result = engine::legacy::assets::LegacyMaterialTextureResolver::ResolveDiffuse(
-                dataRoot, materialFile, input, record->imagesDir, record->texture,
+                dataRoot, materialFile, input, record->imagesDir, *declared[semantic].second,
                 rawOptions.relaxedTextureLookup ? engine::legacy::assets::LegacyTextureLookupPolicy::Relaxed : engine::legacy::assets::LegacyTextureLookupPolicy::Strict,
-                resolution);
+                resolutions[semantic]);
             if (engine::assets::Succeeded(result))
             {
                 engine::assets::TextureAsset decodedTexture;
-                result = DecodeDds(dataRoot, resolution.path, decodedTexture);
+                result = DecodeDds(dataRoot, resolutions[semantic].path, decodedTexture);
                 if (engine::assets::Failed(result)) return fail("DDS validation", result);
-                textureAlpha = engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(decodedTexture);
-                texturePath = &resolution.path;
-                if (resolution.usedRelaxedFallback) std::fprintf(stderr, "warning: relaxed texture fallback used for %s\n", materialName.c_str());
+                if (semantic == 0U) textureAlpha = engine::legacy::assets::LegacyMaterialConverter::DetectTextureAlpha(decodedTexture);
+                texturePaths[semantic] = &resolutions[semantic].path;
+                if (resolutions[semantic].usedRelaxedFallback) std::fprintf(stderr, "warning: relaxed %s lookup used for %s\n", declared[semantic].first, materialName.c_str());
             }
             else if (result == AssetResult::NotFound && rawOptions.allowMissingTextures)
-            { ++missingCount; std::fprintf(stderr, "warning: missing diffuse texture for %s\n", materialName.c_str()); }
-            else return fail("diffuse texture resolution", result);
+            { ++missingCount; std::fprintf(stderr, "warning: missing %s texture for %s\n", declared[semantic].first, materialName.c_str()); }
+            else return fail("material texture resolution", result);
         }
 
         engine::assets::MaterialAsset material;
         std::vector<std::string> diagnostics;
-        result = engine::legacy::assets::LegacyMaterialConverter::Convert(*record, texturePath, textureAlpha, material, diagnostics);
+        engine::legacy::assets::LegacyResolvedMaterialTextures convertedTextures;
+        convertedTextures.baseColor=texturePaths[0]; convertedTextures.normal=texturePaths[1]; convertedTextures.specularGloss=texturePaths[2];
+        convertedTextures.roughness=texturePaths[3]; convertedTextures.emissive=texturePaths[4]; convertedTextures.specularPower=texturePaths[5];
+        result = engine::legacy::assets::LegacyMaterialConverter::Convert(*record, convertedTextures, textureAlpha, material, diagnostics);
         if (engine::assets::Failed(result)) return fail("material conversion", result);
         std::string stem = FileStem(materialName);
         if (!filenames.insert(stem).second)
@@ -226,9 +234,12 @@ int CookModel(const ModelOptions& rawOptions)
         result = error ? AssetResult::InvalidPath : engine::assets::AssetPath::TryCreate(relative, cookedMaterialPath);
         if (engine::assets::Failed(result)) return fail("material asset path", result);
         materialPaths.push_back(cookedMaterialPath);
-        std::printf("slot[%zu]: %s -> %s -> %s, alpha=%s, doubleSided=%s\n", slot, materialName.c_str(),
-                    cookedMaterialPath.String().c_str(), texturePath ? texturePath->String().c_str() : "<fallback>",
-                    AlphaName(material.GetDesc().alphaMode), material.GetDesc().doubleSided ? "true" : "false");
+        const auto& cooked = material.GetDesc();
+        std::printf("slot[%zu]: %s -> %s, alpha=%s, doubleSided=%s, normalScale=%.3f, specularPower=%.3f, reflection=%.3f, emissive=%.3f\n", slot, materialName.c_str(),
+                    cookedMaterialPath.String().c_str(), AlphaName(cooked.alphaMode), cooked.doubleSided ? "true" : "false",
+                    cooked.normalScale, cooked.specularPower, cooked.reflectionFactor, cooked.emissiveStrength);
+        for (std::size_t semantic=0U;semantic<declared.size();++semantic)
+            std::printf("  %s: %s\n",declared[semantic].first,texturePaths[semantic]?texturePaths[semantic]->String().c_str():"<fallback>");
         for (const auto& diagnostic : diagnostics) std::printf("  diagnostic: %s\n", diagnostic.c_str());
         std::wprintf(L"  material library: %ls\n", materialFile.c_str());
     }

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <new>
 #include <string_view>
+#include <unordered_map>
 
 namespace engine::legacy::assets
 {
@@ -52,13 +53,8 @@ bool Color(const std::string_view source, std::array<std::uint8_t, 3U>& color) n
     }
     return Trim(source.substr(cursor)).empty();
 }
-bool DeferredTextureKey(const std::string_view key) noexcept
-{
-    constexpr std::string_view keys[] = {"NormalMap", "SpecularMap", "EnvMap", "GlowMap", "DetailNMap",
-        "DensityMap", "CamoMask", "DistortionMap", "SpecPowMap"};
-    for (const auto candidate : keys) if (Equal(key, candidate)) return true;
-    return false;
-}
+void TextureValue(const std::string_view value, std::string& output)
+{ output = value.empty() || Equal(value, "NONE") ? std::string{} : std::string(value); }
 engine::assets::AssetResult Diagnostic(LegacyMaterialRecord& material, const std::string_view text) noexcept
 {
     try { material.diagnostics.emplace_back(text); }
@@ -75,19 +71,26 @@ engine::assets::AssetResult ParseField(LegacyMaterialRecord& material, const std
     if (Equal(key, "AlphaTransparent")) return Boolean(value, material.alphaTransparent) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     if (Equal(key, "ForceTransparent")) return Boolean(value, material.forceTransparent) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     if (Equal(key, "TransparentShadows")) return Boolean(value, material.transparentShadows) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
-    if (Equal(key, "Texture")) { material.texture = Equal(value, "NONE") ? std::string{} : std::string(value); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "Texture")) { TextureValue(value, material.texture); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "NormalMap")) { TextureValue(value, material.normalMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "SpecularMap")) { TextureValue(value, material.specularMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "EnvMap")) { TextureValue(value, material.envMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "GlowMap")) { TextureValue(value, material.glowMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "DetailNMap")) { TextureValue(value, material.detailNormalMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "DensityMap")) { TextureValue(value, material.densityMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "CamoMask")) { TextureValue(value, material.camouflageMask); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "DistortionMap")) { TextureValue(value, material.distortionMap); return engine::assets::AssetResult::Success; }
+    if (Equal(key, "SpecPowMap")) { TextureValue(value, material.specularPowerMap); return engine::assets::AssetResult::Success; }
     if (Equal(key, "ImagesDir")) { material.imagesDir.assign(value); return engine::assets::AssetResult::Success; }
     if (Equal(key, "SelfIllumMultiplier")) return Float(value, material.selfIllumMultiplier) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
+    if (Equal(key, "NormalScale")) return Float(value, material.normalScale) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     if (Equal(key, "lowQMetallness")) return Float(value, material.lowQMetallness) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
+    if (Equal(key, "lowQSelfIllum")) return Float(value, material.lowQSelfIllum) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     if (Equal(key, "SpecularPower")) return Float(value, material.specularPower) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
+    if (Equal(key, "Specular1Power")) return Float(value, material.specular1Power) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     if (Equal(key, "ReflectionPower")) return Float(value, material.reflectionPower) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
-    if (DeferredTextureKey(key))
-    {
-        if (!value.empty() && !Equal(value, "NONE"))
-            try { material.deferredTextureSlots.emplace_back(std::string(key) + "=" + std::string(value)); }
-            catch (...) { return engine::assets::AssetResult::OutOfMemory; }
-        return engine::assets::AssetResult::Success;
-    }
+    if (Equal(key, "DetailScale")) return Float(value, material.detailScale) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
+    if (Equal(key, "DetailAmmount") || Equal(key, "DetailAmount")) return Float(value, material.detailAmount) ? engine::assets::AssetResult::Success : engine::assets::AssetResult::CorruptData;
     return Diagnostic(material, std::string("ignored key: ") + std::string(key));
 }
 }
@@ -110,6 +113,7 @@ engine::assets::AssetResult LegacyMaterialLibraryDecoder::Decode(
     const std::string_view text(reinterpret_cast<const char*>(source.GetData()), source.GetSize());
     LegacyMaterialLibraryData candidate;
     LegacyMaterialRecord current;
+    std::unordered_map<std::string, std::string, AsciiCaseInsensitiveHash, AsciiCaseInsensitiveEqual> fields;
     bool inside = false;
     std::size_t cursor = 0U;
     try
@@ -126,6 +130,7 @@ engine::assets::AssetResult LegacyMaterialLibraryDecoder::Decode(
             {
                 if (inside || candidate.materials_.size() >= MaximumMaterialCount) return engine::assets::AssetResult::CorruptData;
                 current = {};
+                fields.clear();
                 inside = true;
                 continue;
             }
@@ -140,7 +145,16 @@ engine::assets::AssetResult LegacyMaterialLibraryDecoder::Decode(
             if (!inside) return engine::assets::AssetResult::CorruptData;
             const std::size_t equals = line.find('=');
             if (equals == std::string_view::npos || Trim(line.substr(0U, equals)).empty()) return engine::assets::AssetResult::CorruptData;
-            const auto result = ParseField(current, Trim(line.substr(0U, equals)), line.substr(equals + 1U));
+            const auto key = Trim(line.substr(0U, equals));
+            const auto value = Trim(line.substr(equals + 1U));
+            const auto found = fields.find(std::string(key));
+            if (found != fields.end())
+            {
+                if (found->second != value) return engine::assets::AssetResult::AlreadyExists;
+                continue;
+            }
+            fields.emplace(std::string(key), std::string(value));
+            const auto result = ParseField(current, key, value);
             if (engine::assets::Failed(result)) return result;
         }
     }
