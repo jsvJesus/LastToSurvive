@@ -26,6 +26,8 @@
 !/External/dxsdk/Include/**
 !/External/discord_social_sdk/include/
 !/External/discord_social_sdk/include/**
+!/External/R3/
+!/External/R3/**
 
 # Explicitly exclude root runtime/build folder
 /bin/
