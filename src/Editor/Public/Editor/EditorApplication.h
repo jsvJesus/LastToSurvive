@@ -5,6 +5,7 @@
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
+#include "Editor/EditorTransformController.h"
 
 #include <Application/Application.h>
 
@@ -63,6 +64,8 @@ namespace lts::editor
         EditorSceneDocument sceneDocument_;
 
         EditorCameraController cameraController_;
+        EditorTransformController transformController_;
+
         EditorGridRenderer gridRenderer_;
         EditorSceneRenderer sceneRenderer_;
         EditorShell editorShell_;

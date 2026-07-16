@@ -132,10 +132,34 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         };
 
         constexpr MarkerColor SelectionColor
+{
+    1.0F,
+    0.58F,
+    0.08F,
+    1.0F
+};
+
+        constexpr MarkerColor GizmoXColor
         {
+            0.95F,
+            0.12F,
+            0.10F,
+            1.0F
+        };
+
+        constexpr MarkerColor GizmoYColor
+        {
+            0.20F,
+            0.90F,
+            0.22F,
+            1.0F
+        };
+
+        constexpr MarkerColor GizmoZColor
+        {
+            0.12F,
+            0.42F,
             1.0F,
-            0.58F,
-            0.08F,
             1.0F
         };
 
@@ -791,10 +815,129 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             }
         }
 
+        void AddGizmoArrow(
+        std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+        std::size_t& vertexCount,
+        const DirectX::XMFLOAT3& origin,
+        const DirectX::XMFLOAT3& axis,
+        const DirectX::XMFLOAT3& arrowSideA,
+        const DirectX::XMFLOAT3& arrowSideB,
+        const MarkerColor& color) noexcept
+    {
+        constexpr float AxisLength = 2.5F;
+        constexpr float ArrowLength = 0.35F;
+        constexpr float ArrowWidth = 0.18F;
+
+        const DirectX::XMFLOAT3 end
+        {
+            origin.x + axis.x * AxisLength,
+            origin.y + axis.y * AxisLength,
+            origin.z + axis.z * AxisLength
+        };
+
+        const DirectX::XMFLOAT3 arrowBase
+        {
+            end.x - axis.x * ArrowLength,
+            end.y - axis.y * ArrowLength,
+            end.z - axis.z * ArrowLength
+        };
+
+        AddWorldLine(
+            vertices,
+            vertexCount,
+            origin,
+            end,
+            color);
+
+        AddWorldLine(
+            vertices,
+            vertexCount,
+            end,
+            {
+                arrowBase.x + arrowSideA.x * ArrowWidth,
+                arrowBase.y + arrowSideA.y * ArrowWidth,
+                arrowBase.z + arrowSideA.z * ArrowWidth
+            },
+            color);
+
+        AddWorldLine(
+            vertices,
+            vertexCount,
+            end,
+            {
+                arrowBase.x - arrowSideA.x * ArrowWidth,
+                arrowBase.y - arrowSideA.y * ArrowWidth,
+                arrowBase.z - arrowSideA.z * ArrowWidth
+            },
+            color);
+
+        AddWorldLine(
+            vertices,
+            vertexCount,
+            end,
+            {
+                arrowBase.x + arrowSideB.x * ArrowWidth,
+                arrowBase.y + arrowSideB.y * ArrowWidth,
+                arrowBase.z + arrowSideB.z * ArrowWidth
+            },
+            color);
+
+        AddWorldLine(
+            vertices,
+            vertexCount,
+            end,
+            {
+                arrowBase.x - arrowSideB.x * ArrowWidth,
+                arrowBase.y - arrowSideB.y * ArrowWidth,
+                arrowBase.z - arrowSideB.z * ArrowWidth
+            },
+            color);
+    }
+
+    void AddTransformGizmo(
+        std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+        std::size_t& vertexCount,
+        const EditorSceneEntity& entity) noexcept
+    {
+        DirectX::XMFLOAT3 origin
+        {
+            entity.transform.position[0],
+            entity.transform.position[1] + 0.08F,
+            entity.transform.position[2]
+        };
+
+        AddGizmoArrow(
+            vertices,
+            vertexCount,
+            origin,
+            {1.0F, 0.0F, 0.0F},
+            {0.0F, 1.0F, 0.0F},
+            {0.0F, 0.0F, 1.0F},
+            GizmoXColor);
+
+        AddGizmoArrow(
+            vertices,
+            vertexCount,
+            origin,
+            {0.0F, 1.0F, 0.0F},
+            {1.0F, 0.0F, 0.0F},
+            {0.0F, 0.0F, 1.0F},
+            GizmoYColor);
+
+        AddGizmoArrow(
+            vertices,
+            vertexCount,
+            origin,
+            {0.0F, 0.0F, 1.0F},
+            {1.0F, 0.0F, 0.0F},
+            {0.0F, 1.0F, 0.0F},
+            GizmoZColor);
+    }
+
         [[nodiscard]]
         std::size_t BuildSceneVertices(
-            const EditorSceneDocument& document,
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
+        const EditorSceneDocument& document,
+        std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
         {
             std::size_t vertexCount = 0U;
 
@@ -813,6 +956,16 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 {
                     break;
                 }
+            }
+
+            if (
+                selectedIndex < entities.size() &&
+                vertexCount < vertices.size())
+            {
+                AddTransformGizmo(
+                    vertices,
+                    vertexCount,
+                    entities[selectedIndex]);
             }
 
             return vertexCount;

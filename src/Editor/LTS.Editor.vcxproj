@@ -230,6 +230,7 @@
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
+    <ClInclude Include="Public\Editor\EditorTransformController.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -240,6 +241,7 @@
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
+    <ClCompile Include="Private\EditorTransformController.cpp" />
     <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>
 

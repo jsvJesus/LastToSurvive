@@ -105,12 +105,17 @@ namespace lts::editor
 
         editorShell_.RefreshScene(sceneDocument_);
 
-        cameraController_.SetViewportWindow(
-            editorShell_.GetViewportWindowHandle());
+        const engine::platform::NativeWindowHandle viewportWindow =
+            editorShell_.GetViewportWindowHandle();
+
+        cameraController_.SetViewportWindow(viewportWindow);
+        transformController_.SetViewportWindow(viewportWindow);
 
         if (!InitializeGraphics())
         {
+            transformController_.SetViewportWindow({});
             cameraController_.SetViewportWindow({});
+
             sceneDocument_.Clear();
             editorShell_.Shutdown();
 
@@ -125,7 +130,10 @@ namespace lts::editor
                 "Failed to initialize editor scene renderer.");
 
             sceneRenderer_.Shutdown(graphicsDevice_);
+
+            transformController_.SetViewportWindow({});
             cameraController_.SetViewportWindow({});
+
             sceneDocument_.Clear();
             ShutdownGraphics();
             editorShell_.Shutdown();
@@ -148,6 +156,7 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
+        transformController_.SetViewportWindow({});
         cameraController_.SetViewportWindow({});
 
         sceneRenderer_.Shutdown(graphicsDevice_);
@@ -167,22 +176,14 @@ namespace lts::editor
         std::size_t selectedEntityIndex =
             InvalidEditorEntityIndex;
 
-        /*
-         * Выбор через World Outliner.
-         */
         if (
-            editorShell_.ConsumeHierarchySelection(
-                selectedEntityIndex) &&
-            sceneDocument_.SelectEntityByIndex(
-                selectedEntityIndex))
+            editorShell_.ConsumeHierarchySelection(selectedEntityIndex) &&
+            sceneDocument_.SelectEntityByIndex(selectedEntityIndex))
         {
             editorShell_.ShowEntityDetails(
                 sceneDocument_.GetSelectedEntity());
         }
 
-        /*
-         * Выбор кликом во viewport.
-         */
         ViewportClick viewportClick;
 
         if (editorShell_.ConsumeViewportClick(viewportClick))
@@ -212,8 +213,7 @@ namespace lts::editor
                     pickRay,
                     pickedEntityIndex,
                     pickedDistance) &&
-                sceneDocument_.SelectEntityByIndex(
-                    pickedEntityIndex))
+                sceneDocument_.SelectEntityByIndex(pickedEntityIndex))
             {
                 editorShell_.SelectHierarchyEntity(
                     pickedEntityIndex);
@@ -232,8 +232,16 @@ namespace lts::editor
             }
         }
 
-        EditorMode changedMode =
-            EditorMode::Level;
+        if (
+            transformController_.Update(
+                sceneDocument_,
+                deltaSeconds))
+        {
+            editorShell_.ShowEntityDetails(
+                sceneDocument_.GetSelectedEntity());
+        }
+
+        EditorMode changedMode = EditorMode::Level;
 
         if (editorShell_.ConsumeModeChanged(changedMode))
         {

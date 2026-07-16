@@ -1,5 +1,6 @@
 #include "Editor/EditorSceneDocument.h"
 
+#include <cmath>
 #include <utility>
 
 namespace lts::editor
@@ -188,6 +189,43 @@ namespace lts::editor
     void EditorSceneDocument::ClearSelection() noexcept
     {
         selectedIndex_ = InvalidEditorEntityIndex;
+    }
+
+    bool EditorSceneDocument::TranslateSelectedEntity(
+        const float translationX,
+        const float translationY,
+        const float translationZ) noexcept
+    {
+        if (selectedIndex_ >= entities_.size())
+        {
+            return false;
+        }
+
+        if (
+            !std::isfinite(translationX) ||
+            !std::isfinite(translationY) ||
+            !std::isfinite(translationZ))
+        {
+            return false;
+        }
+
+        if (
+            translationX == 0.0F &&
+            translationY == 0.0F &&
+            translationZ == 0.0F)
+        {
+            return false;
+        }
+
+        EditorTransform& transform =
+            entities_[selectedIndex_].transform;
+
+        transform.position[0] += translationX;
+        transform.position[1] += translationY;
+        transform.position[2] += translationZ;
+
+        dirty_ = true;
+        return true;
     }
 
     bool EditorSceneDocument::IsDirty() const noexcept
