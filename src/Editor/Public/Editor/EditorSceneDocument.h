@@ -57,6 +57,16 @@ namespace lts::editor
         EditorTransform transform;
     };
 
+    struct EditorSceneSnapshot final
+    {
+        std::vector<EditorSceneEntity> entities;
+
+        EditorEntityId nextEntityId = 1U;
+        std::size_t selectedIndex = InvalidEditorEntityIndex;
+
+        bool dirty = false;
+    };
+
     class EditorSceneDocument final
     {
     public:
@@ -76,10 +86,16 @@ namespace lts::editor
             const EditorTransform& transform);
 
         [[nodiscard]]
-        const std::vector<EditorSceneEntity>& GetEntities() const noexcept;
+        const std::vector<EditorSceneEntity>&
+            GetEntities() const noexcept;
 
         [[nodiscard]]
-        const EditorSceneEntity* GetSelectedEntity() const noexcept;
+        const EditorSceneEntity*
+            GetSelectedEntity() const noexcept;
+
+        [[nodiscard]]
+        EditorSceneEntity*
+            GetSelectedEntityMutable() noexcept;
 
         [[nodiscard]]
         std::size_t GetSelectedIndex() const noexcept;
@@ -90,10 +106,27 @@ namespace lts::editor
         void ClearSelection() noexcept;
 
         [[nodiscard]]
+        bool SetSelectedTransform(
+            const EditorTransform& transform) noexcept;
+
+        [[nodiscard]]
         bool TranslateSelectedEntity(
             float translationX,
             float translationY,
             float translationZ) noexcept;
+
+        [[nodiscard]]
+        bool DuplicateSelectedEntity();
+
+        [[nodiscard]]
+        bool DeleteSelectedEntity() noexcept;
+
+        [[nodiscard]]
+        EditorSceneSnapshot CreateSnapshot() const;
+
+        void RestoreSnapshot(
+            const EditorSceneSnapshot& snapshot,
+            bool markDirty);
 
         [[nodiscard]]
         bool IsDirty() const noexcept;

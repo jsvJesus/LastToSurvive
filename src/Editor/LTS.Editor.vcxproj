@@ -58,13 +58,6 @@
   <PropertyGroup Label="UserMacros" />
 
   <PropertyGroup>
-    <!--
-      ProjectDir:
-      Z:\WarZ\src\Editor\
- 
-      LTSRoot:
-      Z:\WarZ\game\
-    -->
     <LTSRoot>$(ProjectDir)..\..\game\</LTSRoot>
     <LTSLogsDir>$(LTSRoot)Logs\</LTSLogsDir>
     <LTSDataDir>$(LTSRoot)Data\</LTSDataDir>
@@ -79,13 +72,11 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerWorkingDirectory>$(LTSRoot)</LocalDebuggerWorkingDirectory>
-
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
     <LocalDebuggerWorkingDirectory>$(LTSRoot)</LocalDebuggerWorkingDirectory>
-
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 
@@ -114,17 +105,17 @@
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
 
-    <AdditionalIncludeDirectories>
-	    $(ProjectDir)Public;
-		$(ProjectDir)..\Engine\Application\Public;
-		$(ProjectDir)..\Engine\Core\Public;
-		$(ProjectDir)..\Engine\Graphics\Public;
-		$(ProjectDir)..\Engine\GraphicsDX11\Public;
-		$(ProjectDir)..\Engine\Platform\Public;
-		$(ProjectDir)..\Engine\Runtime\Public;
-		$(ProjectDir)..\Engine\Tasks\Public;
-		%(AdditionalIncludeDirectories)
-	</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+        $(ProjectDir)Public;
+        $(ProjectDir)..\Engine\Application\Public;
+        $(ProjectDir)..\Engine\Core\Public;
+        $(ProjectDir)..\Engine\Graphics\Public;
+        $(ProjectDir)..\Engine\GraphicsDX11\Public;
+        $(ProjectDir)..\Engine\Platform\Public;
+        $(ProjectDir)..\Engine\Runtime\Public;
+        $(ProjectDir)..\Engine\Tasks\Public;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
 
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -138,7 +129,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-
       <ProgramDatabaseFile>$(LTSPdbDir)$(TargetName).pdb</ProgramDatabaseFile>
 
       <AdditionalDependencies>
@@ -181,17 +171,17 @@
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
 
-    <AdditionalIncludeDirectories>
-	  $(ProjectDir)Public;
-	  $(ProjectDir)..\Engine\Application\Public;
-	  $(ProjectDir)..\Engine\Core\Public;
-	  $(ProjectDir)..\Engine\Graphics\Public;
-	  $(ProjectDir)..\Engine\GraphicsDX11\Public;
-	  $(ProjectDir)..\Engine\Platform\Public;
-	  $(ProjectDir)..\Engine\Runtime\Public;
-	  $(ProjectDir)..\Engine\Tasks\Public;
-	  %(AdditionalIncludeDirectories)
-	</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+        $(ProjectDir)Public;
+        $(ProjectDir)..\Engine\Application\Public;
+        $(ProjectDir)..\Engine\Core\Public;
+        $(ProjectDir)..\Engine\Graphics\Public;
+        $(ProjectDir)..\Engine\GraphicsDX11\Public;
+        $(ProjectDir)..\Engine\Platform\Public;
+        $(ProjectDir)..\Engine\Runtime\Public;
+        $(ProjectDir)..\Engine\Tasks\Public;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
 
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -205,7 +195,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-
       <ProgramDatabaseFile>$(LTSPdbDir)$(TargetName).pdb</ProgramDatabaseFile>
 
       <AdditionalDependencies>
@@ -225,18 +214,23 @@
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
     <ClInclude Include="Public\Editor\EditorCameraController.h" />
+    <ClInclude Include="Public\Editor\EditorCommandHistory.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
+    <ClInclude Include="Public\Editor\EditorInspectorPanel.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
     <ClInclude Include="Public\Editor\EditorTransformController.h" />
+    <ClInclude Include="Public\Editor\EditorTransformTypes.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
     <ClCompile Include="Private\EditorCameraController.cpp" />
+    <ClCompile Include="Private\EditorCommandHistory.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
+    <ClCompile Include="Private\EditorInspectorPanel.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />

@@ -1,5 +1,4 @@
 #include "Editor/EditorApplication.h"
-#include "Editor/EditorScenePicker.h"
 
 #include <Core/Log.h>
 
@@ -23,54 +22,41 @@ namespace lts::editor
     namespace
     {
         [[nodiscard]]
-        lts::application::ApplicationDesc
-            CreateEditorDescription()
+        lts::application::ApplicationDesc CreateEditorDescription()
         {
             lts::application::ApplicationDesc description;
 
-            description.title =
-                L"LastToSurvive Editor";
-
+            description.title = L"LastToSurvive Editor";
             description.logFileName = "Logs/LTS.Editor.log";
-
             description.width = 1600;
             description.height = 900;
-
             description.resizable = true;
             description.startMaximized = false;
             description.enableDpiAwareness = true;
 
-            description.engineConfig.applicationName =
-                "LTS.Editor";
-
+            description.engineConfig.applicationName = "LTS.Editor";
             description.engineConfig.mode =
                 engine::runtime::EngineMode::Studio;
 
             description.engineConfig.rendererBackend =
-                engine::runtime::
-                    RendererBackend::D3D11;
+                engine::runtime::RendererBackend::D3D11;
 
-            description.engineConfig.enableValidation =
-                true;
-
-            description.engineConfig.enableMainThreadChecks =
-                true;
+            description.engineConfig.enableValidation = true;
+            description.engineConfig.enableMainThreadChecks = true;
 
             return description;
         }
     }
 
     EditorApplication::EditorApplication()
-        : Application(
-            CreateEditorDescription())
+        : Application(CreateEditorDescription())
     {
     }
 
-    EditorApplication::~EditorApplication() noexcept =
-        default;
+    EditorApplication::~EditorApplication() noexcept = default;
 
     lts::application::ApplicationResult
-    EditorApplication::OnInitialize() noexcept
+        EditorApplication::OnInitialize() noexcept
     {
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Information,
@@ -84,7 +70,8 @@ namespace lts::editor
                 "LTS.Editor",
                 "Failed to initialize editor shell.");
 
-            return lts::application::ApplicationResult::ClientInitializationFailed;
+            return lts::application::ApplicationResult::
+                ClientInitializationFailed;
         }
 
         try
@@ -100,10 +87,28 @@ namespace lts::editor
 
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::ClientInitializationFailed;
+            return lts::application::ApplicationResult::
+                ClientInitializationFailed;
         }
 
+        commandHistory_.Clear();
         editorShell_.RefreshScene(sceneDocument_);
+
+        if (!inspectorPanel_.Initialize(GetWindow().GetNativeHandle()))
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor",
+                "Failed to initialize editor inspector panel.");
+
+            sceneDocument_.Clear();
+            editorShell_.Shutdown();
+
+            return lts::application::ApplicationResult::
+                ClientInitializationFailed;
+        }
+
+        inspectorPanel_.Refresh(sceneDocument_);
 
         const engine::platform::NativeWindowHandle viewportWindow =
             editorShell_.GetViewportWindowHandle();
@@ -111,15 +116,20 @@ namespace lts::editor
         cameraController_.SetViewportWindow(viewportWindow);
         transformController_.SetViewportWindow(viewportWindow);
 
+        editorShell_.SetStatusText(
+            transformController_.BuildStatusText());
+
         if (!InitializeGraphics())
         {
             transformController_.SetViewportWindow({});
             cameraController_.SetViewportWindow({});
 
+            inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::ClientInitializationFailed;
+            return lts::application::ApplicationResult::
+                ClientInitializationFailed;
         }
 
         if (!sceneRenderer_.Initialize(graphicsDevice_))
@@ -134,11 +144,13 @@ namespace lts::editor
             transformController_.SetViewportWindow({});
             cameraController_.SetViewportWindow({});
 
+            inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
             ShutdownGraphics();
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::ClientInitializationFailed;
+            return lts::application::ApplicationResult::
+                ClientInitializationFailed;
         }
 
         engine::core::GetLogger().Write(
@@ -159,6 +171,9 @@ namespace lts::editor
         transformController_.SetViewportWindow({});
         cameraController_.SetViewportWindow({});
 
+        inspectorPanel_.Shutdown();
+        commandHistory_.Clear();
+
         sceneRenderer_.Shutdown(graphicsDevice_);
         sceneDocument_.Clear();
 
@@ -167,11 +182,14 @@ namespace lts::editor
     }
 
     void EditorApplication::OnUpdate(
-    const double deltaSeconds) noexcept
+        const double deltaSeconds) noexcept
     {
         cameraController_.Update(
             deltaSeconds,
             editorShell_.ConsumeViewportWheelSteps());
+
+        bool selectionChanged = false;
+        bool hierarchyChanged = false;
 
         std::size_t selectedEntityIndex =
             InvalidEditorEntityIndex;
@@ -180,65 +198,65 @@ namespace lts::editor
             editorShell_.ConsumeHierarchySelection(selectedEntityIndex) &&
             sceneDocument_.SelectEntityByIndex(selectedEntityIndex))
         {
-            editorShell_.ShowEntityDetails(
-                sceneDocument_.GetSelectedEntity());
+            selectionChanged = true;
         }
 
         ViewportClick viewportClick;
 
-        if (editorShell_.ConsumeViewportClick(viewportClick))
+        const bool hasViewportClick =
+            editorShell_.ConsumeViewportClick(viewportClick);
+
+        const EditorInteractionResult interactionResult =
+            transformController_.Update(
+                sceneDocument_,
+                commandHistory_,
+                cameraController_,
+                editorShell_.GetViewportSize(),
+                hasViewportClick
+                    ? &viewportClick
+                    : nullptr);
+
+        selectionChanged =
+            selectionChanged ||
+            interactionResult.selectionChanged;
+
+        hierarchyChanged =
+            hierarchyChanged ||
+            interactionResult.hierarchyChanged;
+
+        if (hierarchyChanged)
         {
-            const engine::platform::WindowSize viewportSize =
-                editorShell_.GetViewportSize();
-
-            EditorPickRay pickRay;
-
-            const bool rayBuilt =
-                cameraController_.BuildPickRay(
-                    viewportClick.x,
-                    viewportClick.y,
-                    viewportSize.width,
-                    viewportSize.height,
-                    pickRay);
-
-            std::size_t pickedEntityIndex =
-                InvalidEditorEntityIndex;
-
-            float pickedDistance = 0.0F;
-
-            if (
-                rayBuilt &&
-                EditorScenePicker::Pick(
-                    sceneDocument_,
-                    pickRay,
-                    pickedEntityIndex,
-                    pickedDistance) &&
-                sceneDocument_.SelectEntityByIndex(pickedEntityIndex))
-            {
-                editorShell_.SelectHierarchyEntity(
-                    pickedEntityIndex);
-
-                editorShell_.ShowEntityDetails(
-                    sceneDocument_.GetSelectedEntity());
-            }
-            else
-            {
-                sceneDocument_.ClearSelection();
-
-                editorShell_.SelectHierarchyEntity(
-                    InvalidEditorEntityIndex);
-
-                editorShell_.ShowEntityDetails(nullptr);
-            }
+            editorShell_.RefreshScene(sceneDocument_);
+        }
+        else if (selectionChanged)
+        {
+            editorShell_.SelectHierarchyEntity(
+                sceneDocument_.GetSelectedIndex());
         }
 
         if (
-            transformController_.Update(
-                sceneDocument_,
-                deltaSeconds))
+            selectionChanged ||
+            hierarchyChanged ||
+            interactionResult.documentChanged)
         {
             editorShell_.ShowEntityDetails(
                 sceneDocument_.GetSelectedEntity());
+
+            inspectorPanel_.Refresh(sceneDocument_);
+        }
+
+        if (inspectorPanel_.Update(
+                sceneDocument_,
+                commandHistory_))
+        {
+            editorShell_.ShowEntityDetails(
+                sceneDocument_.GetSelectedEntity());
+        }
+
+        if (interactionResult.statusChanged)
+        {
+            editorShell_.SetStatusText(
+                transformController_.BuildStatusText());
         }
 
         EditorMode changedMode = EditorMode::Level;
@@ -319,10 +337,7 @@ namespace lts::editor
 
         if (engine::graphics::Failed(result))
         {
-            ReportGraphicsFailure(
-                "SetViewport",
-                result);
-
+            ReportGraphicsFailure("SetViewport", result);
             return;
         }
 
@@ -335,7 +350,6 @@ namespace lts::editor
             ReportGraphicsFailure(
                 "SetSwapChainRenderTarget",
                 result);
-
             return;
         }
 
@@ -355,7 +369,6 @@ namespace lts::editor
             ReportGraphicsFailure(
                 "ClearSwapChainColor",
                 result);
-
             return;
         }
 
@@ -371,7 +384,6 @@ namespace lts::editor
             ReportGraphicsFailure(
                 "ClearDepthStencilTarget",
                 result);
-
             return;
         }
 
@@ -394,21 +406,20 @@ namespace lts::editor
             ReportGraphicsFailure(
                 "EditorGridRenderer::Render",
                 result);
-
             return;
         }
 
         result = sceneRenderer_.Render(
             *commandContext_,
             sceneDocument_,
-            viewProjection);
+            viewProjection,
+            transformController_.GetVisualState());
 
         if (engine::graphics::Failed(result))
         {
             ReportGraphicsFailure(
                 "EditorSceneRenderer::Render",
                 result);
-
             return;
         }
 
@@ -421,10 +432,7 @@ namespace lts::editor
 
         if (engine::graphics::Failed(result))
         {
-            ReportGraphicsFailure(
-                "Present",
-                result);
-
+            ReportGraphicsFailure("Present", result);
             return;
         }
 
@@ -460,128 +468,92 @@ namespace lts::editor
     }
 
     void EditorApplication::OnEvent(
-    const lts::application::
-        ApplicationEvent& event) noexcept
+        const lts::application::ApplicationEvent& event) noexcept
     {
         switch (event.type)
         {
-        case lts::application::
-            ApplicationEventType::Resize:
+            case lts::application::ApplicationEventType::Resize:
             {
                 editorShell_.Resize(
                     event.width,
                     event.height);
 
                 const auto viewportSize =
-                    editorShell_.
-                        GetViewportSize();
+                    editorShell_.GetViewportSize();
 
                 ResizeGraphics(
                     viewportSize.width,
                     viewportSize.height);
-
                 break;
             }
 
-        case lts::application::
-            ApplicationEventType::Minimized:
-            {
+            case lts::application::ApplicationEventType::Minimized:
                 swapChainOccluded_ = true;
                 break;
-            }
 
-        case lts::application::
-            ApplicationEventType::Restored:
+            case lts::application::ApplicationEventType::Restored:
             {
                 swapChainOccluded_ = false;
 
                 const auto viewportSize =
-                    editorShell_.
-                        GetViewportSize();
+                    editorShell_.GetViewportSize();
 
                 ResizeGraphics(
                     viewportSize.width,
                     viewportSize.height);
-
                 break;
             }
 
-        case lts::application::
-            ApplicationEventType::Activated:
-            {
+            case lts::application::ApplicationEventType::Activated:
                 swapChainOccluded_ = false;
                 break;
-            }
 
-        case lts::application::
-            ApplicationEventType::DpiChanged:
+            case lts::application::ApplicationEventType::DpiChanged:
             {
                 const auto clientSize =
-                    GetWindow().
-                        GetClientSize();
+                    GetWindow().GetClientSize();
 
                 editorShell_.Resize(
                     clientSize.width,
                     clientSize.height);
 
                 const auto viewportSize =
-                    editorShell_.
-                        GetViewportSize();
+                    editorShell_.GetViewportSize();
 
                 ResizeGraphics(
                     viewportSize.width,
                     viewportSize.height);
-
                 break;
             }
 
-        case lts::application::
-            ApplicationEventType::Deactivated:
-        case lts::application::
-            ApplicationEventType::CloseRequested:
-        default:
-            break;
+            case lts::application::ApplicationEventType::Deactivated:
+            case lts::application::ApplicationEventType::CloseRequested:
+            default:
+                break;
         }
     }
 
-    bool EditorApplication::
-        InitializeGraphics() noexcept
+    bool EditorApplication::InitializeGraphics() noexcept
     {
         const engine::platform::WindowSize viewportSize =
-        editorShell_.
-            GetViewportSize();
+            editorShell_.GetViewportSize();
 
-        viewportWidth_ =
-            std::max(
-                viewportSize.width,
-                1U);
+        viewportWidth_ = std::max(viewportSize.width, 1U);
+        viewportHeight_ = std::max(viewportSize.height, 1U);
 
-        viewportHeight_ =
-            std::max(
-                viewportSize.height,
-                1U);
-
-        engine::graphics::RenderDeviceDesc
-            deviceDescription;
+        engine::graphics::RenderDeviceDesc deviceDescription;
 
         deviceDescription.backend =
-            engine::graphics::
-                GraphicsBackend::D3D11;
+            engine::graphics::GraphicsBackend::D3D11;
 
         deviceDescription.enableValidation =
-            GetEngine().
-                GetConfig().
-                enableValidation;
+            GetEngine().GetConfig().enableValidation;
 
-        deviceDescription.enableDebugMarkers =
-            true;
-
-        deviceDescription.forceSoftwareAdapter =
-            false;
+        deviceDescription.enableDebugMarkers = true;
+        deviceDescription.forceSoftwareAdapter = false;
 
         auto result =
-            graphicsDevice_.Initialize(
-                deviceDescription);
+            graphicsDevice_.Initialize(deviceDescription);
 
         if (engine::graphics::Failed(result))
         {
@@ -594,51 +566,39 @@ namespace lts::editor
         }
 
         commandContext_ =
-            graphicsDevice_.
-                GetImmediateCommandContext();
+            graphicsDevice_.GetImmediateCommandContext();
 
         if (commandContext_ == nullptr)
         {
             ReportGraphicsFailure(
                 "GetImmediateCommandContext",
-                engine::graphics::
-                    GraphicsResult::InvalidState);
+                engine::graphics::GraphicsResult::InvalidState);
 
             ShutdownGraphics();
             return false;
         }
 
-        engine::graphics::SwapChainDesc
-            swapChainDescription;
+        engine::graphics::SwapChainDesc swapChainDescription;
 
         swapChainDescription.window =
-            editorShell_.
-                GetViewportWindowHandle();
+            editorShell_.GetViewportWindowHandle();
 
-        swapChainDescription.width =
-            viewportWidth_;
-
-        swapChainDescription.height =
-            viewportHeight_;
-
+        swapChainDescription.width = viewportWidth_;
+        swapChainDescription.height = viewportHeight_;
         swapChainDescription.bufferCount = 2;
-
         swapChainDescription.format =
-            engine::graphics::
-                Format::B8G8R8A8UNorm;
+            engine::graphics::Format::B8G8R8A8UNorm;
 
         swapChainDescription.presentMode =
-            engine::graphics::
-                PresentMode::VSync;
+            engine::graphics::PresentMode::VSync;
 
         swapChainDescription.windowed = true;
         swapChainDescription.allowModeSwitch = false;
         swapChainDescription.enableTearing = false;
 
-        result =
-            graphicsDevice_.CreateSwapChain(
-                swapChainDescription,
-                swapChain_);
+        result = graphicsDevice_.CreateSwapChain(
+            swapChainDescription,
+            swapChain_);
 
         if (engine::graphics::Failed(result))
         {
@@ -650,10 +610,9 @@ namespace lts::editor
             return false;
         }
 
-        result =
-            CreateDepthStencil(
-                viewportWidth_,
-                viewportHeight_);
+        result = CreateDepthStencil(
+            viewportWidth_,
+            viewportHeight_);
 
         if (engine::graphics::Failed(result))
         {
@@ -665,8 +624,7 @@ namespace lts::editor
             return false;
         }
 
-        if (!gridRenderer_.Initialize(
-        graphicsDevice_))
+        if (!gridRenderer_.Initialize(graphicsDevice_))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
@@ -684,25 +642,18 @@ namespace lts::editor
         return true;
     }
 
-    void EditorApplication::
-        ShutdownGraphics() noexcept
+    void EditorApplication::ShutdownGraphics() noexcept
     {
         graphicsReady_ = false;
 
         if (commandContext_ != nullptr)
         {
-            commandContext_->
-                UnbindRenderTargets();
-
-            commandContext_->
-                ClearState();
-
-            commandContext_->
-                Flush();
+            commandContext_->UnbindRenderTargets();
+            commandContext_->ClearState();
+            commandContext_->Flush();
         }
 
         gridRenderer_.Shutdown(graphicsDevice_);
-
         DestroyDepthStencil();
 
         swapChain_.reset();
@@ -712,7 +663,6 @@ namespace lts::editor
 
         viewportWidth_ = 0;
         viewportHeight_ = 0;
-
         swapChainOccluded_ = false;
     }
 
@@ -721,45 +671,36 @@ namespace lts::editor
             const std::uint32_t width,
             const std::uint32_t height) noexcept
     {
-        if (width == 0 || height == 0)
+        if (width == 0U || height == 0U)
         {
-            return engine::graphics::
-                GraphicsResult::InvalidArgument;
+            return engine::graphics::GraphicsResult::InvalidArgument;
         }
 
-        engine::graphics::TextureDesc
-            depthDescription;
+        engine::graphics::TextureDesc depthDescription;
 
         depthDescription.dimension =
-            engine::graphics::
-                TextureDimension::Texture2D;
+            engine::graphics::TextureDimension::Texture2D;
 
         depthDescription.width = width;
         depthDescription.height = height;
         depthDescription.depth = 1;
-
         depthDescription.arrayLayers = 1;
         depthDescription.mipLevels = 1;
         depthDescription.sampleCount = 1;
 
         depthDescription.format =
-            engine::graphics::
-                Format::D24UNormS8UInt;
+            engine::graphics::Format::D24UNormS8UInt;
 
         depthDescription.usage =
-            engine::graphics::
-                ResourceUsage::Default;
+            engine::graphics::ResourceUsage::Default;
 
         depthDescription.bindFlags =
-            engine::graphics::
-                TextureBindFlags::DepthStencil;
+            engine::graphics::TextureBindFlags::DepthStencil;
 
         depthDescription.cpuAccess =
-            engine::graphics::
-                CpuAccessFlags::None;
+            engine::graphics::CpuAccessFlags::None;
 
-        depthDescription.generateMipmaps =
-            false;
+        depthDescription.generateMipmaps = false;
 
         return graphicsDevice_.CreateTexture(
             depthDescription,
@@ -768,8 +709,7 @@ namespace lts::editor
             depthStencil_);
     }
 
-    void EditorApplication::
-        DestroyDepthStencil() noexcept
+    void EditorApplication::DestroyDepthStencil() noexcept
     {
         if (!depthStencil_.IsValid())
         {
@@ -777,8 +717,7 @@ namespace lts::editor
         }
 
         const auto result =
-            graphicsDevice_.DestroyTexture(
-                depthStencil_);
+            graphicsDevice_.DestroyTexture(depthStencil_);
 
         if (engine::graphics::Failed(result))
         {
@@ -797,8 +736,7 @@ namespace lts::editor
         }
 
         depthStencil_ =
-            engine::graphics::
-                TextureHandle{};
+            engine::graphics::TextureHandle{};
     }
 
     void EditorApplication::ResizeGraphics(
@@ -809,65 +747,51 @@ namespace lts::editor
             !graphicsReady_ ||
             swapChain_ == nullptr ||
             commandContext_ == nullptr ||
-            width == 0 ||
-            height == 0
-        )
+            width == 0U ||
+            height == 0U)
         {
             return;
         }
 
         if (
             width == viewportWidth_ &&
-            height == viewportHeight_
-        )
+            height == viewportHeight_)
         {
             return;
         }
 
-        commandContext_->
-            UnbindRenderTargets();
-
+        commandContext_->UnbindRenderTargets();
         DestroyDepthStencil();
 
-        auto result =
-            swapChain_->Resize(
-                width,
-                height);
+        auto result = swapChain_->Resize(width, height);
 
         if (engine::graphics::Failed(result))
         {
             ReportGraphicsFailure(
                 "SwapChain::Resize",
                 result);
-
             return;
         }
 
         viewportWidth_ = width;
         viewportHeight_ = height;
 
-        result =
-            CreateDepthStencil(
-                width,
-                height);
+        result = CreateDepthStencil(width, height);
 
         if (engine::graphics::Failed(result))
         {
             ReportGraphicsFailure(
                 "Resize CreateDepthStencil",
                 result);
-
             return;
         }
 
         swapChainOccluded_ = false;
     }
 
-    void EditorApplication::
-        ReportGraphicsFailure(
-            const char* operation,
-            const engine::graphics::
-                GraphicsResult result) noexcept
+    void EditorApplication::ReportGraphicsFailure(
+        const char* const operation,
+        const engine::graphics::GraphicsResult result) noexcept
     {
         if (graphicsFailureReported_)
         {

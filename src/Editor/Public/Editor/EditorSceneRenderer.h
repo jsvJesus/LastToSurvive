@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor/EditorSceneDocument.h"
+#include "Editor/EditorTransformTypes.h"
 
 #include <Graphics/GraphicsResult.h>
 #include <Graphics/ResourceHandle.h>
@@ -33,7 +34,8 @@ namespace lts::editor
         engine::graphics::GraphicsResult Render(
             engine::graphics::CommandContext& context,
             const EditorSceneDocument& document,
-            const DirectX::XMFLOAT4X4& viewProjection) noexcept;
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const EditorTransformVisualState& transformState) noexcept;
 
         [[nodiscard]]
         bool IsInitialized() const noexcept;

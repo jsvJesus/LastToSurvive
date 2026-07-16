@@ -1,5 +1,6 @@
 #include "Editor/EditorSceneDocument.h"
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 
@@ -43,6 +44,50 @@ namespace lts::editor
             };
 
             return transform;
+        }
+
+        [[nodiscard]]
+        bool IsFiniteTransform(
+            const EditorTransform& transform) noexcept
+        {
+            for (const float value : transform.position)
+            {
+                if (!std::isfinite(value))
+                {
+                    return false;
+                }
+            }
+
+            for (const float value : transform.rotationDegrees)
+            {
+                if (!std::isfinite(value))
+                {
+                    return false;
+                }
+            }
+
+            for (const float value : transform.scale)
+            {
+                if (
+                    !std::isfinite(value) ||
+                    std::abs(value) < 0.001F)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool TransformsEqual(
+            const EditorTransform& left,
+            const EditorTransform& right) noexcept
+        {
+            return
+                left.position == right.position &&
+                left.rotationDegrees == right.rotationDegrees &&
+                left.scale == right.scale;
         }
     }
 
@@ -168,6 +213,17 @@ namespace lts::editor
         return &entities_[selectedIndex_];
     }
 
+    EditorSceneEntity*
+        EditorSceneDocument::GetSelectedEntityMutable() noexcept
+    {
+        if (selectedIndex_ >= entities_.size())
+        {
+            return nullptr;
+        }
+
+        return &entities_[selectedIndex_];
+    }
+
     std::size_t
         EditorSceneDocument::GetSelectedIndex() const noexcept
     {
@@ -191,17 +247,36 @@ namespace lts::editor
         selectedIndex_ = InvalidEditorEntityIndex;
     }
 
+    bool EditorSceneDocument::SetSelectedTransform(
+        const EditorTransform& transform) noexcept
+    {
+        EditorSceneEntity* const entity =
+            GetSelectedEntityMutable();
+
+        if (
+            entity == nullptr ||
+            !IsFiniteTransform(transform) ||
+            TransformsEqual(entity->transform, transform))
+        {
+            return false;
+        }
+
+        entity->transform = transform;
+        dirty_ = true;
+
+        return true;
+    }
+
     bool EditorSceneDocument::TranslateSelectedEntity(
         const float translationX,
         const float translationY,
         const float translationZ) noexcept
     {
-        if (selectedIndex_ >= entities_.size())
-        {
-            return false;
-        }
+        const EditorSceneEntity* const entity =
+            GetSelectedEntity();
 
         if (
+            entity == nullptr ||
             !std::isfinite(translationX) ||
             !std::isfinite(translationY) ||
             !std::isfinite(translationZ))
@@ -209,23 +284,95 @@ namespace lts::editor
             return false;
         }
 
-        if (
-            translationX == 0.0F &&
-            translationY == 0.0F &&
-            translationZ == 0.0F)
-        {
-            return false;
-        }
-
-        EditorTransform& transform =
-            entities_[selectedIndex_].transform;
+        EditorTransform transform = entity->transform;
 
         transform.position[0] += translationX;
         transform.position[1] += translationY;
         transform.position[2] += translationZ;
 
+        return SetSelectedTransform(transform);
+    }
+
+    bool EditorSceneDocument::DuplicateSelectedEntity()
+    {
+        const EditorSceneEntity* const selected =
+            GetSelectedEntity();
+
+        if (selected == nullptr)
+        {
+            return false;
+        }
+
+        EditorSceneEntity duplicate = *selected;
+
+        duplicate.id = nextEntityId_++;
+        duplicate.name += L" Copy";
+        duplicate.transform.position[0] += 1.0F;
+
+        entities_.push_back(
+            std::move(duplicate));
+
+        selectedIndex_ = entities_.size() - 1U;
+        dirty_ = true;
+
+        return true;
+    }
+
+    bool EditorSceneDocument::DeleteSelectedEntity() noexcept
+    {
+        if (selectedIndex_ >= entities_.size())
+        {
+            return false;
+        }
+
+        entities_.erase(
+            entities_.begin() +
+            static_cast<std::ptrdiff_t>(selectedIndex_));
+
+        if (entities_.empty())
+        {
+            selectedIndex_ = InvalidEditorEntityIndex;
+        }
+        else if (selectedIndex_ >= entities_.size())
+        {
+            selectedIndex_ = entities_.size() - 1U;
+        }
+
         dirty_ = true;
         return true;
+    }
+
+    EditorSceneSnapshot
+        EditorSceneDocument::CreateSnapshot() const
+    {
+        EditorSceneSnapshot snapshot;
+
+        snapshot.entities = entities_;
+        snapshot.nextEntityId = nextEntityId_;
+        snapshot.selectedIndex = selectedIndex_;
+        snapshot.dirty = dirty_;
+
+        return snapshot;
+    }
+
+    void EditorSceneDocument::RestoreSnapshot(
+        const EditorSceneSnapshot& snapshot,
+        const bool markDirty)
+    {
+        entities_ = snapshot.entities;
+        nextEntityId_ = snapshot.nextEntityId;
+        selectedIndex_ = snapshot.selectedIndex;
+
+        if (selectedIndex_ >= entities_.size())
+        {
+            selectedIndex_ = entities_.empty()
+                ? InvalidEditorEntityIndex
+                : entities_.size() - 1U;
+        }
+
+        dirty_ = markDirty
+            ? true
+            : snapshot.dirty;
     }
 
     bool EditorSceneDocument::IsDirty() const noexcept

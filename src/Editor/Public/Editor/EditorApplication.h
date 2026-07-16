@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Editor/EditorCameraController.h"
+#include "Editor/EditorCommandHistory.h"
 #include "Editor/EditorGridRenderer.h"
+#include "Editor/EditorInspectorPanel.h"
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
@@ -62,13 +64,16 @@ namespace lts::editor
             engine::graphics::GraphicsResult result) noexcept;
 
         EditorSceneDocument sceneDocument_;
+        EditorCommandHistory commandHistory_;
 
         EditorCameraController cameraController_;
         EditorTransformController transformController_;
 
         EditorGridRenderer gridRenderer_;
         EditorSceneRenderer sceneRenderer_;
+
         EditorShell editorShell_;
+        EditorInspectorPanel inspectorPanel_;
 
         engine::graphics::d3d11::D3D11Device graphicsDevice_;
 

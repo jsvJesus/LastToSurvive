@@ -9,37 +9,23 @@ namespace lts::editor
 {
     namespace
     {
-        constexpr float MinimumPitch =
-            -1.55334306F;
-
-        constexpr float MaximumPitch =
-            1.55334306F;
-
-        constexpr float MinimumMoveSpeed =
-            1.0F;
-
-        constexpr float MaximumMoveSpeed =
-            250.0F;
-
-        constexpr float FastMoveMultiplier =
-            4.0F;
+        constexpr float MinimumPitch = -1.55334306F;
+        constexpr float MaximumPitch = 1.55334306F;
+        constexpr float MinimumMoveSpeed = 1.0F;
+        constexpr float MaximumMoveSpeed = 250.0F;
+        constexpr float FastMoveMultiplier = 4.0F;
 
         [[nodiscard]]
-        bool IsKeyDown(
-            const int virtualKey) noexcept
+        bool IsKeyDown(const int virtualKey) noexcept
         {
-            return
-                (GetAsyncKeyState(
-                    virtualKey) & 0x8000) != 0;
+            return (GetAsyncKeyState(virtualKey) & 0x8000) != 0;
         }
 
         [[nodiscard]]
         HWND ToWindowHandle(
-            const engine::platform::
-                NativeWindowHandle handle) noexcept
+            const engine::platform::NativeWindowHandle handle) noexcept
         {
-            return reinterpret_cast<HWND>(
-                handle.Value());
+            return reinterpret_cast<HWND>(handle.Value());
         }
 
         [[nodiscard]]
@@ -47,8 +33,7 @@ namespace lts::editor
             const float yaw,
             const float pitch) noexcept
         {
-            const float cosPitch =
-                std::cos(pitch);
+            const float cosPitch = std::cos(pitch);
 
             return DirectX::XMVector3Normalize(
                 DirectX::XMVectorSet(
@@ -65,26 +50,16 @@ namespace lts::editor
         {
             RECT clientRectangle{};
 
-            if (!GetClientRect(
-                    window,
-                    &clientRectangle))
+            if (!GetClientRect(window, &clientRectangle))
             {
                 return false;
             }
 
             POINT center{};
+            center.x = (clientRectangle.right - clientRectangle.left) / 2;
+            center.y = (clientRectangle.bottom - clientRectangle.top) / 2;
 
-            center.x =
-                (clientRectangle.right -
-                    clientRectangle.left) / 2;
-
-            center.y =
-                (clientRectangle.bottom -
-                    clientRectangle.top) / 2;
-
-            if (!ClientToScreen(
-                    window,
-                    &center))
+            if (!ClientToScreen(window, &center))
             {
                 return false;
             }
@@ -94,25 +69,17 @@ namespace lts::editor
         }
     }
 
-    EditorCameraController::
-        EditorCameraController() noexcept =
-            default;
+    EditorCameraController::EditorCameraController() noexcept = default;
 
-    EditorCameraController::
-        ~EditorCameraController() noexcept
+    EditorCameraController::~EditorCameraController() noexcept
     {
         EndMouseLook();
     }
 
-    void EditorCameraController::
-        SetViewportWindow(
-            const engine::platform::
-                NativeWindowHandle window) noexcept
+    void EditorCameraController::SetViewportWindow(
+        const engine::platform::NativeWindowHandle window) noexcept
     {
-        if (
-            viewportWindow_.Value() ==
-            window.Value()
-        )
+        if (viewportWindow_.Value() == window.Value())
         {
             return;
         }
@@ -125,87 +92,83 @@ namespace lts::editor
     {
         EndMouseLook();
 
-        position_ =
-        {
-            18.0F,
-            14.0F,
-            -18.0F
-        };
-
-        yawRadians_ =
-            -0.785398163F;
-
-        pitchRadians_ =
-            -0.488692191F;
-
+        position_ = {18.0F, 14.0F, -18.0F};
+        yawRadians_ = -0.785398163F;
+        pitchRadians_ = -0.488692191F;
         moveSpeed_ = 10.0F;
+    }
+
+    void EditorCameraController::FocusOn(
+        const DirectX::XMFLOAT3& target,
+        const float distance) noexcept
+    {
+        if (
+            !std::isfinite(target.x) ||
+            !std::isfinite(target.y) ||
+            !std::isfinite(target.z) ||
+            !std::isfinite(distance) ||
+            distance <= 0.0F)
+        {
+            return;
+        }
+
+        EndMouseLook();
+
+        const DirectX::XMVECTOR forward =
+            BuildForwardVector(yawRadians_, pitchRadians_);
+
+        const DirectX::XMVECTOR targetVector =
+            DirectX::XMLoadFloat3(&target);
+
+        const DirectX::XMVECTOR position =
+            DirectX::XMVectorSubtract(
+                targetVector,
+                DirectX::XMVectorScale(
+                    forward,
+                    std::clamp(distance, 1.0F, 500.0F)));
+
+        DirectX::XMStoreFloat3(&position_, position);
     }
 
     void EditorCameraController::Update(
         const double deltaSeconds,
         const float wheelSteps) noexcept
     {
-        if (
-            !std::isfinite(deltaSeconds) ||
-            deltaSeconds <= 0.0
-        )
+        if (!std::isfinite(deltaSeconds) || deltaSeconds <= 0.0)
         {
             return;
         }
 
-        if (
-            std::isfinite(wheelSteps) &&
-            wheelSteps != 0.0F
-        )
+        if (std::isfinite(wheelSteps) && wheelSteps != 0.0F)
         {
-            moveSpeed_ *=
-                std::pow(
-                    1.20F,
-                    wheelSteps);
-
-            moveSpeed_ =
-                std::clamp(
-                    moveSpeed_,
-                    MinimumMoveSpeed,
-                    MaximumMoveSpeed);
+            moveSpeed_ *= std::pow(1.20F, wheelSteps);
+            moveSpeed_ = std::clamp(
+                moveSpeed_,
+                MinimumMoveSpeed,
+                MaximumMoveSpeed);
         }
 
-        const HWND viewportWindow =
-            ToWindowHandle(
-                viewportWindow_);
+        const HWND viewportWindow = ToWindowHandle(viewportWindow_);
 
-        if (
-            viewportWindow == nullptr ||
-            !IsWindow(viewportWindow)
-        )
+        if (viewportWindow == nullptr || !IsWindow(viewportWindow))
         {
             EndMouseLook();
             return;
         }
 
-        const HWND rootWindow =
-            GetAncestor(
-                viewportWindow,
-                GA_ROOT);
+        const HWND rootWindow = GetAncestor(viewportWindow, GA_ROOT);
 
         const bool editorIsForeground =
             rootWindow != nullptr &&
-            GetForegroundWindow() ==
-                rootWindow;
+            GetForegroundWindow() == rootWindow;
 
         const bool viewportHasFocus =
-            GetFocus() ==
-                viewportWindow;
+            GetFocus() == viewportWindow;
 
         const bool rightMouseDown =
-            IsKeyDown(
-                VK_RBUTTON);
+            IsKeyDown(VK_RBUTTON);
 
-        if (
-            !editorIsForeground ||
-            !viewportHasFocus ||
-            !rightMouseDown
-        )
+        if (!editorIsForeground || !viewportHasFocus || !rightMouseDown)
         {
             EndMouseLook();
             return;
@@ -213,11 +176,7 @@ namespace lts::editor
 
         POINT viewportCenter{};
 
-        if (
-            !GetViewportCenterOnScreen(
-                viewportWindow,
-                viewportCenter)
-        )
+        if (!GetViewportCenterOnScreen(viewportWindow, viewportCenter))
         {
             EndMouseLook();
             return;
@@ -227,227 +186,149 @@ namespace lts::editor
         {
             POINT currentCursor{};
 
-            if (GetCursorPos(
-                    &currentCursor))
+            if (GetCursorPos(&currentCursor))
             {
-                restoreCursorX_ =
-                    static_cast<std::int32_t>(
-                        currentCursor.x);
-
-                restoreCursorY_ =
-                    static_cast<std::int32_t>(
-                        currentCursor.y);
+                restoreCursorX_ = static_cast<std::int32_t>(currentCursor.x);
+                restoreCursorY_ = static_cast<std::int32_t>(currentCursor.y);
             }
 
-            SetCapture(
-                viewportWindow);
-
-            SetCursorPos(
-                viewportCenter.x,
-                viewportCenter.y);
-
+            SetCapture(viewportWindow);
+            SetCursorPos(viewportCenter.x, viewportCenter.y);
             mouseLookActive_ = true;
         }
         else
         {
             POINT cursorPosition{};
 
-            if (GetCursorPos(
-                    &cursorPosition))
+            if (GetCursorPos(&cursorPosition))
             {
-                const LONG deltaX =
-                    cursorPosition.x -
-                    viewportCenter.x;
-
-                const LONG deltaY =
-                    cursorPosition.y -
-                    viewportCenter.y;
+                const LONG deltaX = cursorPosition.x - viewportCenter.x;
+                const LONG deltaY = cursorPosition.y - viewportCenter.y;
 
                 yawRadians_ +=
-                    static_cast<float>(
-                        deltaX) *
+                    static_cast<float>(deltaX) *
                     lookSensitivity_;
 
                 pitchRadians_ -=
-                    static_cast<float>(
-                        deltaY) *
+                    static_cast<float>(deltaY) *
                     lookSensitivity_;
 
-                pitchRadians_ =
-                    std::clamp(
-                        pitchRadians_,
-                        MinimumPitch,
-                        MaximumPitch);
+                pitchRadians_ = std::clamp(
+                    pitchRadians_,
+                    MinimumPitch,
+                    MaximumPitch);
             }
 
-            SetCursorPos(
-                viewportCenter.x,
-                viewportCenter.y);
+            SetCursorPos(viewportCenter.x, viewportCenter.y);
         }
 
         const float safeDeltaSeconds =
-            static_cast<float>(
-                std::min(
-                    deltaSeconds,
-                    0.1));
+            static_cast<float>(std::min(deltaSeconds, 0.1));
 
         const DirectX::XMVECTOR worldUp =
-            DirectX::XMVectorSet(
-                0.0F,
-                1.0F,
-                0.0F,
-                0.0F);
+            DirectX::XMVectorSet(0.0F, 1.0F, 0.0F, 0.0F);
 
         const DirectX::XMVECTOR forward =
-            BuildForwardVector(
-                yawRadians_,
-                pitchRadians_);
+            BuildForwardVector(yawRadians_, pitchRadians_);
 
         const DirectX::XMVECTOR right =
             DirectX::XMVector3Normalize(
-                DirectX::XMVector3Cross(
-                    worldUp,
-                    forward));
+                DirectX::XMVector3Cross(worldUp, forward));
 
         DirectX::XMVECTOR movement =
             DirectX::XMVectorZero();
 
         if (IsKeyDown('W'))
         {
-            movement =
-                DirectX::XMVectorAdd(
-                    movement,
-                    forward);
+            movement = DirectX::XMVectorAdd(movement, forward);
         }
 
         if (IsKeyDown('S'))
         {
-            movement =
-                DirectX::XMVectorSubtract(
-                    movement,
-                    forward);
+            movement = DirectX::XMVectorSubtract(movement, forward);
         }
 
         if (IsKeyDown('D'))
         {
-            movement =
-                DirectX::XMVectorAdd(
-                    movement,
-                    right);
+            movement = DirectX::XMVectorAdd(movement, right);
         }
 
         if (IsKeyDown('A'))
         {
-            movement =
-                DirectX::XMVectorSubtract(
-                    movement,
-                    right);
+            movement = DirectX::XMVectorSubtract(movement, right);
         }
 
         if (IsKeyDown('E'))
         {
-            movement =
-                DirectX::XMVectorAdd(
-                    movement,
-                    worldUp);
+            movement = DirectX::XMVectorAdd(movement, worldUp);
         }
 
         if (IsKeyDown('Q'))
         {
-            movement =
-                DirectX::XMVectorSubtract(
-                    movement,
-                    worldUp);
+            movement = DirectX::XMVectorSubtract(movement, worldUp);
         }
 
         const float movementLengthSquared =
             DirectX::XMVectorGetX(
-                DirectX::XMVector3LengthSq(
-                    movement));
+                DirectX::XMVector3LengthSq(movement));
 
         if (movementLengthSquared <= 0.000001F)
         {
             return;
         }
 
-        movement =
-            DirectX::XMVector3Normalize(
-                movement);
+        movement = DirectX::XMVector3Normalize(movement);
 
-        float currentSpeed =
-            moveSpeed_;
+        float currentSpeed = moveSpeed_;
 
         if (
             IsKeyDown(VK_SHIFT) ||
             IsKeyDown(VK_LSHIFT) ||
-            IsKeyDown(VK_RSHIFT)
-        )
+            IsKeyDown(VK_RSHIFT))
         {
-            currentSpeed *=
-                FastMoveMultiplier;
+            currentSpeed *= FastMoveMultiplier;
         }
 
         DirectX::XMVECTOR position =
-            DirectX::XMLoadFloat3(
-                &position_);
+            DirectX::XMLoadFloat3(&position_);
 
-        position =
-            DirectX::XMVectorMultiplyAdd(
-                movement,
-                DirectX::XMVectorReplicate(
-                    currentSpeed *
-                    safeDeltaSeconds),
-                position);
-
-        DirectX::XMStoreFloat3(
-            &position_,
+        position = DirectX::XMVectorMultiplyAdd(
+            movement,
+            DirectX::XMVectorReplicate(
+                currentSpeed *
+                safeDeltaSeconds),
             position);
+
+        DirectX::XMStoreFloat3(&position_, position);
     }
 
-    bool EditorCameraController::
-        BuildViewProjection(
-            const std::uint32_t viewportWidth,
-            const std::uint32_t viewportHeight,
-            DirectX::XMFLOAT4X4&
-                outViewProjection) const noexcept
+    bool EditorCameraController::BuildViewProjection(
+        const std::uint32_t viewportWidth,
+        const std::uint32_t viewportHeight,
+        DirectX::XMFLOAT4X4& outViewProjection) const noexcept
     {
-        if (
-            viewportWidth == 0U ||
-            viewportHeight == 0U
-        )
+        if (viewportWidth == 0U || viewportHeight == 0U)
         {
             return false;
         }
 
         const float aspectRatio =
-            static_cast<float>(
-                viewportWidth) /
-            static_cast<float>(
-                viewportHeight);
+            static_cast<float>(viewportWidth) /
+            static_cast<float>(viewportHeight);
 
-        if (
-            !std::isfinite(aspectRatio) ||
-            aspectRatio <= 0.0F
-        )
+        if (!std::isfinite(aspectRatio) || aspectRatio <= 0.0F)
         {
             return false;
         }
 
         const DirectX::XMVECTOR position =
-            DirectX::XMLoadFloat3(
-                &position_);
+            DirectX::XMLoadFloat3(&position_);
 
         const DirectX::XMVECTOR forward =
-            BuildForwardVector(
-                yawRadians_,
-                pitchRadians_);
+            BuildForwardVector(yawRadians_, pitchRadians_);
 
         const DirectX::XMVECTOR up =
-            DirectX::XMVectorSet(
-                0.0F,
-                1.0F,
-                0.0F,
-                0.0F);
+            DirectX::XMVectorSet(0.0F, 1.0F, 0.0F, 0.0F);
 
         const DirectX::XMMATRIX view =
             DirectX::XMMatrixLookToLH(
@@ -457,17 +338,15 @@ namespace lts::editor
 
         const DirectX::XMMATRIX projection =
             DirectX::XMMatrixPerspectiveFovLH(
-                DirectX::XMConvertToRadians(
-                    60.0F),
+                DirectX::XMConvertToRadians(60.0F),
                 aspectRatio,
                 0.1F,
                 2000.0F);
 
-        const DirectX::XMMATRIX
-            viewProjection =
-                DirectX::XMMatrixMultiply(
-                    view,
-                    projection);
+        const DirectX::XMMATRIX viewProjection =
+            DirectX::XMMatrixMultiply(
+                view,
+                projection);
 
         DirectX::XMStoreFloat4x4(
             &outViewProjection,
@@ -477,11 +356,11 @@ namespace lts::editor
     }
 
     bool EditorCameraController::BuildPickRay(
-    const std::uint32_t mouseX,
-    const std::uint32_t mouseY,
-    const std::uint32_t viewportWidth,
-    const std::uint32_t viewportHeight,
-    EditorPickRay& outRay) const noexcept
+        const std::uint32_t mouseX,
+        const std::uint32_t mouseY,
+        const std::uint32_t viewportWidth,
+        const std::uint32_t viewportHeight,
+        EditorPickRay& outRay) const noexcept
     {
         if (
             viewportWidth == 0U ||
@@ -492,11 +371,8 @@ namespace lts::editor
             return false;
         }
 
-        const float width =
-            static_cast<float>(viewportWidth);
-
-        const float height =
-            static_cast<float>(viewportHeight);
+        const float width = static_cast<float>(viewportWidth);
+        const float height = static_cast<float>(viewportHeight);
 
         const float normalizedX =
             ((static_cast<float>(mouseX) + 0.5F) / width) *
@@ -527,42 +403,27 @@ namespace lts::editor
             tangentHalfFieldOfView;
 
         const DirectX::XMVECTOR worldUp =
-            DirectX::XMVectorSet(
-                0.0F,
-                1.0F,
-                0.0F,
-                0.0F);
+            DirectX::XMVectorSet(0.0F, 1.0F, 0.0F, 0.0F);
 
         const DirectX::XMVECTOR forward =
-            BuildForwardVector(
-                yawRadians_,
-                pitchRadians_);
+            BuildForwardVector(yawRadians_, pitchRadians_);
 
         const DirectX::XMVECTOR right =
             DirectX::XMVector3Normalize(
-                DirectX::XMVector3Cross(
-                    worldUp,
-                    forward));
+                DirectX::XMVector3Cross(worldUp, forward));
 
         const DirectX::XMVECTOR cameraUp =
             DirectX::XMVector3Normalize(
-                DirectX::XMVector3Cross(
-                    forward,
-                    right));
+                DirectX::XMVector3Cross(forward, right));
 
         DirectX::XMVECTOR direction =
             DirectX::XMVectorAdd(
                 forward,
                 DirectX::XMVectorAdd(
-                    DirectX::XMVectorScale(
-                        right,
-                        viewX),
-                    DirectX::XMVectorScale(
-                        cameraUp,
-                        viewY)));
+                    DirectX::XMVectorScale(right, viewX),
+                    DirectX::XMVectorScale(cameraUp, viewY)));
 
-        direction =
-            DirectX::XMVector3Normalize(direction);
+        direction = DirectX::XMVector3Normalize(direction);
 
         outRay.origin = position_;
 
@@ -573,14 +434,12 @@ namespace lts::editor
         return true;
     }
 
-    float EditorCameraController::
-        GetMoveSpeed() const noexcept
+    float EditorCameraController::GetMoveSpeed() const noexcept
     {
         return moveSpeed_;
     }
 
-    void EditorCameraController::
-        EndMouseLook() noexcept
+    void EditorCameraController::EndMouseLook() noexcept
     {
         if (!mouseLookActive_)
         {
@@ -588,13 +447,11 @@ namespace lts::editor
         }
 
         const HWND viewportWindow =
-            ToWindowHandle(
-                viewportWindow_);
+            ToWindowHandle(viewportWindow_);
 
         if (
             viewportWindow != nullptr &&
-            GetCapture() == viewportWindow
-        )
+            GetCapture() == viewportWindow)
         {
             ReleaseCapture();
         }

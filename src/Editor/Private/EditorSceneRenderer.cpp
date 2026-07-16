@@ -26,7 +26,7 @@ namespace lts::editor
         using Microsoft::WRL::ComPtr;
 
         constexpr std::size_t MaxMarkerVertices = 4096U;
-        constexpr std::size_t CircleSegments = 32U;
+        constexpr std::size_t CircleSegments = 48U;
 
         constexpr const char* SceneMarkerShaderSource = R"(
 cbuffer CameraBuffer : register(b0)
@@ -49,13 +49,8 @@ struct VertexOutput
 VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
-
-    output.position = mul(
-        float4(input.position, 1.0f),
-        ViewProjection);
-
+    output.position = mul(float4(input.position, 1.0f), ViewProjection);
     output.color = input.color;
-
     return output;
 }
 
@@ -85,86 +80,57 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
         constexpr MarkerColor EnvironmentColor
         {
-            0.52F,
-            0.58F,
-            0.62F,
-            1.0F
+            0.52F, 0.58F, 0.62F, 1.0F
         };
 
         constexpr MarkerColor LightColor
         {
-            1.0F,
-            0.78F,
-            0.18F,
-            1.0F
+            1.0F, 0.78F, 0.18F, 1.0F
         };
 
         constexpr MarkerColor SpawnColor
         {
-            0.18F,
-            0.85F,
-            0.34F,
-            1.0F
+            0.18F, 0.85F, 0.34F, 1.0F
         };
 
         constexpr MarkerColor AnomalyColor
         {
-            0.82F,
-            0.22F,
-            0.62F,
-            1.0F
+            0.82F, 0.22F, 0.62F, 1.0F
         };
 
         constexpr MarkerColor LootColor
         {
-            0.18F,
-            0.68F,
-            0.88F,
-            1.0F
+            0.18F, 0.68F, 0.88F, 1.0F
         };
 
         constexpr MarkerColor EmptyColor
         {
-            0.70F,
-            0.70F,
-            0.70F,
-            1.0F
+            0.70F, 0.70F, 0.70F, 1.0F
         };
 
         constexpr MarkerColor SelectionColor
-{
-    1.0F,
-    0.58F,
-    0.08F,
-    1.0F
-};
+        {
+            1.0F, 0.58F, 0.08F, 1.0F
+        };
 
         constexpr MarkerColor GizmoXColor
         {
-            0.95F,
-            0.12F,
-            0.10F,
-            1.0F
+            0.95F, 0.12F, 0.10F, 1.0F
         };
 
         constexpr MarkerColor GizmoYColor
         {
-            0.20F,
-            0.90F,
-            0.22F,
-            1.0F
+            0.20F, 0.90F, 0.22F, 1.0F
         };
 
         constexpr MarkerColor GizmoZColor
         {
-            0.12F,
-            0.42F,
-            1.0F,
-            1.0F
+            0.12F, 0.42F, 1.0F, 1.0F
         };
 
         [[nodiscard]]
-        DirectX::XMFLOAT4 ToFloat4(const MarkerColor& color) noexcept
+        DirectX::XMFLOAT4 ToFloat4(
+            const MarkerColor& color) noexcept
         {
             return
             {
@@ -176,13 +142,80 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         [[nodiscard]]
+        DirectX::XMFLOAT3 AddVector(
+            const DirectX::XMFLOAT3& left,
+            const DirectX::XMFLOAT3& right) noexcept
+        {
+            return
+            {
+                left.x + right.x,
+                left.y + right.y,
+                left.z + right.z
+            };
+        }
+
+        [[nodiscard]]
+        DirectX::XMFLOAT3 MultiplyVector(
+            const DirectX::XMFLOAT3& value,
+            const float scalar) noexcept
+        {
+            return
+            {
+                value.x * scalar,
+                value.y * scalar,
+                value.z * scalar
+            };
+        }
+
+        [[nodiscard]]
+        DirectX::XMFLOAT3 CrossVector(
+            const DirectX::XMFLOAT3& left,
+            const DirectX::XMFLOAT3& right) noexcept
+        {
+            return
+            {
+                left.y * right.z - left.z * right.y,
+                left.z * right.x - left.x * right.z,
+                left.x * right.y - left.y * right.x
+            };
+        }
+
+        [[nodiscard]]
+        float VectorLengthSquared(
+            const DirectX::XMFLOAT3& value) noexcept
+        {
+            return
+                value.x * value.x +
+                value.y * value.y +
+                value.z * value.z;
+        }
+
+        [[nodiscard]]
+        DirectX::XMFLOAT3 NormalizeVector(
+            const DirectX::XMFLOAT3& value) noexcept
+        {
+            const float lengthSquared =
+                VectorLengthSquared(value);
+
+            if (lengthSquared <= 0.000001F)
+            {
+                return {};
+            }
+
+            return MultiplyVector(
+                value,
+                1.0F / std::sqrt(lengthSquared));
+        }
+
+        [[nodiscard]]
         DirectX::XMMATRIX BuildWorldMatrix(
             const EditorTransform& transform) noexcept
         {
-            const DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(
-                transform.scale[0],
-                transform.scale[1],
-                transform.scale[2]);
+            const DirectX::XMMATRIX scale =
+                DirectX::XMMatrixScaling(
+                    transform.scale[0],
+                    transform.scale[1],
+                    transform.scale[2]);
 
             const DirectX::XMMATRIX rotation =
                 DirectX::XMMatrixRotationRollPitchYaw(
@@ -199,9 +232,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                     transform.position[1],
                     transform.position[2]);
 
-            return DirectX::XMMatrixMultiply(
-                DirectX::XMMatrixMultiply(scale, rotation),
-                translation);
+            return scale * rotation * translation;
         }
 
         [[nodiscard]]
@@ -233,7 +264,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             vertices[vertexCount].position = position;
             vertices[vertexCount].color = ToFloat4(color);
-
             ++vertexCount;
         }
 
@@ -283,7 +313,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 {maximum.x, minimum.y, minimum.z},
                 {maximum.x, minimum.y, maximum.z},
                 {minimum.x, minimum.y, maximum.z},
-
                 {minimum.x, maximum.y, minimum.z},
                 {maximum.x, maximum.y, minimum.z},
                 {maximum.x, maximum.y, maximum.z},
@@ -292,20 +321,9 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             constexpr std::array<std::array<std::size_t, 2U>, 12U> edges
             {{
-                {{0U, 1U}},
-                {{1U, 2U}},
-                {{2U, 3U}},
-                {{3U, 0U}},
-
-                {{4U, 5U}},
-                {{5U, 6U}},
-                {{6U, 7U}},
-                {{7U, 4U}},
-
-                {{0U, 4U}},
-                {{1U, 5U}},
-                {{2U, 6U}},
-                {{3U, 7U}}
+                {{0U, 1U}}, {{1U, 2U}}, {{2U, 3U}}, {{3U, 0U}},
+                {{4U, 5U}}, {{5U, 6U}}, {{6U, 7U}}, {{7U, 4U}},
+                {{0U, 4U}}, {{1U, 5U}}, {{2U, 6U}}, {{3U, 7U}}
             }};
 
             for (const auto& edge : edges)
@@ -320,89 +338,44 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             }
         }
 
-        void AddCircleXZ(
+        void AddCircle(
             std::array<MarkerVertex, MaxMarkerVertices>& vertices,
             std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const float radius,
-            const float height,
-            const MarkerColor& color) noexcept
-        {
-            for (std::size_t index = 0U; index < CircleSegments; ++index)
-            {
-                const float startAngle =
-                    DirectX::XM_2PI *
-                    static_cast<float>(index) /
-                    static_cast<float>(CircleSegments);
-
-                const float endAngle =
-                    DirectX::XM_2PI *
-                    static_cast<float>(index + 1U) /
-                    static_cast<float>(CircleSegments);
-
-                const DirectX::XMFLOAT3 start
-                {
-                    std::cos(startAngle) * radius,
-                    height,
-                    std::sin(startAngle) * radius
-                };
-
-                const DirectX::XMFLOAT3 end
-                {
-                    std::cos(endAngle) * radius,
-                    height,
-                    std::sin(endAngle) * radius
-                };
-
-                AddLocalLine(
-                    vertices,
-                    vertexCount,
-                    world,
-                    start,
-                    end,
-                    color);
-            }
-        }
-
-        void AddCircleXY(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axisA,
+            const DirectX::XMFLOAT3& axisB,
             const float radius,
             const MarkerColor& color) noexcept
         {
             for (std::size_t index = 0U; index < CircleSegments; ++index)
             {
-                const float startAngle =
+                const float firstAngle =
                     DirectX::XM_2PI *
                     static_cast<float>(index) /
                     static_cast<float>(CircleSegments);
 
-                const float endAngle =
+                const float secondAngle =
                     DirectX::XM_2PI *
                     static_cast<float>(index + 1U) /
                     static_cast<float>(CircleSegments);
 
-                const DirectX::XMFLOAT3 start
-                {
-                    std::cos(startAngle) * radius,
-                    std::sin(startAngle) * radius,
-                    0.0F
-                };
+                const DirectX::XMFLOAT3 first = AddVector(
+                    origin,
+                    AddVector(
+                        MultiplyVector(axisA, std::cos(firstAngle) * radius),
+                        MultiplyVector(axisB, std::sin(firstAngle) * radius)));
 
-                const DirectX::XMFLOAT3 end
-                {
-                    std::cos(endAngle) * radius,
-                    std::sin(endAngle) * radius,
-                    0.0F
-                };
+                const DirectX::XMFLOAT3 second = AddVector(
+                    origin,
+                    AddVector(
+                        MultiplyVector(axisA, std::cos(secondAngle) * radius),
+                        MultiplyVector(axisB, std::sin(secondAngle) * radius)));
 
-                AddLocalLine(
+                AddWorldLine(
                     vertices,
                     vertexCount,
-                    world,
-                    start,
-                    end,
+                    first,
+                    second,
                     color);
             }
         }
@@ -440,307 +413,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             }
         }
 
-        void AddEnvironmentMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddWireBox(
-                vertices,
-                vertexCount,
-                world,
-                {-0.75F, 0.0F, -0.75F},
-                {0.75F, 1.5F, 0.75F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {-1.0F, 0.0F, 0.0F},
-                {1.0F, 0.0F, 0.0F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 0.0F, -1.0F},
-                {0.0F, 0.0F, 1.0F},
-                color);
-        }
-
-        void AddDirectionalLightMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddCircleXY(
-                vertices,
-                vertexCount,
-                world,
-                0.45F,
-                color);
-
-            AddCircleXZ(
-                vertices,
-                vertexCount,
-                world,
-                0.45F,
-                0.0F,
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 0.0F, 0.0F},
-                {0.0F, -2.0F, 1.5F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, -2.0F, 1.5F},
-                {-0.35F, -1.55F, 1.25F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, -2.0F, 1.5F},
-                {0.35F, -1.55F, 1.25F},
-                color);
-        }
-
-        void AddSpawnPointMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddCircleXZ(
-                vertices,
-                vertexCount,
-                world,
-                0.65F,
-                0.03F,
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 0.0F, 0.0F},
-                {0.0F, 2.0F, 0.0F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 1.1F, 0.0F},
-                {0.0F, 1.1F, 1.5F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 1.1F, 1.5F},
-                {-0.30F, 1.1F, 1.10F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 1.1F, 1.5F},
-                {0.30F, 1.1F, 1.10F},
-                color);
-        }
-
-        void AddAnomalyMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddCircleXZ(
-                vertices,
-                vertexCount,
-                world,
-                1.0F,
-                0.04F,
-                color);
-
-            AddCircleXZ(
-                vertices,
-                vertexCount,
-                world,
-                0.60F,
-                0.05F,
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {-1.0F, 0.05F, 0.0F},
-                {1.0F, 0.05F, 0.0F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 0.05F, -1.0F},
-                {0.0F, 0.05F, 1.0F},
-                color);
-
-            constexpr std::array<DirectX::XMFLOAT3, 4U> spikes
-            {{
-                {0.65F, 0.0F, 0.0F},
-                {-0.65F, 0.0F, 0.0F},
-                {0.0F, 0.0F, 0.65F},
-                {0.0F, 0.0F, -0.65F}
-            }};
-
-            for (const DirectX::XMFLOAT3& spike : spikes)
-            {
-                AddLocalLine(
-                    vertices,
-                    vertexCount,
-                    world,
-                    spike,
-                    {spike.x, 0.75F, spike.z},
-                    color);
-            }
-        }
-
-        void AddLootContainerMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddWireBox(
-                vertices,
-                vertexCount,
-                world,
-                {-0.75F, 0.0F, -0.50F},
-                {0.75F, 0.80F, 0.50F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {-0.75F, 0.80F, -0.50F},
-                {0.75F, 0.80F, 0.50F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.75F, 0.80F, -0.50F},
-                {-0.75F, 0.80F, 0.50F},
-                color);
-        }
-
-        void AddEmptyMarker(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const MarkerColor& color) noexcept
-        {
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {-0.50F, 0.0F, 0.0F},
-                {0.50F, 0.0F, 0.0F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, -0.50F, 0.0F},
-                {0.0F, 0.50F, 0.0F},
-                color);
-
-            AddLocalLine(
-                vertices,
-                vertexCount,
-                world,
-                {0.0F, 0.0F, -0.50F},
-                {0.0F, 0.0F, 0.50F},
-                color);
-        }
-
-        void AddSelectionBounds(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMMATRIX& world,
-            const EditorEntityKind kind) noexcept
-        {
-            DirectX::XMFLOAT3 minimum
-            {
-                -1.0F,
-                -0.10F,
-                -1.0F
-            };
-
-            DirectX::XMFLOAT3 maximum
-            {
-                1.0F,
-                2.1F,
-                1.0F
-            };
-
-            switch (kind)
-            {
-                case EditorEntityKind::Anomaly:
-                    minimum = {-1.10F, -0.05F, -1.10F};
-                    maximum = {1.10F, 0.85F, 1.10F};
-                    break;
-
-                case EditorEntityKind::LootContainer:
-                    minimum = {-0.90F, -0.10F, -0.65F};
-                    maximum = {0.90F, 1.0F, 0.65F};
-                    break;
-
-                case EditorEntityKind::DirectionalLight:
-                    minimum = {-0.75F, -2.2F, -0.75F};
-                    maximum = {0.75F, 0.75F, 1.75F};
-                    break;
-
-                case EditorEntityKind::Environment:
-                    minimum = {-0.90F, -0.10F, -0.90F};
-                    maximum = {0.90F, 1.70F, 0.90F};
-                    break;
-
-                case EditorEntityKind::SpawnPoint:
-                case EditorEntityKind::Empty:
-                default:
-                    break;
-            }
-
-            AddWireBox(
-                vertices,
-                vertexCount,
-                world,
-                minimum,
-                maximum,
-                SelectionColor);
-        }
-
         void AddEntityMarker(
             std::array<MarkerVertex, MaxMarkerVertices>& vertices,
             std::size_t& vertexCount,
@@ -756,193 +428,474 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             switch (entity.kind)
             {
                 case EditorEntityKind::Environment:
-                    AddEnvironmentMarker(
+                    AddWireBox(
                         vertices,
                         vertexCount,
                         world,
+                        {-0.75F, 0.0F, -0.75F},
+                        {0.75F, 1.5F, 0.75F},
                         color);
                     break;
 
                 case EditorEntityKind::DirectionalLight:
-                    AddDirectionalLightMarker(
+                {
+                    const DirectX::XMFLOAT3 origin =
+                        TransformPoint({0.0F, 0.0F, 0.0F}, world);
+
+                    const DirectX::XMFLOAT3 axisX =
+                        NormalizeVector(
+                            TransformPoint({1.0F, 0.0F, 0.0F}, world));
+
+                    static_cast<void>(axisX);
+
+                    AddCircle(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        {1.0F, 0.0F, 0.0F},
+                        {0.0F, 1.0F, 0.0F},
+                        0.45F,
+                        color);
+
+                    AddLocalLine(
                         vertices,
                         vertexCount,
                         world,
+                        {0.0F, 0.0F, 0.0F},
+                        {0.0F, -2.0F, 1.5F},
                         color);
                     break;
+                }
 
                 case EditorEntityKind::SpawnPoint:
-                    AddSpawnPointMarker(
+                    AddLocalLine(
                         vertices,
                         vertexCount,
                         world,
+                        {0.0F, 0.0F, 0.0F},
+                        {0.0F, 2.0F, 0.0F},
+                        color);
+
+                    AddLocalLine(
+                        vertices,
+                        vertexCount,
+                        world,
+                        {0.0F, 1.1F, 0.0F},
+                        {0.0F, 1.1F, 1.5F},
                         color);
                     break;
 
                 case EditorEntityKind::Anomaly:
-                    AddAnomalyMarker(
+                {
+                    const DirectX::XMFLOAT3 origin =
+                        TransformPoint({0.0F, 0.05F, 0.0F}, world);
+
+                    AddCircle(
                         vertices,
                         vertexCount,
-                        world,
+                        origin,
+                        {1.0F, 0.0F, 0.0F},
+                        {0.0F, 0.0F, 1.0F},
+                        1.0F,
+                        color);
+
+                    AddCircle(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        {1.0F, 0.0F, 0.0F},
+                        {0.0F, 0.0F, 1.0F},
+                        0.60F,
                         color);
                     break;
+                }
 
                 case EditorEntityKind::LootContainer:
-                    AddLootContainerMarker(
+                    AddWireBox(
                         vertices,
                         vertexCount,
                         world,
+                        {-0.75F, 0.0F, -0.50F},
+                        {0.75F, 0.80F, 0.50F},
                         color);
                     break;
 
                 case EditorEntityKind::Empty:
                 default:
-                    AddEmptyMarker(
+                    AddLocalLine(
                         vertices,
                         vertexCount,
                         world,
+                        {-0.50F, 0.0F, 0.0F},
+                        {0.50F, 0.0F, 0.0F},
+                        color);
+
+                    AddLocalLine(
+                        vertices,
+                        vertexCount,
+                        world,
+                        {0.0F, -0.50F, 0.0F},
+                        {0.0F, 0.50F, 0.0F},
+                        color);
+
+                    AddLocalLine(
+                        vertices,
+                        vertexCount,
+                        world,
+                        {0.0F, 0.0F, -0.50F},
+                        {0.0F, 0.0F, 0.50F},
                         color);
                     break;
             }
 
             if (selected)
             {
-                AddSelectionBounds(
+                AddWireBox(
                     vertices,
                     vertexCount,
                     world,
-                    entity.kind);
+                    {-1.0F, -0.10F, -1.0F},
+                    {1.0F, 2.1F, 1.0F},
+                    SelectionColor);
             }
         }
 
+        [[nodiscard]]
+        MarkerColor GetGizmoAxisColor(
+            const EditorTransformAxis axis,
+            const EditorTransformVisualState& state) noexcept
+        {
+            if (
+                axis == state.activeAxis ||
+                axis == state.hotAxis)
+            {
+                return SelectionColor;
+            }
+
+            switch (axis)
+            {
+                case EditorTransformAxis::X:
+                    return GizmoXColor;
+
+                case EditorTransformAxis::Y:
+                    return GizmoYColor;
+
+                case EditorTransformAxis::Z:
+                    return GizmoZColor;
+
+                case EditorTransformAxis::None:
+                default:
+                    return SelectionColor;
+            }
+        }
+
+        void GetGizmoAxes(
+            const EditorSceneEntity& entity,
+            const EditorTransformVisualState& state,
+            DirectX::XMFLOAT3& axisX,
+            DirectX::XMFLOAT3& axisY,
+            DirectX::XMFLOAT3& axisZ) noexcept
+        {
+            axisX = {1.0F, 0.0F, 0.0F};
+            axisY = {0.0F, 1.0F, 0.0F};
+            axisZ = {0.0F, 0.0F, 1.0F};
+
+            if (state.space == EditorTransformSpace::World)
+            {
+                return;
+            }
+
+            const DirectX::XMMATRIX rotation =
+                DirectX::XMMatrixRotationRollPitchYaw(
+                    DirectX::XMConvertToRadians(
+                        entity.transform.rotationDegrees[0]),
+                    DirectX::XMConvertToRadians(
+                        entity.transform.rotationDegrees[1]),
+                    DirectX::XMConvertToRadians(
+                        entity.transform.rotationDegrees[2]));
+
+            DirectX::XMStoreFloat3(
+                &axisX,
+                DirectX::XMVector3Normalize(
+                    DirectX::XMVector3TransformNormal(
+                        DirectX::XMLoadFloat3(&axisX),
+                        rotation)));
+
+            DirectX::XMStoreFloat3(
+                &axisY,
+                DirectX::XMVector3Normalize(
+                    DirectX::XMVector3TransformNormal(
+                        DirectX::XMLoadFloat3(&axisY),
+                        rotation)));
+
+            DirectX::XMStoreFloat3(
+                &axisZ,
+                DirectX::XMVector3Normalize(
+                    DirectX::XMVector3TransformNormal(
+                        DirectX::XMLoadFloat3(&axisZ),
+                        rotation)));
+        }
+
         void AddGizmoArrow(
-        std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-        std::size_t& vertexCount,
-        const DirectX::XMFLOAT3& origin,
-        const DirectX::XMFLOAT3& axis,
-        const DirectX::XMFLOAT3& arrowSideA,
-        const DirectX::XMFLOAT3& arrowSideB,
-        const MarkerColor& color) noexcept
-    {
-        constexpr float AxisLength = 2.5F;
-        constexpr float ArrowLength = 0.35F;
-        constexpr float ArrowWidth = 0.18F;
-
-        const DirectX::XMFLOAT3 end
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axis,
+            const MarkerColor& color) noexcept
         {
-            origin.x + axis.x * AxisLength,
-            origin.y + axis.y * AxisLength,
-            origin.z + axis.z * AxisLength
-        };
+            constexpr float AxisLength = 2.5F;
+            constexpr float ArrowLength = 0.35F;
+            constexpr float ArrowWidth = 0.18F;
 
-        const DirectX::XMFLOAT3 arrowBase
+            const DirectX::XMFLOAT3 end =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, AxisLength));
+
+            const DirectX::XMFLOAT3 arrowBase =
+                AddVector(
+                    end,
+                    MultiplyVector(axis, -ArrowLength));
+
+            const DirectX::XMFLOAT3 reference =
+                std::abs(axis.y) < 0.9F
+                    ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
+                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
+
+            const DirectX::XMFLOAT3 sideA =
+                NormalizeVector(
+                    CrossVector(axis, reference));
+
+            const DirectX::XMFLOAT3 sideB =
+                NormalizeVector(
+                    CrossVector(axis, sideA));
+
+            AddWorldLine(vertices, vertexCount, origin, end, color);
+
+            AddWorldLine(
+                vertices,
+                vertexCount,
+                end,
+                AddVector(
+                    arrowBase,
+                    MultiplyVector(sideA, ArrowWidth)),
+                color);
+
+            AddWorldLine(
+                vertices,
+                vertexCount,
+                end,
+                AddVector(
+                    arrowBase,
+                    MultiplyVector(sideA, -ArrowWidth)),
+                color);
+
+            AddWorldLine(
+                vertices,
+                vertexCount,
+                end,
+                AddVector(
+                    arrowBase,
+                    MultiplyVector(sideB, ArrowWidth)),
+                color);
+
+            AddWorldLine(
+                vertices,
+                vertexCount,
+                end,
+                AddVector(
+                    arrowBase,
+                    MultiplyVector(sideB, -ArrowWidth)),
+                color);
+        }
+
+        void AddScaleGizmoAxis(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axis,
+            const MarkerColor& color) noexcept
         {
-            end.x - axis.x * ArrowLength,
-            end.y - axis.y * ArrowLength,
-            end.z - axis.z * ArrowLength
-        };
+            constexpr float AxisLength = 2.5F;
+            constexpr float CubeHalfSize = 0.16F;
 
-        AddWorldLine(
-            vertices,
-            vertexCount,
-            origin,
-            end,
-            color);
+            const DirectX::XMFLOAT3 end =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, AxisLength));
 
-        AddWorldLine(
-            vertices,
-            vertexCount,
-            end,
-            {
-                arrowBase.x + arrowSideA.x * ArrowWidth,
-                arrowBase.y + arrowSideA.y * ArrowWidth,
-                arrowBase.z + arrowSideA.z * ArrowWidth
-            },
-            color);
+            AddWorldLine(
+                vertices,
+                vertexCount,
+                origin,
+                end,
+                color);
 
-        AddWorldLine(
-            vertices,
-            vertexCount,
-            end,
-            {
-                arrowBase.x - arrowSideA.x * ArrowWidth,
-                arrowBase.y - arrowSideA.y * ArrowWidth,
-                arrowBase.z - arrowSideA.z * ArrowWidth
-            },
-            color);
+            const DirectX::XMMATRIX cubeWorld =
+                DirectX::XMMatrixTranslation(
+                    end.x,
+                    end.y,
+                    end.z);
 
-        AddWorldLine(
-            vertices,
-            vertexCount,
-            end,
-            {
-                arrowBase.x + arrowSideB.x * ArrowWidth,
-                arrowBase.y + arrowSideB.y * ArrowWidth,
-                arrowBase.z + arrowSideB.z * ArrowWidth
-            },
-            color);
+            AddWireBox(
+                vertices,
+                vertexCount,
+                cubeWorld,
+                {-CubeHalfSize, -CubeHalfSize, -CubeHalfSize},
+                {CubeHalfSize, CubeHalfSize, CubeHalfSize},
+                color);
+        }
 
-        AddWorldLine(
-            vertices,
-            vertexCount,
-            end,
-            {
-                arrowBase.x - arrowSideB.x * ArrowWidth,
-                arrowBase.y - arrowSideB.y * ArrowWidth,
-                arrowBase.z - arrowSideB.z * ArrowWidth
-            },
-            color);
-    }
-
-    void AddTransformGizmo(
-        std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-        std::size_t& vertexCount,
-        const EditorSceneEntity& entity) noexcept
-    {
-        DirectX::XMFLOAT3 origin
+        void AddRotationGizmoAxis(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axis,
+            const MarkerColor& color) noexcept
         {
-            entity.transform.position[0],
-            entity.transform.position[1] + 0.08F,
-            entity.transform.position[2]
-        };
+            const DirectX::XMFLOAT3 reference =
+                std::abs(axis.y) < 0.9F
+                    ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
+                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
 
-        AddGizmoArrow(
-            vertices,
-            vertexCount,
-            origin,
-            {1.0F, 0.0F, 0.0F},
-            {0.0F, 1.0F, 0.0F},
-            {0.0F, 0.0F, 1.0F},
-            GizmoXColor);
+            const DirectX::XMFLOAT3 axisA =
+                NormalizeVector(
+                    CrossVector(axis, reference));
 
-        AddGizmoArrow(
-            vertices,
-            vertexCount,
-            origin,
-            {0.0F, 1.0F, 0.0F},
-            {1.0F, 0.0F, 0.0F},
-            {0.0F, 0.0F, 1.0F},
-            GizmoYColor);
+            const DirectX::XMFLOAT3 axisB =
+                NormalizeVector(
+                    CrossVector(axis, axisA));
 
-        AddGizmoArrow(
-            vertices,
-            vertexCount,
-            origin,
-            {0.0F, 0.0F, 1.0F},
-            {1.0F, 0.0F, 0.0F},
-            {0.0F, 1.0F, 0.0F},
-            GizmoZColor);
-    }
+            AddCircle(
+                vertices,
+                vertexCount,
+                origin,
+                axisA,
+                axisB,
+                2.0F,
+                color);
+        }
+
+        void AddTransformGizmo(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const EditorSceneEntity& entity,
+            const EditorTransformVisualState& state) noexcept
+        {
+            const DirectX::XMFLOAT3 origin
+            {
+                entity.transform.position[0],
+                entity.transform.position[1] + 0.08F,
+                entity.transform.position[2]
+            };
+
+            DirectX::XMFLOAT3 axisX;
+            DirectX::XMFLOAT3 axisY;
+            DirectX::XMFLOAT3 axisZ;
+
+            GetGizmoAxes(
+                entity,
+                state,
+                axisX,
+                axisY,
+                axisZ);
+
+            const MarkerColor colorX =
+                GetGizmoAxisColor(EditorTransformAxis::X, state);
+
+            const MarkerColor colorY =
+                GetGizmoAxisColor(EditorTransformAxis::Y, state);
+
+            const MarkerColor colorZ =
+                GetGizmoAxisColor(EditorTransformAxis::Z, state);
+
+            switch (state.operation)
+            {
+                case EditorTransformOperation::Move:
+                    AddGizmoArrow(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisX,
+                        colorX);
+
+                    AddGizmoArrow(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisY,
+                        colorY);
+
+                    AddGizmoArrow(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisZ,
+                        colorZ);
+                    break;
+
+                case EditorTransformOperation::Rotate:
+                    AddRotationGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisX,
+                        colorX);
+
+                    AddRotationGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisY,
+                        colorY);
+
+                    AddRotationGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisZ,
+                        colorZ);
+                    break;
+
+                case EditorTransformOperation::Scale:
+                    AddScaleGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisX,
+                        colorX);
+
+                    AddScaleGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisY,
+                        colorY);
+
+                    AddScaleGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisZ,
+                        colorZ);
+                    break;
+
+                default:
+                    break;
+            }
+        }
 
         [[nodiscard]]
         std::size_t BuildSceneVertices(
-        const EditorSceneDocument& document,
-        std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
+            const EditorSceneDocument& document,
+            const EditorTransformVisualState& transformState,
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
         {
             std::size_t vertexCount = 0U;
 
             const auto& entities = document.GetEntities();
-            const std::size_t selectedIndex = document.GetSelectedIndex();
+            const std::size_t selectedIndex =
+                document.GetSelectedIndex();
 
             for (std::size_t index = 0U; index < entities.size(); ++index)
             {
@@ -965,7 +918,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 AddTransformGizmo(
                     vertices,
                     vertexCount,
-                    entities[selectedIndex]);
+                    entities[selectedIndex],
+                    transformState);
             }
 
             return vertexCount;
@@ -973,8 +927,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
         [[nodiscard]]
         bool CompileShader(
-            const char* entryPoint,
-            const char* target,
+            const char* const entryPoint,
+            const char* const target,
             ComPtr<ID3DBlob>& bytecode) noexcept
         {
             if (entryPoint == nullptr || target == nullptr)
@@ -1010,7 +964,9 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 return true;
             }
 
-            if (errors != nullptr && errors->GetBufferPointer() != nullptr)
+            if (
+                errors != nullptr &&
+                errors->GetBufferPointer() != nullptr)
             {
                 engine::core::GetLogger().Write(
                     engine::core::LogLevel::Error,
@@ -1030,7 +986,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         void LogGraphicsFailure(
-            const char* operation,
+            const char* const operation,
             const engine::graphics::GraphicsResult result) noexcept
         {
             std::string message =
@@ -1070,11 +1026,15 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         engine::graphics::ShaderDesc vertexShaderDescription;
-        vertexShaderDescription.stage = engine::graphics::ShaderStage::Vertex;
+        vertexShaderDescription.stage =
+            engine::graphics::ShaderStage::Vertex;
+
         vertexShaderDescription.bytecode.data =
             vertexBytecode->GetBufferPointer();
+
         vertexShaderDescription.bytecode.size =
             vertexBytecode->GetBufferSize();
+
         vertexShaderDescription.debugName =
             "EditorSceneRenderer.VertexShader";
 
@@ -1093,11 +1053,15 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         engine::graphics::ShaderDesc pixelShaderDescription;
-        pixelShaderDescription.stage = engine::graphics::ShaderStage::Pixel;
+        pixelShaderDescription.stage =
+            engine::graphics::ShaderStage::Pixel;
+
         pixelShaderDescription.bytecode.data =
             pixelBytecode->GetBufferPointer();
+
         pixelShaderDescription.bytecode.size =
             pixelBytecode->GetBufferSize();
+
         pixelShaderDescription.debugName =
             "EditorSceneRenderer.PixelShader";
 
@@ -1163,16 +1127,23 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         engine::graphics::BufferDesc vertexBufferDescription;
         vertexBufferDescription.byteSize =
             sizeof(MarkerVertex) * MaxMarkerVertices;
+
         vertexBufferDescription.stride =
-            static_cast<std::uint32_t>(sizeof(MarkerVertex));
+            static_cast<std::uint32_t>(
+                sizeof(MarkerVertex));
+
         vertexBufferDescription.usage =
             engine::graphics::ResourceUsage::Dynamic;
+
         vertexBufferDescription.bindFlags =
             engine::graphics::BufferBindFlags::Vertex;
+
         vertexBufferDescription.miscFlags =
             engine::graphics::BufferMiscFlags::None;
+
         vertexBufferDescription.cpuAccess =
             engine::graphics::CpuAccessFlags::Write;
+
         vertexBufferDescription.indexFormat =
             engine::graphics::IndexFormat::None;
 
@@ -1194,15 +1165,20 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         engine::graphics::BufferDesc cameraBufferDescription;
         cameraBufferDescription.byteSize =
             sizeof(CameraConstants);
+
         cameraBufferDescription.stride = 0U;
         cameraBufferDescription.usage =
             engine::graphics::ResourceUsage::Default;
+
         cameraBufferDescription.bindFlags =
             engine::graphics::BufferBindFlags::Constant;
+
         cameraBufferDescription.miscFlags =
             engine::graphics::BufferMiscFlags::None;
+
         cameraBufferDescription.cpuAccess =
             engine::graphics::CpuAccessFlags::None;
+
         cameraBufferDescription.indexFormat =
             engine::graphics::IndexFormat::None;
 
@@ -1230,8 +1206,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
         pipelineDescription.rasterizer.fillMode =
             engine::graphics::FillMode::Solid;
+
         pipelineDescription.rasterizer.cullMode =
             engine::graphics::CullMode::None;
+
         pipelineDescription.rasterizer.depthClipEnable = true;
 
         pipelineDescription.blend.renderTargets[0].blendEnable = false;
@@ -1276,54 +1254,42 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         if (pipeline_.IsValid())
         {
             static_cast<void>(
-                device.DestroyGraphicsPipeline(
-                    pipeline_));
-
+                device.DestroyGraphicsPipeline(pipeline_));
             pipeline_ = {};
         }
 
         if (inputLayout_.IsValid())
         {
             static_cast<void>(
-                device.DestroyInputLayout(
-                    inputLayout_));
-
+                device.DestroyInputLayout(inputLayout_));
             inputLayout_ = {};
         }
 
         if (pixelShader_.IsValid())
         {
             static_cast<void>(
-                device.DestroyShader(
-                    pixelShader_));
-
+                device.DestroyShader(pixelShader_));
             pixelShader_ = {};
         }
 
         if (vertexShader_.IsValid())
         {
             static_cast<void>(
-                device.DestroyShader(
-                    vertexShader_));
-
+                device.DestroyShader(vertexShader_));
             vertexShader_ = {};
         }
 
         if (cameraBuffer_.IsValid())
         {
             static_cast<void>(
-                device.DestroyBuffer(
-                    cameraBuffer_));
-
+                device.DestroyBuffer(cameraBuffer_));
             cameraBuffer_ = {};
         }
 
         if (vertexBuffer_.IsValid())
         {
             static_cast<void>(
-                device.DestroyBuffer(
-                    vertexBuffer_));
-
+                device.DestroyBuffer(vertexBuffer_));
             vertexBuffer_ = {};
         }
     }
@@ -1331,7 +1297,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     engine::graphics::GraphicsResult EditorSceneRenderer::Render(
         engine::graphics::CommandContext& context,
         const EditorSceneDocument& document,
-        const DirectX::XMFLOAT4X4& viewProjection) noexcept
+        const DirectX::XMFLOAT4X4& viewProjection,
+        const EditorTransformVisualState& transformState) noexcept
     {
         if (!initialized_)
         {
@@ -1343,6 +1310,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         const std::size_t vertexCount =
             BuildSceneVertices(
                 document,
+                transformState,
                 vertices);
 
         if (vertexCount == 0U)
@@ -1373,8 +1341,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             return result;
         }
 
-        result = context.SetGraphicsPipeline(
-            pipeline_);
+        result = context.SetGraphicsPipeline(pipeline_);
 
         if (engine::graphics::Failed(result))
         {
@@ -1412,8 +1379,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         result = context.Draw(
-            static_cast<std::uint32_t>(
-                vertexCount),
+            static_cast<std::uint32_t>(vertexCount),
             0U);
 
         static_cast<void>(
@@ -1423,7 +1389,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 1U));
 
         context.UnbindGraphicsPipeline();
-
         return result;
     }
 

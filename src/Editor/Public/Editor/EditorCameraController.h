@@ -31,16 +31,17 @@ namespace lts::editor
         EditorCameraController() noexcept;
         ~EditorCameraController() noexcept;
 
-        EditorCameraController(
-            const EditorCameraController&) = delete;
-
-        EditorCameraController& operator=(
-            const EditorCameraController&) = delete;
+        EditorCameraController(const EditorCameraController&) = delete;
+        EditorCameraController& operator=(const EditorCameraController&) = delete;
 
         void SetViewportWindow(
             engine::platform::NativeWindowHandle window) noexcept;
 
         void Reset() noexcept;
+
+        void FocusOn(
+            const DirectX::XMFLOAT3& target,
+            float distance) noexcept;
 
         void Update(
             double deltaSeconds,
