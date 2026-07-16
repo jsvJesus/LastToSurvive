@@ -70,15 +70,33 @@ namespace lts::editor
         default;
 
     lts::application::ApplicationResult
-        EditorApplication::OnInitialize() noexcept
+    EditorApplication::OnInitialize() noexcept
     {
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Information,
             "LTS.Editor",
             "Initializing editor.");
 
+        if (
+            !editorShell_.Initialize(
+                GetWindow().
+                    GetNativeHandle())
+        )
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor",
+                "Failed to initialize editor shell.");
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
         if (!InitializeGraphics())
         {
+            editorShell_.Shutdown();
+
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
@@ -101,11 +119,63 @@ namespace lts::editor
             "Shutting down editor.");
 
         ShutdownGraphics();
+        editorShell_.Shutdown();
     }
 
     void EditorApplication::OnUpdate(
-        const double) noexcept
+    const double) noexcept
     {
+        EditorMode changedMode =
+            EditorMode::Level;
+
+        if (
+            editorShell_.ConsumeModeChanged(
+                changedMode)
+        )
+        {
+            switch (changedMode)
+            {
+            case EditorMode::Level:
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor",
+                    "Level mode selected.");
+                break;
+
+            case EditorMode::Character:
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor",
+                    "Character mode selected.");
+                break;
+
+            case EditorMode::Icon:
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor",
+                    "Icon mode selected.");
+                break;
+
+            case EditorMode::Physics:
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor",
+                    "Physics mode selected.");
+                break;
+
+            case EditorMode::Particles:
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor",
+                    "Particles mode selected.");
+                break;
+
+            case EditorMode::Play:
+            default:
+                break;
+            }
+        }
+
         if (swapChainOccluded_)
         {
             std::this_thread::sleep_for(
@@ -297,68 +367,105 @@ namespace lts::editor
     }
 
     void EditorApplication::OnEvent(
-        const lts::application::
-            ApplicationEvent& event) noexcept
+    const lts::application::
+        ApplicationEvent& event) noexcept
     {
         switch (event.type)
         {
-            case lts::application::
-                ApplicationEventType::Resize:
+        case lts::application::
+            ApplicationEventType::Resize:
             {
-                ResizeGraphics(
+                editorShell_.Resize(
                     event.width,
                     event.height);
+
+                const auto viewportSize =
+                    editorShell_.
+                        GetViewportSize();
+
+                ResizeGraphics(
+                    viewportSize.width,
+                    viewportSize.height);
 
                 break;
             }
 
-            case lts::application::
-                ApplicationEventType::Minimized:
+        case lts::application::
+            ApplicationEventType::Minimized:
             {
                 swapChainOccluded_ = true;
                 break;
             }
 
-            case lts::application::
-                ApplicationEventType::Restored:
+        case lts::application::
+            ApplicationEventType::Restored:
+            {
+                swapChainOccluded_ = false;
+
+                const auto viewportSize =
+                    editorShell_.
+                        GetViewportSize();
+
+                ResizeGraphics(
+                    viewportSize.width,
+                    viewportSize.height);
+
+                break;
+            }
+
+        case lts::application::
+            ApplicationEventType::Activated:
             {
                 swapChainOccluded_ = false;
                 break;
             }
 
-            case lts::application::
-                ApplicationEventType::Activated:
+        case lts::application::
+            ApplicationEventType::DpiChanged:
             {
-                swapChainOccluded_ = false;
+                const auto clientSize =
+                    GetWindow().
+                        GetClientSize();
+
+                editorShell_.Resize(
+                    clientSize.width,
+                    clientSize.height);
+
+                const auto viewportSize =
+                    editorShell_.
+                        GetViewportSize();
+
+                ResizeGraphics(
+                    viewportSize.width,
+                    viewportSize.height);
+
                 break;
             }
 
-            case lts::application::
-                ApplicationEventType::Deactivated:
-            case lts::application::
-                ApplicationEventType::DpiChanged:
-            case lts::application::
-                ApplicationEventType::CloseRequested:
-            default:
-                break;
+        case lts::application::
+            ApplicationEventType::Deactivated:
+        case lts::application::
+            ApplicationEventType::CloseRequested:
+        default:
+            break;
         }
     }
 
     bool EditorApplication::
         InitializeGraphics() noexcept
     {
-        const engine::platform::WindowSize
-            clientSize =
-                GetWindow().GetClientSize();
+        const engine::platform::WindowSize viewportSize =
+        editorShell_.
+            GetViewportSize();
 
         viewportWidth_ =
             std::max(
-                clientSize.width,
+                viewportSize.width,
                 1U);
 
         viewportHeight_ =
             std::max(
-                clientSize.height,
+                viewportSize.height,
                 1U);
 
         engine::graphics::RenderDeviceDesc
@@ -412,8 +519,8 @@ namespace lts::editor
             swapChainDescription;
 
         swapChainDescription.window =
-            GetWindow().
-                GetNativeHandle();
+            editorShell_.
+                GetViewportWindowHandle();
 
         swapChainDescription.width =
             viewportWidth_;

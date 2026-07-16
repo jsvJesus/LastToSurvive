@@ -201,10 +201,12 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
+    <ClInclude Include="Public\Editor\EditorShell.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
+    <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>
 

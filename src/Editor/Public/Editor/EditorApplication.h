@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Editor/EditorShell.h"
+
 #include <Application/Application.h>
 
 #include <Graphics/CommandContext.h>
@@ -66,6 +68,8 @@ namespace lts::editor
             const char* operation,
             engine::graphics::
                 GraphicsResult result) noexcept;
+
+        EditorShell editorShell_;
 
         engine::graphics::d3d11::
             D3D11Device graphicsDevice_;
