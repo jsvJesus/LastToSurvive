@@ -280,17 +280,20 @@ namespace lts::editor
             return;
         }
 
-        /*
-         * На следующем этапе здесь будет:
-         *
-         * Editor UI
-         * Viewport
-         * Docking layout
-         * Main menu
-         * Toolbar
-         * Inspector
-         * Asset Browser
-         */
+        result =
+        gridRenderer_.Render(
+        *commandContext_,
+        viewportWidth_,
+        viewportHeight_);
+
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure(
+                "EditorGridRenderer::Render",
+                result);
+
+            return;
+        }
 
         commandContext_->
             UnbindRenderTargets();
@@ -571,6 +574,18 @@ namespace lts::editor
             return false;
         }
 
+        if (!gridRenderer_.Initialize(
+        graphicsDevice_))
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor.Grid",
+                "Failed to initialize editor world grid.");
+
+            ShutdownGraphics();
+            return false;
+        }
+
         graphicsReady_ = true;
         graphicsFailureReported_ = false;
         swapChainOccluded_ = false;
@@ -594,6 +609,8 @@ namespace lts::editor
             commandContext_->
                 Flush();
         }
+
+        gridRenderer_.Shutdown(graphicsDevice_);
 
         DestroyDepthStencil();
 

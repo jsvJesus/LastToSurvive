@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorShell.h"
 
 #include <Application/Application.h>
@@ -69,6 +70,7 @@ namespace lts::editor
             engine::graphics::
                 GraphicsResult result) noexcept;
 
+        EditorGridRenderer gridRenderer_;
         EditorShell editorShell_;
 
         engine::graphics::d3d11::

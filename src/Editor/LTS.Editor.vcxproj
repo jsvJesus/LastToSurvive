@@ -143,6 +143,7 @@
 
       <AdditionalDependencies>
         d3d11.lib;
+        d3dcompiler.lib;
         dxgi.lib;
         dxguid.lib;
         user32.lib;
@@ -209,6 +210,7 @@
 
       <AdditionalDependencies>
         d3d11.lib;
+        d3dcompiler.lib;
         dxgi.lib;
         dxguid.lib;
         user32.lib;
@@ -222,11 +224,13 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
+    <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
+    <ClCompile Include="Private\EditorGridRenderer.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>

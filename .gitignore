@@ -126,6 +126,8 @@ packages/
 # Keep only selected runtime data under root bin
 !/bin/
 /bin/*
+!/game/
+/game/*
 !/tools/
 /tools/*
 !/bin/Data/
