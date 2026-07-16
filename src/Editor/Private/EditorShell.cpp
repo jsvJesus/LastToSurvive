@@ -240,11 +240,11 @@ namespace lts::editor
                 viewportClassAtom_ = 0;
             }
 
-            DeleteBrush(backgroundBrush_);
-            DeleteBrush(panelBrush_);
-            DeleteBrush(inputBrush_);
-            DeleteBrush(accentBrush_);
-            DeleteBrush(borderBrush_);
+            DestroyBrushHandle(backgroundBrush_);
+            DestroyBrushHandle(panelBrush_);
+            DestroyBrushHandle(inputBrush_);
+            DestroyBrushHandle(accentBrush_);
+            DestroyBrushHandle(borderBrush_);
 
             instance_ = nullptr;
             parentWindow_ = nullptr;
@@ -554,7 +554,7 @@ namespace lts::editor
                 borderBrush_ != nullptr;
         }
 
-        static void DeleteBrush(HBRUSH& brush) noexcept
+        static void DestroyBrushHandle(HBRUSH& brush) noexcept
         {
             if (brush == nullptr)
             {
