@@ -76,29 +76,25 @@ namespace lts::editor
             "LTS.Editor",
             "Initializing editor.");
 
-        if (
-            !editorShell_.Initialize(
-                GetWindow().
-                    GetNativeHandle())
-        )
+        if (!editorShell_.Initialize(GetWindow().GetNativeHandle()))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
                 "LTS.Editor",
                 "Failed to initialize editor shell.");
 
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
+            return lts::application::ApplicationResult::ClientInitializationFailed;
         }
+
+        cameraController_.SetViewportWindow(
+            editorShell_.GetViewportWindowHandle());
 
         if (!InitializeGraphics())
         {
+            cameraController_.SetViewportWindow({});
             editorShell_.Shutdown();
 
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
+            return lts::application::ApplicationResult::ClientInitializationFailed;
         }
 
         engine::core::GetLogger().Write(
@@ -106,8 +102,7 @@ namespace lts::editor
             "LTS.Editor",
             "Editor initialization completed.");
 
-        return lts::application::
-            ApplicationResult::Success;
+        return lts::application::ApplicationResult::Success;
     }
 
     void EditorApplication::OnShutdown() noexcept
