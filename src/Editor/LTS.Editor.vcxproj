@@ -113,6 +113,7 @@
         $(ProjectDir)..\Engine\GraphicsDX11\Public;
         $(ProjectDir)..\Engine\Platform\Public;
         $(ProjectDir)..\Engine\Runtime\Public;
+        $(ProjectDir)..\Engine\Scene\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -179,6 +180,7 @@
         $(ProjectDir)..\Engine\GraphicsDX11\Public;
         $(ProjectDir)..\Engine\Platform\Public;
         $(ProjectDir)..\Engine\Runtime\Public;
+        $(ProjectDir)..\Engine\Scene\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -282,6 +284,12 @@
 
     <ProjectReference Include="..\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj">
       <Project>{91B4D7E8-3C6A-4A72-9F50-2D8E1B6C4A37}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Scene\LTS.Scene.vcxproj">
+      <Project>{4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>

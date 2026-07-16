@@ -3,28 +3,590 @@
 #include <Windows.h>
 
 #include <algorithm>
-#include <charconv>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <locale>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <system_error>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace lts::editor
 {
     namespace
     {
-        constexpr std::uint64_t CurrentFormatVersion = 1U;
-        constexpr std::string_view FormatName = "LTS.Level";
+        constexpr std::uint64_t CurrentFormatVersion = 2U;
+        constexpr std::uint64_t LegacyFormatVersion = 1U;
+
+        constexpr std::string_view FormatName =
+            "LTS.Level";
 
         constexpr std::uintmax_t MaximumLevelFileSize =
             64U * 1024U * 1024U;
+
+        struct JsonValue final
+        {
+            enum class Type : std::uint8_t
+            {
+                Null = 0,
+                Boolean,
+                Number,
+                String,
+                Array,
+                Object
+            };
+
+            Type type = Type::Null;
+
+            bool boolean = false;
+            double number = 0.0;
+
+            std::string string;
+
+            std::vector<JsonValue> array;
+
+            std::vector<
+                std::pair<std::string, JsonValue>>
+                    object;
+
+            [[nodiscard]]
+            const JsonValue* Find(
+                const std::string_view key) const noexcept
+            {
+                for (const auto& entry : object)
+                {
+                    if (entry.first == key)
+                    {
+                        return &entry.second;
+                    }
+                }
+
+                return nullptr;
+            }
+        };
+
+        class JsonParser final
+        {
+        public:
+            explicit JsonParser(
+                const std::string_view text) noexcept
+                : text_(text)
+            {
+            }
+
+            [[nodiscard]]
+            bool Parse(
+                JsonValue& value,
+                std::string& error)
+            {
+                error.clear();
+                position_ = 0U;
+
+                if (!ParseValue(value, error))
+                {
+                    return false;
+                }
+
+                SkipWhitespace();
+
+                if (position_ != text_.size())
+                {
+                    error =
+                        "Unexpected data after JSON document.";
+
+                    return false;
+                }
+
+                return true;
+            }
+
+        private:
+            void SkipWhitespace() noexcept
+            {
+                while (position_ < text_.size())
+                {
+                    const char character =
+                        text_[position_];
+
+                    if (
+                        character != ' ' &&
+                        character != '\t' &&
+                        character != '\r' &&
+                        character != '\n')
+                    {
+                        break;
+                    }
+
+                    ++position_;
+                }
+            }
+
+            [[nodiscard]]
+            bool ParseValue(
+                JsonValue& value,
+                std::string& error)
+            {
+                SkipWhitespace();
+
+                if (position_ >= text_.size())
+                {
+                    error =
+                        "Unexpected end of JSON document.";
+
+                    return false;
+                }
+
+                switch (text_[position_])
+                {
+                    case '{':
+                        return ParseObject(
+                            value,
+                            error);
+
+                    case '[':
+                        return ParseArray(
+                            value,
+                            error);
+
+                    case '"':
+                        value.type =
+                            JsonValue::Type::String;
+
+                        return ParseString(
+                            value.string,
+                            error);
+
+                    case 't':
+                        return ParseLiteral(
+                            "true",
+                            JsonValue::Type::Boolean,
+                            value,
+                            true,
+                            error);
+
+                    case 'f':
+                        return ParseLiteral(
+                            "false",
+                            JsonValue::Type::Boolean,
+                            value,
+                            false,
+                            error);
+
+                    case 'n':
+                        return ParseLiteral(
+                            "null",
+                            JsonValue::Type::Null,
+                            value,
+                            false,
+                            error);
+
+                    default:
+                        return ParseNumber(
+                            value,
+                            error);
+                }
+            }
+
+            [[nodiscard]]
+            bool ParseObject(
+                JsonValue& value,
+                std::string& error)
+            {
+                value = {};
+                value.type =
+                    JsonValue::Type::Object;
+
+                ++position_;
+                SkipWhitespace();
+
+                if (
+                    position_ < text_.size() &&
+                    text_[position_] == '}')
+                {
+                    ++position_;
+                    return true;
+                }
+
+                while (position_ < text_.size())
+                {
+                    std::string key;
+
+                    if (!ParseString(key, error))
+                    {
+                        return false;
+                    }
+
+                    SkipWhitespace();
+
+                    if (
+                        position_ >= text_.size() ||
+                        text_[position_] != ':')
+                    {
+                        error =
+                            "Expected ':' after object key.";
+
+                        return false;
+                    }
+
+                    ++position_;
+
+                    JsonValue child;
+
+                    if (!ParseValue(child, error))
+                    {
+                        return false;
+                    }
+
+                    value.object.emplace_back(
+                        std::move(key),
+                        std::move(child));
+
+                    SkipWhitespace();
+
+                    if (position_ >= text_.size())
+                    {
+                        error =
+                            "Unexpected end of JSON object.";
+
+                        return false;
+                    }
+
+                    if (text_[position_] == '}')
+                    {
+                        ++position_;
+                        return true;
+                    }
+
+                    if (text_[position_] != ',')
+                    {
+                        error =
+                            "Expected ',' inside JSON object.";
+
+                        return false;
+                    }
+
+                    ++position_;
+                    SkipWhitespace();
+                }
+
+                error =
+                    "Unexpected end of JSON object.";
+
+                return false;
+            }
+
+            [[nodiscard]]
+            bool ParseArray(
+                JsonValue& value,
+                std::string& error)
+            {
+                value = {};
+                value.type =
+                    JsonValue::Type::Array;
+
+                ++position_;
+                SkipWhitespace();
+
+                if (
+                    position_ < text_.size() &&
+                    text_[position_] == ']')
+                {
+                    ++position_;
+                    return true;
+                }
+
+                while (position_ < text_.size())
+                {
+                    JsonValue child;
+
+                    if (!ParseValue(child, error))
+                    {
+                        return false;
+                    }
+
+                    value.array.push_back(
+                        std::move(child));
+
+                    SkipWhitespace();
+
+                    if (position_ >= text_.size())
+                    {
+                        error =
+                            "Unexpected end of JSON array.";
+
+                        return false;
+                    }
+
+                    if (text_[position_] == ']')
+                    {
+                        ++position_;
+                        return true;
+                    }
+
+                    if (text_[position_] != ',')
+                    {
+                        error =
+                            "Expected ',' inside JSON array.";
+
+                        return false;
+                    }
+
+                    ++position_;
+                }
+
+                error =
+                    "Unexpected end of JSON array.";
+
+                return false;
+            }
+
+            [[nodiscard]]
+            bool ParseString(
+                std::string& output,
+                std::string& error)
+            {
+                SkipWhitespace();
+
+                if (
+                    position_ >= text_.size() ||
+                    text_[position_] != '"')
+                {
+                    error =
+                        "Expected a JSON string.";
+
+                    return false;
+                }
+
+                ++position_;
+                output.clear();
+
+                while (position_ < text_.size())
+                {
+                    const char character =
+                        text_[position_++];
+
+                    if (character == '"')
+                    {
+                        return true;
+                    }
+
+                    if (
+                        static_cast<unsigned char>(
+                            character) < 0x20U)
+                    {
+                        error =
+                            "Invalid control character in JSON string.";
+
+                        return false;
+                    }
+
+                    if (character != '\\')
+                    {
+                        output.push_back(character);
+                        continue;
+                    }
+
+                    if (position_ >= text_.size())
+                    {
+                        error =
+                            "Invalid JSON string escape.";
+
+                        return false;
+                    }
+
+                    switch (text_[position_++])
+                    {
+                        case '"':
+                            output.push_back('"');
+                            break;
+
+                        case '\\':
+                            output.push_back('\\');
+                            break;
+
+                        case '/':
+                            output.push_back('/');
+                            break;
+
+                        case 'b':
+                            output.push_back('\b');
+                            break;
+
+                        case 'f':
+                            output.push_back('\f');
+                            break;
+
+                        case 'n':
+                            output.push_back('\n');
+                            break;
+
+                        case 'r':
+                            output.push_back('\r');
+                            break;
+
+                        case 't':
+                            output.push_back('\t');
+                            break;
+
+                        default:
+                            error =
+                                "Unsupported JSON string escape.";
+
+                            return false;
+                    }
+                }
+
+                error =
+                    "Unexpected end of JSON string.";
+
+                return false;
+            }
+
+            [[nodiscard]]
+            bool ParseNumber(
+                JsonValue& value,
+                std::string& error)
+            {
+                const std::size_t start =
+                    position_;
+
+                if (
+                    position_ < text_.size() &&
+                    text_[position_] == '-')
+                {
+                    ++position_;
+                }
+
+                while (
+                    position_ < text_.size() &&
+                    text_[position_] >= '0' &&
+                    text_[position_] <= '9')
+                {
+                    ++position_;
+                }
+
+                if (
+                    position_ < text_.size() &&
+                    text_[position_] == '.')
+                {
+                    ++position_;
+
+                    while (
+                        position_ < text_.size() &&
+                        text_[position_] >= '0' &&
+                        text_[position_] <= '9')
+                    {
+                        ++position_;
+                    }
+                }
+
+                if (
+                    position_ < text_.size() &&
+                    (
+                        text_[position_] == 'e' ||
+                        text_[position_] == 'E'
+                    ))
+                {
+                    ++position_;
+
+                    if (
+                        position_ < text_.size() &&
+                        (
+                            text_[position_] == '+' ||
+                            text_[position_] == '-'
+                        ))
+                    {
+                        ++position_;
+                    }
+
+                    while (
+                        position_ < text_.size() &&
+                        text_[position_] >= '0' &&
+                        text_[position_] <= '9')
+                    {
+                        ++position_;
+                    }
+                }
+
+                if (start == position_)
+                {
+                    error =
+                        "Expected a JSON value.";
+
+                    return false;
+                }
+
+                const std::string token(
+                    text_.substr(
+                        start,
+                        position_ - start));
+
+                char* end = nullptr;
+
+                const double number =
+                    std::strtod(
+                        token.c_str(),
+                        &end);
+
+                if (
+                    end == nullptr ||
+                    end == token.c_str() ||
+                    *end != '\0' ||
+                    !std::isfinite(number))
+                {
+                    error =
+                        "Invalid JSON number.";
+
+                    return false;
+                }
+
+                value = {};
+                value.type =
+                    JsonValue::Type::Number;
+
+                value.number = number;
+
+                return true;
+            }
+
+            [[nodiscard]]
+            bool ParseLiteral(
+                const std::string_view literal,
+                const JsonValue::Type type,
+                JsonValue& value,
+                const bool booleanValue,
+                std::string& error)
+            {
+                if (
+                    text_.substr(
+                        position_,
+                        literal.size()) != literal)
+                {
+                    error =
+                        "Invalid JSON literal.";
+
+                    return false;
+                }
+
+                position_ += literal.size();
+
+                value = {};
+                value.type = type;
+                value.boolean = booleanValue;
+
+                return true;
+            }
+
+            std::string_view text_;
+            std::size_t position_ = 0U;
+        };
 
         [[nodiscard]]
         bool ToUtf8(
@@ -38,15 +600,17 @@ namespace lts::editor
                 return true;
             }
 
-            const int required = WideCharToMultiByte(
-                CP_UTF8,
-                WC_ERR_INVALID_CHARS,
-                input.data(),
-                static_cast<int>(input.size()),
-                nullptr,
-                0,
-                nullptr,
-                nullptr);
+            const int required =
+                WideCharToMultiByte(
+                    CP_UTF8,
+                    WC_ERR_INVALID_CHARS,
+                    input.data(),
+                    static_cast<int>(
+                        input.size()),
+                    nullptr,
+                    0,
+                    nullptr,
+                    nullptr);
 
             if (required <= 0)
             {
@@ -54,13 +618,15 @@ namespace lts::editor
             }
 
             output.resize(
-                static_cast<std::size_t>(required));
+                static_cast<std::size_t>(
+                    required));
 
             return WideCharToMultiByte(
                 CP_UTF8,
                 WC_ERR_INVALID_CHARS,
                 input.data(),
-                static_cast<int>(input.size()),
+                static_cast<int>(
+                    input.size()),
                 output.data(),
                 required,
                 nullptr,
@@ -79,13 +645,15 @@ namespace lts::editor
                 return true;
             }
 
-            const int required = MultiByteToWideChar(
-                CP_UTF8,
-                MB_ERR_INVALID_CHARS,
-                input.data(),
-                static_cast<int>(input.size()),
-                nullptr,
-                0);
+            const int required =
+                MultiByteToWideChar(
+                    CP_UTF8,
+                    MB_ERR_INVALID_CHARS,
+                    input.data(),
+                    static_cast<int>(
+                        input.size()),
+                    nullptr,
+                    0);
 
             if (required <= 0)
             {
@@ -93,13 +661,15 @@ namespace lts::editor
             }
 
             output.resize(
-                static_cast<std::size_t>(required));
+                static_cast<std::size_t>(
+                    required));
 
             return MultiByteToWideChar(
                 CP_UTF8,
                 MB_ERR_INVALID_CHARS,
                 input.data(),
-                static_cast<int>(input.size()),
+                static_cast<int>(
+                    input.size()),
                 output.data(),
                 required) == required;
         }
@@ -108,12 +678,11 @@ namespace lts::editor
             std::ostream& output,
             const std::string_view value)
         {
-            static constexpr char Hex[] =
-                "0123456789ABCDEF";
-
             output.put('"');
 
-            for (const unsigned char character : value)
+            for (
+                const unsigned char character :
+                value)
             {
                 switch (character)
                 {
@@ -146,29 +715,31 @@ namespace lts::editor
                         break;
 
                     default:
-                        if (character < 0x20U)
-                        {
-                            output
-                                << "\\u00"
-                                << Hex[
-                                    (character >> 4U) &
-                                    0x0FU]
-                                << Hex[
-                                    character &
-                                    0x0FU];
-                        }
-                        else
+                        if (character >= 0x20U)
                         {
                             output.put(
                                 static_cast<char>(
                                     character));
                         }
-
                         break;
                 }
             }
 
             output.put('"');
+        }
+
+        void WriteVector3(
+            std::ostream& output,
+            const std::array<float, 3U>& value)
+        {
+            output
+                << '['
+                << value[0]
+                << ", "
+                << value[1]
+                << ", "
+                << value[2]
+                << ']';
         }
 
         [[nodiscard]]
@@ -200,32 +771,32 @@ namespace lts::editor
 
         [[nodiscard]]
         bool StringToKind(
-            const std::string_view text,
+            const std::string_view value,
             EditorEntityKind& kind) noexcept
         {
-            if (text == "Environment")
+            if (value == "Environment")
             {
                 kind = EditorEntityKind::Environment;
             }
-            else if (text == "DirectionalLight")
+            else if (value == "DirectionalLight")
             {
                 kind =
                     EditorEntityKind::DirectionalLight;
             }
-            else if (text == "SpawnPoint")
+            else if (value == "SpawnPoint")
             {
                 kind = EditorEntityKind::SpawnPoint;
             }
-            else if (text == "Anomaly")
+            else if (value == "Anomaly")
             {
                 kind = EditorEntityKind::Anomaly;
             }
-            else if (text == "LootContainer")
+            else if (value == "LootContainer")
             {
                 kind =
                     EditorEntityKind::LootContainer;
             }
-            else if (text == "Empty")
+            else if (value == "Empty")
             {
                 kind = EditorEntityKind::Empty;
             }
@@ -237,738 +808,181 @@ namespace lts::editor
             return true;
         }
 
-        void WriteVector3(
-            std::ostream& output,
-            const std::array<float, 3U>& value)
+        [[nodiscard]]
+        const JsonValue* RequireField(
+            const JsonValue& object,
+            const std::string_view name) noexcept
         {
-            output
-                << '['
-                << value[0]
-                << ", "
-                << value[1]
-                << ", "
-                << value[2]
-                << ']';
+            if (
+                object.type !=
+                JsonValue::Type::Object)
+            {
+                return nullptr;
+            }
+
+            return object.Find(name);
         }
 
         [[nodiscard]]
-        bool BuildJson(
-            const EditorLevelFileData& data,
-            std::string& outputText,
-            std::wstring& error)
+        bool ReadString(
+            const JsonValue* value,
+            std::string& output) noexcept
         {
-            std::string levelName;
-            std::string levelGuid;
-
             if (
-                !ToUtf8(data.name, levelName) ||
-                !ToUtf8(data.guid, levelGuid))
+                value == nullptr ||
+                value->type !=
+                    JsonValue::Type::String)
             {
-                error =
-                    L"Failed to convert level metadata to UTF-8.";
-
                 return false;
             }
 
-            std::ostringstream output;
-
-            output.imbue(
-                std::locale::classic());
-
-            output
-                << std::setprecision(9);
-
-            output << "{\n";
-            output << "  \"format\": ";
-
-            WriteJsonString(
-                output,
-                FormatName);
-
-            output
-                << ",\n"
-                << "  \"version\": "
-                << CurrentFormatVersion
-                << ",\n"
-                << "  \"name\": ";
-
-            WriteJsonString(
-                output,
-                levelName);
-
-            output
-                << ",\n"
-                << "  \"guid\": ";
-
-            WriteJsonString(
-                output,
-                levelGuid);
-
-            output
-                << ",\n"
-                << "  \"nextEntityId\": "
-                << data.snapshot.nextEntityId
-                << ",\n"
-                << "  \"selectedIndex\": ";
-
-            if (
-                data.snapshot.selectedIndex ==
-                InvalidEditorEntityIndex)
-            {
-                output << "null";
-            }
-            else
-            {
-                output
-                    << data.snapshot.selectedIndex;
-            }
-
-            output
-                << ",\n"
-                << "  \"entities\": [\n";
-
-            for (
-                std::size_t index = 0U;
-                index <
-                    data.snapshot.entities.size();
-                ++index)
-            {
-                const EditorSceneEntity& entity =
-                    data.snapshot.entities[index];
-
-                std::string entityName;
-
-                if (!ToUtf8(
-                        entity.name,
-                        entityName))
-                {
-                    error =
-                        L"Failed to convert an entity name to UTF-8.";
-
-                    return false;
-                }
-
-                output
-                    << "    {\"id\": "
-                    << entity.id
-                    << ", \"kind\": ";
-
-                WriteJsonString(
-                    output,
-                    KindToString(entity.kind));
-
-                output << ", \"name\": ";
-
-                WriteJsonString(
-                    output,
-                    entityName);
-
-                output
-                    << ", \"position\": ";
-
-                WriteVector3(
-                    output,
-                    entity.transform.position);
-
-                output
-                    << ", \"rotation\": ";
-
-                WriteVector3(
-                    output,
-                    entity.transform.rotationDegrees);
-
-                output
-                    << ", \"scale\": ";
-
-                WriteVector3(
-                    output,
-                    entity.transform.scale);
-
-                output << '}';
-
-                if (
-                    index + 1U <
-                    data.snapshot.entities.size())
-                {
-                    output << ',';
-                }
-
-                output << '\n';
-            }
-
-            output
-                << "  ]\n"
-                << "}\n";
-
-            if (!output.good())
-            {
-                error =
-                    L"Failed to build level JSON.";
-
-                return false;
-            }
-
-            outputText = output.str();
+            output = value->string;
             return true;
         }
 
-        void SkipWhitespace(
-            const std::string_view text,
-            std::size_t& position) noexcept
-        {
-            while (position < text.size())
-            {
-                const char value =
-                    text[position];
-
-                if (
-                    value != ' ' &&
-                    value != '\t' &&
-                    value != '\r' &&
-                    value != '\n')
-                {
-                    break;
-                }
-
-                ++position;
-            }
-        }
-
         [[nodiscard]]
-        bool FindField(
-            const std::string_view text,
-            const std::string_view field,
-            std::size_t& valuePosition)
+        bool ReadBoolean(
+            const JsonValue* value,
+            bool& output) noexcept
         {
-            std::string key;
-
-            key.reserve(
-                field.size() + 2U);
-
-            key.push_back('"');
-            key.append(field);
-            key.push_back('"');
-
-            const std::size_t keyPosition =
-                text.find(key);
-
             if (
-                keyPosition ==
-                std::string_view::npos)
+                value == nullptr ||
+                value->type !=
+                    JsonValue::Type::Boolean)
             {
                 return false;
             }
 
-            const std::size_t colon =
-                text.find(
-                    ':',
-                    keyPosition + key.size());
-
-            if (
-                colon ==
-                std::string_view::npos)
-            {
-                return false;
-            }
-
-            valuePosition = colon + 1U;
-
-            SkipWhitespace(
-                text,
-                valuePosition);
-
-            return
-                valuePosition <
-                text.size();
-        }
-
-        [[nodiscard]]
-        bool ReadJsonString(
-            const std::string_view text,
-            std::size_t& position,
-            std::string& value)
-        {
-            SkipWhitespace(
-                text,
-                position);
-
-            if (
-                position >= text.size() ||
-                text[position] != '"')
-            {
-                return false;
-            }
-
-            ++position;
-            value.clear();
-
-            while (position < text.size())
-            {
-                const char character =
-                    text[position++];
-
-                if (character == '"')
-                {
-                    return true;
-                }
-
-                if (
-                    static_cast<unsigned char>(
-                        character) < 0x20U)
-                {
-                    return false;
-                }
-
-                if (character != '\\')
-                {
-                    value.push_back(character);
-                    continue;
-                }
-
-                if (position >= text.size())
-                {
-                    return false;
-                }
-
-                switch (text[position++])
-                {
-                    case '"':
-                        value.push_back('"');
-                        break;
-
-                    case '\\':
-                        value.push_back('\\');
-                        break;
-
-                    case '/':
-                        value.push_back('/');
-                        break;
-
-                    case 'b':
-                        value.push_back('\b');
-                        break;
-
-                    case 'f':
-                        value.push_back('\f');
-                        break;
-
-                    case 'n':
-                        value.push_back('\n');
-                        break;
-
-                    case 'r':
-                        value.push_back('\r');
-                        break;
-
-                    case 't':
-                        value.push_back('\t');
-                        break;
-
-                    default:
-                        return false;
-                }
-            }
-
-            return false;
-        }
-
-        [[nodiscard]]
-        bool ReadUnsigned(
-            const std::string_view text,
-            std::size_t& position,
-            std::uint64_t& value)
-        {
-            SkipWhitespace(
-                text,
-                position);
-
-            const std::size_t start =
-                position;
-
-            while (
-                position < text.size() &&
-                text[position] >= '0' &&
-                text[position] <= '9')
-            {
-                ++position;
-            }
-
-            if (start == position)
-            {
-                return false;
-            }
-
-            const auto result =
-                std::from_chars(
-                    text.data() + start,
-                    text.data() + position,
-                    value);
-
-            return
-                result.ec == std::errc{} &&
-                result.ptr ==
-                    text.data() + position;
+            output = value->boolean;
+            return true;
         }
 
         [[nodiscard]]
         bool ReadFloat(
-            const std::string_view text,
-            std::size_t& position,
-            float& value)
+            const JsonValue* value,
+            float& output) noexcept
         {
-            SkipWhitespace(
-                text,
-                position);
-
-            const std::size_t start =
-                position;
-
             if (
-                position < text.size() &&
-                text[position] == '-')
-            {
-                ++position;
-            }
-
-            while (
-                position < text.size() &&
-                (
-                    (
-                        text[position] >= '0' &&
-                        text[position] <= '9'
-                    ) ||
-                    text[position] == '.' ||
-                    text[position] == 'e' ||
-                    text[position] == 'E' ||
-                    text[position] == '+' ||
-                    text[position] == '-'
-                ))
-            {
-                ++position;
-            }
-
-            if (start == position)
+                value == nullptr ||
+                value->type !=
+                    JsonValue::Type::Number ||
+                !std::isfinite(value->number) ||
+                value->number <
+                    -static_cast<double>(
+                        std::numeric_limits<float>::max()) ||
+                value->number >
+                    static_cast<double>(
+                        std::numeric_limits<float>::max()))
             {
                 return false;
             }
 
-            const std::string token(
-                text.substr(
-                    start,
-                    position - start));
+            output =
+                static_cast<float>(
+                    value->number);
 
-            char* end = nullptr;
+            return true;
+        }
 
-            const float parsed =
-                std::strtof(
-                    token.c_str(),
-                    &end);
-
+        [[nodiscard]]
+        bool ReadUnsigned(
+            const JsonValue* value,
+            std::uint64_t& output) noexcept
+        {
             if (
-                end == nullptr ||
-                end == token.c_str() ||
-                *end != '\0' ||
-                !std::isfinite(parsed))
+                value == nullptr ||
+                value->type !=
+                    JsonValue::Type::Number ||
+                !std::isfinite(value->number) ||
+                value->number < 0.0 ||
+                std::floor(value->number) !=
+                    value->number ||
+                value->number >
+                    static_cast<double>(
+                        std::numeric_limits<
+                            std::uint64_t>::max()))
             {
                 return false;
             }
 
-            value = parsed;
+            output =
+                static_cast<std::uint64_t>(
+                    value->number);
+
             return true;
         }
 
         [[nodiscard]]
         bool ReadVector3(
-            const std::string_view text,
-            std::size_t& position,
-            std::array<float, 3U>& value)
+            const JsonValue* value,
+            std::array<float, 3U>& output) noexcept
         {
-            SkipWhitespace(
-                text,
-                position);
-
             if (
-                position >= text.size() ||
-                text[position++] != '[')
+                value == nullptr ||
+                value->type !=
+                    JsonValue::Type::Array ||
+                value->array.size() != 3U)
             {
                 return false;
             }
 
             for (
                 std::size_t index = 0U;
-                index < value.size();
+                index < output.size();
                 ++index)
             {
                 if (!ReadFloat(
-                        text,
-                        position,
-                        value[index]))
+                        &value->array[index],
+                        output[index]))
                 {
                     return false;
                 }
-
-                SkipWhitespace(
-                    text,
-                    position);
-
-                if (index + 1U < value.size())
-                {
-                    if (
-                        position >= text.size() ||
-                        text[position++] != ',')
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            SkipWhitespace(
-                text,
-                position);
-
-            return
-                position < text.size() &&
-                text[position++] == ']';
-        }
-
-        [[nodiscard]]
-        bool ReadStringField(
-            const std::string_view object,
-            const std::string_view field,
-            std::string& value)
-        {
-            std::size_t position = 0U;
-
-            return
-                FindField(
-                    object,
-                    field,
-                    position) &&
-                ReadJsonString(
-                    object,
-                    position,
-                    value);
-        }
-
-        [[nodiscard]]
-        bool ReadUnsignedField(
-            const std::string_view object,
-            const std::string_view field,
-            std::uint64_t& value)
-        {
-            std::size_t position = 0U;
-
-            return
-                FindField(
-                    object,
-                    field,
-                    position) &&
-                ReadUnsigned(
-                    object,
-                    position,
-                    value);
-        }
-
-        [[nodiscard]]
-        bool ReadVectorField(
-            const std::string_view object,
-            const std::string_view field,
-            std::array<float, 3U>& value)
-        {
-            std::size_t position = 0U;
-
-            return
-                FindField(
-                    object,
-                    field,
-                    position) &&
-                ReadVector3(
-                    object,
-                    position,
-                    value);
-        }
-
-        [[nodiscard]]
-        bool FindMatching(
-            const std::string_view text,
-            const std::size_t openingPosition,
-            const char opening,
-            const char closing,
-            std::size_t& closingPosition)
-        {
-            int depth = 0;
-            bool inString = false;
-            bool escaped = false;
-
-            for (
-                std::size_t index =
-                    openingPosition;
-                index < text.size();
-                ++index)
-            {
-                const char value =
-                    text[index];
-
-                if (inString)
-                {
-                    if (escaped)
-                    {
-                        escaped = false;
-                    }
-                    else if (value == '\\')
-                    {
-                        escaped = true;
-                    }
-                    else if (value == '"')
-                    {
-                        inString = false;
-                    }
-
-                    continue;
-                }
-
-                if (value == '"')
-                {
-                    inString = true;
-                    continue;
-                }
-
-                if (value == opening)
-                {
-                    ++depth;
-                }
-                else if (
-                    value == closing &&
-                    --depth == 0)
-                {
-                    closingPosition = index;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        [[nodiscard]]
-        bool ExtractEntityObjects(
-            const std::string_view document,
-            std::vector<std::string_view>& objects)
-        {
-            std::size_t valuePosition = 0U;
-
-            if (
-                !FindField(
-                    document,
-                    "entities",
-                    valuePosition) ||
-                valuePosition >=
-                    document.size() ||
-                document[valuePosition] != '[')
-            {
-                return false;
-            }
-
-            std::size_t arrayEnd = 0U;
-
-            if (!FindMatching(
-                    document,
-                    valuePosition,
-                    '[',
-                    ']',
-                    arrayEnd))
-            {
-                return false;
-            }
-
-            objects.clear();
-
-            std::size_t position =
-                valuePosition + 1U;
-
-            while (position < arrayEnd)
-            {
-                SkipWhitespace(
-                    document,
-                    position);
-
-                if (
-                    position < arrayEnd &&
-                    document[position] == ',')
-                {
-                    ++position;
-                    continue;
-                }
-
-                if (position >= arrayEnd)
-                {
-                    break;
-                }
-
-                if (document[position] != '{')
-                {
-                    return false;
-                }
-
-                std::size_t objectEnd = 0U;
-
-                if (
-                    !FindMatching(
-                        document,
-                        position,
-                        '{',
-                        '}',
-                        objectEnd) ||
-                    objectEnd > arrayEnd)
-                {
-                    return false;
-                }
-
-                objects.push_back(
-                    document.substr(
-                        position,
-                        objectEnd -
-                            position +
-                            1U));
-
-                position = objectEnd + 1U;
             }
 
             return true;
         }
 
         [[nodiscard]]
-        bool ParseEntity(
-            const std::string_view object,
+        bool ParseLegacyEntity(
+            const JsonValue& jsonEntity,
             EditorSceneEntity& entity)
         {
             std::uint64_t id = 0U;
+
             std::string kind;
             std::string name;
 
             if (
-                !ReadUnsignedField(
-                    object,
-                    "id",
+                !ReadUnsigned(
+                    RequireField(
+                        jsonEntity,
+                        "id"),
                     id) ||
-                !ReadStringField(
-                    object,
-                    "kind",
+                !ReadString(
+                    RequireField(
+                        jsonEntity,
+                        "kind"),
                     kind) ||
-                !ReadStringField(
-                    object,
-                    "name",
+                !ReadString(
+                    RequireField(
+                        jsonEntity,
+                        "name"),
                     name) ||
-                !ReadVectorField(
-                    object,
-                    "position",
+                !ReadVector3(
+                    RequireField(
+                        jsonEntity,
+                        "position"),
                     entity.transform.position) ||
-                !ReadVectorField(
-                    object,
-                    "rotation",
-                    entity.transform.rotationDegrees) ||
-                !ReadVectorField(
-                    object,
-                    "scale",
+                !ReadVector3(
+                    RequireField(
+                        jsonEntity,
+                        "rotation"),
+                    entity.transform.
+                        rotationDegrees) ||
+                !ReadVector3(
+                    RequireField(
+                        jsonEntity,
+                        "scale"),
                     entity.transform.scale) ||
                 !StringToKind(
                     kind,
@@ -982,6 +996,297 @@ namespace lts::editor
 
             entity.id =
                 static_cast<EditorEntityId>(id);
+
+            engine::scene::SceneWorld::
+                EnsureDefaultComponents(entity);
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool ParseComponentEntity(
+            const JsonValue& jsonEntity,
+            EditorSceneEntity& entity)
+        {
+            std::uint64_t id = 0U;
+            std::string kind;
+
+            if (
+                !ReadUnsigned(
+                    RequireField(
+                        jsonEntity,
+                        "id"),
+                    id) ||
+                !ReadString(
+                    RequireField(
+                        jsonEntity,
+                        "kind"),
+                    kind) ||
+                !StringToKind(
+                    kind,
+                    entity.kind))
+            {
+                return false;
+            }
+
+            entity.id =
+                static_cast<EditorEntityId>(id);
+
+            const JsonValue* const components =
+                RequireField(
+                    jsonEntity,
+                    "components");
+
+            if (
+                components == nullptr ||
+                components->type !=
+                    JsonValue::Type::Object)
+            {
+                return false;
+            }
+
+            const JsonValue* const nameComponent =
+                RequireField(
+                    *components,
+                    "Name");
+
+            const JsonValue* const transformComponent =
+                RequireField(
+                    *components,
+                    "Transform");
+
+            std::string name;
+
+            if (
+                nameComponent == nullptr ||
+                transformComponent == nullptr ||
+                !ReadString(
+                    RequireField(
+                        *nameComponent,
+                        "value"),
+                    name) ||
+                !FromUtf8(
+                    name,
+                    entity.name) ||
+                !ReadVector3(
+                    RequireField(
+                        *transformComponent,
+                        "position"),
+                    entity.transform.position) ||
+                !ReadVector3(
+                    RequireField(
+                        *transformComponent,
+                        "rotation"),
+                    entity.transform.
+                        rotationDegrees) ||
+                !ReadVector3(
+                    RequireField(
+                        *transformComponent,
+                        "scale"),
+                    entity.transform.scale))
+            {
+                return false;
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "Environment"))
+            {
+                engine::scene::EnvironmentComponent
+                    value;
+
+                std::string asset;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "asset"),
+                        asset) ||
+                    !FromUtf8(
+                        asset,
+                        value.environmentAsset))
+                {
+                    return false;
+                }
+
+                entity.environment =
+                    std::move(value);
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "StaticMesh"))
+            {
+                engine::scene::StaticMeshComponent
+                    value;
+
+                std::string asset;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "asset"),
+                        asset) ||
+                    !FromUtf8(
+                        asset,
+                        value.assetPath) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "visible"),
+                        value.visible) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "castShadows"),
+                        value.castShadows))
+                {
+                    return false;
+                }
+
+                entity.staticMesh =
+                    std::move(value);
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "DirectionalLight"))
+            {
+                engine::scene::
+                    DirectionalLightComponent value;
+
+                if (
+                    !ReadVector3(
+                        RequireField(
+                            *component,
+                            "color"),
+                        value.color) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "intensity"),
+                        value.intensity) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "castShadows"),
+                        value.castShadows))
+                {
+                    return false;
+                }
+
+                entity.directionalLight =
+                    value;
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "SpawnPoint"))
+            {
+                engine::scene::SpawnPointComponent
+                    value;
+
+                std::string tag;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "tag"),
+                        tag) ||
+                    !FromUtf8(
+                        tag,
+                        value.spawnTag))
+                {
+                    return false;
+                }
+
+                entity.spawnPoint =
+                    std::move(value);
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "Anomaly"))
+            {
+                engine::scene::AnomalyComponent value;
+
+                std::string type;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "type"),
+                        type) ||
+                    !FromUtf8(
+                        type,
+                        value.anomalyType) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "radius"),
+                        value.radius) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "damagePerSecond"),
+                        value.damagePerSecond))
+                {
+                    return false;
+                }
+
+                entity.anomaly =
+                    std::move(value);
+            }
+
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "LootContainer"))
+            {
+                engine::scene::
+                    LootContainerComponent value;
+
+                std::string lootTable;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "lootTable"),
+                        lootTable) ||
+                    !FromUtf8(
+                        lootTable,
+                        value.lootTable) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "respawnSeconds"),
+                        value.respawnSeconds))
+                {
+                    return false;
+                }
+
+                entity.lootContainer =
+                    std::move(value);
+            }
+
+            engine::scene::SceneWorld::
+                EnsureDefaultComponents(entity);
 
             return true;
         }
@@ -1001,8 +1306,7 @@ namespace lts::editor
                 return false;
             }
 
-            std::unordered_set<EditorEntityId>
-                ids;
+            std::unordered_set<EditorEntityId> ids;
 
             EditorEntityId maximumId = 0U;
 
@@ -1012,11 +1316,14 @@ namespace lts::editor
             {
                 if (
                     entity.id == 0U ||
+                    entity.name.empty() ||
                     !ids.insert(entity.id).second ||
-                    entity.name.empty())
+                    !engine::scene::SceneWorld::
+                        IsFiniteTransform(
+                            entity.transform))
                 {
                     error =
-                        L"Entity IDs or names are invalid.";
+                        L"The level contains an invalid entity.";
 
                     return false;
                 }
@@ -1025,47 +1332,6 @@ namespace lts::editor
                     std::max(
                         maximumId,
                         entity.id);
-
-                for (
-                    const float value :
-                    entity.transform.position)
-                {
-                    if (!std::isfinite(value))
-                    {
-                        error =
-                            L"An entity position is invalid.";
-
-                        return false;
-                    }
-                }
-
-                for (
-                    const float value :
-                    entity.transform.rotationDegrees)
-                {
-                    if (!std::isfinite(value))
-                    {
-                        error =
-                            L"An entity rotation is invalid.";
-
-                        return false;
-                    }
-                }
-
-                for (
-                    const float value :
-                    entity.transform.scale)
-                {
-                    if (
-                        !std::isfinite(value) ||
-                        std::abs(value) < 0.001F)
-                    {
-                        error =
-                            L"An entity scale is invalid.";
-
-                        return false;
-                    }
-                }
             }
 
             if (
@@ -1095,11 +1361,346 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool BuildJson(
+            const EditorLevelFileData& data,
+            std::string& outputText,
+            std::wstring& error)
+        {
+            std::string levelName;
+            std::string levelGuid;
+
+            if (
+                !ToUtf8(data.name, levelName) ||
+                !ToUtf8(data.guid, levelGuid))
+            {
+                error =
+                    L"Failed to convert level metadata to UTF-8.";
+
+                return false;
+            }
+
+            std::ostringstream output;
+
+            output.imbue(
+                std::locale::classic());
+
+            output << std::setprecision(9);
+
+            output << "{\n";
+            output << "  \"format\": ";
+
+            WriteJsonString(output, FormatName);
+
+            output
+                << ",\n  \"version\": "
+                << CurrentFormatVersion
+                << ",\n  \"name\": ";
+
+            WriteJsonString(output, levelName);
+
+            output << ",\n  \"guid\": ";
+
+            WriteJsonString(output, levelGuid);
+
+            output
+                << ",\n  \"nextEntityId\": "
+                << data.snapshot.nextEntityId
+                << ",\n  \"selectedIndex\": ";
+
+            if (
+                data.snapshot.selectedIndex ==
+                InvalidEditorEntityIndex)
+            {
+                output << "null";
+            }
+            else
+            {
+                output
+                    << data.snapshot.selectedIndex;
+            }
+
+            output << ",\n  \"entities\": [\n";
+
+            for (
+                std::size_t index = 0U;
+                index <
+                    data.snapshot.entities.size();
+                ++index)
+            {
+                const EditorSceneEntity& entity =
+                    data.snapshot.entities[index];
+
+                std::string entityName;
+
+                if (!ToUtf8(
+                        entity.name,
+                        entityName))
+                {
+                    error =
+                        L"Failed to convert an entity name to UTF-8.";
+
+                    return false;
+                }
+
+                output
+                    << "    {\n"
+                    << "      \"id\": "
+                    << entity.id
+                    << ",\n"
+                    << "      \"kind\": ";
+
+                WriteJsonString(
+                    output,
+                    KindToString(entity.kind));
+
+                output
+                    << ",\n"
+                    << "      \"components\": {\n"
+                    << "        \"Name\": {\"value\": ";
+
+                WriteJsonString(
+                    output,
+                    entityName);
+
+                output
+                    << "},\n"
+                    << "        \"Transform\": {"
+                    << "\"position\": ";
+
+                WriteVector3(
+                    output,
+                    entity.transform.position);
+
+                output << ", \"rotation\": ";
+
+                WriteVector3(
+                    output,
+                    entity.transform.rotationDegrees);
+
+                output << ", \"scale\": ";
+
+                WriteVector3(
+                    output,
+                    entity.transform.scale);
+
+                output << '}';
+
+                if (entity.environment.has_value())
+                {
+                    std::string asset;
+
+                    if (!ToUtf8(
+                            entity.environment->
+                                environmentAsset,
+                            asset))
+                    {
+                        error =
+                            L"Failed to convert an environment asset path.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"Environment\": {\"asset\": ";
+
+                    WriteJsonString(output, asset);
+
+                    output << '}';
+                }
+
+                if (entity.staticMesh.has_value())
+                {
+                    std::string asset;
+
+                    if (!ToUtf8(
+                            entity.staticMesh->assetPath,
+                            asset))
+                    {
+                        error =
+                            L"Failed to convert a mesh asset path.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"StaticMesh\": {\"asset\": ";
+
+                    WriteJsonString(output, asset);
+
+                    output
+                        << ", \"visible\": "
+                        << (
+                            entity.staticMesh->visible
+                                ? "true"
+                                : "false"
+                        )
+                        << ", \"castShadows\": "
+                        << (
+                            entity.staticMesh->castShadows
+                                ? "true"
+                                : "false"
+                        )
+                        << '}';
+                }
+
+                if (entity.directionalLight.has_value())
+                {
+                    output
+                        << ",\n"
+                        << "        \"DirectionalLight\": {\"color\": ";
+
+                    WriteVector3(
+                        output,
+                        entity.directionalLight->color);
+
+                    output
+                        << ", \"intensity\": "
+                        << entity.directionalLight->
+                            intensity
+                        << ", \"castShadows\": "
+                        << (
+                            entity.directionalLight->
+                                castShadows
+                                ? "true"
+                                : "false"
+                        )
+                        << '}';
+                }
+
+                if (entity.spawnPoint.has_value())
+                {
+                    std::string tag;
+
+                    if (!ToUtf8(
+                            entity.spawnPoint->spawnTag,
+                            tag))
+                    {
+                        error =
+                            L"Failed to convert a spawn tag.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"SpawnPoint\": {\"tag\": ";
+
+                    WriteJsonString(output, tag);
+
+                    output << '}';
+                }
+
+                if (entity.anomaly.has_value())
+                {
+                    std::string type;
+
+                    if (!ToUtf8(
+                            entity.anomaly->anomalyType,
+                            type))
+                    {
+                        error =
+                            L"Failed to convert an anomaly type.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"Anomaly\": {\"type\": ";
+
+                    WriteJsonString(output, type);
+
+                    output
+                        << ", \"radius\": "
+                        << entity.anomaly->radius
+                        << ", \"damagePerSecond\": "
+                        << entity.anomaly->
+                            damagePerSecond
+                        << '}';
+                }
+
+                if (entity.lootContainer.has_value())
+                {
+                    std::string lootTable;
+
+                    if (!ToUtf8(
+                            entity.lootContainer->
+                                lootTable,
+                            lootTable))
+                    {
+                        error =
+                            L"Failed to convert a loot table.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"LootContainer\": {\"lootTable\": ";
+
+                    WriteJsonString(
+                        output,
+                        lootTable);
+
+                    output
+                        << ", \"respawnSeconds\": "
+                        << entity.lootContainer->
+                            respawnSeconds
+                        << '}';
+                }
+
+                output
+                    << "\n"
+                    << "      }\n"
+                    << "    }";
+
+                if (
+                    index + 1U <
+                    data.snapshot.entities.size())
+                {
+                    output << ',';
+                }
+
+                output << '\n';
+            }
+
+            output
+                << "  ]\n"
+                << "}\n";
+
+            if (!output.good())
+            {
+                error =
+                    L"Failed to build level JSON.";
+
+                return false;
+            }
+
+            outputText = output.str();
+            return true;
+        }
+
+        [[nodiscard]]
         bool ParseJson(
-            const std::string_view document,
+            const std::string& contents,
             EditorLevelFileData& data,
             std::wstring& error)
         {
+            JsonValue root;
+            std::string parserError;
+
+            JsonParser parser(contents);
+
+            if (!parser.Parse(root, parserError))
+            {
+                error =
+                    L"Level JSON is malformed.";
+
+                return false;
+            }
+
             std::string format;
             std::string name;
             std::string guid;
@@ -1108,56 +1709,38 @@ namespace lts::editor
             std::uint64_t nextEntityId = 0U;
 
             if (
-                !ReadStringField(
-                    document,
-                    "format",
+                !ReadString(
+                    RequireField(root, "format"),
                     format) ||
-                !ReadUnsignedField(
-                    document,
-                    "version",
+                !ReadUnsigned(
+                    RequireField(root, "version"),
                     version) ||
-                !ReadStringField(
-                    document,
-                    "name",
+                !ReadString(
+                    RequireField(root, "name"),
                     name) ||
-                !ReadStringField(
-                    document,
-                    "guid",
+                !ReadString(
+                    RequireField(root, "guid"),
                     guid) ||
-                !ReadUnsignedField(
-                    document,
-                    "nextEntityId",
-                    nextEntityId))
-            {
-                error =
-                    L"Required level fields are missing or malformed.";
-
-                return false;
-            }
-
-            if (
+                !ReadUnsigned(
+                    RequireField(
+                        root,
+                        "nextEntityId"),
+                    nextEntityId) ||
                 format != FormatName ||
-                version != CurrentFormatVersion)
+                (
+                    version != LegacyFormatVersion &&
+                    version != CurrentFormatVersion
+                ) ||
+                !FromUtf8(name, data.name) ||
+                !FromUtf8(guid, data.guid))
             {
                 error =
-                    L"The level format or version is not supported.";
+                    L"The level format or metadata is invalid.";
 
                 return false;
             }
 
-            if (
-                !FromUtf8(
-                    name,
-                    data.name) ||
-                !FromUtf8(
-                    guid,
-                    data.guid))
-            {
-                error =
-                    L"Level metadata is not valid UTF-8.";
-
-                return false;
-            }
+            data.snapshot = {};
 
             data.snapshot.nextEntityId =
                 static_cast<EditorEntityId>(
@@ -1168,12 +1751,12 @@ namespace lts::editor
 
             data.snapshot.dirty = false;
 
-            std::size_t selectedPosition = 0U;
+            const JsonValue* const selected =
+                RequireField(
+                    root,
+                    "selectedIndex");
 
-            if (!FindField(
-                    document,
-                    "selectedIndex",
-                    selectedPosition))
+            if (selected == nullptr)
             {
                 error =
                     L"selectedIndex is missing.";
@@ -1182,18 +1765,15 @@ namespace lts::editor
             }
 
             if (
-                document.substr(
-                    selectedPosition,
-                    4U) != "null")
+                selected->type !=
+                JsonValue::Type::Null)
             {
-                std::uint64_t selected = 0U;
+                std::uint64_t selectedIndex = 0U;
 
-                if (
-                    !ReadUnsigned(
-                        document,
-                        selectedPosition,
-                        selected) ||
-                    selected >
+                if (!ReadUnsigned(
+                        selected,
+                        selectedIndex) ||
+                    selectedIndex >
                         static_cast<std::uint64_t>(
                             std::numeric_limits<
                                 std::size_t>::max()))
@@ -1206,18 +1786,21 @@ namespace lts::editor
 
                 data.snapshot.selectedIndex =
                     static_cast<std::size_t>(
-                        selected);
+                        selectedIndex);
             }
 
-            std::vector<std::string_view>
-                entityObjects;
+            const JsonValue* const entities =
+                RequireField(
+                    root,
+                    "entities");
 
-            if (!ExtractEntityObjects(
-                    document,
-                    entityObjects))
+            if (
+                entities == nullptr ||
+                entities->type !=
+                    JsonValue::Type::Array)
             {
                 error =
-                    L"The entities array is malformed.";
+                    L"The entities array is missing.";
 
                 return false;
             }
@@ -1225,17 +1808,25 @@ namespace lts::editor
             data.snapshot.entities.clear();
 
             data.snapshot.entities.reserve(
-                entityObjects.size());
+                entities->array.size());
 
             for (
-                const std::string_view object :
-                entityObjects)
+                const JsonValue& jsonEntity :
+                entities->array)
             {
                 EditorSceneEntity entity;
 
-                if (!ParseEntity(
-                        object,
-                        entity))
+                const bool parsed =
+                    version ==
+                        LegacyFormatVersion
+                        ? ParseLegacyEntity(
+                            jsonEntity,
+                            entity)
+                        : ParseComponentEntity(
+                            jsonEntity,
+                            entity);
+
+                if (!parsed)
                 {
                     error =
                         L"An entity record is malformed.";
@@ -1247,9 +1838,7 @@ namespace lts::editor
                     std::move(entity));
             }
 
-            return Validate(
-                data,
-                error);
+            return Validate(data, error);
         }
 
         [[nodiscard]]
@@ -1270,7 +1859,7 @@ namespace lts::editor
                 size > MaximumLevelFileSize)
             {
                 error =
-                    L"The level file is missing, inaccessible, or too large.";
+                    L"The level file is inaccessible or too large.";
 
                 return false;
             }
@@ -1329,10 +1918,7 @@ namespace lts::editor
 
         std::string json;
 
-        if (!BuildJson(
-                data,
-                json,
-                error))
+        if (!BuildJson(data, json, error))
         {
             return false;
         }
@@ -1363,7 +1949,7 @@ namespace lts::editor
             std::ofstream output(
                 temporaryPath,
                 std::ios::binary |
-                std::ios::trunc);
+                    std::ios::trunc);
 
             if (!output)
             {
@@ -1399,7 +1985,7 @@ namespace lts::editor
                 temporaryPath.c_str(),
                 path.c_str(),
                 MOVEFILE_REPLACE_EXISTING |
-                MOVEFILE_WRITE_THROUGH))
+                    MOVEFILE_WRITE_THROUGH))
         {
             error =
                 L"Failed to replace the target level file. Win32 error: ";

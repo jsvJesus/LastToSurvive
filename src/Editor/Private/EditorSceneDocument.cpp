@@ -47,46 +47,14 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool IsFiniteTransform(
-            const EditorTransform& transform) noexcept
-        {
-            for (const float value : transform.position)
-            {
-                if (!std::isfinite(value))
-                {
-                    return false;
-                }
-            }
-
-            for (const float value : transform.rotationDegrees)
-            {
-                if (!std::isfinite(value))
-                {
-                    return false;
-                }
-            }
-
-            for (const float value : transform.scale)
-            {
-                if (
-                    !std::isfinite(value) ||
-                    std::abs(value) < 0.001F)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        [[nodiscard]]
         bool TransformsEqual(
             const EditorTransform& left,
             const EditorTransform& right) noexcept
         {
             return
                 left.position == right.position &&
-                left.rotationDegrees == right.rotationDegrees &&
+                left.rotationDegrees ==
+                    right.rotationDegrees &&
                 left.scale == right.scale;
         }
     }
@@ -150,7 +118,7 @@ namespace lts::editor
                     3.0F)));
 
         selectedIndex_ =
-            entities_.empty()
+            GetEntities().empty()
                 ? InvalidEditorEntityIndex
                 : 0U;
 
@@ -159,10 +127,11 @@ namespace lts::editor
 
     void EditorSceneDocument::Clear() noexcept
     {
-        entities_.clear();
+        world_.Clear();
 
-        nextEntityId_ = 1U;
-        selectedIndex_ = InvalidEditorEntityIndex;
+        selectedIndex_ =
+            InvalidEditorEntityIndex;
+
         dirty_ = false;
     }
 
@@ -171,61 +140,63 @@ namespace lts::editor
         const EditorEntityKind kind,
         const EditorTransform& transform)
     {
-        if (name.empty())
-        {
-            name = L"Entity";
-        }
+        const EditorEntityId entityId =
+            world_.CreateEntity(
+                std::move(name),
+                kind,
+                transform);
 
-        EditorSceneEntity entity;
-
-        entity.id = nextEntityId_++;
-        entity.kind = kind;
-        entity.name = std::move(name);
-        entity.transform = transform;
-
-        entities_.push_back(
-            std::move(entity));
-
-        if (selectedIndex_ == InvalidEditorEntityIndex)
+        if (
+            selectedIndex_ ==
+            InvalidEditorEntityIndex)
         {
             selectedIndex_ = 0U;
         }
 
         dirty_ = true;
-
-        return entities_.back().id;
+        return entityId;
     }
 
     const std::vector<EditorSceneEntity>&
         EditorSceneDocument::GetEntities() const noexcept
     {
-        return entities_;
+        return world_.GetEntities();
     }
 
     const EditorSceneEntity*
-        EditorSceneDocument::GetSelectedEntity() const noexcept
+        EditorSceneDocument::
+            GetSelectedEntity() const noexcept
     {
-        if (selectedIndex_ >= entities_.size())
+        const auto& entities =
+            world_.GetEntities();
+
+        if (selectedIndex_ >= entities.size())
         {
             return nullptr;
         }
 
-        return &entities_[selectedIndex_];
+        return &entities[selectedIndex_];
     }
 
     EditorSceneEntity*
-        EditorSceneDocument::GetSelectedEntityMutable() noexcept
+        EditorSceneDocument::
+            GetSelectedEntityMutable() noexcept
     {
-        if (selectedIndex_ >= entities_.size())
+        const EditorSceneEntity* const selected =
+            GetSelectedEntity();
+
+        if (selected == nullptr)
         {
             return nullptr;
         }
 
-        return &entities_[selectedIndex_];
+        return world_.FindEntity(
+            selected->id);
     }
 
     std::size_t
-        EditorSceneDocument::GetSelectedIndex() const noexcept
+        EditorSceneDocument::
+            GetSelectedIndex() const noexcept
     {
         return selectedIndex_;
     }
@@ -233,7 +204,7 @@ namespace lts::editor
     bool EditorSceneDocument::SelectEntityByIndex(
         const std::size_t index) noexcept
     {
-        if (index >= entities_.size())
+        if (index >= GetEntities().size())
         {
             return false;
         }
@@ -244,7 +215,8 @@ namespace lts::editor
 
     void EditorSceneDocument::ClearSelection() noexcept
     {
-        selectedIndex_ = InvalidEditorEntityIndex;
+        selectedIndex_ =
+            InvalidEditorEntityIndex;
     }
 
     bool EditorSceneDocument::SetSelectedTransform(
@@ -255,8 +227,11 @@ namespace lts::editor
 
         if (
             entity == nullptr ||
-            !IsFiniteTransform(transform) ||
-            TransformsEqual(entity->transform, transform))
+            !engine::scene::SceneWorld::
+                IsFiniteTransform(transform) ||
+            TransformsEqual(
+                entity->transform,
+                transform))
         {
             return false;
         }
@@ -284,7 +259,8 @@ namespace lts::editor
             return false;
         }
 
-        EditorTransform transform = entity->transform;
+        EditorTransform transform =
+            entity->transform;
 
         transform.position[0] += translationX;
         transform.position[1] += translationY;
@@ -293,7 +269,8 @@ namespace lts::editor
         return SetSelectedTransform(transform);
     }
 
-    bool EditorSceneDocument::DuplicateSelectedEntity()
+    bool EditorSceneDocument::
+        DuplicateSelectedEntity()
     {
         const EditorSceneEntity* const selected =
             GetSelectedEntity();
@@ -303,39 +280,53 @@ namespace lts::editor
             return false;
         }
 
-        EditorSceneEntity duplicate = *selected;
+        const EditorEntityId duplicatedId =
+            world_.DuplicateEntity(
+                selected->id);
 
-        duplicate.id = nextEntityId_++;
-        duplicate.name += L" Copy";
-        duplicate.transform.position[0] += 1.0F;
-
-        entities_.push_back(
-            std::move(duplicate));
-
-        selectedIndex_ = entities_.size() - 1U;
-        dirty_ = true;
-
-        return true;
-    }
-
-    bool EditorSceneDocument::DeleteSelectedEntity() noexcept
-    {
-        if (selectedIndex_ >= entities_.size())
+        if (duplicatedId == 0U)
         {
             return false;
         }
 
-        entities_.erase(
-            entities_.begin() +
-            static_cast<std::ptrdiff_t>(selectedIndex_));
+        selectedIndex_ =
+            world_.FindEntityIndex(
+                duplicatedId);
 
-        if (entities_.empty())
+        dirty_ = true;
+        return true;
+    }
+
+    bool EditorSceneDocument::
+        DeleteSelectedEntity() noexcept
+    {
+        const EditorSceneEntity* const selected =
+            GetSelectedEntity();
+
+        if (selected == nullptr)
         {
-            selectedIndex_ = InvalidEditorEntityIndex;
+            return false;
         }
-        else if (selectedIndex_ >= entities_.size())
+
+        if (!world_.DeleteEntity(selected->id))
         {
-            selectedIndex_ = entities_.size() - 1U;
+            return false;
+        }
+
+        const auto& entities =
+            world_.GetEntities();
+
+        if (entities.empty())
+        {
+            selectedIndex_ =
+                InvalidEditorEntityIndex;
+        }
+        else if (
+            selectedIndex_ >=
+            entities.size())
+        {
+            selectedIndex_ =
+                entities.size() - 1U;
         }
 
         dirty_ = true;
@@ -343,13 +334,21 @@ namespace lts::editor
     }
 
     EditorSceneSnapshot
-        EditorSceneDocument::CreateSnapshot() const
+        EditorSceneDocument::
+            CreateSnapshot() const
     {
         EditorSceneSnapshot snapshot;
 
-        snapshot.entities = entities_;
-        snapshot.nextEntityId = nextEntityId_;
-        snapshot.selectedIndex = selectedIndex_;
+        const engine::scene::SceneWorldState state =
+            world_.CreateState();
+
+        snapshot.entities = state.entities;
+        snapshot.nextEntityId =
+            state.nextEntityId;
+
+        snapshot.selectedIndex =
+            selectedIndex_;
+
         snapshot.dirty = dirty_;
 
         return snapshot;
@@ -359,20 +358,32 @@ namespace lts::editor
         const EditorSceneSnapshot& snapshot,
         const bool markDirty)
     {
-        entities_ = snapshot.entities;
-        nextEntityId_ = snapshot.nextEntityId;
-        selectedIndex_ = snapshot.selectedIndex;
+        engine::scene::SceneWorldState state;
 
-        if (selectedIndex_ >= entities_.size())
+        state.entities = snapshot.entities;
+        state.nextEntityId =
+            snapshot.nextEntityId;
+
+        world_.RestoreState(state);
+
+        selectedIndex_ =
+            snapshot.selectedIndex;
+
+        const auto& entities =
+            world_.GetEntities();
+
+        if (selectedIndex_ >= entities.size())
         {
-            selectedIndex_ = entities_.empty()
-                ? InvalidEditorEntityIndex
-                : entities_.size() - 1U;
+            selectedIndex_ =
+                entities.empty()
+                    ? InvalidEditorEntityIndex
+                    : entities.size() - 1U;
         }
 
-        dirty_ = markDirty
-            ? true
-            : snapshot.dirty;
+        dirty_ =
+            markDirty
+                ? true
+                : snapshot.dirty;
     }
 
     bool EditorSceneDocument::IsDirty() const noexcept
@@ -383,5 +394,12 @@ namespace lts::editor
     void EditorSceneDocument::MarkSaved() noexcept
     {
         dirty_ = false;
+    }
+
+    const engine::scene::SceneWorld&
+        EditorSceneDocument::
+            GetSceneWorld() const noexcept
+    {
+        return world_;
     }
 }

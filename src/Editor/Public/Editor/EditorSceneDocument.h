@@ -1,68 +1,38 @@
 #pragma once
 
-#include <array>
+#include <Scene/SceneWorld.h>
+
 #include <cstddef>
-#include <cstdint>
 #include <limits>
 #include <string>
 #include <vector>
 
 namespace lts::editor
 {
-    using EditorEntityId = std::uint64_t;
+    using EditorEntityId =
+        engine::scene::SceneEntityId;
 
-    inline constexpr std::size_t InvalidEditorEntityIndex =
-        std::numeric_limits<std::size_t>::max();
+    using EditorEntityKind =
+        engine::scene::SceneEntityKind;
 
-    enum class EditorEntityKind : std::uint8_t
-    {
-        Empty = 0,
-        Environment,
-        DirectionalLight,
-        SpawnPoint,
-        Anomaly,
-        LootContainer
-    };
+    using EditorTransform =
+        engine::scene::SceneTransform;
 
-    struct EditorTransform final
-    {
-        std::array<float, 3U> position
-        {
-            0.0F,
-            0.0F,
-            0.0F
-        };
+    using EditorSceneEntity =
+        engine::scene::SceneEntity;
 
-        std::array<float, 3U> rotationDegrees
-        {
-            0.0F,
-            0.0F,
-            0.0F
-        };
-
-        std::array<float, 3U> scale
-        {
-            1.0F,
-            1.0F,
-            1.0F
-        };
-    };
-
-    struct EditorSceneEntity final
-    {
-        EditorEntityId id = 0U;
-        EditorEntityKind kind = EditorEntityKind::Empty;
-
-        std::wstring name;
-        EditorTransform transform;
-    };
+    inline constexpr std::size_t
+        InvalidEditorEntityIndex =
+            std::numeric_limits<std::size_t>::max();
 
     struct EditorSceneSnapshot final
     {
         std::vector<EditorSceneEntity> entities;
 
         EditorEntityId nextEntityId = 1U;
-        std::size_t selectedIndex = InvalidEditorEntityIndex;
+
+        std::size_t selectedIndex =
+            InvalidEditorEntityIndex;
 
         bool dirty = false;
     };
@@ -73,8 +43,11 @@ namespace lts::editor
         EditorSceneDocument() = default;
         ~EditorSceneDocument() noexcept = default;
 
-        EditorSceneDocument(const EditorSceneDocument&) = delete;
-        EditorSceneDocument& operator=(const EditorSceneDocument&) = delete;
+        EditorSceneDocument(
+            const EditorSceneDocument&) = delete;
+
+        EditorSceneDocument& operator=(
+            const EditorSceneDocument&) = delete;
 
         void CreateDefaultLevel();
         void Clear() noexcept;
@@ -101,7 +74,8 @@ namespace lts::editor
         std::size_t GetSelectedIndex() const noexcept;
 
         [[nodiscard]]
-        bool SelectEntityByIndex(std::size_t index) noexcept;
+        bool SelectEntityByIndex(
+            std::size_t index) noexcept;
 
         void ClearSelection() noexcept;
 
@@ -133,11 +107,15 @@ namespace lts::editor
 
         void MarkSaved() noexcept;
 
-    private:
-        std::vector<EditorSceneEntity> entities_;
+        [[nodiscard]]
+        const engine::scene::SceneWorld&
+            GetSceneWorld() const noexcept;
 
-        EditorEntityId nextEntityId_ = 1U;
-        std::size_t selectedIndex_ = InvalidEditorEntityIndex;
+    private:
+        engine::scene::SceneWorld world_;
+
+        std::size_t selectedIndex_ =
+            InvalidEditorEntityIndex;
 
         bool dirty_ = false;
     };
