@@ -109,7 +109,7 @@ namespace lts::editor
         engine::graphics::CommandContext*
             commandContext_ = nullptr;
 
-        engine::graphics::TextureHandle//
+        engine::graphics::TextureHandle
             depthStencil_;
 
         std::uint32_t viewportWidth_ = 0;
