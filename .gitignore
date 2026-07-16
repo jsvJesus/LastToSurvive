@@ -142,3 +142,5 @@ packages/
 !/bin/Data/Shaders/DX11_P1/**
 !/bin/Data/Weapons/
 !/bin/Data/Weapons/**
+!/game/Data/Shaders/
+!/game/Data/Shaders/**
