@@ -14,8 +14,7 @@ namespace lts::editor
 {
     namespace
     {
-        constexpr wchar_t ShellPropertyName[] =
-            L"LTS.EditorShell.Instance";
+        constexpr wchar_t ShellPropertyName[] = L"LTS.EditorShell.Instance";
 
         constexpr int IdModeLevel = 1001;
         constexpr int IdModeCharacter = 1002;
@@ -62,50 +61,18 @@ namespace lts::editor
             const wchar_t* text = L"";
         };
 
-        constexpr std::array<ModeButtonDescription, 6U>
-            ModeButtons
-        {
-            ModeButtonDescription
-            {
-                IdModeLevel,
-                EditorMode::Level,
-                L"LEVEL"
-            },
-            ModeButtonDescription
-            {
-                IdModeCharacter,
-                EditorMode::Character,
-                L"CHARACTER"
-            },
-            ModeButtonDescription
-            {
-                IdModeIcon,
-                EditorMode::Icon,
-                L"ICON"
-            },
-            ModeButtonDescription
-            {
-                IdModePhysics,
-                EditorMode::Physics,
-                L"PHYSICS"
-            },
-            ModeButtonDescription
-            {
-                IdModeParticles,
-                EditorMode::Particles,
-                L"PARTICLES"
-            },
-            ModeButtonDescription
-            {
-                IdModePlay,
-                EditorMode::Play,
-                L"PLAY"
-            }
-        };
+        constexpr std::array<ModeButtonDescription, 6U> ModeButtons
+        {{
+            {IdModeLevel, EditorMode::Level, L"LEVEL"},
+            {IdModeCharacter, EditorMode::Character, L"CHARACTER"},
+            {IdModeIcon, EditorMode::Icon, L"ICON"},
+            {IdModePhysics, EditorMode::Physics, L"PHYSICS"},
+            {IdModeParticles, EditorMode::Particles, L"PARTICLES"},
+            {IdModePlay, EditorMode::Play, L"PLAY"}
+        }};
 
         [[nodiscard]]
-        const wchar_t* GetModeName(
-            const EditorMode mode) noexcept
+        const wchar_t* GetModeName(const EditorMode mode) noexcept
         {
             switch (mode)
             {
@@ -133,35 +100,40 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        const wchar_t* GetEntityKindName(
-            const EditorEntityKind kind) noexcept
+        const wchar_t* GetEntityKindName(const EditorEntityKind kind) noexcept
         {
             switch (kind)
             {
                 case EditorEntityKind::Environment:
                     return L"Environment";
+
                 case EditorEntityKind::DirectionalLight:
                     return L"Directional Light";
+
                 case EditorEntityKind::SpawnPoint:
                     return L"Spawn Point";
+
                 case EditorEntityKind::Anomaly:
                     return L"Anomaly";
+
                 case EditorEntityKind::LootContainer:
                     return L"Loot Container";
+
                 case EditorEntityKind::Empty:
                 default:
                     return L"Empty";
             }
         }
 
-        void DestroyControl(
-            HWND& control) noexcept
+        void DestroyControl(HWND& control) noexcept
         {
-            if (control != nullptr)
+            if (control == nullptr)
             {
-                DestroyWindow(control);
-                control = nullptr;
+                return;
             }
+
+            DestroyWindow(control);
+            control = nullptr;
         }
     }
 
@@ -177,8 +149,7 @@ namespace lts::editor
 
         [[nodiscard]]
         bool Initialize(
-            const engine::platform::NativeWindowHandle
-                mainWindow) noexcept
+            const engine::platform::NativeWindowHandle mainWindow) noexcept
         {
             if (initialized_)
             {
@@ -190,21 +161,15 @@ namespace lts::editor
                 return false;
             }
 
-            parentWindow_ =
-                reinterpret_cast<HWND>(
-                    mainWindow.Value());
+            parentWindow_ = reinterpret_cast<HWND>(mainWindow.Value());
 
-            if (
-                parentWindow_ == nullptr ||
-                !IsWindow(parentWindow_)
-            )
+            if (parentWindow_ == nullptr || !IsWindow(parentWindow_))
             {
                 parentWindow_ = nullptr;
                 return false;
             }
 
-            instance_ =
-                GetModuleHandleW(nullptr);
+            instance_ = GetModuleHandleW(nullptr);
 
             if (instance_ == nullptr)
             {
@@ -252,20 +217,12 @@ namespace lts::editor
         void Shutdown() noexcept
         {
             RestoreWindowSubclass();
-
             DestroyControls();
 
-            if (
-                parentWindow_ != nullptr &&
-                IsWindow(parentWindow_)
-            )
+            if (parentWindow_ != nullptr && IsWindow(parentWindow_))
             {
-                SetMenu(
-                    parentWindow_,
-                    nullptr);
-
-                DrawMenuBar(
-                    parentWindow_);
+                SetMenu(parentWindow_, nullptr);
+                DrawMenuBar(parentWindow_);
             }
 
             if (mainMenu_ != nullptr)
@@ -277,13 +234,9 @@ namespace lts::editor
             if (
                 viewportClassAtom_ != 0 &&
                 instance_ != nullptr &&
-                viewportClassName_[0] != L'\0'
-            )
+                viewportClassName_[0] != L'\0')
             {
-                UnregisterClassW(
-                    viewportClassName_.data(),
-                    instance_);
-
+                UnregisterClassW(viewportClassName_.data(), instance_);
                 viewportClassAtom_ = 0;
             }
 
@@ -299,13 +252,16 @@ namespace lts::editor
             viewportClassName_.fill(L'\0');
 
             activeMode_ = EditorMode::Level;
-            modeChanged_ = false;
-            initialized_ = false;
             viewportWheelSteps_ = 0.0F;
+
             pendingViewportClick_ = {};
-            viewportClickPending_ = false;
             pendingHierarchySelection_ = InvalidEditorEntityIndex;
+
+            viewportClickPending_ = false;
             hierarchySelectionChanged_ = false;
+            modeChanged_ = false;
+            subclassInstalled_ = false;
+            initialized_ = false;
         }
 
         void Resize(
@@ -321,55 +277,38 @@ namespace lts::editor
         engine::platform::NativeWindowHandle
             GetViewportWindowHandle() const noexcept
         {
-            return engine::platform::
-                NativeWindowHandle::FromValue(
-                    reinterpret_cast<std::uintptr_t>(
-                        viewportWindow_));
+            return engine::platform::NativeWindowHandle::FromValue(
+                reinterpret_cast<std::uintptr_t>(viewportWindow_));
         }
 
         [[nodiscard]]
-        engine::platform::WindowSize
-            GetViewportSize() const noexcept
+        engine::platform::WindowSize GetViewportSize() const noexcept
         {
             engine::platform::WindowSize result;
 
-            if (
-                viewportWindow_ == nullptr ||
-                !IsWindow(viewportWindow_)
-            )
+            if (viewportWindow_ == nullptr || !IsWindow(viewportWindow_))
             {
                 return result;
             }
 
             RECT rectangle{};
 
-            if (!GetClientRect(
-                    viewportWindow_,
-                    &rectangle))
+            if (!GetClientRect(viewportWindow_, &rectangle))
             {
                 return result;
             }
 
-            const LONG width =
-                rectangle.right -
-                rectangle.left;
-
-            const LONG height =
-                rectangle.bottom -
-                rectangle.top;
+            const LONG width = rectangle.right - rectangle.left;
+            const LONG height = rectangle.bottom - rectangle.top;
 
             if (width > 0)
             {
-                result.width =
-                    static_cast<std::uint32_t>(
-                        width);
+                result.width = static_cast<std::uint32_t>(width);
             }
 
             if (height > 0)
             {
-                result.height =
-                    static_cast<std::uint32_t>(
-                        height);
+                result.height = static_cast<std::uint32_t>(height);
             }
 
             return result;
@@ -382,8 +321,7 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool ConsumeModeChanged(
-            EditorMode& mode) noexcept
+        bool ConsumeModeChanged(EditorMode& mode) noexcept
         {
             if (!modeChanged_)
             {
@@ -392,18 +330,14 @@ namespace lts::editor
 
             mode = activeMode_;
             modeChanged_ = false;
-
             return true;
         }
 
         [[nodiscard]]
         float ConsumeViewportWheelSteps() noexcept
         {
-            const float result =
-                viewportWheelSteps_;
-
+            const float result = viewportWheelSteps_;
             viewportWheelSteps_ = 0.0F;
-
             return result;
         }
 
@@ -417,8 +351,68 @@ namespace lts::editor
 
             click = pendingViewportClick_;
             viewportClickPending_ = false;
-
             return true;
+        }
+
+        void RefreshScene(const EditorSceneDocument& document) noexcept
+        {
+            if (hierarchyList_ == nullptr)
+            {
+                return;
+            }
+
+            SendMessageW(hierarchyList_, LB_RESETCONTENT, 0, 0);
+
+            const auto& entities = document.GetEntities();
+
+            for (std::size_t index = 0U; index < entities.size(); ++index)
+            {
+                const LRESULT itemIndex = SendMessageW(
+                    hierarchyList_,
+                    LB_ADDSTRING,
+                    0,
+                    reinterpret_cast<LPARAM>(
+                        entities[index].name.c_str()));
+
+                if (itemIndex == LB_ERR || itemIndex == LB_ERRSPACE)
+                {
+                    continue;
+                }
+
+                SendMessageW(
+                    hierarchyList_,
+                    LB_SETITEMDATA,
+                    static_cast<WPARAM>(itemIndex),
+                    static_cast<LPARAM>(index));
+            }
+
+            const std::size_t selectedIndex = document.GetSelectedIndex();
+
+            if (selectedIndex < entities.size())
+            {
+                SelectHierarchyEntity(selectedIndex);
+            }
+            else
+            {
+                SelectHierarchyEntity(InvalidEditorEntityIndex);
+            }
+
+            ShowEntityDetails(document.GetSelectedEntity());
+        }
+
+        [[nodiscard]]
+        bool ConsumeHierarchySelection(std::size_t& entityIndex) noexcept
+        {
+            if (!hierarchySelectionChanged_)
+            {
+                return false;
+            }
+
+            entityIndex = pendingHierarchySelection_;
+            pendingHierarchySelection_ = InvalidEditorEntityIndex;
+            hierarchySelectionChanged_ = false;
+
+            return entityIndex != InvalidEditorEntityIndex;
         }
 
         void SelectHierarchyEntity(
@@ -446,90 +440,8 @@ namespace lts::editor
                     0);
             }
 
-            pendingHierarchySelection_ =
-                InvalidEditorEntityIndex;
-
+            pendingHierarchySelection_ = InvalidEditorEntityIndex;
             hierarchySelectionChanged_ = false;
-        }
-
-        void RefreshScene(
-            const EditorSceneDocument& document) noexcept
-        {
-            if (hierarchyList_ == nullptr)
-            {
-                return;
-            }
-
-            SendMessageW(
-                hierarchyList_,
-                LB_RESETCONTENT,
-                0,
-                0);
-
-            const auto& entities =
-                document.GetEntities();
-
-            for (
-                std::size_t index = 0U;
-                index < entities.size();
-                ++index)
-            {
-                const LRESULT itemIndex =
-                    SendMessageW(
-                        hierarchyList_,
-                        LB_ADDSTRING,
-                        0,
-                        reinterpret_cast<LPARAM>(
-                            entities[index].name.c_str()));
-
-                if (
-                    itemIndex == LB_ERR ||
-                    itemIndex == LB_ERRSPACE)
-                {
-                    continue;
-                }
-
-                SendMessageW(
-                    hierarchyList_,
-                    LB_SETITEMDATA,
-                    static_cast<WPARAM>(itemIndex),
-                    static_cast<LPARAM>(index));
-            }
-
-            const std::size_t selectedIndex =
-                document.GetSelectedIndex();
-
-            if (selectedIndex < entities.size())
-            {
-                SendMessageW(
-                    hierarchyList_,
-                    LB_SETCURSEL,
-                    static_cast<WPARAM>(selectedIndex),
-                    0);
-            }
-
-            ShowEntityDetails(
-                document.GetSelectedEntity());
-        }
-
-        [[nodiscard]]
-        bool ConsumeHierarchySelection(
-            std::size_t& entityIndex) noexcept
-        {
-            if (!hierarchySelectionChanged_)
-            {
-                return false;
-            }
-
-            entityIndex = pendingHierarchySelection_;
-
-            pendingHierarchySelection_ =
-                InvalidEditorEntityIndex;
-
-            hierarchySelectionChanged_ = false;
-
-            return entityIndex !=
-                InvalidEditorEntityIndex;
         }
 
         void ShowEntityDetails(
@@ -540,18 +452,11 @@ namespace lts::editor
                 return;
             }
 
-            SendMessageW(
-                inspectorList_,
-                LB_RESETCONTENT,
-                0,
-                0);
+            SendMessageW(inspectorList_, LB_RESETCONTENT, 0, 0);
 
             if (entity == nullptr)
             {
-                AddListItem(
-                    inspectorList_,
-                    L"No object selected");
-
+                AddListItem(inspectorList_, L"No object selected");
                 return;
             }
 
@@ -563,9 +468,7 @@ namespace lts::editor
                 L"Name: %ls",
                 entity->name.c_str());
 
-            AddListItem(
-                inspectorList_,
-                line.data());
+            AddListItem(inspectorList_, line.data());
 
             swprintf_s(
                 line.data(),
@@ -573,17 +476,9 @@ namespace lts::editor
                 L"Type: %ls",
                 GetEntityKindName(entity->kind));
 
-            AddListItem(
-                inspectorList_,
-                line.data());
-
-            AddListItem(
-                inspectorList_,
-                L"");
-
-            AddListItem(
-                inspectorList_,
-                L"TRANSFORM");
+            AddListItem(inspectorList_, line.data());
+            AddListItem(inspectorList_, L"");
+            AddListItem(inspectorList_, L"TRANSFORM");
 
             swprintf_s(
                 line.data(),
@@ -593,9 +488,7 @@ namespace lts::editor
                 entity->transform.position[1],
                 entity->transform.position[2]);
 
-            AddListItem(
-                inspectorList_,
-                line.data());
+            AddListItem(inspectorList_, line.data());
 
             swprintf_s(
                 line.data(),
@@ -605,9 +498,7 @@ namespace lts::editor
                 entity->transform.rotationDegrees[1],
                 entity->transform.rotationDegrees[2]);
 
-            AddListItem(
-                inspectorList_,
-                line.data());
+            AddListItem(inspectorList_, line.data());
 
             swprintf_s(
                 line.data(),
@@ -617,13 +508,10 @@ namespace lts::editor
                 entity->transform.scale[1],
                 entity->transform.scale[2]);
 
-            AddListItem(
-                inspectorList_,
-                line.data());
+            AddListItem(inspectorList_, line.data());
         }
 
-        void SetStatusText(
-            const std::wstring_view text) noexcept
+        void SetStatusText(const std::wstring_view text) noexcept
         {
             if (statusBar_ == nullptr)
             {
@@ -632,10 +520,9 @@ namespace lts::editor
 
             std::array<wchar_t, 512U> buffer{};
 
-            const std::size_t characterCount =
-                std::min(
-                    text.size(),
-                    buffer.size() - 1U);
+            const std::size_t characterCount = std::min(
+                text.size(),
+                buffer.size() - 1U);
 
             if (characterCount > 0U)
             {
@@ -646,35 +533,18 @@ namespace lts::editor
             }
 
             buffer[characterCount] = L'\0';
-
-            SetWindowTextW(
-                statusBar_,
-                buffer.data());
+            SetWindowTextW(statusBar_, buffer.data());
         }
 
     private:
         [[nodiscard]]
         bool CreateBrushes() noexcept
         {
-            backgroundBrush_ =
-                CreateSolidBrush(
-                    RGB(15, 19, 22));
-
-            panelBrush_ =
-                CreateSolidBrush(
-                    RGB(28, 34, 38));
-
-            inputBrush_ =
-                CreateSolidBrush(
-                    RGB(20, 25, 29));
-
-            accentBrush_ =
-                CreateSolidBrush(
-                    RGB(177, 76, 24));
-
-            borderBrush_ =
-                CreateSolidBrush(
-                    RGB(74, 84, 90));
+            backgroundBrush_ = CreateSolidBrush(RGB(15, 19, 22));
+            panelBrush_ = CreateSolidBrush(RGB(28, 34, 38));
+            inputBrush_ = CreateSolidBrush(RGB(20, 25, 29));
+            accentBrush_ = CreateSolidBrush(RGB(177, 76, 24));
+            borderBrush_ = CreateSolidBrush(RGB(74, 84, 90));
 
             return
                 backgroundBrush_ != nullptr &&
@@ -691,21 +561,18 @@ namespace lts::editor
                 return;
             }
 
-            ::DeleteObject(
-                static_cast<HGDIOBJ>(brush));
-
+            ::DeleteObject(static_cast<HGDIOBJ>(brush));
             brush = nullptr;
         }
 
         [[nodiscard]]
         bool RegisterViewportClass() noexcept
         {
-            const int written =
-                swprintf_s(
-                    viewportClassName_.data(),
-                    viewportClassName_.size(),
-                    L"LTS.Editor.Viewport.%lu",
-                    GetCurrentProcessId());
+            const int written = swprintf_s(
+                viewportClassName_.data(),
+                viewportClassName_.size(),
+                L"LTS.Editor.Viewport.%lu",
+                GetCurrentProcessId());
 
             if (written <= 0)
             {
@@ -715,35 +582,15 @@ namespace lts::editor
 
             WNDCLASSEXW windowClass{};
 
-            windowClass.cbSize =
-                sizeof(WNDCLASSEXW);
+            windowClass.cbSize = sizeof(WNDCLASSEXW);
+            windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+            windowClass.lpfnWndProc = &Impl::ViewportWindowProcedure;
+            windowClass.hInstance = instance_;
+            windowClass.hCursor = LoadCursorW(nullptr, IDC_CROSS);
+            windowClass.hbrBackground = nullptr;
+            windowClass.lpszClassName = viewportClassName_.data();
 
-            windowClass.style =
-                CS_OWNDC |
-                CS_HREDRAW |
-                CS_VREDRAW;
-
-            windowClass.lpfnWndProc =
-                &Impl::ViewportWindowProcedure;
-
-            windowClass.hInstance =
-                instance_;
-
-            windowClass.hCursor =
-                LoadCursorW(
-                    nullptr,
-                    IDC_CROSS);
-
-            windowClass.hbrBackground =
-                nullptr;
-
-            windowClass.lpszClassName =
-                viewportClassName_.data();
-
-            viewportClassAtom_ =
-                RegisterClassExW(
-                    &windowClass);
-
+            viewportClassAtom_ = RegisterClassExW(&windowClass);
             return viewportClassAtom_ != 0;
         }
 
@@ -752,25 +599,17 @@ namespace lts::editor
         {
             mainMenu_ = CreateMenu();
 
-            HMENU fileMenu =
-                CreatePopupMenu();
-
-            HMENU editMenu =
-                CreatePopupMenu();
-
-            HMENU viewMenu =
-                CreatePopupMenu();
-
-            HMENU helpMenu =
-                CreatePopupMenu();
+            HMENU fileMenu = CreatePopupMenu();
+            HMENU editMenu = CreatePopupMenu();
+            HMENU viewMenu = CreatePopupMenu();
+            HMENU helpMenu = CreatePopupMenu();
 
             if (
                 mainMenu_ == nullptr ||
                 fileMenu == nullptr ||
                 editMenu == nullptr ||
                 viewMenu == nullptr ||
-                helpMenu == nullptr
-            )
+                helpMenu == nullptr)
             {
                 if (fileMenu != nullptr)
                 {
@@ -804,136 +643,115 @@ namespace lts::editor
             AppendMenuW(
                 fileMenu,
                 MF_STRING,
-                IdMenuNewLevel,
+                static_cast<UINT_PTR>(IdMenuNewLevel),
                 L"New Level");
 
             AppendMenuW(
                 fileMenu,
                 MF_STRING,
-                IdMenuOpen,
+                static_cast<UINT_PTR>(IdMenuOpen),
                 L"Open...");
 
-            AppendMenuW(
-                fileMenu,
-                MF_SEPARATOR,
-                0,
-                nullptr);
+            AppendMenuW(fileMenu, MF_SEPARATOR, 0U, nullptr);
 
             AppendMenuW(
                 fileMenu,
                 MF_STRING,
-                IdMenuSave,
+                static_cast<UINT_PTR>(IdMenuSave),
                 L"Save");
 
             AppendMenuW(
                 fileMenu,
                 MF_STRING,
-                IdMenuSaveAs,
+                static_cast<UINT_PTR>(IdMenuSaveAs),
                 L"Save As...");
 
-            AppendMenuW(
-                fileMenu,
-                MF_SEPARATOR,
-                0,
-                nullptr);
+            AppendMenuW(fileMenu, MF_SEPARATOR, 0U, nullptr);
 
             AppendMenuW(
                 fileMenu,
                 MF_STRING,
-                IdMenuExit,
+                static_cast<UINT_PTR>(IdMenuExit),
                 L"Exit");
 
             AppendMenuW(
                 editMenu,
                 MF_STRING,
-                IdMenuUndo,
+                static_cast<UINT_PTR>(IdMenuUndo),
                 L"Undo");
 
             AppendMenuW(
                 editMenu,
                 MF_STRING,
-                IdMenuRedo,
+                static_cast<UINT_PTR>(IdMenuRedo),
                 L"Redo");
 
-            AppendMenuW(
-                editMenu,
-                MF_SEPARATOR,
-                0,
-                nullptr);
+            AppendMenuW(editMenu, MF_SEPARATOR, 0U, nullptr);
 
             AppendMenuW(
                 editMenu,
                 MF_STRING,
-                IdMenuDelete,
+                static_cast<UINT_PTR>(IdMenuDelete),
                 L"Delete");
 
             AppendMenuW(
                 editMenu,
                 MF_STRING,
-                IdMenuDuplicate,
+                static_cast<UINT_PTR>(IdMenuDuplicate),
                 L"Duplicate");
 
             AppendMenuW(
                 viewMenu,
                 MF_STRING,
-                IdMenuResetLayout,
+                static_cast<UINT_PTR>(IdMenuResetLayout),
                 L"Reset Layout");
 
             AppendMenuW(
                 helpMenu,
                 MF_STRING,
-                IdMenuAbout,
+                static_cast<UINT_PTR>(IdMenuAbout),
                 L"About LTS Editor");
 
             AppendMenuW(
                 mainMenu_,
                 MF_POPUP,
-                reinterpret_cast<UINT_PTR>(
-                    fileMenu),
+                reinterpret_cast<UINT_PTR>(fileMenu),
                 L"File");
 
             AppendMenuW(
                 mainMenu_,
                 MF_POPUP,
-                reinterpret_cast<UINT_PTR>(
-                    editMenu),
+                reinterpret_cast<UINT_PTR>(editMenu),
                 L"Edit");
 
             AppendMenuW(
                 mainMenu_,
                 MF_POPUP,
-                reinterpret_cast<UINT_PTR>(
-                    viewMenu),
+                reinterpret_cast<UINT_PTR>(viewMenu),
                 L"View");
 
             AppendMenuW(
                 mainMenu_,
                 MF_POPUP,
-                reinterpret_cast<UINT_PTR>(
-                    helpMenu),
+                reinterpret_cast<UINT_PTR>(helpMenu),
                 L"Help");
 
-            if (!SetMenu(
-                    parentWindow_,
-                    mainMenu_))
+            if (!SetMenu(parentWindow_, mainMenu_))
             {
                 DestroyMenu(mainMenu_);
                 mainMenu_ = nullptr;
-
                 return false;
             }
 
-            DrawMenuBar(
-                parentWindow_);
-
+            DrawMenuBar(parentWindow_);
             return true;
         }
 
         [[nodiscard]]
         HWND CreateControl(
             const DWORD extendedStyle,
-            const wchar_t* className,
-            const wchar_t* text,
+            const wchar_t* const className,
+            const wchar_t* const text,
             const DWORD style,
             const int controlId) const noexcept
         {
@@ -941,17 +759,14 @@ namespace lts::editor
                 extendedStyle,
                 className,
                 text,
-                WS_CHILD |
-                WS_VISIBLE |
-                style,
+                WS_CHILD | WS_VISIBLE | style,
                 0,
                 0,
                 1,
                 1,
                 parentWindow_,
                 reinterpret_cast<HMENU>(
-                    static_cast<INT_PTR>(
-                        controlId)),
+                    static_cast<INT_PTR>(controlId)),
                 instance_,
                 nullptr);
         }
@@ -962,17 +777,14 @@ namespace lts::editor
             for (
                 std::size_t index = 0U;
                 index < ModeButtons.size();
-                ++index
-            )
+                ++index)
             {
-                modeButtons_[index] =
-                    CreateControl(
-                        0,
-                        L"BUTTON",
-                        ModeButtons[index].text,
-                        BS_OWNERDRAW |
-                        WS_TABSTOP,
-                        ModeButtons[index].controlId);
+                modeButtons_[index] = CreateControl(
+                    0,
+                    L"BUTTON",
+                    ModeButtons[index].text,
+                    BS_OWNERDRAW | WS_TABSTOP,
+                    ModeButtons[index].controlId);
 
                 if (modeButtons_[index] == nullptr)
                 {
@@ -980,119 +792,104 @@ namespace lts::editor
                 }
             }
 
-            EnableWindow(
-                modeButtons_.back(),
-                FALSE);
+            EnableWindow(modeButtons_.back(), FALSE);
 
-            hierarchyTitle_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"HIERARCHY",
-                    SS_LEFT,
-                    IdHierarchyTitle);
+            hierarchyTitle_ = CreateControl(
+                0,
+                L"STATIC",
+                L"HIERARCHY",
+                SS_LEFT,
+                IdHierarchyTitle);
 
-            hierarchyList_ =
-                CreateControl(
-                    WS_EX_CLIENTEDGE,
-                    L"LISTBOX",
-                    L"",
-                    WS_VSCROLL |
+            hierarchyList_ = CreateControl(
+                WS_EX_CLIENTEDGE,
+                L"LISTBOX",
+                L"",
+                WS_VSCROLL |
                     LBS_NOTIFY |
                     LBS_NOINTEGRALHEIGHT,
-                    IdHierarchyList);
+                IdHierarchyList);
 
-            viewportTitle_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"VIEWPORT",
-                    SS_LEFT,
-                    IdViewportTitle);
+            viewportTitle_ = CreateControl(
+                0,
+                L"STATIC",
+                L"VIEWPORT",
+                SS_LEFT,
+                IdViewportTitle);
 
-            viewportWindow_ =
-                CreateWindowExW(
-                    WS_EX_CLIENTEDGE,
-                    viewportClassName_.data(),
-                    L"",
-                    WS_CHILD |
+            viewportWindow_ = CreateWindowExW(
+                WS_EX_CLIENTEDGE,
+                viewportClassName_.data(),
+                L"",
+                WS_CHILD |
                     WS_VISIBLE |
                     WS_CLIPSIBLINGS |
                     WS_CLIPCHILDREN,
-                    0,
-                    0,
-                    1,
-                    1,
-                    parentWindow_,
-                    reinterpret_cast<HMENU>(
-                        static_cast<INT_PTR>(
-                            IdViewportWindow)),
-                    instance_,
-                    this);
+                0,
+                0,
+                1,
+                1,
+                parentWindow_,
+                reinterpret_cast<HMENU>(
+                    static_cast<INT_PTR>(IdViewportWindow)),
+                instance_,
+                this);
 
-            inspectorTitle_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"INSPECTOR",
-                    SS_LEFT,
-                    IdInspectorTitle);
+            inspectorTitle_ = CreateControl(
+                0,
+                L"STATIC",
+                L"INSPECTOR",
+                SS_LEFT,
+                IdInspectorTitle);
 
-            inspectorList_ =
-                CreateControl(
-                    WS_EX_CLIENTEDGE,
-                    L"LISTBOX",
-                    L"",
-                    WS_VSCROLL |
+            inspectorList_ = CreateControl(
+                WS_EX_CLIENTEDGE,
+                L"LISTBOX",
+                L"",
+                WS_VSCROLL |
                     LBS_NOINTEGRALHEIGHT,
-                    IdInspectorList);
+                IdInspectorList);
 
-            assetTitle_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"ASSET BROWSER",
-                    SS_LEFT,
-                    IdAssetTitle);
+            assetTitle_ = CreateControl(
+                0,
+                L"STATIC",
+                L"ASSET BROWSER",
+                SS_LEFT,
+                IdAssetTitle);
 
-            assetList_ =
-                CreateControl(
-                    WS_EX_CLIENTEDGE,
-                    L"LISTBOX",
-                    L"",
-                    WS_VSCROLL |
+            assetList_ = CreateControl(
+                WS_EX_CLIENTEDGE,
+                L"LISTBOX",
+                L"",
+                WS_VSCROLL |
                     LBS_NOTIFY |
                     LBS_NOINTEGRALHEIGHT,
-                    IdAssetList);
+                IdAssetList);
 
-            consoleTitle_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"CONSOLE",
-                    SS_LEFT,
-                    IdConsoleTitle);
+            consoleTitle_ = CreateControl(
+                0,
+                L"STATIC",
+                L"CONSOLE",
+                SS_LEFT,
+                IdConsoleTitle);
 
-            consoleEdit_ =
-                CreateControl(
-                    WS_EX_CLIENTEDGE,
-                    L"EDIT",
-                    L"[LTS.Editor] Editor shell initialized.\r\n",
-                    ES_LEFT |
+            consoleEdit_ = CreateControl(
+                WS_EX_CLIENTEDGE,
+                L"EDIT",
+                L"[LTS.Editor] Editor shell initialized.\r\n",
+                ES_LEFT |
                     ES_MULTILINE |
                     ES_AUTOVSCROLL |
                     ES_READONLY |
                     WS_VSCROLL,
-                    IdConsole);
+                IdConsole);
 
-            statusBar_ =
-                CreateControl(
-                    0,
-                    L"STATIC",
-                    L"Ready",
-                    SS_LEFT |
-                    SS_CENTERIMAGE,
-                    IdStatusBar);
+            statusBar_ = CreateControl(
+                0,
+                L"STATIC",
+                L"Ready",
+                SS_LEFT | SS_CENTERIMAGE,
+                IdStatusBar);
 
             if (
                 hierarchyTitle_ == nullptr ||
@@ -1105,16 +902,13 @@ namespace lts::editor
                 assetList_ == nullptr ||
                 consoleTitle_ == nullptr ||
                 consoleEdit_ == nullptr ||
-                statusBar_ == nullptr
-            )
+                statusBar_ == nullptr)
             {
                 return false;
             }
 
-            font_ =
-                reinterpret_cast<HFONT>(
-                    GetStockObject(
-                        DEFAULT_GUI_FONT));
+            font_ = reinterpret_cast<HFONT>(
+                GetStockObject(DEFAULT_GUI_FONT));
 
             ApplyFontToControls();
             PopulatePlaceholderContent();
@@ -1122,21 +916,18 @@ namespace lts::editor
             return true;
         }
 
-        void ApplyFont(
-            const HWND control) const noexcept
+        void ApplyFont(const HWND control) const noexcept
         {
-            if (
-                control != nullptr &&
-                font_ != nullptr
-            )
+            if (control == nullptr || font_ == nullptr)
             {
-                SendMessageW(
-                    control,
-                    WM_SETFONT,
-                    reinterpret_cast<WPARAM>(
-                        font_),
-                    TRUE);
+                return;
             }
+
+            SendMessageW(
+                control,
+                WM_SETFONT,
+                reinterpret_cast<WPARAM>(font_),
+                TRUE);
         }
 
         void ApplyFontToControls() const noexcept
@@ -1148,65 +939,42 @@ namespace lts::editor
 
             ApplyFont(hierarchyTitle_);
             ApplyFont(hierarchyList_);
-
             ApplyFont(viewportTitle_);
-
             ApplyFont(inspectorTitle_);
             ApplyFont(inspectorList_);
-
             ApplyFont(assetTitle_);
             ApplyFont(assetList_);
-
             ApplyFont(consoleTitle_);
             ApplyFont(consoleEdit_);
-
             ApplyFont(statusBar_);
         }
 
         static void AddListItem(
             const HWND listBox,
-            const wchar_t* text) noexcept
+            const wchar_t* const text) noexcept
         {
-            if (listBox != nullptr)
+            if (listBox == nullptr || text == nullptr)
             {
-                SendMessageW(
-                    listBox,
-                    LB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>(
-                        text));
+                return;
             }
+
+            SendMessageW(
+                listBox,
+                LB_ADDSTRING,
+                0,
+                reinterpret_cast<LPARAM>(text));
         }
 
         void PopulatePlaceholderContent() const noexcept
         {
-            AddListItem(
-                hierarchyList_,
-                L"Loading level...");
+            AddListItem(hierarchyList_, L"Loading level...");
+            AddListItem(inspectorList_, L"No object selected");
 
-            AddListItem(
-                inspectorList_,
-                L"No object selected");
-
-            AddListItem(
-                assetList_,
-                L"Assets/");
-
-            AddListItem(
-                assetList_,
-                L"  Models/");
-
-            AddListItem(
-                assetList_,
-                L"  Materials/");
-
-            AddListItem(
-                assetList_,
-                L"  Textures/");
-
-            AddListItem(
-                assetList_,
-                L"  Levels/");
+            AddListItem(assetList_, L"Assets/");
+            AddListItem(assetList_, L"  Models/");
+            AddListItem(assetList_, L"  Materials/");
+            AddListItem(assetList_, L"  Textures/");
+            AddListItem(assetList_, L"  Levels/");
         }
 
         void DestroyControls() noexcept
@@ -1239,38 +1007,29 @@ namespace lts::editor
         [[nodiscard]]
         bool InstallWindowSubclass() noexcept
         {
-            if (!SetPropW(
-                    parentWindow_,
-                    ShellPropertyName,
-                    this))
+            if (!SetPropW(parentWindow_, ShellPropertyName, this))
             {
                 return false;
             }
 
             SetLastError(ERROR_SUCCESS);
 
-            const LONG_PTR previousProcedure =
-                SetWindowLongPtrW(
-                    parentWindow_,
-                    GWLP_WNDPROC,
-                    reinterpret_cast<LONG_PTR>(
-                        &Impl::WindowProcedure));
+            const LONG_PTR previousProcedure = SetWindowLongPtrW(
+                parentWindow_,
+                GWLP_WNDPROC,
+                reinterpret_cast<LONG_PTR>(
+                    &Impl::WindowProcedure));
 
             if (
                 previousProcedure == 0 &&
-                GetLastError() != ERROR_SUCCESS
-            )
+                GetLastError() != ERROR_SUCCESS)
             {
-                RemovePropW(
-                    parentWindow_,
-                    ShellPropertyName);
-
+                RemovePropW(parentWindow_, ShellPropertyName);
                 return false;
             }
 
             originalWindowProcedure_ =
-                reinterpret_cast<WNDPROC>(
-                    previousProcedure);
+                reinterpret_cast<WNDPROC>(previousProcedure);
 
             subclassInstalled_ = true;
             return true;
@@ -1281,8 +1040,7 @@ namespace lts::editor
             if (
                 subclassInstalled_ &&
                 parentWindow_ != nullptr &&
-                IsWindow(parentWindow_)
-            )
+                IsWindow(parentWindow_))
             {
                 SetWindowLongPtrW(
                     parentWindow_,
@@ -1290,9 +1048,7 @@ namespace lts::editor
                     reinterpret_cast<LONG_PTR>(
                         originalWindowProcedure_));
 
-                RemovePropW(
-                    parentWindow_,
-                    ShellPropertyName);
+                RemovePropW(parentWindow_, ShellPropertyName);
             }
 
             originalWindowProcedure_ = nullptr;
@@ -1308,18 +1064,14 @@ namespace lts::editor
 
             RECT clientRectangle{};
 
-            if (!GetClientRect(
-                    parentWindow_,
-                    &clientRectangle))
+            if (!GetClientRect(parentWindow_, &clientRectangle))
             {
                 return;
             }
 
             Layout(
-                clientRectangle.right -
-                    clientRectangle.left,
-                clientRectangle.bottom -
-                    clientRectangle.top);
+                clientRectangle.right - clientRectangle.left,
+                clientRectangle.bottom - clientRectangle.top);
         }
 
         static void MoveControl(
@@ -1347,132 +1099,89 @@ namespace lts::editor
             const int requestedWidth,
             const int requestedHeight) noexcept
         {
-            const int width =
-                std::max(
-                    requestedWidth,
-                    1);
-
-            const int height =
-                std::max(
-                    requestedHeight,
-                    1);
+            const int width = std::max(requestedWidth, 1);
+            const int height = std::max(requestedHeight, 1);
 
             constexpr int gap = 4;
             constexpr int toolbarHeight = 42;
             constexpr int statusHeight = 24;
             constexpr int titleHeight = 22;
 
-            int leftPanelWidth =
-                std::clamp(
-                    width / 6,
-                    170,
-                    250);
+            int leftPanelWidth = std::clamp(
+                width / 6,
+                170,
+                250);
 
-            int rightPanelWidth =
-                std::clamp(
-                    width / 5,
-                    220,
-                    320);
+            int rightPanelWidth = std::clamp(
+                width / 5,
+                220,
+                320);
 
             if (
                 leftPanelWidth +
-                rightPanelWidth +
-                240 >
-                width
-            )
+                    rightPanelWidth +
+                    240 >
+                width)
             {
-                leftPanelWidth =
-                    std::max(
-                        120,
-                        width / 5);
-
-                rightPanelWidth =
-                    std::max(
-                        140,
-                        width / 4);
+                leftPanelWidth = std::max(120, width / 5);
+                rightPanelWidth = std::max(140, width / 4);
             }
 
-            const int contentTop =
-                toolbarHeight +
-                gap;
+            const int contentTop = toolbarHeight + gap;
 
-            const int contentBottom =
-                std::max(
-                    contentTop + 1,
-                    height -
-                    statusHeight -
-                    gap);
+            const int contentBottom = std::max(
+                contentTop + 1,
+                height - statusHeight - gap);
 
-            const int availableHeight =
-                std::max(
-                    1,
-                    contentBottom -
-                    contentTop);
+            const int availableHeight = std::max(
+                1,
+                contentBottom - contentTop);
 
-            int bottomPanelHeight =
-                std::clamp(
-                    availableHeight / 4,
-                    140,
-                    240);
+            int bottomPanelHeight = std::clamp(
+                availableHeight / 4,
+                140,
+                240);
 
             if (availableHeight < 320)
             {
-                bottomPanelHeight =
-                    std::max(
-                        70,
-                        availableHeight / 3);
+                bottomPanelHeight = std::max(
+                    70,
+                    availableHeight / 3);
             }
 
-            const int centerLeft =
-                leftPanelWidth +
-                gap;
+            const int centerLeft = leftPanelWidth + gap;
 
-            const int centerRight =
-                std::max(
-                    centerLeft + 1,
-                    width -
-                    rightPanelWidth -
-                    gap);
+            const int centerRight = std::max(
+                centerLeft + 1,
+                width - rightPanelWidth - gap);
 
-            const int centerWidth =
-                std::max(
-                    1,
-                    centerRight -
-                    centerLeft);
+            const int centerWidth = std::max(
+                1,
+                centerRight - centerLeft);
 
-            const int bottomTop =
-                std::max(
-                    contentTop +
-                    titleHeight +
-                    1,
-                    contentBottom -
-                    bottomPanelHeight);
+            const int bottomTop = std::max(
+                contentTop + titleHeight + 1,
+                contentBottom - bottomPanelHeight);
 
-            const int viewportTop =
-                contentTop +
-                titleHeight;
+            const int viewportTop = contentTop + titleHeight;
 
-            const int viewportHeight =
-                std::max(
-                    1,
-                    bottomTop -
-                    gap -
-                    viewportTop);
+            const int viewportHeight = std::max(
+                1,
+                bottomTop - gap - viewportTop);
 
-            const int modeButtonWidth = 110;
-            const int modeButtonHeight = 30;
+            constexpr int modeButtonWidth = 110;
+            constexpr int modeButtonHeight = 30;
 
             for (
                 std::size_t index = 0U;
                 index < modeButtons_.size();
-                ++index
-            )
+                ++index)
             {
                 MoveControl(
                     modeButtons_[index],
                     gap +
-                    static_cast<int>(index) *
-                    (modeButtonWidth + gap),
+                        static_cast<int>(index) *
+                            (modeButtonWidth + gap),
                     6,
                     modeButtonWidth,
                     modeButtonHeight);
@@ -1520,22 +1229,16 @@ namespace lts::editor
                 rightPanelWidth - gap,
                 availableHeight - titleHeight);
 
-            const int browserWidth =
-                std::max(
-                    1,
-                    centerWidth / 2 -
-                    gap / 2);
+            const int browserWidth = std::max(
+                1,
+                centerWidth / 2 - gap / 2);
 
             const int consoleLeft =
-                centerLeft +
-                browserWidth +
-                gap;
+                centerLeft + browserWidth + gap;
 
-            const int consoleWidth =
-                std::max(
-                    1,
-                    centerRight -
-                    consoleLeft);
+            const int consoleWidth = std::max(
+                1,
+                centerRight - consoleLeft);
 
             MoveControl(
                 assetTitle_,
@@ -1572,14 +1275,10 @@ namespace lts::editor
                 width,
                 statusHeight);
 
-            InvalidateRect(
-                parentWindow_,
-                nullptr,
-                FALSE);
+            InvalidateRect(parentWindow_, nullptr, FALSE);
         }
 
-        void SetActiveMode(
-            const EditorMode mode) noexcept
+        void SetActiveMode(const EditorMode mode) noexcept
         {
             if (mode == EditorMode::Play)
             {
@@ -1591,9 +1290,7 @@ namespace lts::editor
                 activeMode_ = mode;
                 modeChanged_ = true;
 
-                LogConsole(
-                    GetModeName(mode));
-
+                LogConsole(GetModeName(mode));
                 UpdateStatusText();
             }
 
@@ -1601,55 +1298,47 @@ namespace lts::editor
             {
                 if (button != nullptr)
                 {
-                    InvalidateRect(
-                        button,
-                        nullptr,
-                        TRUE);
+                    InvalidateRect(button, nullptr, TRUE);
                 }
             }
         }
 
         void UpdateStatusText() noexcept
         {
+            if (statusBar_ == nullptr)
+            {
+                return;
+            }
+
             std::array<wchar_t, 256U> buffer{};
 
-            const int written =
-                swprintf_s(
-                    buffer.data(),
-                    buffer.size(),
-                    L"Ready | Mode: %ls | Renderer: DX11",
-                    GetModeName(activeMode_));
+            const int written = swprintf_s(
+                buffer.data(),
+                buffer.size(),
+                L"Ready | Mode: %ls | Renderer: DX11",
+                GetModeName(activeMode_));
 
             if (written > 0)
             {
-                SetWindowTextW(
-                    statusBar_,
-                    buffer.data());
+                SetWindowTextW(statusBar_, buffer.data());
             }
         }
 
-        void LogConsole(
-            const wchar_t* text) const noexcept
+        void LogConsole(const wchar_t* const text) const noexcept
         {
-            if (
-                consoleEdit_ == nullptr ||
-                text == nullptr
-            )
+            if (consoleEdit_ == nullptr || text == nullptr)
             {
                 return;
             }
 
             const int textLength =
-                GetWindowTextLengthW(
-                    consoleEdit_);
+                GetWindowTextLengthW(consoleEdit_);
 
             SendMessageW(
                 consoleEdit_,
                 EM_SETSEL,
-                static_cast<WPARAM>(
-                    textLength),
-                static_cast<LPARAM>(
-                    textLength));
+                static_cast<WPARAM>(textLength),
+                static_cast<LPARAM>(textLength));
 
             SendMessageW(
                 consoleEdit_,
@@ -1662,25 +1351,27 @@ namespace lts::editor
                 consoleEdit_,
                 EM_REPLACESEL,
                 FALSE,
-                reinterpret_cast<LPARAM>(
-                    text));
+                reinterpret_cast<LPARAM>(text));
 
             SendMessageW(
                 consoleEdit_,
                 EM_REPLACESEL,
                 FALSE,
-                reinterpret_cast<LPARAM>(
-                    L"\r\n"));
+                reinterpret_cast<LPARAM>(L"\r\n"));
         }
 
         void HandleHierarchySelectionChanged() noexcept
         {
-            const LRESULT selectedItem =
-                SendMessageW(
-                    hierarchyList_,
-                    LB_GETCURSEL,
-                    0,
-                    0);
+            if (hierarchyList_ == nullptr)
+            {
+                return;
+            }
+
+            const LRESULT selectedItem = SendMessageW(
+                hierarchyList_,
+                LB_GETCURSEL,
+                0,
+                0);
 
             if (selectedItem == LB_ERR)
             {
@@ -1691,12 +1382,11 @@ namespace lts::editor
                 return;
             }
 
-            const LRESULT itemData =
-                SendMessageW(
-                    hierarchyList_,
-                    LB_GETITEMDATA,
-                    static_cast<WPARAM>(selectedItem),
-                    0);
+            const LRESULT itemData = SendMessageW(
+                hierarchyList_,
+                LB_GETITEMDATA,
+                static_cast<WPARAM>(selectedItem),
+                0);
 
             if (itemData == LB_ERR)
             {
@@ -1710,101 +1400,76 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool HandleCommand(
-            const int commandId) noexcept
+        bool HandleCommand(const int commandId) noexcept
         {
             switch (commandId)
             {
                 case IdModeLevel:
-                    SetActiveMode(
-                        EditorMode::Level);
-
+                    SetActiveMode(EditorMode::Level);
                     return true;
 
                 case IdModeCharacter:
-                    SetActiveMode(
-                        EditorMode::Character);
-
+                    SetActiveMode(EditorMode::Character);
                     return true;
 
                 case IdModeIcon:
-                    SetActiveMode(
-                        EditorMode::Icon);
-
+                    SetActiveMode(EditorMode::Icon);
                     return true;
 
                 case IdModePhysics:
-                    SetActiveMode(
-                        EditorMode::Physics);
-
+                    SetActiveMode(EditorMode::Physics);
                     return true;
 
                 case IdModeParticles:
-                    SetActiveMode(
-                        EditorMode::Particles);
-
+                    SetActiveMode(EditorMode::Particles);
                     return true;
 
                 case IdModePlay:
                     return true;
 
                 case IdMenuNewLevel:
-                    SetActiveMode(
-                        EditorMode::Level);
-
-                    LogConsole(
-                        L"New Level command.");
-
+                    SetActiveMode(EditorMode::Level);
+                    LogConsole(L"New Level command.");
                     return true;
 
                 case IdMenuOpen:
                     LogConsole(
                         L"Open command is not implemented yet.");
-
                     return true;
 
                 case IdMenuSave:
                     LogConsole(
                         L"Save command is not implemented yet.");
-
                     return true;
 
                 case IdMenuSaveAs:
                     LogConsole(
                         L"Save As command is not implemented yet.");
-
                     return true;
 
                 case IdMenuUndo:
                     LogConsole(
                         L"Undo stack is not implemented yet.");
-
                     return true;
 
                 case IdMenuRedo:
                     LogConsole(
                         L"Redo stack is not implemented yet.");
-
                     return true;
 
                 case IdMenuDelete:
                     LogConsole(
                         L"No selected object to delete.");
-
                     return true;
 
                 case IdMenuDuplicate:
                     LogConsole(
                         L"No selected object to duplicate.");
-
                     return true;
 
                 case IdMenuResetLayout:
                     LayoutFromParent();
-
-                    LogConsole(
-                        L"Editor layout reset.");
-
+                    LogConsole(L"Editor layout reset.");
                     return true;
 
                 case IdMenuAbout:
@@ -1813,9 +1478,7 @@ namespace lts::editor
                         L"LastToSurvive Editor\n"
                         L"New Engine / DX11",
                         L"About",
-                        MB_OK |
-                        MB_ICONINFORMATION);
-
+                        MB_OK | MB_ICONINFORMATION);
                     return true;
 
                 case IdMenuExit:
@@ -1824,7 +1487,6 @@ namespace lts::editor
                         WM_CLOSE,
                         0,
                         0);
-
                     return true;
 
                 default:
@@ -1833,22 +1495,13 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool IsActiveModeButton(
-            const int controlId) const noexcept
+        bool IsActiveModeButton(const int controlId) const noexcept
         {
-            for (
-                const ModeButtonDescription&
-                    description : ModeButtons
-            )
+            for (const ModeButtonDescription& description : ModeButtons)
             {
-                if (
-                    description.controlId ==
-                    controlId
-                )
+                if (description.controlId == controlId)
                 {
-                    return
-                        description.mode ==
-                        activeMode_;
+                    return description.mode == activeMode_;
                 }
             }
 
@@ -1859,15 +1512,9 @@ namespace lts::editor
         const wchar_t* GetModeButtonText(
             const int controlId) const noexcept
         {
-            for (
-                const ModeButtonDescription&
-                    description : ModeButtons
-            )
+            for (const ModeButtonDescription& description : ModeButtons)
             {
-                if (
-                    description.controlId ==
-                    controlId
-                )
+                if (description.controlId == controlId)
                 {
                     return description.text;
                 }
@@ -1886,20 +1533,13 @@ namespace lts::editor
             }
 
             const int controlId =
-                static_cast<int>(
-                    item.CtlID);
+                static_cast<int>(item.CtlID);
 
             bool knownButton = false;
 
-            for (
-                const ModeButtonDescription&
-                    description : ModeButtons
-            )
+            for (const ModeButtonDescription& description : ModeButtons)
             {
-                if (
-                    description.controlId ==
-                    controlId
-                )
+                if (description.controlId == controlId)
                 {
                     knownButton = true;
                     break;
@@ -1911,18 +1551,13 @@ namespace lts::editor
                 return false;
             }
 
-            HBRUSH fillBrush =
-                IsActiveModeButton(controlId)
-                    ? accentBrush_
-                    : panelBrush_;
+            HBRUSH fillBrush = IsActiveModeButton(controlId)
+                ? accentBrush_
+                : panelBrush_;
 
-            if (
-                (item.itemState &
-                    ODS_SELECTED) != 0
-            )
+            if ((item.itemState & ODS_SELECTED) != 0)
             {
-                fillBrush =
-                    inputBrush_;
+                fillBrush = inputBrush_;
             }
 
             FillRect(
@@ -1937,9 +1572,7 @@ namespace lts::editor
                     ? accentBrush_
                     : borderBrush_);
 
-            SetBkMode(
-                item.hDC,
-                TRANSPARENT);
+            SetBkMode(item.hDC, TRANSPARENT);
 
             SetTextColor(
                 item.hDC,
@@ -1947,8 +1580,7 @@ namespace lts::editor
                     ? RGB(235, 239, 241)
                     : RGB(105, 112, 116));
 
-            RECT textRectangle =
-                item.rcItem;
+            RECT textRectangle = item.rcItem;
 
             DrawTextW(
                 item.hDC,
@@ -1956,16 +1588,12 @@ namespace lts::editor
                 -1,
                 &textRectangle,
                 DT_CENTER |
-                DT_VCENTER |
-                DT_SINGLELINE);
+                    DT_VCENTER |
+                    DT_SINGLELINE);
 
-            if (
-                (item.itemState &
-                    ODS_FOCUS) != 0
-            )
+            if ((item.itemState & ODS_FOCUS) != 0)
             {
-                RECT focusRectangle =
-                    item.rcItem;
+                RECT focusRectangle = item.rcItem;
 
                 InflateRect(
                     &focusRectangle,
@@ -1989,8 +1617,7 @@ namespace lts::editor
             if (message == WM_NCCREATE)
             {
                 const auto* const createData =
-                    reinterpret_cast<const CREATESTRUCTW*>(
-                        lParam);
+                    reinterpret_cast<const CREATESTRUCTW*>(lParam);
 
                 if (createData != nullptr)
                 {
@@ -2005,11 +1632,10 @@ namespace lts::editor
                 }
             }
 
-            auto* const self =
-                reinterpret_cast<Impl*>(
-                    GetWindowLongPtrW(
-                        window,
-                        GWLP_USERDATA));
+            auto* const self = reinterpret_cast<Impl*>(
+                GetWindowLongPtrW(
+                    window,
+                    GWLP_USERDATA));
 
             switch (message)
             {
@@ -2043,10 +1669,8 @@ namespace lts::editor
 
                 case WM_MBUTTONDOWN:
                 case WM_RBUTTONDOWN:
-                {
                     SetFocus(window);
                     return 0;
-                }
 
                 case WM_MOUSEWHEEL:
                 {
@@ -2071,26 +1695,18 @@ namespace lts::editor
                 {
                     PAINTSTRUCT paint{};
 
-                    BeginPaint(
-                        window,
-                        &paint);
-
-                    EndPaint(
-                        window,
-                        &paint);
+                    BeginPaint(window, &paint);
+                    EndPaint(window, &paint);
 
                     return 0;
                 }
 
                 case WM_NCDESTROY:
-                {
                     SetWindowLongPtrW(
                         window,
                         GWLP_USERDATA,
                         0);
-
                     break;
-                }
 
                 default:
                     break;
@@ -2103,24 +1719,20 @@ namespace lts::editor
                 lParam);
         }
 
-        static LRESULT CALLBACK
-            WindowProcedure(
-                const HWND window,
-                const UINT message,
-                const WPARAM wParam,
-                const LPARAM lParam) noexcept
+        static LRESULT CALLBACK WindowProcedure(
+            const HWND window,
+            const UINT message,
+            const WPARAM wParam,
+            const LPARAM lParam) noexcept
         {
-            auto* self =
-                static_cast<Impl*>(
-                    GetPropW(
-                        window,
-                        ShellPropertyName));
+            auto* const self = static_cast<Impl*>(
+                GetPropW(
+                    window,
+                    ShellPropertyName));
 
             if (
                 self == nullptr ||
-                self->originalWindowProcedure_ ==
-                    nullptr
-            )
+                self->originalWindowProcedure_ == nullptr)
             {
                 return DefWindowProcW(
                     window,
@@ -2133,11 +1745,8 @@ namespace lts::editor
             {
                 case WM_COMMAND:
                 {
-                    const int commandId =
-                        LOWORD(wParam);
-
-                    const int notificationCode =
-                        HIWORD(wParam);
+                    const int commandId = LOWORD(wParam);
+                    const int notificationCode = HIWORD(wParam);
 
                     if (
                         commandId == IdHierarchyList &&
@@ -2147,10 +1756,7 @@ namespace lts::editor
                         return 0;
                     }
 
-                    if (
-                        self->HandleCommand(
-                            commandId)
-                    )
+                    if (self->HandleCommand(commandId))
                     {
                         return 0;
                     }
@@ -2164,16 +1770,13 @@ namespace lts::editor
 
                 case WM_DRAWITEM:
                 {
-                    const auto* item =
-                        reinterpret_cast<
-                            const DRAWITEMSTRUCT*>(
-                                lParam);
+                    const auto* const item =
+                        reinterpret_cast<const DRAWITEMSTRUCT*>(
+                            lParam);
 
                     if (
                         item != nullptr &&
-                        self->DrawOwnerButton(
-                            *item)
-                    )
+                        self->DrawOwnerButton(*item))
                     {
                         return TRUE;
                     }
@@ -2184,8 +1787,7 @@ namespace lts::editor
                 case WM_CTLCOLORSTATIC:
                 {
                     const HDC deviceContext =
-                        reinterpret_cast<HDC>(
-                            wParam);
+                        reinterpret_cast<HDC>(wParam);
 
                     SetTextColor(
                         deviceContext,
@@ -2203,8 +1805,7 @@ namespace lts::editor
                 case WM_CTLCOLOREDIT:
                 {
                     const HDC deviceContext =
-                        reinterpret_cast<HDC>(
-                            wParam);
+                        reinterpret_cast<HDC>(wParam);
 
                     SetTextColor(
                         deviceContext,
@@ -2226,9 +1827,7 @@ namespace lts::editor
                     PAINTSTRUCT paint{};
 
                     HDC deviceContext =
-                        BeginPaint(
-                            window,
-                            &paint);
+                        BeginPaint(window, &paint);
 
                     if (deviceContext != nullptr)
                     {
@@ -2238,10 +1837,7 @@ namespace lts::editor
                             self->backgroundBrush_);
                     }
 
-                    EndPaint(
-                        window,
-                        &paint);
-
+                    EndPaint(window, &paint);
                     return 0;
                 }
 
@@ -2261,16 +1857,12 @@ namespace lts::editor
         HINSTANCE instance_ = nullptr;
 
         WNDPROC originalWindowProcedure_ = nullptr;
-
         HMENU mainMenu_ = nullptr;
 
         ATOM viewportClassAtom_ = 0;
 
-        std::array<wchar_t, 96U>
-            viewportClassName_{};
-
-        std::array<HWND, 6U>
-            modeButtons_{};
+        std::array<wchar_t, 96U> viewportClassName_{};
+        std::array<HWND, 6U> modeButtons_{};
 
         HWND hierarchyTitle_ = nullptr;
         HWND hierarchyList_ = nullptr;
@@ -2297,16 +1889,15 @@ namespace lts::editor
         HBRUSH accentBrush_ = nullptr;
         HBRUSH borderBrush_ = nullptr;
 
-        EditorMode activeMode_ =
-            EditorMode::Level;
+        EditorMode activeMode_ = EditorMode::Level;
 
         float viewportWheelSteps_ = 0.0F;
-        ViewportClick pendingViewportClick_;
-        bool viewportClickPending_ = false;
 
+        ViewportClick pendingViewportClick_;
         std::size_t pendingHierarchySelection_ =
             InvalidEditorEntityIndex;
 
+        bool viewportClickPending_ = false;
         bool hierarchySelectionChanged_ = false;
         bool modeChanged_ = false;
         bool subclassInstalled_ = false;
@@ -2314,21 +1905,18 @@ namespace lts::editor
     };
 
     EditorShell::EditorShell()
-        : impl_(
-            std::make_unique<Impl>())
+        : impl_(std::make_unique<Impl>())
     {
     }
 
-    EditorShell::~EditorShell() noexcept =
-        default;
+    EditorShell::~EditorShell() noexcept = default;
 
     bool EditorShell::Initialize(
-        const engine::platform::
-            NativeWindowHandle mainWindow) noexcept
+        const engine::platform::NativeWindowHandle mainWindow) noexcept
     {
-        return impl_ != nullptr &&
-            impl_->Initialize(
-                mainWindow);
+        return
+            impl_ != nullptr &&
+            impl_->Initialize(mainWindow);
     }
 
     void EditorShell::Shutdown() noexcept
@@ -2345,40 +1933,33 @@ namespace lts::editor
     {
         if (impl_ != nullptr)
         {
-            impl_->Resize(
-                width,
-                height);
+            impl_->Resize(width, height);
         }
     }
 
     engine::platform::NativeWindowHandle
-        EditorShell::
-            GetViewportWindowHandle() const noexcept
+        EditorShell::GetViewportWindowHandle() const noexcept
     {
         if (impl_ == nullptr)
         {
             return {};
         }
 
-        return impl_->
-            GetViewportWindowHandle();
+        return impl_->GetViewportWindowHandle();
     }
 
     engine::platform::WindowSize
-        EditorShell::
-            GetViewportSize() const noexcept
+        EditorShell::GetViewportSize() const noexcept
     {
         if (impl_ == nullptr)
         {
             return {};
         }
 
-        return impl_->
-            GetViewportSize();
+        return impl_->GetViewportSize();
     }
 
-    EditorMode EditorShell::
-        GetActiveMode() const noexcept
+    EditorMode EditorShell::GetActiveMode() const noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2391,27 +1972,26 @@ namespace lts::editor
     bool EditorShell::ConsumeModeChanged(
         EditorMode& mode) noexcept
     {
-        return impl_ != nullptr &&
-            impl_->ConsumeModeChanged(
-                mode);
+        return
+            impl_ != nullptr &&
+            impl_->ConsumeModeChanged(mode);
     }
 
-    float EditorShell::
-    ConsumeViewportWheelSteps() noexcept
+    float EditorShell::ConsumeViewportWheelSteps() noexcept
     {
         if (impl_ == nullptr)
         {
             return 0.0F;
         }
 
-        return impl_->
-            ConsumeViewportWheelSteps();
+        return impl_->ConsumeViewportWheelSteps();
     }
 
     bool EditorShell::ConsumeViewportClick(
-    ViewportClick& click) noexcept
+        ViewportClick& click) noexcept
     {
-        return impl_ != nullptr &&
+        return
+            impl_ != nullptr &&
             impl_->ConsumeViewportClick(click);
     }
 
@@ -2429,12 +2009,11 @@ namespace lts::editor
     {
         return
             impl_ != nullptr &&
-            impl_->ConsumeHierarchySelection(
-                entityIndex);
+            impl_->ConsumeHierarchySelection(entityIndex);
     }
 
     void EditorShell::SelectHierarchyEntity(
-    const std::size_t entityIndex) noexcept
+        const std::size_t entityIndex) noexcept
     {
         if (impl_ != nullptr)
         {
@@ -2456,8 +2035,7 @@ namespace lts::editor
     {
         if (impl_ != nullptr)
         {
-            impl_->SetStatusText(
-                text);
+            impl_->SetStatusText(text);
         }
     }
 }
