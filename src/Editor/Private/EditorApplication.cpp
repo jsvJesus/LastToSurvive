@@ -30,8 +30,7 @@ namespace lts::editor
             description.title =
                 L"LastToSurvive Editor";
 
-            description.logFileName =
-                "LTS.Editor.log";
+            description.logFileName = "Logs/LTS.Editor.log";
 
             description.width = 1600;
             description.height = 900;
