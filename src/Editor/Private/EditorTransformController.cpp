@@ -13,9 +13,16 @@ namespace lts::editor
     namespace
     {
         constexpr float GizmoLength = 2.5F;
-        constexpr float GizmoPickRadius = 0.28F;
+        constexpr float GizmoDeadZone = 0.40F;
+        constexpr float MinimumGizmoPickRadius = 0.16F;
+        constexpr float MaximumGizmoPickRadius = 0.85F;
+        constexpr float GizmoPickRadiusPerDistance = 0.012F;
+
         constexpr float RotationRadius = 2.0F;
-        constexpr float RotationPickTolerance = 0.28F;
+        constexpr float MinimumRotationPickTolerance = 0.16F;
+        constexpr float MaximumRotationPickTolerance = 0.75F;
+        constexpr float RotationPickTolerancePerDistance = 0.012F;
+
         constexpr float Epsilon = 0.000001F;
 
         [[nodiscard]]
@@ -239,6 +246,48 @@ namespace lts::editor
 
             return Length(
                 Subtract(rayPoint, segmentPoint));
+        }
+
+        [[nodiscard]]
+        bool ClosestParameterOnAxis(
+            const EditorPickRay& ray,
+            const DirectX::XMFLOAT3& axisOrigin,
+            const DirectX::XMFLOAT3& axisDirection,
+            float& axisParameter) noexcept
+        {
+            const DirectX::XMFLOAT3 offset =
+                Subtract(ray.origin, axisOrigin);
+
+            const float rayLengthSquared =
+                Dot(ray.direction, ray.direction);
+
+            const float axisLengthSquared =
+                Dot(axisDirection, axisDirection);
+
+            const float rayAxisDot =
+                Dot(ray.direction, axisDirection);
+
+            const float rayOffsetDot =
+                Dot(ray.direction, offset);
+
+            const float axisOffsetDot =
+                Dot(axisDirection, offset);
+
+            const float denominator =
+                rayLengthSquared * axisLengthSquared -
+                rayAxisDot * rayAxisDot;
+
+            if (std::abs(denominator) <= Epsilon)
+            {
+                return false;
+            }
+
+            axisParameter =
+                (rayLengthSquared * axisOffsetDot -
+                    rayAxisDot * rayOffsetDot) /
+                denominator;
+
+            return std::isfinite(axisParameter);
         }
 
         [[nodiscard]]
@@ -719,7 +768,9 @@ namespace lts::editor
                     hit,
                     distance))
             {
-                visualState_.activeAxis = EditorTransformAxis::None;
+                visualState_.activeAxis =
+                    EditorTransformAxis::None;
+
                 return false;
             }
 
@@ -728,7 +779,9 @@ namespace lts::editor
 
             if (LengthSquared(dragStartVector_) <= Epsilon)
             {
-                visualState_.activeAxis = EditorTransformAxis::None;
+                visualState_.activeAxis =
+                    EditorTransformAxis::None;
+
                 return false;
             }
         }
@@ -745,32 +798,56 @@ namespace lts::editor
             {
                 const DirectX::XMFLOAT3 fallback =
                     std::abs(dragAxis_.y) < 0.9F
-                        ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
-                        : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
+                        ? DirectX::XMFLOAT3
+                        {
+                            0.0F,
+                            1.0F,
+                            0.0F
+                        }
+                        : DirectX::XMFLOAT3
+                        {
+                            1.0F,
+                            0.0F,
+                            0.0F
+                        };
 
                 dragPlaneNormal_ = Normalize(
                     Cross(
                         dragAxis_,
-                        Cross(fallback, dragAxis_)));
+                        Cross(
+                            fallback,
+                            dragAxis_)));
             }
 
-            if (!IntersectPlane(
+            if (!ClosestParameterOnAxis(
                     ray,
                     dragOrigin_,
-                    dragPlaneNormal_,
-                    hit,
-                    distance))
+                    dragAxis_,
+                    dragStartParameter_))
             {
-                visualState_.activeAxis = EditorTransformAxis::None;
-                return false;
-            }
+                if (!IntersectPlane(
+                        ray,
+                        dragOrigin_,
+                        dragPlaneNormal_,
+                        hit,
+                        distance))
+                {
+                    visualState_.activeAxis =
+                        EditorTransformAxis::None;
 
-            dragStartParameter_ = Dot(
-                Subtract(hit, dragOrigin_),
-                dragAxis_);
+                    return false;
+                }
+
+                dragStartParameter_ = Dot(
+                    Subtract(
+                        hit,
+                        dragOrigin_),
+                    dragAxis_);
+            }
         }
 
-        const HWND viewport = ToWindowHandle(viewportWindow_);
+        const HWND viewport =
+            ToWindowHandle(viewportWindow_);
 
         if (viewport != nullptr)
         {
@@ -789,13 +866,22 @@ namespace lts::editor
         if (!IsKeyDown(VK_LBUTTON))
         {
             const bool changed = dragChanged_;
-            EndDrag(document, history, false);
+
+            EndDrag(
+                document,
+                history,
+                false);
+
             return changed;
         }
 
         if (WasPressed(VK_ESCAPE))
         {
-            EndDrag(document, history, true);
+            EndDrag(
+                document,
+                history,
+                true);
+
             return true;
         }
 
@@ -812,7 +898,8 @@ namespace lts::editor
         DirectX::XMFLOAT3 hit{};
         float distance = 0.0F;
 
-        EditorTransform transform = dragStartTransform_;
+        EditorTransform transform =
+            dragStartTransform_;
 
         const bool snapping =
             IsKeyDown(VK_CONTROL) ||
@@ -831,8 +918,11 @@ namespace lts::editor
                 return false;
             }
 
-            const DirectX::XMFLOAT3 currentVector = Normalize(
-                Subtract(hit, dragOrigin_));
+            const DirectX::XMFLOAT3 currentVector =
+                Normalize(
+                    Subtract(
+                        hit,
+                        dragOrigin_));
 
             if (LengthSquared(currentVector) <= Epsilon)
             {
@@ -849,8 +939,11 @@ namespace lts::editor
                 dragStartVector_,
                 currentVector);
 
-            float angleDegrees = DirectX::XMConvertToDegrees(
-                std::atan2(sine, cosine));
+            float angleDegrees =
+                DirectX::XMConvertToDegrees(
+                    std::atan2(
+                        sine,
+                        cosine));
 
             if (snapping)
             {
@@ -860,36 +953,58 @@ namespace lts::editor
             }
 
             transform.rotationDegrees[
-                AxisIndex(visualState_.activeAxis)] += angleDegrees;
+                AxisIndex(
+                    visualState_.activeAxis)] +=
+                        angleDegrees;
         }
         else
         {
-            if (!IntersectPlane(
+            float currentParameter = 0.0F;
+
+            if (!ClosestParameterOnAxis(
                     ray,
                     dragOrigin_,
-                    dragPlaneNormal_,
-                    hit,
-                    distance))
+                    dragAxis_,
+                    currentParameter))
             {
-                return false;
+                if (!IntersectPlane(
+                        ray,
+                        dragOrigin_,
+                        dragPlaneNormal_,
+                        hit,
+                        distance))
+                {
+                    return false;
+                }
+
+                currentParameter = Dot(
+                    Subtract(
+                        hit,
+                        dragOrigin_),
+                    dragAxis_);
             }
 
             float delta =
-                Dot(
-                    Subtract(hit, dragOrigin_),
-                    dragAxis_) -
+                currentParameter -
                 dragStartParameter_;
 
             if (visualState_.operation == EditorTransformOperation::Move)
             {
                 if (snapping)
                 {
-                    delta = SnapValue(delta, 0.5F);
+                    delta = SnapValue(
+                        delta,
+                        0.5F);
                 }
 
-                transform.position[0] += dragAxis_.x * delta;
-                transform.position[1] += dragAxis_.y * delta;
-                transform.position[2] += dragAxis_.z * delta;
+                transform.position[0] +=
+                    dragAxis_.x * delta;
+
+                transform.position[1] +=
+                    dragAxis_.y * delta;
+
+                transform.position[2] +=
+                    dragAxis_.z * delta;
             }
             else
             {
@@ -897,15 +1012,21 @@ namespace lts::editor
 
                 if (snapping)
                 {
-                    delta = SnapValue(delta, 0.1F);
+                    delta = SnapValue(
+                        delta,
+                        0.1F);
                 }
 
                 const std::size_t axisIndex =
-                    AxisIndex(visualState_.activeAxis);
+                    AxisIndex(
+                        visualState_.activeAxis);
 
-                transform.scale[axisIndex] = std::max(
-                    0.01F,
-                    dragStartTransform_.scale[axisIndex] + delta);
+                transform.scale[axisIndex] =
+                    std::max(
+                        0.01F,
+                        dragStartTransform_.
+                            scale[axisIndex] +
+                        delta);
             }
         }
 
@@ -986,6 +1107,25 @@ namespace lts::editor
             entity.transform.position[2]
         };
 
+        const float cameraDistance = Length(
+            Subtract(
+                origin,
+                ray.origin));
+
+        const float gizmoPickRadius =
+            std::clamp(
+                cameraDistance *
+                    GizmoPickRadiusPerDistance,
+                MinimumGizmoPickRadius,
+                MaximumGizmoPickRadius);
+
+        const float rotationPickTolerance =
+            std::clamp(
+                cameraDistance *
+                    RotationPickTolerancePerDistance,
+                MinimumRotationPickTolerance,
+                MaximumRotationPickTolerance);
+
         constexpr std::array<EditorTransformAxis, 3U> axes
         {
             EditorTransformAxis::X,
@@ -993,19 +1133,32 @@ namespace lts::editor
             EditorTransformAxis::Z
         };
 
-        EditorTransformAxis bestAxis = EditorTransformAxis::None;
-        float bestRayParameter = std::numeric_limits<float>::max();
+        EditorTransformAxis bestAxis =
+            EditorTransformAxis::None;
+
+        float bestScore =
+            std::numeric_limits<float>::max();
+
+        float bestRayParameter =
+            std::numeric_limits<float>::max();
 
         for (const EditorTransformAxis axis : axes)
         {
-            const DirectX::XMFLOAT3 axisVector = GetAxisVector(
-                entity.transform,
-                axis);
+            const DirectX::XMFLOAT3 axisVector =
+                GetAxisVector(
+                    entity.transform,
+                    axis);
 
             float rayParameter = 0.0F;
+
+            float score =
+                std::numeric_limits<float>::max();
+
             bool hit = false;
 
-            if (visualState_.operation == EditorTransformOperation::Rotate)
+            if (
+                visualState_.operation ==
+                EditorTransformOperation::Rotate)
             {
                 DirectX::XMFLOAT3 planeHit{};
 
@@ -1017,32 +1170,91 @@ namespace lts::editor
                         rayParameter))
                 {
                     const float radius = Length(
-                        Subtract(planeHit, origin));
+                        Subtract(
+                            planeHit,
+                            origin));
+
+                    const float ringDistance =
+                        std::abs(
+                            radius -
+                            RotationRadius);
 
                     hit =
-                        std::abs(radius - RotationRadius) <=
-                        RotationPickTolerance;
+                        ringDistance <=
+                        rotationPickTolerance;
+
+                    if (hit)
+                    {
+                        score =
+                            ringDistance /
+                            rotationPickTolerance;
+                    }
                 }
             }
             else
             {
-                const DirectX::XMFLOAT3 end = Add(
-                    origin,
-                    Multiply(axisVector, GizmoLength));
+                /*
+                 * Не начинаем выбор оси прямо из центра объекта.
+                 * Иначе три оси конфликтуют между собой.
+                 */
+                const DirectX::XMFLOAT3 segmentStart =
+                    Add(
+                        origin,
+                        Multiply(
+                            axisVector,
+                            GizmoDeadZone));
 
-                const float distance = DistanceRayToSegment(
-                    ray,
-                    origin,
-                    end,
-                    rayParameter);
+                const DirectX::XMFLOAT3 segmentEnd =
+                    Add(
+                        origin,
+                        Multiply(
+                            axisVector,
+                            GizmoLength));
 
-                hit = distance <= GizmoPickRadius;
+                const float distance =
+                    DistanceRayToSegment(
+                        ray,
+                        segmentStart,
+                        segmentEnd,
+                        rayParameter);
+
+                hit =
+                    distance <=
+                    gizmoPickRadius;
+
+                if (hit)
+                {
+                    /*
+                     * Выбираем ось, которая ближе к курсору,
+                     * а не просто находится ближе к камере.
+                     */
+                    score =
+                        distance /
+                        gizmoPickRadius;
+                }
             }
 
-            if (
-                hit &&
-                rayParameter < bestRayParameter)
+            if (!hit)
             {
+                continue;
+            }
+
+            const bool betterScore =
+                score <
+                bestScore - 0.0001F;
+
+            const bool equalScoreButCloser =
+                std::abs(
+                    score -
+                    bestScore) <= 0.0001F &&
+                rayParameter <
+                    bestRayParameter;
+
+            if (
+                betterScore ||
+                equalScoreButCloser)
+            {
+                bestScore = score;
                 bestRayParameter = rayParameter;
                 bestAxis = axis;
             }
