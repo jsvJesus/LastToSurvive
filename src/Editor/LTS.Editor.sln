@@ -24,7 +24,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Application", "..\Engine\Application\LTS.Application.vcxproj", "{5E5F8D0E-1D41-4B6B-B9B7-9B530A82B1A4}"
 EndProject
 
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Editor", "..\Editor\LTS.Editor.vcxproj", "{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Editor", "LTS.Editor.vcxproj", "{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}"
 EndProject
 
 Global
