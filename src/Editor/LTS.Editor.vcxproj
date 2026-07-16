@@ -48,26 +48,32 @@
   <ImportGroup Label="Shared" />
 
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-
-    <Import Project="$(ProjectDir)..\..\Build\LTS.Runtime.props" />
-
   </ImportGroup>
 
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
-
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-
-    <Import Project="$(ProjectDir)..\..\Build\LTS.Runtime.props" />
-
   </ImportGroup>
 
   <PropertyGroup Label="UserMacros" />
 
   <PropertyGroup>
+    <!--
+      ProjectDir:
+      Z:\WarZ\src\Editor\
+ 
+      LTSRoot:
+      Z:\WarZ\game\
+    -->
+    <LTSRoot>$(ProjectDir)..\..\game\</LTSRoot>
+    <LTSLogsDir>$(LTSRoot)Logs\</LTSLogsDir>
+    <LTSDataDir>$(LTSRoot)Data\</LTSDataDir>
+    <LTSProjectsDir>$(LTSRoot)Projects\</LTSProjectsDir>
+    <LTSCacheDir>$(LTSRoot)Cache\</LTSCacheDir>
+    <LTSTempDir>$(LTSRoot)Temp\</LTSTempDir>
+    <OutDir>$(LTSRoot)</OutDir>
     <IntDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
-
+    <LTSPdbDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Pdb\</LTSPdbDir>
     <TargetName>LTS.Editor</TargetName>
   </PropertyGroup>
 
