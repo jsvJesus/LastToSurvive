@@ -2,6 +2,7 @@
 
 #include <Graphics/GraphicsResult.h>
 #include <Graphics/ResourceHandle.h>
+#include <DirectXMath.h>
 
 #include <cstdint>
 
@@ -36,8 +37,8 @@ namespace lts::editor
         [[nodiscard]]
         engine::graphics::GraphicsResult Render(
             engine::graphics::CommandContext& context,
-            std::uint32_t viewportWidth,
-            std::uint32_t viewportHeight) noexcept;
+            const DirectX::XMFLOAT4X4&
+                viewProjection) noexcept;
 
         [[nodiscard]]
         bool IsInitialized() const noexcept;

@@ -56,6 +56,9 @@ namespace lts::editor
         bool ConsumeModeChanged(
             EditorMode& mode) noexcept;
 
+        [[nodiscard]]
+        float ConsumeViewportWheelSteps() noexcept;
+
         void SetStatusText(
             std::wstring_view text) noexcept;
 

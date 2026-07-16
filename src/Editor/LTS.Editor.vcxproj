@@ -224,12 +224,14 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
+    <ClInclude Include="Public\Editor\EditorCameraController.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
+    <ClCompile Include="Private\EditorCameraController.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\Main.cpp" />

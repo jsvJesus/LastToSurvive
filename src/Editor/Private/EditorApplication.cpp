@@ -117,13 +117,20 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
+        cameraController_.SetViewportWindow({});
+
         ShutdownGraphics();
         editorShell_.Shutdown();
     }
 
     void EditorApplication::OnUpdate(
-    const double) noexcept
+    const double deltaSeconds) noexcept
     {
+        cameraController_.Update(
+            deltaSeconds,
+            editorShell_.
+                ConsumeViewportWheelSteps());
+
         EditorMode changedMode =
             EditorMode::Level;
 
@@ -271,6 +278,20 @@ namespace lts::editor
                     1.0F,
                     0);
 
+        DirectX::XMFLOAT4X4
+        viewProjection{};
+
+        if (
+            !cameraController_.
+                BuildViewProjection(
+                    viewportWidth_,
+                    viewportHeight_,
+                    viewProjection)
+        )
+        {
+            return;
+        }
+
         if (engine::graphics::Failed(result))
         {
             ReportGraphicsFailure(
@@ -283,8 +304,7 @@ namespace lts::editor
         result =
         gridRenderer_.Render(
         *commandContext_,
-        viewportWidth_,
-        viewportHeight_);
+        viewProjection);
 
         if (engine::graphics::Failed(result))
         {

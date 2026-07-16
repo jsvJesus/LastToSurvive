@@ -14,6 +14,12 @@
 #include <cstdint>
 #include <memory>
 
+#include "EditorCameraController.h"
+
+lts::editor::EditorCameraController cameraController_;
+lts::editor::EditorGridRenderer gridRenderer_;
+lts::editor::EditorShell editorShell_;
+
 namespace lts::editor
 {
     class EditorApplication final

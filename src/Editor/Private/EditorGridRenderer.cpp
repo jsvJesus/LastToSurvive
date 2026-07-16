@@ -718,11 +718,11 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     }
 
     engine::graphics::GraphicsResult
-        EditorGridRenderer::Render(
-            engine::graphics::
-                CommandContext& context,
-            const std::uint32_t viewportWidth,
-            const std::uint32_t viewportHeight) noexcept
+    EditorGridRenderer::Render(
+        engine::graphics::
+            CommandContext& context,
+        const DirectX::XMFLOAT4X4&
+            viewProjection) noexcept
     {
         if (!initialized_)
         {
@@ -730,67 +730,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 GraphicsResult::InvalidState;
         }
 
-        if (
-            viewportWidth == 0U ||
-            viewportHeight == 0U
-        )
-        {
-            return engine::graphics::
-                GraphicsResult::InvalidArgument;
-        }
-
-        const float aspectRatio =
-            static_cast<float>(
-                viewportWidth) /
-            static_cast<float>(
-                viewportHeight);
-
-        const DirectX::XMVECTOR cameraPosition =
-            DirectX::XMVectorSet(
-                18.0F,
-                14.0F,
-                -18.0F,
-                1.0F);
-
-        const DirectX::XMVECTOR cameraTarget =
-            DirectX::XMVectorSet(
-                0.0F,
-                0.0F,
-                0.0F,
-                1.0F);
-
-        const DirectX::XMVECTOR cameraUp =
-            DirectX::XMVectorSet(
-                0.0F,
-                1.0F,
-                0.0F,
-                0.0F);
-
-        const DirectX::XMMATRIX view =
-            DirectX::XMMatrixLookAtLH(
-                cameraPosition,
-                cameraTarget,
-                cameraUp);
-
-        const DirectX::XMMATRIX projection =
-            DirectX::XMMatrixPerspectiveFovLH(
-                DirectX::XMConvertToRadians(
-                    60.0F),
-                aspectRatio,
-                0.1F,
-                500.0F);
-
-        const DirectX::XMMATRIX
-            viewProjection =
-                DirectX::XMMatrixMultiply(
-                    view,
-                    projection);
-
         GridCameraConstants cameraConstants{};
 
-        DirectX::XMStoreFloat4x4(
-            &cameraConstants.viewProjection,
-            viewProjection);
+        cameraConstants.viewProjection =
+            viewProjection;
 
         auto result =
             context.UpdateBuffer(

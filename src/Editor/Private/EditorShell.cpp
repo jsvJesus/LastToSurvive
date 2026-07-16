@@ -278,6 +278,7 @@ namespace lts::editor
             activeMode_ = EditorMode::Level;
             modeChanged_ = false;
             initialized_ = false;
+            viewportWheelSteps_ = 0.0F;
         }
 
         void Resize(
@@ -366,6 +367,17 @@ namespace lts::editor
             modeChanged_ = false;
 
             return true;
+        }
+
+        [[nodiscard]]
+        float ConsumeViewportWheelSteps() noexcept
+        {
+            const float result =
+                viewportWheelSteps_;
+
+            viewportWheelSteps_ = 0.0F;
+
+            return result;
         }
 
         void SetStatusText(
@@ -771,7 +783,7 @@ namespace lts::editor
                         static_cast<INT_PTR>(
                             IdViewportWindow)),
                     instance_,
-                    nullptr);
+                    this);
 
             inspectorTitle_ =
                 CreateControl(
@@ -1712,53 +1724,117 @@ namespace lts::editor
         }
 
         static LRESULT CALLBACK
-            ViewportWindowProcedure(
-                const HWND window,
-                const UINT message,
-                const WPARAM wParam,
-                const LPARAM lParam) noexcept
+        ViewportWindowProcedure(
+            const HWND window,
+            const UINT message,
+            const WPARAM wParam,
+            const LPARAM lParam) noexcept
+    {
+        if (message == WM_NCCREATE)
         {
-            switch (message)
+            const auto* const createData =
+                reinterpret_cast<
+                    const CREATESTRUCTW*>(
+                        lParam);
+
+            if (createData != nullptr)
             {
-                case WM_ERASEBKGND:
-                    return 1;
+                auto* const self =
+                    static_cast<Impl*>(
+                        createData->
+                            lpCreateParams);
 
-                case WM_PAINT:
+                SetWindowLongPtrW(
+                    window,
+                    GWLP_USERDATA,
+                    reinterpret_cast<LONG_PTR>(
+                        self));
+            }
+        }
+
+        auto* const self =
+            reinterpret_cast<Impl*>(
+                GetWindowLongPtrW(
+                    window,
+                    GWLP_USERDATA));
+
+        switch (message)
+        {
+            case WM_LBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_RBUTTONDOWN:
+            {
+                SetFocus(window);
+                return 0;
+            }
+
+            case WM_MOUSEWHEEL:
+            {
+                if (self != nullptr)
                 {
-                    PAINTSTRUCT paint{};
+                    const float wheelDelta =
+                        static_cast<float>(
+                            GET_WHEEL_DELTA_WPARAM(
+                                wParam));
 
-                    HDC deviceContext =
-                        BeginPaint(
-                            window,
-                            &paint);
+                    self->viewportWheelSteps_ +=
+                        wheelDelta /
+                        static_cast<float>(
+                            WHEEL_DELTA);
+                }
 
-                    if (deviceContext != nullptr)
-                    {
-                        FillRect(
-                            deviceContext,
-                            &paint.rcPaint,
-                            reinterpret_cast<HBRUSH>(
-                                GetStockObject(
-                                    BLACK_BRUSH)));
-                    }
+                return 0;
+            }
 
-                    EndPaint(
+            case WM_ERASEBKGND:
+                return 1;
+
+            case WM_PAINT:
+            {
+                PAINTSTRUCT paint{};
+
+                HDC deviceContext =
+                    BeginPaint(
                         window,
                         &paint);
 
-                    return 0;
+                if (deviceContext != nullptr)
+                {
+                    FillRect(
+                        deviceContext,
+                        &paint.rcPaint,
+                        reinterpret_cast<HBRUSH>(
+                            GetStockObject(
+                                BLACK_BRUSH)));
                 }
 
-                default:
-                    break;
+                EndPaint(
+                    window,
+                    &paint);
+
+                return 0;
             }
 
-            return DefWindowProcW(
-                window,
-                message,
-                wParam,
-                lParam);
+            case WM_NCDESTROY:
+            {
+                SetWindowLongPtrW(
+                    window,
+                    GWLP_USERDATA,
+                    0);
+
+                break;
+            }
+
+            default:
+                break;
         }
+
+        return DefWindowProcW(
+            window,
+            message,
+            wParam,
+            lParam);
+    }
 
         static LRESULT CALLBACK
             WindowProcedure(
@@ -1946,6 +2022,7 @@ namespace lts::editor
         EditorMode activeMode_ =
             EditorMode::Level;
 
+        float viewportWheelSteps_ = 0.0F;
         bool modeChanged_ = false;
         bool subclassInstalled_ = false;
         bool initialized_ = false;
@@ -2032,6 +2109,18 @@ namespace lts::editor
         return impl_ != nullptr &&
             impl_->ConsumeModeChanged(
                 mode);
+    }
+
+    float EditorShell::
+    ConsumeViewportWheelSteps() noexcept
+    {
+        if (impl_ == nullptr)
+        {
+            return 0.0F;
+        }
+
+        return impl_->
+            ConsumeViewportWheelSteps();
     }
 
     void EditorShell::SetStatusText(
