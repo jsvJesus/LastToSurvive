@@ -21,11 +21,16 @@ namespace lts::editor
         Play
     };
 
+    struct ViewportClick final
+    {
+        std::uint32_t x = 0U;
+        std::uint32_t y = 0U;
+    };
+
     class EditorShell final
     {
     public:
         EditorShell();
-
         ~EditorShell() noexcept;
 
         EditorShell(const EditorShell&) = delete;
@@ -56,11 +61,13 @@ namespace lts::editor
         EditorMode GetActiveMode() const noexcept;
 
         [[nodiscard]]
-        bool ConsumeModeChanged(
-            EditorMode& mode) noexcept;
+        bool ConsumeModeChanged(EditorMode& mode) noexcept;
 
         [[nodiscard]]
         float ConsumeViewportWheelSteps() noexcept;
+
+        [[nodiscard]]
+        bool ConsumeViewportClick(ViewportClick& click) noexcept;
 
         void RefreshScene(
             const EditorSceneDocument& document) noexcept;
@@ -68,6 +75,9 @@ namespace lts::editor
         [[nodiscard]]
         bool ConsumeHierarchySelection(
             std::size_t& entityIndex) noexcept;
+
+        void SelectHierarchyEntity(
+            std::size_t entityIndex) noexcept;
 
         void ShowEntityDetails(
             const EditorSceneEntity* entity) noexcept;

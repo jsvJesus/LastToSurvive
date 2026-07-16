@@ -1,4 +1,5 @@
 #include "Editor/EditorApplication.h"
+#include "Editor/EditorScenePicker.h"
 
 #include <Core/Log.h>
 
@@ -161,12 +162,14 @@ namespace lts::editor
     {
         cameraController_.Update(
             deltaSeconds,
-            editorShell_.
-                ConsumeViewportWheelSteps());
+            editorShell_.ConsumeViewportWheelSteps());
 
         std::size_t selectedEntityIndex =
             InvalidEditorEntityIndex;
 
+        /*
+         * Выбор через World Outliner.
+         */
         if (
             editorShell_.ConsumeHierarchySelection(
                 selectedEntityIndex) &&
@@ -177,54 +180,103 @@ namespace lts::editor
                 sceneDocument_.GetSelectedEntity());
         }
 
+        /*
+         * Выбор кликом во viewport.
+         */
+        ViewportClick viewportClick;
+
+        if (editorShell_.ConsumeViewportClick(viewportClick))
+        {
+            const engine::platform::WindowSize viewportSize =
+                editorShell_.GetViewportSize();
+
+            EditorPickRay pickRay;
+
+            const bool rayBuilt =
+                cameraController_.BuildPickRay(
+                    viewportClick.x,
+                    viewportClick.y,
+                    viewportSize.width,
+                    viewportSize.height,
+                    pickRay);
+
+            std::size_t pickedEntityIndex =
+                InvalidEditorEntityIndex;
+
+            float pickedDistance = 0.0F;
+
+            if (
+                rayBuilt &&
+                EditorScenePicker::Pick(
+                    sceneDocument_,
+                    pickRay,
+                    pickedEntityIndex,
+                    pickedDistance) &&
+                sceneDocument_.SelectEntityByIndex(
+                    pickedEntityIndex))
+            {
+                editorShell_.SelectHierarchyEntity(
+                    pickedEntityIndex);
+
+                editorShell_.ShowEntityDetails(
+                    sceneDocument_.GetSelectedEntity());
+            }
+            else
+            {
+                sceneDocument_.ClearSelection();
+
+                editorShell_.SelectHierarchyEntity(
+                    InvalidEditorEntityIndex);
+
+                editorShell_.ShowEntityDetails(nullptr);
+            }
+        }
+
         EditorMode changedMode =
             EditorMode::Level;
 
-        if (
-            editorShell_.ConsumeModeChanged(
-                changedMode)
-        )
+        if (editorShell_.ConsumeModeChanged(changedMode))
         {
             switch (changedMode)
             {
-            case EditorMode::Level:
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Information,
-                    "LTS.Editor",
-                    "Level mode selected.");
-                break;
+                case EditorMode::Level:
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor",
+                        "Level mode selected.");
+                    break;
 
-            case EditorMode::Character:
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Information,
-                    "LTS.Editor",
-                    "Character mode selected.");
-                break;
+                case EditorMode::Character:
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor",
+                        "Character mode selected.");
+                    break;
 
-            case EditorMode::Icon:
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Information,
-                    "LTS.Editor",
-                    "Icon mode selected.");
-                break;
+                case EditorMode::Icon:
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor",
+                        "Icon mode selected.");
+                    break;
 
-            case EditorMode::Physics:
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Information,
-                    "LTS.Editor",
-                    "Physics mode selected.");
-                break;
+                case EditorMode::Physics:
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor",
+                        "Physics mode selected.");
+                    break;
 
-            case EditorMode::Particles:
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Information,
-                    "LTS.Editor",
-                    "Particles mode selected.");
-                break;
+                case EditorMode::Particles:
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor",
+                        "Particles mode selected.");
+                    break;
 
-            case EditorMode::Play:
-            default:
-                break;
+                case EditorMode::Play:
+                default:
+                    break;
             }
         }
 

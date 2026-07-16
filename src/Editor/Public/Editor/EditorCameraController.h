@@ -8,11 +8,27 @@
 
 namespace lts::editor
 {
+    struct EditorPickRay final
+    {
+        DirectX::XMFLOAT3 origin
+        {
+            0.0F,
+            0.0F,
+            0.0F
+        };
+
+        DirectX::XMFLOAT3 direction
+        {
+            0.0F,
+            0.0F,
+            1.0F
+        };
+    };
+
     class EditorCameraController final
     {
     public:
         EditorCameraController() noexcept;
-
         ~EditorCameraController() noexcept;
 
         EditorCameraController(
@@ -37,13 +53,20 @@ namespace lts::editor
             DirectX::XMFLOAT4X4& outViewProjection) const noexcept;
 
         [[nodiscard]]
+        bool BuildPickRay(
+            std::uint32_t mouseX,
+            std::uint32_t mouseY,
+            std::uint32_t viewportWidth,
+            std::uint32_t viewportHeight,
+            EditorPickRay& outRay) const noexcept;
+
+        [[nodiscard]]
         float GetMoveSpeed() const noexcept;
 
     private:
         void EndMouseLook() noexcept;
 
-        engine::platform::NativeWindowHandle
-            viewportWindow_;
+        engine::platform::NativeWindowHandle viewportWindow_;
 
         DirectX::XMFLOAT3 position_
         {

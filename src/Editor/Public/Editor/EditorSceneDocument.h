@@ -86,6 +86,7 @@ namespace lts::editor
 
         [[nodiscard]]
         bool SelectEntityByIndex(std::size_t index) noexcept;
+        void ClearSelection() noexcept;
 
         [[nodiscard]]
         bool IsDirty() const noexcept;

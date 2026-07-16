@@ -1,6 +1,7 @@
 #include "Editor/EditorShell.h"
 
 #include <Windows.h>
+#include <windowsx.h>
 
 #include <algorithm>
 #include <array>
@@ -301,6 +302,8 @@ namespace lts::editor
             modeChanged_ = false;
             initialized_ = false;
             viewportWheelSteps_ = 0.0F;
+            pendingViewportClick_ = {};
+            viewportClickPending_ = false;
             pendingHierarchySelection_ = InvalidEditorEntityIndex;
             hierarchySelectionChanged_ = false;
         }
@@ -402,6 +405,51 @@ namespace lts::editor
             viewportWheelSteps_ = 0.0F;
 
             return result;
+        }
+
+        [[nodiscard]]
+        bool ConsumeViewportClick(ViewportClick& click) noexcept
+        {
+            if (!viewportClickPending_)
+            {
+                return false;
+            }
+
+            click = pendingViewportClick_;
+            viewportClickPending_ = false;
+
+            return true;
+        }
+
+        void SelectHierarchyEntity(
+            const std::size_t entityIndex) noexcept
+        {
+            if (hierarchyList_ == nullptr)
+            {
+                return;
+            }
+
+            if (entityIndex == InvalidEditorEntityIndex)
+            {
+                SendMessageW(
+                    hierarchyList_,
+                    LB_SETCURSEL,
+                    static_cast<WPARAM>(-1),
+                    0);
+            }
+            else
+            {
+                SendMessageW(
+                    hierarchyList_,
+                    LB_SETCURSEL,
+                    static_cast<WPARAM>(entityIndex),
+                    0);
+            }
+
+            pendingHierarchySelection_ =
+                InvalidEditorEntityIndex;
+
+            hierarchySelectionChanged_ = false;
         }
 
         void RefreshScene(
@@ -636,14 +684,17 @@ namespace lts::editor
                 borderBrush_ != nullptr;
         }
 
-        static void DeleteBrush(
-            HBRUSH& brush) noexcept
+        static void DeleteBrush(HBRUSH& brush) noexcept
         {
-            if (brush != nullptr)
+            if (brush == nullptr)
             {
-                DeleteObject(brush);
-                brush = nullptr;
+                return;
             }
+
+            ::DeleteObject(
+                static_cast<HGDIOBJ>(brush));
+
+            brush = nullptr;
         }
 
         [[nodiscard]]
@@ -1929,118 +1980,128 @@ namespace lts::editor
             return true;
         }
 
-        static LRESULT CALLBACK
-        ViewportWindowProcedure(
+        static LRESULT CALLBACK ViewportWindowProcedure(
             const HWND window,
             const UINT message,
             const WPARAM wParam,
             const LPARAM lParam) noexcept
-    {
-        if (message == WM_NCCREATE)
         {
-            const auto* const createData =
-                reinterpret_cast<
-                    const CREATESTRUCTW*>(
+            if (message == WM_NCCREATE)
+            {
+                const auto* const createData =
+                    reinterpret_cast<const CREATESTRUCTW*>(
                         lParam);
 
-            if (createData != nullptr)
-            {
-                auto* const self =
-                    static_cast<Impl*>(
-                        createData->
-                            lpCreateParams);
-
-                SetWindowLongPtrW(
-                    window,
-                    GWLP_USERDATA,
-                    reinterpret_cast<LONG_PTR>(
-                        self));
-            }
-        }
-
-        auto* const self =
-            reinterpret_cast<Impl*>(
-                GetWindowLongPtrW(
-                    window,
-                    GWLP_USERDATA));
-
-        switch (message)
-        {
-            case WM_LBUTTONDOWN:
-            case WM_MBUTTONDOWN:
-            case WM_RBUTTONDOWN:
-            {
-                SetFocus(window);
-                return 0;
-            }
-
-            case WM_MOUSEWHEEL:
-            {
-                if (self != nullptr)
+                if (createData != nullptr)
                 {
-                    const float wheelDelta =
-                        static_cast<float>(
-                            GET_WHEEL_DELTA_WPARAM(
-                                wParam));
+                    auto* const self =
+                        static_cast<Impl*>(
+                            createData->lpCreateParams);
 
-                    self->viewportWheelSteps_ +=
-                        wheelDelta /
-                        static_cast<float>(
-                            WHEEL_DELTA);
+                    SetWindowLongPtrW(
+                        window,
+                        GWLP_USERDATA,
+                        reinterpret_cast<LONG_PTR>(self));
+                }
+            }
+
+            auto* const self =
+                reinterpret_cast<Impl*>(
+                    GetWindowLongPtrW(
+                        window,
+                        GWLP_USERDATA));
+
+            switch (message)
+            {
+                case WM_LBUTTONDOWN:
+                {
+                    SetFocus(window);
+
+                    if (self != nullptr)
+                    {
+                        const int mouseX =
+                            GET_X_LPARAM(lParam);
+
+                        const int mouseY =
+                            GET_Y_LPARAM(lParam);
+
+                        self->pendingViewportClick_.x =
+                            mouseX >= 0
+                                ? static_cast<std::uint32_t>(mouseX)
+                                : 0U;
+
+                        self->pendingViewportClick_.y =
+                            mouseY >= 0
+                                ? static_cast<std::uint32_t>(mouseY)
+                                : 0U;
+
+                        self->viewportClickPending_ = true;
+                    }
+
+                    return 0;
                 }
 
-                return 0;
-            }
+                case WM_MBUTTONDOWN:
+                case WM_RBUTTONDOWN:
+                {
+                    SetFocus(window);
+                    return 0;
+                }
 
-            case WM_ERASEBKGND:
-                return 1;
+                case WM_MOUSEWHEEL:
+                {
+                    if (self != nullptr)
+                    {
+                        const float wheelDelta =
+                            static_cast<float>(
+                                GET_WHEEL_DELTA_WPARAM(wParam));
 
-            case WM_PAINT:
-            {
-                PAINTSTRUCT paint{};
+                        self->viewportWheelSteps_ +=
+                            wheelDelta /
+                            static_cast<float>(WHEEL_DELTA);
+                    }
 
-                HDC deviceContext =
+                    return 0;
+                }
+
+                case WM_ERASEBKGND:
+                    return 1;
+
+                case WM_PAINT:
+                {
+                    PAINTSTRUCT paint{};
+
                     BeginPaint(
                         window,
                         &paint);
 
-                if (deviceContext != nullptr)
-                {
-                    FillRect(
-                        deviceContext,
-                        &paint.rcPaint,
-                        reinterpret_cast<HBRUSH>(
-                            GetStockObject(
-                                BLACK_BRUSH)));
+                    EndPaint(
+                        window,
+                        &paint);
+
+                    return 0;
                 }
 
-                EndPaint(
-                    window,
-                    &paint);
+                case WM_NCDESTROY:
+                {
+                    SetWindowLongPtrW(
+                        window,
+                        GWLP_USERDATA,
+                        0);
 
-                return 0;
+                    break;
+                }
+
+                default:
+                    break;
             }
 
-            case WM_NCDESTROY:
-            {
-                SetWindowLongPtrW(
-                    window,
-                    GWLP_USERDATA,
-                    0);
-
-                break;
-            }
-
-            default:
-                break;
+            return DefWindowProcW(
+                window,
+                message,
+                wParam,
+                lParam);
         }
-
-        return DefWindowProcW(
-            window,
-            message,
-            wParam,
-            lParam);
-    }
 
         static LRESULT CALLBACK
             WindowProcedure(
@@ -2240,6 +2301,8 @@ namespace lts::editor
             EditorMode::Level;
 
         float viewportWheelSteps_ = 0.0F;
+        ViewportClick pendingViewportClick_;
+        bool viewportClickPending_ = false;
 
         std::size_t pendingHierarchySelection_ =
             InvalidEditorEntityIndex;
@@ -2345,6 +2408,13 @@ namespace lts::editor
             ConsumeViewportWheelSteps();
     }
 
+    bool EditorShell::ConsumeViewportClick(
+    ViewportClick& click) noexcept
+    {
+        return impl_ != nullptr &&
+            impl_->ConsumeViewportClick(click);
+    }
+
     void EditorShell::RefreshScene(
         const EditorSceneDocument& document) noexcept
     {
@@ -2361,6 +2431,15 @@ namespace lts::editor
             impl_ != nullptr &&
             impl_->ConsumeHierarchySelection(
                 entityIndex);
+    }
+
+    void EditorShell::SelectHierarchyEntity(
+    const std::size_t entityIndex) noexcept
+    {
+        if (impl_ != nullptr)
+        {
+            impl_->SelectHierarchyEntity(entityIndex);
+        }
     }
 
     void EditorShell::ShowEntityDetails(

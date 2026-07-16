@@ -185,6 +185,11 @@ namespace lts::editor
         return true;
     }
 
+    void EditorSceneDocument::ClearSelection() noexcept
+    {
+        selectedIndex_ = InvalidEditorEntityIndex;
+    }
+
     bool EditorSceneDocument::IsDirty() const noexcept
     {
         return dirty_;

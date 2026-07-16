@@ -227,6 +227,7 @@
     <ClInclude Include="Public\Editor\EditorCameraController.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
+    <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
   </ItemGroup>
@@ -236,6 +237,7 @@
     <ClCompile Include="Private\EditorCameraController.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
+    <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\Main.cpp" />

@@ -476,6 +476,103 @@ namespace lts::editor
         return true;
     }
 
+    bool EditorCameraController::BuildPickRay(
+    const std::uint32_t mouseX,
+    const std::uint32_t mouseY,
+    const std::uint32_t viewportWidth,
+    const std::uint32_t viewportHeight,
+    EditorPickRay& outRay) const noexcept
+    {
+        if (
+            viewportWidth == 0U ||
+            viewportHeight == 0U ||
+            mouseX >= viewportWidth ||
+            mouseY >= viewportHeight)
+        {
+            return false;
+        }
+
+        const float width =
+            static_cast<float>(viewportWidth);
+
+        const float height =
+            static_cast<float>(viewportHeight);
+
+        const float normalizedX =
+            ((static_cast<float>(mouseX) + 0.5F) / width) *
+            2.0F - 1.0F;
+
+        const float normalizedY =
+            1.0F -
+            ((static_cast<float>(mouseY) + 0.5F) / height) *
+            2.0F;
+
+        const float aspectRatio = width / height;
+
+        constexpr float FieldOfViewDegrees = 60.0F;
+
+        const float tangentHalfFieldOfView =
+            std::tan(
+                DirectX::XMConvertToRadians(
+                    FieldOfViewDegrees) *
+                0.5F);
+
+        const float viewX =
+            normalizedX *
+            aspectRatio *
+            tangentHalfFieldOfView;
+
+        const float viewY =
+            normalizedY *
+            tangentHalfFieldOfView;
+
+        const DirectX::XMVECTOR worldUp =
+            DirectX::XMVectorSet(
+                0.0F,
+                1.0F,
+                0.0F,
+                0.0F);
+
+        const DirectX::XMVECTOR forward =
+            BuildForwardVector(
+                yawRadians_,
+                pitchRadians_);
+
+        const DirectX::XMVECTOR right =
+            DirectX::XMVector3Normalize(
+                DirectX::XMVector3Cross(
+                    worldUp,
+                    forward));
+
+        const DirectX::XMVECTOR cameraUp =
+            DirectX::XMVector3Normalize(
+                DirectX::XMVector3Cross(
+                    forward,
+                    right));
+
+        DirectX::XMVECTOR direction =
+            DirectX::XMVectorAdd(
+                forward,
+                DirectX::XMVectorAdd(
+                    DirectX::XMVectorScale(
+                        right,
+                        viewX),
+                    DirectX::XMVectorScale(
+                        cameraUp,
+                        viewY)));
+
+        direction =
+            DirectX::XMVector3Normalize(direction);
+
+        outRay.origin = position_;
+
+        DirectX::XMStoreFloat3(
+            &outRay.direction,
+            direction);
+
+        return true;
+    }
+
     float EditorCameraController::
         GetMoveSpeed() const noexcept
     {
