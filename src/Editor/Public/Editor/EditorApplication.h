@@ -3,6 +3,7 @@
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorSceneDocument.h"
+#include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
 
 #include <Application/Application.h>
@@ -60,8 +61,10 @@ namespace lts::editor
             engine::graphics::GraphicsResult result) noexcept;
 
         EditorSceneDocument sceneDocument_;
+
         EditorCameraController cameraController_;
         EditorGridRenderer gridRenderer_;
+        EditorSceneRenderer sceneRenderer_;
         EditorShell editorShell_;
 
         engine::graphics::d3d11::D3D11Device graphicsDevice_;

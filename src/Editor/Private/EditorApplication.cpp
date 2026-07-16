@@ -98,6 +98,7 @@ namespace lts::editor
                 "Failed to create the default editor level.");
 
             editorShell_.Shutdown();
+
             return lts::application::ApplicationResult::ClientInitializationFailed;
         }
 
@@ -109,6 +110,23 @@ namespace lts::editor
         if (!InitializeGraphics())
         {
             cameraController_.SetViewportWindow({});
+            sceneDocument_.Clear();
+            editorShell_.Shutdown();
+
+            return lts::application::ApplicationResult::ClientInitializationFailed;
+        }
+
+        if (!sceneRenderer_.Initialize(graphicsDevice_))
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor.SceneRenderer",
+                "Failed to initialize editor scene renderer.");
+
+            sceneRenderer_.Shutdown(graphicsDevice_);
+            cameraController_.SetViewportWindow({});
+            sceneDocument_.Clear();
+            ShutdownGraphics();
             editorShell_.Shutdown();
 
             return lts::application::ApplicationResult::ClientInitializationFailed;
@@ -131,7 +149,9 @@ namespace lts::editor
 
         cameraController_.SetViewportWindow({});
 
+        sceneRenderer_.Shutdown(graphicsDevice_);
         sceneDocument_.Clear();
+
         ShutdownGraphics();
         editorShell_.Shutdown();
     }
@@ -221,8 +241,7 @@ namespace lts::editor
             !graphicsReady_ ||
             IsMinimized() ||
             swapChain_ == nullptr ||
-            commandContext_ == nullptr
-        )
+            commandContext_ == nullptr)
         {
             return;
         }
@@ -231,21 +250,12 @@ namespace lts::editor
 
         viewport.x = 0.0F;
         viewport.y = 0.0F;
-
-        viewport.width =
-            static_cast<float>(
-                viewportWidth_);
-
-        viewport.height =
-            static_cast<float>(
-                viewportHeight_);
-
+        viewport.width = static_cast<float>(viewportWidth_);
+        viewport.height = static_cast<float>(viewportHeight_);
         viewport.minDepth = 0.0F;
         viewport.maxDepth = 1.0F;
 
-        auto result =
-            commandContext_->SetViewport(
-                viewport);
+        auto result = commandContext_->SetViewport(viewport);
 
         if (engine::graphics::Failed(result))
         {
@@ -256,11 +266,9 @@ namespace lts::editor
             return;
         }
 
-        result =
-            commandContext_->
-                SetSwapChainRenderTarget(
-                    *swapChain_,
-                    depthStencil_);
+        result = commandContext_->SetSwapChainRenderTarget(
+            *swapChain_,
+            depthStencil_);
 
         if (engine::graphics::Failed(result))
         {
@@ -278,11 +286,9 @@ namespace lts::editor
         clearColor.blue = 0.026F;
         clearColor.alpha = 1.0F;
 
-        result =
-            commandContext_->
-                ClearSwapChainColor(
-                    *swapChain_,
-                    clearColor);
+        result = commandContext_->ClearSwapChainColor(
+            *swapChain_,
+            clearColor);
 
         if (engine::graphics::Failed(result))
         {
@@ -293,30 +299,12 @@ namespace lts::editor
             return;
         }
 
-        result =
-            commandContext_->
-                ClearDepthStencilTarget(
-                    depthStencil_,
-                    engine::graphics::
-                        ClearDepthStencilFlags::Depth |
-                    engine::graphics::
-                        ClearDepthStencilFlags::Stencil,
-                    1.0F,
-                    0);
-
-        DirectX::XMFLOAT4X4
-        viewProjection{};
-
-        if (
-            !cameraController_.
-                BuildViewProjection(
-                    viewportWidth_,
-                    viewportHeight_,
-                    viewProjection)
-        )
-        {
-            return;
-        }
+        result = commandContext_->ClearDepthStencilTarget(
+            depthStencil_,
+            engine::graphics::ClearDepthStencilFlags::Depth |
+                engine::graphics::ClearDepthStencilFlags::Stencil,
+            1.0F,
+            0);
 
         if (engine::graphics::Failed(result))
         {
@@ -327,10 +315,19 @@ namespace lts::editor
             return;
         }
 
-        result =
-        gridRenderer_.Render(
-        *commandContext_,
-        viewProjection);
+        DirectX::XMFLOAT4X4 viewProjection{};
+
+        if (!cameraController_.BuildViewProjection(
+                viewportWidth_,
+                viewportHeight_,
+                viewProjection))
+        {
+            return;
+        }
+
+        result = gridRenderer_.Render(
+            *commandContext_,
+            viewProjection);
 
         if (engine::graphics::Failed(result))
         {
@@ -341,17 +338,26 @@ namespace lts::editor
             return;
         }
 
-        commandContext_->
-            UnbindRenderTargets();
+        result = sceneRenderer_.Render(
+            *commandContext_,
+            sceneDocument_,
+            viewProjection);
 
-        engine::graphics::PresentStatus
-            presentStatus =
-                engine::graphics::
-                    PresentStatus::Failed;
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure(
+                "EditorSceneRenderer::Render",
+                result);
 
-        result =
-            swapChain_->Present(
-                presentStatus);
+            return;
+        }
+
+        commandContext_->UnbindRenderTargets();
+
+        engine::graphics::PresentStatus presentStatus =
+            engine::graphics::PresentStatus::Failed;
+
+        result = swapChain_->Present(presentStatus);
 
         if (engine::graphics::Failed(result))
         {
@@ -364,53 +370,32 @@ namespace lts::editor
 
         switch (presentStatus)
         {
-            case engine::graphics::
-                PresentStatus::Presented:
-            {
+            case engine::graphics::PresentStatus::Presented:
                 swapChainOccluded_ = false;
                 break;
-            }
 
-            case engine::graphics::
-                PresentStatus::Occluded:
-            {
+            case engine::graphics::PresentStatus::Occluded:
                 swapChainOccluded_ = true;
                 break;
-            }
 
-            case engine::graphics::
-                PresentStatus::DeviceLost:
-            {
+            case engine::graphics::PresentStatus::DeviceLost:
                 ReportGraphicsFailure(
                     "Present: device lost",
-                    engine::graphics::
-                        GraphicsResult::DeviceLost);
-
+                    engine::graphics::GraphicsResult::DeviceLost);
                 break;
-            }
 
-            case engine::graphics::
-                PresentStatus::DeviceRemoved:
-            {
+            case engine::graphics::PresentStatus::DeviceRemoved:
                 ReportGraphicsFailure(
                     "Present: device removed",
-                    engine::graphics::
-                        GraphicsResult::DeviceRemoved);
-
+                    engine::graphics::GraphicsResult::DeviceRemoved);
                 break;
-            }
 
-            case engine::graphics::
-                PresentStatus::Failed:
+            case engine::graphics::PresentStatus::Failed:
             default:
-            {
                 ReportGraphicsFailure(
                     "Present",
-                    engine::graphics::
-                        GraphicsResult::BackendFailure);
-
+                    engine::graphics::GraphicsResult::BackendFailure);
                 break;
-            }
         }
     }
 
