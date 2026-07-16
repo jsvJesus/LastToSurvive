@@ -86,6 +86,23 @@ namespace lts::editor
             return lts::application::ApplicationResult::ClientInitializationFailed;
         }
 
+        try
+        {
+            sceneDocument_.CreateDefaultLevel();
+        }
+        catch (...)
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor.Scene",
+                "Failed to create the default editor level.");
+
+            editorShell_.Shutdown();
+            return lts::application::ApplicationResult::ClientInitializationFailed;
+        }
+
+        editorShell_.RefreshScene(sceneDocument_);
+
         cameraController_.SetViewportWindow(
             editorShell_.GetViewportWindowHandle());
 
@@ -114,6 +131,7 @@ namespace lts::editor
 
         cameraController_.SetViewportWindow({});
 
+        sceneDocument_.Clear();
         ShutdownGraphics();
         editorShell_.Shutdown();
     }
@@ -125,6 +143,19 @@ namespace lts::editor
             deltaSeconds,
             editorShell_.
                 ConsumeViewportWheelSteps());
+
+        std::size_t selectedEntityIndex =
+            InvalidEditorEntityIndex;
+
+        if (
+            editorShell_.ConsumeHierarchySelection(
+                selectedEntityIndex) &&
+            sceneDocument_.SelectEntityByIndex(
+                selectedEntityIndex))
+        {
+            editorShell_.ShowEntityDetails(
+                sceneDocument_.GetSelectedEntity());
+        }
 
         EditorMode changedMode =
             EditorMode::Level;

@@ -131,6 +131,28 @@ namespace lts::editor
             }
         }
 
+        [[nodiscard]]
+        const wchar_t* GetEntityKindName(
+            const EditorEntityKind kind) noexcept
+        {
+            switch (kind)
+            {
+                case EditorEntityKind::Environment:
+                    return L"Environment";
+                case EditorEntityKind::DirectionalLight:
+                    return L"Directional Light";
+                case EditorEntityKind::SpawnPoint:
+                    return L"Spawn Point";
+                case EditorEntityKind::Anomaly:
+                    return L"Anomaly";
+                case EditorEntityKind::LootContainer:
+                    return L"Loot Container";
+                case EditorEntityKind::Empty:
+                default:
+                    return L"Empty";
+            }
+        }
+
         void DestroyControl(
             HWND& control) noexcept
         {
@@ -279,6 +301,8 @@ namespace lts::editor
             modeChanged_ = false;
             initialized_ = false;
             viewportWheelSteps_ = 0.0F;
+            pendingHierarchySelection_ = InvalidEditorEntityIndex;
+            hierarchySelectionChanged_ = false;
         }
 
         void Resize(
@@ -378,6 +402,176 @@ namespace lts::editor
             viewportWheelSteps_ = 0.0F;
 
             return result;
+        }
+
+        void RefreshScene(
+            const EditorSceneDocument& document) noexcept
+        {
+            if (hierarchyList_ == nullptr)
+            {
+                return;
+            }
+
+            SendMessageW(
+                hierarchyList_,
+                LB_RESETCONTENT,
+                0,
+                0);
+
+            const auto& entities =
+                document.GetEntities();
+
+            for (
+                std::size_t index = 0U;
+                index < entities.size();
+                ++index)
+            {
+                const LRESULT itemIndex =
+                    SendMessageW(
+                        hierarchyList_,
+                        LB_ADDSTRING,
+                        0,
+                        reinterpret_cast<LPARAM>(
+                            entities[index].name.c_str()));
+
+                if (
+                    itemIndex == LB_ERR ||
+                    itemIndex == LB_ERRSPACE)
+                {
+                    continue;
+                }
+
+                SendMessageW(
+                    hierarchyList_,
+                    LB_SETITEMDATA,
+                    static_cast<WPARAM>(itemIndex),
+                    static_cast<LPARAM>(index));
+            }
+
+            const std::size_t selectedIndex =
+                document.GetSelectedIndex();
+
+            if (selectedIndex < entities.size())
+            {
+                SendMessageW(
+                    hierarchyList_,
+                    LB_SETCURSEL,
+                    static_cast<WPARAM>(selectedIndex),
+                    0);
+            }
+
+            ShowEntityDetails(
+                document.GetSelectedEntity());
+        }
+
+        [[nodiscard]]
+        bool ConsumeHierarchySelection(
+            std::size_t& entityIndex) noexcept
+        {
+            if (!hierarchySelectionChanged_)
+            {
+                return false;
+            }
+
+            entityIndex = pendingHierarchySelection_;
+
+            pendingHierarchySelection_ =
+                InvalidEditorEntityIndex;
+
+            hierarchySelectionChanged_ = false;
+
+            return entityIndex !=
+                InvalidEditorEntityIndex;
+        }
+
+        void ShowEntityDetails(
+            const EditorSceneEntity* const entity) noexcept
+        {
+            if (inspectorList_ == nullptr)
+            {
+                return;
+            }
+
+            SendMessageW(
+                inspectorList_,
+                LB_RESETCONTENT,
+                0,
+                0);
+
+            if (entity == nullptr)
+            {
+                AddListItem(
+                    inspectorList_,
+                    L"No object selected");
+
+                return;
+            }
+
+            std::array<wchar_t, 256U> line{};
+
+            swprintf_s(
+                line.data(),
+                line.size(),
+                L"Name: %ls",
+                entity->name.c_str());
+
+            AddListItem(
+                inspectorList_,
+                line.data());
+
+            swprintf_s(
+                line.data(),
+                line.size(),
+                L"Type: %ls",
+                GetEntityKindName(entity->kind));
+
+            AddListItem(
+                inspectorList_,
+                line.data());
+
+            AddListItem(
+                inspectorList_,
+                L"");
+
+            AddListItem(
+                inspectorList_,
+                L"TRANSFORM");
+
+            swprintf_s(
+                line.data(),
+                line.size(),
+                L"Location  X %.2f  Y %.2f  Z %.2f",
+                entity->transform.position[0],
+                entity->transform.position[1],
+                entity->transform.position[2]);
+
+            AddListItem(
+                inspectorList_,
+                line.data());
+
+            swprintf_s(
+                line.data(),
+                line.size(),
+                L"Rotation  X %.2f  Y %.2f  Z %.2f",
+                entity->transform.rotationDegrees[0],
+                entity->transform.rotationDegrees[1],
+                entity->transform.rotationDegrees[2]);
+
+            AddListItem(
+                inspectorList_,
+                line.data());
+
+            swprintf_s(
+                line.data(),
+                line.size(),
+                L"Scale     X %.2f  Y %.2f  Z %.2f",
+                entity->transform.scale[0],
+                entity->transform.scale[1],
+                entity->transform.scale[2]);
+
+            AddListItem(
+                inspectorList_,
+                line.data());
         }
 
         void SetStatusText(
@@ -937,35 +1131,11 @@ namespace lts::editor
         {
             AddListItem(
                 hierarchyList_,
-                L"World");
-
-            AddListItem(
-                hierarchyList_,
-                L"  Environment");
-
-            AddListItem(
-                hierarchyList_,
-                L"  Objects");
-
-            AddListItem(
-                hierarchyList_,
-                L"  Lights");
-
-            AddListItem(
-                hierarchyList_,
-                L"  Gameplay");
+                L"Loading level...");
 
             AddListItem(
                 inspectorList_,
                 L"No object selected");
-
-            AddListItem(
-                inspectorList_,
-                L"Transform");
-
-            AddListItem(
-                inspectorList_,
-                L"Components");
 
             AddListItem(
                 assetList_,
@@ -1452,6 +1622,42 @@ namespace lts::editor
                     L"\r\n"));
         }
 
+        void HandleHierarchySelectionChanged() noexcept
+        {
+            const LRESULT selectedItem =
+                SendMessageW(
+                    hierarchyList_,
+                    LB_GETCURSEL,
+                    0,
+                    0);
+
+            if (selectedItem == LB_ERR)
+            {
+                pendingHierarchySelection_ =
+                    InvalidEditorEntityIndex;
+
+                hierarchySelectionChanged_ = true;
+                return;
+            }
+
+            const LRESULT itemData =
+                SendMessageW(
+                    hierarchyList_,
+                    LB_GETITEMDATA,
+                    static_cast<WPARAM>(selectedItem),
+                    0);
+
+            if (itemData == LB_ERR)
+            {
+                return;
+            }
+
+            pendingHierarchySelection_ =
+                static_cast<std::size_t>(itemData);
+
+            hierarchySelectionChanged_ = true;
+        }
+
         [[nodiscard]]
         bool HandleCommand(
             const int commandId) noexcept
@@ -1869,6 +2075,17 @@ namespace lts::editor
                     const int commandId =
                         LOWORD(wParam);
 
+                    const int notificationCode =
+                        HIWORD(wParam);
+
+                    if (
+                        commandId == IdHierarchyList &&
+                        notificationCode == LBN_SELCHANGE)
+                    {
+                        self->HandleHierarchySelectionChanged();
+                        return 0;
+                    }
+
                     if (
                         self->HandleCommand(
                             commandId)
@@ -2023,6 +2240,11 @@ namespace lts::editor
             EditorMode::Level;
 
         float viewportWheelSteps_ = 0.0F;
+
+        std::size_t pendingHierarchySelection_ =
+            InvalidEditorEntityIndex;
+
+        bool hierarchySelectionChanged_ = false;
         bool modeChanged_ = false;
         bool subclassInstalled_ = false;
         bool initialized_ = false;
@@ -2121,6 +2343,33 @@ namespace lts::editor
 
         return impl_->
             ConsumeViewportWheelSteps();
+    }
+
+    void EditorShell::RefreshScene(
+        const EditorSceneDocument& document) noexcept
+    {
+        if (impl_ != nullptr)
+        {
+            impl_->RefreshScene(document);
+        }
+    }
+
+    bool EditorShell::ConsumeHierarchySelection(
+        std::size_t& entityIndex) noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->ConsumeHierarchySelection(
+                entityIndex);
+    }
+
+    void EditorShell::ShowEntityDetails(
+        const EditorSceneEntity* const entity) noexcept
+    {
+        if (impl_ != nullptr)
+        {
+            impl_->ShowEntityDetails(entity);
+        }
     }
 
     void EditorShell::SetStatusText(

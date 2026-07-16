@@ -2,6 +2,7 @@
 
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorGridRenderer.h"
+#include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorShell.h"
 
 #include <Application/Application.h>
@@ -58,6 +59,7 @@ namespace lts::editor
             const char* operation,
             engine::graphics::GraphicsResult result) noexcept;
 
+        EditorSceneDocument sceneDocument_;
         EditorCameraController cameraController_;
         EditorGridRenderer gridRenderer_;
         EditorShell editorShell_;

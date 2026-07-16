@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Editor/EditorSceneDocument.h"
+
 #include <Platform/Window.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string_view>
@@ -58,6 +61,16 @@ namespace lts::editor
 
         [[nodiscard]]
         float ConsumeViewportWheelSteps() noexcept;
+
+        void RefreshScene(
+            const EditorSceneDocument& document) noexcept;
+
+        [[nodiscard]]
+        bool ConsumeHierarchySelection(
+            std::size_t& entityIndex) noexcept;
+
+        void ShowEntityDetails(
+            const EditorSceneEntity* entity) noexcept;
 
         void SetStatusText(
             std::wstring_view text) noexcept;
