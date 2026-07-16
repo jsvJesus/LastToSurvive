@@ -66,11 +66,11 @@
 
   <PropertyGroup Label="UserMacros" />
 
-  <PropertyGroup>
-    <OutDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Bin\</OutDir>
-    <IntDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
-    <TargetName>LTS.Editor</TargetName>
-  </PropertyGroup>
+	<PropertyGroup>
+      <OutDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Bin\</OutDir>
+	  <IntDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
+	  <TargetName>LTS.Editor</TargetName>
+	</PropertyGroup>
 
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -97,17 +97,17 @@
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
 
-      <AdditionalIncludeDirectories>
-        $(ProjectDir);
-        $(ProjectDir)..\Engine\Application\Public;
-        $(ProjectDir)..\Engine\Core\Public;
-        $(ProjectDir)..\Engine\Graphics\Public;
-        $(ProjectDir)..\Engine\GraphicsDX11\Public;
-        $(ProjectDir)..\Engine\Platform\Public;
-        $(ProjectDir)..\Engine\Runtime\Public;
-        $(ProjectDir)..\Engine\Tasks\Public;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+    <AdditionalIncludeDirectories>
+	    $(ProjectDir)Public;
+		$(ProjectDir)..\Engine\Application\Public;
+		$(ProjectDir)..\Engine\Core\Public;
+		$(ProjectDir)..\Engine\Graphics\Public;
+		$(ProjectDir)..\Engine\GraphicsDX11\Public;
+		$(ProjectDir)..\Engine\Platform\Public;
+		$(ProjectDir)..\Engine\Runtime\Public;
+		$(ProjectDir)..\Engine\Tasks\Public;
+		%(AdditionalIncludeDirectories)
+	</AdditionalIncludeDirectories>
 
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -161,17 +161,17 @@
         %(PreprocessorDefinitions)
       </PreprocessorDefinitions>
 
-      <AdditionalIncludeDirectories>
-        $(ProjectDir);
-        $(ProjectDir)..\Engine\Application\Public;
-        $(ProjectDir)..\Engine\Core\Public;
-        $(ProjectDir)..\Engine\Graphics\Public;
-        $(ProjectDir)..\Engine\GraphicsDX11\Public;
-        $(ProjectDir)..\Engine\Platform\Public;
-        $(ProjectDir)..\Engine\Runtime\Public;
-        $(ProjectDir)..\Engine\Tasks\Public;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+    <AdditionalIncludeDirectories>
+	  $(ProjectDir)Public;
+	  $(ProjectDir)..\Engine\Application\Public;
+	  $(ProjectDir)..\Engine\Core\Public;
+	  $(ProjectDir)..\Engine\Graphics\Public;
+	  $(ProjectDir)..\Engine\GraphicsDX11\Public;
+	  $(ProjectDir)..\Engine\Platform\Public;
+	  $(ProjectDir)..\Engine\Runtime\Public;
+	  $(ProjectDir)..\Engine\Tasks\Public;
+	  %(AdditionalIncludeDirectories)
+	</AdditionalIncludeDirectories>
 
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -200,12 +200,12 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ClInclude Include="EditorApplication.h" />
+    <ClInclude Include="Public\Editor\EditorApplication.h" />
   </ItemGroup>
 
   <ItemGroup>
-    <ClCompile Include="EditorApplication.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Private\EditorApplication.cpp" />
+    <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>
 
   <ItemGroup>
