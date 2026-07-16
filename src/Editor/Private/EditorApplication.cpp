@@ -59,19 +59,21 @@ namespace lts::editor
         EditorApplication::OnInitialize() noexcept
     {
         engine::core::GetLogger().Write(
-            engine::core::LogLevel::Information,
-            "LTS.Editor",
-            "Initializing editor.");
+        engine::core::LogLevel::Information,
+        "LTS.Editor",
+        "Initializing editor.");
 
-        if (!editorShell_.Initialize(GetWindow().GetNativeHandle()))
+        if (!editorShell_.Initialize(
+                GetWindow().GetNativeHandle()))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
                 "LTS.Editor",
                 "Failed to initialize editor shell.");
 
-            return lts::application::ApplicationResult::
-                ClientInitializationFailed;
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
         try
@@ -87,14 +89,18 @@ namespace lts::editor
 
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::
-                ClientInitializationFailed;
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
         commandHistory_.Clear();
-        editorShell_.RefreshScene(sceneDocument_);
 
-        if (!inspectorPanel_.Initialize(GetWindow().GetNativeHandle()))
+        editorShell_.RefreshScene(
+            sceneDocument_);
+
+        if (!inspectorPanel_.Initialize(
+                GetWindow().GetNativeHandle()))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
@@ -104,53 +110,92 @@ namespace lts::editor
             sceneDocument_.Clear();
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::
-                ClientInitializationFailed;
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
-        inspectorPanel_.Refresh(sceneDocument_);
+        inspectorPanel_.Refresh(
+            sceneDocument_);
 
-        const engine::platform::NativeWindowHandle viewportWindow =
-            editorShell_.GetViewportWindowHandle();
-
-        cameraController_.SetViewportWindow(viewportWindow);
-        transformController_.SetViewportWindow(viewportWindow);
-
-        editorShell_.SetStatusText(
-            transformController_.BuildStatusText());
-
-        if (!InitializeGraphics())
+        if (!levelDocument_.Initialize(
+                GetWindow().GetNativeHandle(),
+                sceneDocument_))
         {
-            transformController_.SetViewportWindow({});
-            cameraController_.SetViewportWindow({});
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor.Level",
+                "Failed to initialize level document.");
 
             inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::
-                ClientInitializationFailed;
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
-        if (!sceneRenderer_.Initialize(graphicsDevice_))
+        const engine::platform::
+            NativeWindowHandle viewportWindow =
+                editorShell_.
+                    GetViewportWindowHandle();
+
+        cameraController_.SetViewportWindow(
+            viewportWindow);
+
+        transformController_.SetViewportWindow(
+            viewportWindow);
+
+        editorShell_.SetStatusText(
+            transformController_.
+                BuildStatusText());
+
+        if (!InitializeGraphics())
+        {
+            transformController_.
+                SetViewportWindow({});
+
+            cameraController_.
+                SetViewportWindow({});
+
+            levelDocument_.Shutdown();
+            inspectorPanel_.Shutdown();
+            sceneDocument_.Clear();
+            editorShell_.Shutdown();
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
+        if (!sceneRenderer_.Initialize(
+                graphicsDevice_))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
                 "LTS.Editor.SceneRenderer",
                 "Failed to initialize editor scene renderer.");
 
-            sceneRenderer_.Shutdown(graphicsDevice_);
+            sceneRenderer_.Shutdown(
+                graphicsDevice_);
 
-            transformController_.SetViewportWindow({});
-            cameraController_.SetViewportWindow({});
+            transformController_.
+                SetViewportWindow({});
 
+            cameraController_.
+                SetViewportWindow({});
+
+            levelDocument_.Shutdown();
             inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
+
             ShutdownGraphics();
             editorShell_.Shutdown();
 
-            return lts::application::ApplicationResult::
-                ClientInitializationFailed;
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
         engine::core::GetLogger().Write(
@@ -158,7 +203,8 @@ namespace lts::editor
             "LTS.Editor",
             "Editor initialization completed.");
 
-        return lts::application::ApplicationResult::Success;
+        return lts::application::
+            ApplicationResult::Success;
     }
 
     void EditorApplication::OnShutdown() noexcept
@@ -168,13 +214,19 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
-        transformController_.SetViewportWindow({});
-        cameraController_.SetViewportWindow({});
+        transformController_.
+            SetViewportWindow({});
 
+        cameraController_.
+            SetViewportWindow({});
+
+        levelDocument_.Shutdown();
         inspectorPanel_.Shutdown();
         commandHistory_.Clear();
 
-        sceneRenderer_.Shutdown(graphicsDevice_);
+        sceneRenderer_.Shutdown(
+            graphicsDevice_);
+
         sceneDocument_.Clear();
 
         ShutdownGraphics();
@@ -182,11 +234,34 @@ namespace lts::editor
     }
 
     void EditorApplication::OnUpdate(
-        const double deltaSeconds) noexcept
+    const double deltaSeconds) noexcept
     {
+        const EditorLevelUpdateResult
+            levelResult =
+                levelDocument_.Update(
+                    sceneDocument_,
+                    commandHistory_);
+
+        if (levelResult.sceneReplaced)
+        {
+            cameraController_.Reset();
+
+            transformController_.
+                SetViewportWindow(
+                    editorShell_.
+                        GetViewportWindowHandle());
+
+            editorShell_.RefreshScene(
+                sceneDocument_);
+
+            inspectorPanel_.Refresh(
+                sceneDocument_);
+        }
+
         cameraController_.Update(
             deltaSeconds,
-            editorShell_.ConsumeViewportWheelSteps());
+            editorShell_.
+                ConsumeViewportWheelSteps());
 
         bool selectionChanged = false;
         bool hierarchyChanged = false;
@@ -195,8 +270,12 @@ namespace lts::editor
             InvalidEditorEntityIndex;
 
         if (
-            editorShell_.ConsumeHierarchySelection(selectedEntityIndex) &&
-            sceneDocument_.SelectEntityByIndex(selectedEntityIndex))
+            editorShell_.
+                ConsumeHierarchySelection(
+                    selectedEntityIndex) &&
+            sceneDocument_.
+                SelectEntityByIndex(
+                    selectedEntityIndex))
         {
             selectionChanged = true;
         }
@@ -204,17 +283,20 @@ namespace lts::editor
         ViewportClick viewportClick;
 
         const bool hasViewportClick =
-            editorShell_.ConsumeViewportClick(viewportClick);
+            editorShell_.
+                ConsumeViewportClick(
+                    viewportClick);
 
-        const EditorInteractionResult interactionResult =
-            transformController_.Update(
-                sceneDocument_,
-                commandHistory_,
-                cameraController_,
-                editorShell_.GetViewportSize(),
-                hasViewportClick
-                    ? &viewportClick
-                    : nullptr);
+        const EditorInteractionResult
+            interactionResult =
+                transformController_.Update(
+                    sceneDocument_,
+                    commandHistory_,
+                    cameraController_,
+                    editorShell_.GetViewportSize(),
+                    hasViewportClick
+                        ? &viewportClick
+                        : nullptr);
 
         selectionChanged =
             selectionChanged ||
@@ -226,12 +308,14 @@ namespace lts::editor
 
         if (hierarchyChanged)
         {
-            editorShell_.RefreshScene(sceneDocument_);
+            editorShell_.RefreshScene(
+                sceneDocument_);
         }
         else if (selectionChanged)
         {
             editorShell_.SelectHierarchyEntity(
-                sceneDocument_.GetSelectedIndex());
+                sceneDocument_.
+                    GetSelectedIndex());
         }
 
         if (
@@ -240,9 +324,11 @@ namespace lts::editor
             interactionResult.documentChanged)
         {
             editorShell_.ShowEntityDetails(
-                sceneDocument_.GetSelectedEntity());
+                sceneDocument_.
+                    GetSelectedEntity());
 
-            inspectorPanel_.Refresh(sceneDocument_);
+            inspectorPanel_.Refresh(
+                sceneDocument_);
         }
 
         if (inspectorPanel_.Update(
@@ -250,18 +336,22 @@ namespace lts::editor
                 commandHistory_))
         {
             editorShell_.ShowEntityDetails(
-                sceneDocument_.GetSelectedEntity());
+                sceneDocument_.
+                    GetSelectedEntity());
         }
 
         if (interactionResult.statusChanged)
         {
             editorShell_.SetStatusText(
-                transformController_.BuildStatusText());
+                transformController_.
+                    BuildStatusText());
         }
 
-        EditorMode changedMode = EditorMode::Level;
+        EditorMode changedMode =
+            EditorMode::Level;
 
-        if (editorShell_.ConsumeModeChanged(changedMode))
+        if (editorShell_.ConsumeModeChanged(
+                changedMode))
         {
             switch (changedMode)
             {
@@ -305,6 +395,10 @@ namespace lts::editor
                     break;
             }
         }
+
+        levelDocument_.
+            SynchronizeWindowTitle(
+                sceneDocument_);
 
         if (swapChainOccluded_)
         {

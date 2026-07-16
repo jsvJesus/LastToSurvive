@@ -217,6 +217,8 @@
     <ClInclude Include="Public\Editor\EditorCommandHistory.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
     <ClInclude Include="Public\Editor\EditorInspectorPanel.h" />
+    <ClInclude Include="Public\Editor\EditorLevelDocument.h" />
+    <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
@@ -231,6 +233,8 @@
     <ClCompile Include="Private\EditorCommandHistory.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
     <ClCompile Include="Private\EditorInspectorPanel.cpp" />
+    <ClCompile Include="Private\EditorLevelDocument.cpp" />
+    <ClCompile Include="Private\EditorLevelSerializer.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
