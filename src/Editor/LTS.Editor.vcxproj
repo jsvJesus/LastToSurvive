@@ -114,6 +114,7 @@
         $(ProjectDir)..\Engine\Platform\Public;
         $(ProjectDir)..\Engine\Runtime\Public;
         $(ProjectDir)..\Engine\Scene\Public;
+        $(ProjectDir)..\Engine\Assets\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -181,6 +182,7 @@
         $(ProjectDir)..\Engine\Platform\Public;
         $(ProjectDir)..\Engine\Runtime\Public;
         $(ProjectDir)..\Engine\Scene\Public;
+        $(ProjectDir)..\Engine\Assets\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -215,6 +217,7 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
+    <ClInclude Include="Public\Editor\EditorAssetBrowserPanel.h" />
     <ClInclude Include="Public\Editor\EditorCameraController.h" />
     <ClInclude Include="Public\Editor\EditorCommandHistory.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
@@ -225,12 +228,14 @@
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
+    <ClInclude Include="Public\Editor\EditorStaticMeshRenderer.h" />
     <ClInclude Include="Public\Editor\EditorTransformController.h" />
     <ClInclude Include="Public\Editor\EditorTransformTypes.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
+    <ClCompile Include="Private\EditorAssetBrowserPanel.cpp" />
     <ClCompile Include="Private\EditorCameraController.cpp" />
     <ClCompile Include="Private\EditorCommandHistory.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
@@ -241,6 +246,7 @@
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
+    <ClCompile Include="Private\EditorStaticMeshRenderer.cpp" />
     <ClCompile Include="Private\EditorTransformController.cpp" />
     <ClCompile Include="Private\Main.cpp" />
   </ItemGroup>
@@ -290,6 +296,12 @@
 
     <ProjectReference Include="..\Engine\Scene\LTS.Scene.vcxproj">
       <Project>{4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Assets\LTS.Assets.vcxproj">
+      <Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>

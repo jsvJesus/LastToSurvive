@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/EditorAssetBrowserPanel.h"
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorCommandHistory.h"
 #include "Editor/EditorGridRenderer.h"
@@ -8,6 +9,7 @@
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
+#include "Editor/EditorStaticMeshRenderer.h"
 #include "Editor/EditorTransformController.h"
 
 #include <Application/Application.h>
@@ -80,14 +82,22 @@ namespace lts::editor
         EditorCommandHistory commandHistory_;
 
         EditorCameraController cameraController_;
+
         EditorTransformController
             transformController_;
 
         EditorGridRenderer gridRenderer_;
+
+        EditorStaticMeshRenderer
+            staticMeshRenderer_;
+
         EditorSceneRenderer sceneRenderer_;
 
         EditorShell editorShell_;
         EditorInspectorPanel inspectorPanel_;
+
+        EditorAssetBrowserPanel
+            assetBrowserPanel_;
 
         engine::graphics::d3d11::
             D3D11Device graphicsDevice_;

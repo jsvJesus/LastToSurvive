@@ -157,6 +157,47 @@ namespace lts::editor
         return entityId;
     }
 
+    bool EditorSceneDocument::CreateStaticMeshEntity(
+    std::wstring name,
+    std::wstring assetPath,
+    const EditorTransform& transform)
+    {
+        if (assetPath.empty())
+        {
+            return false;
+        }
+
+        const EditorEntityId entityId =
+            world_.CreateEntity(
+                name.empty()
+                    ? L"Static Mesh"
+                    : std::move(name),
+                EditorEntityKind::Empty,
+                transform);
+
+        EditorSceneEntity* const entity =
+            world_.FindEntity(entityId);
+
+        if (entity == nullptr)
+        {
+            return false;
+        }
+
+        entity->staticMesh.emplace();
+
+        entity->staticMesh->assetPath =
+            std::move(assetPath);
+
+        entity->staticMesh->visible = true;
+        entity->staticMesh->castShadows = true;
+
+        selectedIndex_ =
+            world_.FindEntityIndex(entityId);
+
+        dirty_ = true;
+        return true;
+    }
+
     const std::vector<EditorSceneEntity>&
         EditorSceneDocument::GetEntities() const noexcept
     {

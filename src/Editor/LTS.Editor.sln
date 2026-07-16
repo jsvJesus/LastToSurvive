@@ -30,6 +30,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Scene", "..\Engine\Scene\LTS.Scene.vcxproj", "{CC05BCF1-4C7F-454B-97CC-A46508196C39}"
 EndProject
 
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Assets", "..\Engine\Assets\LTS.Assets.vcxproj", "{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}"
+EndProject
+
 Global
 				GlobalSection(SolutionConfigurationPlatforms) = preSolution
 								Release|x64 = Release|x64
@@ -80,6 +83,10 @@ Global
 					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Release|x64.Build.0 = Release|x64
 					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Final|x64.ActiveCfg = Debug|Win32
 					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Final|x64.Build.0 = Debug|Win32
+					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.ActiveCfg = Release|x64
+					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.Build.0 = Release|x64
+					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.ActiveCfg = Final|x64
+					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.Build.0 = Final|x64
 				EndGlobalSection
 
 				GlobalSection(SolutionProperties) = preSolution

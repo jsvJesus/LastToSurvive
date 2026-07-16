@@ -23,7 +23,8 @@ namespace lts::editor
 
     inline constexpr std::size_t
         InvalidEditorEntityIndex =
-            std::numeric_limits<std::size_t>::max();
+            std::numeric_limits<
+                std::size_t>::max();
 
     struct EditorSceneSnapshot final
     {
@@ -59,6 +60,12 @@ namespace lts::editor
             const EditorTransform& transform);
 
         [[nodiscard]]
+        bool CreateStaticMeshEntity(
+            std::wstring name,
+            std::wstring assetPath,
+            const EditorTransform& transform);
+
+        [[nodiscard]]
         const std::vector<EditorSceneEntity>&
             GetEntities() const noexcept;
 
@@ -71,7 +78,8 @@ namespace lts::editor
             GetSelectedEntityMutable() noexcept;
 
         [[nodiscard]]
-        std::size_t GetSelectedIndex() const noexcept;
+        std::size_t
+            GetSelectedIndex() const noexcept;
 
         [[nodiscard]]
         bool SelectEntityByIndex(
@@ -96,7 +104,8 @@ namespace lts::editor
         bool DeleteSelectedEntity() noexcept;
 
         [[nodiscard]]
-        EditorSceneSnapshot CreateSnapshot() const;
+        EditorSceneSnapshot
+            CreateSnapshot() const;
 
         void RestoreSnapshot(
             const EditorSceneSnapshot& snapshot,

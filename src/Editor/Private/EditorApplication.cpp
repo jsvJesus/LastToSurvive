@@ -12,6 +12,7 @@
 #include <Runtime/EngineMode.h>
 #include <Runtime/RendererBackend.h>
 
+#include <filesystem>
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -56,21 +57,16 @@ namespace lts::editor
     EditorApplication::~EditorApplication() noexcept = default;
 
     lts::application::ApplicationResult
-        EditorApplication::OnInitialize() noexcept
+    EditorApplication::OnInitialize() noexcept
     {
         engine::core::GetLogger().Write(
-        engine::core::LogLevel::Information,
-        "LTS.Editor",
-        "Initializing editor.");
+            engine::core::LogLevel::Information,
+            "LTS.Editor",
+            "Initializing editor.");
 
         if (!editorShell_.Initialize(
                 GetWindow().GetNativeHandle()))
         {
-            engine::core::GetLogger().Write(
-                engine::core::LogLevel::Critical,
-                "LTS.Editor",
-                "Failed to initialize editor shell.");
-
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
@@ -82,11 +78,6 @@ namespace lts::editor
         }
         catch (...)
         {
-            engine::core::GetLogger().Write(
-                engine::core::LogLevel::Critical,
-                "LTS.Editor.Scene",
-                "Failed to create the default editor level.");
-
             editorShell_.Shutdown();
 
             return lts::application::
@@ -102,11 +93,6 @@ namespace lts::editor
         if (!inspectorPanel_.Initialize(
                 GetWindow().GetNativeHandle()))
         {
-            engine::core::GetLogger().Write(
-                engine::core::LogLevel::Critical,
-                "LTS.Editor",
-                "Failed to initialize editor inspector panel.");
-
             sceneDocument_.Clear();
             editorShell_.Shutdown();
 
@@ -122,11 +108,19 @@ namespace lts::editor
                 GetWindow().GetNativeHandle(),
                 sceneDocument_))
         {
-            engine::core::GetLogger().Write(
-                engine::core::LogLevel::Critical,
-                "LTS.Editor.Level",
-                "Failed to initialize level document.");
+            inspectorPanel_.Shutdown();
+            sceneDocument_.Clear();
+            editorShell_.Shutdown();
 
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
+        if (!assetBrowserPanel_.Initialize(
+                GetWindow().GetNativeHandle()))
+        {
+            levelDocument_.Shutdown();
             inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
             editorShell_.Shutdown();
@@ -159,9 +153,34 @@ namespace lts::editor
             cameraController_.
                 SetViewportWindow({});
 
+            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
             inspectorPanel_.Shutdown();
+
             sceneDocument_.Clear();
+            editorShell_.Shutdown();
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
+        if (!staticMeshRenderer_.Initialize(
+                graphicsDevice_))
+        {
+            transformController_.
+                SetViewportWindow({});
+
+            cameraController_.
+                SetViewportWindow({});
+
+            assetBrowserPanel_.Shutdown();
+            levelDocument_.Shutdown();
+            inspectorPanel_.Shutdown();
+
+            sceneDocument_.Clear();
+
+            ShutdownGraphics();
             editorShell_.Shutdown();
 
             return lts::application::
@@ -172,12 +191,7 @@ namespace lts::editor
         if (!sceneRenderer_.Initialize(
                 graphicsDevice_))
         {
-            engine::core::GetLogger().Write(
-                engine::core::LogLevel::Critical,
-                "LTS.Editor.SceneRenderer",
-                "Failed to initialize editor scene renderer.");
-
-            sceneRenderer_.Shutdown(
+            staticMeshRenderer_.Shutdown(
                 graphicsDevice_);
 
             transformController_.
@@ -186,8 +200,10 @@ namespace lts::editor
             cameraController_.
                 SetViewportWindow({});
 
+            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
             inspectorPanel_.Shutdown();
+
             sceneDocument_.Clear();
 
             ShutdownGraphics();
@@ -220,11 +236,16 @@ namespace lts::editor
         cameraController_.
             SetViewportWindow({});
 
+        assetBrowserPanel_.Shutdown();
         levelDocument_.Shutdown();
         inspectorPanel_.Shutdown();
+
         commandHistory_.Clear();
 
         sceneRenderer_.Shutdown(
+            graphicsDevice_);
+
+        staticMeshRenderer_.Shutdown(
             graphicsDevice_);
 
         sceneDocument_.Clear();
@@ -256,6 +277,53 @@ namespace lts::editor
 
             inspectorPanel_.Refresh(
                 sceneDocument_);
+        }
+
+        assetBrowserPanel_.Update();
+
+        std::filesystem::path activatedAsset;
+
+        if (assetBrowserPanel_.ConsumeActivatedAsset(
+                activatedAsset))
+        {
+            const EditorSceneSnapshot before =
+                sceneDocument_.CreateSnapshot();
+
+            EditorTransform transform;
+
+            const EditorSceneEntity* const selected =
+                sceneDocument_.GetSelectedEntity();
+
+            if (selected != nullptr)
+            {
+                transform.position =
+                    selected->transform.position;
+
+                transform.position[0] += 2.0F;
+            }
+
+            const std::wstring entityName =
+                activatedAsset.
+                    stem().
+                    wstring();
+
+            if (sceneDocument_.CreateStaticMeshEntity(
+                    entityName,
+                    activatedAsset.generic_wstring(),
+                    transform))
+            {
+                static_cast<void>(
+                    commandHistory_.Push(
+                        before,
+                        sceneDocument_.
+                            CreateSnapshot()));
+
+                editorShell_.RefreshScene(
+                    sceneDocument_);
+
+                inspectorPanel_.Refresh(
+                    sceneDocument_);
+            }
         }
 
         cameraController_.Update(
@@ -500,6 +568,20 @@ namespace lts::editor
             ReportGraphicsFailure(
                 "EditorGridRenderer::Render",
                 result);
+            return;
+        }
+
+        result = staticMeshRenderer_.Render(
+        *commandContext_,
+        sceneDocument_,
+        viewProjection);
+
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure(
+                "EditorStaticMeshRenderer::Render",
+                result);
+
             return;
         }
 
