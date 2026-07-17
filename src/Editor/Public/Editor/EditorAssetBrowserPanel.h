@@ -2,6 +2,8 @@
 
 #include <Platform/Window.h>
 
+#include <Windows.h>
+
 #include <cstddef>
 #include <filesystem>
 #include <string>
@@ -26,7 +28,6 @@ namespace lts::editor
             engine::platform::NativeWindowHandle mainWindow) noexcept;
 
         void Shutdown() noexcept;
-
         void Update() noexcept;
 
         [[nodiscard]]
@@ -47,17 +48,11 @@ namespace lts::editor
         bool InstallWindowSubclass() noexcept;
 
         void RestoreWindowSubclass() noexcept;
-
         void DestroyControls() noexcept;
-
         void UpdateLayout() noexcept;
-
         void ScanAssets() noexcept;
-
         void RebuildVisibleList() noexcept;
-
         void QueueSelectedAsset() noexcept;
-
         void ProcessRequestedAsset() noexcept;
 
         [[nodiscard]]

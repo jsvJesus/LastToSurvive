@@ -1,4 +1,5 @@
 #include "Editor/EditorGridRenderer.h"
+#include "Editor/EditorShaderCompiler.h"
 
 #include <Core/Log.h>
 
@@ -30,42 +31,7 @@ namespace lts::editor
         constexpr int GridExtent = 50;
         constexpr int MajorGridInterval = 10;
 
-        constexpr const char* GridShaderSource = R"(
-cbuffer CameraBuffer : register(b0)
-{
-    row_major float4x4 ViewProjection;
-};
-
-struct VertexInput
-{
-    float3 position : POSITION;
-    float4 color : COLOR0;
-};
-
-struct VertexOutput
-{
-    float4 position : SV_POSITION;
-    float4 color : COLOR0;
-};
-
-VertexOutput VSMain(VertexInput input)
-{
-    VertexOutput output;
-
-    output.position = mul(
-        float4(input.position, 1.0f),
-        ViewProjection);
-
-    output.color = input.color;
-
-    return output;
-}
-
-float4 PSMain(VertexOutput input) : SV_TARGET
-{
-    return input.color;
-}
-)";
+        constexpr wchar_t GridShaderFile[] = L"Grid.hlsl";
 
         struct GridVertex final
         {
@@ -221,72 +187,17 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             return vertices;
         }
 
-        [[nodiscard]]
         bool CompileShader(
-            const char* entryPoint,
-            const char* target,
-            ComPtr<ID3DBlob>& bytecode) noexcept
+        const char* const entryPoint,
+        const char* const target,
+        ComPtr<ID3DBlob>& bytecode) noexcept
         {
-            if (
-                entryPoint == nullptr ||
-                target == nullptr
-            )
-            {
-                return false;
-            }
-
-            bytecode.Reset();
-
-            ComPtr<ID3DBlob> errors;
-
-            constexpr UINT compileFlags =
-                D3DCOMPILE_ENABLE_STRICTNESS |
-                D3DCOMPILE_WARNINGS_ARE_ERRORS |
-                D3DCOMPILE_OPTIMIZATION_LEVEL3;
-
-            const HRESULT result =
-                D3DCompile(
-                    GridShaderSource,
-                    std::char_traits<char>::length(
-                        GridShaderSource),
-                    "EditorGrid.hlsl",
-                    nullptr,
-                    nullptr,
-                    entryPoint,
-                    target,
-                    compileFlags,
-                    0,
-                    bytecode.GetAddressOf(),
-                    errors.GetAddressOf());
-
-            if (SUCCEEDED(result))
-            {
-                return true;
-            }
-
-            if (
-                errors != nullptr &&
-                errors->GetBufferPointer() != nullptr
-            )
-            {
-                const auto* const errorText =
-                    static_cast<const char*>(
-                        errors->GetBufferPointer());
-
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Error,
-                    "LTS.Editor.Grid",
-                    errorText);
-            }
-            else
-            {
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Error,
-                    "LTS.Editor.Grid",
-                    "Failed to compile editor grid shader.");
-            }
-
-            return false;
+            return CompileEditorShaderFile(
+                GridShaderFile,
+                entryPoint,
+                target,
+                "LTS.Editor.Grid",
+                bytecode);
         }
 
         void LogGraphicsFailure(

@@ -1,6 +1,14 @@
 #include "Editor/EditorStaticMeshRenderer.h"
+#include "Editor/EditorShaderCompiler.h"
 
+#include <Assets/AssetData.h>
+#include <Assets/AssetMetadata.h>
+#include <Assets/AssetPath.h>
+#include <Assets/AssetResult.h>
+#include <Assets/AssetType.h>
+#include <Assets/GpuMesh.h>
 #include <Assets/MeshAsset.h>
+#include <Assets/MeshAssetLoader.h>
 
 #include <Core/Log.h>
 
@@ -13,15 +21,19 @@
 #include <Graphics/ResourceHandle.h>
 #include <Graphics/Shader.h>
 
-#include <d3dcompiler.h>
-#include <wrl/client.h>
+#include <DirectXMath.h>
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cwctype>
 #include <filesystem>
+#include <fstream>
+#include <limits>
 #include <memory>
+#include <new>
 #include <string>
+#include <system_error>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -30,82 +42,8 @@ namespace lts::editor
 {
     namespace
     {
-        using Microsoft::WRL::ComPtr;
-
-        constexpr const char*
-            StaticMeshShaderSource = R"(
-cbuffer ObjectBuffer : register(b0)
-{
-    row_major float4x4 World;
-    row_major float4x4 ViewProjection;
-    float4 Tint;
-};
-
-struct VertexInput
-{
-    float3 position : POSITION;
-    float3 normal : NORMAL;
-    float2 texcoord : TEXCOORD0;
-};
-
-struct VertexOutput
-{
-    float4 position : SV_POSITION;
-    float3 normal : NORMAL;
-    float2 texcoord : TEXCOORD0;
-};
-
-VertexOutput VSMain(VertexInput input)
-{
-    VertexOutput output;
-
-    float4 worldPosition =
-        mul(float4(input.position, 1.0f), World);
-
-    output.position =
-        mul(worldPosition, ViewProjection);
-
-    output.normal =
-        normalize(
-            mul(
-                float4(input.normal, 0.0f),
-                World).xyz);
-
-    output.texcoord = input.texcoord;
-
-    return output;
-}
-
-float4 PSMain(VertexOutput input) : SV_TARGET
-{
-    const float3 lightDirection =
-        normalize(float3(-0.35f, 0.85f, -0.40f));
-
-    const float diffuse =
-        saturate(
-            dot(
-                normalize(input.normal),
-                lightDirection));
-
-    const float lighting =
-        0.22f +
-        diffuse * 0.78f;
-
-    const float uvVariation =
-        0.94f +
-        0.06f *
-        saturate(
-            frac(
-                abs(input.texcoord.x) * 4.0f +
-                abs(input.texcoord.y) * 4.0f));
-
-    return float4(
-        Tint.rgb *
-        lighting *
-        uvVariation,
-        Tint.a);
-}
-)";
+        constexpr std::uintmax_t MaximumMeshFileSize =
+            512U * 1024U * 1024U;
 
         struct alignas(16)
             ObjectConstants final
@@ -131,11 +69,14 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             const DirectX::XMMATRIX rotation =
                 DirectX::XMMatrixRotationRollPitchYaw(
                     DirectX::XMConvertToRadians(
-                        transform.rotationDegrees[0]),
+                        transform.
+                            rotationDegrees[0]),
                     DirectX::XMConvertToRadians(
-                        transform.rotationDegrees[1]),
+                        transform.
+                            rotationDegrees[1]),
                     DirectX::XMConvertToRadians(
-                        transform.rotationDegrees[2]));
+                        transform.
+                            rotationDegrees[2]));
 
             const DirectX::XMMATRIX translation =
                 DirectX::XMMatrixTranslation(
@@ -150,88 +91,301 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         }
 
         [[nodiscard]]
-        bool CompileShader(
-            const char* const entryPoint,
-            const char* const target,
-            ComPtr<ID3DBlob>& bytecode) noexcept
+        std::wstring LowercasePath(
+            std::wstring value)
         {
-            bytecode.Reset();
-
-            ComPtr<ID3DBlob> errors;
-
-            constexpr UINT flags =
-                D3DCOMPILE_ENABLE_STRICTNESS |
-                D3DCOMPILE_WARNINGS_ARE_ERRORS |
-                D3DCOMPILE_OPTIMIZATION_LEVEL3;
-
-            const HRESULT result =
-                D3DCompile(
-                    StaticMeshShaderSource,
-                    std::char_traits<char>::length(
-                        StaticMeshShaderSource),
-                    "EditorStaticMesh.hlsl",
-                    nullptr,
-                    nullptr,
-                    entryPoint,
-                    target,
-                    flags,
-                    0,
-                    bytecode.GetAddressOf(),
-                    errors.GetAddressOf());
-
-            if (SUCCEEDED(result))
+            for (wchar_t& character : value)
             {
-                return true;
+                character =
+                    static_cast<wchar_t>(
+                        std::towlower(
+                            character));
             }
 
-            if (
-                errors != nullptr &&
-                errors->GetBufferPointer() != nullptr)
-            {
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Error,
-                    "LTS.Editor.StaticMesh",
-                    static_cast<const char*>(
-                        errors->GetBufferPointer()));
-            }
+            return value;
+        }
 
-            return false;
+        void LogGraphicsFailure(
+            const char* const operation,
+            const engine::graphics::
+                GraphicsResult result) noexcept
+        {
+            std::string message =
+                operation != nullptr
+                    ? operation
+                    : "Static mesh graphics operation";
+
+            message += " failed: ";
+
+            message +=
+                engine::graphics::
+                    ToString(result);
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Error,
+                "LTS.Editor.StaticMesh",
+                message);
+        }
+
+        void LogAssetFailure(
+            const std::filesystem::path& path,
+            const char* const operation,
+            const engine::assets::
+                AssetResult result)
+        {
+            std::string message =
+                operation != nullptr
+                    ? operation
+                    : "Static mesh asset operation";
+
+            message += " failed for '";
+            message += path.generic_u8string();
+            message += "': ";
+
+            message +=
+                engine::assets::
+                    ToString(result);
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Error,
+                "LTS.Editor.StaticMesh",
+                message);
+        }
+
+        [[nodiscard]]
+        engine::assets::AssetResult ReadAssetData(
+            const std::filesystem::path& path,
+            engine::assets::AssetData& output) noexcept
+        {
+            output.Clear();
+
+            try
+            {
+                std::error_code filesystemError;
+
+                const std::uintmax_t fileSize =
+                    std::filesystem::file_size(
+                        path,
+                        filesystemError);
+
+                if (filesystemError)
+                {
+                    return engine::assets::
+                        AssetResult::IoError;
+                }
+
+                if (
+                    fileSize == 0U ||
+                    fileSize >
+                        MaximumMeshFileSize ||
+                    fileSize >
+                        static_cast<std::uintmax_t>(
+                            std::numeric_limits<
+                                std::streamsize>::
+                                    max()))
+                {
+                    return engine::assets::
+                        AssetResult::FileTooLarge;
+                }
+
+                const engine::assets::AssetResult
+                    resizeResult =
+                        output.Resize(
+                            static_cast<std::size_t>(
+                                fileSize));
+
+                if (
+                    engine::assets::Failed(
+                        resizeResult))
+                {
+                    return resizeResult;
+                }
+
+                std::ifstream input(
+                    path,
+                    std::ios::binary);
+
+                if (!input)
+                {
+                    output.Clear();
+
+                    return engine::assets::
+                        AssetResult::IoError;
+                }
+
+                input.read(
+                    reinterpret_cast<char*>(
+                        output.GetData()),
+                    static_cast<std::streamsize>(
+                        fileSize));
+
+                if (!input)
+                {
+                    output.Clear();
+
+                    return engine::assets::
+                        AssetResult::IoError;
+                }
+
+                return engine::assets::
+                    AssetResult::Success;
+            }
+            catch (const std::bad_alloc&)
+            {
+                output.Clear();
+
+                return engine::assets::
+                    AssetResult::OutOfMemory;
+            }
+            catch (...)
+            {
+                output.Clear();
+
+                return engine::assets::
+                    AssetResult::InternalError;
+            }
+        }
+
+        [[nodiscard]]
+        engine::assets::AssetResult
+            CreateMeshMetadata(
+                const std::filesystem::path& requestedPath,
+                const std::size_t sourceSize,
+                engine::assets::AssetMetadata& metadata) noexcept
+        {
+            try
+            {
+                std::filesystem::path logicalPath =
+                    requestedPath;
+
+                if (logicalPath.is_absolute())
+                {
+                    std::error_code currentPathError;
+
+                    const std::filesystem::path gameRoot =
+                        std::filesystem::current_path(
+                            currentPathError);
+
+                    if (!currentPathError)
+                    {
+                        std::error_code relativeError;
+
+                        const std::filesystem::path relative =
+                            std::filesystem::relative(
+                                logicalPath,
+                                gameRoot,
+                                relativeError);
+
+                        if (
+                            !relativeError &&
+                            !relative.empty())
+                        {
+                            logicalPath = relative;
+                        }
+                    }
+
+                    if (logicalPath.is_absolute())
+                    {
+                        logicalPath =
+                            logicalPath.filename();
+                    }
+                }
+
+                const std::string logicalName =
+                    logicalPath.
+                        lexically_normal().
+                        generic_u8string();
+
+                engine::assets::AssetPath assetPath;
+
+                const engine::assets::AssetResult
+                    pathResult =
+                        engine::assets::
+                            AssetPath::TryCreate(
+                                logicalName,
+                                assetPath);
+
+                if (
+                    engine::assets::Failed(
+                        pathResult))
+                {
+                    return pathResult;
+                }
+
+                metadata = {};
+
+                metadata.path =
+                    std::move(assetPath);
+
+                metadata.id =
+                    metadata.path.GetId();
+
+                metadata.type =
+                    engine::assets::
+                        AssetType::Mesh;
+
+                metadata.schemaVersion = 1U;
+
+                metadata.sourceSize =
+                    static_cast<std::uint64_t>(
+                        sourceSize);
+
+                return engine::assets::
+                    AssetResult::Success;
+            }
+            catch (const std::bad_alloc&)
+            {
+                return engine::assets::
+                    AssetResult::OutOfMemory;
+            }
+            catch (...)
+            {
+                return engine::assets::
+                    AssetResult::InternalError;
+            }
         }
     }
 
     class EditorStaticMeshRenderer::Impl final
     {
     public:
-        struct GpuMesh final
-        {
-            engine::graphics::BufferHandle
-                vertexBuffer;
-
-            engine::graphics::BufferHandle
-                indexBuffer;
-
-            std::uint32_t indexCount = 0U;
-        };
-
         [[nodiscard]]
         bool Initialize(
-            engine::graphics::RenderDevice& device) noexcept
+            engine::graphics::
+                RenderDevice& device) noexcept
         {
+            if (initialized_)
+            {
+                return true;
+            }
+
             device_ = &device;
 
-            ComPtr<ID3DBlob> vertexBytecode;
-            ComPtr<ID3DBlob> pixelBytecode;
+            Microsoft::WRL::ComPtr<ID3DBlob>
+                vertexBytecode;
 
-            if (
-                !CompileShader(
+            Microsoft::WRL::ComPtr<ID3DBlob>
+                pixelBytecode;
+
+            if (!CompileEditorShaderFile(
+                    L"StaticMesh.hlsl",
                     "VSMain",
                     "vs_5_0",
-                    vertexBytecode) ||
-                !CompileShader(
+                    "LTS.Editor.StaticMesh",
+                    vertexBytecode))
+            {
+                device_ = nullptr;
+                return false;
+            }
+
+            if (!CompileEditorShaderFile(
+                    L"StaticMesh.hlsl",
                     "PSMain",
                     "ps_5_0",
+                    "LTS.Editor.StaticMesh",
                     pixelBytecode))
             {
+                device_ = nullptr;
                 return false;
             }
 
@@ -260,6 +414,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             if (engine::graphics::Failed(result))
             {
+                LogGraphicsFailure(
+                    "Create static mesh vertex shader",
+                    result);
+
                 Shutdown(device);
                 return false;
             }
@@ -289,6 +447,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             if (engine::graphics::Failed(result))
             {
+                LogGraphicsFailure(
+                    "Create static mesh pixel shader",
+                    result);
+
                 Shutdown(device);
                 return false;
             }
@@ -296,7 +458,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             const std::array<
                 engine::graphics::
                     VertexElementDesc,
-                3U> elements
+                4U> elements
             {{
                 {
                     "POSITION",
@@ -321,12 +483,23 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                     0U
                 },
                 {
+                    "TANGENT",
+                    0U,
+                    engine::graphics::
+                        Format::R32G32B32A32Float,
+                    0U,
+                    24U,
+                    engine::graphics::
+                        VertexInputRate::PerVertex,
+                    0U
+                },
+                {
                     "TEXCOORD",
                     0U,
                     engine::graphics::
                         Format::R32G32Float,
                     0U,
-                    24U,
+                    40U,
                     engine::graphics::
                         VertexInputRate::PerVertex,
                     0U
@@ -356,6 +529,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             if (engine::graphics::Failed(result))
             {
+                LogGraphicsFailure(
+                    "Create static mesh input layout",
+                    result);
+
                 Shutdown(device);
                 return false;
             }
@@ -396,6 +573,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             if (engine::graphics::Failed(result))
             {
+                LogGraphicsFailure(
+                    "Create static mesh object buffer",
+                    result);
+
                 Shutdown(device);
                 return false;
             }
@@ -422,10 +603,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 engine::graphics::
                     FillMode::Solid;
 
-            /*
-             * Старые SCO/SCB встречаются с разным winding.
-             * На первом этапе отключаем culling.
-             */
             pipelineDescription.rasterizer.cullMode =
                 engine::graphics::
                     CullMode::None;
@@ -459,24 +636,38 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
             if (engine::graphics::Failed(result))
             {
+                LogGraphicsFailure(
+                    "Create static mesh pipeline",
+                    result);
+
                 Shutdown(device);
                 return false;
             }
 
             initialized_ = true;
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Information,
+                "LTS.Editor.StaticMesh",
+                "Editor static mesh renderer initialized.");
+
             return true;
         }
 
         void Shutdown(
-            engine::graphics::RenderDevice& device) noexcept
+            engine::graphics::
+                RenderDevice& device) noexcept
         {
             initialized_ = false;
 
             for (auto& entry : meshes_)
             {
-                DestroyGpuMesh(
-                    device,
-                    entry.second);
+                if (entry.second != nullptr)
+                {
+                    static_cast<void>(
+                        entry.second->Release(
+                            device));
+                }
             }
 
             meshes_.clear();
@@ -485,9 +676,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             if (pipeline_.IsValid())
             {
                 static_cast<void>(
-                    device.
-                        DestroyGraphicsPipeline(
-                            pipeline_));
+                    device.DestroyGraphicsPipeline(
+                        pipeline_));
 
                 pipeline_ = {};
             }
@@ -495,9 +685,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             if (inputLayout_.IsValid())
             {
                 static_cast<void>(
-                    device.
-                        DestroyInputLayout(
-                            inputLayout_));
+                    device.DestroyInputLayout(
+                        inputLayout_));
 
                 inputLayout_ = {};
             }
@@ -505,9 +694,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             if (pixelShader_.IsValid())
             {
                 static_cast<void>(
-                    device.
-                        DestroyShader(
-                            pixelShader_));
+                    device.DestroyShader(
+                        pixelShader_));
 
                 pixelShader_ = {};
             }
@@ -515,9 +703,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             if (vertexShader_.IsValid())
             {
                 static_cast<void>(
-                    device.
-                        DestroyShader(
-                            vertexShader_));
+                    device.DestroyShader(
+                        vertexShader_));
 
                 vertexShader_ = {};
             }
@@ -525,9 +712,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             if (objectBuffer_.IsValid())
             {
                 static_cast<void>(
-                    device.
-                        DestroyBuffer(
-                            objectBuffer_));
+                    device.DestroyBuffer(
+                        objectBuffer_));
 
                 objectBuffer_ = {};
             }
@@ -550,7 +736,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                     GraphicsResult::InvalidState;
             }
 
-            auto result =
+            engine::graphics::GraphicsResult result =
                 context.SetGraphicsPipeline(
                     pipeline_);
 
@@ -572,6 +758,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                 context.UnbindGraphicsPipeline();
                 return result;
             }
+
+            result =
+                engine::graphics::
+                    GraphicsResult::Success;
 
             const auto& entities =
                 document.GetEntities();
@@ -596,7 +786,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                     continue;
                 }
 
-                GpuMesh* const mesh =
+                engine::assets::GpuMesh* const mesh =
                     GetOrLoadMesh(
                         entity.staticMesh->
                             assetPath);
@@ -649,13 +839,10 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                         vertexBinding;
 
                 vertexBinding.buffer =
-                    mesh->vertexBuffer;
+                    mesh->GetVertexBuffer();
 
                 vertexBinding.stride =
-                    static_cast<std::uint32_t>(
-                        sizeof(
-                            engine::assets::
-                                MeshVertex));
+                    mesh->GetVertexStride();
 
                 vertexBinding.offset = 0U;
 
@@ -675,7 +862,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                         indexBinding;
 
                 indexBinding.buffer =
-                    mesh->indexBuffer;
+                    mesh->GetIndexBuffer();
 
                 indexBinding.offset = 0U;
 
@@ -688,11 +875,35 @@ float4 PSMain(VertexOutput input) : SV_TARGET
                     break;
                 }
 
-                result =
-                    context.DrawIndexed(
-                        mesh->indexCount,
-                        0U,
-                        0);
+                for (
+                    std::size_t submeshIndex = 0U;
+                    submeshIndex <
+                        mesh->GetSubmeshCount();
+                    ++submeshIndex)
+                {
+                    const engine::assets::
+                        MeshSubmesh* const submesh =
+                            mesh->GetSubmesh(
+                                submeshIndex);
+
+                    if (submesh == nullptr)
+                    {
+                        continue;
+                    }
+
+                    result =
+                        context.DrawIndexed(
+                            submesh->indexCount,
+                            submesh->firstIndex,
+                            submesh->baseVertex);
+
+                    if (
+                        engine::graphics::Failed(
+                            result))
+                    {
+                        break;
+                    }
+                }
 
                 if (engine::graphics::Failed(result))
                 {
@@ -716,235 +927,220 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
     private:
         [[nodiscard]]
-        GpuMesh* GetOrLoadMesh(
+        engine::assets::GpuMesh* GetOrLoadMesh(
             const std::wstring& assetPath) noexcept
         {
-            std::error_code error;
-
-            std::filesystem::path path(
-                assetPath);
-
-            if (!path.is_absolute())
+            try
             {
+                std::filesystem::path path(
+                    assetPath);
+
+                std::error_code filesystemError;
+
+                if (!path.is_absolute())
+                {
+                    const std::filesystem::path gameRoot =
+                        std::filesystem::current_path(
+                            filesystemError);
+
+                    if (filesystemError)
+                    {
+                        return nullptr;
+                    }
+
+                    path =
+                        gameRoot /
+                        path;
+                }
+
                 path =
-                    std::filesystem::
-                        current_path(error) /
-                    path;
-            }
+                    path.lexically_normal();
 
-            if (error)
-            {
-                return nullptr;
-            }
+                const std::wstring key =
+                    LowercasePath(
+                        path.wstring());
 
-            path =
-                path.lexically_normal();
+                const auto existing =
+                    meshes_.find(key);
 
-            const std::wstring key =
-                path.wstring();
+                if (existing != meshes_.end())
+                {
+                    return
+                        existing->second.get();
+                }
 
-            const auto existing =
-                meshes_.find(key);
+                if (
+                    failedMeshes_.find(key) !=
+                    failedMeshes_.end())
+                {
+                    return nullptr;
+                }
 
-            if (existing != meshes_.end())
-            {
-                return &existing->second;
-            }
+                std::unique_ptr<
+                    engine::assets::GpuMesh> mesh =
+                        LoadGpuMesh(
+                            path,
+                            std::filesystem::path(
+                                assetPath));
 
-            if (
-                failedMeshes_.find(key) !=
-                failedMeshes_.end())
-            {
-                return nullptr;
-            }
+                if (mesh == nullptr)
+                {
+                    failedMeshes_.insert(key);
+                    return nullptr;
+                }
 
-            GpuMesh mesh;
+                engine::assets::GpuMesh* const result =
+                    mesh.get();
 
-            if (!LoadGpuMesh(
-                    path,
-                    mesh))
-            {
-                failedMeshes_.insert(key);
-                return nullptr;
-            }
-
-            const auto result =
                 meshes_.emplace(
                     key,
-                    mesh);
+                    std::move(mesh));
 
-            return &result.first->second;
+                return result;
+            }
+            catch (...)
+            {
+                return nullptr;
+            }
         }
 
         [[nodiscard]]
-        bool LoadGpuMesh(
-            const std::filesystem::path& path,
-            GpuMesh& gpuMesh) noexcept
+        std::unique_ptr<
+            engine::assets::GpuMesh>
+                LoadGpuMesh(
+                    const std::filesystem::path& filePath,
+                    const std::filesystem::path& logicalPath) noexcept
         {
-            engine::assets::MeshAsset asset;
-            std::wstring error;
+            try
+            {
+                engine::assets::AssetData sourceData;
 
-            if (
-                !engine::assets::
-                    MeshAssetIO::Load(
-                        path,
-                        asset,
-                        error))
+                engine::assets::AssetResult assetResult =
+                    ReadAssetData(
+                        filePath,
+                        sourceData);
+
+                if (
+                    engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Read LTS mesh",
+                        assetResult);
+
+                    return nullptr;
+                }
+
+                engine::assets::AssetMetadata metadata;
+
+                assetResult =
+                    CreateMeshMetadata(
+                        logicalPath,
+                        sourceData.GetSize(),
+                        metadata);
+
+                if (
+                    engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Create mesh metadata",
+                        assetResult);
+
+                    return nullptr;
+                }
+
+                engine::assets::
+                    MeshAssetLoader loader;
+
+                std::unique_ptr<
+                    engine::assets::LoadedAsset>
+                        loadedAsset;
+
+                assetResult =
+                    loader.Load(
+                        metadata,
+                        sourceData,
+                        loadedAsset);
+
+                if (
+                    engine::assets::Failed(
+                        assetResult) ||
+                    loadedAsset == nullptr ||
+                    loadedAsset->GetType() !=
+                        engine::assets::
+                            AssetType::Mesh)
+                {
+                    if (
+                        engine::assets::Succeeded(
+                            assetResult))
+                    {
+                        assetResult =
+                            engine::assets::
+                                AssetResult::
+                                    TypeMismatch;
+                    }
+
+                    LogAssetFailure(
+                        filePath,
+                        "Load LTS mesh",
+                        assetResult);
+
+                    return nullptr;
+                }
+
+                auto* const loadedMesh =
+                    static_cast<
+                        engine::assets::
+                            MeshLoadedAsset*>(
+                                loadedAsset.get());
+
+                engine::assets::MeshAsset cpuMesh =
+                    loadedMesh->ReleaseMesh();
+
+                auto gpuMesh =
+                    std::make_unique<
+                        engine::assets::GpuMesh>();
+
+                const engine::graphics::
+                    GraphicsResult uploadResult =
+                        gpuMesh->Upload(
+                            *device_,
+                            cpuMesh);
+
+                if (
+                    engine::graphics::Failed(
+                        uploadResult))
+                {
+                    LogGraphicsFailure(
+                        "Upload static mesh",
+                        uploadResult);
+
+                    return nullptr;
+                }
+
+                return gpuMesh;
+            }
+            catch (const std::bad_alloc&)
             {
                 engine::core::GetLogger().Write(
                     engine::core::LogLevel::Error,
                     "LTS.Editor.StaticMesh",
-                    "Failed to load a mesh asset.");
+                    "Not enough memory to load a static mesh.");
 
-                return false;
+                return nullptr;
             }
-
-            engine::graphics::BufferDesc
-                vertexDescription;
-
-            vertexDescription.byteSize =
-                asset.vertices.size() *
-                sizeof(
-                    engine::assets::
-                        MeshVertex);
-
-            vertexDescription.stride =
-                static_cast<std::uint32_t>(
-                    sizeof(
-                        engine::assets::
-                            MeshVertex));
-
-            vertexDescription.usage =
-                engine::graphics::
-                    ResourceUsage::Immutable;
-
-            vertexDescription.bindFlags =
-                engine::graphics::
-                    BufferBindFlags::Vertex;
-
-            vertexDescription.miscFlags =
-                engine::graphics::
-                    BufferMiscFlags::None;
-
-            vertexDescription.cpuAccess =
-                engine::graphics::
-                    CpuAccessFlags::None;
-
-            vertexDescription.indexFormat =
-                engine::graphics::
-                    IndexFormat::None;
-
-            engine::graphics::
-                BufferInitialData
-                    vertexInitialData;
-
-            vertexInitialData.data =
-                reinterpret_cast<
-                    const std::byte*>(
-                        asset.vertices.data());
-
-            vertexInitialData.dataSize =
-                vertexDescription.byteSize;
-
-            auto result =
-                device_->CreateBuffer(
-                    vertexDescription,
-                    &vertexInitialData,
-                    gpuMesh.vertexBuffer);
-
-            if (engine::graphics::Failed(result))
+            catch (...)
             {
-                return false;
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.StaticMesh",
+                    "Unexpected static mesh loading failure.");
+
+                return nullptr;
             }
-
-            engine::graphics::BufferDesc
-                indexDescription;
-
-            indexDescription.byteSize =
-                asset.indices.size() *
-                sizeof(std::uint32_t);
-
-            indexDescription.stride =
-                sizeof(std::uint32_t);
-
-            indexDescription.usage =
-                engine::graphics::
-                    ResourceUsage::Immutable;
-
-            indexDescription.bindFlags =
-                engine::graphics::
-                    BufferBindFlags::Index;
-
-            indexDescription.miscFlags =
-                engine::graphics::
-                    BufferMiscFlags::None;
-
-            indexDescription.cpuAccess =
-                engine::graphics::
-                    CpuAccessFlags::None;
-
-            indexDescription.indexFormat =
-                engine::graphics::
-                    IndexFormat::UInt32;
-
-            engine::graphics::
-                BufferInitialData
-                    indexInitialData;
-
-            indexInitialData.data =
-                reinterpret_cast<
-                    const std::byte*>(
-                        asset.indices.data());
-
-            indexInitialData.dataSize =
-                indexDescription.byteSize;
-
-            result =
-                device_->CreateBuffer(
-                    indexDescription,
-                    &indexInitialData,
-                    gpuMesh.indexBuffer);
-
-            if (engine::graphics::Failed(result))
-            {
-                static_cast<void>(
-                    device_->DestroyBuffer(
-                        gpuMesh.vertexBuffer));
-
-                gpuMesh.vertexBuffer = {};
-                return false;
-            }
-
-            gpuMesh.indexCount =
-                static_cast<std::uint32_t>(
-                    asset.indices.size());
-
-            return true;
-        }
-
-        static void DestroyGpuMesh(
-            engine::graphics::RenderDevice& device,
-            GpuMesh& mesh) noexcept
-        {
-            if (mesh.indexBuffer.IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyBuffer(
-                        mesh.indexBuffer));
-
-                mesh.indexBuffer = {};
-            }
-
-            if (mesh.vertexBuffer.IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyBuffer(
-                        mesh.vertexBuffer));
-
-                mesh.vertexBuffer = {};
-            }
-
-            mesh.indexCount = 0U;
         }
 
         engine::graphics::RenderDevice*
@@ -967,7 +1163,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
         std::unordered_map<
             std::wstring,
-            GpuMesh> meshes_;
+            std::unique_ptr<
+                engine::assets::GpuMesh>> meshes_;
 
         std::unordered_set<
             std::wstring> failedMeshes_;
@@ -984,7 +1181,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             default;
 
     bool EditorStaticMeshRenderer::Initialize(
-        engine::graphics::RenderDevice& device) noexcept
+        engine::graphics::
+            RenderDevice& device) noexcept
     {
         if (impl_ != nullptr)
         {
@@ -1011,7 +1209,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     }
 
     void EditorStaticMeshRenderer::Shutdown(
-        engine::graphics::RenderDevice& device) noexcept
+        engine::graphics::
+            RenderDevice& device) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -1024,7 +1223,8 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
     engine::graphics::GraphicsResult
         EditorStaticMeshRenderer::Render(
-            engine::graphics::CommandContext& context,
+            engine::graphics::
+                CommandContext& context,
             const EditorSceneDocument& document,
             const DirectX::XMFLOAT4X4&
                 viewProjection) noexcept

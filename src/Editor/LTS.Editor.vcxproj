@@ -227,6 +227,7 @@
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
+    <ClInclude Include="Public\Editor\EditorShaderCompiler.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
     <ClInclude Include="Public\Editor\EditorStaticMeshRenderer.h" />
     <ClInclude Include="Public\Editor\EditorTransformController.h" />
@@ -245,6 +246,7 @@
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
+    <ClCompile Include="Private\EditorShaderCompiler.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\EditorStaticMeshRenderer.cpp" />
     <ClCompile Include="Private\EditorTransformController.cpp" />

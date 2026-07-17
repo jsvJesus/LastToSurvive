@@ -133,6 +133,7 @@
     <ClInclude Include="Public\Assets\DdsTextureLoader.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
     <ClInclude Include="Public\Assets\GpuTexture.h" />
+    <ClInclude Include="Public\Assets\LegacyMeshImporter.h" />
     <ClInclude Include="Public\Assets\LtsMaterialWriter.h" />
     <ClInclude Include="Public\Assets\LtsMeshWriter.h" />
     <ClInclude Include="Public\Assets\GpuMesh.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="Private\DdsTextureLoader.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
     <ClCompile Include="Private\GpuTexture.cpp" />
+    <ClCompile Include="Private\LegacyMeshImporter.cpp" />
     <ClCompile Include="Private\LtsMaterialWriter.cpp" />
     <ClCompile Include="Private\LtsMeshWriter.cpp" />
     <ClCompile Include="Private\GpuMesh.cpp" />

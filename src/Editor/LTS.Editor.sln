@@ -27,7 +27,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Editor", "LTS.Editor.vcxproj", "{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}"
 EndProject
 
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Scene", "..\Engine\Scene\LTS.Scene.vcxproj", "{CC05BCF1-4C7F-454B-97CC-A46508196C39}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Scene", "..\Engine\Scene\LTS.Scene.vcxproj", "{4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}"
 EndProject
 
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Assets", "..\Engine\Assets\LTS.Assets.vcxproj", "{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}"
@@ -79,14 +79,14 @@ Global
 								{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}.Release|x64.Build.0 = Release|x64
 								{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}.Final|x64.ActiveCfg = Final|x64
 								{0F16F92B-CC8E-40F1-B0B7-8E6A0F944B33}.Final|x64.Build.0 = Final|x64
-					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Release|x64.ActiveCfg = Release|x64
-					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Release|x64.Build.0 = Release|x64
-					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Final|x64.ActiveCfg = Debug|Win32
-					{CC05BCF1-4C7F-454B-97CC-A46508196C39}.Final|x64.Build.0 = Debug|Win32
-					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.ActiveCfg = Release|x64
-					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.Build.0 = Release|x64
-					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.ActiveCfg = Final|x64
-					{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.Build.0 = Final|x64
+                                {4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}.Release|x64.ActiveCfg = Release|x64
+                                {4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}.Release|x64.Build.0 = Release|x64
+                                {4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}.Final|x64.ActiveCfg = Final|x64
+                                {4C2A7D91-8F0B-4F32-A6CE-5D41E9B7C203}.Final|x64.Build.0 = Final|x64
+                                {C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.ActiveCfg = Release|x64
+                                {C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Release|x64.Build.0 = Release|x64
+                                {C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.ActiveCfg = Final|x64
+                                {C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}.Final|x64.Build.0 = Final|x64
 				EndGlobalSection
 
 				GlobalSection(SolutionProperties) = preSolution

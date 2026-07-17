@@ -1,15 +1,14 @@
 #include "Editor/EditorAssetBrowserPanel.h"
 
-#include <Assets/MeshAsset.h>
+#include <Assets/AssetResult.h>
+#include <Assets/LegacyMeshImporter.h>
 
 #include <Windows.h>
+#include <commctrl.h>
 
 #include <algorithm>
-#include <array>
-#include <commctrl.h>
 #include <cwctype>
 #include <filesystem>
-#include <iterator>
 #include <string>
 #include <system_error>
 #include <utility>
@@ -150,17 +149,28 @@ namespace lts::editor
                 return {};
             }
 
-            std::wstring result;
-            result.resize(
+            std::wstring text(
                 static_cast<std::size_t>(
-                    length));
+                    length) +
+                    1U,
+                L'\0');
 
-            GetWindowTextW(
-                window,
-                result.data(),
-                length + 1);
+            const int copied =
+                GetWindowTextW(
+                    window,
+                    text.data(),
+                    length + 1);
 
-            return result;
+            if (copied <= 0)
+            {
+                return {};
+            }
+
+            text.resize(
+                static_cast<std::size_t>(
+                    copied));
+
+            return text;
         }
     }
 
@@ -208,13 +218,13 @@ namespace lts::editor
         mainWindow_ = root;
         anchorWindow_ = anchor;
 
-        std::error_code error;
+        std::error_code filesystemError;
 
         dataRoot_ =
             std::filesystem::current_path(
-                error);
+                filesystemError);
 
-        if (error)
+        if (filesystemError)
         {
             dataRoot_ = L".";
         }
@@ -229,7 +239,9 @@ namespace lts::editor
             return false;
         }
 
-        ShowWindow(anchor, SW_HIDE);
+        ShowWindow(
+            anchor,
+            SW_HIDE);
 
         initialized_ = true;
         scanRequested_ = true;
@@ -246,9 +258,13 @@ namespace lts::editor
         const HWND anchor =
             ToWindow(anchorWindow_);
 
-        if (anchor != nullptr)
+        if (
+            anchor != nullptr &&
+            IsWindow(anchor))
         {
-            ShowWindow(anchor, SW_SHOW);
+            ShowWindow(
+                anchor,
+                SW_SHOW);
         }
 
         assets_.clear();
@@ -265,6 +281,7 @@ namespace lts::editor
         scanRequested_ = false;
         activationRequested_ = false;
         pendingAssetReady_ = false;
+
         initialized_ = false;
     }
 
@@ -345,7 +362,7 @@ namespace lts::editor
         refreshButton_ =
             CreateChild(
                 panel,
-                0,
+                0U,
                 L"BUTTON",
                 L"Refresh",
                 BS_PUSHBUTTON |
@@ -382,21 +399,23 @@ namespace lts::editor
             GetStockObject(
                 DEFAULT_GUI_FONT);
 
-        ApplyFont(
-            panel,
-            static_cast<HFONT>(font_));
+        const HFONT font =
+            static_cast<HFONT>(
+                font_);
+
+        ApplyFont(panel, font);
 
         ApplyFont(
             ToWindow(filterEdit_),
-            static_cast<HFONT>(font_));
+            font);
 
         ApplyFont(
             ToWindow(refreshButton_),
-            static_cast<HFONT>(font_));
+            font);
 
         ApplyFont(
             ToWindow(assetList_),
-            static_cast<HFONT>(font_));
+            font);
 
         return true;
     }
@@ -546,15 +565,17 @@ namespace lts::editor
             2U);
 
         const int width =
-            std::max(
-                points[1].x -
-                points[0].x,
-                1);
+            (std::max)(
+        static_cast<int>(
+            points[1].x -
+            points[0].x),
+        1);
 
         const int height =
-            std::max(
-                points[1].y -
-                points[0].y,
+            (std::max)(
+                static_cast<int>(
+                    points[1].y -
+                    points[0].y),
                 1);
 
         MoveWindow(
@@ -565,47 +586,47 @@ namespace lts::editor
             height,
             TRUE);
 
-        constexpr int margin = 4;
-        constexpr int toolbarHeight = 26;
-        constexpr int refreshWidth = 72;
+        constexpr int Margin = 4;
+        constexpr int ToolbarHeight = 26;
+        constexpr int RefreshWidth = 72;
 
         MoveWindow(
             ToWindow(filterEdit_),
-            margin,
-            margin,
+            Margin,
+            Margin,
             std::max(
                 width -
-                    refreshWidth -
-                    margin * 3,
+                    RefreshWidth -
+                    Margin * 3,
                 1),
-            toolbarHeight,
+            ToolbarHeight,
             TRUE);
 
         MoveWindow(
             ToWindow(refreshButton_),
             std::max(
                 width -
-                    refreshWidth -
-                    margin,
-                margin),
-            margin,
-            refreshWidth,
-            toolbarHeight,
+                    RefreshWidth -
+                    Margin,
+                Margin),
+            Margin,
+            RefreshWidth,
+            ToolbarHeight,
             TRUE);
 
         MoveWindow(
             ToWindow(assetList_),
-            margin,
-            toolbarHeight +
-                margin * 2,
+            Margin,
+            ToolbarHeight +
+                Margin * 2,
             std::max(
                 width -
-                    margin * 2,
+                    Margin * 2,
                 1),
             std::max(
                 height -
-                    toolbarHeight -
-                    margin * 3,
+                    ToolbarHeight -
+                    Margin * 3,
                 1),
             TRUE);
     }
@@ -615,106 +636,123 @@ namespace lts::editor
     {
         assets_.clear();
 
-        std::error_code error;
-
-        if (!std::filesystem::exists(
-                dataRoot_,
-                error))
+        try
         {
-            RebuildVisibleList();
-            return;
-        }
+            std::error_code filesystemError;
 
-        const auto options =
-            std::filesystem::
-                directory_options::
-                    skip_permission_denied;
-
-        std::filesystem::
-            recursive_directory_iterator iterator(
-                dataRoot_,
-                options,
-                error);
-
-        const std::filesystem::
-            recursive_directory_iterator end;
-
-        while (
-            !error &&
-            iterator != end)
-        {
-            const std::filesystem::
-                directory_entry entry =
-                    *iterator;
-
-            iterator.increment(error);
-
-            if (
-                error ||
-                !entry.is_regular_file(error) ||
-                error ||
-                !IsSupportedExtension(
-                    entry.path()))
-            {
-                error.clear();
-                continue;
-            }
-
-            std::error_code relativeError;
-
-            const std::filesystem::path relative =
-                std::filesystem::relative(
-                    entry.path(),
+            if (!std::filesystem::is_directory(
                     dataRoot_,
-                    relativeError);
-
-            AssetEntry asset;
-
-            asset.sourcePath =
-                entry.path();
-
-            const std::wstring extension =
-                Lowercase(
-                    entry.path().
-                        extension().
-                        wstring());
-
-            if (extension == L".sco")
+                    filesystemError) ||
+                filesystemError)
             {
-                asset.displayName = L"[SCO] ";
-            }
-            else if (extension == L".scb")
-            {
-                asset.displayName = L"[SCB] ";
-            }
-            else
-            {
-                asset.displayName =
-                    L"[LTS] ";
+                RebuildVisibleList();
+                return;
             }
 
-            asset.displayName +=
-                relativeError
-                    ? entry.path().
-                        filename().
-                        wstring()
-                    : relative.
-                        generic_wstring();
+            const auto options =
+                std::filesystem::
+                    directory_options::
+                        skip_permission_denied;
 
-            assets_.push_back(
-                std::move(asset));
+            std::filesystem::
+                recursive_directory_iterator iterator(
+                    dataRoot_,
+                    options,
+                    filesystemError);
+
+            const std::filesystem::
+                recursive_directory_iterator end;
+
+            while (iterator != end)
+            {
+                const std::filesystem::
+                    directory_entry entry =
+                        *iterator;
+
+                iterator.increment(
+                    filesystemError);
+
+                if (filesystemError)
+                {
+                    filesystemError.clear();
+                }
+
+                std::error_code entryError;
+
+                if (
+                    !entry.is_regular_file(
+                        entryError) ||
+                    entryError ||
+                    !IsSupportedExtension(
+                        entry.path()))
+                {
+                    continue;
+                }
+
+                std::error_code relativeError;
+
+                const std::filesystem::path relative =
+                    std::filesystem::relative(
+                        entry.path(),
+                        dataRoot_,
+                        relativeError);
+
+                AssetEntry asset;
+
+                asset.sourcePath =
+                    entry.path();
+
+                const std::wstring extension =
+                    Lowercase(
+                        entry.path().
+                            extension().
+                            wstring());
+
+                if (extension == L".sco")
+                {
+                    asset.displayName =
+                        L"[SCO] ";
+                }
+                else if (extension == L".scb")
+                {
+                    asset.displayName =
+                        L"[SCB] ";
+                }
+                else
+                {
+                    asset.displayName =
+                        L"[LTS] ";
+                }
+
+                asset.displayName +=
+                    relativeError
+                        ? entry.path().
+                            filename().
+                            wstring()
+                        : relative.
+                            generic_wstring();
+
+                assets_.push_back(
+                    std::move(asset));
+            }
+
+            std::sort(
+                assets_.begin(),
+                assets_.end(),
+                [](const AssetEntry& left,
+                   const AssetEntry& right)
+                {
+                    return
+                        Lowercase(
+                            left.displayName) <
+                        Lowercase(
+                            right.displayName);
+                });
         }
-
-        std::sort(
-            assets_.begin(),
-            assets_.end(),
-            [](const AssetEntry& left,
-               const AssetEntry& right)
-            {
-                return
-                    Lowercase(left.displayName) <
-                    Lowercase(right.displayName);
-            });
+        catch (...)
+        {
+            assets_.clear();
+        }
 
         RebuildVisibleList();
     }
@@ -733,55 +771,68 @@ namespace lts::editor
         SendMessageW(
             list,
             LB_RESETCONTENT,
-            0,
+            0U,
             0);
 
-        const std::wstring filter =
-            Lowercase(
-                ReadWindowText(
-                    ToWindow(filterEdit_)));
-
-        for (
-            std::size_t index = 0U;
-            index < assets_.size();
-            ++index)
+        try
         {
-            const std::wstring searchable =
+            const std::wstring filter =
                 Lowercase(
-                    assets_[index].displayName);
+                    ReadWindowText(
+                        ToWindow(
+                            filterEdit_)));
 
-            if (
-                !filter.empty() &&
-                searchable.find(filter) ==
-                    std::wstring::npos)
+            for (
+                std::size_t index = 0U;
+                index < assets_.size();
+                ++index)
             {
-                continue;
-            }
+                const std::wstring searchable =
+                    Lowercase(
+                        assets_[index].
+                            displayName);
 
-            const LRESULT item =
+                if (
+                    !filter.empty() &&
+                    searchable.find(filter) ==
+                        std::wstring::npos)
+                {
+                    continue;
+                }
+
+                const LRESULT item =
+                    SendMessageW(
+                        list,
+                        LB_ADDSTRING,
+                        0U,
+                        reinterpret_cast<LPARAM>(
+                            assets_[index].
+                                displayName.
+                                c_str()));
+
+                if (
+                    item == LB_ERR ||
+                    item == LB_ERRSPACE)
+                {
+                    continue;
+                }
+
                 SendMessageW(
                     list,
-                    LB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>(
-                        assets_[index].
-                            displayName.
-                            c_str()));
-
-            if (
-                item == LB_ERR ||
-                item == LB_ERRSPACE)
-            {
-                continue;
+                    LB_SETITEMDATA,
+                    static_cast<WPARAM>(
+                        item),
+                    static_cast<LPARAM>(
+                        index));
             }
-
+        }
+        catch (...)
+        {
             SendMessageW(
                 list,
-                LB_SETITEMDATA,
-                static_cast<WPARAM>(
-                    item),
-                static_cast<LPARAM>(
-                    index));
+                LB_RESETCONTENT,
+                0U,
+                0);
         }
     }
 
@@ -800,7 +851,7 @@ namespace lts::editor
             SendMessageW(
                 list,
                 LB_GETCURSEL,
-                0,
+                0U,
                 0);
 
         if (selectedItem == LB_ERR)
@@ -849,6 +900,12 @@ namespace lts::editor
                 runtimePath,
                 error))
         {
+            if (error.empty())
+            {
+                error =
+                    L"Failed to prepare the selected mesh.";
+            }
+
             MessageBoxW(
                 ToWindow(mainWindow_),
                 error.c_str(),
@@ -879,6 +936,8 @@ namespace lts::editor
             std::filesystem::path& runtimePath,
             std::wstring& error) const
     {
+        error.clear();
+
         const std::wstring extension =
             Lowercase(
                 entry.sourcePath.
@@ -921,7 +980,7 @@ namespace lts::editor
             std::error_code filesystemError;
 
             if (
-                std::filesystem::exists(
+                std::filesystem::is_regular_file(
                     finalPath,
                     filesystemError) &&
                 !filesystemError)
@@ -949,17 +1008,27 @@ namespace lts::editor
                 }
             }
 
-            if (
-                conversionRequired &&
-                !engine::assets::
-                    MeshAssetIO::
-                        ConvertLegacyMesh(
+            if (conversionRequired)
+            {
+                const engine::assets::AssetResult result =
+                    engine::assets::
+                        LegacyMeshImporter::Import(
                             entry.sourcePath,
                             finalPath,
-                            error))
-            {
-                return false;
+                            error);
+
+                if (engine::assets::Failed(result))
+                {
+                    return false;
+                }
             }
+        }
+        else if (extension != L".ltsmesh")
+        {
+            error =
+                L"Unsupported mesh extension.";
+
+            return false;
         }
 
         std::error_code currentPathError;
@@ -970,7 +1039,9 @@ namespace lts::editor
 
         if (currentPathError)
         {
-            runtimePath = finalPath;
+            runtimePath =
+                finalPath.lexically_normal();
+
             return true;
         }
 

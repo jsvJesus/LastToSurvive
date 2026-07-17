@@ -1,4 +1,5 @@
 #include "Editor/EditorSceneRenderer.h"
+#include "Editor/EditorShaderCompiler.h"
 
 #include <Core/Log.h>
 
@@ -28,37 +29,7 @@ namespace lts::editor
         constexpr std::size_t MaxMarkerVertices = 4096U;
         constexpr std::size_t CircleSegments = 48U;
 
-        constexpr const char* SceneMarkerShaderSource = R"(
-cbuffer CameraBuffer : register(b0)
-{
-    row_major float4x4 ViewProjection;
-};
-
-struct VertexInput
-{
-    float3 position : POSITION;
-    float4 color : COLOR0;
-};
-
-struct VertexOutput
-{
-    float4 position : SV_POSITION;
-    float4 color : COLOR0;
-};
-
-VertexOutput VSMain(VertexInput input)
-{
-    VertexOutput output;
-    output.position = mul(float4(input.position, 1.0f), ViewProjection);
-    output.color = input.color;
-    return output;
-}
-
-float4 PSMain(VertexOutput input) : SV_TARGET
-{
-    return input.color;
-}
-)";
+        constexpr wchar_t SceneMarkerShaderFile[] = L"SceneMarkers.hlsl";
 
         using MarkerColor = std::array<float, 4U>;
 
@@ -927,62 +898,16 @@ float4 PSMain(VertexOutput input) : SV_TARGET
 
         [[nodiscard]]
         bool CompileShader(
-            const char* const entryPoint,
-            const char* const target,
-            ComPtr<ID3DBlob>& bytecode) noexcept
+        const char* const entryPoint,
+        const char* const target,
+        ComPtr<ID3DBlob>& bytecode) noexcept
         {
-            if (entryPoint == nullptr || target == nullptr)
-            {
-                return false;
-            }
-
-            bytecode.Reset();
-
-            ComPtr<ID3DBlob> errors;
-
-            constexpr UINT compileFlags =
-                D3DCOMPILE_ENABLE_STRICTNESS |
-                D3DCOMPILE_WARNINGS_ARE_ERRORS |
-                D3DCOMPILE_OPTIMIZATION_LEVEL3;
-
-            const HRESULT result = D3DCompile(
-                SceneMarkerShaderSource,
-                std::char_traits<char>::length(
-                    SceneMarkerShaderSource),
-                "EditorSceneMarkers.hlsl",
-                nullptr,
-                nullptr,
+            return CompileEditorShaderFile(
+                SceneMarkerShaderFile,
                 entryPoint,
                 target,
-                compileFlags,
-                0,
-                bytecode.GetAddressOf(),
-                errors.GetAddressOf());
-
-            if (SUCCEEDED(result))
-            {
-                return true;
-            }
-
-            if (
-                errors != nullptr &&
-                errors->GetBufferPointer() != nullptr)
-            {
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Error,
-                    "LTS.Editor.SceneRenderer",
-                    static_cast<const char*>(
-                        errors->GetBufferPointer()));
-            }
-            else
-            {
-                engine::core::GetLogger().Write(
-                    engine::core::LogLevel::Error,
-                    "LTS.Editor.SceneRenderer",
-                    "Failed to compile scene marker shader.");
-            }
-
-            return false;
+                "LTS.Editor.SceneRenderer",
+                bytecode);
         }
 
         void LogGraphicsFailure(
