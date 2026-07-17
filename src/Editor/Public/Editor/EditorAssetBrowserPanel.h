@@ -5,6 +5,7 @@
 #include <Windows.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -34,12 +35,30 @@ namespace lts::editor
         bool ConsumeActivatedAsset(
             std::filesystem::path& assetPath);
 
+        enum class AssetEntryKind : std::uint8_t
+        {
+            LegacySco = 0,
+            LegacyScb,
+            GameMesh
+        };
+
     private:
         struct AssetEntry final
         {
             std::filesystem::path sourcePath;
             std::wstring displayName;
+
+            AssetEntryKind kind =
+                AssetEntryKind::GameMesh;
         };
+
+        [[nodiscard]]
+        bool ResolveProjectPaths(
+            std::wstring& error) noexcept;
+
+        [[nodiscard]]
+        bool EnsureOutputDirectories(
+            std::wstring& error) noexcept;
 
         [[nodiscard]]
         bool CreateControls() noexcept;
@@ -50,7 +69,12 @@ namespace lts::editor
         void RestoreWindowSubclass() noexcept;
         void DestroyControls() noexcept;
         void UpdateLayout() noexcept;
+
         void ScanAssets() noexcept;
+
+        void ScanLegacyObjects() noexcept;
+        void ScanGameMeshes() noexcept;
+
         void RebuildVisibleList() noexcept;
         void QueueSelectedAsset() noexcept;
         void ProcessRequestedAsset() noexcept;
@@ -79,7 +103,13 @@ namespace lts::editor
 
         void* previousWindowProcedure_ = nullptr;
 
-        std::filesystem::path dataRoot_;
+        std::filesystem::path projectRoot_;
+        std::filesystem::path gameRoot_;
+
+        std::filesystem::path legacyObjectsRoot_;
+        std::filesystem::path meshesRoot_;
+        std::filesystem::path materialsRoot_;
+        std::filesystem::path texturesRoot_;
 
         std::vector<AssetEntry> assets_;
 

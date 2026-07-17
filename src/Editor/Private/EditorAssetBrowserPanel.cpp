@@ -7,6 +7,7 @@
 #include <commctrl.h>
 
 #include <algorithm>
+#include <array>
 #include <cwctype>
 #include <filesystem>
 #include <string>
@@ -26,6 +27,9 @@ namespace lts::editor
         constexpr int IdAssetFilter = 5101;
         constexpr int IdAssetRefresh = 5102;
         constexpr int IdAssetList = 5103;
+
+        constexpr std::size_t InvalidAssetIndex =
+            static_cast<std::size_t>(-1);
 
         [[nodiscard]]
         HWND ToWindow(
@@ -61,7 +65,7 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool IsSupportedExtension(
+        bool IsLegacyMeshExtension(
             const std::filesystem::path& path)
         {
             const std::wstring extension =
@@ -70,8 +74,197 @@ namespace lts::editor
 
             return
                 extension == L".sco" ||
-                extension == L".scb" ||
-                extension == L".ltsmesh";
+                extension == L".scb";
+        }
+
+        [[nodiscard]]
+        bool IsGameMeshExtension(
+            const std::filesystem::path& path)
+        {
+            return
+                Lowercase(
+                    path.extension().wstring()) ==
+                L".ltsmesh";
+        }
+
+        [[nodiscard]]
+        bool IsProjectRoot(
+            const std::filesystem::path& path) noexcept
+        {
+            try
+            {
+                std::error_code filesystemError;
+
+                const bool hasGame =
+                    std::filesystem::is_directory(
+                        path / L"game",
+                        filesystemError);
+
+                if (
+                    filesystemError ||
+                    !hasGame)
+                {
+                    return false;
+                }
+
+                filesystemError.clear();
+
+                const bool hasBin =
+                    std::filesystem::is_directory(
+                        path / L"bin",
+                        filesystemError);
+
+                return
+                    !filesystemError &&
+                    hasBin;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        bool FindProjectRoot(
+            std::filesystem::path startPath,
+            std::filesystem::path& projectRoot) noexcept
+        {
+            try
+            {
+                if (startPath.empty())
+                {
+                    return false;
+                }
+
+                std::error_code filesystemError;
+
+                startPath =
+                    std::filesystem::absolute(
+                        startPath,
+                        filesystemError);
+
+                if (filesystemError)
+                {
+                    return false;
+                }
+
+                if (std::filesystem::is_regular_file(
+                        startPath,
+                        filesystemError))
+                {
+                    if (filesystemError)
+                    {
+                        return false;
+                    }
+
+                    startPath =
+                        startPath.parent_path();
+                }
+
+                startPath =
+                    startPath.lexically_normal();
+
+                std::filesystem::path current =
+                    startPath;
+
+                for (
+                    std::size_t depth = 0U;
+                    depth < 12U;
+                    ++depth)
+                {
+                    if (IsProjectRoot(current))
+                    {
+                        projectRoot = current;
+                        return true;
+                    }
+
+                    if (
+                        Lowercase(
+                            current.filename().
+                                wstring()) ==
+                            L"game" &&
+                        IsProjectRoot(
+                            current.parent_path()))
+                    {
+                        projectRoot =
+                            current.parent_path();
+
+                        return true;
+                    }
+
+                    const std::filesystem::path parent =
+                        current.parent_path();
+
+                    if (
+                        parent.empty() ||
+                        parent == current)
+                    {
+                        break;
+                    }
+
+                    current = parent;
+                }
+
+                return false;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        std::filesystem::path
+            GetExecutableDirectory() noexcept
+        {
+            try
+            {
+                std::array<wchar_t, 32768U>
+                    executablePath{};
+
+                const DWORD length =
+                    GetModuleFileNameW(
+                        nullptr,
+                        executablePath.data(),
+                        static_cast<DWORD>(
+                            executablePath.size()));
+
+                if (
+                    length == 0U ||
+                    length >=
+                        executablePath.size())
+                {
+                    return {};
+                }
+
+                return
+                    std::filesystem::path(
+                        std::wstring(
+                            executablePath.data(),
+                            length)).
+                        parent_path();
+            }
+            catch (...)
+            {
+                return {};
+            }
+        }
+
+        [[nodiscard]]
+        bool ContainsParentTraversal(
+            const std::filesystem::path& path)
+        {
+            for (
+                const std::filesystem::path& segment :
+                path)
+            {
+                if (segment == L"..")
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         [[nodiscard]]
@@ -172,6 +365,28 @@ namespace lts::editor
 
             return text;
         }
+
+        [[nodiscard]]
+        const wchar_t* GetEntryPrefix(
+            const EditorAssetBrowserPanel::
+                AssetEntryKind kind) noexcept
+        {
+            switch (kind)
+            {
+                case EditorAssetBrowserPanel::
+                    AssetEntryKind::LegacySco:
+                    return L"[LEGACY SCO] ";
+
+                case EditorAssetBrowserPanel::
+                    AssetEntryKind::LegacyScb:
+                    return L"[LEGACY SCB] ";
+
+                case EditorAssetBrowserPanel::
+                    AssetEntryKind::GameMesh:
+                default:
+                    return L"[GAME MESH] ";
+            }
+        }
     }
 
     EditorAssetBrowserPanel::
@@ -218,18 +433,28 @@ namespace lts::editor
         mainWindow_ = root;
         anchorWindow_ = anchor;
 
-        std::error_code filesystemError;
+        std::wstring error;
 
-        dataRoot_ =
-            std::filesystem::current_path(
-                filesystemError);
-
-        if (filesystemError)
+        if (
+            !ResolveProjectPaths(error) ||
+            !EnsureOutputDirectories(error))
         {
-            dataRoot_ = L".";
-        }
+            if (error.empty())
+            {
+                error =
+                    L"Failed to initialize asset workspace paths.";
+            }
 
-        dataRoot_ /= L"Data";
+            MessageBoxW(
+                root,
+                error.c_str(),
+                L"Asset Browser",
+                MB_OK |
+                MB_ICONERROR);
+
+            Shutdown();
+            return false;
+        }
 
         if (
             !CreateControls() ||
@@ -269,14 +494,21 @@ namespace lts::editor
 
         assets_.clear();
         pendingAssetPath_.clear();
-        dataRoot_.clear();
+
+        projectRoot_.clear();
+        gameRoot_.clear();
+
+        legacyObjectsRoot_.clear();
+        meshesRoot_.clear();
+        materialsRoot_.clear();
+        texturesRoot_.clear();
 
         mainWindow_ = nullptr;
         anchorWindow_ = nullptr;
         font_ = nullptr;
 
         requestedAssetIndex_ =
-            static_cast<std::size_t>(-1);
+            InvalidAssetIndex;
 
         scanRequested_ = false;
         activationRequested_ = false;
@@ -323,6 +555,173 @@ namespace lts::editor
         pendingAssetReady_ = false;
 
         return true;
+    }
+
+    bool EditorAssetBrowserPanel::
+        ResolveProjectPaths(
+            std::wstring& error) noexcept
+    {
+        error.clear();
+
+        try
+        {
+            std::filesystem::path foundRoot;
+
+            std::error_code currentPathError;
+
+            const std::filesystem::path currentPath =
+                std::filesystem::current_path(
+                    currentPathError);
+
+            if (
+                !currentPathError &&
+                FindProjectRoot(
+                    currentPath,
+                    foundRoot))
+            {
+                projectRoot_ =
+                    foundRoot.lexically_normal();
+            }
+            else
+            {
+                const std::filesystem::path
+                    executableDirectory =
+                        GetExecutableDirectory();
+
+                if (
+                    executableDirectory.empty() ||
+                    !FindProjectRoot(
+                        executableDirectory,
+                        foundRoot))
+                {
+                    error =
+                        L"Project root was not found. "
+                        L"The editor expects folders \"game\" and "
+                        L"\"bin\" under one common project directory.";
+
+                    return false;
+                }
+
+                projectRoot_ =
+                    foundRoot.lexically_normal();
+            }
+
+            gameRoot_ =
+                projectRoot_ /
+                L"game";
+
+            legacyObjectsRoot_ =
+                projectRoot_ /
+                L"bin" /
+                L"Data" /
+                L"ObjectsDepot";
+
+            meshesRoot_ =
+                gameRoot_ /
+                L"Data" /
+                L"Meshes";
+
+            materialsRoot_ =
+                gameRoot_ /
+                L"Data" /
+                L"Materials";
+
+            texturesRoot_ =
+                gameRoot_ /
+                L"Data" /
+                L"Textures";
+
+            std::error_code filesystemError;
+
+            if (!std::filesystem::is_directory(
+                    gameRoot_,
+                    filesystemError) ||
+                filesystemError)
+            {
+                error =
+                    L"The game directory does not exist:\n";
+
+                error +=
+                    gameRoot_.wstring();
+
+                return false;
+            }
+
+            filesystemError.clear();
+
+            if (!std::filesystem::is_directory(
+                    legacyObjectsRoot_,
+                    filesystemError) ||
+                filesystemError)
+            {
+                error =
+                    L"The legacy ObjectsDepot directory does not exist:\n";
+
+                error +=
+                    legacyObjectsRoot_.wstring();
+
+                return false;
+            }
+
+            return true;
+        }
+        catch (...)
+        {
+            error =
+                L"Unexpected failure while resolving project paths.";
+
+            return false;
+        }
+    }
+
+    bool EditorAssetBrowserPanel::
+        EnsureOutputDirectories(
+            std::wstring& error) noexcept
+    {
+        error.clear();
+
+        try
+        {
+            const std::array<
+                std::filesystem::path,
+                3U> directories
+            {
+                meshesRoot_,
+                materialsRoot_,
+                texturesRoot_
+            };
+
+            for (
+                const std::filesystem::path& directory :
+                directories)
+            {
+                std::error_code filesystemError;
+
+                std::filesystem::create_directories(
+                    directory,
+                    filesystemError);
+
+                if (filesystemError)
+                {
+                    error =
+                        L"Failed to create asset output directory:\n";
+
+                    error +=
+                        directory.wstring();
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (...)
+        {
+            error =
+                L"Unexpected failure while creating asset directories.";
+
+            return false;
+        }
     }
 
     bool EditorAssetBrowserPanel::
@@ -376,6 +775,7 @@ namespace lts::editor
                 L"LISTBOX",
                 L"",
                 WS_VSCROLL |
+                WS_HSCROLL |
                 LBS_NOTIFY |
                 LBS_NOINTEGRALHEIGHT,
                 IdAssetList);
@@ -393,7 +793,7 @@ namespace lts::editor
             EM_SETCUEBANNER,
             TRUE,
             reinterpret_cast<LPARAM>(
-                L"Filter meshes..."));
+                L"Filter legacy and game meshes..."));
 
         font_ =
             GetStockObject(
@@ -566,10 +966,10 @@ namespace lts::editor
 
         const int width =
             (std::max)(
-        static_cast<int>(
-            points[1].x -
-            points[0].x),
-        1);
+                static_cast<int>(
+                    points[1].x -
+                    points[0].x),
+                1);
 
         const int height =
             (std::max)(
@@ -580,8 +980,10 @@ namespace lts::editor
 
         MoveWindow(
             panel,
-            points[0].x,
-            points[0].y,
+            static_cast<int>(
+                points[0].x),
+            static_cast<int>(
+                points[0].y),
             width,
             height,
             TRUE);
@@ -594,7 +996,7 @@ namespace lts::editor
             ToWindow(filterEdit_),
             Margin,
             Margin,
-            std::max(
+            (std::max)(
                 width -
                     RefreshWidth -
                     Margin * 3,
@@ -604,7 +1006,7 @@ namespace lts::editor
 
         MoveWindow(
             ToWindow(refreshButton_),
-            std::max(
+            (std::max)(
                 width -
                     RefreshWidth -
                     Margin,
@@ -619,11 +1021,11 @@ namespace lts::editor
             Margin,
             ToolbarHeight +
                 Margin * 2,
-            std::max(
+            (std::max)(
                 width -
                     Margin * 2,
                 1),
-            std::max(
+            (std::max)(
                 height -
                     ToolbarHeight -
                     Margin * 3,
@@ -636,16 +1038,46 @@ namespace lts::editor
     {
         assets_.clear();
 
+        ScanLegacyObjects();
+        ScanGameMeshes();
+
+        std::sort(
+            assets_.begin(),
+            assets_.end(),
+            [](const AssetEntry& left,
+               const AssetEntry& right)
+            {
+                if (left.kind != right.kind)
+                {
+                    return
+                        static_cast<std::uint8_t>(
+                            left.kind) <
+                        static_cast<std::uint8_t>(
+                            right.kind);
+                }
+
+                return
+                    Lowercase(
+                        left.displayName) <
+                    Lowercase(
+                        right.displayName);
+            });
+
+        RebuildVisibleList();
+    }
+
+    void EditorAssetBrowserPanel::
+        ScanLegacyObjects() noexcept
+    {
         try
         {
             std::error_code filesystemError;
 
             if (!std::filesystem::is_directory(
-                    dataRoot_,
+                    legacyObjectsRoot_,
                     filesystemError) ||
                 filesystemError)
             {
-                RebuildVisibleList();
                 return;
             }
 
@@ -656,7 +1088,7 @@ namespace lts::editor
 
             std::filesystem::
                 recursive_directory_iterator iterator(
-                    dataRoot_,
+                    legacyObjectsRoot_,
                     options,
                     filesystemError);
 
@@ -683,7 +1115,7 @@ namespace lts::editor
                     !entry.is_regular_file(
                         entryError) ||
                     entryError ||
-                    !IsSupportedExtension(
+                    !IsLegacyMeshExtension(
                         entry.path()))
                 {
                     continue;
@@ -694,8 +1126,16 @@ namespace lts::editor
                 const std::filesystem::path relative =
                     std::filesystem::relative(
                         entry.path(),
-                        dataRoot_,
+                        legacyObjectsRoot_,
                         relativeError);
+
+                if (
+                    relativeError ||
+                    relative.empty() ||
+                    ContainsParentTraversal(relative))
+                {
+                    continue;
+                }
 
                 AssetEntry asset;
 
@@ -708,53 +1148,122 @@ namespace lts::editor
                             extension().
                             wstring());
 
-                if (extension == L".sco")
-                {
-                    asset.displayName =
-                        L"[SCO] ";
-                }
-                else if (extension == L".scb")
-                {
-                    asset.displayName =
-                        L"[SCB] ";
-                }
-                else
-                {
-                    asset.displayName =
-                        L"[LTS] ";
-                }
+                asset.kind =
+                    extension == L".sco"
+                        ? AssetEntryKind::LegacySco
+                        : AssetEntryKind::LegacyScb;
+
+                asset.displayName =
+                    GetEntryPrefix(asset.kind);
 
                 asset.displayName +=
-                    relativeError
-                        ? entry.path().
-                            filename().
-                            wstring()
-                        : relative.
-                            generic_wstring();
+                    relative.generic_wstring();
 
                 assets_.push_back(
                     std::move(asset));
             }
-
-            std::sort(
-                assets_.begin(),
-                assets_.end(),
-                [](const AssetEntry& left,
-                   const AssetEntry& right)
-                {
-                    return
-                        Lowercase(
-                            left.displayName) <
-                        Lowercase(
-                            right.displayName);
-                });
         }
         catch (...)
         {
-            assets_.clear();
+            // Повреждённый или недоступный файл
+            // не должен ломать весь Asset Browser.
         }
+    }
 
-        RebuildVisibleList();
+    void EditorAssetBrowserPanel::
+        ScanGameMeshes() noexcept
+    {
+        try
+        {
+            std::error_code filesystemError;
+
+            if (!std::filesystem::is_directory(
+                    meshesRoot_,
+                    filesystemError) ||
+                filesystemError)
+            {
+                return;
+            }
+
+            const auto options =
+                std::filesystem::
+                    directory_options::
+                        skip_permission_denied;
+
+            std::filesystem::
+                recursive_directory_iterator iterator(
+                    meshesRoot_,
+                    options,
+                    filesystemError);
+
+            const std::filesystem::
+                recursive_directory_iterator end;
+
+            while (iterator != end)
+            {
+                const std::filesystem::
+                    directory_entry entry =
+                        *iterator;
+
+                iterator.increment(
+                    filesystemError);
+
+                if (filesystemError)
+                {
+                    filesystemError.clear();
+                }
+
+                std::error_code entryError;
+
+                if (
+                    !entry.is_regular_file(
+                        entryError) ||
+                    entryError ||
+                    !IsGameMeshExtension(
+                        entry.path()))
+                {
+                    continue;
+                }
+
+                std::error_code relativeError;
+
+                const std::filesystem::path relative =
+                    std::filesystem::relative(
+                        entry.path(),
+                        meshesRoot_,
+                        relativeError);
+
+                if (
+                    relativeError ||
+                    relative.empty() ||
+                    ContainsParentTraversal(relative))
+                {
+                    continue;
+                }
+
+                AssetEntry asset;
+
+                asset.sourcePath =
+                    entry.path();
+
+                asset.kind =
+                    AssetEntryKind::GameMesh;
+
+                asset.displayName =
+                    GetEntryPrefix(asset.kind);
+
+                asset.displayName +=
+                    relative.generic_wstring();
+
+                assets_.push_back(
+                    std::move(asset));
+            }
+        }
+        catch (...)
+        {
+            // Повреждённый или недоступный файл
+            // не должен ломать весь Asset Browser.
+        }
     }
 
     void EditorAssetBrowserPanel::
@@ -781,6 +1290,8 @@ namespace lts::editor
                     ReadWindowText(
                         ToWindow(
                             filterEdit_)));
+
+            int widestTextLength = 0;
 
             for (
                 std::size_t index = 0U;
@@ -824,7 +1335,23 @@ namespace lts::editor
                         item),
                     static_cast<LPARAM>(
                         index));
+
+                widestTextLength =
+                    (std::max)(
+                        widestTextLength,
+                        static_cast<int>(
+                            assets_[index].
+                                displayName.
+                                size()) *
+                            8);
             }
+
+            SendMessageW(
+                list,
+                LB_SETHORIZONTALEXTENT,
+                static_cast<WPARAM>(
+                    widestTextLength),
+                0);
         }
         catch (...)
         {
@@ -887,7 +1414,7 @@ namespace lts::editor
             assets_.size())
         {
             requestedAssetIndex_ =
-                static_cast<std::size_t>(-1);
+                InvalidAssetIndex;
 
             return;
         }
@@ -914,7 +1441,7 @@ namespace lts::editor
                 MB_ICONERROR);
 
             requestedAssetIndex_ =
-                static_cast<std::size_t>(-1);
+                InvalidAssetIndex;
 
             return;
         }
@@ -925,7 +1452,7 @@ namespace lts::editor
         pendingAssetReady_ = true;
 
         requestedAssetIndex_ =
-            static_cast<std::size_t>(-1);
+            InvalidAssetIndex;
 
         scanRequested_ = true;
     }
@@ -937,131 +1464,154 @@ namespace lts::editor
             std::wstring& error) const
     {
         error.clear();
+        runtimePath.clear();
 
-        const std::wstring extension =
-            Lowercase(
-                entry.sourcePath.
-                    extension().
-                    wstring());
-
-        std::filesystem::path finalPath =
-            entry.sourcePath;
-
-        if (
-            extension == L".sco" ||
-            extension == L".scb")
+        try
         {
-            std::error_code relativeError;
-
-            std::filesystem::path relative =
-                std::filesystem::relative(
-                    entry.sourcePath,
-                    dataRoot_,
-                    relativeError);
-
-            if (relativeError)
-            {
-                relative =
-                    entry.sourcePath.
-                        filename();
-            }
-
-            finalPath =
-                dataRoot_ /
-                L"Imported" /
-                L"Meshes" /
-                relative;
-
-            finalPath.replace_extension(
-                L".ltsmesh");
-
-            bool conversionRequired = true;
-
-            std::error_code filesystemError;
+            std::filesystem::path finalPath;
 
             if (
-                std::filesystem::is_regular_file(
-                    finalPath,
-                    filesystemError) &&
-                !filesystemError)
+                entry.kind ==
+                    AssetEntryKind::LegacySco ||
+                entry.kind ==
+                    AssetEntryKind::LegacyScb)
             {
-                const auto sourceTime =
-                    std::filesystem::
-                        last_write_time(
-                            entry.sourcePath,
-                            filesystemError);
+                std::error_code relativeError;
 
-                if (!filesystemError)
+                std::filesystem::path relative =
+                    std::filesystem::relative(
+                        entry.sourcePath,
+                        legacyObjectsRoot_,
+                        relativeError);
+
+                if (
+                    relativeError ||
+                    relative.empty() ||
+                    ContainsParentTraversal(relative))
                 {
-                    const auto destinationTime =
+                    error =
+                        L"Legacy mesh is outside ObjectsDepot.";
+
+                    return false;
+                }
+
+                finalPath =
+                    meshesRoot_ /
+                    relative;
+
+                finalPath.replace_extension(
+                    L".ltsmesh");
+
+                bool conversionRequired = true;
+
+                std::error_code filesystemError;
+
+                if (
+                    std::filesystem::is_regular_file(
+                        finalPath,
+                        filesystemError) &&
+                    !filesystemError)
+                {
+                    const auto sourceTime =
                         std::filesystem::
                             last_write_time(
-                                finalPath,
+                                entry.sourcePath,
                                 filesystemError);
 
-                    if (
-                        !filesystemError &&
-                        destinationTime >= sourceTime)
+                    if (!filesystemError)
                     {
-                        conversionRequired = false;
+                        const auto destinationTime =
+                            std::filesystem::
+                                last_write_time(
+                                    finalPath,
+                                    filesystemError);
+
+                        if (
+                            !filesystemError &&
+                            destinationTime >=
+                                sourceTime)
+                        {
+                            conversionRequired =
+                                false;
+                        }
+                    }
+                }
+
+                if (conversionRequired)
+                {
+                    const engine::assets::
+                        AssetResult result =
+                            engine::assets::
+                                LegacyMeshImporter::
+                                    Import(
+                                        entry.sourcePath,
+                                        finalPath,
+                                        error);
+
+                    if (
+                        engine::assets::Failed(
+                            result))
+                    {
+                        return false;
                     }
                 }
             }
-
-            if (conversionRequired)
+            else
             {
-                const engine::assets::AssetResult result =
-                    engine::assets::
-                        LegacyMeshImporter::Import(
-                            entry.sourcePath,
-                            finalPath,
-                            error);
-
-                if (engine::assets::Failed(result))
-                {
-                    return false;
-                }
+                finalPath =
+                    entry.sourcePath;
             }
-        }
-        else if (extension != L".ltsmesh")
-        {
-            error =
-                L"Unsupported mesh extension.";
 
-            return false;
-        }
+            std::error_code fileError;
 
-        std::error_code currentPathError;
+            if (!std::filesystem::is_regular_file(
+                    finalPath,
+                    fileError) ||
+                fileError)
+            {
+                error =
+                    L"The converted mesh file does not exist:\n";
 
-        const std::filesystem::path gameRoot =
-            std::filesystem::current_path(
-                currentPathError);
+                error +=
+                    finalPath.wstring();
 
-        if (currentPathError)
-        {
+                return false;
+            }
+
+            std::error_code relativeError;
+
             runtimePath =
-                finalPath.lexically_normal();
+                std::filesystem::relative(
+                    finalPath,
+                    gameRoot_,
+                    relativeError);
+
+            if (
+                relativeError ||
+                runtimePath.empty() ||
+                ContainsParentTraversal(
+                    runtimePath))
+            {
+                error =
+                    L"The mesh path cannot be converted "
+                    L"to a game-relative path.";
+
+                return false;
+            }
+
+            runtimePath =
+                runtimePath.lexically_normal();
 
             return true;
         }
-
-        std::error_code relativeError;
-
-        runtimePath =
-            std::filesystem::relative(
-                finalPath,
-                gameRoot,
-                relativeError);
-
-        if (relativeError)
+        catch (...)
         {
-            runtimePath = finalPath;
+            error =
+                L"Unexpected failure while preparing the mesh.";
+
+            runtimePath.clear();
+            return false;
         }
-
-        runtimePath =
-            runtimePath.lexically_normal();
-
-        return true;
     }
 
     LRESULT CALLBACK
