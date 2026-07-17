@@ -725,10 +725,15 @@ namespace lts::editor
     }
 
     bool EditorAssetBrowserPanel::
-        CreateControls() noexcept
+    CreateControls() noexcept
     {
         const HWND root =
             ToWindow(mainWindow_);
+
+        if (root == nullptr)
+        {
+            return false;
+        }
 
         const HWND panel =
             CreateChild(
@@ -737,7 +742,8 @@ namespace lts::editor
                 L"STATIC",
                 L"",
                 SS_LEFT |
-                WS_CLIPCHILDREN,
+                WS_CLIPCHILDREN |
+                WS_CLIPSIBLINGS,
                 IdAssetPanel);
 
         if (panel == nullptr)
@@ -747,37 +753,49 @@ namespace lts::editor
 
         panelWindow_ = panel;
 
+        /*
+         * Элементы управления создаются дочерними
+         * элементами главного окна, а не panel.
+         *
+         * Поэтому WM_COMMAND, EN_CHANGE, BN_CLICKED
+         * и LBN_DBLCLK приходят в WindowProcedure
+         * главного окна.
+         */
         filterEdit_ =
             CreateChild(
-                panel,
+                root,
                 WS_EX_CLIENTEDGE,
                 L"EDIT",
                 L"",
                 ES_LEFT |
                 ES_AUTOHSCROLL |
-                WS_TABSTOP,
+                WS_TABSTOP |
+                WS_CLIPSIBLINGS,
                 IdAssetFilter);
 
         refreshButton_ =
             CreateChild(
-                panel,
+                root,
                 0U,
                 L"BUTTON",
                 L"Refresh",
                 BS_PUSHBUTTON |
-                WS_TABSTOP,
+                WS_TABSTOP |
+                WS_CLIPSIBLINGS,
                 IdAssetRefresh);
 
         assetList_ =
             CreateChild(
-                panel,
+                root,
                 WS_EX_CLIENTEDGE,
                 L"LISTBOX",
                 L"",
                 WS_VSCROLL |
                 WS_HSCROLL |
                 LBS_NOTIFY |
-                LBS_NOINTEGRALHEIGHT,
+                LBS_NOINTEGRALHEIGHT |
+                WS_TABSTOP |
+                WS_CLIPSIBLINGS,
                 IdAssetList);
 
         if (
@@ -785,6 +803,11 @@ namespace lts::editor
             ToWindow(refreshButton_) == nullptr ||
             ToWindow(assetList_) == nullptr)
         {
+            DestroyWindowSafe(assetList_);
+            DestroyWindowSafe(refreshButton_);
+            DestroyWindowSafe(filterEdit_);
+            DestroyWindowSafe(panelWindow_);
+
             return false;
         }
 
@@ -803,7 +826,9 @@ namespace lts::editor
             static_cast<HFONT>(
                 font_);
 
-        ApplyFont(panel, font);
+        ApplyFont(
+            panel,
+            font);
 
         ApplyFont(
             ToWindow(filterEdit_),
@@ -816,6 +841,21 @@ namespace lts::editor
         ApplyFont(
             ToWindow(assetList_),
             font);
+
+        /*
+         * Гарантируем, что фон находится позади
+         * фильтра, кнопки и списка.
+         */
+        SetWindowPos(
+            panel,
+            HWND_BOTTOM,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE);
 
         return true;
     }
@@ -918,7 +958,7 @@ namespace lts::editor
     }
 
     void EditorAssetBrowserPanel::
-        UpdateLayout() noexcept
+    UpdateLayout() noexcept
     {
         const HWND root =
             ToWindow(mainWindow_);
@@ -929,10 +969,22 @@ namespace lts::editor
         const HWND panel =
             ToWindow(panelWindow_);
 
+        const HWND filter =
+            ToWindow(filterEdit_);
+
+        const HWND refresh =
+            ToWindow(refreshButton_);
+
+        const HWND list =
+            ToWindow(assetList_);
+
         if (
             root == nullptr ||
             anchor == nullptr ||
-            panel == nullptr)
+            panel == nullptr ||
+            filter == nullptr ||
+            refresh == nullptr ||
+            list == nullptr)
         {
             return;
         }
@@ -964,6 +1016,14 @@ namespace lts::editor
             points,
             2U);
 
+        const int originX =
+            static_cast<int>(
+                points[0].x);
+
+        const int originY =
+            static_cast<int>(
+                points[0].y);
+
         const int width =
             (std::max)(
                 static_cast<int>(
@@ -978,24 +1038,24 @@ namespace lts::editor
                     points[0].y),
                 1);
 
-        MoveWindow(
-            panel,
-            static_cast<int>(
-                points[0].x),
-            static_cast<int>(
-                points[0].y),
-            width,
-            height,
-            TRUE);
-
         constexpr int Margin = 4;
         constexpr int ToolbarHeight = 26;
         constexpr int RefreshWidth = 72;
 
         MoveWindow(
-            ToWindow(filterEdit_),
-            Margin,
-            Margin,
+            panel,
+            originX,
+            originY,
+            width,
+            height,
+            TRUE);
+
+        MoveWindow(
+            filter,
+            originX +
+                Margin,
+            originY +
+                Margin,
             (std::max)(
                 width -
                     RefreshWidth -
@@ -1005,21 +1065,25 @@ namespace lts::editor
             TRUE);
 
         MoveWindow(
-            ToWindow(refreshButton_),
-            (std::max)(
-                width -
-                    RefreshWidth -
-                    Margin,
-                Margin),
-            Margin,
+            refresh,
+            originX +
+                (std::max)(
+                    width -
+                        RefreshWidth -
+                        Margin,
+                    Margin),
+            originY +
+                Margin,
             RefreshWidth,
             ToolbarHeight,
             TRUE);
 
         MoveWindow(
-            ToWindow(assetList_),
-            Margin,
-            ToolbarHeight +
+            list,
+            originX +
+                Margin,
+            originY +
+                ToolbarHeight +
                 Margin * 2,
             (std::max)(
                 width -
@@ -1031,6 +1095,50 @@ namespace lts::editor
                     Margin * 3,
                 1),
             TRUE);
+
+        SetWindowPos(
+            panel,
+            HWND_BOTTOM,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE);
+
+        SetWindowPos(
+            filter,
+            HWND_TOP,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE);
+
+        SetWindowPos(
+            refresh,
+            HWND_TOP,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE);
+
+        SetWindowPos(
+            list,
+            HWND_TOP,
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE |
+            SWP_NOSIZE |
+            SWP_NOACTIVATE);
     }
 
     void EditorAssetBrowserPanel::
