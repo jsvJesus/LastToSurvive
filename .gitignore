@@ -151,3 +151,5 @@ packages/
 !/bin/Data/Weapons/**
 !/bin/Data/Shaders/
 /bin/Data/Shaders/**
+!/tools/LTS/
+/tools/LTS/**
