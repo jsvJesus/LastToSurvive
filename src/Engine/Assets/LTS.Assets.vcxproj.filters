@@ -32,6 +32,7 @@
     <ClInclude Include="Public\Assets\DdsTextureDecoder.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\DdsTextureLoader.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\FileAssetSource.h"><Filter>Public</Filter></ClInclude>
+    <ClInclude Include="Public\Assets\FbxStaticMeshImporter.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\GpuTexture.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\LtsMaterialWriter.h"><Filter>Public</Filter></ClInclude>
     <ClInclude Include="Public\Assets\LtsMeshWriter.h"><Filter>Public</Filter></ClInclude>
@@ -58,6 +59,7 @@
     <ClCompile Include="Private\DdsTextureDecoder.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\DdsTextureLoader.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\FileAssetSource.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\FbxStaticMeshImporter.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\GpuTexture.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\LtsMaterialWriter.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\LtsMeshWriter.cpp"><Filter>Private</Filter></ClCompile>
@@ -69,5 +71,6 @@
     <ClCompile Include="Private\MeshAssetLoader.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\TextureAsset.cpp"><Filter>Private</Filter></ClCompile>
     <ClCompile Include="Private\TextureAssetCache.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="..\..\..\External\ufbx\ufbx.c"><Filter>Private</Filter></ClCompile>
   </ItemGroup>
 </Project>

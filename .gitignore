@@ -18,6 +18,8 @@
 
 # Keep only RmlUI source package from External
 /External/*
+!/External/ufbx/
+!/External/ufbx/**
 !/External/RmlUI/
 !/External/RmlUI/**
 
@@ -117,6 +119,11 @@ r3dlog.txt
 *.bank
 *.fsb
 *.fev
+*.fbx
+*.ltsmaterial
+*.ltsmesh
+*.png
+*.dds
 
 # NuGet / .NET / Avalonia
 .nuget/
@@ -128,19 +135,19 @@ packages/
 /bin/*
 !/game/
 /game/*
+!/game/Data/
+!/game/Data/*
 !/tools/
 /tools/*
 !/bin/Data/
 /bin/Data/*
 !/bin/Data/Rml/
 !/bin/Data/Rml/**
-!/bin/Data/Shaders/
-/bin/Data/Shaders/*
 !/bin/Data/Shaders/DX9_P1/
 !/bin/Data/Shaders/DX9_P1/**
 !/bin/Data/Shaders/DX11_P1/
 !/bin/Data/Shaders/DX11_P1/**
 !/bin/Data/Weapons/
 !/bin/Data/Weapons/**
-!/game/Data/Shaders/
-!/game/Data/Shaders/**
+!/bin/Data/Shaders/
+/bin/Data/Shaders/**

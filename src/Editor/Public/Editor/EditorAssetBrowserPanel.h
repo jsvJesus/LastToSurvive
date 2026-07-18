@@ -37,9 +37,10 @@ namespace lts::editor
 
         enum class AssetEntryKind : std::uint8_t
         {
-            LegacySco = 0,
-            LegacyScb,
-            GameMesh
+            SourceFbx = 0,
+            GameMesh,
+            Material,
+            Texture
         };
 
     private:
@@ -72,7 +73,10 @@ namespace lts::editor
 
         void ScanAssets() noexcept;
 
-        void ScanLegacyObjects() noexcept;
+        void ScanAssetDirectory(
+            const std::filesystem::path& root,
+            AssetEntryKind kind,
+            const wchar_t* requiredExtension) noexcept;
         void ScanGameMeshes() noexcept;
 
         void RebuildVisibleList() noexcept;
@@ -106,7 +110,7 @@ namespace lts::editor
         std::filesystem::path projectRoot_;
         std::filesystem::path gameRoot_;
 
-        std::filesystem::path legacyObjectsRoot_;
+        std::filesystem::path sourceFbxRoot_;
         std::filesystem::path meshesRoot_;
         std::filesystem::path materialsRoot_;
         std::filesystem::path texturesRoot_;

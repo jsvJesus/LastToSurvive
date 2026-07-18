@@ -1,7 +1,7 @@
 #include "Editor/EditorAssetBrowserPanel.h"
 
 #include <Assets/AssetResult.h>
-#include <Assets/LegacyMeshImporter.h>
+#include <Assets/FbxStaticMeshImporter.h>
 
 #include <Windows.h>
 #include <commctrl.h>
@@ -62,19 +62,6 @@ namespace lts::editor
                 });
 
             return value;
-        }
-
-        [[nodiscard]]
-        bool IsLegacyMeshExtension(
-            const std::filesystem::path& path)
-        {
-            const std::wstring extension =
-                Lowercase(
-                    path.extension().wstring());
-
-            return
-                extension == L".sco" ||
-                extension == L".scb";
         }
 
         [[nodiscard]]
@@ -374,17 +361,21 @@ namespace lts::editor
             switch (kind)
             {
                 case EditorAssetBrowserPanel::
-                    AssetEntryKind::LegacySco:
-                    return L"[LEGACY SCO] ";
-
-                case EditorAssetBrowserPanel::
-                    AssetEntryKind::LegacyScb:
-                    return L"[LEGACY SCB] ";
+                    AssetEntryKind::SourceFbx:
+                    return L"[FBX STATIC] ";
 
                 case EditorAssetBrowserPanel::
                     AssetEntryKind::GameMesh:
                 default:
-                    return L"[GAME MESH] ";
+                    return L"[LTS MESH] ";
+
+                case EditorAssetBrowserPanel::
+                    AssetEntryKind::Material:
+                    return L"[MATERIAL] ";
+
+                case EditorAssetBrowserPanel::
+                    AssetEntryKind::Texture:
+                    return L"[TEXTURE] ";
             }
         }
     }
@@ -498,7 +489,7 @@ namespace lts::editor
         projectRoot_.clear();
         gameRoot_.clear();
 
-        legacyObjectsRoot_.clear();
+        sourceFbxRoot_.clear();
         meshesRoot_.clear();
         materialsRoot_.clear();
         texturesRoot_.clear();
@@ -610,11 +601,11 @@ namespace lts::editor
                 projectRoot_ /
                 L"game";
 
-            legacyObjectsRoot_ =
-                projectRoot_ /
-                L"bin" /
+            sourceFbxRoot_ =
+                gameRoot_ /
                 L"Data" /
-                L"ObjectsDepot";
+                L"SourceAssets" /
+                L"FBX";
 
             meshesRoot_ =
                 gameRoot_ /
@@ -647,22 +638,6 @@ namespace lts::editor
                 return false;
             }
 
-            filesystemError.clear();
-
-            if (!std::filesystem::is_directory(
-                    legacyObjectsRoot_,
-                    filesystemError) ||
-                filesystemError)
-            {
-                error =
-                    L"The legacy ObjectsDepot directory does not exist:\n";
-
-                error +=
-                    legacyObjectsRoot_.wstring();
-
-                return false;
-            }
-
             return true;
         }
         catch (...)
@@ -684,8 +659,14 @@ namespace lts::editor
         {
             const std::array<
                 std::filesystem::path,
-                3U> directories
+                9U> directories
             {
+                sourceFbxRoot_ / L"Environment",
+                sourceFbxRoot_ / L"Props",
+                sourceFbxRoot_ / L"Items",
+                sourceFbxRoot_ / L"Weapons",
+                sourceFbxRoot_ / L"Characters",
+                sourceFbxRoot_ / L"Animations",
                 meshesRoot_,
                 materialsRoot_,
                 texturesRoot_
@@ -1146,8 +1127,10 @@ namespace lts::editor
     {
         assets_.clear();
 
-        ScanLegacyObjects();
-        ScanGameMeshes();
+        ScanAssetDirectory(sourceFbxRoot_, AssetEntryKind::SourceFbx, L".fbx");
+        ScanAssetDirectory(meshesRoot_, AssetEntryKind::GameMesh, L".ltsmesh");
+        ScanAssetDirectory(materialsRoot_, AssetEntryKind::Material, L".ltsmaterial");
+        ScanAssetDirectory(texturesRoot_, AssetEntryKind::Texture, nullptr);
 
         std::sort(
             assets_.begin(),
@@ -1175,14 +1158,17 @@ namespace lts::editor
     }
 
     void EditorAssetBrowserPanel::
-        ScanLegacyObjects() noexcept
+        ScanAssetDirectory(
+            const std::filesystem::path& root,
+            const AssetEntryKind kind,
+            const wchar_t* const requiredExtension) noexcept
     {
         try
         {
             std::error_code filesystemError;
 
             if (!std::filesystem::is_directory(
-                    legacyObjectsRoot_,
+                    root,
                     filesystemError) ||
                 filesystemError)
             {
@@ -1196,7 +1182,7 @@ namespace lts::editor
 
             std::filesystem::
                 recursive_directory_iterator iterator(
-                    legacyObjectsRoot_,
+                    root,
                     options,
                     filesystemError);
 
@@ -1223,8 +1209,9 @@ namespace lts::editor
                     !entry.is_regular_file(
                         entryError) ||
                     entryError ||
-                    !IsLegacyMeshExtension(
-                        entry.path()))
+                    (requiredExtension != nullptr &&
+                     Lowercase(entry.path().extension().wstring()) !=
+                        requiredExtension))
                 {
                     continue;
                 }
@@ -1234,7 +1221,7 @@ namespace lts::editor
                 const std::filesystem::path relative =
                     std::filesystem::relative(
                         entry.path(),
-                        legacyObjectsRoot_,
+                        root,
                         relativeError);
 
                 if (
@@ -1250,16 +1237,7 @@ namespace lts::editor
                 asset.sourcePath =
                     entry.path();
 
-                const std::wstring extension =
-                    Lowercase(
-                        entry.path().
-                            extension().
-                            wstring());
-
-                asset.kind =
-                    extension == L".sco"
-                        ? AssetEntryKind::LegacySco
-                        : AssetEntryKind::LegacyScb;
+                asset.kind = kind;
 
                 asset.displayName =
                     GetEntryPrefix(asset.kind);
@@ -1578,18 +1556,14 @@ namespace lts::editor
         {
             std::filesystem::path finalPath;
 
-            if (
-                entry.kind ==
-                    AssetEntryKind::LegacySco ||
-                entry.kind ==
-                    AssetEntryKind::LegacyScb)
+            if (entry.kind == AssetEntryKind::SourceFbx)
             {
                 std::error_code relativeError;
 
                 std::filesystem::path relative =
                     std::filesystem::relative(
                         entry.sourcePath,
-                        legacyObjectsRoot_,
+                        sourceFbxRoot_,
                         relativeError);
 
                 if (
@@ -1597,8 +1571,7 @@ namespace lts::editor
                     relative.empty() ||
                     ContainsParentTraversal(relative))
                 {
-                    error =
-                        L"Legacy mesh is outside ObjectsDepot.";
+                    error = L"FBX source is outside Data/SourceAssets/FBX.";
 
                     return false;
                 }
@@ -1611,63 +1584,48 @@ namespace lts::editor
                     L".ltsmesh");
 
                 bool conversionRequired = true;
-
                 std::error_code filesystemError;
-
-                if (
-                    std::filesystem::is_regular_file(
-                        finalPath,
-                        filesystemError) &&
+                if (std::filesystem::is_regular_file(finalPath, filesystemError) &&
                     !filesystemError)
                 {
-                    const auto sourceTime =
-                        std::filesystem::
-                            last_write_time(
-                                entry.sourcePath,
-                                filesystemError);
-
+                    const auto sourceTime = std::filesystem::last_write_time(
+                        entry.sourcePath, filesystemError);
                     if (!filesystemError)
                     {
-                        const auto destinationTime =
-                            std::filesystem::
-                                last_write_time(
-                                    finalPath,
-                                    filesystemError);
-
-                        if (
-                            !filesystemError &&
-                            destinationTime >=
-                                sourceTime)
-                        {
-                            conversionRequired =
-                                false;
-                        }
+                        const auto destinationTime = std::filesystem::last_write_time(
+                            finalPath, filesystemError);
+                        conversionRequired = filesystemError || destinationTime < sourceTime;
                     }
                 }
-
                 if (conversionRequired)
                 {
-                    const engine::assets::
-                        AssetResult result =
-                            engine::assets::
-                                LegacyMeshImporter::
-                                    Import(
-                                        entry.sourcePath,
-                                        finalPath,
-                                        error);
-
-                    if (
-                        engine::assets::Failed(
-                            result))
+                    std::vector<std::wstring> warnings;
+                    const engine::assets::AssetResult result =
+                        engine::assets::FbxStaticMeshImporter::Import(
+                            entry.sourcePath, finalPath, error, &warnings);
+                    if (engine::assets::Failed(result)) return false;
+                    if (!warnings.empty())
                     {
-                        return false;
+                        std::wstring warningText = L"FBX imported with warnings:\n";
+                        for (const std::wstring& warning : warnings)
+                        {
+                            warningText += L"\n- ";
+                            warningText += warning;
+                        }
+                        MessageBoxW(ToWindow(mainWindow_), warningText.c_str(),
+                            L"FBX Import", MB_OK | MB_ICONWARNING);
                     }
                 }
             }
-            else
+            else if (entry.kind == AssetEntryKind::GameMesh)
             {
                 finalPath =
                     entry.sourcePath;
+            }
+            else
+            {
+                error = L"This asset type is browse-only in Static Mesh Pipeline V1.";
+                return false;
             }
 
             std::error_code fileError;

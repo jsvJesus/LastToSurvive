@@ -7,6 +7,7 @@
 #include <Assets/AssetResult.h>
 #include <Assets/AssetType.h>
 #include <Assets/GpuMesh.h>
+#include <Assets/MaterialAssetLoader.h>
 #include <Assets/MeshAsset.h>
 #include <Assets/MeshAssetLoader.h>
 
@@ -20,10 +21,15 @@
 #include <Graphics/RenderDevice.h>
 #include <Graphics/ResourceHandle.h>
 #include <Graphics/Shader.h>
+#include <Graphics/Texture.h>
 
 #include <DirectXMath.h>
+#include <Windows.h>
+#include <wincodec.h>
+#include <wrl/client.h>
 
 #include <array>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cwctype>
@@ -37,6 +43,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 namespace lts::editor
 {
@@ -50,11 +57,52 @@ namespace lts::editor
         {
             DirectX::XMFLOAT4X4 world;
             DirectX::XMFLOAT4X4 viewProjection;
-            DirectX::XMFLOAT4 tint;
+            DirectX::XMFLOAT4 baseColor;
+            DirectX::XMFLOAT4 materialParameters;
         };
 
         static_assert(
             sizeof(ObjectConstants) % 16U == 0U);
+
+        [[nodiscard]] bool DecodeWicRgba(
+            const std::filesystem::path& path,
+            std::vector<std::byte>& pixels,
+            std::uint32_t& width,
+            std::uint32_t& height) noexcept
+        {
+            pixels.clear(); width = 0U; height = 0U;
+            try
+            {
+                Microsoft::WRL::ComPtr<IWICImagingFactory> factory;
+                HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr,
+                    CLSCTX_INPROC_SERVER, IID_PPV_ARGS(factory.GetAddressOf()));
+                if (FAILED(hr)) return false;
+                Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
+                hr = factory->CreateDecoderFromFilename(path.c_str(), nullptr,
+                    GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf());
+                if (FAILED(hr)) return false;
+                Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
+                hr = decoder->GetFrame(0U, frame.GetAddressOf());
+                if (FAILED(hr) || FAILED(frame->GetSize(&width, &height)) ||
+                    width == 0U || height == 0U || width > 16384U || height > 16384U)
+                    return false;
+                Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
+                hr = factory->CreateFormatConverter(converter.GetAddressOf());
+                if (FAILED(hr)) return false;
+                hr = converter->Initialize(frame.Get(), GUID_WICPixelFormat32bppRGBA,
+                    WICBitmapDitherTypeNone, nullptr, 0.0, WICBitmapPaletteTypeCustom);
+                if (FAILED(hr)) return false;
+                const std::size_t rowPitch = static_cast<std::size_t>(width) * 4U;
+                const std::size_t byteCount = rowPitch * static_cast<std::size_t>(height);
+                if (byteCount > static_cast<std::size_t>((std::numeric_limits<UINT>::max)()))
+                    return false;
+                pixels.resize(byteCount);
+                hr = converter->CopyPixels(nullptr, static_cast<UINT>(rowPitch),
+                    static_cast<UINT>(byteCount), reinterpret_cast<BYTE*>(pixels.data()));
+                return SUCCEEDED(hr);
+            }
+            catch (...) { pixels.clear(); width = 0U; height = 0U; return false; }
+        }
 
         [[nodiscard]]
         DirectX::XMMATRIX BuildWorldMatrix(
@@ -348,6 +396,19 @@ namespace lts::editor
 
     class EditorStaticMeshRenderer::Impl final
     {
+        struct CachedMaterial final
+        {
+            engine::assets::MaterialAssetDesc desc;
+            engine::graphics::TextureHandle baseColorTexture;
+            engine::graphics::SamplerHandle sampler;
+        };
+
+        struct CachedMesh final
+        {
+            std::unique_ptr<engine::assets::GpuMesh> gpu;
+            std::vector<CachedMaterial> materials;
+        };
+
     public:
         [[nodiscard]]
         bool Initialize(
@@ -644,6 +705,26 @@ namespace lts::editor
                 return false;
             }
 
+            pipelineDescription.blend.renderTargets[0].blendEnable = true;
+            pipelineDescription.blend.renderTargets[0].sourceColor =
+                engine::graphics::BlendFactor::SourceAlpha;
+            pipelineDescription.blend.renderTargets[0].destinationColor =
+                engine::graphics::BlendFactor::InverseSourceAlpha;
+            pipelineDescription.blend.renderTargets[0].sourceAlpha =
+                engine::graphics::BlendFactor::One;
+            pipelineDescription.blend.renderTargets[0].destinationAlpha =
+                engine::graphics::BlendFactor::InverseSourceAlpha;
+            pipelineDescription.depthStencil.depthWriteEnable = false;
+            pipelineDescription.debugName = "EditorStaticMesh.TransparentPipeline";
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription, transparentPipeline_);
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure("Create transparent static mesh pipeline", result);
+                Shutdown(device);
+                return false;
+            }
+
             initialized_ = true;
 
             engine::core::GetLogger().Write(
@@ -662,16 +743,29 @@ namespace lts::editor
 
             for (auto& entry : meshes_)
             {
-                if (entry.second != nullptr)
+                for (CachedMaterial& material : entry.second.materials)
+                {
+                    if (material.baseColorTexture.IsValid())
+                        static_cast<void>(device.DestroyTexture(material.baseColorTexture));
+                    if (material.sampler.IsValid())
+                        static_cast<void>(device.DestroySampler(material.sampler));
+                }
+                if (entry.second.gpu != nullptr)
                 {
                     static_cast<void>(
-                        entry.second->Release(
+                        entry.second.gpu->Release(
                             device));
                 }
             }
 
             meshes_.clear();
             failedMeshes_.clear();
+
+            if (transparentPipeline_.IsValid())
+            {
+                static_cast<void>(device.DestroyGraphicsPipeline(transparentPipeline_));
+                transparentPipeline_ = {};
+            }
 
             if (pipeline_.IsValid())
             {
@@ -759,6 +853,16 @@ namespace lts::editor
                 return result;
             }
 
+            result = context.SetConstantBuffers(
+                engine::graphics::ShaderStage::Pixel, 0U, &objectBuffer_, 1U);
+            if (engine::graphics::Failed(result))
+            {
+                static_cast<void>(context.UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex, 0U, 1U));
+                context.UnbindGraphicsPipeline();
+                return result;
+            }
+
             result =
                 engine::graphics::
                     GraphicsResult::Success;
@@ -786,15 +890,16 @@ namespace lts::editor
                     continue;
                 }
 
-                engine::assets::GpuMesh* const mesh =
+                CachedMesh* const cachedMesh =
                     GetOrLoadMesh(
                         entity.staticMesh->
                             assetPath);
 
-                if (mesh == nullptr)
+                if (cachedMesh == nullptr || cachedMesh->gpu == nullptr)
                 {
                     continue;
                 }
+                engine::assets::GpuMesh* const mesh = cachedMesh->gpu.get();
 
                 ObjectConstants constants{};
 
@@ -806,22 +911,9 @@ namespace lts::editor
                 constants.viewProjection =
                     viewProjection;
 
-                constants.tint =
-                    entityIndex == selectedIndex
-                        ? DirectX::XMFLOAT4
-                        {
-                            1.0F,
-                            0.45F,
-                            0.10F,
-                            1.0F
-                        }
-                        : DirectX::XMFLOAT4
-                        {
-                            0.58F,
-                            0.63F,
-                            0.66F,
-                            1.0F
-                        };
+                constants.baseColor = { 0.58F, 0.63F, 0.66F, 1.0F };
+                constants.materialParameters = {
+                    entityIndex == selectedIndex ? 1.0F : 0.0F, 0.0F, 0.0F, 0.0F };
 
                 result =
                     context.UpdateBuffer(
@@ -891,6 +983,49 @@ namespace lts::editor
                         continue;
                     }
 
+                    engine::graphics::TextureHandle texture;
+                    engine::graphics::SamplerHandle sampler;
+                    bool transparent = false;
+                    if (submesh->materialSlot < cachedMesh->materials.size())
+                    {
+                        const CachedMaterial& material =
+                            cachedMesh->materials[submesh->materialSlot];
+                        constants.baseColor = {
+                            material.desc.baseColorFactor[0], material.desc.baseColorFactor[1],
+                            material.desc.baseColorFactor[2], material.desc.baseColorFactor[3] };
+                        texture = material.baseColorTexture;
+                        sampler = material.sampler;
+                        transparent = material.desc.alphaMode ==
+                            engine::assets::MaterialAlphaMode::Blend;
+                        constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
+                    }
+                    else
+                    {
+                        constants.baseColor = { 0.58F, 0.63F, 0.66F, 1.0F };
+                        constants.materialParameters.y = 0.0F;
+                    }
+                    result = context.SetGraphicsPipeline(
+                        transparent ? transparentPipeline_ : pipeline_);
+                    if (engine::graphics::Failed(result)) break;
+                    result = context.UpdateBuffer(objectBuffer_, &constants, sizeof(constants));
+                    if (engine::graphics::Failed(result)) break;
+                    if (texture.IsValid())
+                    {
+                        result = context.SetShaderResources(
+                            engine::graphics::ShaderStage::Pixel, 0U, &texture, 1U);
+                        if (engine::graphics::Failed(result)) break;
+                        result = context.SetSamplers(
+                            engine::graphics::ShaderStage::Pixel, 0U, &sampler, 1U);
+                        if (engine::graphics::Failed(result)) break;
+                    }
+                    else
+                    {
+                        static_cast<void>(context.UnbindShaderResources(
+                            engine::graphics::ShaderStage::Pixel, 0U, 1U));
+                        static_cast<void>(context.UnbindSamplers(
+                            engine::graphics::ShaderStage::Pixel, 0U, 1U));
+                    }
+
                     result =
                         context.DrawIndexed(
                             submesh->indexCount,
@@ -912,6 +1047,10 @@ namespace lts::editor
             }
 
             context.UnbindIndexBuffer();
+            static_cast<void>(context.UnbindShaderResources(
+                engine::graphics::ShaderStage::Pixel, 0U, 1U));
+            static_cast<void>(context.UnbindSamplers(
+                engine::graphics::ShaderStage::Pixel, 0U, 1U));
 
             static_cast<void>(
                 context.UnbindConstantBuffers(
@@ -919,6 +1058,8 @@ namespace lts::editor
                         ShaderStage::Vertex,
                     0U,
                     1U));
+            static_cast<void>(context.UnbindConstantBuffers(
+                engine::graphics::ShaderStage::Pixel, 0U, 1U));
 
             context.UnbindGraphicsPipeline();
 
@@ -927,7 +1068,7 @@ namespace lts::editor
 
     private:
         [[nodiscard]]
-        engine::assets::GpuMesh* GetOrLoadMesh(
+        CachedMesh* GetOrLoadMesh(
             const std::wstring& assetPath) noexcept
         {
             try
@@ -966,7 +1107,7 @@ namespace lts::editor
                 if (existing != meshes_.end())
                 {
                     return
-                        existing->second.get();
+                        &existing->second;
                 }
 
                 if (
@@ -976,8 +1117,7 @@ namespace lts::editor
                     return nullptr;
                 }
 
-                std::unique_ptr<
-                    engine::assets::GpuMesh> mesh =
+                std::unique_ptr<engine::assets::GpuMesh> mesh =
                         LoadGpuMesh(
                             path,
                             std::filesystem::path(
@@ -989,19 +1129,115 @@ namespace lts::editor
                     return nullptr;
                 }
 
-                engine::assets::GpuMesh* const result =
-                    mesh.get();
-
-                meshes_.emplace(
-                    key,
-                    std::move(mesh));
-
-                return result;
+                CachedMesh cached;
+                cached.gpu = std::move(mesh);
+                LoadMaterials(path, cached.materials);
+                auto inserted = meshes_.emplace(key, std::move(cached));
+                return &inserted.first->second;
             }
             catch (...)
             {
                 return nullptr;
             }
+        }
+
+        void LoadMaterials(
+            const std::filesystem::path& meshPath,
+            std::vector<CachedMaterial>& output) noexcept
+        {
+            output.clear();
+            try
+            {
+                std::filesystem::path meshesRoot;
+                std::filesystem::path cursor = meshPath.parent_path();
+                while (!cursor.empty())
+                {
+                    if (LowercasePath(cursor.filename().wstring()) == L"meshes")
+                    {
+                        meshesRoot = cursor;
+                        break;
+                    }
+                    const auto parent = cursor.parent_path();
+                    if (parent == cursor) break;
+                    cursor = parent;
+                }
+                if (meshesRoot.empty()) return;
+                std::error_code filesystemError;
+                const auto package = std::filesystem::relative(
+                    meshPath.parent_path(), meshesRoot, filesystemError);
+                if (filesystemError) return;
+                const auto directory = meshesRoot.parent_path() / L"Materials" / package;
+                if (!std::filesystem::is_directory(directory, filesystemError) || filesystemError)
+                    return;
+                std::vector<std::filesystem::path> files;
+                for (std::filesystem::directory_iterator iterator(directory, filesystemError), end;
+                     !filesystemError && iterator != end; iterator.increment(filesystemError))
+                {
+                    if (iterator->is_regular_file() &&
+                        LowercasePath(iterator->path().extension().wstring()) == L".ltsmaterial")
+                        files.push_back(iterator->path());
+                }
+                std::sort(files.begin(), files.end(), [](const auto& left, const auto& right)
+                { return LowercasePath(left.filename().wstring()) < LowercasePath(right.filename().wstring()); });
+                for (const auto& file : files)
+                {
+                    engine::assets::AssetData data;
+                    if (engine::assets::Failed(ReadAssetData(file, data))) continue;
+                    const auto gameRoot = meshesRoot.parent_path().parent_path();
+                    const auto logical = std::filesystem::relative(file, gameRoot, filesystemError);
+                    if (filesystemError) continue;
+                    engine::assets::AssetPath assetPath;
+                    if (engine::assets::Failed(engine::assets::AssetPath::TryCreate(
+                            logical.generic_u8string(), assetPath))) continue;
+                    engine::assets::AssetMetadata metadata;
+                    metadata.path = std::move(assetPath);
+                    metadata.id = metadata.path.GetId();
+                    metadata.type = engine::assets::AssetType::Material;
+                    metadata.schemaVersion = 2U;
+                    metadata.sourceSize = data.GetSize();
+                    engine::assets::MaterialAssetLoader loader;
+                    std::unique_ptr<engine::assets::LoadedAsset> loaded;
+                    if (engine::assets::Failed(loader.Load(metadata, data, loaded)) || !loaded)
+                        continue;
+                    const auto* loadedMaterial = static_cast<engine::assets::MaterialLoadedAsset*>(loaded.get());
+                    CachedMaterial material;
+                    material.desc = loadedMaterial->GetMaterial().GetDesc();
+                    if (material.desc.baseColorTexture)
+                    {
+                        const auto texturePath = gameRoot /
+                            std::filesystem::u8path(material.desc.baseColorTexture->String());
+                        std::vector<std::byte> pixels;
+                        std::uint32_t width = 0U, height = 0U;
+                        if (DecodeWicRgba(texturePath, pixels, width, height))
+                        {
+                            engine::graphics::TextureDesc desc;
+                            desc.width = width; desc.height = height;
+                            desc.format = engine::graphics::Format::R8G8B8A8UNormSrgb;
+                            engine::graphics::TextureSubresourceData initial;
+                            initial.data = pixels.data(); initial.dataSize = pixels.size();
+                            initial.rowPitch = static_cast<std::size_t>(width) * 4U;
+                            initial.slicePitch = pixels.size();
+                            if (engine::graphics::Failed(device_->CreateTexture(
+                                    desc, &initial, 1U, material.baseColorTexture)))
+                                material.baseColorTexture = {};
+                        }
+                    }
+                    if (material.baseColorTexture.IsValid())
+                    {
+                        engine::graphics::SamplerDesc samplerDesc = material.desc.sampler;
+                        samplerDesc.addressU = engine::graphics::TextureAddressMode::Wrap;
+                        samplerDesc.addressV = engine::graphics::TextureAddressMode::Wrap;
+                        if (engine::graphics::Failed(device_->CreateSampler(
+                                samplerDesc, material.sampler)))
+                        {
+                            static_cast<void>(device_->DestroyTexture(material.baseColorTexture));
+                            material.baseColorTexture = {};
+                        }
+                    }
+                    output.push_back(std::move(material));
+                }
+            }
+            catch (...) { output.clear(); }
         }
 
         [[nodiscard]]
@@ -1161,10 +1397,12 @@ namespace lts::editor
         engine::graphics::PipelineStateHandle
             pipeline_;
 
+        engine::graphics::PipelineStateHandle
+            transparentPipeline_;
+
         std::unordered_map<
             std::wstring,
-            std::unique_ptr<
-                engine::assets::GpuMesh>> meshes_;
+            CachedMesh> meshes_;
 
         std::unordered_set<
             std::wstring> failedMeshes_;
