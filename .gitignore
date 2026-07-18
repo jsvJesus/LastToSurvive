@@ -141,17 +141,18 @@ packages/
 /tools/*
 !/bin/Data/
 /bin/Data/*
+!/bin/Data/Shaders/
+/bin/Data/Shaders/*
 
 !/bin/Data/Rml/
 !/bin/Data/Rml/**
-!/bin/Data/Shaders/DX9_P1/
-/bin/Data/Shaders/DX9_P1/*
-!/bin/Data/Shaders/DX11_P1/
-/bin/Data/Shaders/DX11_P1/*
 
 !/bin/Data/Weapons/
 !/bin/Data/Weapons/**
-!/bin/Data/Shaders/
-!/bin/Data/Shaders/**
+
+!/game/Data/Shaders/
+!/game/Data/Shaders/**
+!/game/Data/UI/
+!/game/Data/UI/**
 !/tools/LTS/
 !/tools/LTS/**
