@@ -34,6 +34,16 @@
 # Explicitly exclude root runtime/build folder
 /bin/
 
+# Track shader sources, but never runtime shader cache
+!/bin/Data/Shaders/
+!/bin/Data/Shaders/**
+
+/bin/Data/Shaders/Cache/
+/bin/Data/Shaders/Cache/**
+/bin/Data/Shaders/TEXTURE/
+/bin/Data/Shaders/TEXTURE/**
+/bin/Data/Shaders/**/*.csr
+
 # Visual Studio / Rider
 .vs/
 .idea/
@@ -142,8 +152,6 @@ packages/
 /tools/*
 !/bin/Data/
 /bin/Data/*
-!/bin/Data/Shaders/
-/bin/Data/Shaders/*
 
 !/bin/Data/Rml/
 !/bin/Data/Rml/**
