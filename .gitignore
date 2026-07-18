@@ -124,6 +124,7 @@ r3dlog.txt
 *.ltsmesh
 *.png
 *.dds
+*.csr
 
 # NuGet / .NET / Avalonia
 .nuget/
