@@ -49,6 +49,12 @@ namespace lts::editor
         void SynchronizeWindowTitle(
             const EditorSceneDocument& sceneDocument) noexcept;
 
+        [[nodiscard]] bool SetWindowInterceptionEnabled(bool enabled) noexcept;
+
+        void RequestNewLevel() noexcept;
+        void RequestOpenLevel() noexcept;
+        void RequestSaveLevel() noexcept;
+
     private:
         enum class PendingCommand : std::uint8_t
         {

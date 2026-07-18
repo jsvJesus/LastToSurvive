@@ -10,6 +10,20 @@
 
 namespace lts::editor
 {
+    void EditorTransformController::SetOperation(
+        const EditorTransformOperation operation) noexcept
+    {
+        visualState_.operation = operation;
+    }
+
+    void EditorTransformController::ToggleSpace() noexcept
+    {
+        visualState_.space =
+            visualState_.space == EditorTransformSpace::World
+                ? EditorTransformSpace::Local
+                : EditorTransformSpace::World;
+    }
+
     namespace
     {
         constexpr float GizmoLength = 2.5F;

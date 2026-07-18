@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #0e1313;
+  color: #d9dfda;
+  font-family: Roboto;
+}
+
+.module {
+  padding: 48px;
+}
+
+h1 {
+  color: #9aaa70;
+  letter-spacing: 4px;
+}
+
+#viewport {
+  width: 620px;
+  height: 470px;
+  margin: 20px 0;
+  padding: 20px;
+  background: #171e1d;
+  border: 1px #39443f;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+}
+
+select {
+  width: 220px;
+  height: 34px;
+  margin: 5px 0;
+}
+
+button {
+  display: block;
+  margin-top: 22px;
+  padding: 12px 20px;
+  background: #26312e;
+  border: 1px #71805c;
+  color: #e3e8e3;
+}

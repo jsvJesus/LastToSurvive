@@ -6,6 +6,8 @@
 #include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorInspectorPanel.h"
 #include "Editor/EditorLevelDocument.h"
+#include "Editor/EditorLauncherController.h"
+#include "Editor/LevelEditorUiController.h"
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
@@ -19,6 +21,8 @@
 #include <Graphics/SwapChain.h>
 
 #include <GraphicsDX11/D3D11Device.h>
+#include <GraphicsDX11/RmlUiRenderInterfaceDX11.h>
+#include <UI/RmlUiHost.h>
 
 #include <cstdint>
 #include <memory>
@@ -57,6 +61,12 @@ namespace lts::editor
     private:
         [[nodiscard]]
         bool InitializeGraphics() noexcept;
+        [[nodiscard]] bool InitializeUi() noexcept;
+        void ShutdownUi() noexcept;
+        void RenderUi() noexcept;
+        void HandleLauncherAction(EditorLauncherAction action);
+        void HandleLevelEditorAction(LevelEditorUiAction action);
+        [[nodiscard]] bool LoadUiDocument(const char* path);
 
         void ShutdownGraphics() noexcept;
 
@@ -105,6 +115,18 @@ namespace lts::editor
         std::unique_ptr<
             engine::graphics::SwapChain>
                 swapChain_;
+
+        std::unique_ptr<engine::graphics::SwapChain> uiSwapChain_;
+        engine::graphics::d3d11::RmlUiRenderInterfaceDX11 uiRenderInterface_;
+        engine::ui::RmlUiHost uiHost_;
+        EditorLauncherController launcherController_;
+        LevelEditorUiController levelEditorUiController_;
+        Rml::ElementDocument* uiDocument_ = nullptr;
+        std::uint32_t uiWidth_ = 0;
+        std::uint32_t uiHeight_ = 0;
+        bool levelEditorUiActive_ = false;
+        std::size_t snapSettingIndex_ = 1;
+        bool playInNewWindow_ = false;
 
         engine::graphics::CommandContext*
             commandContext_ = nullptr;

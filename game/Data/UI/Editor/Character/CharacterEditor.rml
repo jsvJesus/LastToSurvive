@@ -1,0 +1,14 @@
+<rml>
+<head>
+  <title>Character Editor</title>
+  <link type="text/rcss" href="CharacterEditor.rcss"/>
+</head>
+<body>
+  <div class="module">
+    <h1>CHARACTER EDITOR</h1>
+    <div id="viewport">CHARACTER PREVIEW</div>
+    <p>Module foundation ready for skeletal mesh, animation and equipment workflows.</p>
+    <button id="back-to-editor-menu">BACK TO EDITOR MENU</button>
+  </div>
+</body>
+</rml>

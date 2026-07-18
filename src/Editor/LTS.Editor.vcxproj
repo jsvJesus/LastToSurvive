@@ -116,6 +116,8 @@
         $(ProjectDir)..\Engine\Scene\Public;
         $(ProjectDir)..\Engine\Assets\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
+        $(ProjectDir)..\Engine\UI\Public;
+        $(ProjectDir)..\..\External\RmlUI\Include;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -143,6 +145,7 @@
         shell32.lib;
         ole32.lib;
         windowscodecs.lib;
+        $(ProjectDir)..\..\External\RmlUI\Bin-Dynamic\Release\rmlui.lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>
     </Link>
@@ -185,6 +188,8 @@
         $(ProjectDir)..\Engine\Scene\Public;
         $(ProjectDir)..\Engine\Assets\Public;
         $(ProjectDir)..\Engine\Tasks\Public;
+        $(ProjectDir)..\Engine\UI\Public;
+        $(ProjectDir)..\..\External\RmlUI\Include;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
 
@@ -212,6 +217,7 @@
         shell32.lib;
         ole32.lib;
         windowscodecs.lib;
+        $(ProjectDir)..\..\External\RmlUI\Bin-Dynamic\Release\rmlui.lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>
     </Link>
@@ -226,6 +232,8 @@
     <ClInclude Include="Public\Editor\EditorInspectorPanel.h" />
     <ClInclude Include="Public\Editor\EditorLevelDocument.h" />
     <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
+    <ClInclude Include="Public\Editor\LevelEditorUiController.h" />
+    <ClInclude Include="Public\Editor\EditorLauncherController.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
@@ -245,6 +253,8 @@
     <ClCompile Include="Private\EditorInspectorPanel.cpp" />
     <ClCompile Include="Private\EditorLevelDocument.cpp" />
     <ClCompile Include="Private\EditorLevelSerializer.cpp" />
+    <ClCompile Include="Private\LevelEditorUiController.cpp" />
+    <ClCompile Include="Private\EditorLauncherController.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
@@ -258,6 +268,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Engine\Application\LTS.Application.vcxproj">
       <Project>{5E5F8D0E-1D41-4B6B-B9B7-9B530A82B1A4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\UI\LTS.UI.vcxproj">
+      <Project>{7D4C1A86-5B29-4E73-9F12-A6C8D3E04B51}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
@@ -312,6 +328,13 @@
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyRmlUiRuntime" AfterTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)..\..\External\RmlUI\Bin-Dynamic\Release\rmlui.dll"
+          DestinationFolder="$(OutDir)" />
+    <MakeDir Directories="$(LTSDataDir)UI\Assets\Fonts" />
+    <Copy SourceFiles="$(ProjectDir)..\..\External\RmlUI\Fonts\Roboto-Regular.ttf"
+          DestinationFiles="$(LTSDataDir)UI\Assets\Fonts\Roboto-Regular.ttf" />
+  </Target>
   <ImportGroup Label="ExtensionTargets" />
 
 </Project>

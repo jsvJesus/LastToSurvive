@@ -39,7 +39,7 @@
       <WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)Private;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)Private;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\..\External\RmlUI\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation><Optimization>MaxSpeed</Optimization><InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion><IntrinsicFunctions>true</IntrinsicFunctions><FavorSizeOrSpeed>Speed</FavorSizeOrSpeed><FunctionLevelLinking>true</FunctionLevelLinking>
       <BufferSecurityCheck>true</BufferSecurityCheck><SDLCheck>true</SDLCheck><ControlFlowGuard>Guard</ControlFlowGuard><FloatingPointModel>Precise</FloatingPointModel><DebugInformationFormat>ProgramDatabase</DebugInformationFormat><CompileAs>CompileAsCpp</CompileAs>
@@ -51,7 +51,7 @@
       <WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)Private;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)Private;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\..\External\RmlUI\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><PrecompiledHeader>NotUsing</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation><Optimization>MaxSpeed</Optimization><InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion><IntrinsicFunctions>true</IntrinsicFunctions><FavorSizeOrSpeed>Speed</FavorSizeOrSpeed><FunctionLevelLinking>true</FunctionLevelLinking>
       <BufferSecurityCheck>true</BufferSecurityCheck><SDLCheck>true</SDLCheck><ControlFlowGuard>Guard</ControlFlowGuard><FloatingPointModel>Precise</FloatingPointModel><DebugInformationFormat>ProgramDatabase</DebugInformationFormat><CompileAs>CompileAsCpp</CompileAs>
@@ -62,6 +62,7 @@
     <ClInclude Include="Public\GraphicsDX11\D3D11Context.h" />
     <ClInclude Include="Public\GraphicsDX11\D3D11Device.h" />
     <ClInclude Include="Public\GraphicsDX11\D3D11SwapChain.h" />
+    <ClInclude Include="Public\GraphicsDX11\RmlUiRenderInterfaceDX11.h" />
     <ClInclude Include="Private\D3D11Buffer.h" />
     <ClInclude Include="Private\D3D11ComPtr.h" />
     <ClInclude Include="Private\D3D11Conversions.h" />
@@ -84,6 +85,7 @@
     <ClCompile Include="Private\D3D11Shader.cpp" />
     <ClCompile Include="Private\D3D11SwapChain.cpp" />
     <ClCompile Include="Private\D3D11Texture.cpp" />
+    <ClCompile Include="Private\RmlUiRenderInterfaceDX11.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphics\LTS.Graphics.vcxproj">

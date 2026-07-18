@@ -51,6 +51,9 @@ namespace lts::editor
         [[nodiscard]]
         std::wstring BuildStatusText() const;
 
+        void SetOperation(EditorTransformOperation operation) noexcept;
+        void ToggleSpace() noexcept;
+
     private:
         [[nodiscard]]
         bool IsViewportFocused() const noexcept;

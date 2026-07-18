@@ -1,0 +1,14 @@
+<rml>
+<head>
+  <title>Physics Editor</title>
+  <link type="text/rcss" href="PhysicsEditor.rcss"/>
+</head>
+<body>
+  <div class="module">
+    <h1>PHYSICS EDITOR</h1>
+    <div id="viewport">COLLISION PREVIEW</div>
+    <p>Module foundation ready for collision and physics-material editing.</p>
+    <button id="back-to-editor-menu">BACK TO EDITOR MENU</button>
+  </div>
+</body>
+</rml>

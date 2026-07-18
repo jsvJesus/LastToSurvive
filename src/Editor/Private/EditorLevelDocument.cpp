@@ -215,6 +215,38 @@ namespace lts::editor
         }
     }
 
+    bool EditorLevelDocument::SetWindowInterceptionEnabled(
+        const bool enabled) noexcept
+    {
+        if (!initialized_)
+        {
+            return false;
+        }
+
+        if (enabled)
+        {
+            return subclassInstalled_ || InstallWindowSubclass();
+        }
+
+        RestoreWindowSubclass();
+        return true;
+    }
+
+    void EditorLevelDocument::RequestNewLevel() noexcept
+    {
+        QueueCommand(PendingCommand::NewLevel);
+    }
+
+    void EditorLevelDocument::RequestOpenLevel() noexcept
+    {
+        QueueCommand(PendingCommand::OpenLevel);
+    }
+
+    void EditorLevelDocument::RequestSaveLevel() noexcept
+    {
+        QueueCommand(PendingCommand::Save);
+    }
+
     EditorLevelUpdateResult
         EditorLevelDocument::Update(
             EditorSceneDocument& sceneDocument,

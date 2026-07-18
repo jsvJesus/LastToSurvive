@@ -491,6 +491,12 @@ namespace lts::application
                     lParam);
             }
 
+            static_cast<void>(
+                self->owner_.inputSystem_.HandleNativeMessage(
+                    message,
+                    static_cast<std::uintptr_t>(wParam),
+                    static_cast<std::intptr_t>(lParam)));
+
             switch (message)
             {
                 case WM_CLOSE:
@@ -865,6 +871,8 @@ namespace lts::application
                 !engine_.IsExitRequested()
             )
             {
+                inputSystem_.BeginFrame();
+
                 MSG message{};
 
                 while (
@@ -1054,6 +1062,18 @@ namespace lts::application
             &window_,
             &engine_
         };
+    }
+
+    engine::platform::InputSystem&
+        Application::GetInputSystem() noexcept
+    {
+        return inputSystem_;
+    }
+
+    const engine::platform::InputSystem&
+        Application::GetInputSystem() const noexcept
+    {
+        return inputSystem_;
     }
 
     void Application::OnEvent(

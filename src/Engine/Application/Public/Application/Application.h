@@ -2,6 +2,7 @@
 
 #include <Platform/Window.h>
 #include <Runtime/Engine.h>
+#include <Platform/Input.h>
 #include <Runtime/EngineConfig.h>
 
 #include <cstdint>
@@ -126,6 +127,14 @@ namespace lts::application
         ApplicationContext
             GetContext() noexcept;
 
+        [[nodiscard]]
+        engine::platform::InputSystem&
+            GetInputSystem() noexcept;
+
+        [[nodiscard]]
+        const engine::platform::InputSystem&
+            GetInputSystem() const noexcept;
+
     protected:
         [[nodiscard]]
         virtual ApplicationResult
@@ -150,6 +159,7 @@ namespace lts::application
         ApplicationDesc description_;
 
         engine::platform::Window window_;
+        engine::platform::InputSystem inputSystem_;
         engine::runtime::Engine engine_;
 
         std::unique_ptr<Impl> impl_;

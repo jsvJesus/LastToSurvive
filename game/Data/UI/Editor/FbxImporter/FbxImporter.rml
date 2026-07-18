@@ -1,0 +1,26 @@
+<rml>
+<head>
+  <title>FBX Importer</title>
+  <link type="text/rcss" href="FbxImporter.rcss"/>
+</head>
+<body>
+  <div class="module">
+    <h1>FBX IMPORTER</h1>
+    <label>SOURCE FBX</label>
+    <input id="source-fbx" type="text"/>
+    <label>DESTINATION</label>
+    <input id="destination" type="text"/>
+    <div>
+      <input id="import-materials" type="checkbox" checked="checked"/>
+      Import Materials
+    </div>
+    <div>
+      <input id="import-textures" type="checkbox" checked="checked"/>
+      Import Textures
+    </div>
+    <button id="import-fbx">IMPORT STATIC MESH</button>
+    <div id="import-result">Select an FBX source.</div>
+    <button id="back-to-editor-menu">BACK TO EDITOR MENU</button>
+  </div>
+</body>
+</rml>
