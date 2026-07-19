@@ -26,6 +26,13 @@ namespace lts::editor
             std::numeric_limits<
                 std::size_t>::max();
 
+    enum class EditorSelectionMode
+    {
+        Replace,
+        Toggle,
+        Range
+    };
+
     struct EditorSceneSnapshot final
     {
         std::vector<EditorSceneEntity> entities;
@@ -36,6 +43,9 @@ namespace lts::editor
             InvalidEditorEntityIndex;
 
         EditorEntityId selectedEntityId = 0U;
+
+        std::vector<EditorEntityId> selectedEntityIds;
+        EditorEntityId selectionAnchorId = 0U;
 
         bool dirty = false;
     };
@@ -87,6 +97,16 @@ namespace lts::editor
         bool SelectEntityByIndex(
             std::size_t index) noexcept;
 
+        [[nodiscard]] bool SelectEntityByIndex(
+            std::size_t index,
+            EditorSelectionMode mode) noexcept;
+
+        [[nodiscard]] bool IsEntitySelected(
+            EditorEntityId entityId) const noexcept;
+
+        [[nodiscard]] const std::vector<EditorEntityId>&
+            GetSelectedEntityIds() const noexcept;
+
         void ClearSelection() noexcept;
 
         [[nodiscard]]
@@ -107,6 +127,12 @@ namespace lts::editor
 
         [[nodiscard]]
         bool DeleteSelectedEntity() noexcept;
+
+        [[nodiscard]] bool SetEntityParent(
+            EditorEntityId entityId,
+            EditorEntityId parentId) noexcept;
+
+        [[nodiscard]] bool MoveSelectionToFolder(std::wstring folder);
 
         [[nodiscard]]
         EditorSceneSnapshot
@@ -134,6 +160,9 @@ namespace lts::editor
 
         std::size_t selectedIndex_ =
             InvalidEditorEntityIndex;
+
+        std::vector<EditorEntityId> selectedEntityIds_;
+        EditorEntityId selectionAnchorId_ = 0U;
 
         bool dirty_ = false;
     };

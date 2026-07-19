@@ -1423,16 +1423,85 @@ namespace lts::editor
             ImGui::End();
 
             ImGui::Begin("World Outliner");
+            if (ImGui::Button("New Folder") &&
+                !sceneDocument_.GetSelectedEntityIds().empty())
+            {
+                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                const std::wstring folder = L"Folder " +
+                    std::to_wstring(outlinerFolderCounter_++);
+                if (sceneDocument_.MoveSelectionToFolder(folder))
+                    static_cast<void>(commandHistory_.Push(
+                        before, sceneDocument_.CreateSnapshot()));
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("To Root"))
+            {
+                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                bool changed = false;
+                for (const EditorEntityId entityId :
+                     sceneDocument_.GetSelectedEntityIds())
+                    changed = sceneDocument_.SetEntityParent(entityId, 0U) || changed;
+                if (changed) static_cast<void>(commandHistory_.Push(
+                    before, sceneDocument_.CreateSnapshot()));
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Clear Folder"))
+            {
+                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                if (sceneDocument_.MoveSelectionToFolder(L""))
+                    static_cast<void>(commandHistory_.Push(
+                        before, sceneDocument_.CreateSnapshot()));
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Ctrl: toggle  Shift: range");
             const auto& entities = sceneDocument_.GetEntities();
             for (std::size_t index = 0; index < entities.size(); ++index)
             {
                 const EditorSceneEntity& entity = entities[index];
-                const std::string label = ToUtf8(entity.name) + "##" +
+                std::string visibleLabel;
+                if (!entity.editorFolder.empty())
+                    visibleLabel += "[" + ToUtf8(entity.editorFolder) + "] ";
+                if (entity.parentId != 0U) visibleLabel += "  > ";
+                visibleLabel += ToUtf8(entity.name);
+                const std::string label = visibleLabel + "##" +
                     std::to_string(static_cast<unsigned long long>(entity.id));
                 if (ImGui::Selectable(
-                        label.c_str(), index == sceneDocument_.GetSelectedIndex()))
+                        label.c_str(), sceneDocument_.IsEntitySelected(entity.id)))
                 {
-                    static_cast<void>(sceneDocument_.SelectEntityByIndex(index));
+                    const ImGuiIO& io = ImGui::GetIO();
+                    const EditorSelectionMode mode = io.KeyShift
+                        ? EditorSelectionMode::Range
+                        : (io.KeyCtrl ? EditorSelectionMode::Toggle
+                                      : EditorSelectionMode::Replace);
+                    static_cast<void>(
+                        sceneDocument_.SelectEntityByIndex(index, mode));
+                }
+                if (ImGui::BeginDragDropSource())
+                {
+                    const EditorEntityId draggedId = entity.id;
+                    ImGui::SetDragDropPayload(
+                        "LTS_OUTLINER_ENTITY", &draggedId, sizeof(draggedId));
+                    ImGui::Text("Parent %s", ToUtf8(entity.name).c_str());
+                    ImGui::EndDragDropSource();
+                }
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload =
+                            ImGui::AcceptDragDropPayload("LTS_OUTLINER_ENTITY"))
+                    {
+                        if (payload->IsDelivery() &&
+                            payload->DataSize == sizeof(EditorEntityId))
+                        {
+                            const EditorEntityId draggedId =
+                                *static_cast<const EditorEntityId*>(payload->Data);
+                            const EditorSceneSnapshot before =
+                                sceneDocument_.CreateSnapshot();
+                            if (sceneDocument_.SetEntityParent(draggedId, entity.id))
+                                static_cast<void>(commandHistory_.Push(
+                                    before, sceneDocument_.CreateSnapshot()));
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
                 }
             }
             ImGui::End();

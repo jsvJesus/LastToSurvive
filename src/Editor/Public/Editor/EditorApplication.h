@@ -166,6 +166,7 @@ namespace lts::editor
         std::array<char, 128U> contentSearch_{};
         std::array<char, 256U> entityRenameBuffer_{};
         EditorEntityId renameEntityId_ = 0U;
+        std::uint32_t outlinerFolderCounter_ = 1U;
 
         engine::graphics::CommandContext*
             commandContext_ = nullptr;

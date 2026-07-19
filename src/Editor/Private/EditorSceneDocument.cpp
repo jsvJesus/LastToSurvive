@@ -121,6 +121,8 @@ namespace lts::editor
             GetEntities().empty()
                 ? InvalidEditorEntityIndex
                 : 0U;
+        if (selectedIndex_ != InvalidEditorEntityIndex)
+            static_cast<void>(SelectEntityByIndex(selectedIndex_));
 
         dirty_ = false;
     }
@@ -131,6 +133,8 @@ namespace lts::editor
 
         selectedIndex_ =
             InvalidEditorEntityIndex;
+        selectedEntityIds_.clear();
+        selectionAnchorId_ = 0U;
 
         dirty_ = false;
     }
@@ -148,6 +152,8 @@ namespace lts::editor
                 transform);
 
         selectedIndex_ = world_.FindEntityIndex(entityId);
+        selectedEntityIds_.assign(1U, entityId);
+        selectionAnchorId_ = entityId;
 
         dirty_ = true;
         return entityId;
@@ -188,6 +194,8 @@ namespace lts::editor
 
         selectedIndex_ =
             world_.FindEntityIndex(entityId);
+        selectedEntityIds_.assign(1U, entityId);
+        selectionAnchorId_ = entityId;
 
         dirty_ = true;
         return true;
@@ -240,19 +248,83 @@ namespace lts::editor
     bool EditorSceneDocument::SelectEntityByIndex(
         const std::size_t index) noexcept
     {
-        if (index >= GetEntities().size())
+        return SelectEntityByIndex(index, EditorSelectionMode::Replace);
+    }
+
+    bool EditorSceneDocument::SelectEntityByIndex(
+        const std::size_t index,
+        const EditorSelectionMode mode) noexcept
+    {
+        const std::vector<EditorSceneEntity>& entities = GetEntities();
+        if (index >= entities.size())
         {
             return false;
         }
 
+        const EditorEntityId entityId = entities[index].id;
+        if (mode == EditorSelectionMode::Toggle)
+        {
+            const auto iterator = std::find(
+                selectedEntityIds_.begin(), selectedEntityIds_.end(), entityId);
+            if (iterator != selectedEntityIds_.end())
+            {
+                selectedEntityIds_.erase(iterator);
+                if (selectedEntityIds_.empty())
+                {
+                    ClearSelection();
+                    return true;
+                }
+                selectedIndex_ = world_.FindEntityIndex(selectedEntityIds_.back());
+                return true;
+            }
+            selectedEntityIds_.push_back(entityId);
+        }
+        else if (mode == EditorSelectionMode::Range && selectionAnchorId_ != 0U)
+        {
+            const std::size_t anchorIndex = world_.FindEntityIndex(selectionAnchorId_);
+            if (anchorIndex != InvalidEditorEntityIndex)
+            {
+                selectedEntityIds_.clear();
+                const std::size_t first = std::min(anchorIndex, index);
+                const std::size_t last = std::max(anchorIndex, index);
+                for (std::size_t selectionIndex = first;
+                     selectionIndex <= last; ++selectionIndex)
+                {
+                    selectedEntityIds_.push_back(entities[selectionIndex].id);
+                }
+            }
+        }
+        else
+        {
+            selectedEntityIds_.assign(1U, entityId);
+            selectionAnchorId_ = entityId;
+        }
+
+        if (selectedEntityIds_.empty()) selectedEntityIds_.push_back(entityId);
         selectedIndex_ = index;
+        if (mode != EditorSelectionMode::Range) selectionAnchorId_ = entityId;
         return true;
+    }
+
+    bool EditorSceneDocument::IsEntitySelected(
+        const EditorEntityId entityId) const noexcept
+    {
+        return std::find(selectedEntityIds_.begin(), selectedEntityIds_.end(), entityId) !=
+            selectedEntityIds_.end();
+    }
+
+    const std::vector<EditorEntityId>&
+        EditorSceneDocument::GetSelectedEntityIds() const noexcept
+    {
+        return selectedEntityIds_;
     }
 
     void EditorSceneDocument::ClearSelection() noexcept
     {
         selectedIndex_ =
             InvalidEditorEntityIndex;
+        selectedEntityIds_.clear();
+        selectionAnchorId_ = 0U;
     }
 
     bool EditorSceneDocument::SetSelectedTransform(
@@ -356,31 +428,32 @@ namespace lts::editor
     bool EditorSceneDocument::
         DuplicateSelectedEntity()
     {
-        const EditorSceneEntity* const selected =
-            GetSelectedEntity();
-
-        if (selected == nullptr)
+        if (selectedEntityIds_.empty())
         {
             return false;
         }
 
-        const EditorEntityId duplicatedId =
-            world_.DuplicateEntity(
-                selected->id);
+        const std::vector<EditorEntityId> sourceIds = selectedEntityIds_;
+        std::vector<EditorEntityId> duplicatedIds;
+        duplicatedIds.reserve(sourceIds.size());
+        for (const EditorEntityId sourceId : sourceIds)
+        {
+            const EditorEntityId duplicatedId = world_.DuplicateEntity(sourceId);
+            if (duplicatedId == 0U) continue;
+            if (EditorSceneEntity* const duplicated = world_.FindEntity(duplicatedId))
+            {
+                duplicated->name = MakeUniqueName(duplicated->name, duplicated->id);
+            }
+            duplicatedIds.push_back(duplicatedId);
+        }
 
-        if (duplicatedId == 0U)
+        if (duplicatedIds.empty())
         {
             return false;
         }
-
-        selectedIndex_ =
-            world_.FindEntityIndex(
-                duplicatedId);
-
-        if (EditorSceneEntity* const duplicated = GetSelectedEntityMutable())
-        {
-            duplicated->name = MakeUniqueName(duplicated->name, duplicated->id);
-        }
+        selectedEntityIds_ = std::move(duplicatedIds);
+        selectionAnchorId_ = selectedEntityIds_.front();
+        selectedIndex_ = world_.FindEntityIndex(selectedEntityIds_.back());
 
         dirty_ = true;
         return true;
@@ -389,21 +462,32 @@ namespace lts::editor
     bool EditorSceneDocument::
         DeleteSelectedEntity() noexcept
     {
-        const EditorSceneEntity* const selected =
-            GetSelectedEntity();
-
-        if (selected == nullptr)
+        if (selectedEntityIds_.empty())
         {
             return false;
         }
 
-        if (!world_.DeleteEntity(selected->id))
+        const std::size_t previousIndex = selectedIndex_;
+        const std::vector<EditorEntityId> ids = selectedEntityIds_;
+        for (const EditorSceneEntity& entity : world_.GetEntities())
         {
-            return false;
+            if (std::find(ids.begin(), ids.end(), entity.parentId) != ids.end())
+            {
+                if (EditorSceneEntity* const mutableEntity = world_.FindEntity(entity.id))
+                    mutableEntity->parentId = 0U;
+            }
         }
+        bool deleted = false;
+        for (const EditorEntityId entityId : ids)
+        {
+            deleted = world_.DeleteEntity(entityId) || deleted;
+        }
+        if (!deleted) return false;
 
         const auto& entities =
             world_.GetEntities();
+        selectedEntityIds_.clear();
+        selectionAnchorId_ = 0U;
 
         if (entities.empty())
         {
@@ -411,15 +495,62 @@ namespace lts::editor
                 InvalidEditorEntityIndex;
         }
         else if (
-            selectedIndex_ >=
+            previousIndex >=
             entities.size())
         {
             selectedIndex_ =
                 entities.size() - 1U;
         }
+        else
+        {
+            selectedIndex_ = previousIndex;
+        }
+        if (selectedIndex_ != InvalidEditorEntityIndex)
+        {
+            selectedEntityIds_.push_back(entities[selectedIndex_].id);
+            selectionAnchorId_ = entities[selectedIndex_].id;
+        }
 
         dirty_ = true;
         return true;
+    }
+
+    bool EditorSceneDocument::SetEntityParent(
+        const EditorEntityId entityId,
+        const EditorEntityId parentId) noexcept
+    {
+        EditorSceneEntity* const entity = world_.FindEntity(entityId);
+        if (entity == nullptr || entityId == parentId) return false;
+        if (parentId != 0U && world_.FindEntity(parentId) == nullptr) return false;
+
+        EditorEntityId ancestorId = parentId;
+        while (ancestorId != 0U)
+        {
+            if (ancestorId == entityId) return false;
+            const EditorSceneEntity* const ancestor = world_.FindEntity(ancestorId);
+            if (ancestor == nullptr) break;
+            ancestorId = ancestor->parentId;
+        }
+        if (entity->parentId == parentId) return false;
+        entity->parentId = parentId;
+        dirty_ = true;
+        return true;
+    }
+
+    bool EditorSceneDocument::MoveSelectionToFolder(std::wstring folder)
+    {
+        bool changed = false;
+        for (const EditorEntityId entityId : selectedEntityIds_)
+        {
+            EditorSceneEntity* const entity = world_.FindEntity(entityId);
+            if (entity != nullptr && entity->editorFolder != folder)
+            {
+                entity->editorFolder = folder;
+                changed = true;
+            }
+        }
+        dirty_ = dirty_ || changed;
+        return changed;
     }
 
     EditorSceneSnapshot
@@ -441,6 +572,8 @@ namespace lts::editor
         {
             snapshot.selectedEntityId = selected->id;
         }
+        snapshot.selectedEntityIds = selectedEntityIds_;
+        snapshot.selectionAnchorId = selectionAnchorId_;
 
         snapshot.dirty = dirty_;
 
@@ -458,6 +591,15 @@ namespace lts::editor
             snapshot.nextEntityId;
 
         world_.RestoreState(state);
+
+        selectedEntityIds_.clear();
+        for (const EditorEntityId entityId : snapshot.selectedEntityIds)
+        {
+            if (world_.FindEntity(entityId) != nullptr)
+                selectedEntityIds_.push_back(entityId);
+        }
+        selectionAnchorId_ = world_.FindEntity(snapshot.selectionAnchorId) != nullptr
+            ? snapshot.selectionAnchorId : 0U;
 
         selectedIndex_ = InvalidEditorEntityIndex;
         if (snapshot.selectedEntityId != 0U)
@@ -478,6 +620,10 @@ namespace lts::editor
                 entities.empty()
                     ? InvalidEditorEntityIndex
                     : entities.size() - 1U;
+        }
+        if (selectedEntityIds_.empty() && selectedIndex_ != InvalidEditorEntityIndex)
+        {
+            selectedEntityIds_.push_back(entities[selectedIndex_].id);
         }
 
         dirty_ =

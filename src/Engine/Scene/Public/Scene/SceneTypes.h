@@ -124,6 +124,10 @@ namespace engine::scene
         SceneEntityKind kind =
             SceneEntityKind::Empty;
 
+        // Editor hierarchy metadata. Runtime systems may safely ignore it.
+        SceneEntityId parentId = 0U;
+        std::wstring editorFolder;
+
         std::optional<EnvironmentComponent>
             environment;
 

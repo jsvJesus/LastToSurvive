@@ -1116,6 +1116,19 @@ namespace lts::editor
                     std::move(value);
             }
 
+            if (const JsonValue* hierarchy = components->Find("EditorHierarchy"))
+            {
+                std::uint64_t parentId = 0U;
+                std::string folder;
+                if (!ReadUnsigned(hierarchy->Find("parentId"), parentId) ||
+                    !ReadString(hierarchy->Find("folder"), folder) ||
+                    !FromUtf8(folder, entity.editorFolder))
+                {
+                    return false;
+                }
+                entity.parentId = static_cast<EditorEntityId>(parentId);
+            }
+
             if (
                 const JsonValue* component =
                     RequireField(
@@ -1431,10 +1444,12 @@ namespace lts::editor
                     data.snapshot.entities[index];
 
                 std::string entityName;
+                std::string editorFolder;
 
                 if (!ToUtf8(
                         entity.name,
-                        entityName))
+                        entityName) ||
+                    !ToUtf8(entity.editorFolder, editorFolder))
                 {
                     error =
                         L"Failed to convert an entity name to UTF-8.";
@@ -1483,6 +1498,9 @@ namespace lts::editor
                     output,
                     entity.transform.scale);
 
+                output << "},\n        \"EditorHierarchy\": {\"parentId\": "
+                       << entity.parentId << ", \"folder\": ";
+                WriteJsonString(output, editorFolder);
                 output << '}';
 
                 if (entity.environment.has_value())

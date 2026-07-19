@@ -15,6 +15,8 @@ namespace lts::editor
             return
                 left.id == right.id &&
                 left.kind == right.kind &&
+                left.parentId == right.parentId &&
+                left.editorFolder == right.editorFolder &&
                 left.name == right.name &&
                 left.transform.position == right.transform.position &&
                 left.transform.rotationDegrees ==
@@ -31,6 +33,8 @@ namespace lts::editor
                 left.nextEntityId != right.nextEntityId ||
                 left.selectedIndex != right.selectedIndex ||
                 left.selectedEntityId != right.selectedEntityId ||
+                left.selectedEntityIds != right.selectedEntityIds ||
+                left.selectionAnchorId != right.selectionAnchorId ||
                 left.entities.size() != right.entities.size())
             {
                 return false;
