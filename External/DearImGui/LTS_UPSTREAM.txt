@@ -1,0 +1,5 @@
+Repository: https://github.com/ocornut/imgui.git
+Branch: docking
+Commit: 81c008f90d488d18370dbe6741115e126d67f539
+Version: 1.92.9 WIP
+Integrated backends: Win32, DirectX 11

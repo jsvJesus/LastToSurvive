@@ -6,7 +6,8 @@ namespace lts::editor
 {
     enum class EditorTransformOperation : std::uint8_t
     {
-        Move = 0,
+        Select = 0,
+        Move,
         Rotate,
         Scale
     };
@@ -28,7 +29,7 @@ namespace lts::editor
     struct EditorTransformVisualState final
     {
         EditorTransformOperation operation =
-            EditorTransformOperation::Move;
+            EditorTransformOperation::Select;
 
         EditorTransformSpace space =
             EditorTransformSpace::World;

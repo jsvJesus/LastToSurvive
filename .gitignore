@@ -22,6 +22,8 @@
 !/External/ufbx/**
 !/External/RmlUI/
 !/External/RmlUI/**
+!/External/DearImGui/
+!/External/DearImGui/**
 
 # Keep only use sdk from External
 !/External/dxsdk/Include/

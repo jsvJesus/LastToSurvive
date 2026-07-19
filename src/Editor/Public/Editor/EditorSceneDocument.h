@@ -91,6 +91,9 @@ namespace lts::editor
         bool SetSelectedTransform(
             const EditorTransform& transform) noexcept;
 
+        [[nodiscard]] bool RenameSelectedEntity(
+            std::wstring name);
+
         [[nodiscard]]
         bool TranslateSelectedEntity(
             float translationX,
@@ -121,6 +124,10 @@ namespace lts::editor
             GetSceneWorld() const noexcept;
 
     private:
+        [[nodiscard]] std::wstring MakeUniqueName(
+            std::wstring baseName,
+            EditorEntityId ignoredEntityId = 0U) const;
+
         engine::scene::SceneWorld world_;
 
         std::size_t selectedIndex_ =

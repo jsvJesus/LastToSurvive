@@ -150,6 +150,12 @@ namespace lts::application
         virtual void OnEvent(
             const ApplicationEvent& event) noexcept;
 
+        [[nodiscard]] virtual bool OnNativeMessage(
+            void* nativeWindow,
+            std::uint32_t message,
+            std::uintptr_t wordParameter,
+            std::intptr_t longParameter) noexcept;
+
     private:
         class Impl;
 

@@ -497,6 +497,15 @@ namespace lts::application
                     static_cast<std::uintptr_t>(wParam),
                     static_cast<std::intptr_t>(lParam)));
 
+            if (self->owner_.OnNativeMessage(
+                    window,
+                    message,
+                    static_cast<std::uintptr_t>(wParam),
+                    static_cast<std::intptr_t>(lParam)))
+            {
+                return 1;
+            }
+
             switch (message)
             {
                 case WM_CLOSE:
@@ -1079,6 +1088,15 @@ namespace lts::application
     void Application::OnEvent(
         const ApplicationEvent&) noexcept
     {
+    }
+
+    bool Application::OnNativeMessage(
+        void*,
+        const std::uint32_t,
+        const std::uintptr_t,
+        const std::intptr_t) noexcept
+    {
+        return false;
     }
 
     void Application::DispatchEvent(

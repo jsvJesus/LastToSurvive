@@ -174,26 +174,17 @@ namespace lts::editor
             return;
         }
 
-        POINT viewportCenter{};
-
-        if (!GetViewportCenterOnScreen(viewportWindow, viewportCenter))
-        {
-            EndMouseLook();
-            return;
-        }
-
         if (!mouseLookActive_)
         {
             POINT currentCursor{};
 
             if (GetCursorPos(&currentCursor))
             {
-                restoreCursorX_ = static_cast<std::int32_t>(currentCursor.x);
-                restoreCursorY_ = static_cast<std::int32_t>(currentCursor.y);
+                lastCursorX_ = static_cast<std::int32_t>(currentCursor.x);
+                lastCursorY_ = static_cast<std::int32_t>(currentCursor.y);
             }
 
             SetCapture(viewportWindow);
-            SetCursorPos(viewportCenter.x, viewportCenter.y);
             mouseLookActive_ = true;
         }
         else
@@ -202,8 +193,11 @@ namespace lts::editor
 
             if (GetCursorPos(&cursorPosition))
             {
-                const LONG deltaX = cursorPosition.x - viewportCenter.x;
-                const LONG deltaY = cursorPosition.y - viewportCenter.y;
+                const LONG deltaX = cursorPosition.x - lastCursorX_;
+                const LONG deltaY = cursorPosition.y - lastCursorY_;
+
+                lastCursorX_ = static_cast<std::int32_t>(cursorPosition.x);
+                lastCursorY_ = static_cast<std::int32_t>(cursorPosition.y);
 
                 yawRadians_ +=
                     static_cast<float>(deltaX) *
@@ -219,7 +213,6 @@ namespace lts::editor
                     MaximumPitch);
             }
 
-            SetCursorPos(viewportCenter.x, viewportCenter.y);
         }
 
         const float safeDeltaSeconds =
@@ -455,10 +448,6 @@ namespace lts::editor
         {
             ReleaseCapture();
         }
-
-        SetCursorPos(
-            restoreCursorX_,
-            restoreCursorY_);
 
         mouseLookActive_ = false;
     }

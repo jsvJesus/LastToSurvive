@@ -7,6 +7,7 @@
 #include <DirectXMath.h>
 
 #include <memory>
+#include <string>
 
 namespace engine::graphics
 {
@@ -40,6 +41,11 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const EditorSceneDocument& document,
             const DirectX::XMFLOAT4X4& viewProjection) noexcept;
+
+        [[nodiscard]] bool TryGetMeshBounds(
+            const std::wstring& assetPath,
+            DirectX::XMFLOAT3& minimum,
+            DirectX::XMFLOAT3& maximum) const noexcept;
 
     private:
         class Impl;

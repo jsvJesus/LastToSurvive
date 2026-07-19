@@ -7,6 +7,7 @@
 
 namespace lts::editor
 {
+    class EditorStaticMeshRenderer;
     class EditorScenePicker final
     {
     public:
@@ -17,6 +18,7 @@ namespace lts::editor
             const EditorSceneDocument& document,
             const EditorPickRay& ray,
             std::size_t& outEntityIndex,
-            float& outDistance) noexcept;
+            float& outDistance,
+            const EditorStaticMeshRenderer* meshRenderer = nullptr) noexcept;
     };
 }

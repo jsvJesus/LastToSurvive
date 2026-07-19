@@ -23,9 +23,14 @@
 #include <GraphicsDX11/D3D11Device.h>
 #include <GraphicsDX11/RmlUiRenderInterfaceDX11.h>
 #include <UI/RmlUiHost.h>
+#include <ImGui/ImGuiHost.h>
 
 #include <cstdint>
+#include <array>
+#include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace lts::editor
 {
@@ -58,12 +63,23 @@ namespace lts::editor
             const lts::application::
                 ApplicationEvent& event) noexcept override;
 
+        [[nodiscard]] bool OnNativeMessage(
+            void* nativeWindow,
+            std::uint32_t message,
+            std::uintptr_t wordParameter,
+            std::intptr_t longParameter) noexcept override;
+
     private:
         [[nodiscard]]
         bool InitializeGraphics() noexcept;
         [[nodiscard]] bool InitializeUi() noexcept;
         void ShutdownUi() noexcept;
         void RenderUi() noexcept;
+        void RenderImGui() noexcept;
+        void DrawImGuiWorkspace() noexcept;
+        void RefreshContentBrowser() noexcept;
+        void DrawContentBrowser() noexcept;
+        [[nodiscard]] bool StartImGuiWorkspace(EditorLauncherAction action) noexcept;
         void HandleLauncherAction(EditorLauncherAction action);
         void HandleLevelEditorAction(LevelEditorUiAction action);
         [[nodiscard]] bool LoadUiDocument(const char* path);
@@ -119,6 +135,7 @@ namespace lts::editor
         std::unique_ptr<engine::graphics::SwapChain> uiSwapChain_;
         engine::graphics::d3d11::RmlUiRenderInterfaceDX11 uiRenderInterface_;
         engine::ui::RmlUiHost uiHost_;
+        engine::ui::ImGuiHost imguiHost_;
         EditorLauncherController launcherController_;
         LevelEditorUiController levelEditorUiController_;
         Rml::ElementDocument* uiDocument_ = nullptr;
@@ -127,6 +144,20 @@ namespace lts::editor
         bool levelEditorUiActive_ = false;
         std::size_t snapSettingIndex_ = 1;
         bool playInNewWindow_ = false;
+        EditorLauncherAction imguiWorkspace_ = EditorLauncherAction::LevelEditor;
+        EditorLauncherAction pendingImGuiWorkspace_ = EditorLauncherAction::LevelEditor;
+        bool imguiWorkspacePending_ = false;
+        bool imguiLayoutBuilt_ = false;
+        float imguiViewportX_ = 0.0F;
+        float imguiViewportY_ = 0.0F;
+        float imguiViewportWidth_ = 1.0F;
+        float imguiViewportHeight_ = 1.0F;
+        std::filesystem::path contentMeshesRoot_;
+        std::filesystem::path contentSelectedDirectory_;
+        std::vector<std::filesystem::path> contentMeshFiles_;
+        std::array<char, 128U> contentSearch_{};
+        std::array<char, 256U> entityRenameBuffer_{};
+        EditorEntityId renameEntityId_ = 0U;
 
         engine::graphics::CommandContext*
             commandContext_ = nullptr;

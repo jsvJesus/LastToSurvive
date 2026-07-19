@@ -629,7 +629,7 @@ namespace lts::editor
             EditorCommandHistory&
                 commandHistory) noexcept
     {
-        sceneDocument.CreateDefaultLevel();
+        sceneDocument.Clear();
 
         const EditorSceneSnapshot snapshot =
             sceneDocument.CreateSnapshot();

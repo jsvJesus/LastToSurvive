@@ -28,14 +28,14 @@ namespace lts::editor
     {
         constexpr float GizmoLength = 2.5F;
         constexpr float GizmoDeadZone = 0.40F;
-        constexpr float MinimumGizmoPickRadius = 0.16F;
-        constexpr float MaximumGizmoPickRadius = 0.85F;
-        constexpr float GizmoPickRadiusPerDistance = 0.012F;
+        constexpr float MinimumGizmoPickRadius = 0.30F;
+        constexpr float MaximumGizmoPickRadius = 1.35F;
+        constexpr float GizmoPickRadiusPerDistance = 0.022F;
 
         constexpr float RotationRadius = 2.0F;
-        constexpr float MinimumRotationPickTolerance = 0.16F;
-        constexpr float MaximumRotationPickTolerance = 0.75F;
-        constexpr float RotationPickTolerancePerDistance = 0.012F;
+        constexpr float MinimumRotationPickTolerance = 0.30F;
+        constexpr float MaximumRotationPickTolerance = 1.20F;
+        constexpr float RotationPickTolerancePerDistance = 0.022F;
 
         constexpr float Epsilon = 0.000001F;
 
@@ -344,6 +344,9 @@ namespace lts::editor
         {
             switch (operation)
             {
+                case EditorTransformOperation::Select:
+                    return L"Select";
+
                 case EditorTransformOperation::Move:
                     return L"Move";
 
@@ -403,7 +406,8 @@ namespace lts::editor
         EditorCommandHistory& history,
         EditorCameraController& camera,
         const engine::platform::WindowSize viewportSize,
-        const ViewportClick* const viewportClick) noexcept
+        const ViewportClick* const viewportClick,
+        const EditorStaticMeshRenderer* const meshRenderer) noexcept
     {
         EditorInteractionResult result;
 
@@ -435,6 +439,7 @@ namespace lts::editor
             !rightMouseDown &&
             visualState_.activeAxis == EditorTransformAxis::None)
         {
+            const bool selectPressed = WasPressed('Q');
             const bool movePressed = WasPressed('W');
             const bool rotatePressed = WasPressed('E');
             const bool scalePressed = WasPressed('R');
@@ -444,6 +449,12 @@ namespace lts::editor
             const bool duplicatePressed = WasPressed('D');
             const bool focusPressed = WasPressed('F');
             const bool deletePressed = WasPressed(VK_DELETE);
+
+            if (selectPressed)
+            {
+                visualState_.operation = EditorTransformOperation::Select;
+                result.statusChanged = true;
+            }
 
             if (movePressed)
             {
@@ -556,6 +567,7 @@ namespace lts::editor
         }
         else
         {
+            static_cast<void>(WasPressed('Q'));
             static_cast<void>(WasPressed('W'));
             static_cast<void>(WasPressed('E'));
             static_cast<void>(WasPressed('R'));
@@ -591,7 +603,8 @@ namespace lts::editor
                             document,
                             ray,
                             pickedIndex,
-                            distance) &&
+                            distance,
+                            meshRenderer) &&
                         document.SelectEntityByIndex(pickedIndex))
                     {
                         result.selectionChanged = true;
@@ -625,6 +638,16 @@ namespace lts::editor
         }
 
         return result;
+    }
+
+    void EditorTransformController::SetViewportRegion(
+        const std::int32_t x,
+        const std::int32_t y,
+        const std::uint32_t,
+        const std::uint32_t) noexcept
+    {
+        viewportX_ = x;
+        viewportY_ = y;
     }
 
     const EditorTransformVisualState&
@@ -711,15 +734,15 @@ namespace lts::editor
         }
 
         if (
-            cursor.x < 0 ||
-            cursor.y < 0)
+            cursor.x < viewportX_ ||
+            cursor.y < viewportY_)
         {
             return false;
         }
 
         return camera.BuildPickRay(
-            static_cast<std::uint32_t>(cursor.x),
-            static_cast<std::uint32_t>(cursor.y),
+            static_cast<std::uint32_t>(cursor.x - viewportX_),
+            static_cast<std::uint32_t>(cursor.y - viewportY_),
             viewportSize.width,
             viewportSize.height,
             ray);
@@ -1114,6 +1137,10 @@ namespace lts::editor
         const EditorPickRay& ray,
         float& parameter) const noexcept
     {
+        if (visualState_.operation == EditorTransformOperation::Select)
+        {
+            return EditorTransformAxis::None;
+        }
         const DirectX::XMFLOAT3 origin
         {
             entity.transform.position[0],

@@ -10,6 +10,8 @@
 #include <Graphics/Viewport.h>
 #include <RmlUi/Core/ElementDocument.h>
 #include <RmlUi/Core/Element.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 
 #include <Runtime/EngineMode.h>
 #include <Runtime/RendererBackend.h>
@@ -17,6 +19,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <chrono>
+#include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -27,6 +30,32 @@ namespace lts::editor
 {
     namespace
     {
+        [[nodiscard]] std::string ToUtf8(const std::wstring& value)
+        {
+            if (value.empty()) return {};
+            const int size = WideCharToMultiByte(
+                CP_UTF8, 0, value.data(), static_cast<int>(value.size()),
+                nullptr, 0, nullptr, nullptr);
+            if (size <= 0) return {};
+            std::string output(static_cast<std::size_t>(size), '\0');
+            WideCharToMultiByte(
+                CP_UTF8, 0, value.data(), static_cast<int>(value.size()),
+                output.data(), size, nullptr, nullptr);
+            return output;
+        }
+
+        [[nodiscard]] std::wstring FromUtf8(const char* const value)
+        {
+            if (value == nullptr || *value == '\0') return {};
+            const int length = static_cast<int>(std::strlen(value));
+            const int size = MultiByteToWideChar(
+                CP_UTF8, 0, value, length, nullptr, 0);
+            if (size <= 0) return {};
+            std::wstring output(static_cast<std::size_t>(size), L'\0');
+            MultiByteToWideChar(CP_UTF8, 0, value, length, output.data(), size);
+            return output;
+        }
+
         [[nodiscard]]
         lts::application::ApplicationDesc CreateEditorDescription()
         {
@@ -79,7 +108,7 @@ namespace lts::editor
 
         try
         {
-            sceneDocument_.CreateDefaultLevel();
+            sceneDocument_.Clear();
         }
         catch (...)
         {
@@ -268,6 +297,7 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
+        imguiHost_.Shutdown();
         ShutdownUi();
 
         transformController_.
@@ -297,9 +327,64 @@ namespace lts::editor
     void EditorApplication::OnUpdate(
     const double deltaSeconds) noexcept
     {
+        if (imguiHost_.IsInitialized())
+        {
+            if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
+            {
+                const EditorLevelUpdateResult result =
+                    levelDocument_.Update(sceneDocument_, commandHistory_);
+                if (result.sceneReplaced) cameraController_.Reset();
+                if (result.closeApproved) RequestExit();
+                cameraController_.Update(
+                    deltaSeconds,
+                    static_cast<float>(GetInputSystem().GetMouseWheelDelta()) /
+                        static_cast<float>(WHEEL_DELTA));
+
+                const std::int32_t viewportX =
+                    static_cast<std::int32_t>(imguiViewportX_);
+                const std::int32_t viewportY =
+                    static_cast<std::int32_t>(imguiViewportY_);
+                const engine::platform::WindowSize viewportSize{
+                    static_cast<std::uint32_t>(std::max(imguiViewportWidth_, 1.0F)),
+                    static_cast<std::uint32_t>(std::max(imguiViewportHeight_, 1.0F))};
+                transformController_.SetViewportRegion(
+                    viewportX, viewportY, viewportSize.width, viewportSize.height);
+
+                const engine::platform::MousePosition mouse =
+                    GetInputSystem().GetMousePosition();
+                const bool insideViewport =
+                    mouse.x >= viewportX && mouse.y >= viewportY &&
+                    mouse.x < viewportX + static_cast<std::int32_t>(viewportSize.width) &&
+                    mouse.y < viewportY + static_cast<std::int32_t>(viewportSize.height);
+                const bool clicked = insideViewport &&
+                    GetInputSystem().WasMouseButtonPressed(
+                        engine::platform::MouseButton::Left) &&
+                    !GetInputSystem().IsMouseButtonDown(
+                        engine::platform::MouseButton::Right);
+                ViewportClick click;
+                if (clicked)
+                {
+                    click.x = static_cast<std::uint32_t>(mouse.x - viewportX);
+                    click.y = static_cast<std::uint32_t>(mouse.y - viewportY);
+                }
+                static_cast<void>(transformController_.Update(
+                    sceneDocument_, commandHistory_, cameraController_,
+                    viewportSize, clicked ? &click : nullptr,
+                    &staticMeshRenderer_));
+            }
+            return;
+        }
+
         if (uiHost_.IsInitialized())
         {
             static_cast<void>(uiHost_.ProcessInput(GetInputSystem()));
+
+            if (imguiWorkspacePending_)
+            {
+                imguiWorkspacePending_ = false;
+                static_cast<void>(StartImGuiWorkspace(pendingImGuiWorkspace_));
+                return;
+            }
 
             if (levelEditorUiActive_)
             {
@@ -318,6 +403,53 @@ namespace lts::editor
                     deltaSeconds,
                     static_cast<float>(GetInputSystem().GetMouseWheelDelta()) /
                         static_cast<float>(WHEEL_DELTA));
+
+                if (uiDocument_ != nullptr)
+                {
+                    Rml::Element* const viewportElement =
+                        uiDocument_->GetElementById("viewport");
+                    if (viewportElement != nullptr)
+                    {
+                        const Rml::Vector2f offset = viewportElement->
+                            GetAbsoluteOffset(Rml::BoxArea::Border);
+                        const Rml::Vector2f size = viewportElement->GetBox().
+                            GetSize(Rml::BoxArea::Border);
+                        const std::int32_t viewportX =
+                            static_cast<std::int32_t>(offset.x);
+                        const std::int32_t viewportY =
+                            static_cast<std::int32_t>(offset.y);
+                        engine::platform::WindowSize viewportSize{
+                            static_cast<std::uint32_t>(std::max(size.x, 1.0F)),
+                            static_cast<std::uint32_t>(std::max(size.y, 1.0F))};
+
+                        transformController_.SetViewportRegion(
+                            viewportX, viewportY,
+                            viewportSize.width, viewportSize.height);
+
+                        ViewportClick click;
+                        const engine::platform::MousePosition mouse =
+                            GetInputSystem().GetMousePosition();
+                        const bool inside =
+                            mouse.x >= viewportX && mouse.y >= viewportY &&
+                            mouse.x < viewportX + static_cast<std::int32_t>(viewportSize.width) &&
+                            mouse.y < viewportY + static_cast<std::int32_t>(viewportSize.height);
+                        const bool clicked = inside &&
+                            GetInputSystem().WasMouseButtonPressed(
+                                engine::platform::MouseButton::Left) &&
+                            !GetInputSystem().IsMouseButtonDown(
+                                engine::platform::MouseButton::Right);
+                        if (clicked)
+                        {
+                            click.x = static_cast<std::uint32_t>(mouse.x - viewportX);
+                            click.y = static_cast<std::uint32_t>(mouse.y - viewportY);
+                        }
+
+                        static_cast<void>(transformController_.Update(
+                            sceneDocument_, commandHistory_, cameraController_,
+                            viewportSize, clicked ? &click : nullptr,
+                            &staticMeshRenderer_));
+                    }
+                }
             }
 
             uiHost_.Update();
@@ -544,6 +676,12 @@ namespace lts::editor
 
     void EditorApplication::OnRender() noexcept
     {
+        if (imguiHost_.IsInitialized())
+        {
+            RenderImGui();
+            return;
+        }
+
         if (uiHost_.IsInitialized())
         {
             RenderUi();
@@ -662,7 +800,8 @@ namespace lts::editor
             *commandContext_,
             sceneDocument_,
             viewProjection,
-            transformController_.GetVisualState());
+            transformController_.GetVisualState(),
+            &staticMeshRenderer_);
 
         if (engine::graphics::Failed(result))
         {
@@ -748,7 +887,7 @@ namespace lts::editor
                     }
                 }
 
-                if (uiHost_.IsInitialized())
+                if (uiHost_.IsInitialized() || imguiHost_.IsInitialized())
                 {
                     break;
                 }
@@ -810,6 +949,16 @@ namespace lts::editor
             default:
                 break;
         }
+    }
+
+    bool EditorApplication::OnNativeMessage(
+        void* const nativeWindow,
+        const std::uint32_t message,
+        const std::uintptr_t wordParameter,
+        const std::intptr_t longParameter) noexcept
+    {
+        return imguiHost_.ProcessNativeMessage(
+            nativeWindow, message, wordParameter, longParameter);
     }
 
     bool EditorApplication::InitializeUi() noexcept
@@ -898,6 +1047,541 @@ namespace lts::editor
         uiHeight_ = 0;
     }
 
+    bool EditorApplication::StartImGuiWorkspace(
+        const EditorLauncherAction action) noexcept
+    {
+        if (uiDocument_ != nullptr)
+        {
+            launcherController_.Detach();
+            uiDocument_->Close();
+            uiDocument_ = nullptr;
+        }
+        uiHost_.Shutdown();
+        uiRenderInterface_.Shutdown();
+
+        if (!imguiHost_.Initialize(
+                reinterpret_cast<void*>(GetWindow().GetNativeHandle().Value()),
+                graphicsDevice_.GetNativeDevice(),
+                graphicsDevice_.GetNativeImmediateContext()))
+        {
+            return false;
+        }
+
+        imguiWorkspace_ = action;
+        imguiLayoutBuilt_ = false;
+        RefreshContentBrowser();
+        levelEditorUiActive_ = action == EditorLauncherAction::LevelEditor;
+        cameraController_.SetViewportWindow(GetWindow().GetNativeHandle());
+        transformController_.SetViewportWindow(GetWindow().GetNativeHandle());
+        return true;
+    }
+
+    void EditorApplication::RefreshContentBrowser() noexcept
+    {
+        contentMeshFiles_.clear();
+        try
+        {
+            std::filesystem::path gameRoot = std::filesystem::current_path();
+            if (gameRoot.filename() != L"game")
+            {
+                gameRoot /= L"game";
+            }
+            contentMeshesRoot_ = (gameRoot / L"Data" / L"Meshes").lexically_normal();
+            contentSelectedDirectory_ = contentMeshesRoot_;
+
+            std::error_code error;
+            for (std::filesystem::recursive_directory_iterator iterator(
+                     contentMeshesRoot_,
+                     std::filesystem::directory_options::skip_permission_denied,
+                     error), end;
+                 iterator != end;
+                 iterator.increment(error))
+            {
+                if (error)
+                {
+                    error.clear();
+                    continue;
+                }
+                if (iterator->is_regular_file(error) && !error &&
+                    iterator->path().extension() == L".ltsmesh")
+                {
+                    contentMeshFiles_.push_back(iterator->path().lexically_normal());
+                }
+            }
+            std::sort(contentMeshFiles_.begin(), contentMeshFiles_.end());
+        }
+        catch (...)
+        {
+            contentMeshFiles_.clear();
+        }
+    }
+
+    void EditorApplication::DrawContentBrowser() noexcept
+    {
+        if (ImGui::Button("Refresh"))
+        {
+            RefreshContentBrowser();
+        }
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(260.0F);
+        ImGui::InputTextWithHint(
+            "##ContentSearch",
+            "Search meshes...",
+            contentSearch_.data(),
+            contentSearch_.size());
+        ImGui::Separator();
+
+        std::vector<std::filesystem::path> directories;
+        for (const std::filesystem::path& file : contentMeshFiles_)
+        {
+            const std::filesystem::path directory = file.parent_path();
+            if (std::find(directories.begin(), directories.end(), directory) == directories.end())
+            {
+                directories.push_back(directory);
+            }
+        }
+
+        ImGui::BeginChild("ContentFolders", ImVec2(210.0F, 0.0F), ImGuiChildFlags_Borders);
+        if (ImGui::Selectable(
+                "Meshes",
+                contentSelectedDirectory_ == contentMeshesRoot_))
+        {
+            contentSelectedDirectory_ = contentMeshesRoot_;
+        }
+        for (const std::filesystem::path& directory : directories)
+        {
+            std::error_code error;
+            const std::string label = std::filesystem::relative(
+                directory, contentMeshesRoot_, error).generic_u8string();
+            if (!error && ImGui::Selectable(
+                    ("  " + label).c_str(),
+                    contentSelectedDirectory_ == directory))
+            {
+                contentSelectedDirectory_ = directory;
+            }
+        }
+        ImGui::EndChild();
+        ImGui::SameLine();
+
+        ImGui::BeginChild("ContentAssets", ImVec2(0.0F, 0.0F), ImGuiChildFlags_Borders);
+        std::string search = contentSearch_.data();
+        std::transform(search.begin(), search.end(), search.begin(),
+            [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
+        for (const std::filesystem::path& file : contentMeshFiles_)
+        {
+            if (contentSelectedDirectory_ != contentMeshesRoot_ &&
+                file.parent_path() != contentSelectedDirectory_)
+            {
+                continue;
+            }
+            std::string name = file.stem().u8string();
+            std::string loweredName = name;
+            std::transform(loweredName.begin(), loweredName.end(), loweredName.begin(),
+                [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
+            if (!search.empty() && loweredName.find(search) == std::string::npos)
+            {
+                continue;
+            }
+
+            ImGui::PushID(file.generic_u8string().c_str());
+            const bool selected = ImGui::Selectable(
+                name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick,
+                ImVec2(180.0F, 42.0F));
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            {
+                std::error_code relativeError;
+                const std::filesystem::path relative = std::filesystem::relative(
+                    file, contentMeshesRoot_.parent_path().parent_path(), relativeError);
+                if (!relativeError)
+                {
+                    const std::string payload = relative.generic_u8string();
+                    ImGui::SetDragDropPayload(
+                        "LTS_MESH_ASSET",
+                        payload.c_str(),
+                        payload.size() + 1U);
+                    ImGui::Text("Place %s", name.c_str());
+                }
+                ImGui::EndDragDropSource();
+            }
+            if (selected && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                std::error_code error;
+                const std::filesystem::path relative = std::filesystem::relative(
+                    file, contentMeshesRoot_.parent_path().parent_path(), error);
+                if (!error)
+                {
+                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                    EditorTransform transform{};
+                    if (sceneDocument_.CreateStaticMeshEntity(
+                            file.stem().wstring(),
+                            relative.generic_wstring(),
+                            transform))
+                    {
+                        static_cast<void>(commandHistory_.Push(
+                            before, sceneDocument_.CreateSnapshot()));
+                    }
+                }
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("%s\nDouble-click to add to scene",
+                    file.generic_u8string().c_str());
+            }
+            ImGui::PopID();
+        }
+        if (contentMeshFiles_.empty())
+        {
+            ImGui::TextDisabled("No .ltsmesh files found in Data/Meshes");
+        }
+        ImGui::EndChild();
+    }
+
+    void EditorApplication::DrawImGuiWorkspace() noexcept
+    {
+        const ImGuiID dockspaceId = ImGui::DockSpaceOverViewport(
+            0,
+            ImGui::GetMainViewport(),
+            ImGuiDockNodeFlags_PassthruCentralNode);
+
+        if (!imguiLayoutBuilt_ &&
+            imguiWorkspace_ == EditorLauncherAction::LevelEditor)
+        {
+            ImGuiViewport* const mainViewport = ImGui::GetMainViewport();
+            ImGui::DockBuilderRemoveNode(dockspaceId);
+            ImGui::DockBuilderAddNode(
+                dockspaceId,
+                ImGuiDockNodeFlags_DockSpace |
+                    ImGuiDockNodeFlags_PassthruCentralNode);
+            ImGui::DockBuilderSetNodeSize(dockspaceId, mainViewport->WorkSize);
+
+            ImGuiID center = dockspaceId;
+            const ImGuiID toolbar = ImGui::DockBuilderSplitNode(
+                center, ImGuiDir_Up, 0.055F, nullptr, &center);
+            const ImGuiID left = ImGui::DockBuilderSplitNode(
+                center, ImGuiDir_Left, 0.16F, nullptr, &center);
+            const ImGuiID right = ImGui::DockBuilderSplitNode(
+                center, ImGuiDir_Right, 0.22F, nullptr, &center);
+            const ImGuiID bottom = ImGui::DockBuilderSplitNode(
+                center, ImGuiDir_Down, 0.24F, nullptr, &center);
+            ImGuiID rightTop = right;
+            const ImGuiID rightBottom = ImGui::DockBuilderSplitNode(
+                rightTop, ImGuiDir_Down, 0.48F, nullptr, &rightTop);
+
+            ImGui::DockBuilderDockWindow("Toolbar", toolbar);
+            ImGui::DockBuilderDockWindow("Place Actors", left);
+            ImGui::DockBuilderDockWindow("Scene Outliner", rightTop);
+            ImGui::DockBuilderDockWindow("Details", rightBottom);
+            ImGui::DockBuilderDockWindow("Content Browser", bottom);
+            ImGui::DockBuilderDockWindow("Viewport", center);
+            ImGui::DockBuilderFinish(dockspaceId);
+            imguiLayoutBuilt_ = true;
+        }
+
+        const char* workspaceName = "Level Editor";
+        switch (imguiWorkspace_)
+        {
+            case EditorLauncherAction::CharacterEditor: workspaceName = "Character Editor"; break;
+            case EditorLauncherAction::PhysicsEditor: workspaceName = "Physics Editor"; break;
+            case EditorLauncherAction::FbxImporter: workspaceName = "FBX Importer"; break;
+            case EditorLauncherAction::IconGenerator: workspaceName = "Icon Generator"; break;
+            default: break;
+        }
+
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New", "Ctrl+N")) levelDocument_.RequestNewLevel();
+                if (ImGui::MenuItem("Open", "Ctrl+O")) levelDocument_.RequestOpenLevel();
+                if (ImGui::MenuItem("Save", "Ctrl+S")) levelDocument_.RequestSaveLevel();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Exit")) RequestExit();
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Edit"))
+            {
+                if (ImGui::MenuItem("Undo", "Ctrl+Z")) static_cast<void>(commandHistory_.Undo(sceneDocument_));
+                if (ImGui::MenuItem("Redo", "Ctrl+Y")) static_cast<void>(commandHistory_.Redo(sceneDocument_));
+                ImGui::EndMenu();
+            }
+            ImGui::TextDisabled("%s", workspaceName);
+            ImGui::EndMainMenuBar();
+        }
+
+        if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
+        {
+            ImGui::Begin(
+                "Toolbar",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoScrollbar |
+                    ImGuiWindowFlags_NoScrollWithMouse);
+            if (ImGui::Button("New")) levelDocument_.RequestNewLevel();
+            ImGui::SameLine();
+            if (ImGui::Button("Open")) levelDocument_.RequestOpenLevel();
+            ImGui::SameLine();
+            if (ImGui::Button("Save")) levelDocument_.RequestSaveLevel();
+            ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
+            if (ImGui::Button("Undo")) static_cast<void>(commandHistory_.Undo(sceneDocument_));
+            ImGui::SameLine();
+            if (ImGui::Button("Redo")) static_cast<void>(commandHistory_.Redo(sceneDocument_));
+            ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
+            const auto drawToolButton = [this](
+                const char* const label,
+                const EditorTransformOperation operation,
+                const char* const description)
+            {
+                const bool active = transformController_.GetVisualState().operation == operation;
+                if (active)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.10F, 0.38F, 0.47F, 1.0F));
+                }
+                const bool clicked = ImGui::Button(label);
+                if (active) ImGui::PopStyleColor();
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", description);
+                if (clicked) transformController_.SetOperation(operation);
+            };
+            drawToolButton(
+                "Q Select", EditorTransformOperation::Select,
+                "Selection mode: click objects without showing a transform gizmo");
+            ImGui::SameLine();
+            drawToolButton("W Move", EditorTransformOperation::Move, "Move selected object");
+            ImGui::SameLine();
+            drawToolButton("E Rotate", EditorTransformOperation::Rotate, "Rotate selected object");
+            ImGui::SameLine();
+            drawToolButton("R Scale", EditorTransformOperation::Scale, "Scale selected object");
+            ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
+            if (ImGui::Button(
+                    transformController_.GetVisualState().space == EditorTransformSpace::World
+                        ? "World" : "Local"))
+            {
+                transformController_.ToggleSpace();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Play")) HandleLauncherAction(EditorLauncherAction::TestGame);
+            ImGui::End();
+
+            ImGui::Begin("Place Actors");
+            if (ImGui::Button("Empty Actor", ImVec2(-1.0F, 0.0F)))
+            {
+                const EditorTransform transform{};
+                static_cast<void>(sceneDocument_.CreateEntity(
+                    L"Empty Actor", EditorEntityKind::Empty, transform));
+            }
+            if (ImGui::Button("Directional Light", ImVec2(-1.0F, 0.0F)))
+            {
+                const EditorTransform transform{};
+                static_cast<void>(sceneDocument_.CreateEntity(
+                    L"Directional Light", EditorEntityKind::DirectionalLight, transform));
+            }
+            if (ImGui::Button("Spawn Point", ImVec2(-1.0F, 0.0F)))
+            {
+                const EditorTransform transform{};
+                static_cast<void>(sceneDocument_.CreateEntity(
+                    L"Spawn Point", EditorEntityKind::SpawnPoint, transform));
+            }
+            ImGui::End();
+
+            ImGui::Begin("Scene Outliner");
+            const auto& entities = sceneDocument_.GetEntities();
+            for (std::size_t index = 0; index < entities.size(); ++index)
+            {
+                const EditorSceneEntity& entity = entities[index];
+                const std::string label = ToUtf8(entity.name) + "##" +
+                    std::to_string(static_cast<unsigned long long>(entity.id));
+                if (ImGui::Selectable(
+                        label.c_str(), index == sceneDocument_.GetSelectedIndex()))
+                {
+                    static_cast<void>(sceneDocument_.SelectEntityByIndex(index));
+                }
+            }
+            ImGui::End();
+
+            ImGui::Begin("Details");
+            if (const EditorSceneEntity* entity = sceneDocument_.GetSelectedEntity())
+            {
+                if (renameEntityId_ != entity->id)
+                {
+                    renameEntityId_ = entity->id;
+                    entityRenameBuffer_.fill('\0');
+                    const std::string name = ToUtf8(entity->name);
+                    const std::size_t count = std::min(
+                        name.size(), entityRenameBuffer_.size() - 1U);
+                    std::memcpy(entityRenameBuffer_.data(), name.data(), count);
+                }
+                ImGui::TextDisabled("Name");
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(-1.0F);
+                if (ImGui::InputText(
+                        "##EntityName",
+                        entityRenameBuffer_.data(),
+                        entityRenameBuffer_.size(),
+                        ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                    if (sceneDocument_.RenameSelectedEntity(
+                            FromUtf8(entityRenameBuffer_.data())))
+                    {
+                        static_cast<void>(commandHistory_.Push(
+                            before, sceneDocument_.CreateSnapshot()));
+                    }
+                    renameEntityId_ = 0U;
+                }
+                ImGui::Separator();
+                EditorTransform transform = entity->transform;
+                if (ImGui::DragFloat3("Location", transform.position.data(), 0.1F) ||
+                    ImGui::DragFloat3("Rotation", transform.rotationDegrees.data(), 0.5F) ||
+                    ImGui::DragFloat3("Scale", transform.scale.data(), 0.01F, 0.001F, 1000.0F))
+                {
+                    static_cast<void>(sceneDocument_.SetSelectedTransform(transform));
+                }
+            }
+            else
+            {
+                ImGui::TextDisabled("No selection");
+            }
+            ImGui::End();
+
+            ImGui::Begin("Content Browser");
+            DrawContentBrowser();
+            ImGui::End();
+
+            ImGui::SetNextWindowBgAlpha(0.0F);
+            ImGui::Begin(
+                "Viewport",
+                nullptr,
+                ImGuiWindowFlags_NoBackground |
+                    ImGuiWindowFlags_NoScrollbar |
+                    ImGuiWindowFlags_NoScrollWithMouse);
+            const ImVec2 position = ImGui::GetCursorScreenPos();
+            const ImVec2 available = ImGui::GetContentRegionAvail();
+            imguiViewportX_ = position.x;
+            imguiViewportY_ = position.y;
+            imguiViewportWidth_ = std::max(available.x, 1.0F);
+            imguiViewportHeight_ = std::max(available.y, 1.0F);
+            ImGui::InvisibleButton("SceneViewport", available);
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* const payload =
+                        ImGui::AcceptDragDropPayload("LTS_MESH_ASSET"))
+                {
+                    if (payload->IsDelivery() && payload->Data != nullptr)
+                    {
+                        const char* const assetPath =
+                            static_cast<const char*>(payload->Data);
+                        const ImVec2 mouse = ImGui::GetMousePos();
+                        EditorPickRay ray;
+                        const float localX = mouse.x - imguiViewportX_;
+                        const float localY = mouse.y - imguiViewportY_;
+                        if (localX >= 0.0F && localY >= 0.0F &&
+                            cameraController_.BuildPickRay(
+                                static_cast<std::uint32_t>(localX),
+                                static_cast<std::uint32_t>(localY),
+                                static_cast<std::uint32_t>(imguiViewportWidth_),
+                                static_cast<std::uint32_t>(imguiViewportHeight_),
+                                ray) && std::abs(ray.direction.y) > 0.00001F)
+                        {
+                            const float distance = -ray.origin.y / ray.direction.y;
+                            if (distance >= 0.0F)
+                            {
+                                EditorTransform transform{};
+                                transform.position = {
+                                    ray.origin.x + ray.direction.x * distance,
+                                    0.0F,
+                                    ray.origin.z + ray.direction.z * distance};
+                                const std::filesystem::path path = FromUtf8(assetPath);
+                                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                if (sceneDocument_.CreateStaticMeshEntity(
+                                        path.stem().wstring(),
+                                        path.generic_wstring(),
+                                        transform))
+                                {
+                                    static_cast<void>(commandHistory_.Push(
+                                        before, sceneDocument_.CreateSnapshot()));
+                                }
+                            }
+                        }
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+            ImGui::End();
+        }
+        else
+        {
+            ImGui::Begin(workspaceName);
+            ImGui::Text("%s workspace", workspaceName);
+            ImGui::Separator();
+            ImGui::TextDisabled("Dear ImGui tool host is active.");
+            ImGui::End();
+        }
+    }
+
+    void EditorApplication::RenderImGui() noexcept
+    {
+        if (uiSwapChain_ == nullptr || commandContext_ == nullptr || IsMinimized())
+        {
+            return;
+        }
+
+        imguiHost_.BeginFrame();
+        DrawImGuiWorkspace();
+
+        engine::graphics::Viewport fullViewport;
+        fullViewport.width = static_cast<float>(uiWidth_);
+        fullViewport.height = static_cast<float>(uiHeight_);
+        fullViewport.maxDepth = 1.0F;
+        auto result = commandContext_->SetViewport(fullViewport);
+        if (!engine::graphics::Failed(result)) result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_);
+        engine::graphics::ClearColor clear{0.025F, 0.030F, 0.036F, 1.0F};
+        if (!engine::graphics::Failed(result)) result = commandContext_->ClearSwapChainColor(*uiSwapChain_, clear);
+
+        if (!engine::graphics::Failed(result))
+        {
+            imguiHost_.Render();
+        }
+
+        if (!engine::graphics::Failed(result) &&
+            imguiWorkspace_ == EditorLauncherAction::LevelEditor &&
+            depthStencil_.IsValid())
+        {
+            engine::graphics::Viewport sceneViewport;
+            sceneViewport.x = imguiViewportX_;
+            sceneViewport.y = imguiViewportY_;
+            sceneViewport.width = imguiViewportWidth_;
+            sceneViewport.height = imguiViewportHeight_;
+            sceneViewport.maxDepth = 1.0F;
+            result = commandContext_->SetViewport(sceneViewport);
+            if (!engine::graphics::Failed(result)) result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_, depthStencil_);
+            if (!engine::graphics::Failed(result)) result = commandContext_->ClearDepthStencilTarget(
+                depthStencil_,
+                engine::graphics::ClearDepthStencilFlags::Depth | engine::graphics::ClearDepthStencilFlags::Stencil,
+                1.0F, 0);
+            DirectX::XMFLOAT4X4 viewProjection{};
+            if (!engine::graphics::Failed(result) && cameraController_.BuildViewProjection(
+                    static_cast<std::uint32_t>(imguiViewportWidth_),
+                    static_cast<std::uint32_t>(imguiViewportHeight_),
+                    viewProjection))
+            {
+                result = gridRenderer_.Render(*commandContext_, viewProjection);
+                if (!engine::graphics::Failed(result)) result = staticMeshRenderer_.Render(*commandContext_, sceneDocument_, viewProjection);
+                if (!engine::graphics::Failed(result)) result = sceneRenderer_.Render(
+                    *commandContext_, sceneDocument_, viewProjection,
+                    transformController_.GetVisualState(), &staticMeshRenderer_);
+            }
+        }
+
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure("Render Dear ImGui workspace", result);
+            return;
+        }
+        commandContext_->UnbindRenderTargets();
+        engine::graphics::PresentStatus status = engine::graphics::PresentStatus::Failed;
+        result = uiSwapChain_->Present(status);
+        if (engine::graphics::Failed(result)) ReportGraphicsFailure("Present Dear ImGui", result);
+    }
+
     bool EditorApplication::LoadUiDocument(const char* const path)
     {
         if (path == nullptr)
@@ -923,30 +1607,12 @@ namespace lts::editor
         switch (action)
         {
             case EditorLauncherAction::LevelEditor:
-                if (LoadUiDocument("Level/LevelEditor.rml"))
-                {
-                    levelEditorUiActive_ = true;
-                    cameraController_.SetViewportWindow(
-                        GetWindow().GetNativeHandle());
-                    static_cast<void>(levelEditorUiController_.Attach(
-                        *uiDocument_,
-                        [this](const LevelEditorUiAction uiAction)
-                        {
-                            HandleLevelEditorAction(uiAction);
-                        }));
-                }
-                break;
             case EditorLauncherAction::CharacterEditor:
-                static_cast<void>(LoadUiDocument("Character/CharacterEditor.rml"));
-                break;
             case EditorLauncherAction::PhysicsEditor:
-                static_cast<void>(LoadUiDocument("Physics/PhysicsEditor.rml"));
-                break;
             case EditorLauncherAction::FbxImporter:
-                static_cast<void>(LoadUiDocument("FbxImporter/FbxImporter.rml"));
-                break;
             case EditorLauncherAction::IconGenerator:
-                static_cast<void>(LoadUiDocument("IconGenerator/IconGenerator.rml"));
+                pendingImGuiWorkspace_ = action;
+                imguiWorkspacePending_ = true;
                 break;
             case EditorLauncherAction::TestGame:
                 engine::core::GetLogger().Write(
@@ -1002,6 +1668,7 @@ namespace lts::editor
             case LevelEditorUiAction::Back:
                 levelEditorUiActive_ = false;
                 cameraController_.SetViewportWindow({});
+                transformController_.SetViewportWindow({});
                 if (LoadUiDocument("Launcher/EditorLauncher.rml"))
                 {
                     static_cast<void>(launcherController_.Attach(
@@ -1200,7 +1867,8 @@ namespace lts::editor
                             *commandContext_,
                             sceneDocument_,
                             viewProjection,
-                            transformController_.GetVisualState());
+                            transformController_.GetVisualState(),
+                            &staticMeshRenderer_);
                     }
                 }
 

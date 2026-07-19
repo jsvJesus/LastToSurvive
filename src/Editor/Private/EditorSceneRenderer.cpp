@@ -1,4 +1,5 @@
 #include "Editor/EditorSceneRenderer.h"
+#include "Editor/EditorStaticMeshRenderer.h"
 #include "Editor/EditorShaderCompiler.h"
 
 #include <Core/Log.h>
@@ -388,7 +389,8 @@ namespace lts::editor
             std::array<MarkerVertex, MaxMarkerVertices>& vertices,
             std::size_t& vertexCount,
             const EditorSceneEntity& entity,
-            const bool selected) noexcept
+            const bool selected,
+            const EditorStaticMeshRenderer* const meshRenderer) noexcept
         {
             const DirectX::XMMATRIX world =
                 BuildWorldMatrix(entity.transform);
@@ -521,12 +523,19 @@ namespace lts::editor
 
             if (selected)
             {
+                DirectX::XMFLOAT3 minimum{-1.0F, -0.10F, -1.0F};
+                DirectX::XMFLOAT3 maximum{1.0F, 2.1F, 1.0F};
+                if (entity.staticMesh.has_value() && meshRenderer != nullptr)
+                {
+                    static_cast<void>(meshRenderer->TryGetMeshBounds(
+                        entity.staticMesh->assetPath, minimum, maximum));
+                }
                 AddWireBox(
                     vertices,
                     vertexCount,
                     world,
-                    {-1.0F, -0.10F, -1.0F},
-                    {1.0F, 2.1F, 1.0F},
+                    minimum,
+                    maximum,
                     SelectionColor);
             }
         }
@@ -615,8 +624,8 @@ namespace lts::editor
             const MarkerColor& color) noexcept
         {
             constexpr float AxisLength = 2.5F;
-            constexpr float ArrowLength = 0.35F;
-            constexpr float ArrowWidth = 0.18F;
+            constexpr float ArrowLength = 0.48F;
+            constexpr float ArrowWidth = 0.30F;
 
             const DirectX::XMFLOAT3 end =
                 AddVector(
@@ -641,7 +650,20 @@ namespace lts::editor
                 NormalizeVector(
                     CrossVector(axis, sideA));
 
+            const DirectX::XMFLOAT3 thicknessAxis =
+                std::abs(axis.y) < 0.9F
+                    ? NormalizeVector(CrossVector(axis, {0.0F, 1.0F, 0.0F}))
+                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
+            constexpr float LineHalfWidth = 0.045F;
             AddWorldLine(vertices, vertexCount, origin, end, color);
+            AddWorldLine(
+                vertices, vertexCount,
+                AddVector(origin, MultiplyVector(thicknessAxis, LineHalfWidth)),
+                AddVector(end, MultiplyVector(thicknessAxis, LineHalfWidth)), color);
+            AddWorldLine(
+                vertices, vertexCount,
+                AddVector(origin, MultiplyVector(thicknessAxis, -LineHalfWidth)),
+                AddVector(end, MultiplyVector(thicknessAxis, -LineHalfWidth)), color);
 
             AddWorldLine(
                 vertices,
@@ -688,19 +710,24 @@ namespace lts::editor
             const MarkerColor& color) noexcept
         {
             constexpr float AxisLength = 2.5F;
-            constexpr float CubeHalfSize = 0.16F;
+            constexpr float CubeHalfSize = 0.24F;
 
             const DirectX::XMFLOAT3 end =
                 AddVector(
                     origin,
                     MultiplyVector(axis, AxisLength));
 
-            AddWorldLine(
-                vertices,
-                vertexCount,
-                origin,
-                end,
-                color);
+            const DirectX::XMFLOAT3 thicknessAxis =
+                std::abs(axis.y) < 0.9F
+                    ? NormalizeVector(CrossVector(axis, {0.0F, 1.0F, 0.0F}))
+                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
+            AddWorldLine(vertices, vertexCount, origin, end, color);
+            AddWorldLine(vertices, vertexCount,
+                AddVector(origin, MultiplyVector(thicknessAxis, 0.045F)),
+                AddVector(end, MultiplyVector(thicknessAxis, 0.045F)), color);
+            AddWorldLine(vertices, vertexCount,
+                AddVector(origin, MultiplyVector(thicknessAxis, -0.045F)),
+                AddVector(end, MultiplyVector(thicknessAxis, -0.045F)), color);
 
             const DirectX::XMMATRIX cubeWorld =
                 DirectX::XMMatrixTranslation(
@@ -745,6 +772,8 @@ namespace lts::editor
                 axisB,
                 2.0F,
                 color);
+            AddCircle(vertices, vertexCount, origin, axisA, axisB, 1.94F, color);
+            AddCircle(vertices, vertexCount, origin, axisA, axisB, 2.06F, color);
         }
 
         void AddTransformGizmo(
@@ -782,6 +811,9 @@ namespace lts::editor
 
             switch (state.operation)
             {
+                case EditorTransformOperation::Select:
+                    break;
+
                 case EditorTransformOperation::Move:
                     AddGizmoArrow(
                         vertices,
@@ -860,7 +892,8 @@ namespace lts::editor
         std::size_t BuildSceneVertices(
             const EditorSceneDocument& document,
             const EditorTransformVisualState& transformState,
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            const EditorStaticMeshRenderer* const meshRenderer) noexcept
         {
             std::size_t vertexCount = 0U;
 
@@ -874,7 +907,8 @@ namespace lts::editor
                     vertices,
                     vertexCount,
                     entities[index],
-                    index == selectedIndex);
+                    index == selectedIndex,
+                    meshRenderer);
 
                 if (vertexCount >= vertices.size())
                 {
@@ -1223,7 +1257,8 @@ namespace lts::editor
         engine::graphics::CommandContext& context,
         const EditorSceneDocument& document,
         const DirectX::XMFLOAT4X4& viewProjection,
-        const EditorTransformVisualState& transformState) noexcept
+        const EditorTransformVisualState& transformState,
+        const EditorStaticMeshRenderer* const meshRenderer) noexcept
     {
         if (!initialized_)
         {
@@ -1236,7 +1271,8 @@ namespace lts::editor
             BuildSceneVertices(
                 document,
                 transformState,
-                vertices);
+                vertices,
+                meshRenderer);
 
         if (vertexCount == 0U)
         {

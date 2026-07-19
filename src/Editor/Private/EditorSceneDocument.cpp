@@ -140,6 +140,7 @@ namespace lts::editor
         const EditorEntityKind kind,
         const EditorTransform& transform)
     {
+        name = MakeUniqueName(std::move(name));
         const EditorEntityId entityId =
             world_.CreateEntity(
                 std::move(name),
@@ -167,11 +168,10 @@ namespace lts::editor
             return false;
         }
 
+        name = MakeUniqueName(name.empty() ? L"Static Mesh" : std::move(name));
         const EditorEntityId entityId =
             world_.CreateEntity(
-                name.empty()
-                    ? L"Static Mesh"
-                    : std::move(name),
+                std::move(name),
                 EditorEntityKind::Empty,
                 transform);
 
@@ -283,6 +283,54 @@ namespace lts::editor
         return true;
     }
 
+    std::wstring EditorSceneDocument::MakeUniqueName(
+        std::wstring baseName,
+        const EditorEntityId ignoredEntityId) const
+    {
+        if (baseName.empty())
+        {
+            baseName = L"Entity";
+        }
+        const auto exists = [this, ignoredEntityId](const std::wstring& candidate)
+        {
+            return std::any_of(GetEntities().begin(), GetEntities().end(),
+                [&candidate, ignoredEntityId](const EditorSceneEntity& entity)
+                {
+                    return entity.id != ignoredEntityId && entity.name == candidate;
+                });
+        };
+        if (!exists(baseName))
+        {
+            return baseName;
+        }
+        for (std::uint32_t suffix = 2U; suffix < 1000000U; ++suffix)
+        {
+            std::wstring candidate = baseName + L"_" + std::to_wstring(suffix);
+            if (!exists(candidate))
+            {
+                return candidate;
+            }
+        }
+        return baseName + L"_Copy";
+    }
+
+    bool EditorSceneDocument::RenameSelectedEntity(std::wstring name)
+    {
+        EditorSceneEntity* const entity = GetSelectedEntityMutable();
+        if (entity == nullptr)
+        {
+            return false;
+        }
+        name = MakeUniqueName(std::move(name), entity->id);
+        if (entity->name == name)
+        {
+            return false;
+        }
+        entity->name = std::move(name);
+        dirty_ = true;
+        return true;
+    }
+
     bool EditorSceneDocument::TranslateSelectedEntity(
         const float translationX,
         const float translationY,
@@ -333,6 +381,11 @@ namespace lts::editor
         selectedIndex_ =
             world_.FindEntityIndex(
                 duplicatedId);
+
+        if (EditorSceneEntity* const duplicated = GetSelectedEntityMutable())
+        {
+            duplicated->name = MakeUniqueName(duplicated->name, duplicated->id);
+        }
 
         dirty_ = true;
         return true;

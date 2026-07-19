@@ -16,6 +16,7 @@
 
 namespace lts::editor
 {
+    class EditorStaticMeshRenderer;
     struct EditorInteractionResult final
     {
         bool documentChanged = false;
@@ -36,13 +37,20 @@ namespace lts::editor
         void SetViewportWindow(
             engine::platform::NativeWindowHandle window) noexcept;
 
+        void SetViewportRegion(
+            std::int32_t x,
+            std::int32_t y,
+            std::uint32_t width,
+            std::uint32_t height) noexcept;
+
         [[nodiscard]]
         EditorInteractionResult Update(
             EditorSceneDocument& document,
             EditorCommandHistory& history,
             EditorCameraController& camera,
             engine::platform::WindowSize viewportSize,
-            const ViewportClick* viewportClick) noexcept;
+            const ViewportClick* viewportClick,
+            const EditorStaticMeshRenderer* meshRenderer = nullptr) noexcept;
 
         [[nodiscard]]
         const EditorTransformVisualState&
@@ -100,6 +108,8 @@ namespace lts::editor
             EditorTransformAxis axis) const noexcept;
 
         engine::platform::NativeWindowHandle viewportWindow_;
+        std::int32_t viewportX_ = 0;
+        std::int32_t viewportY_ = 0;
 
         EditorTransformVisualState visualState_;
 

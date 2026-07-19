@@ -1066,6 +1066,36 @@ namespace lts::editor
             return result;
         }
 
+        [[nodiscard]] bool TryGetMeshBounds(
+            const std::wstring& assetPath,
+            DirectX::XMFLOAT3& minimum,
+            DirectX::XMFLOAT3& maximum) const noexcept
+        {
+            try
+            {
+                std::filesystem::path path(assetPath);
+                if (!path.is_absolute())
+                {
+                    path = std::filesystem::current_path() / path;
+                }
+                const auto found = meshes_.find(
+                    LowercasePath(path.lexically_normal().wstring()));
+                if (found == meshes_.end() || found->second.gpu == nullptr)
+                {
+                    return false;
+                }
+                const engine::assets::MeshBounds& bounds =
+                    found->second.gpu->GetBounds();
+                minimum = {bounds.minimum[0], bounds.minimum[1], bounds.minimum[2]};
+                maximum = {bounds.maximum[0], bounds.maximum[1], bounds.maximum[2]};
+                return bounds.IsValid();
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
     private:
         [[nodiscard]]
         CachedMesh* GetOrLoadMesh(
@@ -1477,5 +1507,14 @@ namespace lts::editor
             context,
             document,
             viewProjection);
+    }
+
+    bool EditorStaticMeshRenderer::TryGetMeshBounds(
+        const std::wstring& assetPath,
+        DirectX::XMFLOAT3& minimum,
+        DirectX::XMFLOAT3& maximum) const noexcept
+    {
+        return impl_ != nullptr &&
+            impl_->TryGetMeshBounds(assetPath, minimum, maximum);
     }
 }

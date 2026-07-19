@@ -82,8 +82,8 @@ namespace lts::editor
         float moveSpeed_ = 10.0F;
         float lookSensitivity_ = 0.0025F;
 
-        std::int32_t restoreCursorX_ = 0;
-        std::int32_t restoreCursorY_ = 0;
+        std::int32_t lastCursorX_ = 0;
+        std::int32_t lastCursorY_ = 0;
 
         bool mouseLookActive_ = false;
     };

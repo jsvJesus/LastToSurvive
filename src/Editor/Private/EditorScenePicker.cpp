@@ -1,4 +1,5 @@
 #include "Editor/EditorScenePicker.h"
+#include "Editor/EditorStaticMeshRenderer.h"
 
 #include <DirectXMath.h>
 
@@ -196,7 +197,8 @@ namespace lts::editor
         bool IntersectEntity(
             const EditorSceneEntity& entity,
             const EditorPickRay& ray,
-            float& outDistance) noexcept
+            float& outDistance,
+            const EditorStaticMeshRenderer* const meshRenderer) noexcept
         {
             const DirectX::XMMATRIX world =
                 BuildWorldMatrix(entity.transform);
@@ -250,10 +252,19 @@ namespace lts::editor
                 &localDirection,
                 localDirectionVector);
 
+            PickBounds bounds = GetEntityBounds(entity.kind);
+            if (entity.staticMesh.has_value() && meshRenderer != nullptr)
+            {
+                static_cast<void>(meshRenderer->TryGetMeshBounds(
+                    entity.staticMesh->assetPath,
+                    bounds.minimum,
+                    bounds.maximum));
+            }
+
             return IntersectAabb(
                 localOrigin,
                 localDirection,
-                GetEntityBounds(entity.kind),
+                bounds,
                 outDistance);
         }
     }
@@ -262,7 +273,8 @@ namespace lts::editor
         const EditorSceneDocument& document,
         const EditorPickRay& ray,
         std::size_t& outEntityIndex,
-        float& outDistance) noexcept
+        float& outDistance,
+        const EditorStaticMeshRenderer* const meshRenderer) noexcept
     {
         outEntityIndex = InvalidEditorEntityIndex;
         outDistance = std::numeric_limits<float>::max();
@@ -290,7 +302,8 @@ namespace lts::editor
             if (!IntersectEntity(
                     entities[index],
                     ray,
-                    distance))
+                    distance,
+                    meshRenderer))
             {
                 continue;
             }

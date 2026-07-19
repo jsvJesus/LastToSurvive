@@ -16,6 +16,7 @@ namespace engine::graphics
 
 namespace lts::editor
 {
+    class EditorStaticMeshRenderer;
     class EditorSceneRenderer final
     {
     public:
@@ -35,7 +36,8 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const EditorSceneDocument& document,
             const DirectX::XMFLOAT4X4& viewProjection,
-            const EditorTransformVisualState& transformState) noexcept;
+            const EditorTransformVisualState& transformState,
+            const EditorStaticMeshRenderer* meshRenderer = nullptr) noexcept;
 
         [[nodiscard]]
         bool IsInitialized() const noexcept;
