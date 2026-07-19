@@ -237,6 +237,7 @@
     <ClInclude Include="Public\Editor\EditorLevelDocument.h" />
     <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
     <ClInclude Include="Public\Editor\LevelEditorUiController.h" />
+    <ClInclude Include="Public\Editor\LevelEditorLayout.h" />
     <ClInclude Include="Public\Editor\EditorLauncherController.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
@@ -258,6 +259,7 @@
     <ClCompile Include="Private\EditorLevelDocument.cpp" />
     <ClCompile Include="Private\EditorLevelSerializer.cpp" />
     <ClCompile Include="Private\LevelEditorUiController.cpp" />
+    <ClCompile Include="Private\LevelEditorLayout.cpp" />
     <ClCompile Include="Private\EditorLauncherController.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />

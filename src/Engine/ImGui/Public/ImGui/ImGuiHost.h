@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -19,7 +20,8 @@ namespace engine::ui
         [[nodiscard]] bool Initialize(
             void* nativeWindow,
             ID3D11Device* device,
-            ID3D11DeviceContext* context) noexcept;
+            ID3D11DeviceContext* context,
+            const char* iniFilename) noexcept;
 
         void Shutdown() noexcept;
         void BeginFrame() noexcept;
@@ -35,5 +37,6 @@ namespace engine::ui
 
     private:
         bool initialized_ = false;
+        std::string iniFilename_;
     };
 }

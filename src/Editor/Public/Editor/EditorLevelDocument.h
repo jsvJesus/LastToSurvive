@@ -54,6 +54,8 @@ namespace lts::editor
         void RequestNewLevel() noexcept;
         void RequestOpenLevel() noexcept;
         void RequestSaveLevel() noexcept;
+        void RequestSaveLevelAs() noexcept;
+        void RequestCloseLevel() noexcept;
 
     private:
         enum class PendingCommand : std::uint8_t

@@ -22,7 +22,8 @@ namespace engine::ui
     bool ImGuiHost::Initialize(
         void* const nativeWindow,
         ID3D11Device* const device,
-        ID3D11DeviceContext* const context) noexcept
+        ID3D11DeviceContext* const context,
+        const char* const iniFilename) noexcept
     {
         if (initialized_)
         {
@@ -38,7 +39,8 @@ namespace engine::ui
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.IniFilename = "Data/UI/Editor/imgui.ini";
+        iniFilename_ = iniFilename != nullptr ? iniFilename : "imgui.ini";
+        io.IniFilename = iniFilename_.c_str();
         static_cast<void>(io.Fonts->AddFontFromFileTTF(
             "Data/UI/Assets/Fonts/Roboto-Regular.ttf",
             15.0F));
@@ -107,6 +109,7 @@ namespace engine::ui
         ImGui_ImplDX11_Shutdown();
         ImGui_ImplWin32_Shutdown();
         ImGui::DestroyContext();
+        iniFilename_.clear();
         initialized_ = false;
     }
 

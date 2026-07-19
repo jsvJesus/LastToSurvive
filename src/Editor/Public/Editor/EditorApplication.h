@@ -8,6 +8,7 @@
 #include "Editor/EditorLevelDocument.h"
 #include "Editor/EditorLauncherController.h"
 #include "Editor/LevelEditorUiController.h"
+#include "Editor/LevelEditorLayout.h"
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
@@ -73,6 +74,8 @@ namespace lts::editor
         [[nodiscard]]
         bool InitializeGraphics() noexcept;
         [[nodiscard]] bool InitializeUi() noexcept;
+        [[nodiscard]] bool InitializeLauncherUi() noexcept;
+        [[nodiscard]] bool ReturnToLauncher() noexcept;
         void ShutdownUi() noexcept;
         void RenderUi() noexcept;
         void RenderImGui() noexcept;
@@ -138,6 +141,7 @@ namespace lts::editor
         engine::ui::ImGuiHost imguiHost_;
         EditorLauncherController launcherController_;
         LevelEditorUiController levelEditorUiController_;
+        LevelEditorLayout levelEditorLayout_;
         Rml::ElementDocument* uiDocument_ = nullptr;
         std::uint32_t uiWidth_ = 0;
         std::uint32_t uiHeight_ = 0;
@@ -147,7 +151,7 @@ namespace lts::editor
         EditorLauncherAction imguiWorkspace_ = EditorLauncherAction::LevelEditor;
         EditorLauncherAction pendingImGuiWorkspace_ = EditorLauncherAction::LevelEditor;
         bool imguiWorkspacePending_ = false;
-        bool imguiLayoutBuilt_ = false;
+        bool returnToLauncherPending_ = false;
         float imguiViewportX_ = 0.0F;
         float imguiViewportY_ = 0.0F;
         float imguiViewportWidth_ = 1.0F;

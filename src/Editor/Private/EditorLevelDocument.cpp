@@ -247,6 +247,16 @@ namespace lts::editor
         QueueCommand(PendingCommand::Save);
     }
 
+    void EditorLevelDocument::RequestSaveLevelAs() noexcept
+    {
+        QueueCommand(PendingCommand::SaveAs);
+    }
+
+    void EditorLevelDocument::RequestCloseLevel() noexcept
+    {
+        QueueCommand(PendingCommand::Exit);
+    }
+
     EditorLevelUpdateResult
         EditorLevelDocument::Update(
             EditorSceneDocument& sceneDocument,
