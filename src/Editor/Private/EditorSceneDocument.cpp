@@ -147,12 +147,7 @@ namespace lts::editor
                 kind,
                 transform);
 
-        if (
-            selectedIndex_ ==
-            InvalidEditorEntityIndex)
-        {
-            selectedIndex_ = 0U;
-        }
+        selectedIndex_ = world_.FindEntityIndex(entityId);
 
         dirty_ = true;
         return entityId;
@@ -442,6 +437,10 @@ namespace lts::editor
 
         snapshot.selectedIndex =
             selectedIndex_;
+        if (const EditorSceneEntity* const selected = GetSelectedEntity())
+        {
+            snapshot.selectedEntityId = selected->id;
+        }
 
         snapshot.dirty = dirty_;
 
@@ -460,8 +459,15 @@ namespace lts::editor
 
         world_.RestoreState(state);
 
-        selectedIndex_ =
-            snapshot.selectedIndex;
+        selectedIndex_ = InvalidEditorEntityIndex;
+        if (snapshot.selectedEntityId != 0U)
+        {
+            selectedIndex_ = world_.FindEntityIndex(snapshot.selectedEntityId);
+        }
+        if (selectedIndex_ == InvalidEditorEntityIndex)
+        {
+            selectedIndex_ = snapshot.selectedIndex;
+        }
 
         const auto& entities =
             world_.GetEntities();

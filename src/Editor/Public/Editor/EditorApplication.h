@@ -3,6 +3,7 @@
 #include "Editor/EditorAssetBrowserPanel.h"
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorCommandHistory.h"
+#include "Editor/EditorCommandSystem.h"
 #include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorInspectorPanel.h"
 #include "Editor/EditorLevelDocument.h"
@@ -80,6 +81,8 @@ namespace lts::editor
         void RenderUi() noexcept;
         void RenderImGui() noexcept;
         void DrawImGuiWorkspace() noexcept;
+        void ProcessEditorShortcuts() noexcept;
+        bool ExecuteEditorCommand(EditorCommand command);
         void RefreshContentBrowser() noexcept;
         void DrawContentBrowser() noexcept;
         [[nodiscard]] bool StartImGuiWorkspace(EditorLauncherAction action) noexcept;
@@ -109,6 +112,7 @@ namespace lts::editor
         EditorSceneDocument sceneDocument_;
         EditorLevelDocument levelDocument_;
         EditorCommandHistory commandHistory_;
+        EditorCommandSystem commandSystem_;
 
         EditorCameraController cameraController_;
 

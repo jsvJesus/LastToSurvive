@@ -1278,7 +1278,10 @@ namespace lts::editor
     void EditorApplication::DrawImGuiWorkspace() noexcept
     {
         if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
+        {
             static_cast<void>(levelEditorLayout_.DrawDockSpace());
+            ProcessEditorShortcuts();
+        }
         else
             static_cast<void>(ImGui::DockSpaceOverViewport(
                 0, ImGui::GetMainViewport(),
@@ -1298,10 +1301,10 @@ namespace lts::editor
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem("New", "Ctrl+N")) levelDocument_.RequestNewLevel();
-                if (ImGui::MenuItem("Open", "Ctrl+O")) levelDocument_.RequestOpenLevel();
-                if (ImGui::MenuItem("Save", "Ctrl+S")) levelDocument_.RequestSaveLevel();
-                if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) levelDocument_.RequestSaveLevelAs();
+                if (ImGui::MenuItem("New", "Ctrl+N")) static_cast<void>(ExecuteEditorCommand(EditorCommand::NewLevel));
+                if (ImGui::MenuItem("Open", "Ctrl+O")) static_cast<void>(ExecuteEditorCommand(EditorCommand::OpenLevel));
+                if (ImGui::MenuItem("Save", "Ctrl+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevel));
+                if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevelAs));
                 ImGui::Separator();
                 if (ImGui::MenuItem("Back to Editor Launcher"))
                 {
@@ -1318,8 +1321,11 @@ namespace lts::editor
             }
             if (ImGui::BeginMenu("Edit"))
             {
-                if (ImGui::MenuItem("Undo", "Ctrl+Z")) static_cast<void>(commandHistory_.Undo(sceneDocument_));
-                if (ImGui::MenuItem("Redo", "Ctrl+Y")) static_cast<void>(commandHistory_.Redo(sceneDocument_));
+                if (ImGui::MenuItem("Undo", "Ctrl+Z", false, commandHistory_.CanUndo())) static_cast<void>(ExecuteEditorCommand(EditorCommand::Undo));
+                if (ImGui::MenuItem("Redo", "Ctrl+Y", false, commandHistory_.CanRedo())) static_cast<void>(ExecuteEditorCommand(EditorCommand::Redo));
+                ImGui::Separator();
+                if (ImGui::MenuItem("Duplicate", "Ctrl+D", false, sceneDocument_.GetSelectedEntity() != nullptr)) static_cast<void>(ExecuteEditorCommand(EditorCommand::DuplicateSelection));
+                if (ImGui::MenuItem("Delete", "Delete", false, sceneDocument_.GetSelectedEntity() != nullptr)) static_cast<void>(ExecuteEditorCommand(EditorCommand::DeleteSelection));
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("View"))
@@ -1340,15 +1346,15 @@ namespace lts::editor
                 ImGuiWindowFlags_NoTitleBar |
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoScrollWithMouse);
-            if (ImGui::Button("New")) levelDocument_.RequestNewLevel();
+            if (ImGui::Button("New")) static_cast<void>(ExecuteEditorCommand(EditorCommand::NewLevel));
             ImGui::SameLine();
-            if (ImGui::Button("Open")) levelDocument_.RequestOpenLevel();
+            if (ImGui::Button("Open")) static_cast<void>(ExecuteEditorCommand(EditorCommand::OpenLevel));
             ImGui::SameLine();
-            if (ImGui::Button("Save")) levelDocument_.RequestSaveLevel();
+            if (ImGui::Button("Save")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevel));
             ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
-            if (ImGui::Button("Undo")) static_cast<void>(commandHistory_.Undo(sceneDocument_));
+            if (ImGui::Button("Undo")) static_cast<void>(ExecuteEditorCommand(EditorCommand::Undo));
             ImGui::SameLine();
-            if (ImGui::Button("Redo")) static_cast<void>(commandHistory_.Redo(sceneDocument_));
+            if (ImGui::Button("Redo")) static_cast<void>(ExecuteEditorCommand(EditorCommand::Redo));
             ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
             const auto drawToolButton = [this](
                 const char* const label,
@@ -1363,7 +1369,17 @@ namespace lts::editor
                 const bool clicked = ImGui::Button(label);
                 if (active) ImGui::PopStyleColor();
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", description);
-                if (clicked) transformController_.SetOperation(operation);
+                if (clicked)
+                {
+                    EditorCommand command = EditorCommand::SelectTool;
+                    if (operation == EditorTransformOperation::Move)
+                        command = EditorCommand::MoveTool;
+                    else if (operation == EditorTransformOperation::Rotate)
+                        command = EditorCommand::RotateTool;
+                    else if (operation == EditorTransformOperation::Scale)
+                        command = EditorCommand::ScaleTool;
+                    static_cast<void>(ExecuteEditorCommand(command));
+                }
             };
             drawToolButton(
                 "Q Select", EditorTransformOperation::Select,
@@ -1547,6 +1563,43 @@ namespace lts::editor
         }
     }
 
+    bool EditorApplication::ExecuteEditorCommand(const EditorCommand command)
+    {
+        return commandSystem_.Execute(
+            command, sceneDocument_, commandHistory_, levelDocument_,
+            transformController_);
+    }
+
+    void EditorApplication::ProcessEditorShortcuts() noexcept
+    {
+        const ImGuiIO& io = ImGui::GetIO();
+        if (io.WantTextInput) return;
+
+        const auto pressed = [](const ImGuiKey key)
+        {
+            return ImGui::IsKeyPressed(key, false);
+        };
+
+        EditorCommand command{};
+        bool hasCommand = true;
+        if (io.KeyCtrl && pressed(ImGuiKey_N)) command = EditorCommand::NewLevel;
+        else if (io.KeyCtrl && pressed(ImGuiKey_O)) command = EditorCommand::OpenLevel;
+        else if (io.KeyCtrl && io.KeyShift && pressed(ImGuiKey_S)) command = EditorCommand::SaveLevelAs;
+        else if (io.KeyCtrl && pressed(ImGuiKey_S)) command = EditorCommand::SaveLevel;
+        else if (io.KeyCtrl && io.KeyShift && pressed(ImGuiKey_Z)) command = EditorCommand::Redo;
+        else if (io.KeyCtrl && pressed(ImGuiKey_Z)) command = EditorCommand::Undo;
+        else if (io.KeyCtrl && pressed(ImGuiKey_Y)) command = EditorCommand::Redo;
+        else if (io.KeyCtrl && pressed(ImGuiKey_D)) command = EditorCommand::DuplicateSelection;
+        else if (pressed(ImGuiKey_Delete)) command = EditorCommand::DeleteSelection;
+        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_Q)) command = EditorCommand::SelectTool;
+        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_W)) command = EditorCommand::MoveTool;
+        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_E)) command = EditorCommand::RotateTool;
+        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_R)) command = EditorCommand::ScaleTool;
+        else hasCommand = false;
+
+        if (hasCommand) static_cast<void>(ExecuteEditorCommand(command));
+    }
+
     void EditorApplication::RenderImGui() noexcept
     {
         if (uiSwapChain_ == nullptr || commandContext_ == nullptr || IsMinimized())
@@ -1722,11 +1775,11 @@ namespace lts::editor
                 setStatus("SAVE LEVEL");
                 break;
             case LevelEditorUiAction::Undo:
-                static_cast<void>(commandHistory_.Undo(sceneDocument_));
+                static_cast<void>(ExecuteEditorCommand(EditorCommand::Undo));
                 setStatus("UNDO");
                 break;
             case LevelEditorUiAction::Redo:
-                static_cast<void>(commandHistory_.Redo(sceneDocument_));
+                static_cast<void>(ExecuteEditorCommand(EditorCommand::Redo));
                 setStatus("REDO");
                 break;
             case LevelEditorUiAction::Move:
@@ -1753,7 +1806,7 @@ namespace lts::editor
                 }
                 break;
             case LevelEditorUiAction::Select:
-                selectTool("select-tool", EditorTransformOperation::Move);
+                selectTool("select-tool", EditorTransformOperation::Select);
                 setStatus("SELECT TOOL");
                 break;
             case LevelEditorUiAction::Snap:

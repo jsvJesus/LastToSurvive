@@ -35,6 +35,8 @@ namespace lts::editor
         std::size_t selectedIndex =
             InvalidEditorEntityIndex;
 
+        EditorEntityId selectedEntityId = 0U;
+
         bool dirty = false;
     };
 

@@ -30,6 +30,7 @@ namespace lts::editor
             if (
                 left.nextEntityId != right.nextEntityId ||
                 left.selectedIndex != right.selectedIndex ||
+                left.selectedEntityId != right.selectedEntityId ||
                 left.entities.size() != right.entities.size())
             {
                 return false;
