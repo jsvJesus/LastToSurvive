@@ -1,379 +1,1741 @@
 #include "Editor/EditorTerrainRenderer.h"
 #include "Editor/EditorShaderCompiler.h"
-#include <Assets/TerrainAsset.h>
+
 #include <Assets/AssetData.h>
+#include <Assets/AssetResult.h>
 #include <Assets/DdsTextureDecoder.h>
+#include <Assets/TerrainAsset.h>
 #include <Assets/TextureAsset.h>
 #include <Core/Log.h>
 #include <Graphics/Buffer.h>
 #include <Graphics/CommandContext.h>
 #include <Graphics/Format.h>
+#include <Graphics/GraphicsResult.h>
 #include <Graphics/InputLayout.h>
 #include <Graphics/PipelineState.h>
 #include <Graphics/RenderDevice.h>
-#include <Graphics/Shader.h>
 #include <Graphics/Sampler.h>
+#include <Graphics/Shader.h>
 #include <Graphics/Texture.h>
 #include <GraphicsDX11/D3D11Device.h>
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <wrl/client.h>
+
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <limits>
+#include <memory>
+#include <string>
+#include <system_error>
 #include <unordered_map>
+#include <utility>
 #include <vector>
+
 namespace lts::editor
 {
-namespace {
-    struct Vertex{DirectX::XMFLOAT3 position;DirectX::XMFLOAT3 normal;DirectX::XMFLOAT2 uv;};
-    
-    struct alignas(16) Constants final
+    namespace
     {
-        DirectX::XMFLOAT4X4 world;
-        DirectX::XMFLOAT4X4 viewProjection;
+        constexpr std::uint32_t MaximumTerrainGpuCellsPerAxis = 1024U;
+        constexpr std::uint32_t TerrainChunkCellCount = 64U;
+        constexpr std::size_t MaximumTerrainMaskCount = 6U;
+        constexpr std::size_t MaximumTerrainLayerCount = 18U;
+        constexpr std::size_t MaximumPaintedLayerCount = 17U;
+        constexpr std::uint32_t MaximumPaintHistorySize = 32U;
+        constexpr std::uintmax_t MaximumTextureFileSize =
+            512ULL * 1024ULL * 1024ULL;
 
-        std::array<
-            DirectX::XMFLOAT4,
-            18U> placement;
+        constexpr std::uint32_t PaintFileSignature = 0x5053544CU;
+        constexpr std::uint32_t PaintFileVersion = 1U;
 
-        std::array<
-            DirectX::XMFLOAT4,
-            18U> layerParameters;
-
-        /*
-         * x = terrain local width.
-         * y = terrain local depth.
-         * z = active layer count.
-         */
-        DirectX::XMFLOAT4 terrainInfo;
-    };
-
-    static_assert(
-        sizeof(Constants) % 16U == 0U);
-
-    struct BrushVertex{DirectX::XMFLOAT3 position;DirectX::XMFLOAT4 color;};
-    struct alignas(16) BrushConstants{DirectX::XMFLOAT4X4 viewProjection;};
-    struct Chunk
-    {
-        DirectX::XMFLOAT3 minimum{};
-        DirectX::XMFLOAT3 maximum{};
-        DirectX::XMFLOAT3 center{};
-        std::array<std::uint32_t, 3> first{};
-        std::array<std::uint32_t, 3> count{};
-    };
-
-    struct PaintChange
-    {
-        std::uint32_t pixel=0U;
-        std::array<std::uint8_t,17> before{};
-        std::array<std::uint8_t,17> after{};
-    };
-
-    using PaintCommand=std::vector<PaintChange>;
-
-    bool IsChunkVisible(
-        const Chunk& chunk,
-        DirectX::FXMMATRIX worldViewProjection) noexcept
-    {
-        std::array<DirectX::XMVECTOR, 8> clipPoints{};
-        std::size_t point = 0;
-        for (std::uint32_t z = 0; z < 2; ++z)
+        struct Vertex final
         {
-            for (std::uint32_t y = 0; y < 2; ++y)
-            {
-                for (std::uint32_t x = 0; x < 2; ++x)
-                {
-                    const auto position = DirectX::XMVectorSet(
-                        x == 0 ? chunk.minimum.x : chunk.maximum.x,
-                        y == 0 ? chunk.minimum.y : chunk.maximum.y,
-                        z == 0 ? chunk.minimum.z : chunk.maximum.z,
-                        1.0F);
-                    clipPoints[point++] = DirectX::XMVector4Transform(position, worldViewProjection);
-                }
-            }
-        }
-
-        const auto allOutside = [&clipPoints](auto predicate)
-        {
-            for (const auto& clip : clipPoints)
-            {
-                DirectX::XMFLOAT4 value{};
-                DirectX::XMStoreFloat4(&value, clip);
-                if (!predicate(value))
-                    return false;
-            }
-            return true;
+            DirectX::XMFLOAT3 position{};
+            DirectX::XMFLOAT3 normal{};
+            DirectX::XMFLOAT2 uv{};
         };
 
-        return !allOutside([](const DirectX::XMFLOAT4& p) { return p.x < -p.w; }) &&
-               !allOutside([](const DirectX::XMFLOAT4& p) { return p.x > p.w; }) &&
-               !allOutside([](const DirectX::XMFLOAT4& p) { return p.y < -p.w; }) &&
-               !allOutside([](const DirectX::XMFLOAT4& p) { return p.y > p.w; }) &&
-               !allOutside([](const DirectX::XMFLOAT4& p) { return p.z < 0.0F; }) &&
-               !allOutside([](const DirectX::XMFLOAT4& p) { return p.z > p.w; });
-    }
-    bool CreateEmbeddedTexture(engine::graphics::RenderDevice& device,const engine::assets::TerrainAsset& terrain,const engine::assets::TerrainEmbeddedTexture& embedded,engine::graphics::TextureHandle& output)
-    {
-        std::ifstream stream(terrain.sourcePath,std::ios::binary);if(!stream)return false;stream.seekg(static_cast<std::streamoff>(embedded.offset));engine::assets::AssetData data;if(engine::assets::Failed(data.Resize(static_cast<std::size_t>(embedded.size))))return false;if(!stream.read(reinterpret_cast<char*>(data.GetData()),static_cast<std::streamsize>(embedded.size)))return false;engine::assets::TextureAsset decoded;if(engine::assets::Failed(engine::assets::DdsTextureDecoder::Decode(data,decoded)))return false;std::vector<engine::graphics::TextureSubresourceData> initial(decoded.GetSubresourceCount());for(std::size_t i=0;i<initial.size();++i)if(engine::assets::Failed(decoded.GetSubresourceData(i,initial[i])))return false;return engine::graphics::Succeeded(device.CreateTexture(decoded.GetDesc(),initial.data(),initial.size(),output));
-    }
-
-    bool DecodeEmbeddedMask(
-        const engine::assets::TerrainAsset& terrain,
-        const engine::assets::TerrainEmbeddedTexture& embedded,
-        std::vector<std::byte>& rgba,
-        std::uint32_t& width,
-        std::uint32_t& height)
-    {
-        std::ifstream stream(terrain.sourcePath,std::ios::binary);
-        if(!stream)return false;
-        stream.seekg(static_cast<std::streamoff>(embedded.offset));
-        engine::assets::AssetData data;
-        if(engine::assets::Failed(data.Resize(static_cast<std::size_t>(embedded.size))))return false;
-        if(!stream.read(reinterpret_cast<char*>(data.GetData()),static_cast<std::streamsize>(embedded.size)))return false;
-        engine::assets::TextureAsset decoded;
-        if(engine::assets::Failed(engine::assets::DdsTextureDecoder::Decode(data,decoded)))return false;
-        const auto& desc=decoded.GetDesc();
-        width=desc.width;height=desc.height;
-        engine::graphics::TextureSubresourceData source{};
-        if(engine::assets::Failed(decoded.GetSubresourceData(0,source)))return false;
-        rgba.assign(static_cast<std::size_t>(width)*height*4U,std::byte{0});
-        if(desc.format==engine::graphics::Format::R8G8B8A8UNorm ||
-           desc.format==engine::graphics::Format::R8G8B8A8UNormSrgb)
+        struct alignas(16) Constants final
         {
-            for(std::uint32_t y=0;y<height;++y)
-                std::memcpy(rgba.data()+static_cast<std::size_t>(y)*width*4U,
-                    source.data+static_cast<std::size_t>(y)*source.rowPitch,
-                    static_cast<std::size_t>(width)*4U);
+            DirectX::XMFLOAT4X4 world{};
+            DirectX::XMFLOAT4X4 viewProjection{};
+
+            std::array<DirectX::XMFLOAT4, MaximumTerrainLayerCount>
+                placement{};
+
+            std::array<DirectX::XMFLOAT4, MaximumTerrainLayerCount>
+                layerParameters{};
+
+            // x = terrain local width.
+            // y = terrain local depth.
+            // z = active layer count.
+            // w = reserved.
+            DirectX::XMFLOAT4 terrainInfo{};
+        };
+
+        static_assert(sizeof(Constants) % 16U == 0U);
+
+        struct BrushVertex final
+        {
+            DirectX::XMFLOAT3 position{};
+            DirectX::XMFLOAT4 color{};
+        };
+
+        struct alignas(16) BrushConstants final
+        {
+            DirectX::XMFLOAT4X4 viewProjection{};
+        };
+
+        static_assert(sizeof(BrushConstants) % 16U == 0U);
+
+        struct Chunk final
+        {
+            DirectX::XMFLOAT3 minimum{};
+            DirectX::XMFLOAT3 maximum{};
+            DirectX::XMFLOAT3 center{};
+
+            std::array<std::uint32_t, 3U> first{};
+            std::array<std::uint32_t, 3U> count{};
+        };
+
+        struct PaintChange final
+        {
+            std::uint32_t pixel = 0U;
+            std::array<std::uint8_t, MaximumPaintedLayerCount> before{};
+            std::array<std::uint8_t, MaximumPaintedLayerCount> after{};
+        };
+
+        using PaintCommand = std::vector<PaintChange>;
+
+        [[nodiscard]]
+        std::uint32_t CalculateTerrainSampleStep(
+            const std::uint32_t sourceWidth,
+            const std::uint32_t sourceHeight) noexcept
+        {
+            if (sourceWidth < 2U || sourceHeight < 2U)
+            {
+                return 1U;
+            }
+
+            const std::uint32_t maximumCellCount =
+                (std::max)(sourceWidth - 1U, sourceHeight - 1U);
+
+            return (std::max)(
+                1U,
+                (maximumCellCount + MaximumTerrainGpuCellsPerAxis - 1U) /
+                    MaximumTerrainGpuCellsPerAxis);
+        }
+
+        [[nodiscard]]
+        std::uint32_t CalculateTerrainGpuVertexCount(
+            const std::uint32_t sourceVertexCount,
+            const std::uint32_t sampleStep) noexcept
+        {
+            if (sourceVertexCount < 2U || sampleStep == 0U)
+            {
+                return sourceVertexCount;
+            }
+
+            return
+                (sourceVertexCount - 1U + sampleStep - 1U) / sampleStep + 1U;
+        }
+
+        void LogTerrainGraphicsFailure(
+            const char* const operation,
+            const engine::graphics::GraphicsResult result)
+        {
+            std::string message =
+                operation != nullptr
+                    ? operation
+                    : "Terrain graphics operation";
+
+            message += " failed: ";
+            message += engine::graphics::ToString(result);
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Error,
+                "LTS.Editor.Terrain",
+                message);
+        }
+
+        void LogTerrainAssetFailure(
+            const char* const operation,
+            const engine::assets::AssetResult result)
+        {
+            std::string message =
+                operation != nullptr
+                    ? operation
+                    : "Terrain asset operation";
+
+            message += " failed: ";
+            message += engine::assets::ToString(result);
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Error,
+                "LTS.Editor.Terrain",
+                message);
+        }
+
+        void LogTerrainGeometryInfo(
+            const std::uint32_t sourceWidth,
+            const std::uint32_t sourceHeight,
+            const std::uint32_t gpuWidth,
+            const std::uint32_t gpuHeight,
+            const std::uint32_t sampleStep)
+        {
+            std::string message = "Preparing terrain GPU grid. Source=";
+            message += std::to_string(sourceWidth);
+            message += "x";
+            message += std::to_string(sourceHeight);
+            message += ", GPU=";
+            message += std::to_string(gpuWidth);
+            message += "x";
+            message += std::to_string(gpuHeight);
+            message += ", sample step=";
+            message += std::to_string(sampleStep);
+            message += ".";
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Information,
+                "LTS.Editor.Terrain",
+                message);
+        }
+
+        [[nodiscard]]
+        bool IsChunkVisible(
+            const Chunk& chunk,
+            DirectX::FXMMATRIX worldViewProjection) noexcept
+        {
+            std::array<DirectX::XMVECTOR, 8U> clipPoints{};
+            std::size_t pointIndex = 0U;
+
+            for (std::uint32_t z = 0U; z < 2U; ++z)
+            {
+                for (std::uint32_t y = 0U; y < 2U; ++y)
+                {
+                    for (std::uint32_t x = 0U; x < 2U; ++x)
+                    {
+                        const DirectX::XMVECTOR position =
+                            DirectX::XMVectorSet(
+                                x == 0U
+                                    ? chunk.minimum.x
+                                    : chunk.maximum.x,
+                                y == 0U
+                                    ? chunk.minimum.y
+                                    : chunk.maximum.y,
+                                z == 0U
+                                    ? chunk.minimum.z
+                                    : chunk.maximum.z,
+                                1.0F);
+
+                        clipPoints[pointIndex++] =
+                            DirectX::XMVector4Transform(
+                                position,
+                                worldViewProjection);
+                    }
+                }
+            }
+
+            const auto allOutside =
+                [&clipPoints](const auto& predicate)
+                {
+                    for (const DirectX::XMVECTOR& clipPoint : clipPoints)
+                    {
+                        DirectX::XMFLOAT4 value{};
+                        DirectX::XMStoreFloat4(&value, clipPoint);
+
+                        if (!predicate(value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                };
+
+            return
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.x < -point.w;
+                    }) &&
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.x > point.w;
+                    }) &&
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.y < -point.w;
+                    }) &&
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.y > point.w;
+                    }) &&
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.z < 0.0F;
+                    }) &&
+                !allOutside(
+                    [](const DirectX::XMFLOAT4& point)
+                    {
+                        return point.z > point.w;
+                    });
+        }
+
+        [[nodiscard]]
+        bool ReadEmbeddedTextureData(
+            const engine::assets::TerrainAsset& terrain,
+            const engine::assets::TerrainEmbeddedTexture& embedded,
+            engine::assets::AssetData& output)
+        {
+            if (embedded.size == 0U ||
+                embedded.size > MaximumTextureFileSize)
+            {
+                return false;
+            }
+
+            std::ifstream stream(
+                terrain.sourcePath,
+                std::ios::binary);
+
+            if (!stream)
+            {
+                return false;
+            }
+
+            stream.seekg(
+                static_cast<std::streamoff>(embedded.offset),
+                std::ios::beg);
+
+            if (!stream)
+            {
+                return false;
+            }
+
+            const engine::assets::AssetResult resizeResult =
+                output.Resize(
+                    static_cast<std::size_t>(embedded.size));
+
+            if (engine::assets::Failed(resizeResult))
+            {
+                return false;
+            }
+
+            return static_cast<bool>(
+                stream.read(
+                    reinterpret_cast<char*>(output.GetData()),
+                    static_cast<std::streamsize>(embedded.size)));
+        }
+
+        [[nodiscard]]
+        std::uint8_t Expand5(const std::uint16_t value) noexcept
+        {
+            return static_cast<std::uint8_t>(
+                (value << 3U) | (value >> 2U));
+        }
+
+        [[nodiscard]]
+        std::uint8_t Expand6(const std::uint16_t value) noexcept
+        {
+            return static_cast<std::uint8_t>(
+                (value << 2U) | (value >> 4U));
+        }
+
+        void DecodeColorBlock(
+            const std::uint8_t* const block,
+            const bool forceFourColorMode,
+            std::array<std::array<std::uint8_t, 4U>, 4U>& colors,
+            std::uint32_t& selectors) noexcept
+        {
+            const std::uint16_t color0 =
+                static_cast<std::uint16_t>(
+                    block[0] |
+                    (static_cast<std::uint16_t>(block[1]) << 8U));
+
+            const std::uint16_t color1 =
+                static_cast<std::uint16_t>(
+                    block[2] |
+                    (static_cast<std::uint16_t>(block[3]) << 8U));
+
+            colors[0] =
+            {
+                Expand5((color0 >> 11U) & 31U),
+                Expand6((color0 >> 5U) & 63U),
+                Expand5(color0 & 31U),
+                255U
+            };
+
+            colors[1] =
+            {
+                Expand5((color1 >> 11U) & 31U),
+                Expand6((color1 >> 5U) & 63U),
+                Expand5(color1 & 31U),
+                255U
+            };
+
+            const bool fourColorMode =
+                forceFourColorMode || color0 > color1;
+
+            for (std::size_t channel = 0U; channel < 3U; ++channel)
+            {
+                if (fourColorMode)
+                {
+                    colors[2][channel] =
+                        static_cast<std::uint8_t>(
+                            (2U * colors[0][channel] +
+                             colors[1][channel]) /
+                            3U);
+
+                    colors[3][channel] =
+                        static_cast<std::uint8_t>(
+                            (colors[0][channel] +
+                             2U * colors[1][channel]) /
+                            3U);
+                }
+                else
+                {
+                    colors[2][channel] =
+                        static_cast<std::uint8_t>(
+                            (colors[0][channel] +
+                             colors[1][channel]) /
+                            2U);
+
+                    colors[3][channel] = 0U;
+                }
+            }
+
+            colors[2][3] = 255U;
+            colors[3][3] = fourColorMode ? 255U : 0U;
+
+            selectors =
+                static_cast<std::uint32_t>(block[4]) |
+                (static_cast<std::uint32_t>(block[5]) << 8U) |
+                (static_cast<std::uint32_t>(block[6]) << 16U) |
+                (static_cast<std::uint32_t>(block[7]) << 24U);
+        }
+
+        [[nodiscard]]
+        bool DecodeEmbeddedMask(
+            const engine::assets::TerrainAsset& terrain,
+            const engine::assets::TerrainEmbeddedTexture& embedded,
+            std::vector<std::byte>& rgba,
+            std::uint32_t& width,
+            std::uint32_t& height)
+        {
+            engine::assets::AssetData data;
+
+            if (!ReadEmbeddedTextureData(terrain, embedded, data))
+            {
+                return false;
+            }
+
+            engine::assets::TextureAsset decoded;
+
+            const engine::assets::AssetResult decodeResult =
+                engine::assets::DdsTextureDecoder::Decode(
+                    data,
+                    decoded);
+
+            if (engine::assets::Failed(decodeResult))
+            {
+                return false;
+            }
+
+            const engine::graphics::TextureDesc& description =
+                decoded.GetDesc();
+
+            width = description.width;
+            height = description.height;
+
+            if (width == 0U || height == 0U)
+            {
+                return false;
+            }
+
+            engine::graphics::TextureSubresourceData source{};
+
+            if (engine::assets::Failed(
+                    decoded.GetSubresourceData(0U, source)))
+            {
+                return false;
+            }
+
+            const std::uint64_t byteCount =
+                static_cast<std::uint64_t>(width) *
+                static_cast<std::uint64_t>(height) *
+                4ULL;
+
+            if (byteCount >
+                static_cast<std::uint64_t>(
+                    (std::numeric_limits<std::size_t>::max)()))
+            {
+                return false;
+            }
+
+            rgba.assign(
+                static_cast<std::size_t>(byteCount),
+                std::byte{0});
+
+            if (description.format ==
+                    engine::graphics::Format::R8G8B8A8UNorm ||
+                description.format ==
+                    engine::graphics::Format::R8G8B8A8UNormSrgb)
+            {
+                for (std::uint32_t y = 0U; y < height; ++y)
+                {
+                    std::memcpy(
+                        rgba.data() +
+                            static_cast<std::size_t>(y) *
+                                width * 4U,
+                        source.data +
+                            static_cast<std::size_t>(y) *
+                                source.rowPitch,
+                        static_cast<std::size_t>(width) * 4U);
+                }
+
+                return true;
+            }
+
+            const bool isBc1 =
+                description.format ==
+                    engine::graphics::Format::BC1UNorm ||
+                description.format ==
+                    engine::graphics::Format::BC1UNormSrgb;
+
+            const bool isBc2 =
+                description.format ==
+                    engine::graphics::Format::BC2UNorm ||
+                description.format ==
+                    engine::graphics::Format::BC2UNormSrgb;
+
+            const bool isBc3 =
+                description.format ==
+                    engine::graphics::Format::BC3UNorm ||
+                description.format ==
+                    engine::graphics::Format::BC3UNormSrgb;
+
+            if (!isBc1 && !isBc2 && !isBc3)
+            {
+                std::string message =
+                    "Unsupported terrain splat-mask format: ";
+
+                message +=
+                    engine::graphics::ToString(
+                        description.format);
+
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    message);
+
+                return false;
+            }
+
+            const std::size_t blockSize = isBc1 ? 8U : 16U;
+            const std::size_t colorOffset = isBc1 ? 0U : 8U;
+            const bool forceFourColorMode = !isBc1;
+
+            for (std::uint32_t blockY = 0U;
+                 blockY < (height + 3U) / 4U;
+                 ++blockY)
+            {
+                const auto* const row =
+                    reinterpret_cast<const std::uint8_t*>(
+                        source.data +
+                        static_cast<std::size_t>(blockY) *
+                            source.rowPitch);
+
+                for (std::uint32_t blockX = 0U;
+                     blockX < (width + 3U) / 4U;
+                     ++blockX)
+                {
+                    const std::uint8_t* const block =
+                        row +
+                        static_cast<std::size_t>(blockX) *
+                            blockSize +
+                        colorOffset;
+
+                    std::array<std::array<std::uint8_t, 4U>, 4U>
+                        colors{};
+
+                    std::uint32_t selectors = 0U;
+
+                    DecodeColorBlock(
+                        block,
+                        forceFourColorMode,
+                        colors,
+                        selectors);
+
+                    for (std::uint32_t pixelY = 0U;
+                         pixelY < 4U;
+                         ++pixelY)
+                    {
+                        for (std::uint32_t pixelX = 0U;
+                             pixelX < 4U;
+                             ++pixelX)
+                        {
+                            const std::uint32_t x =
+                                blockX * 4U + pixelX;
+
+                            const std::uint32_t y =
+                                blockY * 4U + pixelY;
+
+                            if (x >= width || y >= height)
+                            {
+                                continue;
+                            }
+
+                            const std::uint32_t selector =
+                                (selectors >>
+                                 (2U * (pixelY * 4U + pixelX))) &
+                                3U;
+
+                            const auto& color = colors[selector];
+
+                            std::memcpy(
+                                rgba.data() +
+                                    (static_cast<std::size_t>(y) *
+                                         width +
+                                     x) *
+                                        4U,
+                                color.data(),
+                                4U);
+                        }
+                    }
+                }
+            }
+
             return true;
         }
-        if(desc.format!=engine::graphics::Format::BC1UNorm &&
-           desc.format!=engine::graphics::Format::BC1UNormSrgb)return false;
 
-        const auto expand5=[](const std::uint16_t value){return static_cast<std::uint8_t>((value<<3U)|(value>>2U));};
-        const auto expand6=[](const std::uint16_t value){return static_cast<std::uint8_t>((value<<2U)|(value>>4U));};
-        for(std::uint32_t blockY=0;blockY<(height+3U)/4U;++blockY)
+        [[nodiscard]]
+        bool CreateSolidTexture(
+            engine::graphics::RenderDevice& device,
+            const std::array<std::byte, 4U>& pixel,
+            engine::graphics::TextureHandle& output)
         {
-            const auto* row=reinterpret_cast<const std::uint8_t*>(source.data+static_cast<std::size_t>(blockY)*source.rowPitch);
-            for(std::uint32_t blockX=0;blockX<(width+3U)/4U;++blockX)
+            engine::graphics::TextureDesc description{};
+            description.width = 1U;
+            description.height = 1U;
+            description.format =
+                engine::graphics::Format::R8G8B8A8UNorm;
+            description.bindFlags =
+                engine::graphics::TextureBindFlags::ShaderResource;
+
+            const engine::graphics::TextureSubresourceData data
             {
-                const auto* block=row+blockX*8U;
-                const std::uint16_t color0=static_cast<std::uint16_t>(block[0]|(block[1]<<8U));
-                const std::uint16_t color1=static_cast<std::uint16_t>(block[2]|(block[3]<<8U));
-                std::array<std::array<std::uint8_t,4>,4> colors{};
-                colors[0]={expand5((color0>>11U)&31U),expand6((color0>>5U)&63U),expand5(color0&31U),255U};
-                colors[1]={expand5((color1>>11U)&31U),expand6((color1>>5U)&63U),expand5(color1&31U),255U};
-                for(std::size_t channel=0;channel<3U;++channel)
+                pixel.data(),
+                pixel.size(),
+                4U,
+                4U
+            };
+
+            return engine::graphics::Succeeded(
+                device.CreateTexture(
+                    description,
+                    &data,
+                    1U,
+                    output));
+        }
+
+        [[nodiscard]]
+        bool CreateFallbackMask(
+            engine::graphics::RenderDevice& device,
+            engine::graphics::TextureHandle& output)
+        {
+            constexpr std::array<std::byte, 4U> pixel
+            {
+                std::byte{0},
+                std::byte{0},
+                std::byte{0},
+                std::byte{0}
+            };
+
+            return CreateSolidTexture(device, pixel, output);
+        }
+
+        [[nodiscard]]
+        bool CreateFallbackMaterial(
+            engine::graphics::RenderDevice& device,
+            engine::graphics::TextureHandle& output)
+        {
+            constexpr std::array<std::byte, 4U> pixel
+            {
+                std::byte{96},
+                std::byte{96},
+                std::byte{96},
+                std::byte{255}
+            };
+
+            return CreateSolidTexture(device, pixel, output);
+        }
+
+        [[nodiscard]]
+        bool CreateEditableMaskTexture(
+            engine::graphics::RenderDevice& device,
+            const std::vector<std::byte>& rgba,
+            const std::uint32_t width,
+            const std::uint32_t height,
+            engine::graphics::TextureHandle& output)
+        {
+            const std::uint64_t expectedSize =
+                static_cast<std::uint64_t>(width) *
+                static_cast<std::uint64_t>(height) *
+                4ULL;
+
+            if (width == 0U ||
+                height == 0U ||
+                expectedSize != rgba.size())
+            {
+                return false;
+            }
+
+            engine::graphics::TextureDesc description{};
+            description.width = width;
+            description.height = height;
+            description.format =
+                engine::graphics::Format::R8G8B8A8UNorm;
+            description.bindFlags =
+                engine::graphics::TextureBindFlags::ShaderResource;
+
+            const engine::graphics::TextureSubresourceData data
+            {
+                rgba.data(),
+                rgba.size(),
+                static_cast<std::size_t>(width) * 4U,
+                rgba.size()
+            };
+
+            return engine::graphics::Succeeded(
+                device.CreateTexture(
+                    description,
+                    &data,
+                    1U,
+                    output));
+        }
+
+        [[nodiscard]]
+        bool CreateDdsFileTexture(
+            engine::graphics::RenderDevice& device,
+            const std::filesystem::path& path,
+            engine::graphics::TextureHandle& output)
+        {
+            std::error_code filesystemError;
+
+            const std::uintmax_t fileSize =
+                std::filesystem::file_size(
+                    path,
+                    filesystemError);
+
+            if (filesystemError ||
+                fileSize == 0U ||
+                fileSize > MaximumTextureFileSize)
+            {
+                return false;
+            }
+
+            engine::assets::AssetData data;
+
+            const engine::assets::AssetResult resizeResult =
+                data.Resize(
+                    static_cast<std::size_t>(fileSize));
+
+            if (engine::assets::Failed(resizeResult))
+            {
+                return false;
+            }
+
+            std::ifstream stream(
+                path,
+                std::ios::binary);
+
+            if (!stream ||
+                !stream.read(
+                    reinterpret_cast<char*>(data.GetData()),
+                    static_cast<std::streamsize>(fileSize)))
+            {
+                return false;
+            }
+
+            engine::assets::TextureAsset decoded;
+            engine::assets::DdsTextureDecodeOptions options{};
+            options.forceSrgb = true;
+
+            const engine::assets::AssetResult decodeResult =
+                engine::assets::DdsTextureDecoder::Decode(
+                    data,
+                    options,
+                    decoded);
+
+            if (engine::assets::Failed(decodeResult))
+            {
+                return false;
+            }
+
+            std::vector<engine::graphics::TextureSubresourceData>
+                initialData(decoded.GetSubresourceCount());
+
+            for (std::size_t index = 0U;
+                 index < initialData.size();
+                 ++index)
+            {
+                if (engine::assets::Failed(
+                        decoded.GetSubresourceData(
+                            index,
+                            initialData[index])))
                 {
-                    if(color0>color1)
-                    {
-                        colors[2][channel]=static_cast<std::uint8_t>((2U*colors[0][channel]+colors[1][channel])/3U);
-                        colors[3][channel]=static_cast<std::uint8_t>((colors[0][channel]+2U*colors[1][channel])/3U);
-                    }
-                    else
-                    {
-                        colors[2][channel]=static_cast<std::uint8_t>((colors[0][channel]+colors[1][channel])/2U);
-                        colors[3][channel]=0U;
-                    }
-                }
-                colors[2][3]=255U;colors[3][3]=color0>color1?255U:0U;
-                const std::uint32_t selectors=static_cast<std::uint32_t>(block[4])|
-                    (static_cast<std::uint32_t>(block[5])<<8U)|
-                    (static_cast<std::uint32_t>(block[6])<<16U)|
-                    (static_cast<std::uint32_t>(block[7])<<24U);
-                for(std::uint32_t py=0;py<4U;++py)for(std::uint32_t px=0;px<4U;++px)
-                {
-                    const std::uint32_t x=blockX*4U+px,y=blockY*4U+py;
-                    if(x>=width||y>=height)continue;
-                    const auto& color=colors[(selectors>>(2U*(py*4U+px)))&3U];
-                    std::memcpy(rgba.data()+(static_cast<std::size_t>(y)*width+x)*4U,color.data(),4U);
+                    return false;
                 }
             }
+
+            return engine::graphics::Succeeded(
+                device.CreateTexture(
+                    decoded.GetDesc(),
+                    initialData.data(),
+                    initialData.size(),
+                    output));
         }
-        return true;
     }
-    bool CreateFallbackMask(engine::graphics::RenderDevice& device,engine::graphics::TextureHandle& output)
-    {
-        const std::array<std::byte,4> pixel{};engine::graphics::TextureDesc desc{};engine::graphics::TextureSubresourceData data{pixel.data(),pixel.size(),4U,4U};return engine::graphics::Succeeded(device.CreateTexture(desc,&data,1U,output));
-    }
-    bool CreateEditableMaskTexture(
-        engine::graphics::RenderDevice& device,
-        const std::vector<std::byte>& rgba,
-        const std::uint32_t width,
-        const std::uint32_t height,
-        engine::graphics::TextureHandle& output)
-    {
-        if(rgba.size()!=static_cast<std::size_t>(width)*height*4U)return false;
-        engine::graphics::TextureDesc desc{};
-        desc.width=width;desc.height=height;
-        desc.format=engine::graphics::Format::R8G8B8A8UNorm;
-        desc.bindFlags=engine::graphics::TextureBindFlags::ShaderResource;
-        engine::graphics::TextureSubresourceData data{
-            rgba.data(),rgba.size(),static_cast<std::size_t>(width)*4U,rgba.size()};
-        return engine::graphics::Succeeded(device.CreateTexture(desc,&data,1U,output));
-    }
-    bool CreateDdsFileTexture(engine::graphics::RenderDevice& device,const std::filesystem::path& path,engine::graphics::TextureHandle& output)
-    {
-        std::error_code ec;const auto size=std::filesystem::file_size(path,ec);if(ec||size==0U||size>512U*1024U*1024U)return false;engine::assets::AssetData data;if(engine::assets::Failed(data.Resize(static_cast<std::size_t>(size))))return false;std::ifstream stream(path,std::ios::binary);if(!stream||!stream.read(reinterpret_cast<char*>(data.GetData()),static_cast<std::streamsize>(size)))return false;engine::assets::TextureAsset decoded;engine::assets::DdsTextureDecodeOptions options{};options.forceSrgb=true;if(engine::assets::Failed(engine::assets::DdsTextureDecoder::Decode(data,options,decoded)))return false;std::vector<engine::graphics::TextureSubresourceData> initial(decoded.GetSubresourceCount());for(std::size_t i=0;i<initial.size();++i)if(engine::assets::Failed(decoded.GetSubresourceData(i,initial[i])))return false;return engine::graphics::Succeeded(device.CreateTexture(decoded.GetDesc(),initial.data(),initial.size(),output));
-    }}
-    class EditorTerrainRenderer::Impl
+
+    class EditorTerrainRenderer::Impl final
     {
     public:
-        bool Initialize(engine::graphics::RenderDevice& d) noexcept
+        [[nodiscard]]
+        bool Initialize(
+            engine::graphics::RenderDevice& device) noexcept
         {
-            device_=&d;
-            if(terrainPath_.empty())return true;engine::assets::TerrainAsset terrain;
-            if(engine::assets::Failed(engine::assets::TerrainAsset::Load(terrainPath_,terrain)))return false;
-            // Keep every source height sample. LOD is selected per chunk through the
-            // index buffer; the source geometry itself is never destructively reduced.
-            constexpr std::uint32_t step=1U;
-            const std::uint32_t vx=terrain.width;
-            const std::uint32_t vz=terrain.height;
-            std::vector<Vertex> vertices(static_cast<std::size_t>(vx)*vz);
-            for(std::uint32_t z=0;z<vz;++z)for(std::uint32_t x=0;x<vx;++x)
-            {
-                const auto sx=(std::min)(x*step,terrain.width-1U),sz=(std::min)(z*step,terrain.height-1U);
-                const float hl=terrain.GetHeight(sx>step?sx-step:sx,sz),hr=terrain.GetHeight((std::min)(sx+step,terrain.width-1U),sz);
-                const float hd=terrain.GetHeight(sx,sz>step?sz-step:sz),hu=terrain.GetHeight(sx,(std::min)(sz+step,terrain.height-1U));
-                DirectX::XMVECTOR n=DirectX::XMVector3Normalize(DirectX::XMVectorSet(hl-hr,2.0F*step*terrain.tileSize,hd-hu,0));
-                auto& v=vertices[static_cast<std::size_t>(z)*vx+x];v.position={sx*terrain.tileSize,terrain.GetHeight(sx,sz),sz*terrain.tileSize};DirectX::XMStoreFloat3(&v.normal,n);v.uv={static_cast<float>(sx)/static_cast<float>(terrain.width-1U),static_cast<float>(sz)/static_cast<float>(terrain.height-1U)};
-            }
-            std::vector<std::uint32_t> indices;
-            constexpr std::uint32_t chunkCells=64U;
-            chunks_.clear();
-            for(std::uint32_t cz=0;cz<vz-1U;cz+=chunkCells)for(std::uint32_t cx=0;cx<vx-1U;cx+=chunkCells)
-            {
-                Chunk chunk;
-                const std::uint32_t endX=(std::min)(cx+chunkCells,vx-1U),endZ=(std::min)(cz+chunkCells,vz-1U);
-                float minimumHeight=terrain.GetHeight(cx,cz);
-                float maximumHeight=minimumHeight;
-                for(std::uint32_t z=cz;z<=endZ;++z)for(std::uint32_t x=cx;x<=endX;++x)
-                {
-                    const float height=terrain.GetHeight(x,z);
-                    minimumHeight=(std::min)(minimumHeight,height);
-                    maximumHeight=(std::max)(maximumHeight,height);
-                }
-                chunk.minimum={cx*terrain.tileSize,minimumHeight,cz*terrain.tileSize};
-                chunk.maximum={endX*terrain.tileSize,maximumHeight,endZ*terrain.tileSize};
-                chunk.center={(chunk.minimum.x+chunk.maximum.x)*0.5F,(minimumHeight+maximumHeight)*0.5F,(chunk.minimum.z+chunk.maximum.z)*0.5F};
+            device_ = &device;
 
-                const float skirtDepth=(std::max)(20.0F,terrain.heightScale*0.025F);
-                std::array<std::vector<std::uint32_t>,4> skirtBottom{};
-                const auto appendSkirtVertex=[&](std::uint32_t sourceIndex)
+            if (terrainPath_.empty())
+            {
+                return true;
+            }
+
+            engine::assets::TerrainAsset terrain;
+
+            const engine::assets::AssetResult loadResult =
+                engine::assets::TerrainAsset::Load(
+                    terrainPath_,
+                    terrain);
+
+            if (engine::assets::Failed(loadResult))
+            {
+                LogTerrainAssetFailure(
+                    "Load terrain asset",
+                    loadResult);
+
+                return false;
+            }
+
+            if (!terrain.IsValid())
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Terrain asset failed validation before GPU creation.");
+
+                return false;
+            }
+
+            const std::uint32_t sampleStep =
+                CalculateTerrainSampleStep(
+                    terrain.width,
+                    terrain.height);
+
+            const std::uint32_t gpuWidth =
+                CalculateTerrainGpuVertexCount(
+                    terrain.width,
+                    sampleStep);
+
+            const std::uint32_t gpuHeight =
+                CalculateTerrainGpuVertexCount(
+                    terrain.height,
+                    sampleStep);
+
+            if (gpuWidth < 2U || gpuHeight < 2U)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Terrain GPU grid is too small.");
+
+                return false;
+            }
+
+            LogTerrainGeometryInfo(
+                terrain.width,
+                terrain.height,
+                gpuWidth,
+                gpuHeight,
+                sampleStep);
+
+            const auto getSourceX =
+                [&terrain, sampleStep](
+                    const std::uint32_t gpuX) noexcept
                 {
-                    Vertex skirt=vertices[sourceIndex];
-                    skirt.position.y-=skirtDepth;
-                    const auto index=static_cast<std::uint32_t>(vertices.size());
-                    vertices.push_back(skirt);
-                    return index;
+                    return (std::min)(
+                        gpuX * sampleStep,
+                        terrain.width - 1U);
                 };
-                for(std::uint32_t x=cx;x<=endX;++x)
+
+            const auto getSourceZ =
+                [&terrain, sampleStep](
+                    const std::uint32_t gpuZ) noexcept
                 {
-                    skirtBottom[0].push_back(appendSkirtVertex(cz*vx+x));
-                    skirtBottom[1].push_back(appendSkirtVertex(endZ*vx+x));
-                }
-                for(std::uint32_t z=cz;z<=endZ;++z)
+                    return (std::min)(
+                        gpuZ * sampleStep,
+                        terrain.height - 1U);
+                };
+
+            const std::uint64_t baseVertexCount =
+                static_cast<std::uint64_t>(gpuWidth) *
+                static_cast<std::uint64_t>(gpuHeight);
+
+            if (baseVertexCount >
+                static_cast<std::uint64_t>(
+                    (std::numeric_limits<std::size_t>::max)() /
+                    sizeof(Vertex)))
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Terrain GPU vertex count overflow.");
+
+                return false;
+            }
+
+            std::vector<Vertex> vertices(
+                static_cast<std::size_t>(baseVertexCount));
+
+            for (std::uint32_t gpuZ = 0U;
+                 gpuZ < gpuHeight;
+                 ++gpuZ)
+            {
+                const std::uint32_t sourceZ =
+                    getSourceZ(gpuZ);
+
+                for (std::uint32_t gpuX = 0U;
+                     gpuX < gpuWidth;
+                     ++gpuX)
                 {
-                    skirtBottom[2].push_back(appendSkirtVertex(z*vx+cx));
-                    skirtBottom[3].push_back(appendSkirtVertex(z*vx+endX));
-                }
-                for(std::uint32_t lod=0;lod<3U;++lod)
-                {
-                    const std::uint32_t stride=1U<<lod;
-                    chunk.first[lod]=static_cast<std::uint32_t>(indices.size());
-                    for(std::uint32_t z=cz;z<endZ;z+=stride)
+                    const std::uint32_t sourceX =
+                        getSourceX(gpuX);
+
+                    const std::uint32_t sourceLeft =
+                        sourceX > sampleStep
+                            ? sourceX - sampleStep
+                            : 0U;
+
+                    const std::uint32_t sourceRight =
+                        (std::min)(
+                            sourceX + sampleStep,
+                            terrain.width - 1U);
+
+                    const std::uint32_t sourceDown =
+                        sourceZ > sampleStep
+                            ? sourceZ - sampleStep
+                            : 0U;
+
+                    const std::uint32_t sourceUp =
+                        (std::min)(
+                            sourceZ + sampleStep,
+                            terrain.height - 1U);
+
+                    const float heightLeft =
+                        terrain.GetHeight(
+                            sourceLeft,
+                            sourceZ);
+
+                    const float heightRight =
+                        terrain.GetHeight(
+                            sourceRight,
+                            sourceZ);
+
+                    const float heightDown =
+                        terrain.GetHeight(
+                            sourceX,
+                            sourceDown);
+
+                    const float heightUp =
+                        terrain.GetHeight(
+                            sourceX,
+                            sourceUp);
+
+                    const float normalScaleX =
+                        static_cast<float>(
+                            (std::max)(
+                                sourceRight - sourceLeft,
+                                1U)) *
+                        terrain.tileSize;
+
+                    const float normalScaleZ =
+                        static_cast<float>(
+                            (std::max)(
+                                sourceUp - sourceDown,
+                                1U)) *
+                        terrain.tileSize;
+
+                    const DirectX::XMVECTOR normal =
+                        DirectX::XMVector3Normalize(
+                            DirectX::XMVectorSet(
+                                (heightLeft - heightRight) *
+                                    normalScaleZ,
+                                normalScaleX * normalScaleZ,
+                                (heightDown - heightUp) *
+                                    normalScaleX,
+                                0.0F));
+
+                    Vertex& vertex =
+                        vertices[
+                            static_cast<std::size_t>(gpuZ) *
+                                gpuWidth +
+                            gpuX];
+
+                    vertex.position =
                     {
-                        const std::uint32_t nextZ=(std::min)(z+stride,endZ);
-                        for(std::uint32_t x=cx;x<endX;x+=stride)
+                        static_cast<float>(sourceX) *
+                            terrain.tileSize,
+                        terrain.GetHeight(sourceX, sourceZ),
+                        static_cast<float>(sourceZ) *
+                            terrain.tileSize
+                    };
+
+                    DirectX::XMStoreFloat3(
+                        &vertex.normal,
+                        normal);
+
+                    vertex.uv =
+                    {
+                        static_cast<float>(sourceX) /
+                            static_cast<float>(terrain.width - 1U),
+                        static_cast<float>(sourceZ) /
+                            static_cast<float>(terrain.height - 1U)
+                    };
+                }
+            }
+
+            std::vector<std::uint32_t> indices;
+            chunks_.clear();
+
+            for (std::uint32_t chunkZ = 0U;
+                 chunkZ < gpuHeight - 1U;
+                 chunkZ += TerrainChunkCellCount)
+            {
+                for (std::uint32_t chunkX = 0U;
+                     chunkX < gpuWidth - 1U;
+                     chunkX += TerrainChunkCellCount)
+                {
+                    const std::uint32_t endX =
+                        (std::min)(
+                            chunkX + TerrainChunkCellCount,
+                            gpuWidth - 1U);
+
+                    const std::uint32_t endZ =
+                        (std::min)(
+                            chunkZ + TerrainChunkCellCount,
+                            gpuHeight - 1U);
+
+                    Chunk chunk{};
+
+                    const Vertex& firstVertex =
+                        vertices[
+                            static_cast<std::size_t>(chunkZ) *
+                                gpuWidth +
+                            chunkX];
+
+                    float minimumHeight =
+                        firstVertex.position.y;
+
+                    float maximumHeight =
+                        firstVertex.position.y;
+
+                    for (std::uint32_t z = chunkZ;
+                         z <= endZ;
+                         ++z)
+                    {
+                        for (std::uint32_t x = chunkX;
+                             x <= endX;
+                             ++x)
                         {
-                            const std::uint32_t nextX=(std::min)(x+stride,endX);
-                            const auto a=z*vx+x;
-                            const auto b=z*vx+nextX;
-                            const auto c=nextZ*vx+x;
-                            const auto diagonal=nextZ*vx+nextX;
-                            indices.insert(indices.end(),{a,c,b,b,c,diagonal});
+                            const float height =
+                                vertices[
+                                    static_cast<std::size_t>(z) *
+                                        gpuWidth +
+                                    x]
+                                    .position.y;
+
+                            minimumHeight =
+                                (std::min)(minimumHeight, height);
+
+                            maximumHeight =
+                                (std::max)(maximumHeight, height);
                         }
                     }
 
-                    const auto addSkirt=[&](std::uint32_t length,const auto topIndex,const std::vector<std::uint32_t>& bottom)
-                    {
-                        for(std::uint32_t edge=0;edge<length;edge+=stride)
-                        {
-                            const std::uint32_t next=(std::min)(edge+stride,length);
-                            const std::uint32_t topA=topIndex(edge);
-                            const std::uint32_t topB=topIndex(next);
-                            indices.insert(indices.end(),{topA,bottom[edge],topB,topB,bottom[edge],bottom[next]});
-                        }
-                    };
-                    addSkirt(endX-cx,[&](std::uint32_t edge){return cz*vx+cx+edge;},skirtBottom[0]);
-                    addSkirt(endX-cx,[&](std::uint32_t edge){return endZ*vx+cx+edge;},skirtBottom[1]);
-                    addSkirt(endZ-cz,[&](std::uint32_t edge){return (cz+edge)*vx+cx;},skirtBottom[2]);
-                    addSkirt(endZ-cz,[&](std::uint32_t edge){return (cz+edge)*vx+endX;},skirtBottom[3]);
-                    chunk.count[lod]=static_cast<std::uint32_t>(indices.size())-chunk.first[lod];
-                }
-                chunks_.push_back(chunk);
-            }
-            indexCount_=static_cast<std::uint32_t>(indices.size());
-            engine::graphics::BufferDesc bd{};bd.byteSize=vertices.size()*sizeof(Vertex);bd.stride=sizeof(Vertex);bd.bindFlags=engine::graphics::BufferBindFlags::Vertex;engine::graphics::BufferInitialData vi{reinterpret_cast<const std::byte*>(vertices.data()),bd.byteSize};
-            if(engine::graphics::Failed(d.CreateBuffer(bd,&vi,vertex_)))return false;
-            bd.byteSize=indices.size()*sizeof(std::uint32_t);bd.stride=sizeof(std::uint32_t);bd.bindFlags=engine::graphics::BufferBindFlags::Index;bd.indexFormat=engine::graphics::IndexFormat::UInt32;engine::graphics::BufferInitialData ii{reinterpret_cast<const std::byte*>(indices.data()),bd.byteSize};
-            if(engine::graphics::Failed(d.CreateBuffer(bd,&ii,index_)))return false;
-            Microsoft::WRL::ComPtr<ID3DBlob> vs,ps;if(!CompileEditorShaderFile(L"Terrain.hlsl","VSMain","vs_5_0","LTS.Editor.Terrain",vs)||!CompileEditorShaderFile(L"Terrain.hlsl","PSMain","ps_5_0","LTS.Editor.Terrain",ps))return false;
-            engine::graphics::ShaderDesc sd{};sd.stage=engine::graphics::ShaderStage::Vertex;sd.bytecode={vs->GetBufferPointer(),vs->GetBufferSize()};if(engine::graphics::Failed(d.CreateShader(sd,vertexShader_)))return false;sd.stage=engine::graphics::ShaderStage::Pixel;sd.bytecode={ps->GetBufferPointer(),ps->GetBufferSize()};if(engine::graphics::Failed(d.CreateShader(sd,pixelShader_)))return false;
-            const std::array<engine::graphics::VertexElementDesc,3> elements{{{"POSITION",0,engine::graphics::Format::R32G32B32Float,0,0,engine::graphics::VertexInputRate::PerVertex,0},{"NORMAL",0,engine::graphics::Format::R32G32B32Float,0,12,engine::graphics::VertexInputRate::PerVertex,0},{"TEXCOORD",0,engine::graphics::Format::R32G32Float,0,24,engine::graphics::VertexInputRate::PerVertex,0}}};engine::graphics::InputLayoutDesc ild{};ild.vertexShader=vertexShader_;ild.elements=elements.data();ild.elementCount=elements.size();if(engine::graphics::Failed(d.CreateInputLayout(ild,layout_)))return false;
-            bd={};bd.byteSize=sizeof(Constants);bd.bindFlags=engine::graphics::BufferBindFlags::Constant;if(engine::graphics::Failed(d.CreateBuffer(bd,nullptr,constants_)))return false;
-            engine::graphics::GraphicsPipelineDesc pd{};pd.vertexShader=vertexShader_;pd.pixelShader=pixelShader_;pd.inputLayout=layout_;pd.topology=engine::graphics::PrimitiveTopology::TriangleList;pd.rasterizer.cullMode=engine::graphics::CullMode::None;pd.depthStencil.depthEnable=true;pd.depthStencil.depthWriteEnable=true;pd.depthStencil.depthFunction=engine::graphics::ComparisonFunction::LessEqual;if(engine::graphics::Failed(d.CreateGraphicsPipeline(pd,pipeline_)))return false;
-            Microsoft::WRL::ComPtr<ID3DBlob> brushVs,brushPs;
-            if(!CompileEditorShaderFile(L"Grid.hlsl","VSMain","vs_5_0","LTS.Editor.TerrainBrush",brushVs)||
-               !CompileEditorShaderFile(L"Grid.hlsl","PSMain","ps_5_0","LTS.Editor.TerrainBrush",brushPs))return false;
-            sd={};sd.stage=engine::graphics::ShaderStage::Vertex;sd.bytecode={brushVs->GetBufferPointer(),brushVs->GetBufferSize()};
-            if(engine::graphics::Failed(d.CreateShader(sd,brushVertexShader_)))return false;
-            sd.stage=engine::graphics::ShaderStage::Pixel;sd.bytecode={brushPs->GetBufferPointer(),brushPs->GetBufferSize()};
-            if(engine::graphics::Failed(d.CreateShader(sd,brushPixelShader_)))return false;
-            const std::array<engine::graphics::VertexElementDesc,2> brushElements{{
-                {"POSITION",0,engine::graphics::Format::R32G32B32Float,0,0,engine::graphics::VertexInputRate::PerVertex,0},
-                {"COLOR",0,engine::graphics::Format::R32G32B32A32Float,0,12,engine::graphics::VertexInputRate::PerVertex,0}}};
-            engine::graphics::InputLayoutDesc brushLayoutDesc{};brushLayoutDesc.vertexShader=brushVertexShader_;brushLayoutDesc.elements=brushElements.data();brushLayoutDesc.elementCount=brushElements.size();
-            if(engine::graphics::Failed(d.CreateInputLayout(brushLayoutDesc,brushLayout_)))return false;
-            bd={};bd.byteSize=256U*sizeof(BrushVertex);bd.stride=sizeof(BrushVertex);bd.bindFlags=engine::graphics::BufferBindFlags::Vertex;
-            if(engine::graphics::Failed(d.CreateBuffer(bd,nullptr,brushVertexBuffer_)))return false;
-            bd={};bd.byteSize=sizeof(BrushConstants);bd.bindFlags=engine::graphics::BufferBindFlags::Constant;
-            if(engine::graphics::Failed(d.CreateBuffer(bd,nullptr,brushConstants_)))return false;
-            engine::graphics::GraphicsPipelineDesc brushPipelineDesc{};
-            brushPipelineDesc.vertexShader=brushVertexShader_;brushPipelineDesc.pixelShader=brushPixelShader_;
-            brushPipelineDesc.inputLayout=brushLayout_;brushPipelineDesc.topology=engine::graphics::PrimitiveTopology::LineList;
-            brushPipelineDesc.rasterizer.cullMode=engine::graphics::CullMode::None;
-            brushPipelineDesc.depthStencil.depthEnable=true;brushPipelineDesc.depthStencil.depthWriteEnable=false;
-            brushPipelineDesc.depthStencil.depthFunction=engine::graphics::ComparisonFunction::LessEqual;
-            if(engine::graphics::Failed(d.CreateGraphicsPipeline(brushPipelineDesc,brushPipeline_)))return false;
+                    const Vertex& minimumCorner =
+                        vertices[
+                            static_cast<std::size_t>(chunkZ) *
+                                gpuWidth +
+                            chunkX];
 
+                    const Vertex& maximumCorner =
+                        vertices[
+                            static_cast<std::size_t>(endZ) *
+                                gpuWidth +
+                            endX];
+
+                    chunk.minimum =
+                    {
+                        minimumCorner.position.x,
+                        minimumHeight,
+                        minimumCorner.position.z
+                    };
+
+                    chunk.maximum =
+                    {
+                        maximumCorner.position.x,
+                        maximumHeight,
+                        maximumCorner.position.z
+                    };
+
+                    chunk.center =
+                    {
+                        (chunk.minimum.x + chunk.maximum.x) * 0.5F,
+                        (minimumHeight + maximumHeight) * 0.5F,
+                        (chunk.minimum.z + chunk.maximum.z) * 0.5F
+                    };
+
+                    const float skirtDepth =
+                        (std::max)(
+                            20.0F,
+                            terrain.heightScale * 0.025F);
+
+                    std::array<
+                        std::vector<std::uint32_t>,
+                        4U> skirtBottom{};
+
+                    const auto appendSkirtVertex =
+                        [&vertices, skirtDepth](
+                            const std::uint32_t sourceIndex)
+                        {
+                            Vertex skirt = vertices[sourceIndex];
+                            skirt.position.y -= skirtDepth;
+
+                            const std::uint32_t index =
+                                static_cast<std::uint32_t>(
+                                    vertices.size());
+
+                            vertices.push_back(skirt);
+                            return index;
+                        };
+
+                    for (std::uint32_t x = chunkX;
+                         x <= endX;
+                         ++x)
+                    {
+                        skirtBottom[0].push_back(
+                            appendSkirtVertex(
+                                chunkZ * gpuWidth + x));
+
+                        skirtBottom[1].push_back(
+                            appendSkirtVertex(
+                                endZ * gpuWidth + x));
+                    }
+
+                    for (std::uint32_t z = chunkZ;
+                         z <= endZ;
+                         ++z)
+                    {
+                        skirtBottom[2].push_back(
+                            appendSkirtVertex(
+                                z * gpuWidth + chunkX));
+
+                        skirtBottom[3].push_back(
+                            appendSkirtVertex(
+                                z * gpuWidth + endX));
+                    }
+
+                    for (std::uint32_t lod = 0U;
+                         lod < 3U;
+                         ++lod)
+                    {
+                        const std::uint32_t stride = 1U << lod;
+
+                        chunk.first[lod] =
+                            static_cast<std::uint32_t>(
+                                indices.size());
+
+                        for (std::uint32_t z = chunkZ;
+                             z < endZ;
+                             z += stride)
+                        {
+                            const std::uint32_t nextZ =
+                                (std::min)(z + stride, endZ);
+
+                            for (std::uint32_t x = chunkX;
+                                 x < endX;
+                                 x += stride)
+                            {
+                                const std::uint32_t nextX =
+                                    (std::min)(x + stride, endX);
+
+                                const std::uint32_t a =
+                                    z * gpuWidth + x;
+
+                                const std::uint32_t b =
+                                    z * gpuWidth + nextX;
+
+                                const std::uint32_t c =
+                                    nextZ * gpuWidth + x;
+
+                                const std::uint32_t diagonal =
+                                    nextZ * gpuWidth + nextX;
+
+                                indices.insert(
+                                    indices.end(),
+                                    {a, c, b, b, c, diagonal});
+                            }
+                        }
+
+                        const auto addSkirt =
+                            [&indices, stride](
+                                const std::uint32_t length,
+                                const auto& topIndex,
+                                const std::vector<std::uint32_t>& bottom)
+                            {
+                                for (std::uint32_t edge = 0U;
+                                     edge < length;
+                                     edge += stride)
+                                {
+                                    const std::uint32_t next =
+                                        (std::min)(
+                                            edge + stride,
+                                            length);
+
+                                    const std::uint32_t topA =
+                                        topIndex(edge);
+
+                                    const std::uint32_t topB =
+                                        topIndex(next);
+
+                                    indices.insert(
+                                        indices.end(),
+                                        {
+                                            topA,
+                                            bottom[edge],
+                                            topB,
+                                            topB,
+                                            bottom[edge],
+                                            bottom[next]
+                                        });
+                                }
+                            };
+
+                        addSkirt(
+                            endX - chunkX,
+                            [chunkZ, chunkX, gpuWidth](
+                                const std::uint32_t edge)
+                            {
+                                return
+                                    chunkZ * gpuWidth +
+                                    chunkX + edge;
+                            },
+                            skirtBottom[0]);
+
+                        addSkirt(
+                            endX - chunkX,
+                            [endZ, chunkX, gpuWidth](
+                                const std::uint32_t edge)
+                            {
+                                return
+                                    endZ * gpuWidth +
+                                    chunkX + edge;
+                            },
+                            skirtBottom[1]);
+
+                        addSkirt(
+                            endZ - chunkZ,
+                            [chunkZ, chunkX, gpuWidth](
+                                const std::uint32_t edge)
+                            {
+                                return
+                                    (chunkZ + edge) * gpuWidth +
+                                    chunkX;
+                            },
+                            skirtBottom[2]);
+
+                        addSkirt(
+                            endZ - chunkZ,
+                            [chunkZ, endX, gpuWidth](
+                                const std::uint32_t edge)
+                            {
+                                return
+                                    (chunkZ + edge) * gpuWidth +
+                                    endX;
+                            },
+                            skirtBottom[3]);
+
+                        chunk.count[lod] =
+                            static_cast<std::uint32_t>(
+                                indices.size()) -
+                            chunk.first[lod];
+                    }
+
+                    chunks_.push_back(chunk);
+                }
+            }
+
+            indexCount_ =
+                static_cast<std::uint32_t>(indices.size());
+
+            engine::graphics::BufferDesc bufferDescription{};
+            bufferDescription.byteSize =
+                vertices.size() * sizeof(Vertex);
+            bufferDescription.stride = sizeof(Vertex);
+            bufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Vertex;
+
+            const engine::graphics::BufferInitialData vertexInitialData
+            {
+                reinterpret_cast<const std::byte*>(vertices.data()),
+                bufferDescription.byteSize
+            };
+
+            engine::graphics::GraphicsResult graphicsResult =
+                device.CreateBuffer(
+                    bufferDescription,
+                    &vertexInitialData,
+                    vertexBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain vertex buffer",
+                    graphicsResult);
+
+                return false;
+            }
+
+            bufferDescription = {};
+            bufferDescription.byteSize =
+                indices.size() * sizeof(std::uint32_t);
+            bufferDescription.stride = sizeof(std::uint32_t);
+            bufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Index;
+            bufferDescription.indexFormat =
+                engine::graphics::IndexFormat::UInt32;
+
+            const engine::graphics::BufferInitialData indexInitialData
+            {
+                reinterpret_cast<const std::byte*>(indices.data()),
+                bufferDescription.byteSize
+            };
+
+            graphicsResult =
+                device.CreateBuffer(
+                    bufferDescription,
+                    &indexInitialData,
+                    indexBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain index buffer",
+                    graphicsResult);
+
+                return false;
+            }
+
+            Microsoft::WRL::ComPtr<ID3DBlob> vertexBytecode;
+            Microsoft::WRL::ComPtr<ID3DBlob> pixelBytecode;
+
+            if (!CompileEditorShaderFile(
+                    L"Terrain.hlsl",
+                    "VSMain",
+                    "vs_5_0",
+                    "LTS.Editor.Terrain",
+                    vertexBytecode) ||
+                !CompileEditorShaderFile(
+                    L"Terrain.hlsl",
+                    "PSMain",
+                    "ps_5_0",
+                    "LTS.Editor.Terrain",
+                    pixelBytecode))
+            {
+                return false;
+            }
+
+            engine::graphics::ShaderDesc shaderDescription{};
+            shaderDescription.stage =
+                engine::graphics::ShaderStage::Vertex;
+            shaderDescription.bytecode =
+            {
+                vertexBytecode->GetBufferPointer(),
+                vertexBytecode->GetBufferSize()
+            };
+
+            graphicsResult =
+                device.CreateShader(
+                    shaderDescription,
+                    vertexShader_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain vertex shader",
+                    graphicsResult);
+
+                return false;
+            }
+
+            shaderDescription.stage =
+                engine::graphics::ShaderStage::Pixel;
+            shaderDescription.bytecode =
+            {
+                pixelBytecode->GetBufferPointer(),
+                pixelBytecode->GetBufferSize()
+            };
+
+            graphicsResult =
+                device.CreateShader(
+                    shaderDescription,
+                    pixelShader_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain pixel shader",
+                    graphicsResult);
+
+                return false;
+            }
+
+            const std::array<engine::graphics::VertexElementDesc, 3U>
+                elements
+                {{
+                    {
+                        "POSITION",
+                        0U,
+                        engine::graphics::Format::R32G32B32Float,
+                        0U,
+                        0U,
+                        engine::graphics::VertexInputRate::PerVertex,
+                        0U
+                    },
+                    {
+                        "NORMAL",
+                        0U,
+                        engine::graphics::Format::R32G32B32Float,
+                        0U,
+                        12U,
+                        engine::graphics::VertexInputRate::PerVertex,
+                        0U
+                    },
+                    {
+                        "TEXCOORD",
+                        0U,
+                        engine::graphics::Format::R32G32Float,
+                        0U,
+                        24U,
+                        engine::graphics::VertexInputRate::PerVertex,
+                        0U
+                    }
+                }};
+
+            engine::graphics::InputLayoutDesc inputLayoutDescription{};
+            inputLayoutDescription.vertexShader = vertexShader_;
+            inputLayoutDescription.elements = elements.data();
+            inputLayoutDescription.elementCount = elements.size();
+
+            graphicsResult =
+                device.CreateInputLayout(
+                    inputLayoutDescription,
+                    inputLayout_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain input layout",
+                    graphicsResult);
+
+                return false;
+            }
+
+            bufferDescription = {};
+            bufferDescription.byteSize = sizeof(Constants);
+            bufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Constant;
+
+            graphicsResult =
+                device.CreateBuffer(
+                    bufferDescription,
+                    nullptr,
+                    constantBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain constant buffer",
+                    graphicsResult);
+
+                return false;
+            }
+
+            engine::graphics::GraphicsPipelineDesc pipelineDescription{};
+            pipelineDescription.vertexShader = vertexShader_;
+            pipelineDescription.pixelShader = pixelShader_;
+            pipelineDescription.inputLayout = inputLayout_;
+            pipelineDescription.topology =
+                engine::graphics::PrimitiveTopology::TriangleList;
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+            pipelineDescription.depthStencil.depthEnable = true;
+            pipelineDescription.depthStencil.depthWriteEnable = true;
+            pipelineDescription.depthStencil.depthFunction =
+                engine::graphics::ComparisonFunction::LessEqual;
+
+            graphicsResult =
+                device.CreateGraphicsPipeline(
+                    pipelineDescription,
+                    pipeline_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain graphics pipeline",
+                    graphicsResult);
+
+                return false;
+            }
+
+            Microsoft::WRL::ComPtr<ID3DBlob> brushVertexBytecode;
+            Microsoft::WRL::ComPtr<ID3DBlob> brushPixelBytecode;
+
+            if (!CompileEditorShaderFile(
+                    L"Grid.hlsl",
+                    "VSMain",
+                    "vs_5_0",
+                    "LTS.Editor.TerrainBrush",
+                    brushVertexBytecode) ||
+                !CompileEditorShaderFile(
+                    L"Grid.hlsl",
+                    "PSMain",
+                    "ps_5_0",
+                    "LTS.Editor.TerrainBrush",
+                    brushPixelBytecode))
+            {
+                return false;
+            }
+
+            shaderDescription = {};
+            shaderDescription.stage =
+                engine::graphics::ShaderStage::Vertex;
+            shaderDescription.bytecode =
+            {
+                brushVertexBytecode->GetBufferPointer(),
+                brushVertexBytecode->GetBufferSize()
+            };
+
+            graphicsResult =
+                device.CreateShader(
+                    shaderDescription,
+                    brushVertexShader_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush vertex shader",
+                    graphicsResult);
+
+                return false;
+            }
+
+            shaderDescription.stage =
+                engine::graphics::ShaderStage::Pixel;
+            shaderDescription.bytecode =
+            {
+                brushPixelBytecode->GetBufferPointer(),
+                brushPixelBytecode->GetBufferSize()
+            };
+
+            graphicsResult =
+                device.CreateShader(
+                    shaderDescription,
+                    brushPixelShader_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush pixel shader",
+                    graphicsResult);
+
+                return false;
+            }
+
+            const std::array<engine::graphics::VertexElementDesc, 2U>
+                brushElements
+                {{
+                    {
+                        "POSITION",
+                        0U,
+                        engine::graphics::Format::R32G32B32Float,
+                        0U,
+                        0U,
+                        engine::graphics::VertexInputRate::PerVertex,
+                        0U
+                    },
+                    {
+                        "COLOR",
+                        0U,
+                        engine::graphics::Format::R32G32B32A32Float,
+                        0U,
+                        12U,
+                        engine::graphics::VertexInputRate::PerVertex,
+                        0U
+                    }
+                }};
+
+            engine::graphics::InputLayoutDesc brushLayoutDescription{};
+            brushLayoutDescription.vertexShader = brushVertexShader_;
+            brushLayoutDescription.elements = brushElements.data();
+            brushLayoutDescription.elementCount = brushElements.size();
+
+            graphicsResult =
+                device.CreateInputLayout(
+                    brushLayoutDescription,
+                    brushInputLayout_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush input layout",
+                    graphicsResult);
+
+                return false;
+            }
+
+            bufferDescription = {};
+            bufferDescription.byteSize =
+                256U * sizeof(BrushVertex);
+            bufferDescription.stride = sizeof(BrushVertex);
+            bufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Vertex;
+
+            graphicsResult =
+                device.CreateBuffer(
+                    bufferDescription,
+                    nullptr,
+                    brushVertexBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush vertex buffer",
+                    graphicsResult);
+
+                return false;
+            }
+
+            bufferDescription = {};
+            bufferDescription.byteSize = sizeof(BrushConstants);
+            bufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Constant;
+
+            graphicsResult =
+                device.CreateBuffer(
+                    bufferDescription,
+                    nullptr,
+                    brushConstantBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush constant buffer",
+                    graphicsResult);
+
+                return false;
+            }
+
+            engine::graphics::GraphicsPipelineDesc brushPipelineDescription{};
+            brushPipelineDescription.vertexShader = brushVertexShader_;
+            brushPipelineDescription.pixelShader = brushPixelShader_;
+            brushPipelineDescription.inputLayout = brushInputLayout_;
+            brushPipelineDescription.topology =
+                engine::graphics::PrimitiveTopology::LineList;
+            brushPipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+            brushPipelineDescription.depthStencil.depthEnable = true;
+            brushPipelineDescription.depthStencil.depthWriteEnable = false;
+            brushPipelineDescription.depthStencil.depthFunction =
+                engine::graphics::ComparisonFunction::LessEqual;
+
+            graphicsResult =
+                device.CreateGraphicsPipeline(
+                    brushPipelineDescription,
+                    brushPipeline_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain brush graphics pipeline",
+                    graphicsResult);
+
+                return false;
+            }
+
+            if (terrain.masks.size() > MaximumTerrainMaskCount)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Terrain contains more than six splat masks.");
+
+                return false;
+            }
+
+            activeMaskCount_ = terrain.masks.size();
             maskWidth_ = terrain.splatWidth;
             maskHeight_ = terrain.splatHeight;
 
-            /*
-             * Реальные маски должны успешно декодироваться.
-             * Fallback используется только для свободных GPU slots.
-             */
             bool maskDimensionsInitialized = false;
 
-            for (std::size_t index = 0U;
-                 index < terrain.masks.size();
-                 ++index)
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < activeMaskCount_;
+                 ++maskIndex)
             {
                 std::uint32_t decodedWidth = 0U;
                 std::uint32_t decodedHeight = 0U;
 
                 if (!DecodeEmbeddedMask(
                         terrain,
-                        terrain.masks[index],
-                        maskPixels_[index],
+                        terrain.masks[maskIndex],
+                        maskPixels_[maskIndex],
                         decodedWidth,
                         decodedHeight) ||
                     decodedWidth == 0U ||
                     decodedHeight == 0U)
                 {
+                    std::string message =
+                        "Decode terrain splat mask ";
+                    message += std::to_string(maskIndex);
+                    message += " failed.";
+
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        message);
+
                     return false;
                 }
 
@@ -383,51 +1745,413 @@ namespace {
                     maskHeight_ = decodedHeight;
                     maskDimensionsInitialized = true;
                 }
-                else if (
-                    decodedWidth != maskWidth_ ||
-                    decodedHeight != maskHeight_)
+                else if (decodedWidth != maskWidth_ ||
+                         decodedHeight != maskHeight_)
                 {
-                    /*
-                     * Нельзя смешивать masks разных размеров.
-                     */
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        "Terrain splat masks use different dimensions.");
+
                     return false;
                 }
             }
 
-            if (maskWidth_ == 0U ||
-                maskHeight_ == 0U)
+            if (maskWidth_ == 0U || maskHeight_ == 0U)
             {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Terrain splat-mask dimensions are invalid.");
+
                 return false;
             }
 
-            const std::size_t maskByteCount =
-                static_cast<std::size_t>(
-                    maskWidth_) *
-                static_cast<std::size_t>(
-                    maskHeight_) *
-                4U;
-
-            for (std::size_t index =
-                     terrain.masks.size();
-                 index < maskPixels_.size();
-                 ++index)
+            for (std::size_t maskIndex = activeMaskCount_;
+                 maskIndex < maskPixels_.size();
+                 ++maskIndex)
             {
-                maskPixels_[index].assign(
-                    maskByteCount,
-                    std::byte{0});
+                maskPixels_[maskIndex].clear();
             }
 
             LoadPaintData(terrain.sourcePath);
-            for(std::size_t i=0;i<masks_.size();++i)
-                if(!CreateEditableMaskTexture(d,maskPixels_[i],maskWidth_,maskHeight_,masks_[i]))return false;
-            std::filesystem::path workspace=std::filesystem::current_path();if(workspace.filename()==L"game")workspace=workspace.parent_path();workspaceRoot_=workspace;for(std::size_t i=0;i<materials_.size();++i){bool created=false;if(i<terrain.layers.size()){materialPaths_[i]=terrain.layers[i].diffusePath;const auto logical=std::filesystem::u8path(materialPaths_[i]);created=CreateDdsFileTexture(d,workspace/L"game"/logical,materials_[i]);if(!created)created=CreateDdsFileTexture(d,workspace/L"bin"/logical,materials_[i]);}if(!created&&!CreateFallbackMask(d,materials_[i]))return false;}
-            engine::graphics::SamplerDesc samplerDesc{};samplerDesc.addressU=engine::graphics::TextureAddressMode::Wrap;samplerDesc.addressV=engine::graphics::TextureAddressMode::Wrap;if(engine::graphics::Failed(d.CreateSampler(samplerDesc,sampler_)))return false;terrainAsset_=std::move(terrain);loaded_=true;return true;
+
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < masks_.size();
+                 ++maskIndex)
+            {
+                const bool created =
+                    maskIndex < activeMaskCount_
+                        ? CreateEditableMaskTexture(
+                            device,
+                            maskPixels_[maskIndex],
+                            maskWidth_,
+                            maskHeight_,
+                            masks_[maskIndex])
+                        : CreateFallbackMask(
+                            device,
+                            masks_[maskIndex]);
+
+                if (!created)
+                {
+                    std::string message =
+                        "Create terrain mask texture ";
+                    message += std::to_string(maskIndex);
+                    message += " failed.";
+
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        message);
+
+                    return false;
+                }
+            }
+
+            std::filesystem::path workspace =
+                std::filesystem::current_path();
+
+            if (workspace.filename() == L"game")
+            {
+                workspace = workspace.parent_path();
+            }
+
+            workspaceRoot_ = workspace;
+
+            for (std::size_t layerIndex = 0U;
+                 layerIndex < materials_.size();
+                 ++layerIndex)
+            {
+                bool created = false;
+
+                if (layerIndex < terrain.layers.size())
+                {
+                    materialPaths_[layerIndex] =
+                        terrain.layers[layerIndex].diffusePath;
+
+                    const std::filesystem::path logicalPath =
+                        std::filesystem::u8path(
+                            materialPaths_[layerIndex]);
+
+                    created =
+                        CreateDdsFileTexture(
+                            device,
+                            workspace / L"game" / logicalPath,
+                            materials_[layerIndex]);
+
+                    if (!created)
+                    {
+                        created =
+                            CreateDdsFileTexture(
+                                device,
+                                workspace / L"bin" / logicalPath,
+                                materials_[layerIndex]);
+                    }
+
+                    if (!created &&
+                        !materialPaths_[layerIndex].empty())
+                    {
+                        std::string message =
+                            "Terrain layer texture was not found or could not be decoded: ";
+                        message += materialPaths_[layerIndex];
+
+                        engine::core::GetLogger().Write(
+                            engine::core::LogLevel::Warning,
+                            "LTS.Editor.Terrain",
+                            message);
+                    }
+                }
+
+                if (!created &&
+                    !CreateFallbackMaterial(
+                        device,
+                        materials_[layerIndex]))
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        "Create terrain fallback material texture failed.");
+
+                    return false;
+                }
+            }
+
+            engine::graphics::SamplerDesc samplerDescription{};
+            samplerDescription.addressU =
+                engine::graphics::TextureAddressMode::Wrap;
+            samplerDescription.addressV =
+                engine::graphics::TextureAddressMode::Wrap;
+
+            graphicsResult =
+                device.CreateSampler(
+                    samplerDescription,
+                    sampler_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain sampler",
+                    graphicsResult);
+
+                return false;
+            }
+
+            terrainAsset_ = std::move(terrain);
+            loaded_ = true;
+
+            return true;
         }
-        void Shutdown(engine::graphics::RenderDevice& d) noexcept{for(auto& texture:materials_){if(texture.IsValid())static_cast<void>(d.DestroyTexture(texture));texture={};}for(auto& mask:masks_){if(mask.IsValid())static_cast<void>(d.DestroyTexture(mask));mask={};}if(sampler_.IsValid())static_cast<void>(d.DestroySampler(sampler_));sampler_={};if(brushPipeline_.IsValid())static_cast<void>(d.DestroyGraphicsPipeline(brushPipeline_));if(brushLayout_.IsValid())static_cast<void>(d.DestroyInputLayout(brushLayout_));if(brushVertexShader_.IsValid())static_cast<void>(d.DestroyShader(brushVertexShader_));if(brushPixelShader_.IsValid())static_cast<void>(d.DestroyShader(brushPixelShader_));if(brushConstants_.IsValid())static_cast<void>(d.DestroyBuffer(brushConstants_));if(brushVertexBuffer_.IsValid())static_cast<void>(d.DestroyBuffer(brushVertexBuffer_));if(pipeline_.IsValid())static_cast<void>(d.DestroyGraphicsPipeline(pipeline_));if(layout_.IsValid())static_cast<void>(d.DestroyInputLayout(layout_));if(vertexShader_.IsValid())static_cast<void>(d.DestroyShader(vertexShader_));if(pixelShader_.IsValid())static_cast<void>(d.DestroyShader(pixelShader_));if(constants_.IsValid())static_cast<void>(d.DestroyBuffer(constants_));if(index_.IsValid())static_cast<void>(d.DestroyBuffer(index_));if(vertex_.IsValid())static_cast<void>(d.DestroyBuffer(vertex_));brushPipeline_={};brushLayout_={};brushVertexShader_={};brushPixelShader_={};brushConstants_={};brushVertexBuffer_={};pipeline_={};layout_={};vertexShader_={};pixelShader_={};constants_={};index_={};vertex_={};terrainAsset_={};for(auto& pixels:maskPixels_)pixels.clear();activePaintBefore_.clear();paintUndo_.clear();paintRedo_.clear();paintPath_.clear();maskWidth_=0U;maskHeight_=0U;paintStrokeActive_=false;indexCount_=0;loaded_=false;}
-        engine::graphics::GraphicsResult Render(engine::graphics::CommandContext& c,const EditorSceneDocument& document,const DirectX::XMFLOAT4X4& vp,const DirectX::XMFLOAT3& camera) noexcept
+
+        void Shutdown(
+            engine::graphics::RenderDevice& device) noexcept
         {
-            if(!loaded_)return engine::graphics::GraphicsResult::Success;const EditorSceneEntity* actor=nullptr;for(const auto& e:document.GetEntities())if(e.terrain.has_value()&&e.terrain->visible){actor=&e;break;}if(actor==nullptr)return engine::graphics::GraphicsResult::Success;
-            if(device_!=nullptr){for(std::size_t i=0;i<materials_.size()&&i<actor->terrain->layers.size();++i){const std::string& path=actor->terrain->layers[i].diffusePath;if(path==materialPaths_[i])continue;if(materials_[i].IsValid())static_cast<void>(device_->DestroyTexture(materials_[i]));materials_[i]={};const auto logical=std::filesystem::u8path(path);bool created=CreateDdsFileTexture(*device_,workspaceRoot_/L"game"/logical,materials_[i]);if(!created)created=CreateDdsFileTexture(*device_,workspaceRoot_/L"bin"/logical,materials_[i]);if(!created)static_cast<void>(CreateFallbackMask(*device_,materials_[i]));materialPaths_[i]=path;}}
+            for (engine::graphics::TextureHandle& texture : materials_)
+            {
+                if (texture.IsValid())
+                {
+                    static_cast<void>(
+                        device.DestroyTexture(texture));
+                }
+
+                texture = {};
+            }
+
+            for (engine::graphics::TextureHandle& mask : masks_)
+            {
+                if (mask.IsValid())
+                {
+                    static_cast<void>(
+                        device.DestroyTexture(mask));
+                }
+
+                mask = {};
+            }
+
+            if (sampler_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroySampler(sampler_));
+            }
+
+            if (brushPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        brushPipeline_));
+            }
+
+            if (brushInputLayout_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyInputLayout(
+                        brushInputLayout_));
+            }
+
+            if (brushVertexShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        brushVertexShader_));
+            }
+
+            if (brushPixelShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        brushPixelShader_));
+            }
+
+            if (brushConstantBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        brushConstantBuffer_));
+            }
+
+            if (brushVertexBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        brushVertexBuffer_));
+            }
+
+            if (pipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        pipeline_));
+            }
+
+            if (inputLayout_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyInputLayout(
+                        inputLayout_));
+            }
+
+            if (vertexShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        vertexShader_));
+            }
+
+            if (pixelShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        pixelShader_));
+            }
+
+            if (constantBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        constantBuffer_));
+            }
+
+            if (indexBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        indexBuffer_));
+            }
+
+            if (vertexBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        vertexBuffer_));
+            }
+
+            sampler_ = {};
+            brushPipeline_ = {};
+            brushInputLayout_ = {};
+            brushVertexShader_ = {};
+            brushPixelShader_ = {};
+            brushConstantBuffer_ = {};
+            brushVertexBuffer_ = {};
+            pipeline_ = {};
+            inputLayout_ = {};
+            vertexShader_ = {};
+            pixelShader_ = {};
+            constantBuffer_ = {};
+            indexBuffer_ = {};
+            vertexBuffer_ = {};
+
+            terrainAsset_ = {};
+            chunks_.clear();
+
+            for (std::vector<std::byte>& pixels : maskPixels_)
+            {
+                pixels.clear();
+            }
+
+            for (std::string& path : materialPaths_)
+            {
+                path.clear();
+            }
+
+            activePaintBefore_.clear();
+            paintUndo_.clear();
+            paintRedo_.clear();
+            paintPath_.clear();
+
+            activeMaskCount_ = 0U;
+            maskWidth_ = 0U;
+            maskHeight_ = 0U;
+            indexCount_ = 0U;
+            paintStrokeActive_ = false;
+            loaded_ = false;
+            device_ = nullptr;
+        }
+
+        [[nodiscard]]
+        engine::graphics::GraphicsResult Render(
+            engine::graphics::CommandContext& context,
+            const EditorSceneDocument& document,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
+        {
+            if (!loaded_)
+            {
+                return engine::graphics::GraphicsResult::Success;
+            }
+
+            const EditorSceneEntity* actor = nullptr;
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
+            {
+                if (entity.terrain.has_value() &&
+                    entity.terrain->visible)
+                {
+                    actor = &entity;
+                    break;
+                }
+            }
+
+            if (actor == nullptr)
+            {
+                return engine::graphics::GraphicsResult::Success;
+            }
+
+            if (device_ != nullptr)
+            {
+                const std::size_t layerCount =
+                    (std::min)(
+                        materials_.size(),
+                        actor->terrain->layers.size());
+
+                for (std::size_t layerIndex = 0U;
+                     layerIndex < layerCount;
+                     ++layerIndex)
+                {
+                    const std::string& path =
+                        actor->terrain->layers[layerIndex].diffusePath;
+
+                    if (path == materialPaths_[layerIndex])
+                    {
+                        continue;
+                    }
+
+                    if (materials_[layerIndex].IsValid())
+                    {
+                        static_cast<void>(
+                            device_->DestroyTexture(
+                                materials_[layerIndex]));
+                    }
+
+                    materials_[layerIndex] = {};
+
+                    const std::filesystem::path logicalPath =
+                        std::filesystem::u8path(path);
+
+                    bool created =
+                        CreateDdsFileTexture(
+                            *device_,
+                            workspaceRoot_ / L"game" / logicalPath,
+                            materials_[layerIndex]);
+
+                    if (!created)
+                    {
+                        created =
+                            CreateDdsFileTexture(
+                                *device_,
+                                workspaceRoot_ / L"bin" / logicalPath,
+                                materials_[layerIndex]);
+                    }
+
+                    if (!created)
+                    {
+                        static_cast<void>(
+                            CreateFallbackMaterial(
+                                *device_,
+                                materials_[layerIndex]));
+                    }
+
+                    materialPaths_[layerIndex] = path;
+                }
+            }
 
             Constants constants{};
 
@@ -452,17 +2176,13 @@ namespace {
                 &constants.world,
                 worldMatrix);
 
-            constants.viewProjection =
-                vp;
+            constants.viewProjection = viewProjection;
 
-            /*
-             * Все отсутствующие slots выключены.
-             */
-            for (std::size_t index = 0U;
-                 index < constants.placement.size();
-                 ++index)
+            for (std::size_t layerIndex = 0U;
+                 layerIndex < constants.placement.size();
+                 ++layerIndex)
             {
-                constants.placement[index] =
+                constants.placement[layerIndex] =
                 {
                     1.0F,
                     1.0F,
@@ -470,7 +2190,7 @@ namespace {
                     0.0F
                 };
 
-                constants.layerParameters[index] =
+                constants.layerParameters[layerIndex] =
                 {
                     0.0F,
                     0.0F,
@@ -492,16 +2212,16 @@ namespace {
                     sourceLayerCount,
                     constants.placement.size());
 
-            for (std::size_t index = 0U;
-                 index < layerCount;
-                 ++index)
+            for (std::size_t layerIndex = 0U;
+                 layerIndex < layerCount;
+                 ++layerIndex)
             {
                 if (hasSceneOverrides)
                 {
                     const auto& layer =
-                        actor->terrain->layers[index];
+                        actor->terrain->layers[layerIndex];
 
-                    constants.placement[index] =
+                    constants.placement[layerIndex] =
                     {
                         layer.scaleU,
                         layer.scaleV,
@@ -509,17 +2229,15 @@ namespace {
                         layer.offsetV
                     };
 
-                    constants.layerParameters[index].x =
-                        layer.visible
-                            ? 1.0F
-                            : 0.0F;
+                    constants.layerParameters[layerIndex].x =
+                        layer.visible ? 1.0F : 0.0F;
                 }
                 else
                 {
                     const auto& layer =
-                        terrainAsset_.layers[index];
+                        terrainAsset_.layers[layerIndex];
 
-                    constants.placement[index] =
+                    constants.placement[layerIndex] =
                     {
                         layer.scaleU,
                         layer.scaleV,
@@ -527,19 +2245,16 @@ namespace {
                         0.0F
                     };
 
-                    constants.layerParameters[index].x =
-                        1.0F;
+                    constants.layerParameters[layerIndex].x = 1.0F;
                 }
             }
 
             const float terrainWidth =
-                static_cast<float>(
-                    terrainAsset_.width - 1U) *
+                static_cast<float>(terrainAsset_.width - 1U) *
                 terrainAsset_.tileSize;
 
             const float terrainDepth =
-                static_cast<float>(
-                    terrainAsset_.height - 1U) *
+                static_cast<float>(terrainAsset_.height - 1U) *
                 terrainAsset_.tileSize;
 
             constants.terrainInfo =
@@ -550,135 +2265,479 @@ namespace {
                 0.0F
             };
 
-            auto r = c.UpdateBuffer(
-            constants_,
-            &constants,
-            sizeof(constants));
+            engine::graphics::GraphicsResult result =
+                context.UpdateBuffer(
+                    constantBuffer_,
+                    &constants,
+                    sizeof(constants));
 
-            if(engine::graphics::Failed(r))return r;r=c.SetGraphicsPipeline(pipeline_);if(engine::graphics::Failed(r))return r;engine::graphics::VertexBufferBinding vb{vertex_,sizeof(Vertex),0};engine::graphics::IndexBufferBinding ib{index_,0};r=c.SetVertexBuffers(0,&vb,1);if(!engine::graphics::Failed(r))r=c.SetIndexBuffer(ib);if(!engine::graphics::Failed(r))r=c.SetConstantBuffers(engine::graphics::ShaderStage::Vertex,0,&constants_,1);if(!engine::graphics::Failed(r))r=c.SetConstantBuffers(engine::graphics::ShaderStage::Pixel,0,&constants_,1);if(!engine::graphics::Failed(r))r=c.SetShaderResources(engine::graphics::ShaderStage::Pixel,0,masks_.data(),masks_.size());if(!engine::graphics::Failed(r))r=c.SetShaderResources(engine::graphics::ShaderStage::Pixel,6,materials_.data(),materials_.size());if(!engine::graphics::Failed(r))r=c.SetSamplers(engine::graphics::ShaderStage::Pixel,0,&sampler_,1);
-            if(!engine::graphics::Failed(r))
+            if (engine::graphics::Failed(result))
             {
-                const auto viewProjectionMatrix=DirectX::XMLoadFloat4x4(&vp);
-                const auto worldViewProjection=worldMatrix*viewProjectionMatrix;
-                for(const Chunk& chunk:chunks_)
+                return result;
+            }
+
+            result = context.SetGraphicsPipeline(pipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                return result;
+            }
+
+            const engine::graphics::VertexBufferBinding vertexBinding
+            {
+                vertexBuffer_,
+                sizeof(Vertex),
+                0U
+            };
+
+            const engine::graphics::IndexBufferBinding indexBinding
+            {
+                indexBuffer_,
+                0U
+            };
+
+            result =
+                context.SetVertexBuffers(
+                    0U,
+                    &vertexBinding,
+                    1U);
+
+            if (!engine::graphics::Failed(result))
+            {
+                result = context.SetIndexBuffer(indexBinding);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetConstantBuffers(
+                        engine::graphics::ShaderStage::Vertex,
+                        0U,
+                        &constantBuffer_,
+                        1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetConstantBuffers(
+                        engine::graphics::ShaderStage::Pixel,
+                        0U,
+                        &constantBuffer_,
+                        1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetShaderResources(
+                        engine::graphics::ShaderStage::Pixel,
+                        0U,
+                        masks_.data(),
+                        masks_.size());
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetShaderResources(
+                        engine::graphics::ShaderStage::Pixel,
+                        6U,
+                        materials_.data(),
+                        materials_.size());
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetSamplers(
+                        engine::graphics::ShaderStage::Pixel,
+                        0U,
+                        &sampler_,
+                        1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                const DirectX::XMMATRIX viewProjectionMatrix =
+                    DirectX::XMLoadFloat4x4(&viewProjection);
+
+                const DirectX::XMMATRIX worldViewProjection =
+                    worldMatrix * viewProjectionMatrix;
+
+                for (const Chunk& chunk : chunks_)
                 {
-                    if(!IsChunkVisible(chunk,worldViewProjection))continue;
-                    const auto localCenter=DirectX::XMLoadFloat3(&chunk.center);
+                    if (!IsChunkVisible(
+                            chunk,
+                            worldViewProjection))
+                    {
+                        continue;
+                    }
+
+                    const DirectX::XMVECTOR localCenter =
+                        DirectX::XMLoadFloat3(&chunk.center);
+
                     DirectX::XMFLOAT3 worldCenter{};
-                    DirectX::XMStoreFloat3(&worldCenter,DirectX::XMVector3TransformCoord(localCenter,worldMatrix));
-                    const float dx=worldCenter.x-camera.x,dy=worldCenter.y-camera.y,dz=worldCenter.z-camera.z;
-                    const float distanceSquared=dx*dx+dy*dy+dz*dz;
-                    const std::size_t lod=distanceSquared<1200.0F*1200.0F?0U:(distanceSquared<2800.0F*2800.0F?1U:2U);
-                    r=c.DrawIndexed(chunk.count[lod],chunk.first[lod],0);
-                    if(engine::graphics::Failed(r))break;
+
+                    DirectX::XMStoreFloat3(
+                        &worldCenter,
+                        DirectX::XMVector3TransformCoord(
+                            localCenter,
+                            worldMatrix));
+
+                    const float deltaX =
+                        worldCenter.x - cameraPosition.x;
+                    const float deltaY =
+                        worldCenter.y - cameraPosition.y;
+                    const float deltaZ =
+                        worldCenter.z - cameraPosition.z;
+
+                    const float distanceSquared =
+                        deltaX * deltaX +
+                        deltaY * deltaY +
+                        deltaZ * deltaZ;
+
+                    const std::size_t lod =
+                        distanceSquared < 1200.0F * 1200.0F
+                            ? 0U
+                            : distanceSquared < 2800.0F * 2800.0F
+                                ? 1U
+                                : 2U;
+
+                    result =
+                        context.DrawIndexed(
+                            chunk.count[lod],
+                            chunk.first[lod],
+                            0);
+
+                    if (engine::graphics::Failed(result))
+                    {
+                        break;
+                    }
                 }
             }
-            static_cast<void>(c.UnbindShaderResources(engine::graphics::ShaderStage::Pixel,0,24));c.UnbindIndexBuffer();c.UnbindGraphicsPipeline();return r;
+
+            static_cast<void>(
+                context.UnbindShaderResources(
+                    engine::graphics::ShaderStage::Pixel,
+                    0U,
+                    24U));
+
+            context.UnbindIndexBuffer();
+            context.UnbindGraphicsPipeline();
+
+            return result;
         }
+
+        [[nodiscard]]
         engine::graphics::GraphicsResult RenderBrush(
             engine::graphics::CommandContext& context,
             const EditorSceneDocument& document,
             const DirectX::XMFLOAT4X4& viewProjection,
-            const float worldX,const float worldZ,const float radius,
-            const bool erase)noexcept
+            const float worldX,
+            const float worldZ,
+            const float radius,
+            const bool erase) noexcept
         {
-            if(!loaded_||!brushPipeline_.IsValid()||radius<=0.0F)
-                return engine::graphics::GraphicsResult::Success;
-            constexpr std::uint32_t segments=96U;
-            std::array<BrushVertex,segments*2U> vertices{};
-            const DirectX::XMFLOAT4 color=erase?
-                DirectX::XMFLOAT4{0.95F,0.18F,0.12F,1.0F}:
-                DirectX::XMFLOAT4{1.0F,0.62F,0.08F,1.0F};
-            std::uint32_t vertexCount=0U;
-            for(std::uint32_t segment=0;segment<segments;++segment)
+            if (!loaded_ ||
+                !brushPipeline_.IsValid() ||
+                radius <= 0.0F)
             {
-                const float angle0=DirectX::XM_2PI*static_cast<float>(segment)/segments;
-                const float angle1=DirectX::XM_2PI*static_cast<float>(segment+1U)/segments;
-                const float x0=worldX+std::cos(angle0)*radius,z0=worldZ+std::sin(angle0)*radius;
-                const float x1=worldX+std::cos(angle1)*radius,z1=worldZ+std::sin(angle1)*radius;
-                float y0=0.0F,y1=0.0F;
-                if(!TryGetSurfaceHeight(document,x0,z0,y0)||!TryGetSurfaceHeight(document,x1,z1,y1))
-                    continue;
-                vertices[vertexCount++]={{x0,y0+0.35F,z0},color};
-                vertices[vertexCount++]={{x1,y1+0.35F,z1},color};
+                return engine::graphics::GraphicsResult::Success;
             }
-            if(vertexCount==0U)return engine::graphics::GraphicsResult::Success;
-            BrushConstants constants{viewProjection};
-            auto result=context.UpdateBuffer(brushVertexBuffer_,vertices.data(),sizeof(vertices));
-            if(engine::graphics::Failed(result))return result;
-            result=context.UpdateBuffer(brushConstants_,&constants,sizeof(constants));
-            if(engine::graphics::Failed(result))return result;
-            result=context.SetGraphicsPipeline(brushPipeline_);
-            engine::graphics::VertexBufferBinding binding{brushVertexBuffer_,sizeof(BrushVertex),0U};
-            if(!engine::graphics::Failed(result))result=context.SetVertexBuffers(0U,&binding,1U);
-            if(!engine::graphics::Failed(result))result=context.SetConstantBuffers(
-                engine::graphics::ShaderStage::Vertex,0U,&brushConstants_,1U);
-            if(!engine::graphics::Failed(result))result=context.Draw(vertexCount,0U);
-            static_cast<void>(context.UnbindConstantBuffers(engine::graphics::ShaderStage::Vertex,0U,1U));
-            context.UnbindGraphicsPipeline();return result;
+
+            constexpr std::uint32_t segmentCount = 96U;
+
+            std::array<BrushVertex, segmentCount * 2U> vertices{};
+
+            const DirectX::XMFLOAT4 color =
+                erase
+                    ? DirectX::XMFLOAT4
+                        {0.95F, 0.18F, 0.12F, 1.0F}
+                    : DirectX::XMFLOAT4
+                        {1.0F, 0.62F, 0.08F, 1.0F};
+
+            std::uint32_t vertexCount = 0U;
+
+            for (std::uint32_t segment = 0U;
+                 segment < segmentCount;
+                 ++segment)
+            {
+                const float angle0 =
+                    DirectX::XM_2PI *
+                    static_cast<float>(segment) /
+                    static_cast<float>(segmentCount);
+
+                const float angle1 =
+                    DirectX::XM_2PI *
+                    static_cast<float>(segment + 1U) /
+                    static_cast<float>(segmentCount);
+
+                const float x0 =
+                    worldX + std::cos(angle0) * radius;
+                const float z0 =
+                    worldZ + std::sin(angle0) * radius;
+                const float x1 =
+                    worldX + std::cos(angle1) * radius;
+                const float z1 =
+                    worldZ + std::sin(angle1) * radius;
+
+                float y0 = 0.0F;
+                float y1 = 0.0F;
+
+                if (!TryGetSurfaceHeight(
+                        document,
+                        x0,
+                        z0,
+                        y0) ||
+                    !TryGetSurfaceHeight(
+                        document,
+                        x1,
+                        z1,
+                        y1))
+                {
+                    continue;
+                }
+
+                vertices[vertexCount++] =
+                {
+                    {x0, y0 + 0.35F, z0},
+                    color
+                };
+
+                vertices[vertexCount++] =
+                {
+                    {x1, y1 + 0.35F, z1},
+                    color
+                };
+            }
+
+            if (vertexCount == 0U)
+            {
+                return engine::graphics::GraphicsResult::Success;
+            }
+
+            const BrushConstants constants{viewProjection};
+
+            engine::graphics::GraphicsResult result =
+                context.UpdateBuffer(
+                    brushVertexBuffer_,
+                    vertices.data(),
+                    static_cast<std::size_t>(vertexCount) *
+                        sizeof(BrushVertex));
+
+            if (engine::graphics::Failed(result))
+            {
+                return result;
+            }
+
+            result =
+                context.UpdateBuffer(
+                    brushConstantBuffer_,
+                    &constants,
+                    sizeof(constants));
+
+            if (engine::graphics::Failed(result))
+            {
+                return result;
+            }
+
+            result =
+                context.SetGraphicsPipeline(
+                    brushPipeline_);
+
+            const engine::graphics::VertexBufferBinding binding
+            {
+                brushVertexBuffer_,
+                sizeof(BrushVertex),
+                0U
+            };
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetVertexBuffers(
+                        0U,
+                        &binding,
+                        1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    context.SetConstantBuffers(
+                        engine::graphics::ShaderStage::Vertex,
+                        0U,
+                        &brushConstantBuffer_,
+                        1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result = context.Draw(vertexCount, 0U);
+            }
+
+            static_cast<void>(
+                context.UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    0U,
+                    1U));
+
+            context.UnbindGraphicsPipeline();
+
+            return result;
         }
-        bool LoadTerrain(engine::graphics::RenderDevice& d,const std::filesystem::path& path)noexcept{Shutdown(d);terrainPath_=path;const bool loaded=Initialize(d);engine::core::GetLogger().Write(loaded?engine::core::LogLevel::Information:engine::core::LogLevel::Error,"LTS.Editor.Terrain",loaded?(path.empty()?"Terrain cleared.":"Terrain GPU resources loaded."):"Failed to load terrain GPU resources.");return loaded;}
-        [[nodiscard]]bool HasTerrain()const noexcept{return loaded_;}
-        [[nodiscard]] bool TryGetSurfaceHeight(
+
+        [[nodiscard]]
+        bool LoadTerrain(
+            engine::graphics::RenderDevice& device,
+            const std::filesystem::path& path) noexcept
+        {
+            Shutdown(device);
+            terrainPath_ = path;
+
+            const bool loaded = Initialize(device);
+
+            engine::core::GetLogger().Write(
+                loaded
+                    ? engine::core::LogLevel::Information
+                    : engine::core::LogLevel::Error,
+                "LTS.Editor.Terrain",
+                loaded
+                    ? path.empty()
+                        ? "Terrain cleared."
+                        : "Terrain GPU resources loaded."
+                    : "Failed to load terrain GPU resources.");
+
+            return loaded;
+        }
+
+        [[nodiscard]]
+        bool HasTerrain() const noexcept
+        {
+            return loaded_;
+        }
+
+        [[nodiscard]]
+        bool TryGetSurfaceHeight(
             const EditorSceneDocument& document,
             const float worldX,
             const float worldZ,
             float& worldHeight) const noexcept
         {
-            if (!loaded_ || !terrainAsset_.IsValid()) return false;
+            if (!loaded_ || !terrainAsset_.IsValid())
+            {
+                return false;
+            }
 
             const EditorSceneEntity* actor = nullptr;
-            for (const auto& entity : document.GetEntities())
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
             {
-                if (entity.terrain.has_value() && entity.terrain->visible)
+                if (entity.terrain.has_value() &&
+                    entity.terrain->visible)
                 {
                     actor = &entity;
                     break;
                 }
             }
+
             if (actor == nullptr ||
                 std::abs(actor->transform.scale[0]) < 0.00001F ||
                 std::abs(actor->transform.scale[2]) < 0.00001F)
+            {
                 return false;
+            }
 
-            // Terrain editing currently keeps the heightfield aligned to world X/Z.
-            // Scale and translation are still respected by placement.
+            // Terrain editing currently keeps the heightfield aligned
+            // to world X/Z. Scale and translation are respected.
             const float localX =
-                (worldX - actor->transform.position[0]) / actor->transform.scale[0];
+                (worldX - actor->transform.position[0]) /
+                actor->transform.scale[0];
+
             const float localZ =
-                (worldZ - actor->transform.position[2]) / actor->transform.scale[2];
-            const float sampleX = localX / terrainAsset_.tileSize;
-            const float sampleZ = localZ / terrainAsset_.tileSize;
-            if (sampleX < 0.0F || sampleZ < 0.0F ||
-                sampleX > static_cast<float>(terrainAsset_.width - 1U) ||
-                sampleZ > static_cast<float>(terrainAsset_.height - 1U))
+                (worldZ - actor->transform.position[2]) /
+                actor->transform.scale[2];
+
+            const float sampleX =
+                localX / terrainAsset_.tileSize;
+
+            const float sampleZ =
+                localZ / terrainAsset_.tileSize;
+
+            if (sampleX < 0.0F ||
+                sampleZ < 0.0F ||
+                sampleX >
+                    static_cast<float>(terrainAsset_.width - 1U) ||
+                sampleZ >
+                    static_cast<float>(terrainAsset_.height - 1U))
+            {
                 return false;
+            }
 
-            const auto x0 = static_cast<std::uint32_t>(std::floor(sampleX));
-            const auto z0 = static_cast<std::uint32_t>(std::floor(sampleZ));
-            const auto x1 = (std::min)(x0 + 1U, terrainAsset_.width - 1U);
-            const auto z1 = (std::min)(z0 + 1U, terrainAsset_.height - 1U);
-            const float tx = sampleX - static_cast<float>(x0);
-            const float tz = sampleZ - static_cast<float>(z0);
-            const float h0 = terrainAsset_.GetHeight(x0, z0) * (1.0F - tx) +
-                terrainAsset_.GetHeight(x1, z0) * tx;
-            const float h1 = terrainAsset_.GetHeight(x0, z1) * (1.0F - tx) +
-                terrainAsset_.GetHeight(x1, z1) * tx;
-            const float localHeight = h0 * (1.0F - tz) + h1 * tz;
-            worldHeight = actor->transform.position[1] +
+            const std::uint32_t x0 =
+                static_cast<std::uint32_t>(
+                    std::floor(sampleX));
+
+            const std::uint32_t z0 =
+                static_cast<std::uint32_t>(
+                    std::floor(sampleZ));
+
+            const std::uint32_t x1 =
+                (std::min)(
+                    x0 + 1U,
+                    terrainAsset_.width - 1U);
+
+            const std::uint32_t z1 =
+                (std::min)(
+                    z0 + 1U,
+                    terrainAsset_.height - 1U);
+
+            const float blendX =
+                sampleX - static_cast<float>(x0);
+
+            const float blendZ =
+                sampleZ - static_cast<float>(z0);
+
+            const float height0 =
+                terrainAsset_.GetHeight(x0, z0) *
+                    (1.0F - blendX) +
+                terrainAsset_.GetHeight(x1, z0) *
+                    blendX;
+
+            const float height1 =
+                terrainAsset_.GetHeight(x0, z1) *
+                    (1.0F - blendX) +
+                terrainAsset_.GetHeight(x1, z1) *
+                    blendX;
+
+            const float localHeight =
+                height0 * (1.0F - blendZ) +
+                height1 * blendZ;
+
+            worldHeight =
+                actor->transform.position[1] +
                 localHeight * actor->transform.scale[1];
+
             return true;
         }
 
-        [[nodiscard]] bool BeginPaintStroke() noexcept
+        [[nodiscard]]
+        bool BeginPaintStroke() noexcept
         {
-            if(!loaded_||paintStrokeActive_)return false;
+            if (!loaded_ || paintStrokeActive_)
+            {
+                return false;
+            }
+
             activePaintBefore_.clear();
-            paintStrokeActive_=true;
+            paintStrokeActive_ = true;
+
             return true;
         }
 
-        [[nodiscard]] bool Paint(
+        [[nodiscard]]
+        bool Paint(
             const EditorSceneDocument& document,
             const float worldX,
             const float worldZ,
@@ -688,204 +2747,904 @@ namespace {
             const std::size_t layerIndex,
             const bool erase) noexcept
         {
-            if(!paintStrokeActive_||layerIndex>=18U||maskWidth_==0U||maskHeight_==0U)return false;
-            const EditorSceneEntity* actor=nullptr;
-            for(const auto& entity:document.GetEntities())
-                if(entity.terrain.has_value()&&entity.terrain->visible){actor=&entity;break;}
-            if(actor==nullptr||std::abs(actor->transform.scale[0])<0.00001F||
-               std::abs(actor->transform.scale[2])<0.00001F)return false;
-
-            const float terrainWidth=(terrainAsset_.width-1U)*terrainAsset_.tileSize*actor->transform.scale[0];
-            const float terrainDepth=(terrainAsset_.height-1U)*terrainAsset_.tileSize*actor->transform.scale[2];
-            const float u=(worldX-actor->transform.position[0])/terrainWidth;
-            const float v=(worldZ-actor->transform.position[2])/terrainDepth;
-            if(u<0.0F||v<0.0F||u>1.0F||v>1.0F)return false;
-            const float centerX=u*static_cast<float>(maskWidth_-1U);
-            const float centerY=v*static_cast<float>(maskHeight_-1U);
-            const float pixelsPerWorldX=static_cast<float>(maskWidth_-1U)/std::abs(terrainWidth);
-            const float pixelsPerWorldZ=static_cast<float>(maskHeight_-1U)/std::abs(terrainDepth);
-            const float radiusPixels=(std::max)(1.0F,radius*(pixelsPerWorldX+pixelsPerWorldZ)*0.5F);
-            const int minimumX=(std::max)(0,static_cast<int>(std::floor(centerX-radiusPixels)));
-            const int maximumX=(std::min)(static_cast<int>(maskWidth_-1U),static_cast<int>(std::ceil(centerX+radiusPixels)));
-            const int minimumY=(std::max)(0,static_cast<int>(std::floor(centerY-radiusPixels)));
-            const int maximumY=(std::min)(static_cast<int>(maskHeight_-1U),static_cast<int>(std::ceil(centerY+radiusPixels)));
-            bool changed=false;
-            for(int y=minimumY;y<=maximumY;++y)for(int x=minimumX;x<=maximumX;++x)
+            if (!paintStrokeActive_ ||
+                layerIndex >= terrainAsset_.layers.size() ||
+                maskWidth_ == 0U ||
+                maskHeight_ == 0U)
             {
-                const float dx=static_cast<float>(x)-centerX,dy=static_cast<float>(y)-centerY;
-                const float normalizedDistance=std::sqrt(dx*dx+dy*dy)/radiusPixels;
-                if(normalizedDistance>1.0F)continue;
-                const float hardPart=std::clamp(1.0F-falloff,0.0F,1.0F);
-                const float influence=normalizedDistance<=hardPart?1.0F:
-                    1.0F-(normalizedDistance-hardPart)/(std::max)(falloff,0.0001F);
-                const float amount=std::clamp(strength,0.0F,1.0F)*std::clamp(influence,0.0F,1.0F);
-                if(amount<=0.0F)continue;
-                const auto pixel=static_cast<std::uint32_t>(y)*maskWidth_+static_cast<std::uint32_t>(x);
-                auto weights=ReadWeights(pixel);
-                activePaintBefore_.try_emplace(pixel,weights);
-                if(layerIndex==0U)
-                {
-                    for(auto& weight:weights)
-                        weight=static_cast<std::uint8_t>(std::lround(weight*(1.0F-amount)));
-                }
-                else
-                {
-                    const std::size_t selected=layerIndex-1U;
-                    const float target=erase?0.0F:255.0F;
-                    const auto newSelected=static_cast<std::uint8_t>(std::clamp(
-                        std::lround(weights[selected]+(target-weights[selected])*amount),0L,255L));
-                    weights[selected]=newSelected;
-                    if(!erase)
-                    {
-                        std::uint32_t otherTotal=0U;
-                        for(std::size_t i=0;i<weights.size();++i)if(i!=selected)otherTotal+=weights[i];
-                        const std::uint32_t remaining=255U-newSelected;
-                        if(otherTotal>remaining&&otherTotal>0U)
-                            for(std::size_t i=0;i<weights.size();++i)if(i!=selected)
-                                weights[i]=static_cast<std::uint8_t>(weights[i]*remaining/otherTotal);
-                    }
-                }
-                WriteWeights(pixel,weights);changed=true;
+                return false;
             }
-            if(changed)UploadMaskRegion(
-                static_cast<std::uint32_t>(minimumX),static_cast<std::uint32_t>(minimumY),
-                static_cast<std::uint32_t>(maximumX+1),static_cast<std::uint32_t>(maximumY+1));
+
+            if (layerIndex > 0U &&
+                (layerIndex - 1U) / 3U >= activeMaskCount_)
+            {
+                return false;
+            }
+
+            const EditorSceneEntity* actor = nullptr;
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
+            {
+                if (entity.terrain.has_value() &&
+                    entity.terrain->visible)
+                {
+                    actor = &entity;
+                    break;
+                }
+            }
+
+            if (actor == nullptr ||
+                std::abs(actor->transform.scale[0]) < 0.00001F ||
+                std::abs(actor->transform.scale[2]) < 0.00001F)
+            {
+                return false;
+            }
+
+            const float terrainWidth =
+                static_cast<float>(terrainAsset_.width - 1U) *
+                terrainAsset_.tileSize *
+                actor->transform.scale[0];
+
+            const float terrainDepth =
+                static_cast<float>(terrainAsset_.height - 1U) *
+                terrainAsset_.tileSize *
+                actor->transform.scale[2];
+
+            const float u =
+                (worldX - actor->transform.position[0]) /
+                terrainWidth;
+
+            const float v =
+                (worldZ - actor->transform.position[2]) /
+                terrainDepth;
+
+            if (u < 0.0F ||
+                v < 0.0F ||
+                u > 1.0F ||
+                v > 1.0F)
+            {
+                return false;
+            }
+
+            const float centerX =
+                u * static_cast<float>(maskWidth_ - 1U);
+
+            const float centerY =
+                v * static_cast<float>(maskHeight_ - 1U);
+
+            const float pixelsPerWorldX =
+                static_cast<float>(maskWidth_ - 1U) /
+                std::abs(terrainWidth);
+
+            const float pixelsPerWorldZ =
+                static_cast<float>(maskHeight_ - 1U) /
+                std::abs(terrainDepth);
+
+            const float radiusPixels =
+                (std::max)(
+                    1.0F,
+                    radius *
+                        (pixelsPerWorldX + pixelsPerWorldZ) *
+                        0.5F);
+
+            const int minimumX =
+                (std::max)(
+                    0,
+                    static_cast<int>(
+                        std::floor(centerX - radiusPixels)));
+
+            const int maximumX =
+                (std::min)(
+                    static_cast<int>(maskWidth_ - 1U),
+                    static_cast<int>(
+                        std::ceil(centerX + radiusPixels)));
+
+            const int minimumY =
+                (std::max)(
+                    0,
+                    static_cast<int>(
+                        std::floor(centerY - radiusPixels)));
+
+            const int maximumY =
+                (std::min)(
+                    static_cast<int>(maskHeight_ - 1U),
+                    static_cast<int>(
+                        std::ceil(centerY + radiusPixels)));
+
+            bool changed = false;
+
+            for (int y = minimumY; y <= maximumY; ++y)
+            {
+                for (int x = minimumX; x <= maximumX; ++x)
+                {
+                    const float deltaX =
+                        static_cast<float>(x) - centerX;
+                    const float deltaY =
+                        static_cast<float>(y) - centerY;
+
+                    const float normalizedDistance =
+                        std::sqrt(
+                            deltaX * deltaX +
+                            deltaY * deltaY) /
+                        radiusPixels;
+
+                    if (normalizedDistance > 1.0F)
+                    {
+                        continue;
+                    }
+
+                    const float hardPart =
+                        std::clamp(
+                            1.0F - falloff,
+                            0.0F,
+                            1.0F);
+
+                    const float influence =
+                        normalizedDistance <= hardPart
+                            ? 1.0F
+                            : 1.0F -
+                                (normalizedDistance - hardPart) /
+                                (std::max)(falloff, 0.0001F);
+
+                    const float amount =
+                        std::clamp(strength, 0.0F, 1.0F) *
+                        std::clamp(influence, 0.0F, 1.0F);
+
+                    if (amount <= 0.0F)
+                    {
+                        continue;
+                    }
+
+                    const std::uint32_t pixel =
+                        static_cast<std::uint32_t>(y) *
+                            maskWidth_ +
+                        static_cast<std::uint32_t>(x);
+
+                    auto weights = ReadWeights(pixel);
+
+                    activePaintBefore_.try_emplace(
+                        pixel,
+                        weights);
+
+                    if (layerIndex == 0U)
+                    {
+                        for (std::uint8_t& weight : weights)
+                        {
+                            weight =
+                                static_cast<std::uint8_t>(
+                                    std::lround(
+                                        static_cast<float>(weight) *
+                                        (1.0F - amount)));
+                        }
+                    }
+                    else
+                    {
+                        const std::size_t selectedLayer =
+                            layerIndex - 1U;
+
+                        const float target =
+                            erase ? 0.0F : 255.0F;
+
+                        const auto newSelectedWeight =
+                            static_cast<std::uint8_t>(
+                                std::clamp(
+                                    std::lround(
+                                        static_cast<float>(
+                                            weights[selectedLayer]) +
+                                        (target -
+                                         static_cast<float>(
+                                             weights[selectedLayer])) *
+                                            amount),
+                                    0L,
+                                    255L));
+
+                        weights[selectedLayer] =
+                            newSelectedWeight;
+
+                        if (!erase)
+                        {
+                            std::uint32_t otherTotal = 0U;
+
+                            for (std::size_t index = 0U;
+                                 index < weights.size();
+                                 ++index)
+                            {
+                                if (index != selectedLayer)
+                                {
+                                    otherTotal += weights[index];
+                                }
+                            }
+
+                            const std::uint32_t remaining =
+                                255U - newSelectedWeight;
+
+                            if (otherTotal > remaining &&
+                                otherTotal > 0U)
+                            {
+                                for (std::size_t index = 0U;
+                                     index < weights.size();
+                                     ++index)
+                                {
+                                    if (index != selectedLayer)
+                                    {
+                                        weights[index] =
+                                            static_cast<std::uint8_t>(
+                                                static_cast<std::uint32_t>(
+                                                    weights[index]) *
+                                                remaining /
+                                                otherTotal);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    WriteWeights(pixel, weights);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                UploadMaskRegion(
+                    static_cast<std::uint32_t>(minimumX),
+                    static_cast<std::uint32_t>(minimumY),
+                    static_cast<std::uint32_t>(maximumX + 1),
+                    static_cast<std::uint32_t>(maximumY + 1));
+            }
+
             return changed;
         }
 
-        [[nodiscard]] bool EndPaintStroke() noexcept
+        [[nodiscard]]
+        bool EndPaintStroke() noexcept
         {
-            if(!paintStrokeActive_)return false;
-            paintStrokeActive_=false;
-            PaintCommand command;command.reserve(activePaintBefore_.size());
-            for(const auto& [pixel,before]:activePaintBefore_)
+            if (!paintStrokeActive_)
             {
-                const auto after=ReadWeights(pixel);
-                if(before!=after)command.push_back({pixel,before,after});
+                return false;
             }
+
+            paintStrokeActive_ = false;
+
+            PaintCommand command;
+            command.reserve(activePaintBefore_.size());
+
+            for (const auto& [pixel, before] : activePaintBefore_)
+            {
+                const auto after = ReadWeights(pixel);
+
+                if (before != after)
+                {
+                    command.push_back(
+                        {pixel, before, after});
+                }
+            }
+
             activePaintBefore_.clear();
-            if(command.empty())return false;
+
+            if (command.empty())
+            {
+                return false;
+            }
+
             paintUndo_.push_back(std::move(command));
-            if(paintUndo_.size()>32U)paintUndo_.erase(paintUndo_.begin());
+
+            if (paintUndo_.size() > MaximumPaintHistorySize)
+            {
+                paintUndo_.erase(paintUndo_.begin());
+            }
+
             paintRedo_.clear();
             SavePaintData();
+
             return true;
         }
 
-        [[nodiscard]] bool UndoPaint() noexcept
+        [[nodiscard]]
+        bool UndoPaint() noexcept
         {
-            if(paintUndo_.empty())return false;
-            auto command=std::move(paintUndo_.back());paintUndo_.pop_back();
-            for(const auto& change:command)WriteWeights(change.pixel,change.before);
-            paintRedo_.push_back(std::move(command));RefreshMaskTextures();SavePaintData();return true;
-        }
-
-        [[nodiscard]] bool RedoPaint() noexcept
-        {
-            if(paintRedo_.empty())return false;
-            auto command=std::move(paintRedo_.back());paintRedo_.pop_back();
-            for(const auto& change:command)WriteWeights(change.pixel,change.after);
-            paintUndo_.push_back(std::move(command));RefreshMaskTextures();SavePaintData();return true;
-        }
-
-        [[nodiscard]] bool CanUndoPaint()const noexcept{return !paintUndo_.empty();}
-        [[nodiscard]] bool CanRedoPaint()const noexcept{return !paintRedo_.empty();}
-
-        [[nodiscard]] std::array<std::uint8_t,17> ReadWeights(const std::uint32_t pixel)const noexcept
-        {
-            std::array<std::uint8_t,17> weights{};
-            for(std::size_t layer=0;layer<weights.size();++layer)
+            if (paintUndo_.empty())
             {
-                const std::size_t mask=layer/3U,channel=layer%3U;
-                weights[layer]=std::to_integer<std::uint8_t>(maskPixels_[mask][static_cast<std::size_t>(pixel)*4U+channel]);
+                return false;
             }
+
+            PaintCommand command =
+                std::move(paintUndo_.back());
+
+            paintUndo_.pop_back();
+
+            for (const PaintChange& change : command)
+            {
+                WriteWeights(change.pixel, change.before);
+            }
+
+            paintRedo_.push_back(std::move(command));
+            RefreshMaskTextures();
+            SavePaintData();
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool RedoPaint() noexcept
+        {
+            if (paintRedo_.empty())
+            {
+                return false;
+            }
+
+            PaintCommand command =
+                std::move(paintRedo_.back());
+
+            paintRedo_.pop_back();
+
+            for (const PaintChange& change : command)
+            {
+                WriteWeights(change.pixel, change.after);
+            }
+
+            paintUndo_.push_back(std::move(command));
+            RefreshMaskTextures();
+            SavePaintData();
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool CanUndoPaint() const noexcept
+        {
+            return !paintUndo_.empty();
+        }
+
+        [[nodiscard]]
+        bool CanRedoPaint() const noexcept
+        {
+            return !paintRedo_.empty();
+        }
+
+    private:
+        [[nodiscard]]
+        std::array<std::uint8_t, MaximumPaintedLayerCount>
+            ReadWeights(
+                const std::uint32_t pixel) const noexcept
+        {
+            std::array<std::uint8_t, MaximumPaintedLayerCount>
+                weights{};
+
+            const std::size_t byteOffset =
+                static_cast<std::size_t>(pixel) * 4U;
+
+            for (std::size_t layer = 0U;
+                 layer < weights.size();
+                 ++layer)
+            {
+                const std::size_t maskIndex = layer / 3U;
+                const std::size_t channel = layer % 3U;
+
+                if (maskIndex >= activeMaskCount_ ||
+                    byteOffset + channel >=
+                        maskPixels_[maskIndex].size())
+                {
+                    weights[layer] = 0U;
+                    continue;
+                }
+
+                weights[layer] =
+                    std::to_integer<std::uint8_t>(
+                        maskPixels_[maskIndex][
+                            byteOffset + channel]);
+            }
+
             return weights;
         }
 
-        void WriteWeights(const std::uint32_t pixel,const std::array<std::uint8_t,17>& weights)noexcept
+        void WriteWeights(
+            const std::uint32_t pixel,
+            const std::array<
+                std::uint8_t,
+                MaximumPaintedLayerCount>& weights) noexcept
         {
-            for(std::size_t layer=0;layer<weights.size();++layer)
+            const std::size_t byteOffset =
+                static_cast<std::size_t>(pixel) * 4U;
+
+            for (std::size_t layer = 0U;
+                 layer < weights.size();
+                 ++layer)
             {
-                const std::size_t mask=layer/3U,channel=layer%3U;
-                maskPixels_[mask][static_cast<std::size_t>(pixel)*4U+channel]=static_cast<std::byte>(weights[layer]);
+                const std::size_t maskIndex = layer / 3U;
+                const std::size_t channel = layer % 3U;
+
+                if (maskIndex >= activeMaskCount_ ||
+                    byteOffset + channel >=
+                        maskPixels_[maskIndex].size())
+                {
+                    continue;
+                }
+
+                maskPixels_[maskIndex][byteOffset + channel] =
+                    static_cast<std::byte>(weights[layer]);
             }
         }
 
-        void RefreshMaskTextures()noexcept
+        void RefreshMaskTextures() noexcept
         {
-            if(device_==nullptr)return;
-            for(std::size_t i=0;i<masks_.size();++i)
+            if (device_ == nullptr)
             {
-                if(masks_[i].IsValid())static_cast<void>(device_->DestroyTexture(masks_[i]));
-                masks_[i]={};
-                static_cast<void>(CreateEditableMaskTexture(*device_,maskPixels_[i],maskWidth_,maskHeight_,masks_[i]));
+                return;
+            }
+
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < masks_.size();
+                 ++maskIndex)
+            {
+                if (masks_[maskIndex].IsValid())
+                {
+                    static_cast<void>(
+                        device_->DestroyTexture(
+                            masks_[maskIndex]));
+                }
+
+                masks_[maskIndex] = {};
+
+                const bool created =
+                    maskIndex < activeMaskCount_
+                        ? CreateEditableMaskTexture(
+                            *device_,
+                            maskPixels_[maskIndex],
+                            maskWidth_,
+                            maskHeight_,
+                            masks_[maskIndex])
+                        : CreateFallbackMask(
+                            *device_,
+                            masks_[maskIndex]);
+
+                if (!created)
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        "Failed to recreate terrain mask texture.");
+                }
             }
         }
 
         void UploadMaskRegion(
-            const std::uint32_t left,const std::uint32_t top,
-            const std::uint32_t right,const std::uint32_t bottom)noexcept
+            const std::uint32_t left,
+            const std::uint32_t top,
+            const std::uint32_t right,
+            const std::uint32_t bottom) noexcept
         {
-            auto* dxDevice=static_cast<engine::graphics::d3d11::D3D11Device*>(device_);
-            if(dxDevice==nullptr||right<=left||bottom<=top)return;
-            ID3D11DeviceContext* context=dxDevice->GetNativeImmediateContext();
-            if(context==nullptr)return;
-            const D3D11_BOX box{left,top,0U,right,bottom,1U};
-            for(std::size_t index=0;index<masks_.size();++index)
+            if (device_ == nullptr ||
+                right <= left ||
+                bottom <= top)
             {
-                ID3D11Resource* resource=dxDevice->GetNativeTexture(masks_[index]);
-                if(resource==nullptr)continue;
-                const auto* source=maskPixels_[index].data()+
-                    (static_cast<std::size_t>(top)*maskWidth_+left)*4U;
-                context->UpdateSubresource(resource,0U,&box,source,maskWidth_*4U,0U);
+                return;
+            }
+
+            auto* const d3d11Device =
+                static_cast<
+                    engine::graphics::d3d11::D3D11Device*>(
+                        device_);
+
+            ID3D11DeviceContext* const context =
+                d3d11Device->GetNativeImmediateContext();
+
+            if (context == nullptr)
+            {
+                return;
+            }
+
+            const D3D11_BOX box
+            {
+                left,
+                top,
+                0U,
+                right,
+                bottom,
+                1U
+            };
+
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < activeMaskCount_;
+                 ++maskIndex)
+            {
+                ID3D11Resource* const resource =
+                    d3d11Device->GetNativeTexture(
+                        masks_[maskIndex]);
+
+                if (resource == nullptr)
+                {
+                    continue;
+                }
+
+                const std::byte* const source =
+                    maskPixels_[maskIndex].data() +
+                    (static_cast<std::size_t>(top) *
+                         maskWidth_ +
+                     left) *
+                        4U;
+
+                context->UpdateSubresource(
+                    resource,
+                    0U,
+                    &box,
+                    source,
+                    maskWidth_ * 4U,
+                    0U);
             }
         }
 
-        void LoadPaintData(const std::filesystem::path& terrainPath)noexcept
+        void LoadPaintData(
+            const std::filesystem::path& terrainPath) noexcept
         {
-            paintPath_=terrainPath;paintPath_+=L".paint";
-            std::ifstream stream(paintPath_,std::ios::binary);
-            std::uint32_t signature=0U,version=0U,width=0U,height=0U,count=0U;
-            if(!stream.read(reinterpret_cast<char*>(&signature),sizeof(signature))||
-               !stream.read(reinterpret_cast<char*>(&version),sizeof(version))||
-               !stream.read(reinterpret_cast<char*>(&width),sizeof(width))||
-               !stream.read(reinterpret_cast<char*>(&height),sizeof(height))||
-               !stream.read(reinterpret_cast<char*>(&count),sizeof(count))||
-               signature!=0x5053544CU||version!=1U||width!=maskWidth_||height!=maskHeight_||count!=6U)return;
-            const std::size_t bytes=static_cast<std::size_t>(width)*height*4U;
-            for(auto& mask:maskPixels_)
+            paintPath_ = terrainPath;
+            paintPath_ += L".paint";
+
+            std::ifstream stream(
+                paintPath_,
+                std::ios::binary);
+
+            if (!stream)
             {
-                std::vector<std::byte> loaded(bytes);
-                if(!stream.read(reinterpret_cast<char*>(loaded.data()),static_cast<std::streamsize>(bytes)))return;
-                mask=std::move(loaded);
+                return;
+            }
+
+            std::uint32_t signature = 0U;
+            std::uint32_t version = 0U;
+            std::uint32_t width = 0U;
+            std::uint32_t height = 0U;
+            std::uint32_t maskCount = 0U;
+
+            if (!stream.read(
+                    reinterpret_cast<char*>(&signature),
+                    sizeof(signature)) ||
+                !stream.read(
+                    reinterpret_cast<char*>(&version),
+                    sizeof(version)) ||
+                !stream.read(
+                    reinterpret_cast<char*>(&width),
+                    sizeof(width)) ||
+                !stream.read(
+                    reinterpret_cast<char*>(&height),
+                    sizeof(height)) ||
+                !stream.read(
+                    reinterpret_cast<char*>(&maskCount),
+                    sizeof(maskCount)) ||
+                signature != PaintFileSignature ||
+                version != PaintFileVersion ||
+                width != maskWidth_ ||
+                height != maskHeight_ ||
+                maskCount == 0U ||
+                maskCount > MaximumTerrainMaskCount)
+            {
+                return;
+            }
+
+            const std::uint64_t bytesPerMask64 =
+                static_cast<std::uint64_t>(width) *
+                static_cast<std::uint64_t>(height) *
+                4ULL;
+
+            if (bytesPerMask64 >
+                static_cast<std::uint64_t>(
+                    (std::numeric_limits<std::size_t>::max)()))
+            {
+                return;
+            }
+
+            const std::size_t bytesPerMask =
+                static_cast<std::size_t>(bytesPerMask64);
+
+            for (std::uint32_t maskIndex = 0U;
+                 maskIndex < maskCount;
+                 ++maskIndex)
+            {
+                std::vector<std::byte> loaded(bytesPerMask);
+
+                if (!stream.read(
+                        reinterpret_cast<char*>(loaded.data()),
+                        static_cast<std::streamsize>(
+                            bytesPerMask)))
+                {
+                    return;
+                }
+
+                if (maskIndex < activeMaskCount_)
+                {
+                    maskPixels_[maskIndex] =
+                        std::move(loaded);
+                }
             }
         }
 
-        void SavePaintData()const noexcept
+        void SavePaintData() const noexcept
         {
-            if(paintPath_.empty())return;
-            std::ofstream stream(paintPath_,std::ios::binary|std::ios::trunc);
-            const std::uint32_t signature=0x5053544CU,version=1U,count=6U;
-            stream.write(reinterpret_cast<const char*>(&signature),sizeof(signature));
-            stream.write(reinterpret_cast<const char*>(&version),sizeof(version));
-            stream.write(reinterpret_cast<const char*>(&maskWidth_),sizeof(maskWidth_));
-            stream.write(reinterpret_cast<const char*>(&maskHeight_),sizeof(maskHeight_));
-            stream.write(reinterpret_cast<const char*>(&count),sizeof(count));
-            for(const auto& mask:maskPixels_)
-                stream.write(reinterpret_cast<const char*>(mask.data()),static_cast<std::streamsize>(mask.size()));
+            if (paintPath_.empty() ||
+                activeMaskCount_ == 0U)
+            {
+                return;
+            }
+
+            std::filesystem::path temporary = paintPath_;
+            temporary += L".tmp";
+
+            std::ofstream stream(
+                temporary,
+                std::ios::binary |
+                    std::ios::trunc);
+
+            if (!stream)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Failed to create temporary terrain paint file.");
+
+                return;
+            }
+
+            const std::uint32_t maskCount =
+                static_cast<std::uint32_t>(
+                    activeMaskCount_);
+
+            stream.write(
+                reinterpret_cast<const char*>(
+                    &PaintFileSignature),
+                sizeof(PaintFileSignature));
+
+            stream.write(
+                reinterpret_cast<const char*>(
+                    &PaintFileVersion),
+                sizeof(PaintFileVersion));
+
+            stream.write(
+                reinterpret_cast<const char*>(&maskWidth_),
+                sizeof(maskWidth_));
+
+            stream.write(
+                reinterpret_cast<const char*>(&maskHeight_),
+                sizeof(maskHeight_));
+
+            stream.write(
+                reinterpret_cast<const char*>(&maskCount),
+                sizeof(maskCount));
+
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < activeMaskCount_;
+                 ++maskIndex)
+            {
+                stream.write(
+                    reinterpret_cast<const char*>(
+                        maskPixels_[maskIndex].data()),
+                    static_cast<std::streamsize>(
+                        maskPixels_[maskIndex].size()));
+            }
+
+            stream.close();
+
+            if (!stream)
+            {
+                std::error_code removeError;
+                static_cast<void>(
+                    std::filesystem::remove(
+                        temporary,
+                        removeError));
+
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Failed to write terrain paint data.");
+
+                return;
+            }
+
+            std::error_code filesystemError;
+            static_cast<void>(
+                std::filesystem::remove(
+                    paintPath_,
+                    filesystemError));
+
+            filesystemError.clear();
+
+            std::filesystem::rename(
+                temporary,
+                paintPath_,
+                filesystemError);
+
+            if (filesystemError)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    "Failed to commit terrain paint data.");
+            }
         }
-    private:engine::graphics::RenderDevice* device_=nullptr;std::filesystem::path terrainPath_,workspaceRoot_,paintPath_;engine::assets::TerrainAsset terrainAsset_;std::vector<Chunk> chunks_;engine::graphics::BufferHandle vertex_,index_,constants_,brushVertexBuffer_,brushConstants_;engine::graphics::ShaderHandle vertexShader_,pixelShader_,brushVertexShader_,brushPixelShader_;engine::graphics::InputLayoutHandle layout_,brushLayout_;engine::graphics::PipelineStateHandle pipeline_,brushPipeline_;std::array<engine::graphics::TextureHandle,6> masks_{};std::array<std::vector<std::byte>,6> maskPixels_{};std::array<engine::graphics::TextureHandle,18> materials_{};std::array<std::string,18> materialPaths_{};engine::graphics::SamplerHandle sampler_;std::unordered_map<std::uint32_t,std::array<std::uint8_t,17>> activePaintBefore_;std::vector<PaintCommand> paintUndo_,paintRedo_;std::uint32_t maskWidth_=0U,maskHeight_=0U,indexCount_=0;bool paintStrokeActive_=false,loaded_=false;
+
+        engine::graphics::RenderDevice* device_ = nullptr;
+
+        std::filesystem::path terrainPath_;
+        std::filesystem::path workspaceRoot_;
+        std::filesystem::path paintPath_;
+
+        engine::assets::TerrainAsset terrainAsset_;
+        std::vector<Chunk> chunks_;
+
+        engine::graphics::BufferHandle vertexBuffer_{};
+        engine::graphics::BufferHandle indexBuffer_{};
+        engine::graphics::BufferHandle constantBuffer_{};
+        engine::graphics::BufferHandle brushVertexBuffer_{};
+        engine::graphics::BufferHandle brushConstantBuffer_{};
+
+        engine::graphics::ShaderHandle vertexShader_{};
+        engine::graphics::ShaderHandle pixelShader_{};
+        engine::graphics::ShaderHandle brushVertexShader_{};
+        engine::graphics::ShaderHandle brushPixelShader_{};
+
+        engine::graphics::InputLayoutHandle inputLayout_{};
+        engine::graphics::InputLayoutHandle brushInputLayout_{};
+
+        engine::graphics::PipelineStateHandle pipeline_{};
+        engine::graphics::PipelineStateHandle brushPipeline_{};
+
+        std::array<
+            engine::graphics::TextureHandle,
+            MaximumTerrainMaskCount> masks_{};
+
+        std::array<
+            std::vector<std::byte>,
+            MaximumTerrainMaskCount> maskPixels_{};
+
+        std::array<
+            engine::graphics::TextureHandle,
+            MaximumTerrainLayerCount> materials_{};
+
+        std::array<
+            std::string,
+            MaximumTerrainLayerCount> materialPaths_{};
+
+        engine::graphics::SamplerHandle sampler_{};
+
+        std::unordered_map<
+            std::uint32_t,
+            std::array<std::uint8_t, MaximumPaintedLayerCount>>
+                activePaintBefore_;
+
+        std::vector<PaintCommand> paintUndo_;
+        std::vector<PaintCommand> paintRedo_;
+
+        std::size_t activeMaskCount_ = 0U;
+        std::uint32_t maskWidth_ = 0U;
+        std::uint32_t maskHeight_ = 0U;
+        std::uint32_t indexCount_ = 0U;
+
+        bool paintStrokeActive_ = false;
+        bool loaded_ = false;
     };
-    EditorTerrainRenderer::EditorTerrainRenderer()noexcept:impl_(std::make_unique<Impl>()){} EditorTerrainRenderer::~EditorTerrainRenderer()noexcept=default;
-    bool EditorTerrainRenderer::Initialize(engine::graphics::RenderDevice& d)noexcept{return impl_->Initialize(d);}void EditorTerrainRenderer::Shutdown(engine::graphics::RenderDevice& d)noexcept{impl_->Shutdown(d);}engine::graphics::GraphicsResult EditorTerrainRenderer::Render(engine::graphics::CommandContext& c,const EditorSceneDocument& doc,const DirectX::XMFLOAT4X4& vp,const DirectX::XMFLOAT3& camera)noexcept{return impl_->Render(c,doc,vp,camera);}
-    bool EditorTerrainRenderer::LoadTerrain(engine::graphics::RenderDevice& d,const std::filesystem::path& p)noexcept{return impl_->LoadTerrain(d,p);}bool EditorTerrainRenderer::HasTerrain()const noexcept{return impl_->HasTerrain();}
-    bool EditorTerrainRenderer::TryGetSurfaceHeight(const EditorSceneDocument& document,const float worldX,const float worldZ,float& worldHeight)const noexcept{return impl_->TryGetSurfaceHeight(document,worldX,worldZ,worldHeight);}
-    bool EditorTerrainRenderer::BeginPaintStroke()noexcept{return impl_->BeginPaintStroke();}
-    bool EditorTerrainRenderer::Paint(const EditorSceneDocument& document,const float worldX,const float worldZ,const float radius,const float strength,const float falloff,const std::size_t layerIndex,const bool erase)noexcept{return impl_->Paint(document,worldX,worldZ,radius,strength,falloff,layerIndex,erase);}
-    bool EditorTerrainRenderer::EndPaintStroke()noexcept{return impl_->EndPaintStroke();}
-    bool EditorTerrainRenderer::UndoPaint()noexcept{return impl_->UndoPaint();}
-    bool EditorTerrainRenderer::RedoPaint()noexcept{return impl_->RedoPaint();}
-    bool EditorTerrainRenderer::CanUndoPaint()const noexcept{return impl_->CanUndoPaint();}
-    bool EditorTerrainRenderer::CanRedoPaint()const noexcept{return impl_->CanRedoPaint();}
-    engine::graphics::GraphicsResult EditorTerrainRenderer::RenderBrush(engine::graphics::CommandContext& context,const EditorSceneDocument& document,const DirectX::XMFLOAT4X4& viewProjection,const float worldX,const float worldZ,const float radius,const bool erase)noexcept{return impl_->RenderBrush(context,document,viewProjection,worldX,worldZ,radius,erase);}
+
+    EditorTerrainRenderer::EditorTerrainRenderer() noexcept
+        : impl_(std::make_unique<Impl>())
+    {
+    }
+
+    EditorTerrainRenderer::~EditorTerrainRenderer() noexcept = default;
+
+    bool EditorTerrainRenderer::Initialize(
+        engine::graphics::RenderDevice& device) noexcept
+    {
+        return impl_->Initialize(device);
+    }
+
+    bool EditorTerrainRenderer::LoadTerrain(
+        engine::graphics::RenderDevice& device,
+        const std::filesystem::path& path) noexcept
+    {
+        return impl_->LoadTerrain(device, path);
+    }
+
+    bool EditorTerrainRenderer::HasTerrain() const noexcept
+    {
+        return impl_->HasTerrain();
+    }
+
+    bool EditorTerrainRenderer::TryGetSurfaceHeight(
+        const EditorSceneDocument& document,
+        const float worldX,
+        const float worldZ,
+        float& worldHeight) const noexcept
+    {
+        return impl_->TryGetSurfaceHeight(
+            document,
+            worldX,
+            worldZ,
+            worldHeight);
+    }
+
+    bool EditorTerrainRenderer::BeginPaintStroke() noexcept
+    {
+        return impl_->BeginPaintStroke();
+    }
+
+    bool EditorTerrainRenderer::Paint(
+        const EditorSceneDocument& document,
+        const float worldX,
+        const float worldZ,
+        const float radius,
+        const float strength,
+        const float falloff,
+        const std::size_t layerIndex,
+        const bool erase) noexcept
+    {
+        return impl_->Paint(
+            document,
+            worldX,
+            worldZ,
+            radius,
+            strength,
+            falloff,
+            layerIndex,
+            erase);
+    }
+
+    bool EditorTerrainRenderer::EndPaintStroke() noexcept
+    {
+        return impl_->EndPaintStroke();
+    }
+
+    bool EditorTerrainRenderer::UndoPaint() noexcept
+    {
+        return impl_->UndoPaint();
+    }
+
+    bool EditorTerrainRenderer::RedoPaint() noexcept
+    {
+        return impl_->RedoPaint();
+    }
+
+    bool EditorTerrainRenderer::CanUndoPaint() const noexcept
+    {
+        return impl_->CanUndoPaint();
+    }
+
+    bool EditorTerrainRenderer::CanRedoPaint() const noexcept
+    {
+        return impl_->CanRedoPaint();
+    }
+
+    void EditorTerrainRenderer::Shutdown(
+        engine::graphics::RenderDevice& device) noexcept
+    {
+        impl_->Shutdown(device);
+    }
+
+    engine::graphics::GraphicsResult EditorTerrainRenderer::Render(
+        engine::graphics::CommandContext& context,
+        const EditorSceneDocument& document,
+        const DirectX::XMFLOAT4X4& viewProjection,
+        const DirectX::XMFLOAT3& cameraPosition) noexcept
+    {
+        return impl_->Render(
+            context,
+            document,
+            viewProjection,
+            cameraPosition);
+    }
+
+    engine::graphics::GraphicsResult EditorTerrainRenderer::RenderBrush(
+        engine::graphics::CommandContext& context,
+        const EditorSceneDocument& document,
+        const DirectX::XMFLOAT4X4& viewProjection,
+        const float worldX,
+        const float worldZ,
+        const float radius,
+        const bool erase) noexcept
+    {
+        return impl_->RenderBrush(
+            context,
+            document,
+            viewProjection,
+            worldX,
+            worldZ,
+            radius,
+            erase);
+    }
 }
