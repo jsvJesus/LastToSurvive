@@ -1,6 +1,8 @@
 #include "Editor/EditorApplication.h"
 
 #include <Core/Log.h>
+#include <Assets/LegacyTerrain2Importer.h>
+#include <Assets/TerrainAsset.h>
 
 #include <Graphics/Format.h>
 #include <Graphics/GraphicsBackend.h>
@@ -24,7 +26,10 @@
 #include <cstring>
 #include <string>
 #include <thread>
+#include <functional>
 #include <Windows.h>
+#include <ShObjIdl.h>
+#include <wrl/client.h>
 
 namespace lts::editor
 {
@@ -54,6 +59,89 @@ namespace lts::editor
             std::wstring output(static_cast<std::size_t>(size), L'\0');
             MultiByteToWideChar(CP_UTF8, 0, value, length, output.data(), size);
             return output;
+        }
+
+        [[nodiscard]] bool SelectFolder(
+            const HWND owner, std::filesystem::path& output)
+        {
+            Microsoft::WRL::ComPtr<IFileOpenDialog> dialog;
+            if (FAILED(CoCreateInstance(
+                    CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER,
+                    IID_PPV_ARGS(&dialog)))) return false;
+            DWORD options = 0U;
+            if (FAILED(dialog->GetOptions(&options)) ||
+                FAILED(dialog->SetOptions(options | FOS_PICKFOLDERS |
+                    FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST)) ||
+                FAILED(dialog->SetTitle(L"Select legacy Terrain2 directory")) ||
+                FAILED(dialog->Show(owner))) return false;
+            Microsoft::WRL::ComPtr<IShellItem> item;
+            if (FAILED(dialog->GetResult(&item))) return false;
+            PWSTR path = nullptr;
+            if (FAILED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))) return false;
+            output = path;
+            CoTaskMemFree(path);
+            return true;
+        }
+
+        [[nodiscard]] bool SelectTerrainFile(
+            const HWND owner, std::filesystem::path& output)
+        {
+            Microsoft::WRL::ComPtr<IFileOpenDialog> dialog;
+            if (FAILED(CoCreateInstance(CLSID_FileOpenDialog, nullptr,
+                    CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dialog)))) return false;
+            constexpr COMDLG_FILTERSPEC filter[] =
+            {
+                {L"LTS Terrain (*.ltsterrain)", L"*.ltsterrain"},
+                {L"All files (*.*)", L"*.*"}
+            };
+            if (FAILED(dialog->SetFileTypes(2U, filter)) ||
+                FAILED(dialog->SetDefaultExtension(L"ltsterrain")) ||
+                FAILED(dialog->SetTitle(L"Open LTS Terrain")) ||
+                FAILED(dialog->Show(owner))) return false;
+            Microsoft::WRL::ComPtr<IShellItem> item;
+            if (FAILED(dialog->GetResult(&item))) return false;
+            PWSTR path = nullptr;
+            if (FAILED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))) return false;
+            output = path; CoTaskMemFree(path); return true;
+        }
+
+        [[nodiscard]] bool SelectTerrainTexture(
+            const HWND owner, std::filesystem::path& output)
+        {
+            Microsoft::WRL::ComPtr<IFileOpenDialog> dialog;
+            if (FAILED(CoCreateInstance(CLSID_FileOpenDialog, nullptr,
+                    CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dialog)))) return false;
+            constexpr COMDLG_FILTERSPEC filters[] =
+            {
+                {L"Terrain textures", L"*.dds;*.png;*.tga;*.jpg;*.jpeg"},
+                {L"All files", L"*.*"}
+            };
+            if (FAILED(dialog->SetFileTypes(2U, filters)) ||
+                FAILED(dialog->SetTitle(L"Select terrain layer texture")) ||
+                FAILED(dialog->Show(owner))) return false;
+            Microsoft::WRL::ComPtr<IShellItem> item;
+            if (FAILED(dialog->GetResult(&item))) return false;
+            PWSTR path = nullptr;
+            if (FAILED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))) return false;
+            output = path; CoTaskMemFree(path); return true;
+        }
+
+        [[nodiscard]] std::vector<engine::scene::TerrainComponent::LayerOverride>
+            BuildTerrainLayerOverrides(const engine::assets::TerrainAsset& terrain)
+        {
+            std::vector<engine::scene::TerrainComponent::LayerOverride> result;
+            result.reserve(terrain.layers.size());
+            for (const auto& source : terrain.layers)
+            {
+                engine::scene::TerrainComponent::LayerOverride layer;
+                layer.name = source.name;
+                layer.diffusePath = source.diffusePath;
+                layer.normalPath = source.normalPath;
+                layer.scaleU = source.scaleU;
+                layer.scaleV = source.scaleV;
+                result.push_back(std::move(layer));
+            }
+            return result;
         }
 
         [[nodiscard]]
@@ -248,8 +336,18 @@ namespace lts::editor
                     ClientInitializationFailed;
         }
 
+        if (!terrainRenderer_.Initialize(graphicsDevice_))
+        {
+            sceneRenderer_.Shutdown(graphicsDevice_);
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
+            ShutdownGraphics();
+            editorShell_.Shutdown();
+            return lts::application::ApplicationResult::ClientInitializationFailed;
+        }
+
         if (!InitializeUi())
         {
+            terrainRenderer_.Shutdown(graphicsDevice_);
             sceneRenderer_.Shutdown(graphicsDevice_);
             staticMeshRenderer_.Shutdown(graphicsDevice_);
             ShutdownGraphics();
@@ -315,6 +413,8 @@ namespace lts::editor
         sceneRenderer_.Shutdown(
             graphicsDevice_);
 
+        terrainRenderer_.Shutdown(graphicsDevice_);
+
         staticMeshRenderer_.Shutdown(
             graphicsDevice_);
 
@@ -333,7 +433,53 @@ namespace lts::editor
             {
                 const EditorLevelUpdateResult result =
                     levelDocument_.Update(sceneDocument_, commandHistory_);
-                if (result.sceneReplaced) cameraController_.Reset();
+                if (result.sceneReplaced)
+                {
+                    cameraController_.Reset();
+                    loadedTerrainAssetPath_.clear();
+                    static_cast<void>(terrainRenderer_.LoadTerrain(
+                        graphicsDevice_, std::filesystem::path{}));
+                }
+                for (const EditorSceneEntity& sceneEntity : sceneDocument_.GetEntities())
+                {
+                    if (!sceneEntity.terrain.has_value() ||
+                        !sceneEntity.terrain->visible) continue;
+                    std::filesystem::path gameRoot = std::filesystem::current_path();
+                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
+                    std::filesystem::path terrainPath = sceneEntity.terrain->assetPath;
+                    if (terrainPath.is_relative()) terrainPath = gameRoot / terrainPath;
+                    terrainPath = terrainPath.lexically_normal();
+                    if (terrainPath != loadedTerrainAssetPath_ &&
+                        terrainRenderer_.LoadTerrain(graphicsDevice_, terrainPath))
+                    {
+                        loadedTerrainAssetPath_ = terrainPath;
+                        if (result.sceneReplaced)
+                        {
+                            engine::assets::TerrainAsset terrainAsset;
+                            if (engine::assets::Succeeded(
+                                    engine::assets::TerrainAsset::Load(
+                                        terrainPath, terrainAsset)))
+                            {
+                                const float terrainWidth =
+                                    static_cast<float>(terrainAsset.width - 1U) *
+                                    terrainAsset.tileSize;
+                                const float terrainDepth =
+                                    static_cast<float>(terrainAsset.height - 1U) *
+                                    terrainAsset.tileSize;
+                                cameraController_.FocusOn(
+                                    {
+                                        sceneEntity.transform.position[0] + terrainWidth * 0.5F,
+                                        sceneEntity.transform.position[1] +
+                                            terrainAsset.heightOffset +
+                                            terrainAsset.heightScale * 0.35F,
+                                        sceneEntity.transform.position[2] + terrainDepth * 0.5F
+                                    },
+                                    (std::max)(terrainWidth, terrainDepth) * 0.64F);
+                            }
+                        }
+                    }
+                    break;
+                }
                 if (result.closeApproved)
                 {
                     if (returnToLauncherPending_)
@@ -378,10 +524,41 @@ namespace lts::editor
                     click.x = static_cast<std::uint32_t>(mouse.x - viewportX);
                     click.y = static_cast<std::uint32_t>(mouse.y - viewportY);
                 }
-                static_cast<void>(transformController_.Update(
-                    sceneDocument_, commandHistory_, cameraController_,
-                    viewportSize, clicked ? &click : nullptr,
-                    &staticMeshRenderer_));
+                EditorInteractionResult transformResult{};
+                if (!terrainPaintMode_)
+                {
+                    transformResult = transformController_.Update(
+                        sceneDocument_, commandHistory_, cameraController_,
+                        viewportSize, clicked ? &click : nullptr,
+                        &staticMeshRenderer_);
+                }
+
+                const auto& transformState = transformController_.GetVisualState();
+                if (transformResult.documentChanged &&
+                    transformState.operation == EditorTransformOperation::Move &&
+                    (transformState.activeAxis == EditorTransformAxis::X ||
+                     transformState.activeAxis == EditorTransformAxis::Z))
+                {
+                    EditorSceneEntity* const entity = sceneDocument_.GetSelectedEntityMutable();
+                    if (entity != nullptr && entity->staticMesh.has_value())
+                    {
+                        float terrainHeight = 0.0F;
+                        if (terrainRenderer_.TryGetSurfaceHeight(
+                                sceneDocument_, entity->transform.position[0],
+                                entity->transform.position[2], terrainHeight))
+                        {
+                            DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
+                            float bottomOffset = 0.0F;
+                            if (staticMeshRenderer_.TryGetMeshBounds(
+                                    entity->staticMesh->assetPath,
+                                    boundsMinimum, boundsMaximum))
+                            {
+                                bottomOffset = boundsMinimum.y * entity->transform.scale[1];
+                            }
+                            entity->transform.position[1] = terrainHeight - bottomOffset;
+                        }
+                    }
+                }
             }
             return;
         }
@@ -793,6 +970,14 @@ namespace lts::editor
             return;
         }
 
+        result = terrainRenderer_.Render(*commandContext_, sceneDocument_, viewProjection,
+            cameraController_.GetPosition());
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure("EditorTerrainRenderer::Render", result);
+            return;
+        }
+
         result = staticMeshRenderer_.Render(
         *commandContext_,
         sceneDocument_,
@@ -1117,6 +1302,7 @@ namespace lts::editor
 
     void EditorApplication::RefreshContentBrowser() noexcept
     {
+        const std::filesystem::path previousDirectory = contentSelectedDirectory_;
         contentMeshFiles_.clear();
         try
         {
@@ -1126,7 +1312,9 @@ namespace lts::editor
                 gameRoot /= L"game";
             }
             contentMeshesRoot_ = (gameRoot / L"Data" / L"Meshes").lexically_normal();
-            contentSelectedDirectory_ = contentMeshesRoot_;
+            contentSelectedDirectory_ = previousDirectory.empty()
+                ? contentMeshesRoot_
+                : previousDirectory;
 
             std::error_code error;
             for (std::filesystem::recursive_directory_iterator iterator(
@@ -1148,6 +1336,10 @@ namespace lts::editor
                 }
             }
             std::sort(contentMeshFiles_.begin(), contentMeshFiles_.end());
+            if (!std::filesystem::is_directory(contentSelectedDirectory_))
+            {
+                contentSelectedDirectory_ = contentMeshesRoot_;
+            }
         }
         catch (...)
         {
@@ -1168,44 +1360,79 @@ namespace lts::editor
             "Search meshes...",
             contentSearch_.data(),
             contentSearch_.size());
+        ImGui::SameLine();
+        if (ImGui::Button(contentGridView_ ? "List" : "Tiles"))
+        {
+            contentGridView_ = !contentGridView_;
+        }
         ImGui::Separator();
 
-        std::vector<std::filesystem::path> directories;
-        for (const std::filesystem::path& file : contentMeshFiles_)
-        {
-            const std::filesystem::path directory = file.parent_path();
-            if (std::find(directories.begin(), directories.end(), directory) == directories.end())
-            {
-                directories.push_back(directory);
-            }
-        }
-
         ImGui::BeginChild("ContentFolders", ImVec2(210.0F, 0.0F), ImGuiChildFlags_Borders);
-        if (ImGui::Selectable(
-                "Meshes",
-                contentSelectedDirectory_ == contentMeshesRoot_))
+        std::function<void(const std::filesystem::path&, const char*)> drawDirectory;
+        drawDirectory = [&](const std::filesystem::path& directory, const char* label)
         {
-            contentSelectedDirectory_ = contentMeshesRoot_;
-        }
-        for (const std::filesystem::path& directory : directories)
-        {
+            std::vector<std::filesystem::path> children;
             std::error_code error;
-            const std::string label = std::filesystem::relative(
-                directory, contentMeshesRoot_, error).generic_u8string();
-            if (!error && ImGui::Selectable(
-                    ("  " + label).c_str(),
-                    contentSelectedDirectory_ == directory))
+            for (std::filesystem::directory_iterator iterator(
+                     directory, std::filesystem::directory_options::skip_permission_denied,
+                     error), end;
+                 iterator != end;
+                 iterator.increment(error))
+            {
+                if (error) { error.clear(); continue; }
+                if (iterator->is_directory(error) && !error)
+                {
+                    children.push_back(iterator->path().lexically_normal());
+                }
+            }
+            std::sort(children.begin(), children.end());
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
+                ImGuiTreeNodeFlags_SpanAvailWidth;
+            if (children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
+            if (directory == contentSelectedDirectory_) flags |= ImGuiTreeNodeFlags_Selected;
+            if (directory == contentMeshesRoot_) flags |= ImGuiTreeNodeFlags_DefaultOpen;
+            const bool open = ImGui::TreeNodeEx(directory.generic_u8string().c_str(), flags, "%s", label);
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             {
                 contentSelectedDirectory_ = directory;
             }
-        }
+            if (open)
+            {
+                for (const std::filesystem::path& child : children)
+                {
+                    const std::string childLabel = child.filename().u8string();
+                    drawDirectory(child, childLabel.c_str());
+                }
+                ImGui::TreePop();
+            }
+        };
+        drawDirectory(contentMeshesRoot_, "Meshes");
         ImGui::EndChild();
         ImGui::SameLine();
 
         ImGui::BeginChild("ContentAssets", ImVec2(0.0F, 0.0F), ImGuiChildFlags_Borders);
+        std::error_code breadcrumbError;
+        const std::filesystem::path relativeDirectory = std::filesystem::relative(
+            contentSelectedDirectory_, contentMeshesRoot_, breadcrumbError);
+        if (ImGui::SmallButton("Meshes")) contentSelectedDirectory_ = contentMeshesRoot_;
+        if (!breadcrumbError && relativeDirectory != L".")
+        {
+            std::filesystem::path current = contentMeshesRoot_;
+            for (const auto& part : relativeDirectory)
+            {
+                current /= part;
+                ImGui::SameLine(); ImGui::TextDisabled(">"); ImGui::SameLine();
+                const std::string partLabel = part.u8string();
+                ImGui::PushID(current.generic_u8string().c_str());
+                if (ImGui::SmallButton(partLabel.c_str())) contentSelectedDirectory_ = current;
+                ImGui::PopID();
+            }
+        }
+        ImGui::Separator();
         std::string search = contentSearch_.data();
         std::transform(search.begin(), search.end(), search.begin(),
             [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
+        bool refreshRequested = false;
         for (const std::filesystem::path& file : contentMeshFiles_)
         {
             if (contentSelectedDirectory_ != contentMeshesRoot_ &&
@@ -1213,8 +1440,11 @@ namespace lts::editor
             {
                 continue;
             }
-            std::string name = file.stem().u8string();
-            std::string loweredName = name;
+            const std::string name = file.stem().u8string();
+            std::error_code displayPathError;
+            const std::string displayPath = std::filesystem::relative(
+                file, contentMeshesRoot_, displayPathError).generic_u8string();
+            std::string loweredName = displayPathError ? name : displayPath;
             std::transform(loweredName.begin(), loweredName.end(), loweredName.begin(),
                 [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
             if (!search.empty() && loweredName.find(search) == std::string::npos)
@@ -1223,9 +1453,13 @@ namespace lts::editor
             }
 
             ImGui::PushID(file.generic_u8string().c_str());
+            const float itemWidth = contentGridView_ ? 150.0F : -1.0F;
+            const float itemHeight = contentGridView_ ? 58.0F : 24.0F;
             const bool selected = ImGui::Selectable(
-                name.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick,
-                ImVec2(180.0F, 42.0F));
+                name.c_str(), contentSelectedAsset_ == file,
+                ImGuiSelectableFlags_AllowDoubleClick,
+                ImVec2(itemWidth, itemHeight));
+            if (selected) contentSelectedAsset_ = file;
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 std::error_code relativeError;
@@ -1251,6 +1485,45 @@ namespace lts::editor
                 {
                     const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
                     EditorTransform transform{};
+                    EditorPickRay ray{};
+                    if (cameraController_.BuildPickRay(
+                            static_cast<std::uint32_t>(imguiViewportWidth_ * 0.5F),
+                            static_cast<std::uint32_t>(imguiViewportHeight_ * 0.5F),
+                            static_cast<std::uint32_t>(imguiViewportWidth_),
+                            static_cast<std::uint32_t>(imguiViewportHeight_), ray))
+                    {
+                        float distance = 10.0F;
+                        if (std::abs(ray.direction.y) > 0.00001F)
+                        {
+                            const float planeDistance = -ray.origin.y / ray.direction.y;
+                            if (planeDistance >= 0.0F) distance = planeDistance;
+                            float terrainHeight = 0.0F;
+                            for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
+                            {
+                                const float x = ray.origin.x + ray.direction.x * distance;
+                                const float z = ray.origin.z + ray.direction.z * distance;
+                                if (!terrainRenderer_.TryGetSurfaceHeight(
+                                        sceneDocument_, x, z, terrainHeight)) break;
+                                const float refined =
+                                    (terrainHeight - ray.origin.y) / ray.direction.y;
+                                if (refined < 0.0F) break;
+                                distance = refined;
+                            }
+                        }
+                        transform.position = {
+                            ray.origin.x + ray.direction.x * distance,
+                            ray.origin.y + ray.direction.y * distance,
+                            ray.origin.z + ray.direction.z * distance};
+                        float terrainHeight = 0.0F;
+                        if (terrainRenderer_.TryGetSurfaceHeight(
+                                sceneDocument_, transform.position[0],
+                                transform.position[2], terrainHeight))
+                            transform.position[1] = terrainHeight;
+                        DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
+                        if (staticMeshRenderer_.TryGetMeshBounds(
+                                relative.generic_wstring(), boundsMinimum, boundsMaximum))
+                            transform.position[1] -= boundsMinimum.y;
+                    }
                     if (sceneDocument_.CreateStaticMeshEntity(
                             file.stem().wstring(),
                             relative.generic_wstring(),
@@ -1266,8 +1539,33 @@ namespace lts::editor
                 ImGui::SetTooltip("%s\nDouble-click to add to scene",
                     file.generic_u8string().c_str());
             }
+            if (ImGui::BeginPopupContextItem("AssetContext"))
+            {
+                contentSelectedAsset_ = file;
+                if (ImGui::MenuItem("Copy Asset Path"))
+                {
+                    ImGui::SetClipboardText(file.generic_u8string().c_str());
+                }
+                if (ImGui::MenuItem("Copy Game Path"))
+                {
+                    std::error_code relativeError;
+                    const std::filesystem::path relative = std::filesystem::relative(
+                        file, contentMeshesRoot_.parent_path().parent_path(), relativeError);
+                    if (!relativeError)
+                    {
+                        ImGui::SetClipboardText(relative.generic_u8string().c_str());
+                    }
+                }
+                if (ImGui::MenuItem("Refresh")) refreshRequested = true;
+                ImGui::EndPopup();
+            }
             ImGui::PopID();
+            if (contentGridView_ && ImGui::GetContentRegionAvail().x > 310.0F)
+            {
+                ImGui::SameLine();
+            }
         }
+        if (refreshRequested) RefreshContentBrowser();
         if (contentMeshFiles_.empty())
         {
             ImGui::TextDisabled("No .ltsmesh files found in Data/Meshes");
@@ -1306,6 +1604,82 @@ namespace lts::editor
                 if (ImGui::MenuItem("Save", "Ctrl+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevel));
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevelAs));
                 ImGui::Separator();
+                if (ImGui::MenuItem("Import Legacy Terrain2..."))
+                {
+                    std::filesystem::path source;
+                    const HWND owner = reinterpret_cast<HWND>(
+                        GetWindow().GetNativeHandle().Value());
+                    if (SelectFolder(owner, source))
+                    {
+                        std::filesystem::path gameRoot = std::filesystem::current_path();
+                        if (gameRoot.filename() != L"game") gameRoot /= L"game";
+                        const std::filesystem::path destination = gameRoot / L"Data" /
+                            L"Terrains" / (source.parent_path().filename().wstring() + L".ltsterrain");
+                        const engine::assets::AssetResult result =
+                            engine::assets::LegacyTerrain2Importer::Import(source, destination);
+                        if (engine::assets::Succeeded(result) &&
+                            terrainRenderer_.LoadTerrain(graphicsDevice_, destination))
+                        {
+                            loadedTerrainAssetPath_ = destination.lexically_normal();
+                            std::error_code relativeError;
+                            const std::filesystem::path relative = std::filesystem::relative(
+                                destination, gameRoot, relativeError);
+                            const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                            if (!relativeError && sceneDocument_.CreateTerrainEntity(
+                                    destination.stem().wstring(), relative.generic_wstring(), {}))
+                            {
+                                engine::assets::TerrainAsset terrainAsset;
+                                if (engine::assets::Succeeded(engine::assets::TerrainAsset::Load(
+                                        destination, terrainAsset)))
+                                    static_cast<void>(sceneDocument_.SetSelectedTerrainLayers(
+                                        BuildTerrainLayerOverrides(terrainAsset)));
+                                static_cast<void>(commandHistory_.Push(
+                                    before, sceneDocument_.CreateSnapshot()));
+                            }
+                            cameraController_.FocusOn({4096.0F, 250.0F, 4096.0F}, 5200.0F);
+                        }
+                        const std::wstring message = engine::assets::Succeeded(result)
+                            ? (L"Terrain imported successfully:\n" + destination.wstring())
+                            : (L"Terrain import failed: " + std::wstring(
+                                FromUtf8(engine::assets::ToString(result))));
+                        MessageBoxW(owner, message.c_str(), L"Legacy Terrain2 Import",
+                            MB_OK | (engine::assets::Succeeded(result) ? MB_ICONINFORMATION : MB_ICONERROR));
+                    }
+                }
+                if (ImGui::MenuItem("Open Terrain..."))
+                {
+                    const HWND owner = reinterpret_cast<HWND>(
+                        GetWindow().GetNativeHandle().Value());
+                    std::filesystem::path terrain;
+                    if (SelectTerrainFile(owner, terrain))
+                    {
+                        if (terrainRenderer_.LoadTerrain(graphicsDevice_, terrain))
+                        {
+                            loadedTerrainAssetPath_ = terrain.lexically_normal();
+                            std::filesystem::path gameRoot = std::filesystem::current_path();
+                            if (gameRoot.filename() != L"game") gameRoot /= L"game";
+                            std::error_code relativeError;
+                            const std::filesystem::path relative = std::filesystem::relative(
+                                terrain, gameRoot, relativeError);
+                            const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                            if (!relativeError && sceneDocument_.CreateTerrainEntity(
+                                    terrain.stem().wstring(), relative.generic_wstring(), {}))
+                            {
+                                engine::assets::TerrainAsset terrainAsset;
+                                if (engine::assets::Succeeded(engine::assets::TerrainAsset::Load(
+                                        terrain, terrainAsset)))
+                                    static_cast<void>(sceneDocument_.SetSelectedTerrainLayers(
+                                        BuildTerrainLayerOverrides(terrainAsset)));
+                                static_cast<void>(commandHistory_.Push(
+                                    before, sceneDocument_.CreateSnapshot()));
+                            }
+                            cameraController_.FocusOn({4096.0F, 250.0F, 4096.0F}, 5200.0F);
+                        }
+                        else MessageBoxW(owner, L"Failed to load terrain asset.",
+                            L"Open Terrain", MB_OK | MB_ICONERROR);
+                    }
+                }
+                ImGui::Separator();
                 if (ImGui::MenuItem("Back to Editor Launcher"))
                 {
                     returnToLauncherPending_ = true;
@@ -1321,8 +1695,12 @@ namespace lts::editor
             }
             if (ImGui::BeginMenu("Edit"))
             {
-                if (ImGui::MenuItem("Undo", "Ctrl+Z", false, commandHistory_.CanUndo())) static_cast<void>(ExecuteEditorCommand(EditorCommand::Undo));
-                if (ImGui::MenuItem("Redo", "Ctrl+Y", false, commandHistory_.CanRedo())) static_cast<void>(ExecuteEditorCommand(EditorCommand::Redo));
+                if (ImGui::MenuItem("Undo", "Ctrl+Z", false,
+                        commandHistory_.CanUndo() || terrainRenderer_.CanUndoPaint()))
+                    static_cast<void>(ExecuteEditorCommand(EditorCommand::Undo));
+                if (ImGui::MenuItem("Redo", "Ctrl+Y", false,
+                        commandHistory_.CanRedo() || terrainRenderer_.CanRedoPaint()))
+                    static_cast<void>(ExecuteEditorCommand(EditorCommand::Redo));
                 ImGui::Separator();
                 if (ImGui::MenuItem("Duplicate", "Ctrl+D", false, sceneDocument_.GetSelectedEntity() != nullptr)) static_cast<void>(ExecuteEditorCommand(EditorCommand::DuplicateSelection));
                 if (ImGui::MenuItem("Delete", "Delete", false, sceneDocument_.GetSelectedEntity() != nullptr)) static_cast<void>(ExecuteEditorCommand(EditorCommand::DeleteSelection));
@@ -1390,6 +1768,14 @@ namespace lts::editor
             drawToolButton("E Rotate", EditorTransformOperation::Rotate, "Rotate selected object");
             ImGui::SameLine();
             drawToolButton("R Scale", EditorTransformOperation::Scale, "Scale selected object");
+            ImGui::SameLine();
+            if (terrainPaintMode_)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.42F, 0.24F, 0.08F, 1.0F));
+            if (ImGui::Button("Terrain Paint"))
+                terrainPaintMode_ = !terrainPaintMode_;
+            if (terrainPaintMode_) ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Paint terrain material weights. Hold Shift to erase.");
             ImGui::SameLine(); ImGui::Separator(); ImGui::SameLine();
             if (ImGui::Button(
                     transformController_.GetVisualState().space == EditorTransformSpace::World
@@ -1397,6 +1783,20 @@ namespace lts::editor
             {
                 transformController_.ToggleSpace();
             }
+            ImGui::SameLine();
+            bool snappingEnabled = transformController_.IsSnappingEnabled();
+            if (ImGui::Checkbox("Snap", &snappingEnabled))
+                transformController_.SetSnappingEnabled(snappingEnabled);
+            ImGui::SameLine();
+            std::array<float, 3U> snapSteps = transformController_.GetSnapSteps();
+            ImGui::SetNextItemWidth(165.0F);
+            if (ImGui::DragFloat3(
+                    "##SnapSteps", snapSteps.data(), 0.1F, 0.001F, 1000.0F,
+                    "%.2f"))
+                transformController_.SetSnapSteps(
+                    snapSteps[0], snapSteps[1], snapSteps[2]);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Move / Rotate / Scale snap steps");
             ImGui::SameLine();
             if (ImGui::Button("Play")) HandleLauncherAction(EditorLauncherAction::TestGame);
             ImGui::End();
@@ -1423,87 +1823,7 @@ namespace lts::editor
             ImGui::End();
 
             ImGui::Begin("World Outliner");
-            if (ImGui::Button("New Folder") &&
-                !sceneDocument_.GetSelectedEntityIds().empty())
-            {
-                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                const std::wstring folder = L"Folder " +
-                    std::to_wstring(outlinerFolderCounter_++);
-                if (sceneDocument_.MoveSelectionToFolder(folder))
-                    static_cast<void>(commandHistory_.Push(
-                        before, sceneDocument_.CreateSnapshot()));
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("To Root"))
-            {
-                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                bool changed = false;
-                for (const EditorEntityId entityId :
-                     sceneDocument_.GetSelectedEntityIds())
-                    changed = sceneDocument_.SetEntityParent(entityId, 0U) || changed;
-                if (changed) static_cast<void>(commandHistory_.Push(
-                    before, sceneDocument_.CreateSnapshot()));
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Clear Folder"))
-            {
-                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                if (sceneDocument_.MoveSelectionToFolder(L""))
-                    static_cast<void>(commandHistory_.Push(
-                        before, sceneDocument_.CreateSnapshot()));
-            }
-            ImGui::SameLine();
-            ImGui::TextDisabled("Ctrl: toggle  Shift: range");
-            const auto& entities = sceneDocument_.GetEntities();
-            for (std::size_t index = 0; index < entities.size(); ++index)
-            {
-                const EditorSceneEntity& entity = entities[index];
-                std::string visibleLabel;
-                if (!entity.editorFolder.empty())
-                    visibleLabel += "[" + ToUtf8(entity.editorFolder) + "] ";
-                if (entity.parentId != 0U) visibleLabel += "  > ";
-                visibleLabel += ToUtf8(entity.name);
-                const std::string label = visibleLabel + "##" +
-                    std::to_string(static_cast<unsigned long long>(entity.id));
-                if (ImGui::Selectable(
-                        label.c_str(), sceneDocument_.IsEntitySelected(entity.id)))
-                {
-                    const ImGuiIO& io = ImGui::GetIO();
-                    const EditorSelectionMode mode = io.KeyShift
-                        ? EditorSelectionMode::Range
-                        : (io.KeyCtrl ? EditorSelectionMode::Toggle
-                                      : EditorSelectionMode::Replace);
-                    static_cast<void>(
-                        sceneDocument_.SelectEntityByIndex(index, mode));
-                }
-                if (ImGui::BeginDragDropSource())
-                {
-                    const EditorEntityId draggedId = entity.id;
-                    ImGui::SetDragDropPayload(
-                        "LTS_OUTLINER_ENTITY", &draggedId, sizeof(draggedId));
-                    ImGui::Text("Parent %s", ToUtf8(entity.name).c_str());
-                    ImGui::EndDragDropSource();
-                }
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (const ImGuiPayload* payload =
-                            ImGui::AcceptDragDropPayload("LTS_OUTLINER_ENTITY"))
-                    {
-                        if (payload->IsDelivery() &&
-                            payload->DataSize == sizeof(EditorEntityId))
-                        {
-                            const EditorEntityId draggedId =
-                                *static_cast<const EditorEntityId*>(payload->Data);
-                            const EditorSceneSnapshot before =
-                                sceneDocument_.CreateSnapshot();
-                            if (sceneDocument_.SetEntityParent(draggedId, entity.id))
-                                static_cast<void>(commandHistory_.Push(
-                                    before, sceneDocument_.CreateSnapshot()));
-                        }
-                    }
-                    ImGui::EndDragDropTarget();
-                }
-            }
+            worldOutlinerPanel_.Draw(sceneDocument_, commandHistory_);
             ImGui::End();
 
             ImGui::Begin("Inspector");
@@ -1537,12 +1857,244 @@ namespace lts::editor
                     renameEntityId_ = 0U;
                 }
                 ImGui::Separator();
+                const std::size_t selectionCount =
+                    sceneDocument_.GetSelectedEntityIds().size();
+                if (selectionCount > 1U)
+                    ImGui::TextDisabled("%llu objects selected",
+                        static_cast<unsigned long long>(selectionCount));
+
                 EditorTransform transform = entity->transform;
-                if (ImGui::DragFloat3("Location", transform.position.data(), 0.1F) ||
-                    ImGui::DragFloat3("Rotation", transform.rotationDegrees.data(), 0.5F) ||
-                    ImGui::DragFloat3("Scale", transform.scale.data(), 0.01F, 0.001F, 1000.0F))
+                const auto hasMixed = [this](
+                    const std::array<float, 3U>& values,
+                    const int component)
                 {
-                    static_cast<void>(sceneDocument_.SetSelectedTransform(transform));
+                    for (const EditorEntityId id : sceneDocument_.GetSelectedEntityIds())
+                    {
+                        const EditorSceneEntity* candidate =
+                            sceneDocument_.GetSceneWorld().FindEntity(id);
+                        if (candidate == nullptr) continue;
+                        const std::array<float, 3U>* candidateValues =
+                            component == 0 ? &candidate->transform.position :
+                            (component == 1 ? &candidate->transform.rotationDegrees :
+                                              &candidate->transform.scale);
+                        if (*candidateValues != values) return true;
+                    }
+                    return false;
+                };
+                const auto editTransform = [this, &entity, &transform, &hasMixed](
+                    const char* label, std::array<float, 3U>& values,
+                    const float speed, const int component)
+                {
+                    const std::array<float, 3U> beforeValues = values;
+                    if (hasMixed(beforeValues, component))
+                        ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, true);
+                    const bool changed = ImGui::DragFloat3(
+                        label, values.data(), speed,
+                        component == 2 ? 0.001F : 0.0F,
+                        component == 2 ? 1000.0F : 0.0F);
+                    if (hasMixed(beforeValues, component)) ImGui::PopItemFlag();
+                    if (ImGui::IsItemActivated() && !inspectorEditActive_)
+                    {
+                        inspectorEditBefore_ = sceneDocument_.CreateSnapshot();
+                        inspectorEditActive_ = true;
+                    }
+                    if (changed)
+                    {
+                        if (transformController_.IsSnappingEnabled())
+                        {
+                            const std::array<float, 3U> steps =
+                                transformController_.GetSnapSteps();
+                            const float step = steps[static_cast<std::size_t>(component)];
+                            for (float& value : values)
+                                value = std::round(value / step) * step;
+                        }
+                        std::array<float, 3U> positionDelta{};
+                        std::array<float, 3U> rotationDelta{};
+                        std::array<float, 3U> scaleRatio{1.0F, 1.0F, 1.0F};
+                        for (std::size_t axis = 0U; axis < 3U; ++axis)
+                        {
+                            if (component == 0)
+                                positionDelta[axis] = values[axis] - beforeValues[axis];
+                            else if (component == 1)
+                                rotationDelta[axis] = values[axis] - beforeValues[axis];
+                            else
+                                scaleRatio[axis] = beforeValues[axis] != 0.0F
+                                    ? values[axis] / beforeValues[axis] : 1.0F;
+                        }
+                        static_cast<void>(sceneDocument_.ApplySelectionTransformDelta(
+                            positionDelta, rotationDelta, scaleRatio));
+                    }
+                    if (ImGui::IsItemDeactivatedAfterEdit() && inspectorEditActive_)
+                    {
+                        static_cast<void>(commandHistory_.Push(
+                            inspectorEditBefore_, sceneDocument_.CreateSnapshot()));
+                        inspectorEditBefore_ = {};
+                        inspectorEditActive_ = false;
+                    }
+                };
+                editTransform("Location", transform.position, 0.1F, 0);
+                editTransform("Rotation", transform.rotationDegrees, 0.5F, 1);
+                editTransform("Scale", transform.scale, 0.01F, 2);
+
+                if (ImGui::Button("Reset Transform"))
+                {
+                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                    if (sceneDocument_.SetSelectionTransform(EditorTransform{}))
+                        static_cast<void>(commandHistory_.Push(
+                            before, sceneDocument_.CreateSnapshot()));
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Copy"))
+                {
+                    transformClipboard_ = entity->transform;
+                    transformClipboardValid_ = true;
+                }
+                ImGui::SameLine();
+                if (!transformClipboardValid_) ImGui::BeginDisabled();
+                if (ImGui::Button("Paste"))
+                {
+                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                    if (sceneDocument_.SetSelectionTransform(transformClipboard_))
+                        static_cast<void>(commandHistory_.Push(
+                            before, sceneDocument_.CreateSnapshot()));
+                }
+                if (!transformClipboardValid_) ImGui::EndDisabled();
+
+                if (entity->terrain.has_value())
+                {
+                    ImGui::SeparatorText("Terrain Paint");
+                    ImGui::Checkbox("Enable Paint Mode", &terrainPaintMode_);
+                    ImGui::SliderFloat("Brush Size", &terrainBrushRadius_, 1.0F, 1024.0F, "%.1f");
+                    ImGui::SliderFloat("Strength", &terrainBrushStrength_, 0.01F, 1.0F, "%.2f");
+                    ImGui::SliderFloat("Falloff", &terrainBrushFalloff_, 0.0F, 1.0F, "%.2f");
+                    const auto& paintLayers=entity->terrain->layers;
+                    const char* preview=paintLayers.empty()?"Base Layer":paintLayers[0].name.c_str();
+                    if(terrainPaintLayer_<paintLayers.size())
+                        preview=paintLayers[terrainPaintLayer_].name.c_str();
+                    if(ImGui::BeginCombo("Paint Layer",preview))
+                    {
+                        for(std::size_t index=0;index<paintLayers.size()&&index<18U;++index)
+                        {
+                            ImGui::PushID(static_cast<int>(index));
+                            if(ImGui::Selectable(paintLayers[index].name.c_str(),terrainPaintLayer_==index))
+                                terrainPaintLayer_=index;
+                            ImGui::PopID();
+                        }
+                        ImGui::EndCombo();
+                    }
+                    if(ImGui::Button("Undo Paint")&&terrainRenderer_.CanUndoPaint())
+                        static_cast<void>(terrainRenderer_.UndoPaint());
+                    ImGui::SameLine();
+                    if(ImGui::Button("Redo Paint")&&terrainRenderer_.CanRedoPaint())
+                        static_cast<void>(terrainRenderer_.RedoPaint());
+                    ImGui::TextDisabled("LMB paint | Shift+LMB erase");
+                    ImGui::SeparatorText("Terrain Materials");
+                    ImGui::Separator();
+                    ImGui::TextUnformatted("Terrain");
+                    ImGui::TextWrapped("Asset: %s",
+                        ToUtf8(entity->terrain->assetPath).c_str());
+                    ImGui::TextDisabled("%llu material layers",
+                        static_cast<unsigned long long>(entity->terrain->layers.size()));
+                    for (std::size_t layerIndex = 0U;
+                         layerIndex < entity->terrain->layers.size(); ++layerIndex)
+                    {
+                        const auto& layer = entity->terrain->layers[layerIndex];
+                        ImGui::PushID(static_cast<int>(layerIndex));
+                        const std::string label = std::to_string(layerIndex) + ". " + layer.name;
+                        if (ImGui::TreeNode(label.c_str()))
+                        {
+                            bool visible = layer.visible;
+                            float scale[2]{layer.scaleU, layer.scaleV};
+                            float offset[2]{layer.offsetU, layer.offsetV};
+                            std::string diffuse = layer.diffusePath;
+                            std::string normal = layer.normalPath;
+                            if (ImGui::Checkbox("Visible", &visible))
+                            {
+                                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                if (sceneDocument_.UpdateSelectedTerrainLayer(
+                                        layerIndex, diffuse, normal, scale[0], scale[1],
+                                        offset[0], offset[1], visible))
+                                    static_cast<void>(commandHistory_.Push(
+                                        before, sceneDocument_.CreateSnapshot()));
+                            }
+                            const auto editPlacement = [this, layerIndex, &diffuse, &normal,
+                                &scale, &offset, visible](const char* caption, float* values,
+                                    const float speed, const float minimum, const float maximum)
+                            {
+                                const bool changed = ImGui::DragFloat2(
+                                    caption, values, speed, minimum, maximum);
+                                if (ImGui::IsItemActivated())
+                                {
+                                    terrainLayerEditBefore_ = sceneDocument_.CreateSnapshot();
+                                    terrainLayerEditIndex_ = layerIndex;
+                                    terrainLayerEditActive_ = true;
+                                }
+                                if (changed)
+                                {
+                                    static_cast<void>(sceneDocument_.UpdateSelectedTerrainLayer(
+                                        layerIndex, diffuse, normal, scale[0], scale[1],
+                                        offset[0], offset[1], visible));
+                                }
+                                if (ImGui::IsItemDeactivatedAfterEdit() &&
+                                    terrainLayerEditActive_ && terrainLayerEditIndex_ == layerIndex)
+                                {
+                                    static_cast<void>(commandHistory_.Push(
+                                        terrainLayerEditBefore_, sceneDocument_.CreateSnapshot()));
+                                    terrainLayerEditBefore_ = {};
+                                    terrainLayerEditIndex_ = InvalidEditorEntityIndex;
+                                    terrainLayerEditActive_ = false;
+                                }
+                            };
+                            editPlacement("Texture Size", scale, 1.0F, 0.001F, 100000.0F);
+                            editPlacement("Texture Offset", offset, 0.01F, -100000.0F, 100000.0F);
+                            ImGui::TextWrapped("Diffuse: %s", diffuse.c_str());
+                            if (ImGui::Button("Browse Diffuse..."))
+                            {
+                                std::filesystem::path selected;
+                                if (SelectTerrainTexture(reinterpret_cast<HWND>(
+                                        GetWindow().GetNativeHandle().Value()), selected))
+                                {
+                                    std::filesystem::path gameRoot = std::filesystem::current_path();
+                                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
+                                    std::error_code relativeError;
+                                    const auto relative = std::filesystem::relative(
+                                        selected, gameRoot, relativeError);
+                                    diffuse = relativeError ? selected.generic_u8string() :
+                                        relative.generic_u8string();
+                                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                    if (sceneDocument_.UpdateSelectedTerrainLayer(
+                                            layerIndex, diffuse, normal, scale[0], scale[1],
+                                            offset[0], offset[1], visible))
+                                        static_cast<void>(commandHistory_.Push(
+                                            before, sceneDocument_.CreateSnapshot()));
+                                }
+                            }
+                            ImGui::TextWrapped("Normal: %s", normal.c_str());
+                            if (ImGui::Button("Browse Normal..."))
+                            {
+                                std::filesystem::path selected;
+                                if (SelectTerrainTexture(reinterpret_cast<HWND>(
+                                        GetWindow().GetNativeHandle().Value()), selected))
+                                {
+                                    std::filesystem::path gameRoot = std::filesystem::current_path();
+                                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
+                                    std::error_code relativeError;
+                                    const auto relative = std::filesystem::relative(
+                                        selected, gameRoot, relativeError);
+                                    normal = relativeError ? selected.generic_u8string() :
+                                        relative.generic_u8string();
+                                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                    if (sceneDocument_.UpdateSelectedTerrainLayer(
+                                            layerIndex, diffuse, normal, scale[0], scale[1],
+                                            offset[0], offset[1], visible))
+                                        static_cast<void>(commandHistory_.Push(
+                                            before, sceneDocument_.CreateSnapshot()));
+                                }
+                            }
+                            ImGui::TreePop();
+                        }
+                        ImGui::PopID();
+                    }
                 }
             }
             else
@@ -1562,6 +2114,13 @@ namespace lts::editor
                 ImGuiWindowFlags_NoBackground |
                     ImGuiWindowFlags_NoScrollbar |
                     ImGuiWindowFlags_NoScrollWithMouse);
+            if(const ImGuiWindow* toolbarWindow=ImGui::FindWindowByName("Toolbar"))
+            {
+                const ImGuiWindow* viewportWindow=ImGui::FindWindowByName("Viewport");
+                if(viewportWindow!=nullptr&&toolbarWindow->DockId!=0U&&
+                    toolbarWindow->DockId==viewportWindow->DockId)
+                    levelEditorLayout_.RequestReset();
+            }
             const ImVec2 position = ImGui::GetCursorScreenPos();
             const ImVec2 available = ImGui::GetContentRegionAvail();
             imguiViewportX_ = position.x;
@@ -1569,6 +2128,62 @@ namespace lts::editor
             imguiViewportWidth_ = std::max(available.x, 1.0F);
             imguiViewportHeight_ = std::max(available.y, 1.0F);
             ImGui::InvisibleButton("SceneViewport", available);
+            const bool paintHovered=terrainPaintMode_&&ImGui::IsItemHovered();
+            terrainBrushHitValid_=false;
+            if(paintHovered)
+            {
+                const ImVec2 mouse=ImGui::GetMousePos();
+                const float localX=mouse.x-imguiViewportX_;
+                const float localY=mouse.y-imguiViewportY_;
+                EditorPickRay ray{};
+                if(localX>=0.0F&&localY>=0.0F&&
+                    cameraController_.BuildPickRay(
+                        static_cast<std::uint32_t>(localX),
+                        static_cast<std::uint32_t>(localY),
+                        static_cast<std::uint32_t>(imguiViewportWidth_),
+                        static_cast<std::uint32_t>(imguiViewportHeight_),ray)&&
+                    std::abs(ray.direction.y)>0.00001F)
+                {
+                    float distance=-ray.origin.y/ray.direction.y;
+                    if(distance>=0.0F)
+                    {
+                        float terrainHeight=0.0F;
+                        bool hit=false;
+                        for(std::uint32_t iteration=0;iteration<10U;++iteration)
+                        {
+                            const float x=ray.origin.x+ray.direction.x*distance;
+                            const float z=ray.origin.z+ray.direction.z*distance;
+                            if(!terrainRenderer_.TryGetSurfaceHeight(
+                                    sceneDocument_,x,z,terrainHeight))break;
+                            hit=true;
+                            const float refined=(terrainHeight-ray.origin.y)/ray.direction.y;
+                            if(refined<0.0F)break;
+                            distance=refined;
+                        }
+                        if(hit)
+                        {
+                            terrainBrushWorldX_=ray.origin.x+ray.direction.x*distance;
+                            terrainBrushWorldZ_=ray.origin.z+ray.direction.z*distance;
+                            terrainBrushHitValid_=true;
+                        }
+                    }
+                }
+                if(terrainBrushHitValid_&&ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    terrainPaintStrokeActive_=terrainRenderer_.BeginPaintStroke();
+            }
+            if(terrainPaintStrokeActive_&&terrainBrushHitValid_&&
+                ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+                static_cast<void>(terrainRenderer_.Paint(
+                    sceneDocument_,terrainBrushWorldX_,terrainBrushWorldZ_,terrainBrushRadius_,
+                    terrainBrushStrength_,terrainBrushFalloff_,terrainPaintLayer_,
+                    ImGui::GetIO().KeyShift));
+            }
+            if(terrainPaintStrokeActive_&&ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            {
+                static_cast<void>(terrainRenderer_.EndPaintStroke());
+                terrainPaintStrokeActive_=false;
+            }
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload* const payload =
@@ -1590,6 +2205,7 @@ namespace lts::editor
                                 static_cast<std::uint32_t>(imguiViewportHeight_),
                                 ray))
                         {
+                            const std::filesystem::path path = FromUtf8(assetPath);
                             constexpr float fallbackDistance = 10.0F;
                             float distance = fallbackDistance;
                             if (std::abs(ray.direction.y) > 0.00001F)
@@ -1600,12 +2216,36 @@ namespace lts::editor
                                     distance = groundDistance;
                             }
 
+                            // Refine the old Y=0 plane hit against the actual
+                            // terrain height. A few fixed-point iterations are
+                            // enough because the heightfield is continuous.
+                            float terrainHeight = 0.0F;
+                            if (std::abs(ray.direction.y) > 0.00001F)
+                            {
+                                for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
+                                {
+                                    const float x = ray.origin.x + ray.direction.x * distance;
+                                    const float z = ray.origin.z + ray.direction.z * distance;
+                                    if (!terrainRenderer_.TryGetSurfaceHeight(
+                                            sceneDocument_, x, z, terrainHeight)) break;
+                                    const float refinedDistance =
+                                        (terrainHeight - ray.origin.y) / ray.direction.y;
+                                    if (refinedDistance < 0.0F) break;
+                                    distance = refinedDistance;
+                                }
+                            }
+
                             EditorTransform transform{};
                             transform.position = {
                                 ray.origin.x + ray.direction.x * distance,
-                                0.0F,
+                                terrainHeight,
                                 ray.origin.z + ray.direction.z * distance};
-                            const std::filesystem::path path = FromUtf8(assetPath);
+                            DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
+                            if (staticMeshRenderer_.TryGetMeshBounds(
+                                    path.generic_wstring(), boundsMinimum, boundsMaximum))
+                            {
+                                transform.position[1] -= boundsMinimum.y;
+                            }
                             const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
                             if (sceneDocument_.CreateStaticMeshEntity(
                                     path.stem().wstring(),
@@ -1634,6 +2274,12 @@ namespace lts::editor
 
     bool EditorApplication::ExecuteEditorCommand(const EditorCommand command)
     {
+        if (terrainPaintMode_ && command == EditorCommand::Undo &&
+            terrainRenderer_.CanUndoPaint())
+            return terrainRenderer_.UndoPaint();
+        if (terrainPaintMode_ && command == EditorCommand::Redo &&
+            terrainRenderer_.CanRedoPaint())
+            return terrainRenderer_.RedoPaint();
         return commandSystem_.Execute(
             command, sceneDocument_, commandHistory_, levelDocument_,
             transformController_);
@@ -1716,10 +2362,17 @@ namespace lts::editor
                     viewProjection))
             {
                 result = gridRenderer_.Render(*commandContext_, viewProjection);
+                if (!engine::graphics::Failed(result)) result = terrainRenderer_.Render(*commandContext_, sceneDocument_, viewProjection, cameraController_.GetPosition());
                 if (!engine::graphics::Failed(result)) result = staticMeshRenderer_.Render(*commandContext_, sceneDocument_, viewProjection);
                 if (!engine::graphics::Failed(result)) result = sceneRenderer_.Render(
                     *commandContext_, sceneDocument_, viewProjection,
                     transformController_.GetVisualState(), &staticMeshRenderer_);
+                if (!engine::graphics::Failed(result) && terrainPaintMode_ &&
+                    terrainBrushHitValid_)
+                    result = terrainRenderer_.RenderBrush(
+                        *commandContext_, sceneDocument_, viewProjection,
+                        terrainBrushWorldX_, terrainBrushWorldZ_, terrainBrushRadius_,
+                        ImGui::GetIO().KeyShift);
             }
         }
 
@@ -2008,6 +2661,11 @@ namespace lts::editor
                         sceneWidth, sceneHeight, viewProjection))
                 {
                     result = gridRenderer_.Render(*commandContext_, viewProjection);
+                    if (!engine::graphics::Failed(result))
+                    {
+                        result = terrainRenderer_.Render(*commandContext_, sceneDocument_, viewProjection,
+                            cameraController_.GetPosition());
+                    }
                     if (!engine::graphics::Failed(result))
                     {
                         result = staticMeshRenderer_.Render(

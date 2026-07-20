@@ -432,6 +432,11 @@ namespace lts::editor
         return moveSpeed_;
     }
 
+    DirectX::XMFLOAT3 EditorCameraController::GetPosition() const noexcept
+    {
+        return position_;
+    }
+
     void EditorCameraController::EndMouseLook() noexcept
     {
         if (!mouseLookActive_)

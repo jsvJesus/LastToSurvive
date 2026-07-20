@@ -24,6 +24,30 @@ namespace lts::editor
                 : EditorTransformSpace::World;
     }
 
+    void EditorTransformController::SetSnappingEnabled(
+        const bool enabled) noexcept
+    {
+        snappingEnabled_ = enabled;
+    }
+
+    bool EditorTransformController::IsSnappingEnabled() const noexcept
+    {
+        return snappingEnabled_;
+    }
+
+    void EditorTransformController::SetSnapSteps(
+        const float move, const float rotate, const float scale) noexcept
+    {
+        moveSnap_ = std::max(move, 0.001F);
+        rotateSnap_ = std::max(rotate, 0.001F);
+        scaleSnap_ = std::max(scale, 0.001F);
+    }
+
+    std::array<float, 3U> EditorTransformController::GetSnapSteps() const noexcept
+    {
+        return {moveSnap_, rotateSnap_, scaleSnap_};
+    }
+
     namespace
     {
         constexpr float GizmoLength = 2.5F;
@@ -938,7 +962,7 @@ namespace lts::editor
         EditorTransform transform =
             dragStartTransform_;
 
-        const bool snapping =
+        const bool snapping = snappingEnabled_ ||
             IsKeyDown(VK_CONTROL) ||
             IsKeyDown(VK_LCONTROL) ||
             IsKeyDown(VK_RCONTROL);
@@ -986,7 +1010,7 @@ namespace lts::editor
             {
                 angleDegrees = SnapValue(
                     angleDegrees,
-                    15.0F);
+                    rotateSnap_);
             }
 
             transform.rotationDegrees[
@@ -1031,7 +1055,7 @@ namespace lts::editor
                 {
                     delta = SnapValue(
                         delta,
-                        0.5F);
+                        moveSnap_);
                 }
 
                 transform.position[0] +=
@@ -1051,7 +1075,7 @@ namespace lts::editor
                 {
                     delta = SnapValue(
                         delta,
-                        0.1F);
+                        scaleSnap_);
                 }
 
                 const std::size_t axisIndex =
@@ -1067,7 +1091,23 @@ namespace lts::editor
             }
         }
 
-        if (document.SetSelectedTransform(transform))
+        std::array<float, 3U> positionDelta{};
+        std::array<float, 3U> rotationDelta{};
+        std::array<float, 3U> scaleRatio{1.0F, 1.0F, 1.0F};
+        for (std::size_t axis = 0U; axis < 3U; ++axis)
+        {
+            positionDelta[axis] =
+                transform.position[axis] - dragStartTransform_.position[axis];
+            rotationDelta[axis] = transform.rotationDegrees[axis] -
+                dragStartTransform_.rotationDegrees[axis];
+            if (std::abs(dragStartTransform_.scale[axis]) > Epsilon)
+                scaleRatio[axis] = transform.scale[axis] /
+                    dragStartTransform_.scale[axis];
+        }
+
+        document.RestoreSnapshot(dragBefore_, false);
+        if (document.ApplySelectionTransformDelta(
+                positionDelta, rotationDelta, scaleRatio))
         {
             dragChanged_ = true;
             return true;

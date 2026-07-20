@@ -145,6 +145,11 @@ namespace engine::scene
         return entities_;
     }
 
+    std::vector<SceneEntity>& SceneWorld::GetEntitiesMutable() noexcept
+    {
+        return entities_;
+    }
+
     SceneEntityId
         SceneWorld::GetNextEntityId() const noexcept
     {
@@ -277,6 +282,13 @@ namespace engine::scene
                 if (!entity.lootContainer.has_value())
                 {
                     entity.lootContainer.emplace();
+                }
+                break;
+
+            case SceneEntityKind::Terrain:
+                if (!entity.terrain.has_value())
+                {
+                    entity.terrain.emplace();
                 }
                 break;
 

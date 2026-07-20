@@ -410,6 +410,9 @@ namespace lts::editor
                         color);
                     break;
 
+                case EditorEntityKind::Terrain:
+                    break;
+
                 case EditorEntityKind::DirectionalLight:
                 {
                     const DirectX::XMFLOAT3 origin =
@@ -521,7 +524,7 @@ namespace lts::editor
                     break;
             }
 
-            if (selected)
+            if (selected && entity.kind != EditorEntityKind::Terrain)
             {
                 DirectX::XMFLOAT3 minimum{-1.0F, -0.10F, -1.0F};
                 DirectX::XMFLOAT3 maximum{1.0F, 2.1F, 1.0F};

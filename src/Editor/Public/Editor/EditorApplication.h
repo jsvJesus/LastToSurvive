@@ -10,11 +10,13 @@
 #include "Editor/EditorLauncherController.h"
 #include "Editor/LevelEditorUiController.h"
 #include "Editor/LevelEditorLayout.h"
+#include "Editor/EditorWorldOutlinerPanel.h"
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
 #include "Editor/EditorShell.h"
 #include "Editor/EditorStaticMeshRenderer.h"
 #include "Editor/EditorTransformController.h"
+#include "Editor/EditorTerrainRenderer.h"
 
 #include <Application/Application.h>
 
@@ -124,6 +126,8 @@ namespace lts::editor
         EditorStaticMeshRenderer
             staticMeshRenderer_;
 
+        EditorTerrainRenderer terrainRenderer_;
+
         EditorSceneRenderer sceneRenderer_;
 
         EditorShell editorShell_;
@@ -164,9 +168,28 @@ namespace lts::editor
         std::filesystem::path contentSelectedDirectory_;
         std::vector<std::filesystem::path> contentMeshFiles_;
         std::array<char, 128U> contentSearch_{};
+        std::filesystem::path contentSelectedAsset_;
+        std::filesystem::path loadedTerrainAssetPath_;
+        bool contentGridView_ = true;
         std::array<char, 256U> entityRenameBuffer_{};
         EditorEntityId renameEntityId_ = 0U;
-        std::uint32_t outlinerFolderCounter_ = 1U;
+        EditorWorldOutlinerPanel worldOutlinerPanel_;
+        EditorSceneSnapshot inspectorEditBefore_;
+        EditorTransform transformClipboard_;
+        bool inspectorEditActive_ = false;
+        EditorSceneSnapshot terrainLayerEditBefore_;
+        std::size_t terrainLayerEditIndex_ = InvalidEditorEntityIndex;
+        bool terrainLayerEditActive_ = false;
+        bool terrainPaintMode_ = false;
+        bool terrainPaintStrokeActive_ = false;
+        std::size_t terrainPaintLayer_ = 0U;
+        float terrainBrushRadius_ = 64.0F;
+        float terrainBrushStrength_ = 0.25F;
+        float terrainBrushFalloff_ = 0.5F;
+        float terrainBrushWorldX_ = 0.0F;
+        float terrainBrushWorldZ_ = 0.0F;
+        bool terrainBrushHitValid_ = false;
+        bool transformClipboardValid_ = false;
 
         engine::graphics::CommandContext*
             commandContext_ = nullptr;

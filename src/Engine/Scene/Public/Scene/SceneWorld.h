@@ -49,6 +49,9 @@ namespace engine::scene
         const std::vector<SceneEntity>&
             GetEntities() const noexcept;
 
+        [[nodiscard]] std::vector<SceneEntity>&
+            GetEntitiesMutable() noexcept;
+
         [[nodiscard]]
         SceneEntityId GetNextEntityId() const noexcept;
 

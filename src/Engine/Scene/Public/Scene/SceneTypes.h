@@ -17,7 +17,8 @@ namespace engine::scene
         DirectionalLight,
         SpawnPoint,
         Anomaly,
-        LootContainer
+        LootContainer,
+        Terrain
     };
 
     struct SceneTransform final
@@ -65,6 +66,25 @@ namespace engine::scene
 
         bool visible = true;
         bool castShadows = true;
+    };
+
+    struct TerrainComponent final
+    {
+        struct LayerOverride final
+        {
+            std::string name;
+            std::string diffusePath;
+            std::string normalPath;
+            float scaleU = 1.0F;
+            float scaleV = 1.0F;
+            float offsetU = 0.0F;
+            float offsetV = 0.0F;
+            bool visible = true;
+        };
+        std::wstring assetPath;
+        bool visible = true;
+        bool castShadows = true;
+        std::vector<LayerOverride> layers;
     };
 
     struct DirectionalLightComponent final
@@ -133,6 +153,8 @@ namespace engine::scene
 
         std::optional<StaticMeshComponent>
             staticMesh;
+
+        std::optional<TerrainComponent> terrain;
 
         std::optional<DirectionalLightComponent>
             directionalLight;

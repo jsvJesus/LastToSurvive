@@ -61,6 +61,10 @@ namespace lts::editor
 
         void SetOperation(EditorTransformOperation operation) noexcept;
         void ToggleSpace() noexcept;
+        void SetSnappingEnabled(bool enabled) noexcept;
+        [[nodiscard]] bool IsSnappingEnabled() const noexcept;
+        void SetSnapSteps(float move, float rotate, float scale) noexcept;
+        [[nodiscard]] std::array<float, 3U> GetSnapSteps() const noexcept;
 
     private:
         [[nodiscard]]
@@ -126,5 +130,9 @@ namespace lts::editor
         float dragStartParameter_ = 0.0F;
 
         bool dragChanged_ = false;
+        bool snappingEnabled_ = false;
+        float moveSnap_ = 0.5F;
+        float rotateSnap_ = 15.0F;
+        float scaleSnap_ = 0.1F;
     };
 }

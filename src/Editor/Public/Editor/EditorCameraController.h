@@ -63,6 +63,7 @@ namespace lts::editor
 
         [[nodiscard]]
         float GetMoveSpeed() const noexcept;
+        [[nodiscard]] DirectX::XMFLOAT3 GetPosition() const noexcept;
 
     private:
         void EndMouseLook() noexcept;

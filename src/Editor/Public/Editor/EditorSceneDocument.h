@@ -3,6 +3,7 @@
 #include <Scene/SceneWorld.h>
 
 #include <cstddef>
+#include <array>
 #include <limits>
 #include <string>
 #include <vector>
@@ -77,6 +78,18 @@ namespace lts::editor
             std::wstring assetPath,
             const EditorTransform& transform);
 
+        [[nodiscard]] bool CreateTerrainEntity(
+            std::wstring name,
+            std::wstring assetPath,
+            const EditorTransform& transform);
+
+        [[nodiscard]] bool SetSelectedTerrainLayers(
+            std::vector<engine::scene::TerrainComponent::LayerOverride> layers);
+        [[nodiscard]] bool UpdateSelectedTerrainLayer(
+            std::size_t index, std::string diffusePath, std::string normalPath,
+            float scaleU, float scaleV, float offsetU, float offsetV,
+            bool visible) noexcept;
+
         [[nodiscard]]
         const std::vector<EditorSceneEntity>&
             GetEntities() const noexcept;
@@ -133,6 +146,17 @@ namespace lts::editor
             EditorEntityId parentId) noexcept;
 
         [[nodiscard]] bool MoveSelectionToFolder(std::wstring folder);
+        [[nodiscard]] bool RenameFolder(
+            const std::wstring& oldName,
+            std::wstring newName);
+
+        [[nodiscard]] bool ApplySelectionTransformDelta(
+            const std::array<float, 3U>& positionDelta,
+            const std::array<float, 3U>& rotationDelta,
+            const std::array<float, 3U>& scaleRatio) noexcept;
+
+        [[nodiscard]] bool SetSelectionTransform(
+            const EditorTransform& transform) noexcept;
 
         [[nodiscard]]
         EditorSceneSnapshot

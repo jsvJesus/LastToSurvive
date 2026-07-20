@@ -201,6 +201,70 @@ namespace lts::editor
         return true;
     }
 
+    bool EditorSceneDocument::CreateTerrainEntity(
+        std::wstring name, std::wstring assetPath,
+        const EditorTransform& transform)
+    {
+        if (assetPath.empty()) return false;
+        for (EditorSceneEntity& existing : world_.GetEntitiesMutable())
+        {
+            if (!existing.terrain.has_value()) continue;
+            existing.terrain->assetPath = std::move(assetPath);
+            existing.transform = transform;
+            selectedIndex_ = world_.FindEntityIndex(existing.id);
+            selectedEntityIds_.assign(1U, existing.id);
+            selectionAnchorId_ = existing.id;
+            dirty_ = true;
+            return true;
+        }
+        name = MakeUniqueName(name.empty() ? L"Terrain" : std::move(name));
+        const EditorEntityId id = world_.CreateEntity(
+            std::move(name), EditorEntityKind::Terrain, transform);
+        EditorSceneEntity* entity = world_.FindEntity(id);
+        if (entity == nullptr) return false;
+        entity->terrain.emplace();
+        entity->terrain->assetPath = std::move(assetPath);
+        entity->terrain->visible = true;
+        entity->terrain->castShadows = true;
+        selectedIndex_ = world_.FindEntityIndex(id);
+        selectedEntityIds_.assign(1U, id);
+        selectionAnchorId_ = id;
+        dirty_ = true;
+        return true;
+    }
+
+    bool EditorSceneDocument::SetSelectedTerrainLayers(
+        std::vector<engine::scene::TerrainComponent::LayerOverride> layers)
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+        if (entity == nullptr || !entity->terrain.has_value()) return false;
+        entity->terrain->layers = std::move(layers);
+        dirty_ = true;
+        return true;
+    }
+
+    bool EditorSceneDocument::UpdateSelectedTerrainLayer(
+        const std::size_t index, std::string diffusePath, std::string normalPath,
+        const float scaleU, const float scaleV, const float offsetU,
+        const float offsetV, const bool visible) noexcept
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+        if (entity == nullptr || !entity->terrain.has_value() ||
+            index >= entity->terrain->layers.size() ||
+            !std::isfinite(scaleU) || !std::isfinite(scaleV) ||
+            !std::isfinite(offsetU) || !std::isfinite(offsetV) ||
+            scaleU <= 0.0F || scaleV <= 0.0F) return false;
+        auto& layer = entity->terrain->layers[index];
+        if (layer.scaleU == scaleU && layer.scaleV == scaleV &&
+            layer.offsetU == offsetU && layer.offsetV == offsetV &&
+            layer.diffusePath == diffusePath && layer.normalPath == normalPath &&
+            layer.visible == visible) return false;
+        layer.diffusePath = std::move(diffusePath); layer.normalPath = std::move(normalPath);
+        layer.scaleU = scaleU; layer.scaleV = scaleV;
+        layer.offsetU = offsetU; layer.offsetV = offsetV; layer.visible = visible;
+        dirty_ = true; return true;
+    }
+
     const std::vector<EditorSceneEntity>&
         EditorSceneDocument::GetEntities() const noexcept
     {
@@ -546,6 +610,70 @@ namespace lts::editor
             if (entity != nullptr && entity->editorFolder != folder)
             {
                 entity->editorFolder = folder;
+                changed = true;
+            }
+        }
+        dirty_ = dirty_ || changed;
+        return changed;
+    }
+
+    bool EditorSceneDocument::RenameFolder(
+        const std::wstring& oldName, std::wstring newName)
+    {
+        if (oldName.empty() || oldName == newName) return false;
+        bool changed = false;
+        for (const EditorSceneEntity& entity : world_.GetEntities())
+        {
+            if (entity.editorFolder != oldName) continue;
+            if (EditorSceneEntity* const mutableEntity = world_.FindEntity(entity.id))
+            {
+                mutableEntity->editorFolder = newName;
+                changed = true;
+            }
+        }
+        dirty_ = dirty_ || changed;
+        return changed;
+    }
+
+    bool EditorSceneDocument::ApplySelectionTransformDelta(
+        const std::array<float, 3U>& positionDelta,
+        const std::array<float, 3U>& rotationDelta,
+        const std::array<float, 3U>& scaleRatio) noexcept
+    {
+        bool changed = false;
+        for (const EditorEntityId entityId : selectedEntityIds_)
+        {
+            EditorSceneEntity* const entity = world_.FindEntity(entityId);
+            if (entity == nullptr) continue;
+            EditorTransform transform = entity->transform;
+            for (std::size_t axis = 0U; axis < 3U; ++axis)
+            {
+                transform.position[axis] += positionDelta[axis];
+                transform.rotationDegrees[axis] += rotationDelta[axis];
+                transform.scale[axis] = std::max(
+                    0.001F, transform.scale[axis] * scaleRatio[axis]);
+            }
+            if (!TransformsEqual(transform, entity->transform))
+            {
+                entity->transform = transform;
+                changed = true;
+            }
+        }
+        dirty_ = dirty_ || changed;
+        return changed;
+    }
+
+    bool EditorSceneDocument::SetSelectionTransform(
+        const EditorTransform& transform) noexcept
+    {
+        if (!engine::scene::SceneWorld::IsFiniteTransform(transform)) return false;
+        bool changed = false;
+        for (const EditorEntityId entityId : selectedEntityIds_)
+        {
+            EditorSceneEntity* const entity = world_.FindEntity(entityId);
+            if (entity != nullptr && !TransformsEqual(entity->transform, transform))
+            {
+                entity->transform = transform;
                 changed = true;
             }
         }

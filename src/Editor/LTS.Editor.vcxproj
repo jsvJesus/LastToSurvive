@@ -239,10 +239,12 @@
     <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
     <ClInclude Include="Public\Editor\LevelEditorUiController.h" />
     <ClInclude Include="Public\Editor\LevelEditorLayout.h" />
+    <ClInclude Include="Public\Editor\EditorWorldOutlinerPanel.h" />
     <ClInclude Include="Public\Editor\EditorLauncherController.h" />
     <ClInclude Include="Public\Editor\EditorSceneDocument.h" />
     <ClInclude Include="Public\Editor\EditorScenePicker.h" />
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
+    <ClInclude Include="Public\Editor\EditorTerrainRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShaderCompiler.h" />
     <ClInclude Include="Public\Editor\EditorShell.h" />
     <ClInclude Include="Public\Editor\EditorStaticMeshRenderer.h" />
@@ -262,10 +264,12 @@
     <ClCompile Include="Private\EditorLevelSerializer.cpp" />
     <ClCompile Include="Private\LevelEditorUiController.cpp" />
     <ClCompile Include="Private\LevelEditorLayout.cpp" />
+    <ClCompile Include="Private\EditorWorldOutlinerPanel.cpp" />
     <ClCompile Include="Private\EditorLauncherController.cpp" />
     <ClCompile Include="Private\EditorSceneDocument.cpp" />
     <ClCompile Include="Private\EditorScenePicker.cpp" />
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
+    <ClCompile Include="Private\EditorTerrainRenderer.cpp" />
     <ClCompile Include="Private\EditorShaderCompiler.cpp" />
     <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\EditorStaticMeshRenderer.cpp" />

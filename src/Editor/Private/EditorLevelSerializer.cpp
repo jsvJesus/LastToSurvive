@@ -763,6 +763,9 @@ namespace lts::editor
                 case EditorEntityKind::LootContainer:
                     return "LootContainer";
 
+                case EditorEntityKind::Terrain:
+                    return "Terrain";
+
                 case EditorEntityKind::Empty:
                 default:
                     return "Empty";
@@ -795,6 +798,10 @@ namespace lts::editor
             {
                 kind =
                     EditorEntityKind::LootContainer;
+            }
+            else if (value == "Terrain")
+            {
+                kind = EditorEntityKind::Terrain;
             }
             else if (value == "Empty")
             {
@@ -1165,6 +1172,40 @@ namespace lts::editor
 
                 entity.staticMesh =
                     std::move(value);
+            }
+
+            if (const JsonValue* component = RequireField(*components, "Terrain"))
+            {
+                engine::scene::TerrainComponent value;
+                std::string asset;
+                if (!ReadString(RequireField(*component, "asset"), asset) ||
+                    !FromUtf8(asset, value.assetPath) ||
+                    !ReadBoolean(RequireField(*component, "visible"), value.visible) ||
+                    !ReadBoolean(RequireField(*component, "castShadows"), value.castShadows))
+                {
+                    return false;
+                }
+                if (const JsonValue* layers = component->Find("layers"))
+                {
+                    if (layers->type != JsonValue::Type::Array) return false;
+                    for (const JsonValue& layerJson : layers->array)
+                    {
+                        engine::scene::TerrainComponent::LayerOverride layer;
+                        if (layerJson.type != JsonValue::Type::Object ||
+                            !ReadString(RequireField(layerJson, "name"), layer.name) ||
+                            !ReadString(RequireField(layerJson, "diffuse"), layer.diffusePath) ||
+                            !ReadString(RequireField(layerJson, "normal"), layer.normalPath) ||
+                            !ReadFloat(RequireField(layerJson, "scaleU"), layer.scaleU) ||
+                            !ReadFloat(RequireField(layerJson, "scaleV"), layer.scaleV) ||
+                            !ReadBoolean(RequireField(layerJson, "visible"), layer.visible)) return false;
+                        if (const JsonValue* offset = layerJson.Find("offsetU");
+                            offset != nullptr && !ReadFloat(offset, layer.offsetU)) return false;
+                        if (const JsonValue* offset = layerJson.Find("offsetV");
+                            offset != nullptr && !ReadFloat(offset, layer.offsetV)) return false;
+                        value.layers.push_back(std::move(layer));
+                    }
+                }
+                entity.terrain = std::move(value);
             }
 
             if (
@@ -1561,6 +1602,38 @@ namespace lts::editor
                                 : "false"
                         )
                         << '}';
+                }
+
+                if (entity.terrain.has_value())
+                {
+                    std::string asset;
+                    if (!ToUtf8(entity.terrain->assetPath, asset))
+                    {
+                        error = L"Failed to convert a terrain asset path.";
+                        return false;
+                    }
+                    output << ",\n        \"Terrain\": {\"asset\": ";
+                    WriteJsonString(output, asset);
+                    output << ", \"visible\": "
+                           << (entity.terrain->visible ? "true" : "false")
+                           << ", \"castShadows\": "
+                           << (entity.terrain->castShadows ? "true" : "false")
+                           << ", \"layers\": [";
+                    for (std::size_t layerIndex = 0U;
+                         layerIndex < entity.terrain->layers.size(); ++layerIndex)
+                    {
+                        if (layerIndex != 0U) output << ", ";
+                        const auto& layer = entity.terrain->layers[layerIndex];
+                        output << "{\"name\": "; WriteJsonString(output, layer.name);
+                        output << ", \"diffuse\": "; WriteJsonString(output, layer.diffusePath);
+                        output << ", \"normal\": "; WriteJsonString(output, layer.normalPath);
+                        output << ", \"scaleU\": " << layer.scaleU
+                               << ", \"scaleV\": " << layer.scaleV
+                               << ", \"offsetU\": " << layer.offsetU
+                               << ", \"offsetV\": " << layer.offsetV
+                               << ", \"visible\": " << (layer.visible ? "true" : "false") << '}';
+                    }
+                    output << "]}";
                 }
 
                 if (entity.directionalLight.has_value())
