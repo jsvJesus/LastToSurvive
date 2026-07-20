@@ -18,6 +18,7 @@
 #include <Runtime/EngineMode.h>
 #include <Runtime/RendererBackend.h>
 
+#include <cmath>
 #include <filesystem>
 #include <algorithm>
 #include <chrono>
@@ -113,8 +114,14 @@ namespace lts::editor
                     CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dialog)))) return false;
             constexpr COMDLG_FILTERSPEC filters[] =
             {
-                {L"Terrain textures", L"*.dds;*.png;*.tga;*.jpg;*.jpeg"},
-                {L"All files", L"*.*"}
+                {
+                    L"DirectDraw Surface (*.dds)",
+                    L"*.dds"
+                },
+                {
+                    L"All files (*.*)",
+                    L"*.*"
+                }
             };
             if (FAILED(dialog->SetFileTypes(2U, filters)) ||
                 FAILED(dialog->SetTitle(L"Select terrain layer texture")) ||
@@ -142,6 +149,63 @@ namespace lts::editor
                 result.push_back(std::move(layer));
             }
             return result;
+        }
+
+        void FocusCameraOnTerrain(
+            EditorCameraController& camera,
+            const engine::assets::TerrainAsset& terrain,
+            const EditorTransform& transform)
+        {
+            const float localWidth =
+                static_cast<float>(
+                    terrain.width - 1U) *
+                terrain.tileSize;
+
+            const float localDepth =
+                static_cast<float>(
+                    terrain.height - 1U) *
+                terrain.tileSize;
+
+            const float worldWidth =
+                localWidth *
+                std::fabs(
+                    transform.scale[0]);
+
+            const float worldDepth =
+                localDepth *
+                std::fabs(
+                    transform.scale[2]);
+
+            const float amplitude =
+                (std::max)(
+                    std::fabs(
+                        terrain.heightOffset),
+                    std::fabs(
+                        terrain.heightOffset +
+                        terrain.heightScale));
+
+            camera.FocusOn(
+                {
+                    transform.position[0] +
+                        localWidth *
+                        transform.scale[0] *
+                        0.5F,
+
+                    transform.position[1] +
+                        amplitude *
+                        std::fabs(
+                            transform.scale[1]) *
+                        0.35F,
+
+                    transform.position[2] +
+                        localDepth *
+                        transform.scale[2] *
+                        0.5F
+                },
+                (std::max)(
+                    worldWidth,
+                    worldDepth) *
+                0.64F);
         }
 
         [[nodiscard]]
@@ -449,32 +513,36 @@ namespace lts::editor
                     std::filesystem::path terrainPath = sceneEntity.terrain->assetPath;
                     if (terrainPath.is_relative()) terrainPath = gameRoot / terrainPath;
                     terrainPath = terrainPath.lexically_normal();
-                    if (terrainPath != loadedTerrainAssetPath_ &&
-                        terrainRenderer_.LoadTerrain(graphicsDevice_, terrainPath))
+                    if (terrainPath !=
+                        loadedTerrainAssetPath_)
                     {
-                        loadedTerrainAssetPath_ = terrainPath;
-                        if (result.sceneReplaced)
+                        /*
+                         * Запоминаем саму попытку.
+                         * Даже повреждённый файл не будет
+                         * перечитываться каждый кадр.
+                         */
+                        loadedTerrainAssetPath_ =
+                            terrainPath;
+
+                        if (terrainRenderer_.
+                                LoadTerrain(
+                                    graphicsDevice_,
+                                    terrainPath) &&
+                            result.sceneReplaced)
                         {
-                            engine::assets::TerrainAsset terrainAsset;
+                            engine::assets::TerrainAsset
+                                terrainAsset;
+
                             if (engine::assets::Succeeded(
-                                    engine::assets::TerrainAsset::Load(
-                                        terrainPath, terrainAsset)))
+                                    engine::assets::
+                                        TerrainAsset::Load(
+                                            terrainPath,
+                                            terrainAsset)))
                             {
-                                const float terrainWidth =
-                                    static_cast<float>(terrainAsset.width - 1U) *
-                                    terrainAsset.tileSize;
-                                const float terrainDepth =
-                                    static_cast<float>(terrainAsset.height - 1U) *
-                                    terrainAsset.tileSize;
-                                cameraController_.FocusOn(
-                                    {
-                                        sceneEntity.transform.position[0] + terrainWidth * 0.5F,
-                                        sceneEntity.transform.position[1] +
-                                            terrainAsset.heightOffset +
-                                            terrainAsset.heightScale * 0.35F,
-                                        sceneEntity.transform.position[2] + terrainDepth * 0.5F
-                                    },
-                                    (std::max)(terrainWidth, terrainDepth) * 0.64F);
+                                FocusCameraOnTerrain(
+                                    cameraController_,
+                                    terrainAsset,
+                                    sceneEntity.transform);
                             }
                         }
                     }
@@ -1604,79 +1672,390 @@ namespace lts::editor
                 if (ImGui::MenuItem("Save", "Ctrl+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevel));
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevelAs));
                 ImGui::Separator();
-                if (ImGui::MenuItem("Import Legacy Terrain2..."))
+                if (ImGui::MenuItem(
+                        "Import Legacy Terrain2..."))
                 {
-                    std::filesystem::path source;
-                    const HWND owner = reinterpret_cast<HWND>(
-                        GetWindow().GetNativeHandle().Value());
-                    if (SelectFolder(owner, source))
+                    std::filesystem::path selectedFolder;
+
+                    const HWND owner =
+                        reinterpret_cast<HWND>(
+                            GetWindow().
+                                GetNativeHandle().
+                                Value());
+
+                    if (SelectFolder(
+                            owner,
+                            selectedFolder))
                     {
-                        std::filesystem::path gameRoot = std::filesystem::current_path();
-                        if (gameRoot.filename() != L"game") gameRoot /= L"game";
-                        const std::filesystem::path destination = gameRoot / L"Data" /
-                            L"Terrains" / (source.parent_path().filename().wstring() + L".ltsterrain");
-                        const engine::assets::AssetResult result =
-                            engine::assets::LegacyTerrain2Importer::Import(source, destination);
-                        if (engine::assets::Succeeded(result) &&
-                            terrainRenderer_.LoadTerrain(graphicsDevice_, destination))
+                        /*
+                         * Можно выбрать либо сам Terrain2,
+                         * либо корневую папку карты.
+                         */
+                        std::filesystem::path
+                            terrain2Directory =
+                                selectedFolder;
+
+                        std::error_code pathError;
+
+                        if (!std::filesystem::
+                                is_regular_file(
+                                    terrain2Directory /
+                                        L"terrain2.ini",
+                                    pathError))
                         {
-                            loadedTerrainAssetPath_ = destination.lexically_normal();
-                            std::error_code relativeError;
-                            const std::filesystem::path relative = std::filesystem::relative(
-                                destination, gameRoot, relativeError);
-                            const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                            if (!relativeError && sceneDocument_.CreateTerrainEntity(
-                                    destination.stem().wstring(), relative.generic_wstring(), {}))
+                            pathError.clear();
+
+                            const auto nestedDirectory =
+                                selectedFolder /
+                                L"Terrain2";
+
+                            if (std::filesystem::
+                                    is_regular_file(
+                                        nestedDirectory /
+                                            L"terrain2.ini",
+                                        pathError))
                             {
-                                engine::assets::TerrainAsset terrainAsset;
-                                if (engine::assets::Succeeded(engine::assets::TerrainAsset::Load(
-                                        destination, terrainAsset)))
-                                    static_cast<void>(sceneDocument_.SetSelectedTerrainLayers(
-                                        BuildTerrainLayerOverrides(terrainAsset)));
-                                static_cast<void>(commandHistory_.Push(
-                                    before, sceneDocument_.CreateSnapshot()));
+                                terrain2Directory =
+                                    nestedDirectory;
                             }
-                            cameraController_.FocusOn({4096.0F, 250.0F, 4096.0F}, 5200.0F);
                         }
-                        const std::wstring message = engine::assets::Succeeded(result)
-                            ? (L"Terrain imported successfully:\n" + destination.wstring())
-                            : (L"Terrain import failed: " + std::wstring(
-                                FromUtf8(engine::assets::ToString(result))));
-                        MessageBoxW(owner, message.c_str(), L"Legacy Terrain2 Import",
-                            MB_OK | (engine::assets::Succeeded(result) ? MB_ICONINFORMATION : MB_ICONERROR));
+
+                        std::filesystem::path gameRoot =
+                            std::filesystem::
+                                current_path();
+
+                        if (gameRoot.filename() !=
+                            L"game")
+                        {
+                            gameRoot /= L"game";
+                        }
+
+                        std::wstring terrainName;
+
+                        if (terrain2Directory.
+                                filename() ==
+                            L"Terrain2")
+                        {
+                            terrainName =
+                                terrain2Directory.
+                                    parent_path().
+                                    filename().
+                                    wstring();
+                        }
+                        else
+                        {
+                            terrainName =
+                                terrain2Directory.
+                                    filename().
+                                    wstring();
+                        }
+
+                        if (terrainName.empty())
+                        {
+                            terrainName =
+                                L"ImportedTerrain";
+                        }
+
+                        const std::filesystem::path
+                            destination =
+                                gameRoot /
+                                L"Data" /
+                                L"Terrains" /
+                                (
+                                    terrainName +
+                                    L".ltsterrain"
+                                );
+
+                        const engine::assets::
+                            AssetResult importResult =
+                                engine::assets::
+                                    LegacyTerrain2Importer::
+                                        Import(
+                                            terrain2Directory,
+                                            destination);
+
+                        bool terrainReady = false;
+
+                        std::wstring message;
+
+                        if (engine::assets::Failed(
+                                importResult))
+                        {
+                            message =
+                                L"Terrain import failed: " +
+                                std::wstring(
+                                    FromUtf8(
+                                        engine::assets::
+                                            ToString(
+                                                importResult)));
+                        }
+                        else
+                        {
+                            engine::assets::TerrainAsset
+                                terrainAsset;
+
+                            const auto assetResult =
+                                engine::assets::
+                                    TerrainAsset::Load(
+                                        destination,
+                                        terrainAsset);
+
+                            if (engine::assets::Failed(
+                                    assetResult))
+                            {
+                                message =
+                                    L"Terrain was imported, "
+                                    L"but validation failed: " +
+                                    std::wstring(
+                                        FromUtf8(
+                                            engine::assets::
+                                                ToString(
+                                                    assetResult)));
+                            }
+                            else if (
+                                !terrainRenderer_.
+                                    LoadTerrain(
+                                        graphicsDevice_,
+                                        destination))
+                            {
+                                message =
+                                    L"Terrain was imported, "
+                                    L"but GPU resources "
+                                    L"could not be created.";
+                            }
+                            else
+                            {
+                                loadedTerrainAssetPath_ =
+                                    destination.
+                                        lexically_normal();
+
+                                std::error_code
+                                    relativeError;
+
+                                const auto relativePath =
+                                    std::filesystem::
+                                        relative(
+                                            destination,
+                                            gameRoot,
+                                            relativeError);
+
+                                if (relativeError)
+                                {
+                                    message =
+                                        L"Terrain was imported, "
+                                        L"but its game-relative "
+                                        L"path could not be built.";
+                                }
+                                else
+                                {
+                                    const EditorSceneSnapshot
+                                        before =
+                                            sceneDocument_.
+                                                CreateSnapshot();
+
+                                    EditorTransform
+                                        transform{};
+
+                                    if (sceneDocument_.
+                                            CreateTerrainEntity(
+                                                destination.
+                                                    stem().
+                                                    wstring(),
+                                                relativePath.
+                                                    generic_wstring(),
+                                                transform))
+                                    {
+                                        static_cast<void>(
+                                            sceneDocument_.
+                                                SetSelectedTerrainLayers(
+                                                    BuildTerrainLayerOverrides(
+                                                        terrainAsset)));
+
+                                        static_cast<void>(
+                                            commandHistory_.Push(
+                                                before,
+                                                sceneDocument_.
+                                                    CreateSnapshot()));
+
+                                        FocusCameraOnTerrain(
+                                            cameraController_,
+                                            terrainAsset,
+                                            transform);
+
+                                        terrainReady = true;
+
+                                        message =
+                                            L"Terrain imported "
+                                            L"successfully:\n" +
+                                            destination.wstring();
+                                    }
+                                    else
+                                    {
+                                        message =
+                                            L"Terrain was imported, "
+                                            L"but the Terrain actor "
+                                            L"could not be created.";
+                                    }
+                                }
+                            }
+                        }
+
+                        MessageBoxW(
+                            owner,
+                            message.c_str(),
+                            L"Legacy Terrain2 Import",
+                            MB_OK |
+                                (
+                                    terrainReady
+                                        ? MB_ICONINFORMATION
+                                        : MB_ICONERROR
+                                ));
                     }
                 }
-                if (ImGui::MenuItem("Open Terrain..."))
+                if (ImGui::MenuItem(
+                        "Open Terrain..."))
                 {
-                    const HWND owner = reinterpret_cast<HWND>(
-                        GetWindow().GetNativeHandle().Value());
-                    std::filesystem::path terrain;
-                    if (SelectTerrainFile(owner, terrain))
+                    const HWND owner =
+                        reinterpret_cast<HWND>(
+                            GetWindow().
+                                GetNativeHandle().
+                                Value());
+
+                    std::filesystem::path terrainPath;
+
+                    if (SelectTerrainFile(
+                            owner,
+                            terrainPath))
                     {
-                        if (terrainRenderer_.LoadTerrain(graphicsDevice_, terrain))
+                        engine::assets::TerrainAsset
+                            terrainAsset;
+
+                        const auto assetResult =
+                            engine::assets::
+                                TerrainAsset::Load(
+                                    terrainPath,
+                                    terrainAsset);
+
+                        bool terrainReady = false;
+                        std::wstring message;
+
+                        if (engine::assets::Failed(
+                                assetResult))
                         {
-                            loadedTerrainAssetPath_ = terrain.lexically_normal();
-                            std::filesystem::path gameRoot = std::filesystem::current_path();
-                            if (gameRoot.filename() != L"game") gameRoot /= L"game";
-                            std::error_code relativeError;
-                            const std::filesystem::path relative = std::filesystem::relative(
-                                terrain, gameRoot, relativeError);
-                            const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                            if (!relativeError && sceneDocument_.CreateTerrainEntity(
-                                    terrain.stem().wstring(), relative.generic_wstring(), {}))
-                            {
-                                engine::assets::TerrainAsset terrainAsset;
-                                if (engine::assets::Succeeded(engine::assets::TerrainAsset::Load(
-                                        terrain, terrainAsset)))
-                                    static_cast<void>(sceneDocument_.SetSelectedTerrainLayers(
-                                        BuildTerrainLayerOverrides(terrainAsset)));
-                                static_cast<void>(commandHistory_.Push(
-                                    before, sceneDocument_.CreateSnapshot()));
-                            }
-                            cameraController_.FocusOn({4096.0F, 250.0F, 4096.0F}, 5200.0F);
+                            message =
+                                L"Terrain validation failed: " +
+                                std::wstring(
+                                    FromUtf8(
+                                        engine::assets::
+                                            ToString(
+                                                assetResult)));
                         }
-                        else MessageBoxW(owner, L"Failed to load terrain asset.",
-                            L"Open Terrain", MB_OK | MB_ICONERROR);
+                        else if (
+                            !terrainRenderer_.
+                                LoadTerrain(
+                                    graphicsDevice_,
+                                    terrainPath))
+                        {
+                            message =
+                                L"Terrain asset is valid, "
+                                L"but GPU resources "
+                                L"could not be created.";
+                        }
+                        else
+                        {
+                            loadedTerrainAssetPath_ =
+                                terrainPath.
+                                    lexically_normal();
+
+                            std::filesystem::path gameRoot =
+                                std::filesystem::
+                                    current_path();
+
+                            if (gameRoot.filename() !=
+                                L"game")
+                            {
+                                gameRoot /= L"game";
+                            }
+
+                            std::error_code
+                                relativeError;
+
+                            const auto relativePath =
+                                std::filesystem::
+                                    relative(
+                                        terrainPath,
+                                        gameRoot,
+                                        relativeError);
+
+                            if (relativeError)
+                            {
+                                message =
+                                    L"Terrain was loaded, "
+                                    L"but its game-relative "
+                                    L"path could not be built.";
+                            }
+                            else
+                            {
+                                const EditorSceneSnapshot
+                                    before =
+                                        sceneDocument_.
+                                            CreateSnapshot();
+
+                                EditorTransform transform{};
+
+                                if (sceneDocument_.
+                                        CreateTerrainEntity(
+                                            terrainPath.
+                                                stem().
+                                                wstring(),
+                                            relativePath.
+                                                generic_wstring(),
+                                            transform))
+                                {
+                                    static_cast<void>(
+                                        sceneDocument_.
+                                            SetSelectedTerrainLayers(
+                                                BuildTerrainLayerOverrides(
+                                                    terrainAsset)));
+
+                                    static_cast<void>(
+                                        commandHistory_.Push(
+                                            before,
+                                            sceneDocument_.
+                                                CreateSnapshot()));
+
+                                    FocusCameraOnTerrain(
+                                        cameraController_,
+                                        terrainAsset,
+                                        transform);
+
+                                    terrainReady = true;
+
+                                    message =
+                                        L"Terrain opened "
+                                        L"successfully:\n" +
+                                        terrainPath.wstring();
+                                }
+                                else
+                                {
+                                    message =
+                                        L"Terrain was loaded, "
+                                        L"but the Terrain actor "
+                                        L"could not be created.";
+                                }
+                            }
+                        }
+
+                        MessageBoxW(
+                            owner,
+                            message.c_str(),
+                            L"Open Terrain",
+                            MB_OK |
+                                (
+                                    terrainReady
+                                        ? MB_ICONINFORMATION
+                                        : MB_ICONERROR
+                                ));
                     }
                 }
                 ImGui::Separator();
@@ -2317,74 +2696,235 @@ namespace lts::editor
 
     void EditorApplication::RenderImGui() noexcept
     {
-        if (uiSwapChain_ == nullptr || commandContext_ == nullptr || IsMinimized())
+        if (uiSwapChain_ == nullptr ||
+            commandContext_ == nullptr ||
+            IsMinimized())
         {
             return;
         }
 
+        /*
+         * Сначала строим ImGui draw data и получаем
+         * актуальный rectangle viewport.
+         */
         imguiHost_.BeginFrame();
         DrawImGuiWorkspace();
 
         engine::graphics::Viewport fullViewport;
-        fullViewport.width = static_cast<float>(uiWidth_);
-        fullViewport.height = static_cast<float>(uiHeight_);
+
+        fullViewport.x = 0.0F;
+        fullViewport.y = 0.0F;
+        fullViewport.width =
+            static_cast<float>(uiWidth_);
+        fullViewport.height =
+            static_cast<float>(uiHeight_);
+        fullViewport.minDepth = 0.0F;
         fullViewport.maxDepth = 1.0F;
-        auto result = commandContext_->SetViewport(fullViewport);
-        if (!engine::graphics::Failed(result)) result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_);
-        engine::graphics::ClearColor clear{0.025F, 0.030F, 0.036F, 1.0F};
-        if (!engine::graphics::Failed(result)) result = commandContext_->ClearSwapChainColor(*uiSwapChain_, clear);
+
+        auto result =
+            commandContext_->SetViewport(
+                fullViewport);
 
         if (!engine::graphics::Failed(result))
         {
-            imguiHost_.Render();
+            result =
+                commandContext_->
+                    SetSwapChainRenderTarget(
+                        *uiSwapChain_);
         }
 
+        engine::graphics::ClearColor clear
+        {
+            0.025F,
+            0.030F,
+            0.036F,
+            1.0F
+        };
+
+        if (!engine::graphics::Failed(result))
+        {
+            result =
+                commandContext_->
+                    ClearSwapChainColor(
+                        *uiSwapChain_,
+                        clear);
+        }
+
+        /*
+         * Сначала 3D-сцена.
+         */
         if (!engine::graphics::Failed(result) &&
-            imguiWorkspace_ == EditorLauncherAction::LevelEditor &&
+            imguiWorkspace_ ==
+                EditorLauncherAction::LevelEditor &&
             depthStencil_.IsValid())
         {
-            engine::graphics::Viewport sceneViewport;
-            sceneViewport.x = imguiViewportX_;
-            sceneViewport.y = imguiViewportY_;
-            sceneViewport.width = imguiViewportWidth_;
-            sceneViewport.height = imguiViewportHeight_;
+            engine::graphics::Viewport
+                sceneViewport;
+
+            sceneViewport.x =
+                imguiViewportX_;
+
+            sceneViewport.y =
+                imguiViewportY_;
+
+            sceneViewport.width =
+                imguiViewportWidth_;
+
+            sceneViewport.height =
+                imguiViewportHeight_;
+
+            sceneViewport.minDepth = 0.0F;
             sceneViewport.maxDepth = 1.0F;
-            result = commandContext_->SetViewport(sceneViewport);
-            if (!engine::graphics::Failed(result)) result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_, depthStencil_);
-            if (!engine::graphics::Failed(result)) result = commandContext_->ClearDepthStencilTarget(
-                depthStencil_,
-                engine::graphics::ClearDepthStencilFlags::Depth | engine::graphics::ClearDepthStencilFlags::Stencil,
-                1.0F, 0);
-            DirectX::XMFLOAT4X4 viewProjection{};
-            if (!engine::graphics::Failed(result) && cameraController_.BuildViewProjection(
-                    static_cast<std::uint32_t>(imguiViewportWidth_),
-                    static_cast<std::uint32_t>(imguiViewportHeight_),
-                    viewProjection))
+
+            result =
+                commandContext_->SetViewport(
+                    sceneViewport);
+
+            if (!engine::graphics::Failed(result))
             {
-                result = gridRenderer_.Render(*commandContext_, viewProjection);
-                if (!engine::graphics::Failed(result)) result = terrainRenderer_.Render(*commandContext_, sceneDocument_, viewProjection, cameraController_.GetPosition());
-                if (!engine::graphics::Failed(result)) result = staticMeshRenderer_.Render(*commandContext_, sceneDocument_, viewProjection);
-                if (!engine::graphics::Failed(result)) result = sceneRenderer_.Render(
-                    *commandContext_, sceneDocument_, viewProjection,
-                    transformController_.GetVisualState(), &staticMeshRenderer_);
-                if (!engine::graphics::Failed(result) && terrainPaintMode_ &&
+                result =
+                    commandContext_->
+                        SetSwapChainRenderTarget(
+                            *uiSwapChain_,
+                            depthStencil_);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result =
+                    commandContext_->
+                        ClearDepthStencilTarget(
+                            depthStencil_,
+                            engine::graphics::
+                                ClearDepthStencilFlags::
+                                    Depth |
+                            engine::graphics::
+                                ClearDepthStencilFlags::
+                                    Stencil,
+                            1.0F,
+                            0);
+            }
+
+            DirectX::XMFLOAT4X4
+                viewProjection{};
+
+            if (!engine::graphics::Failed(result) &&
+                cameraController_.
+                    BuildViewProjection(
+                        static_cast<std::uint32_t>(
+                            imguiViewportWidth_),
+                        static_cast<std::uint32_t>(
+                            imguiViewportHeight_),
+                        viewProjection))
+            {
+                result =
+                    gridRenderer_.Render(
+                        *commandContext_,
+                        viewProjection);
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result =
+                        terrainRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            cameraController_.
+                                GetPosition());
+                }
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result =
+                        staticMeshRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection);
+                }
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result =
+                        sceneRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            transformController_.
+                                GetVisualState(),
+                            &staticMeshRenderer_);
+                }
+
+                if (!engine::graphics::Failed(result) &&
+                    terrainPaintMode_ &&
                     terrainBrushHitValid_)
-                    result = terrainRenderer_.RenderBrush(
-                        *commandContext_, sceneDocument_, viewProjection,
-                        terrainBrushWorldX_, terrainBrushWorldZ_, terrainBrushRadius_,
-                        ImGui::GetIO().KeyShift);
+                {
+                    result =
+                        terrainRenderer_.
+                            RenderBrush(
+                                *commandContext_,
+                                sceneDocument_,
+                                viewProjection,
+                                terrainBrushWorldX_,
+                                terrainBrushWorldZ_,
+                                terrainBrushRadius_,
+                                ImGui::GetIO().
+                                    KeyShift);
+                }
             }
         }
 
         if (engine::graphics::Failed(result))
         {
-            ReportGraphicsFailure("Render Dear ImGui workspace", result);
+            ReportGraphicsFailure(
+                "Render Dear ImGui workspace",
+                result);
+
             return;
         }
-        commandContext_->UnbindRenderTargets();
-        engine::graphics::PresentStatus status = engine::graphics::PresentStatus::Failed;
-        result = uiSwapChain_->Present(status);
-        if (engine::graphics::Failed(result)) ReportGraphicsFailure("Present Dear ImGui", result);
+
+        /*
+         * Возвращаем полный viewport и рисуем
+         * ImGui последним поверх 3D.
+         */
+        result =
+            commandContext_->SetViewport(
+                fullViewport);
+
+        if (!engine::graphics::Failed(result))
+        {
+            result =
+                commandContext_->
+                    SetSwapChainRenderTarget(
+                        *uiSwapChain_);
+        }
+
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure(
+                "Prepare Dear ImGui overlay",
+                result);
+
+            return;
+        }
+
+        imguiHost_.Render();
+
+        commandContext_->
+            UnbindRenderTargets();
+
+        engine::graphics::PresentStatus status =
+            engine::graphics::
+                PresentStatus::Failed;
+
+        result =
+            uiSwapChain_->Present(status);
+
+        if (engine::graphics::Failed(result))
+        {
+            ReportGraphicsFailure(
+                "Present Dear ImGui",
+                result);
+        }
     }
 
     bool EditorApplication::LoadUiDocument(const char* const path)

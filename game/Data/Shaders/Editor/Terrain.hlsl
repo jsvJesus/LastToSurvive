@@ -1,7 +1,237 @@
-cbuffer TerrainConstants : register(b0) { row_major float4x4 World; row_major float4x4 ViewProjection; float4 Placement[18]; float4 LayerParameters[18]; };
-Texture2D Masks[6] : register(t0); Texture2D Layers[18] : register(t6); SamplerState TerrainSampler : register(s0);
-struct VSIn { float3 position : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; };
-struct VSOut { float4 position : SV_POSITION; float3 normal : NORMAL; float height : TEXCOORD0; float2 uv : TEXCOORD1; };
-VSOut VSMain(VSIn input){VSOut o;float4 world=mul(float4(input.position,1),World);o.position=mul(world,ViewProjection);o.normal=mul(input.normal,(float3x3)World);o.height=world.y;o.uv=input.uv;return o;}
-float2 LayerUv(uint i,float2 worldXZ){return (worldXZ+Placement[i].zw)/max(Placement[i].xy,float2(0.001,0.001));}
-float4 PSMain(VSOut input):SV_TARGET{float3 weights[6];float rawTotal=0;[unroll]for(uint m=0;m<6;m++){weights[m]=Masks[m].Sample(TerrainSampler,input.uv).rgb;rawTotal+=dot(weights[m],1.0.xxx);}float baseWeight=saturate(1-rawTotal)*LayerParameters[0].x;float total=baseWeight;float2 worldXZ=input.uv*8192.0;float3 color=Layers[0].Sample(TerrainSampler,LayerUv(0,worldXZ)).rgb*baseWeight;[unroll]for(uint maskIndex=0;maskIndex<6;maskIndex++){[unroll]for(uint c=0;c<3;c++){uint layer=min(maskIndex*3+c+1,17);float weight=weights[maskIndex][c]*LayerParameters[layer].x;color+=Layers[layer].Sample(TerrainSampler,LayerUv(layer,worldXZ)).rgb*weight;total+=weight;}}if(total<0.0001)return float4(0.08,0.08,0.08,1);color/=total;float3 light=normalize(float3(-0.35,0.85,-0.4));float n=saturate(dot(normalize(input.normal),light))*0.72+0.28;return float4(color*n,1);}
+cbuffer TerrainConstants : register(b0)
+{
+    row_major float4x4 World;
+    row_major float4x4 ViewProjection;
+
+    /*
+     * xy = texture size in terrain local units.
+     * zw = texture offset.
+     */
+    float4 Placement[18];
+
+    /*
+     * x = layer visibility.
+     */
+    float4 LayerParameters[18];
+
+    /*
+     * x = terrain local width.
+     * y = terrain local depth.
+     * z = real layer count including base layer.
+     * w = reserved.
+     */
+    float4 TerrainInfo;
+};
+
+Texture2D Masks[6] : register(t0);
+Texture2D Layers[18] : register(t6);
+
+SamplerState TerrainSampler : register(s0);
+
+struct VSIn
+{
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD0;
+};
+
+struct VSOut
+{
+    float4 position : SV_POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD0;
+};
+
+VSOut VSMain(VSIn input)
+{
+    VSOut output;
+
+    const float4 worldPosition =
+        mul(float4(input.position, 1.0F), World);
+
+    output.position =
+        mul(worldPosition, ViewProjection);
+
+    output.normal =
+        normalize(
+            mul(
+                input.normal,
+                (float3x3)World));
+
+    output.uv = input.uv;
+
+    return output;
+}
+
+float2 GetLayerUv(
+    const uint layerIndex,
+    const float2 terrainPosition)
+{
+    const float2 layerSize =
+        max(
+            Placement[layerIndex].xy,
+            float2(0.001F, 0.001F));
+
+    return
+        (
+            terrainPosition +
+            Placement[layerIndex].zw
+        ) /
+        layerSize;
+}
+
+float4 PSMain(VSOut input) : SV_TARGET
+{
+    const uint layerCount =
+        min(
+            (uint)TerrainInfo.z,
+            18U);
+
+    if (layerCount == 0U)
+    {
+        return float4(
+            0.08F,
+            0.08F,
+            0.08F,
+            1.0F);
+    }
+
+    float3 maskWeights[6];
+
+    [unroll]
+    for (uint maskIndex = 0U;
+         maskIndex < 6U;
+         ++maskIndex)
+    {
+        maskWeights[maskIndex] =
+            Masks[maskIndex].Sample(
+                TerrainSampler,
+                input.uv).rgb;
+    }
+
+    /*
+     * Texture placement теперь зависит от
+     * реального размера terrain, а не от 8192.
+     */
+    const float2 terrainPosition =
+        input.uv *
+        TerrainInfo.xy;
+
+    float paintedVisibleWeight = 0.0F;
+
+    [unroll]
+    for (uint maskIndex = 0U;
+         maskIndex < 6U;
+         ++maskIndex)
+    {
+        [unroll]
+        for (uint channel = 0U;
+             channel < 3U;
+             ++channel)
+        {
+            const uint layerIndex =
+                maskIndex * 3U +
+                channel +
+                1U;
+
+            if (layerIndex >= layerCount)
+            {
+                continue;
+            }
+
+            paintedVisibleWeight +=
+                maskWeights[maskIndex][channel] *
+                LayerParameters[layerIndex].x;
+        }
+    }
+
+    const float baseWeight =
+        saturate(
+            1.0F -
+            paintedVisibleWeight) *
+        LayerParameters[0].x;
+
+    float totalWeight = baseWeight;
+
+    float3 color =
+        Layers[0].Sample(
+            TerrainSampler,
+            GetLayerUv(
+                0U,
+                terrainPosition)).rgb *
+        baseWeight;
+
+    [unroll]
+    for (uint maskIndex = 0U;
+         maskIndex < 6U;
+         ++maskIndex)
+    {
+        [unroll]
+        for (uint channel = 0U;
+             channel < 3U;
+             ++channel)
+        {
+            const uint layerIndex =
+                maskIndex * 3U +
+                channel +
+                1U;
+
+            /*
+             * Не повторяем последний layer через min().
+             */
+            if (layerIndex >= layerCount)
+            {
+                continue;
+            }
+
+            const float weight =
+                maskWeights[maskIndex][channel] *
+                LayerParameters[layerIndex].x;
+
+            if (weight <= 0.00001F)
+            {
+                continue;
+            }
+
+            color +=
+                Layers[layerIndex].Sample(
+                    TerrainSampler,
+                    GetLayerUv(
+                        layerIndex,
+                        terrainPosition)).rgb *
+                weight;
+
+            totalWeight += weight;
+        }
+    }
+
+    if (totalWeight <= 0.0001F)
+    {
+        return float4(
+            0.08F,
+            0.08F,
+            0.08F,
+            1.0F);
+    }
+
+    color /= totalWeight;
+
+    const float3 lightDirection =
+        normalize(
+            float3(
+                -0.35F,
+                0.85F,
+                -0.40F));
+
+    const float lighting =
+        saturate(
+            dot(
+                normalize(input.normal),
+                lightDirection)) *
+            0.72F +
+        0.28F;
+
+    return float4(
+        color * lighting,
+        1.0F);
+}
