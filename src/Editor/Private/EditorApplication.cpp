@@ -595,6 +595,27 @@ namespace lts::editor
                     }
                     return;
                 }
+
+                /*
+                 * Уровень и документы продолжают обновляться,
+                 * но камера и взаимодействие с Level Viewport
+                 * работают только при активной вкладке Viewport.
+                 */
+                if (!imguiViewportVisible_)
+                {
+                    terrainBrushHitValid_ = false;
+
+                    if (terrainPaintStrokeActive_)
+                    {
+                        static_cast<void>(
+                            terrainRenderer_.EndPaintStroke());
+
+                        terrainPaintStrokeActive_ = false;
+                    }
+
+                    return;
+                }
+                
                 cameraController_.Update(
                     deltaSeconds,
                     static_cast<float>(GetInputSystem().GetMouseWheelDelta()) /
@@ -1739,6 +1760,12 @@ namespace lts::editor
 
     void EditorApplication::DrawImGuiWorkspace() noexcept
     {
+        /*
+         * Каждый новый ImGui frame считаем Viewport скрытым.
+         * Ниже он установит true только при реально активной вкладке.
+         */
+        imguiViewportVisible_ = false;
+
         if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
         {
             static_cast<void>(levelEditorLayout_.DrawDockSpace());
@@ -2587,158 +2614,188 @@ namespace lts::editor
             ImGui::End();
 
             ImGui::SetNextWindowBgAlpha(0.0F);
-            ImGui::Begin(
-                "Viewport",
-                nullptr,
-                ImGuiWindowFlags_NoBackground |
-                    ImGuiWindowFlags_NoScrollbar |
-                    ImGuiWindowFlags_NoScrollWithMouse);
-            if(const ImGuiWindow* toolbarWindow=ImGui::FindWindowByName("Toolbar"))
+
+            const bool drawLevelViewport =
+                ImGui::Begin(
+                    "Viewport",
+                    nullptr,
+                    ImGuiWindowFlags_NoBackground |
+                        ImGuiWindowFlags_NoScrollbar |
+                        ImGuiWindowFlags_NoScrollWithMouse);
+
+            if (drawLevelViewport)
             {
-                const ImGuiWindow* viewportWindow=ImGui::FindWindowByName("Viewport");
-                if(viewportWindow!=nullptr&&toolbarWindow->DockId!=0U&&
-                    toolbarWindow->DockId==viewportWindow->DockId)
-                    levelEditorLayout_.RequestReset();
-            }
-            const ImVec2 position = ImGui::GetCursorScreenPos();
-            const ImVec2 available = ImGui::GetContentRegionAvail();
-            imguiViewportX_ = position.x;
-            imguiViewportY_ = position.y;
-            imguiViewportWidth_ = std::max(available.x, 1.0F);
-            imguiViewportHeight_ = std::max(available.y, 1.0F);
-            ImGui::InvisibleButton("SceneViewport", available);
-            const bool paintHovered=terrainPaintMode_&&ImGui::IsItemHovered();
-            terrainBrushHitValid_=false;
-            if(paintHovered)
-            {
-                const ImVec2 mouse=ImGui::GetMousePos();
-                const float localX=mouse.x-imguiViewportX_;
-                const float localY=mouse.y-imguiViewportY_;
-                EditorPickRay ray{};
-                if(localX>=0.0F&&localY>=0.0F&&
-                    cameraController_.BuildPickRay(
-                        static_cast<std::uint32_t>(localX),
-                        static_cast<std::uint32_t>(localY),
-                        static_cast<std::uint32_t>(imguiViewportWidth_),
-                        static_cast<std::uint32_t>(imguiViewportHeight_),ray)&&
-                    std::abs(ray.direction.y)>0.00001F)
+                /*
+                 * Begin() возвращает false для скрытой dock-вкладки.
+                 * Поэтому Level Scene разрешаем только здесь.
+                 */
+                imguiViewportVisible_ = true;
+            
+                if(const ImGuiWindow* toolbarWindow=ImGui::FindWindowByName("Toolbar"))
                 {
-                    float distance=-ray.origin.y/ray.direction.y;
-                    if(distance>=0.0F)
+                    const ImGuiWindow* viewportWindow=ImGui::FindWindowByName("Viewport");
+                    if(viewportWindow!=nullptr&&toolbarWindow->DockId!=0U&&
+                        toolbarWindow->DockId==viewportWindow->DockId)
+                        levelEditorLayout_.RequestReset();
+                }
+                
+                const ImVec2 position = ImGui::GetCursorScreenPos();
+                const ImVec2 available = ImGui::GetContentRegionAvail();
+                imguiViewportX_ = position.x;
+                imguiViewportY_ = position.y;
+                imguiViewportWidth_ = std::max(available.x, 1.0F);
+                imguiViewportHeight_ = std::max(available.y, 1.0F);
+                ImGui::InvisibleButton("SceneViewport", available);
+                const bool paintHovered=terrainPaintMode_&&ImGui::IsItemHovered();
+                terrainBrushHitValid_=false;
+                if(paintHovered)
+                {
+                    const ImVec2 mouse=ImGui::GetMousePos();
+                    const float localX=mouse.x-imguiViewportX_;
+                    const float localY=mouse.y-imguiViewportY_;
+                    EditorPickRay ray{};
+                    if(localX>=0.0F&&localY>=0.0F&&
+                        cameraController_.BuildPickRay(
+                            static_cast<std::uint32_t>(localX),
+                            static_cast<std::uint32_t>(localY),
+                            static_cast<std::uint32_t>(imguiViewportWidth_),
+                            static_cast<std::uint32_t>(imguiViewportHeight_),ray)&&
+                        std::abs(ray.direction.y)>0.00001F)
                     {
-                        float terrainHeight=0.0F;
-                        bool hit=false;
-                        for(std::uint32_t iteration=0;iteration<10U;++iteration)
+                        float distance=-ray.origin.y/ray.direction.y;
+                        if(distance>=0.0F)
                         {
-                            const float x=ray.origin.x+ray.direction.x*distance;
-                            const float z=ray.origin.z+ray.direction.z*distance;
-                            if(!terrainRenderer_.TryGetSurfaceHeight(
-                                    sceneDocument_,x,z,terrainHeight))break;
-                            hit=true;
-                            const float refined=(terrainHeight-ray.origin.y)/ray.direction.y;
-                            if(refined<0.0F)break;
-                            distance=refined;
-                        }
-                        if(hit)
-                        {
-                            terrainBrushWorldX_=ray.origin.x+ray.direction.x*distance;
-                            terrainBrushWorldZ_=ray.origin.z+ray.direction.z*distance;
-                            terrainBrushHitValid_=true;
+                            float terrainHeight=0.0F;
+                            bool hit=false;
+                            for(std::uint32_t iteration=0;iteration<10U;++iteration)
+                            {
+                                const float x=ray.origin.x+ray.direction.x*distance;
+                                const float z=ray.origin.z+ray.direction.z*distance;
+                                if(!terrainRenderer_.TryGetSurfaceHeight(
+                                        sceneDocument_,x,z,terrainHeight))break;
+                                hit=true;
+                                const float refined=(terrainHeight-ray.origin.y)/ray.direction.y;
+                                if(refined<0.0F)break;
+                                distance=refined;
+                            }
+                            if(hit)
+                            {
+                                terrainBrushWorldX_=ray.origin.x+ray.direction.x*distance;
+                                terrainBrushWorldZ_=ray.origin.z+ray.direction.z*distance;
+                                terrainBrushHitValid_=true;
+                            }
                         }
                     }
+                    if(terrainBrushHitValid_&&ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        terrainPaintStrokeActive_=terrainRenderer_.BeginPaintStroke();
                 }
-                if(terrainBrushHitValid_&&ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                    terrainPaintStrokeActive_=terrainRenderer_.BeginPaintStroke();
-            }
-            if(terrainPaintStrokeActive_&&terrainBrushHitValid_&&
-                ImGui::IsMouseDown(ImGuiMouseButton_Left))
-            {
-                static_cast<void>(terrainRenderer_.Paint(
-                    sceneDocument_,terrainBrushWorldX_,terrainBrushWorldZ_,terrainBrushRadius_,
-                    terrainBrushStrength_,terrainBrushFalloff_,terrainPaintLayer_,
-                    ImGui::GetIO().KeyShift));
-            }
-            if(terrainPaintStrokeActive_&&ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                static_cast<void>(terrainRenderer_.EndPaintStroke());
-                terrainPaintStrokeActive_=false;
-            }
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload* const payload =
-                        ImGui::AcceptDragDropPayload("LTS_MESH_ASSET"))
+                if(terrainPaintStrokeActive_&&terrainBrushHitValid_&&
+                    ImGui::IsMouseDown(ImGuiMouseButton_Left))
                 {
-                    if (payload->IsDelivery() && payload->Data != nullptr)
+                    static_cast<void>(terrainRenderer_.Paint(
+                        sceneDocument_,terrainBrushWorldX_,terrainBrushWorldZ_,terrainBrushRadius_,
+                        terrainBrushStrength_,terrainBrushFalloff_,terrainPaintLayer_,
+                        ImGui::GetIO().KeyShift));
+                }
+                if(terrainPaintStrokeActive_&&ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
+                    static_cast<void>(terrainRenderer_.EndPaintStroke());
+                    terrainPaintStrokeActive_=false;
+                }
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* const payload =
+                            ImGui::AcceptDragDropPayload("LTS_MESH_ASSET"))
                     {
-                        const char* const assetPath =
-                            static_cast<const char*>(payload->Data);
-                        const ImVec2 mouse = ImGui::GetMousePos();
-                        EditorPickRay ray;
-                        const float localX = mouse.x - imguiViewportX_;
-                        const float localY = mouse.y - imguiViewportY_;
-                        if (localX >= 0.0F && localY >= 0.0F &&
-                            cameraController_.BuildPickRay(
-                                static_cast<std::uint32_t>(localX),
-                                static_cast<std::uint32_t>(localY),
-                                static_cast<std::uint32_t>(imguiViewportWidth_),
-                                static_cast<std::uint32_t>(imguiViewportHeight_),
-                                ray))
+                        if (payload->IsDelivery() && payload->Data != nullptr)
                         {
-                            const std::filesystem::path path = FromUtf8(assetPath);
-                            constexpr float fallbackDistance = 10.0F;
-                            float distance = fallbackDistance;
-                            if (std::abs(ray.direction.y) > 0.00001F)
+                            const char* const assetPath =
+                                static_cast<const char*>(payload->Data);
+                            const ImVec2 mouse = ImGui::GetMousePos();
+                            EditorPickRay ray;
+                            const float localX = mouse.x - imguiViewportX_;
+                            const float localY = mouse.y - imguiViewportY_;
+                            if (localX >= 0.0F && localY >= 0.0F &&
+                                cameraController_.BuildPickRay(
+                                    static_cast<std::uint32_t>(localX),
+                                    static_cast<std::uint32_t>(localY),
+                                    static_cast<std::uint32_t>(imguiViewportWidth_),
+                                    static_cast<std::uint32_t>(imguiViewportHeight_),
+                                    ray))
                             {
-                                const float groundDistance =
-                                    -ray.origin.y / ray.direction.y;
-                                if (groundDistance >= 0.0F)
-                                    distance = groundDistance;
-                            }
-
-                            // Refine the old Y=0 plane hit against the actual
-                            // terrain height. A few fixed-point iterations are
-                            // enough because the heightfield is continuous.
-                            float terrainHeight = 0.0F;
-                            if (std::abs(ray.direction.y) > 0.00001F)
-                            {
-                                for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
+                                const std::filesystem::path path = FromUtf8(assetPath);
+                                constexpr float fallbackDistance = 10.0F;
+                                float distance = fallbackDistance;
+                                if (std::abs(ray.direction.y) > 0.00001F)
                                 {
-                                    const float x = ray.origin.x + ray.direction.x * distance;
-                                    const float z = ray.origin.z + ray.direction.z * distance;
-                                    if (!terrainRenderer_.TryGetSurfaceHeight(
-                                            sceneDocument_, x, z, terrainHeight)) break;
-                                    const float refinedDistance =
-                                        (terrainHeight - ray.origin.y) / ray.direction.y;
-                                    if (refinedDistance < 0.0F) break;
-                                    distance = refinedDistance;
+                                    const float groundDistance =
+                                        -ray.origin.y / ray.direction.y;
+                                    if (groundDistance >= 0.0F)
+                                        distance = groundDistance;
+                                }
+
+                                // Refine the old Y=0 plane hit against the actual
+                                // terrain height. A few fixed-point iterations are
+                                // enough because the heightfield is continuous.
+                                float terrainHeight = 0.0F;
+                                if (std::abs(ray.direction.y) > 0.00001F)
+                                {
+                                    for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
+                                    {
+                                        const float x = ray.origin.x + ray.direction.x * distance;
+                                        const float z = ray.origin.z + ray.direction.z * distance;
+                                        if (!terrainRenderer_.TryGetSurfaceHeight(
+                                                sceneDocument_, x, z, terrainHeight)) break;
+                                        const float refinedDistance =
+                                            (terrainHeight - ray.origin.y) / ray.direction.y;
+                                        if (refinedDistance < 0.0F) break;
+                                        distance = refinedDistance;
+                                    }
+                                }
+
+                                EditorTransform transform{};
+                                transform.position = {
+                                    ray.origin.x + ray.direction.x * distance,
+                                    terrainHeight,
+                                    ray.origin.z + ray.direction.z * distance};
+                                DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
+                                if (staticMeshRenderer_.TryGetMeshBounds(
+                                        path.generic_wstring(), boundsMinimum, boundsMaximum))
+                                {
+                                    transform.position[1] -= boundsMinimum.y;
+                                }
+                                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                if (sceneDocument_.CreateStaticMeshEntity(
+                                        path.stem().wstring(),
+                                        path.generic_wstring(),
+                                        transform))
+                                {
+                                    static_cast<void>(commandHistory_.Push(
+                                        before, sceneDocument_.CreateSnapshot()));
                                 }
                             }
-
-                            EditorTransform transform{};
-                            transform.position = {
-                                ray.origin.x + ray.direction.x * distance,
-                                terrainHeight,
-                                ray.origin.z + ray.direction.z * distance};
-                            DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
-                            if (staticMeshRenderer_.TryGetMeshBounds(
-                                    path.generic_wstring(), boundsMinimum, boundsMaximum))
-                            {
-                                transform.position[1] -= boundsMinimum.y;
-                            }
-                            const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                            if (sceneDocument_.CreateStaticMeshEntity(
-                                    path.stem().wstring(),
-                                    path.generic_wstring(),
-                                    transform))
-                            {
-                                static_cast<void>(commandHistory_.Push(
-                                    before, sceneDocument_.CreateSnapshot()));
-                            }
                         }
                     }
+                    ImGui::EndDragDropTarget();
                 }
-                ImGui::EndDragDropTarget();
             }
+            else
+            {
+                /*
+                 * При переключении вкладки прекращаем работу
+                 * кисти terrain и запрещаем её визуализацию.
+                 */
+                terrainBrushHitValid_ = false;
+
+                if (terrainPaintStrokeActive_)
+                {
+                    static_cast<void>(
+                        terrainRenderer_.EndPaintStroke());
+
+                    terrainPaintStrokeActive_ = false;
+                }
+            }
+
             ImGui::End();
         }
         else
@@ -2868,10 +2925,7 @@ namespace lts::editor
             imguiHost_.Render();
         }
 
-        if (!engine::graphics::Failed(result) &&
-            imguiWorkspace_ ==
-                EditorLauncherAction::LevelEditor &&
-            depthStencil_.IsValid())
+        if (!engine::graphics::Failed(result) && imguiWorkspace_ == EditorLauncherAction::LevelEditor && imguiViewportVisible_ && depthStencil_.IsValid())
         {
             engine::graphics::Viewport sceneViewport{};
 

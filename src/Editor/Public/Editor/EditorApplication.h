@@ -163,10 +163,18 @@ namespace lts::editor
         EditorLauncherAction pendingImGuiWorkspace_ = EditorLauncherAction::LevelEditor;
         bool imguiWorkspacePending_ = false;
         bool returnToLauncherPending_ = false;
+        
         float imguiViewportX_ = 0.0F;
         float imguiViewportY_ = 0.0F;
         float imguiViewportWidth_ = 1.0F;
         float imguiViewportHeight_ = 1.0F;
+
+        /*
+         * true только когда dock-вкладка Viewport
+         * действительно отображается.
+         */
+        bool imguiViewportVisible_ = false;
+        
         std::filesystem::path contentMeshesRoot_;
         std::filesystem::path contentSelectedDirectory_;
         std::vector<std::filesystem::path> contentMeshFiles_;
