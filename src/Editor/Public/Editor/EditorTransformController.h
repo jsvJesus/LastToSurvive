@@ -3,7 +3,6 @@
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorCommandHistory.h"
 #include "Editor/EditorSceneDocument.h"
-#include "Editor/EditorShell.h"
 #include "Editor/EditorTransformTypes.h"
 
 #include <Platform/Window.h>

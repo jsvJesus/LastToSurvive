@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Editor/EditorAssetBrowserPanel.h"
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorCommandHistory.h"
 #include "Editor/EditorCommandSystem.h"
 #include "Editor/EditorGridRenderer.h"
-#include "Editor/EditorInspectorPanel.h"
 #include "Editor/EditorLevelDocument.h"
 #include "Editor/LevelEditorLayout.h"
 #include "Editor/EditorWorldOutlinerPanel.h"
 #include "Editor/EditorSceneDocument.h"
 #include "Editor/EditorSceneRenderer.h"
-#include "Editor/EditorShell.h"
 #include "Editor/EditorStaticMeshRenderer.h"
 #include "Editor/EditorTransformController.h"
 #include "Editor/EditorTerrainRenderer.h"
@@ -96,7 +93,7 @@ namespace lts::editor
 
         void DestroyDepthStencil() noexcept;
 
-        void ResizeGraphics(
+        void ResizeEditorUi(
             std::uint32_t width,
             std::uint32_t height) noexcept;
 
@@ -124,18 +121,8 @@ namespace lts::editor
 
         EditorSceneRenderer sceneRenderer_;
 
-        EditorShell editorShell_;
-        EditorInspectorPanel inspectorPanel_;
-
-        EditorAssetBrowserPanel
-            assetBrowserPanel_;
-
         engine::graphics::d3d11::
             D3D11Device graphicsDevice_;
-
-        std::unique_ptr<
-            engine::graphics::SwapChain>
-                swapChain_;
 
         std::unique_ptr<engine::graphics::SwapChain>
         uiSwapChain_;
@@ -191,12 +178,7 @@ namespace lts::editor
 
         engine::graphics::TextureHandle
             depthStencil_;
-
-        std::uint32_t viewportWidth_ = 0;
-        std::uint32_t viewportHeight_ = 0;
-
-        bool graphicsReady_ = false;
+        
         bool graphicsFailureReported_ = false;
-        bool swapChainOccluded_ = false;
     };
 }

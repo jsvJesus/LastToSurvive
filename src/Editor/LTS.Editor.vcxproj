@@ -223,12 +223,10 @@
 
   <ItemGroup>
     <ClInclude Include="Public\Editor\EditorApplication.h" />
-    <ClInclude Include="Public\Editor\EditorAssetBrowserPanel.h" />
     <ClInclude Include="Public\Editor\EditorCameraController.h" />
     <ClInclude Include="Public\Editor\EditorCommandHistory.h" />
     <ClInclude Include="Public\Editor\EditorCommandSystem.h" />
     <ClInclude Include="Public\Editor\EditorGridRenderer.h" />
-    <ClInclude Include="Public\Editor\EditorInspectorPanel.h" />
     <ClInclude Include="Public\Editor\EditorLevelDocument.h" />
     <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
     <ClInclude Include="Public\Editor\EditorToolWindowManager.h" />
@@ -239,7 +237,6 @@
     <ClInclude Include="Public\Editor\EditorSceneRenderer.h" />
     <ClInclude Include="Public\Editor\EditorTerrainRenderer.h" />
     <ClInclude Include="Public\Editor\EditorShaderCompiler.h" />
-    <ClInclude Include="Public\Editor\EditorShell.h" />
     <ClInclude Include="Public\Editor\EditorStaticMeshRenderer.h" />
     <ClInclude Include="Public\Editor\EditorTransformController.h" />
     <ClInclude Include="Public\Editor\EditorTransformTypes.h" />
@@ -248,12 +245,10 @@
 
   <ItemGroup>
     <ClCompile Include="Private\EditorApplication.cpp" />
-    <ClCompile Include="Private\EditorAssetBrowserPanel.cpp" />
     <ClCompile Include="Private\EditorCameraController.cpp" />
     <ClCompile Include="Private\EditorCommandHistory.cpp" />
     <ClCompile Include="Private\EditorCommandSystem.cpp" />
     <ClCompile Include="Private\EditorGridRenderer.cpp" />
-    <ClCompile Include="Private\EditorInspectorPanel.cpp" />
     <ClCompile Include="Private\EditorLevelDocument.cpp" />
     <ClCompile Include="Private\EditorLevelSerializer.cpp" />
     <ClCompile Include="Private\EditorToolWindowManager.cpp" />
@@ -264,7 +259,6 @@
     <ClCompile Include="Private\EditorSceneRenderer.cpp" />
     <ClCompile Include="Private\EditorTerrainRenderer.cpp" />
     <ClCompile Include="Private\EditorShaderCompiler.cpp" />
-    <ClCompile Include="Private\EditorShell.cpp" />
     <ClCompile Include="Private\EditorStaticMeshRenderer.cpp" />
     <ClCompile Include="Private\EditorTransformController.cpp" />
     <ClCompile Include="Private\Main.cpp" />

@@ -218,21 +218,12 @@ namespace lts::editor
 
     EditorApplication::~EditorApplication() noexcept = default;
 
-    lts::application::ApplicationResult
-    EditorApplication::OnInitialize() noexcept
+    lts::application::ApplicationResult EditorApplication::OnInitialize() noexcept
     {
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Information,
             "LTS.Editor",
             "Initializing editor.");
-
-        if (!editorShell_.Initialize(
-                GetWindow().GetNativeHandle()))
-        {
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
-        }
 
         try
         {
@@ -240,8 +231,6 @@ namespace lts::editor
         }
         catch (...)
         {
-            editorShell_.Shutdown();
-
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
@@ -249,78 +238,21 @@ namespace lts::editor
 
         commandHistory_.Clear();
 
-        editorShell_.RefreshScene(
-            sceneDocument_);
-
-        if (!inspectorPanel_.Initialize(
-                GetWindow().GetNativeHandle()))
-        {
-            sceneDocument_.Clear();
-            editorShell_.Shutdown();
-
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
-        }
-
-        inspectorPanel_.Refresh(
-            sceneDocument_);
-
         if (!levelDocument_.Initialize(
                 GetWindow().GetNativeHandle(),
                 sceneDocument_))
         {
-            inspectorPanel_.Shutdown();
             sceneDocument_.Clear();
-            editorShell_.Shutdown();
 
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
         }
-
-        if (!assetBrowserPanel_.Initialize(
-                GetWindow().GetNativeHandle()))
-        {
-            levelDocument_.Shutdown();
-            inspectorPanel_.Shutdown();
-            sceneDocument_.Clear();
-            editorShell_.Shutdown();
-
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
-        }
-
-        const engine::platform::
-            NativeWindowHandle viewportWindow =
-                editorShell_.
-                    GetViewportWindowHandle();
-
-        cameraController_.SetViewportWindow(
-            viewportWindow);
-
-        transformController_.SetViewportWindow(
-            viewportWindow);
-
-        editorShell_.SetStatusText(
-            transformController_.
-                BuildStatusText());
 
         if (!InitializeGraphics())
         {
-            transformController_.
-                SetViewportWindow({});
-
-            cameraController_.
-                SetViewportWindow({});
-
-            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
-            inspectorPanel_.Shutdown();
-
             sceneDocument_.Clear();
-            editorShell_.Shutdown();
 
             return lts::application::
                 ApplicationResult::
@@ -330,20 +262,9 @@ namespace lts::editor
         if (!staticMeshRenderer_.Initialize(
                 graphicsDevice_))
         {
-            transformController_.
-                SetViewportWindow({});
-
-            cameraController_.
-                SetViewportWindow({});
-
-            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
-            inspectorPanel_.Shutdown();
-
             sceneDocument_.Clear();
-
             ShutdownGraphics();
-            editorShell_.Shutdown();
 
             return lts::application::
                 ApplicationResult::
@@ -356,42 +277,62 @@ namespace lts::editor
             staticMeshRenderer_.Shutdown(
                 graphicsDevice_);
 
-            transformController_.
-                SetViewportWindow({});
-
-            cameraController_.
-                SetViewportWindow({});
-
-            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
-            inspectorPanel_.Shutdown();
-
             sceneDocument_.Clear();
-
             ShutdownGraphics();
-            editorShell_.Shutdown();
 
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
         }
 
-        if (!terrainRenderer_.Initialize(graphicsDevice_))
+        if (!terrainRenderer_.Initialize(
+                graphicsDevice_))
         {
-            sceneRenderer_.Shutdown(graphicsDevice_);
-            staticMeshRenderer_.Shutdown(graphicsDevice_);
+            sceneRenderer_.Shutdown(
+                graphicsDevice_);
+
+            staticMeshRenderer_.Shutdown(
+                graphicsDevice_);
+
+            levelDocument_.Shutdown();
+            sceneDocument_.Clear();
             ShutdownGraphics();
-            editorShell_.Shutdown();
-            return lts::application::ApplicationResult::ClientInitializationFailed;
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
         if (!InitializeEditorUi())
         {
-            transformController_.
-                SetViewportWindow({});
+            terrainRenderer_.Shutdown(
+                graphicsDevice_);
 
-            cameraController_.
-                SetViewportWindow({});
+            sceneRenderer_.Shutdown(
+                graphicsDevice_);
+
+            staticMeshRenderer_.Shutdown(
+                graphicsDevice_);
+
+            levelDocument_.Shutdown();
+            sceneDocument_.Clear();
+            ShutdownGraphics();
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
+        /*
+         * Старое Win32-меню и обработка команд документа
+         * больше не управляют интерфейсом редактора.
+         * Все команды приходят из Dear ImGui.
+         */
+        if (!levelDocument_.
+                SetWindowInterceptionEnabled(false))
+        {
+            ShutdownEditorUi();
 
             terrainRenderer_.Shutdown(
                 graphicsDevice_);
@@ -402,43 +343,32 @@ namespace lts::editor
             staticMeshRenderer_.Shutdown(
                 graphicsDevice_);
 
-            assetBrowserPanel_.Shutdown();
             levelDocument_.Shutdown();
-            inspectorPanel_.Shutdown();
-
             sceneDocument_.Clear();
-
             ShutdownGraphics();
-            editorShell_.Shutdown();
 
             return lts::application::
                 ApplicationResult::
                     ClientInitializationFailed;
         }
 
-        assetBrowserPanel_.Shutdown();
-        inspectorPanel_.Shutdown();
+        const HWND mainWindow =
+            reinterpret_cast<HWND>(
+                GetWindow().
+                    GetNativeHandle().
+                    Value());
 
-        if (!levelDocument_.SetWindowInterceptionEnabled(false))
-        {
-            ShutdownEditorUi();
-            return lts::application::ApplicationResult::ClientInitializationFailed;
-        }
-
-        EnumChildWindows(
-            reinterpret_cast<HWND>(GetWindow().GetNativeHandle().Value()),
-            [](HWND child, LPARAM) -> BOOL
-            {
-                ShowWindow(child, SW_HIDE);
-                return TRUE;
-            },
-            0);
-
+        /*
+         * EditorLevelDocument пока ещё может устанавливать
+         * старое системное меню. Убираем его, поскольку меню
+         * редактора теперь полностью рисуется через ImGui.
+         */
         SetMenu(
-            reinterpret_cast<HWND>(GetWindow().GetNativeHandle().Value()),
+            mainWindow,
             nullptr);
+
         DrawMenuBar(
-            reinterpret_cast<HWND>(GetWindow().GetNativeHandle().Value()));
+            mainWindow);
 
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Information,
@@ -464,16 +394,14 @@ namespace lts::editor
         cameraController_.
             SetViewportWindow({});
 
-        assetBrowserPanel_.Shutdown();
         levelDocument_.Shutdown();
-        inspectorPanel_.Shutdown();
-
         commandHistory_.Clear();
+
+        terrainRenderer_.Shutdown(
+            graphicsDevice_);
 
         sceneRenderer_.Shutdown(
             graphicsDevice_);
-
-        terrainRenderer_.Shutdown(graphicsDevice_);
 
         staticMeshRenderer_.Shutdown(
             graphicsDevice_);
@@ -481,656 +409,347 @@ namespace lts::editor
         sceneDocument_.Clear();
 
         ShutdownGraphics();
-        editorShell_.Shutdown();
     }
 
-    void EditorApplication::OnUpdate(
-    const double deltaSeconds) noexcept
+    void EditorApplication::OnUpdate(const double deltaSeconds) noexcept
     {
-        if (imguiHost_.IsInitialized())
+        if (!imguiHost_.IsInitialized())
         {
-            if (imguiHost_.IsInitialized())
-            {
-                const EditorLevelUpdateResult result =
-                    levelDocument_.Update(sceneDocument_, commandHistory_);
-                if (result.sceneReplaced)
-                {
-                    cameraController_.Reset();
-                    loadedTerrainAssetPath_.clear();
-                    static_cast<void>(terrainRenderer_.LoadTerrain(
-                        graphicsDevice_, std::filesystem::path{}));
-                }
-                for (const EditorSceneEntity& sceneEntity : sceneDocument_.GetEntities())
-                {
-                    if (!sceneEntity.terrain.has_value() ||
-                        !sceneEntity.terrain->visible) continue;
-                    std::filesystem::path gameRoot = std::filesystem::current_path();
-                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
-                    std::filesystem::path terrainPath = sceneEntity.terrain->assetPath;
-                    if (terrainPath.is_relative()) terrainPath = gameRoot / terrainPath;
-                    terrainPath = terrainPath.lexically_normal();
-                    if (terrainPath !=
-                        loadedTerrainAssetPath_)
-                    {
-                        /*
-                         * Запоминаем саму попытку.
-                         * Даже повреждённый файл не будет
-                         * перечитываться каждый кадр.
-                         */
-                        loadedTerrainAssetPath_ =
-                            terrainPath;
-
-                        if (terrainRenderer_.
-                                LoadTerrain(
-                                    graphicsDevice_,
-                                    terrainPath) &&
-                            result.sceneReplaced)
-                        {
-                            engine::assets::TerrainAsset
-                                terrainAsset;
-
-                            if (engine::assets::Succeeded(
-                                    engine::assets::
-                                        TerrainAsset::Load(
-                                            terrainPath,
-                                            terrainAsset)))
-                            {
-                                FocusCameraOnTerrain(
-                                    cameraController_,
-                                    terrainAsset,
-                                    sceneEntity.transform);
-                            }
-                        }
-                    }
-                    break;
-                }
-                if (result.closeApproved)
-                {
-                    RequestExit();
-                    return;
-                }
-
-                /*
-                 * Уровень и документы продолжают обновляться,
-                 * но камера и взаимодействие с Level Viewport
-                 * работают только при активной вкладке Viewport.
-                 */
-                if (!imguiViewportVisible_)
-                {
-                    terrainBrushHitValid_ = false;
-
-                    if (terrainPaintStrokeActive_)
-                    {
-                        static_cast<void>(
-                            terrainRenderer_.EndPaintStroke());
-
-                        terrainPaintStrokeActive_ = false;
-                    }
-
-                    return;
-                }
-                
-                cameraController_.Update(
-                    deltaSeconds,
-                    static_cast<float>(GetInputSystem().GetMouseWheelDelta()) /
-                        static_cast<float>(WHEEL_DELTA));
-
-                const std::int32_t viewportX =
-                    static_cast<std::int32_t>(imguiViewportX_);
-                const std::int32_t viewportY =
-                    static_cast<std::int32_t>(imguiViewportY_);
-                const engine::platform::WindowSize viewportSize{
-                    static_cast<std::uint32_t>(std::max(imguiViewportWidth_, 1.0F)),
-                    static_cast<std::uint32_t>(std::max(imguiViewportHeight_, 1.0F))};
-                transformController_.SetViewportRegion(
-                    viewportX, viewportY, viewportSize.width, viewportSize.height);
-
-                const engine::platform::MousePosition mouse =
-                    GetInputSystem().GetMousePosition();
-                const bool insideViewport =
-                    mouse.x >= viewportX && mouse.y >= viewportY &&
-                    mouse.x < viewportX + static_cast<std::int32_t>(viewportSize.width) &&
-                    mouse.y < viewportY + static_cast<std::int32_t>(viewportSize.height);
-                const bool clicked = insideViewport &&
-                    GetInputSystem().WasMouseButtonPressed(
-                        engine::platform::MouseButton::Left) &&
-                    !GetInputSystem().IsMouseButtonDown(
-                        engine::platform::MouseButton::Right);
-                ViewportClick click;
-                if (clicked)
-                {
-                    click.x = static_cast<std::uint32_t>(mouse.x - viewportX);
-                    click.y = static_cast<std::uint32_t>(mouse.y - viewportY);
-                }
-                EditorInteractionResult transformResult{};
-                if (!terrainPaintMode_)
-                {
-                    transformResult = transformController_.Update(
-                        sceneDocument_, commandHistory_, cameraController_,
-                        viewportSize, clicked ? &click : nullptr,
-                        &staticMeshRenderer_);
-                }
-
-                const auto& transformState = transformController_.GetVisualState();
-                if (transformResult.documentChanged &&
-                    transformState.operation == EditorTransformOperation::Move &&
-                    (transformState.activeAxis == EditorTransformAxis::X ||
-                     transformState.activeAxis == EditorTransformAxis::Z))
-                {
-                    EditorSceneEntity* const entity = sceneDocument_.GetSelectedEntityMutable();
-                    if (entity != nullptr && entity->staticMesh.has_value())
-                    {
-                        float terrainHeight = 0.0F;
-                        if (terrainRenderer_.TryGetSurfaceHeight(
-                                sceneDocument_, entity->transform.position[0],
-                                entity->transform.position[2], terrainHeight))
-                        {
-                            DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
-                            float bottomOffset = 0.0F;
-                            if (staticMeshRenderer_.TryGetMeshBounds(
-                                    entity->staticMesh->assetPath,
-                                    boundsMinimum, boundsMaximum))
-                            {
-                                bottomOffset = boundsMinimum.y * entity->transform.scale[1];
-                            }
-                            entity->transform.position[1] = terrainHeight - bottomOffset;
-                        }
-                    }
-                }
-            }
             return;
         }
 
-        const EditorLevelUpdateResult
-            levelResult =
-                levelDocument_.Update(
-                    sceneDocument_,
-                    commandHistory_);
+        const EditorLevelUpdateResult result =
+            levelDocument_.Update(
+                sceneDocument_,
+                commandHistory_);
 
-        if (levelResult.sceneReplaced)
+        if (result.sceneReplaced)
         {
             cameraController_.Reset();
 
-            transformController_.
-                SetViewportWindow(
-                    editorShell_.
-                        GetViewportWindowHandle());
+            loadedTerrainAssetPath_.clear();
 
-            editorShell_.RefreshScene(
-                sceneDocument_);
-
-            inspectorPanel_.Refresh(
-                sceneDocument_);
+            static_cast<void>(
+                terrainRenderer_.LoadTerrain(
+                    graphicsDevice_,
+                    std::filesystem::path{}));
         }
 
-        assetBrowserPanel_.Update();
-
-        std::filesystem::path activatedAsset;
-
-        if (assetBrowserPanel_.ConsumeActivatedAsset(
-                activatedAsset))
+        /*
+         * Загружаем terrain, который указан
+         * в открытом документе уровня.
+         */
+        for (
+            const EditorSceneEntity& sceneEntity :
+                sceneDocument_.GetEntities())
         {
-            const EditorSceneSnapshot before =
-                sceneDocument_.CreateSnapshot();
-
-            EditorTransform transform;
-
-            const EditorSceneEntity* const selected =
-                sceneDocument_.GetSelectedEntity();
-
-            if (selected != nullptr)
+            if (
+                !sceneEntity.terrain.has_value() ||
+                !sceneEntity.terrain->visible)
             {
-                transform.position =
-                    selected->transform.position;
-
-                transform.position[0] += 2.0F;
+                continue;
             }
 
-            const std::wstring entityName =
-                activatedAsset.
-                    stem().
-                    wstring();
+            std::filesystem::path gameRoot =
+                std::filesystem::current_path();
 
-            if (sceneDocument_.CreateStaticMeshEntity(
-                    entityName,
-                    activatedAsset.generic_wstring(),
-                    transform))
+            if (gameRoot.filename() != L"game")
+            {
+                gameRoot /= L"game";
+            }
+
+            std::filesystem::path terrainPath =
+                sceneEntity.terrain->assetPath;
+
+            if (terrainPath.is_relative())
+            {
+                terrainPath =
+                    gameRoot /
+                    terrainPath;
+            }
+
+            terrainPath =
+                terrainPath.lexically_normal();
+
+            if (
+                terrainPath !=
+                loadedTerrainAssetPath_)
+            {
+                loadedTerrainAssetPath_ =
+                    terrainPath;
+
+                if (terrainRenderer_.LoadTerrain(
+                        graphicsDevice_,
+                        terrainPath) &&
+                    result.sceneReplaced)
+                {
+                    engine::assets::TerrainAsset
+                        terrainAsset;
+
+                    if (engine::assets::Succeeded(
+                            engine::assets::
+                                TerrainAsset::Load(
+                                    terrainPath,
+                                    terrainAsset)))
+                    {
+                        FocusCameraOnTerrain(
+                            cameraController_,
+                            terrainAsset,
+                            sceneEntity.transform);
+                    }
+                }
+            }
+
+            break;
+        }
+
+        if (result.closeApproved)
+        {
+            RequestExit();
+            return;
+        }
+
+        levelDocument_.SynchronizeWindowTitle(
+            sceneDocument_);
+
+        /*
+         * Документ продолжает обновляться при открытых
+         * Character/Physics/FBX/Icon вкладках, но управление
+         * сценой работает только в активном Viewport.
+         */
+        if (!imguiViewportVisible_)
+        {
+            terrainBrushHitValid_ = false;
+
+            if (terrainPaintStrokeActive_)
             {
                 static_cast<void>(
-                    commandHistory_.Push(
-                        before,
-                        sceneDocument_.
-                            CreateSnapshot()));
+                    terrainRenderer_.
+                        EndPaintStroke());
 
-                editorShell_.RefreshScene(
-                    sceneDocument_);
-
-                inspectorPanel_.Refresh(
-                    sceneDocument_);
+                terrainPaintStrokeActive_ = false;
             }
+
+            return;
         }
 
         cameraController_.Update(
             deltaSeconds,
-            editorShell_.
-                ConsumeViewportWheelSteps());
+            static_cast<float>(
+                GetInputSystem().
+                    GetMouseWheelDelta()) /
+                static_cast<float>(
+                    WHEEL_DELTA));
 
-        bool selectionChanged = false;
-        bool hierarchyChanged = false;
+        const std::int32_t viewportX =
+            static_cast<std::int32_t>(
+                imguiViewportX_);
 
-        std::size_t selectedEntityIndex =
-            InvalidEditorEntityIndex;
+        const std::int32_t viewportY =
+            static_cast<std::int32_t>(
+                imguiViewportY_);
 
-        if (
-            editorShell_.
-                ConsumeHierarchySelection(
-                    selectedEntityIndex) &&
-            sceneDocument_.
-                SelectEntityByIndex(
-                    selectedEntityIndex))
+        const engine::platform::WindowSize
+            viewportSize
+            {
+                static_cast<std::uint32_t>(
+                    std::max(
+                        imguiViewportWidth_,
+                        1.0F)),
+
+                static_cast<std::uint32_t>(
+                    std::max(
+                        imguiViewportHeight_,
+                        1.0F))
+            };
+
+        transformController_.SetViewportRegion(
+            viewportX,
+            viewportY,
+            viewportSize.width,
+            viewportSize.height);
+
+        const engine::platform::MousePosition mouse =
+            GetInputSystem().
+                GetMousePosition();
+
+        const bool insideViewport =
+            mouse.x >= viewportX &&
+            mouse.y >= viewportY &&
+            mouse.x <
+                viewportX +
+                    static_cast<std::int32_t>(
+                        viewportSize.width) &&
+            mouse.y <
+                viewportY +
+                    static_cast<std::int32_t>(
+                        viewportSize.height);
+
+        const bool clicked =
+            insideViewport &&
+            GetInputSystem().
+                WasMouseButtonPressed(
+                    engine::platform::
+                        MouseButton::Left) &&
+            !GetInputSystem().
+                IsMouseButtonDown(
+                    engine::platform::
+                        MouseButton::Right);
+
+        ViewportClick click{};
+
+        if (clicked)
         {
-            selectionChanged = true;
+            click.x =
+                static_cast<std::uint32_t>(
+                    mouse.x -
+                    viewportX);
+
+            click.y =
+                static_cast<std::uint32_t>(
+                    mouse.y -
+                    viewportY);
         }
 
-        ViewportClick viewportClick;
+        EditorInteractionResult
+            transformResult{};
 
-        const bool hasViewportClick =
-            editorShell_.
-                ConsumeViewportClick(
-                    viewportClick);
-
-        const EditorInteractionResult
-            interactionResult =
+        if (!terrainPaintMode_)
+        {
+            transformResult =
                 transformController_.Update(
                     sceneDocument_,
                     commandHistory_,
                     cameraController_,
-                    editorShell_.GetViewportSize(),
-                    hasViewportClick
-                        ? &viewportClick
-                        : nullptr);
-
-        selectionChanged =
-            selectionChanged ||
-            interactionResult.selectionChanged;
-
-        hierarchyChanged =
-            hierarchyChanged ||
-            interactionResult.hierarchyChanged;
-
-        if (hierarchyChanged)
-        {
-            editorShell_.RefreshScene(
-                sceneDocument_);
+                    viewportSize,
+                    clicked
+                        ? &click
+                        : nullptr,
+                    &staticMeshRenderer_);
         }
-        else if (selectionChanged)
-        {
-            editorShell_.SelectHierarchyEntity(
-                sceneDocument_.
-                    GetSelectedIndex());
-        }
+
+        /*
+         * При перемещении объекта по X/Z
+         * удерживаем его на поверхности terrain.
+         */
+        const auto& transformState =
+            transformController_.
+                GetVisualState();
 
         if (
-            selectionChanged ||
-            hierarchyChanged ||
-            interactionResult.documentChanged)
+            transformResult.documentChanged &&
+            transformState.operation ==
+                EditorTransformOperation::Move &&
+            (
+                transformState.activeAxis ==
+                    EditorTransformAxis::X ||
+                transformState.activeAxis ==
+                    EditorTransformAxis::Z
+            ))
         {
-            editorShell_.ShowEntityDetails(
+            EditorSceneEntity* const entity =
                 sceneDocument_.
-                    GetSelectedEntity());
+                    GetSelectedEntityMutable();
 
-            inspectorPanel_.Refresh(
-                sceneDocument_);
-        }
-
-        if (inspectorPanel_.Update(
-                sceneDocument_,
-                commandHistory_))
-        {
-            editorShell_.ShowEntityDetails(
-                sceneDocument_.
-                    GetSelectedEntity());
-        }
-
-        if (interactionResult.statusChanged)
-        {
-            editorShell_.SetStatusText(
-                transformController_.
-                    BuildStatusText());
-        }
-
-        EditorMode changedMode =
-            EditorMode::Level;
-
-        if (editorShell_.ConsumeModeChanged(
-                changedMode))
-        {
-            switch (changedMode)
+            if (
+                entity != nullptr &&
+                entity->staticMesh.has_value())
             {
-                case EditorMode::Level:
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Information,
-                        "LTS.Editor",
-                        "Level mode selected.");
-                    break;
+                float terrainHeight = 0.0F;
 
-                case EditorMode::Character:
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Information,
-                        "LTS.Editor",
-                        "Character mode selected.");
-                    break;
+                if (terrainRenderer_.
+                        TryGetSurfaceHeight(
+                            sceneDocument_,
+                            entity->transform.
+                                position[0],
+                            entity->transform.
+                                position[2],
+                            terrainHeight))
+                {
+                    DirectX::XMFLOAT3
+                        boundsMinimum{};
 
-                case EditorMode::Icon:
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Information,
-                        "LTS.Editor",
-                        "Icon mode selected.");
-                    break;
+                    DirectX::XMFLOAT3
+                        boundsMaximum{};
 
-                case EditorMode::Physics:
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Information,
-                        "LTS.Editor",
-                        "Physics mode selected.");
-                    break;
+                    float bottomOffset = 0.0F;
 
-                case EditorMode::Particles:
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Information,
-                        "LTS.Editor",
-                        "Particles mode selected.");
-                    break;
+                    if (staticMeshRenderer_.
+                            TryGetMeshBounds(
+                                entity->staticMesh->
+                                    assetPath,
+                                boundsMinimum,
+                                boundsMaximum))
+                    {
+                        bottomOffset =
+                            boundsMinimum.y *
+                            entity->transform.
+                                scale[1];
+                    }
 
-                case EditorMode::Play:
-                default:
-                    break;
+                    entity->transform.position[1] =
+                        terrainHeight -
+                        bottomOffset;
+                }
             }
-        }
-
-        levelDocument_.
-            SynchronizeWindowTitle(
-                sceneDocument_);
-
-        if (swapChainOccluded_)
-        {
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(16));
         }
     }
 
     void EditorApplication::OnRender() noexcept
     {
-        if (imguiHost_.IsInitialized())
-        {
-            RenderImGui();
-            return;
-        }
-
-        if (
-            !graphicsReady_ ||
-            IsMinimized() ||
-            swapChain_ == nullptr ||
-            commandContext_ == nullptr)
+        if (!imguiHost_.IsInitialized())
         {
             return;
         }
 
-        engine::graphics::Viewport viewport;
-
-        viewport.x = 0.0F;
-        viewport.y = 0.0F;
-        viewport.width = static_cast<float>(viewportWidth_);
-        viewport.height = static_cast<float>(viewportHeight_);
-        viewport.minDepth = 0.0F;
-        viewport.maxDepth = 1.0F;
-
-        auto result = commandContext_->SetViewport(viewport);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure("SetViewport", result);
-            return;
-        }
-
-        result = commandContext_->SetSwapChainRenderTarget(
-            *swapChain_,
-            depthStencil_);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "SetSwapChainRenderTarget",
-                result);
-            return;
-        }
-
-        engine::graphics::ClearColor clearColor;
-
-        clearColor.red = 0.018F;
-        clearColor.green = 0.022F;
-        clearColor.blue = 0.026F;
-        clearColor.alpha = 1.0F;
-
-        result = commandContext_->ClearSwapChainColor(
-            *swapChain_,
-            clearColor);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "ClearSwapChainColor",
-                result);
-            return;
-        }
-
-        result = commandContext_->ClearDepthStencilTarget(
-            depthStencil_,
-            engine::graphics::ClearDepthStencilFlags::Depth |
-                engine::graphics::ClearDepthStencilFlags::Stencil,
-            1.0F,
-            0);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "ClearDepthStencilTarget",
-                result);
-            return;
-        }
-
-        DirectX::XMFLOAT4X4 viewProjection{};
-
-        if (!cameraController_.BuildViewProjection(
-                viewportWidth_,
-                viewportHeight_,
-                viewProjection))
-        {
-            return;
-        }
-
-        result = gridRenderer_.Render(
-            *commandContext_,
-            viewProjection);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "EditorGridRenderer::Render",
-                result);
-            return;
-        }
-
-        result = terrainRenderer_.Render(*commandContext_, sceneDocument_, viewProjection,
-            cameraController_.GetPosition());
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure("EditorTerrainRenderer::Render", result);
-            return;
-        }
-
-        result = staticMeshRenderer_.Render(
-        *commandContext_,
-        sceneDocument_,
-        viewProjection);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "EditorStaticMeshRenderer::Render",
-                result);
-
-            return;
-        }
-
-        result = sceneRenderer_.Render(
-            *commandContext_,
-            sceneDocument_,
-            viewProjection,
-            transformController_.GetVisualState(),
-            &staticMeshRenderer_);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "EditorSceneRenderer::Render",
-                result);
-            return;
-        }
-
-        commandContext_->UnbindRenderTargets();
-
-        engine::graphics::PresentStatus presentStatus =
-            engine::graphics::PresentStatus::Failed;
-
-        result = swapChain_->Present(presentStatus);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure("Present", result);
-            return;
-        }
-
-        switch (presentStatus)
-        {
-            case engine::graphics::PresentStatus::Presented:
-                swapChainOccluded_ = false;
-                break;
-
-            case engine::graphics::PresentStatus::Occluded:
-                swapChainOccluded_ = true;
-                break;
-
-            case engine::graphics::PresentStatus::DeviceLost:
-                ReportGraphicsFailure(
-                    "Present: device lost",
-                    engine::graphics::GraphicsResult::DeviceLost);
-                break;
-
-            case engine::graphics::PresentStatus::DeviceRemoved:
-                ReportGraphicsFailure(
-                    "Present: device removed",
-                    engine::graphics::GraphicsResult::DeviceRemoved);
-                break;
-
-            case engine::graphics::PresentStatus::Failed:
-            default:
-                ReportGraphicsFailure(
-                    "Present",
-                    engine::graphics::GraphicsResult::BackendFailure);
-                break;
-        }
-
+        RenderImGui();
     }
 
-    void EditorApplication::OnEvent(
-        const lts::application::ApplicationEvent& event) noexcept
+    void EditorApplication::OnEvent(const lts::application::ApplicationEvent& event) noexcept
     {
         switch (event.type)
         {
-            case lts::application::ApplicationEventType::Resize:
+        case lts::application::
+            ApplicationEventType::Resize:
             {
-                if (uiSwapChain_ != nullptr && event.width > 0 && event.height > 0)
-                {
-                    commandContext_->UnbindRenderTargets();
-                    const auto uiResizeResult = uiSwapChain_->Resize(event.width, event.height);
-                    if (!engine::graphics::Failed(uiResizeResult))
-                    {
-                        DestroyDepthStencil();
-                        const auto depthResizeResult =
-                            CreateDepthStencil(event.width, event.height);
-                        if (engine::graphics::Failed(depthResizeResult))
-                        {
-                            ReportGraphicsFailure(
-                                "Resize UI depth stencil",
-                                depthResizeResult);
-                            break;
-                        }
-                        uiWidth_ = event.width;
-                        uiHeight_ = event.height;
-                    }
-                }
-                    if (imguiHost_.IsInitialized())
-                {
-                    break;
-                }
-
-                editorShell_.Resize(
+                ResizeEditorUi(
                     event.width,
                     event.height);
 
-                const auto viewportSize =
-                    editorShell_.GetViewportSize();
-
-                ResizeGraphics(
-                    viewportSize.width,
-                    viewportSize.height);
                 break;
             }
 
-            case lts::application::ApplicationEventType::Minimized:
-                swapChainOccluded_ = true;
-                break;
-
-            case lts::application::ApplicationEventType::Restored:
-            {
-                swapChainOccluded_ = false;
-
-                const auto viewportSize =
-                    editorShell_.GetViewportSize();
-
-                ResizeGraphics(
-                    viewportSize.width,
-                    viewportSize.height);
-                break;
-            }
-
-            case lts::application::ApplicationEventType::Activated:
-                swapChainOccluded_ = false;
-                break;
-
-            case lts::application::ApplicationEventType::DpiChanged:
+        case lts::application::
+            ApplicationEventType::DpiChanged:
             {
                 const auto clientSize =
-                    GetWindow().GetClientSize();
+                    GetWindow().
+                        GetClientSize();
 
-                editorShell_.Resize(
+                ResizeEditorUi(
                     clientSize.width,
                     clientSize.height);
 
-                const auto viewportSize =
-                    editorShell_.GetViewportSize();
-
-                ResizeGraphics(
-                    viewportSize.width,
-                    viewportSize.height);
                 break;
             }
 
-            case lts::application::ApplicationEventType::Deactivated:
-            case lts::application::ApplicationEventType::CloseRequested:
-            default:
-                break;
+        case lts::application::
+            ApplicationEventType::Minimized:
+
+        case lts::application::
+            ApplicationEventType::Restored:
+
+        case lts::application::
+            ApplicationEventType::Activated:
+
+        case lts::application::
+            ApplicationEventType::Deactivated:
+
+        case lts::application::
+            ApplicationEventType::CloseRequested:
+
+        default:
+            break;
         }
     }
 
@@ -1286,6 +905,61 @@ namespace lts::editor
         terrainBrushHitValid_ = false;
     }
 
+    void EditorApplication::ResizeEditorUi(const std::uint32_t width, const std::uint32_t height) noexcept
+    {
+        if (
+        uiSwapChain_ == nullptr ||
+        commandContext_ == nullptr ||
+        width == 0U ||
+        height == 0U)
+        {
+            return;
+        }
+
+        if (
+            width == uiWidth_ &&
+            height == uiHeight_)
+        {
+            return;
+        }
+
+        commandContext_->
+            UnbindRenderTargets();
+
+        DestroyDepthStencil();
+
+        const auto resizeResult =
+            uiSwapChain_->Resize(
+                width,
+                height);
+
+        if (engine::graphics::Failed(
+                resizeResult))
+        {
+            ReportGraphicsFailure(
+                "Resize editor swap chain",
+                resizeResult);
+
+            return;
+        }
+
+        uiWidth_ = width;
+        uiHeight_ = height;
+
+        const auto depthResult =
+            CreateDepthStencil(
+                uiWidth_,
+                uiHeight_);
+
+        if (engine::graphics::Failed(
+                depthResult))
+        {
+            ReportGraphicsFailure(
+                "Resize editor depth stencil",
+                depthResult);
+        }
+    }
+    
     void EditorApplication::RefreshContentBrowser() noexcept
     {
         const std::filesystem::path previousDirectory = contentSelectedDirectory_;
@@ -2677,25 +2351,27 @@ namespace lts::editor
 
     bool EditorApplication::InitializeGraphics() noexcept
     {
-        const engine::platform::WindowSize viewportSize =
-            editorShell_.GetViewportSize();
-
-        viewportWidth_ = std::max(viewportSize.width, 1U);
-        viewportHeight_ = std::max(viewportSize.height, 1U);
-
-        engine::graphics::RenderDeviceDesc deviceDescription;
+        engine::graphics::RenderDeviceDesc
+        deviceDescription{};
 
         deviceDescription.backend =
-            engine::graphics::GraphicsBackend::D3D11;
+            engine::graphics::
+                GraphicsBackend::D3D11;
 
         deviceDescription.enableValidation =
-            GetEngine().GetConfig().enableValidation;
+            GetEngine().
+                GetConfig().
+                enableValidation;
 
-        deviceDescription.enableDebugMarkers = true;
-        deviceDescription.forceSoftwareAdapter = false;
+        deviceDescription.enableDebugMarkers =
+            true;
+
+        deviceDescription.forceSoftwareAdapter =
+            false;
 
         auto result =
-            graphicsDevice_.Initialize(deviceDescription);
+            graphicsDevice_.Initialize(
+                deviceDescription);
 
         if (engine::graphics::Failed(result))
         {
@@ -2708,65 +2384,22 @@ namespace lts::editor
         }
 
         commandContext_ =
-            graphicsDevice_.GetImmediateCommandContext();
+            graphicsDevice_.
+                GetImmediateCommandContext();
 
         if (commandContext_ == nullptr)
         {
             ReportGraphicsFailure(
                 "GetImmediateCommandContext",
-                engine::graphics::GraphicsResult::InvalidState);
+                engine::graphics::
+                    GraphicsResult::InvalidState);
 
             ShutdownGraphics();
             return false;
         }
 
-        engine::graphics::SwapChainDesc swapChainDescription;
-
-        swapChainDescription.window =
-            editorShell_.GetViewportWindowHandle();
-
-        swapChainDescription.width = viewportWidth_;
-        swapChainDescription.height = viewportHeight_;
-        swapChainDescription.bufferCount = 2;
-        swapChainDescription.format =
-            engine::graphics::Format::B8G8R8A8UNorm;
-
-        swapChainDescription.presentMode =
-            engine::graphics::PresentMode::VSync;
-
-        swapChainDescription.windowed = true;
-        swapChainDescription.allowModeSwitch = false;
-        swapChainDescription.enableTearing = false;
-
-        result = graphicsDevice_.CreateSwapChain(
-            swapChainDescription,
-            swapChain_);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "CreateSwapChain",
-                result);
-
-            ShutdownGraphics();
-            return false;
-        }
-
-        result = CreateDepthStencil(
-            viewportWidth_,
-            viewportHeight_);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "CreateDepthStencil",
-                result);
-
-            ShutdownGraphics();
-            return false;
-        }
-
-        if (!gridRenderer_.Initialize(graphicsDevice_))
+        if (!gridRenderer_.Initialize(
+                graphicsDevice_))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
@@ -2777,35 +2410,35 @@ namespace lts::editor
             return false;
         }
 
-        graphicsReady_ = true;
         graphicsFailureReported_ = false;
-        swapChainOccluded_ = false;
 
         return true;
     }
 
     void EditorApplication::ShutdownGraphics() noexcept
     {
-        graphicsReady_ = false;
-
         if (commandContext_ != nullptr)
         {
-            commandContext_->UnbindRenderTargets();
-            commandContext_->ClearState();
-            commandContext_->Flush();
+            commandContext_->
+                UnbindRenderTargets();
+
+            commandContext_->
+                ClearState();
+
+            commandContext_->
+                Flush();
         }
 
-        gridRenderer_.Shutdown(graphicsDevice_);
+        gridRenderer_.Shutdown(
+            graphicsDevice_);
+
         DestroyDepthStencil();
 
-        swapChain_.reset();
         commandContext_ = nullptr;
 
         graphicsDevice_.Shutdown();
 
-        viewportWidth_ = 0;
-        viewportHeight_ = 0;
-        swapChainOccluded_ = false;
+        graphicsFailureReported_ = false;
     }
 
     engine::graphics::GraphicsResult
@@ -2879,56 +2512,6 @@ namespace lts::editor
 
         depthStencil_ =
             engine::graphics::TextureHandle{};
-    }
-
-    void EditorApplication::ResizeGraphics(
-        const std::uint32_t width,
-        const std::uint32_t height) noexcept
-    {
-        if (
-            !graphicsReady_ ||
-            swapChain_ == nullptr ||
-            commandContext_ == nullptr ||
-            width == 0U ||
-            height == 0U)
-        {
-            return;
-        }
-
-        if (
-            width == viewportWidth_ &&
-            height == viewportHeight_)
-        {
-            return;
-        }
-
-        commandContext_->UnbindRenderTargets();
-        DestroyDepthStencil();
-
-        auto result = swapChain_->Resize(width, height);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "SwapChain::Resize",
-                result);
-            return;
-        }
-
-        viewportWidth_ = width;
-        viewportHeight_ = height;
-
-        result = CreateDepthStencil(width, height);
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "Resize CreateDepthStencil",
-                result);
-            return;
-        }
-
-        swapChainOccluded_ = false;
     }
 
     void EditorApplication::ReportGraphicsFailure(
