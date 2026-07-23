@@ -421,7 +421,7 @@ namespace lts::editor
 
         if (!levelDocument_.SetWindowInterceptionEnabled(false))
         {
-            ShutdownUi();
+            ShutdownEditorUi();
             return lts::application::ApplicationResult::ClientInitializationFailed;
         }
 
@@ -1825,11 +1825,11 @@ namespace lts::editor
                 LaunchTestGame();
             }
 
-            ImGui::TextDisabled("%s", "Level Editor");
+            ImGui::TextDisabled("Level Editor");
+            ImGui::EndMainMenuBar();
         }
-
-        if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
-        {
+        
+        //{
             ImGui::Begin(
                 "Toolbar",
                 nullptr,
@@ -1910,7 +1910,7 @@ namespace lts::editor
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Move / Rotate / Scale snap steps");
             ImGui::SameLine();
-            if (ImGui::Button("Play")) HandleLauncherAction(EditorLauncherAction::TestGame);
+            if (ImGui::Button("Play")) LaunchTestGame();
             ImGui::End();
 
             ImGui::Begin("Place Actors");
@@ -2403,7 +2403,7 @@ namespace lts::editor
             }
 
             ImGui::End();
-        }
+        //}
         toolWindowManager_.DrawOpenWindows();
     }
 
