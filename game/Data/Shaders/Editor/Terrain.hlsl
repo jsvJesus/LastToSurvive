@@ -99,20 +99,16 @@ float4 PSMain(VSOut input) : SV_TARGET
     float3 maskWeights[6];
 
     [unroll]
-    for (uint maskIndex = 0U;
-         maskIndex < 6U;
-         ++maskIndex)
+    for (uint sampleMaskIndex = 0U;
+         sampleMaskIndex < 6U;
+         ++sampleMaskIndex)
     {
-        maskWeights[maskIndex] =
-            Masks[maskIndex].Sample(
+        maskWeights[sampleMaskIndex] =
+            Masks[sampleMaskIndex].Sample(
                 TerrainSampler,
                 input.uv).rgb;
     }
 
-    /*
-     * Texture placement теперь зависит от
-     * реального размера terrain, а не от 8192.
-     */
     const float2 terrainPosition =
         input.uv *
         TerrainInfo.xy;
@@ -120,28 +116,28 @@ float4 PSMain(VSOut input) : SV_TARGET
     float paintedVisibleWeight = 0.0F;
 
     [unroll]
-    for (uint maskIndex = 0U;
-         maskIndex < 6U;
-         ++maskIndex)
+    for (uint weightMaskIndex = 0U;
+         weightMaskIndex < 6U;
+         ++weightMaskIndex)
     {
         [unroll]
-        for (uint channel = 0U;
-             channel < 3U;
-             ++channel)
+        for (uint weightChannel = 0U;
+             weightChannel < 3U;
+             ++weightChannel)
         {
-            const uint layerIndex =
-                maskIndex * 3U +
-                channel +
+            const uint weightLayerIndex =
+                weightMaskIndex * 3U +
+                weightChannel +
                 1U;
 
-            if (layerIndex >= layerCount)
+            if (weightLayerIndex >= layerCount)
             {
                 continue;
             }
 
             paintedVisibleWeight +=
-                maskWeights[maskIndex][channel] *
-                LayerParameters[layerIndex].x;
+                maskWeights[weightMaskIndex][weightChannel] *
+                LayerParameters[weightLayerIndex].x;
         }
     }
 
@@ -162,31 +158,28 @@ float4 PSMain(VSOut input) : SV_TARGET
         baseWeight;
 
     [unroll]
-    for (uint maskIndex = 0U;
-         maskIndex < 6U;
-         ++maskIndex)
+    for (uint blendMaskIndex = 0U;
+         blendMaskIndex < 6U;
+         ++blendMaskIndex)
     {
         [unroll]
-        for (uint channel = 0U;
-             channel < 3U;
-             ++channel)
+        for (uint blendChannel = 0U;
+             blendChannel < 3U;
+             ++blendChannel)
         {
-            const uint layerIndex =
-                maskIndex * 3U +
-                channel +
+            const uint blendLayerIndex =
+                blendMaskIndex * 3U +
+                blendChannel +
                 1U;
 
-            /*
-             * Не повторяем последний layer через min().
-             */
-            if (layerIndex >= layerCount)
+            if (blendLayerIndex >= layerCount)
             {
                 continue;
             }
 
             const float weight =
-                maskWeights[maskIndex][channel] *
-                LayerParameters[layerIndex].x;
+                maskWeights[blendMaskIndex][blendChannel] *
+                LayerParameters[blendLayerIndex].x;
 
             if (weight <= 0.00001F)
             {
@@ -194,10 +187,10 @@ float4 PSMain(VSOut input) : SV_TARGET
             }
 
             color +=
-                Layers[layerIndex].Sample(
+                Layers[blendLayerIndex].Sample(
                     TerrainSampler,
                     GetLayerUv(
-                        layerIndex,
+                        blendLayerIndex,
                         terrainPosition)).rgb *
                 weight;
 

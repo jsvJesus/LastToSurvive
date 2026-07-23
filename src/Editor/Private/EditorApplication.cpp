@@ -2704,13 +2704,14 @@ namespace lts::editor
         }
 
         /*
-         * Сначала строим ImGui draw data и получаем
-         * актуальный rectangle viewport.
+         * Сначала строим Dear ImGui.
+         * На этом этапе также вычисляются реальные координаты
+         * и размер docked-окна Viewport.
          */
         imguiHost_.BeginFrame();
         DrawImGuiWorkspace();
 
-        engine::graphics::Viewport fullViewport;
+        engine::graphics::Viewport fullViewport{};
 
         fullViewport.x = 0.0F;
         fullViewport.y = 0.0F;
@@ -2733,7 +2734,7 @@ namespace lts::editor
                         *uiSwapChain_);
         }
 
-        engine::graphics::ClearColor clear
+        const engine::graphics::ClearColor clear
         {
             0.025F,
             0.030F,
@@ -2751,15 +2752,21 @@ namespace lts::editor
         }
 
         /*
-         * Сначала 3D-сцена.
+         * В текущей архитектуре Dear ImGui рисуется первым.
+         * D3D-сцена затем заполняет только прямоугольник
+         * прозрачного окна Viewport.
          */
+        if (!engine::graphics::Failed(result))
+        {
+            imguiHost_.Render();
+        }
+
         if (!engine::graphics::Failed(result) &&
             imguiWorkspace_ ==
                 EditorLauncherAction::LevelEditor &&
             depthStencil_.IsValid())
         {
-            engine::graphics::Viewport
-                sceneViewport;
+            engine::graphics::Viewport sceneViewport{};
 
             sceneViewport.x =
                 imguiViewportX_;
@@ -2768,10 +2775,14 @@ namespace lts::editor
                 imguiViewportY_;
 
             sceneViewport.width =
-                imguiViewportWidth_;
+                (std::max)(
+                    imguiViewportWidth_,
+                    1.0F);
 
             sceneViewport.height =
-                imguiViewportHeight_;
+                (std::max)(
+                    imguiViewportHeight_,
+                    1.0F);
 
             sceneViewport.minDepth = 0.0F;
             sceneViewport.maxDepth = 1.0F;
@@ -2796,26 +2807,32 @@ namespace lts::editor
                         ClearDepthStencilTarget(
                             depthStencil_,
                             engine::graphics::
-                                ClearDepthStencilFlags::
-                                    Depth |
+                                ClearDepthStencilFlags::Depth |
                             engine::graphics::
-                                ClearDepthStencilFlags::
-                                    Stencil,
+                                ClearDepthStencilFlags::Stencil,
                             1.0F,
-                            0);
+                            0U);
             }
 
-            DirectX::XMFLOAT4X4
-                viewProjection{};
+            DirectX::XMFLOAT4X4 viewProjection{};
+
+            const std::uint32_t viewportWidth =
+                static_cast<std::uint32_t>(
+                    (std::max)(
+                        imguiViewportWidth_,
+                        1.0F));
+
+            const std::uint32_t viewportHeight =
+                static_cast<std::uint32_t>(
+                    (std::max)(
+                        imguiViewportHeight_,
+                        1.0F));
 
             if (!engine::graphics::Failed(result) &&
-                cameraController_.
-                    BuildViewProjection(
-                        static_cast<std::uint32_t>(
-                            imguiViewportWidth_),
-                        static_cast<std::uint32_t>(
-                            imguiViewportHeight_),
-                        viewProjection))
+                cameraController_.BuildViewProjection(
+                    viewportWidth,
+                    viewportHeight,
+                    viewProjection))
             {
                 result =
                     gridRenderer_.Render(
@@ -2859,16 +2876,14 @@ namespace lts::editor
                     terrainBrushHitValid_)
                 {
                     result =
-                        terrainRenderer_.
-                            RenderBrush(
-                                *commandContext_,
-                                sceneDocument_,
-                                viewProjection,
-                                terrainBrushWorldX_,
-                                terrainBrushWorldZ_,
-                                terrainBrushRadius_,
-                                ImGui::GetIO().
-                                    KeyShift);
+                        terrainRenderer_.RenderBrush(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            terrainBrushWorldX_,
+                            terrainBrushWorldZ_,
+                            terrainBrushRadius_,
+                            ImGui::GetIO().KeyShift);
                 }
             }
         }
@@ -2879,45 +2894,19 @@ namespace lts::editor
                 "Render Dear ImGui workspace",
                 result);
 
+            commandContext_->UnbindRenderTargets();
             return;
         }
 
-        /*
-         * Возвращаем полный viewport и рисуем
-         * ImGui последним поверх 3D.
-         */
-        result =
-            commandContext_->SetViewport(
-                fullViewport);
+        commandContext_->UnbindRenderTargets();
 
-        if (!engine::graphics::Failed(result))
-        {
-            result =
-                commandContext_->
-                    SetSwapChainRenderTarget(
-                        *uiSwapChain_);
-        }
-
-        if (engine::graphics::Failed(result))
-        {
-            ReportGraphicsFailure(
-                "Prepare Dear ImGui overlay",
-                result);
-
-            return;
-        }
-
-        imguiHost_.Render();
-
-        commandContext_->
-            UnbindRenderTargets();
-
-        engine::graphics::PresentStatus status =
+        engine::graphics::PresentStatus presentStatus =
             engine::graphics::
                 PresentStatus::Failed;
 
         result =
-            uiSwapChain_->Present(status);
+            uiSwapChain_->Present(
+                presentStatus);
 
         if (engine::graphics::Failed(result))
         {
