@@ -7,8 +7,6 @@
 #include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorInspectorPanel.h"
 #include "Editor/EditorLevelDocument.h"
-#include "Editor/EditorLauncherController.h"
-#include "Editor/LevelEditorUiController.h"
 #include "Editor/LevelEditorLayout.h"
 #include "Editor/EditorWorldOutlinerPanel.h"
 #include "Editor/EditorSceneDocument.h"
@@ -26,8 +24,6 @@
 #include <Graphics/SwapChain.h>
 
 #include <GraphicsDX11/D3D11Device.h>
-#include <GraphicsDX11/RmlUiRenderInterfaceDX11.h>
-#include <UI/RmlUiHost.h>
 #include <ImGui/ImGuiHost.h>
 
 #include <cstdint>
@@ -77,22 +73,18 @@ namespace lts::editor
     private:
         [[nodiscard]]
         bool InitializeGraphics() noexcept;
-        [[nodiscard]] bool InitializeUi() noexcept;
-        [[nodiscard]] bool InitializeLauncherUi() noexcept;
-        [[nodiscard]] bool ReturnToLauncher() noexcept;
-        void ShutdownUi() noexcept;
-        void RenderUi() noexcept;
+
+        [[nodiscard]]
+        bool InitializeEditorUi() noexcept;
+        void ShutdownEditorUi() noexcept;
         void RenderImGui() noexcept;
         void DrawImGuiWorkspace() noexcept;
+        
         void LaunchTestGame() noexcept;
         void ProcessEditorShortcuts() noexcept;
         bool ExecuteEditorCommand(EditorCommand command);
         void RefreshContentBrowser() noexcept;
         void DrawContentBrowser() noexcept;
-        [[nodiscard]] bool StartImGuiWorkspace(EditorLauncherAction action) noexcept;
-        void HandleLauncherAction(EditorLauncherAction action);
-        void HandleLevelEditorAction(LevelEditorUiAction action);
-        [[nodiscard]] bool LoadUiDocument(const char* path);
 
         void ShutdownGraphics() noexcept;
 
@@ -145,24 +137,16 @@ namespace lts::editor
             engine::graphics::SwapChain>
                 swapChain_;
 
-        std::unique_ptr<engine::graphics::SwapChain> uiSwapChain_;
-        engine::graphics::d3d11::RmlUiRenderInterfaceDX11 uiRenderInterface_;
-        engine::ui::RmlUiHost uiHost_;
+        std::unique_ptr<engine::graphics::SwapChain>
+        uiSwapChain_;
+
         engine::ui::ImGuiHost imguiHost_;
-        EditorLauncherController launcherController_;
-        LevelEditorUiController levelEditorUiController_;
+
         LevelEditorLayout levelEditorLayout_;
         EditorToolWindowManager toolWindowManager_;
-        Rml::ElementDocument* uiDocument_ = nullptr;
-        std::uint32_t uiWidth_ = 0;
-        std::uint32_t uiHeight_ = 0;
-        bool levelEditorUiActive_ = false;
-        std::size_t snapSettingIndex_ = 1;
-        bool playInNewWindow_ = false;
-        EditorLauncherAction imguiWorkspace_ = EditorLauncherAction::LevelEditor;
-        EditorLauncherAction pendingImGuiWorkspace_ = EditorLauncherAction::LevelEditor;
-        bool imguiWorkspacePending_ = false;
-        bool returnToLauncherPending_ = false;
+
+        std::uint32_t uiWidth_ = 0U;
+        std::uint32_t uiHeight_ = 0U;
         
         float imguiViewportX_ = 0.0F;
         float imguiViewportY_ = 0.0F;
