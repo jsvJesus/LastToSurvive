@@ -4,6 +4,12 @@
 
 namespace lts::editor
 {
+    struct ViewportClick final
+    {
+        std::uint32_t x = 0U;
+        std::uint32_t y = 0U;
+    };
+    
     enum class EditorTransformOperation : std::uint8_t
     {
         Select = 0,
