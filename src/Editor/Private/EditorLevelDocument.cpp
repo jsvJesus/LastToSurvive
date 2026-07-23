@@ -215,6 +215,12 @@ namespace lts::editor
         }
     }
 
+    const std::filesystem::path&
+    EditorLevelDocument::GetCurrentPath() const noexcept
+    {
+        return currentPath_;
+    }
+
     bool EditorLevelDocument::SetWindowInterceptionEnabled(
         const bool enabled) noexcept
     {

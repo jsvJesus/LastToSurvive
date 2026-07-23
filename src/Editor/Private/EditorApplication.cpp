@@ -1,4 +1,5 @@
 #include "Editor/EditorApplication.h"
+#include "TestGame/TestGameLauncher.h"
 
 #include <Core/Log.h>
 #include <Assets/LegacyTerrain2Importer.h>
@@ -417,6 +418,40 @@ namespace lts::editor
             ShutdownGraphics();
             editorShell_.Shutdown();
             return lts::application::ApplicationResult::ClientInitializationFailed;
+        }
+
+        if (!StartImGuiWorkspace(
+        EditorLauncherAction::LevelEditor))
+        {
+            ShutdownUi();
+
+            terrainRenderer_.Shutdown(
+                graphicsDevice_);
+
+            sceneRenderer_.Shutdown(
+                graphicsDevice_);
+
+            staticMeshRenderer_.Shutdown(
+                graphicsDevice_);
+
+            transformController_.
+                SetViewportWindow({});
+
+            cameraController_.
+                SetViewportWindow({});
+
+            assetBrowserPanel_.Shutdown();
+            levelDocument_.Shutdown();
+            inspectorPanel_.Shutdown();
+
+            sceneDocument_.Clear();
+
+            ShutdownGraphics();
+            editorShell_.Shutdown();
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
         }
 
         assetBrowserPanel_.Shutdown();
@@ -1641,6 +1676,67 @@ namespace lts::editor
         ImGui::EndChild();
     }
 
+    void EditorApplication::LaunchTestGame() noexcept
+    {
+        const HWND owner =
+            reinterpret_cast<HWND>(
+                GetWindow().
+                    GetNativeHandle().
+                    Value());
+
+        if (sceneDocument_.IsDirty())
+        {
+            MessageBoxW(
+                owner,
+                L"Save the current level before "
+                L"starting Test Game.",
+                L"Test Game",
+                MB_OK |
+                    MB_ICONWARNING);
+
+            return;
+        }
+
+        const std::filesystem::path&
+            currentLevelPath =
+                levelDocument_.GetCurrentPath();
+
+        if (currentLevelPath.empty())
+        {
+            MessageBoxW(
+                owner,
+                L"The current level has not been saved.\n\n"
+                L"Use File -> Save As before starting "
+                L"Test Game.",
+                L"Test Game",
+                MB_OK |
+                    MB_ICONWARNING);
+
+            return;
+        }
+
+        std::wstring error;
+
+        if (!TestGameLauncher::Launch(
+                currentLevelPath,
+                error))
+        {
+            MessageBoxW(
+                owner,
+                error.c_str(),
+                L"Test Game",
+                MB_OK |
+                    MB_ICONERROR);
+
+            return;
+        }
+
+        engine::core::GetLogger().Write(
+            engine::core::LogLevel::Information,
+            "LTS.Editor.TestGame",
+            "LTS.Game.exe started in editor test mode.");
+    }
+
     void EditorApplication::DrawImGuiWorkspace() noexcept
     {
         if (imguiWorkspace_ == EditorLauncherAction::LevelEditor)
@@ -2059,12 +2155,7 @@ namespace lts::editor
                     }
                 }
                 ImGui::Separator();
-                if (ImGui::MenuItem("Back to Editor Launcher"))
-                {
-                    returnToLauncherPending_ = true;
-                    levelDocument_.RequestCloseLevel();
-                }
-                ImGui::Separator();
+
                 if (ImGui::MenuItem("Exit"))
                 {
                     returnToLauncherPending_ = false;
@@ -2091,6 +2182,15 @@ namespace lts::editor
                     levelEditorLayout_.RequestReset();
                 ImGui::EndMenu();
             }
+
+            const EditorToolAction toolAction = toolWindowManager_.DrawToolsMenu();
+            if (
+                toolAction ==
+                EditorToolAction::TestGame)
+            {
+                LaunchTestGame();
+            }
+
             ImGui::TextDisabled("%s", workspaceName);
             ImGui::EndMainMenuBar();
         }
@@ -2649,6 +2749,7 @@ namespace lts::editor
             ImGui::TextDisabled("Dear ImGui tool host is active.");
             ImGui::End();
         }
+        toolWindowManager_.DrawOpenWindows();
     }
 
     bool EditorApplication::ExecuteEditorCommand(const EditorCommand command)
@@ -2673,6 +2774,12 @@ namespace lts::editor
         {
             return ImGui::IsKeyPressed(key, false);
         };
+
+        if (pressed(ImGuiKey_F5))
+        {
+            LaunchTestGame();
+            return;
+        }
 
         EditorCommand command{};
         bool hasCommand = true;

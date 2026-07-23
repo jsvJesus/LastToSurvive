@@ -237,6 +237,7 @@
     <ClInclude Include="Public\Editor\EditorInspectorPanel.h" />
     <ClInclude Include="Public\Editor\EditorLevelDocument.h" />
     <ClInclude Include="Public\Editor\EditorLevelSerializer.h" />
+    <ClInclude Include="Public\Editor\EditorToolWindowManager.h" />
     <ClInclude Include="Public\Editor\LevelEditorUiController.h" />
     <ClInclude Include="Public\Editor\LevelEditorLayout.h" />
     <ClInclude Include="Public\Editor\EditorWorldOutlinerPanel.h" />
@@ -250,6 +251,7 @@
     <ClInclude Include="Public\Editor\EditorStaticMeshRenderer.h" />
     <ClInclude Include="Public\Editor\EditorTransformController.h" />
     <ClInclude Include="Public\Editor\EditorTransformTypes.h" />
+    <ClInclude Include="Public\TestGame\TestGameLauncher.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -262,6 +264,7 @@
     <ClCompile Include="Private\EditorInspectorPanel.cpp" />
     <ClCompile Include="Private\EditorLevelDocument.cpp" />
     <ClCompile Include="Private\EditorLevelSerializer.cpp" />
+    <ClCompile Include="Private\EditorToolWindowManager.cpp" />
     <ClCompile Include="Private\LevelEditorUiController.cpp" />
     <ClCompile Include="Private\LevelEditorLayout.cpp" />
     <ClCompile Include="Private\EditorWorldOutlinerPanel.cpp" />
@@ -275,6 +278,7 @@
     <ClCompile Include="Private\EditorStaticMeshRenderer.cpp" />
     <ClCompile Include="Private\EditorTransformController.cpp" />
     <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\TestGameLauncher.cpp" />
   </ItemGroup>
 
   <ItemGroup>

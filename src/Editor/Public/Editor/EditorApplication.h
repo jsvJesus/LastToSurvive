@@ -17,6 +17,7 @@
 #include "Editor/EditorStaticMeshRenderer.h"
 #include "Editor/EditorTransformController.h"
 #include "Editor/EditorTerrainRenderer.h"
+#include "Editor/EditorToolWindowManager.h"
 
 #include <Application/Application.h>
 
@@ -83,6 +84,7 @@ namespace lts::editor
         void RenderUi() noexcept;
         void RenderImGui() noexcept;
         void DrawImGuiWorkspace() noexcept;
+        void LaunchTestGame() noexcept;
         void ProcessEditorShortcuts() noexcept;
         bool ExecuteEditorCommand(EditorCommand command);
         void RefreshContentBrowser() noexcept;
@@ -150,6 +152,7 @@ namespace lts::editor
         EditorLauncherController launcherController_;
         LevelEditorUiController levelEditorUiController_;
         LevelEditorLayout levelEditorLayout_;
+        EditorToolWindowManager toolWindowManager_;
         Rml::ElementDocument* uiDocument_ = nullptr;
         std::uint32_t uiWidth_ = 0;
         std::uint32_t uiHeight_ = 0;

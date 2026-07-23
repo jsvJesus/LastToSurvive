@@ -49,6 +49,10 @@ namespace lts::editor
         void SynchronizeWindowTitle(
             const EditorSceneDocument& sceneDocument) noexcept;
 
+        [[nodiscard]]
+            const std::filesystem::path&
+                GetCurrentPath() const noexcept;
+
         [[nodiscard]] bool SetWindowInterceptionEnabled(bool enabled) noexcept;
 
         void RequestNewLevel() noexcept;
