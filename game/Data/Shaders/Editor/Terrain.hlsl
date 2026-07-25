@@ -109,8 +109,7 @@ float3 ConvertNormalToWorld(
 
 float4 PSMain(VSOut input) : SV_TARGET
 {
-    const uint layerCount =
-        min((uint)TerrainInfo.z, 18U);
+    const uint layerCount = min((uint)TerrainInfo.z, 18U);
 
     if (layerCount == 0U)
     {
@@ -126,42 +125,41 @@ float4 PSMain(VSOut input) : SV_TARGET
             Masks[maskIndex].Sample(TerrainSampler, input.uv).rgb;
     }
 
-    const float2 terrainPosition =
-        input.uv * TerrainInfo.xy;
-
+    const float2 terrainPosition = input.uv * TerrainInfo.xy;
     float paintedVisibleWeight = 0.0F;
 
+    /*
+     * Считаем общий вес видимых слоёв,
+     * нарисованных поверх Base Layer.
+     */
     [unroll]
-    for (uint layerIndex = 1U; layerIndex < 18U; ++layerIndex)
+    for (uint weightLayerIndex = 1U;
+         weightLayerIndex < 18U;
+         ++weightLayerIndex)
     {
-        if (layerIndex >= layerCount)
+        if (weightLayerIndex >= layerCount)
         {
             continue;
         }
 
         paintedVisibleWeight +=
-            GetLayerWeight(layerIndex, maskWeights) *
-            LayerParameters[layerIndex].x;
+            GetLayerWeight(weightLayerIndex, maskWeights) *
+            LayerParameters[weightLayerIndex].x;
     }
 
     const float baseWeight =
         saturate(1.0F - paintedVisibleWeight) *
         LayerParameters[0].x;
 
-    const float2 baseUv =
-        GetLayerUv(0U, terrainPosition);
+    const float2 baseUv = GetLayerUv(0U, terrainPosition);
 
     float3 color =
-        DiffuseLayers[0].Sample(
-            TerrainSampler,
-            baseUv).rgb *
+        DiffuseLayers[0].Sample(TerrainSampler, baseUv).rgb *
         baseWeight;
 
     float3 tangentNormal =
         (
-            NormalLayers[0].Sample(
-                TerrainSampler,
-                baseUv).xyz *
+            NormalLayers[0].Sample(TerrainSampler, baseUv).xyz *
             2.0F -
             1.0F
         ) *
@@ -169,17 +167,25 @@ float4 PSMain(VSOut input) : SV_TARGET
 
     float totalWeight = baseWeight;
 
+    /*
+     * Смешиваем нарисованные material layers.
+     *
+     * Имя переменной отличается от первого цикла,
+     * чтобы FXC не считал её повторным объявлением.
+     */
     [unroll]
-    for (uint layerIndex = 1U; layerIndex < 18U; ++layerIndex)
+    for (uint blendLayerIndex = 1U;
+         blendLayerIndex < 18U;
+         ++blendLayerIndex)
     {
-        if (layerIndex >= layerCount)
+        if (blendLayerIndex >= layerCount)
         {
             continue;
         }
 
         const float weight =
-            GetLayerWeight(layerIndex, maskWeights) *
-            LayerParameters[layerIndex].x;
+            GetLayerWeight(blendLayerIndex, maskWeights) *
+            LayerParameters[blendLayerIndex].x;
 
         if (weight <= 0.00001F)
         {
@@ -187,17 +193,17 @@ float4 PSMain(VSOut input) : SV_TARGET
         }
 
         const float2 layerUv =
-            GetLayerUv(layerIndex, terrainPosition);
+            GetLayerUv(blendLayerIndex, terrainPosition);
 
         color +=
-            DiffuseLayers[layerIndex].Sample(
+            DiffuseLayers[blendLayerIndex].Sample(
                 TerrainSampler,
                 layerUv).rgb *
             weight;
 
         tangentNormal +=
             (
-                NormalLayers[layerIndex].Sample(
+                NormalLayers[blendLayerIndex].Sample(
                     TerrainSampler,
                     layerUv).xyz *
                 2.0F -
@@ -216,8 +222,7 @@ float4 PSMain(VSOut input) : SV_TARGET
     color /= totalWeight;
     tangentNormal = normalize(tangentNormal / totalWeight);
 
-    const float3 geometryNormal =
-        normalize(input.normal);
+    const float3 geometryNormal = normalize(input.normal);
 
     const float3 finalNormal =
         ConvertNormalToWorld(
