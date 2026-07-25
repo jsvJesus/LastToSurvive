@@ -1896,35 +1896,34 @@ namespace lts::editor
             return;
         }
 
-        /*
-         * Сначала строим Dear ImGui.
-         * На этом этапе также вычисляются реальные координаты
-         * и размер docked-окна Viewport.
-         */
         imguiHost_.BeginFrame();
         DrawImGuiWorkspace();
 
-        engine::graphics::Viewport fullViewport{};
+        /*
+         * 3D-сцена сейчас рисуется поверх ImGui, чтобы прозрачное окно
+         * Viewport не перекрывало grid, terrain и объекты.
+         *
+         * Но при открытом popup или modal-окне сцену временно не рисуем,
+         * иначе она перекроет окно импорта, меню или контекстное меню.
+         */
+        const bool popupOpen = ImGui::IsPopupOpen(
+            nullptr,
+            ImGuiPopupFlags_AnyPopupId |
+            ImGuiPopupFlags_AnyPopupLevel);
 
+        engine::graphics::Viewport fullViewport{};
         fullViewport.x = 0.0F;
         fullViewport.y = 0.0F;
-        fullViewport.width =
-            static_cast<float>(uiWidth_);
-        fullViewport.height =
-            static_cast<float>(uiHeight_);
+        fullViewport.width = static_cast<float>(uiWidth_);
+        fullViewport.height = static_cast<float>(uiHeight_);
         fullViewport.minDepth = 0.0F;
         fullViewport.maxDepth = 1.0F;
 
-        auto result =
-            commandContext_->SetViewport(
-                fullViewport);
+        auto result = commandContext_->SetViewport(fullViewport);
 
         if (!engine::graphics::Failed(result))
         {
-            result =
-                commandContext_->
-                    SetSwapChainRenderTarget(
-                        *uiSwapChain_);
+            result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_);
         }
 
         const engine::graphics::ClearColor clear
@@ -1937,23 +1936,25 @@ namespace lts::editor
 
         if (!engine::graphics::Failed(result))
         {
-            result =
-                commandContext_->
-                    ClearSwapChainColor(
-                        *uiSwapChain_,
-                        clear);
+            result = commandContext_->ClearSwapChainColor(*uiSwapChain_, clear);
         }
 
         /*
-         * Сначала рисуем 3D-сцену строго в прямоугольнике Viewport.
-         * После неё рисуем весь Dear ImGui поверх сцены.
-         *
-         * Благодаря этому popup, меню, Inspector и другие окна
-         * никогда не перекрываются сеткой или terrain.
+         * Сначала отрисовываем весь ImGui.
+         * Затем 3D-сцена заполняет только прозрачную область Viewport.
          */
-        if (!engine::graphics::Failed(result) &&
+        if (!engine::graphics::Failed(result))
+        {
+            imguiHost_.Render();
+        }
+
+        const bool renderScene =
+            !engine::graphics::Failed(result) &&
             imguiViewportVisible_ &&
-            depthStencil_.IsValid())
+            !popupOpen &&
+            depthStencil_.IsValid();
+
+        if (renderScene)
         {
             engine::graphics::Viewport sceneViewport{};
             sceneViewport.x = imguiViewportX_;
@@ -1977,7 +1978,7 @@ namespace lts::editor
                 result = commandContext_->ClearDepthStencilTarget(
                     depthStencil_,
                     engine::graphics::ClearDepthStencilFlags::Depth |
-                        engine::graphics::ClearDepthStencilFlags::Stencil,
+                    engine::graphics::ClearDepthStencilFlags::Stencil,
                     1.0F,
                     0U);
             }
@@ -2045,25 +2046,6 @@ namespace lts::editor
             }
         }
 
-        /*
-         * Возвращаем полный Viewport главного окна
-         * и рисуем ImGui последним.
-         */
-        if (!engine::graphics::Failed(result))
-        {
-            result = commandContext_->SetViewport(fullViewport);
-        }
-
-        if (!engine::graphics::Failed(result))
-        {
-            result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_);
-        }
-
-        if (!engine::graphics::Failed(result))
-        {
-            imguiHost_.Render();
-        }
-
         if (engine::graphics::Failed(result))
         {
             ReportGraphicsFailure(
@@ -2077,12 +2059,9 @@ namespace lts::editor
         commandContext_->UnbindRenderTargets();
 
         engine::graphics::PresentStatus presentStatus =
-            engine::graphics::
-                PresentStatus::Failed;
+            engine::graphics::PresentStatus::Failed;
 
-        result =
-            uiSwapChain_->Present(
-                presentStatus);
+        result = uiSwapChain_->Present(presentStatus);
 
         if (engine::graphics::Failed(result))
         {
