@@ -868,7 +868,7 @@ namespace lts::editor
             return false;
         }
 
-        RefreshContentBrowser();
+        contentBrowserPanel_.Refresh();
 
         cameraController_.
             SetViewportWindow(
@@ -958,279 +958,6 @@ namespace lts::editor
                 "Resize editor depth stencil",
                 depthResult);
         }
-    }
-    
-    void EditorApplication::RefreshContentBrowser() noexcept
-    {
-        const std::filesystem::path previousDirectory = contentSelectedDirectory_;
-        contentMeshFiles_.clear();
-        try
-        {
-            std::filesystem::path gameRoot = std::filesystem::current_path();
-            if (gameRoot.filename() != L"game")
-            {
-                gameRoot /= L"game";
-            }
-            contentMeshesRoot_ = (gameRoot / L"Data" / L"Meshes").lexically_normal();
-            contentSelectedDirectory_ = previousDirectory.empty()
-                ? contentMeshesRoot_
-                : previousDirectory;
-
-            std::error_code error;
-            for (std::filesystem::recursive_directory_iterator iterator(
-                     contentMeshesRoot_,
-                     std::filesystem::directory_options::skip_permission_denied,
-                     error), end;
-                 iterator != end;
-                 iterator.increment(error))
-            {
-                if (error)
-                {
-                    error.clear();
-                    continue;
-                }
-                if (iterator->is_regular_file(error) && !error &&
-                    iterator->path().extension() == L".ltsmesh")
-                {
-                    contentMeshFiles_.push_back(iterator->path().lexically_normal());
-                }
-            }
-            std::sort(contentMeshFiles_.begin(), contentMeshFiles_.end());
-            if (!std::filesystem::is_directory(contentSelectedDirectory_))
-            {
-                contentSelectedDirectory_ = contentMeshesRoot_;
-            }
-        }
-        catch (...)
-        {
-            contentMeshFiles_.clear();
-        }
-    }
-
-    void EditorApplication::DrawContentBrowser() noexcept
-    {
-        if (ImGui::Button("Refresh"))
-        {
-            RefreshContentBrowser();
-        }
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(260.0F);
-        ImGui::InputTextWithHint(
-            "##ContentSearch",
-            "Search meshes...",
-            contentSearch_.data(),
-            contentSearch_.size());
-        ImGui::SameLine();
-        if (ImGui::Button(contentGridView_ ? "List" : "Tiles"))
-        {
-            contentGridView_ = !contentGridView_;
-        }
-        ImGui::Separator();
-
-        ImGui::BeginChild("ContentFolders", ImVec2(210.0F, 0.0F), ImGuiChildFlags_Borders);
-        std::function<void(const std::filesystem::path&, const char*)> drawDirectory;
-        drawDirectory = [&](const std::filesystem::path& directory, const char* label)
-        {
-            std::vector<std::filesystem::path> children;
-            std::error_code error;
-            for (std::filesystem::directory_iterator iterator(
-                     directory, std::filesystem::directory_options::skip_permission_denied,
-                     error), end;
-                 iterator != end;
-                 iterator.increment(error))
-            {
-                if (error) { error.clear(); continue; }
-                if (iterator->is_directory(error) && !error)
-                {
-                    children.push_back(iterator->path().lexically_normal());
-                }
-            }
-            std::sort(children.begin(), children.end());
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
-                ImGuiTreeNodeFlags_SpanAvailWidth;
-            if (children.empty()) flags |= ImGuiTreeNodeFlags_Leaf;
-            if (directory == contentSelectedDirectory_) flags |= ImGuiTreeNodeFlags_Selected;
-            if (directory == contentMeshesRoot_) flags |= ImGuiTreeNodeFlags_DefaultOpen;
-            const bool open = ImGui::TreeNodeEx(directory.generic_u8string().c_str(), flags, "%s", label);
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            {
-                contentSelectedDirectory_ = directory;
-            }
-            if (open)
-            {
-                for (const std::filesystem::path& child : children)
-                {
-                    const std::string childLabel = child.filename().u8string();
-                    drawDirectory(child, childLabel.c_str());
-                }
-                ImGui::TreePop();
-            }
-        };
-        drawDirectory(contentMeshesRoot_, "Meshes");
-        ImGui::EndChild();
-        ImGui::SameLine();
-
-        ImGui::BeginChild("ContentAssets", ImVec2(0.0F, 0.0F), ImGuiChildFlags_Borders);
-        std::error_code breadcrumbError;
-        const std::filesystem::path relativeDirectory = std::filesystem::relative(
-            contentSelectedDirectory_, contentMeshesRoot_, breadcrumbError);
-        if (ImGui::SmallButton("Meshes")) contentSelectedDirectory_ = contentMeshesRoot_;
-        if (!breadcrumbError && relativeDirectory != L".")
-        {
-            std::filesystem::path current = contentMeshesRoot_;
-            for (const auto& part : relativeDirectory)
-            {
-                current /= part;
-                ImGui::SameLine(); ImGui::TextDisabled(">"); ImGui::SameLine();
-                const std::string partLabel = part.u8string();
-                ImGui::PushID(current.generic_u8string().c_str());
-                if (ImGui::SmallButton(partLabel.c_str())) contentSelectedDirectory_ = current;
-                ImGui::PopID();
-            }
-        }
-        ImGui::Separator();
-        std::string search = contentSearch_.data();
-        std::transform(search.begin(), search.end(), search.begin(),
-            [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
-        bool refreshRequested = false;
-        for (const std::filesystem::path& file : contentMeshFiles_)
-        {
-            if (contentSelectedDirectory_ != contentMeshesRoot_ &&
-                file.parent_path() != contentSelectedDirectory_)
-            {
-                continue;
-            }
-            const std::string name = file.stem().u8string();
-            std::error_code displayPathError;
-            const std::string displayPath = std::filesystem::relative(
-                file, contentMeshesRoot_, displayPathError).generic_u8string();
-            std::string loweredName = displayPathError ? name : displayPath;
-            std::transform(loweredName.begin(), loweredName.end(), loweredName.begin(),
-                [](const unsigned char value) { return static_cast<char>(std::tolower(value)); });
-            if (!search.empty() && loweredName.find(search) == std::string::npos)
-            {
-                continue;
-            }
-
-            ImGui::PushID(file.generic_u8string().c_str());
-            const float itemWidth = contentGridView_ ? 150.0F : -1.0F;
-            const float itemHeight = contentGridView_ ? 58.0F : 24.0F;
-            const bool selected = ImGui::Selectable(
-                name.c_str(), contentSelectedAsset_ == file,
-                ImGuiSelectableFlags_AllowDoubleClick,
-                ImVec2(itemWidth, itemHeight));
-            if (selected) contentSelectedAsset_ = file;
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-            {
-                std::error_code relativeError;
-                const std::filesystem::path relative = std::filesystem::relative(
-                    file, contentMeshesRoot_.parent_path().parent_path(), relativeError);
-                if (!relativeError)
-                {
-                    const std::string payload = relative.generic_u8string();
-                    ImGui::SetDragDropPayload(
-                        "LTS_MESH_ASSET",
-                        payload.c_str(),
-                        payload.size() + 1U);
-                    ImGui::Text("Place %s", name.c_str());
-                }
-                ImGui::EndDragDropSource();
-            }
-            if (selected && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-            {
-                std::error_code error;
-                const std::filesystem::path relative = std::filesystem::relative(
-                    file, contentMeshesRoot_.parent_path().parent_path(), error);
-                if (!error)
-                {
-                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                    EditorTransform transform{};
-                    EditorPickRay ray{};
-                    if (cameraController_.BuildPickRay(
-                            static_cast<std::uint32_t>(imguiViewportWidth_ * 0.5F),
-                            static_cast<std::uint32_t>(imguiViewportHeight_ * 0.5F),
-                            static_cast<std::uint32_t>(imguiViewportWidth_),
-                            static_cast<std::uint32_t>(imguiViewportHeight_), ray))
-                    {
-                        float distance = 10.0F;
-                        if (std::abs(ray.direction.y) > 0.00001F)
-                        {
-                            const float planeDistance = -ray.origin.y / ray.direction.y;
-                            if (planeDistance >= 0.0F) distance = planeDistance;
-                            float terrainHeight = 0.0F;
-                            for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
-                            {
-                                const float x = ray.origin.x + ray.direction.x * distance;
-                                const float z = ray.origin.z + ray.direction.z * distance;
-                                if (!terrainRenderer_.TryGetSurfaceHeight(
-                                        sceneDocument_, x, z, terrainHeight)) break;
-                                const float refined =
-                                    (terrainHeight - ray.origin.y) / ray.direction.y;
-                                if (refined < 0.0F) break;
-                                distance = refined;
-                            }
-                        }
-                        transform.position = {
-                            ray.origin.x + ray.direction.x * distance,
-                            ray.origin.y + ray.direction.y * distance,
-                            ray.origin.z + ray.direction.z * distance};
-                        float terrainHeight = 0.0F;
-                        if (terrainRenderer_.TryGetSurfaceHeight(
-                                sceneDocument_, transform.position[0],
-                                transform.position[2], terrainHeight))
-                            transform.position[1] = terrainHeight;
-                        DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
-                        if (staticMeshRenderer_.TryGetMeshBounds(
-                                relative.generic_wstring(), boundsMinimum, boundsMaximum))
-                            transform.position[1] -= boundsMinimum.y;
-                    }
-                    if (sceneDocument_.CreateStaticMeshEntity(
-                            file.stem().wstring(),
-                            relative.generic_wstring(),
-                            transform))
-                    {
-                        static_cast<void>(commandHistory_.Push(
-                            before, sceneDocument_.CreateSnapshot()));
-                    }
-                }
-            }
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::SetTooltip("%s\nDouble-click to add to scene",
-                    file.generic_u8string().c_str());
-            }
-            if (ImGui::BeginPopupContextItem("AssetContext"))
-            {
-                contentSelectedAsset_ = file;
-                if (ImGui::MenuItem("Copy Asset Path"))
-                {
-                    ImGui::SetClipboardText(file.generic_u8string().c_str());
-                }
-                if (ImGui::MenuItem("Copy Game Path"))
-                {
-                    std::error_code relativeError;
-                    const std::filesystem::path relative = std::filesystem::relative(
-                        file, contentMeshesRoot_.parent_path().parent_path(), relativeError);
-                    if (!relativeError)
-                    {
-                        ImGui::SetClipboardText(relative.generic_u8string().c_str());
-                    }
-                }
-                if (ImGui::MenuItem("Refresh")) refreshRequested = true;
-                ImGui::EndPopup();
-            }
-            ImGui::PopID();
-            if (contentGridView_ && ImGui::GetContentRegionAvail().x > 310.0F)
-            {
-                ImGui::SameLine();
-            }
-        }
-        if (refreshRequested) RefreshContentBrowser();
-        if (contentMeshFiles_.empty())
-        {
-            ImGui::TextDisabled("No .ltsmesh files found in Data/Meshes");
-        }
-        ImGui::EndChild();
     }
 
     void EditorApplication::LaunchTestGame() noexcept
@@ -1889,9 +1616,21 @@ namespace lts::editor
             }
             ImGui::End();
 
-            ImGui::Begin("Content Browser");
-            DrawContentBrowser();
-            ImGui::End();
+            EditorContentBrowserContext
+            contentBrowserContext
+            {
+                sceneDocument_,
+                commandHistory_,
+                cameraController_,
+                staticMeshRenderer_,
+                terrainRenderer_,
+                imguiViewportWidth_,
+                imguiViewportHeight_
+            };
+
+            contentBrowserPanel_.
+                Draw(
+                    contentBrowserContext);
 
             ImGui::SetNextWindowBgAlpha(0.0F);
 

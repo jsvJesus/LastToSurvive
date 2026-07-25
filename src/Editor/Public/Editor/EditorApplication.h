@@ -3,6 +3,7 @@
 #include "Editor/EditorCameraController.h"
 #include "Editor/EditorCommandHistory.h"
 #include "Editor/EditorCommandSystem.h"
+#include "Editor/EditorContentBrowserPanel.h"
 #include "Editor/EditorGridRenderer.h"
 #include "Editor/EditorLevelDocument.h"
 #include "Editor/LevelEditorLayout.h"
@@ -80,8 +81,6 @@ namespace lts::editor
         void LaunchTestGame() noexcept;
         void ProcessEditorShortcuts() noexcept;
         bool ExecuteEditorCommand(EditorCommand command);
-        void RefreshContentBrowser() noexcept;
-        void DrawContentBrowser() noexcept;
 
         void ShutdownGraphics() noexcept;
 
@@ -146,16 +145,11 @@ namespace lts::editor
          */
         bool imguiViewportVisible_ = false;
         
-        std::filesystem::path contentMeshesRoot_;
-        std::filesystem::path contentSelectedDirectory_;
-        std::vector<std::filesystem::path> contentMeshFiles_;
-        std::array<char, 128U> contentSearch_{};
-        std::filesystem::path contentSelectedAsset_;
         std::filesystem::path loadedTerrainAssetPath_;
-        bool contentGridView_ = true;
         std::array<char, 256U> entityRenameBuffer_{};
         EditorEntityId renameEntityId_ = 0U;
         EditorWorldOutlinerPanel worldOutlinerPanel_;
+        EditorContentBrowserPanel contentBrowserPanel_;
         EditorSceneSnapshot inspectorEditBefore_;
         EditorTransform transformClipboard_;
         bool inspectorEditActive_ = false;
