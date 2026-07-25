@@ -611,7 +611,7 @@ namespace lts::editor
             const bool selected =
                 ImGui::Selectable(
                     name.c_str(),
-                    selectedAsset_ == file, ImGuiSelectableFlags_ AllowDoubleClick, ImVec2(itemWidth, itemHeight));
+                    selectedAsset_ == file, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(itemWidth, itemHeight));
 
             if (selected)
             {
@@ -623,7 +623,7 @@ namespace lts::editor
              * Payload оставляем совместимым
              * с существующим Viewport.
              */
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_ SourceAllowNullID))
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 std::error_code relativeError;
 
