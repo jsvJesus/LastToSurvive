@@ -1,4 +1,4 @@
-#include "Editor/EditorApplication.h"
+#include "Editor/Application/Application.h"
 #include <Assets/LegacyTerrain2Importer.h>
 #include <Assets/TerrainAsset.h>
 
@@ -31,7 +31,7 @@ int WINAPI wWinMain(
     }
     if (arguments != nullptr) LocalFree(arguments);
 
-    lts::editor::EditorApplication application;
+    lts::editor::Application application;
 
     const auto result =
         application.Run();

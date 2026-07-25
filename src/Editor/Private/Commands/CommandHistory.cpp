@@ -1,0 +1,141 @@
+#include "Editor/Commands/CommandHistory.h"
+
+#include <algorithm>
+#include <utility>
+
+namespace lts::editor
+{
+    namespace
+    {
+        [[nodiscard]]
+        bool EntityEquals(
+            const EditorSceneEntity& left,
+            const EditorSceneEntity& right) noexcept
+        {
+            return
+                left.id == right.id &&
+                left.kind == right.kind &&
+                left.parentId == right.parentId &&
+                left.editorFolder == right.editorFolder &&
+                left.name == right.name &&
+                left.transform.position == right.transform.position &&
+                left.transform.rotationDegrees ==
+                    right.transform.rotationDegrees &&
+                left.transform.scale == right.transform.scale;
+        }
+
+        [[nodiscard]]
+        bool SnapshotEquals(
+            const EditorSceneSnapshot& left,
+            const EditorSceneSnapshot& right) noexcept
+        {
+            if (
+                left.nextEntityId != right.nextEntityId ||
+                left.selectedIndex != right.selectedIndex ||
+                left.selectedEntityId != right.selectedEntityId ||
+                left.selectedEntityIds != right.selectedEntityIds ||
+                left.selectionAnchorId != right.selectionAnchorId ||
+                left.entities.size() != right.entities.size())
+            {
+                return false;
+            }
+
+            for (
+                std::size_t index = 0U;
+                index < left.entities.size();
+                ++index)
+            {
+                if (!EntityEquals(
+                        left.entities[index],
+                        right.entities[index]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    void CommandHistory::Clear() noexcept
+    {
+        entries_.clear();
+        cursor_ = 0U;
+    }
+
+    bool CommandHistory::Push(
+        const EditorSceneSnapshot& before,
+        const EditorSceneSnapshot& after)
+    {
+        if (SnapshotEquals(before, after))
+        {
+            return false;
+        }
+
+        if (cursor_ < entries_.size())
+        {
+            entries_.erase(
+                entries_.begin() +
+                    static_cast<std::ptrdiff_t>(cursor_),
+                entries_.end());
+        }
+
+        Entry entry;
+        entry.before = before;
+        entry.after = after;
+
+        entries_.push_back(
+            std::move(entry));
+
+        if (entries_.size() > MaximumEntries)
+        {
+            entries_.erase(entries_.begin());
+        }
+
+        cursor_ = entries_.size();
+        return true;
+    }
+
+    bool CommandHistory::Undo(
+        SceneDocument& document)
+    {
+        if (!CanUndo())
+        {
+            return false;
+        }
+
+        --cursor_;
+
+        document.RestoreSnapshot(
+            entries_[cursor_].before,
+            true);
+
+        return true;
+    }
+
+    bool CommandHistory::Redo(
+        SceneDocument& document)
+    {
+        if (!CanRedo())
+        {
+            return false;
+        }
+
+        document.RestoreSnapshot(
+            entries_[cursor_].after,
+            true);
+
+        ++cursor_;
+        return true;
+    }
+
+    bool CommandHistory::CanUndo() const noexcept
+    {
+        return cursor_ > 0U;
+    }
+
+    bool CommandHistory::CanRedo() const noexcept
+    {
+        return cursor_ < entries_.size();
+    }
+}
