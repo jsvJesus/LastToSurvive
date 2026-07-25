@@ -736,6 +736,7 @@ namespace lts::editor
         }
 
         ImGui::SetNextWindowSize(ImVec2(620.0F, 0.0F), ImGuiCond_Appearing);
+        ImGui::SetNextWindowBgAlpha(1.0F);
 
         bool windowOpen = true;
 

@@ -1945,78 +1945,52 @@ namespace lts::editor
         }
 
         /*
-         * В текущей архитектуре Dear ImGui рисуется первым.
-         * D3D-сцена затем заполняет только прямоугольник
-         * прозрачного окна Viewport.
+         * Сначала рисуем 3D-сцену строго в прямоугольнике Viewport.
+         * После неё рисуем весь Dear ImGui поверх сцены.
+         *
+         * Благодаря этому popup, меню, Inspector и другие окна
+         * никогда не перекрываются сеткой или terrain.
          */
-        if (!engine::graphics::Failed(result))
-        {
-            imguiHost_.Render();
-        }
-
-        if (!engine::graphics::Failed(result) && imguiViewportVisible_ && depthStencil_.IsValid())
+        if (!engine::graphics::Failed(result) &&
+            imguiViewportVisible_ &&
+            depthStencil_.IsValid())
         {
             engine::graphics::Viewport sceneViewport{};
-
-            sceneViewport.x =
-                imguiViewportX_;
-
-            sceneViewport.y =
-                imguiViewportY_;
-
-            sceneViewport.width =
-                (std::max)(
-                    imguiViewportWidth_,
-                    1.0F);
-
-            sceneViewport.height =
-                (std::max)(
-                    imguiViewportHeight_,
-                    1.0F);
-
+            sceneViewport.x = imguiViewportX_;
+            sceneViewport.y = imguiViewportY_;
+            sceneViewport.width = (std::max)(imguiViewportWidth_, 1.0F);
+            sceneViewport.height = (std::max)(imguiViewportHeight_, 1.0F);
             sceneViewport.minDepth = 0.0F;
             sceneViewport.maxDepth = 1.0F;
 
-            result =
-                commandContext_->SetViewport(
-                    sceneViewport);
+            result = commandContext_->SetViewport(sceneViewport);
 
             if (!engine::graphics::Failed(result))
             {
-                result =
-                    commandContext_->
-                        SetSwapChainRenderTarget(
-                            *uiSwapChain_,
-                            depthStencil_);
+                result = commandContext_->SetSwapChainRenderTarget(
+                    *uiSwapChain_,
+                    depthStencil_);
             }
 
             if (!engine::graphics::Failed(result))
             {
-                result =
-                    commandContext_->
-                        ClearDepthStencilTarget(
-                            depthStencil_,
-                            engine::graphics::
-                                ClearDepthStencilFlags::Depth |
-                            engine::graphics::
-                                ClearDepthStencilFlags::Stencil,
-                            1.0F,
-                            0U);
+                result = commandContext_->ClearDepthStencilTarget(
+                    depthStencil_,
+                    engine::graphics::ClearDepthStencilFlags::Depth |
+                        engine::graphics::ClearDepthStencilFlags::Stencil,
+                    1.0F,
+                    0U);
             }
 
             DirectX::XMFLOAT4X4 viewProjection{};
 
             const std::uint32_t viewportWidth =
                 static_cast<std::uint32_t>(
-                    (std::max)(
-                        imguiViewportWidth_,
-                        1.0F));
+                    (std::max)(imguiViewportWidth_, 1.0F));
 
             const std::uint32_t viewportHeight =
                 static_cast<std::uint32_t>(
-                    (std::max)(
-                        imguiViewportHeight_,
-                        1.0F));
+                    (std::max)(imguiViewportHeight_, 1.0F));
 
             if (!engine::graphics::Failed(result) &&
                 cameraController_.BuildViewProjection(
@@ -2024,58 +1998,70 @@ namespace lts::editor
                     viewportHeight,
                     viewProjection))
             {
-                result =
-                    gridRenderer_.Render(
+                result = gridRenderer_.Render(
+                    *commandContext_,
+                    viewProjection);
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result = terrainRenderer_.Render(
                         *commandContext_,
+                        sceneDocument_,
+                        viewProjection,
+                        cameraController_.GetPosition());
+                }
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result = staticMeshRenderer_.Render(
+                        *commandContext_,
+                        sceneDocument_,
                         viewProjection);
-
-                if (!engine::graphics::Failed(result))
-                {
-                    result =
-                        terrainRenderer_.Render(
-                            *commandContext_,
-                            sceneDocument_,
-                            viewProjection,
-                            cameraController_.
-                                GetPosition());
                 }
 
                 if (!engine::graphics::Failed(result))
                 {
-                    result =
-                        staticMeshRenderer_.Render(
-                            *commandContext_,
-                            sceneDocument_,
-                            viewProjection);
-                }
-
-                if (!engine::graphics::Failed(result))
-                {
-                    result =
-                        sceneRenderer_.Render(
-                            *commandContext_,
-                            sceneDocument_,
-                            viewProjection,
-                            transformController_.
-                                GetVisualState(),
-                            &staticMeshRenderer_);
+                    result = sceneRenderer_.Render(
+                        *commandContext_,
+                        sceneDocument_,
+                        viewProjection,
+                        transformController_.GetVisualState(),
+                        &staticMeshRenderer_);
                 }
 
                 if (!engine::graphics::Failed(result) &&
                     terrainPaintMode_ &&
                     terrainBrushHitValid_)
                 {
-                    result =
-                        terrainRenderer_.RenderBrush(
-                            *commandContext_,
-                            sceneDocument_,
-                            viewProjection,
-                            terrainBrushWorldX_,
-                            terrainBrushWorldZ_,
-                            terrainBrushRadius_,
-                            ImGui::GetIO().KeyShift);
+                    result = terrainRenderer_.RenderBrush(
+                        *commandContext_,
+                        sceneDocument_,
+                        viewProjection,
+                        terrainBrushWorldX_,
+                        terrainBrushWorldZ_,
+                        terrainBrushRadius_,
+                        ImGui::GetIO().KeyShift);
                 }
             }
+        }
+
+        /*
+         * Возвращаем полный Viewport главного окна
+         * и рисуем ImGui последним.
+         */
+        if (!engine::graphics::Failed(result))
+        {
+            result = commandContext_->SetViewport(fullViewport);
+        }
+
+        if (!engine::graphics::Failed(result))
+        {
+            result = commandContext_->SetSwapChainRenderTarget(*uiSwapChain_);
+        }
+
+        if (!engine::graphics::Failed(result))
+        {
+            imguiHost_.Render();
         }
 
         if (engine::graphics::Failed(result))
