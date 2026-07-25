@@ -85,10 +85,14 @@ namespace lts::editor
 
         [[nodiscard]] bool SetSelectedTerrainLayers(
             std::vector<engine::scene::TerrainComponent::LayerOverride> layers);
+        
         [[nodiscard]] bool UpdateSelectedTerrainLayer(
             std::size_t index, std::string diffusePath, std::string normalPath,
             float scaleU, float scaleV, float offsetU, float offsetV,
             bool visible) noexcept;
+
+        [[nodiscard]] bool AddSelectedTerrainLayer(std::string name);
+        [[nodiscard]] bool RemoveSelectedTerrainLayer(std::size_t index) noexcept;
 
         [[nodiscard]]
         const std::vector<EditorSceneEntity>&

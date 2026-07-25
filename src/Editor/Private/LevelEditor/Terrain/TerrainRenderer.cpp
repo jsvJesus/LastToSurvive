@@ -683,6 +683,21 @@ namespace lts::editor
             return CreateSolidTexture(device, pixel, output);
         }
 
+        bool CreateFallbackNormalMaterial(
+            engine::graphics::RenderDevice& device,
+            engine::graphics::TextureHandle& output)
+        {
+            constexpr std::array<std::byte, 4U> pixel
+            {
+                std::byte{128},
+                std::byte{128},
+                std::byte{255},
+                std::byte{255}
+            };
+
+            return CreateSolidTexture(device, pixel, output);
+        }
+
         [[nodiscard]]
         bool CreateEditableMaskTexture(
             engine::graphics::RenderDevice& device,
@@ -731,6 +746,7 @@ namespace lts::editor
         bool CreateDdsFileTexture(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& path,
+            const bool forceSrgb,
             engine::graphics::TextureHandle& output)
         {
             std::error_code filesystemError;
@@ -772,7 +788,7 @@ namespace lts::editor
 
             engine::assets::TextureAsset decoded;
             engine::assets::DdsTextureDecodeOptions options{};
-            options.forceSrgb = true;
+            options.forceSrgb = forceSrgb;
 
             const engine::assets::AssetResult decodeResult =
                 engine::assets::DdsTextureDecoder::Decode(
@@ -1819,59 +1835,80 @@ namespace lts::editor
 
             workspaceRoot_ = workspace;
 
+            const auto loadLayerTexture =
+            [&device, &workspace](
+                const std::string& logicalPath,
+                const bool forceSrgb,
+                engine::graphics::TextureHandle& output)
+            {
+                if (logicalPath.empty())
+                {
+                    return false;
+                }
+
+                const std::filesystem::path path =
+                    std::filesystem::u8path(logicalPath);
+
+                if (CreateDdsFileTexture(
+                        device,
+                        workspace / L"game" / path,
+                        forceSrgb,
+                        output))
+                {
+                    return true;
+                }
+
+                return CreateDdsFileTexture(
+                    device,
+                    workspace / L"bin" / path,
+                    forceSrgb,
+                    output);
+            };
+
             for (std::size_t layerIndex = 0U;
                  layerIndex < materials_.size();
                  ++layerIndex)
             {
-                bool created = false;
+                bool diffuseCreated = false;
+                bool normalCreated = false;
 
                 if (layerIndex < terrain.layers.size())
                 {
                     materialPaths_[layerIndex] =
                         terrain.layers[layerIndex].diffusePath;
 
-                    const std::filesystem::path logicalPath =
-                        std::filesystem::u8path(
-                            materialPaths_[layerIndex]);
+                    normalMaterialPaths_[layerIndex] =
+                        terrain.layers[layerIndex].normalPath;
 
-                    created =
-                        CreateDdsFileTexture(
-                            device,
-                            workspace / L"game" / logicalPath,
-                            materials_[layerIndex]);
+                    diffuseCreated = loadLayerTexture(
+                        materialPaths_[layerIndex],
+                        true,
+                        materials_[layerIndex]);
 
-                    if (!created)
-                    {
-                        created =
-                            CreateDdsFileTexture(
-                                device,
-                                workspace / L"bin" / logicalPath,
-                                materials_[layerIndex]);
-                    }
-
-                    if (!created &&
-                        !materialPaths_[layerIndex].empty())
-                    {
-                        std::string message =
-                            "Terrain layer texture was not found or could not be decoded: ";
-                        message += materialPaths_[layerIndex];
-
-                        engine::core::GetLogger().Write(
-                            engine::core::LogLevel::Warning,
-                            "LTS.Editor.Terrain",
-                            message);
-                    }
+                    normalCreated = loadLayerTexture(
+                        normalMaterialPaths_[layerIndex],
+                        false,
+                        normalMaterials_[layerIndex]);
                 }
 
-                if (!created &&
-                    !CreateFallbackMaterial(
-                        device,
-                        materials_[layerIndex]))
+                if (!diffuseCreated &&
+                    !CreateFallbackMaterial(device, materials_[layerIndex]))
                 {
                     engine::core::GetLogger().Write(
                         engine::core::LogLevel::Error,
                         "LTS.Editor.Terrain",
-                        "Create terrain fallback material texture failed.");
+                        "Failed to create terrain fallback diffuse texture.");
+
+                    return false;
+                }
+
+                if (!normalCreated &&
+                    !CreateFallbackNormalMaterial(device, normalMaterials_[layerIndex]))
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.Terrain",
+                        "Failed to create terrain fallback normal texture.");
 
                     return false;
                 }
@@ -1912,6 +1949,16 @@ namespace lts::editor
                 {
                     static_cast<void>(
                         device.DestroyTexture(texture));
+                }
+
+                texture = {};
+            }
+
+            for (engine::graphics::TextureHandle& texture : normalMaterials_)
+            {
+                if (texture.IsValid())
+                {
+                    static_cast<void>(device.DestroyTexture(texture));
                 }
 
                 texture = {};
@@ -2053,6 +2100,11 @@ namespace lts::editor
                 path.clear();
             }
 
+            for (std::string& path : normalMaterialPaths_)
+            {
+                path.clear();
+            }
+
             activePaintBefore_.clear();
             paintUndo_.clear();
             paintRedo_.clear();
@@ -2079,6 +2131,23 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::Success;
             }
 
+            const bool hasSceneOverrides = !actor->terrain->layers.empty();
+
+            const std::size_t sourceLayerCount =
+                hasSceneOverrides
+                    ? actor->terrain->layers.size()
+                    : terrainAsset_.layers.size();
+
+            if (!SetMaterialLayerCount(sourceLayerCount))
+            {
+                return engine::graphics::GraphicsResult::InvalidArgument;
+            }
+
+            const std::size_t layerCount =
+                (std::min)(
+                    sourceLayerCount,
+                    MaximumTerrainLayerCount);
+
             const EditorSceneEntity* actor = nullptr;
 
             for (const EditorSceneEntity& entity : document.GetEntities())
@@ -2098,59 +2167,93 @@ namespace lts::editor
 
             if (device_ != nullptr)
             {
-                const std::size_t layerCount =
-                    (std::min)(
-                        materials_.size(),
-                        actor->terrain->layers.size());
+                const auto reloadTexture =
+                    [this](
+                        const std::string& path,
+                        const bool forceSrgb,
+                        const bool normalMap,
+                        engine::graphics::TextureHandle& texture,
+                        std::string& cachedPath)
+                {
+                    if (path == cachedPath)
+                    {
+                        return true;
+                    }
+
+                    if (texture.IsValid())
+                    {
+                        static_cast<void>(device_->DestroyTexture(texture));
+                    }
+
+                    texture = {};
+
+                    const std::filesystem::path logicalPath =
+                        std::filesystem::u8path(path);
+
+                    bool created = false;
+
+                    if (!path.empty())
+                    {
+                        created = CreateDdsFileTexture(
+                            *device_,
+                            workspaceRoot_ / L"game" / logicalPath,
+                            forceSrgb,
+                            texture);
+
+                        if (!created)
+                        {
+                            created = CreateDdsFileTexture(
+                                *device_,
+                                workspaceRoot_ / L"bin" / logicalPath,
+                                forceSrgb,
+                                texture);
+                        }
+                    }
+
+                    if (!created)
+                    {
+                        created = normalMap
+                            ? CreateFallbackNormalMaterial(*device_, texture)
+                            : CreateFallbackMaterial(*device_, texture);
+                    }
+
+                    if (created)
+                    {
+                        cachedPath = path;
+                    }
+
+                    return created;
+                };
 
                 for (std::size_t layerIndex = 0U;
                      layerIndex < layerCount;
                      ++layerIndex)
                 {
-                    const std::string& path =
-                        actor->terrain->layers[layerIndex].diffusePath;
+                    const std::string& diffusePath =
+                        hasSceneOverrides
+                            ? actor->terrain->layers[layerIndex].diffusePath
+                            : terrainAsset_.layers[layerIndex].diffusePath;
 
-                    if (path == materialPaths_[layerIndex])
+                    const std::string& normalPath =
+                        hasSceneOverrides
+                            ? actor->terrain->layers[layerIndex].normalPath
+                            : terrainAsset_.layers[layerIndex].normalPath;
+
+                    if (!reloadTexture(
+                            diffusePath,
+                            true,
+                            false,
+                            materials_[layerIndex],
+                            materialPaths_[layerIndex]) ||
+                        !reloadTexture(
+                            normalPath,
+                            false,
+                            true,
+                            normalMaterials_[layerIndex],
+                            normalMaterialPaths_[layerIndex]))
                     {
-                        continue;
+                        return engine::graphics::GraphicsResult::BackendFailure;
                     }
-
-                    if (materials_[layerIndex].IsValid())
-                    {
-                        static_cast<void>(
-                            device_->DestroyTexture(
-                                materials_[layerIndex]));
-                    }
-
-                    materials_[layerIndex] = {};
-
-                    const std::filesystem::path logicalPath =
-                        std::filesystem::u8path(path);
-
-                    bool created =
-                        CreateDdsFileTexture(
-                            *device_,
-                            workspaceRoot_ / L"game" / logicalPath,
-                            materials_[layerIndex]);
-
-                    if (!created)
-                    {
-                        created =
-                            CreateDdsFileTexture(
-                                *device_,
-                                workspaceRoot_ / L"bin" / logicalPath,
-                                materials_[layerIndex]);
-                    }
-
-                    if (!created)
-                    {
-                        static_cast<void>(
-                            CreateFallbackMaterial(
-                                *device_,
-                                materials_[layerIndex]));
-                    }
-
-                    materialPaths_[layerIndex] = path;
                 }
             }
 
@@ -2350,6 +2453,15 @@ namespace lts::editor
 
             if (!engine::graphics::Failed(result))
             {
+                result = context.SetShaderResources(
+                    engine::graphics::ShaderStage::Pixel,
+                    24U,
+                    normalMaterials_.data(),
+                    normalMaterials_.size());
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
                 result =
                     context.SetSamplers(
                         engine::graphics::ShaderStage::Pixel,
@@ -2422,7 +2534,7 @@ namespace lts::editor
                 context.UnbindShaderResources(
                     engine::graphics::ShaderStage::Pixel,
                     0U,
-                    24U));
+                    42U));
 
             context.UnbindIndexBuffer();
             context.UnbindGraphicsPipeline();
@@ -2587,6 +2699,179 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool SetMaterialLayerCount(
+            const std::size_t layerCount) noexcept
+        {
+            if (!loaded_ ||
+                device_ == nullptr ||
+                layerCount == 0U ||
+                layerCount > MaximumTerrainLayerCount ||
+                maskWidth_ == 0U ||
+                maskHeight_ == 0U)
+            {
+                return false;
+            }
+
+            const std::size_t requiredMaskCount =
+                layerCount <= 1U
+                    ? 0U
+                    : (layerCount - 1U + 2U) / 3U;
+
+            if (requiredMaskCount > MaximumTerrainMaskCount)
+            {
+                return false;
+            }
+
+            if (requiredMaskCount == activeMaskCount_)
+            {
+                return true;
+            }
+
+            const std::uint64_t bytesPerMask64 =
+                static_cast<std::uint64_t>(maskWidth_) *
+                static_cast<std::uint64_t>(maskHeight_) *
+                4ULL;
+
+            if (bytesPerMask64 == 0U ||
+                bytesPerMask64 >
+                    static_cast<std::uint64_t>(
+                        (std::numeric_limits<std::size_t>::max)()))
+            {
+                return false;
+            }
+
+            const std::size_t bytesPerMask =
+                static_cast<std::size_t>(bytesPerMask64);
+
+            const std::size_t previousMaskCount = activeMaskCount_;
+
+            for (std::size_t maskIndex = 0U;
+                 maskIndex < requiredMaskCount;
+                 ++maskIndex)
+            {
+                if (maskPixels_[maskIndex].size() != bytesPerMask)
+                {
+                    maskPixels_[maskIndex].assign(
+                        bytesPerMask,
+                        std::byte{0});
+                }
+            }
+
+            activeMaskCount_ = requiredMaskCount;
+
+            /*
+             * При загрузке уровня Terrain Asset может содержать только Base Layer,
+             * а дополнительные слои хранятся в Level Scene.
+             *
+             * После вычисления нужного количества масок повторно читаем .paint.
+             */
+            if (requiredMaskCount > previousMaskCount)
+            {
+                LoadPaintData(terrainAsset_.sourcePath);
+            }
+
+            paintStrokeActive_ = false;
+            activePaintBefore_.clear();
+            paintUndo_.clear();
+            paintRedo_.clear();
+
+            RefreshMaskTextures();
+
+            if (activeMaskCount_ == 0U)
+            {
+                std::error_code error;
+                std::filesystem::remove(paintPath_, error);
+            }
+            else
+            {
+                SavePaintData();
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool RemoveMaterialLayer(
+            const std::size_t layerIndex,
+            const std::size_t oldLayerCount) noexcept
+        {
+            if (layerIndex == 0U ||
+                oldLayerCount <= 1U ||
+                oldLayerCount > MaximumTerrainLayerCount ||
+                layerIndex >= oldLayerCount)
+            {
+                return false;
+            }
+
+            if (!SetMaterialLayerCount(oldLayerCount))
+            {
+                return false;
+            }
+
+            const std::size_t removedPaintIndex = layerIndex - 1U;
+            const std::size_t paintedLayerCount = oldLayerCount - 1U;
+
+            const std::uint64_t pixelCount64 =
+                static_cast<std::uint64_t>(maskWidth_) *
+                static_cast<std::uint64_t>(maskHeight_);
+
+            if (pixelCount64 >
+                static_cast<std::uint64_t>(
+                    (std::numeric_limits<std::uint32_t>::max)()))
+            {
+                return false;
+            }
+
+            const std::uint32_t pixelCount =
+                static_cast<std::uint32_t>(pixelCount64);
+
+            /*
+             * Удаляем канал выбранного слоя и сдвигаем последующие слои.
+             */
+            for (std::uint32_t pixel = 0U; pixel < pixelCount; ++pixel)
+            {
+                auto weights = ReadWeights(pixel);
+
+                for (std::size_t index = removedPaintIndex;
+                     index + 1U < paintedLayerCount;
+                     ++index)
+                {
+                    weights[index] = weights[index + 1U];
+                }
+
+                weights[paintedLayerCount - 1U] = 0U;
+                WriteWeights(pixel, weights);
+            }
+
+            const std::size_t newLayerCount = oldLayerCount - 1U;
+            const std::size_t newMaskCount =
+                newLayerCount <= 1U
+                    ? 0U
+                    : (newLayerCount - 1U + 2U) / 3U;
+
+            activeMaskCount_ = newMaskCount;
+
+            paintStrokeActive_ = false;
+            activePaintBefore_.clear();
+            paintUndo_.clear();
+            paintRedo_.clear();
+
+            RefreshMaskTextures();
+
+            if (activeMaskCount_ == 0U)
+            {
+                std::error_code error;
+                std::filesystem::remove(paintPath_, error);
+            }
+            else
+            {
+                SavePaintData();
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
         bool LoadTerrain(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& path) noexcept
@@ -2746,7 +3031,6 @@ namespace lts::editor
             const bool erase) noexcept
         {
             if (!paintStrokeActive_ ||
-                layerIndex >= terrainAsset_.layers.size() ||
                 maskWidth_ == 0U ||
                 maskHeight_ == 0U)
             {
@@ -2763,12 +3047,36 @@ namespace lts::editor
 
             for (const EditorSceneEntity& entity : document.GetEntities())
             {
-                if (entity.terrain.has_value() &&
-                    entity.terrain->visible)
+                if (entity.terrain.has_value() && entity.terrain->visible)
                 {
                     actor = &entity;
                     break;
                 }
+            }
+
+            if (actor == nullptr ||
+                std::abs(actor->transform.scale[0]) < 0.00001F ||
+                std::abs(actor->transform.scale[2]) < 0.00001F)
+            {
+                return false;
+            }
+
+            const std::size_t layerCount =
+                actor->terrain->layers.empty()
+                    ? terrainAsset_.layers.size()
+                    : actor->terrain->layers.size();
+
+            if (layerIndex >= layerCount ||
+                layerCount > MaximumTerrainLayerCount ||
+                !SetMaterialLayerCount(layerCount))
+            {
+                return false;
+            }
+
+            if (layerIndex > 0U &&
+                (layerIndex - 1U) / 3U >= activeMaskCount_)
+            {
+                return false;
             }
 
             if (actor == nullptr ||
@@ -3484,28 +3792,15 @@ namespace lts::editor
         engine::graphics::PipelineStateHandle pipeline_{};
         engine::graphics::PipelineStateHandle brushPipeline_{};
 
-        std::array<
-            engine::graphics::TextureHandle,
-            MaximumTerrainMaskCount> masks_{};
-
-        std::array<
-            std::vector<std::byte>,
-            MaximumTerrainMaskCount> maskPixels_{};
-
-        std::array<
-            engine::graphics::TextureHandle,
-            MaximumTerrainLayerCount> materials_{};
-
-        std::array<
-            std::string,
-            MaximumTerrainLayerCount> materialPaths_{};
-
+        std::array<engine::graphics::TextureHandle, MaximumTerrainMaskCount> masks_{};
+        std::array<std::vector<std::byte>, MaximumTerrainMaskCount> maskPixels_{};
+        std::array<engine::graphics::TextureHandle, MaximumTerrainLayerCount> materials_{};
+        std::array<std::string, MaximumTerrainLayerCount> materialPaths_{};
+        std::array<engine::graphics::TextureHandle, MaximumTerrainLayerCount> normalMaterials_{};
+        std::array<std::string, MaximumTerrainLayerCount> normalMaterialPaths_{};
         engine::graphics::SamplerHandle sampler_{};
 
-        std::unordered_map<
-            std::uint32_t,
-            std::array<std::uint8_t, MaximumPaintedLayerCount>>
-                activePaintBefore_;
+        std::unordered_map<std::uint32_t, std::array<std::uint8_t, MaximumPaintedLayerCount>>activePaintBefore_;
 
         std::vector<PaintCommand> paintUndo_;
         std::vector<PaintCommand> paintRedo_;
@@ -3542,6 +3837,21 @@ namespace lts::editor
     bool TerrainRenderer::HasTerrain() const noexcept
     {
         return impl_->HasTerrain();
+    }
+
+    bool TerrainRenderer::SetMaterialLayerCount(
+    const std::size_t layerCount) noexcept
+    {
+        return impl_->SetMaterialLayerCount(layerCount);
+    }
+
+    bool TerrainRenderer::RemoveMaterialLayer(
+        const std::size_t layerIndex,
+        const std::size_t oldLayerCount) noexcept
+    {
+        return impl_->RemoveMaterialLayer(
+            layerIndex,
+            oldLayerCount);
     }
 
     bool TerrainRenderer::TryGetSurfaceHeight(

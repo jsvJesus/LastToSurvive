@@ -17,12 +17,22 @@ public:
     [[nodiscard]] bool LoadTerrain(engine::graphics::RenderDevice& device,
         const std::filesystem::path& path) noexcept;
     [[nodiscard]] bool HasTerrain() const noexcept;
+    
+    [[nodiscard]] bool SetMaterialLayerCount(
+        std::size_t layerCount) noexcept;
+
+    [[nodiscard]] bool RemoveMaterialLayer(
+        std::size_t layerIndex,
+        std::size_t oldLayerCount) noexcept;
+    
     [[nodiscard]] bool TryGetSurfaceHeight(
         const SceneDocument& document,
         float worldX,
         float worldZ,
         float& worldHeight) const noexcept;
+    
     [[nodiscard]] bool BeginPaintStroke() noexcept;
+    
     [[nodiscard]] bool Paint(
         const SceneDocument& document,
         float worldX,

@@ -265,6 +265,74 @@ namespace lts::editor
         dirty_ = true; return true;
     }
 
+    bool SceneDocument::AddSelectedTerrainLayer(std::string name)
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+
+        if (entity == nullptr ||
+            !entity->terrain.has_value() ||
+            entity->terrain->layers.size() >= 18U)
+        {
+            return false;
+        }
+
+        auto& layers = entity->terrain->layers;
+
+        if (name.empty())
+        {
+            name = "Layer " + std::to_string(layers.size());
+        }
+
+        const std::string baseName = name;
+        std::uint32_t suffix = 2U;
+
+        const auto nameExists = [&layers](const std::string& candidate)
+        {
+            return std::any_of(
+                layers.begin(),
+                layers.end(),
+                [&candidate](const auto& layer)
+                {
+                    return layer.name == candidate;
+                });
+        };
+
+        while (nameExists(name))
+        {
+            name = baseName + " " + std::to_string(suffix++);
+        }
+
+        engine::scene::TerrainComponent::LayerOverride layer;
+        layer.name = std::move(name);
+        layer.scaleU = 16.0F;
+        layer.scaleV = 16.0F;
+        layer.visible = true;
+
+        layers.push_back(std::move(layer));
+        dirty_ = true;
+
+        return true;
+    }
+
+    bool SceneDocument::RemoveSelectedTerrainLayer(std::size_t index) noexcept
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+
+        if (entity == nullptr ||
+            !entity->terrain.has_value() ||
+            index == 0U ||
+            index >= entity->terrain->layers.size())
+        {
+            return false;
+        }
+
+        auto& layers = entity->terrain->layers;
+        layers.erase(layers.begin() + static_cast<std::ptrdiff_t>(index));
+
+        dirty_ = true;
+        return true;
+    }
+
     const std::vector<EditorSceneEntity>&
         SceneDocument::GetEntities() const noexcept
     {
