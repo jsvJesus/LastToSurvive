@@ -1481,139 +1481,551 @@ namespace lts::editor
 
                 if (entity->terrain.has_value())
                 {
-                    ImGui::SeparatorText("Terrain Paint");
-                    ImGui::Checkbox("Enable Paint Mode", &terrainPaintMode_);
-                    ImGui::SliderFloat("Brush Size", &terrainBrushRadius_, 1.0F, 1024.0F, "%.1f");
-                    ImGui::SliderFloat("Strength", &terrainBrushStrength_, 0.01F, 1.0F, "%.2f");
-                    ImGui::SliderFloat("Falloff", &terrainBrushFalloff_, 0.0F, 1.0F, "%.2f");
-                    const auto& paintLayers=entity->terrain->layers;
-                    const char* preview=paintLayers.empty()?"Base Layer":paintLayers[0].name.c_str();
-                    if(terrainPaintLayer_<paintLayers.size())
-                        preview=paintLayers[terrainPaintLayer_].name.c_str();
-                    if(ImGui::BeginCombo("Paint Layer",preview))
+                    const auto& layers = entity->terrain->layers;
+
+                    if (!layers.empty() && terrainPaintLayer_ >= layers.size())
                     {
-                        for(std::size_t index=0;index<paintLayers.size()&&index<18U;++index)
-                        {
-                            ImGui::PushID(static_cast<int>(index));
-                            if(ImGui::Selectable(paintLayers[index].name.c_str(),terrainPaintLayer_==index))
-                                terrainPaintLayer_=index;
-                            ImGui::PopID();
-                        }
-                        ImGui::EndCombo();
+                        terrainPaintLayer_ = layers.size() - 1U;
                     }
-                    if(ImGui::Button("Undo Paint")&&terrainRenderer_.CanUndoPaint())
-                        static_cast<void>(terrainRenderer_.UndoPaint());
-                    ImGui::SameLine();
-                    if(ImGui::Button("Redo Paint")&&terrainRenderer_.CanRedoPaint())
-                        static_cast<void>(terrainRenderer_.RedoPaint());
-                    ImGui::TextDisabled("LMB paint | Shift+LMB erase");
-                    ImGui::SeparatorText("Terrain Materials");
-                    ImGui::Separator();
-                    ImGui::TextUnformatted("Terrain");
-                    ImGui::TextWrapped("Asset: %s",
-                        ToUtf8(entity->terrain->assetPath).c_str());
-                    ImGui::TextDisabled("%llu material layers",
-                        static_cast<unsigned long long>(entity->terrain->layers.size()));
-                    for (std::size_t layerIndex = 0U;
-                         layerIndex < entity->terrain->layers.size(); ++layerIndex)
+
+                    const auto selectTexturePath = [this](std::string& outputPath)
                     {
-                        const auto& layer = entity->terrain->layers[layerIndex];
+                        std::filesystem::path selectedPath;
+
+                        const HWND owner = reinterpret_cast<HWND>(
+                            GetWindow().GetNativeHandle().Value());
+
+                        if (!SelectTerrainTexture(owner, selectedPath))
+                        {
+                            return false;
+                        }
+
+                        std::filesystem::path gameRoot = std::filesystem::current_path();
+
+                        if (gameRoot.filename() != L"game")
+                        {
+                            gameRoot /= L"game";
+                        }
+
+                        std::error_code error;
+                        const std::filesystem::path relativePath =
+                            std::filesystem::relative(selectedPath, gameRoot, error);
+
+                        outputPath = error
+                            ? selectedPath.generic_u8string()
+                            : relativePath.generic_u8string();
+
+                        return true;
+                    };
+
+                    /*
+                     * TERRAIN MATERIALS
+                     */
+                    ImGui::SeparatorText("Terrain Materials");
+
+                    ImGui::TextWrapped(
+                        "Asset: %s",
+                        ToUtf8(entity->terrain->assetPath).c_str());
+
+                    ImGui::TextDisabled(
+                        "%llu / 18 layers",
+                        static_cast<unsigned long long>(layers.size()));
+
+                    const bool canAddLayer = layers.size() < 18U;
+
+                    if (!canAddLayer)
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::Button("Add Layer"))
+                    {
+                        const std::size_t oldLayerCount = layers.size();
+                        const std::size_t newLayerCount = oldLayerCount + 1U;
+
+                        if (terrainRenderer_.SetMaterialLayerCount(newLayerCount))
+                        {
+                            const EditorSceneSnapshot before =
+                                sceneDocument_.CreateSnapshot();
+
+                            const std::string layerName = oldLayerCount == 0U
+                                ? "Base"
+                                : "Layer " + std::to_string(oldLayerCount);
+
+                            if (sceneDocument_.AddSelectedTerrainLayer(layerName))
+                            {
+                                static_cast<void>(commandHistory_.Push(
+                                    before,
+                                    sceneDocument_.CreateSnapshot()));
+
+                                terrainPaintLayer_ = oldLayerCount;
+                            }
+                            else
+                            {
+                                static_cast<void>(
+                                    terrainRenderer_.SetMaterialLayerCount(oldLayerCount));
+                            }
+                        }
+                    }
+
+                    if (!canAddLayer)
+                    {
+                        ImGui::EndDisabled();
+                    }
+
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+                        !canAddLayer)
+                    {
+                        ImGui::SetTooltip("Maximum terrain layer count is 18.");
+                    }
+
+                    ImGui::SameLine();
+
+                    const bool canRemoveLayer =
+                        terrainPaintLayer_ > 0U &&
+                        terrainPaintLayer_ < layers.size();
+
+                    if (!canRemoveLayer)
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::Button("Remove Selected Layer"))
+                    {
+                        const std::size_t oldLayerCount = layers.size();
+                        const std::size_t removeIndex = terrainPaintLayer_;
+
+                        const EditorSceneSnapshot before =
+                            sceneDocument_.CreateSnapshot();
+
+                        if (terrainRenderer_.RemoveMaterialLayer(
+                                removeIndex,
+                                oldLayerCount) &&
+                            sceneDocument_.RemoveSelectedTerrainLayer(removeIndex))
+                        {
+                            static_cast<void>(commandHistory_.Push(
+                                before,
+                                sceneDocument_.CreateSnapshot()));
+
+                            terrainPaintLayer_ = (std::min)(
+                                removeIndex,
+                                layers.size() - 1U);
+                        }
+                    }
+
+                    if (!canRemoveLayer)
+                    {
+                        ImGui::EndDisabled();
+                    }
+
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+                        !canRemoveLayer)
+                    {
+                        ImGui::SetTooltip(
+                            terrainPaintLayer_ == 0U
+                                ? "Base Layer cannot be removed."
+                                : "Select a material layer first.");
+                    }
+
+                    ImGui::TextDisabled(
+                        "Layer 0 is Base. Each RGB splat-mask stores 3 painted layers.");
+
+                    ImGui::Separator();
+
+                    for (std::size_t layerIndex = 0U;
+                         layerIndex < layers.size();
+                         ++layerIndex)
+                    {
+                        const auto& layer = layers[layerIndex];
+
                         ImGui::PushID(static_cast<int>(layerIndex));
-                        const std::string label = std::to_string(layerIndex) + ". " + layer.name;
-                        if (ImGui::TreeNode(label.c_str()))
+
+                        const std::string header =
+                            std::to_string(layerIndex) + ". " + layer.name;
+
+                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+
+                        if (layerIndex == terrainPaintLayer_)
+                        {
+                            flags |= ImGuiTreeNodeFlags_Selected;
+                        }
+
+                        if (ImGui::TreeNodeEx(header.c_str(), flags))
                         {
                             bool visible = layer.visible;
                             float scale[2]{layer.scaleU, layer.scaleV};
                             float offset[2]{layer.offsetU, layer.offsetV};
+
                             std::string diffuse = layer.diffusePath;
                             std::string normal = layer.normalPath;
+
+                            if (ImGui::Button(
+                                    layerIndex == terrainPaintLayer_
+                                        ? "Active Paint Layer"
+                                        : "Use for Paint"))
+                            {
+                                terrainPaintLayer_ = layerIndex;
+                            }
+
+                            ImGui::SameLine();
+
                             if (ImGui::Checkbox("Visible", &visible))
                             {
-                                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                const EditorSceneSnapshot before =
+                                    sceneDocument_.CreateSnapshot();
+
                                 if (sceneDocument_.UpdateSelectedTerrainLayer(
-                                        layerIndex, diffuse, normal, scale[0], scale[1],
-                                        offset[0], offset[1], visible))
+                                        layerIndex,
+                                        diffuse,
+                                        normal,
+                                        scale[0],
+                                        scale[1],
+                                        offset[0],
+                                        offset[1],
+                                        visible))
+                                {
                                     static_cast<void>(commandHistory_.Push(
-                                        before, sceneDocument_.CreateSnapshot()));
+                                        before,
+                                        sceneDocument_.CreateSnapshot()));
+                                }
                             }
-                            const auto editPlacement = [this, layerIndex, &diffuse, &normal,
-                                &scale, &offset, visible](const char* caption, float* values,
-                                    const float speed, const float minimum, const float maximum)
+
+                            const auto editPlacement =
+                                [this, layerIndex, &diffuse, &normal, &scale, &offset, visible](
+                                    const char* label,
+                                    float* values,
+                                    const float speed,
+                                    const float minimum,
+                                    const float maximum)
                             {
                                 const bool changed = ImGui::DragFloat2(
-                                    caption, values, speed, minimum, maximum);
-                                if (ImGui::IsItemActivated())
+                                    label,
+                                    values,
+                                    speed,
+                                    minimum,
+                                    maximum,
+                                    "%.3f");
+
+                                if (ImGui::IsItemActivated() && !terrainLayerEditActive_)
                                 {
-                                    terrainLayerEditBefore_ = sceneDocument_.CreateSnapshot();
+                                    terrainLayerEditBefore_ =
+                                        sceneDocument_.CreateSnapshot();
+
                                     terrainLayerEditIndex_ = layerIndex;
                                     terrainLayerEditActive_ = true;
                                 }
+
                                 if (changed)
                                 {
-                                    static_cast<void>(sceneDocument_.UpdateSelectedTerrainLayer(
-                                        layerIndex, diffuse, normal, scale[0], scale[1],
-                                        offset[0], offset[1], visible));
+                                    static_cast<void>(
+                                        sceneDocument_.UpdateSelectedTerrainLayer(
+                                            layerIndex,
+                                            diffuse,
+                                            normal,
+                                            scale[0],
+                                            scale[1],
+                                            offset[0],
+                                            offset[1],
+                                            visible));
                                 }
+
                                 if (ImGui::IsItemDeactivatedAfterEdit() &&
-                                    terrainLayerEditActive_ && terrainLayerEditIndex_ == layerIndex)
+                                    terrainLayerEditActive_ &&
+                                    terrainLayerEditIndex_ == layerIndex)
                                 {
                                     static_cast<void>(commandHistory_.Push(
-                                        terrainLayerEditBefore_, sceneDocument_.CreateSnapshot()));
+                                        terrainLayerEditBefore_,
+                                        sceneDocument_.CreateSnapshot()));
+
                                     terrainLayerEditBefore_ = {};
                                     terrainLayerEditIndex_ = InvalidEditorEntityIndex;
                                     terrainLayerEditActive_ = false;
                                 }
                             };
-                            editPlacement("Texture Size", scale, 1.0F, 0.001F, 100000.0F);
-                            editPlacement("Texture Offset", offset, 0.01F, -100000.0F, 100000.0F);
-                            ImGui::TextWrapped("Diffuse: %s", diffuse.c_str());
+
+                            editPlacement(
+                                "Scale U / V",
+                                scale,
+                                0.25F,
+                                0.001F,
+                                100000.0F);
+
+                            editPlacement(
+                                "Offset U / V",
+                                offset,
+                                0.01F,
+                                -100000.0F,
+                                100000.0F);
+
+                            ImGui::SeparatorText("Diffuse");
+
+                            ImGui::TextWrapped(
+                                "%s",
+                                diffuse.empty()
+                                    ? "<fallback diffuse>"
+                                    : diffuse.c_str());
+
                             if (ImGui::Button("Browse Diffuse..."))
                             {
-                                std::filesystem::path selected;
-                                if (SelectTerrainTexture(reinterpret_cast<HWND>(
-                                        GetWindow().GetNativeHandle().Value()), selected))
+                                std::string selectedPath;
+
+                                if (selectTexturePath(selectedPath))
                                 {
-                                    std::filesystem::path gameRoot = std::filesystem::current_path();
-                                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
-                                    std::error_code relativeError;
-                                    const auto relative = std::filesystem::relative(
-                                        selected, gameRoot, relativeError);
-                                    diffuse = relativeError ? selected.generic_u8string() :
-                                        relative.generic_u8string();
-                                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                    const EditorSceneSnapshot before =
+                                        sceneDocument_.CreateSnapshot();
+
+                                    diffuse = std::move(selectedPath);
+
                                     if (sceneDocument_.UpdateSelectedTerrainLayer(
-                                            layerIndex, diffuse, normal, scale[0], scale[1],
-                                            offset[0], offset[1], visible))
+                                            layerIndex,
+                                            diffuse,
+                                            normal,
+                                            scale[0],
+                                            scale[1],
+                                            offset[0],
+                                            offset[1],
+                                            visible))
+                                    {
                                         static_cast<void>(commandHistory_.Push(
-                                            before, sceneDocument_.CreateSnapshot()));
+                                            before,
+                                            sceneDocument_.CreateSnapshot()));
+                                    }
                                 }
                             }
-                            ImGui::TextWrapped("Normal: %s", normal.c_str());
+
+                            if (!diffuse.empty())
+                            {
+                                ImGui::SameLine();
+
+                                if (ImGui::Button("Clear Diffuse"))
+                                {
+                                    const EditorSceneSnapshot before =
+                                        sceneDocument_.CreateSnapshot();
+
+                                    diffuse.clear();
+
+                                    if (sceneDocument_.UpdateSelectedTerrainLayer(
+                                            layerIndex,
+                                            diffuse,
+                                            normal,
+                                            scale[0],
+                                            scale[1],
+                                            offset[0],
+                                            offset[1],
+                                            visible))
+                                    {
+                                        static_cast<void>(commandHistory_.Push(
+                                            before,
+                                            sceneDocument_.CreateSnapshot()));
+                                    }
+                                }
+                            }
+
+                            ImGui::SeparatorText("Normal");
+
+                            ImGui::TextWrapped(
+                                "%s",
+                                normal.empty()
+                                    ? "<flat normal>"
+                                    : normal.c_str());
+
                             if (ImGui::Button("Browse Normal..."))
                             {
-                                std::filesystem::path selected;
-                                if (SelectTerrainTexture(reinterpret_cast<HWND>(
-                                        GetWindow().GetNativeHandle().Value()), selected))
+                                std::string selectedPath;
+
+                                if (selectTexturePath(selectedPath))
                                 {
-                                    std::filesystem::path gameRoot = std::filesystem::current_path();
-                                    if (gameRoot.filename() != L"game") gameRoot /= L"game";
-                                    std::error_code relativeError;
-                                    const auto relative = std::filesystem::relative(
-                                        selected, gameRoot, relativeError);
-                                    normal = relativeError ? selected.generic_u8string() :
-                                        relative.generic_u8string();
-                                    const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
+                                    const EditorSceneSnapshot before =
+                                        sceneDocument_.CreateSnapshot();
+
+                                    normal = std::move(selectedPath);
+
                                     if (sceneDocument_.UpdateSelectedTerrainLayer(
-                                            layerIndex, diffuse, normal, scale[0], scale[1],
-                                            offset[0], offset[1], visible))
+                                            layerIndex,
+                                            diffuse,
+                                            normal,
+                                            scale[0],
+                                            scale[1],
+                                            offset[0],
+                                            offset[1],
+                                            visible))
+                                    {
                                         static_cast<void>(commandHistory_.Push(
-                                            before, sceneDocument_.CreateSnapshot()));
+                                            before,
+                                            sceneDocument_.CreateSnapshot()));
+                                    }
                                 }
                             }
+
+                            if (!normal.empty())
+                            {
+                                ImGui::SameLine();
+
+                                if (ImGui::Button("Clear Normal"))
+                                {
+                                    const EditorSceneSnapshot before =
+                                        sceneDocument_.CreateSnapshot();
+
+                                    normal.clear();
+
+                                    if (sceneDocument_.UpdateSelectedTerrainLayer(
+                                            layerIndex,
+                                            diffuse,
+                                            normal,
+                                            scale[0],
+                                            scale[1],
+                                            offset[0],
+                                            offset[1],
+                                            visible))
+                                    {
+                                        static_cast<void>(commandHistory_.Push(
+                                            before,
+                                            sceneDocument_.CreateSnapshot()));
+                                    }
+                                }
+                            }
+
+                            if (layerIndex == 0U)
+                            {
+                                ImGui::TextDisabled(
+                                    "Base Layer fills every unpainted terrain area.");
+                            }
+                            else
+                            {
+                                const std::size_t paintedIndex = layerIndex - 1U;
+                                const std::size_t maskIndex = paintedIndex / 3U;
+                                const std::size_t channelIndex = paintedIndex % 3U;
+
+                                const char* channelName =
+                                    channelIndex == 0U ? "R" :
+                                    channelIndex == 1U ? "G" : "B";
+
+                                ImGui::TextDisabled(
+                                    "Splat-mask %llu, channel %s",
+                                    static_cast<unsigned long long>(maskIndex),
+                                    channelName);
+                            }
+
                             ImGui::TreePop();
                         }
+
                         ImGui::PopID();
                     }
+
+                    /*
+                     * TERRAIN PAINT
+                     */
+                    ImGui::SeparatorText("Terrain Paint");
+
+                    const bool canPaint = layers.size() > 1U;
+
+                    if (!canPaint)
+                    {
+                        terrainPaintMode_ = false;
+                        ImGui::BeginDisabled();
+                    }
+
+                    ImGui::Checkbox("Enable Paint Mode", &terrainPaintMode_);
+
+                    if (!canPaint)
+                    {
+                        ImGui::EndDisabled();
+                        ImGui::TextDisabled("Add at least one layer above Base.");
+                    }
+
+                    ImGui::SliderFloat(
+                        "Brush Size",
+                        &terrainBrushRadius_,
+                        1.0F,
+                        1024.0F,
+                        "%.1f");
+
+                    ImGui::SliderFloat(
+                        "Strength",
+                        &terrainBrushStrength_,
+                        0.01F,
+                        1.0F,
+                        "%.2f");
+
+                    ImGui::SliderFloat(
+                        "Falloff",
+                        &terrainBrushFalloff_,
+                        0.0F,
+                        1.0F,
+                        "%.2f");
+
+                    const char* paintPreview = layers.empty()
+                        ? "No Layers"
+                        : layers[terrainPaintLayer_].name.c_str();
+
+                    if (layers.empty())
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::BeginCombo("Paint Layer", paintPreview))
+                    {
+                        for (std::size_t index = 0U;
+                             index < layers.size();
+                             ++index)
+                        {
+                            const bool selected = terrainPaintLayer_ == index;
+
+                            if (ImGui::Selectable(
+                                    layers[index].name.c_str(),
+                                    selected))
+                            {
+                                terrainPaintLayer_ = index;
+                            }
+
+                            if (selected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+
+                        ImGui::EndCombo();
+                    }
+
+                    if (layers.empty())
+                    {
+                        ImGui::EndDisabled();
+                    }
+
+                    if (!terrainRenderer_.CanUndoPaint())
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::Button("Undo Paint"))
+                    {
+                        static_cast<void>(terrainRenderer_.UndoPaint());
+                    }
+
+                    if (!terrainRenderer_.CanUndoPaint())
+                    {
+                        ImGui::EndDisabled();
+                    }
+
+                    ImGui::SameLine();
+
+                    if (!terrainRenderer_.CanRedoPaint())
+                    {
+                        ImGui::BeginDisabled();
+                    }
+
+                    if (ImGui::Button("Redo Paint"))
+                    {
+                        static_cast<void>(terrainRenderer_.RedoPaint());
+                    }
+
+                    if (!terrainRenderer_.CanRedoPaint())
+                    {
+                        ImGui::EndDisabled();
+                    }
+
+                    ImGui::TextDisabled(
+                        "LMB paints selected layer. Shift + LMB erases it.");
                 }
             }
             else

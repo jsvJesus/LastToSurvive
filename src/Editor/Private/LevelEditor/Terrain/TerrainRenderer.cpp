@@ -3030,15 +3030,7 @@ namespace lts::editor
             const std::size_t layerIndex,
             const bool erase) noexcept
         {
-            if (!paintStrokeActive_ ||
-                maskWidth_ == 0U ||
-                maskHeight_ == 0U)
-            {
-                return false;
-            }
-
-            if (layerIndex > 0U &&
-                (layerIndex - 1U) / 3U >= activeMaskCount_)
+            if (!paintStrokeActive_ || maskWidth_ == 0U || maskHeight_ == 0U)
             {
                 return false;
             }
@@ -3061,10 +3053,9 @@ namespace lts::editor
                 return false;
             }
 
-            const std::size_t layerCount =
-                actor->terrain->layers.empty()
-                    ? terrainAsset_.layers.size()
-                    : actor->terrain->layers.size();
+            const std::size_t layerCount = actor->terrain->layers.empty()
+                ? terrainAsset_.layers.size()
+                : actor->terrain->layers.size();
 
             if (layerIndex >= layerCount ||
                 layerCount > MaximumTerrainLayerCount ||
@@ -3075,13 +3066,6 @@ namespace lts::editor
 
             if (layerIndex > 0U &&
                 (layerIndex - 1U) / 3U >= activeMaskCount_)
-            {
-                return false;
-            }
-
-            if (actor == nullptr ||
-                std::abs(actor->transform.scale[0]) < 0.00001F ||
-                std::abs(actor->transform.scale[2]) < 0.00001F)
             {
                 return false;
             }
