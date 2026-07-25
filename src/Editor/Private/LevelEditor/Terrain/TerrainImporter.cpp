@@ -536,16 +536,13 @@ namespace lts::editor
             return false;
         }
 
-        if (!std::isfinite(tileSize_) || tileSize_ <= 0.0F)
+        for (const float scale : resultScale_)
         {
-            status_ = "Tile Size must be greater than zero.";
-            return false;
-        }
-
-        if (!std::isfinite(heightRange_) || heightRange_ <= 0.0F)
-        {
-            status_ = "Height Range must be greater than zero.";
-            return false;
+            if (!std::isfinite(scale) || scale <= 0.0F)
+            {
+                status_ = "Result Scale X, Y and Z must be greater than zero.";
+                return false;
+            }
         }
 
         if (!std::isfinite(baseHeight_))
@@ -650,7 +647,24 @@ namespace lts::editor
             return false;
         }
 
-        if (!WriteTerrainFile(outputPath, width, height, tileSize_, heightRange_, terrainHeights))
+        /*
+          * Внутри asset храним нормализованный terrain:
+          *
+          * X/Z: один sample = 1 unit.
+          * Y: высота в диапазоне -1..+1.
+          *
+          * Реальный масштаб карты задаётся Transform Terrain Actor.
+          */
+        constexpr float normalizedTileSize = 1.0F;
+        constexpr float normalizedHeightRange = 2.0F;
+
+        if (!WriteTerrainFile(
+                outputPath,
+                width,
+                height,
+                normalizedTileSize,
+                normalizedHeightRange,
+                terrainHeights))
         {
             status_ = "Could not write the .ltsterrain file.";
             return false;
@@ -679,7 +693,24 @@ namespace lts::editor
         const EditorSceneSnapshot before = context.sceneDocument.CreateSnapshot();
 
         EditorTransform transform{};
+
         transform.position[1] = baseHeight_;
+
+        /*
+         * Старый terrain-конвертер:
+         * X/Y = горизонтальная плоскость карты.
+         * Z   = вертикальная высота.
+         *
+         * Наш движок:
+         * X/Z = горизонтальная плоскость.
+         * Y   = вертикальная высота.
+         */
+        transform.scale =
+        {
+            resultScale_[0], // Source X -> Engine X
+            resultScale_[2], // Source Z -> Engine Y
+            resultScale_[1]  // Source Y -> Engine Z
+        };
 
         if (!context.sceneDocument.CreateTerrainEntity(
                 outputName, relativePath.generic_wstring(), transform))
@@ -776,22 +807,52 @@ namespace lts::editor
         ImGui::SetNextItemWidth(140.0F);
         ImGui::InputInt("Height", &height_);
 
-        ImGui::SetNextItemWidth(180.0F);
-        ImGui::DragFloat("Tile Size", &tileSize_, 0.1F, 0.01F, 10000.0F, "%.2f");
+        ImGui::SeparatorText("Result Scale");
+
+        ImGui::SetNextItemWidth(360.0F);
+
+        ImGui::DragFloat3(
+            "##ResultScale",
+            resultScale_.data(),
+            0.01F,
+            0.000001F,
+            1000000.0F,
+            "%.6f");
+
+        ImGui::TextDisabled(
+            "X/Y = map plane, Z = height");
+
+        ImGui::TextDisabled(
+            "Engine transform: X=%.6f, Y=%.6f, Z=%.6f",
+            resultScale_[0],
+            resultScale_[2],
+            resultScale_[1]);
 
         ImGui::SetNextItemWidth(180.0F);
-        ImGui::DragFloat("Height Range", &heightRange_, 1.0F, 1.0F, 100000.0F, "%.1f");
 
-        ImGui::SetNextItemWidth(180.0F);
-        ImGui::DragFloat("Base Height", &baseHeight_, 1.0F, -100000.0F, 100000.0F, "%.1f");
+        ImGui::DragFloat(
+            "Base Height",
+            &baseHeight_,
+            1.0F,
+            -1000000.0F,
+            1000000.0F,
+            "%.3f");
 
-        if (width_ > 1 && height_ > 1 && tileSize_ > 0.0F)
+        if (width_ > 1 &&
+            height_ > 1 &&
+            resultScale_[0] > 0.0F &&
+            resultScale_[1] > 0.0F)
         {
-            const float worldWidth = static_cast<float>(width_ - 1) * tileSize_;
-            const float worldDepth = static_cast<float>(height_ - 1) * tileSize_;
+            const double worldWidth =
+                static_cast<double>(width_ - 1) *
+                static_cast<double>(resultScale_[0]);
+
+            const double worldDepth =
+                static_cast<double>(height_ - 1) *
+                static_cast<double>(resultScale_[1]);
 
             ImGui::TextDisabled(
-                "World size: %.1f x %.1f",
+                "Map size: %.3f x %.3f",
                 worldWidth,
                 worldDepth);
         }

@@ -49,8 +49,13 @@ namespace lts::editor
         int width_ = 0;
         int height_ = 0;
 
-        float tileSize_ = 1.0F;
-        float heightRange_ = 512.0F;
+        std::array<float, 3> resultScale_
+        {
+            1.0F,
+            1.0F,
+            1.0F
+        };
+
         float baseHeight_ = 0.0F;
 
         bool flipX_ = false;
