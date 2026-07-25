@@ -45,6 +45,8 @@ namespace lts::editor
     {
         constexpr std::uint32_t MaximumTerrainGpuCellsPerAxis = 1024U;
         constexpr std::uint32_t TerrainChunkCellCount = 64U;
+        constexpr std::uint32_t TerrainBrushSegmentCount = 96U;
+        constexpr std::uint32_t TerrainBrushVertexCount = TerrainBrushSegmentCount * 2U;
         constexpr std::size_t MaximumTerrainMaskCount = 6U;
         constexpr std::size_t MaximumTerrainLayerCount = 18U;
         constexpr std::size_t MaximumPaintedLayerCount = 17U;
@@ -1626,8 +1628,7 @@ namespace lts::editor
             }
 
             bufferDescription = {};
-            bufferDescription.byteSize =
-                256U * sizeof(BrushVertex);
+            bufferDescription.byteSize = TerrainBrushVertexCount * sizeof(BrushVertex);
             bufferDescription.stride = sizeof(BrushVertex);
             bufferDescription.bindFlags =
                 engine::graphics::BufferBindFlags::Vertex;
@@ -2446,9 +2447,7 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::Success;
             }
 
-            constexpr std::uint32_t segmentCount = 96U;
-
-            std::array<BrushVertex, segmentCount * 2U> vertices{};
+            std::array<BrushVertex, TerrainBrushVertexCount> vertices{};
 
             const DirectX::XMFLOAT4 color =
                 erase
@@ -2460,18 +2459,18 @@ namespace lts::editor
             std::uint32_t vertexCount = 0U;
 
             for (std::uint32_t segment = 0U;
-                 segment < segmentCount;
+                 segment < TerrainBrushSegmentCount;
                  ++segment)
             {
                 const float angle0 =
                     DirectX::XM_2PI *
                     static_cast<float>(segment) /
-                    static_cast<float>(segmentCount);
+                    static_cast<float>(TerrainBrushSegmentCount);
 
                 const float angle1 =
                     DirectX::XM_2PI *
                     static_cast<float>(segment + 1U) /
-                    static_cast<float>(segmentCount);
+                    static_cast<float>(TerrainBrushSegmentCount);
 
                 const float x0 =
                     worldX + std::cos(angle0) * radius;
@@ -2521,10 +2520,9 @@ namespace lts::editor
 
             engine::graphics::GraphicsResult result =
                 context.UpdateBuffer(
-                    brushVertexBuffer_,
-                    vertices.data(),
-                    static_cast<std::size_t>(vertexCount) *
-                        sizeof(BrushVertex));
+                brushVertexBuffer_,
+                vertices.data(),
+                sizeof(vertices));
 
             if (engine::graphics::Failed(result))
             {
