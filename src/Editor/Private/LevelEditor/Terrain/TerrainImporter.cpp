@@ -655,16 +655,16 @@ namespace lts::editor
           *
           * Реальный масштаб карты задаётся Transform Terrain Actor.
           */
-        constexpr float normalizedTileSize = 1.0F;
-        constexpr float normalizedHeightRange = 2.0F;
+        constexpr float terrainTileSize = 1.0F;
+        constexpr float terrainHeightRange = 512.0F;
 
         if (!WriteTerrainFile(
-                outputPath,
-                width,
-                height,
-                normalizedTileSize,
-                normalizedHeightRange,
-                terrainHeights))
+            outputPath,
+            width,
+            height,
+            terrainTileSize,
+            terrainHeightRange,
+            terrainHeights))
         {
             status_ = "Could not write the .ltsterrain file.";
             return false;
