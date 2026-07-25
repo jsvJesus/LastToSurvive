@@ -705,11 +705,13 @@ namespace lts::editor
          * X/Z = горизонтальная плоскость.
          * Y   = вертикальная высота.
          */
+        constexpr float centimetersToMeters = 0.01F;
+
         transform.scale =
         {
-            resultScale_[0], // Source X -> Engine X
-            resultScale_[2], // Source Z -> Engine Y
-            resultScale_[1]  // Source Y -> Engine Z
+            resultScale_[0] * centimetersToMeters, // Source X -> Engine X
+            resultScale_[2] * centimetersToMeters, // Source Z -> Engine Y
+            resultScale_[1] * centimetersToMeters  // Source Y -> Engine Z
         };
 
         if (!context.sceneDocument.CreateTerrainEntity(
@@ -819,14 +821,12 @@ namespace lts::editor
             1000000.0F,
             "%.6f");
 
-        ImGui::TextDisabled(
-            "X/Y = map plane, Z = height");
+        ImGui::TextDisabled("Source UE scale in centimeters: X/Y plane, Z height");
 
-        ImGui::TextDisabled(
-            "Engine transform: X=%.6f, Y=%.6f, Z=%.6f",
-            resultScale_[0],
-            resultScale_[2],
-            resultScale_[1]);
+        ImGui::TextDisabled("Engine scale (meters): X=%.6f, Y=%.6f, Z=%.6f",
+            resultScale_[0] * 0.01F,
+            resultScale_[2] * 0.01F,
+            resultScale_[1] * 0.01F);
 
         ImGui::SetNextItemWidth(180.0F);
 
@@ -843,13 +843,17 @@ namespace lts::editor
             resultScale_[0] > 0.0F &&
             resultScale_[1] > 0.0F)
         {
+            constexpr double centimetersToMeters = 0.01;
+
             const double worldWidth =
                 static_cast<double>(width_ - 1) *
-                static_cast<double>(resultScale_[0]);
+                static_cast<double>(resultScale_[0]) *
+                centimetersToMeters;
 
             const double worldDepth =
                 static_cast<double>(height_ - 1) *
-                static_cast<double>(resultScale_[1]);
+                static_cast<double>(resultScale_[1]) *
+                centimetersToMeters;
 
             ImGui::TextDisabled(
                 "Map size: %.3f x %.3f",
