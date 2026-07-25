@@ -2131,29 +2131,11 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::Success;
             }
 
-            const bool hasSceneOverrides = !actor->terrain->layers.empty();
-
-            const std::size_t sourceLayerCount =
-                hasSceneOverrides
-                    ? actor->terrain->layers.size()
-                    : terrainAsset_.layers.size();
-
-            if (!SetMaterialLayerCount(sourceLayerCount))
-            {
-                return engine::graphics::GraphicsResult::InvalidArgument;
-            }
-
-            const std::size_t layerCount =
-                (std::min)(
-                    sourceLayerCount,
-                    MaximumTerrainLayerCount);
-
             const EditorSceneEntity* actor = nullptr;
 
             for (const EditorSceneEntity& entity : document.GetEntities())
             {
-                if (entity.terrain.has_value() &&
-                    entity.terrain->visible)
+                if (entity.terrain.has_value() && entity.terrain->visible)
                 {
                     actor = &entity;
                     break;
@@ -2164,6 +2146,22 @@ namespace lts::editor
             {
                 return engine::graphics::GraphicsResult::Success;
             }
+
+            const bool hasSceneOverrides = !actor->terrain->layers.empty();
+
+            const std::size_t sourceLayerCount = hasSceneOverrides
+                ? actor->terrain->layers.size()
+                : terrainAsset_.layers.size();
+
+            if (sourceLayerCount == 0U ||
+                sourceLayerCount > MaximumTerrainLayerCount ||
+                !SetMaterialLayerCount(sourceLayerCount))
+            {
+                return engine::graphics::GraphicsResult::InvalidArgument;
+            }
+
+            const std::size_t layerCount =
+                (std::min)(sourceLayerCount, MaximumTerrainLayerCount);
 
             if (device_ != nullptr)
             {
@@ -2303,28 +2301,14 @@ namespace lts::editor
                 };
             }
 
-            const bool hasSceneOverrides =
-                !actor->terrain->layers.empty();
-
-            const std::size_t sourceLayerCount =
-                hasSceneOverrides
-                    ? actor->terrain->layers.size()
-                    : terrainAsset_.layers.size();
-
-            const std::size_t layerCount =
-                (std::min)(
-                    sourceLayerCount,
-                    constants.placement.size());
-
             for (std::size_t layerIndex = 0U;
                  layerIndex < layerCount;
                  ++layerIndex)
             {
                 if (hasSceneOverrides)
                 {
-                    const auto& layer =
-                        actor->terrain->layers[layerIndex];
-
+                    const auto& layer = actor->terrain->layers[layerIndex];
+            
                     constants.placement[layerIndex] =
                     {
                         layer.scaleU,
@@ -2332,15 +2316,14 @@ namespace lts::editor
                         layer.offsetU,
                         layer.offsetV
                     };
-
+            
                     constants.layerParameters[layerIndex].x =
                         layer.visible ? 1.0F : 0.0F;
                 }
                 else
                 {
-                    const auto& layer =
-                        terrainAsset_.layers[layerIndex];
-
+                    const auto& layer = terrainAsset_.layers[layerIndex];
+            
                     constants.placement[layerIndex] =
                     {
                         layer.scaleU,
@@ -2348,7 +2331,7 @@ namespace lts::editor
                         0.0F,
                         0.0F
                     };
-
+            
                     constants.layerParameters[layerIndex].x = 1.0F;
                 }
             }
