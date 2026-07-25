@@ -212,7 +212,7 @@ namespace lts::editor
     }
 
     Application::Application()
-        : Application(CreateEditorDescription())
+    : lts::application::Application(CreateEditorDescription())
     {
     }
 
