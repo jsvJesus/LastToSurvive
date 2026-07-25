@@ -13,6 +13,7 @@
 #include "Editor/LevelEditor/Rendering/StaticMeshRenderer.h"
 #include "Editor/LevelEditor/Viewport/TransformController.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
+#include "Editor/LevelEditor/Terrain/TerrainImporter.h"
 #include "Editor/Tools/ToolWindowManager.h"
 
 #include <Application/Application.h>
@@ -105,21 +106,14 @@ namespace lts::editor
         LevelDocument levelDocument_;
         CommandHistory commandHistory_;
         CommandSystem commandSystem_;
-
         CameraController cameraController_;
-
-        TransformController
-            transformController_;
-
+        TransformController transformController_;
         GridRenderer gridRenderer_;
-
-        StaticMeshRenderer
-            staticMeshRenderer_;
-
+        StaticMeshRenderer staticMeshRenderer_;
         TerrainRenderer terrainRenderer_;
-
+        TerrainImporter terrainImporter_;
         SceneRenderer sceneRenderer_;
-
+        
         engine::graphics::d3d11::
             D3D11Device graphicsDevice_;
 

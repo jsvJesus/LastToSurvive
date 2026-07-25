@@ -1041,7 +1041,13 @@ namespace lts::editor
                 if (ImGui::MenuItem("Open", "Ctrl+O")) static_cast<void>(ExecuteEditorCommand(EditorCommand::OpenLevel));
                 if (ImGui::MenuItem("Save", "Ctrl+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevel));
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S")) static_cast<void>(ExecuteEditorCommand(EditorCommand::SaveLevelAs));
+
                 ImGui::Separator();
+
+                if (ImGui::MenuItem("Import Terrain (.r16)..."))
+                {
+                    terrainImporter_.Open();
+                }
                 
                 if (ImGui::MenuItem(
                         "Open Terrain..."))
@@ -1817,6 +1823,18 @@ namespace lts::editor
 
             ImGui::End();
         //}
+        TerrainImportContext terrainImportContext
+        {
+            graphicsDevice_,
+            sceneDocument_,
+            commandHistory_,
+            cameraController_,
+            terrainRenderer_,
+            loadedTerrainAssetPath_,
+            reinterpret_cast<void*>(GetWindow().GetNativeHandle().Value())
+        };
+
+        terrainImporter_.Draw(terrainImportContext);
         toolWindowManager_.DrawOpenWindows();
     }
 

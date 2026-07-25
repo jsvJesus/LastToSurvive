@@ -225,6 +225,7 @@
     <ClInclude Include="Public\Editor\Application\Application.h" />
     <ClInclude Include="Public\Editor\Commands\CommandHistory.h" />
     <ClInclude Include="Public\Editor\Commands\CommandSystem.h" />
+    <ClInclude Include="Public\Editor\LevelEditor\Terrain\TerrainImporter.h" />
     <ClInclude Include="Public\Editor\LevelEditor\UI\ContentBrowserPanel.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\GridRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\SceneRenderer.h" />
@@ -1422,6 +1423,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Private\LevelEditor\Terrain\TerrainImporter.cpp" />
     <ClCompile Include="Private\LevelEditor\Terrain\TerrainRenderer.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>Z:\WarZ\src\Editor\..\..\build\x64\Release\Obj\LTS.Editor\</AssemblerListingLocation>
