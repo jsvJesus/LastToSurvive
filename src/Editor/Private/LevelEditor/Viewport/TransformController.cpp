@@ -468,11 +468,7 @@ namespace lts::editor
             const bool rotatePressed = WasPressed('E');
             const bool scalePressed = WasPressed('R');
             const bool spacePressed = WasPressed('T');
-            const bool undoPressed = WasPressed('Z');
-            const bool redoPressed = WasPressed('Y');
-            const bool duplicatePressed = WasPressed('D');
             const bool focusPressed = WasPressed('F');
-            const bool deletePressed = WasPressed(VK_DELETE);
 
             if (selectPressed)
             {
@@ -508,69 +504,6 @@ namespace lts::editor
                 result.statusChanged = true;
             }
 
-            const bool controlDown =
-                IsKeyDown(VK_CONTROL) ||
-                IsKeyDown(VK_LCONTROL) ||
-                IsKeyDown(VK_RCONTROL);
-
-            if (
-                controlDown &&
-                undoPressed &&
-                history.Undo(document))
-            {
-                result.documentChanged = true;
-                result.selectionChanged = true;
-                result.hierarchyChanged = true;
-            }
-
-            if (
-                controlDown &&
-                redoPressed &&
-                history.Redo(document))
-            {
-                result.documentChanged = true;
-                result.selectionChanged = true;
-                result.hierarchyChanged = true;
-            }
-
-            if (
-                controlDown &&
-                duplicatePressed)
-            {
-                const EditorSceneSnapshot before =
-                    document.CreateSnapshot();
-
-                if (document.DuplicateSelectedEntity())
-                {
-                    static_cast<void>(
-                        history.Push(
-                            before,
-                            document.CreateSnapshot()));
-
-                    result.documentChanged = true;
-                    result.selectionChanged = true;
-                    result.hierarchyChanged = true;
-                }
-            }
-
-            if (deletePressed)
-            {
-                const EditorSceneSnapshot before =
-                    document.CreateSnapshot();
-
-                if (document.DeleteSelectedEntity())
-                {
-                    static_cast<void>(
-                        history.Push(
-                            before,
-                            document.CreateSnapshot()));
-
-                    result.documentChanged = true;
-                    result.selectionChanged = true;
-                    result.hierarchyChanged = true;
-                }
-            }
-
             if (focusPressed)
             {
                 const EditorSceneEntity* const entity =
@@ -596,11 +529,7 @@ namespace lts::editor
             static_cast<void>(WasPressed('E'));
             static_cast<void>(WasPressed('R'));
             static_cast<void>(WasPressed('T'));
-            static_cast<void>(WasPressed('Z'));
-            static_cast<void>(WasPressed('Y'));
-            static_cast<void>(WasPressed('D'));
             static_cast<void>(WasPressed('F'));
-            static_cast<void>(WasPressed(VK_DELETE));
         }
 
         if (
