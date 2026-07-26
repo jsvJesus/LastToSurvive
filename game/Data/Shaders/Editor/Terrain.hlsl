@@ -3,13 +3,13 @@ cbuffer TerrainConstants : register(b0)
     row_major float4x4 World;
     row_major float4x4 ViewProjection;
 
-    // xy = texture size, zw = texture offset.
+    // xy = размер текстуры слоя, zw = смещение текстуры.
     float4 Placement[18];
 
-    // x = layer visibility.
+    // x = видимость слоя.
     float4 LayerParameters[18];
 
-    // x = terrain width, y = terrain depth, z = layer count.
+    // x = ширина terrain, y = глубина terrain, z = количество слоёв.
     float4 TerrainInfo;
 };
 
@@ -37,34 +37,37 @@ VSOut VSMain(VSIn input)
 {
     VSOut output;
 
-    const float4 worldPosition =
-        mul(float4(input.position, 1.0F), World);
+    float4 worldPosition = mul(float4(input.position, 1.0F), World);
 
-    output.position =
-        mul(worldPosition, ViewProjection);
-
-    output.normal =
-        normalize(mul(input.normal, (float3x3)World));
-
+    output.position = mul(worldPosition, ViewProjection);
+    output.normal = normalize(mul(input.normal, (float3x3)World));
     output.uv = input.uv;
 
     return output;
 }
 
-float2 GetLayerUv(
-    const uint layerIndex,
-    const float2 terrainPosition)
+void GetLayerSampling(
+    uint layerIndex,
+    float2 terrainPosition,
+    float2 terrainGradientX,
+    float2 terrainGradientY,
+    out float2 uv,
+    out float2 gradientX,
+    out float2 gradientY)
 {
-    const float2 size =
-        max(
-            Placement[layerIndex].xy,
-            float2(0.001F, 0.001F));
+    float2 size = max(
+        Placement[layerIndex].xy,
+        float2(0.001F, 0.001F));
 
-    return
-        (terrainPosition + Placement[layerIndex].zw) /
-        size;
+    uv = (terrainPosition + Placement[layerIndex].zw) / size;
+    gradientX = terrainGradientX / size;
+    gradientY = terrainGradientY / size;
 }
 
+/*
+ * FXC не поддерживает произвольную индексацию Texture2D.
+ * Поэтому индексы ресурсов во всех ветках указаны литералами.
+ */
 float3 SampleMask(uint maskIndex, float2 uv)
 {
     switch (maskIndex)
@@ -79,72 +82,78 @@ float3 SampleMask(uint maskIndex, float2 uv)
     }
 }
 
-float3 SampleDiffuse(uint layerIndex, float2 uv)
+float3 SampleDiffuse(
+    uint layerIndex,
+    float2 uv,
+    float2 gradientX,
+    float2 gradientY)
 {
     switch (layerIndex)
     {
-        case 0U:  return DiffuseLayers[0].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 1U:  return DiffuseLayers[1].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 2U:  return DiffuseLayers[2].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 3U:  return DiffuseLayers[3].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 4U:  return DiffuseLayers[4].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 5U:  return DiffuseLayers[5].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 6U:  return DiffuseLayers[6].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 7U:  return DiffuseLayers[7].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 8U:  return DiffuseLayers[8].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 9U:  return DiffuseLayers[9].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 10U: return DiffuseLayers[10].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 11U: return DiffuseLayers[11].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 12U: return DiffuseLayers[12].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 13U: return DiffuseLayers[13].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 14U: return DiffuseLayers[14].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 15U: return DiffuseLayers[15].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 16U: return DiffuseLayers[16].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 17U: return DiffuseLayers[17].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        default:  return float3(0.08F, 0.08F, 0.08F);
+        case 0U:  return DiffuseLayers[0].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 1U:  return DiffuseLayers[1].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 2U:  return DiffuseLayers[2].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 3U:  return DiffuseLayers[3].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 4U:  return DiffuseLayers[4].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 5U:  return DiffuseLayers[5].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 6U:  return DiffuseLayers[6].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 7U:  return DiffuseLayers[7].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 8U:  return DiffuseLayers[8].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 9U:  return DiffuseLayers[9].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 10U: return DiffuseLayers[10].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 11U: return DiffuseLayers[11].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 12U: return DiffuseLayers[12].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 13U: return DiffuseLayers[13].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 14U: return DiffuseLayers[14].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 15U: return DiffuseLayers[15].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 16U: return DiffuseLayers[16].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 17U: return DiffuseLayers[17].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        default: return float3(0.08F, 0.08F, 0.08F);
     }
 }
 
-float3 SampleNormal(uint layerIndex, float2 uv)
+float3 SampleNormal(
+    uint layerIndex,
+    float2 uv,
+    float2 gradientX,
+    float2 gradientY)
 {
     switch (layerIndex)
     {
-        case 0U:  return NormalLayers[0].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 1U:  return NormalLayers[1].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 2U:  return NormalLayers[2].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 3U:  return NormalLayers[3].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 4U:  return NormalLayers[4].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 5U:  return NormalLayers[5].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 6U:  return NormalLayers[6].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 7U:  return NormalLayers[7].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 8U:  return NormalLayers[8].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 9U:  return NormalLayers[9].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 10U: return NormalLayers[10].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 11U: return NormalLayers[11].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 12U: return NormalLayers[12].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 13U: return NormalLayers[13].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 14U: return NormalLayers[14].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 15U: return NormalLayers[15].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 16U: return NormalLayers[16].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        case 17U: return NormalLayers[17].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
-        default:  return float3(0.5F, 0.5F, 1.0F);
+        case 0U:  return NormalLayers[0].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 1U:  return NormalLayers[1].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 2U:  return NormalLayers[2].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 3U:  return NormalLayers[3].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 4U:  return NormalLayers[4].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 5U:  return NormalLayers[5].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 6U:  return NormalLayers[6].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 7U:  return NormalLayers[7].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 8U:  return NormalLayers[8].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 9U:  return NormalLayers[9].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 10U: return NormalLayers[10].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 11U: return NormalLayers[11].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 12U: return NormalLayers[12].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 13U: return NormalLayers[13].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 14U: return NormalLayers[14].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 15U: return NormalLayers[15].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 16U: return NormalLayers[16].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 17U: return NormalLayers[17].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        default: return float3(0.5F, 0.5F, 1.0F);
     }
 }
 
-float GetLayerWeight(
-    const uint layerIndex,
-    const float2 terrainUv)
+float GetLayerWeight(uint layerIndex, float2 terrainUv)
 {
     if (layerIndex == 0U)
     {
         return 0.0F;
     }
 
-    const uint paintedIndex = layerIndex - 1U;
-    const uint maskIndex = paintedIndex / 3U;
-    const uint channelIndex = paintedIndex % 3U;
+    uint paintedIndex = layerIndex - 1U;
+    uint maskIndex = paintedIndex / 3U;
+    uint channelIndex = paintedIndex % 3U;
 
-    const float3 mask = SampleMask(maskIndex, terrainUv);
+    float3 mask = SampleMask(maskIndex, terrainUv);
 
     if (channelIndex == 0U)
     {
@@ -160,29 +169,25 @@ float GetLayerWeight(
 }
 
 float3 ConvertNormalToWorld(
-    const float3 tangentNormal,
-    const float3 geometryNormal)
+    float3 tangentNormal,
+    float3 geometryNormal)
 {
     float3 tangent =
         float3(1.0F, 0.0F, 0.0F) -
         geometryNormal *
-        dot(
-            geometryNormal,
-            float3(1.0F, 0.0F, 0.0F));
+        dot(geometryNormal, float3(1.0F, 0.0F, 0.0F));
 
     if (dot(tangent, tangent) < 0.0001F)
     {
         tangent =
             float3(0.0F, 0.0F, 1.0F) -
             geometryNormal *
-            dot(
-                geometryNormal,
-                float3(0.0F, 0.0F, 1.0F));
+            dot(geometryNormal, float3(0.0F, 0.0F, 1.0F));
     }
 
     tangent = normalize(tangent);
 
-    const float3 bitangent =
+    float3 bitangent =
         normalize(cross(tangent, geometryNormal));
 
     return normalize(
@@ -193,20 +198,22 @@ float3 ConvertNormalToWorld(
 
 float4 PSMain(VSOut input) : SV_TARGET
 {
-    const uint layerCount =
-        min((uint)TerrainInfo.z, 18U);
+    uint layerCount = min((uint)TerrainInfo.z, 18U);
 
     if (layerCount == 0U)
     {
-        return float4(
-            0.08F,
-            0.08F,
-            0.08F,
-            1.0F);
+        return float4(0.08F, 0.08F, 0.08F, 1.0F);
     }
 
-    const float2 terrainPosition =
+    float2 terrainPosition =
         input.uv * TerrainInfo.xy;
+
+    /*
+     * Производные вычисляем до динамических циклов.
+     * Они используются SampleGrad для корректного выбора mip-уровня.
+     */
+    float2 terrainGradientX = ddx(terrainPosition);
+    float2 terrainGradientY = ddy(terrainPosition);
 
     float paintedVisibleWeight = 0.0F;
 
@@ -216,26 +223,42 @@ float4 PSMain(VSOut input) : SV_TARGET
          ++weightLayerIndex)
     {
         paintedVisibleWeight +=
-            GetLayerWeight(
-                weightLayerIndex,
-                input.uv) *
+            GetLayerWeight(weightLayerIndex, input.uv) *
             LayerParameters[weightLayerIndex].x;
     }
 
-    const float baseWeight =
+    float baseWeight =
         saturate(1.0F - paintedVisibleWeight) *
         LayerParameters[0].x;
 
-    const float2 baseUv =
-        GetLayerUv(0U, terrainPosition);
+    float2 baseUv;
+    float2 baseGradientX;
+    float2 baseGradientY;
+
+    GetLayerSampling(
+        0U,
+        terrainPosition,
+        terrainGradientX,
+        terrainGradientY,
+        baseUv,
+        baseGradientX,
+        baseGradientY);
 
     float3 color =
-        SampleDiffuse(0U, baseUv) *
+        SampleDiffuse(
+            0U,
+            baseUv,
+            baseGradientX,
+            baseGradientY) *
         baseWeight;
 
     float3 tangentNormal =
         (
-            SampleNormal(0U, baseUv) *
+            SampleNormal(
+                0U,
+                baseUv,
+                baseGradientX,
+                baseGradientY) *
             2.0F -
             1.0F
         ) *
@@ -248,10 +271,8 @@ float4 PSMain(VSOut input) : SV_TARGET
          blendLayerIndex < layerCount;
          ++blendLayerIndex)
     {
-        const float weight =
-            GetLayerWeight(
-                blendLayerIndex,
-                input.uv) *
+        float weight =
+            GetLayerWeight(blendLayerIndex, input.uv) *
             LayerParameters[blendLayerIndex].x;
 
         if (weight <= 0.00001F)
@@ -259,22 +280,34 @@ float4 PSMain(VSOut input) : SV_TARGET
             continue;
         }
 
-        const float2 layerUv =
-            GetLayerUv(
-                blendLayerIndex,
-                terrainPosition);
+        float2 layerUv;
+        float2 layerGradientX;
+        float2 layerGradientY;
+
+        GetLayerSampling(
+            blendLayerIndex,
+            terrainPosition,
+            terrainGradientX,
+            terrainGradientY,
+            layerUv,
+            layerGradientX,
+            layerGradientY);
 
         color +=
             SampleDiffuse(
                 blendLayerIndex,
-                layerUv) *
+                layerUv,
+                layerGradientX,
+                layerGradientY) *
             weight;
 
         tangentNormal +=
             (
                 SampleNormal(
                     blendLayerIndex,
-                    layerUv) *
+                    layerUv,
+                    layerGradientX,
+                    layerGradientY) *
                 2.0F -
                 1.0F
             ) *
@@ -285,42 +318,26 @@ float4 PSMain(VSOut input) : SV_TARGET
 
     if (totalWeight <= 0.0001F)
     {
-        return float4(
-            0.08F,
-            0.08F,
-            0.08F,
-            1.0F);
+        return float4(0.08F, 0.08F, 0.08F, 1.0F);
     }
 
     color /= totalWeight;
+    tangentNormal = normalize(tangentNormal / totalWeight);
 
-    tangentNormal =
-        normalize(tangentNormal / totalWeight);
+    float3 geometryNormal = normalize(input.normal);
 
-    const float3 geometryNormal =
-        normalize(input.normal);
-
-    const float3 finalNormal =
+    float3 finalNormal =
         ConvertNormalToWorld(
             tangentNormal,
             geometryNormal);
 
-    const float3 lightDirection =
-        normalize(
-            float3(
-                -0.35F,
-                0.85F,
-                -0.40F));
+    float3 lightDirection =
+        normalize(float3(-0.35F, 0.85F, -0.40F));
 
-    const float lighting =
-        saturate(
-            dot(
-                finalNormal,
-                lightDirection)) *
+    float lighting =
+        saturate(dot(finalNormal, lightDirection)) *
         0.72F +
         0.28F;
 
-    return float4(
-        color * lighting,
-        1.0F);
+    return float4(color * lighting, 1.0F);
 }

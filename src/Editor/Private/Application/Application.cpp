@@ -2083,48 +2083,202 @@ namespace lts::editor
                 imguiViewportWidth_ = std::max(available.x, 1.0F);
                 imguiViewportHeight_ = std::max(available.y, 1.0F);
                 ImGui::InvisibleButton("SceneViewport", available);
-                const bool paintHovered=terrainPaintMode_&&ImGui::IsItemHovered();
-                terrainBrushHitValid_=false;
-                if(paintHovered)
+
+                const bool paintHovered =
+                    terrainPaintMode_ &&
+                    ImGui::IsItemHovered();
+
+                terrainBrushHitValid_ = false;
+
+                const auto findTerrainHit =
+                    [this](
+                        const EditorPickRay& ray,
+                        float& hitX,
+                        float& hitZ) -> bool
                 {
-                    const ImVec2 mouse=ImGui::GetMousePos();
-                    const float localX=mouse.x-imguiViewportX_;
-                    const float localY=mouse.y-imguiViewportY_;
+                    constexpr float maximumDistance = 20000.0F;
+                    constexpr std::uint32_t maximumSteps = 512U;
+                    constexpr std::uint32_t binarySteps = 16U;
+
+                    float distance = 0.0F;
+                    float previousDistance = 0.0F;
+                    float previousDifference = 0.0F;
+                    bool previousPointValid = false;
+
+                    for (std::uint32_t stepIndex = 0U;
+                         stepIndex < maximumSteps;
+                         ++stepIndex)
+                    {
+                        const float stepSize = std::clamp(
+                            0.25F + distance * 0.02F,
+                            0.25F,
+                            20.0F);
+
+                        distance += stepSize;
+
+                        if (distance > maximumDistance)
+                        {
+                            break;
+                        }
+
+                        const float worldX =
+                            ray.origin.x +
+                            ray.direction.x * distance;
+
+                        const float worldY =
+                            ray.origin.y +
+                            ray.direction.y * distance;
+
+                        const float worldZ =
+                            ray.origin.z +
+                            ray.direction.z * distance;
+
+                        float terrainHeight = 0.0F;
+
+                        if (!terrainRenderer_.TryGetSurfaceHeight(
+                                sceneDocument_,
+                                worldX,
+                                worldZ,
+                                terrainHeight))
+                        {
+                            previousPointValid = false;
+                            continue;
+                        }
+
+                        const float difference =
+                            worldY - terrainHeight;
+
+                        if (std::abs(difference) <= 0.02F)
+                        {
+                            hitX = worldX;
+                            hitZ = worldZ;
+                            return true;
+                        }
+
+                        /*
+                         * Луч пересёк поверхность:
+                         *
+                         * предыдущая точка была над terrain,
+                         * текущая точка оказалась под terrain.
+                         */
+                        if (previousPointValid &&
+                            previousDifference > 0.0F &&
+                            difference <= 0.0F)
+                        {
+                            float minimumDistance = previousDistance;
+                            float maximumHitDistance = distance;
+
+                            for (std::uint32_t binaryIndex = 0U;
+                                 binaryIndex < binarySteps;
+                                 ++binaryIndex)
+                            {
+                                const float middleDistance =
+                                    (minimumDistance + maximumHitDistance) *
+                                    0.5F;
+
+                                const float middleX =
+                                    ray.origin.x +
+                                    ray.direction.x * middleDistance;
+
+                                const float middleY =
+                                    ray.origin.y +
+                                    ray.direction.y * middleDistance;
+
+                                const float middleZ =
+                                    ray.origin.z +
+                                    ray.direction.z * middleDistance;
+
+                                float middleTerrainHeight = 0.0F;
+
+                                if (!terrainRenderer_.TryGetSurfaceHeight(
+                                        sceneDocument_,
+                                        middleX,
+                                        middleZ,
+                                        middleTerrainHeight))
+                                {
+                                    minimumDistance = middleDistance;
+                                    continue;
+                                }
+
+                                if (middleY > middleTerrainHeight)
+                                {
+                                    minimumDistance = middleDistance;
+                                }
+                                else
+                                {
+                                    maximumHitDistance = middleDistance;
+                                }
+                            }
+
+                            const float hitDistance =
+                                (minimumDistance + maximumHitDistance) *
+                                0.5F;
+
+                            hitX =
+                                ray.origin.x +
+                                ray.direction.x * hitDistance;
+
+                            hitZ =
+                                ray.origin.z +
+                                ray.direction.z * hitDistance;
+
+                            return true;
+                        }
+
+                        /*
+                         * Камера или начало луча уже оказалось
+                         * ниже поверхности. Используем первую
+                         * валидную точку на terrain.
+                         */
+                        if (!previousPointValid && difference <= 0.0F)
+                        {
+                            hitX = worldX;
+                            hitZ = worldZ;
+                            return true;
+                        }
+
+                        previousDistance = distance;
+                        previousDifference = difference;
+                        previousPointValid = true;
+                    }
+
+                    return false;
+                };
+
+                if (paintHovered)
+                {
+                    const ImVec2 mouse = ImGui::GetMousePos();
+
+                    const float localX =
+                        mouse.x - imguiViewportX_;
+
+                    const float localY =
+                        mouse.y - imguiViewportY_;
+
                     EditorPickRay ray{};
-                    if(localX>=0.0F&&localY>=0.0F&&
+
+                    if (localX >= 0.0F &&
+                        localY >= 0.0F &&
                         cameraController_.BuildPickRay(
                             static_cast<std::uint32_t>(localX),
                             static_cast<std::uint32_t>(localY),
                             static_cast<std::uint32_t>(imguiViewportWidth_),
-                            static_cast<std::uint32_t>(imguiViewportHeight_),ray)&&
-                        std::abs(ray.direction.y)>0.00001F)
+                            static_cast<std::uint32_t>(imguiViewportHeight_),
+                            ray) &&
+                        findTerrainHit(
+                            ray,
+                            terrainBrushWorldX_,
+                            terrainBrushWorldZ_))
                     {
-                        float distance=-ray.origin.y/ray.direction.y;
-                        if(distance>=0.0F)
-                        {
-                            float terrainHeight=0.0F;
-                            bool hit=false;
-                            for(std::uint32_t iteration=0;iteration<10U;++iteration)
-                            {
-                                const float x=ray.origin.x+ray.direction.x*distance;
-                                const float z=ray.origin.z+ray.direction.z*distance;
-                                if(!terrainRenderer_.TryGetSurfaceHeight(
-                                        sceneDocument_,x,z,terrainHeight))break;
-                                hit=true;
-                                const float refined=(terrainHeight-ray.origin.y)/ray.direction.y;
-                                if(refined<0.0F)break;
-                                distance=refined;
-                            }
-                            if(hit)
-                            {
-                                terrainBrushWorldX_=ray.origin.x+ray.direction.x*distance;
-                                terrainBrushWorldZ_=ray.origin.z+ray.direction.z*distance;
-                                terrainBrushHitValid_=true;
-                            }
-                        }
+                        terrainBrushHitValid_ = true;
                     }
-                    if(terrainBrushHitValid_&&ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        terrainPaintStrokeActive_=terrainRenderer_.BeginPaintStroke();
+
+                    if (terrainBrushHitValid_ &&
+                        ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        terrainPaintStrokeActive_ =
+                            terrainRenderer_.BeginPaintStroke();
+                    }
                 }
                 if(terrainPaintStrokeActive_&&terrainBrushHitValid_&&
                     ImGui::IsMouseDown(ImGuiMouseButton_Left))
