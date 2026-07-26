@@ -57,6 +57,151 @@ namespace lts::editor
                     right.rotationDegrees &&
                 left.scale == right.scale;
         }
+
+        struct SkyPresetValues final
+        {
+            std::array<float, 3U> topColor
+            {
+                0.055F, 0.200F, 0.550F
+            };
+
+            std::array<float, 3U> horizonColor
+            {
+                0.450F, 0.680F, 0.920F
+            };
+
+            std::array<float, 3U> groundColor
+            {
+                0.080F, 0.075F, 0.070F
+            };
+
+            std::array<float, 3U> ambientColor
+            {
+                0.280F, 0.310F, 0.360F
+            };
+
+            float skyIntensity = 1.0F;
+            float ambientIntensity = 1.0F;
+            float horizonExponent = 0.55F;
+            float sunDiskSizeDegrees = 1.25F;
+
+            std::array<float, 3U> sunRotation
+            {
+                -50.0F, 35.0F, 0.0F
+            };
+
+            std::array<float, 3U> sunColor
+            {
+                1.0F, 0.94F, 0.82F
+            };
+
+            float sunIntensity = 4.0F;
+        };
+
+        [[nodiscard]]
+        SkyPresetValues GetSkyPresetValues(
+            const engine::scene::SkyPreset preset) noexcept
+        {
+            SkyPresetValues value;
+
+            switch (preset)
+            {
+                case engine::scene::SkyPreset::ClearDay:
+                    break;
+
+                case engine::scene::SkyPreset::Cloudy:
+                    value.topColor = {0.170F, 0.205F, 0.250F};
+                    value.horizonColor = {0.410F, 0.440F, 0.470F};
+                    value.groundColor = {0.080F, 0.080F, 0.085F};
+                    value.ambientColor = {0.340F, 0.365F, 0.400F};
+                    value.skyIntensity = 0.75F;
+                    value.ambientIntensity = 1.15F;
+                    value.horizonExponent = 0.85F;
+                    value.sunDiskSizeDegrees = 0.35F;
+                    value.sunRotation = {-60.0F, 20.0F, 0.0F};
+                    value.sunColor = {0.78F, 0.84F, 0.92F};
+                    value.sunIntensity = 1.60F;
+                    break;
+
+                case engine::scene::SkyPreset::Sunrise:
+                    value.topColor = {0.025F, 0.060F, 0.170F};
+                    value.horizonColor = {0.950F, 0.360F, 0.120F};
+                    value.groundColor = {0.070F, 0.030F, 0.025F};
+                    value.ambientColor = {0.300F, 0.180F, 0.200F};
+                    value.skyIntensity = 0.90F;
+                    value.ambientIntensity = 0.80F;
+                    value.horizonExponent = 0.42F;
+                    value.sunDiskSizeDegrees = 2.00F;
+                    value.sunRotation = {-8.0F, -75.0F, 0.0F};
+                    value.sunColor = {1.00F, 0.39F, 0.13F};
+                    value.sunIntensity = 3.20F;
+                    break;
+
+                case engine::scene::SkyPreset::Sunset:
+                    value.topColor = {0.035F, 0.045F, 0.140F};
+                    value.horizonColor = {1.000F, 0.240F, 0.070F};
+                    value.groundColor = {0.055F, 0.020F, 0.018F};
+                    value.ambientColor = {0.270F, 0.135F, 0.180F};
+                    value.skyIntensity = 0.85F;
+                    value.ambientIntensity = 0.72F;
+                    value.horizonExponent = 0.38F;
+                    value.sunDiskSizeDegrees = 2.20F;
+                    value.sunRotation = {-6.0F, 78.0F, 0.0F};
+                    value.sunColor = {1.00F, 0.24F, 0.07F};
+                    value.sunIntensity = 3.00F;
+                    break;
+
+                case engine::scene::SkyPreset::Night:
+                    value.topColor = {0.002F, 0.006F, 0.025F};
+                    value.horizonColor = {0.018F, 0.030F, 0.070F};
+                    value.groundColor = {0.003F, 0.004F, 0.008F};
+                    value.ambientColor = {0.030F, 0.045F, 0.095F};
+                    value.skyIntensity = 0.32F;
+                    value.ambientIntensity = 0.38F;
+                    value.horizonExponent = 0.70F;
+                    value.sunDiskSizeDegrees = 0.50F;
+                    value.sunRotation = {-42.0F, -20.0F, 0.0F};
+                    value.sunColor = {0.30F, 0.42F, 0.70F};
+                    value.sunIntensity = 0.35F;
+                    break;
+
+                case engine::scene::SkyPreset::Storm:
+                    value.topColor = {0.012F, 0.016F, 0.022F};
+                    value.horizonColor = {0.105F, 0.125F, 0.145F};
+                    value.groundColor = {0.020F, 0.022F, 0.025F};
+                    value.ambientColor = {0.105F, 0.125F, 0.150F};
+                    value.skyIntensity = 0.55F;
+                    value.ambientIntensity = 0.66F;
+                    value.horizonExponent = 1.20F;
+                    value.sunDiskSizeDegrees = 0.12F;
+                    value.sunRotation = {-65.0F, 40.0F, 0.0F};
+                    value.sunColor = {0.55F, 0.62F, 0.72F};
+                    value.sunIntensity = 0.55F;
+                    break;
+
+                case engine::scene::SkyPreset::Custom:
+                    break;
+            }
+
+            return value;
+        }
+
+        [[nodiscard]]
+        bool IsValidSkyColor(
+            const std::array<float, 3U>& color) noexcept
+        {
+            for (const float component : color)
+            {
+                if (!std::isfinite(component) ||
+                    component < 0.0F ||
+                    component > 100.0F)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     void SceneDocument::CreateDefaultLevel()
@@ -369,6 +514,121 @@ namespace lts::editor
         light.color = color;
         light.intensity = intensity;
         light.castShadows = castShadows;
+
+        dirty_ = true;
+        return true;
+    }
+
+    bool SceneDocument::UpdateSelectedEnvironment(const std::array<float, 3>& topColor,
+        const std::array<float, 3>& horizonColor, const std::array<float, 3>& groundColor,
+        const std::array<float, 3>& ambientColor, float skyIntensity, float ambientIntensity, float horizonExponent,
+        float sunDiskSizeDegrees, bool visible, bool linkSun) noexcept
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+
+        if (entity == nullptr ||
+            !entity->environment.has_value() ||
+            !IsValidSkyColor(topColor) ||
+            !IsValidSkyColor(horizonColor) ||
+            !IsValidSkyColor(groundColor) ||
+            !IsValidSkyColor(ambientColor) ||
+            !std::isfinite(skyIntensity) ||
+            !std::isfinite(ambientIntensity) ||
+            !std::isfinite(horizonExponent) ||
+            !std::isfinite(sunDiskSizeDegrees) ||
+            skyIntensity < 0.0F ||
+            skyIntensity > 100.0F ||
+            ambientIntensity < 0.0F ||
+            ambientIntensity > 100.0F ||
+            horizonExponent < 0.05F ||
+            horizonExponent > 8.0F ||
+            sunDiskSizeDegrees < 0.01F ||
+            sunDiskSizeDegrees > 20.0F)
+        {
+            return false;
+        }
+
+        auto& environment = *entity->environment;
+
+        if (environment.topColor == topColor &&
+            environment.horizonColor == horizonColor &&
+            environment.groundColor == groundColor &&
+            environment.ambientColor == ambientColor &&
+            environment.skyIntensity == skyIntensity &&
+            environment.ambientIntensity == ambientIntensity &&
+            environment.horizonExponent == horizonExponent &&
+            environment.sunDiskSizeDegrees == sunDiskSizeDegrees &&
+            environment.visible == visible &&
+            environment.linkSun == linkSun)
+        {
+            return false;
+        }
+
+        environment.preset = engine::scene::SkyPreset::Custom;
+        environment.topColor = topColor;
+        environment.horizonColor = horizonColor;
+        environment.groundColor = groundColor;
+        environment.ambientColor = ambientColor;
+        environment.skyIntensity = skyIntensity;
+        environment.ambientIntensity = ambientIntensity;
+        environment.horizonExponent = horizonExponent;
+        environment.sunDiskSizeDegrees = sunDiskSizeDegrees;
+        environment.visible = visible;
+        environment.linkSun = linkSun;
+
+        dirty_ = true;
+        return true;
+    }
+
+    bool SceneDocument::ApplySelectedSkyPreset(engine::scene::SkyPreset preset) noexcept
+    {
+        if (preset == engine::scene::SkyPreset::Custom)
+        {
+            return false;
+        }
+
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+
+        if (entity == nullptr || !entity->environment.has_value())
+        {
+            return false;
+        }
+
+        const SkyPresetValues values = GetSkyPresetValues(preset);
+
+        auto& environment = *entity->environment;
+        environment.preset = preset;
+        environment.topColor = values.topColor;
+        environment.horizonColor = values.horizonColor;
+        environment.groundColor = values.groundColor;
+        environment.ambientColor = values.ambientColor;
+        environment.skyIntensity = values.skyIntensity;
+        environment.ambientIntensity = values.ambientIntensity;
+        environment.horizonExponent = values.horizonExponent;
+        environment.sunDiskSizeDegrees = values.sunDiskSizeDegrees;
+
+        if (environment.linkSun)
+        {
+            for (EditorSceneEntity& candidate :
+                 world_.GetEntitiesMutable())
+            {
+                if (!candidate.directionalLight.has_value())
+                {
+                    continue;
+                }
+
+                candidate.transform.rotationDegrees =
+                    values.sunRotation;
+
+                candidate.directionalLight->color =
+                    values.sunColor;
+
+                candidate.directionalLight->intensity =
+                    values.sunIntensity;
+
+                break;
+            }
+        }
 
         dirty_ = true;
         return true;

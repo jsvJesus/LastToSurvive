@@ -99,6 +99,21 @@ namespace lts::editor
             float intensity,
             bool castShadows) noexcept;
 
+        [[nodiscard]] bool UpdateSelectedEnvironment(
+            const std::array<float, 3U>& topColor,
+            const std::array<float, 3U>& horizonColor,
+            const std::array<float, 3U>& groundColor,
+            const std::array<float, 3U>& ambientColor,
+            float skyIntensity,
+            float ambientIntensity,
+            float horizonExponent,
+            float sunDiskSizeDegrees,
+            bool visible,
+            bool linkSun) noexcept;
+
+        [[nodiscard]] bool ApplySelectedSkyPreset(
+            engine::scene::SkyPreset preset) noexcept;
+
         [[nodiscard]]
         const std::vector<EditorSceneEntity>&
             GetEntities() const noexcept;

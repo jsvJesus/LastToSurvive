@@ -5,6 +5,7 @@
 #include "Editor/Commands/CommandSystem.h"
 #include "Editor/LevelEditor/UI/ContentBrowserPanel.h"
 #include "Editor/LevelEditor/Rendering/GridRenderer.h"
+#include "Editor/LevelEditor/Rendering/SkyRenderer.h"
 #include "Editor/LevelEditor/Documents/LevelDocument.h"
 #include "Editor/LevelEditor/UI/DockLayout.h"
 #include "Editor/LevelEditor/UI/WorldOutlinerPanel.h"
@@ -109,6 +110,7 @@ namespace lts::editor
         CameraController cameraController_;
         TransformController transformController_;
         GridRenderer gridRenderer_;
+        SkyRenderer skyRenderer_;
         StaticMeshRenderer staticMeshRenderer_;
         TerrainRenderer terrainRenderer_;
         TerrainImporter terrainImporter_;

@@ -816,9 +816,60 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        const JsonValue* RequireField(
-            const JsonValue& object,
-            const std::string_view name) noexcept
+        const char* SkyPresetToString(const engine::scene::SkyPreset preset) noexcept
+        {
+            switch (preset)
+            {
+            case engine::scene::SkyPreset::ClearDay:
+                return "ClearDay";
+
+            case engine::scene::SkyPreset::Cloudy:
+                return "Cloudy";
+
+            case engine::scene::SkyPreset::Sunrise:
+                return "Sunrise";
+
+            case engine::scene::SkyPreset::Sunset:
+                return "Sunset";
+
+            case engine::scene::SkyPreset::Night:
+                return "Night";
+
+            case engine::scene::SkyPreset::Storm:
+                return "Storm";
+
+            case engine::scene::SkyPreset::Custom:
+                return "Custom";
+            }
+
+            return "Custom";
+        }
+
+        [[nodiscard]]
+        bool StringToSkyPreset(const std::string_view value, engine::scene::SkyPreset& preset) noexcept
+        {
+            if (value == "ClearDay")
+                preset = engine::scene::SkyPreset::ClearDay;
+            else if (value == "Cloudy")
+                preset = engine::scene::SkyPreset::Cloudy;
+            else if (value == "Sunrise")
+                preset = engine::scene::SkyPreset::Sunrise;
+            else if (value == "Sunset")
+                preset = engine::scene::SkyPreset::Sunset;
+            else if (value == "Night")
+                preset = engine::scene::SkyPreset::Night;
+            else if (value == "Storm")
+                preset = engine::scene::SkyPreset::Storm;
+            else if (value == "Custom")
+                preset = engine::scene::SkyPreset::Custom;
+            else
+                return false;
+
+            return true;
+        }
+
+        [[nodiscard]]
+        const JsonValue* RequireField(const JsonValue& object, const std::string_view name) noexcept
         {
             if (
                 object.type !=
@@ -1095,32 +1146,92 @@ namespace lts::editor
                 return false;
             }
 
-            if (
-                const JsonValue* component =
-                    RequireField(
-                        *components,
-                        "Environment"))
+            if (const JsonValue* component = RequireField(*components, "Environment"))
             {
-                engine::scene::EnvironmentComponent
-                    value;
-
+                engine::scene::EnvironmentComponent value;
                 std::string asset;
 
-                if (
-                    !ReadString(
-                        RequireField(
-                            *component,
-                            "asset"),
+                if (!ReadString(
+                        RequireField(*component, "asset"),
                         asset) ||
-                    !FromUtf8(
-                        asset,
-                        value.environmentAsset))
+                    !FromUtf8(asset, value.environmentAsset))
                 {
                     return false;
                 }
 
-                entity.environment =
-                    std::move(value);
+                if (const JsonValue* field = component->Find("preset"))
+                {
+                    std::string preset;
+
+                    if (!ReadString(field, preset) ||
+                        !StringToSkyPreset(preset, value.preset))
+                    {
+                        return false;
+                    }
+                }
+
+                if (const JsonValue* field = component->Find("topColor");
+                    field != nullptr && !ReadVector3(field, value.topColor))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("horizonColor");
+                    field != nullptr && !ReadVector3(field, value.horizonColor))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("groundColor");
+                    field != nullptr && !ReadVector3(field, value.groundColor))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("ambientColor");
+                    field != nullptr && !ReadVector3(field, value.ambientColor))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("skyIntensity");
+                    field != nullptr && !ReadFloat(field, value.skyIntensity))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("ambientIntensity");
+                    field != nullptr && !ReadFloat(field, value.ambientIntensity))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("horizonExponent");
+                    field != nullptr && !ReadFloat(field, value.horizonExponent))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("sunDiskSizeDegrees");
+                    field != nullptr &&
+                    !ReadFloat(field, value.sunDiskSizeDegrees))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("visible");
+                    field != nullptr && !ReadBoolean(field, value.visible))
+                {
+                    return false;
+                }
+
+                if (const JsonValue* field = component->Find("linkSun");
+                    field != nullptr && !ReadBoolean(field, value.linkSun))
+                {
+                    return false;
+                }
+
+                entity.environment = std::move(value);
             }
 
             if (const JsonValue* hierarchy = components->Find("EditorHierarchy"))
@@ -1546,12 +1657,11 @@ namespace lts::editor
 
                 if (entity.environment.has_value())
                 {
+                    const auto& environment = *entity.environment;
+
                     std::string asset;
 
-                    if (!ToUtf8(
-                            entity.environment->
-                                environmentAsset,
-                            asset))
+                    if (!ToUtf8(environment.environmentAsset, asset))
                     {
                         error =
                             L"Failed to convert an environment asset path.";
@@ -1565,7 +1675,38 @@ namespace lts::editor
 
                     WriteJsonString(output, asset);
 
-                    output << '}';
+                    output << ", \"preset\": ";
+
+                    WriteJsonString(
+                        output,
+                        SkyPresetToString(environment.preset));
+
+                    output << ", \"topColor\": ";
+                    WriteVector3(output, environment.topColor);
+
+                    output << ", \"horizonColor\": ";
+                    WriteVector3(output, environment.horizonColor);
+
+                    output << ", \"groundColor\": ";
+                    WriteVector3(output, environment.groundColor);
+
+                    output << ", \"ambientColor\": ";
+                    WriteVector3(output, environment.ambientColor);
+
+                    output
+                        << ", \"skyIntensity\": "
+                        << environment.skyIntensity
+                        << ", \"ambientIntensity\": "
+                        << environment.ambientIntensity
+                        << ", \"horizonExponent\": "
+                        << environment.horizonExponent
+                        << ", \"sunDiskSizeDegrees\": "
+                        << environment.sunDiskSizeDegrees
+                        << ", \"visible\": "
+                        << (environment.visible ? "true" : "false")
+                        << ", \"linkSun\": "
+                        << (environment.linkSun ? "true" : "false")
+                        << '}';
                 }
 
                 if (entity.staticMesh.has_value())

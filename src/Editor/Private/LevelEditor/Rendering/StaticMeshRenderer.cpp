@@ -162,6 +162,15 @@ namespace lts::editor
             };
 
             float intensity = 1.0F;
+
+            DirectX::XMFLOAT3 ambientColor
+            {
+                0.28F,
+                0.31F,
+                0.36F
+            };
+
+            float ambientIntensity = 1.0F;
         };
 
         [[nodiscard]]
@@ -169,6 +178,40 @@ namespace lts::editor
             const SceneDocument& document) noexcept
         {
             ResolvedDirectionalLight result;
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
+            {
+                if (!entity.environment.has_value() ||
+                    !entity.environment->visible)
+                {
+                    continue;
+                }
+
+                const auto& environment =
+                    *entity.environment;
+
+                result.ambientColor =
+                {
+                    (std::max)(
+                        environment.ambientColor[0],
+                        0.0F),
+
+                    (std::max)(
+                        environment.ambientColor[1],
+                        0.0F),
+
+                    (std::max)(
+                        environment.ambientColor[2],
+                        0.0F)
+                };
+
+                result.ambientIntensity =
+                    (std::max)(
+                        environment.ambientIntensity,
+                        0.0F);
+
+                break;
+            }
 
             for (const EditorSceneEntity& entity : document.GetEntities())
             {
@@ -1017,9 +1060,15 @@ namespace lts::editor
 
                 constants.ambientColor =
                 {
-                    0.28F,
-                    0.31F,
-                    0.36F,
+                    lighting.ambientColor.x *
+                        lighting.ambientIntensity,
+
+                    lighting.ambientColor.y *
+                        lighting.ambientIntensity,
+
+                    lighting.ambientColor.z *
+                        lighting.ambientIntensity,
+
                     1.0F
                 };
 

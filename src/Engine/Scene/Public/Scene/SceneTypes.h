@@ -55,9 +55,58 @@ namespace engine::scene
         SceneTransform transform;
     };
 
+    enum class SkyPreset : std::uint8_t
+    {
+        ClearDay = 0,
+        Cloudy,
+        Sunrise,
+        Sunset,
+        Night,
+        Storm,
+        Custom
+    };
+
     struct EnvironmentComponent final
     {
         std::wstring environmentAsset;
+
+        SkyPreset preset = SkyPreset::ClearDay;
+
+        std::array<float, 3U> topColor
+        {
+            0.055F,
+            0.200F,
+            0.550F
+        };
+
+        std::array<float, 3U> horizonColor
+        {
+            0.450F,
+            0.680F,
+            0.920F
+        };
+
+        std::array<float, 3U> groundColor
+        {
+            0.080F,
+            0.075F,
+            0.070F
+        };
+
+        std::array<float, 3U> ambientColor
+        {
+            0.280F,
+            0.310F,
+            0.360F
+        };
+
+        float skyIntensity = 1.0F;
+        float ambientIntensity = 1.0F;
+        float horizonExponent = 0.55F;
+        float sunDiskSizeDegrees = 1.25F;
+
+        bool visible = true;
+        bool linkSun = true;
     };
 
     struct StaticMeshComponent final

@@ -1327,6 +1327,93 @@ namespace lts::editor
                 static_cast<void>(sceneDocument_.CreateEntity(
                     L"Empty Actor", EditorEntityKind::Empty, transform));
             }
+            if (ImGui::Button("Sky / Environment", ImVec2(-1.0F, 0.0F)))
+            {
+                const EditorSceneSnapshot before =
+                    sceneDocument_.CreateSnapshot();
+
+                const auto& entities =
+                    sceneDocument_.GetEntities();
+
+                EditorEntityId environmentId = 0U;
+                bool hasSun = false;
+                bool sceneChanged = false;
+
+                for (const EditorSceneEntity& candidate : entities)
+                {
+                    if (candidate.environment.has_value())
+                    {
+                        environmentId = candidate.id;
+                    }
+
+                    if (candidate.directionalLight.has_value())
+                    {
+                        hasSun = true;
+                    }
+                }
+
+                if (environmentId == 0U)
+                {
+                    const EditorTransform transform{};
+
+                    environmentId =
+                        sceneDocument_.CreateEntity(
+                            L"Environment",
+                            EditorEntityKind::Environment,
+                            transform);
+
+                    sceneChanged =
+                        environmentId != 0U;
+                }
+
+                if (!hasSun)
+                {
+                    EditorTransform sunTransform{};
+                    sunTransform.rotationDegrees =
+                    {
+                        -50.0F,
+                        35.0F,
+                        0.0F
+                    };
+
+                    const EditorEntityId sunId =
+                        sceneDocument_.CreateEntity(
+                            L"Sun",
+                            EditorEntityKind::DirectionalLight,
+                            sunTransform);
+
+                    sceneChanged =
+                        sceneChanged || sunId != 0U;
+                }
+
+                const auto& updatedEntities =
+                    sceneDocument_.GetEntities();
+
+                for (std::size_t index = 0U;
+                     index < updatedEntities.size();
+                     ++index)
+                {
+                    if (updatedEntities[index].id == environmentId)
+                    {
+                        static_cast<void>(
+                            sceneDocument_.SelectEntityByIndex(index));
+
+                        break;
+                    }
+                }
+
+                static_cast<void>(
+                    sceneDocument_.ApplySelectedSkyPreset(
+                        engine::scene::SkyPreset::ClearDay));
+
+                if (sceneChanged)
+                {
+                    static_cast<void>(
+                        commandHistory_.Push(
+                            before,
+                            sceneDocument_.CreateSnapshot()));
+                }
+            }
             if (ImGui::Button("Directional Light", ImVec2(-1.0F, 0.0F)))
             {
                 const auto& entities = sceneDocument_.GetEntities();
@@ -1514,6 +1601,301 @@ namespace lts::editor
                             before, sceneDocument_.CreateSnapshot()));
                 }
                 if (!transformClipboardValid_) ImGui::EndDisabled();
+                if (entity->environment.has_value())
+                {
+                    ImGui::SeparatorText("Sky / Environment");
+
+                    constexpr std::array<const char*, 7U>
+                        presetNames
+                    {{
+                        "Clear Day",
+                        "Cloudy",
+                        "Sunrise",
+                        "Sunset",
+                        "Night",
+                        "Storm",
+                        "Custom"
+                    }};
+
+                    const auto& environment =
+                        *entity->environment;
+
+                    const std::size_t currentPreset =
+                        static_cast<std::size_t>(
+                            environment.preset);
+
+                    const char* presetPreview =
+                        currentPreset < presetNames.size()
+                            ? presetNames[currentPreset]
+                            : "Custom";
+
+                    if (ImGui::BeginCombo(
+                            "Sky Preset",
+                            presetPreview))
+                    {
+                        for (std::size_t index = 0U;
+                             index < 6U;
+                             ++index)
+                        {
+                            const bool selected =
+                                currentPreset == index;
+
+                            if (ImGui::Selectable(
+                                    presetNames[index],
+                                    selected))
+                            {
+                                const EditorSceneSnapshot before =
+                                    sceneDocument_.CreateSnapshot();
+
+                                if (sceneDocument_.ApplySelectedSkyPreset(
+                                        static_cast<
+                                            engine::scene::SkyPreset>(
+                                                index)))
+                                {
+                                    static_cast<void>(
+                                        commandHistory_.Push(
+                                            before,
+                                            sceneDocument_.
+                                                CreateSnapshot()));
+                                }
+                            }
+
+                            if (selected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+
+                        ImGui::EndCombo();
+                    }
+
+                    const auto& currentEnvironment =
+                        *entity->environment;
+
+                    std::array<float, 3U> topColor =
+                        currentEnvironment.topColor;
+
+                    std::array<float, 3U> horizonColor =
+                        currentEnvironment.horizonColor;
+
+                    std::array<float, 3U> groundColor =
+                        currentEnvironment.groundColor;
+
+                    std::array<float, 3U> ambientColor =
+                        currentEnvironment.ambientColor;
+
+                    float skyIntensity =
+                        currentEnvironment.skyIntensity;
+
+                    float ambientIntensity =
+                        currentEnvironment.ambientIntensity;
+
+                    float horizonExponent =
+                        currentEnvironment.horizonExponent;
+
+                    float sunDiskSize =
+                        currentEnvironment.sunDiskSizeDegrees;
+
+                    bool visible =
+                        currentEnvironment.visible;
+
+                    bool linkSun =
+                        currentEnvironment.linkSun;
+
+                    const auto updateEnvironment =
+                        [this,
+                         &topColor,
+                         &horizonColor,
+                         &groundColor,
+                         &ambientColor,
+                         &skyIntensity,
+                         &ambientIntensity,
+                         &horizonExponent,
+                         &sunDiskSize,
+                         &visible,
+                         &linkSun]()
+                    {
+                        return sceneDocument_.
+                            UpdateSelectedEnvironment(
+                                topColor,
+                                horizonColor,
+                                groundColor,
+                                ambientColor,
+                                skyIntensity,
+                                ambientIntensity,
+                                horizonExponent,
+                                sunDiskSize,
+                                visible,
+                                linkSun);
+                    };
+
+                    const auto beginEnvironmentEdit =
+                        [this]()
+                    {
+                        if (!inspectorEditActive_)
+                        {
+                            inspectorEditBefore_ =
+                                sceneDocument_.CreateSnapshot();
+
+                            inspectorEditActive_ = true;
+                        }
+                    };
+
+                    const auto finishEnvironmentEdit =
+                        [this]()
+                    {
+                        if (!inspectorEditActive_)
+                        {
+                            return;
+                        }
+
+                        static_cast<void>(
+                            commandHistory_.Push(
+                                inspectorEditBefore_,
+                                sceneDocument_.CreateSnapshot()));
+
+                        inspectorEditBefore_ = {};
+                        inspectorEditActive_ = false;
+                    };
+
+                    const auto editColor =
+                        [&beginEnvironmentEdit,
+                         &finishEnvironmentEdit,
+                         &updateEnvironment](
+                            const char* label,
+                            std::array<float, 3U>& value)
+                    {
+                        const bool changed =
+                            ImGui::ColorEdit3(
+                                label,
+                                value.data(),
+                                ImGuiColorEditFlags_Float |
+                                    ImGuiColorEditFlags_HDR);
+
+                        if (ImGui::IsItemActivated())
+                        {
+                            beginEnvironmentEdit();
+                        }
+
+                        if (changed)
+                        {
+                            static_cast<void>(
+                                updateEnvironment());
+                        }
+
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        {
+                            finishEnvironmentEdit();
+                        }
+                    };
+
+                    const auto editFloat =
+                        [&beginEnvironmentEdit,
+                         &finishEnvironmentEdit,
+                         &updateEnvironment](
+                            const char* label,
+                            float& value,
+                            const float speed,
+                            const float minimum,
+                            const float maximum)
+                    {
+                        const bool changed =
+                            ImGui::DragFloat(
+                                label,
+                                &value,
+                                speed,
+                                minimum,
+                                maximum,
+                                "%.3f");
+
+                        if (ImGui::IsItemActivated())
+                        {
+                            beginEnvironmentEdit();
+                        }
+
+                        if (changed)
+                        {
+                            static_cast<void>(
+                                updateEnvironment());
+                        }
+
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                        {
+                            finishEnvironmentEdit();
+                        }
+                    };
+
+                    editColor("Sky Top Color", topColor);
+                    editColor("Horizon Color", horizonColor);
+                    editColor("Ground Color", groundColor);
+                    editColor("Ambient Color", ambientColor);
+
+                    editFloat(
+                        "Sky Intensity",
+                        skyIntensity,
+                        0.01F,
+                        0.0F,
+                        20.0F);
+
+                    editFloat(
+                        "Ambient Intensity",
+                        ambientIntensity,
+                        0.01F,
+                        0.0F,
+                        20.0F);
+
+                    editFloat(
+                        "Horizon Exponent",
+                        horizonExponent,
+                        0.01F,
+                        0.05F,
+                        8.0F);
+
+                    editFloat(
+                        "Sun Disk Size",
+                        sunDiskSize,
+                        0.01F,
+                        0.01F,
+                        20.0F);
+
+                    if (ImGui::Checkbox(
+                            "Visible",
+                            &visible))
+                    {
+                        const EditorSceneSnapshot before =
+                            sceneDocument_.CreateSnapshot();
+
+                        if (updateEnvironment())
+                        {
+                            static_cast<void>(
+                                commandHistory_.Push(
+                                    before,
+                                    sceneDocument_.CreateSnapshot()));
+                        }
+                    }
+
+                    if (ImGui::Checkbox(
+                            "Link Preset To Sun",
+                            &linkSun))
+                    {
+                        const EditorSceneSnapshot before =
+                            sceneDocument_.CreateSnapshot();
+
+                        if (updateEnvironment())
+                        {
+                            static_cast<void>(
+                                commandHistory_.Push(
+                                    before,
+                                    sceneDocument_.CreateSnapshot()));
+                        }
+                    }
+
+                    ImGui::TextDisabled(
+                        "Manual changes switch the preset to Custom.");
+
+                    ImGui::TextDisabled(
+                        "Linked presets update Directional Light rotation, color and intensity.");
+                }
                 if (entity->directionalLight.has_value())
                 {
                     ImGui::SeparatorText("Directional Light");
@@ -2746,9 +3128,14 @@ namespace lts::editor
                     viewportHeight,
                     viewProjection))
             {
-                result = gridRenderer_.Render(
-                    *commandContext_,
-                    viewProjection);
+                result = skyRenderer_.Render(*commandContext_, sceneDocument_, viewProjection, cameraController_.GetPosition());
+                
+                if (!engine::graphics::Failed(result))
+                {
+                    result = gridRenderer_.Render(
+                        *commandContext_,
+                        viewProjection);
+                }
 
                 if (!engine::graphics::Failed(result))
                 {
@@ -2867,13 +3254,23 @@ namespace lts::editor
             return false;
         }
 
-        if (!gridRenderer_.Initialize(
-                graphicsDevice_))
+        if (!gridRenderer_.Initialize(graphicsDevice_))
         {
             engine::core::GetLogger().Write(
                 engine::core::LogLevel::Critical,
                 "LTS.Editor.Grid",
                 "Failed to initialize editor world grid.");
+
+            ShutdownGraphics();
+            return false;
+        }
+
+        if (!skyRenderer_.Initialize(graphicsDevice_))
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "LTS.Editor.Sky",
+                "Failed to initialize editor sky renderer.");
 
             ShutdownGraphics();
             return false;
@@ -2898,8 +3295,8 @@ namespace lts::editor
                 Flush();
         }
 
-        gridRenderer_.Shutdown(
-            graphicsDevice_);
+        skyRenderer_.Shutdown(graphicsDevice_);
+        gridRenderer_.Shutdown(graphicsDevice_);
 
         DestroyDepthStencil();
 
