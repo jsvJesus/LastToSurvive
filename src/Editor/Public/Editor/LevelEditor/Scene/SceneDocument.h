@@ -94,6 +94,11 @@ namespace lts::editor
         [[nodiscard]] bool AddSelectedTerrainLayer(std::string name);
         [[nodiscard]] bool RemoveSelectedTerrainLayer(std::size_t index) noexcept;
 
+        [[nodiscard]] bool UpdateSelectedDirectionalLight(
+            const std::array<float, 3U>& color,
+            float intensity,
+            bool castShadows) noexcept;
+
         [[nodiscard]]
         const std::vector<EditorSceneEntity>&
             GetEntities() const noexcept;

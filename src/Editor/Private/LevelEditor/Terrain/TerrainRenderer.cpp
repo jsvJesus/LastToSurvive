@@ -80,7 +80,81 @@ namespace lts::editor
             // z = active layer count.
             // w = reserved.
             DirectX::XMFLOAT4 terrainInfo{};
+            DirectX::XMFLOAT4 sunDirectionIntensity{};
+            DirectX::XMFLOAT4 sunColor{};
+            DirectX::XMFLOAT4 ambientColor{};
         };
+
+        struct ResolvedDirectionalLight final
+        {
+            DirectX::XMFLOAT3 direction
+            {
+                -0.35F,
+                0.85F,
+                -0.40F
+            };
+
+            DirectX::XMFLOAT3 color
+            {
+                1.0F,
+                1.0F,
+                1.0F
+            };
+
+            float intensity = 1.0F;
+        };
+
+        [[nodiscard]]
+        ResolvedDirectionalLight ResolveDirectionalLight(
+            const SceneDocument& document) noexcept
+        {
+            ResolvedDirectionalLight result;
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
+            {
+                if (!entity.directionalLight.has_value())
+                {
+                    continue;
+                }
+
+                const auto& light = *entity.directionalLight;
+
+                const float pitch = DirectX::XMConvertToRadians(
+                    entity.transform.rotationDegrees[0]);
+
+                const float yaw = DirectX::XMConvertToRadians(
+                    entity.transform.rotationDegrees[1]);
+
+                const float cosinePitch = std::cos(pitch);
+
+                DirectX::XMFLOAT3 direction
+                {
+                    -cosinePitch * std::sin(yaw),
+                    -std::sin(pitch),
+                    -cosinePitch * std::cos(yaw)
+                };
+
+                DirectX::XMStoreFloat3(
+                    &result.direction,
+                    DirectX::XMVector3Normalize(
+                        DirectX::XMLoadFloat3(&direction)));
+
+                result.color =
+                {
+                    (std::max)(light.color[0], 0.0F),
+                    (std::max)(light.color[1], 0.0F),
+                    (std::max)(light.color[2], 0.0F)
+                };
+
+                result.intensity =
+                    (std::max)(light.intensity, 0.0F) *
+                    0.25F;
+
+                break;
+            }
+
+            return result;
+        }
 
         static_assert(sizeof(Constants) % 16U == 0U);
 
@@ -2350,6 +2424,33 @@ namespace lts::editor
                 terrainDepth,
                 static_cast<float>(layerCount),
                 0.0F
+            };
+
+            const ResolvedDirectionalLight lighting =
+                ResolveDirectionalLight(document);
+
+            constants.sunDirectionIntensity =
+            {
+                lighting.direction.x,
+                lighting.direction.y,
+                lighting.direction.z,
+                lighting.intensity
+            };
+
+            constants.sunColor =
+            {
+                lighting.color.x,
+                lighting.color.y,
+                lighting.color.z,
+                1.0F
+            };
+
+            constants.ambientColor =
+            {
+                0.28F,
+                0.31F,
+                0.36F,
+                1.0F
             };
 
             engine::graphics::GraphicsResult result =

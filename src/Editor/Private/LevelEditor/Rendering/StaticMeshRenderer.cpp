@@ -52,13 +52,20 @@ namespace lts::editor
         constexpr std::uintmax_t MaximumMeshFileSize =
             512U * 1024U * 1024U;
 
-        struct alignas(16)
-            ObjectConstants final
+        struct alignas(16) ObjectConstants final
         {
             DirectX::XMFLOAT4X4 world;
             DirectX::XMFLOAT4X4 viewProjection;
+
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 materialParameters;
+
+            // xyz = направление от поверхности к солнцу.
+            // w = нормализованная интенсивность.
+            DirectX::XMFLOAT4 sunDirectionIntensity;
+
+            DirectX::XMFLOAT4 sunColor;
+            DirectX::XMFLOAT4 ambientColor;
         };
 
         static_assert(
@@ -136,6 +143,81 @@ namespace lts::editor
                 scale *
                 rotation *
                 translation;
+        }
+
+        struct ResolvedDirectionalLight final
+        {
+            DirectX::XMFLOAT3 direction
+            {
+                -0.35F,
+                0.85F,
+                -0.40F
+            };
+
+            DirectX::XMFLOAT3 color
+            {
+                1.0F,
+                1.0F,
+                1.0F
+            };
+
+            float intensity = 1.0F;
+        };
+
+        [[nodiscard]]
+        ResolvedDirectionalLight ResolveDirectionalLight(
+            const SceneDocument& document) noexcept
+        {
+            ResolvedDirectionalLight result;
+
+            for (const EditorSceneEntity& entity : document.GetEntities())
+            {
+                if (!entity.directionalLight.has_value())
+                {
+                    continue;
+                }
+
+                const auto& light = *entity.directionalLight;
+
+                const float pitch = DirectX::XMConvertToRadians(
+                    entity.transform.rotationDegrees[0]);
+
+                const float yaw = DirectX::XMConvertToRadians(
+                    entity.transform.rotationDegrees[1]);
+
+                const float cosinePitch = std::cos(pitch);
+
+                DirectX::XMFLOAT3 direction
+                {
+                    -cosinePitch * std::sin(yaw),
+                    -std::sin(pitch),
+                    -cosinePitch * std::cos(yaw)
+                };
+
+                DirectX::XMStoreFloat3(
+                    &result.direction,
+                    DirectX::XMVector3Normalize(
+                        DirectX::XMLoadFloat3(&direction)));
+
+                result.color =
+                {
+                    (std::max)(light.color[0], 0.0F),
+                    (std::max)(light.color[1], 0.0F),
+                    (std::max)(light.color[2], 0.0F)
+                };
+
+                /*
+                 * Старое значение по умолчанию равно 4.
+                 * Для shader нормализуем его к 1.
+                 */
+                result.intensity =
+                    (std::max)(light.intensity, 0.0F) *
+                    0.25F;
+
+                break;
+            }
+
+            return result;
         }
 
         [[nodiscard]]
@@ -872,6 +954,8 @@ namespace lts::editor
 
             const std::size_t selectedIndex =
                 document.GetSelectedIndex();
+            const ResolvedDirectionalLight lighting =
+                ResolveDirectionalLight(document);
 
             for (
                 std::size_t entityIndex = 0U;
@@ -914,6 +998,30 @@ namespace lts::editor
                 constants.baseColor = { 0.58F, 0.63F, 0.66F, 1.0F };
                 constants.materialParameters = {
                     entityIndex == selectedIndex ? 1.0F : 0.0F, 0.0F, 0.0F, 0.0F };
+                
+                constants.sunDirectionIntensity =
+                {
+                    lighting.direction.x,
+                    lighting.direction.y,
+                    lighting.direction.z,
+                    lighting.intensity
+                };
+
+                constants.sunColor =
+                {
+                    lighting.color.x,
+                    lighting.color.y,
+                    lighting.color.z,
+                    1.0F
+                };
+
+                constants.ambientColor =
+                {
+                    0.28F,
+                    0.31F,
+                    0.36F,
+                    1.0F
+                };
 
                 result =
                     context.UpdateBuffer(

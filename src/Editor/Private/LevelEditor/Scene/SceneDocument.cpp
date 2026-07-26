@@ -333,6 +333,47 @@ namespace lts::editor
         return true;
     }
 
+    bool SceneDocument::UpdateSelectedDirectionalLight(const std::array<float, 3>& color, float intensity,
+        bool castShadows) noexcept
+    {
+        EditorSceneEntity* entity = GetSelectedEntityMutable();
+
+        if (entity == nullptr ||
+            !entity->directionalLight.has_value() ||
+            !std::isfinite(intensity) ||
+            intensity < 0.0F ||
+            intensity > 1000.0F)
+        {
+            return false;
+        }
+
+        for (const float component : color)
+        {
+            if (!std::isfinite(component) ||
+                component < 0.0F ||
+                component > 100.0F)
+            {
+                return false;
+            }
+        }
+
+        auto& light = *entity->directionalLight;
+
+        if (light.color == color &&
+            light.intensity == intensity &&
+            light.castShadows == castShadows)
+        {
+            return false;
+        }
+
+        light.color = color;
+        light.intensity = intensity;
+        light.castShadows = castShadows;
+
+        dirty_ = true;
+        return true;
+    }
+
     const std::vector<EditorSceneEntity>&
         SceneDocument::GetEntities() const noexcept
     {

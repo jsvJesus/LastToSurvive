@@ -1329,9 +1329,45 @@ namespace lts::editor
             }
             if (ImGui::Button("Directional Light", ImVec2(-1.0F, 0.0F)))
             {
-                const EditorTransform transform{};
-                static_cast<void>(sceneDocument_.CreateEntity(
-                    L"Directional Light", EditorEntityKind::DirectionalLight, transform));
+                const auto& entities = sceneDocument_.GetEntities();
+                std::size_t existingLightIndex = InvalidEditorEntityIndex;
+
+                for (std::size_t index = 0U; index < entities.size(); ++index)
+                {
+                    if (entities[index].directionalLight.has_value())
+                    {
+                        existingLightIndex = index;
+                        break;
+                    }
+                }
+
+                if (existingLightIndex != InvalidEditorEntityIndex)
+                {
+                    static_cast<void>(
+                        sceneDocument_.SelectEntityByIndex(existingLightIndex));
+                }
+                else
+                {
+                    const EditorSceneSnapshot before =
+                        sceneDocument_.CreateSnapshot();
+
+                    EditorTransform transform{};
+                    transform.rotationDegrees = {-50.0F, 35.0F, 0.0F};
+
+                    const EditorEntityId lightId =
+                        sceneDocument_.CreateEntity(
+                            L"Directional Light",
+                            EditorEntityKind::DirectionalLight,
+                            transform);
+
+                    if (lightId != 0U)
+                    {
+                        static_cast<void>(
+                            commandHistory_.Push(
+                                before,
+                                sceneDocument_.CreateSnapshot()));
+                    }
+                }
             }
             if (ImGui::Button("Spawn Point", ImVec2(-1.0F, 0.0F)))
             {
@@ -1478,7 +1514,152 @@ namespace lts::editor
                             before, sceneDocument_.CreateSnapshot()));
                 }
                 if (!transformClipboardValid_) ImGui::EndDisabled();
+                if (entity->directionalLight.has_value())
+                {
+                    ImGui::SeparatorText("Directional Light");
 
+                    const auto& currentLight = *entity->directionalLight;
+
+                    std::array<float, 3U> color = currentLight.color;
+                    float intensity = currentLight.intensity;
+                    bool castShadows = currentLight.castShadows;
+
+                    const auto beginLightEdit = [this]()
+                    {
+                        if (!inspectorEditActive_)
+                        {
+                            inspectorEditBefore_ = sceneDocument_.CreateSnapshot();
+                            inspectorEditActive_ = true;
+                        }
+                    };
+
+                    const auto finishLightEdit = [this]()
+                    {
+                        if (!inspectorEditActive_)
+                        {
+                            return;
+                        }
+
+                        static_cast<void>(
+                            commandHistory_.Push(
+                                inspectorEditBefore_,
+                                sceneDocument_.CreateSnapshot()));
+
+                        inspectorEditBefore_ = {};
+                        inspectorEditActive_ = false;
+                    };
+
+                    const bool colorChanged =
+                        ImGui::ColorEdit3(
+                            "Color",
+                            color.data(),
+                            ImGuiColorEditFlags_Float |
+                                ImGuiColorEditFlags_HDR);
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        beginLightEdit();
+                    }
+
+                    if (colorChanged)
+                    {
+                        static_cast<void>(
+                            sceneDocument_.UpdateSelectedDirectionalLight(
+                                color,
+                                intensity,
+                                castShadows));
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        finishLightEdit();
+                    }
+
+                    const bool intensityChanged =
+                        ImGui::DragFloat(
+                            "Intensity",
+                            &intensity,
+                            0.05F,
+                            0.0F,
+                            20.0F,
+                            "%.2f");
+
+                    if (ImGui::IsItemActivated())
+                    {
+                        beginLightEdit();
+                    }
+
+                    if (intensityChanged)
+                    {
+                        static_cast<void>(
+                            sceneDocument_.UpdateSelectedDirectionalLight(
+                                color,
+                                intensity,
+                                castShadows));
+                    }
+
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        finishLightEdit();
+                    }
+
+                    if (ImGui::Checkbox("Cast Shadows", &castShadows))
+                    {
+                        const EditorSceneSnapshot before =
+                            sceneDocument_.CreateSnapshot();
+
+                        if (sceneDocument_.UpdateSelectedDirectionalLight(
+                                color,
+                                intensity,
+                                castShadows))
+                        {
+                            static_cast<void>(
+                                commandHistory_.Push(
+                                    before,
+                                    sceneDocument_.CreateSnapshot()));
+                        }
+                    }
+
+                    ImGui::TextDisabled(
+                        "Rotation controls the direction of sunlight.");
+
+                    ImGui::TextDisabled(
+                        "Location and Scale do not affect Directional Light.");
+
+                    if (ImGui::Button("Reset Light"))
+                    {
+                        const EditorSceneSnapshot before =
+                            sceneDocument_.CreateSnapshot();
+
+                        EditorTransform defaultTransform = entity->transform;
+                        defaultTransform.rotationDegrees = {-50.0F, 35.0F, 0.0F};
+                        defaultTransform.scale = {1.0F, 1.0F, 1.0F};
+
+                        const std::array<float, 3U> defaultColor =
+                        {
+                            1.0F,
+                            1.0F,
+                            1.0F
+                        };
+
+                        const bool transformChanged =
+                            sceneDocument_.SetSelectedTransform(defaultTransform);
+
+                        const bool lightChanged =
+                            sceneDocument_.UpdateSelectedDirectionalLight(
+                                defaultColor,
+                                4.0F,
+                                true);
+
+                        if (transformChanged || lightChanged)
+                        {
+                            static_cast<void>(
+                                commandHistory_.Push(
+                                    before,
+                                    sceneDocument_.CreateSnapshot()));
+                        }
+                    }
+                }
                 if (entity->terrain.has_value())
                 {
                     const auto& layers = entity->terrain->layers;

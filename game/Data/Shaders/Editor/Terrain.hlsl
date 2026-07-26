@@ -11,6 +11,13 @@ cbuffer TerrainConstants : register(b0)
 
     // x = ширина terrain, y = глубина terrain, z = количество слоёв.
     float4 TerrainInfo;
+	
+	// xyz = направление от поверхности к солнцу.
+	// w = нормализованная интенсивность.
+	float4 SunDirectionIntensity;
+
+	float4 SunColor;
+	float4 AmbientColor;
 };
 
 Texture2D Masks[6] : register(t0);
@@ -331,13 +338,27 @@ float4 PSMain(VSOut input) : SV_TARGET
             tangentNormal,
             geometryNormal);
 
-    float3 lightDirection =
-        normalize(float3(-0.35F, 0.85F, -0.40F));
+    float3 sunDirection =
+    normalize(SunDirectionIntensity.xyz);
 
-    float lighting =
-        saturate(dot(finalNormal, lightDirection)) *
-        0.72F +
-        0.28F;
+	float sunDiffuse =
+		saturate(dot(finalNormal, sunDirection));
 
-    return float4(color * lighting, 1.0F);
+	float skyAmount =
+		saturate(finalNormal.y * 0.5F + 0.5F);
+
+	float3 ambient =
+		lerp(
+			AmbientColor.rgb * 0.55F,
+			AmbientColor.rgb,
+			skyAmount);
+
+	float3 lighting =
+		ambient +
+		SunColor.rgb *
+		sunDiffuse *
+		SunDirectionIntensity.w *
+		0.72F;
+
+	return float4(color * lighting, 1.0F);
 }
