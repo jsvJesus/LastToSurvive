@@ -65,78 +65,68 @@ float2 GetLayerUv(
         size;
 }
 
-/*
- * FXC не поддерживает произвольную индексацию Texture2D-массивов.
- * Поэтому каждый resource индексируется литералом.
- */
-float3 SampleMask(
-    const uint maskIndex,
-    const float2 uv)
+float3 SampleMask(uint maskIndex, float2 uv)
 {
     switch (maskIndex)
     {
-        case 0U: return Masks[0].Sample(TerrainSampler, uv).rgb;
-        case 1U: return Masks[1].Sample(TerrainSampler, uv).rgb;
-        case 2U: return Masks[2].Sample(TerrainSampler, uv).rgb;
-        case 3U: return Masks[3].Sample(TerrainSampler, uv).rgb;
-        case 4U: return Masks[4].Sample(TerrainSampler, uv).rgb;
-        case 5U: return Masks[5].Sample(TerrainSampler, uv).rgb;
+        case 0U: return Masks[0].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 1U: return Masks[1].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 2U: return Masks[2].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 3U: return Masks[3].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 4U: return Masks[4].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 5U: return Masks[5].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
         default: return float3(0.0F, 0.0F, 0.0F);
     }
 }
 
-float3 SampleDiffuse(
-    const uint layerIndex,
-    const float2 uv)
+float3 SampleDiffuse(uint layerIndex, float2 uv)
 {
     switch (layerIndex)
     {
-        case 0U:  return DiffuseLayers[0].Sample(TerrainSampler, uv).rgb;
-        case 1U:  return DiffuseLayers[1].Sample(TerrainSampler, uv).rgb;
-        case 2U:  return DiffuseLayers[2].Sample(TerrainSampler, uv).rgb;
-        case 3U:  return DiffuseLayers[3].Sample(TerrainSampler, uv).rgb;
-        case 4U:  return DiffuseLayers[4].Sample(TerrainSampler, uv).rgb;
-        case 5U:  return DiffuseLayers[5].Sample(TerrainSampler, uv).rgb;
-        case 6U:  return DiffuseLayers[6].Sample(TerrainSampler, uv).rgb;
-        case 7U:  return DiffuseLayers[7].Sample(TerrainSampler, uv).rgb;
-        case 8U:  return DiffuseLayers[8].Sample(TerrainSampler, uv).rgb;
-        case 9U:  return DiffuseLayers[9].Sample(TerrainSampler, uv).rgb;
-        case 10U: return DiffuseLayers[10].Sample(TerrainSampler, uv).rgb;
-        case 11U: return DiffuseLayers[11].Sample(TerrainSampler, uv).rgb;
-        case 12U: return DiffuseLayers[12].Sample(TerrainSampler, uv).rgb;
-        case 13U: return DiffuseLayers[13].Sample(TerrainSampler, uv).rgb;
-        case 14U: return DiffuseLayers[14].Sample(TerrainSampler, uv).rgb;
-        case 15U: return DiffuseLayers[15].Sample(TerrainSampler, uv).rgb;
-        case 16U: return DiffuseLayers[16].Sample(TerrainSampler, uv).rgb;
-        case 17U: return DiffuseLayers[17].Sample(TerrainSampler, uv).rgb;
+        case 0U:  return DiffuseLayers[0].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 1U:  return DiffuseLayers[1].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 2U:  return DiffuseLayers[2].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 3U:  return DiffuseLayers[3].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 4U:  return DiffuseLayers[4].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 5U:  return DiffuseLayers[5].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 6U:  return DiffuseLayers[6].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 7U:  return DiffuseLayers[7].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 8U:  return DiffuseLayers[8].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 9U:  return DiffuseLayers[9].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 10U: return DiffuseLayers[10].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 11U: return DiffuseLayers[11].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 12U: return DiffuseLayers[12].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 13U: return DiffuseLayers[13].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 14U: return DiffuseLayers[14].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 15U: return DiffuseLayers[15].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 16U: return DiffuseLayers[16].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 17U: return DiffuseLayers[17].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
         default:  return float3(0.08F, 0.08F, 0.08F);
     }
 }
 
-float3 SampleNormal(
-    const uint layerIndex,
-    const float2 uv)
+float3 SampleNormal(uint layerIndex, float2 uv)
 {
     switch (layerIndex)
     {
-        case 0U:  return NormalLayers[0].Sample(TerrainSampler, uv).xyz;
-        case 1U:  return NormalLayers[1].Sample(TerrainSampler, uv).xyz;
-        case 2U:  return NormalLayers[2].Sample(TerrainSampler, uv).xyz;
-        case 3U:  return NormalLayers[3].Sample(TerrainSampler, uv).xyz;
-        case 4U:  return NormalLayers[4].Sample(TerrainSampler, uv).xyz;
-        case 5U:  return NormalLayers[5].Sample(TerrainSampler, uv).xyz;
-        case 6U:  return NormalLayers[6].Sample(TerrainSampler, uv).xyz;
-        case 7U:  return NormalLayers[7].Sample(TerrainSampler, uv).xyz;
-        case 8U:  return NormalLayers[8].Sample(TerrainSampler, uv).xyz;
-        case 9U:  return NormalLayers[9].Sample(TerrainSampler, uv).xyz;
-        case 10U: return NormalLayers[10].Sample(TerrainSampler, uv).xyz;
-        case 11U: return NormalLayers[11].Sample(TerrainSampler, uv).xyz;
-        case 12U: return NormalLayers[12].Sample(TerrainSampler, uv).xyz;
-        case 13U: return NormalLayers[13].Sample(TerrainSampler, uv).xyz;
-        case 14U: return NormalLayers[14].Sample(TerrainSampler, uv).xyz;
-        case 15U: return NormalLayers[15].Sample(TerrainSampler, uv).xyz;
-        case 16U: return NormalLayers[16].Sample(TerrainSampler, uv).xyz;
-        case 17U: return NormalLayers[17].Sample(TerrainSampler, uv).xyz;
+        case 0U:  return NormalLayers[0].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 1U:  return NormalLayers[1].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 2U:  return NormalLayers[2].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 3U:  return NormalLayers[3].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 4U:  return NormalLayers[4].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 5U:  return NormalLayers[5].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 6U:  return NormalLayers[6].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 7U:  return NormalLayers[7].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 8U:  return NormalLayers[8].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 9U:  return NormalLayers[9].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 10U: return NormalLayers[10].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 11U: return NormalLayers[11].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 12U: return NormalLayers[12].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 13U: return NormalLayers[13].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 14U: return NormalLayers[14].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 15U: return NormalLayers[15].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 16U: return NormalLayers[16].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
+        case 17U: return NormalLayers[17].SampleLevel(TerrainSampler, uv, 0.0F).xyz;
         default:  return float3(0.5F, 0.5F, 1.0F);
     }
 }
