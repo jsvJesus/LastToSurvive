@@ -47,6 +47,7 @@ VSOut VSMain(VSIn input)
         normalize(mul(input.normal, (float3x3)World));
 
     output.uv = input.uv;
+
     return output;
 }
 
@@ -55,15 +56,94 @@ float2 GetLayerUv(
     const float2 terrainPosition)
 {
     const float2 size =
-        max(Placement[layerIndex].xy, float2(0.001F, 0.001F));
+        max(
+            Placement[layerIndex].xy,
+            float2(0.001F, 0.001F));
 
     return
-        (terrainPosition + Placement[layerIndex].zw) / size;
+        (terrainPosition + Placement[layerIndex].zw) /
+        size;
+}
+
+/*
+ * FXC не поддерживает произвольную индексацию Texture2D-массивов.
+ * Поэтому каждый resource индексируется литералом.
+ */
+float3 SampleMask(
+    const uint maskIndex,
+    const float2 uv)
+{
+    switch (maskIndex)
+    {
+        case 0U: return Masks[0].Sample(TerrainSampler, uv).rgb;
+        case 1U: return Masks[1].Sample(TerrainSampler, uv).rgb;
+        case 2U: return Masks[2].Sample(TerrainSampler, uv).rgb;
+        case 3U: return Masks[3].Sample(TerrainSampler, uv).rgb;
+        case 4U: return Masks[4].Sample(TerrainSampler, uv).rgb;
+        case 5U: return Masks[5].Sample(TerrainSampler, uv).rgb;
+        default: return float3(0.0F, 0.0F, 0.0F);
+    }
+}
+
+float3 SampleDiffuse(
+    const uint layerIndex,
+    const float2 uv)
+{
+    switch (layerIndex)
+    {
+        case 0U:  return DiffuseLayers[0].Sample(TerrainSampler, uv).rgb;
+        case 1U:  return DiffuseLayers[1].Sample(TerrainSampler, uv).rgb;
+        case 2U:  return DiffuseLayers[2].Sample(TerrainSampler, uv).rgb;
+        case 3U:  return DiffuseLayers[3].Sample(TerrainSampler, uv).rgb;
+        case 4U:  return DiffuseLayers[4].Sample(TerrainSampler, uv).rgb;
+        case 5U:  return DiffuseLayers[5].Sample(TerrainSampler, uv).rgb;
+        case 6U:  return DiffuseLayers[6].Sample(TerrainSampler, uv).rgb;
+        case 7U:  return DiffuseLayers[7].Sample(TerrainSampler, uv).rgb;
+        case 8U:  return DiffuseLayers[8].Sample(TerrainSampler, uv).rgb;
+        case 9U:  return DiffuseLayers[9].Sample(TerrainSampler, uv).rgb;
+        case 10U: return DiffuseLayers[10].Sample(TerrainSampler, uv).rgb;
+        case 11U: return DiffuseLayers[11].Sample(TerrainSampler, uv).rgb;
+        case 12U: return DiffuseLayers[12].Sample(TerrainSampler, uv).rgb;
+        case 13U: return DiffuseLayers[13].Sample(TerrainSampler, uv).rgb;
+        case 14U: return DiffuseLayers[14].Sample(TerrainSampler, uv).rgb;
+        case 15U: return DiffuseLayers[15].Sample(TerrainSampler, uv).rgb;
+        case 16U: return DiffuseLayers[16].Sample(TerrainSampler, uv).rgb;
+        case 17U: return DiffuseLayers[17].Sample(TerrainSampler, uv).rgb;
+        default:  return float3(0.08F, 0.08F, 0.08F);
+    }
+}
+
+float3 SampleNormal(
+    const uint layerIndex,
+    const float2 uv)
+{
+    switch (layerIndex)
+    {
+        case 0U:  return NormalLayers[0].Sample(TerrainSampler, uv).xyz;
+        case 1U:  return NormalLayers[1].Sample(TerrainSampler, uv).xyz;
+        case 2U:  return NormalLayers[2].Sample(TerrainSampler, uv).xyz;
+        case 3U:  return NormalLayers[3].Sample(TerrainSampler, uv).xyz;
+        case 4U:  return NormalLayers[4].Sample(TerrainSampler, uv).xyz;
+        case 5U:  return NormalLayers[5].Sample(TerrainSampler, uv).xyz;
+        case 6U:  return NormalLayers[6].Sample(TerrainSampler, uv).xyz;
+        case 7U:  return NormalLayers[7].Sample(TerrainSampler, uv).xyz;
+        case 8U:  return NormalLayers[8].Sample(TerrainSampler, uv).xyz;
+        case 9U:  return NormalLayers[9].Sample(TerrainSampler, uv).xyz;
+        case 10U: return NormalLayers[10].Sample(TerrainSampler, uv).xyz;
+        case 11U: return NormalLayers[11].Sample(TerrainSampler, uv).xyz;
+        case 12U: return NormalLayers[12].Sample(TerrainSampler, uv).xyz;
+        case 13U: return NormalLayers[13].Sample(TerrainSampler, uv).xyz;
+        case 14U: return NormalLayers[14].Sample(TerrainSampler, uv).xyz;
+        case 15U: return NormalLayers[15].Sample(TerrainSampler, uv).xyz;
+        case 16U: return NormalLayers[16].Sample(TerrainSampler, uv).xyz;
+        case 17U: return NormalLayers[17].Sample(TerrainSampler, uv).xyz;
+        default:  return float3(0.5F, 0.5F, 1.0F);
+    }
 }
 
 float GetLayerWeight(
     const uint layerIndex,
-    const float3 maskWeights[6])
+    const float2 terrainUv)
 {
     if (layerIndex == 0U)
     {
@@ -72,9 +152,21 @@ float GetLayerWeight(
 
     const uint paintedIndex = layerIndex - 1U;
     const uint maskIndex = paintedIndex / 3U;
-    const uint channel = paintedIndex % 3U;
+    const uint channelIndex = paintedIndex % 3U;
 
-    return maskWeights[maskIndex][channel];
+    const float3 mask = SampleMask(maskIndex, terrainUv);
+
+    if (channelIndex == 0U)
+    {
+        return mask.r;
+    }
+
+    if (channelIndex == 1U)
+    {
+        return mask.g;
+    }
+
+    return mask.b;
 }
 
 float3 ConvertNormalToWorld(
@@ -83,7 +175,8 @@ float3 ConvertNormalToWorld(
 {
     float3 tangent =
         float3(1.0F, 0.0F, 0.0F) -
-        geometryNormal * dot(
+        geometryNormal *
+        dot(
             geometryNormal,
             float3(1.0F, 0.0F, 0.0F));
 
@@ -91,7 +184,8 @@ float3 ConvertNormalToWorld(
     {
         tangent =
             float3(0.0F, 0.0F, 1.0F) -
-            geometryNormal * dot(
+            geometryNormal *
+            dot(
                 geometryNormal,
                 float3(0.0F, 0.0F, 1.0F));
     }
@@ -109,41 +203,32 @@ float3 ConvertNormalToWorld(
 
 float4 PSMain(VSOut input) : SV_TARGET
 {
-    const uint layerCount = min((uint)TerrainInfo.z, 18U);
+    const uint layerCount =
+        min((uint)TerrainInfo.z, 18U);
 
     if (layerCount == 0U)
     {
-        return float4(0.08F, 0.08F, 0.08F, 1.0F);
+        return float4(
+            0.08F,
+            0.08F,
+            0.08F,
+            1.0F);
     }
 
-    float3 maskWeights[6];
+    const float2 terrainPosition =
+        input.uv * TerrainInfo.xy;
 
-    [unroll]
-    for (uint maskIndex = 0U; maskIndex < 6U; ++maskIndex)
-    {
-        maskWeights[maskIndex] =
-            Masks[maskIndex].Sample(TerrainSampler, input.uv).rgb;
-    }
-
-    const float2 terrainPosition = input.uv * TerrainInfo.xy;
     float paintedVisibleWeight = 0.0F;
 
-    /*
-     * Считаем общий вес видимых слоёв,
-     * нарисованных поверх Base Layer.
-     */
-    [unroll]
+    [loop]
     for (uint weightLayerIndex = 1U;
-         weightLayerIndex < 18U;
+         weightLayerIndex < layerCount;
          ++weightLayerIndex)
     {
-        if (weightLayerIndex >= layerCount)
-        {
-            continue;
-        }
-
         paintedVisibleWeight +=
-            GetLayerWeight(weightLayerIndex, maskWeights) *
+            GetLayerWeight(
+                weightLayerIndex,
+                input.uv) *
             LayerParameters[weightLayerIndex].x;
     }
 
@@ -151,15 +236,16 @@ float4 PSMain(VSOut input) : SV_TARGET
         saturate(1.0F - paintedVisibleWeight) *
         LayerParameters[0].x;
 
-    const float2 baseUv = GetLayerUv(0U, terrainPosition);
+    const float2 baseUv =
+        GetLayerUv(0U, terrainPosition);
 
     float3 color =
-        DiffuseLayers[0].Sample(TerrainSampler, baseUv).rgb *
+        SampleDiffuse(0U, baseUv) *
         baseWeight;
 
     float3 tangentNormal =
         (
-            NormalLayers[0].Sample(TerrainSampler, baseUv).xyz *
+            SampleNormal(0U, baseUv) *
             2.0F -
             1.0F
         ) *
@@ -167,24 +253,15 @@ float4 PSMain(VSOut input) : SV_TARGET
 
     float totalWeight = baseWeight;
 
-    /*
-     * Смешиваем нарисованные material layers.
-     *
-     * Имя переменной отличается от первого цикла,
-     * чтобы FXC не считал её повторным объявлением.
-     */
-    [unroll]
+    [loop]
     for (uint blendLayerIndex = 1U;
-         blendLayerIndex < 18U;
+         blendLayerIndex < layerCount;
          ++blendLayerIndex)
     {
-        if (blendLayerIndex >= layerCount)
-        {
-            continue;
-        }
-
         const float weight =
-            GetLayerWeight(blendLayerIndex, maskWeights) *
+            GetLayerWeight(
+                blendLayerIndex,
+                input.uv) *
             LayerParameters[blendLayerIndex].x;
 
         if (weight <= 0.00001F)
@@ -193,19 +270,21 @@ float4 PSMain(VSOut input) : SV_TARGET
         }
 
         const float2 layerUv =
-            GetLayerUv(blendLayerIndex, terrainPosition);
+            GetLayerUv(
+                blendLayerIndex,
+                terrainPosition);
 
         color +=
-            DiffuseLayers[blendLayerIndex].Sample(
-                TerrainSampler,
-                layerUv).rgb *
+            SampleDiffuse(
+                blendLayerIndex,
+                layerUv) *
             weight;
 
         tangentNormal +=
             (
-                NormalLayers[blendLayerIndex].Sample(
-                    TerrainSampler,
-                    layerUv).xyz *
+                SampleNormal(
+                    blendLayerIndex,
+                    layerUv) *
                 2.0F -
                 1.0F
             ) *
@@ -216,13 +295,20 @@ float4 PSMain(VSOut input) : SV_TARGET
 
     if (totalWeight <= 0.0001F)
     {
-        return float4(0.08F, 0.08F, 0.08F, 1.0F);
+        return float4(
+            0.08F,
+            0.08F,
+            0.08F,
+            1.0F);
     }
 
     color /= totalWeight;
-    tangentNormal = normalize(tangentNormal / totalWeight);
 
-    const float3 geometryNormal = normalize(input.normal);
+    tangentNormal =
+        normalize(tangentNormal / totalWeight);
+
+    const float3 geometryNormal =
+        normalize(input.normal);
 
     const float3 finalNormal =
         ConvertNormalToWorld(
@@ -230,12 +316,21 @@ float4 PSMain(VSOut input) : SV_TARGET
             geometryNormal);
 
     const float3 lightDirection =
-        normalize(float3(-0.35F, 0.85F, -0.40F));
+        normalize(
+            float3(
+                -0.35F,
+                0.85F,
+                -0.40F));
 
     const float lighting =
-        saturate(dot(finalNormal, lightDirection)) *
+        saturate(
+            dot(
+                finalNormal,
+                lightDirection)) *
         0.72F +
         0.28F;
 
-    return float4(color * lighting, 1.0F);
+    return float4(
+        color * lighting,
+        1.0F);
 }
