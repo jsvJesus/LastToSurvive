@@ -532,6 +532,9 @@ namespace lts::editor
 
         analysisAttempted_ = false;
         analysisSucceeded_ = false;
+
+        usingEmbeddedWeights_ = false;
+        vertexWeightCountMismatch_ = false;
     }
 
     void WarZImporterWindow::AnalyzeSelection() noexcept
@@ -544,7 +547,7 @@ namespace lts::editor
                 static_cast<int>(packages_.size()))
         {
             analysisStatus_ =
-                "No skeletal package is selected.";
+                "No asset package is selected.";
 
             return;
         }
@@ -564,14 +567,6 @@ namespace lts::editor
                 static_cast<std::size_t>(
                     selectedPackage_)];
 
-        if (package.wgtPath.empty())
-        {
-            analysisStatus_ =
-                "The selected package has no .wgt file.";
-
-            return;
-        }
-
         const std::filesystem::path& skeletonPath =
             skeletons_[
                 static_cast<std::size_t>(
@@ -587,33 +582,98 @@ namespace lts::editor
             return;
         }
 
-        if (!LegacySkeletalReader::ReadWeights(
-                package.wgtPath,
+        if (!LegacyMeshReader::Read(
+                package.scbPath,
+                package.scoPath,
                 &selectedSkeletonData_,
-                selectedWeightData_))
+                selectedMeshData_))
         {
             analysisStatus_ =
-                selectedWeightData_.error;
+                selectedMeshData_.error;
 
             return;
         }
 
-        analysisSucceeded_ = true;
+        std::string externalWeightError;
 
-        const bool hasWarnings =
+        if (!package.wgtPath.empty())
+        {
+            if (!LegacySkeletalReader::ReadWeights(
+                    package.wgtPath,
+                    &selectedSkeletonData_,
+                    selectedWeightData_))
+            {
+                externalWeightError =
+                    selectedWeightData_.error;
+
+                selectedWeightData_ = {};
+            }
+        }
+
+        if (selectedWeightData_.vertices.empty())
+        {
+            if (selectedMeshData_.hasEmbeddedWeights)
+            {
+                selectedWeightData_ =
+                    selectedMeshData_.embeddedWeights;
+
+                usingEmbeddedWeights_ = true;
+            }
+            else
+            {
+                analysisStatus_ =
+                    externalWeightError.empty()
+                        ? "Neither external WGT nor embedded SCB weights were found."
+                        : externalWeightError;
+
+                return;
+            }
+        }
+
+        vertexWeightCountMismatch_ =
+            selectedMeshData_.vertices.size() !=
+            selectedWeightData_.vertices.size();
+
+        const bool meshWarnings =
+            selectedMeshData_.invalidIndexCount != 0U ||
+            selectedMeshData_.degenerateTriangleCount != 0U ||
+            selectedMeshData_.nonFiniteVertexCount != 0U ||
+            selectedMeshData_.uvConflictCount != 0U ||
+            selectedMeshData_.invalidMaterialRangeCount != 0U ||
+            selectedMeshData_.indexCountNotTriangleList ||
+            selectedMeshData_.
+                embeddedWeightVertexCountMismatch ||
+            selectedMeshData_.usedScoFallback;
+
+        const bool skeletonWarnings =
             selectedSkeletonData_.rootCount != 1U ||
             selectedSkeletonData_.emptyNameCount != 0U ||
             selectedSkeletonData_.duplicateNameCount != 0U ||
-            selectedSkeletonData_.invalidParentCount != 0U ||
+            selectedSkeletonData_.invalidParentCount != 0U;
+
+        const bool weightWarnings =
             selectedWeightData_.zeroWeightVertexCount != 0U ||
             selectedWeightData_.nonNormalizedVertexCount != 0U ||
             selectedWeightData_.invalidWeightValueCount != 0U ||
             selectedWeightData_.invalidBoneReferenceCount != 0U ||
-            selectedWeightData_.skeletonIdMismatch;
+            selectedWeightData_.skeletonIdMismatch ||
+            vertexWeightCountMismatch_;
 
-        analysisStatus_ = hasWarnings
-            ? "Analysis completed with validation warnings."
-            : "Skeleton and skin weights are valid.";
+        analysisSucceeded_ = true;
+
+        analysisStatus_ =
+            meshWarnings ||
+            skeletonWarnings ||
+            weightWarnings
+                ? "Geometry, skeleton and weights were loaded with warnings."
+                : "Geometry, skeleton and weights are valid.";
+
+        if (!externalWeightError.empty() &&
+            usingEmbeddedWeights_)
+        {
+            analysisStatus_ +=
+                " External WGT failed; embedded SCB weights are used.";
+        }
     }
 
     void WarZImporterWindow::ScanSource() noexcept
@@ -1133,7 +1193,7 @@ namespace lts::editor
 
                     if (package.wgtPath.empty())
                     {
-                        label += "  [missing WGT]";
+                        label += "  [no external WGT]";
                     }
 
                     const bool selected =
@@ -1344,6 +1404,219 @@ namespace lts::editor
 
                 if (analysisSucceeded_)
                 {
+                    const char* meshFormatName = "Unknown";
+
+                    switch (selectedMeshData_.format)
+                    {
+                        case LegacyMeshFormat::Scb:
+                            meshFormatName = "SCB";
+                            break;
+
+                        case LegacyMeshFormat::Sco:
+                            meshFormatName = "SCO";
+                            break;
+
+                        case LegacyMeshFormat::Unknown:
+                            break;
+                    }
+
+                    ImGui::Text(
+                        "Geometry Source: %s",
+                        meshFormatName);
+
+                    ImGui::SameLine();
+
+                    ImGui::TextDisabled(
+                        "%s",
+                        PathToUtf8(
+                            selectedMeshData_.sourcePath).
+                            c_str());
+
+                    ImGui::Text(
+                        "Weight Source: %s",
+                        usingEmbeddedWeights_
+                            ? "Embedded SCB"
+                            : "External WGT");
+
+                    if (!selectedMeshData_.warning.empty())
+                    {
+                        ImGui::TextColored(
+                            ImVec4(
+                                0.95F,
+                                0.65F,
+                                0.20F,
+                                1.0F),
+                            "%s",
+                            selectedMeshData_.warning.c_str());
+                    }
+
+                    if (ImGui::BeginTable(
+                            "LegacyMeshAnalysis",
+                            2,
+                            ImGuiTableFlags_Borders |
+                                ImGuiTableFlags_RowBg |
+                                ImGuiTableFlags_SizingStretchProp))
+                    {
+                        ImGui::TableSetupColumn("Mesh Property");
+                        ImGui::TableSetupColumn("Value");
+                        ImGui::TableHeadersRow();
+
+                        const auto drawMeshRow =
+                            [](const char* property,
+                               const std::string& value)
+                        {
+                            ImGui::TableNextRow();
+
+                            ImGui::TableNextColumn();
+                            ImGui::TextUnformatted(property);
+
+                            ImGui::TableNextColumn();
+                            ImGui::TextUnformatted(value.c_str());
+                        };
+
+                        drawMeshRow(
+                            "Name",
+                            selectedMeshData_.name.empty()
+                                ? "<unnamed>"
+                                : selectedMeshData_.name);
+
+                        drawMeshRow(
+                            "Vertices",
+                            std::to_string(
+                                selectedMeshData_.vertices.size()));
+
+                        drawMeshRow(
+                            "Weight Vertices",
+                            std::to_string(
+                                selectedWeightData_.vertices.size()));
+
+                        drawMeshRow(
+                            "Indices",
+                            std::to_string(
+                                selectedMeshData_.indices.size()));
+
+                        drawMeshRow(
+                            "Triangles",
+                            std::to_string(
+                                selectedMeshData_.indices.size() /
+                                3U));
+
+                        drawMeshRow(
+                            "Material Chunks",
+                            std::to_string(
+                                selectedMeshData_.
+                                    materialChunks.size()));
+
+                        drawMeshRow(
+                            "Invalid Indices",
+                            std::to_string(
+                                selectedMeshData_.
+                                    invalidIndexCount));
+
+                        drawMeshRow(
+                            "Degenerate Triangles",
+                            std::to_string(
+                                selectedMeshData_.
+                                    degenerateTriangleCount));
+
+                        drawMeshRow(
+                            "Non-finite Vertices",
+                            std::to_string(
+                                selectedMeshData_.
+                                    nonFiniteVertexCount));
+
+                        drawMeshRow(
+                            "SCO UV Conflicts",
+                            std::to_string(
+                                selectedMeshData_.
+                                    uvConflictCount));
+
+                        drawMeshRow(
+                            "Invalid Material Ranges",
+                            std::to_string(
+                                selectedMeshData_.
+                                    invalidMaterialRangeCount));
+
+                        drawMeshRow(
+                            "Vertex Colors",
+                            selectedMeshData_.hasVertexColors
+                                ? "Yes"
+                                : "No");
+
+                        drawMeshRow(
+                            "Embedded Weights",
+                            selectedMeshData_.hasEmbeddedWeights
+                                ? "Yes"
+                                : "No");
+
+                        drawMeshRow(
+                            "Trailing Bytes",
+                            std::to_string(
+                                selectedMeshData_.
+                                    trailingByteCount));
+
+                        ImGui::EndTable();
+                    }
+
+                    if (vertexWeightCountMismatch_)
+                    {
+                        ImGui::TextColored(
+                            ImVec4(
+                                0.95F,
+                                0.30F,
+                                0.22F,
+                                1.0F),
+                            "Error: mesh vertex count does not match weight vertex count.");
+                    }
+
+                    if (selectedMeshData_.
+                            embeddedWeightVertexCountMismatch)
+                    {
+                        ImGui::TextColored(
+                            ImVec4(
+                                0.95F,
+                                0.30F,
+                                0.22F,
+                                1.0F),
+                            "Error: embedded SCB weight count does not match mesh vertices.");
+                    }
+
+                    if (ImGui::TreeNode(
+                            "Material Slots"))
+                    {
+                        if (selectedMeshData_.
+                                materialChunks.empty())
+                        {
+                            ImGui::TextDisabled(
+                                "No material chunks.");
+                        }
+
+                        for (std::size_t chunkIndex = 0U;
+                             chunkIndex <
+                                 selectedMeshData_.
+                                     materialChunks.size();
+                             ++chunkIndex)
+                        {
+                            const LegacyMaterialChunk& chunk =
+                                selectedMeshData_.
+                                    materialChunks[chunkIndex];
+
+                            ImGui::Text(
+                                "%llu: %s | First=%u | Count=%u",
+                                static_cast<unsigned long long>(
+                                    chunkIndex),
+                                chunk.materialName.empty()
+                                    ? "<unnamed>"
+                                    : chunk.materialName.c_str(),
+                                chunk.firstIndex,
+                                chunk.indexCount);
+                        }
+
+                        ImGui::TreePop();
+                    }
+
+                    ImGui::Spacing();
+                    
                     if (ImGui::BeginTable(
                             "LegacySkeletalAnalysis",
                             3,

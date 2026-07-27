@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/Tools/Import/LegacySkeletalReader.h"
+#include "Editor/Tools/Import/LegacyMeshReader.h"
 
 #include <array>
 #include <cstddef>
@@ -55,6 +55,7 @@ namespace lts::editor
 
         LegacySkeletonData selectedSkeletonData_;
         LegacyWeightData selectedWeightData_;
+        LegacyMeshData selectedMeshData_;
 
         std::array<char, 256U> packageFilter_{};
 
@@ -83,5 +84,8 @@ namespace lts::editor
         bool analysisSucceeded_ = false;
 
         bool open_ = false;
+
+        bool usingEmbeddedWeights_ = false;
+        bool vertexWeightCountMismatch_ = false;
     };
 }
