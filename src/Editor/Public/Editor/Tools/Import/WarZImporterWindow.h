@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/Tools/Import/LegacyMeshReader.h"
+#include "Editor/Tools/Import/LegacyMeshPreview.h"
 
 #include <array>
 #include <cstddef>
@@ -56,6 +56,7 @@ namespace lts::editor
         LegacySkeletonData selectedSkeletonData_;
         LegacyWeightData selectedWeightData_;
         LegacyMeshData selectedMeshData_;
+        LegacyMeshPreview meshPreview_;
 
         std::array<char, 256U> packageFilter_{};
 
@@ -83,9 +84,13 @@ namespace lts::editor
         bool analysisAttempted_ = false;
         bool analysisSucceeded_ = false;
 
-        bool open_ = false;
-
         bool usingEmbeddedWeights_ = false;
         bool vertexWeightCountMismatch_ = false;
+
+        bool showLegacyPreview_ = false;
+        bool previewShowSkeleton_ = true;
+        bool previewWireframe_ = false;
+
+        bool open_ = false;
     };
 }

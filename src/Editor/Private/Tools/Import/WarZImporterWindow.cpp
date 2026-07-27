@@ -527,6 +527,9 @@ namespace lts::editor
     {
         selectedSkeletonData_ = {};
         selectedWeightData_ = {};
+        selectedMeshData_ = {};
+
+        meshPreview_.Reset();
 
         analysisStatus_.clear();
 
@@ -535,6 +538,8 @@ namespace lts::editor
 
         usingEmbeddedWeights_ = false;
         vertexWeightCountMismatch_ = false;
+
+        showLegacyPreview_ = false;
     }
 
     void WarZImporterWindow::AnalyzeSelection() noexcept
@@ -1865,13 +1870,36 @@ namespace lts::editor
 
                 ImGui::Spacing();
 
-                ImGui::BeginDisabled();
+                const bool canPreview = analysisSucceeded_ && !selectedMeshData_.vertices.empty() && !selectedMeshData_.indices.empty();
+                if (!canPreview)
+                {
+                    ImGui::BeginDisabled();
+                }
 
-                ImGui::Button(
-                    "Preview Legacy",
-                    ImVec2(145.0F, 32.0F));
+                if (ImGui::Button(
+                        showLegacyPreview_
+                            ? "Hide Preview"
+                            : "Preview Legacy",
+                        ImVec2(145.0F, 32.0F)))
+                {
+                    showLegacyPreview_ =
+                        !showLegacyPreview_;
+
+                    if (showLegacyPreview_)
+                    {
+                        meshPreview_.Frame(
+                            selectedMeshData_);
+                    }
+                }
+
+                if (!canPreview)
+                {
+                    ImGui::EndDisabled();
+                }
 
                 ImGui::SameLine();
+
+                ImGui::BeginDisabled();
 
                 ImGui::Button(
                     "Convert to LTS",
@@ -1884,6 +1912,47 @@ namespace lts::editor
                     ImVec2(175.0F, 32.0F));
 
                 ImGui::EndDisabled();
+
+                if (showLegacyPreview_ &&
+                    canPreview)
+                {
+                    ImGui::SeparatorText(
+                        "3D Bind Pose Preview");
+
+                    if (ImGui::Button("Frame"))
+                    {
+                        meshPreview_.Frame(
+                            selectedMeshData_);
+                    }
+
+                    ImGui::SameLine();
+
+                    ImGui::Checkbox(
+                        "Skeleton",
+                        &previewShowSkeleton_);
+
+                    ImGui::SameLine();
+
+                    ImGui::Checkbox(
+                        "Wireframe",
+                        &previewWireframe_);
+
+                    ImGui::TextDisabled(
+                        "Material slots use preview colors. DDS textures will be connected next.");
+
+                    const float previewWidth =
+                        (std::max)(
+                            ImGui::GetContentRegionAvail().x,
+                            320.0F);
+
+                    meshPreview_.Draw(
+                        selectedMeshData_,
+                        &selectedSkeletonData_,
+                        previewWidth,
+                        430.0F,
+                        previewShowSkeleton_,
+                        previewWireframe_);
+                }
 
                 ImGui::TextDisabled(
                     "Source scanner is ready. Legacy mesh parsing and conversion are not connected yet.");
