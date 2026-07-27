@@ -1,6 +1,6 @@
 cbuffer PreviewConstants : register(b0)
 {
-    float4x4 ViewProjection;
+    row_major float4x4 ViewProjection;
 
     float4 CameraPosition;
     float4 LightDirectionIntensity;
@@ -41,11 +41,7 @@ VSOutput VSMain(VSInput input)
 {
     VSOutput output;
 
-    output.position =
-        mul(
-            ViewProjection,
-            float4(input.position, 1.0));
-
+    output.position = mul(float4(input.position, 1.0F), ViewProjection);
     output.worldPosition = input.position;
     output.normal = normalize(input.normal);
     output.tangent = input.tangent;

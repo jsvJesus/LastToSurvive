@@ -2007,10 +2007,7 @@ namespace lts::editor
 
             PreviewConstants constants{};
 
-            DirectX::XMStoreFloat4x4(
-                &constants.viewProjection,
-                DirectX::XMMatrixTranspose(
-                    viewProjection));
+            DirectX::XMStoreFloat4x4(&constants.viewProjection, viewProjection);
 
             constants.cameraPosition =
             {
