@@ -50,12 +50,24 @@ namespace lts::editor
         void AnalyzeSelection() noexcept;
         void DrawMaterialAnalysis() noexcept;
 
+        void ResetAnimation(
+            bool clearSelection) noexcept;
+
+        void LoadSelectedAnimation() noexcept;
+        void UpdateAnimationPose() noexcept;
+        void UpdateAnimationPlayback() noexcept;
+        void DrawAnimationControls() noexcept;
+
         [[nodiscard]]
         bool SelectSourceFolder() noexcept;
 
         [[nodiscard]]
         bool MatchesFilter(
             const SourcePackage& package) const noexcept;
+
+        [[nodiscard]]
+        bool MatchesAnimationFilter(
+            const std::filesystem::path& path) const noexcept;
 
         std::filesystem::path sourceRoot_;
 
@@ -66,22 +78,32 @@ namespace lts::editor
         LegacySkeletonData selectedSkeletonData_;
         LegacyWeightData selectedWeightData_;
         LegacyMeshData selectedMeshData_;
-        LegacyMeshPreview meshPreview_;
         LegacyMaterialSet selectedMaterialSet_;
 
+        LegacyAnimationData selectedAnimationData_;
+        LegacyAnimationPose selectedAnimationPose_;
+
+        LegacyMeshPreview meshPreview_;
+
         std::array<char, 256U> packageFilter_{};
+        std::array<char, 256U> animationFilter_{};
 
         std::string status_;
         std::string analysisStatus_;
+        std::string animationStatus_;
 
         int selectedPackage_ = -1;
         int selectedSkeleton_ = -1;
+        int selectedAnimation_ = -1;
 
         std::size_t scbCount_ = 0U;
         std::size_t scoCount_ = 0U;
         std::size_t wgtCount_ = 0U;
         std::size_t materialCount_ = 0U;
         std::size_t textureCount_ = 0U;
+
+        float animationFrame_ = 0.0F;
+        float animationPlaybackFps_ = 30.0F;
 
         bool importSkeletalMesh_ = true;
         bool importSkeleton_ = true;
@@ -97,6 +119,12 @@ namespace lts::editor
 
         bool usingEmbeddedWeights_ = false;
         bool vertexWeightCountMismatch_ = false;
+
+        bool animationLoaded_ = false;
+        bool animationCompatible_ = false;
+        bool animationPlaying_ = false;
+        bool animationLoop_ = true;
+        bool animationLockRoot_ = true;
 
         bool showLegacyPreview_ = false;
         bool previewShowSkeleton_ = true;

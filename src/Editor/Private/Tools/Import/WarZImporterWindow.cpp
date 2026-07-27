@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <utility>
 #include <cstdio>
+#include <cmath>
 
 namespace lts::editor
 {
@@ -523,12 +524,218 @@ namespace lts::editor
             std::string::npos;
     }
 
+    void WarZImporterWindow::ResetAnimation(
+    const bool clearSelection) noexcept
+    {
+        selectedAnimationData_ = {};
+        selectedAnimationPose_ = {};
+
+        animationStatus_.clear();
+
+        animationFrame_ = 0.0F;
+        animationPlaybackFps_ = 30.0F;
+
+        animationLoaded_ = false;
+        animationCompatible_ = false;
+        animationPlaying_ = false;
+
+        if (clearSelection)
+        {
+            selectedAnimation_ = -1;
+        }
+    }
+
+    bool WarZImporterWindow::MatchesAnimationFilter(
+        const std::filesystem::path& path) const noexcept
+    {
+        if (animationFilter_[0] == '\0')
+        {
+            return true;
+        }
+
+        const std::filesystem::path animationsRoot =
+            sourceRoot_ / L"Animations";
+
+        const std::string animationName =
+            ToLowerAscii(
+                PathToUtf8(
+                    path.lexically_relative(
+                        animationsRoot)));
+
+        const std::string filter =
+            ToLowerAscii(
+                animationFilter_.data());
+
+        return
+            animationName.find(filter) !=
+            std::string::npos;
+    }
+
+    void WarZImporterWindow::LoadSelectedAnimation() noexcept
+    {
+        ResetAnimation(false);
+
+        if (!analysisSucceeded_)
+        {
+            animationStatus_ =
+                "Analyze the selected mesh and skeleton first.";
+
+            return;
+        }
+
+        if (selectedAnimation_ < 0 ||
+            selectedAnimation_ >=
+                static_cast<int>(
+                    animations_.size()))
+        {
+            animationStatus_ =
+                "No animation is selected.";
+
+            return;
+        }
+
+        if (!LegacyAnimationReader::Read(
+                animations_[
+                    static_cast<std::size_t>(
+                        selectedAnimation_)],
+                &selectedSkeletonData_,
+                selectedAnimationData_))
+        {
+            animationStatus_ =
+                selectedAnimationData_.error;
+
+            return;
+        }
+
+        animationLoaded_ = true;
+
+        animationCompatible_ =
+            selectedAnimationData_.IsCompatible() &&
+            selectedSkeletonData_.bones.size() <=
+                LegacyAnimationMaximumBones;
+
+        animationPlaybackFps_ =
+            selectedAnimationData_.frameRate;
+
+        if (!animationCompatible_)
+        {
+            if (selectedAnimationData_.
+                    skeletonIdMismatch)
+            {
+                animationStatus_ =
+                    "Animation Skeleton ID does not match the selected SKL.";
+            }
+            else if (selectedAnimationData_.
+                         mappedTrackCount == 0U)
+            {
+                animationStatus_ =
+                    "Animation contains no tracks for the selected skeleton.";
+            }
+            else
+            {
+                animationStatus_ =
+                    "Animation is not compatible with the preview skeleton.";
+            }
+
+            return;
+        }
+
+        animationStatus_ =
+            selectedAnimationData_.
+                missingBoneTrackCount != 0U
+                    ? "Animation loaded with unmapped tracks."
+                    : "Animation is compatible with the selected skeleton.";
+
+        UpdateAnimationPose();
+    }
+
+    void WarZImporterWindow::UpdateAnimationPose() noexcept
+    {
+        if (!animationLoaded_ ||
+            !animationCompatible_)
+        {
+            selectedAnimationPose_ = {};
+            return;
+        }
+
+        std::string error;
+
+        if (!LegacyAnimationReader::Sample(
+                selectedAnimationData_,
+                selectedSkeletonData_,
+                selectedMeshData_.pivot,
+                animationFrame_,
+                animationLoop_,
+                animationLockRoot_,
+                selectedAnimationPose_,
+                error))
+        {
+            animationCompatible_ = false;
+            animationPlaying_ = false;
+
+            selectedAnimationPose_ = {};
+
+            animationStatus_ =
+                error.empty()
+                    ? "Failed to sample animation pose."
+                    : error;
+        }
+    }
+
+    void WarZImporterWindow::
+        UpdateAnimationPlayback() noexcept
+    {
+        if (!animationPlaying_ ||
+            !animationLoaded_ ||
+            !animationCompatible_ ||
+            selectedAnimationData_.frameCount <= 1U)
+        {
+            return;
+        }
+
+        const float deltaSeconds =
+            std::clamp(
+                ImGui::GetIO().DeltaTime,
+                0.0F,
+                0.1F);
+
+        animationFrame_ +=
+            deltaSeconds *
+            animationPlaybackFps_;
+
+        const float finalFrame =
+            static_cast<float>(
+                selectedAnimationData_.
+                    frameCount -
+                1U);
+
+        if (animationLoop_)
+        {
+            if (finalFrame > 0.0F &&
+                animationFrame_ >= finalFrame)
+            {
+                animationFrame_ =
+                    std::fmod(
+                        animationFrame_,
+                        finalFrame);
+            }
+        }
+        else if (animationFrame_ >= finalFrame)
+        {
+            animationFrame_ = finalFrame;
+            animationPlaying_ = false;
+        }
+
+        UpdateAnimationPose();
+    }
+
     void WarZImporterWindow::ResetAnalysis() noexcept
     {
         selectedSkeletonData_ = {};
         selectedWeightData_ = {};
         selectedMeshData_ = {};
         selectedMaterialSet_ = {};
+        ResetAnimation(false);
 
         meshPreview_.Reset();
 
@@ -714,6 +921,11 @@ namespace lts::editor
             analysisStatus_ +=
                 " " +
                 materialAnalysisError;
+        }
+
+        if (selectedAnimation_ >= 0 && selectedAnimation_ <static_cast<int>(animations_.size()))
+        {
+            LoadSelectedAnimation();
         }
     }
 
@@ -972,6 +1184,370 @@ namespace lts::editor
         }
     }
 
+    void WarZImporterWindow::DrawAnimationControls() noexcept
+    {
+        ImGui::SeparatorText("Animation Preview");
+
+        ImGui::InputTextWithHint(
+            "##WarZAnimationFilter",
+            "Filter animations...",
+            animationFilter_.data(),
+            animationFilter_.size());
+
+        const std::filesystem::path animationsRoot =
+            sourceRoot_ / L"Animations";
+
+        std::string selectedLabel =
+            "<select WarZ animation>";
+
+        if (selectedAnimation_ >= 0 &&
+            selectedAnimation_ <
+                static_cast<int>(
+                    animations_.size()))
+        {
+            selectedLabel =
+                PathToUtf8(
+                    animations_[
+                        static_cast<std::size_t>(
+                            selectedAnimation_)].
+                        lexically_relative(
+                            animationsRoot));
+        }
+
+        if (ImGui::BeginCombo(
+                "Animation",
+                selectedLabel.c_str()))
+        {
+            for (std::size_t index = 0U;
+                 index < animations_.size();
+                 ++index)
+            {
+                if (!MatchesAnimationFilter(
+                        animations_[index]))
+                {
+                    continue;
+                }
+
+                const std::string label =
+                    PathToUtf8(
+                        animations_[index].
+                            lexically_relative(
+                                animationsRoot));
+
+                const bool selected =
+                    selectedAnimation_ ==
+                    static_cast<int>(index);
+
+                if (ImGui::Selectable(
+                        label.c_str(),
+                        selected))
+                {
+                    selectedAnimation_ =
+                        static_cast<int>(index);
+
+                    LoadSelectedAnimation();
+                }
+
+                if (selected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+
+            ImGui::EndCombo();
+        }
+
+        if (selectedAnimation_ < 0)
+        {
+            ImGui::TextDisabled(
+                "Select an animation from bin/Data/Animations.");
+
+            return;
+        }
+
+        if (!animationLoaded_)
+        {
+            if (ImGui::Button("Load Animation"))
+            {
+                LoadSelectedAnimation();
+            }
+        }
+
+        if (!animationStatus_.empty())
+        {
+            const ImVec4 color =
+                animationCompatible_
+                    ? ImVec4(
+                        0.35F,
+                        0.85F,
+                        0.45F,
+                        1.0F)
+                    : ImVec4(
+                        0.95F,
+                        0.45F,
+                        0.25F,
+                        1.0F);
+
+            ImGui::TextColored(
+                color,
+                "%s",
+                animationStatus_.c_str());
+        }
+
+        if (!animationLoaded_)
+        {
+            return;
+        }
+
+        if (ImGui::BeginTable(
+                "WarZAnimationInfo",
+                2,
+                ImGuiTableFlags_Borders |
+                    ImGuiTableFlags_RowBg |
+                    ImGuiTableFlags_SizingStretchProp))
+        {
+            const auto drawRow =
+                [](const char* property,
+                   const std::string& value)
+            {
+                ImGui::TableNextRow();
+
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted(property);
+
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted(
+                    value.c_str());
+            };
+
+            char animationSkeletonId[32]{};
+            char selectedSkeletonId[32]{};
+
+            std::snprintf(
+                animationSkeletonId,
+                sizeof(animationSkeletonId),
+                "0x%08X",
+                selectedAnimationData_.
+                    skeletonId);
+
+            std::snprintf(
+                selectedSkeletonId,
+                sizeof(selectedSkeletonId),
+                "0x%08X",
+                selectedSkeletonData_.
+                    skeletonId);
+
+            drawRow(
+                "Skeleton ID",
+                std::string(animationSkeletonId) +
+                    " / selected " +
+                    selectedSkeletonId);
+
+            drawRow(
+                "Tracks",
+                std::to_string(
+                    selectedAnimationData_.
+                        tracks.size()));
+
+            drawRow(
+                "Mapped Tracks",
+                std::to_string(
+                    selectedAnimationData_.
+                        mappedTrackCount));
+
+            drawRow(
+                "Unmapped Tracks",
+                std::to_string(
+                    selectedAnimationData_.
+                        missingBoneTrackCount));
+
+            drawRow(
+                "Frames",
+                std::to_string(
+                    selectedAnimationData_.
+                        frameCount));
+
+            drawRow(
+                "Source FPS",
+                std::to_string(
+                    selectedAnimationData_.
+                        frameRate));
+
+            drawRow(
+                "Duration",
+                std::to_string(
+                    selectedAnimationData_.
+                        durationSeconds) +
+                    " sec");
+
+            drawRow(
+                "Root Tracks",
+                std::to_string(
+                    selectedAnimationData_.
+                        rootTrackCount));
+
+            drawRow(
+                "Invalid Quaternions",
+                std::to_string(
+                    selectedAnimationData_.
+                        invalidQuaternionCount));
+
+            drawRow(
+                "Non-normalized Quaternions",
+                std::to_string(
+                    selectedAnimationData_.
+                        nonNormalizedQuaternionCount));
+
+            drawRow(
+                "Invalid Translations",
+                std::to_string(
+                    selectedAnimationData_.
+                        invalidTranslationCount));
+
+            drawRow(
+                "Trailing Bytes",
+                std::to_string(
+                    selectedAnimationData_.
+                        trailingByteCount));
+
+            ImGui::EndTable();
+        }
+
+        if (!animationCompatible_)
+        {
+            return;
+        }
+
+        UpdateAnimationPlayback();
+
+        if (ImGui::Button(
+                animationPlaying_
+                    ? "Pause"
+                    : "Play",
+                ImVec2(80.0F, 28.0F)))
+        {
+            const float finalFrame =
+                static_cast<float>(
+                    selectedAnimationData_.
+                        frameCount -
+                    1U);
+
+            if (!animationPlaying_ &&
+                !animationLoop_ &&
+                animationFrame_ >= finalFrame)
+            {
+                animationFrame_ = 0.0F;
+                UpdateAnimationPose();
+            }
+
+            animationPlaying_ =
+                !animationPlaying_;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button(
+                "Stop",
+                ImVec2(70.0F, 28.0F)))
+        {
+            animationPlaying_ = false;
+            animationFrame_ = 0.0F;
+
+            UpdateAnimationPose();
+        }
+
+        ImGui::SameLine();
+
+        ImGui::Checkbox(
+            "Loop",
+            &animationLoop_);
+
+        ImGui::SameLine();
+
+        if (ImGui::Checkbox(
+                "Lock Root X/Z",
+                &animationLockRoot_))
+        {
+            UpdateAnimationPose();
+        }
+
+        if (ImGui::DragFloat(
+                "Playback FPS",
+                &animationPlaybackFps_,
+                0.25F,
+                1.0F,
+                240.0F,
+                "%.2f"))
+        {
+            animationPlaybackFps_ =
+                std::clamp(
+                    animationPlaybackFps_,
+                    1.0F,
+                    240.0F);
+        }
+
+        const float finalFrame =
+            static_cast<float>(
+                selectedAnimationData_.
+                    frameCount -
+                1U);
+
+        if (ImGui::SliderFloat(
+                "Timeline",
+                &animationFrame_,
+                0.0F,
+                finalFrame,
+                "Frame %.2f"))
+        {
+            animationPlaying_ = false;
+            UpdateAnimationPose();
+        }
+
+        if (ImGui::Button("-1 Frame"))
+        {
+            animationPlaying_ = false;
+
+            animationFrame_ =
+                (std::max)(
+                    animationFrame_ -
+                        1.0F,
+                    0.0F);
+
+            UpdateAnimationPose();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("+1 Frame"))
+        {
+            animationPlaying_ = false;
+
+            animationFrame_ =
+                (std::min)(
+                    animationFrame_ +
+                        1.0F,
+                    finalFrame);
+
+            UpdateAnimationPose();
+        }
+
+        const float currentSeconds =
+            selectedAnimationData_.
+                frameRate > 0.0F
+                    ? animationFrame_ /
+                        selectedAnimationData_.
+                            frameRate
+                    : 0.0F;
+
+        ImGui::SameLine();
+
+        ImGui::Text(
+            "%.3f / %.3f sec",
+            currentSeconds,
+            selectedAnimationData_.
+                durationSeconds);
+    }
+
     void WarZImporterWindow::ScanSource() noexcept
     {
         packages_.clear();
@@ -981,6 +1557,7 @@ namespace lts::editor
 
         selectedPackage_ = -1;
         selectedSkeleton_ = -1;
+        selectedAnimation_ = -1;
 
         scbCount_ = 0U;
         scoCount_ = 0U;
@@ -2210,11 +2787,15 @@ namespace lts::editor
 
                 ImGui::EndDisabled();
 
+                if (analysisSucceeded_)
+                {
+                    DrawAnimationControls();
+                }
+
                 if (showLegacyPreview_ &&
                     canPreview)
                 {
-                    ImGui::SeparatorText(
-                        "3D Bind Pose Preview");
+                    ImGui::SeparatorText(animationLoaded_ && animationCompatible_ ? "3D Animation Preview": "3D Bind Pose Preview");
 
                     if (ImGui::Button("Frame"))
                     {
@@ -2241,17 +2822,21 @@ namespace lts::editor
                             ImGui::GetContentRegionAvail().x,
                             320.0F);
 
+                    const LegacyAnimationPose* animationPose = animationLoaded_ && animationCompatible_ ? &selectedAnimationPose_: nullptr;
+
                     meshPreview_.Draw(
                         selectedMeshData_,
                         &selectedSkeletonData_,
+                        &selectedWeightData_,
                         &selectedMaterialSet_,
+                        animationPose,
                         previewWidth,
                         430.0F,
                         previewShowSkeleton_,
                         previewWireframe_);
                 }
 
-                ImGui::TextDisabled("D3D11 bind-pose preview with WarZ DDS materials.");
+                ImGui::TextDisabled(animationPose != nullptr ? "D3D11 WarZ animation preview with GPU skinning.": "D3D11 bind-pose preview with WarZ DDS materials.");
             }
 
             ImGui::EndTable();

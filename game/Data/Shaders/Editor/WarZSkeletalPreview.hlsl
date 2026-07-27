@@ -1,3 +1,5 @@
+#define MAX_PREVIEW_BONES 128
+
 cbuffer PreviewConstants : register(b0)
 {
     row_major float4x4 ViewProjection;
@@ -10,6 +12,12 @@ cbuffer PreviewConstants : register(b0)
     float4 BaseColor;
     float4 MaterialParameters;
     float4 TextureFlags;
+
+    // x = skinning enabled
+    // y = bone count
+    float4 AnimationParameters;
+
+    row_major float4x4 BoneMatrices[MAX_PREVIEW_BONES];
 };
 
 Texture2D DiffuseTexture : register(t0);
@@ -25,6 +33,9 @@ struct VSInput
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
     float2 uv : TEXCOORD0;
+
+    uint4 boneIndices : BLENDINDICES0;
+    float4 boneWeights : BLENDWEIGHT0;
 };
 
 struct VSOutput
@@ -37,14 +48,137 @@ struct VSOutput
     float2 uv : TEXCOORD3;
 };
 
+void SkinVertex(
+    VSInput input,
+    out float4 position,
+    out float3 normal,
+    out float3 tangent)
+{
+    position =
+        float4(
+            input.position,
+            1.0F);
+
+    normal = input.normal;
+    tangent = input.tangent.xyz;
+
+    if (AnimationParameters.x < 0.5F ||
+        AnimationParameters.y < 1.0F)
+    {
+        return;
+    }
+
+    float weightSum =
+        input.boneWeights.x +
+        input.boneWeights.y +
+        input.boneWeights.z +
+        input.boneWeights.w;
+
+    if (weightSum <= 0.00001F)
+    {
+        return;
+    }
+
+    float4 normalizedWeights =
+        input.boneWeights /
+        weightSum;
+
+    float4 skinnedPosition =
+        float4(0.0F, 0.0F, 0.0F, 0.0F);
+
+    float3 skinnedNormal =
+        float3(0.0F, 0.0F, 0.0F);
+
+    float3 skinnedTangent =
+        float3(0.0F, 0.0F, 0.0F);
+
+    uint maximumBoneIndex =
+        (uint)AnimationParameters.y -
+        1U;
+
+    [unroll]
+    for (uint influenceIndex = 0U;
+         influenceIndex < 4U;
+         ++influenceIndex)
+    {
+        float weight =
+            normalizedWeights[
+                influenceIndex];
+
+        if (weight <= 0.000001F)
+        {
+            continue;
+        }
+
+        uint boneIndex =
+            min(
+                input.boneIndices[
+                    influenceIndex],
+                maximumBoneIndex);
+
+        row_major float4x4 boneMatrix =
+            BoneMatrices[boneIndex];
+
+        skinnedPosition +=
+            mul(
+                float4(
+                    input.position,
+                    1.0F),
+                boneMatrix) *
+            weight;
+
+        skinnedNormal +=
+            mul(
+                float4(
+                    input.normal,
+                    0.0F),
+                boneMatrix).xyz *
+            weight;
+
+        skinnedTangent +=
+            mul(
+                float4(
+                    input.tangent.xyz,
+                    0.0F),
+                boneMatrix).xyz *
+            weight;
+    }
+
+    position = skinnedPosition;
+    normal = normalize(skinnedNormal);
+    tangent = normalize(skinnedTangent);
+}
+
 VSOutput VSMain(VSInput input)
 {
     VSOutput output;
 
-    output.position = mul(float4(input.position, 1.0F), ViewProjection);
-    output.worldPosition = input.position;
-    output.normal = normalize(input.normal);
-    output.tangent = input.tangent;
+    float4 localPosition;
+    float3 localNormal;
+    float3 localTangent;
+
+    SkinVertex(
+        input,
+        localPosition,
+        localNormal,
+        localTangent);
+
+    output.position =
+        mul(
+            localPosition,
+            ViewProjection);
+
+    output.worldPosition =
+        localPosition.xyz;
+
+    output.normal =
+        normalize(localNormal);
+
+    output.tangent =
+        float4(
+            normalize(localTangent),
+            input.tangent.w);
+
     output.uv = input.uv;
 
     return output;
@@ -52,9 +186,10 @@ VSOutput VSMain(VSInput input)
 
 float3 ResolveNormal(VSOutput input)
 {
-    float3 normal = normalize(input.normal);
+    float3 normal =
+        normalize(input.normal);
 
-    if (TextureFlags.y < 0.5)
+    if (TextureFlags.y < 0.5F)
     {
         return normal;
     }
@@ -63,39 +198,50 @@ float3 ResolveNormal(VSOutput input)
         normalize(
             input.tangent.xyz -
             normal *
-            dot(normal, input.tangent.xyz));
+            dot(
+                normal,
+                input.tangent.xyz));
 
-    float tangentSign =
-        input.tangent.w >= 0.0
-            ? 1.0
-            : -1.0;
+    const float tangentSign =
+        input.tangent.w >= 0.0F
+            ? 1.0F
+            : -1.0F;
 
     float3 bitangent =
         normalize(
-            cross(normal, tangent)) *
+            cross(
+                normal,
+                tangent)) *
         tangentSign;
 
     float3 textureNormal =
         NormalTexture.Sample(
             LinearSampler,
             input.uv).xyz *
-        2.0 -
-        1.0;
+        2.0F -
+        1.0F;
 
     return normalize(
-        tangent * textureNormal.x +
-        bitangent * textureNormal.y +
-        normal * textureNormal.z);
+        tangent *
+            textureNormal.x +
+        bitangent *
+            textureNormal.y +
+        normal *
+            textureNormal.z);
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
     float4 diffuseSample =
-        TextureFlags.x > 0.5
+        TextureFlags.x > 0.5F
             ? DiffuseTexture.Sample(
                 LinearSampler,
                 input.uv)
-            : float4(1.0, 1.0, 1.0, 1.0);
+            : float4(
+                1.0F,
+                1.0F,
+                1.0F,
+                1.0F);
 
     float3 baseColor =
         BaseColor.rgb *
@@ -125,29 +271,29 @@ float4 PSMain(VSOutput input) : SV_TARGET
                 lightDirection));
 
     float roughness =
-        TextureFlags.w > 0.5
+        TextureFlags.w > 0.5F
             ? RoughnessTexture.Sample(
                 LinearSampler,
                 input.uv).r
             : saturate(
-                1.0 -
+                1.0F -
                 MaterialParameters.y);
 
     float metalness =
-        TextureFlags.z > 0.5
+        TextureFlags.z > 0.5F
             ? SpecularTexture.Sample(
                 LinearSampler,
                 input.uv).r
-            : 0.0;
+            : 0.0F;
 
     float specularExponent =
-        MaterialParameters.x > 0.0
+        MaterialParameters.x > 0.0F
             ? max(
                 MaterialParameters.x,
-                8.0)
+                8.0F)
             : lerp(
-                96.0,
-                8.0,
+                96.0F,
+                8.0F,
                 roughness);
 
     float specularAmount =
@@ -161,42 +307,30 @@ float4 PSMain(VSOutput input) : SV_TARGET
     float3 specularColor =
         lerp(
             float3(
-                0.04,
-                0.04,
-                0.04),
+                0.04F,
+                0.04F,
+                0.04F),
             baseColor,
             metalness);
 
-    float3 ambient =
-        baseColor *
-        AmbientColor.rgb;
-
-    float3 diffuse =
-        baseColor *
-        LightColor.rgb *
-        normalLight *
-        LightDirectionIntensity.w;
-
-    float3 specular =
-        specularColor *
-        LightColor.rgb *
-        specularAmount *
-        lerp(
-            0.35,
-            1.0,
-            1.0 - roughness);
-
-    float3 selfIllumination =
-        baseColor *
-        max(
-            MaterialParameters.w,
-            0.0);
-
     float3 finalColor =
-        ambient +
-        diffuse +
-        specular +
-        selfIllumination;
+        baseColor *
+            AmbientColor.rgb +
+        baseColor *
+            LightColor.rgb *
+            normalLight *
+            LightDirectionIntensity.w +
+        specularColor *
+            LightColor.rgb *
+            specularAmount *
+            lerp(
+                0.35F,
+                1.0F,
+                1.0F - roughness) +
+        baseColor *
+            max(
+                MaterialParameters.w,
+                0.0F);
 
     return float4(
         finalColor,

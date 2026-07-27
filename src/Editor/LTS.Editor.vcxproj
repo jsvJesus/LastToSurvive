@@ -242,6 +242,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\TransformTypes.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelDocument.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelSerializer.h" />
+    <ClInclude Include="Public\Editor\Tools\Import\LegacyAnimationReader.h" />
     <ClInclude Include="Public\Editor\Tools\Import\LegacyMaterialReader.h" />
     <ClInclude Include="Public\Editor\Tools\Import\LegacyMeshPreview.h" />
     <ClInclude Include="Public\Editor\Tools\Import\LegacyMeshReader.h" />
@@ -2074,6 +2075,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\Tools\Import\LegacyAnimationReader.cpp" />
     <ClCompile Include="Private\Tools\Import\LegacyMaterialReader.cpp" />
     <ClCompile Include="Private\Tools\Import\LegacyMeshPreview.cpp" />
     <ClCompile Include="Private\Tools\Import\LegacyMeshReader.cpp" />

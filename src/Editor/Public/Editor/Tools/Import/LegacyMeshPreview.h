@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/Tools/Import/LegacyAnimationReader.h"
 #include "Editor/Tools/Import/LegacyMaterialReader.h"
 
 #include <array>
@@ -18,8 +19,11 @@ namespace lts::editor
         LegacyMeshPreview();
         ~LegacyMeshPreview() noexcept;
 
-        LegacyMeshPreview(const LegacyMeshPreview&) = delete;
-        LegacyMeshPreview& operator=(const LegacyMeshPreview&) = delete;
+        LegacyMeshPreview(
+            const LegacyMeshPreview&) = delete;
+
+        LegacyMeshPreview& operator=(
+            const LegacyMeshPreview&) = delete;
 
         void Initialize(
             ID3D11Device* device,
@@ -28,12 +32,15 @@ namespace lts::editor
         void Shutdown() noexcept;
         void Reset() noexcept;
 
-        void Frame(const LegacyMeshData& mesh) noexcept;
+        void Frame(
+            const LegacyMeshData& mesh) noexcept;
 
         void Draw(
             const LegacyMeshData& mesh,
             const LegacySkeletonData* skeleton,
+            const LegacyWeightData* weights,
             const LegacyMaterialSet* materials,
+            const LegacyAnimationPose* animationPose,
             float width,
             float height,
             bool showSkeleton,

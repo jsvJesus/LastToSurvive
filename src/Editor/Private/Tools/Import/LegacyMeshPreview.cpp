@@ -34,8 +34,8 @@ namespace lts::editor
             DirectX::XMConvertToRadians(45.0F);
 
         constexpr std::uint32_t MaximumPreviewSize = 2048U;
-        constexpr std::uintmax_t MaximumDdsFileSize =
-            512U * 1024U * 1024U;
+        constexpr std::uintmax_t MaximumDdsFileSize = 512U * 1024U * 1024U;
+        constexpr std::size_t MaximumPreviewBones = LegacyAnimationMaximumBones;
 
         constexpr std::uint32_t DdsMagic = 0x20534444U;
         constexpr std::uint32_t DdsFourCcFlag = 0x00000004U;
@@ -115,9 +115,12 @@ namespace lts::editor
             DirectX::XMFLOAT3 normal;
             DirectX::XMFLOAT4 tangent;
             DirectX::XMFLOAT2 uv;
+
+            std::array<std::uint8_t, 4U> boneIndices{};
+            DirectX::XMFLOAT4 boneWeights{};
         };
 
-        static_assert(sizeof(PreviewVertex) == 48U);
+        static_assert(sizeof(PreviewVertex) == 68U);
 
         struct alignas(16) PreviewConstants final
         {
@@ -129,21 +132,22 @@ namespace lts::editor
             DirectX::XMFLOAT4 ambientColor;
 
             DirectX::XMFLOAT4 baseColor;
-
-            // x = SpecularPower
-            // y = Specular1Power
-            // z = ReflectionPower
-            // w = SelfIllumMultiplier
             DirectX::XMFLOAT4 materialParameters;
-
-            // x = Diffuse
-            // y = Normal
-            // z = Specular / Metalness
-            // w = Roughness
             DirectX::XMFLOAT4 textureFlags;
+
+            /*
+             * x = use skinning
+             * y = bone count
+             */
+            DirectX::XMFLOAT4 animationParameters;
+
+            std::array<
+                DirectX::XMFLOAT4X4,
+                MaximumPreviewBones> boneMatrices{};
         };
 
         static_assert(sizeof(PreviewConstants) % 16U == 0U);
+        static_assert(sizeof(PreviewConstants) <= 65536U);
 
         struct GpuMaterial final
         {
@@ -822,9 +826,32 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        DirectX::XMFLOAT3 GetBonePosition(const LegacyBone& bone, const std::array<float, 3U>& meshPivot) noexcept
+        DirectX::XMFLOAT3 GetBonePosition(
+            const LegacyBone& bone,
+            const LegacyAnimationPose* animationPose,
+            const std::size_t boneIndex,
+            const std::array<float, 3U>& meshPivot) noexcept
         {
-            return {bone.absoluteBindMatrix[12U] - meshPivot[0U], bone.absoluteBindMatrix[13U] - meshPivot[1U], bone.absoluteBindMatrix[14U] - meshPivot[2U]};
+            const std::array<float, 16U>* matrix =
+                &bone.absoluteBindMatrix;
+
+            if (animationPose != nullptr &&
+                boneIndex <
+                    animationPose->
+                        absoluteBoneMatrices.size())
+            {
+                matrix =
+                    &animationPose->
+                        absoluteBoneMatrices[
+                            boneIndex];
+            }
+
+            return
+            {
+                (*matrix)[12U] - meshPivot[0U],
+                (*matrix)[13U] - meshPivot[1U],
+                (*matrix)[14U] - meshPivot[2U]
+            };
         }
 
         [[nodiscard]]
@@ -1076,7 +1103,7 @@ namespace lts::editor
                     0U,
                     D3D11_INPUT_PER_VERTEX_DATA,
                     0U
-                },
+                    },
                 {
                     "NORMAL",
                     0U,
@@ -1085,7 +1112,7 @@ namespace lts::editor
                     12U,
                     D3D11_INPUT_PER_VERTEX_DATA,
                     0U
-                },
+                    },
                 {
                     "TANGENT",
                     0U,
@@ -1094,13 +1121,31 @@ namespace lts::editor
                     24U,
                     D3D11_INPUT_PER_VERTEX_DATA,
                     0U
-                },
+                    },
                 {
                     "TEXCOORD",
                     0U,
                     DXGI_FORMAT_R32G32_FLOAT,
                     0U,
                     40U,
+                    D3D11_INPUT_PER_VERTEX_DATA,
+                    0U
+                    },
+                {
+                    "BLENDINDICES",
+                    0U,
+                    DXGI_FORMAT_R8G8B8A8_UINT,
+                    0U,
+                    48U,
+                    D3D11_INPUT_PER_VERTEX_DATA,
+                    0U
+                },
+                {
+                    "BLENDWEIGHT",
+                    0U,
+                    DXGI_FORMAT_R32G32B32A32_FLOAT,
+                    0U,
+                    52U,
                     D3D11_INPUT_PER_VERTEX_DATA,
                     0U
                 }
@@ -1300,6 +1345,8 @@ namespace lts::editor
             vertexBuffer_.Reset();
 
             cachedSource_.clear();
+            cachedWeightSource_.clear();
+            cachedWeightVertexCount_ = 0U;
             cachedVertexCount_ = 0U;
             cachedIndexCount_ = 0U;
 
@@ -1334,7 +1381,9 @@ namespace lts::editor
         [[nodiscard]]
         bool Render(
             const LegacyMeshData& mesh,
+            const LegacyWeightData* weights,
             const LegacyMaterialSet* materials,
+            const LegacyAnimationPose* animationPose,
             const DirectX::XMMATRIX& viewProjection,
             const DirectX::XMFLOAT3& cameraPosition,
             const std::uint32_t width,
@@ -1353,6 +1402,7 @@ namespace lts::editor
                     height) ||
                 !EnsureAsset(
                     mesh,
+                    weights,
                     materials))
             {
                 return false;
@@ -1531,7 +1581,8 @@ namespace lts::editor
                     if (!UpdateConstants(
                             viewProjection,
                             cameraPosition,
-                            material))
+                            material,
+                            animationPose))
                     {
                         return false;
                     }
@@ -1556,7 +1607,8 @@ namespace lts::editor
                 if (!UpdateConstants(
                         viewProjection,
                         cameraPosition,
-                        material))
+                        material,
+                        animationPose))
                 {
                     return false;
                 }
@@ -1708,16 +1760,19 @@ namespace lts::editor
         [[nodiscard]]
         bool EnsureAsset(
             const LegacyMeshData& mesh,
+            const LegacyWeightData* weights,
             const LegacyMaterialSet* materialSet) noexcept
         {
+            const std::filesystem::path weightSource = weights != nullptr ? weights->sourcePath: std::filesystem::path{};
+            const std::size_t weightVertexCount = weights != nullptr ? weights->vertices.size(): 0U;
+            
             if (vertexBuffer_ != nullptr &&
                 indexBuffer_ != nullptr &&
-                cachedSource_ ==
-                    mesh.sourcePath &&
-                cachedVertexCount_ ==
-                    mesh.vertices.size() &&
-                cachedIndexCount_ ==
-                    mesh.indices.size())
+                cachedSource_ == mesh.sourcePath &&
+                cachedVertexCount_ == mesh.vertices.size() &&
+                cachedIndexCount_ == mesh.indices.size() &&
+                cachedWeightSource_ == weightSource &&
+                cachedWeightVertexCount_ == weightVertexCount)
             {
                 return true;
             }
@@ -1742,13 +1797,17 @@ namespace lts::editor
             }
 
             std::vector<PreviewVertex> vertices;
-            vertices.reserve(
-                mesh.vertices.size());
-
-            for (const LegacyMeshVertex& source :
-                 mesh.vertices)
+            vertices.reserve(mesh.vertices.size());
+            
+            const bool hasValidWeights = weights != nullptr && weights->vertices.size() == mesh.vertices.size();
+            for (std::size_t vertexIndex = 0U;
+                 vertexIndex < mesh.vertices.size();
+                 ++vertexIndex)
             {
-                PreviewVertex vertex;
+                const LegacyMeshVertex& source =
+                    mesh.vertices[vertexIndex];
+
+                PreviewVertex vertex{};
 
                 vertex.position =
                 {
@@ -1777,6 +1836,23 @@ namespace lts::editor
                     source.uv[0],
                     source.uv[1]
                 };
+
+                if (hasValidWeights)
+                {
+                    const LegacySkinVertex& skin =
+                        weights->vertices[vertexIndex];
+
+                    vertex.boneIndices =
+                        skin.boneIndices;
+
+                    vertex.boneWeights =
+                    {
+                        skin.weights[0],
+                        skin.weights[1],
+                        skin.weights[2],
+                        skin.weights[3]
+                    };
+                }
 
                 vertices.push_back(vertex);
             }
@@ -1870,14 +1946,11 @@ namespace lts::editor
                         materialIndex]);
             }
 
-            cachedSource_ =
-                mesh.sourcePath;
-
-            cachedVertexCount_ =
-                mesh.vertices.size();
-
-            cachedIndexCount_ =
-                mesh.indices.size();
+            cachedSource_ = mesh.sourcePath;
+            cachedWeightSource_ = weightSource;
+            cachedWeightVertexCount_ = weightVertexCount;
+            cachedVertexCount_ = mesh.vertices.size();
+            cachedIndexCount_ = mesh.indices.size();
 
             error_.clear();
             return true;
@@ -1987,7 +2060,8 @@ namespace lts::editor
         bool UpdateConstants(
             const DirectX::XMMATRIX& viewProjection,
             const DirectX::XMFLOAT3& cameraPosition,
-            const GpuMaterial& material) noexcept
+            const GpuMaterial& material,
+            const LegacyAnimationPose* animationPose) noexcept
         {
             D3D11_MAPPED_SUBRESOURCE mapped{};
 
@@ -2007,7 +2081,9 @@ namespace lts::editor
 
             PreviewConstants constants{};
 
-            DirectX::XMStoreFloat4x4(&constants.viewProjection, viewProjection);
+            DirectX::XMStoreFloat4x4(
+                &constants.viewProjection,
+                viewProjection);
 
             constants.cameraPosition =
             {
@@ -2063,6 +2139,59 @@ namespace lts::editor
 
             constants.textureFlags =
                 material.textureFlags;
+
+            const DirectX::XMMATRIX identity =
+                DirectX::XMMatrixIdentity();
+
+            for (DirectX::XMFLOAT4X4& matrix :
+                 constants.boneMatrices)
+            {
+                DirectX::XMStoreFloat4x4(
+                    &matrix,
+                    identity);
+            }
+
+            const bool useSkinning =
+                animationPose != nullptr &&
+                !animationPose->skinMatrices.empty() &&
+                animationPose->skinMatrices.size() <=
+                    MaximumPreviewBones;
+
+            if (useSkinning)
+            {
+                const std::size_t boneCount =
+                    animationPose->skinMatrices.size();
+
+                constants.animationParameters =
+                {
+                    1.0F,
+                    static_cast<float>(boneCount),
+                    0.0F,
+                    0.0F
+                };
+
+                for (std::size_t boneIndex = 0U;
+                     boneIndex < boneCount;
+                     ++boneIndex)
+                {
+                    std::memcpy(
+                        &constants.boneMatrices[
+                            boneIndex],
+                        animationPose->skinMatrices[
+                            boneIndex].data(),
+                        sizeof(DirectX::XMFLOAT4X4));
+                }
+            }
+            else
+            {
+                constants.animationParameters =
+                {
+                    0.0F,
+                    0.0F,
+                    0.0F,
+                    0.0F
+                };
+            }
 
             std::memcpy(
                 mapped.pData,
@@ -2137,6 +2266,8 @@ namespace lts::editor
         std::vector<GpuMaterial> materials_;
 
         std::filesystem::path cachedSource_;
+        std::filesystem::path cachedWeightSource_;
+        std::size_t cachedWeightVertexCount_ = 0U;
 
         std::size_t cachedVertexCount_ = 0U;
         std::size_t cachedIndexCount_ = 0U;
@@ -2333,7 +2464,9 @@ namespace lts::editor
     void LegacyMeshPreview::Draw(
         const LegacyMeshData& mesh,
         const LegacySkeletonData* const skeleton,
+        const LegacyWeightData* const weights,
         const LegacyMaterialSet* const materials,
+        const LegacyAnimationPose* const animationPose,
         const float requestedWidth,
         const float requestedHeight,
         const bool showSkeleton,
@@ -2512,13 +2645,15 @@ namespace lts::editor
         {
             rendered =
                 impl_->Render(
-                    mesh,
-                    materials,
-                    camera.viewProjection,
-                    camera.cameraPosition,
-                    renderWidth,
-                    renderHeight,
-                    wireframe);
+                mesh,
+                weights,
+                materials,
+                animationPose,
+                camera.viewProjection,
+                camera.cameraPosition,
+                renderWidth,
+                renderHeight,
+                wireframe);
         }
 
         ImDrawList& drawList =
@@ -2583,9 +2718,7 @@ namespace lts::editor
                     skeleton->bones[
                         boneIndex];
 
-                const DirectX::XMFLOAT3 position =
-                    GetBonePosition(bone, mesh.pivot);
-
+                const DirectX::XMFLOAT3 position = GetBonePosition(bone, animationPose, boneIndex, mesh.pivot);
                 ImVec2 boneScreen;
 
                 if (!ProjectPoint(
