@@ -822,15 +822,9 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        DirectX::XMFLOAT3 GetBonePosition(
-            const LegacyBone& bone) noexcept
+        DirectX::XMFLOAT3 GetBonePosition(const LegacyBone& bone, const std::array<float, 3U>& meshPivot) noexcept
         {
-            return
-            {
-                bone.absoluteBindMatrix[12U],
-                bone.absoluteBindMatrix[13U],
-                bone.absoluteBindMatrix[14U]
-            };
+            return {bone.absoluteBindMatrix[12U] - meshPivot[0U], bone.absoluteBindMatrix[13U] - meshPivot[1U], bone.absoluteBindMatrix[14U] - meshPivot[2U]};
         }
 
         [[nodiscard]]
@@ -2593,7 +2587,7 @@ namespace lts::editor
                         boneIndex];
 
                 const DirectX::XMFLOAT3 position =
-                    GetBonePosition(bone);
+                    GetBonePosition(bone, mesh.pivot);
 
                 ImVec2 boneScreen;
 
@@ -2620,7 +2614,7 @@ namespace lts::editor
                     ImVec2 parentScreen;
 
                     if (ProjectPoint(
-                            GetBonePosition(parent),
+                            GetBonePosition(parent, mesh.pivot),
                             camera.viewProjection,
                             canvasMinimum,
                             canvasSize,
