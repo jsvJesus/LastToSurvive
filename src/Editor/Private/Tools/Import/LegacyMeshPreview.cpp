@@ -417,28 +417,13 @@ namespace lts::editor
 
             if (IsBlockCompressed(format))
             {
-                const std::size_t blockSize =
-                    GetBlockSize(format);
+                const std::size_t blockSize = GetBlockSize(format);
 
-                const std::size_t blockWidth =
-                    (std::max)(
-                        (static_cast<std::size_t>(
-                            width) + 3U) / 4U,
-                        1U);
+                const std::size_t blockWidth =(static_cast<std::size_t>(width) + std::size_t{3U}) / std::size_t{4U};
+                const std::size_t blockHeight =(static_cast<std::size_t>(height) + std::size_t{3U}) / std::size_t{4U};
 
-                const std::size_t blockHeight =
-                    (std::max)(
-                        (static_cast<std::size_t>(
-                            height) + 3U) / 4U,
-                        1U);
-
-                rowPitch =
-                    blockWidth *
-                    blockSize;
-
-                slicePitch =
-                    rowPitch *
-                    blockHeight;
+                rowPitch = blockWidth * blockSize;
+                slicePitch = rowPitch * blockHeight;
 
                 return true;
             }
@@ -1274,27 +1259,11 @@ namespace lts::editor
             sampler.MaxLOD =
                 D3D11_FLOAT32_MAX;
 
-            if (FAILED(
-                    device_->CreateSamplerState(
-                        &sampler,
-                        sampler_.
-                            GetAddressOf())) ||
-                !CreateSolidTexture(
-                    *device_,
-                    {255U, 255U, 255U, 255U},
-                    whiteTexture_) ||
-                !CreateSolidTexture(
-                    *device_,
-                    {128U, 128U, 255U, 255U},
-                    flatNormalTexture_) ||
-                !CreateSolidTexture(
-                    *device_,
-                    {0U, 0U, 0U, 255U},
-                    blackTexture_) ||
-                !CreateSolidTexture(
-                    *device_,
-                    {180U, 180U, 180U, 255U},
-                    roughnessTexture_))
+            if (FAILED(device_->CreateSamplerState(&sampler, sampler_.GetAddressOf())) ||
+                !CreateSolidTexture(*device_.Get(), {255U, 255U, 255U, 255U}, whiteTexture_) ||
+                !CreateSolidTexture(*device_.Get(), {128U, 128U, 255U, 255U}, flatNormalTexture_) ||
+                !CreateSolidTexture(*device_.Get(), {0U, 0U, 0U, 255U}, blackTexture_) ||
+                !CreateSolidTexture(*device_.Get(), {180U, 180U, 180U, 255U}, roughnessTexture_))
             {
                 error_ =
                     "Failed to create preview textures or sampler.";
@@ -1998,12 +1967,7 @@ namespace lts::editor
 
             std::string textureError;
 
-            if (LoadDdsTexture(
-                    *device_,
-                    texture->dds.path,
-                    srgb,
-                    output,
-                    textureError))
+            if (LoadDdsTexture(*device_.Get(), texture->dds.path, srgb, output, textureError))
             {
                 loadedFlag = 1.0F;
                 return;
