@@ -15,6 +15,7 @@
 #include <system_error>
 #include <unordered_map>
 #include <utility>
+#include <cstdio>
 
 namespace lts::editor
 {
@@ -522,11 +523,105 @@ namespace lts::editor
             std::string::npos;
     }
 
+    void WarZImporterWindow::ResetAnalysis() noexcept
+    {
+        selectedSkeletonData_ = {};
+        selectedWeightData_ = {};
+
+        analysisStatus_.clear();
+
+        analysisAttempted_ = false;
+        analysisSucceeded_ = false;
+    }
+
+    void WarZImporterWindow::AnalyzeSelection() noexcept
+    {
+        ResetAnalysis();
+        analysisAttempted_ = true;
+
+        if (selectedPackage_ < 0 ||
+            selectedPackage_ >=
+                static_cast<int>(packages_.size()))
+        {
+            analysisStatus_ =
+                "No skeletal package is selected.";
+
+            return;
+        }
+
+        if (selectedSkeleton_ < 0 ||
+            selectedSkeleton_ >=
+                static_cast<int>(skeletons_.size()))
+        {
+            analysisStatus_ =
+                "No bind skeleton is selected.";
+
+            return;
+        }
+
+        const SourcePackage& package =
+            packages_[
+                static_cast<std::size_t>(
+                    selectedPackage_)];
+
+        if (package.wgtPath.empty())
+        {
+            analysisStatus_ =
+                "The selected package has no .wgt file.";
+
+            return;
+        }
+
+        const std::filesystem::path& skeletonPath =
+            skeletons_[
+                static_cast<std::size_t>(
+                    selectedSkeleton_)];
+
+        if (!LegacySkeletalReader::ReadSkeleton(
+                skeletonPath,
+                selectedSkeletonData_))
+        {
+            analysisStatus_ =
+                selectedSkeletonData_.error;
+
+            return;
+        }
+
+        if (!LegacySkeletalReader::ReadWeights(
+                package.wgtPath,
+                &selectedSkeletonData_,
+                selectedWeightData_))
+        {
+            analysisStatus_ =
+                selectedWeightData_.error;
+
+            return;
+        }
+
+        analysisSucceeded_ = true;
+
+        const bool hasWarnings =
+            selectedSkeletonData_.rootCount != 1U ||
+            selectedSkeletonData_.emptyNameCount != 0U ||
+            selectedSkeletonData_.duplicateNameCount != 0U ||
+            selectedSkeletonData_.invalidParentCount != 0U ||
+            selectedWeightData_.zeroWeightVertexCount != 0U ||
+            selectedWeightData_.nonNormalizedVertexCount != 0U ||
+            selectedWeightData_.invalidWeightValueCount != 0U ||
+            selectedWeightData_.invalidBoneReferenceCount != 0U ||
+            selectedWeightData_.skeletonIdMismatch;
+
+        analysisStatus_ = hasWarnings
+            ? "Analysis completed with validation warnings."
+            : "Skeleton and skin weights are valid.";
+    }
+
     void WarZImporterWindow::ScanSource() noexcept
     {
         packages_.clear();
         skeletons_.clear();
         animations_.clear();
+        ResetAnalysis();
 
         selectedPackage_ = -1;
         selectedSkeleton_ = -1;
@@ -824,8 +919,7 @@ namespace lts::editor
                                 filename().
                                 wstring());
 
-                    if (fileName ==
-                        L"ProperScale_AndBiped_new.skl")
+                    if (fileName == L"properscale_andbiped_new.skl")
                     {
                         selectedSkeleton_ =
                             static_cast<int>(index);
@@ -1046,12 +1140,16 @@ namespace lts::editor
                         selectedPackage_ ==
                         static_cast<int>(index);
 
-                    if (ImGui::Selectable(
-                            label.c_str(),
-                            selected))
+                    if (ImGui::Selectable(label.c_str(), selected))
                     {
-                        selectedPackage_ =
+                        const int newSelection =
                             static_cast<int>(index);
+
+                        if (selectedPackage_ != newSelection)
+                        {
+                            selectedPackage_ = newSelection;
+                            ResetAnalysis();
+                        }
                     }
 
                     if (selected)
@@ -1176,17 +1274,16 @@ namespace lts::editor
                             selectedSkeleton_ ==
                             static_cast<int>(index);
 
-                        if (ImGui::Selectable(
-                                label.c_str(),
-                                selected))
+                        if (ImGui::Selectable(label.c_str(), selected))
                         {
-                            selectedSkeleton_ =
+                            const int newSelection =
                                 static_cast<int>(index);
-                        }
 
-                        if (selected)
-                        {
-                            ImGui::SetItemDefaultFocus();
+                            if (selectedSkeleton_ != newSelection)
+                            {
+                                selectedSkeleton_ = newSelection;
+                                ResetAnalysis();
+                            }
                         }
                     }
 
@@ -1198,8 +1295,243 @@ namespace lts::editor
                     static_cast<unsigned long long>(
                         animations_.size()));
 
-                ImGui::TextDisabled(
-                    "Animation-to-package binding will be added with the legacy parser.");
+                ImGui::TextDisabled("Animation-to-package binding will be added later.");
+                ImGui::SeparatorText("Legacy Analysis");
+
+                const bool canAnalyze =
+                    !package.wgtPath.empty() &&
+                    selectedSkeleton_ >= 0 &&
+                    selectedSkeleton_ <
+                        static_cast<int>(skeletons_.size());
+
+                if (!canAnalyze)
+                {
+                    ImGui::BeginDisabled();
+                }
+
+                if (ImGui::Button(
+                        "Analyze Selected",
+                        ImVec2(170.0F, 30.0F)))
+                {
+                    AnalyzeSelection();
+                }
+
+                if (!canAnalyze)
+                {
+                    ImGui::EndDisabled();
+                }
+
+                if (analysisAttempted_)
+                {
+                    const ImVec4 analysisColor =
+                        analysisSucceeded_
+                            ? ImVec4(
+                                0.35F,
+                                0.85F,
+                                0.45F,
+                                1.0F)
+                            : ImVec4(
+                                0.95F,
+                                0.35F,
+                                0.28F,
+                                1.0F);
+
+                    ImGui::TextColored(
+                        analysisColor,
+                        "%s",
+                        analysisStatus_.c_str());
+                }
+
+                if (analysisSucceeded_)
+                {
+                    if (ImGui::BeginTable(
+                            "LegacySkeletalAnalysis",
+                            3,
+                            ImGuiTableFlags_Borders |
+                                ImGuiTableFlags_RowBg |
+                                ImGuiTableFlags_SizingStretchProp))
+                    {
+                        ImGui::TableSetupColumn("Property");
+                        ImGui::TableSetupColumn("Skeleton");
+                        ImGui::TableSetupColumn("Weights");
+                        ImGui::TableHeadersRow();
+
+                        const auto drawRow =
+                            [](const char* property,
+                               const std::string& skeletonValue,
+                               const std::string& weightValue)
+                        {
+                            ImGui::TableNextRow();
+
+                            ImGui::TableNextColumn();
+                            ImGui::TextUnformatted(property);
+
+                            ImGui::TableNextColumn();
+                            ImGui::TextUnformatted(
+                                skeletonValue.c_str());
+
+                            ImGui::TableNextColumn();
+                            ImGui::TextUnformatted(
+                                weightValue.c_str());
+                        };
+
+                        char skeletonIdText[32]{};
+                        char weightSkeletonIdText[32]{};
+
+                        std::snprintf(
+                            skeletonIdText,
+                            sizeof(skeletonIdText),
+                            "0x%08X",
+                            static_cast<unsigned int>(
+                                selectedSkeletonData_.skeletonId));
+
+                        std::snprintf(
+                            weightSkeletonIdText,
+                            sizeof(weightSkeletonIdText),
+                            "0x%08X",
+                            static_cast<unsigned int>(
+                                selectedWeightData_.skeletonId));
+
+                        drawRow(
+                            "Skeleton ID",
+                            skeletonIdText,
+                            weightSkeletonIdText);
+
+                        drawRow(
+                            "Elements",
+                            std::to_string(
+                                selectedSkeletonData_.bones.size()) +
+                                " bones",
+
+                            std::to_string(
+                                selectedWeightData_.vertices.size()) +
+                                " vertices");
+
+                        drawRow(
+                            "Hierarchy",
+                            std::to_string(
+                                selectedSkeletonData_.rootCount) +
+                                " roots",
+
+                            "Max Bone ID: " +
+                                std::to_string(
+                                    selectedWeightData_.
+                                        maximumBoneIndex));
+
+                        drawRow(
+                            "Invalid references",
+                            std::to_string(
+                                selectedSkeletonData_.
+                                    invalidParentCount) +
+                                " parents",
+
+                            std::to_string(
+                                selectedWeightData_.
+                                    invalidBoneReferenceCount) +
+                                " influences");
+
+                        drawRow(
+                            "Names / values",
+                            std::to_string(
+                                selectedSkeletonData_.
+                                    duplicateNameCount) +
+                                " duplicate names",
+
+                            std::to_string(
+                                selectedWeightData_.
+                                    invalidWeightValueCount) +
+                                " invalid weights");
+
+                        drawRow(
+                            "Weight normalization",
+                            "-",
+
+                            std::to_string(
+                                selectedWeightData_.
+                                    nonNormalizedVertexCount) +
+                                " vertices");
+
+                        drawRow(
+                            "Zero weights",
+                            "-",
+
+                            std::to_string(
+                                selectedWeightData_.
+                                    zeroWeightVertexCount) +
+                                " vertices");
+
+                        drawRow(
+                            "Trailing bytes",
+                            std::to_string(
+                                selectedSkeletonData_.
+                                    trailingByteCount),
+
+                            std::to_string(
+                                selectedWeightData_.
+                                    trailingByteCount));
+
+                        ImGui::EndTable();
+                    }
+
+                    if (selectedWeightData_.skeletonIdMismatch)
+                    {
+                        ImGui::TextColored(
+                            ImVec4(
+                                0.95F,
+                                0.45F,
+                                0.20F,
+                                1.0F),
+                            "Warning: WGT skeleton ID does not match the selected SKL.");
+                    }
+
+                    if (ImGui::TreeNode(
+                            "Bone Hierarchy Preview"))
+                    {
+                        const std::size_t visibleBoneCount =
+                            (std::min)(
+                                selectedSkeletonData_.bones.size(),
+                                static_cast<std::size_t>(128U));
+
+                        if (ImGui::BeginChild(
+                                "LegacyBoneList",
+                                ImVec2(0.0F, 220.0F),
+                                true))
+                        {
+                            for (std::size_t boneIndex = 0U;
+                                 boneIndex < visibleBoneCount;
+                                 ++boneIndex)
+                            {
+                                const LegacyBone& bone =
+                                    selectedSkeletonData_.
+                                        bones[boneIndex];
+
+                                ImGui::Text(
+                                    "%llu: %s  Parent=%d  Length=%.3f",
+                                    static_cast<unsigned long long>(
+                                        boneIndex),
+                                    bone.name.empty()
+                                        ? "<unnamed>"
+                                        : bone.name.c_str(),
+                                    bone.parentIndex,
+                                    bone.length);
+                            }
+
+                            if (visibleBoneCount <
+                                selectedSkeletonData_.bones.size())
+                            {
+                                ImGui::TextDisabled(
+                                    "... %llu more bones",
+                                    static_cast<unsigned long long>(
+                                        selectedSkeletonData_.
+                                            bones.size() -
+                                        visibleBoneCount));
+                            }
+                        }
+
+                        ImGui::EndChild();
+                        ImGui::TreePop();
+                    }
+                }
 
                 ImGui::SeparatorText("Import");
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Editor/Tools/Import/LegacySkeletalReader.h"
+
 #include <array>
 #include <cstddef>
 #include <filesystem>
@@ -35,6 +37,9 @@ namespace lts::editor
         void InitializeDefaultSource() noexcept;
         void ScanSource() noexcept;
 
+        void ResetAnalysis() noexcept;
+        void AnalyzeSelection() noexcept;
+
         [[nodiscard]]
         bool SelectSourceFolder() noexcept;
 
@@ -48,9 +53,13 @@ namespace lts::editor
         std::vector<std::filesystem::path> skeletons_;
         std::vector<std::filesystem::path> animations_;
 
+        LegacySkeletonData selectedSkeletonData_;
+        LegacyWeightData selectedWeightData_;
+
         std::array<char, 256U> packageFilter_{};
 
         std::string status_;
+        std::string analysisStatus_;
 
         int selectedPackage_ = -1;
         int selectedSkeleton_ = -1;
@@ -69,6 +78,10 @@ namespace lts::editor
 
         bool initialized_ = false;
         bool scanSucceeded_ = false;
+
+        bool analysisAttempted_ = false;
+        bool analysisSucceeded_ = false;
+
         bool open_ = false;
     };
 }

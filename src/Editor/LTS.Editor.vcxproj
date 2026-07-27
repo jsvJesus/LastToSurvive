@@ -242,6 +242,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\TransformTypes.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelDocument.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelSerializer.h" />
+    <ClInclude Include="Public\Editor\Tools\Import\LegacySkeletalReader.h" />
     <ClInclude Include="Public\Editor\Tools\Import\WarZImporterWindow.h" />
     <ClInclude Include="Public\Editor\Tools\TestGame\Launcher.h" />
     <ClInclude Include="Public\Editor\Tools\ToolWindowManager.h" />
@@ -2070,6 +2071,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\Tools\Import\LegacySkeletalReader.cpp" />
     <ClCompile Include="Private\Tools\Import\WarZImporterWindow.cpp" />
     <ClCompile Include="Private\Tools\TestGame\Launcher.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
