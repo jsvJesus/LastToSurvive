@@ -167,6 +167,35 @@ namespace lts::editor
                 std::isfinite(value[1]);
         }
 
+        void ApplyLegacyPivot(LegacyMeshData& mesh) noexcept
+        {
+            const float pivotX = mesh.pivot[0];
+            const float pivotY = mesh.pivot[1];
+            const float pivotZ = mesh.pivot[2];
+
+            if (!std::isfinite(pivotX) ||
+                !std::isfinite(pivotY) ||
+                !std::isfinite(pivotZ))
+            {
+                if (!mesh.warning.empty())
+                {
+                    mesh.warning += ' ';
+                }
+
+                mesh.warning +=
+                    "Mesh pivot contains non-finite values and was ignored.";
+
+                return;
+            }
+            
+            for (LegacyMeshVertex& vertex : mesh.vertices)
+            {
+                vertex.position[0] -= pivotX;
+                vertex.position[1] -= pivotY;
+                vertex.position[2] -= pivotZ;
+            }
+        }
+
         void ValidateMesh(
             LegacyMeshData& mesh) noexcept
         {
@@ -868,6 +897,7 @@ namespace lts::editor
                             finalPosition));
             }
 
+            ApplyLegacyPivot(output);
             ValidateMesh(output);
             return true;
         }
@@ -1211,6 +1241,7 @@ namespace lts::editor
                     lastChunk.firstIndex;
             }
 
+            ApplyLegacyPivot(output);
             ValidateMesh(output);
             return true;
         }
