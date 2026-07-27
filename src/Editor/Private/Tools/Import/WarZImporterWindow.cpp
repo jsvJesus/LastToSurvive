@@ -541,52 +541,42 @@ namespace lts::editor
 
         try
         {
-            sourceRoot_ =
-                NormalizeSourceRoot(sourceRoot_);
+            sourceRoot_ = NormalizeSourceRoot(sourceRoot_);
 
-            const std::filesystem::path charactersRoot =
-                sourceRoot_ /
-                L"ObjectsDepot" /
-                L"CharactersNew";
+            const std::filesystem::path objectsDepotRoot =
+                sourceRoot_ / L"ObjectsDepot";
 
             const std::filesystem::path animationsRoot =
                 sourceRoot_ / L"Animations";
 
             if (!DirectoryExists(sourceRoot_))
             {
-                status_ =
-                    "Source root does not exist.";
-
+                status_ = "Source root does not exist.";
                 return;
             }
 
-            if (!DirectoryExists(charactersRoot))
+            if (!DirectoryExists(objectsDepotRoot))
             {
-                status_ =
-                    "ObjectsDepot/CharactersNew was not found.";
-
+                status_ = "ObjectsDepot folder was not found.";
                 return;
             }
-
-            std::unordered_map<
-                std::string,
-                std::size_t> packageLookup;
+            
+            std::unordered_map<std::string, std::size_t> packageLookup;
 
             for (const std::filesystem::directory_entry& entry :
                  std::filesystem::recursive_directory_iterator(
-                     charactersRoot,
+                     objectsDepotRoot,
                      std::filesystem::directory_options::
                          skip_permission_denied))
             {
-                std::error_code error;
+                std::error_code entryError;
 
-                if (!entry.is_regular_file(error) || error)
+                if (!entry.is_regular_file(entryError) || entryError)
                 {
                     continue;
                 }
 
-                const std::filesystem::path& filePath =
-                    entry.path();
+                const std::filesystem::path filePath = entry.path();
 
                 const bool isScb =
                     HasExtension(filePath, L".scb");
@@ -597,6 +587,30 @@ namespace lts::editor
                 const bool isWgt =
                     HasExtension(filePath, L".wgt");
 
+                const bool isMaterial =
+                    HasExtension(filePath, L".mat");
+
+                const bool isTexture =
+                    HasExtension(filePath, L".dds");
+
+                const bool isSkeletonFile =
+                    HasExtension(filePath, L".skl");
+
+                if (isMaterial)
+                {
+                    ++materialCount_;
+                }
+
+                if (isTexture)
+                {
+                    ++textureCount_;
+                }
+                
+                if (isSkeletonFile && IsWarZSkeleton(filePath))
+                {
+                    skeletons_.push_back(filePath);
+                }
+
                 if (!isScb && !isSco && !isWgt)
                 {
                     continue;
@@ -605,43 +619,41 @@ namespace lts::editor
                 std::filesystem::path relativePath =
                     std::filesystem::relative(
                         filePath,
-                        charactersRoot,
-                        error);
+                        objectsDepotRoot,
+                        entryError);
 
-                if (error)
+                if (entryError)
                 {
                     continue;
                 }
 
                 relativePath.replace_extension();
+                relativePath = relativePath.lexically_normal();
 
-                const std::string key =
-                    ToLowerAscii(
-                        PathToUtf8(relativePath));
+                const std::string packageKey =
+                    ToLowerAscii(PathToUtf8(relativePath));
 
                 std::size_t packageIndex = 0U;
 
-                const auto found =
-                    packageLookup.find(key);
+                const auto existingPackage =
+                    packageLookup.find(packageKey);
 
-                if (found == packageLookup.end())
+                if (existingPackage == packageLookup.end())
                 {
                     packageIndex = packages_.size();
 
                     SourcePackage package;
-                    package.relativePath =
-                        relativePath.lexically_normal();
+                    package.relativePath = relativePath;
 
-                    packages_.push_back(
-                        std::move(package));
+                    packages_.push_back(std::move(package));
 
                     packageLookup.emplace(
-                        key,
+                        packageKey,
                         packageIndex);
                 }
                 else
                 {
-                    packageIndex = found->second;
+                    packageIndex = existingPackage->second;
                 }
 
                 SourcePackage& package =
@@ -663,7 +675,7 @@ namespace lts::editor
                     ++wgtCount_;
                 }
             }
-
+            
             packages_.erase(
                 std::remove_if(
                     packages_.begin(),
@@ -675,7 +687,7 @@ namespace lts::editor
                             package.scoPath.empty();
                     }),
                 packages_.end());
-
+            
             for (SourcePackage& package : packages_)
             {
                 const std::filesystem::path sourceFile =
@@ -686,21 +698,41 @@ namespace lts::editor
                 const std::filesystem::path packageDirectory =
                     sourceFile.parent_path();
 
-                package.materialCount =
-                    CountFilesWithExtension(
-                        packageDirectory / L"Materials",
-                        L".mat");
+                const std::filesystem::path materialsDirectory =
+                    packageDirectory / L"Materials";
 
-                package.textureCount =
-                    CountFilesWithExtension(
-                        packageDirectory / L"Textures",
-                        L".dds");
+                const std::filesystem::path texturesDirectory =
+                    packageDirectory / L"Textures";
 
-                materialCount_ +=
-                    package.materialCount;
+                if (DirectoryExists(materialsDirectory))
+                {
+                    package.materialCount =
+                        CountFilesWithExtension(
+                            materialsDirectory,
+                            L".mat");
+                }
+                else
+                {
+                    package.materialCount =
+                        CountFilesWithExtension(
+                            packageDirectory,
+                            L".mat");
+                }
 
-                textureCount_ +=
-                    package.textureCount;
+                if (DirectoryExists(texturesDirectory))
+                {
+                    package.textureCount =
+                        CountFilesWithExtension(
+                            texturesDirectory,
+                            L".dds");
+                }
+                else
+                {
+                    package.textureCount =
+                        CountFilesWithExtension(
+                            packageDirectory,
+                            L".dds");
+                }
             }
 
             std::sort(
@@ -716,57 +748,23 @@ namespace lts::editor
                             PathToUtf8(right.relativePath));
                 });
 
-            const std::filesystem::path skeletonRoots[]
-            {
-                sourceRoot_ /
-                    L"ObjectsDepot" /
-                    L"Characters",
-
-                sourceRoot_ /
-                    L"ObjectsDepot" /
-                    L"CharactersNew"
-            };
-
-            for (const std::filesystem::path& skeletonRoot :
-                 skeletonRoots)
-            {
-                if (!DirectoryExists(skeletonRoot))
-                {
-                    continue;
-                }
-
-                for (const std::filesystem::directory_entry& entry :
-                     std::filesystem::recursive_directory_iterator(
-                         skeletonRoot,
-                         std::filesystem::directory_options::
-                             skip_permission_denied))
-                {
-                    std::error_code error;
-
-                    if (!entry.is_regular_file(error) ||
-                        error)
-                    {
-                        continue;
-                    }
-
-                    if (IsWarZSkeleton(entry.path()))
-                    {
-                        skeletons_.push_back(
-                            entry.path());
-                    }
-                }
-            }
-
             std::sort(
                 skeletons_.begin(),
-                skeletons_.end());
+                skeletons_.end(),
+                [](const std::filesystem::path& left,
+                   const std::filesystem::path& right)
+                {
+                    return
+                        ToLowerWide(left.wstring()) <
+                        ToLowerWide(right.wstring());
+                });
 
             skeletons_.erase(
                 std::unique(
                     skeletons_.begin(),
                     skeletons_.end()),
                 skeletons_.end());
-
+            
             if (DirectoryExists(animationsRoot))
             {
                 for (const std::filesystem::directory_entry& entry :
@@ -775,24 +773,36 @@ namespace lts::editor
                          std::filesystem::directory_options::
                              skip_permission_denied))
                 {
-                    std::error_code error;
+                    std::error_code entryError;
 
-                    if (!entry.is_regular_file(error) ||
-                        error)
+                    if (!entry.is_regular_file(entryError) ||
+                        entryError)
                     {
                         continue;
                     }
 
                     if (IsWarZAnimation(entry.path()))
                     {
-                        animations_.push_back(
-                            entry.path());
+                        animations_.push_back(entry.path());
                     }
                 }
             }
 
             std::sort(
                 animations_.begin(),
+                animations_.end(),
+                [](const std::filesystem::path& left,
+                   const std::filesystem::path& right)
+                {
+                    return
+                        ToLowerWide(left.wstring()) <
+                        ToLowerWide(right.wstring());
+                });
+
+            animations_.erase(
+                std::unique(
+                    animations_.begin(),
+                    animations_.end()),
                 animations_.end());
 
             if (!packages_.empty())
@@ -803,16 +813,19 @@ namespace lts::editor
             if (!skeletons_.empty())
             {
                 selectedSkeleton_ = 0;
-
+                
                 for (std::size_t index = 0U;
                      index < skeletons_.size();
                      ++index)
                 {
-                    if (ToLowerWide(
+                    const std::wstring fileName =
+                        ToLowerWide(
                             skeletons_[index].
                                 filename().
-                                wstring()) ==
-                        L"properscale_andbiped_new.skl")
+                                wstring());
+
+                    if (fileName ==
+                        L"ProperScale_AndBiped_new.skl")
                     {
                         selectedSkeleton_ =
                             static_cast<int>(index);
@@ -827,7 +840,7 @@ namespace lts::editor
             status_ =
                 "Scan completed: " +
                 std::to_string(packages_.size()) +
-                " skeletal packages, " +
+                " packages, " +
                 std::to_string(skeletons_.size()) +
                 " skeletons, " +
                 std::to_string(animations_.size()) +
