@@ -528,6 +528,7 @@ namespace lts::editor
         selectedSkeletonData_ = {};
         selectedWeightData_ = {};
         selectedMeshData_ = {};
+        selectedMaterialSet_ = {};
 
         meshPreview_.Reset();
 
@@ -599,6 +600,26 @@ namespace lts::editor
             return;
         }
 
+        const std::filesystem::path sourceMeshPath =
+            !package.scbPath.empty()
+        ? package.scbPath
+        : package.scoPath;
+
+        const std::filesystem::path packageDirectory =
+            sourceMeshPath.parent_path();
+
+        std::string materialAnalysisError;
+
+        if (!LegacyMaterialReader::ReadForMesh(
+                sourceRoot_,
+                packageDirectory,
+                selectedMeshData_.materialChunks,
+                selectedMaterialSet_))
+        {
+            materialAnalysisError =
+                selectedMaterialSet_.error;
+        }
+
         std::string externalWeightError;
 
         if (!package.wgtPath.empty())
@@ -664,20 +685,290 @@ namespace lts::editor
             selectedWeightData_.skeletonIdMismatch ||
             vertexWeightCountMismatch_;
 
+        const bool materialWarnings =
+            !materialAnalysisError.empty() ||
+            selectedMaterialSet_.missingMaterialCount != 0U ||
+            selectedMaterialSet_.missingTextureCount != 0U ||
+            selectedMaterialSet_.invalidDdsCount != 0U ||
+            selectedMaterialSet_.parseWarningCount != 0U;
+
         analysisSucceeded_ = true;
 
         analysisStatus_ =
             meshWarnings ||
             skeletonWarnings ||
-            weightWarnings
-                ? "Geometry, skeleton and weights were loaded with warnings."
-                : "Geometry, skeleton and weights are valid.";
+            weightWarnings ||
+            materialWarnings
+                ? "Geometry, skeleton, weights and materials were loaded with warnings."
+                : "Geometry, skeleton, weights and materials are valid.";
 
         if (!externalWeightError.empty() &&
             usingEmbeddedWeights_)
         {
             analysisStatus_ +=
                 " External WGT failed; embedded SCB weights are used.";
+        }
+
+        if (!materialAnalysisError.empty())
+        {
+            analysisStatus_ +=
+                " " +
+                materialAnalysisError;
+        }
+    }
+
+    void WarZImporterWindow::DrawMaterialAnalysis() noexcept
+    {
+        ImGui::SeparatorText("WarZ Materials");
+
+        ImGui::Text(
+            "Resolved: %llu | Missing MAT: %llu | "
+            "Missing DDS: %llu | Invalid DDS: %llu",
+            static_cast<unsigned long long>(
+                selectedMaterialSet_.materials.size()),
+            static_cast<unsigned long long>(
+                selectedMaterialSet_.
+                    missingMaterialCount),
+            static_cast<unsigned long long>(
+                selectedMaterialSet_.
+                    missingTextureCount),
+            static_cast<unsigned long long>(
+                selectedMaterialSet_.
+                    invalidDdsCount));
+
+        if (selectedMaterialSet_.materials.empty())
+        {
+            ImGui::TextDisabled(
+                "The selected mesh has no material chunks.");
+
+            return;
+        }
+
+        for (std::size_t materialIndex = 0U;
+             materialIndex <
+                 selectedMaterialSet_.materials.size();
+             ++materialIndex)
+        {
+            const LegacyMaterialData& material =
+                selectedMaterialSet_.
+                    materials[materialIndex];
+
+            ImGui::PushID(
+                static_cast<int>(
+                    materialIndex));
+
+            const std::string label =
+                material.name.empty()
+                    ? "<unnamed material>"
+                    : material.name;
+
+            if (ImGui::TreeNode(
+                    "LegacyMaterial",
+                    "%s",
+                    label.c_str()))
+            {
+                ImGui::ColorButton(
+                    "##MaterialColor",
+                    ImVec4(
+                        material.diffuseColor[0],
+                        material.diffuseColor[1],
+                        material.diffuseColor[2],
+                        1.0F),
+                    ImGuiColorEditFlags_NoTooltip,
+                    ImVec2(36.0F, 20.0F));
+
+                ImGui::SameLine();
+
+                ImGui::Text(
+                    "Color24: %.3f %.3f %.3f",
+                    material.diffuseColor[0],
+                    material.diffuseColor[1],
+                    material.diffuseColor[2]);
+
+                if (!material.sourcePath.empty())
+                {
+                    ImGui::TextWrapped(
+                        "MAT: %s",
+                        PathToUtf8(
+                            material.sourcePath).
+                            c_str());
+                }
+
+                if (!material.imagesDirectory.empty())
+                {
+                    ImGui::TextWrapped(
+                        "Images: %s",
+                        PathToUtf8(
+                            material.imagesDirectory).
+                            c_str());
+                }
+
+                ImGui::Text(
+                    "Type: %s",
+                    material.typeName.empty()
+                        ? "<default>"
+                        : material.typeName.c_str());
+
+                ImGui::Text(
+                    "Specular: %.3f | Secondary: %.3f | Reflection: %.3f",
+                    material.specularPower,
+                    material.specularPower1,
+                    material.reflectionPower);
+
+                ImGui::Text(
+                    "Double Sided: %s | Transparent: %s | Force Alpha: %s",
+                    material.doubleSided
+                        ? "Yes"
+                        : "No",
+                    material.transparent
+                        ? "Yes"
+                        : "No",
+                    material.forceAlpha
+                        ? "Yes"
+                        : "No");
+
+                if (!material.error.empty())
+                {
+                    ImGui::TextColored(
+                        ImVec4(
+                            0.95F,
+                            0.32F,
+                            0.24F,
+                            1.0F),
+                        "%s",
+                        material.error.c_str());
+                }
+
+                if (material.parseWarningCount != 0U)
+                {
+                    ImGui::TextColored(
+                        ImVec4(
+                            0.95F,
+                            0.65F,
+                            0.20F,
+                            1.0F),
+                        "MAT parse warnings: %llu",
+                        static_cast<unsigned long long>(
+                            material.
+                                parseWarningCount));
+                }
+
+                if (ImGui::BeginTable(
+                        "MaterialTextures",
+                        4,
+                        ImGuiTableFlags_Borders |
+                            ImGuiTableFlags_RowBg |
+                            ImGuiTableFlags_Resizable |
+                            ImGuiTableFlags_SizingStretchProp))
+                {
+                    ImGui::TableSetupColumn(
+                        "Slot");
+
+                    ImGui::TableSetupColumn(
+                        "Source");
+
+                    ImGui::TableSetupColumn(
+                        "DDS");
+
+                    ImGui::TableSetupColumn(
+                        "Status");
+
+                    ImGui::TableHeadersRow();
+
+                    for (const LegacyMaterialTexture& texture :
+                         material.textures)
+                    {
+                        if (texture.sourceName.empty())
+                        {
+                            continue;
+                        }
+
+                        ImGui::TableNextRow();
+
+                        ImGui::TableNextColumn();
+
+                        ImGui::TextUnformatted(
+                            ToString(texture.slot));
+
+                        ImGui::TableNextColumn();
+
+                        ImGui::TextWrapped(
+                            "%s",
+                            texture.sourceName.c_str());
+
+                        ImGui::TableNextColumn();
+
+                        if (texture.dds.valid)
+                        {
+                            ImGui::Text(
+                                "%ux%u | %s | Mips %u",
+                                texture.dds.width,
+                                texture.dds.height,
+                                texture.dds.format.c_str(),
+                                texture.dds.mipCount);
+
+                            if (texture.dds.arraySize > 1U)
+                            {
+                                ImGui::TextDisabled(
+                                    "Array: %u",
+                                    texture.dds.arraySize);
+                            }
+
+                            if (texture.dds.isCubeMap)
+                            {
+                                ImGui::TextDisabled(
+                                    "Cube Map");
+                            }
+                        }
+                        else
+                        {
+                            ImGui::TextDisabled("-");
+                        }
+
+                        ImGui::TableNextColumn();
+
+                        if (texture.dds.valid)
+                        {
+                            ImGui::TextColored(
+                                ImVec4(
+                                    0.35F,
+                                    0.85F,
+                                    0.45F,
+                                    1.0F),
+                                "Ready");
+                        }
+                        else
+                        {
+                            ImGui::TextColored(
+                                ImVec4(
+                                    0.95F,
+                                    0.35F,
+                                    0.25F,
+                                    1.0F),
+                                "%s",
+                                texture.dds.error.empty()
+                                    ? "Missing"
+                                    : texture.dds.error.c_str());
+                        }
+
+                        if (!texture.dds.path.empty() &&
+                            ImGui::IsItemHovered())
+                        {
+                            ImGui::SetTooltip(
+                                "%s",
+                                PathToUtf8(
+                                    texture.dds.path).
+                                    c_str());
+                        }
+                    }
+
+                    ImGui::EndTable();
+                }
+
+                ImGui::TreePop();
+            }
+
+            ImGui::PopID();
         }
     }
 
@@ -1364,10 +1655,14 @@ namespace lts::editor
                 ImGui::SeparatorText("Legacy Analysis");
 
                 const bool canAnalyze =
-                    !package.wgtPath.empty() &&
-                    selectedSkeleton_ >= 0 &&
-                    selectedSkeleton_ <
-                        static_cast<int>(skeletons_.size());
+                (
+                    !package.scbPath.empty() ||
+                    !package.scoPath.empty()
+                ) &&
+                selectedSkeleton_ >= 0 &&
+                selectedSkeleton_ <
+                    static_cast<int>(
+                        skeletons_.size());
 
                 if (!canAnalyze)
                 {
@@ -1619,6 +1914,8 @@ namespace lts::editor
 
                         ImGui::TreePop();
                     }
+
+                    DrawMaterialAnalysis();
 
                     ImGui::Spacing();
                     
@@ -1938,7 +2235,7 @@ namespace lts::editor
                         &previewWireframe_);
 
                     ImGui::TextDisabled(
-                        "Material slots use preview colors. DDS textures will be connected next.");
+                    "WarZ Color24 is applied. DDS files are resolved and validated below.");
 
                     const float previewWidth =
                         (std::max)(
@@ -1948,6 +2245,7 @@ namespace lts::editor
                     meshPreview_.Draw(
                         selectedMeshData_,
                         &selectedSkeletonData_,
+                        &selectedMaterialSet_,
                         previewWidth,
                         430.0F,
                         previewShowSkeleton_,

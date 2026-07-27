@@ -325,36 +325,46 @@ namespace lts::editor
 
         [[nodiscard]]
         ImU32 BuildMaterialColor(
-            const LegacyMaterialChunk* material,
+            const LegacyMaterialChunk* materialChunk,
+            const LegacyMaterialData* materialData,
             const std::size_t materialIndex,
             const float lighting) noexcept
         {
-            const std::string materialName =
-                material != nullptr
-                    ? material->materialName
-                    : std::string{};
+            float red = 0.72F;
+            float green = 0.75F;
+            float blue = 0.78F;
 
-            const std::uint32_t hash =
-                HashMaterialName(
-                    materialName,
-                    materialIndex);
+            if (materialData != nullptr)
+            {
+                red = materialData->diffuseColor[0];
+                green = materialData->diffuseColor[1];
+                blue = materialData->diffuseColor[2];
+            }
+            else
+            {
+                const std::string materialName =
+                    materialChunk != nullptr
+                        ? materialChunk->materialName
+                        : std::string{};
 
-            const float hue =
-                static_cast<float>(
-                    hash % 1000U) /
-                1000.0F;
+                const std::uint32_t hash =
+                    HashMaterialName(
+                        materialName,
+                        materialIndex);
 
-            float red = 0.0F;
-            float green = 0.0F;
-            float blue = 0.0F;
+                const float hue =
+                    static_cast<float>(
+                        hash % 1000U) /
+                    1000.0F;
 
-            ImGui::ColorConvertHSVtoRGB(
-                hue,
-                0.32F,
-                0.78F,
-                red,
-                green,
-                blue);
+                ImGui::ColorConvertHSVtoRGB(
+                    hue,
+                    0.32F,
+                    0.78F,
+                    red,
+                    green,
+                    blue);
+            }
 
             const float safeLighting =
                 std::clamp(
@@ -630,6 +640,7 @@ namespace lts::editor
     void LegacyMeshPreview::Draw(
         const LegacyMeshData& mesh,
         const LegacySkeletonData* skeleton,
+        const LegacyMaterialSet* materials,
         const float requestedWidth,
         const float requestedHeight,
         const bool showSkeleton,
@@ -961,15 +972,23 @@ namespace lts::editor
                 0.28F +
                 diffuse * 0.72F;
 
-            const LegacyMaterialChunk* material =
+            const LegacyMaterialChunk* materialChunk =
                 FindMaterialChunk(
                     mesh,
                     indexOffset,
                     chunkCursor);
 
+            const LegacyMaterialData* materialData =
+                materialChunk != nullptr &&
+                materials != nullptr
+                    ? materials->Find(
+                        materialChunk->materialName)
+                    : nullptr;
+
             triangle.color =
                 BuildMaterialColor(
-                    material,
+                    materialChunk,
+                    materialData,
                     chunkCursor,
                     lighting);
 

@@ -39,6 +39,7 @@ namespace lts::editor
 
         void ResetAnalysis() noexcept;
         void AnalyzeSelection() noexcept;
+        void DrawMaterialAnalysis() noexcept;
 
         [[nodiscard]]
         bool SelectSourceFolder() noexcept;
@@ -57,6 +58,7 @@ namespace lts::editor
         LegacyWeightData selectedWeightData_;
         LegacyMeshData selectedMeshData_;
         LegacyMeshPreview meshPreview_;
+        LegacyMaterialSet selectedMaterialSet_;
 
         std::array<char, 256U> packageFilter_{};
 

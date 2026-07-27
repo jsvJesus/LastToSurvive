@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/Tools/Import/LegacyMeshReader.h"
+#include "Editor/Tools/Import/LegacyMaterialReader.h"
 
 #include <array>
 #include <cstddef>
@@ -19,6 +19,7 @@ namespace lts::editor
         void Draw(
             const LegacyMeshData& mesh,
             const LegacySkeletonData* skeleton,
+            const LegacyMaterialSet* materials,
             float width,
             float height,
             bool showSkeleton,
