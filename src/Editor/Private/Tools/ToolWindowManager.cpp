@@ -65,6 +65,16 @@ namespace lts::editor
             nullptr,
             &fbxImporterOpen_);
 
+        const bool warZImporterOpen = warZImporterWindow_.IsOpen();
+        if (ImGui::MenuItem(
+                "WarZ Importer",
+                nullptr,
+                warZImporterOpen))
+        {
+            warZImporterWindow_.SetOpen(
+                !warZImporterOpen);
+        }
+
         ImGui::MenuItem(
             "Icon Generator",
             nullptr,
@@ -82,6 +92,8 @@ namespace lts::editor
         DrawPhysicsEditor();
         DrawFbxImporter();
         DrawIconGenerator();
+
+        warZImporterWindow_.Draw();
     }
 
     void ToolWindowManager::

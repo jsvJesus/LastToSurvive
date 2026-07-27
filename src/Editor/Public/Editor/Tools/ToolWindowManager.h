@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "Editor/Tools/Import/WarZImporterWindow.h"
+
 namespace lts::editor
 {
     enum class EditorToolAction : std::uint8_t
@@ -28,5 +30,7 @@ namespace lts::editor
         bool physicsEditorOpen_ = false;
         bool fbxImporterOpen_ = false;
         bool iconGeneratorOpen_ = false;
+
+        WarZImporterWindow warZImporterWindow_;
     };
 }

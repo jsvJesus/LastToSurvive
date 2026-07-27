@@ -242,6 +242,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\TransformTypes.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelDocument.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelSerializer.h" />
+    <ClInclude Include="Public\Editor\Tools\Import\WarZImporterWindow.h" />
     <ClInclude Include="Public\Editor\Tools\TestGame\Launcher.h" />
     <ClInclude Include="Public\Editor\Tools\ToolWindowManager.h" />
   </ItemGroup>
@@ -2069,6 +2070,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\Tools\Import\WarZImporterWindow.cpp" />
     <ClCompile Include="Private\Tools\TestGame\Launcher.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>Z:\WarZ\src\Editor\..\..\build\x64\Release\Obj\LTS.Editor\</AssemblerListingLocation>
@@ -2350,11 +2352,9 @@
   <ItemGroup>
     <Folder Include="Private\Tools\Character\" />
     <Folder Include="Private\Tools\Icon\" />
-    <Folder Include="Private\Tools\Import\" />
     <Folder Include="Private\Tools\Physics\" />
     <Folder Include="Public\Editor\Tools\Character\" />
     <Folder Include="Public\Editor\Tools\Icon\" />
-    <Folder Include="Public\Editor\Tools\Import\" />
     <Folder Include="Public\Editor\Tools\Physics\" />
   </ItemGroup>
 

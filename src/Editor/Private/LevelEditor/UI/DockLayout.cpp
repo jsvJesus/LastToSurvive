@@ -54,6 +54,8 @@ namespace lts::editor
         ImGui::DockBuilderDockWindow("Place Actors", left);
         ImGui::DockBuilderDockWindow("World Outliner", left);
         ImGui::DockBuilderDockWindow("Viewport", center);
+        ImGui::DockBuilderDockWindow("FBX Importer", center);
+        ImGui::DockBuilderDockWindow("WarZ Importer", center);
         ImGui::DockBuilderDockWindow("Inspector", rightTop);
         ImGui::DockBuilderDockWindow("World Settings", rightBottom);
         ImGui::DockBuilderDockWindow("Content Browser", bottom);
