@@ -2792,6 +2792,8 @@ namespace lts::editor
                     DrawAnimationControls();
                 }
 
+                const LegacyAnimationPose* animationPose = animationLoaded_ && animationCompatible_ ? &selectedAnimationPose_: nullptr;
+
                 if (showLegacyPreview_ &&
                     canPreview)
                 {
@@ -2821,8 +2823,6 @@ namespace lts::editor
                         (std::max)(
                             ImGui::GetContentRegionAvail().x,
                             320.0F);
-
-                    const LegacyAnimationPose* animationPose = animationLoaded_ && animationCompatible_ ? &selectedAnimationPose_: nullptr;
 
                     meshPreview_.Draw(
                         selectedMeshData_,

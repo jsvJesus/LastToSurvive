@@ -2736,15 +2736,19 @@ namespace lts::editor
                         static_cast<std::int32_t>(
                             skeleton->bones.size()))
                 {
+                    const std::size_t parentIndex = static_cast<std::size_t>(bone.parentIndex);
+                    
                     const LegacyBone& parent =
-                        skeleton->bones[
-                            static_cast<std::size_t>(
-                                bone.parentIndex)];
+                        skeleton->bones[parentIndex];
 
                     ImVec2 parentScreen;
 
                     if (ProjectPoint(
-                            GetBonePosition(parent, mesh.pivot),
+                            GetBonePosition(
+                                parent,
+                                animationPose,
+                                parentIndex,
+                                mesh.pivot),
                             camera.viewProjection,
                             canvasMinimum,
                             canvasSize,
