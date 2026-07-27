@@ -6,6 +6,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <cwctype>
 #include <fstream>
 #include <limits>
 #include <sstream>
