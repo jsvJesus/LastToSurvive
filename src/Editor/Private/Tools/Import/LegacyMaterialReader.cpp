@@ -236,22 +236,13 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        std::filesystem::path ConvertLegacyPath(
-            std::string value)
+        std::filesystem::path ConvertLegacyPath(std::string value)
         {
             std::replace(
                 value.begin(),
                 value.end(),
                 '\\',
-                std::filesystem::path::
-                    preferred_separator);
-
-            std::replace(
-                value.begin(),
-                value.end(),
-                '/',
-                std::filesystem::path::
-                    preferred_separator);
+                '/');
 
             return
                 std::filesystem::u8path(value).
