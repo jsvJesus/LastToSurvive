@@ -96,6 +96,16 @@ namespace lts::editor
         warZImporterWindow_.Draw();
     }
 
+    void ToolWindowManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* context) noexcept
+    {
+        warZImporterWindow_.Initialize(device, context);
+    }
+
+    void ToolWindowManager::Shutdown() noexcept
+    {
+        warZImporterWindow_.Shutdown();
+    }
+
     void ToolWindowManager::
         DrawCharacterEditor() noexcept
     {

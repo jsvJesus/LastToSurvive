@@ -5,16 +5,30 @@
 #include <array>
 #include <cstddef>
 #include <filesystem>
+#include <memory>
+
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 
 namespace lts::editor
 {
     class LegacyMeshPreview final
     {
     public:
+        LegacyMeshPreview();
+        ~LegacyMeshPreview() noexcept;
+
+        LegacyMeshPreview(const LegacyMeshPreview&) = delete;
+        LegacyMeshPreview& operator=(const LegacyMeshPreview&) = delete;
+
+        void Initialize(
+            ID3D11Device* device,
+            ID3D11DeviceContext* context) noexcept;
+
+        void Shutdown() noexcept;
         void Reset() noexcept;
 
-        void Frame(
-            const LegacyMeshData& mesh) noexcept;
+        void Frame(const LegacyMeshData& mesh) noexcept;
 
         void Draw(
             const LegacyMeshData& mesh,
@@ -26,6 +40,9 @@ namespace lts::editor
             bool wireframe) noexcept;
 
     private:
+        class Impl;
+        std::unique_ptr<Impl> impl_;
+
         std::filesystem::path framedSource_;
 
         std::array<float, 3U> target_

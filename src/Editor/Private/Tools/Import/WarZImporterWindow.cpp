@@ -2234,8 +2234,7 @@ namespace lts::editor
                         "Wireframe",
                         &previewWireframe_);
 
-                    ImGui::TextDisabled(
-                    "WarZ Color24 is applied. DDS files are resolved and validated below.");
+                    ImGui::TextDisabled("WarZ Color24 is applied. DDS files are resolved and validated below.");
 
                     const float previewWidth =
                         (std::max)(
@@ -2252,13 +2251,22 @@ namespace lts::editor
                         previewWireframe_);
                 }
 
-                ImGui::TextDisabled(
-                    "Source scanner is ready. Legacy mesh parsing and conversion are not connected yet.");
+                ImGui::TextDisabled("D3D11 bind-pose preview with WarZ DDS materials.");
             }
 
             ImGui::EndTable();
         }
 
         ImGui::End();
+    }
+
+    void WarZImporterWindow::Initialize(ID3D11Device* device, ID3D11DeviceContext* context) noexcept
+    {
+        meshPreview_.Initialize(device, context);
+    }
+
+    void WarZImporterWindow::Shutdown() noexcept
+    {
+        meshPreview_.Shutdown();
     }
 }

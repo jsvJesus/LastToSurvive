@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+
 namespace lts::editor
 {
     class WarZImporterWindow final
@@ -20,6 +23,12 @@ namespace lts::editor
         bool IsOpen() const noexcept;
 
         void Draw() noexcept;
+
+        void Initialize(
+            ID3D11Device* device,
+            ID3D11DeviceContext* context) noexcept;
+
+        void Shutdown() noexcept;
 
     private:
         struct SourcePackage final

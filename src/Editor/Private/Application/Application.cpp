@@ -324,6 +324,10 @@ namespace lts::editor
                     ClientInitializationFailed;
         }
 
+        toolWindowManager_.Initialize(
+            graphicsDevice_.GetNativeDevice(),
+            graphicsDevice_.GetNativeImmediateContext());
+
         /*
          * Старое Win32-меню и обработка команд документа
          * больше не управляют интерфейсом редактора.
@@ -332,6 +336,7 @@ namespace lts::editor
         if (!levelDocument_.
                 SetWindowInterceptionEnabled(false))
         {
+            toolWindowManager_.Shutdown();
             ShutdownEditorUi();
 
             terrainRenderer_.Shutdown(
@@ -386,6 +391,7 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
+        toolWindowManager_.Shutdown();
         ShutdownEditorUi();
 
         transformController_.

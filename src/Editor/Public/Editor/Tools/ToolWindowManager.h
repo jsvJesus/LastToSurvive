@@ -4,6 +4,9 @@
 
 #include "Editor/Tools/Import/WarZImporterWindow.h"
 
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+
 namespace lts::editor
 {
     enum class EditorToolAction : std::uint8_t
@@ -19,6 +22,12 @@ namespace lts::editor
         EditorToolAction DrawToolsMenu() noexcept;
 
         void DrawOpenWindows() noexcept;
+
+        void Initialize(
+            ID3D11Device* device,
+            ID3D11DeviceContext* context) noexcept;
+
+        void Shutdown() noexcept;
 
     private:
         void DrawCharacterEditor() noexcept;
