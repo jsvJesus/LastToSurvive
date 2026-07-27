@@ -78,8 +78,14 @@ namespace lts::editor
         [[nodiscard]]
         bool IsCompatible() const noexcept
         {
+            /*
+             * Legacy WarZ связывает animation tracks со skeleton
+             * по именам костей, а не запрещает animation из-за
+             * несовпадения экспортного Skeleton ID.
+             *
+             * Skeleton ID остаётся диагностическим предупреждением.
+             */
             return
-                !skeletonIdMismatch &&
                 mappedTrackCount != 0U &&
                 !tracks.empty() &&
                 frameCount != 0U &&

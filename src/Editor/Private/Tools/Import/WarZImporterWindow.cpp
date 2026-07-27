@@ -620,31 +620,53 @@ namespace lts::editor
         if (!animationCompatible_)
         {
             if (selectedAnimationData_.
-                    skeletonIdMismatch)
-            {
-                animationStatus_ =
-                    "Animation Skeleton ID does not match the selected SKL.";
-            }
-            else if (selectedAnimationData_.
-                         mappedTrackCount == 0U)
+                    mappedTrackCount == 0U)
             {
                 animationStatus_ =
                     "Animation contains no tracks for the selected skeleton.";
             }
+            else if (selectedSkeletonData_.
+                         bones.size() >
+                     LegacyAnimationMaximumBones)
+            {
+                animationStatus_ =
+                    "The selected skeleton exceeds the GPU preview bone limit.";
+            }
             else
             {
                 animationStatus_ =
-                    "Animation is not compatible with the preview skeleton.";
+                    "Animation cannot be used by the preview.";
             }
 
             return;
         }
 
-        animationStatus_ =
-            selectedAnimationData_.
-                missingBoneTrackCount != 0U
-                    ? "Animation loaded with unmapped tracks."
-                    : "Animation is compatible with the selected skeleton.";
+        if (selectedAnimationData_.skeletonIdMismatch)
+        {
+            animationStatus_ =
+                "Skeleton ID differs, but WarZ bone-name remapping succeeded: " +
+                std::to_string(
+                    selectedAnimationData_.mappedTrackCount) +
+                " / " +
+                std::to_string(
+                    selectedAnimationData_.tracks.size()) +
+                " tracks mapped.";
+        }
+        else if (selectedAnimationData_.
+                     missingBoneTrackCount != 0U)
+        {
+            animationStatus_ =
+                "Animation loaded with " +
+                std::to_string(
+                    selectedAnimationData_.
+                        missingBoneTrackCount) +
+                " unmapped tracks.";
+        }
+        else
+        {
+            animationStatus_ =
+                "Animation is compatible with the selected skeleton.";
+        }
 
         UpdateAnimationPose();
     }
@@ -1275,18 +1297,31 @@ namespace lts::editor
 
         if (!animationStatus_.empty())
         {
+            const bool hasCompatibilityWarning =
+                animationCompatible_ &&
+                (
+                    selectedAnimationData_.skeletonIdMismatch ||
+                    selectedAnimationData_.missingBoneTrackCount != 0U
+                );
+
             const ImVec4 color =
-                animationCompatible_
+                !animationCompatible_
                     ? ImVec4(
-                        0.35F,
-                        0.85F,
-                        0.45F,
-                        1.0F)
-                    : ImVec4(
                         0.95F,
-                        0.45F,
+                        0.35F,
                         0.25F,
-                        1.0F);
+                        1.0F)
+                    : hasCompatibilityWarning
+                        ? ImVec4(
+                            0.95F,
+                            0.65F,
+                            0.20F,
+                            1.0F)
+                        : ImVec4(
+                            0.35F,
+                            0.85F,
+                            0.45F,
+                            1.0F);
 
             ImGui::TextColored(
                 color,
