@@ -12,6 +12,12 @@ namespace engine::graphics
             case Format::R8UNorm:
             case Format::R8G8UNorm:
             case Format::R8G8B8A8UNorm:
+
+                /*
+                 * uint4 BLENDINDICES для skeletal mesh.
+                 */
+            case Format::R8G8B8A8UInt:
+
             case Format::R16UNorm:
             case Format::R16Float:
             case Format::R16G16Float:
