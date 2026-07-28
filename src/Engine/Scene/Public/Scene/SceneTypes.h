@@ -8,8 +8,6 @@
 
 namespace engine::scene
 {
-    struct CharacterControllerComponent;
-    struct SkeletalMeshComponent;
     using SceneEntityId = std::uint64_t;
 
     enum class SceneEntityKind : std::uint8_t
@@ -174,6 +172,44 @@ namespace engine::scene
     };
 
     /*
+     * Компонент отображаемого скелетного меша.
+     *
+     * Пути намеренно пустые. Конкретный персонаж, NPC или оружие
+     * должны назначать свои ресурсы через Editor, prefab или loader.
+     */
+    struct SkeletalMeshComponent final
+    {
+        std::wstring assetPath;
+        std::wstring skeletonPath;
+
+        std::wstring idleAnimation;
+        std::wstring walkAnimation;
+        std::wstring runAnimation;
+        std::wstring jumpAnimation;
+
+        bool visible = true;
+        bool castShadows = true;
+    };
+
+    struct CharacterControllerComponent final
+    {
+        float capsuleRadius = 0.35F;
+        float capsuleHeight = 1.80F;
+
+        float walkSpeed = 2.5F;
+        float runSpeed = 5.5F;
+        float acceleration = 18.0F;
+        float deceleration = 22.0F;
+
+        float rotationSpeedDegrees = 540.0F;
+        float jumpVelocity = 5.0F;
+        float gravity = 9.81F;
+
+        bool playerControlled = true;
+        bool useRootMotion = false;
+    };
+
+    /*
      * Name и Transform являются обязательными компонентами.
      *
      * Наследование здесь специально сохраняет старый синтаксис:
@@ -212,7 +248,8 @@ namespace engine::scene
         std::optional<StaticMeshComponent>
             staticMesh;
 
-        std::optional<TerrainComponent> terrain;
+        std::optional<TerrainComponent>
+            terrain;
 
         std::optional<DirectionalLightComponent>
             directionalLight;
@@ -232,42 +269,5 @@ namespace engine::scene
         std::vector<SceneEntity> entities;
 
         SceneEntityId nextEntityId = 1U;
-    };
-
-    struct SkeletalMeshComponent final
-    {
-        std::wstring assetPath =
-            L"SkeletalMeshes/Characters/"
-            L"char_lms_body_01.skm";
-
-        std::wstring skeletonPath =
-            L"Skeletons/Characters/"
-            L"CH_Skeletal.sk";
-
-        std::wstring idleAnimation;
-        std::wstring walkAnimation;
-        std::wstring runAnimation;
-        std::wstring jumpAnimation;
-
-        bool visible = true;
-        bool castShadows = true;
-    };
-
-    struct CharacterControllerComponent final
-    {
-        float capsuleRadius = 0.35F;
-        float capsuleHeight = 1.80F;
-
-        float walkSpeed = 2.5F;
-        float runSpeed = 5.5F;
-        float acceleration = 18.0F;
-        float deceleration = 22.0F;
-
-        float rotationSpeedDegrees = 540.0F;
-        float jumpVelocity = 5.0F;
-        float gravity = 9.81F;
-
-        bool playerControlled = true;
-        bool useRootMotion = false;
     };
 }
