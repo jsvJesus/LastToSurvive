@@ -14,6 +14,7 @@ namespace engine::graphics::d3d11::detail
             case Format::R8UNorm: return DXGI_FORMAT_R8_UNORM;
             case Format::R8G8UNorm: return DXGI_FORMAT_R8G8_UNORM;
             case Format::R8G8B8A8UNorm: return DXGI_FORMAT_R8G8B8A8_UNORM;
+            case Format::R8G8B8A8UInt: return DXGI_FORMAT_R8G8B8A8_UINT;
             case Format::R8G8B8A8UNormSrgb: return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
             case Format::B8G8R8A8UNorm: return DXGI_FORMAT_B8G8R8A8_UNORM;
             case Format::B8G8R8A8UNormSrgb: return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
@@ -108,6 +109,9 @@ namespace engine::graphics::d3d11::detail
             return GraphicsResult::Success;
         case Format::R8G8B8A8UNorm:
             outFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+            return GraphicsResult::Success;
+        case Format::R8G8B8A8UInt:
+            outFormat = DXGI_FORMAT_R8G8B8A8_UINT;
             return GraphicsResult::Success;
         case Format::R16UNorm:
             outFormat = DXGI_FORMAT_R16_UNORM;

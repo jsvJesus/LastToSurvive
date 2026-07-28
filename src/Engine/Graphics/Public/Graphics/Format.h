@@ -41,6 +41,11 @@ namespace engine::graphics
         BC7UNorm,
         BC7UNormSrgb,
 
+        /*
+         * Используется для uint4 BLENDINDICES.
+         */
+        R8G8B8A8UInt,
+
         Count
     };
 

@@ -72,6 +72,8 @@ namespace engine::graphics
             return MakeLinear(2);
         case Format::R8G8B8A8UNorm:
             return MakeLinear(4);
+        case Format::R8G8B8A8UInt:
+            return MakeLinear(4);
         case Format::R8G8B8A8UNormSrgb:
             return MakeLinear(4, false, false, true);
         case Format::B8G8R8A8UNorm:
@@ -238,6 +240,8 @@ namespace engine::graphics
             return "R8G8UNorm";
         case Format::R8G8B8A8UNorm:
             return "R8G8B8A8UNorm";
+        case Format::R8G8B8A8UInt:
+            return "R8G8B8A8UInt";
         case Format::R8G8B8A8UNormSrgb:
             return "R8G8B8A8UNormSrgb";
         case Format::B8G8R8A8UNorm:

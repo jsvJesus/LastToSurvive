@@ -8,6 +8,8 @@
 #include <Assets/GpuSkeletalMesh.h>
 #include <Assets/SkeletalMeshAsset.h>
 #include <Assets/SkeletalMeshAssetLoader.h>
+#include <Assets/SkeletonAsset.h>
+#include <Assets/SkeletonAssetLoader.h>
 
 #include <Core/Log.h>
 
@@ -27,6 +29,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
@@ -62,6 +65,28 @@ namespace lts::editor
             DirectX::XMFLOAT4 sunColor;
             DirectX::XMFLOAT4 ambientColor;
         };
+
+        struct alignas(16)
+            SkinningConstants final
+        {
+            /*
+             * x = skinning enabled
+             * y = bone count
+             */
+            DirectX::XMFLOAT4 parameters{};
+
+            std::array<
+                DirectX::XMFLOAT4X4,
+                engine::assets::
+                    MaximumSkeletonBones>
+                boneMatrices{};
+        };
+
+        static_assert(
+            sizeof(SkinningConstants) % 16U == 0U);
+
+        static_assert(
+            sizeof(SkinningConstants) <= 65536U);
 
         static_assert(
             sizeof(ObjectConstants) % 16U == 0U);
@@ -425,6 +450,329 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        std::filesystem::path FindDataRoot(
+            std::filesystem::path current) noexcept
+        {
+            try
+            {
+                current =
+                    current.lexically_normal();
+
+                while (!current.empty())
+                {
+                    if (
+                        LowercasePath(
+                            current.filename().
+                                wstring()) ==
+                        L"data")
+                    {
+                        return current;
+                    }
+
+                    const std::filesystem::path parent =
+                        current.parent_path();
+
+                    if (
+                        parent.empty() ||
+                        parent == current)
+                    {
+                        break;
+                    }
+
+                    current = parent;
+                }
+            }
+            catch (...)
+            {
+            }
+
+            return {};
+        }
+
+        [[nodiscard]]
+        std::filesystem::path ResolveSkeletonFile(
+            const std::filesystem::path&
+                skeletalMeshFile,
+            const std::string&
+                skeletonAssetPath) noexcept
+        {
+            try
+            {
+                if (skeletonAssetPath.empty())
+                {
+                    return {};
+                }
+
+                const std::filesystem::path requested =
+                    std::filesystem::u8path(
+                        skeletonAssetPath);
+
+                std::error_code error;
+
+                if (requested.is_absolute())
+                {
+                    return
+                        std::filesystem::is_regular_file(
+                            requested,
+                            error) &&
+                        !error
+                            ? requested.
+                                lexically_normal()
+                            : std::filesystem::path{};
+                }
+
+                const std::filesystem::path dataRoot =
+                    FindDataRoot(
+                        skeletalMeshFile.
+                            parent_path());
+
+                if (dataRoot.empty())
+                {
+                    return {};
+                }
+
+                /*
+                 * Обычно .skm хранит:
+                 *
+                 * Skeletons/Characters/CH_Skeletal.sk
+                 */
+                std::filesystem::path candidate =
+                    dataRoot /
+                    requested;
+
+                if (std::filesystem::is_regular_file(
+                        candidate,
+                        error) &&
+                    !error)
+                {
+                    return
+                        candidate.lexically_normal();
+                }
+
+                error.clear();
+
+                /*
+                 * Поддержка пути с префиксом Data/.
+                 */
+                candidate =
+                    dataRoot.parent_path() /
+                    requested;
+
+                if (std::filesystem::is_regular_file(
+                        candidate,
+                        error) &&
+                    !error)
+                {
+                    return
+                        candidate.lexically_normal();
+                }
+            }
+            catch (...)
+            {
+            }
+
+            return {};
+        }
+
+        [[nodiscard]]
+        DirectX::XMMATRIX LoadMatrix(
+            const std::array<float, 16U>&
+                source) noexcept
+        {
+            DirectX::XMFLOAT4X4 stored;
+
+            std::memcpy(
+                &stored,
+                source.data(),
+                sizeof(stored));
+
+            return DirectX::XMLoadFloat4x4(
+                &stored);
+        }
+
+        void StoreMatrix(
+            const DirectX::XMMATRIX& matrix,
+            DirectX::XMFLOAT4X4&
+                destination) noexcept
+        {
+            DirectX::XMStoreFloat4x4(
+                &destination,
+                matrix);
+        }
+
+        [[nodiscard]]
+        bool InvertMatrix(
+            const DirectX::XMMATRIX& source,
+            DirectX::XMMATRIX& inverse) noexcept
+        {
+            DirectX::XMVECTOR determinant;
+
+            inverse =
+                DirectX::XMMatrixInverse(
+                    &determinant,
+                    source);
+
+            const float value =
+                DirectX::XMVectorGetX(
+                    determinant);
+
+            return
+                std::isfinite(value) &&
+                std::fabs(value) >
+                    0.0000001F;
+        }
+
+        [[nodiscard]]
+        bool BuildBindPoseSkinningConstants(
+            const engine::assets::SkeletonAsset&
+                skeleton,
+            const std::array<float, 3U>& pivot,
+            SkinningConstants& output) noexcept
+        {
+            if (!skeleton.IsValid())
+            {
+                return false;
+            }
+
+            output = {};
+
+            output.parameters =
+            {
+                1.0F,
+                static_cast<float>(
+                    skeleton.GetBoneCount()),
+                0.0F,
+                0.0F
+            };
+
+            for (
+                DirectX::XMFLOAT4X4& matrix :
+                output.boneMatrices)
+            {
+                DirectX::XMStoreFloat4x4(
+                    &matrix,
+                    DirectX::XMMatrixIdentity());
+            }
+
+            const DirectX::XMMATRIX pivotTransform =
+                DirectX::XMMatrixTranslation(
+                    -pivot[0],
+                    -pivot[1],
+                    -pivot[2]);
+
+            for (
+                std::size_t boneIndex = 0U;
+                boneIndex <
+                    skeleton.GetBoneCount();
+                ++boneIndex)
+            {
+                const engine::assets::SkeletonBone*
+                    bone =
+                        skeleton.GetBone(
+                            boneIndex);
+
+                if (bone == nullptr)
+                {
+                    return false;
+                }
+
+                const DirectX::XMMATRIX bindMatrix =
+                    LoadMatrix(
+                        bone->
+                            absoluteBindMatrix);
+
+                /*
+                 * То же преобразование pivot,
+                 * которое используется старым preview.
+                 */
+                const DirectX::XMMATRIX shiftedBind =
+                    bindMatrix *
+                    pivotTransform;
+
+                /*
+                 * Пока current pose равна bind pose.
+                 *
+                 * На следующем этапе shiftedCurrent
+                 * будет получаться из .anim.
+                 */
+                const DirectX::XMMATRIX shiftedCurrent =
+                    bindMatrix *
+                    pivotTransform;
+
+                DirectX::XMMATRIX inverseBind;
+
+                if (!InvertMatrix(
+                        shiftedBind,
+                        inverseBind))
+                {
+                    return false;
+                }
+
+                StoreMatrix(
+                    inverseBind *
+                        shiftedCurrent,
+                    output.boneMatrices[
+                        boneIndex]);
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool ValidateMeshSkeleton(
+            const engine::assets::
+                SkeletalMeshAsset& mesh,
+            const engine::assets::
+                SkeletonAsset& skeleton) noexcept
+        {
+            if (
+                !mesh.IsValid() ||
+                !skeleton.IsValid())
+            {
+                return false;
+            }
+
+            const engine::assets::
+                SkeletalMeshVertex* vertices =
+                    mesh.GetVertexData();
+
+            if (vertices == nullptr)
+            {
+                return false;
+            }
+
+            for (
+                std::size_t vertexIndex = 0U;
+                vertexIndex <
+                    mesh.GetVertexCount();
+                ++vertexIndex)
+            {
+                const auto& vertex =
+                    vertices[vertexIndex];
+
+                for (
+                    std::size_t influence = 0U;
+                    influence < 4U;
+                    ++influence)
+                {
+                    if (
+                        vertex.boneWeights[
+                            influence] >
+                            0.000001F &&
+                        static_cast<std::size_t>(
+                            vertex.boneIndices[
+                                influence]) >=
+                            skeleton.GetBoneCount())
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
         engine::assets::AssetResult ReadAssetData(
             const std::filesystem::path& path,
             engine::assets::AssetData&
@@ -524,6 +872,7 @@ namespace lts::editor
                 const std::filesystem::path&
                     logicalPath,
                 const std::size_t sourceSize,
+                const engine::assets::AssetType type,
                 engine::assets::AssetMetadata&
                     metadata) noexcept
         {
@@ -547,9 +896,7 @@ namespace lts::editor
             metadata.path = std::move(path);
             metadata.id = metadata.path.GetId();
 
-            metadata.type =
-                engine::assets::
-                    AssetType::SkeletalMesh;
+            metadata.type = type;
 
             metadata.schemaVersion = 1U;
             metadata.sourceSize = sourceSize;
@@ -608,11 +955,21 @@ namespace lts::editor
 
     class ModularCharacterRenderer::Impl final
     {
+        struct CachedSkeleton final
+        {
+            engine::assets::SkeletonAsset asset;
+        };
+
         struct CachedMesh final
         {
             std::unique_ptr<
                 engine::assets::GpuSkeletalMesh>
                 gpu;
+
+            std::shared_ptr<CachedSkeleton>
+                skeleton;
+
+            SkinningConstants bindPose;
         };
 
     public:
@@ -639,7 +996,7 @@ namespace lts::editor
              * тот же shader, что и StaticMeshRenderer.
              */
             if (!CompileEditorShaderFile(
-                    L"StaticMesh.hlsl",
+                    L"ModularCharacter.hlsl",
                     "VSMain",
                     "vs_5_0",
                     "LTS.Editor.ModularCharacter",
@@ -650,7 +1007,7 @@ namespace lts::editor
             }
 
             if (!CompileEditorShaderFile(
-                    L"StaticMesh.hlsl",
+                    L"ModularCharacter.hlsl",
                     "PSMain",
                     "ps_5_0",
                     "LTS.Editor.ModularCharacter",
@@ -736,7 +1093,7 @@ namespace lts::editor
             const std::array<
                 engine::graphics::
                     VertexElementDesc,
-                4U>
+                6U>
                 elements
                 {{
                     {
@@ -779,6 +1136,28 @@ namespace lts::editor
                             Format::R32G32Float,
                         0U,
                         40U,
+                        engine::graphics::
+                            VertexInputRate::PerVertex,
+                        0U
+                    },
+                    {
+                        "BLENDINDICES",
+                        0U,
+                        engine::graphics::
+                            Format::R8G8B8A8UInt,
+                        0U,
+                        48U,
+                        engine::graphics::
+                            VertexInputRate::PerVertex,
+                        0U
+                    },
+                    {
+                        "BLENDWEIGHT",
+                        0U,
+                        engine::graphics::
+                            Format::R32G32B32A32Float,
+                        0U,
+                        52U,
                         engine::graphics::
                             VertexInputRate::PerVertex,
                         0U
@@ -848,6 +1227,25 @@ namespace lts::editor
                     constantDescription,
                     nullptr,
                     objectBuffer_);
+
+            constantDescription.byteSize =
+                sizeof(SkinningConstants);
+
+            result =
+                device.CreateBuffer(
+                    constantDescription,
+                    nullptr,
+                    skinningBuffer_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create modular character skinning buffer",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
 
             if (engine::graphics::Failed(result))
             {
@@ -949,6 +1347,8 @@ namespace lts::editor
 
             meshes_.clear();
             failedMeshes_.clear();
+            skeletons_.clear();
+            failedSkeletons_.clear();
 
             if (pipeline_.IsValid())
             {
@@ -984,6 +1384,15 @@ namespace lts::editor
                         vertexShader_));
 
                 vertexShader_ = {};
+            }
+
+            if (skinningBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        skinningBuffer_));
+
+                skinningBuffer_ = {};
             }
 
             if (objectBuffer_.IsValid())
@@ -1022,13 +1431,22 @@ namespace lts::editor
                 return result;
             }
 
+            const std::array<
+                engine::graphics::BufferHandle,
+                2U>
+                vertexConstantBuffers
+                {{
+                    objectBuffer_,
+                    skinningBuffer_
+                }};
+
             result =
                 context.SetConstantBuffers(
                     engine::graphics::
                         ShaderStage::Vertex,
                     0U,
-                    &objectBuffer_,
-                    1U);
+                    vertexConstantBuffers.data(),
+                    vertexConstantBuffers.size());
 
             if (engine::graphics::Failed(result))
             {
@@ -1044,6 +1462,27 @@ namespace lts::editor
                     0U,
                     &objectBuffer_,
                     1U);
+
+            if (engine::graphics::Failed(result))
+            {
+                static_cast<void>(
+                    context.UnbindConstantBuffers(
+                        engine::graphics::
+                            ShaderStage::Vertex,
+                        0U,
+                        vertexConstantBuffers.size()));
+
+                context.UnbindGraphicsPipeline();
+
+                return result;
+            }
+
+            if (engine::graphics::Failed(result))
+            {
+                context.UnbindGraphicsPipeline();
+
+                return result;
+            }
 
             if (engine::graphics::Failed(result))
             {
@@ -1191,6 +1630,19 @@ namespace lts::editor
                     engine::assets::
                         GpuSkeletalMesh* const mesh =
                             cached->gpu.get();
+
+                    result =
+                        context.UpdateBuffer(
+                            skinningBuffer_,
+                            &cached->bindPose,
+                            sizeof(
+                                cached->bindPose));
+
+                    if (engine::graphics::Failed(
+                            result))
+                    {
+                        break;
+                    }
 
                     constants.baseColor =
                         GetSlotColor(slot);
@@ -1364,25 +1816,18 @@ namespace lts::editor
                     return nullptr;
                 }
 
-                std::unique_ptr<
-                    engine::assets::GpuSkeletalMesh>
-                    gpuMesh =
-                        LoadGpuMesh(
-                            resolvedPath,
-                            std::filesystem::path(
-                                assetPath));
+                CachedMesh cached;
 
-                if (gpuMesh == nullptr)
+                if (!LoadMesh(
+                        resolvedPath,
+                        std::filesystem::path(
+                            assetPath),
+                        cached))
                 {
                     failedMeshes_.insert(key);
 
                     return nullptr;
                 }
-
-                CachedMesh cached;
-
-                cached.gpu =
-                    std::move(gpuMesh);
 
                 auto insertion =
                     meshes_.emplace(
@@ -1398,13 +1843,159 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        std::unique_ptr<
-            engine::assets::GpuSkeletalMesh>
-                LoadGpuMesh(
-                    const std::filesystem::path&
+        std::shared_ptr<CachedSkeleton>
+            GetOrLoadSkeleton(
+                const std::filesystem::path&
+                    filePath,
+                const std::filesystem::path&
+                    logicalPath) noexcept
+        {
+            try
+            {
+                const std::wstring key =
+                    LowercasePath(
+                        filePath.
+                            lexically_normal().
+                            wstring());
+
+                const auto existing =
+                    skeletons_.find(key);
+
+                if (existing != skeletons_.end())
+                {
+                    return existing->second;
+                }
+
+                if (
+                    failedSkeletons_.find(key) !=
+                    failedSkeletons_.end())
+                {
+                    return nullptr;
+                }
+
+                engine::assets::AssetData source;
+
+                engine::assets::AssetResult result =
+                    ReadAssetData(
                         filePath,
-                    const std::filesystem::path&
-                        logicalPath) noexcept
+                        source);
+
+                if (engine::assets::Failed(result))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Read skeleton",
+                        result);
+
+                    failedSkeletons_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::AssetMetadata metadata;
+
+                result =
+                    CreateMetadata(
+                        logicalPath,
+                        source.GetSize(),
+                        engine::assets::
+                            AssetType::Skeleton,
+                        metadata);
+
+                if (engine::assets::Failed(result))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Create skeleton metadata",
+                        result);
+
+                    failedSkeletons_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::
+                    SkeletonAssetLoader loader;
+
+                std::unique_ptr<
+                    engine::assets::LoadedAsset>
+                    loadedAsset;
+
+                result =
+                    loader.Load(
+                        metadata,
+                        source,
+                        loadedAsset);
+
+                if (
+                    engine::assets::Failed(result) ||
+                    loadedAsset == nullptr ||
+                    loadedAsset->GetType() !=
+                        engine::assets::
+                            AssetType::Skeleton)
+                {
+                    if (
+                        engine::assets::Succeeded(
+                            result))
+                    {
+                        result =
+                            engine::assets::
+                                AssetResult::
+                                    TypeMismatch;
+                    }
+
+                    LogAssetFailure(
+                        filePath,
+                        "Load skeleton",
+                        result);
+
+                    failedSkeletons_.insert(key);
+                    return nullptr;
+                }
+
+                auto* const loadedSkeleton =
+                    static_cast<
+                        engine::assets::
+                            SkeletonLoadedAsset*>(
+                                loadedAsset.get());
+
+                auto cached =
+                    std::make_shared<
+                        CachedSkeleton>();
+
+                cached->asset =
+                    loadedSkeleton->
+                        ReleaseSkeleton();
+
+                skeletons_.emplace(
+                    key,
+                    cached);
+
+                return cached;
+            }
+            catch (const std::bad_alloc&)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.ModularCharacter",
+                    "Not enough memory to load skeleton.");
+
+                return nullptr;
+            }
+            catch (...)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.ModularCharacter",
+                    "Unexpected skeleton loading failure.");
+
+                return nullptr;
+            }
+        }
+
+        [[nodiscard]]
+        bool LoadMesh(
+            const std::filesystem::path& filePath,
+            const std::filesystem::path& logicalPath,
+            CachedMesh& output) noexcept
         {
             try
             {
@@ -1424,16 +2015,17 @@ namespace lts::editor
                         "Read skeletal mesh",
                         assetResult);
 
-                    return nullptr;
+                    return false;
                 }
 
-                engine::assets::AssetMetadata
-                    metadata;
+                engine::assets::AssetMetadata metadata;
 
                 assetResult =
                     CreateMetadata(
                         logicalPath,
                         source.GetSize(),
+                        engine::assets::
+                            AssetType::SkeletalMesh,
                         metadata);
 
                 if (engine::assets::Failed(
@@ -1444,7 +2036,7 @@ namespace lts::editor
                         "Create skeletal mesh metadata",
                         assetResult);
 
-                    return nullptr;
+                    return false;
                 }
 
                 engine::assets::
@@ -1483,7 +2075,7 @@ namespace lts::editor
                         "Load skeletal mesh",
                         assetResult);
 
-                    return nullptr;
+                    return false;
                 }
 
                 auto* const loadedMesh =
@@ -1496,6 +2088,68 @@ namespace lts::editor
                     cpuMesh =
                         loadedMesh->
                             ReleaseSkeletalMesh();
+
+                const std::filesystem::path
+                    skeletonFile =
+                        ResolveSkeletonFile(
+                            filePath,
+                            cpuMesh.
+                                GetSkeletonAssetPath());
+
+                if (skeletonFile.empty())
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.ModularCharacter",
+                        "Skeleton referenced by .skm was not found.");
+
+                    return false;
+                }
+
+                const std::filesystem::path
+                    logicalSkeletonPath =
+                        std::filesystem::u8path(
+                            cpuMesh.
+                                GetSkeletonAssetPath());
+
+                std::shared_ptr<CachedSkeleton>
+                    skeleton =
+                        GetOrLoadSkeleton(
+                            skeletonFile,
+                            logicalSkeletonPath);
+
+                if (skeleton == nullptr)
+                {
+                    return false;
+                }
+
+                if (!ValidateMeshSkeleton(
+                        cpuMesh,
+                        skeleton->asset))
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.ModularCharacter",
+                        "Skeletal mesh contains a bone index "
+                        "outside the loaded skeleton.");
+
+                    return false;
+                }
+
+                SkinningConstants bindPose;
+
+                if (!BuildBindPoseSkinningConstants(
+                        skeleton->asset,
+                        cpuMesh.GetPivot(),
+                        bindPose))
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.ModularCharacter",
+                        "Failed to build skeleton bind matrices.");
+
+                    return false;
+                }
 
                 auto gpuMesh =
                     std::make_unique<
@@ -1515,10 +2169,19 @@ namespace lts::editor
                         "Upload skeletal mesh",
                         uploadResult);
 
-                    return nullptr;
+                    return false;
                 }
 
-                return gpuMesh;
+                output.gpu =
+                    std::move(gpuMesh);
+
+                output.skeleton =
+                    std::move(skeleton);
+
+                output.bindPose =
+                    bindPose;
+
+                return true;
             }
             catch (const std::bad_alloc&)
             {
@@ -1527,7 +2190,7 @@ namespace lts::editor
                     "LTS.Editor.ModularCharacter",
                     "Not enough memory to load a skeletal mesh.");
 
-                return nullptr;
+                return false;
             }
             catch (...)
             {
@@ -1536,7 +2199,7 @@ namespace lts::editor
                     "LTS.Editor.ModularCharacter",
                     "Unexpected skeletal mesh loading failure.");
 
-                return nullptr;
+                return false;
             }
         }
 
@@ -1545,6 +2208,9 @@ namespace lts::editor
 
         engine::graphics::BufferHandle
             objectBuffer_;
+
+        engine::graphics::BufferHandle
+            skinningBuffer_;
 
         engine::graphics::ShaderHandle
             vertexShader_;
@@ -1563,8 +2229,16 @@ namespace lts::editor
             CachedMesh>
             meshes_;
 
+        std::unordered_map<
+            std::wstring,
+            std::shared_ptr<CachedSkeleton>>
+            skeletons_;
+
         std::unordered_set<std::wstring>
             failedMeshes_;
+
+        std::unordered_set<std::wstring>
+            failedSkeletons_;
 
         bool initialized_ = false;
     };

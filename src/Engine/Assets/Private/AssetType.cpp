@@ -40,6 +40,9 @@ namespace engine::assets
         case AssetType::SkeletalMesh:
             return "SkeletalMesh";
 
+        case AssetType::Skeleton:
+            return "Skeleton";
+
         default:
             return "Unknown";
         }
