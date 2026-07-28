@@ -737,6 +737,86 @@ namespace lts::editor
             output = path; CoTaskMemFree(path); return true;
         }
 
+        [[nodiscard]]
+        bool SelectAnimationFile(
+            const HWND owner,
+            std::filesystem::path& output)
+        {
+            Microsoft::WRL::ComPtr<
+                IFileOpenDialog>
+                dialog;
+
+            if (FAILED(
+                    CoCreateInstance(
+                        CLSID_FileOpenDialog,
+                        nullptr,
+                        CLSCTX_INPROC_SERVER,
+                        IID_PPV_ARGS(
+                            &dialog))))
+            {
+                return false;
+            }
+
+            constexpr COMDLG_FILTERSPEC
+                filters[]
+                {
+                    {
+                        L"LTS Animation (*.anim)",
+                        L"*.anim"
+                    },
+                    {
+                        L"All files (*.*)",
+                        L"*.*"
+                    }
+                };
+
+            if (
+                FAILED(
+                    dialog->SetFileTypes(
+                        2U,
+                        filters)) ||
+                FAILED(
+                    dialog->
+                        SetDefaultExtension(
+                            L"anim")) ||
+                FAILED(
+                    dialog->SetTitle(
+                        L"Select Idle Animation")) ||
+                FAILED(
+                    dialog->Show(owner)))
+            {
+                return false;
+            }
+
+            Microsoft::WRL::ComPtr<
+                IShellItem>
+                item;
+
+            if (FAILED(
+                    dialog->GetResult(
+                        &item)))
+            {
+                return false;
+            }
+
+            PWSTR selectedPath = nullptr;
+
+            if (FAILED(
+                    item->GetDisplayName(
+                        SIGDN_FILESYSPATH,
+                        &selectedPath)))
+            {
+                return false;
+            }
+
+            output = selectedPath;
+
+            CoTaskMemFree(
+                selectedPath);
+
+            return true;
+        }
+
         [[nodiscard]] bool SelectTerrainTexture(
             const HWND owner, std::filesystem::path& output)
         {
@@ -2799,6 +2879,110 @@ namespace lts::editor
                     if (autoFirstPersonBody)
                     {
                         ImGui::EndDisabled();
+                    }
+
+                    ImGui::SeparatorText(
+                        "Animation Preview");
+
+                    const std::string
+                        idleAnimationLabel =
+                            current.
+                                idleAnimation.empty()
+                                ? std::string(
+                                    "<None>")
+                                : ToUtf8(
+                                    current.
+                                        idleAnimation);
+
+                    ImGui::TextWrapped(
+                        "Idle: %s",
+                        idleAnimationLabel.
+                            c_str());
+
+                    if (ImGui::Button(
+                            "Select Idle Animation..."))
+                    {
+                        std::filesystem::path
+                            selectedAnimation;
+
+                        const HWND owner =
+                            reinterpret_cast<HWND>(
+                                GetWindow().
+                                    GetNativeHandle().
+                                    Value());
+
+                        if (SelectAnimationFile(
+                                owner,
+                                selectedAnimation))
+                        {
+                            std::wstring storedPath;
+
+                            const std::filesystem::path
+                                gameRoot =
+                                    FindEditorGameRoot();
+
+                            std::error_code
+                                relativeError;
+
+                            const std::filesystem::path
+                                relativePath =
+                                    std::filesystem::
+                                        relative(
+                                            selectedAnimation,
+                                            gameRoot,
+                                            relativeError);
+
+                            const std::wstring
+                                relativeText =
+                                    relativePath.
+                                        generic_wstring();
+
+                            if (
+                                !relativeError &&
+                                !relativeText.empty() &&
+                                relativeText.rfind(
+                                    L"..",
+                                    0U) != 0U)
+                            {
+                                storedPath =
+                                    relativeText;
+                            }
+                            else
+                            {
+                                storedPath =
+                                    selectedAnimation.
+                                        lexically_normal().
+                                        generic_wstring();
+                            }
+
+                            engine::scene::
+                                SkeletalMeshComponent
+                                    updated =
+                                        current;
+
+                            updated.idleAnimation =
+                                std::move(
+                                    storedPath);
+
+                            applyCharacter(
+                                std::move(updated));
+                        }
+                    }
+
+                    ImGui::SameLine();
+
+                    if (ImGui::Button(
+                            "Clear Idle"))
+                    {
+                        engine::scene::
+                            SkeletalMeshComponent
+                                updated =
+                                    current;
+
+                        updated.idleAnimation.clear();
+
+                        applyCharacter(
+                            std::move(updated));
                     }
 
                     bool characterVisible =

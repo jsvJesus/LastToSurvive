@@ -5,6 +5,8 @@
 #include <Assets/AssetMetadata.h>
 #include <Assets/AssetPath.h>
 #include <Assets/AssetResult.h>
+#include <Assets/AnimationAsset.h>
+#include <Assets/AnimationAssetLoader.h>
 #include <Assets/GpuSkeletalMesh.h>
 #include <Assets/SkeletalMeshAsset.h>
 #include <Assets/SkeletalMeshAssetLoader.h>
@@ -30,6 +32,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <chrono>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
@@ -66,8 +69,7 @@ namespace lts::editor
             DirectX::XMFLOAT4 ambientColor;
         };
 
-        struct alignas(16)
-            SkinningConstants final
+        struct SkinningConstants final
         {
             /*
              * x = skinning enabled
@@ -623,15 +625,151 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool BuildBindPoseSkinningConstants(
+        DirectX::XMMATRIX
+            BuildAnimationTrackMatrix(
+                const engine::assets::
+                    AnimationTrack& track,
+                const std::uint32_t firstFrame,
+                const std::uint32_t secondFrame,
+                const float interpolation) noexcept
+        {
+            const engine::assets::AnimationKey&
+                first =
+                    track.keys[firstFrame];
+
+            const engine::assets::AnimationKey&
+                second =
+                    track.keys[secondFrame];
+
+            DirectX::XMVECTOR firstRotation =
+                DirectX::XMVectorSet(
+                    first.rotation[0],
+                    first.rotation[1],
+                    first.rotation[2],
+                    first.rotation[3]);
+
+            DirectX::XMVECTOR secondRotation =
+                DirectX::XMVectorSet(
+                    second.rotation[0],
+                    second.rotation[1],
+                    second.rotation[2],
+                    second.rotation[3]);
+
+            firstRotation =
+                DirectX::XMQuaternionNormalize(
+                    firstRotation);
+
+            secondRotation =
+                DirectX::XMQuaternionNormalize(
+                    secondRotation);
+
+            const DirectX::XMVECTOR rotation =
+                DirectX::XMQuaternionSlerp(
+                    firstRotation,
+                    secondRotation,
+                    interpolation);
+
+            const float translationX =
+                first.translation[0] +
+                (
+                    second.translation[0] -
+                    first.translation[0]
+                ) *
+                interpolation;
+
+            const float translationY =
+                first.translation[1] +
+                (
+                    second.translation[1] -
+                    first.translation[1]
+                ) *
+                interpolation;
+
+            const float translationZ =
+                first.translation[2] +
+                (
+                    second.translation[2] -
+                    first.translation[2]
+                ) *
+                interpolation;
+
+            DirectX::XMFLOAT4X4 stored;
+
+            DirectX::XMStoreFloat4x4(
+                &stored,
+                DirectX::XMMatrixRotationQuaternion(
+                    rotation));
+
+            stored._41 = translationX;
+            stored._42 = translationY;
+            stored._43 = translationZ;
+
+            return DirectX::XMLoadFloat4x4(
+                &stored);
+        }
+
+        [[nodiscard]]
+        bool BuildSkinningConstants(
             const engine::assets::SkeletonAsset&
                 skeleton,
+            const engine::assets::AnimationAsset*
+                animation,
             const std::array<float, 3U>& pivot,
+            const double elapsedSeconds,
             SkinningConstants& output) noexcept
         {
             if (!skeleton.IsValid())
             {
                 return false;
+            }
+
+            const bool useAnimation =
+                animation != nullptr &&
+                animation->IsCompatibleWith(
+                    skeleton);
+
+            std::uint32_t firstFrame = 0U;
+            std::uint32_t secondFrame = 0U;
+
+            float interpolation = 0.0F;
+
+            if (useAnimation)
+            {
+                const double frameCount =
+                    static_cast<double>(
+                        animation->
+                            GetFrameCount());
+
+                const double framePosition =
+                    std::fmod(
+                        (std::max)(
+                            elapsedSeconds,
+                            0.0) *
+                        static_cast<double>(
+                            animation->
+                                GetFrameRate()),
+                        frameCount);
+
+                firstFrame =
+                    static_cast<std::uint32_t>(
+                        std::floor(
+                            framePosition));
+
+                secondFrame =
+                    firstFrame + 1U;
+
+                if (
+                    secondFrame >=
+                    animation->GetFrameCount())
+                {
+                    secondFrame = 0U;
+                }
+
+                interpolation =
+                    static_cast<float>(
+                        framePosition -
+                        static_cast<double>(
+                            firstFrame));
             }
 
             output = {};
@@ -641,7 +779,7 @@ namespace lts::editor
                 1.0F,
                 static_cast<float>(
                     skeleton.GetBoneCount()),
-                0.0F,
+                useAnimation ? 1.0F : 0.0F,
                 0.0F
             };
 
@@ -653,6 +791,12 @@ namespace lts::editor
                     &matrix,
                     DirectX::XMMatrixIdentity());
             }
+
+            std::array<
+                DirectX::XMFLOAT4X4,
+                engine::assets::
+                    MaximumSkeletonBones>
+                currentAbsolute{};
 
             const DirectX::XMMATRIX pivotTransform =
                 DirectX::XMMatrixTranslation(
@@ -681,23 +825,131 @@ namespace lts::editor
                         bone->
                             absoluteBindMatrix);
 
-                /*
-                 * То же преобразование pivot,
-                 * которое используется старым preview.
-                 */
+                DirectX::XMMATRIX bindLocalMatrix =
+                    bindMatrix;
+
+                if (bone->parentIndex >= 0)
+                {
+                    const std::size_t parentIndex =
+                        static_cast<std::size_t>(
+                            bone->parentIndex);
+
+                    if (
+                        parentIndex >= boneIndex ||
+                        parentIndex >=
+                            skeleton.GetBoneCount())
+                    {
+                        return false;
+                    }
+
+                    const engine::assets::
+                        SkeletonBone* parentBone =
+                            skeleton.GetBone(
+                                parentIndex);
+
+                    if (parentBone == nullptr)
+                    {
+                        return false;
+                    }
+
+                    DirectX::XMMATRIX
+                        inverseParentBind;
+
+                    if (!InvertMatrix(
+                            LoadMatrix(
+                                parentBone->
+                                    absoluteBindMatrix),
+                            inverseParentBind))
+                    {
+                        return false;
+                    }
+
+                    bindLocalMatrix =
+                        bindMatrix *
+                        inverseParentBind;
+                }
+
+                DirectX::XMMATRIX localMatrix =
+                    bindLocalMatrix;
+
+                if (useAnimation)
+                {
+                    const engine::assets::
+                        AnimationTrack* track =
+                            animation->
+                                GetTrackForBone(
+                                    boneIndex);
+
+                    if (track != nullptr)
+                    {
+                        localMatrix =
+                            BuildAnimationTrackMatrix(
+                                *track,
+                                firstFrame,
+                                secondFrame,
+                                interpolation);
+
+                        /*
+                         * Пока root motion не подключён
+                         * к CharacterController, блокируем
+                         * горизонтальное перемещение root.
+                         */
+                        if (bone->parentIndex < 0)
+                        {
+                            DirectX::XMFLOAT4X4
+                                animatedLocal;
+
+                            DirectX::XMFLOAT4X4
+                                bindLocal;
+
+                            DirectX::XMStoreFloat4x4(
+                                &animatedLocal,
+                                localMatrix);
+
+                            DirectX::XMStoreFloat4x4(
+                                &bindLocal,
+                                bindLocalMatrix);
+
+                            animatedLocal._41 =
+                                bindLocal._41;
+
+                            animatedLocal._43 =
+                                bindLocal._43;
+
+                            localMatrix =
+                                DirectX::
+                                    XMLoadFloat4x4(
+                                        &animatedLocal);
+                        }
+                    }
+                }
+
+                DirectX::XMMATRIX absoluteMatrix =
+                    localMatrix;
+
+                if (bone->parentIndex >= 0)
+                {
+                    absoluteMatrix *=
+                        DirectX::XMLoadFloat4x4(
+                            &currentAbsolute[
+                                static_cast<
+                                    std::size_t>(
+                                        bone->
+                                            parentIndex)]);
+                }
+
+                DirectX::XMStoreFloat4x4(
+                    &currentAbsolute[boneIndex],
+                    absoluteMatrix);
+
                 const DirectX::XMMATRIX shiftedBind =
                     bindMatrix *
                     pivotTransform;
 
-                /*
-                 * Пока current pose равна bind pose.
-                 *
-                 * На следующем этапе shiftedCurrent
-                 * будет получаться из .anim.
-                 */
-                const DirectX::XMMATRIX shiftedCurrent =
-                    bindMatrix *
-                    pivotTransform;
+                const DirectX::XMMATRIX
+                    shiftedCurrent =
+                        absoluteMatrix *
+                        pivotTransform;
 
                 DirectX::XMMATRIX inverseBind;
 
@@ -960,6 +1212,14 @@ namespace lts::editor
             engine::assets::SkeletonAsset asset;
         };
 
+        struct CachedAnimation final
+        {
+            engine::assets::AnimationAsset asset;
+
+            std::chrono::steady_clock::time_point
+                startedAt;
+        };
+
         struct CachedMesh final
         {
             std::unique_ptr<
@@ -969,7 +1229,7 @@ namespace lts::editor
             std::shared_ptr<CachedSkeleton>
                 skeleton;
 
-            SkinningConstants bindPose;
+            std::array<float, 3U> pivot{};
         };
 
     public:
@@ -1228,6 +1488,16 @@ namespace lts::editor
                     nullptr,
                     objectBuffer_);
 
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create modular character object buffer",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
             constantDescription.byteSize =
                 sizeof(SkinningConstants);
 
@@ -1241,16 +1511,6 @@ namespace lts::editor
             {
                 LogGraphicsFailure(
                     "Create modular character skinning buffer",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create modular character constant buffer",
                     result);
 
                 Shutdown(device);
@@ -1349,6 +1609,8 @@ namespace lts::editor
             failedMeshes_.clear();
             skeletons_.clear();
             failedSkeletons_.clear();
+            animations_.clear();
+            failedAnimations_.clear();
 
             if (pipeline_.IsValid())
             {
@@ -1448,13 +1710,6 @@ namespace lts::editor
                     vertexConstantBuffers.data(),
                     vertexConstantBuffers.size());
 
-            if (engine::graphics::Failed(result))
-            {
-                context.UnbindGraphicsPipeline();
-
-                return result;
-            }
-
             result =
                 context.SetConstantBuffers(
                     engine::graphics::
@@ -1472,13 +1727,6 @@ namespace lts::editor
                         0U,
                         vertexConstantBuffers.size()));
 
-                context.UnbindGraphicsPipeline();
-
-                return result;
-            }
-
-            if (engine::graphics::Failed(result))
-            {
                 context.UnbindGraphicsPipeline();
 
                 return result;
@@ -1549,6 +1797,34 @@ namespace lts::editor
 
                 const auto& component =
                     *entity.skeletalMesh;
+
+                std::shared_ptr<CachedAnimation>
+                    currentAnimation;
+
+                double animationSeconds = 0.0;
+
+                if (
+                    !component.
+                        idleAnimation.empty())
+                {
+                    currentAnimation =
+                        GetOrLoadAnimation(
+                            component.
+                                idleAnimation);
+
+                    if (currentAnimation != nullptr)
+                    {
+                        animationSeconds =
+                            std::chrono::duration<
+                                double>(
+                                    std::chrono::
+                                        steady_clock::
+                                            now() -
+                                    currentAnimation->
+                                        startedAt)
+                                .count();
+                    }
+                }
 
                 ObjectConstants constants{};
 
@@ -1631,12 +1907,46 @@ namespace lts::editor
                         GpuSkeletalMesh* const mesh =
                             cached->gpu.get();
 
+                    SkinningConstants skinning;
+
+                    const engine::assets::
+                        AnimationAsset*
+                            animationAsset =
+                                currentAnimation !=
+                                    nullptr
+                                    ? &currentAnimation->
+                                        asset
+                                    : nullptr;
+
+                    if (!BuildSkinningConstants(
+                            cached->skeleton->asset,
+                            animationAsset,
+                            cached->pivot,
+                            animationSeconds,
+                            skinning))
+                    {
+                        /*
+                         * Несовместимая анимация не должна
+                         * скрывать персонажа. Возвращаемся
+                         * к bind pose.
+                         */
+                        if (!BuildSkinningConstants(
+                                cached->
+                                    skeleton->asset,
+                                nullptr,
+                                cached->pivot,
+                                0.0,
+                                skinning))
+                        {
+                            continue;
+                        }
+                    }
+
                     result =
                         context.UpdateBuffer(
                             skinningBuffer_,
-                            &cached->bindPose,
-                            sizeof(
-                                cached->bindPose));
+                            &skinning,
+                            sizeof(skinning));
 
                     if (engine::graphics::Failed(
                             result))
@@ -1752,7 +2062,7 @@ namespace lts::editor
                     engine::graphics::
                         ShaderStage::Vertex,
                     0U,
-                    1U));
+                    2U));
 
             static_cast<void>(
                 context.UnbindConstantBuffers(
@@ -1992,6 +2302,183 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        std::shared_ptr<CachedAnimation>
+            GetOrLoadAnimation(
+                const std::wstring&
+                    assetPath) noexcept
+        {
+            try
+            {
+                const std::filesystem::path
+                    resolvedPath =
+                        ResolveAssetFile(
+                            assetPath);
+
+                if (resolvedPath.empty())
+                {
+                    const std::wstring key =
+                        LowercasePath(assetPath);
+
+                    if (
+                        failedAnimations_.
+                            insert(key).second)
+                    {
+                        engine::core::GetLogger().
+                            Write(
+                                engine::core::
+                                    LogLevel::Error,
+                                "LTS.Editor.ModularCharacter",
+                                "Animation file was not found.");
+                    }
+
+                    return nullptr;
+                }
+
+                const std::wstring key =
+                    LowercasePath(
+                        resolvedPath.
+                            lexically_normal().
+                            wstring());
+
+                const auto existing =
+                    animations_.find(key);
+
+                if (existing != animations_.end())
+                {
+                    return existing->second;
+                }
+
+                if (
+                    failedAnimations_.find(key) !=
+                    failedAnimations_.end())
+                {
+                    return nullptr;
+                }
+
+                engine::assets::AssetData source;
+
+                engine::assets::AssetResult result =
+                    ReadAssetData(
+                        resolvedPath,
+                        source);
+
+                if (engine::assets::Failed(result))
+                {
+                    LogAssetFailure(
+                        resolvedPath,
+                        "Read animation",
+                        result);
+
+                    failedAnimations_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::AssetMetadata metadata;
+
+                result =
+                    CreateMetadata(
+                        std::filesystem::path(
+                            assetPath),
+                        source.GetSize(),
+                        engine::assets::
+                            AssetType::Animation,
+                        metadata);
+
+                if (engine::assets::Failed(result))
+                {
+                    LogAssetFailure(
+                        resolvedPath,
+                        "Create animation metadata",
+                        result);
+
+                    failedAnimations_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::
+                    AnimationAssetLoader loader;
+
+                std::unique_ptr<
+                    engine::assets::LoadedAsset>
+                    loadedAsset;
+
+                result =
+                    loader.Load(
+                        metadata,
+                        source,
+                        loadedAsset);
+
+                if (
+                    engine::assets::Failed(result) ||
+                    loadedAsset == nullptr ||
+                    loadedAsset->GetType() !=
+                        engine::assets::
+                            AssetType::Animation)
+                {
+                    if (
+                        engine::assets::Succeeded(
+                            result))
+                    {
+                        result =
+                            engine::assets::
+                                AssetResult::
+                                    TypeMismatch;
+                    }
+
+                    LogAssetFailure(
+                        resolvedPath,
+                        "Load animation",
+                        result);
+
+                    failedAnimations_.insert(key);
+                    return nullptr;
+                }
+
+                auto* const loadedAnimation =
+                    static_cast<
+                        engine::assets::
+                            AnimationLoadedAsset*>(
+                                loadedAsset.get());
+
+                auto cached =
+                    std::make_shared<
+                        CachedAnimation>();
+
+                cached->asset =
+                    loadedAnimation->
+                        ReleaseAnimation();
+
+                cached->startedAt =
+                    std::chrono::
+                        steady_clock::now();
+
+                animations_.emplace(
+                    key,
+                    cached);
+
+                return cached;
+            }
+            catch (const std::bad_alloc&)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.ModularCharacter",
+                    "Not enough memory to load animation.");
+
+                return nullptr;
+            }
+            catch (...)
+            {
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.ModularCharacter",
+                    "Unexpected animation loading failure.");
+
+                return nullptr;
+            }
+        }
+
+        [[nodiscard]]
         bool LoadMesh(
             const std::filesystem::path& filePath,
             const std::filesystem::path& logicalPath,
@@ -2136,21 +2623,6 @@ namespace lts::editor
                     return false;
                 }
 
-                SkinningConstants bindPose;
-
-                if (!BuildBindPoseSkinningConstants(
-                        skeleton->asset,
-                        cpuMesh.GetPivot(),
-                        bindPose))
-                {
-                    engine::core::GetLogger().Write(
-                        engine::core::LogLevel::Error,
-                        "LTS.Editor.ModularCharacter",
-                        "Failed to build skeleton bind matrices.");
-
-                    return false;
-                }
-
                 auto gpuMesh =
                     std::make_unique<
                         engine::assets::
@@ -2178,8 +2650,8 @@ namespace lts::editor
                 output.skeleton =
                     std::move(skeleton);
 
-                output.bindPose =
-                    bindPose;
+                output.pivot =
+                    cpuMesh.GetPivot();
 
                 return true;
             }
@@ -2234,11 +2706,19 @@ namespace lts::editor
             std::shared_ptr<CachedSkeleton>>
             skeletons_;
 
+        std::unordered_map<
+            std::wstring,
+            std::shared_ptr<CachedAnimation>>
+            animations_;
+
         std::unordered_set<std::wstring>
             failedMeshes_;
 
         std::unordered_set<std::wstring>
             failedSkeletons_;
+
+        std::unordered_set<std::wstring>
+            failedAnimations_;
 
         bool initialized_ = false;
     };

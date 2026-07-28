@@ -116,6 +116,8 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="Public\Assets\AnimationAsset.h" />
+    <ClInclude Include="Public\Assets\AnimationAssetLoader.h" />
     <ClInclude Include="Public\Assets\AssetData.h" />
     <ClInclude Include="Public\Assets\AssetHandle.h" />
     <ClInclude Include="Public\Assets\AssetId.h" />
@@ -160,6 +162,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Private\AnimationAsset.cpp" />
+    <ClCompile Include="Private\AnimationAssetLoader.cpp" />
     <ClCompile Include="Private\AssetData.cpp" />
     <ClCompile Include="Private\AssetId.cpp" />
     <ClCompile Include="Private\AssetLoaderRegistry.cpp" />
