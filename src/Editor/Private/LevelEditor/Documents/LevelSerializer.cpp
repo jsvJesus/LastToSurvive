@@ -22,7 +22,8 @@ namespace lts::editor
 {
     namespace
     {
-        constexpr std::uint64_t CurrentFormatVersion = 2U;
+        constexpr std::uint64_t CurrentFormatVersion = 3U;
+        constexpr std::uint64_t ComponentFormatVersion = 2U;
         constexpr std::uint64_t LegacyFormatVersion = 1U;
 
         constexpr std::string_view FormatName =
@@ -765,6 +766,9 @@ namespace lts::editor
 
                 case EditorEntityKind::Terrain:
                     return "Terrain";
+                
+                case EditorEntityKind::Character:
+                    return "Character";
 
                 case EditorEntityKind::Empty:
                 default:
@@ -802,6 +806,10 @@ namespace lts::editor
             else if (value == "Terrain")
             {
                 kind = EditorEntityKind::Terrain;
+            }
+            else if (value == "Character")
+            {
+                kind = EditorEntityKind::Character;
             }
             else if (value == "Empty")
             {
@@ -1285,6 +1293,151 @@ namespace lts::editor
                     std::move(value);
             }
 
+            if (const JsonValue* component = RequireField(*components, "SkeletalMesh"))
+            {
+                engine::scene::SkeletalMeshComponent value;
+
+                std::string asset;
+                std::string skeleton;
+                std::string idleAnimation;
+                std::string walkAnimation;
+                std::string runAnimation;
+                std::string jumpAnimation;
+
+                if (
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "asset"),
+                        asset) ||
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "skeleton"),
+                        skeleton) ||
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "idleAnimation"),
+                        idleAnimation) ||
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "walkAnimation"),
+                        walkAnimation) ||
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "runAnimation"),
+                        runAnimation) ||
+                    !ReadString(
+                        RequireField(
+                            *component,
+                            "jumpAnimation"),
+                        jumpAnimation) ||
+                    !FromUtf8(
+                        asset,
+                        value.assetPath) ||
+                    !FromUtf8(
+                        skeleton,
+                        value.skeletonPath) ||
+                    !FromUtf8(
+                        idleAnimation,
+                                   value.idleAnimation) ||
+                    !FromUtf8(
+                        walkAnimation,
+                        value.walkAnimation) ||
+                    !FromUtf8(
+                        runAnimation,
+                        value.runAnimation) ||
+                    !FromUtf8(
+                        jumpAnimation,
+                        value.jumpAnimation) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "visible"),
+                        value.visible) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "castShadows"),
+                        value.castShadows))
+                {
+                    return false;
+                }
+
+                entity.skeletalMesh =
+                    std::move(value);
+            }
+
+            if (const JsonValue* component = RequireField(*components, "CharacterController"))
+            {
+                engine::scene::CharacterControllerComponent value;
+
+                if (
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "capsuleRadius"),
+                        value.capsuleRadius) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "capsuleHeight"),
+                        value.capsuleHeight) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "walkSpeed"),
+                        value.walkSpeed) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "runSpeed"),
+                        value.runSpeed) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "acceleration"),
+                        value.acceleration) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "deceleration"),
+                        value.deceleration) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "rotationSpeedDegrees"),
+                        value.rotationSpeedDegrees) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "jumpVelocity"),
+                        value.jumpVelocity) ||
+                    !ReadFloat(
+                        RequireField(
+                            *component,
+                            "gravity"),
+                        value.gravity) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "playerControlled"),
+                        value.playerControlled) ||
+                    !ReadBoolean(
+                        RequireField(
+                            *component,
+                            "useRootMotion"),
+                        value.useRootMotion))
+                {
+                    return false;
+                }
+
+                entity.characterController = value;
+            }
+
             if (const JsonValue* component = RequireField(*components, "Terrain"))
             {
                 engine::scene::TerrainComponent value;
@@ -1745,6 +1898,140 @@ namespace lts::editor
                         << '}';
                 }
 
+                if (entity.skeletalMesh.has_value())
+                {
+                    const engine::scene::SkeletalMeshComponent& skeletalMesh =
+                        *entity.skeletalMesh;
+
+                    std::string asset;
+                    std::string skeleton;
+                    std::string idleAnimation;
+                    std::string walkAnimation;
+                    std::string runAnimation;
+                    std::string jumpAnimation;
+
+                    if (
+                        !ToUtf8(
+                            skeletalMesh.assetPath,
+                            asset) ||
+                        !ToUtf8(
+                            skeletalMesh.skeletonPath,
+                            skeleton) ||
+                        !ToUtf8(
+                            skeletalMesh.idleAnimation,
+                            idleAnimation) ||
+                        !ToUtf8(
+                            skeletalMesh.walkAnimation,
+                            walkAnimation) ||
+                        !ToUtf8(
+                            skeletalMesh.runAnimation,
+                            runAnimation) ||
+                        !ToUtf8(
+                            skeletalMesh.jumpAnimation,
+                            jumpAnimation))
+                    {
+                        error =
+                            L"Failed to convert skeletal mesh asset paths to UTF-8.";
+
+                        return false;
+                    }
+
+                    output
+                        << ",\n"
+                        << "        \"SkeletalMesh\": {\"asset\": ";
+
+                    WriteJsonString(
+                        output,
+                        asset);
+
+                    output << ", \"skeleton\": ";
+
+                    WriteJsonString(
+                        output,
+                        skeleton);
+
+                    output << ", \"idleAnimation\": ";
+
+                    WriteJsonString(
+                        output,
+                        idleAnimation);
+
+                    output << ", \"walkAnimation\": ";
+
+                    WriteJsonString(
+                        output,
+                        walkAnimation);
+
+                    output << ", \"runAnimation\": ";
+
+                    WriteJsonString(
+                        output,
+                        runAnimation);
+
+                    output << ", \"jumpAnimation\": ";
+
+                    WriteJsonString(
+                        output,
+                        jumpAnimation);
+
+                    output
+                        << ", \"visible\": "
+                        << (
+                            skeletalMesh.visible
+                                ? "true"
+                                : "false"
+                        )
+                        << ", \"castShadows\": "
+                        << (
+                            skeletalMesh.castShadows
+                                ? "true"
+                                : "false"
+                        )
+                        << '}';
+                }
+
+                if (entity.characterController.has_value())
+                {
+                    const engine::scene::CharacterControllerComponent&
+                        controller =
+                            *entity.characterController;
+
+                    output
+                        << ",\n"
+                        << "        \"CharacterController\": {"
+                        << "\"capsuleRadius\": "
+                        << controller.capsuleRadius
+                        << ", \"capsuleHeight\": "
+                        << controller.capsuleHeight
+                        << ", \"walkSpeed\": "
+                        << controller.walkSpeed
+                        << ", \"runSpeed\": "
+                        << controller.runSpeed
+                        << ", \"acceleration\": "
+                        << controller.acceleration
+                        << ", \"deceleration\": "
+                        << controller.deceleration
+                        << ", \"rotationSpeedDegrees\": "
+                        << controller.rotationSpeedDegrees
+                        << ", \"jumpVelocity\": "
+                        << controller.jumpVelocity
+                        << ", \"gravity\": "
+                        << controller.gravity
+                        << ", \"playerControlled\": "
+                        << (
+                            controller.playerControlled
+                                ? "true"
+                                : "false"
+                        )
+                        << ", \"useRootMotion\": "
+                        << (
+                            controller.useRootMotion
+                                ? "true"
+                                : "false"
+                        )
+                        << '}';
+                }
+
                 if (entity.terrain.has_value())
                 {
                     std::string asset;
@@ -1961,6 +2248,7 @@ namespace lts::editor
                 format != FormatName ||
                 (
                     version != LegacyFormatVersion &&
+                    version != ComponentFormatVersion &&
                     version != CurrentFormatVersion
                 ) ||
                 !FromUtf8(name, data.name) ||

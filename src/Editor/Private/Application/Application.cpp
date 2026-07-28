@@ -1333,6 +1333,34 @@ namespace lts::editor
                 static_cast<void>(sceneDocument_.CreateEntity(
                     L"Empty Actor", EditorEntityKind::Empty, transform));
             }
+            if (ImGui::Button("Character", ImVec2(-1.0F, 0.0F)))
+            {
+                const EditorSceneSnapshot before =
+                    sceneDocument_.CreateSnapshot();
+
+                EditorTransform transform;
+
+                transform.position =
+                {
+                    0.0F,
+                    1.0F,
+                    0.0F
+                };
+
+                const EditorEntityId characterId =
+                    sceneDocument_.CreateEntity(
+                        L"Character",
+                        EditorEntityKind::Character,
+                        transform);
+
+                if (characterId != 0U)
+                {
+                    static_cast<void>(
+                        commandHistory_.Push(
+                            before,
+                            sceneDocument_.CreateSnapshot()));
+                }
+            }
             if (ImGui::Button("Sky / Environment", ImVec2(-1.0F, 0.0F)))
             {
                 const EditorSceneSnapshot before =

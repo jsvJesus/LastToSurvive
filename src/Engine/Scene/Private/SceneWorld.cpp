@@ -292,6 +292,18 @@ namespace engine::scene
                 }
                 break;
 
+            case SceneEntityKind::Character:
+                if (!entity.skeletalMesh.has_value())
+                {
+                    entity.skeletalMesh.emplace();
+                }
+
+                if (!entity.characterController.has_value())
+                {
+                    entity.characterController.emplace();
+                }
+                break;
+
             case SceneEntityKind::Empty:
             default:
                 break;
