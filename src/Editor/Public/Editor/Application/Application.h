@@ -142,6 +142,7 @@ namespace lts::editor
         bool imguiViewportVisible_ = false;
         
         std::filesystem::path loadedTerrainAssetPath_;
+        std::filesystem::path failedTerrainAssetPath_;
         std::array<char, 256U> entityRenameBuffer_{};
         EditorEntityId renameEntityId_ = 0U;
         WorldOutlinerPanel worldOutlinerPanel_;

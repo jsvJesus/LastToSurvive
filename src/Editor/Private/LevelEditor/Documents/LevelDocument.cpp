@@ -905,7 +905,7 @@ namespace lts::editor
 
         static_cast<void>(
             dialog->SetDefaultExtension(
-                L"ltslevel"));
+                L"level"));
 
         DWORD options = 0U;
 

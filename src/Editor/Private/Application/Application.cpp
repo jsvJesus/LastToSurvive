@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <filesystem>
+#include <system_error>
 #include <algorithm>
 #include <chrono>
 #include <cctype>
@@ -58,6 +59,112 @@ namespace lts::editor
             std::wstring output(static_cast<std::size_t>(size), L'\0');
             MultiByteToWideChar(CP_UTF8, 0, value, length, output.data(), size);
             return output;
+        }
+
+        [[nodiscard]]
+        std::filesystem::path FindGameRootFrom(
+            std::filesystem::path current) noexcept
+        {
+            std::error_code error;
+
+            current = current.lexically_normal();
+
+            while (!current.empty())
+            {
+                error.clear();
+
+                /*
+                 * Сам исполняемый файл Editor обычно уже лежит
+                 * внутри game.
+                 */
+                if (std::filesystem::is_directory(
+                        current / L"Data",
+                        error))
+                {
+                    return current;
+                }
+
+                error.clear();
+
+                /*
+                 * Также поддерживаем запуск из корня репозитория,
+                 * build-папки и Visual Studio.
+                 */
+                const std::filesystem::path nestedGame =
+                    current / L"game";
+
+                if (std::filesystem::is_directory(
+                        nestedGame / L"Data",
+                        error))
+                {
+                    return nestedGame.lexically_normal();
+                }
+
+                const std::filesystem::path parent =
+                    current.parent_path();
+
+                if (parent.empty() || parent == current)
+                {
+                    break;
+                }
+
+                current = parent;
+            }
+
+            return {};
+        }
+
+        [[nodiscard]]
+        std::filesystem::path FindEditorGameRoot() noexcept
+        {
+            constexpr DWORD MaximumModulePathLength = 32768U;
+
+            std::wstring modulePath(
+                static_cast<std::size_t>(
+                    MaximumModulePathLength),
+                L'\0');
+
+            const DWORD length =
+                GetModuleFileNameW(
+                    nullptr,
+                    modulePath.data(),
+                    MaximumModulePathLength);
+
+            if (
+                length > 0U &&
+                length < MaximumModulePathLength)
+            {
+                modulePath.resize(
+                    static_cast<std::size_t>(
+                        length));
+
+                const std::filesystem::path executableDirectory =
+                    std::filesystem::path(
+                        modulePath).parent_path();
+
+                std::filesystem::path gameRoot =
+                    FindGameRootFrom(
+                        executableDirectory);
+
+                if (!gameRoot.empty())
+                {
+                    return gameRoot;
+                }
+            }
+
+            std::error_code error;
+
+            const std::filesystem::path workingDirectory =
+                std::filesystem::current_path(
+                    error);
+
+            if (!error)
+            {
+                return FindGameRootFrom(
+                    workingDirectory);
+            }
+
+            return {};
         }
 
         [[nodiscard]] bool SelectTerrainFile(
@@ -434,6 +541,7 @@ namespace lts::editor
             cameraController_.Reset();
 
             loadedTerrainAssetPath_.clear();
+            failedTerrainAssetPath_.clear();
 
             static_cast<void>(
                 terrainRenderer_.LoadTerrain(
@@ -447,21 +555,14 @@ namespace lts::editor
          */
         for (
             const EditorSceneEntity& sceneEntity :
-                sceneDocument_.GetEntities())
+            sceneDocument_.GetEntities())
         {
             if (
                 !sceneEntity.terrain.has_value() ||
-                !sceneEntity.terrain->visible)
+                !sceneEntity.terrain->visible ||
+                sceneEntity.terrain->assetPath.empty())
             {
                 continue;
-            }
-
-            std::filesystem::path gameRoot =
-                std::filesystem::current_path();
-
-            if (gameRoot.filename() != L"game")
-            {
-                gameRoot /= L"game";
             }
 
             std::filesystem::path terrainPath =
@@ -469,6 +570,23 @@ namespace lts::editor
 
             if (terrainPath.is_relative())
             {
+                const std::filesystem::path gameRoot =
+                    FindEditorGameRoot();
+
+                if (gameRoot.empty())
+                {
+                    if (result.sceneReplaced)
+                    {
+                        engine::core::GetLogger().Write(
+                            engine::core::LogLevel::Error,
+                            "LTS.Editor.Terrain",
+                            "Could not resolve the game directory "
+                            "while opening the level.");
+                    }
+
+                    break;
+                }
+
                 terrainPath =
                     gameRoot /
                     terrainPath;
@@ -477,32 +595,91 @@ namespace lts::editor
             terrainPath =
                 terrainPath.lexically_normal();
 
+            /*
+             * Terrain уже загружен либо эта же загрузка
+             * ранее завершилась ошибкой.
+             */
             if (
-                terrainPath !=
-                loadedTerrainAssetPath_)
+                terrainPath ==
+                    loadedTerrainAssetPath_ ||
+                terrainPath ==
+                    failedTerrainAssetPath_)
             {
-                loadedTerrainAssetPath_ =
+                break;
+            }
+
+            std::error_code filesystemError;
+
+            if (!std::filesystem::is_regular_file(
+                    terrainPath,
+                    filesystemError))
+            {
+                failedTerrainAssetPath_ =
                     terrainPath;
 
-                if (terrainRenderer_.LoadTerrain(
-                        graphicsDevice_,
-                        terrainPath) &&
-                    result.sceneReplaced)
-                {
-                    engine::assets::TerrainAsset
-                        terrainAsset;
+                std::string message =
+                    "Terrain asset referenced by the level "
+                    "was not found: ";
 
-                    if (engine::assets::Succeeded(
-                            engine::assets::
-                                TerrainAsset::Load(
-                                    terrainPath,
-                                    terrainAsset)))
-                    {
-                        FocusCameraOnTerrain(
-                            cameraController_,
-                            terrainAsset,
-                            sceneEntity.transform);
-                    }
+                message +=
+                    ToUtf8(
+                        terrainPath.wstring());
+
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    message);
+
+                break;
+            }
+
+            if (!terrainRenderer_.LoadTerrain(
+                    graphicsDevice_,
+                    terrainPath))
+            {
+                failedTerrainAssetPath_ =
+                    terrainPath;
+
+                std::string message =
+                    "Could not load terrain referenced "
+                    "by the level: ";
+
+                message +=
+                    ToUtf8(
+                        terrainPath.wstring());
+
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    message);
+
+                break;
+            }
+
+            /*
+             * Путь запоминаем только после успешной загрузки.
+             */
+            loadedTerrainAssetPath_ =
+                terrainPath;
+
+            failedTerrainAssetPath_.clear();
+
+            if (result.sceneReplaced)
+            {
+                engine::assets::TerrainAsset
+                    terrainAsset;
+
+                if (engine::assets::Succeeded(
+                        engine::assets::
+                            TerrainAsset::Load(
+                                terrainPath,
+                                terrainAsset)) &&
+                    terrainAsset.IsValid())
+                {
+                    FocusCameraOnTerrain(
+                        cameraController_,
+                        terrainAsset,
+                        sceneEntity.transform);
                 }
             }
 
