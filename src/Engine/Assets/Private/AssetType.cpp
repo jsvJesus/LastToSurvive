@@ -36,6 +36,9 @@ namespace engine::assets
 
         case AssetType::StaticModel:
             return "StaticModel";
+            
+        case AssetType::SkeletalMesh:
+            return "SkeletalMesh";
 
         default:
             return "Unknown";

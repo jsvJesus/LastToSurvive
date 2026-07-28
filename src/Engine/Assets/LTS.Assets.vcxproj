@@ -144,6 +144,8 @@
     <ClInclude Include="Public\Assets\MeshAssetBuilder.h" />
     <ClInclude Include="Public\Assets\MeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\LtsStaticModelWriter.h" />
+    <ClInclude Include="Public\Assets\SkeletalMeshAsset.h" />
+    <ClInclude Include="Public\Assets\SkeletalMeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\StaticModelAsset.h" />
     <ClInclude Include="Public\Assets\StaticModelAssetLoader.h" />
     <ClInclude Include="Public\Assets\ShaderAsset.h" />
@@ -179,6 +181,8 @@
     <ClCompile Include="Private\MeshAssetBuilder.cpp" />
     <ClCompile Include="Private\MeshAssetLoader.cpp" />
     <ClCompile Include="Private\LtsStaticModelWriter.cpp" />
+    <ClCompile Include="Private\SkeletalMeshAsset.cpp" />
+    <ClCompile Include="Private\SkeletalMeshAssetLoader.cpp" />
     <ClCompile Include="Private\StaticModelAsset.cpp" />
     <ClCompile Include="Private\StaticModelAssetLoader.cpp" />
     <ClCompile Include="Private\ShaderAsset.cpp" />

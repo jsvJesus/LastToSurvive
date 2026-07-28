@@ -16,7 +16,8 @@ namespace engine::assets
         Effect,
         Audio,
         Data,
-        StaticModel
+        StaticModel,
+        SkeletalMesh
     };
 
     [[nodiscard]] const char* ToString(
