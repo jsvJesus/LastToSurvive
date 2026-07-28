@@ -2750,7 +2750,7 @@ namespace lts::editor
                     package.relativePath;
 
                 skeletalMeshOutput +=
-                    L".ltsskeletalmesh";
+                    L".skm";
 
                 const std::string outputText =
                     PathToUtf8(

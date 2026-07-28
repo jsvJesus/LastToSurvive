@@ -111,7 +111,7 @@ namespace lts::editor
                     !error &&
                     iterator->path().
                         extension() ==
-                        L".ltsmesh")
+                        L".mesh")
                 {
                     meshFiles_.push_back(
                         iterator->path().
@@ -738,7 +738,7 @@ namespace lts::editor
         if (meshFiles_.empty())
         {
             ImGui::TextDisabled(
-                "No .ltsmesh files found "
+                "No .mesh files found "
                 "in Data/Meshes");
         }
 

@@ -1361,7 +1361,7 @@ namespace lts::editor
                      !filesystemError && iterator != end; iterator.increment(filesystemError))
                 {
                     if (iterator->is_regular_file() &&
-                        LowercasePath(iterator->path().extension().wstring()) == L".ltsmaterial")
+                        LowercasePath(iterator->path().extension().wstring()) == L".material")
                         files.push_back(iterator->path());
                 }
                 std::sort(files.begin(), files.end(), [](const auto& left, const auto& right)

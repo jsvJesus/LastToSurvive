@@ -68,11 +68,11 @@ namespace lts::editor
                     CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dialog)))) return false;
             constexpr COMDLG_FILTERSPEC filter[] =
             {
-                {L"LTS Terrain (*.ltsterrain)", L"*.ltsterrain"},
+                {L"LTS Terrain (*.terrain)", L"*.terrain"},
                 {L"All files (*.*)", L"*.*"}
             };
             if (FAILED(dialog->SetFileTypes(2U, filter)) ||
-                FAILED(dialog->SetDefaultExtension(L"ltsterrain")) ||
+                FAILED(dialog->SetDefaultExtension(L"terrain")) ||
                 FAILED(dialog->SetTitle(L"Open LTS Terrain")) ||
                 FAILED(dialog->Show(owner))) return false;
             Microsoft::WRL::ComPtr<IShellItem> item;

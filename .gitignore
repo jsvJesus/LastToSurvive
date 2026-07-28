@@ -132,8 +132,16 @@ r3dlog.txt
 *.fsb
 *.fev
 *.fbx
-*.ltsmaterial
-*.ltsmesh
+# objects (skm - skeletal mesh, sk - skeletal, anim - animations, mesh - static mesh)
+*.material
+*.mesh
+*.skm
+*.sk
+*.anim
+# level
+*.terrain
+*.level
+#
 *.png
 *.dds
 *.csr

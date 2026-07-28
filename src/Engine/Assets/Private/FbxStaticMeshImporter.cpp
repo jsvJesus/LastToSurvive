@@ -302,7 +302,7 @@ namespace engine::assets
             const std::filesystem::path destination =
                 materialRoot / packagePath / std::filesystem::u8path(
                     (slot < 10U ? "000" : slot < 100U ? "00" : slot < 1000U ? "0" : "") +
-                    std::to_string(slot) + "_" + materialName + ".ltsmaterial");
+                    std::to_string(slot) + "_" + materialName + ".material");
             std::error_code filesystemError;
             std::filesystem::create_directories(destination.parent_path(), filesystemError);
             if (filesystemError) return AssetResult::IoError;

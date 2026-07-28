@@ -803,10 +803,10 @@ namespace lts::editor
 
         if (
             path.extension() !=
-            L".ltslevel")
+            L".level")
         {
             path.replace_extension(
-                L".ltslevel");
+                L".level");
         }
 
         const std::filesystem::path
@@ -885,8 +885,8 @@ namespace lts::editor
             filters[]
         {
             {
-                L"LastToSurvive Level (*.ltslevel)",
-                L"*.ltslevel"
+                L"LastToSurvive Level (*.level)",
+                L"*.level"
             },
             {
                 L"All Files (*.*)",
@@ -964,7 +964,7 @@ namespace lts::editor
                     ? L"Untitled"
                     : levelName_;
 
-            defaultName += L".ltslevel";
+            defaultName += L".level";
 
             static_cast<void>(
                 dialog->SetFileName(

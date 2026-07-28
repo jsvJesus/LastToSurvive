@@ -631,7 +631,7 @@ namespace lts::editor
         const std::filesystem::path gameRoot = FindGameRoot();
         const std::filesystem::path outputDirectory = gameRoot / L"Data" / L"Terrains";
         const std::filesystem::path outputPath =
-            (outputDirectory / outputName).replace_extension(L".ltsterrain");
+            (outputDirectory / outputName).replace_extension(L".terrain");
 
         std::filesystem::create_directories(outputDirectory, error);
 
@@ -666,7 +666,7 @@ namespace lts::editor
             terrainHeightRange,
             terrainHeights))
         {
-            status_ = "Could not write the .ltsterrain file.";
+            status_ = "Could not write the .terrain file.";
             return false;
         }
 
@@ -876,7 +876,7 @@ namespace lts::editor
         {
             const std::filesystem::path preview =
                 FindGameRoot() / L"Data" / L"Terrains" /
-                (cleanOutputName + L".ltsterrain");
+                (cleanOutputName + L".terrain");
 
             const std::string previewText = ToUtf8(preview.wstring());
             ImGui::TextWrapped("Output: %s", previewText.c_str());
