@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -177,10 +178,51 @@ namespace engine::scene
      * Пути намеренно пустые. Конкретный персонаж, NPC или оружие
      * должны назначать свои ресурсы через Editor, prefab или loader.
      */
-    struct SkeletalMeshComponent final
+    enum class CharacterMeshSlot : std::uint8_t
+    {
+        Hair = 0,
+        Head,
+        Body,
+        Legs,
+        Shoes,
+        FirstPersonBody,
+        Count
+    };
+
+    inline constexpr std::size_t CharacterMeshSlotCount =
+        static_cast<std::size_t>(
+            CharacterMeshSlot::Count);
+
+    struct SkeletalMeshPart final
     {
         std::wstring assetPath;
+
+        bool visible = true;
+    };
+
+    /*
+     * Один модульный персонаж.
+     *
+     * Все части используют один Skeleton и одну текущую
+     * анимационную позу.
+     */
+    struct SkeletalMeshComponent final
+    {
+        /*
+         * Например:
+         *
+         * char_lms
+         * char_male_01
+         * skies_survivor1
+         */
+        std::wstring characterFamily;
+
         std::wstring skeletonPath;
+
+        std::array<
+            SkeletalMeshPart,
+            CharacterMeshSlotCount>
+            parts;
 
         std::wstring idleAnimation;
         std::wstring walkAnimation;
@@ -189,6 +231,30 @@ namespace engine::scene
 
         bool visible = true;
         bool castShadows = true;
+
+        /*
+         * При смене body_01 редактор пытается автоматически
+         * назначить bodyfps01 из того же семейства.
+         */
+        bool autoFirstPersonBody = true;
+
+        [[nodiscard]]
+        SkeletalMeshPart& GetPart(
+            const CharacterMeshSlot slot) noexcept
+        {
+            return parts[
+                static_cast<std::size_t>(
+                    slot)];
+        }
+
+        [[nodiscard]]
+        const SkeletalMeshPart& GetPart(
+            const CharacterMeshSlot slot) const noexcept
+        {
+            return parts[
+                static_cast<std::size_t>(
+                    slot)];
+        }
     };
 
     struct CharacterControllerComponent final

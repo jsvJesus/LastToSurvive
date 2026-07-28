@@ -378,6 +378,25 @@ namespace lts::editor
         return true;
     }
 
+    bool SceneDocument::UpdateSelectedSkeletalMesh(engine::scene::SkeletalMeshComponent component)
+    {
+        EditorSceneEntity* const entity =
+            GetSelectedEntityMutable();
+
+        if (
+            entity == nullptr ||
+            !entity->skeletalMesh.has_value())
+        {
+            return false;
+        }
+
+        entity->skeletalMesh =
+            std::move(component);
+
+        dirty_ = true;
+        return true;
+    }
+
     bool SceneDocument::SetSelectedTerrainLayers(
         std::vector<engine::scene::TerrainComponent::LayerOverride> layers)
     {

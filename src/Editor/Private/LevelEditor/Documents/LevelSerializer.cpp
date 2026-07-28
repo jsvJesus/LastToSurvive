@@ -22,9 +22,17 @@ namespace lts::editor
 {
     namespace
     {
-        constexpr std::uint64_t CurrentFormatVersion = 3U;
-        constexpr std::uint64_t ComponentFormatVersion = 2U;
-        constexpr std::uint64_t LegacyFormatVersion = 1U;
+        constexpr std::uint64_t
+            CurrentFormatVersion = 4U;
+
+        constexpr std::uint64_t
+            SingleMeshCharacterFormatVersion = 3U;
+
+        constexpr std::uint64_t
+            ComponentFormatVersion = 2U;
+
+        constexpr std::uint64_t
+            LegacyFormatVersion = 1U;
 
         constexpr std::string_view FormatName =
             "LTS.Level";
@@ -1293,23 +1301,42 @@ namespace lts::editor
                     std::move(value);
             }
 
-            if (const JsonValue* component = RequireField(*components, "SkeletalMesh"))
+            if (
+                const JsonValue* component =
+                    RequireField(
+                        *components,
+                        "SkeletalMesh"))
             {
-                engine::scene::SkeletalMeshComponent value;
+                engine::scene::SkeletalMeshComponent
+                    value;
 
-                std::string asset;
+                std::string family;
                 std::string skeleton;
                 std::string idleAnimation;
                 std::string walkAnimation;
                 std::string runAnimation;
                 std::string jumpAnimation;
 
+                /*
+                 * В level версии 3 поля family ещё не было.
+                 */
                 if (
-                    !ReadString(
-                        RequireField(
-                            *component,
-                            "asset"),
-                        asset) ||
+                    const JsonValue* familyField =
+                        component->Find("family"))
+                {
+                    if (
+                        !ReadString(
+                            familyField,
+                            family) ||
+                        !FromUtf8(
+                            family,
+                            value.characterFamily))
+                    {
+                        return false;
+                    }
+                }
+
+                if (
                     !ReadString(
                         RequireField(
                             *component,
@@ -1336,14 +1363,11 @@ namespace lts::editor
                             "jumpAnimation"),
                         jumpAnimation) ||
                     !FromUtf8(
-                        asset,
-                        value.assetPath) ||
-                    !FromUtf8(
                         skeleton,
                         value.skeletonPath) ||
                     !FromUtf8(
                         idleAnimation,
-                                   value.idleAnimation) ||
+                        value.idleAnimation) ||
                     !FromUtf8(
                         walkAnimation,
                         value.walkAnimation) ||
@@ -1365,6 +1389,178 @@ namespace lts::editor
                         value.castShadows))
                 {
                     return false;
+                }
+
+                if (
+                    const JsonValue* autoFpsField =
+                        component->Find(
+                            "autoFirstPersonBody"))
+                {
+                    if (!ReadBoolean(
+                            autoFpsField,
+                            value.autoFirstPersonBody))
+                    {
+                        return false;
+                    }
+                }
+
+                const auto readPart =
+                    [&value](
+                        const JsonValue& parts,
+                        const char* const name,
+                        const engine::scene::
+                            CharacterMeshSlot slot)
+                    {
+                        const JsonValue* const partJson =
+                            parts.Find(name);
+
+                        /*
+                         * Отсутствующий слот разрешён.
+                         *
+                         * Например Hair может быть пустым.
+                         */
+                        if (partJson == nullptr)
+                        {
+                            return true;
+                        }
+
+                        std::string asset;
+
+                        auto& part =
+                            value.GetPart(slot);
+
+                        /*
+                         * Поддерживаем сокращённую запись:
+                         *
+                         * "hair": "Data/.../hair_01.skm"
+                         */
+                        if (
+                            partJson->type ==
+                            JsonValue::Type::String)
+                        {
+                            if (!ReadString(
+                                    partJson,
+                                    asset))
+                            {
+                                return false;
+                            }
+                        }
+                        /*
+                         * Основной формат:
+                         *
+                         * "hair": {
+                         *     "asset": "...",
+                         *     "visible": true
+                         * }
+                         */
+                        else if (
+                            partJson->type ==
+                            JsonValue::Type::Object)
+                        {
+                            if (!ReadString(
+                                    RequireField(
+                                        *partJson,
+                                        "asset"),
+                                    asset))
+                            {
+                                return false;
+                            }
+
+                            if (
+                                const JsonValue*
+                                    visibleField =
+                                        partJson->Find(
+                                            "visible"))
+                            {
+                                if (!ReadBoolean(
+                                        visibleField,
+                                        part.visible))
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        return FromUtf8(
+                            asset,
+                            part.assetPath);
+                    };
+
+                if (
+                    const JsonValue* parts =
+                        component->Find("parts"))
+                {
+                    if (
+                        parts->type !=
+                        JsonValue::Type::Object ||
+                        !readPart(
+                            *parts,
+                            "hair",
+                            engine::scene::
+                                CharacterMeshSlot::Hair) ||
+                        !readPart(
+                            *parts,
+                            "head",
+                            engine::scene::
+                                CharacterMeshSlot::Head) ||
+                        !readPart(
+                            *parts,
+                            "body",
+                            engine::scene::
+                                CharacterMeshSlot::Body) ||
+                        !readPart(
+                            *parts,
+                            "legs",
+                            engine::scene::
+                                CharacterMeshSlot::Legs) ||
+                        !readPart(
+                            *parts,
+                            "shoes",
+                            engine::scene::
+                                CharacterMeshSlot::Shoes) ||
+                        !readPart(
+                            *parts,
+                            "firstPersonBody",
+                            engine::scene::
+                                CharacterMeshSlot::
+                                    FirstPersonBody))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    /*
+                     * Совместимость с level версии 3.
+                     *
+                     * Старый одиночный asset переносим в Body.
+                     */
+                    const JsonValue* const legacyAsset =
+                        component->Find("asset");
+
+                    if (legacyAsset != nullptr)
+                    {
+                        std::string asset;
+
+                        if (
+                            !ReadString(
+                                legacyAsset,
+                                asset) ||
+                            !FromUtf8(
+                                asset,
+                                value.GetPart(
+                                    engine::scene::
+                                        CharacterMeshSlot::
+                                            Body)
+                                    .assetPath))
+                        {
+                            return false;
+                        }
+                    }
                 }
 
                 entity.skeletalMesh =
@@ -1900,10 +2096,12 @@ namespace lts::editor
 
                 if (entity.skeletalMesh.has_value())
                 {
-                    const engine::scene::SkeletalMeshComponent& skeletalMesh =
-                        *entity.skeletalMesh;
+                    const engine::scene::
+                        SkeletalMeshComponent&
+                            skeletalMesh =
+                                *entity.skeletalMesh;
 
-                    std::string asset;
+                    std::string family;
                     std::string skeleton;
                     std::string idleAnimation;
                     std::string walkAnimation;
@@ -1912,8 +2110,8 @@ namespace lts::editor
 
                     if (
                         !ToUtf8(
-                            skeletalMesh.assetPath,
-                            asset) ||
+                            skeletalMesh.characterFamily,
+                            family) ||
                         !ToUtf8(
                             skeletalMesh.skeletonPath,
                             skeleton) ||
@@ -1931,18 +2129,20 @@ namespace lts::editor
                             jumpAnimation))
                     {
                         error =
-                            L"Failed to convert skeletal mesh asset paths to UTF-8.";
+                            L"Failed to convert modular "
+                            L"character paths to UTF-8.";
 
                         return false;
                     }
 
                     output
                         << ",\n"
-                        << "        \"SkeletalMesh\": {\"asset\": ";
+                        << "        \"SkeletalMesh\": {"
+                        << "\"family\": ";
 
                     WriteJsonString(
                         output,
-                        asset);
+                        family);
 
                     output << ", \"skeleton\": ";
 
@@ -1950,25 +2150,122 @@ namespace lts::editor
                         output,
                         skeleton);
 
-                    output << ", \"idleAnimation\": ";
+                    output
+                        << ", \"parts\": {";
+
+                    const auto writePart =
+                        [&output,
+                         &skeletalMesh](
+                            const char* const name,
+                            const engine::scene::
+                                CharacterMeshSlot slot,
+                            const bool first)
+                        {
+                            const auto& part =
+                                skeletalMesh.GetPart(
+                                    slot);
+
+                            std::string asset;
+
+                            if (!ToUtf8(
+                                    part.assetPath,
+                                    asset))
+                            {
+                                return false;
+                            }
+
+                            if (!first)
+                            {
+                                output << ',';
+                            }
+
+                            output
+                                << "\n"
+                                << "          \""
+                                << name
+                                << "\": {\"asset\": ";
+
+                            WriteJsonString(
+                                output,
+                                asset);
+
+                            output
+                                << ", \"visible\": "
+                                << (
+                                    part.visible
+                                        ? "true"
+                                        : "false"
+                                )
+                                << '}';
+
+                            return true;
+                        };
+
+                    if (
+                        !writePart(
+                            "hair",
+                            engine::scene::
+                                CharacterMeshSlot::Hair,
+                            true) ||
+                        !writePart(
+                            "head",
+                            engine::scene::
+                                CharacterMeshSlot::Head,
+                            false) ||
+                        !writePart(
+                            "body",
+                            engine::scene::
+                                CharacterMeshSlot::Body,
+                            false) ||
+                        !writePart(
+                            "legs",
+                            engine::scene::
+                                CharacterMeshSlot::Legs,
+                            false) ||
+                        !writePart(
+                            "shoes",
+                            engine::scene::
+                                CharacterMeshSlot::Shoes,
+                            false) ||
+                        !writePart(
+                            "firstPersonBody",
+                            engine::scene::
+                                CharacterMeshSlot::
+                                    FirstPersonBody,
+                            false))
+                    {
+                        error =
+                            L"Failed to convert a modular "
+                            L"character part path.";
+
+                        return false;
+                    }
+
+                    output
+                        << "\n"
+                        << "        }"
+                        << ", \"idleAnimation\": ";
 
                     WriteJsonString(
                         output,
                         idleAnimation);
 
-                    output << ", \"walkAnimation\": ";
+                    output
+                        << ", \"walkAnimation\": ";
 
                     WriteJsonString(
                         output,
                         walkAnimation);
 
-                    output << ", \"runAnimation\": ";
+                    output
+                        << ", \"runAnimation\": ";
 
                     WriteJsonString(
                         output,
                         runAnimation);
 
-                    output << ", \"jumpAnimation\": ";
+                    output
+                        << ", \"jumpAnimation\": ";
 
                     WriteJsonString(
                         output,
@@ -1986,6 +2283,13 @@ namespace lts::editor
                             skeletalMesh.castShadows
                                 ? "true"
                                 : "false"
+                        )
+                        << ", \"autoFirstPersonBody\": "
+                        << (
+                            skeletalMesh.
+                                autoFirstPersonBody
+                                    ? "true"
+                                    : "false"
                         )
                         << '}';
                 }
@@ -2249,6 +2553,7 @@ namespace lts::editor
                 (
                     version != LegacyFormatVersion &&
                     version != ComponentFormatVersion &&
+                    version != SingleMeshCharacterFormatVersion &&
                     version != CurrentFormatVersion
                 ) ||
                 !FromUtf8(name, data.name) ||
