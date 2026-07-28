@@ -8,6 +8,8 @@
 
 namespace engine::scene
 {
+    struct CharacterControllerComponent;
+    struct SkeletalMeshComponent;
     using SceneEntityId = std::uint64_t;
 
     enum class SceneEntityKind : std::uint8_t
@@ -18,7 +20,8 @@ namespace engine::scene
         SpawnPoint,
         Anomaly,
         LootContainer,
-        Terrain
+        Terrain,
+        Character
     };
 
     struct SceneTransform final
@@ -197,6 +200,12 @@ namespace engine::scene
         SceneEntityId parentId = 0U;
         std::wstring editorFolder;
 
+        std::optional<SkeletalMeshComponent>
+            skeletalMesh;
+
+        std::optional<CharacterControllerComponent>
+            characterController;
+
         std::optional<EnvironmentComponent>
             environment;
 
@@ -223,5 +232,42 @@ namespace engine::scene
         std::vector<SceneEntity> entities;
 
         SceneEntityId nextEntityId = 1U;
+    };
+
+    struct SkeletalMeshComponent final
+    {
+        std::wstring assetPath =
+            L"SkeletalMeshes/Characters/"
+            L"char_lms_body_01.skm";
+
+        std::wstring skeletonPath =
+            L"Skeletons/Characters/"
+            L"CH_Skeletal.sk";
+
+        std::wstring idleAnimation;
+        std::wstring walkAnimation;
+        std::wstring runAnimation;
+        std::wstring jumpAnimation;
+
+        bool visible = true;
+        bool castShadows = true;
+    };
+
+    struct CharacterControllerComponent final
+    {
+        float capsuleRadius = 0.35F;
+        float capsuleHeight = 1.80F;
+
+        float walkSpeed = 2.5F;
+        float runSpeed = 5.5F;
+        float acceleration = 18.0F;
+        float deceleration = 22.0F;
+
+        float rotationSpeedDegrees = 540.0F;
+        float jumpVelocity = 5.0F;
+        float gravity = 9.81F;
+
+        bool playerControlled = true;
+        bool useRootMotion = false;
     };
 }

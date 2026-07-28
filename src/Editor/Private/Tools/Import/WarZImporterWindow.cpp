@@ -1,4 +1,5 @@
 #include "Editor/Tools/Import/WarZImporterWindow.h"
+#include "Editor/Tools/Import/WarZAssetConverter.h"
 
 #include <imgui.h>
 
@@ -11,12 +12,14 @@
 #include <cstdint>
 #include <cwctype>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <unordered_map>
 #include <utility>
 #include <cstdio>
 #include <cmath>
+#include <type_traits>
 
 namespace lts::editor
 {
@@ -949,6 +952,139 @@ namespace lts::editor
         {
             LoadSelectedAnimation();
         }
+    }
+
+    void WarZImporterWindow::ConvertSelection() noexcept
+    {
+        conversionStatus_.clear();
+        conversionSucceeded_ = false;
+
+        if (
+            !analysisSucceeded_ ||
+            selectedPackage_ < 0 ||
+            selectedPackage_ >=
+                static_cast<int>(
+                    packages_.size()))
+        {
+            conversionStatus_ =
+                "Analyze a package before conversion.";
+
+            return;
+        }
+
+        if (
+            vertexWeightCountMismatch_ ||
+            selectedMeshData_.vertices.empty() ||
+            selectedWeightData_.vertices.empty())
+        {
+            conversionStatus_ =
+                "Mesh and skin weights are not compatible.";
+
+            return;
+        }
+
+        const SourcePackage& package =
+            packages_[
+                static_cast<std::size_t>(
+                    selectedPackage_)];
+
+        std::error_code currentPathError;
+
+        const std::filesystem::path projectRoot =
+            std::filesystem::current_path(
+                currentPathError);
+
+        if (currentPathError)
+        {
+            conversionStatus_ =
+                "Failed to resolve Editor working directory.";
+
+            return;
+        }
+
+        WarZConversionRequest request;
+
+        request.dataRoot =
+            projectRoot /
+            L"Data";
+
+        request.sourceRoot =
+            sourceRoot_;
+
+        request.packageRelativePath =
+            package.relativePath;
+
+        request.sourceSkeletonPath =
+            selectedSkeletonData_.sourcePath;
+
+        request.mesh =
+            &selectedMeshData_;
+
+        request.skeleton =
+            &selectedSkeletonData_;
+
+        request.weights =
+            &selectedWeightData_;
+
+        request.materials =
+            &selectedMaterialSet_;
+
+        request.animationPaths =
+            &animations_;
+
+        request.writeSkeletalMesh =
+            importSkeletalMesh_;
+
+        request.writeSkeleton =
+            importSkeleton_;
+
+        request.writeMaterials =
+            importMaterials_;
+
+        request.writeTextures =
+            importTextures_;
+
+        request.writeAnimations =
+            importAnimations_;
+
+        WarZConversionResult conversion;
+
+        if (!WarZAssetConverter::Convert(
+                request,
+                conversion))
+        {
+            conversionStatus_ =
+                conversion.error.empty()
+                    ? "Asset conversion failed."
+                    : conversion.error;
+
+            return;
+        }
+
+        std::ostringstream status;
+
+        status <<
+            "Conversion completed. "
+            "Materials: " <<
+            conversion.materialCount <<
+            ", textures: " <<
+            conversion.textureCount <<
+            ", animations: " <<
+            conversion.animationCount <<
+            ".";
+
+        if (!conversion.warnings.empty())
+        {
+            status <<
+                " Warnings: " <<
+                conversion.warnings.size() <<
+                ".";
+        }
+
+        conversionStatus_ =
+            status.str();
+
+        conversionSucceeded_ = true;
     }
 
     void WarZImporterWindow::DrawMaterialAnalysis() noexcept
@@ -1944,7 +2080,7 @@ namespace lts::editor
         }
 
         ImGui::TextUnformatted(
-            "Import WarZ skeletal assets and animations into LTS.");
+            "Import WarZ assets into project formats.");
 
         ImGui::SeparatorText("Source");
 
@@ -2749,8 +2885,7 @@ namespace lts::editor
                     L"SkeletalMeshes" /
                     package.relativePath;
 
-                skeletalMeshOutput +=
-                    L".skm";
+                skeletalMeshOutput.replace_extension(L".skm");
 
                 const std::string outputText =
                     PathToUtf8(
@@ -2759,6 +2894,9 @@ namespace lts::editor
                 ImGui::TextWrapped(
                     "Skeletal Mesh: %s",
                     outputText.c_str());
+
+                const std::filesystem::path skeletonOutput =std::filesystem::path(L"Data") / WarZAssetConverter::BuildSkeletonRelativePath(selectedSkeletonData_.sourcePath);
+                ImGui::TextWrapped("Skeleton: %s", PathToUtf8(skeletonOutput).c_str());
 
                 ImGui::TextWrapped(
                     "Materials: Data/Materials/%s",
@@ -2808,11 +2946,57 @@ namespace lts::editor
 
                 ImGui::SameLine();
 
+                const bool canConvert =
+                    analysisSucceeded_ &&
+                    !selectedMeshData_.vertices.empty() &&
+                    !selectedMeshData_.indices.empty() &&
+                    !selectedWeightData_.vertices.empty() &&
+                    !vertexWeightCountMismatch_;
+
+                if (!canConvert)
+                {
+                    ImGui::BeginDisabled();
+                }
+
+                if (ImGui::Button(
+                        "Convert Assets",
+                        ImVec2(145.0F, 32.0F)))
+                {
+                    ConvertSelection();
+                }
+
+                if (!canConvert)
+                {
+                    ImGui::EndDisabled();
+                }
+
+                ImGui::SameLine();
+
                 ImGui::BeginDisabled();
 
                 ImGui::Button(
-                    "Convert to LTS",
-                    ImVec2(145.0F, 32.0F));
+                    "Export Editable FBX",
+                    ImVec2(175.0F, 32.0F));
+
+                ImGui::EndDisabled();
+
+                if (!conversionStatus_.empty())
+                {
+                    ImGui::TextColored(
+                        conversionSucceeded_
+                            ? ImVec4(
+                                0.35F,
+                                0.85F,
+                                0.45F,
+                                1.0F)
+                            : ImVec4(
+                                0.95F,
+                                0.35F,
+                                0.25F,
+                                1.0F),
+                        "%s",
+                        conversionStatus_.c_str());
+                }
 
                 ImGui::SameLine();
 

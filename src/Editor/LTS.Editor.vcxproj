@@ -247,6 +247,7 @@
     <ClInclude Include="Public\Editor\Tools\Import\LegacyMeshPreview.h" />
     <ClInclude Include="Public\Editor\Tools\Import\LegacyMeshReader.h" />
     <ClInclude Include="Public\Editor\Tools\Import\LegacySkeletalReader.h" />
+    <ClInclude Include="Public\Editor\Tools\Import\WarZAssetConverter.h" />
     <ClInclude Include="Public\Editor\Tools\Import\WarZImporterWindow.h" />
     <ClInclude Include="Public\Editor\Tools\TestGame\Launcher.h" />
     <ClInclude Include="Public\Editor\Tools\ToolWindowManager.h" />
@@ -2080,6 +2081,7 @@
     <ClCompile Include="Private\Tools\Import\LegacyMeshPreview.cpp" />
     <ClCompile Include="Private\Tools\Import\LegacyMeshReader.cpp" />
     <ClCompile Include="Private\Tools\Import\LegacySkeletalReader.cpp" />
+    <ClCompile Include="Private\Tools\Import\WarZAssetConverter.cpp" />
     <ClCompile Include="Private\Tools\Import\WarZImporterWindow.cpp" />
     <ClCompile Include="Private\Tools\TestGame\Launcher.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>

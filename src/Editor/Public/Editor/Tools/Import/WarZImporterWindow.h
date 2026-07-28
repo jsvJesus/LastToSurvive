@@ -48,6 +48,7 @@ namespace lts::editor
 
         void ResetAnalysis() noexcept;
         void AnalyzeSelection() noexcept;
+        void ConvertSelection() noexcept;
         void DrawMaterialAnalysis() noexcept;
 
         void ResetAnimation(
@@ -91,6 +92,7 @@ namespace lts::editor
         std::string status_;
         std::string analysisStatus_;
         std::string animationStatus_;
+        std::string conversionStatus_;
 
         int selectedPackage_ = -1;
         int selectedSkeleton_ = -1;
@@ -129,6 +131,8 @@ namespace lts::editor
         bool showLegacyPreview_ = false;
         bool previewShowSkeleton_ = true;
         bool previewWireframe_ = false;
+
+        bool conversionSucceeded_ = false;
 
         bool open_ = false;
     };
