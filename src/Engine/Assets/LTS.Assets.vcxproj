@@ -133,6 +133,7 @@
     <ClInclude Include="Public\Assets\DdsTextureLoader.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
     <ClInclude Include="Public\Assets\FbxStaticMeshImporter.h" />
+    <ClInclude Include="Public\Assets\GpuSkeletalMesh.h" />
     <ClInclude Include="Public\Assets\LegacyTerrain2Importer.h" />
     <ClInclude Include="Public\Assets\GpuTexture.h" />
     <ClInclude Include="Public\Assets\LtsMaterialWriter.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="Private\DdsTextureLoader.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
     <ClCompile Include="Private\FbxStaticMeshImporter.cpp" />
+    <ClCompile Include="Private\GpuSkeletalMesh.cpp" />
     <ClCompile Include="Private\LegacyTerrain2Importer.cpp" />
     <ClCompile Include="Private\GpuTexture.cpp" />
     <ClCompile Include="Private\LtsMaterialWriter.cpp" />

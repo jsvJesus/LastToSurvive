@@ -926,11 +926,25 @@ namespace lts::editor
                     ClientInitializationFailed;
         }
 
+        if (!modularCharacterRenderer_.Initialize(
+                graphicsDevice_))
+        {
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
+
+            levelDocument_.Shutdown();
+            sceneDocument_.Clear();
+            ShutdownGraphics();
+
+            return lts::application::
+                ApplicationResult::
+                    ClientInitializationFailed;
+        }
+
         if (!sceneRenderer_.Initialize(
                 graphicsDevice_))
         {
-            staticMeshRenderer_.Shutdown(
-                graphicsDevice_);
+            modularCharacterRenderer_.Shutdown(graphicsDevice_);
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
@@ -944,11 +958,9 @@ namespace lts::editor
         if (!terrainRenderer_.Initialize(
                 graphicsDevice_))
         {
-            sceneRenderer_.Shutdown(
-                graphicsDevice_);
-
-            staticMeshRenderer_.Shutdown(
-                graphicsDevice_);
+            sceneRenderer_.Shutdown(graphicsDevice_);
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
+            modularCharacterRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
@@ -961,14 +973,10 @@ namespace lts::editor
 
         if (!InitializeEditorUi())
         {
-            terrainRenderer_.Shutdown(
-                graphicsDevice_);
-
-            sceneRenderer_.Shutdown(
-                graphicsDevice_);
-
-            staticMeshRenderer_.Shutdown(
-                graphicsDevice_);
+            terrainRenderer_.Shutdown(graphicsDevice_);
+            sceneRenderer_.Shutdown(graphicsDevice_);
+            modularCharacterRenderer_.Shutdown(graphicsDevice_);
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
@@ -994,14 +1002,10 @@ namespace lts::editor
             toolWindowManager_.Shutdown();
             ShutdownEditorUi();
 
-            terrainRenderer_.Shutdown(
-                graphicsDevice_);
-
-            sceneRenderer_.Shutdown(
-                graphicsDevice_);
-
-            staticMeshRenderer_.Shutdown(
-                graphicsDevice_);
+            terrainRenderer_.Shutdown(graphicsDevice_);
+            sceneRenderer_.Shutdown(graphicsDevice_);
+            staticMeshRenderer_.Shutdown(graphicsDevice_);
+            modularCharacterRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
@@ -1058,14 +1062,10 @@ namespace lts::editor
         levelDocument_.Shutdown();
         commandHistory_.Clear();
 
-        terrainRenderer_.Shutdown(
-            graphicsDevice_);
-
-        sceneRenderer_.Shutdown(
-            graphicsDevice_);
-
-        staticMeshRenderer_.Shutdown(
-            graphicsDevice_);
+        terrainRenderer_.Shutdown(graphicsDevice_);
+        sceneRenderer_.Shutdown(graphicsDevice_);
+        modularCharacterRenderer_.Shutdown(graphicsDevice_);
+        staticMeshRenderer_.Shutdown(graphicsDevice_);
 
         sceneDocument_.Clear();
 
@@ -4400,6 +4400,15 @@ namespace lts::editor
                         *commandContext_,
                         sceneDocument_,
                         viewProjection);
+                }
+
+                if (!engine::graphics::Failed(result))
+                {
+                    result =
+                        modularCharacterRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection);
                 }
 
                 if (!engine::graphics::Failed(result))

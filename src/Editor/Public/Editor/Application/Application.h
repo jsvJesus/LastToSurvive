@@ -12,6 +12,7 @@
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
 #include "Editor/LevelEditor/Rendering/SceneRenderer.h"
 #include "Editor/LevelEditor/Rendering/StaticMeshRenderer.h"
+#include "Editor/LevelEditor/Rendering/ModularCharacterRenderer.h"
 #include "Editor/LevelEditor/Viewport/TransformController.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
 #include "Editor/LevelEditor/Terrain/TerrainImporter.h"
@@ -112,6 +113,7 @@ namespace lts::editor
         GridRenderer gridRenderer_;
         SkyRenderer skyRenderer_;
         StaticMeshRenderer staticMeshRenderer_;
+        ModularCharacterRenderer modularCharacterRenderer_;
         TerrainRenderer terrainRenderer_;
         TerrainImporter terrainImporter_;
         SceneRenderer sceneRenderer_;
