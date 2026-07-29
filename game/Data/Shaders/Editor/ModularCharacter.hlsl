@@ -632,17 +632,14 @@ float4 PSMain(
             saturate(color),
             1.0F / 2.2F);
 
-    color =
-        lerp(
-            color,
-            float3(
-                1.0F,
-                0.35F,
-                0.05F),
-            saturate(
-                MaterialParameters0.x) *
-            0.16F);
-
+    /*
+     * Выделенный Character уже обозначается
+     * bounding box и gizmo в SceneRenderer.
+     *
+     * Не изменяем итоговый цвет материала,
+     * чтобы корректно оценивать текстуры,
+     * normal map и освещение.
+     */
     return float4(
         color,
         surface.a);
