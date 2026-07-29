@@ -3,32 +3,10 @@
 cbuffer ObjectBuffer : register(b0)
 {
     row_major float4x4 World;
-    row_major float4x4 WorldInverseTranspose;
     row_major float4x4 ViewProjection;
 
     float4 BaseColor;
-    float4 EmissiveFactor;
-    float4 CameraPosition;
-
-    /*
-     * x = selected
-     * y = alpha cutoff
-     * z = alpha mode:
-     *     0 = Opaque
-     *     1 = Mask
-     *     2 = Blend
-     */
-    float4 MaterialParameters0;
-
-    /*
-     * x = has base-color texture
-     *
-     * Остальные компоненты пока не используются.
-     */
-    float4 TextureFlags0;
-    float4 TextureFlags1;
-    float4 SurfaceParameters;
-    float4 EmissiveParameters;
+    float4 MaterialParameters;
 
     float4 SunDirectionIntensity;
     float4 SunColor;
@@ -40,7 +18,6 @@ cbuffer SkinningBuffer : register(b1)
     /*
      * x = skinning enabled
      * y = bone count
-     * z = animation enabled
      */
     float4 SkinningParameters;
 
@@ -66,8 +43,11 @@ struct VertexOutput
 {
     float4 position : SV_POSITION;
 
-    float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL;
+    float2 texcoord : TEXCOORD0;
+
+    float4 baseColor : COLOR0;
+    float4 materialParameters : TEXCOORD1;
 };
 
 void SkinVertex(
@@ -80,8 +60,7 @@ void SkinVertex(
             input.position,
             1.0F);
 
-    normal =
-        input.normal;
+    normal = input.normal;
 
     if (
         SkinningParameters.x < 0.5F ||
@@ -90,7 +69,7 @@ void SkinVertex(
         return;
     }
 
-    const float weightSum =
+    float weightSum =
         input.boneWeights.x +
         input.boneWeights.y +
         input.boneWeights.z +
@@ -101,7 +80,7 @@ void SkinVertex(
         return;
     }
 
-    const float4 weights =
+    float4 weights =
         input.boneWeights /
         weightSum;
 
@@ -118,7 +97,7 @@ void SkinVertex(
             0.0F,
             0.0F);
 
-    const uint maximumBoneIndex =
+    uint maximumBoneIndex =
         (uint)SkinningParameters.y -
         1U;
 
@@ -141,9 +120,8 @@ void SkinVertex(
                 input.boneIndices[influence],
                 maximumBoneIndex);
 
-        const row_major float4x4
-            boneMatrix =
-                BoneMatrices[boneIndex];
+        row_major float4x4 boneMatrix =
+            BoneMatrices[boneIndex];
 
         skinnedPosition +=
             mul(
@@ -162,16 +140,14 @@ void SkinVertex(
             weight;
     }
 
-    position =
-        skinnedPosition;
+    position = skinnedPosition;
 
     normal =
         normalize(
             skinnedNormal);
 }
 
-VertexOutput VSMain(
-    VertexInput input)
+VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
 
@@ -199,58 +175,26 @@ VertexOutput VSMain(
                 float4(
                     localNormal,
                     0.0F),
-                WorldInverseTranspose).xyz);
+                World).xyz);
 
     output.texcoord =
         input.texcoord;
+
+    output.baseColor =
+        BaseColor;
+
+    output.materialParameters =
+		MaterialParameters;
 
     return output;
 }
 
 float4 PSMain(
-    VertexOutput input,
-    const bool isFrontFace : SV_IsFrontFace)
-    : SV_TARGET
+    VertexOutput input) : SV_TARGET
 {
-    float4 surface =
-        BaseColor;
-
-    if (TextureFlags0.x > 0.5F)
-    {
-        surface *=
-            BaseColorTexture.Sample(
-                MaterialSampler,
-                input.texcoord);
-    }
-
-    /*
-     * Alpha Mask применяется только там,
-     * где renderer явно выбрал Mask.
-     */
-    if (
-        MaterialParameters0.z >
-            0.5F &&
-        MaterialParameters0.z <
-            1.5F)
-    {
-        clip(
-            surface.a -
-            MaterialParameters0.y);
-    }
-
-    float3 normal =
+    const float3 normal =
         normalize(
             input.normal);
-
-    /*
-     * Для double-sided поверхности
-     * разворачиваем normal обратной стороны.
-     */
-    if (!isFrontFace)
-    {
-        normal =
-            -normal;
-    }
 
     const float3 sunDirection =
         normalize(
@@ -270,35 +214,61 @@ float4 PSMain(
 
     const float3 ambient =
         lerp(
-            AmbientColor.rgb * 0.65F,
+            AmbientColor.rgb * 0.55F,
             AmbientColor.rgb,
             skyAmount);
 
-    const float3 directLighting =
+    const float3 lighting =
+        ambient +
         SunColor.rgb *
         sunDiffuse *
         SunDirectionIntensity.w *
-        0.80F;
+        0.92F;
+
+    float4 surface =
+        input.baseColor;
+
+    /*
+     * y = наличие BaseColorTexture.
+     */
+    if (
+        input.materialParameters.y >
+        0.5F)
+    {
+        surface *=
+            BaseColorTexture.Sample(
+                MaterialSampler,
+                input.texcoord);
+    }
+
+    /*
+     * w:
+     * 0 = Opaque
+     * 1 = Mask
+     * 2 = Blend
+     *
+     * z = alpha cutoff.
+     */
+    if (
+        input.materialParameters.w >
+            0.5F &&
+        input.materialParameters.w <
+            1.5F)
+    {
+        clip(
+            surface.a -
+            input.materialParameters.z);
+    }
 
     float3 color =
         surface.rgb *
-        (
-            ambient +
-            directLighting
-        );
+        lighting;
 
-    /*
-     * Простой preview tone mapping.
-     *
-     * Здесь нет legacy normal/specular/
-     * roughness/emissive логики.
-     */
     color =
         color /
         (
             1.0F +
-            color *
-                0.12F
+            color * 0.18F
         );
 
     color =
@@ -306,11 +276,18 @@ float4 PSMain(
             saturate(color),
             1.0F / 2.2F);
 
-    /*
-     * Opaque и Mask пишут полную alpha.
-     * Alpha diffuse используется только clip().
-     */
+    color =
+        lerp(
+            color,
+            float3(
+                1.0F,
+                0.35F,
+                0.05F),
+            saturate(
+                input.materialParameters.x) *
+                0.16F);
+
     return float4(
         color,
-        1.0F);
+        surface.a);
 }
