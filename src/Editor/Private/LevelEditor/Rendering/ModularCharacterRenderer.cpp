@@ -1696,6 +1696,16 @@ namespace lts::editor
                 engine::graphics::
                     CullMode::Back;
 
+            /*
+             * Конвертированные WarZ mesh используют
+             * counter-clockwise winding.
+             *
+             * Индексы при записи .skm сохраняются
+             * в исходном порядке.
+             */
+            pipelineDescription.rasterizer.
+                frontCounterClockwise = true;
+
             pipelineDescription.rasterizer.
                 depthClipEnable = true;
 
