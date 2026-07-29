@@ -1,14 +1,22 @@
 #include "Editor/Tools/Import/WarZAssetConverter.h"
 
+#include <Assets/AssetData.h>
+#include <Assets/AssetPath.h>
+#include <Assets/AssetResult.h>
+#include <Assets/LtsMaterialWriter.h>
+#include <Assets/MaterialAsset.h>
+
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <cwctype>
 #include <fstream>
 #include <iomanip>
 #include <limits>
+#include <optional>
 #include <sstream>
 #include <string_view>
 #include <system_error>
@@ -416,22 +424,6 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool WriteTextAtomic(
-            const std::filesystem::path& destination,
-            const std::string& text,
-            std::string& error)
-        {
-            const std::vector<std::uint8_t> bytes(
-                text.begin(),
-                text.end());
-
-            return WriteBinaryAtomic(
-                destination,
-                bytes,
-                error);
-        }
-
-        [[nodiscard]]
         bool CopyFileAtomic(
             const std::filesystem::path& source,
             const std::filesystem::path& destination,
@@ -495,93 +487,6 @@ namespace lts::editor
                 temporary,
                 destination,
                 error);
-        }
-
-        [[nodiscard]]
-        std::string EscapeJson(
-            const std::string_view value)
-        {
-            std::string output;
-            output.reserve(value.size() + 8U);
-
-            for (const unsigned char character :
-                 value)
-            {
-                switch (character)
-                {
-                    case '"':
-                        output += "\\\"";
-                        break;
-
-                    case '\\':
-                        output += "\\\\";
-                        break;
-
-                    case '\n':
-                        output += "\\n";
-                        break;
-
-                    case '\r':
-                        output += "\\r";
-                        break;
-
-                    case '\t':
-                        output += "\\t";
-                        break;
-
-                    default:
-                        if (character >= 0x20U)
-                        {
-                            output.push_back(
-                                static_cast<char>(
-                                    character));
-                        }
-                        break;
-                }
-            }
-
-            return output;
-        }
-
-        [[nodiscard]]
-        const char* TextureFieldName(
-            const LegacyTextureSlot slot) noexcept
-        {
-            switch (slot)
-            {
-                case LegacyTextureSlot::Diffuse:
-                    return "baseColor";
-
-                case LegacyTextureSlot::Normal:
-                    return "normal";
-
-                case LegacyTextureSlot::Specular:
-                    return "specular";
-
-                case LegacyTextureSlot::Roughness:
-                    return "roughness";
-
-                case LegacyTextureSlot::Glow:
-                    return "emissive";
-
-                case LegacyTextureSlot::DetailNormal:
-                    return "detailNormal";
-
-                case LegacyTextureSlot::Density:
-                    return "density";
-
-                case LegacyTextureSlot::CamouflageMask:
-                    return "camouflageMask";
-
-                case LegacyTextureSlot::Distortion:
-                    return "distortion";
-
-                case LegacyTextureSlot::SpecularPower:
-                    return "specularPower";
-
-                default:
-                    return "unknown";
-            }
         }
 
         struct TextureOutputState final
@@ -906,96 +811,335 @@ namespace lts::editor
             const std::filesystem::path& destination,
             std::string& error)
         {
-            std::ostringstream stream;
+            const auto sanitizeFloat =
+                [](
+                    const float value,
+                    const float fallback,
+                    const float minimum,
+                    const float maximum) noexcept
+                {
+                    if (!std::isfinite(value))
+                    {
+                        return fallback;
+                    }
 
-            stream <<
-                std::fixed <<
-                std::setprecision(6);
+                    return std::clamp(
+                        value,
+                        minimum,
+                        maximum);
+                };
 
-            stream <<
-                "{\n"
-                "  \"format\": \"Material\",\n"
-                "  \"version\": 1,\n"
-                "  \"name\": \"" <<
-                EscapeJson(material.name) <<
-                "\",\n"
-                "  \"shader\": \"Character\",\n"
-                "  \"baseColor\": [" <<
-                material.diffuseColor[0] << ", " <<
-                material.diffuseColor[1] << ", " <<
-                material.diffuseColor[2] << ", 1.0],\n"
-                "  \"specularPower\": " <<
-                material.specularPower << ",\n"
-                "  \"secondarySpecularPower\": " <<
-                material.specularPower1 << ",\n"
-                "  \"reflection\": " <<
-                material.reflectionPower << ",\n"
-                "  \"detailScale\": " <<
-                material.detailScale << ",\n"
-                "  \"detailAmount\": " <<
-                material.detailAmount << ",\n"
-                "  \"emissiveStrength\": " <<
-                material.selfIlluminationMultiplier << ",\n"
-                "  \"doubleSided\": " <<
-                (
-                    material.doubleSided
-                        ? "true"
-                        : "false"
-                ) <<
-                ",\n"
-                "  \"transparent\": " <<
-                (
-                    material.transparent ||
-                    material.forceAlpha
-                        ? "true"
-                        : "false"
-                ) <<
-                ",\n"
-                "  \"textures\": {\n";
+            engine::assets::MaterialAssetDesc
+                description;
 
-            bool firstTexture = true;
-
-            for (
-                std::size_t index = 0U;
-                index < texturePaths.size();
-                ++index)
+            description.baseColorFactor =
             {
-                if (texturePaths[index].empty())
-                {
-                    continue;
-                }
+                sanitizeFloat(
+                    material.diffuseColor[0],
+                    1.0F,
+                    0.0F,
+                    1.0F),
 
-                if (!firstTexture)
-                {
-                    stream << ",\n";
-                }
+                sanitizeFloat(
+                    material.diffuseColor[1],
+                    1.0F,
+                    0.0F,
+                    1.0F),
 
-                firstTexture = false;
+                sanitizeFloat(
+                    material.diffuseColor[2],
+                    1.0F,
+                    0.0F,
+                    1.0F),
 
-                stream <<
-                    "    \"" <<
-                    TextureFieldName(
-                        static_cast<
-                            LegacyTextureSlot>(
-                                index)) <<
-                    "\": \"" <<
-                    EscapeJson(
-                        texturePaths[index]) <<
-                    "\"";
+                1.0F
+            };
+
+            description.metallicFactor =
+                sanitizeFloat(
+                    material.lowQualityMetalness,
+                    0.0F,
+                    0.0F,
+                    1.0F);
+
+            /*
+             * Пока полноценная конверсия WarZ gloss
+             * в PBR roughness не подключена.
+             *
+             * Roughness texture, если она существует,
+             * всё равно сохраняется ниже.
+             */
+            description.roughnessFactor = 1.0F;
+
+            description.alphaCutoff = 0.5F;
+
+            /*
+             * ForceAlpha обычно используется для
+             * растительности, волос и cutout-материалов.
+             */
+            if (material.forceAlpha)
+            {
+                description.alphaMode =
+                    engine::assets::
+                        MaterialAlphaMode::Mask;
+            }
+            else if (material.transparent)
+            {
+                description.alphaMode =
+                    engine::assets::
+                        MaterialAlphaMode::Blend;
+            }
+            else
+            {
+                description.alphaMode =
+                    engine::assets::
+                        MaterialAlphaMode::Opaque;
             }
 
-            if (!firstTexture)
+            description.doubleSided =
+                material.doubleSided;
+
+            description.normalScale = 1.0F;
+
+            const bool hasSpecularTexture =
+                !texturePaths[
+                    static_cast<std::size_t>(
+                        LegacyTextureSlot::
+                            Specular)]
+                    .empty();
+
+            description.specularIntensity =
+                hasSpecularTexture ||
+                material.specularPower > 0.0F
+                    ? 1.0F
+                    : 0.0F;
+
+            description.specularPower =
+                sanitizeFloat(
+                    material.specularPower,
+                    32.0F,
+                    1.0F,
+                    8192.0F);
+
+            description.reflectionFactor =
+                sanitizeFloat(
+                    material.reflectionPower,
+                    0.0F,
+                    0.0F,
+                    16.0F);
+
+            description.emissiveStrength =
+                sanitizeFloat(
+                    material.
+                        selfIlluminationMultiplier,
+                    0.0F,
+                    0.0F,
+                    64.0F);
+
+            const bool hasEmissiveTexture =
+                !texturePaths[
+                    static_cast<std::size_t>(
+                        LegacyTextureSlot::Glow)]
+                    .empty();
+
+            if (
+                hasEmissiveTexture ||
+                description.emissiveStrength >
+                    0.0F)
             {
-                stream << '\n';
+                description.emissiveFactor =
+                {
+                    1.0F,
+                    1.0F,
+                    1.0F
+                };
             }
 
-            stream <<
-                "  }\n"
-                "}\n";
+            description.sampler.filter =
+                engine::graphics::
+                    TextureFilter::Anisotropic;
 
-            return WriteTextAtomic(
+            description.sampler.addressU =
+                engine::graphics::
+                    TextureAddressMode::Wrap;
+
+            description.sampler.addressV =
+                engine::graphics::
+                    TextureAddressMode::Wrap;
+
+            description.sampler.addressW =
+                engine::graphics::
+                    TextureAddressMode::Wrap;
+
+            description.sampler.
+                maximumAnisotropy = 8U;
+
+            description.debugName =
+                destination.filename().
+                    generic_u8string();
+
+            const auto assignTexture =
+                [&texturePaths, &error](
+                    const LegacyTextureSlot slot,
+                    std::optional<
+                        engine::assets::AssetPath>&
+                            destinationPath)
+                {
+                    const std::string& sourcePath =
+                        texturePaths[
+                            static_cast<std::size_t>(
+                                slot)];
+
+                    if (sourcePath.empty())
+                    {
+                        return true;
+                    }
+
+                    engine::assets::AssetPath path;
+
+                    const engine::assets::
+                        AssetResult result =
+                            engine::assets::
+                                AssetPath::TryCreate(
+                                    sourcePath,
+                                    path);
+
+                    if (engine::assets::Failed(
+                            result))
+                    {
+                        error =
+                            "Invalid material texture "
+                            "asset path '" +
+                            sourcePath +
+                            "': " +
+                            engine::assets::
+                                ToString(result);
+
+                        return false;
+                    }
+
+                    destinationPath =
+                        std::move(path);
+
+                    return true;
+                };
+
+            if (
+                !assignTexture(
+                    LegacyTextureSlot::Diffuse,
+                    description.
+                        baseColorTexture) ||
+                !assignTexture(
+                    LegacyTextureSlot::Normal,
+                    description.
+                        normalTexture) ||
+                !assignTexture(
+                    LegacyTextureSlot::Specular,
+                    description.
+                        specularGlossTexture) ||
+                !assignTexture(
+                    LegacyTextureSlot::Roughness,
+                    description.
+                        roughnessTexture) ||
+                !assignTexture(
+                    LegacyTextureSlot::Glow,
+                    description.
+                        emissiveTexture) ||
+                !assignTexture(
+                    LegacyTextureSlot::
+                        SpecularPower,
+                    description.
+                        specularPowerTexture))
+            {
+                return false;
+            }
+
+            engine::assets::MaterialAsset
+                materialAsset;
+
+            engine::assets::AssetResult result =
+                materialAsset.Initialize(
+                    std::move(description));
+
+            if (engine::assets::Failed(result))
+            {
+                error =
+                    "Failed to initialize LTS "
+                    "material '" +
+                    destination.
+                        generic_u8string() +
+                    "': " +
+                    engine::assets::
+                        ToString(result);
+
+                return false;
+            }
+
+            engine::assets::AssetData encoded;
+
+            result =
+                engine::assets::
+                    LtsMaterialWriter::Encode(
+                        materialAsset,
+                        encoded);
+
+            if (engine::assets::Failed(result))
+            {
+                error =
+                    "Failed to encode LTS "
+                    "material '" +
+                    destination.
+                        generic_u8string() +
+                    "': " +
+                    engine::assets::
+                        ToString(result);
+
+                return false;
+            }
+
+            if (
+                encoded.IsEmpty() ||
+                encoded.GetData() == nullptr)
+            {
+                error =
+                    "LTS material writer produced "
+                    "empty data.";
+
+                return false;
+            }
+
+            std::vector<std::uint8_t> bytes;
+
+            try
+            {
+                bytes.resize(
+                    encoded.GetSize());
+
+                std::memcpy(
+                    bytes.data(),
+                    encoded.GetData(),
+                    encoded.GetSize());
+            }
+            catch (const std::bad_alloc&)
+            {
+                error =
+                    "Not enough memory to write "
+                    "the LTS material.";
+
+                return false;
+            }
+            catch (...)
+            {
+                error =
+                    "Unexpected failure while "
+                    "preparing LTS material data.";
+
+                return false;
+            }
+
+            return WriteBinaryAtomic(
                 destination,
-                stream.str(),
+                bytes,
                 error);
         }
 
