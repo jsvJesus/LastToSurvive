@@ -25,6 +25,9 @@ cbuffer SkinningBuffer : register(b1)
         BoneMatrices[MAX_CHARACTER_BONES];
 };
 
+Texture2D BaseColorTexture : register(t0);
+SamplerState MaterialSampler : register(s0);
+
 struct VertexInput
 {
     float3 position : POSITION;
@@ -44,7 +47,7 @@ struct VertexOutput
     float2 texcoord : TEXCOORD0;
 
     float4 baseColor : COLOR0;
-    float2 materialParameters : TEXCOORD1;
+    float4 materialParameters : TEXCOORD1;
 };
 
 void SkinVertex(
@@ -181,7 +184,7 @@ VertexOutput VSMain(VertexInput input)
         BaseColor;
 
     output.materialParameters =
-        MaterialParameters.xy;
+		MaterialParameters;
 
     return output;
 }
@@ -222,8 +225,43 @@ float4 PSMain(
         SunDirectionIntensity.w *
         0.92F;
 
+    float4 surface =
+        input.baseColor;
+
+    /*
+     * y = наличие BaseColorTexture.
+     */
+    if (
+        input.materialParameters.y >
+        0.5F)
+    {
+        surface *=
+            BaseColorTexture.Sample(
+                MaterialSampler,
+                input.texcoord);
+    }
+
+    /*
+     * w:
+     * 0 = Opaque
+     * 1 = Mask
+     * 2 = Blend
+     *
+     * z = alpha cutoff.
+     */
+    if (
+        input.materialParameters.w >
+            0.5F &&
+        input.materialParameters.w <
+            1.5F)
+    {
+        clip(
+            surface.a -
+            input.materialParameters.z);
+    }
+
     float3 color =
-        input.baseColor.rgb *
+        surface.rgb *
         lighting;
 
     color =
@@ -251,5 +289,5 @@ float4 PSMain(
 
     return float4(
         color,
-        input.baseColor.a);
+        surface.a);
 }

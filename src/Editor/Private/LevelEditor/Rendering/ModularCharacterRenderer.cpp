@@ -7,6 +7,11 @@
 #include <Assets/AssetResult.h>
 #include <Assets/AnimationAsset.h>
 #include <Assets/AnimationAssetLoader.h>
+#include <Assets/DdsTextureDecoder.h>
+#include <Assets/GpuTexture.h>
+#include <Assets/MaterialAsset.h>
+#include <Assets/MaterialAssetLoader.h>
+#include <Assets/TextureAsset.h>
 #include <Assets/GpuSkeletalMesh.h>
 #include <Assets/SkeletalMeshAsset.h>
 #include <Assets/SkeletalMeshAssetLoader.h>
@@ -23,6 +28,8 @@
 #include <Graphics/RenderDevice.h>
 #include <Graphics/ResourceHandle.h>
 #include <Graphics/Shader.h>
+#include <Graphics/Sampler.h>
+#include <Graphics/Texture.h>
 
 #include <DirectXMath.h>
 
@@ -44,6 +51,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 namespace lts::editor
 {
@@ -482,6 +490,96 @@ namespace lts::editor
                     }
 
                     current = parent;
+                }
+            }
+            catch (...)
+            {
+            }
+
+            return {};
+        }
+
+        [[nodiscard]]
+        std::filesystem::path ResolveDataAssetFile(
+            const std::filesystem::path&
+                sourceFile,
+            const std::string&
+                assetPath) noexcept
+        {
+            try
+            {
+                if (assetPath.empty())
+                {
+                    return {};
+                }
+
+                const std::filesystem::path requested =
+                    std::filesystem::u8path(
+                        assetPath);
+
+                std::error_code error;
+
+                if (requested.is_absolute())
+                {
+                    if (std::filesystem::is_regular_file(
+                            requested,
+                            error) &&
+                        !error)
+                    {
+                        return
+                            requested.lexically_normal();
+                    }
+
+                    return {};
+                }
+
+                const std::filesystem::path dataRoot =
+                    FindDataRoot(
+                        sourceFile.parent_path());
+
+                if (dataRoot.empty())
+                {
+                    return {};
+                }
+
+                /*
+                 * Путь без Data/:
+                 *
+                 * Materials/Characters/test.material
+                 * Textures/Characters/test.dds
+                 */
+                std::filesystem::path candidate =
+                    dataRoot /
+                    requested;
+
+                if (std::filesystem::is_regular_file(
+                        candidate,
+                        error) &&
+                    !error)
+                {
+                    return
+                        candidate.lexically_normal();
+                }
+
+                error.clear();
+
+                /*
+                 * Путь с Data/:
+                 *
+                 * Data/Materials/...
+                 * Data/Textures/...
+                 */
+                candidate =
+                    dataRoot.parent_path() /
+                    requested;
+
+                if (std::filesystem::is_regular_file(
+                        candidate,
+                        error) &&
+                    !error)
+                {
+                    return
+                        candidate.lexically_normal();
                 }
             }
             catch (...)
@@ -1207,6 +1305,25 @@ namespace lts::editor
 
     class ModularCharacterRenderer::Impl final
     {
+        struct CachedTexture final
+        {
+            std::unique_ptr<
+                engine::assets::GpuTexture>
+                gpu;
+        };
+
+        struct CachedMaterial final
+        {
+            engine::assets::MaterialAssetDesc
+                desc;
+
+            std::shared_ptr<CachedTexture>
+                baseColorTexture;
+
+            engine::graphics::SamplerHandle
+                sampler;
+        };
+        
         struct CachedSkeleton final
         {
             engine::assets::SkeletonAsset asset;
@@ -1228,6 +1345,10 @@ namespace lts::editor
 
             std::shared_ptr<CachedSkeleton>
                 skeleton;
+
+            std::vector<
+                std::shared_ptr<CachedMaterial>>
+                materials;
 
             std::array<float, 3U> pivot{};
         };
@@ -1579,6 +1700,59 @@ namespace lts::editor
                 return false;
             }
 
+            pipelineDescription.blend.
+                renderTargets[0].
+                    blendEnable = true;
+
+            pipelineDescription.blend.
+                renderTargets[0].
+                    sourceColor =
+                        engine::graphics::
+                            BlendFactor::SourceAlpha;
+
+            pipelineDescription.blend.
+                renderTargets[0].
+                    destinationColor =
+                        engine::graphics::
+                            BlendFactor::
+                                InverseSourceAlpha;
+
+            pipelineDescription.blend.
+                renderTargets[0].
+                    sourceAlpha =
+                        engine::graphics::
+                            BlendFactor::One;
+
+            pipelineDescription.blend.
+                renderTargets[0].
+                    destinationAlpha =
+                        engine::graphics::
+                            BlendFactor::
+                                InverseSourceAlpha;
+
+            pipelineDescription.depthStencil.
+                depthWriteEnable = false;
+
+            pipelineDescription.debugName =
+                "EditorModularCharacter."
+                "TransparentPipeline";
+
+            result =
+                device.CreateGraphicsPipeline(
+                    pipelineDescription,
+                    transparentPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create transparent modular "
+                    "character pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
             initialized_ = true;
 
             engine::core::GetLogger().Write(
@@ -1594,6 +1768,32 @@ namespace lts::editor
                 device) noexcept
         {
             initialized_ = false;
+
+            for (auto& pair : materials_)
+            {
+                if (
+                    pair.second != nullptr &&
+                    pair.second->sampler.IsValid())
+                {
+                    static_cast<void>(
+                        device.DestroySampler(
+                            pair.second->sampler));
+
+                    pair.second->sampler = {};
+                }
+            }
+
+            for (auto& pair : textures_)
+            {
+                if (
+                    pair.second != nullptr &&
+                    pair.second->gpu != nullptr)
+                {
+                    static_cast<void>(
+                        pair.second->gpu->
+                            Release(device));
+                }
+            }
 
             for (auto& pair : meshes_)
             {
@@ -1611,6 +1811,19 @@ namespace lts::editor
             failedSkeletons_.clear();
             animations_.clear();
             failedAnimations_.clear();
+            materials_.clear();
+            failedMaterials_.clear();
+            textures_.clear();
+            failedTextures_.clear();
+
+            if (transparentPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        transparentPipeline_));
+
+                transparentPipeline_ = {};
+            }
 
             if (pipeline_.IsValid())
             {
@@ -1954,21 +2167,6 @@ namespace lts::editor
                         break;
                     }
 
-                    constants.baseColor =
-                        GetSlotColor(slot);
-
-                    result =
-                        context.UpdateBuffer(
-                            objectBuffer_,
-                            &constants,
-                            sizeof(constants));
-
-                    if (engine::graphics::Failed(
-                            result))
-                    {
-                        break;
-                    }
-
                     engine::graphics::
                         VertexBufferBinding
                             vertexBinding;
@@ -2029,6 +2227,188 @@ namespace lts::editor
                             continue;
                         }
 
+                        std::shared_ptr<
+                            CachedMaterial>
+                                material;
+
+                        if (
+                            section->materialSlot <
+                            cached->
+                                materials.size())
+                        {
+                            material =
+                                cached->materials[
+                                    section->
+                                        materialSlot];
+                        }
+
+                        engine::graphics::
+                            TextureHandle
+                                baseColorTexture;
+
+                        engine::graphics::
+                            SamplerHandle
+                                materialSampler;
+
+                        bool transparent = false;
+
+                        constants.baseColor =
+                            GetSlotColor(slot);
+
+                        constants.
+                            materialParameters.y =
+                                0.0F;
+
+                        constants.
+                            materialParameters.z =
+                                0.5F;
+
+                        constants.
+                            materialParameters.w =
+                                0.0F;
+
+                        if (material != nullptr)
+                        {
+                            constants.baseColor =
+                            {
+                                material->desc.
+                                    baseColorFactor[0],
+
+                                material->desc.
+                                    baseColorFactor[1],
+
+                                material->desc.
+                                    baseColorFactor[2],
+
+                                material->desc.
+                                    baseColorFactor[3]
+                            };
+
+                            constants.
+                                materialParameters.z =
+                                    material->desc.
+                                        alphaCutoff;
+
+                            constants.
+                                materialParameters.w =
+                                    static_cast<float>(
+                                        static_cast<
+                                            std::uint32_t>(
+                                                material->
+                                                    desc.
+                                                    alphaMode));
+
+                            transparent =
+                                material->desc.
+                                    alphaMode ==
+                                engine::assets::
+                                    MaterialAlphaMode::
+                                        Blend;
+
+                            if (
+                                material->
+                                    baseColorTexture !=
+                                        nullptr &&
+                                material->
+                                    baseColorTexture->
+                                    gpu != nullptr &&
+                                material->
+                                    baseColorTexture->
+                                    gpu->IsValid() &&
+                                material->sampler.
+                                    IsValid())
+                            {
+                                baseColorTexture =
+                                    material->
+                                        baseColorTexture->
+                                        gpu->
+                                        GetHandle();
+
+                                materialSampler =
+                                    material->sampler;
+
+                                constants.
+                                    materialParameters.y =
+                                        1.0F;
+                            }
+                        }
+
+                        result =
+                            context.SetGraphicsPipeline(
+                                transparent
+                                    ? transparentPipeline_
+                                    : pipeline_);
+
+                        if (engine::graphics::Failed(
+                                result))
+                        {
+                            break;
+                        }
+
+                        result =
+                            context.UpdateBuffer(
+                                objectBuffer_,
+                                &constants,
+                                sizeof(constants));
+
+                        if (engine::graphics::Failed(
+                                result))
+                        {
+                            break;
+                        }
+
+                        if (
+                            baseColorTexture.IsValid() &&
+                            materialSampler.IsValid())
+                        {
+                            result =
+                                context.SetShaderResources(
+                                    engine::graphics::
+                                        ShaderStage::Pixel,
+                                    0U,
+                                    &baseColorTexture,
+                                    1U);
+
+                            if (engine::graphics::Failed(
+                                    result))
+                            {
+                                break;
+                            }
+
+                            result =
+                                context.SetSamplers(
+                                    engine::graphics::
+                                        ShaderStage::Pixel,
+                                    0U,
+                                    &materialSampler,
+                                    1U);
+
+                            if (engine::graphics::Failed(
+                                    result))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            static_cast<void>(
+                                context.
+                                    UnbindShaderResources(
+                                        engine::graphics::
+                                            ShaderStage::
+                                                Pixel,
+                                        0U,
+                                        1U));
+
+                            static_cast<void>(
+                                context.UnbindSamplers(
+                                    engine::graphics::
+                                        ShaderStage::
+                                            Pixel,
+                                    0U,
+                                    1U));
+                        }
+
                         result =
                             context.DrawIndexed(
                                 section->indexCount,
@@ -2056,6 +2436,20 @@ namespace lts::editor
             }
 
             context.UnbindIndexBuffer();
+
+            static_cast<void>(
+                context.UnbindShaderResources(
+                    engine::graphics::
+                        ShaderStage::Pixel,
+                    0U,
+                    1U));
+
+            static_cast<void>(
+                context.UnbindSamplers(
+                    engine::graphics::
+                        ShaderStage::Pixel,
+                    0U,
+                    1U));
 
             static_cast<void>(
                 context.UnbindConstantBuffers(
@@ -2479,6 +2873,397 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        std::shared_ptr<CachedTexture>
+            GetOrLoadTexture(
+                const std::filesystem::path&
+                    filePath) noexcept
+        {
+            try
+            {
+                const std::wstring key =
+                    LowercasePath(
+                        filePath.
+                            lexically_normal().
+                            wstring());
+
+                const auto existing =
+                    textures_.find(key);
+
+                if (existing != textures_.end())
+                {
+                    return existing->second;
+                }
+
+                if (
+                    failedTextures_.find(key) !=
+                    failedTextures_.end())
+                {
+                    return nullptr;
+                }
+
+                engine::assets::AssetData source;
+
+                engine::assets::AssetResult
+                    assetResult =
+                        ReadAssetData(
+                            filePath,
+                            source);
+
+                if (engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Read character texture",
+                        assetResult);
+
+                    failedTextures_.insert(key);
+                    return nullptr;
+                }
+
+                if (!engine::assets::
+                        DdsTextureDecoder::IsDds(
+                            source))
+                {
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Error,
+                        "LTS.Editor.ModularCharacter",
+                        "Character base-color texture "
+                        "is not a DDS file.");
+
+                    failedTextures_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::
+                    DdsTextureDecodeOptions
+                        decodeOptions;
+
+                decodeOptions.forceSrgb = true;
+                decodeOptions.allowBc7 = true;
+
+                engine::assets::TextureAsset
+                    cpuTexture;
+
+                assetResult =
+                    engine::assets::
+                        DdsTextureDecoder::Decode(
+                            source,
+                            decodeOptions,
+                            cpuTexture);
+
+                if (engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        filePath,
+                        "Decode character DDS texture",
+                        assetResult);
+
+                    failedTextures_.insert(key);
+                    return nullptr;
+                }
+
+                auto cached =
+                    std::make_shared<
+                        CachedTexture>();
+
+                cached->gpu =
+                    std::make_unique<
+                        engine::assets::GpuTexture>();
+
+                engine::assets::
+                    GpuTextureUploadOptions
+                        uploadOptions;
+
+                uploadOptions.requestedColorSpace =
+                    engine::assets::
+                        RequestedColorSpace::Srgb;
+
+                const engine::graphics::
+                    GraphicsResult graphicsResult =
+                        cached->gpu->Upload(
+                            *device_,
+                            cpuTexture,
+                            uploadOptions);
+
+                if (engine::graphics::Failed(
+                        graphicsResult))
+                {
+                    LogGraphicsFailure(
+                        "Upload character base-color texture",
+                        graphicsResult);
+
+                    failedTextures_.insert(key);
+                    return nullptr;
+                }
+
+                textures_.emplace(
+                    key,
+                    cached);
+
+                return cached;
+            }
+            catch (const std::bad_alloc&)
+            {
+                return nullptr;
+            }
+            catch (...)
+            {
+                return nullptr;
+            }
+        }
+
+        [[nodiscard]]
+        std::shared_ptr<CachedMaterial>
+            GetOrLoadMaterial(
+                const std::filesystem::path&
+                    skeletalMeshFile,
+                const std::string&
+                    materialAssetPath) noexcept
+        {
+            try
+            {
+                const std::filesystem::path
+                    materialFile =
+                        ResolveDataAssetFile(
+                            skeletalMeshFile,
+                            materialAssetPath);
+
+                if (materialFile.empty())
+                {
+                    const std::wstring failedKey =
+                        LowercasePath(
+                            std::filesystem::u8path(
+                                materialAssetPath).
+                                wstring());
+
+                    if (
+                        failedMaterials_.
+                            insert(failedKey).
+                            second)
+                    {
+                        std::string message =
+                            "Character material was "
+                            "not found: ";
+
+                        message += materialAssetPath;
+
+                        engine::core::GetLogger().Write(
+                            engine::core::
+                                LogLevel::Error,
+                            "LTS.Editor.ModularCharacter",
+                            message);
+                    }
+
+                    return nullptr;
+                }
+
+                const std::wstring key =
+                    LowercasePath(
+                        materialFile.
+                            lexically_normal().
+                            wstring());
+
+                const auto existing =
+                    materials_.find(key);
+
+                if (existing != materials_.end())
+                {
+                    return existing->second;
+                }
+
+                if (
+                    failedMaterials_.find(key) !=
+                    failedMaterials_.end())
+                {
+                    return nullptr;
+                }
+
+                engine::assets::AssetData source;
+
+                engine::assets::AssetResult
+                    assetResult =
+                        ReadAssetData(
+                            materialFile,
+                            source);
+
+                if (engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        materialFile,
+                        "Read character material",
+                        assetResult);
+
+                    failedMaterials_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::AssetMetadata
+                    metadata;
+
+                assetResult =
+                    CreateMetadata(
+                        std::filesystem::u8path(
+                            materialAssetPath),
+                        source.GetSize(),
+                        engine::assets::
+                            AssetType::Material,
+                        metadata);
+
+                if (engine::assets::Failed(
+                        assetResult))
+                {
+                    LogAssetFailure(
+                        materialFile,
+                        "Create character material metadata",
+                        assetResult);
+
+                    failedMaterials_.insert(key);
+                    return nullptr;
+                }
+
+                engine::assets::
+                    MaterialAssetLoader loader;
+
+                std::unique_ptr<
+                    engine::assets::LoadedAsset>
+                    loadedAsset;
+
+                assetResult =
+                    loader.Load(
+                        metadata,
+                        source,
+                        loadedAsset);
+
+                if (
+                    engine::assets::Failed(
+                        assetResult) ||
+                    loadedAsset == nullptr ||
+                    loadedAsset->GetType() !=
+                        engine::assets::
+                            AssetType::Material)
+                {
+                    if (
+                        engine::assets::Succeeded(
+                            assetResult))
+                    {
+                        assetResult =
+                            engine::assets::
+                                AssetResult::
+                                    TypeMismatch;
+                    }
+
+                    LogAssetFailure(
+                        materialFile,
+                        "Load character material",
+                        assetResult);
+
+                    failedMaterials_.insert(key);
+                    return nullptr;
+                }
+
+                const auto* const loadedMaterial =
+                    static_cast<
+                        engine::assets::
+                            MaterialLoadedAsset*>(
+                                loadedAsset.get());
+
+                auto cached =
+                    std::make_shared<
+                        CachedMaterial>();
+
+                cached->desc =
+                    loadedMaterial->
+                        GetMaterial().
+                        GetDesc();
+
+                if (
+                    cached->desc.
+                        baseColorTexture.
+                        has_value())
+                {
+                    const std::filesystem::path
+                        textureFile =
+                            ResolveDataAssetFile(
+                                materialFile,
+                                cached->desc.
+                                    baseColorTexture->
+                                    String());
+
+                    if (!textureFile.empty())
+                    {
+                        cached->baseColorTexture =
+                            GetOrLoadTexture(
+                                textureFile);
+                    }
+                    else
+                    {
+                        std::string message =
+                            "Character base-color texture "
+                            "was not found: ";
+
+                        message +=
+                            cached->desc.
+                                baseColorTexture->
+                                String();
+
+                        engine::core::GetLogger().Write(
+                            engine::core::
+                                LogLevel::Error,
+                            "LTS.Editor.ModularCharacter",
+                            message);
+                    }
+                }
+
+                if (
+                    cached->baseColorTexture !=
+                        nullptr &&
+                    cached->baseColorTexture->gpu !=
+                        nullptr &&
+                    cached->baseColorTexture->gpu->
+                        IsValid())
+                {
+                    engine::graphics::SamplerDesc
+                        samplerDescription =
+                            cached->desc.sampler;
+
+                    const engine::graphics::
+                        GraphicsResult samplerResult =
+                            device_->CreateSampler(
+                                samplerDescription,
+                                cached->sampler);
+
+                    if (engine::graphics::Failed(
+                            samplerResult))
+                    {
+                        LogGraphicsFailure(
+                            "Create character material sampler",
+                            samplerResult);
+
+                        cached->baseColorTexture.reset();
+                        cached->sampler = {};
+                    }
+                }
+
+                materials_.emplace(
+                    key,
+                    cached);
+
+                return cached;
+            }
+            catch (const std::bad_alloc&)
+            {
+                return nullptr;
+            }
+            catch (...)
+            {
+                return nullptr;
+            }
+        }
+
+        [[nodiscard]]
         bool LoadMesh(
             const std::filesystem::path& filePath,
             const std::filesystem::path& logicalPath,
@@ -2644,6 +3429,48 @@ namespace lts::editor
                     return false;
                 }
 
+                output.materials.clear();
+
+                output.materials.resize(
+                    cpuMesh.
+                        GetMaterialSlotCount());
+
+                for (
+                    std::size_t sectionIndex = 0U;
+                    sectionIndex <
+                        cpuMesh.GetSectionCount();
+                    ++sectionIndex)
+                {
+                    const engine::assets::
+                        SkeletalMeshSection*
+                            section =
+                                cpuMesh.GetSection(
+                                    sectionIndex);
+
+                    if (
+                        section == nullptr ||
+                        section->materialSlot >=
+                            output.materials.size() ||
+                        section->
+                            materialAssetPath.empty())
+                    {
+                        continue;
+                    }
+
+                    auto& material =
+                        output.materials[
+                            section->materialSlot];
+
+                    if (material == nullptr)
+                    {
+                        material =
+                            GetOrLoadMaterial(
+                                filePath,
+                                section->
+                                    materialAssetPath);
+                    }
+                }
+
                 output.gpu =
                     std::move(gpuMesh);
 
@@ -2696,6 +3523,9 @@ namespace lts::editor
         engine::graphics::PipelineStateHandle
             pipeline_;
 
+        engine::graphics::PipelineStateHandle
+            transparentPipeline_;
+
         std::unordered_map<
             std::wstring,
             CachedMesh>
@@ -2711,6 +3541,16 @@ namespace lts::editor
             std::shared_ptr<CachedAnimation>>
             animations_;
 
+        std::unordered_map<
+            std::wstring,
+            std::shared_ptr<CachedMaterial>>
+            materials_;
+
+        std::unordered_map<
+            std::wstring,
+            std::shared_ptr<CachedTexture>>
+            textures_;
+
         std::unordered_set<std::wstring>
             failedMeshes_;
 
@@ -2719,6 +3559,12 @@ namespace lts::editor
 
         std::unordered_set<std::wstring>
             failedAnimations_;
+
+        std::unordered_set<std::wstring>
+            failedMaterials_;
+
+        std::unordered_set<std::wstring>
+            failedTextures_;
 
         bool initialized_ = false;
     };
