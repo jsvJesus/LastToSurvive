@@ -43,7 +43,9 @@ namespace lts::editor
                 context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept;
+                viewProjection,
+            const DirectX::XMFLOAT3&
+                cameraPosition) noexcept;
 
     private:
         class Impl;
