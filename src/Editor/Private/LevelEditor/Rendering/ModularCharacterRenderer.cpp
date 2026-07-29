@@ -2587,6 +2587,48 @@ namespace lts::editor
                                 material->desc.
                                     doubleSided;
 
+                            /*
+                             * Legacy WarZ character materials
+                             * часто одновременно имеют:
+                             *
+                             * Transparent + DoubleSided.
+                             *
+                             * Для волос и одежды это означает
+                             * alpha cutout, а не полупрозрачное
+                             * смешивание двух сторон.
+                             */
+                            if (
+                                transparent &&
+                                doubleSided)
+                            {
+                                transparent = false;
+
+                                /*
+                                 * Переключаем shader с Blend
+                                 * на Mask.
+                                 */
+                                constants.
+                                    materialParameters0.z =
+                                        static_cast<float>(
+                                            static_cast<
+                                                std::uint32_t>(
+                                                    engine::assets::
+                                                        MaterialAlphaMode::
+                                                            Mask));
+
+                                /*
+                                 * Защита от нулевого или слишком
+                                 * маленького cutoff.
+                                 */
+                                constants.
+                                    materialParameters0.y =
+                                        std::clamp(
+                                            material->desc.
+                                                alphaCutoff,
+                                            0.05F,
+                                            0.95F);
+                            }
+
                             textureHandles[0] =
                                 getTextureHandle(
                                     material->
