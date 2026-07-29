@@ -2998,14 +2998,6 @@ namespace lts::editor
                         conversionStatus_.c_str());
                 }
 
-                ImGui::SameLine();
-
-                ImGui::Button(
-                    "Export Editable FBX",
-                    ImVec2(175.0F, 32.0F));
-
-                ImGui::EndDisabled();
-
                 if (analysisSucceeded_)
                 {
                     DrawAnimationControls();
