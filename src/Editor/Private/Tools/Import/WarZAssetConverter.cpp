@@ -874,10 +874,22 @@ namespace lts::editor
             description.alphaCutoff = 0.5F;
 
             /*
-             * ForceAlpha обычно используется для
-             * растительности, волос и cutout-материалов.
+             * Для legacy character materials сочетание
+             * Transparent + DoubleSided обычно означает
+             * alpha-tested поверхность:
+             *
+             * волосы, ресницы, отдельные части одежды.
+             *
+             * Рисовать две стороны через Blend нельзя:
+             * передняя и задняя поверхности начинают
+             * смешиваться между собой.
              */
-            if (material.forceAlpha)
+            if (
+                material.forceAlpha ||
+                (
+                    material.transparent &&
+                    material.doubleSided
+                ))
             {
                 description.alphaMode =
                     engine::assets::
