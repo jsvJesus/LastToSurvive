@@ -2655,30 +2655,18 @@ namespace lts::editor
                                     material->
                                         baseColorTexture);
 
-                            textureHandles[1] =
-                                getTextureHandle(
-                                    material->
-                                        normalTexture);
-
-                            textureHandles[2] =
-                                getTextureHandle(
-                                    material->
-                                        specularGlossTexture);
-
-                            textureHandles[3] =
-                                getTextureHandle(
-                                    material->
-                                        roughnessTexture);
-
-                            textureHandles[4] =
-                                getTextureHandle(
-                                    material->
-                                        emissiveTexture);
-
-                            textureHandles[5] =
-                                getTextureHandle(
-                                    material->
-                                        specularPowerTexture);
+                            if (
+                                textureHandles[0].
+                                    IsValid())
+                            {
+                                constants.baseColor =
+                                {
+                                    1.0F,
+                                    1.0F,
+                                    1.0F,
+                                    1.0F
+                                };
+                            }
 
                             materialSampler =
                                 material->sampler;
@@ -3724,56 +3712,9 @@ namespace lts::editor
                     "base-color texture",
                     cached->baseColorTexture);
 
-                loadTexture(
-                    cached->desc.
-                        normalTexture,
-                    false,
-                    "normal texture",
-                    cached->normalTexture);
-
-                loadTexture(
-                    cached->desc.
-                        specularGlossTexture,
-                    false,
-                    "specular/gloss texture",
-                    cached->
-                        specularGlossTexture);
-
-                loadTexture(
-                    cached->desc.
-                        roughnessTexture,
-                    false,
-                    "roughness texture",
-                    cached->roughnessTexture);
-
-                loadTexture(
-                    cached->desc.
-                        emissiveTexture,
-                    true,
-                    "emissive texture",
-                    cached->emissiveTexture);
-
-                loadTexture(
-                    cached->desc.
-                        specularPowerTexture,
-                    false,
-                    "specular-power texture",
-                    cached->
-                        specularPowerTexture);
-
                 const bool hasAnyTexture =
-                    cached->baseColorTexture !=
-                        nullptr ||
-                    cached->normalTexture !=
-                        nullptr ||
-                    cached->specularGlossTexture !=
-                        nullptr ||
-                    cached->roughnessTexture !=
-                        nullptr ||
-                    cached->emissiveTexture !=
-                        nullptr ||
-                    cached->specularPowerTexture !=
-                        nullptr;
+                   cached->baseColorTexture !=
+                       nullptr;
 
                 if (hasAnyTexture)
                 {

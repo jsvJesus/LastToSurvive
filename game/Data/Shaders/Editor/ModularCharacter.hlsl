@@ -22,31 +22,12 @@ cbuffer ObjectBuffer : register(b0)
 
     /*
      * x = has base-color texture
-     * y = has normal texture
-     * z = has specular/gloss texture
-     * w = has roughness texture
+     *
+     * Остальные компоненты пока не используются.
      */
     float4 TextureFlags0;
-
-    /*
-     * x = has emissive texture
-     * y = has specular-power texture
-     * z = normal scale
-     * w = metallic factor
-     */
     float4 TextureFlags1;
-
-    /*
-     * x = roughness factor
-     * y = specular intensity
-     * z = specular power
-     * w = reflection factor
-     */
     float4 SurfaceParameters;
-
-    /*
-     * x = emissive strength
-     */
     float4 EmissiveParameters;
 
     float4 SunDirectionIntensity;
@@ -68,12 +49,6 @@ cbuffer SkinningBuffer : register(b1)
 };
 
 Texture2D BaseColorTexture : register(t0);
-Texture2D NormalTexture : register(t1);
-Texture2D SpecularGlossTexture : register(t2);
-Texture2D RoughnessTexture : register(t3);
-Texture2D EmissiveTexture : register(t4);
-Texture2D SpecularPowerTexture : register(t5);
-
 SamplerState MaterialSampler : register(s0);
 
 struct VertexInput
@@ -92,25 +67,21 @@ struct VertexOutput
     float4 position : SV_POSITION;
 
     float2 texcoord : TEXCOORD0;
-    float3 worldPosition : TEXCOORD1;
-
     float3 normal : NORMAL;
-    float4 tangent : TANGENT;
 };
 
 void SkinVertex(
     VertexInput input,
     out float4 position,
-    out float3 normal,
-    out float3 tangent)
+    out float3 normal)
 {
     position =
         float4(
             input.position,
             1.0F);
 
-    normal = input.normal;
-    tangent = input.tangent.xyz;
+    normal =
+        input.normal;
 
     if (
         SkinningParameters.x < 0.5F ||
@@ -147,12 +118,6 @@ void SkinVertex(
             0.0F,
             0.0F);
 
-    float3 skinnedTangent =
-        float3(
-            0.0F,
-            0.0F,
-            0.0F);
-
     const uint maximumBoneIndex =
         (uint)SkinningParameters.y -
         1U;
@@ -176,8 +141,9 @@ void SkinVertex(
                 input.boneIndices[influence],
                 maximumBoneIndex);
 
-        const row_major float4x4 boneMatrix =
-            BoneMatrices[boneIndex];
+        const row_major float4x4
+            boneMatrix =
+                BoneMatrices[boneIndex];
 
         skinnedPosition +=
             mul(
@@ -194,19 +160,14 @@ void SkinVertex(
                     0.0F),
                 boneMatrix).xyz *
             weight;
-
-        skinnedTangent +=
-            mul(
-                float4(
-                    input.tangent.xyz,
-                    0.0F),
-                boneMatrix).xyz *
-            weight;
     }
 
-    position = skinnedPosition;
-    normal = normalize(skinnedNormal);
-    tangent = normalize(skinnedTangent);
+    position =
+        skinnedPosition;
+
+    normal =
+        normalize(
+            skinnedNormal);
 }
 
 VertexOutput VSMain(
@@ -216,13 +177,11 @@ VertexOutput VSMain(
 
     float4 localPosition;
     float3 localNormal;
-    float3 localTangent;
 
     SkinVertex(
         input,
         localPosition,
-        localNormal,
-        localTangent);
+        localNormal);
 
     const float4 worldPosition =
         mul(
@@ -234,9 +193,6 @@ VertexOutput VSMain(
             worldPosition,
             ViewProjection);
 
-    output.worldPosition =
-        worldPosition.xyz;
-
     output.normal =
         normalize(
             mul(
@@ -245,122 +201,10 @@ VertexOutput VSMain(
                     0.0F),
                 WorldInverseTranspose).xyz);
 
-    output.tangent.xyz =
-        normalize(
-            mul(
-                float4(
-                    localTangent,
-                    0.0F),
-                World).xyz);
-
-    output.tangent.w =
-        input.tangent.w;
-
     output.texcoord =
         input.texcoord;
 
     return output;
-}
-
-float3 ResolveNormal(
-    VertexOutput input,
-    const bool isFrontFace)
-{
-    float3 geometricNormal =
-        normalize(
-            input.normal);
-
-    if (!isFrontFace)
-    {
-        geometricNormal =
-            -geometricNormal;
-    }
-
-    if (TextureFlags0.y < 0.5F)
-    {
-        return geometricNormal;
-    }
-
-    float3 tangent =
-        normalize(
-            input.tangent.xyz);
-
-    tangent =
-        normalize(
-            tangent -
-            geometricNormal *
-            dot(
-                tangent,
-                geometricNormal));
-
-    const float3 bitangent =
-        normalize(
-            cross(
-                geometricNormal,
-                tangent)) *
-        input.tangent.w;
-
-    const float4 normalSample =
-        NormalTexture.Sample(
-            MaterialSampler,
-            input.texcoord);
-
-    /*
-     * Поддерживаем:
-     *
-     * RGB / BC5:
-     * X = R, Y = G
-     *
-     * DXT5nm:
-     * X = A, Y = G
-     */
-    float2 encodedXY =
-        normalSample.rg;
-
-    const bool looksLikeDxt5Normal =
-        abs(normalSample.a - 1.0F) >
-            0.001F &&
-        normalSample.b > 0.75F;
-
-    if (looksLikeDxt5Normal)
-    {
-        encodedXY =
-            float2(
-                normalSample.a,
-                normalSample.g);
-    }
-
-    float2 tangentNormalXY =
-        encodedXY *
-            2.0F -
-        1.0F;
-
-    tangentNormalXY *=
-        max(
-            TextureFlags1.z,
-            0.0F);
-
-    const float tangentNormalZ =
-        sqrt(
-            saturate(
-                1.0F -
-                dot(
-                    tangentNormalXY,
-                    tangentNormalXY)));
-
-    const float3 tangentNormal =
-        normalize(
-            float3(
-                tangentNormalXY,
-                tangentNormalZ));
-
-    return normalize(
-        tangent *
-            tangentNormal.x +
-        bitangent *
-            tangentNormal.y +
-        geometricNormal *
-            tangentNormal.z);
 }
 
 float4 PSMain(
@@ -380,7 +224,8 @@ float4 PSMain(
     }
 
     /*
-     * Mask.
+     * Alpha Mask применяется только там,
+     * где renderer явно выбрал Mask.
      */
     if (
         MaterialParameters0.z >
@@ -393,157 +238,29 @@ float4 PSMain(
             MaterialParameters0.y);
     }
 
-    const float3 normal =
-        ResolveNormal(
-            input,
-            isFrontFace);
+    float3 normal =
+        normalize(
+            input.normal);
 
-    const float3 lightDirection =
+    /*
+     * Для double-sided поверхности
+     * разворачиваем normal обратной стороны.
+     */
+    if (!isFrontFace)
+    {
+        normal =
+            -normal;
+    }
+
+    const float3 sunDirection =
         normalize(
             SunDirectionIntensity.xyz);
 
-    const float3 viewDirection =
-        normalize(
-            CameraPosition.xyz -
-            input.worldPosition);
-
-    const float3 halfDirection =
-        normalize(
-            lightDirection +
-            viewDirection);
-
-    const float normalDotLight =
+    const float sunDiffuse =
         saturate(
             dot(
                 normal,
-                lightDirection));
-
-    const float normalDotView =
-        saturate(
-            dot(
-                normal,
-                viewDirection));
-
-    const float normalDotHalf =
-        saturate(
-            dot(
-                normal,
-                halfDirection));
-
-    float4 specularGlossSample =
-        float4(
-            1.0F,
-            1.0F,
-            1.0F,
-            1.0F);
-
-    if (TextureFlags0.z > 0.5F)
-    {
-        specularGlossSample =
-            SpecularGlossTexture.Sample(
-                MaterialSampler,
-                input.texcoord);
-    }
-
-    float roughness =
-        saturate(
-            SurfaceParameters.x);
-
-    if (TextureFlags0.w > 0.5F)
-    {
-        roughness *=
-            RoughnessTexture.Sample(
-                MaterialSampler,
-                input.texcoord).r;
-    }
-    else if (TextureFlags0.z > 0.5F)
-    {
-        /*
-         * Альфа SpecularGloss используется
-         * как gloss, если отдельной Roughness
-         * карты нет.
-         */
-        roughness *=
-            1.0F -
-            specularGlossSample.a;
-    }
-
-    roughness =
-        clamp(
-            roughness,
-            0.04F,
-            1.0F);
-
-    const float roughnessPower =
-        lerp(
-            256.0F,
-            8.0F,
-            roughness);
-
-    float specularPower =
-        lerp(
-            roughnessPower,
-            max(
-                SurfaceParameters.z,
-                1.0F),
-            0.5F);
-
-    if (TextureFlags1.y > 0.5F)
-    {
-        const float powerSample =
-            SpecularPowerTexture.Sample(
-                MaterialSampler,
-                input.texcoord).r;
-
-        specularPower *=
-            lerp(
-                0.25F,
-                4.0F,
-                powerSample);
-    }
-
-    specularPower =
-        clamp(
-            specularPower,
-            1.0F,
-            8192.0F);
-
-    const float metallic =
-        saturate(
-            TextureFlags1.w);
-
-    const float3 dielectricF0 =
-        float3(
-            0.04F,
-            0.04F,
-            0.04F);
-
-    const float3 materialF0 =
-        lerp(
-            dielectricF0,
-            surface.rgb,
-            metallic);
-
-    const float3 specularColor =
-        materialF0 *
-        specularGlossSample.rgb;
-
-    const float specularIntensity =
-        max(
-            SurfaceParameters.y,
-            0.0F) *
-        (
-            1.0F -
-            roughness *
-                0.65F
-        );
-
-    const float specularTerm =
-        pow(
-            normalDotHalf,
-            specularPower) *
-        specularIntensity *
-        SunDirectionIntensity.w;
+                sunDirection));
 
     const float skyAmount =
         saturate(
@@ -553,78 +270,35 @@ float4 PSMain(
 
     const float3 ambient =
         lerp(
-            AmbientColor.rgb * 0.55F,
+            AmbientColor.rgb * 0.65F,
             AmbientColor.rgb,
             skyAmount);
 
-    const float3 directDiffuse =
+    const float3 directLighting =
         SunColor.rgb *
-        normalDotLight *
+        sunDiffuse *
         SunDirectionIntensity.w *
-        0.92F;
-
-    const float3 diffuseColor =
-        surface.rgb *
-        (
-            1.0F -
-            metallic
-        );
+        0.80F;
 
     float3 color =
-        diffuseColor *
+        surface.rgb *
         (
             ambient +
-            directDiffuse
+            directLighting
         );
 
-    color +=
-        SunColor.rgb *
-        specularColor *
-        specularTerm;
-
     /*
-     * Упрощённое отражение окружения.
+     * Простой preview tone mapping.
      *
-     * Полноценный environment cubemap
-     * подключим отдельным IBL-проходом.
+     * Здесь нет legacy normal/specular/
+     * roughness/emissive логики.
      */
-    const float fresnel =
-        pow(
-            1.0F -
-            normalDotView,
-            5.0F);
-
-    color +=
-        AmbientColor.rgb *
-        specularColor *
-        fresnel *
-        max(
-            SurfaceParameters.w,
-            0.0F) *
-        0.15F;
-
-    float3 emissive =
-        EmissiveFactor.rgb *
-        max(
-            EmissiveParameters.x,
-            0.0F);
-
-    if (TextureFlags1.x > 0.5F)
-    {
-        emissive *=
-            EmissiveTexture.Sample(
-                MaterialSampler,
-                input.texcoord).rgb;
-    }
-
-    color += emissive;
-
     color =
         color /
         (
             1.0F +
             color *
-                0.18F
+                0.12F
         );
 
     color =
@@ -633,14 +307,10 @@ float4 PSMain(
             1.0F / 2.2F);
 
     /*
-     * Выделенный Character уже обозначается
-     * bounding box и gizmo в SceneRenderer.
-     *
-     * Не изменяем итоговый цвет материала,
-     * чтобы корректно оценивать текстуры,
-     * normal map и освещение.
+     * Opaque и Mask пишут полную alpha.
+     * Alpha diffuse используется только clip().
      */
     return float4(
         color,
-        surface.a);
+        1.0F);
 }

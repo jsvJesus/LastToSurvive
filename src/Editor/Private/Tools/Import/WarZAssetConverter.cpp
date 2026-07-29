@@ -834,138 +834,47 @@ namespace lts::editor
 
             description.baseColorFactor =
             {
-                sanitizeFloat(
-                    material.diffuseColor[0],
-                    1.0F,
-                    0.0F,
-                    1.0F),
-
-                sanitizeFloat(
-                    material.diffuseColor[1],
-                    1.0F,
-                    0.0F,
-                    1.0F),
-
-                sanitizeFloat(
-                    material.diffuseColor[2],
-                    1.0F,
-                    0.0F,
-                    1.0F),
-
+                1.0F,
+                1.0F,
+                1.0F,
                 1.0F
             };
 
-            description.metallicFactor =
-                sanitizeFloat(
-                    material.lowQualityMetalness,
-                    0.0F,
-                    0.0F,
-                    1.0F);
-
-            /*
-             * Пока полноценная конверсия WarZ gloss
-             * в PBR roughness не подключена.
-             *
-             * Roughness texture, если она существует,
-             * всё равно сохраняется ниже.
-             */
+            description.metallicFactor = 0.0F;
             description.roughnessFactor = 1.0F;
 
+            description.specularIntensity = 0.0F;
+            description.specularPower = 32.0F;
+            description.reflectionFactor = 0.0F;
+
+            description.emissiveFactor =
+            {
+                0.0F,
+                0.0F,
+                0.0F
+            };
+
+            description.emissiveStrength = 0.0F;
+
+            description.normalScale = 1.0F;
             description.alphaCutoff = 0.5F;
 
             /*
-             * Для legacy character materials сочетание
-             * Transparent + DoubleSided обычно означает
-             * alpha-tested поверхность:
+             * Сам формат материала не решает,
+             * является ли модуль Hair.
              *
-             * волосы, ресницы, отдельные части одежды.
-             *
-             * Рисовать две стороны через Blend нельзя:
-             * передняя и задняя поверхности начинают
-             * смешиваться между собой.
+             * Hair -> Mask выбирает renderer
+             * по CharacterMeshSlot.
              */
-            if (
-                material.forceAlpha ||
-                (
-                    material.transparent &&
-                    material.doubleSided
-                ))
-            {
-                description.alphaMode =
-                    engine::assets::
-                        MaterialAlphaMode::Mask;
-            }
-            else if (material.transparent)
-            {
-                description.alphaMode =
-                    engine::assets::
-                        MaterialAlphaMode::Blend;
-            }
-            else
-            {
-                description.alphaMode =
-                    engine::assets::
+            description.alphaMode =
+                material.forceAlpha
+                    ? engine::assets::
+                        MaterialAlphaMode::Mask
+                    : engine::assets::
                         MaterialAlphaMode::Opaque;
-            }
 
             description.doubleSided =
                 material.doubleSided;
-
-            description.normalScale = 1.0F;
-
-            const bool hasSpecularTexture =
-                !texturePaths[
-                    static_cast<std::size_t>(
-                        LegacyTextureSlot::
-                            Specular)]
-                    .empty();
-
-            description.specularIntensity =
-                hasSpecularTexture ||
-                material.specularPower > 0.0F
-                    ? 1.0F
-                    : 0.0F;
-
-            description.specularPower =
-                sanitizeFloat(
-                    material.specularPower,
-                    32.0F,
-                    1.0F,
-                    8192.0F);
-
-            description.reflectionFactor =
-                sanitizeFloat(
-                    material.reflectionPower,
-                    0.0F,
-                    0.0F,
-                    16.0F);
-
-            description.emissiveStrength =
-                sanitizeFloat(
-                    material.
-                        selfIlluminationMultiplier,
-                    0.0F,
-                    0.0F,
-                    64.0F);
-
-            const bool hasEmissiveTexture =
-                !texturePaths[
-                    static_cast<std::size_t>(
-                        LegacyTextureSlot::Glow)]
-                    .empty();
-
-            if (
-                hasEmissiveTexture ||
-                description.emissiveStrength >
-                    0.0F)
-            {
-                description.emissiveFactor =
-                {
-                    1.0F,
-                    1.0F,
-                    1.0F
-                };
-            }
 
             description.sampler.filter =
                 engine::graphics::
@@ -1036,32 +945,10 @@ namespace lts::editor
                     return true;
                 };
 
-            if (
-                !assignTexture(
+            if (!assignTexture(
                     LegacyTextureSlot::Diffuse,
                     description.
-                        baseColorTexture) ||
-                !assignTexture(
-                    LegacyTextureSlot::Normal,
-                    description.
-                        normalTexture) ||
-                !assignTexture(
-                    LegacyTextureSlot::Specular,
-                    description.
-                        specularGlossTexture) ||
-                !assignTexture(
-                    LegacyTextureSlot::Roughness,
-                    description.
-                        roughnessTexture) ||
-                !assignTexture(
-                    LegacyTextureSlot::Glow,
-                    description.
-                        emissiveTexture) ||
-                !assignTexture(
-                    LegacyTextureSlot::
-                        SpecularPower,
-                    description.
-                        specularPowerTexture))
+                        baseColorTexture))
             {
                 return false;
             }
