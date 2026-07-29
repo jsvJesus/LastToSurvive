@@ -2576,37 +2576,44 @@ namespace lts::editor
                                     material->desc.
                                         emissiveStrength;
 
-                            transparent =
-                                material->desc.
-                                    alphaMode ==
-                                engine::assets::
-                                    MaterialAlphaMode::
-                                        Blend;
+                            /*
+                             * В modular-character renderer
+                             * настоящее alpha blending пока
+                             * не используется.
+                             *
+                             * Hair получает alpha mask.
+                             *
+                             * Авторский Mask сохраняется.
+                             *
+                             * Legacy Blend на Body, Head,
+                             * Legs и Shoes переводится в
+                             * Opaque, потому что alpha-канал
+                             * этих DDS может содержать не
+                             * прозрачность, а служебные данные.
+                             */
+                            transparent = false;
 
                             doubleSided =
                                 material->desc.
                                     doubleSided;
 
-                            /*
-                             * Legacy WarZ character materials
-                             * часто одновременно имеют:
-                             *
-                             * Transparent + DoubleSided.
-                             *
-                             * Для волос и одежды это означает
-                             * alpha cutout, а не полупрозрачное
-                             * смешивание двух сторон.
-                             */
-                            if (
-                                transparent &&
-                                doubleSided)
-                            {
-                                transparent = false;
+                            const bool hairSlot =
+                                slot ==
+                                engine::scene::
+                                    CharacterMeshSlot::
+                                        Hair;
 
-                                /*
-                                 * Переключаем shader с Blend
-                                 * на Mask.
-                                 */
+                            const bool authoredMask =
+                                material->desc.
+                                    alphaMode ==
+                                engine::assets::
+                                    MaterialAlphaMode::
+                                        Mask;
+
+                            if (
+                                hairSlot ||
+                                authoredMask)
+                            {
                                 constants.
                                     materialParameters0.z =
                                         static_cast<float>(
@@ -2616,17 +2623,31 @@ namespace lts::editor
                                                         MaterialAlphaMode::
                                                             Mask));
 
-                                /*
-                                 * Защита от нулевого или слишком
-                                 * маленького cutoff.
-                                 */
                                 constants.
                                     materialParameters0.y =
                                         std::clamp(
                                             material->desc.
                                                 alphaCutoff,
-                                            0.05F,
+                                            0.15F,
                                             0.95F);
+                            }
+                            else
+                            {
+                                constants.
+                                    materialParameters0.z =
+                                        static_cast<float>(
+                                            static_cast<
+                                                std::uint32_t>(
+                                                    engine::assets::
+                                                        MaterialAlphaMode::
+                                                            Opaque));
+
+                                /*
+                                 * BaseColorFactor у непрозрачной
+                                 * части всегда имеет полную alpha.
+                                 */
+                                constants.baseColor.w =
+                                    1.0F;
                             }
 
                             textureHandles[0] =
