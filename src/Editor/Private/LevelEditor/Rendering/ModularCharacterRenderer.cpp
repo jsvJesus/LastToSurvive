@@ -2066,6 +2066,7 @@ namespace lts::editor
             if (engine::graphics::Failed(result))
             {
                 context.UnbindGraphicsPipeline();
+
                 return result;
             }
 
@@ -2087,6 +2088,7 @@ namespace lts::editor
                         vertexConstantBuffers.size()));
 
                 context.UnbindGraphicsPipeline();
+
                 return result;
             }
 
@@ -2272,7 +2274,8 @@ namespace lts::editor
 
                     if (
                         cached == nullptr ||
-                        cached->gpu == nullptr)
+                        cached->gpu == nullptr ||
+                        cached->skeleton == nullptr)
                     {
                         continue;
                     }
@@ -2301,8 +2304,9 @@ namespace lts::editor
                     {
                         /*
                          * Несовместимая анимация не должна
-                         * скрывать персонажа. Возвращаемся
-                         * к bind pose.
+                         * скрывать персонажа.
+                         *
+                         * Возвращаемся к bind pose.
                          */
                         if (!BuildSkinningConstants(
                                 cached->
@@ -2440,6 +2444,9 @@ namespace lts::editor
                         bool transparent = false;
                         bool doubleSided = false;
 
+                        /*
+                         * Значения материала по умолчанию.
+                         */
                         constants.baseColor =
                             GetSlotColor(slot);
 
@@ -2452,7 +2459,8 @@ namespace lts::editor
                         };
 
                         /*
-                         * Сохраняем selected в x.
+                         * materialParameters0.x уже хранит
+                         * выделение выбранного Entity.
                          */
                         constants.
                             materialParameters0.y =
@@ -2614,7 +2622,7 @@ namespace lts::editor
                         }
 
                         /*
-                         * Нельзя читать texture без
+                         * Нельзя читать текстуры без
                          * валидного sampler.
                          */
                         if (!materialSampler.IsValid())
@@ -2796,6 +2804,19 @@ namespace lts::editor
                         {
                             break;
                         }
+
+                        /*
+                         * Рисуем текущую секцию материала.
+                         *
+                         * В предыдущем коде этот вызов
+                         * отсутствовал, поэтому renderer
+                         * ничего не выводил.
+                         */
+                        result =
+                            context.DrawIndexed(
+                                section->indexCount,
+                                section->firstIndex,
+                                0);
 
                         if (engine::graphics::Failed(
                                 result))
