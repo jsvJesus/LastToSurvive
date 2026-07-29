@@ -32,6 +32,10 @@
 !/External/discord_social_sdk/include/**
 !/External/R3/
 !/External/R3/**
+!/External/SpeedTreeSDK/Include/
+!/External/SpeedTreeSDK/Include/**
+!/External/SpeedTreeSDK/Source/
+!/External/SpeedTreeSDK/Source/**
 
 # Explicitly exclude root runtime/build folder
 /bin/
