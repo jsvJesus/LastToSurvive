@@ -4588,7 +4588,7 @@ namespace lts::editor
 
                 if (!engine::graphics::Failed(result))
                 {
-                    result = modularCharacterRenderer_.Render(*commandContext_, sceneDocument_, viewProjection, cameraController_.GetPosition());
+                    result = modularCharacterRenderer_.Render(*commandContext_, sceneDocument_, viewProjection);
                 }
 
                 if (!engine::graphics::Failed(result))

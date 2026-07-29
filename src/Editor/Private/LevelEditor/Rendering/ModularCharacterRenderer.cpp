@@ -65,28 +65,10 @@ namespace lts::editor
             ObjectConstants final
         {
             DirectX::XMFLOAT4X4 world;
-
-            DirectX::XMFLOAT4X4
-                worldInverseTranspose;
-
-            DirectX::XMFLOAT4X4
-                viewProjection;
+            DirectX::XMFLOAT4X4 viewProjection;
 
             DirectX::XMFLOAT4 baseColor;
-            DirectX::XMFLOAT4 emissiveFactor;
-            DirectX::XMFLOAT4 cameraPosition;
-
-            DirectX::XMFLOAT4
-                materialParameters0;
-
-            DirectX::XMFLOAT4 textureFlags0;
-            DirectX::XMFLOAT4 textureFlags1;
-
-            DirectX::XMFLOAT4
-                surfaceParameters;
-
-            DirectX::XMFLOAT4
-                emissiveParameters;
+            DirectX::XMFLOAT4 materialParameters;
 
             DirectX::XMFLOAT4
                 sunDirectionIntensity;
@@ -1338,21 +1320,6 @@ namespace lts::editor
             std::shared_ptr<CachedTexture>
                 baseColorTexture;
 
-            std::shared_ptr<CachedTexture>
-                normalTexture;
-
-            std::shared_ptr<CachedTexture>
-                specularGlossTexture;
-
-            std::shared_ptr<CachedTexture>
-                roughnessTexture;
-
-            std::shared_ptr<CachedTexture>
-                emissiveTexture;
-
-            std::shared_ptr<CachedTexture>
-                specularPowerTexture;
-
             engine::graphics::SamplerHandle
                 sampler;
         };
@@ -1694,17 +1661,7 @@ namespace lts::editor
 
             pipelineDescription.rasterizer.cullMode =
                 engine::graphics::
-                    CullMode::Back;
-
-            /*
-             * Конвертированные WarZ mesh используют
-             * counter-clockwise winding.
-             *
-             * Индексы при записи .skm сохраняются
-             * в исходном порядке.
-             */
-            pipelineDescription.rasterizer.
-                frontCounterClockwise = true;
+                    CullMode::None;
 
             pipelineDescription.rasterizer.
                 depthClipEnable = true;
@@ -1726,8 +1683,7 @@ namespace lts::editor
                             LessEqual;
 
             pipelineDescription.debugName =
-                "EditorModularCharacter."
-                "OpaquePipeline";
+                "EditorModularCharacter.Pipeline";
 
             result =
                 device.CreateGraphicsPipeline(
@@ -1737,47 +1693,12 @@ namespace lts::editor
             if (engine::graphics::Failed(result))
             {
                 LogGraphicsFailure(
-                    "Create modular character "
-                    "opaque pipeline",
+                    "Create modular character pipeline",
                     result);
 
                 Shutdown(device);
                 return false;
             }
-
-            /*
-             * Opaque / Mask, double-sided.
-             */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::
-                    CullMode::None;
-
-            pipelineDescription.debugName =
-                "EditorModularCharacter."
-                "DoubleSidedPipeline";
-
-            result =
-                device.CreateGraphicsPipeline(
-                    pipelineDescription,
-                    doubleSidedPipeline_);
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create double-sided modular "
-                    "character pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Transparent, single-sided.
-             */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::
-                    CullMode::Back;
 
             pipelineDescription.blend.
                 renderTargets[0].
@@ -1787,8 +1708,7 @@ namespace lts::editor
                 renderTargets[0].
                     sourceColor =
                         engine::graphics::
-                            BlendFactor::
-                                SourceAlpha;
+                            BlendFactor::SourceAlpha;
 
             pipelineDescription.blend.
                 renderTargets[0].
@@ -1821,44 +1741,6 @@ namespace lts::editor
                 device.CreateGraphicsPipeline(
                     pipelineDescription,
                     transparentPipeline_);
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create transparent modular "
-                    "character pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Transparent, double-sided.
-             */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::
-                    CullMode::None;
-
-            pipelineDescription.debugName =
-                "EditorModularCharacter."
-                "TransparentDoubleSidedPipeline";
-
-            result =
-                device.CreateGraphicsPipeline(
-                    pipelineDescription,
-                    transparentDoubleSidedPipeline_);
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create transparent double-sided "
-                    "character pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
 
             if (engine::graphics::Failed(result))
             {
@@ -1934,17 +1816,6 @@ namespace lts::editor
             textures_.clear();
             failedTextures_.clear();
 
-            if (
-                transparentDoubleSidedPipeline_.
-                    IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyGraphicsPipeline(
-                        transparentDoubleSidedPipeline_));
-
-                transparentDoubleSidedPipeline_ = {};
-            }
-            
             if (transparentPipeline_.IsValid())
             {
                 static_cast<void>(
@@ -1952,15 +1823,6 @@ namespace lts::editor
                         transparentPipeline_));
 
                 transparentPipeline_ = {};
-            }
-
-            if (doubleSidedPipeline_.IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyGraphicsPipeline(
-                        doubleSidedPipeline_));
-
-                doubleSidedPipeline_ = {};
             }
 
             if (pipeline_.IsValid())
@@ -2025,9 +1887,7 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection,
-            const DirectX::XMFLOAT3&
-                cameraPosition) noexcept
+                viewProjection) noexcept
         {
             if (
                 !initialized_ ||
@@ -2063,13 +1923,6 @@ namespace lts::editor
                     vertexConstantBuffers.data(),
                     vertexConstantBuffers.size());
 
-            if (engine::graphics::Failed(result))
-            {
-                context.UnbindGraphicsPipeline();
-
-                return result;
-            }
-
             result =
                 context.SetConstantBuffers(
                     engine::graphics::
@@ -2086,6 +1939,20 @@ namespace lts::editor
                             ShaderStage::Vertex,
                         0U,
                         vertexConstantBuffers.size()));
+
+                context.UnbindGraphicsPipeline();
+
+                return result;
+            }
+
+            if (engine::graphics::Failed(result))
+            {
+                static_cast<void>(
+                    context.UnbindConstantBuffers(
+                        engine::graphics::
+                            ShaderStage::Vertex,
+                        0U,
+                        1U));
 
                 context.UnbindGraphicsPipeline();
 
@@ -2174,51 +2041,21 @@ namespace lts::editor
 
                 ObjectConstants constants{};
 
-                const DirectX::XMMATRIX
-                    worldMatrix =
-                        BuildWorldMatrix(
-                            entity.transform);
-
                 DirectX::XMStoreFloat4x4(
                     &constants.world,
-                    worldMatrix);
-
-                DirectX::XMMATRIX
-                    inverseWorld;
-
-                if (!InvertMatrix(
-                        worldMatrix,
-                        inverseWorld))
-                {
-                    inverseWorld =
-                        DirectX::
-                            XMMatrixIdentity();
-                }
-
-                DirectX::XMStoreFloat4x4(
-                    &constants.
-                        worldInverseTranspose,
-                    DirectX::XMMatrixTranspose(
-                        inverseWorld));
+                    BuildWorldMatrix(
+                        entity.transform));
 
                 constants.viewProjection =
                     viewProjection;
 
-                constants.cameraPosition =
-                {
-                    cameraPosition.x,
-                    cameraPosition.y,
-                    cameraPosition.z,
-                    1.0F
-                };
-
-                constants.materialParameters0 =
+                constants.materialParameters =
                 {
                     entityIndex == selectedIndex
                         ? 1.0F
                         : 0.0F,
 
-                    0.5F,
+                    0.0F,
                     0.0F,
                     0.0F
                 };
@@ -2274,8 +2111,7 @@ namespace lts::editor
 
                     if (
                         cached == nullptr ||
-                        cached->gpu == nullptr ||
-                        cached->skeleton == nullptr)
+                        cached->gpu == nullptr)
                     {
                         continue;
                     }
@@ -2304,9 +2140,8 @@ namespace lts::editor
                     {
                         /*
                          * Несовместимая анимация не должна
-                         * скрывать персонажа.
-                         *
-                         * Возвращаемся к bind pose.
+                         * скрывать персонажа. Возвращаемся
+                         * к bind pose.
                          */
                         if (!BuildSkinningConstants(
                                 cached->
@@ -2407,98 +2242,30 @@ namespace lts::editor
                                         materialSlot];
                         }
 
-                        const auto getTextureHandle =
-                            [](
-                                const std::shared_ptr<
-                                    CachedTexture>&
-                                        texture)
-                                noexcept
-                            {
-                                if (
-                                    texture == nullptr ||
-                                    texture->gpu ==
-                                        nullptr ||
-                                    !texture->gpu->
-                                        IsValid())
-                                {
-                                    return
-                                        engine::graphics::
-                                            TextureHandle{};
-                                }
-
-                                return
-                                    texture->gpu->
-                                        GetHandle();
-                            };
-
-                        std::array<
-                            engine::graphics::
-                                TextureHandle,
-                            6U>
-                            textureHandles{};
+                        engine::graphics::
+                            TextureHandle
+                                baseColorTexture;
 
                         engine::graphics::
                             SamplerHandle
                                 materialSampler;
 
                         bool transparent = false;
-                        bool doubleSided = false;
 
-                        /*
-                         * Значения материала по умолчанию.
-                         */
                         constants.baseColor =
                             GetSlotColor(slot);
 
-                        constants.emissiveFactor =
-                        {
-                            0.0F,
-                            0.0F,
-                            0.0F,
-                            0.0F
-                        };
-
-                        /*
-                         * materialParameters0.x уже хранит
-                         * выделение выбранного Entity.
-                         */
                         constants.
-                            materialParameters0.y =
+                            materialParameters.y =
+                                0.0F;
+
+                        constants.
+                            materialParameters.z =
                                 0.5F;
 
                         constants.
-                            materialParameters0.z =
+                            materialParameters.w =
                                 0.0F;
-
-                        constants.
-                            materialParameters0.w =
-                                0.0F;
-
-                        constants.textureFlags0 = {};
-
-                        constants.textureFlags1 =
-                        {
-                            0.0F,
-                            0.0F,
-                            1.0F,
-                            0.0F
-                        };
-
-                        constants.surfaceParameters =
-                        {
-                            1.0F,
-                            0.0F,
-                            32.0F,
-                            0.0F
-                        };
-
-                        constants.emissiveParameters =
-                        {
-                            0.0F,
-                            0.0F,
-                            0.0F,
-                            0.0F
-                        };
 
                         if (material != nullptr)
                         {
@@ -2517,27 +2284,13 @@ namespace lts::editor
                                     baseColorFactor[3]
                             };
 
-                            constants.emissiveFactor =
-                            {
-                                material->desc.
-                                    emissiveFactor[0],
-
-                                material->desc.
-                                    emissiveFactor[1],
-
-                                material->desc.
-                                    emissiveFactor[2],
-
-                                0.0F
-                            };
-
                             constants.
-                                materialParameters0.y =
+                                materialParameters.z =
                                     material->desc.
                                         alphaCutoff;
 
                             constants.
-                                materialParameters0.z =
+                                materialParameters.w =
                                     static_cast<float>(
                                         static_cast<
                                             std::uint32_t>(
@@ -2545,199 +2298,46 @@ namespace lts::editor
                                                     desc.
                                                     alphaMode));
 
-                            constants.
-                                textureFlags1.z =
-                                    material->desc.
-                                        normalScale;
-
-                            constants.
-                                textureFlags1.w =
-                                    material->desc.
-                                        metallicFactor;
-
-                            constants.
-                                surfaceParameters =
-                            {
-                                material->desc.
-                                    roughnessFactor,
-
-                                material->desc.
-                                    specularIntensity,
-
-                                material->desc.
-                                    specularPower,
-
-                                material->desc.
-                                    reflectionFactor
-                            };
-
-                            constants.
-                                emissiveParameters.x =
-                                    material->desc.
-                                        emissiveStrength;
-
-                            /*
-                             * В modular-character renderer
-                             * настоящее alpha blending пока
-                             * не используется.
-                             *
-                             * Hair получает alpha mask.
-                             *
-                             * Авторский Mask сохраняется.
-                             *
-                             * Legacy Blend на Body, Head,
-                             * Legs и Shoes переводится в
-                             * Opaque, потому что alpha-канал
-                             * этих DDS может содержать не
-                             * прозрачность, а служебные данные.
-                             */
-                            transparent = false;
-
-                            doubleSided =
-                                material->desc.
-                                    doubleSided;
-
-                            const bool hairSlot =
-                                slot ==
-                                engine::scene::
-                                    CharacterMeshSlot::
-                                        Hair;
-
-                            const bool authoredMask =
+                            transparent =
                                 material->desc.
                                     alphaMode ==
                                 engine::assets::
                                     MaterialAlphaMode::
-                                        Mask;
+                                        Blend;
 
                             if (
-                                hairSlot ||
-                                authoredMask)
-                            {
-                                constants.
-                                    materialParameters0.z =
-                                        static_cast<float>(
-                                            static_cast<
-                                                std::uint32_t>(
-                                                    engine::assets::
-                                                        MaterialAlphaMode::
-                                                            Mask));
-
-                                constants.
-                                    materialParameters0.y =
-                                        std::clamp(
-                                            material->desc.
-                                                alphaCutoff,
-                                            0.15F,
-                                            0.95F);
-                            }
-                            else
-                            {
-                                constants.
-                                    materialParameters0.z =
-                                        static_cast<float>(
-                                            static_cast<
-                                                std::uint32_t>(
-                                                    engine::assets::
-                                                        MaterialAlphaMode::
-                                                            Opaque));
-
-                                /*
-                                 * BaseColorFactor у непрозрачной
-                                 * части всегда имеет полную alpha.
-                                 */
-                                constants.baseColor.w =
-                                    1.0F;
-                            }
-
-                            textureHandles[0] =
-                                getTextureHandle(
-                                    material->
-                                        baseColorTexture);
-
-                            if (
-                                textureHandles[0].
+                                material->
+                                    baseColorTexture !=
+                                        nullptr &&
+                                material->
+                                    baseColorTexture->
+                                    gpu != nullptr &&
+                                material->
+                                    baseColorTexture->
+                                    gpu->IsValid() &&
+                                material->sampler.
                                     IsValid())
                             {
-                                constants.baseColor =
-                                {
-                                    1.0F,
-                                    1.0F,
-                                    1.0F,
-                                    1.0F
-                                };
+                                baseColorTexture =
+                                    material->
+                                        baseColorTexture->
+                                        gpu->
+                                        GetHandle();
+
+                                materialSampler =
+                                    material->sampler;
+
+                                constants.
+                                    materialParameters.y =
+                                        1.0F;
                             }
-
-                            materialSampler =
-                                material->sampler;
-                        }
-
-                        /*
-                         * Нельзя читать текстуры без
-                         * валидного sampler.
-                         */
-                        if (!materialSampler.IsValid())
-                        {
-                            textureHandles = {};
-                        }
-
-                        constants.textureFlags0 =
-                        {
-                            textureHandles[0].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F,
-
-                            textureHandles[1].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F,
-
-                            textureHandles[2].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F,
-
-                            textureHandles[3].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F
-                        };
-
-                        constants.textureFlags1.x =
-                            textureHandles[4].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F;
-
-                        constants.textureFlags1.y =
-                            textureHandles[5].
-                                IsValid()
-                                    ? 1.0F
-                                    : 0.0F;
-
-                        engine::graphics::
-                            PipelineStateHandle
-                                selectedPipeline;
-
-                        if (transparent)
-                        {
-                            selectedPipeline =
-                                doubleSided
-                                    ? transparentDoubleSidedPipeline_
-                                    : transparentPipeline_;
-                        }
-                        else
-                        {
-                            selectedPipeline =
-                                doubleSided
-                                    ? doubleSidedPipeline_
-                                    : pipeline_;
                         }
 
                         result =
                             context.SetGraphicsPipeline(
-                                selectedPipeline);
+                                transparent
+                                    ? transparentPipeline_
+                                    : pipeline_);
 
                         if (engine::graphics::Failed(
                                 result))
@@ -2757,81 +2357,24 @@ namespace lts::editor
                             break;
                         }
 
-                        for (
-                            std::size_t textureIndex =
-                                0U;
-                            textureIndex <
-                                textureHandles.size();
-                            ++textureIndex)
+                        if (
+                            baseColorTexture.IsValid() &&
+                            materialSampler.IsValid())
                         {
-                            if (
-                                textureHandles[
-                                    textureIndex].
-                                    IsValid())
-                            {
-                                result =
-                                    context.
-                                        SetShaderResources(
-                                            engine::graphics::
-                                                ShaderStage::
-                                                    Pixel,
+                            result =
+                                context.SetShaderResources(
+                                    engine::graphics::
+                                        ShaderStage::Pixel,
+                                    0U,
+                                    &baseColorTexture,
+                                    1U);
 
-                                            static_cast<
-                                                std::uint32_t>(
-                                                    textureIndex),
-
-                                            &textureHandles[
-                                                textureIndex],
-
-                                            1U);
-                            }
-                            else
-                            {
-                                result =
-                                    context.
-                                        UnbindShaderResources(
-                                            engine::graphics::
-                                                ShaderStage::
-                                                    Pixel,
-
-                                            static_cast<
-                                                std::uint32_t>(
-                                                    textureIndex),
-
-                                            1U);
-                            }
-
-                            if (
-                                engine::graphics::Failed(
+                            if (engine::graphics::Failed(
                                     result))
                             {
                                 break;
                             }
-                        }
 
-                        if (engine::graphics::Failed(
-                                result))
-                        {
-                            break;
-                        }
-
-                        const bool hasAnyTexture =
-                            std::any_of(
-                                textureHandles.begin(),
-                                textureHandles.end(),
-                                [](
-                                    const engine::graphics::
-                                        TextureHandle
-                                            texture)
-                                {
-                                    return
-                                        texture.IsValid();
-                                });
-
-                        if (
-                            hasAnyTexture &&
-                            materialSampler.IsValid())
-                        {
                             result =
                                 context.SetSamplers(
                                     engine::graphics::
@@ -2839,30 +2382,33 @@ namespace lts::editor
                                     0U,
                                     &materialSampler,
                                     1U);
+
+                            if (engine::graphics::Failed(
+                                    result))
+                            {
+                                break;
+                            }
                         }
                         else
                         {
-                            result =
+                            static_cast<void>(
+                                context.
+                                    UnbindShaderResources(
+                                        engine::graphics::
+                                            ShaderStage::
+                                                Pixel,
+                                        0U,
+                                        1U));
+
+                            static_cast<void>(
                                 context.UnbindSamplers(
                                     engine::graphics::
-                                        ShaderStage::Pixel,
+                                        ShaderStage::
+                                            Pixel,
                                     0U,
-                                    1U);
+                                    1U));
                         }
 
-                        if (engine::graphics::Failed(
-                                result))
-                        {
-                            break;
-                        }
-
-                        /*
-                         * Рисуем текущую секцию материала.
-                         *
-                         * В предыдущем коде этот вызов
-                         * отсутствовал, поэтому renderer
-                         * ничего не выводил.
-                         */
                         result =
                             context.DrawIndexed(
                                 section->indexCount,
@@ -2896,7 +2442,7 @@ namespace lts::editor
                     engine::graphics::
                         ShaderStage::Pixel,
                     0U,
-                    6U));
+                    1U));
 
             static_cast<void>(
                 context.UnbindSamplers(
@@ -3330,21 +2876,15 @@ namespace lts::editor
         std::shared_ptr<CachedTexture>
             GetOrLoadTexture(
                 const std::filesystem::path&
-                    filePath,
-                const bool forceSrgb) noexcept
+                    filePath) noexcept
         {
             try
             {
-                std::wstring key =
+                const std::wstring key =
                     LowercasePath(
                         filePath.
                             lexically_normal().
                             wstring());
-
-                key +=
-                    forceSrgb
-                        ? L"|srgb"
-                        : L"|linear";
 
                 const auto existing =
                     textures_.find(key);
@@ -3385,17 +2925,11 @@ namespace lts::editor
                         DdsTextureDecoder::IsDds(
                             source))
                 {
-                    std::string message =
-                        "Character texture is not "
-                        "a DDS file: ";
-
-                    message +=
-                        filePath.generic_u8string();
-
                     engine::core::GetLogger().Write(
                         engine::core::LogLevel::Error,
                         "LTS.Editor.ModularCharacter",
-                        message);
+                        "Character base-color texture "
+                        "is not a DDS file.");
 
                     failedTextures_.insert(key);
                     return nullptr;
@@ -3405,9 +2939,7 @@ namespace lts::editor
                     DdsTextureDecodeOptions
                         decodeOptions;
 
-                decodeOptions.forceSrgb =
-                    forceSrgb;
-
+                decodeOptions.forceSrgb = true;
                 decodeOptions.allowBc7 = true;
 
                 engine::assets::TextureAsset
@@ -3445,11 +2977,8 @@ namespace lts::editor
                         uploadOptions;
 
                 uploadOptions.requestedColorSpace =
-                    forceSrgb
-                        ? engine::assets::
-                            RequestedColorSpace::Srgb
-                        : engine::assets::
-                            RequestedColorSpace::Linear;
+                    engine::assets::
+                        RequestedColorSpace::Srgb;
 
                 const engine::graphics::
                     GraphicsResult graphicsResult =
@@ -3462,7 +2991,7 @@ namespace lts::editor
                         graphicsResult))
                 {
                     LogGraphicsFailure(
-                        "Upload character texture",
+                        "Upload character base-color texture",
                         graphicsResult);
 
                     failedTextures_.insert(key);
@@ -3650,73 +3179,51 @@ namespace lts::editor
                         GetMaterial().
                         GetDesc();
 
-                const auto loadTexture =
-                    [this,
-                     &materialFile](
-                        const std::optional<
-                            engine::assets::
-                                AssetPath>& assetPath,
-                        const bool forceSrgb,
-                        const char* const semantic,
-                        std::shared_ptr<
-                            CachedTexture>& output)
-                    {
-                        if (!assetPath.has_value())
-                        {
-                            return;
-                        }
-
-                        const std::filesystem::path
-                            textureFile =
-                                ResolveDataAssetFile(
-                                    materialFile,
-                                    assetPath->String());
-
-                        if (textureFile.empty())
-                        {
-                            std::string message =
-                                "Character ";
-
-                            message +=
-                                semantic != nullptr
-                                    ? semantic
-                                    : "texture";
-
-                            message +=
-                                " was not found: ";
-
-                            message +=
-                                assetPath->String();
-
-                            engine::core::GetLogger().
-                                Write(
-                                    engine::core::
-                                        LogLevel::Error,
-                                    "LTS.Editor."
-                                    "ModularCharacter",
-                                    message);
-
-                            return;
-                        }
-
-                        output =
-                            GetOrLoadTexture(
-                                textureFile,
-                                forceSrgb);
-                    };
-
-                loadTexture(
+                if (
                     cached->desc.
-                        baseColorTexture,
-                    true,
-                    "base-color texture",
-                    cached->baseColorTexture);
+                        baseColorTexture.
+                        has_value())
+                {
+                    const std::filesystem::path
+                        textureFile =
+                            ResolveDataAssetFile(
+                                materialFile,
+                                cached->desc.
+                                    baseColorTexture->
+                                    String());
 
-                const bool hasAnyTexture =
-                   cached->baseColorTexture !=
-                       nullptr;
+                    if (!textureFile.empty())
+                    {
+                        cached->baseColorTexture =
+                            GetOrLoadTexture(
+                                textureFile);
+                    }
+                    else
+                    {
+                        std::string message =
+                            "Character base-color texture "
+                            "was not found: ";
 
-                if (hasAnyTexture)
+                        message +=
+                            cached->desc.
+                                baseColorTexture->
+                                String();
+
+                        engine::core::GetLogger().Write(
+                            engine::core::
+                                LogLevel::Error,
+                            "LTS.Editor.ModularCharacter",
+                            message);
+                    }
+                }
+
+                if (
+                    cached->baseColorTexture !=
+                        nullptr &&
+                    cached->baseColorTexture->gpu !=
+                        nullptr &&
+                    cached->baseColorTexture->gpu->
+                        IsValid())
                 {
                     engine::graphics::SamplerDesc
                         samplerDescription =
@@ -3735,6 +3242,7 @@ namespace lts::editor
                             "Create character material sampler",
                             samplerResult);
 
+                        cached->baseColorTexture.reset();
                         cached->sampler = {};
                     }
                 }
@@ -4016,13 +3524,7 @@ namespace lts::editor
             pipeline_;
 
         engine::graphics::PipelineStateHandle
-            doubleSidedPipeline_;
-
-        engine::graphics::PipelineStateHandle
             transparentPipeline_;
-
-        engine::graphics::PipelineStateHandle
-            transparentDoubleSidedPipeline_;
 
         std::unordered_map<
             std::wstring,
@@ -4122,9 +3624,7 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection,
-            const DirectX::XMFLOAT3&
-                cameraPosition) noexcept
+                viewProjection) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -4135,7 +3635,6 @@ namespace lts::editor
         return impl_->Render(
             context,
             document,
-            viewProjection,
-            cameraPosition);
+            viewProjection);
     }
 }
