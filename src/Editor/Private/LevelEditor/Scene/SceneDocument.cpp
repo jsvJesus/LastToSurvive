@@ -659,6 +659,18 @@ namespace lts::editor
         return world_.GetEntities();
     }
 
+    const EditorSceneEntity* SceneDocument::FindEntity(EditorEntityId entityId) const noexcept
+    {
+        return world_.FindEntity(
+            entityId);
+    }
+
+    EditorSceneEntity* SceneDocument::FindEntityMutable(EditorEntityId entityId) noexcept
+    {
+        return world_.FindEntity(
+            entityId);
+    }
+
     const EditorSceneEntity*
         SceneDocument::
             GetSelectedEntity() const noexcept

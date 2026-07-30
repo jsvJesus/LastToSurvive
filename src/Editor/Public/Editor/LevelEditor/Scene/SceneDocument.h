@@ -123,6 +123,14 @@ namespace lts::editor
             GetEntities() const noexcept;
 
         [[nodiscard]]
+        const EditorSceneEntity* FindEntity(
+            EditorEntityId entityId) const noexcept;
+
+        [[nodiscard]]
+        EditorSceneEntity* FindEntityMutable(
+            EditorEntityId entityId) noexcept;
+
+        [[nodiscard]]
         const EditorSceneEntity*
             GetSelectedEntity() const noexcept;
 

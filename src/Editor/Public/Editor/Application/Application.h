@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor/LevelEditor/Viewport/CameraController.h"
+#include "Editor/LevelEditor/Play/PlayInEditorController.h"
 #include "Editor/Commands/CommandHistory.h"
 #include "Editor/Commands/CommandSystem.h"
 #include "Editor/LevelEditor/UI/ContentBrowserPanel.h"
@@ -109,6 +110,7 @@ namespace lts::editor
         CommandHistory commandHistory_;
         CommandSystem commandSystem_;
         CameraController cameraController_;
+        PlayInEditorController playInEditorController_;
         TransformController transformController_;
         GridRenderer gridRenderer_;
         SkyRenderer skyRenderer_;

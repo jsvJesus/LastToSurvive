@@ -1130,6 +1130,12 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
+        if (playInEditorController_.IsPlaying())
+        {
+            playInEditorController_.Stop(
+                sceneDocument_);
+        }
+
         toolWindowManager_.Shutdown();
         ShutdownEditorUi();
 
@@ -1156,6 +1162,27 @@ namespace lts::editor
     {
         if (!imguiHost_.IsInitialized())
         {
+            return;
+        }
+
+        /*
+         * В режиме Play редакторские камера, gizmo,
+         * выделение и изменение документа отключены.
+         */
+        if (playInEditorController_.IsPlaying())
+        {
+            playInEditorController_.Update(
+                deltaSeconds,
+                sceneDocument_,
+                terrainRenderer_,
+                imguiViewportX_,
+                imguiViewportY_,
+                imguiViewportWidth_,
+                imguiViewportHeight_);
+
+            levelDocument_.SynchronizeWindowTitle(
+                sceneDocument_);
+
             return;
         }
 
@@ -2127,8 +2154,63 @@ namespace lts::editor
                     snapSteps[0], snapSteps[1], snapSteps[2]);
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Move / Rotate / Scale snap steps");
+        
             ImGui::SameLine();
-            if (ImGui::Button("Play")) LaunchTestGame();
+
+            const bool playMode =
+                playInEditorController_.
+                    IsPlaying();
+
+            if (playMode)
+            {
+                ImGui::PushStyleColor(
+                    ImGuiCol_Button,
+                    ImVec4(
+                        0.52F,
+                        0.12F,
+                        0.10F,
+                        1.0F));
+            }
+
+            if (ImGui::Button(
+                    playMode
+                        ? "Stop"
+                        : "Play"))
+            {
+                if (playMode)
+                {
+                    playInEditorController_.Stop(
+                        sceneDocument_);
+                }
+                else
+                {
+                    static_cast<void>(
+                        playInEditorController_.Start(
+                            sceneDocument_,
+                            terrainRenderer_,
+                            GetWindow().
+                                GetNativeHandle(),
+                            imguiViewportX_,
+                            imguiViewportY_,
+                            imguiViewportWidth_,
+                            imguiViewportHeight_));
+                }
+            }
+
+            if (playMode)
+            {
+                ImGui::PopStyleColor();
+            }
+
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    playMode
+                        ? "Stop Play In Editor "
+                          "(Esc or F5)"
+                        : "Play In Editor (F5)");
+            }
+
             ImGui::End();
 
             ImGui::Begin("Place Actors");
@@ -4414,38 +4496,173 @@ namespace lts::editor
 
     void Application::ProcessEditorShortcuts() noexcept
     {
-        const ImGuiIO& io = ImGui::GetIO();
-        if (io.WantTextInput) return;
+        const ImGuiIO& io =
+            ImGui::GetIO();
 
-        const auto pressed = [](const ImGuiKey key)
+        const auto pressed =
+            [](
+                const ImGuiKey key)
+            {
+                return ImGui::IsKeyPressed(
+                    key,
+                    false);
+            };
+
+        /*
+         * В Play Mode работают только команды выхода.
+         * Escape также обрабатывается самим контроллером.
+         */
+        if (playInEditorController_.IsPlaying())
         {
-            return ImGui::IsKeyPressed(key, false);
-        };
+            if (pressed(ImGuiKey_F5))
+            {
+                playInEditorController_.Stop(
+                    sceneDocument_);
+            }
+
+            return;
+        }
+
+        if (io.WantTextInput)
+        {
+            return;
+        }
 
         if (pressed(ImGuiKey_F5))
         {
-            LaunchTestGame();
+            static_cast<void>(
+                playInEditorController_.Start(
+                    sceneDocument_,
+                    terrainRenderer_,
+                    GetWindow().
+                        GetNativeHandle(),
+                    imguiViewportX_,
+                    imguiViewportY_,
+                    imguiViewportWidth_,
+                    imguiViewportHeight_));
+
             return;
         }
 
         EditorCommand command{};
         bool hasCommand = true;
-        if (io.KeyCtrl && pressed(ImGuiKey_N)) command = EditorCommand::NewLevel;
-        else if (io.KeyCtrl && pressed(ImGuiKey_O)) command = EditorCommand::OpenLevel;
-        else if (io.KeyCtrl && io.KeyShift && pressed(ImGuiKey_S)) command = EditorCommand::SaveLevelAs;
-        else if (io.KeyCtrl && pressed(ImGuiKey_S)) command = EditorCommand::SaveLevel;
-        else if (io.KeyCtrl && io.KeyShift && pressed(ImGuiKey_Z)) command = EditorCommand::Redo;
-        else if (io.KeyCtrl && pressed(ImGuiKey_Z)) command = EditorCommand::Undo;
-        else if (io.KeyCtrl && pressed(ImGuiKey_Y)) command = EditorCommand::Redo;
-        else if (io.KeyCtrl && pressed(ImGuiKey_D)) command = EditorCommand::DuplicateSelection;
-        else if (pressed(ImGuiKey_Delete)) command = EditorCommand::DeleteSelection;
-        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_Q)) command = EditorCommand::SelectTool;
-        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_W)) command = EditorCommand::MoveTool;
-        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_E)) command = EditorCommand::RotateTool;
-        else if (!io.KeyCtrl && !io.KeyAlt && !io.MouseDown[ImGuiMouseButton_Right] && pressed(ImGuiKey_R)) command = EditorCommand::ScaleTool;
-        else hasCommand = false;
 
-        if (hasCommand) static_cast<void>(ExecuteEditorCommand(command));
+        if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_N))
+        {
+            command =
+                EditorCommand::NewLevel;
+        }
+        else if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_O))
+        {
+            command =
+                EditorCommand::OpenLevel;
+        }
+        else if (
+            io.KeyCtrl &&
+            io.KeyShift &&
+            pressed(ImGuiKey_S))
+        {
+            command =
+                EditorCommand::SaveLevelAs;
+        }
+        else if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_S))
+        {
+            command =
+                EditorCommand::SaveLevel;
+        }
+        else if (
+            io.KeyCtrl &&
+            io.KeyShift &&
+            pressed(ImGuiKey_Z))
+        {
+            command =
+                EditorCommand::Redo;
+        }
+        else if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_Z))
+        {
+            command =
+                EditorCommand::Undo;
+        }
+        else if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_Y))
+        {
+            command =
+                EditorCommand::Redo;
+        }
+        else if (
+            io.KeyCtrl &&
+            pressed(ImGuiKey_D))
+        {
+            command =
+                EditorCommand::
+                    DuplicateSelection;
+        }
+        else if (pressed(ImGuiKey_Delete))
+        {
+            command =
+                EditorCommand::
+                    DeleteSelection;
+        }
+        else if (
+            !io.KeyCtrl &&
+            !io.KeyAlt &&
+            !io.MouseDown[
+                ImGuiMouseButton_Right] &&
+            pressed(ImGuiKey_Q))
+        {
+            command =
+                EditorCommand::SelectTool;
+        }
+        else if (
+            !io.KeyCtrl &&
+            !io.KeyAlt &&
+            !io.MouseDown[
+                ImGuiMouseButton_Right] &&
+            pressed(ImGuiKey_W))
+        {
+            command =
+                EditorCommand::MoveTool;
+        }
+        else if (
+            !io.KeyCtrl &&
+            !io.KeyAlt &&
+            !io.MouseDown[
+                ImGuiMouseButton_Right] &&
+            pressed(ImGuiKey_E))
+        {
+            command =
+                EditorCommand::RotateTool;
+        }
+        else if (
+            !io.KeyCtrl &&
+            !io.KeyAlt &&
+            !io.MouseDown[
+                ImGuiMouseButton_Right] &&
+            pressed(ImGuiKey_R))
+        {
+            command =
+                EditorCommand::ScaleTool;
+        }
+        else
+        {
+            hasCommand = false;
+        }
+
+        if (hasCommand)
+        {
+            static_cast<void>(
+                ExecuteEditorCommand(
+                    command));
+        }
     }
 
     void Application::RenderImGui() noexcept
@@ -4554,65 +4771,114 @@ namespace lts::editor
                 static_cast<std::uint32_t>(
                     (std::max)(imguiViewportHeight_, 1.0F));
 
-            if (!engine::graphics::Failed(result) &&
-                cameraController_.BuildViewProjection(
-                    viewportWidth,
-                    viewportHeight,
-                    viewProjection))
+            const bool playMode =
+                playInEditorController_.
+                    IsPlaying();
+
+            const DirectX::XMFLOAT3
+                renderCameraPosition =
+                    playMode
+                        ? playInEditorController_.
+                            GetCameraPosition()
+                        : cameraController_.
+                            GetPosition();
+
+            const bool cameraReady =
+                playMode
+                    ? playInEditorController_.
+                        BuildViewProjection(
+                            viewportWidth,
+                            viewportHeight,
+                            viewProjection)
+                    : cameraController_.
+                        BuildViewProjection(
+                            viewportWidth,
+                            viewportHeight,
+                            viewProjection);
+
+            if (
+                !engine::graphics::Failed(result) &&
+                cameraReady)
             {
-                result = skyRenderer_.Render(*commandContext_, sceneDocument_, viewProjection, cameraController_.GetPosition());
-                
-                if (!engine::graphics::Failed(result))
-                {
-                    result = gridRenderer_.Render(
-                        *commandContext_,
-                        viewProjection);
-                }
-
-                if (!engine::graphics::Failed(result))
-                {
-                    result = terrainRenderer_.Render(
+                result =
+                    skyRenderer_.Render(
                         *commandContext_,
                         sceneDocument_,
                         viewProjection,
-                        cameraController_.GetPosition());
+                        renderCameraPosition);
+
+                /*
+                 * Editor Grid и gizmo в игровом
+                 * режиме не отображаются.
+                 */
+                if (
+                    !engine::graphics::Failed(result) &&
+                    !playMode)
+                {
+                    result =
+                        gridRenderer_.Render(
+                            *commandContext_,
+                            viewProjection);
                 }
 
                 if (!engine::graphics::Failed(result))
                 {
-                    result = staticMeshRenderer_.Render(
-                        *commandContext_,
-                        sceneDocument_,
-                        viewProjection);
+                    result =
+                        terrainRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            renderCameraPosition);
                 }
 
                 if (!engine::graphics::Failed(result))
                 {
-                    result = modularCharacterRenderer_.Render(*commandContext_, sceneDocument_, viewProjection);
+                    result =
+                        staticMeshRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection);
                 }
 
                 if (!engine::graphics::Failed(result))
                 {
-                    result = sceneRenderer_.Render(
-                        *commandContext_,
-                        sceneDocument_,
-                        viewProjection,
-                        transformController_.GetVisualState(),
-                        &staticMeshRenderer_);
+                    result =
+                        modularCharacterRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection);
                 }
 
-                if (!engine::graphics::Failed(result) &&
+                if (
+                    !engine::graphics::Failed(result) &&
+                    !playMode)
+                {
+                    result =
+                        sceneRenderer_.Render(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            transformController_.
+                                GetVisualState(),
+                            &staticMeshRenderer_);
+                }
+
+                if (
+                    !engine::graphics::Failed(result) &&
+                    !playMode &&
                     terrainPaintMode_ &&
                     terrainBrushHitValid_)
                 {
-                    result = terrainRenderer_.RenderBrush(
-                        *commandContext_,
-                        sceneDocument_,
-                        viewProjection,
-                        terrainBrushWorldX_,
-                        terrainBrushWorldZ_,
-                        terrainBrushRadius_,
-                        ImGui::GetIO().KeyShift);
+                    result =
+                        terrainRenderer_.RenderBrush(
+                            *commandContext_,
+                            sceneDocument_,
+                            viewProjection,
+                            terrainBrushWorldX_,
+                            terrainBrushWorldZ_,
+                            terrainBrushRadius_,
+                            ImGui::GetIO().
+                                KeyShift);
                 }
             }
         }
