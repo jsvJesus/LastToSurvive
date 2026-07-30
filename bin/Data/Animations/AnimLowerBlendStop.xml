@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<UpperBlendStart
+	AIDX_CrouchBlend = "Bip01_Spine2"
+
+	AIDX_RunBlend    = "Bip01_Spine3"
+
+	AIDX_SprintBlend = "Bip01_Spine"
+
+	AIDX_ShootWalk       = "Bip01_Spine3"
+	AIDX_ShootCrouchMove       = "Bip01_Spine2"
+
+	AIDX_ProneBlend  = "Bip01_Spine"
+
+	AIDX_ProneUp   = "Bip01"
+	AIDX_ProneDown   = "Bip01"
+/>
