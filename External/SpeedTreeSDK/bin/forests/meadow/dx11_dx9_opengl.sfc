@@ -1,0 +1,531 @@
+//
+//  SpeedTree Reference Application Forest Config File
+//
+//	This file describes a SpeedTree forest scene and is parsed by the 
+//	SpeedTree SDK reference application. By convention, we use the SFC 
+//	extension for these files (SpeedTree Forest Config).
+//
+//	SFC files are passed via command-line to the reference application,
+//	but this is most commonly handled by using the reference application
+//	launching utility.
+//
+//      Copyright (c) 2003-2016 IDV, Inc.
+//      All rights reserved in all media.
+//
+//      IDV, Inc.
+//      http://www.idvinc.com
+//
+
+
+//	Path Macros
+//
+// 	Each macro assumes a current working directory of where the SFC file
+//	resides. All paths in the SFC file are relative from that point.
+
+#platform_all
+	#define PATH_COMPILED_ASSETS		"compiled_assets/desktop/$RENDER_TYPE$/dx11_and_opengl"
+#platform_dx9
+	#define PATH_COMPILED_ASSETS		"compiled_assets/desktop/$RENDER_TYPE$/dx9"
+#platform_all
+
+#define PATH_POPULATION_DATA			"population"
+#define PATH_TERRAIN					"nonvegetation_assets/terrain"
+#define PATH_SKY						"nonvegetation_assets/sky"
+#define PATH_POST_EFFECTS				"nonvegetation_assets/post_effects"
+#define PATH_CAMERA_FILE				"saved_cameras.txt"
+#define PATH_AMBIENT_IMAGE_FILE		"nonvegetation_assets/terrain/ambient_image_plate.dds"
+
+
+//	Forest Settings
+//
+// 	These macros are used to keep important flags at the top of the file
+//	as they can get rather lengthy.
+
+#define SETTING_SHADOWS_ENABLED		1	// shadow flag must match Compiler app setting
+#define SETTING_WIND_ENABLED			1	// will disable wind, but to compile assets with wind off to optimize
+#define SETTING_BLOOM_ENABLED			1	// currently works in forward rendering path only
+#define SETTING_DISTANCE_BLUR_ENABLED	0	// currently works in deferred rendering path only
+#define SETTING_DEPTH_PREPASS_ENABLED	0	// assets must be compiled with a depth prepass enabled
+#define SETTING_RANDOM_AREA			"0 10560 0 10560" // area [x_min, x_max, y_min, y_max] of randomly-populated area
+#define SETTING_AMBIENT_IMAGE_SCALAR	0.5		// all trees share the same ambient scalar
+#define SETTING_TREE_LOD_SCALAR		0.75		// global scalar for overall LOD values
+
+
+//	Shared Grass Settings
+//
+// 	A lot of values are shared by the grass models; defined here
+
+#define GRASS_NEAR_LOD 				"lod_range 30 90"
+#define GRASS_NEAR_CELL_SIZE 			"cell_size 20"
+#define GRASS_NEAR_DENSITY			"density 0.18"
+
+#define GRASS_MID_LOD 				"lod_range 250 450"
+#define GRASS_MID_CELL_SIZE 			"cell_size 40"
+#define GRASS_MID_DENSITY				"density 0.14"
+
+#define GRASS_SCALAR_RANGE			"0.55 0.65"
+#define GRASS_HUE_VARIATION			"hue_variation { by_pos -0.0125 by_vertex -0.05 color 1 1 1 } "
+
+
+//	Misc Shared Settings
+#define COMMON_HUE_VARIATION			"{ by_pos 0.015 by_vertex 0.0 color 1 1 1 }"
+
+
+//
+//	Forest Population
+//
+
+// random tree population isn't used in this example SFC file, but this is the syntax:
+//
+//	random_tree_population
+//	{
+//		filename "%PATH_COMPILED_ASSETS%/my_tree/my_tree.srt" 
+//		quantity 100 
+//		area %SETTING_RANDOM_AREA%
+//		seed 5
+//		lod_scalar 1.0
+//		scalar_range 0.5 1.5
+//		ambient_image_scalar 0.3
+//	}
+
+
+// meadow broadleaves
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/meadow_broadleaf_1.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/meadow_broadleaves/meadow_broadleaf_1.srt"
+	follow_terrain true
+	lod_scalar 0.75
+	hue_variation { by_pos 0.025 by_vertex 0.075 color 1 1 1 }
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/meadow_broadleaf_2.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/meadow_broadleaves/meadow_broadleaf_2.srt"
+	follow_terrain true
+	lod_scalar 0.75
+	hue_variation { by_pos 0.025 by_vertex 0.075 color 1 1 1 }
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/meadow_broadleaf_3.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/meadow_broadleaves/meadow_broadleaf_3.srt"
+	follow_terrain true
+	lod_scalar 0.75
+	hue_variation { by_pos 0.025 by_vertex 0.075 color 1 1 1 }
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// scots pines
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/scots_pine.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/scots_pine/scots_pine.srt"
+	follow_terrain true
+	hue_variation { by_pos 0.015 by_vertex 0.01 color 0.75 1 0.25 }
+	lod_scalar 0.5
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// ground clutter
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/beavertail_cactus_1.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/ground_clutter/beavertail_cactus_1.srt"
+	follow_terrain true
+	lod_scalar 3
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/beavertail_cactus_2.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/ground_clutter/beavertail_cactus_2.srt"
+	follow_terrain true
+	lod_scalar 3
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/granite.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/ground_clutter/granite.srt"
+	follow_terrain true
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+	lod_scalar 2.5
+	hue_variation { by_pos 0.0175  by_vertex 0.01 color 1 1 1 }
+}
+
+// shrine
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/angel.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/shrine/angel.srt"
+	follow_terrain true
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+	lod_scalar 1
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/hollywood_juniper.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/shrine/hollywood_juniper.srt"
+	follow_terrain true
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+	lod_scalar 1
+	hue_variation { by_pos 0.02 by_vertex 0.01 color 1 1 1 }
+}
+
+// european linden
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/european_linden_dead.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/european_linden/european_linden_dead.srt"
+	follow_terrain true
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+	lod_scalar 1
+	hue_variation { by_pos 0.01  by_vertex 0.01 color 0.75 1 0.25 }
+}
+
+// animals (flying stuff)
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/flock.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/animals/flock.srt"
+	follow_terrain true
+}
+
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/butterflies.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/animals/butterflies.srt"
+	follow_terrain true
+}
+
+// hero tree
+speedforest_population
+{
+	speedforest_filename "%PATH_POPULATION_DATA%/hero.instances"
+	srt_filename "%PATH_COMPILED_ASSETS%/gnarls_barky/gnarls_barky.srt"
+	follow_terrain true
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+	lod_scalar 1.2
+	hue_variation { by_pos 0.0  by_vertex 0.12 color 1 1 1 }
+}
+
+
+//
+//	Grass
+//
+
+// live grass, near
+grass_population
+{
+	%GRASS_NEAR_DENSITY% %GRASS_NEAR_LOD% %GRASS_NEAR_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel red 
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// live grass, mid
+grass_population
+{
+	%GRASS_MID_DENSITY% %GRASS_MID_LOD% %GRASS_MID_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel red 
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// dead grass, near
+grass_population
+{
+	%GRASS_NEAR_DENSITY% %GRASS_NEAR_LOD% %GRASS_NEAR_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_dead.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel green
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// dead grass, mid
+grass_population
+{
+	%GRASS_MID_DENSITY% %GRASS_MID_LOD% %GRASS_MID_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_dead.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel green
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// live-to-dead transition grass, near
+grass_population
+{
+	%GRASS_NEAR_DENSITY% %GRASS_NEAR_LOD% %GRASS_NEAR_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_half_dead.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel blue
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// live-to-dead transition grass, mid
+grass_population
+{
+	%GRASS_MID_DENSITY% %GRASS_MID_LOD% %GRASS_MID_CELL_SIZE% %GRASS_HUE_VARIATION%
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_half_dead.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_grass.tga" mask_channel blue
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// grass with flowers, type 1
+grass_population
+{
+	density 0.1 %GRASS_MID_LOD% %GRASS_MID_CELL_SIZE% 
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_flower_1.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_flowers.tga" mask_channel red 
+	hue_variation { by_pos 0.1 by_vertex 0.0 color 1 1 1 }
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+// grass with flowers, type 2
+grass_population
+{
+	density 0.1 %GRASS_MID_LOD% %GRASS_MID_CELL_SIZE% 
+	filename "%PATH_COMPILED_ASSETS%/grasses/elephant_grass_flower_2.srt"
+	area %SETTING_RANDOM_AREA%
+	scalar_range %GRASS_SCALAR_RANGE%
+	mask_filename "%PATH_TERRAIN%/population_mask_flowers.tga" mask_channel green 
+	hue_variation { by_pos 0.1 by_vertex 0.0 color 1 1 1 }
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR% // forward rendering only
+}
+
+
+//
+//	Configuration settings
+//
+
+world
+{
+	// camera-related
+	near_clip 0.25
+	far_clip 5280	
+	fov 55
+	3dtree_cell_size 600
+	
+	// LOD
+	tree_lod_scalar %SETTING_TREE_LOD_SCALAR%
+	
+	// population
+	tree_surface_adhesion 0.1
+	grass_surface_adhesion 0.9
+	random_population_scalar 1
+	grass_density_scalar 1.0
+	
+	// alpha thickness
+	alpha_test_scalar_3d 0.2
+	alpha_test_scalar_grass 0.8
+	alpha_test_scalar_billboard 0.2
+}
+
+fog
+{
+	linear 100 5280
+	color 0.54 0.63 0.765
+	density 0.0000005
+}
+
+terrain
+{
+	// general
+	shader_path "%PATH_TERRAIN%/$RENDER_TYPE$"
+	max_resolution 33
+	lod_levels 4
+	cell_size 500
+	tiles 1
+	
+	// height map
+	height_map_filename "%PATH_TERRAIN%/heightmap.tga"
+	height_map_size 10560 10560 600
+	
+	// splat map
+	splat_map_filename "%PATH_TERRAIN%/splats.dds"
+	
+	// lighting
+	ambient 0.8 0.8 0.8
+	diffuse 0.7 0.7 0.7
+	ambient_occlusion_brightness 0.0
+	ambient_occlusion_distance 25.0
+	ambient_image_scalar %SETTING_AMBIENT_IMAGE_SCALAR%
+	normal_map_filename "%PATH_TERRAIN%/heightmap_normals.dds"
+
+	splat_layer_0
+	{
+		filename "%PATH_TERRAIN%/ground.dds"
+		repeat 600
+		approx_color 0.41 0.35 0.31
+	}
+	
+	splat_layer_1
+	{
+		filename "%PATH_TERRAIN%/green_far.dds"
+		repeat 20
+		approx_color 0.30 0.31 0.17
+	}
+	
+	splat_layer_2
+	{
+		filename "%PATH_TERRAIN%/dead_far.dds"
+		repeat 100
+		approx_color 0.266 0.337 0.1333
+	}
+}
+
+lighting
+{	
+	forward
+	{
+		ambient 0.2 0.2 0.2
+		specular 1.8 1.8 1.8
+		diffuse 1.7 1.7 1.7
+		transmission 1 1 1
+	}
+
+	deferred
+	{
+		ambient 0.4 0.4 0.4
+		specular 0.95 0.95 0.95
+		diffuse 1.75 1.75 1.75
+		transmission 1 1 1
+	}
+
+	direction 0.19 -0.68 -0.7
+
+	bloom
+	{
+	    enabled %SETTING_BLOOM_ENABLED%
+	    downsample 6
+	    bright_pass 0.25
+	    bright_floor 0.1
+	    blur 40
+	    bloom_effect_scalar 0.6
+	    main_effect_scalar 0.92
+	    sky_bleed 0.2
+	}
+
+	image_based_ambient_lighting
+	{
+		filename %PATH_AMBIENT_IMAGE_FILE%
+	}
+
+	// lerp to these colors when the sun is lower in the sky
+	twilight
+	{
+		horizon_color 0.98 0.51 0.12
+		ambient 0.1 0.1 0.1
+		diffuse 0.9 0.48 0.0
+		transmission 0.4 0.4 0.4
+		specular 0.45 0.35 0.35
+	}
+}
+
+shadows
+{
+	enabled %SETTING_SHADOWS_ENABLED%
+	resolution 2048
+	num_maps 3
+	map_distances 170 420 750 5000
+	map_update_intervals 1 2 3 4
+	fade 0.2
+	behind_camera_dist 5000
+} 
+
+wind
+{
+ 	// if the tree shaders were compiled with wind enabled, turning it off here will keep them still,
+	// but they'll still execute the wind vertex shader code
+	enabled %SETTING_WIND_ENABLED%
+ 	gusting false
+	strength 0.5
+	direction 1 0 0
+}
+
+sky
+{
+	shader_path "%PATH_SKY%"
+	color 0.6 0.7 0.85
+
+	sun_size 0.0025
+	sun_spread_exponent 100
+
+	texture "%PATH_SKY%/skydome.dds"
+	
+	// lerp to these colors when the sun is lower in the sky
+	twilight
+	{
+		sun_size 0.005
+		sun_spread_exponent 50
+		color 0.1 0.05 0.3
+	}
+}
+
+navigation
+{
+	camera_file "%PATH_CAMERA_FILE%"
+	follow_height 10
+	translate_scalar 50
+	rotate_scalar 0.002
+}
+
+forward_render
+{
+	depth_prepass %SETTING_DEPTH_PREPASS_ENABLED%
+	post_effects_shader_path "%PATH_POST_EFFECTS%"
+}
+
+deferred_render
+{
+	depth_prepass %SETTING_DEPTH_PREPASS_ENABLED%
+	post_effects_shader_path "%PATH_POST_EFFECTS%"
+	distance_blur %SETTING_DISTANCE_BLUR_ENABLED%
+}
+
+// parameters for running in demo mode at trade shows
+demo
+{
+	camera_time 5 5
+	camera_speed 1 2
+	sun_speed 0.04
+	keyboard_lock false
+	cameras_editable true
+
+	// internal development tool
+	hand_tuned_name0 "sky red"
+	hand_tuned_value0 1.0 0.0 2.0 0.005 // value, min clamp, max clamp, adjustment speed
+}
+
+overlays
+{
+	shader_path "%PATH_POST_EFFECTS%"
+
+	// position (0,0) is the bottom-left of the screen, (1,1) is top-right
+	// size is [0,1] and controls the width of the logo as a percent of the screen's width (image aspect ratio is locked)
+	// anchor controls which corner of image will be placed at pos
+	//  [0 1 2]
+	//  [3 4 5]
+	//  [6 7 8]
+
+	//overlay { filename "%PATH_POST_EFFECTS%/SpeedTree_Logo.dds" pos 0.98 -0.025 size 0.2 anchor 8 }
+}

@@ -173,12 +173,12 @@ packages/
 !/bin/Data/Weapons/
 !/bin/Data/Weapons/**
 
-!/bin/Data/Animations/
-!/bin/Data/Animations/**
-
 !/game/Data/Shaders/
 !/game/Data/Shaders/**
 !/game/Data/UI/
 !/game/Data/UI/**
 !/tools/LTS/
 !/tools/LTS/**
+
+!/External/SpeedTreeSDK/
+!/External/SpeedTreeSDK/**
