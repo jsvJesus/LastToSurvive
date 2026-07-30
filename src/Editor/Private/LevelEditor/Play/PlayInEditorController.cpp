@@ -34,6 +34,17 @@ namespace lts::editor
         constexpr float MaximumStepHeight =
             0.65F;
 
+        /*
+         * Конвертированные модели персонажей WarZ
+         * визуально смотрят вдоль локальной оси -Z.
+         *
+         * Игровое движение использует +Z как Forward,
+         * поэтому visual yaw требует разворота на 180°.
+         */
+        constexpr float
+            CharacterVisualYawOffsetDegrees =
+                180.0F;
+
         [[nodiscard]]
         bool IsKeyDown(
             const int virtualKey) noexcept
@@ -307,18 +318,33 @@ namespace lts::editor
             }
         }
 
+        float gameplayYawDegrees =
+            player->transform.
+                rotationDegrees[1];
+
         if (playerStart != nullptr)
         {
             player->transform.position =
                 playerStart->
                     transform.position;
 
-            player->transform.
-                rotationDegrees[1] =
-                    playerStart->
-                        transform.
-                        rotationDegrees[1];
+            /*
+             * Rotation Spawn Point означает игровое
+             * направление движения, а не локальное
+             * направление геометрии модели.
+             */
+            gameplayYawDegrees =
+                playerStart->
+                    transform.
+                    rotationDegrees[1];
         }
+
+        player->transform.
+            rotationDegrees[1] =
+                std::remainder(
+                    gameplayYawDegrees +
+                        CharacterVisualYawOffsetDegrees,
+                    360.0F);
 
         const auto& controller =
             *player->characterController;
@@ -342,10 +368,13 @@ namespace lts::editor
             groundHeight +
             halfHeight;
 
+        /*
+         * Камера использует gameplay yaw без
+         * визуального разворота модели.
+         */
         cameraYawRadians_ =
             DirectX::XMConvertToRadians(
-                player->transform.
-                    rotationDegrees[1]);
+                gameplayYawDegrees);
 
         cameraPitchRadians_ =
             -0.261799388F;
@@ -859,18 +888,29 @@ namespace lts::editor
 
         if (moving)
         {
-            const float targetYawDegrees =
+            const float movementYawDegrees =
                 DirectX::XMConvertToDegrees(
                     std::atan2(
                         directionX,
                         directionZ));
+
+            /*
+             * Направление движения рассчитывается
+             * относительно +Z, а геометрия Character
+             * смотрит вдоль -Z.
+             */
+            const float targetVisualYawDegrees =
+                std::remainder(
+                    movementYawDegrees +
+                        CharacterVisualYawOffsetDegrees,
+                    360.0F);
 
             player->transform.
                 rotationDegrees[1] =
                     MoveAngleDegrees(
                         player->transform.
                             rotationDegrees[1],
-                        targetYawDegrees,
+                        targetVisualYawDegrees,
                         (std::max)(
                             controller.
                                 rotationSpeedDegrees,

@@ -740,6 +740,7 @@ namespace lts::editor
         [[nodiscard]]
         bool SelectAnimationFile(
             const HWND owner,
+            const wchar_t* const title,
             std::filesystem::path& output)
         {
             Microsoft::WRL::ComPtr<
@@ -781,9 +782,12 @@ namespace lts::editor
                             L"anim")) ||
                 FAILED(
                     dialog->SetTitle(
-                        L"Select Idle Animation")) ||
+                        title != nullptr
+                            ? title
+                            : L"Select Animation")) ||
                 FAILED(
-                    dialog->Show(owner)))
+                    dialog->Show(
+                        owner)))
             {
                 return false;
             }
@@ -809,7 +813,8 @@ namespace lts::editor
                 return false;
             }
 
-            output = selectedPath;
+            output =
+                selectedPath;
 
             CoTaskMemFree(
                 selectedPath);
@@ -2964,108 +2969,170 @@ namespace lts::editor
                     }
 
                     ImGui::SeparatorText(
-                        "Animation Preview");
+                        "Locomotion Animations");
 
-                    const std::string
-                        idleAnimationLabel =
-                            current.
-                                idleAnimation.empty()
-                                ? std::string(
-                                    "<None>")
-                                : ToUtf8(
-                                    current.
-                                        idleAnimation);
+                    const HWND animationDialogOwner =
+                        reinterpret_cast<HWND>(
+                            GetWindow().
+                                GetNativeHandle().
+                                Value());
 
-                    ImGui::TextWrapped(
-                        "Idle: %s",
-                        idleAnimationLabel.
-                            c_str());
-
-                    if (ImGui::Button(
-                            "Select Idle Animation..."))
-                    {
-                        std::filesystem::path
-                            selectedAnimation;
-
-                        const HWND owner =
-                            reinterpret_cast<HWND>(
-                                GetWindow().
-                                    GetNativeHandle().
-                                    Value());
-
-                        if (SelectAnimationFile(
-                                owner,
-                                selectedAnimation))
+                    const auto makeStoredAnimationPath =
+                        [](
+                            const std::filesystem::path&
+                                selectedAnimation)
+                            -> std::wstring
                         {
-                            std::wstring storedPath;
-
                             const std::filesystem::path
                                 gameRoot =
                                     FindEditorGameRoot();
 
-                            std::error_code
-                                relativeError;
-
-                            const std::filesystem::path
-                                relativePath =
-                                    std::filesystem::
-                                        relative(
-                                            selectedAnimation,
-                                            gameRoot,
-                                            relativeError);
-
-                            const std::wstring
-                                relativeText =
-                                    relativePath.
-                                        generic_wstring();
-
-                            if (
-                                !relativeError &&
-                                !relativeText.empty() &&
-                                relativeText.rfind(
-                                    L"..",
-                                    0U) != 0U)
+                            if (!gameRoot.empty())
                             {
-                                storedPath =
-                                    relativeText;
-                            }
-                            else
-                            {
-                                storedPath =
-                                    selectedAnimation.
-                                        lexically_normal().
-                                        generic_wstring();
+                                std::error_code
+                                    relativeError;
+
+                                const std::filesystem::path
+                                    relativePath =
+                                        std::filesystem::
+                                            relative(
+                                                selectedAnimation,
+                                                gameRoot,
+                                                relativeError);
+
+                                const std::wstring
+                                    relativeText =
+                                        relativePath.
+                                            generic_wstring();
+
+                                if (
+                                    !relativeError &&
+                                    !relativeText.empty() &&
+                                    relativeText.rfind(
+                                        L"..",
+                                        0U) != 0U)
+                                {
+                                    return relativeText;
+                                }
                             }
 
-                            engine::scene::
-                                SkeletalMeshComponent
-                                    updated =
-                                        current;
+                            return
+                                selectedAnimation.
+                                    lexically_normal().
+                                    generic_wstring();
+                        };
 
-                            updated.idleAnimation =
-                                std::move(
-                                    storedPath);
+                    const auto drawAnimationField =
+                        [&](
+                            const char* const label,
+                            const wchar_t* const
+                                dialogTitle,
 
-                            applyCharacter(
-                                std::move(updated));
-                        }
-                    }
+                            std::wstring
+                                engine::scene::
+                                    SkeletalMeshComponent::*
+                                        animationMember)
+                        {
+                            ImGui::PushID(
+                                label);
 
-                    ImGui::SameLine();
+                            const std::wstring&
+                                animationPath =
+                                    current.*
+                                        animationMember;
 
-                    if (ImGui::Button(
-                            "Clear Idle"))
-                    {
-                        engine::scene::
-                            SkeletalMeshComponent
-                                updated =
-                                    current;
+                            const std::string
+                                animationLabel =
+                                    animationPath.empty()
+                                        ? std::string(
+                                            "<None>")
+                                        : ToUtf8(
+                                            animationPath);
 
-                        updated.idleAnimation.clear();
+                            ImGui::TextWrapped(
+                                "%s: %s",
+                                label,
+                                animationLabel.c_str());
 
-                        applyCharacter(
-                            std::move(updated));
-                    }
+                            if (ImGui::Button(
+                                    "Select..."))
+                            {
+                                std::filesystem::path
+                                    selectedAnimation;
+
+                                if (SelectAnimationFile(
+                                        animationDialogOwner,
+                                        dialogTitle,
+                                        selectedAnimation))
+                                {
+                                    engine::scene::
+                                        SkeletalMeshComponent
+                                            updated =
+                                                current;
+
+                                    updated.*animationMember =
+                                        makeStoredAnimationPath(
+                                            selectedAnimation);
+
+                                    applyCharacter(
+                                        std::move(
+                                            updated));
+                                }
+                            }
+
+                            if (!animationPath.empty())
+                            {
+                                ImGui::SameLine();
+
+                                if (ImGui::Button(
+                                        "Clear"))
+                                {
+                                    engine::scene::
+                                        SkeletalMeshComponent
+                                            updated =
+                                                current;
+
+                                    (
+                                        updated.*
+                                            animationMember
+                                    ).clear();
+
+                                    applyCharacter(
+                                        std::move(
+                                            updated));
+                                }
+                            }
+
+                            ImGui::PopID();
+                        };
+
+                    drawAnimationField(
+                        "Idle",
+                        L"Select Idle Animation",
+                        &engine::scene::
+                            SkeletalMeshComponent::
+                                idleAnimation);
+
+                    drawAnimationField(
+                        "Walk",
+                        L"Select Walk Animation",
+                        &engine::scene::
+                            SkeletalMeshComponent::
+                                walkAnimation);
+
+                    drawAnimationField(
+                        "Run",
+                        L"Select Run Animation",
+                        &engine::scene::
+                            SkeletalMeshComponent::
+                                runAnimation);
+
+                    drawAnimationField(
+                        "Jump",
+                        L"Select Jump Animation",
+                        &engine::scene::
+                            SkeletalMeshComponent::
+                                jumpAnimation);
 
                     bool characterVisible =
                         current.visible;
