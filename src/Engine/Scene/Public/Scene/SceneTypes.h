@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Scene/CharacterAnimationTypes.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -304,6 +306,15 @@ namespace engine::scene
 
         std::optional<SkeletalMeshComponent>
             skeletalMesh;
+
+        /*
+         * Наша новая layered animation system.
+         *
+         * Набор клипов и transient runtime отделены
+         * от геометрии персонажа.
+         */
+        std::optional<CharacterAnimationComponent>
+            characterAnimation;
 
         std::optional<CharacterControllerComponent>
             characterController;
