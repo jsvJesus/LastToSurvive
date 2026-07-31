@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
+#include <Scene/CharacterAnimationStateMachine.h>
 
 #include <Platform/Window.h>
 
@@ -70,17 +71,14 @@ namespace lts::editor
 
         void ReleaseCursor() noexcept;
 
-        void UpdateAnimation(
-            EditorSceneEntity& player,
-            bool moving,
-            bool running) noexcept;
+        engine::scene::
+            CharacterAnimationStateMachine
+                animationStateMachine_;
 
         engine::platform::NativeWindowHandle window_;
 
         EditorSceneSnapshot snapshot_;
         EditorEntityId playerEntityId_ = 0U;
-
-        std::wstring originalIdleAnimation_;
 
         DirectX::XMFLOAT3 cameraPosition_
         {

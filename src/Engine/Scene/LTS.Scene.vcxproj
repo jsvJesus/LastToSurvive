@@ -164,12 +164,14 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="Public\Scene\CharacterAnimationStateMachine.h" />
     <ClInclude Include="Public\Scene\CharacterAnimationTypes.h" />
     <ClInclude Include="Public\Scene\SceneTypes.h" />
     <ClInclude Include="Public\Scene\SceneWorld.h" />
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Private\CharacterAnimationStateMachine.cpp" />
     <ClCompile Include="Private\SceneWorld.cpp" />
   </ItemGroup>
 

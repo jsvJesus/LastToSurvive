@@ -285,9 +285,17 @@ namespace lts::editor
             return false;
         }
 
-        originalIdleAnimation_ =
-            player->skeletalMesh->
-                idleAnimation;
+        /*
+         * Character сущность должна иметь отдельный
+         * animation component.
+         */
+        if (!player->characterAnimation.has_value())
+        {
+            player->characterAnimation.emplace();
+        }
+
+        animationStateMachine_.Reset(
+            *player->characterAnimation);
 
         const EditorSceneEntity* playerStart =
             nullptr;
@@ -447,8 +455,6 @@ namespace lts::editor
 
         snapshot_ = {};
         playerEntityId_ = 0U;
-
-        originalIdleAnimation_.clear();
 
         velocityX_ = 0.0F;
         velocityZ_ = 0.0F;
@@ -918,10 +924,116 @@ namespace lts::editor
                         safeDeltaSeconds);
         }
 
-        UpdateAnimation(
-            *player,
-            moving,
-            running);
+        const float horizontalSpeed =
+            std::sqrt(
+                velocityX_ *
+                    velocityX_ +
+                velocityZ_ *
+                    velocityZ_);
+
+        if (!player->characterAnimation.has_value())
+        {
+            player->characterAnimation.emplace();
+        }
+
+        auto& characterAnimation =
+            *player->characterAnimation;
+
+        engine::scene::
+            CharacterAnimationStateInput
+                animationInput;
+
+        animationInput.deltaSeconds =
+            static_cast<double>(
+                safeDeltaSeconds);
+
+        /*
+         * Пока переключение C ещё не подключено,
+         * сохраняем текущий режим runtime.
+         */
+        animationInput.viewMode =
+            characterAnimation.runtime.viewMode;
+
+        /*
+         * Пока toggle Ctrl ещё не подключён,
+         * сохраняем текущую стойку runtime.
+         */
+        animationInput.stance =
+            characterAnimation.runtime.stance;
+
+        animationInput.movementSpeed =
+            horizontalSpeed;
+
+        animationInput.grounded =
+            grounded_;
+
+        animationInput.aiming =
+            characterAnimation.runtime.aiming;
+
+        animationInput.upperBodyState =
+            animationInput.aiming
+                ? engine::scene::
+                    CharacterUpperBodyState::Aiming
+                : engine::scene::
+                    CharacterUpperBodyState::Relaxed;
+
+        /*
+         * В текущем свободном режиме персонаж
+         * сам разворачивается в сторону движения.
+         *
+         * Поэтому его locomotion относительно корпуса
+         * считается Forward.
+         *
+         * При добавлении Aim/Strafe сюда будут
+         * поступать Left/Right/Backward.
+         */
+        animationInput.movementDirection =
+            moving
+                ? engine::scene::
+                    CharacterMovementDirection::Forward
+                : engine::scene::
+                    CharacterMovementDirection::None;
+
+        if (!grounded_)
+        {
+            animationInput.locomotionState =
+                engine::scene::
+                    CharacterLocomotionState::
+                        JumpLoop;
+        }
+        else if (moving && running)
+        {
+            animationInput.locomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Run;
+        }
+        else if (moving)
+        {
+            animationInput.locomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Walk;
+        }
+        else
+        {
+            animationInput.locomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Idle;
+        }
+
+        /*
+         * Action input будет подключён отдельно:
+         *
+         * ЛКМ → Primary
+         * ПКМ → Aiming
+         * R   → Reload
+         */
+        animationInput.actionRequest =
+            engine::scene::
+                CharacterActionState::None;
+
+        animationStateMachine_.Update(
+            animationInput,
+            characterAnimation);
 
         const DirectX::XMVECTOR target =
             DirectX::XMVectorSet(
@@ -1212,64 +1324,5 @@ namespace lts::editor
             restoreCursorY_);
 
         cursorCaptured_ = false;
-    }
-
-    void PlayInEditorController::UpdateAnimation(
-        EditorSceneEntity& player,
-        const bool moving,
-        const bool running) noexcept
-    {
-        if (!player.skeletalMesh.has_value())
-        {
-            return;
-        }
-
-        auto& skeletalMesh =
-            *player.skeletalMesh;
-
-        const std::wstring* desiredAnimation =
-            &originalIdleAnimation_;
-
-        if (
-            !grounded_ &&
-            !skeletalMesh.
-                jumpAnimation.empty())
-        {
-            desiredAnimation =
-                &skeletalMesh.
-                    jumpAnimation;
-        }
-        else if (
-            running &&
-            !skeletalMesh.
-                runAnimation.empty())
-        {
-            desiredAnimation =
-                &skeletalMesh.
-                    runAnimation;
-        }
-        else if (
-            moving &&
-            !skeletalMesh.
-                walkAnimation.empty())
-        {
-            desiredAnimation =
-                &skeletalMesh.
-                    walkAnimation;
-        }
-
-        if (
-            skeletalMesh.idleAnimation !=
-                *desiredAnimation)
-        {
-            /*
-             * Текущий renderer проигрывает путь
-             * idleAnimation. В PIE временно подставляем
-             * locomotion-анимацию. Snapshot восстановит
-             * исходный путь после Stop.
-             */
-            skeletalMesh.idleAnimation =
-                *desiredAnimation;
-        }
     }
 }
