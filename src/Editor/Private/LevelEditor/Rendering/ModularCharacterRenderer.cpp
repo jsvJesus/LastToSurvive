@@ -1,4 +1,5 @@
 #include "Editor/LevelEditor/Rendering/ModularCharacterRenderer.h"
+#include "Editor/LevelEditor/Rendering/CharacterAnimationEvaluator.h"
 #include "Editor/LevelEditor/Rendering/ShaderCompiler.h"
 
 #include <Assets/AssetData.h>
@@ -2011,32 +2012,182 @@ namespace lts::editor
                 const auto& component =
                     *entity.skeletalMesh;
 
+                /*
+                 * Старый однослойный путь остаётся
+                 * безопасным fallback, пока новая
+                 * state machine ещё не активировала
+                 * runtime-слои.
+                 */
                 std::shared_ptr<CachedAnimation>
-                    currentAnimation;
+                    legacyAnimation;
 
-                double animationSeconds = 0.0;
+                double legacyAnimationSeconds = 0.0;
 
-                if (
-                    !component.
-                        idleAnimation.empty())
+                if (!component.idleAnimation.empty())
                 {
-                    currentAnimation =
+                    legacyAnimation =
                         GetOrLoadAnimation(
-                            component.
-                                idleAnimation);
+                            component.idleAnimation);
 
-                    if (currentAnimation != nullptr)
+                    if (legacyAnimation != nullptr)
                     {
-                        animationSeconds =
+                        legacyAnimationSeconds =
                             std::chrono::duration<
                                 double>(
                                     std::chrono::
                                         steady_clock::
                                             now() -
-                                    currentAnimation->
+                                    legacyAnimation->
                                         startedAt)
                                 .count();
                     }
+                }
+
+                CharacterAnimationLayerSample
+                    lowerBodySample;
+
+                CharacterAnimationLayerSample
+                    upperBodySample;
+
+                CharacterAnimationLayerSample
+                    actionSample;
+
+                const engine::scene::
+                    CharacterAnimationComponent*
+                        animationComponent =
+                            nullptr;
+
+                bool useLayeredAnimation = false;
+
+                if (
+                    entity.characterAnimation.
+                        has_value() &&
+                    entity.characterAnimation->
+                        enabled)
+                {
+                    animationComponent =
+                        &*entity.characterAnimation;
+
+                    const auto resolveLayer =
+                        [this](
+                            const engine::scene::
+                                CharacterAnimationLayerRuntime&
+                                    runtime) noexcept
+                        {
+                            CharacterAnimationLayerSample
+                                sample;
+
+                            sample.active =
+                                runtime.active;
+
+                            sample.currentTimeSeconds =
+                                runtime.currentTimeSeconds;
+
+                            sample.previousTimeSeconds =
+                                runtime.previousTimeSeconds;
+
+                            sample.weight =
+                                std::clamp(
+                                    runtime.weight,
+                                    0.0F,
+                                    1.0F);
+
+                            sample.loopMode =
+                                runtime.loopMode;
+
+                            if (
+                                !runtime.currentClip.
+                                    empty())
+                            {
+                                const std::shared_ptr<
+                                    CachedAnimation>
+                                    current =
+                                        GetOrLoadAnimation(
+                                            runtime.
+                                                currentClip);
+
+                                if (current != nullptr)
+                                {
+                                    sample.
+                                        currentAnimation =
+                                            &current->asset;
+                                }
+                            }
+
+                            if (
+                                runtime.IsTransitioning() &&
+                                !runtime.previousClip.
+                                    empty())
+                            {
+                                const std::shared_ptr<
+                                    CachedAnimation>
+                                    previous =
+                                        GetOrLoadAnimation(
+                                            runtime.
+                                                previousClip);
+
+                                if (previous != nullptr)
+                                {
+                                    sample.
+                                        previousAnimation =
+                                            &previous->asset;
+                                }
+
+                                sample.transitionAlpha =
+                                    runtime.
+                                        transitionDurationSeconds >
+                                            0.0F
+                                        ? std::clamp(
+                                            runtime.
+                                                transitionElapsedSeconds /
+                                            runtime.
+                                                transitionDurationSeconds,
+                                            0.0F,
+                                            1.0F)
+                                        : 1.0F;
+                            }
+                            else
+                            {
+                                sample.transitionAlpha =
+                                    1.0F;
+                            }
+
+                            /*
+                             * Слой считается активным только
+                             * при наличии хотя бы одного
+                             * успешно загруженного клипа.
+                             */
+                            sample.active =
+                                sample.active &&
+                                (
+                                    sample.currentAnimation !=
+                                        nullptr ||
+                                    sample.previousAnimation !=
+                                        nullptr
+                                );
+
+                            return sample;
+                        };
+
+                    lowerBodySample =
+                        resolveLayer(
+                            animationComponent->
+                                runtime.lowerBody);
+
+                    upperBodySample =
+                        resolveLayer(
+                            animationComponent->
+                                runtime.upperBody);
+
+                    actionSample =
+                        resolveLayer(
+                            animationComponent->
+                                runtime.action);
+
+                    useLayeredAnimation =
+                        lowerBodySample.active ||
+                        upperBodySample.active ||
+                        actionSample.active;
                 }
 
                 ObjectConstants constants{};
@@ -2120,38 +2271,122 @@ namespace lts::editor
                         GpuSkeletalMesh* const mesh =
                             cached->gpu.get();
 
-                    SkinningConstants skinning;
+                    SkinningConstants skinning{};
 
-                    const engine::assets::
-                        AnimationAsset*
-                            animationAsset =
-                                currentAnimation !=
-                                    nullptr
-                                    ? &currentAnimation->
-                                        asset
-                                    : nullptr;
+                    bool skinningReady = false;
 
-                    if (!BuildSkinningConstants(
-                            cached->skeleton->asset,
-                            animationAsset,
-                            cached->pivot,
-                            animationSeconds,
-                            skinning))
+                    /*
+                     * Новый Lower/Upper/Action evaluator.
+                     */
+                    if (
+                        useLayeredAnimation &&
+                        animationComponent != nullptr)
                     {
-                        /*
-                         * Несовместимая анимация не должна
-                         * скрывать персонажа. Возвращаемся
-                         * к bind pose.
-                         */
+                        CharacterAnimationEvaluationInput
+                            evaluationInput;
+
+                        evaluationInput.skeleton =
+                            &cached->skeleton->asset;
+
+                        evaluationInput.pivot =
+                            cached->pivot;
+
+                        evaluationInput.lowerBody =
+                            lowerBodySample;
+
+                        evaluationInput.upperBody =
+                            upperBodySample;
+
+                        evaluationInput.action =
+                            actionSample;
+
+                        evaluationInput.
+                            upperBodyRootBone =
+                                animationComponent->
+                                    animationSet.
+                                    upperBodyRootBone;
+
+                        evaluationInput.
+                            actionRootBone =
+                                animationComponent->
+                                    animationSet.
+                                    actionRootBone;
+
+                        evaluationInput.
+                            blockHorizontalRootMotion =
+                                !entity.
+                                    characterController.
+                                    has_value() ||
+                                !entity.
+                                    characterController->
+                                    useRootMotion;
+
+                        CharacterAnimationPose pose;
+
+                        if (animationEvaluator_.Evaluate(
+                                evaluationInput,
+                                pose))
+                        {
+                            skinning.parameters =
+                            {
+                                1.0F,
+
+                                static_cast<float>(
+                                    pose.boneCount),
+
+                                pose.animated
+                                    ? 1.0F
+                                    : 0.0F,
+
+                                0.0F
+                            };
+
+                            skinning.boneMatrices =
+                                pose.boneMatrices;
+
+                            skinningReady = true;
+                        }
+                    }
+
+                    /*
+                     * Пока runtime-слои не заполнены,
+                     * сохраняем старый рабочий preview.
+                     *
+                     * Также сюда попадём при ошибке
+                     * layered evaluator.
+                     */
+                    if (!skinningReady)
+                    {
+                        const engine::assets::
+                            AnimationAsset*
+                                legacyAnimationAsset =
+                                    legacyAnimation !=
+                                        nullptr
+                                        ? &legacyAnimation->
+                                            asset
+                                        : nullptr;
+
                         if (!BuildSkinningConstants(
-                                cached->
-                                    skeleton->asset,
-                                nullptr,
+                                cached->skeleton->asset,
+                                legacyAnimationAsset,
                                 cached->pivot,
-                                0.0,
+                                legacyAnimationSeconds,
                                 skinning))
                         {
-                            continue;
+                            /*
+                             * Ошибка анимации не должна
+                             * скрыть персонажа.
+                             */
+                            if (!BuildSkinningConstants(
+                                    cached->
+                                        skeleton->asset,
+                                    nullptr,
+                                    cached->pivot,
+                                    0.0,
+                                    skinning))
+                            {
+                                continue;
+                            }
                         }
                     }
 
@@ -3501,6 +3736,9 @@ namespace lts::editor
                 return false;
             }
         }
+
+        CharacterAnimationEvaluator
+            animationEvaluator_;
 
         engine::graphics::RenderDevice*
             device_ = nullptr;
