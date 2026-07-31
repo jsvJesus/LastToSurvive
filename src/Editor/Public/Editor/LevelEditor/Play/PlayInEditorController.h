@@ -87,6 +87,14 @@ namespace lts::editor
             -4.0F
         };
 
+        /*
+         * Игровое направление ног и корпуса.
+         *
+         * Оно не содержит визуальный разворот
+         * импортированной модели на 180 градусов.
+         */
+        float bodyYawDegrees_ = 0.0F;
+
         float cameraYawRadians_ = 0.0F;
         float cameraPitchRadians_ =
             -0.261799388F;

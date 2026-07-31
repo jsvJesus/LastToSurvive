@@ -847,6 +847,12 @@ namespace lts::editor
             input.upperBodyRootBone,
             upperBodyMask);
 
+        const std::int32_t
+            upperBodyRootBoneIndex =
+                FindBoneIndex(
+                    skeleton,
+                    input.upperBodyRootBone);
+
         BuildBoneMask(
             skeleton,
             input.actionRootBone.empty()
@@ -992,6 +998,54 @@ namespace lts::editor
                             localMatrix,
                             actionMatrix,
                             actionWeight);
+
+                    usedAnimationTrack = true;
+                }
+            }
+
+            /*
+             * Процедурный yaw применяется только
+             * к корневой кости upper-body mask.
+             *
+             * Все дочерние кости Spine, Neck,
+             * Head и рук получат поворот через
+             * обычную skeleton hierarchy.
+             */
+            if (
+                upperBodyRootBoneIndex >= 0 &&
+                boneIndex ==
+                    static_cast<std::size_t>(
+                        upperBodyRootBoneIndex) &&
+                std::isfinite(
+                    input.
+                        upperBodyYawOffsetDegrees))
+            {
+                const float yawOffsetDegrees =
+                    std::remainder(
+                        input.
+                            upperBodyYawOffsetDegrees,
+                        360.0F);
+
+                if (
+                    std::fabs(
+                        yawOffsetDegrees) >
+                        0.001F)
+                {
+                    const DirectX::XMMATRIX
+                        upperBodyYaw =
+                            DirectX::
+                                XMMatrixRotationY(
+                                    DirectX::
+                                        XMConvertToRadians(
+                                            yawOffsetDegrees));
+
+                    /*
+                     * Extra local rotation выполняется
+                     * до базового local transform кости.
+                     */
+                    localMatrix =
+                        upperBodyYaw *
+                        localMatrix;
 
                     usedAnimationTrack = true;
                 }

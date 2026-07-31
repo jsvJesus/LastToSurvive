@@ -138,6 +138,30 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        float NormalizeAngleDegrees(
+            const float angleDegrees) noexcept
+        {
+            if (!std::isfinite(angleDegrees))
+            {
+                return 0.0F;
+            }
+
+            return std::remainder(
+                angleDegrees,
+                360.0F);
+        }
+
+        [[nodiscard]]
+        float AngleDifferenceDegrees(
+            const float targetDegrees,
+            const float currentDegrees) noexcept
+        {
+            return NormalizeAngleDegrees(
+                targetDegrees -
+                currentDegrees);
+        }
+
+        [[nodiscard]]
         float ResolveGroundHeight(
             const SceneDocument& document,
             const TerrainRenderer&
@@ -377,15 +401,42 @@ namespace lts::editor
             halfHeight;
 
         /*
-         * Камера использует gameplay yaw без
-         * визуального разворота модели.
+         * bodyYawDegrees_ хранит игровое направление.
+         * Визуальный offset модели здесь отсутствует.
          */
+        bodyYawDegrees_ =
+            NormalizeAngleDegrees(
+                gameplayYawDegrees);
+
         cameraYawRadians_ =
             DirectX::XMConvertToRadians(
-                gameplayYawDegrees);
+                bodyYawDegrees_);
 
         cameraPitchRadians_ =
             -0.261799388F;
+
+        if (player->characterAnimation.has_value())
+        {
+            auto& animationRuntime =
+                player->characterAnimation->
+                    runtime;
+
+            animationRuntime.actorYawDegrees =
+                bodyYawDegrees_;
+
+            animationRuntime.lowerBodyYawDegrees =
+                bodyYawDegrees_;
+
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
+
+            animationRuntime.
+                upperBodyYawOffsetDegrees =
+                    0.0F;
+
+            animationRuntime.turnInPlaceActive =
+                false;
+        }
 
         velocityX_ = 0.0F;
         velocityZ_ = 0.0F;
@@ -459,6 +510,7 @@ namespace lts::editor
         velocityX_ = 0.0F;
         velocityZ_ = 0.0F;
         verticalVelocity_ = 0.0F;
+        bodyYawDegrees_ = 0.0F;
 
         grounded_ = false;
         spaceWasDown_ = false;
@@ -892,37 +944,229 @@ namespace lts::editor
             nextZ
         };
 
+        if (!player->characterAnimation.has_value())
+        {
+            player->characterAnimation.emplace();
+        }
+
+        auto& characterAnimation =
+            *player->characterAnimation;
+
+        auto& animationRuntime =
+            characterAnimation.runtime;
+
+        const auto& animationTuning =
+            characterAnimation.animationSet.tuning;
+
+        const float cameraYawDegrees =
+            NormalizeAngleDegrees(
+                DirectX::XMConvertToDegrees(
+                    cameraYawRadians_));
+
+        const float turnEnterDegrees =
+            (std::max)(
+                std::fabs(
+                    animationTuning.
+                        turnInPlaceEnterDegrees),
+                1.0F);
+
+        const float turnExitDegrees =
+            std::clamp(
+                std::fabs(
+                    animationTuning.
+                        turnInPlaceExitDegrees),
+                0.0F,
+                turnEnterDegrees);
+
+        const float turnSpeedDegrees =
+            (std::max)(
+                animationTuning.
+                    turnInPlaceSpeedDegrees,
+                1.0F);
+
+        engine::scene::CharacterLocomotionState
+            requestedLocomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Idle;
+
+        /*
+         * Во время движения ноги и корпус
+         * смотрят в направлении движения.
+         */
         if (moving)
         {
             const float movementYawDegrees =
-                DirectX::XMConvertToDegrees(
-                    std::atan2(
-                        directionX,
-                        directionZ));
+                NormalizeAngleDegrees(
+                    DirectX::XMConvertToDegrees(
+                        std::atan2(
+                            directionX,
+                            directionZ)));
 
-            /*
-             * Направление движения рассчитывается
-             * относительно +Z, а геометрия Character
-             * смотрит вдоль -Z.
-             */
-            const float targetVisualYawDegrees =
-                std::remainder(
-                    movementYawDegrees +
-                        CharacterVisualYawOffsetDegrees,
-                    360.0F);
+            bodyYawDegrees_ =
+                MoveAngleDegrees(
+                    bodyYawDegrees_,
+                    movementYawDegrees,
+                    (std::max)(
+                        controller.
+                            rotationSpeedDegrees,
+                        0.0F) *
+                    safeDeltaSeconds);
 
-            player->transform.
-                rotationDegrees[1] =
-                    MoveAngleDegrees(
-                        player->transform.
-                            rotationDegrees[1],
-                        targetVisualYawDegrees,
-                        (std::max)(
-                            controller.
-                                rotationSpeedDegrees,
-                            0.0F) *
-                        safeDeltaSeconds);
+            animationRuntime.turnInPlaceActive =
+                false;
+
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
         }
+        /*
+         * Turn In Place работает только:
+         *
+         * - когда персонаж стоит;
+         * - когда он находится на земле.
+         */
+        else if (grounded_)
+        {
+            const float cameraBodyDifference =
+                AngleDifferenceDegrees(
+                    cameraYawDegrees,
+                    bodyYawDegrees_);
+
+            if (
+                !animationRuntime.
+                    turnInPlaceActive &&
+                std::fabs(
+                    cameraBodyDifference) >=
+                    turnEnterDegrees)
+            {
+                animationRuntime.
+                    turnInPlaceActive =
+                        true;
+
+                animationRuntime.
+                    turnTargetYawDegrees =
+                        cameraYawDegrees;
+            }
+
+            if (animationRuntime.turnInPlaceActive)
+            {
+                /*
+                 * Пока камера продолжает двигаться,
+                 * ноги догоняют её актуальный yaw.
+                 */
+                animationRuntime.
+                    turnTargetYawDegrees =
+                        cameraYawDegrees;
+
+                float remainingDifference =
+                    AngleDifferenceDegrees(
+                        animationRuntime.
+                            turnTargetYawDegrees,
+                        bodyYawDegrees_);
+
+                if (
+                    std::fabs(
+                        remainingDifference) <=
+                        turnExitDegrees)
+                {
+                    bodyYawDegrees_ =
+                        animationRuntime.
+                            turnTargetYawDegrees;
+
+                    animationRuntime.
+                        turnInPlaceActive =
+                            false;
+                }
+                else
+                {
+                    bodyYawDegrees_ =
+                        MoveAngleDegrees(
+                            bodyYawDegrees_,
+                            animationRuntime.
+                                turnTargetYawDegrees,
+                            turnSpeedDegrees *
+                                safeDeltaSeconds);
+
+                    remainingDifference =
+                        AngleDifferenceDegrees(
+                            animationRuntime.
+                                turnTargetYawDegrees,
+                            bodyYawDegrees_);
+
+                    if (
+                        std::fabs(
+                            remainingDifference) <=
+                            turnExitDegrees)
+                    {
+                        bodyYawDegrees_ =
+                            animationRuntime.
+                                turnTargetYawDegrees;
+
+                        animationRuntime.
+                            turnInPlaceActive =
+                                false;
+                    }
+                }
+            }
+            else
+            {
+                animationRuntime.
+                    turnTargetYawDegrees =
+                        bodyYawDegrees_;
+            }
+        }
+        else
+        {
+            /*
+             * В воздухе Turn In Place запрещён.
+             */
+            animationRuntime.turnInPlaceActive =
+                false;
+
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
+        }
+
+        bodyYawDegrees_ =
+            NormalizeAngleDegrees(
+                bodyYawDegrees_);
+
+        /*
+         * Импортированный персонаж визуально
+         * направлен вдоль -Z.
+         *
+         * Transform сущности содержит visual offset,
+         * а animation runtime — чистый gameplay yaw.
+         */
+        player->transform.rotationDegrees[1] =
+            NormalizeAngleDegrees(
+                bodyYawDegrees_ +
+                    CharacterVisualYawOffsetDegrees);
+
+        animationRuntime.actorYawDegrees =
+            bodyYawDegrees_;
+
+        animationRuntime.lowerBodyYawDegrees =
+            bodyYawDegrees_;
+
+        /*
+         * Spine может следовать за камерой только
+         * в пределах maximumUpperBodyYawDegrees.
+         */
+        const float maximumUpperBodyYaw =
+            (std::max)(
+                std::fabs(
+                    animationTuning.
+                        maximumUpperBodyYawDegrees),
+                0.0F);
+
+        animationRuntime.
+            upperBodyYawOffsetDegrees =
+                std::clamp(
+                    AngleDifferenceDegrees(
+                        cameraYawDegrees,
+                        bodyYawDegrees_),
+                    -maximumUpperBodyYaw,
+                    maximumUpperBodyYaw);
 
         const float horizontalSpeed =
             std::sqrt(
@@ -931,13 +1175,49 @@ namespace lts::editor
                 velocityZ_ *
                     velocityZ_);
 
-        if (!player->characterAnimation.has_value())
+        if (!grounded_)
         {
-            player->characterAnimation.emplace();
+            requestedLocomotionState =
+                engine::scene::
+                    CharacterLocomotionState::
+                        JumpLoop;
         }
+        else if (moving && running)
+        {
+            requestedLocomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Run;
+        }
+        else if (moving)
+        {
+            requestedLocomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Walk;
+        }
+        else if (
+            animationRuntime.turnInPlaceActive)
+        {
+            const float turnDifference =
+                AngleDifferenceDegrees(
+                    animationRuntime.
+                        turnTargetYawDegrees,
+                    bodyYawDegrees_);
 
-        auto& characterAnimation =
-            *player->characterAnimation;
+            requestedLocomotionState =
+                turnDifference >= 0.0F
+                    ? engine::scene::
+                        CharacterLocomotionState::
+                            TurnInPlaceRight
+                    : engine::scene::
+                        CharacterLocomotionState::
+                            TurnInPlaceLeft;
+        }
+        else
+        {
+            requestedLocomotionState =
+                engine::scene::
+                    CharacterLocomotionState::Idle;
+        }
 
         engine::scene::
             CharacterAnimationStateInput
@@ -994,31 +1274,8 @@ namespace lts::editor
                 : engine::scene::
                     CharacterMovementDirection::None;
 
-        if (!grounded_)
-        {
-            animationInput.locomotionState =
-                engine::scene::
-                    CharacterLocomotionState::
-                        JumpLoop;
-        }
-        else if (moving && running)
-        {
-            animationInput.locomotionState =
-                engine::scene::
-                    CharacterLocomotionState::Run;
-        }
-        else if (moving)
-        {
-            animationInput.locomotionState =
-                engine::scene::
-                    CharacterLocomotionState::Walk;
-        }
-        else
-        {
-            animationInput.locomotionState =
-                engine::scene::
-                    CharacterLocomotionState::Idle;
-        }
+        animationInput.locomotionState =
+            requestedLocomotionState;
 
         /*
          * Action input будет подключён отдельно:

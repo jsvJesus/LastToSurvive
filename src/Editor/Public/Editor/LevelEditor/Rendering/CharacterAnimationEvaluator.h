@@ -73,6 +73,12 @@ namespace lts::editor
             "Bip01_Spine";
 
         /*
+         * Процедурный поворот верхней части тела
+         * относительно таза и ног.
+         */
+        float upperBodyYawOffsetDegrees = 0.0F;
+
+        /*
          * Пока CharacterController сам перемещает
          * персонажа, горизонтальный root motion
          * из клипа блокируется.
