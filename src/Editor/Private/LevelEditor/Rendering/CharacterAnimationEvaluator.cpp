@@ -852,12 +852,6 @@ namespace lts::editor
                 skeleton,
                 input.lookRootBone);
 
-        const std::int32_t
-            upperBodyRootBoneIndex =
-                FindBoneIndex(
-                    skeleton,
-                    input.upperBodyRootBone);
-
         BuildBoneMask(
             skeleton,
             input.actionRootBone.empty()

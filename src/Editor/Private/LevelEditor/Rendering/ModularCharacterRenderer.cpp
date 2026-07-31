@@ -2012,6 +2012,37 @@ namespace lts::editor
                 const auto& component =
                     *entity.skeletalMesh;
 
+                std::array<
+    engine::scene::CharacterMeshSlot,
+    5U>
+    renderSlots =
+        visibleSlots;
+
+                std::size_t renderSlotCount =
+                    renderSlots.size();
+
+                const bool firstPersonView =
+                    entity.characterAnimation.has_value() &&
+                    entity.characterAnimation->
+                        runtime.viewMode ==
+                            engine::scene::
+                                CharacterViewMode::
+                                    FirstPerson;
+
+                if (firstPersonView)
+                {
+                    /*
+                     * FirstPersonBody — внутреннее имя
+                     * уже назначенного BodyFPS.
+                     */
+                    renderSlots[0U] =
+                        engine::scene::
+                            CharacterMeshSlot::
+                                FirstPersonBody;
+
+                    renderSlotCount = 1U;
+                }
+
                 /*
                  * Старый однослойный путь остаётся
                  * безопасным fallback, пока новая
@@ -2242,10 +2273,14 @@ namespace lts::editor
                 };
 
                 for (
-                    const engine::scene::
-                        CharacterMeshSlot slot :
-                    visibleSlots)
+                    std::size_t renderSlotIndex = 0U;
+                    renderSlotIndex < renderSlotCount;
+                    ++renderSlotIndex)
                 {
+                    const engine::scene::
+                        CharacterMeshSlot slot =
+                            renderSlots[
+                                renderSlotIndex];
                     const auto& part =
                         component.GetPart(slot);
 
