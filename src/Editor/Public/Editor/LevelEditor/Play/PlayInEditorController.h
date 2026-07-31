@@ -88,16 +88,23 @@ namespace lts::editor
         };
 
         /*
-         * Игровое направление ног и корпуса.
-         *
-         * Оно не содержит визуальный разворот
-         * импортированной модели на 180 градусов.
+         * Игровое направление корпуса и ног.
+         * Визуальный offset модели +180° здесь
+         * не хранится.
          */
         float bodyYawDegrees_ = 0.0F;
 
         float cameraYawRadians_ = 0.0F;
         float cameraPitchRadians_ =
             -0.261799388F;
+
+        engine::scene::CharacterViewMode viewMode_ =
+            engine::scene::
+                CharacterViewMode::ThirdPerson;
+
+        engine::scene::CharacterStance stance_ =
+            engine::scene::
+                CharacterStance::Standing;
 
         float velocityX_ = 0.0F;
         float velocityZ_ = 0.0F;
@@ -108,8 +115,16 @@ namespace lts::editor
 
         bool playing_ = false;
         bool grounded_ = false;
+
         bool spaceWasDown_ = false;
         bool escapeWasDown_ = false;
+
+        bool viewToggleWasDown_ = false;
+        bool crouchToggleWasDown_ = false;
+
+        bool primaryActionWasDown_ = false;
+        bool reloadWasDown_ = false;
+
         bool cursorCaptured_ = false;
     };
 }

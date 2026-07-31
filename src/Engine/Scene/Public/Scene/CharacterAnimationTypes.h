@@ -274,22 +274,21 @@ namespace engine::scene
         float actionBlendOutSeconds = 0.10F;
 
         /*
-         * Максимальное отклонение туловища
-         * относительно ног.
+         * До 45 градусов поворачивается только
+         * look-chain: Neck, Head и дочерние кости.
          */
-        float maximumUpperBodyYawDegrees = 65.0F;
+        float maximumUpperBodyYawDegrees = 45.0F;
 
         /*
-         * После превышения этого угла запускается
-         * Turn In Place / Rot Legs.
+         * После 45 градусов начинается Rot Legs.
          */
-        float turnInPlaceEnterDegrees = 65.0F;
+        float turnInPlaceEnterDegrees = 45.0F;
 
         /*
-         * При достижении этого остаточного угла
-         * поворот ног считается завершённым.
+         * Ноги считаются довёрнутыми, когда осталось
+         * меньше пяти градусов.
          */
-        float turnInPlaceExitDegrees = 8.0F;
+        float turnInPlaceExitDegrees = 5.0F;
 
         float turnInPlaceSpeedDegrees = 240.0F;
     };
@@ -317,6 +316,15 @@ namespace engine::scene
          */
         std::string actionRootBone =
             "Bip01_Spine";
+
+        /*
+         * Корневая кость процедурного Look.
+         *
+         * Поворот мышью применяется не ко всему
+         * Spine, а к Neck и всем его потомкам.
+         */
+        std::string lookRootBone =
+            "Bip01_Neck";
 
         CharacterLowerBodyAnimationSet lowerBody;
 

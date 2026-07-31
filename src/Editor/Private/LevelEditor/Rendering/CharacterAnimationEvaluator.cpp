@@ -847,6 +847,11 @@ namespace lts::editor
             input.upperBodyRootBone,
             upperBodyMask);
 
+        const std::int32_t lookRootBoneIndex =
+            FindBoneIndex(
+                skeleton,
+                input.lookRootBone);
+
         const std::int32_t
             upperBodyRootBoneIndex =
                 FindBoneIndex(
@@ -1004,47 +1009,38 @@ namespace lts::editor
             }
 
             /*
-             * Процедурный yaw применяется только
-             * к корневой кости upper-body mask.
+             * Процедурный Look применяется только
+             * к корневой кости look-chain.
              *
-             * Все дочерние кости Spine, Neck,
-             * Head и рук получат поворот через
-             * обычную skeleton hierarchy.
+             * Все дочерние кости Neck/Head получат
+             * поворот через skeleton hierarchy.
              */
             if (
-                upperBodyRootBoneIndex >= 0 &&
+                lookRootBoneIndex >= 0 &&
                 boneIndex ==
                     static_cast<std::size_t>(
-                        upperBodyRootBoneIndex) &&
+                        lookRootBoneIndex) &&
                 std::isfinite(
-                    input.
-                        upperBodyYawOffsetDegrees))
+                    input.lookYawOffsetDegrees))
             {
-                const float yawOffsetDegrees =
+                const float lookYawDegrees =
                     std::remainder(
-                        input.
-                            upperBodyYawOffsetDegrees,
+                        input.lookYawOffsetDegrees,
                         360.0F);
 
                 if (
-                    std::fabs(
-                        yawOffsetDegrees) >
+                    std::fabs(lookYawDegrees) >
                         0.001F)
                 {
                     const DirectX::XMMATRIX
-                        upperBodyYaw =
-                            DirectX::
-                                XMMatrixRotationY(
-                                    DirectX::
-                                        XMConvertToRadians(
-                                            yawOffsetDegrees));
+                        lookRotation =
+                            DirectX::XMMatrixRotationY(
+                                DirectX::
+                                    XMConvertToRadians(
+                                        lookYawDegrees));
 
-                    /*
-                     * Extra local rotation выполняется
-                     * до базового local transform кости.
-                     */
                     localMatrix =
-                        upperBodyYaw *
+                        lookRotation *
                         localMatrix;
 
                     usedAnimationTrack = true;

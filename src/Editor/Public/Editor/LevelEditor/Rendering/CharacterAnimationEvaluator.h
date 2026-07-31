@@ -73,10 +73,17 @@ namespace lts::editor
             "Bip01_Spine";
 
         /*
-         * Процедурный поворот верхней части тела
-         * относительно таза и ног.
+         * Кость, которая процедурно следует
+         * за направлением камеры.
          */
-        float upperBodyYawOffsetDegrees = 0.0F;
+        std::string lookRootBone =
+            "Bip01_Neck";
+
+        /*
+         * Горизонтальный поворот Look относительно
+         * текущего направления ног.
+         */
+        float lookYawOffsetDegrees = 0.0F;
 
         /*
          * Пока CharacterController сам перемещает

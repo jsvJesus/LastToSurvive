@@ -2307,16 +2307,22 @@ namespace lts::editor
                                     upperBodyRootBone;
 
                         evaluationInput.
-                            upperBodyYawOffsetDegrees =
-                                animationComponent->
-                                    runtime.
-                                    upperBodyYawOffsetDegrees;
-
-                        evaluationInput.
                             actionRootBone =
                                 animationComponent->
                                     animationSet.
                                     actionRootBone;
+
+                        evaluationInput.
+                            lookRootBone =
+                                animationComponent->
+                                    animationSet.
+                                    lookRootBone;
+
+                        evaluationInput.
+                            lookYawOffsetDegrees =
+                                animationComponent->
+                                    runtime.
+                                    upperBodyYawOffsetDegrees;
 
                         evaluationInput.
                             blockHorizontalRootMotion =
