@@ -676,8 +676,11 @@ namespace lts::editor
                 return false;
             }
 
-            DirectX::XMMATRIX currentMatrix;
-            DirectX::XMMATRIX previousMatrix;
+            DirectX::XMMATRIX currentMatrix =
+                DirectX::XMMatrixIdentity();
+
+            DirectX::XMMATRIX previousMatrix =
+                DirectX::XMMatrixIdentity();
 
             const bool currentSampled =
                 SampleAnimationBone(
