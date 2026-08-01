@@ -997,7 +997,7 @@ namespace lts::editor
                     CharacterStance::
                         Crouched;
 
-        const bool running =
+        const bool sprinting =
             moving &&
             !crouched &&
             (
@@ -1012,7 +1012,7 @@ namespace lts::editor
         float targetSpeed =
             moving
                 ? (
-                    running
+                    sprinting
                         ? controller.runSpeed
                         : controller.walkSpeed
                 )
@@ -1373,37 +1373,39 @@ namespace lts::editor
         }
         else if (
             moving &&
-            running)
+            !crouched &&
+            sprinting)
         {
             locomotionState =
                 engine::scene::
                     CharacterLocomotionState::
-                        Run;
+                        Sprint;
         }
-        else if (moving)
+        else if (
+            moving &&
+            !crouched &&
+            aiming)
         {
+            /*
+             * Walk используется только при Aim Mode.
+             */
             locomotionState =
                 engine::scene::
                     CharacterLocomotionState::
                         Walk;
         }
-        else if (animationRuntime.
-                    turnInPlaceActive)
+        else if (moving)
         {
-            const float turnDifference =
-                AngleDifferenceDegrees(
-                    animationRuntime.
-                        turnTargetYawDegrees,
-                    bodyYawDegrees_);
-
+            /*
+             * Обычное движение стоя или crouch move.
+             *
+             * Для Crouched state machine автоматически
+             * выберет lowerBody.crouchedMove.
+             */
             locomotionState =
-                turnDifference >= 0.0F
-                    ? engine::scene::
-                        CharacterLocomotionState::
-                            TurnInPlaceRight
-                    : engine::scene::
-                        CharacterLocomotionState::
-                            TurnInPlaceLeft;
+                engine::scene::
+                    CharacterLocomotionState::
+                        Run;
         }
 
         engine::scene::

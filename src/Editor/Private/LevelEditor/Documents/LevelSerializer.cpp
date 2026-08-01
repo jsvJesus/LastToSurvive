@@ -22,8 +22,19 @@ namespace lts::editor
 {
     namespace
     {
+        /*
+         * Version 5:
+         * CharacterAnimation component persistence.
+         */
         constexpr std::uint64_t
-            CurrentFormatVersion = 4U;
+            CurrentFormatVersion = 5U;
+
+        /*
+         * Version 4:
+         * modular character parts and BodyFPS.
+         */
+        constexpr std::uint64_t
+            ModularCharacterFormatVersion = 4U;
 
         constexpr std::uint64_t
             SingleMeshCharacterFormatVersion = 3U;
@@ -1017,6 +1028,980 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool WriteWideString(
+            std::ostream& output,
+            const std::wstring& value)
+        {
+            std::string utf8;
+
+            if (!ToUtf8(value, utf8))
+            {
+                return false;
+            }
+
+            WriteJsonString(output, utf8);
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadWideStringField(
+            const JsonValue& object,
+            const std::string_view name,
+            std::wstring& output)
+        {
+            std::string utf8;
+
+            return
+                ReadString(
+                    RequireField(
+                        object,
+                        name),
+                    utf8) &&
+                FromUtf8(
+                    utf8,
+                    output);
+        }
+
+        [[nodiscard]]
+        bool WriteDirectionalAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterDirectionalAnimationSet& value)
+        {
+            output << "{\"forward\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forward))
+            {
+                return false;
+            }
+
+            output << ", \"forwardLeft\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forwardLeft))
+            {
+                return false;
+            }
+
+            output << ", \"forwardRight\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forwardRight))
+            {
+                return false;
+            }
+
+            output << ", \"left\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.left))
+            {
+                return false;
+            }
+
+            output << ", \"right\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.right))
+            {
+                return false;
+            }
+
+            output << ", \"backward\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.backward))
+            {
+                return false;
+            }
+
+            output << ", \"backwardLeft\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.backwardLeft))
+            {
+                return false;
+            }
+
+            output << ", \"backwardRight\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.backwardRight))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadDirectionalAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterDirectionalAnimationSet& value)
+        {
+            return
+                ReadWideStringField(
+                    json,
+                    "forward",
+                    value.forward) &&
+                ReadWideStringField(
+                    json,
+                    "forwardLeft",
+                    value.forwardLeft) &&
+                ReadWideStringField(
+                    json,
+                    "forwardRight",
+                    value.forwardRight) &&
+                ReadWideStringField(
+                    json,
+                    "left",
+                    value.left) &&
+                ReadWideStringField(
+                    json,
+                    "right",
+                    value.right) &&
+                ReadWideStringField(
+                    json,
+                    "backward",
+                    value.backward) &&
+                ReadWideStringField(
+                    json,
+                    "backwardLeft",
+                    value.backwardLeft) &&
+                ReadWideStringField(
+                    json,
+                    "backwardRight",
+                    value.backwardRight);
+        }
+
+        [[nodiscard]]
+        bool WriteSprintAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterSprintAnimationSet& value)
+        {
+            output << "{\"forward\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forward))
+            {
+                return false;
+            }
+
+            output << ", \"forwardLeft\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forwardLeft))
+            {
+                return false;
+            }
+
+            output << ", \"forwardRight\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.forwardRight))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadSprintAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterSprintAnimationSet& value)
+        {
+            return
+                ReadWideStringField(
+                    json,
+                    "forward",
+                    value.forward) &&
+                ReadWideStringField(
+                    json,
+                    "forwardLeft",
+                    value.forwardLeft) &&
+                ReadWideStringField(
+                    json,
+                    "forwardRight",
+                    value.forwardRight);
+        }
+
+        [[nodiscard]]
+        bool WriteUpperBodyAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterUpperBodyAnimationSet& value)
+        {
+            output << "{\"standingRelaxedIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.standingRelaxedIdle))
+            {
+                return false;
+            }
+
+            output << ", \"standingRelaxedMove\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.standingRelaxedMove))
+            {
+                return false;
+            }
+
+            output << ", \"standingAimIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.standingAimIdle))
+            {
+                return false;
+            }
+
+            output << ", \"standingAimMove\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.standingAimMove))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedRelaxedIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedRelaxedIdle))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedRelaxedMove\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedRelaxedMove))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedAimIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedAimIdle))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedAimMove\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedAimMove))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadUpperBodyAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterUpperBodyAnimationSet& value)
+        {
+            return
+                ReadWideStringField(
+                    json,
+                    "standingRelaxedIdle",
+                    value.standingRelaxedIdle) &&
+                ReadWideStringField(
+                    json,
+                    "standingRelaxedMove",
+                    value.standingRelaxedMove) &&
+                ReadWideStringField(
+                    json,
+                    "standingAimIdle",
+                    value.standingAimIdle) &&
+                ReadWideStringField(
+                    json,
+                    "standingAimMove",
+                    value.standingAimMove) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedRelaxedIdle",
+                    value.crouchedRelaxedIdle) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedRelaxedMove",
+                    value.crouchedRelaxedMove) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedAimIdle",
+                    value.crouchedAimIdle) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedAimMove",
+                    value.crouchedAimMove);
+        }
+
+        [[nodiscard]]
+        bool WriteActionAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterActionAnimationSet& value)
+        {
+            output << "{\"primaryStanding\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.primaryStanding))
+            {
+                return false;
+            }
+
+            output << ", \"primaryMoving\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.primaryMoving))
+            {
+                return false;
+            }
+
+            output << ", \"primaryCrouched\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.primaryCrouched))
+            {
+                return false;
+            }
+
+            output << ", \"secondaryStanding\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.secondaryStanding))
+            {
+                return false;
+            }
+
+            output << ", \"secondaryMoving\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.secondaryMoving))
+            {
+                return false;
+            }
+
+            output << ", \"secondaryCrouched\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.secondaryCrouched))
+            {
+                return false;
+            }
+
+            output << ", \"reloadStanding\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.reloadStanding))
+            {
+                return false;
+            }
+
+            output << ", \"reloadMoving\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.reloadMoving))
+            {
+                return false;
+            }
+
+            output << ", \"reloadCrouched\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.reloadCrouched))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadActionAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterActionAnimationSet& value)
+        {
+            return
+                ReadWideStringField(
+                    json,
+                    "primaryStanding",
+                    value.primaryStanding) &&
+                ReadWideStringField(
+                    json,
+                    "primaryMoving",
+                    value.primaryMoving) &&
+                ReadWideStringField(
+                    json,
+                    "primaryCrouched",
+                    value.primaryCrouched) &&
+                ReadWideStringField(
+                    json,
+                    "secondaryStanding",
+                    value.secondaryStanding) &&
+                ReadWideStringField(
+                    json,
+                    "secondaryMoving",
+                    value.secondaryMoving) &&
+                ReadWideStringField(
+                    json,
+                    "secondaryCrouched",
+                    value.secondaryCrouched) &&
+                ReadWideStringField(
+                    json,
+                    "reloadStanding",
+                    value.reloadStanding) &&
+                ReadWideStringField(
+                    json,
+                    "reloadMoving",
+                    value.reloadMoving) &&
+                ReadWideStringField(
+                    json,
+                    "reloadCrouched",
+                    value.reloadCrouched);
+        }
+
+        [[nodiscard]]
+        bool WriteViewAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterViewAnimationSet& value)
+        {
+            output << "{\"upperBody\": ";
+
+            if (!WriteUpperBodyAnimationSet(
+                    output,
+                    value.upperBody))
+            {
+                return false;
+            }
+
+            output << ", \"actions\": ";
+
+            if (!WriteActionAnimationSet(
+                    output,
+                    value.actions))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadViewAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterViewAnimationSet& value)
+        {
+            const JsonValue* const upperBody =
+                RequireField(
+                    json,
+                    "upperBody");
+
+            const JsonValue* const actions =
+                RequireField(
+                    json,
+                    "actions");
+
+            return
+                upperBody != nullptr &&
+                actions != nullptr &&
+                ReadUpperBodyAnimationSet(
+                    *upperBody,
+                    value.upperBody) &&
+                ReadActionAnimationSet(
+                    *actions,
+                    value.actions);
+        }
+
+        [[nodiscard]]
+        bool WriteLowerBodyAnimationSet(
+            std::ostream& output,
+            const engine::scene::
+                CharacterLowerBodyAnimationSet& value)
+        {
+            output << "{\"standingIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.standingIdle))
+            {
+                return false;
+            }
+
+            output << ", \"walk\": ";
+
+            if (!WriteDirectionalAnimationSet(
+                    output,
+                    value.walk))
+            {
+                return false;
+            }
+
+            output << ", \"run\": ";
+
+            if (!WriteDirectionalAnimationSet(
+                    output,
+                    value.run))
+            {
+                return false;
+            }
+
+            output << ", \"sprint\": ";
+
+            if (!WriteSprintAnimationSet(
+                    output,
+                    value.sprint))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedIdle\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedIdle))
+            {
+                return false;
+            }
+
+            output << ", \"crouchedMove\": ";
+
+            if (!WriteDirectionalAnimationSet(
+                    output,
+                    value.crouchedMove))
+            {
+                return false;
+            }
+
+            output << ", \"turnInPlaceLeft\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.turnInPlaceLeft))
+            {
+                return false;
+            }
+
+            output << ", \"turnInPlaceRight\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.turnInPlaceRight))
+            {
+                return false;
+            }
+
+            output
+                << ", \"crouchedTurnInPlaceLeft\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedTurnInPlaceLeft))
+            {
+                return false;
+            }
+
+            output
+                << ", \"crouchedTurnInPlaceRight\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.crouchedTurnInPlaceRight))
+            {
+                return false;
+            }
+
+            output << ", \"jumpStart\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.jumpStart))
+            {
+                return false;
+            }
+
+            output << ", \"jumpLoop\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.jumpLoop))
+            {
+                return false;
+            }
+
+            output << ", \"jumpLand\": ";
+
+            if (!WriteWideString(
+                    output,
+                    value.jumpLand))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadLowerBodyAnimationSet(
+            const JsonValue& json,
+            engine::scene::
+                CharacterLowerBodyAnimationSet& value)
+        {
+            const JsonValue* const walk =
+                RequireField(
+                    json,
+                    "walk");
+
+            const JsonValue* const run =
+                RequireField(
+                    json,
+                    "run");
+
+            const JsonValue* const sprint =
+                RequireField(
+                    json,
+                    "sprint");
+
+            const JsonValue* const crouchedMove =
+                RequireField(
+                    json,
+                    "crouchedMove");
+
+            return
+                walk != nullptr &&
+                run != nullptr &&
+                sprint != nullptr &&
+                crouchedMove != nullptr &&
+                ReadWideStringField(
+                    json,
+                    "standingIdle",
+                    value.standingIdle) &&
+                ReadDirectionalAnimationSet(
+                    *walk,
+                    value.walk) &&
+                ReadDirectionalAnimationSet(
+                    *run,
+                    value.run) &&
+                ReadSprintAnimationSet(
+                    *sprint,
+                    value.sprint) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedIdle",
+                    value.crouchedIdle) &&
+                ReadDirectionalAnimationSet(
+                    *crouchedMove,
+                    value.crouchedMove) &&
+                ReadWideStringField(
+                    json,
+                    "turnInPlaceLeft",
+                    value.turnInPlaceLeft) &&
+                ReadWideStringField(
+                    json,
+                    "turnInPlaceRight",
+                    value.turnInPlaceRight) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedTurnInPlaceLeft",
+                    value.crouchedTurnInPlaceLeft) &&
+                ReadWideStringField(
+                    json,
+                    "crouchedTurnInPlaceRight",
+                    value.crouchedTurnInPlaceRight) &&
+                ReadWideStringField(
+                    json,
+                    "jumpStart",
+                    value.jumpStart) &&
+                ReadWideStringField(
+                    json,
+                    "jumpLoop",
+                    value.jumpLoop) &&
+                ReadWideStringField(
+                    json,
+                    "jumpLand",
+                    value.jumpLand);
+        }
+
+        [[nodiscard]]
+        bool WriteAnimationTuning(
+            std::ostream& output,
+            const engine::scene::
+                CharacterAnimationTuning& value)
+        {
+            output
+                << "{\"locomotionBlendSeconds\": "
+                << value.locomotionBlendSeconds
+                << ", \"upperBodyBlendSeconds\": "
+                << value.upperBodyBlendSeconds
+                << ", \"actionBlendInSeconds\": "
+                << value.actionBlendInSeconds
+                << ", \"actionBlendOutSeconds\": "
+                << value.actionBlendOutSeconds
+                << ", \"maximumUpperBodyYawDegrees\": "
+                << value.maximumUpperBodyYawDegrees
+                << ", \"turnInPlaceEnterDegrees\": "
+                << value.turnInPlaceEnterDegrees
+                << ", \"turnInPlaceExitDegrees\": "
+                << value.turnInPlaceExitDegrees
+                << ", \"turnInPlaceSpeedDegrees\": "
+                << value.turnInPlaceSpeedDegrees
+                << '}';
+
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadAnimationTuning(
+            const JsonValue& json,
+            engine::scene::
+                CharacterAnimationTuning& value)
+        {
+            return
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "locomotionBlendSeconds"),
+                    value.locomotionBlendSeconds) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "upperBodyBlendSeconds"),
+                    value.upperBodyBlendSeconds) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "actionBlendInSeconds"),
+                    value.actionBlendInSeconds) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "actionBlendOutSeconds"),
+                    value.actionBlendOutSeconds) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "maximumUpperBodyYawDegrees"),
+                    value.maximumUpperBodyYawDegrees) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "turnInPlaceEnterDegrees"),
+                    value.turnInPlaceEnterDegrees) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "turnInPlaceExitDegrees"),
+                    value.turnInPlaceExitDegrees) &&
+                ReadFloat(
+                    RequireField(
+                        json,
+                        "turnInPlaceSpeedDegrees"),
+                    value.turnInPlaceSpeedDegrees);
+        }
+
+        [[nodiscard]]
+        bool WriteCharacterAnimationComponent(
+            std::ostream& output,
+            const engine::scene::
+                CharacterAnimationComponent& value)
+        {
+            const engine::scene::
+                CharacterAnimationSet& animationSet =
+                    value.animationSet;
+
+            output
+                << "{\"enabled\": "
+                << (
+                    value.enabled
+                        ? "true"
+                        : "false"
+                )
+                << ", \"upperBodyRootBone\": ";
+
+            WriteJsonString(
+                output,
+                animationSet.upperBodyRootBone);
+
+            output << ", \"actionRootBone\": ";
+
+            WriteJsonString(
+                output,
+                animationSet.actionRootBone);
+
+            output << ", \"lookRootBone\": ";
+
+            WriteJsonString(
+                output,
+                animationSet.lookRootBone);
+
+            output << ", \"lowerBody\": ";
+
+            if (!WriteLowerBodyAnimationSet(
+                    output,
+                    animationSet.lowerBody))
+            {
+                return false;
+            }
+
+            output << ", \"thirdPerson\": ";
+
+            if (!WriteViewAnimationSet(
+                    output,
+                    animationSet.thirdPerson))
+            {
+                return false;
+            }
+
+            output << ", \"firstPerson\": ";
+
+            if (!WriteViewAnimationSet(
+                    output,
+                    animationSet.firstPerson))
+            {
+                return false;
+            }
+
+            output << ", \"tuning\": ";
+
+            if (!WriteAnimationTuning(
+                    output,
+                    animationSet.tuning))
+            {
+                return false;
+            }
+
+            output << '}';
+            return output.good();
+        }
+
+        [[nodiscard]]
+        bool ReadCharacterAnimationComponent(
+            const JsonValue& json,
+            engine::scene::
+                CharacterAnimationComponent& value)
+        {
+            const JsonValue* const lowerBody =
+                RequireField(
+                    json,
+                    "lowerBody");
+
+            const JsonValue* const thirdPerson =
+                RequireField(
+                    json,
+                    "thirdPerson");
+
+            const JsonValue* const firstPerson =
+                RequireField(
+                    json,
+                    "firstPerson");
+
+            const JsonValue* const tuning =
+                RequireField(
+                    json,
+                    "tuning");
+
+            if (
+                lowerBody == nullptr ||
+                thirdPerson == nullptr ||
+                firstPerson == nullptr ||
+                tuning == nullptr ||
+                !ReadBoolean(
+                    RequireField(
+                        json,
+                        "enabled"),
+                    value.enabled) ||
+                !ReadString(
+                    RequireField(
+                        json,
+                        "upperBodyRootBone"),
+                    value.animationSet.
+                        upperBodyRootBone) ||
+                !ReadString(
+                    RequireField(
+                        json,
+                        "actionRootBone"),
+                    value.animationSet.
+                        actionRootBone) ||
+                !ReadString(
+                    RequireField(
+                        json,
+                        "lookRootBone"),
+                    value.animationSet.
+                        lookRootBone) ||
+                !ReadLowerBodyAnimationSet(
+                    *lowerBody,
+                    value.animationSet.
+                        lowerBody) ||
+                !ReadViewAnimationSet(
+                    *thirdPerson,
+                    value.animationSet.
+                        thirdPerson) ||
+                !ReadViewAnimationSet(
+                    *firstPerson,
+                    value.animationSet.
+                        firstPerson) ||
+                !ReadAnimationTuning(
+                    *tuning,
+                    value.animationSet.
+                        tuning))
+            {
+                return false;
+            }
+
+            /*
+             * Runtime никогда не загружается из level.
+             */
+            value.runtime.Reset();
+
+            return true;
+        }
+
+        [[nodiscard]]
         bool ParseLegacyEntity(
             const JsonValue& jsonEntity,
             EditorSceneEntity& entity)
@@ -1564,6 +2549,33 @@ namespace lts::editor
                 }
 
                 entity.skeletalMesh =
+                    std::move(value);
+            }
+
+            /*
+             * CharacterAnimation отсутствует
+             * в level версиях 1-4.
+             *
+             * В этом случае SceneWorld создаст
+             * компонент с настройками по умолчанию.
+             */
+            if (
+                const JsonValue* component =
+                    components->Find(
+                        "CharacterAnimation"))
+            {
+                engine::scene::
+                    CharacterAnimationComponent value;
+
+                if (
+                    !ReadCharacterAnimationComponent(
+                        *component,
+                        value))
+                {
+                    return false;
+                }
+
+                entity.characterAnimation =
                     std::move(value);
             }
 
@@ -2294,6 +3306,28 @@ namespace lts::editor
                         << '}';
                 }
 
+                if (
+                    entity.characterAnimation.
+                        has_value())
+                {
+                    output
+                        << ",\n"
+                        << "        "
+                        << "\"CharacterAnimation\": ";
+
+                    if (
+                        !WriteCharacterAnimationComponent(
+                            output,
+                            *entity.characterAnimation))
+                    {
+                        error =
+                            L"Failed to serialize the "
+                            L"character animation set.";
+
+                        return false;
+                    }
+                }
+
                 if (entity.characterController.has_value())
                 {
                     const engine::scene::CharacterControllerComponent&
@@ -2554,6 +3588,7 @@ namespace lts::editor
                     version != LegacyFormatVersion &&
                     version != ComponentFormatVersion &&
                     version != SingleMeshCharacterFormatVersion &&
+                    version != ModularCharacterFormatVersion &&
                     version != CurrentFormatVersion
                 ) ||
                 !FromUtf8(name, data.name) ||

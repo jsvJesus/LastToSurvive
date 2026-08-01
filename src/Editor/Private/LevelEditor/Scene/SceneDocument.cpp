@@ -397,6 +397,32 @@ namespace lts::editor
         return true;
     }
 
+    bool SceneDocument::UpdateSelectedCharacterAnimation(engine::scene::CharacterAnimationComponent component)
+    {
+        EditorSceneEntity* const entity =
+            GetSelectedEntityMutable();
+
+        if (
+            entity == nullptr ||
+            !entity->characterAnimation.has_value())
+        {
+            return false;
+        }
+
+        /*
+         * Runtime не переносим из Inspector.
+         * После изменения набора клипов state machine
+         * должна начать с чистого состояния.
+         */
+        component.runtime.Reset();
+
+        entity->characterAnimation =
+            std::move(component);
+
+        dirty_ = true;
+        return true;
+    }
+
     bool SceneDocument::SetSelectedTerrainLayers(
         std::vector<engine::scene::TerrainComponent::LayerOverride> layers)
     {

@@ -87,6 +87,11 @@ namespace lts::editor
         bool UpdateSelectedSkeletalMesh(
             engine::scene::SkeletalMeshComponent component);
 
+        [[nodiscard]]
+        bool UpdateSelectedCharacterAnimation(
+            engine::scene::
+                CharacterAnimationComponent component);
+
         [[nodiscard]] bool SetSelectedTerrainLayers(
             std::vector<engine::scene::TerrainComponent::LayerOverride> layers);
         

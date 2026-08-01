@@ -55,8 +55,16 @@ namespace engine::scene
     {
         Idle = 0,
 
+        /*
+         * Walk используется при Aim Mode.
+         *
+         * Run — обычное передвижение стоя.
+         *
+         * Sprint — ускоренное движение с Shift.
+         */
         Walk,
         Run,
+        Sprint,
 
         JumpStart,
         JumpLoop,
@@ -172,6 +180,70 @@ namespace engine::scene
     };
 
     /*
+     * В старом наборе персонажа Sprint имеет
+     * только три реальных направления:
+     *
+     * F
+     * FL
+     * FR
+     *
+     * Боковые и задние направления выбирают
+     * ближайший существующий sprint-клип.
+     */
+    struct CharacterSprintAnimationSet final
+    {
+        std::wstring forward;
+        std::wstring forwardLeft;
+        std::wstring forwardRight;
+
+        [[nodiscard]]
+        const std::wstring& Resolve(
+            const CharacterMovementDirection
+                direction) const noexcept
+        {
+            switch (direction)
+            {
+            case CharacterMovementDirection::
+                ForwardLeft:
+
+            case CharacterMovementDirection::
+                Left:
+
+            case CharacterMovementDirection::
+                BackwardLeft:
+                return
+                    !forwardLeft.empty()
+                        ? forwardLeft
+                        : forward;
+
+            case CharacterMovementDirection::
+                ForwardRight:
+
+            case CharacterMovementDirection::
+                Right:
+
+            case CharacterMovementDirection::
+                BackwardRight:
+                return
+                    !forwardRight.empty()
+                        ? forwardRight
+                        : forward;
+
+            case CharacterMovementDirection::
+                Forward:
+
+            case CharacterMovementDirection::
+                Backward:
+
+            case CharacterMovementDirection::None:
+
+            default:
+                return forward;
+            }
+        }
+    };
+
+    /*
      * Все клипы нижней части тела.
      *
      * Этот слой будет управлять:
@@ -187,8 +259,20 @@ namespace engine::scene
     {
         std::wstring standingIdle;
 
+        /*
+         * Walk воспроизводится только в Aim Mode.
+         */
         CharacterDirectionalAnimationSet walk;
+
+        /*
+         * Run — обычное движение персонажа.
+         */
         CharacterDirectionalAnimationSet run;
+
+        /*
+         * Sprint использует F / FL / FR.
+         */
+        CharacterSprintAnimationSet sprint;
 
         std::wstring crouchedIdle;
 

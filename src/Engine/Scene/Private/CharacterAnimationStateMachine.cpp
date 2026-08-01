@@ -54,6 +54,28 @@ namespace engine::scene
         }
 
         [[nodiscard]]
+        const std::wstring* ResolveSprintClip(
+            const CharacterSprintAnimationSet&
+                sprintSet,
+
+            const CharacterMovementDirection
+                movementDirection) noexcept
+        {
+            const std::wstring&
+                directionalClip =
+                    sprintSet.Resolve(
+                        movementDirection);
+
+            return FirstNonEmpty(
+            {
+                &directionalClip,
+                &sprintSet.forward,
+                &sprintSet.forwardLeft,
+                &sprintSet.forwardRight
+            });
+        }
+        
+        [[nodiscard]]
         bool IsCharacterMoving(
             const CharacterAnimationStateInput&
                 input) noexcept
@@ -599,6 +621,48 @@ namespace engine::scene
                 });
             }
 
+        case CharacterLocomotionState::Sprint:
+                {
+                    if (crouched)
+                    {
+                        const std::wstring*
+                            crouchedMove =
+                                ResolveDirectionalClip(
+                                    lowerBody.crouchedMove,
+                                    input.movementDirection);
+
+                        return FirstNonEmpty(
+                        {
+                            crouchedMove,
+                            &lowerBody.crouchedIdle,
+                            &lowerBody.standingIdle
+                        });
+                    }
+
+                    const std::wstring* sprint =
+                        ResolveSprintClip(
+                            lowerBody.sprint,
+                            input.movementDirection);
+
+                    const std::wstring* run =
+                        ResolveDirectionalClip(
+                            lowerBody.run,
+                            input.movementDirection);
+
+                    const std::wstring* walk =
+                        ResolveDirectionalClip(
+                            lowerBody.walk,
+                            input.movementDirection);
+
+                    return FirstNonEmpty(
+                    {
+                        sprint,
+                        run,
+                        walk,
+                        &lowerBody.standingIdle
+                    });
+                }
+
             case CharacterLocomotionState::
                 JumpStart:
                 return FirstNonEmpty(
@@ -939,6 +1003,7 @@ namespace engine::scene
             case CharacterLocomotionState::Idle:
             case CharacterLocomotionState::Walk:
             case CharacterLocomotionState::Run:
+            case CharacterLocomotionState::Sprint:
             case CharacterLocomotionState::JumpLoop:
 
             default:
