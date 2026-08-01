@@ -2999,12 +2999,17 @@ namespace lts::editor
                         failedAnimations_.
                             insert(key).second)
                     {
-                        engine::core::GetLogger().
-                            Write(
-                                engine::core::
-                                    LogLevel::Error,
-                                "LTS.Editor.ModularCharacter",
-                                "Animation file was not found.");
+                        std::string message = "Animation file was not found: ";
+
+                        message +=
+                            std::filesystem::path(
+                                assetPath).
+                                generic_u8string();
+
+                        engine::core::GetLogger().Write(
+                            engine::core::LogLevel::Error,
+                            "LTS.Editor.ModularCharacter",
+                            message);
                     }
 
                     return nullptr;

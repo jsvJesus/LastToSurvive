@@ -590,7 +590,7 @@ namespace engine::scene
          * сохраняемое внутри level.
          */
         std::wstring profilePath =
-            L"Data/Config/CharacterAnimations/"
+            L"Data/Config/"
             L"MEL_Hands.json";
 
         /*
