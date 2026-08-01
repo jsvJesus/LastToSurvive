@@ -65,28 +65,24 @@ namespace lts::editor
                 512U * 1024U * 1024U;
 
         /*
-         * Camera-space placement used by the original WarZ FPS pass.
-         * The BodyFPS mesh remains a normal skeletal asset; only its
-         * presentation matrix is detached from the world-space actor.
+         * BodyFPS находится в camera-space.
+         *
+         * X: небольшое смещение вправо.
+         * Y: руки опущены ниже центра камеры.
+         * Z: модель отодвинута от near plane,
+         *    чтобы руки не занимали весь экран.
          */
         constexpr float
             FirstPersonPresentationRightOffset =
-                0.0053F;
+                0.025F;
 
         constexpr float
             FirstPersonPresentationHeadOffset =
-                /*
-                 * BodyFPS contains the arms but no separately rendered
-                 * weapon.  Its highest skinned vertex sits about 0.22 m
-                 * below Bip01_Head, so the legacy 0.0409 m correction would
-                 * leave the whole mesh below a 60-degree vertical field of
-                 * view.  Keep a small visible portion of the arms in frame.
-                 */
-                0.30F;
+                -0.18F;
 
         constexpr float
             FirstPersonPresentationForwardOffset =
-                0.10F;
+                0.38F;
 
         struct alignas(16)
             ObjectConstants final
@@ -2680,28 +2676,6 @@ namespace lts::editor
                                 }
                             }
 
-                            if (
-                                firstPersonView &&
-                                slot ==
-                                    engine::scene::
-                                        CharacterMeshSlot::
-                                            FirstPersonBody)
-                            {
-                                firstPersonHeadResolved =
-                                    TryResolveBoneModelPosition(
-                                        cached->skeleton->
-                                            asset,
-                                        pose.
-                                            modelBoneMatrices.
-                                                data(),
-                                        static_cast<
-                                            std::size_t>(
-                                                pose.
-                                                    boneCount),
-                                        "Bip01_Head",
-                                        firstPersonHeadModelPosition);
-                            }
-
                             skinningReady = true;
                         }
                     }
@@ -2775,20 +2749,14 @@ namespace lts::editor
                         firstPersonHeadResolved)
                     {
                         /*
-                         * Сначала переносим Bip01_Head
-                         * в начало camera-space.
+                         * Скелет BodyFPS сначала приводится
+                         * к bind-положению Bip01_Head.
                          *
-                         * Затем разворачиваем BodyFPS
-                         * на 180 градусов вокруг Y.
+                         * Затем исправляется направление
+                         * старого WarZ skeleton.
                          *
-                         * После этого добавляем FPS offset.
-                         *
-                         * Проект использует row-vector
-                         * convention, поэтому порядок:
-                         *
-                         * headToOrigin *
-                         * facingCorrection *
-                         * cameraOffset
+                         * После этого руки размещаются
+                         * относительно FPS-камеры.
                          */
                         const DirectX::XMMATRIX
                             headToOrigin =

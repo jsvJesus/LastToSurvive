@@ -38,11 +38,17 @@ namespace lts::editor
         constexpr float CrouchedFallbackHeadHeight =
             1.18F;
 
+        constexpr float FirstPersonStandingEyeHeight =
+            1.72F;
+
+        constexpr float FirstPersonCrouchedEyeHeight =
+            1.22F;
+
         constexpr float FirstPersonForwardOffset =
-            0.06F;
+            0.0F;
 
         constexpr float FirstPersonUpOffset =
-            0.02F;
+            0.0F;
 
         constexpr float FirstPersonNearPlane =
             0.01F;
@@ -1584,50 +1590,33 @@ namespace lts::editor
                 engine::scene::
                     CharacterStance::Crouched;
 
-        float resolvedHeadY =
-            nextY +
-            (
-                crouchedCamera
-                    ? CrouchedFallbackHeadHeight
-                    : StandingFallbackHeadHeight
-            );
-
-        DirectX::XMFLOAT3 animatedHeadPosition;
-
         /*
-         * HUD_TPSGame использовал стабильную высоту
-         * персонажа для TPS.
+         * WarZ HUD_TPSGame:
          *
-         * Animated Bip01_Head применяется только FPS.
+         * CamPos = PlayerPosition;
+         * CamPos.Y += CharacterHeight + Rig.Position.Y;
+         *
+         * Камера не следует за каждым кадром
+         * Bip01_Head. Иначе Idle/Run заставляют
+         * FPS-камеру качаться вместе со скелетом.
          */
-        if (
-            firstPersonView &&
-            characterRenderer.TryGetBoneWorldPosition(
-                playerEntityId_,
-                "Bip01_Head",
-                animatedHeadPosition))
-        {
-            const float minimumHeadHeight =
-                crouchedCamera
-                    ? nextY + 0.75F
-                    : nextY + 1.20F;
-
-            const float maximumHeadHeight =
-                crouchedCamera
-                    ? nextY + 1.60F
-                    : nextY + 2.15F;
-
-            resolvedHeadY =
-                std::clamp(
-                    animatedHeadPosition.y,
-                    minimumHeadHeight,
-                    maximumHeadHeight);
-        }
+        const float resolvedCameraHeight =
+            firstPersonView
+                ? (
+                    crouchedCamera
+                        ? FirstPersonCrouchedEyeHeight
+                        : FirstPersonStandingEyeHeight
+                )
+                : (
+                    crouchedCamera
+                        ? CrouchedFallbackHeadHeight
+                        : StandingFallbackHeadHeight
+                );
 
         const DirectX::XMFLOAT3 targetAnchor
         {
             nextX,
-            resolvedHeadY,
+            nextY + resolvedCameraHeight,
             nextZ
         };
 
