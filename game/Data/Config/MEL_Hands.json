@@ -23,8 +23,8 @@
         "forward": "Data/Animations/Characters/run_stand_F.anim",
         "forwardLeft": "Data/Animations/Characters/run_stand_FL.anim",
         "forwardRight": "Data/Animations/Characters/run_stand_FR.anim",
-        "left": "Data/Animations/Characters/run_stand_L.anim",
-        "right": "Data/Animations/Characters/run_stand_R.anim",
+        "left": "Data/Animations/Characters/run_stand_B.anim",
+		"right": "Data/Animations/Characters/run_stand_F.anim",
         "backward": "Data/Animations/Characters/run_stand_B.anim",
         "backwardLeft": "Data/Animations/Characters/run_stand_BL.anim",
         "backwardRight": "Data/Animations/Characters/run_stand_BR.anim"
@@ -46,9 +46,10 @@
         "backwardRight": "Data/Animations/Characters/run_crouch_BR.anim"
       },
       "turnInPlaceLeft": "Data/Animations/Characters/walk_stand_BL.anim",
-      "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BR.anim",
-      "crouchedTurnInPlaceLeft": "Data/Animations/Characters/crouch_turn_L.anim",
-      "crouchedTurnInPlaceRight": "Data/Animations/Characters/crouch_turn_R.anim",
+	  "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BL.anim",
+
+      "crouchedTurnInPlaceLeft": "Data/Animations/Characters/Crouch_Str.anim",
+      "crouchedTurnInPlaceRight": "Data/Animations/Characters/Crouch_Str.anim",
       "jumpStart": "Data/Animations/Characters/Jump_ASR_Idle_S.anim",
       "jumpLoop": "Data/Animations/Characters/Jump_ASR_Idle_A.anim",
       "jumpLand": "Data/Animations/Characters/Jump_ASR_Idle_L.anim"

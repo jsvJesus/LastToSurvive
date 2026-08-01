@@ -1440,9 +1440,12 @@ namespace lts::editor
             CharacterAnimationStateInput
                 animationInput;
 
+        /*
+         * Movement использует safeDeltaSeconds.
+         * Animation clock получает полный frame delta.
+         */
         animationInput.deltaSeconds =
-            static_cast<double>(
-                safeDeltaSeconds);
+            deltaSeconds;
 
         animationInput.viewMode =
             viewMode_;
@@ -1490,7 +1493,7 @@ namespace lts::editor
                         Relaxed;
 
         if (!animationRuntime.
-                lowerBody.currentClip.empty())
+        lowerBody.currentClip.empty())
         {
             if (!characterRenderer.
                     TryGetAnimationDuration(
@@ -1499,14 +1502,28 @@ namespace lts::editor
                         animationInput.
                             lowerClipDurationSeconds))
             {
+                const bool jumpOneShot =
+                    animationRuntime.
+                        locomotionState ==
+                            engine::scene::
+                                CharacterLocomotionState::
+                                    JumpStart ||
+                    animationRuntime.
+                        locomotionState ==
+                            engine::scene::
+                                CharacterLocomotionState::
+                                    JumpLand;
+
                 /*
-                 * A missing, corrupt, or single-frame Once clip must not
-                 * pin JumpLand forever. The renderer already reports load
-                 * failures; one nominal frame keeps state progression safe.
+                 * Jump не должен зависнуть при повреждённом
+                 * клипе. Turn без duration продолжит работать
+                 * через turnInPlaceSpeedDegrees.
                  */
                 animationInput.
                     lowerClipDurationSeconds =
-                        InvalidOneShotFallbackDurationSeconds;
+                        jumpOneShot
+                            ? InvalidOneShotFallbackDurationSeconds
+                            : 0.0;
             }
         }
 
@@ -1573,7 +1590,14 @@ namespace lts::editor
 
         DirectX::XMFLOAT3 animatedHeadPosition;
 
+        /*
+         * HUD_TPSGame использовал стабильную высоту
+         * персонажа для TPS.
+         *
+         * Animated Bip01_Head применяется только FPS.
+         */
         if (
+            firstPersonView &&
             characterRenderer.TryGetBoneWorldPosition(
                 playerEntityId_,
                 "Bip01_Head",

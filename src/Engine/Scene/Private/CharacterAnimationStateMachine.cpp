@@ -9,9 +9,6 @@ namespace engine::scene
 {
     namespace
     {
-        constexpr double MaximumAnimationDeltaSeconds =
-            0.10;
-
         constexpr float MaximumProceduralPitchDegrees =
             89.0F;
 
@@ -181,16 +178,21 @@ namespace engine::scene
         CharacterAnimationRuntime& runtime =
             component.runtime;
 
-        double deltaSeconds =
-            std::isfinite(input.deltaSeconds)
+        const double animationDeltaSeconds =
+            std::isfinite(input.deltaSeconds) &&
+            input.deltaSeconds > 0.0
                 ? input.deltaSeconds
                 : 0.0;
 
-        deltaSeconds =
-            std::clamp(
-                deltaSeconds,
-                0.0,
-                MaximumAnimationDeltaSeconds);
+        /*
+         * Поворот и physics остаются ограниченными.
+         * Animation clock получает полное время кадра.
+         */
+        const float rotationDeltaSeconds =
+            static_cast<float>(
+                (std::min)(
+                    animationDeltaSeconds,
+                    0.05));
 
         const CharacterAnimationSet& animationSet =
             component.animationSet;
@@ -233,7 +235,7 @@ namespace engine::scene
 
         const float frameTurnDelta =
             turnSpeedDegrees *
-            static_cast<float>(deltaSeconds);
+                rotationDeltaSeconds;
 
         const bool canTurnInPlace =
             input.viewMode ==
@@ -243,6 +245,23 @@ namespace engine::scene
             input.locomotionState ==
                 CharacterLocomotionState::Idle;
 
+        const bool lowerLayerContainsTurnClip =
+            (
+                runtime.locomotionState ==
+                    CharacterLocomotionState::
+                        TurnInPlaceLeft ||
+                runtime.locomotionState ==
+                    CharacterLocomotionState::
+                        TurnInPlaceRight
+            ) &&
+            runtime.lowerBody.loopMode ==
+                CharacterAnimationLoopMode::Once &&
+            !runtime.lowerBody.currentClip.empty();
+
+        const bool turnClipFinished =
+            lowerLayerContainsTurnClip &&
+            runtime.lowerBody.completed;
+
         if (moving)
         {
             actorYawDegrees =
@@ -250,12 +269,14 @@ namespace engine::scene
                     actorYawDegrees,
                     desiredActorYawDegrees,
                     (std::max)(
-                        input.movementRotationSpeedDegrees,
+                        input.
+                            movementRotationSpeedDegrees,
                         0.0F) *
-                    static_cast<float>(deltaSeconds));
+                    rotationDeltaSeconds);
 
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
+
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
         }
@@ -263,10 +284,6 @@ namespace engine::scene
             input.viewMode ==
                 CharacterViewMode::FirstPerson)
         {
-            /*
-             * Локальный FPS не запускает TPS turn-track.
-             * Корпус плавно следует за направлением камеры.
-             */
             actorYawDegrees =
                 MoveAngleDegrees(
                     actorYawDegrees,
@@ -275,6 +292,7 @@ namespace engine::scene
 
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
+
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
         }
@@ -282,6 +300,7 @@ namespace engine::scene
         {
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
+
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
         }
@@ -292,20 +311,18 @@ namespace engine::scene
                     desiredActorYawDegrees,
                     actorYawDegrees);
 
-            bool startedTurnThisUpdate = false;
+            bool startedTurnThisUpdate =
+                false;
 
             if (
                 !runtime.turnInPlaceActive &&
-                std::fabs(cameraBodyDifference) >=
+                std::fabs(
+                    cameraBodyDifference) >=
                     turnEnterDegrees)
             {
-                runtime.turnInPlaceActive = true;
+                runtime.turnInPlaceActive =
+                    true;
 
-                /*
-                 * Target фиксируется один раз на текущий
-                 * turn, поэтому ноги не гонятся бесконечно
-                 * за каждым новым mouse delta.
-                 */
                 runtime.turnTargetYawDegrees =
                     desiredActorYawDegrees;
 
@@ -314,33 +331,102 @@ namespace engine::scene
                         ? 1
                         : -1;
 
-                startedTurnThisUpdate = true;
+                startedTurnThisUpdate =
+                    true;
             }
 
             if (runtime.turnInPlaceActive)
             {
-                if (!startedTurnThisUpdate)
+                float remainingDifference =
+                    AngleDifferenceDegrees(
+                        runtime.
+                            turnTargetYawDegrees,
+                        actorYawDegrees);
+
+                if (turnClipFinished)
                 {
+                    actorYawDegrees =
+                        NormalizeAngleDegrees(
+                            runtime.
+                                turnTargetYawDegrees);
+
+                    runtime.turnInPlaceActive =
+                        false;
+
+                    runtime.turnDirection = 0;
+                }
+                else if (!startedTurnThisUpdate)
+                {
+                    float maximumTurnDelta =
+                        frameTurnDelta;
+
+                    /*
+                     * Когда длительность turn-клипа известна,
+                     * угол ног синхронизируется с оставшимся
+                     * временем клипа.
+                     */
+                    if (
+                        lowerLayerContainsTurnClip &&
+                        std::isfinite(
+                            input.
+                                lowerClipDurationSeconds) &&
+                        input.
+                            lowerClipDurationSeconds >
+                                0.0)
+                    {
+                        const double remainingClipSeconds =
+                            (std::max)(
+                                input.
+                                    lowerClipDurationSeconds -
+                                runtime.lowerBody.
+                                    currentTimeSeconds,
+                                0.0);
+
+                        if (
+                            remainingClipSeconds >
+                                0.000001 &&
+                            animationDeltaSeconds > 0.0)
+                        {
+                            const double stepSeconds =
+                                (std::min)(
+                                    animationDeltaSeconds,
+                                    remainingClipSeconds);
+
+                            maximumTurnDelta =
+                                std::fabs(
+                                    remainingDifference) *
+                                static_cast<float>(
+                                    stepSeconds /
+                                    remainingClipSeconds);
+                        }
+                    }
+
                     actorYawDegrees =
                         MoveAngleDegrees(
                             actorYawDegrees,
-                            runtime.turnTargetYawDegrees,
-                            frameTurnDelta);
+                            runtime.
+                                turnTargetYawDegrees,
+                            maximumTurnDelta);
 
-                    const float remainingDifference =
+                    remainingDifference =
                         AngleDifferenceDegrees(
-                            runtime.turnTargetYawDegrees,
+                            runtime.
+                                turnTargetYawDegrees,
                             actorYawDegrees);
 
                     if (
-                        std::fabs(remainingDifference) <=
+                        std::fabs(
+                            remainingDifference) <=
                             turnExitDegrees)
                     {
                         actorYawDegrees =
                             NormalizeAngleDegrees(
-                                runtime.turnTargetYawDegrees);
+                                runtime.
+                                    turnTargetYawDegrees);
 
-                        runtime.turnInPlaceActive = false;
+                        runtime.turnInPlaceActive =
+                            false;
+
                         runtime.turnDirection = 0;
                     }
                 }
@@ -452,17 +538,17 @@ namespace engine::scene
          */
         AdvanceLayer(
             runtime.lowerBody,
-            deltaSeconds,
+            animationDeltaSeconds,
             input.lowerClipDurationSeconds);
 
         AdvanceLayer(
             runtime.upperBody,
-            deltaSeconds,
+            animationDeltaSeconds,
             0.0);
 
         AdvanceLayer(
             runtime.action,
-            deltaSeconds,
+            animationDeltaSeconds,
             input.actionClipDurationSeconds);
 
         /*
@@ -601,12 +687,10 @@ namespace engine::scene
         }
 
         const double safeDeltaSeconds =
-            std::clamp(
-                std::isfinite(deltaSeconds)
-                    ? deltaSeconds
-                    : 0.0,
-                0.0,
-                MaximumAnimationDeltaSeconds);
+            std::isfinite(deltaSeconds) &&
+            deltaSeconds > 0.0
+                ? deltaSeconds
+                : 0.0;
 
         if (!layer.currentClip.empty())
         {
@@ -633,7 +717,10 @@ namespace engine::scene
                     layer.transitionDurationSeconds)
             {
                 layer.previousClip.clear();
-                layer.previousTimeSeconds = 0.0;
+
+                layer.previousTimeSeconds =
+                    0.0;
+
                 layer.previousLoopMode =
                     CharacterAnimationLoopMode::Loop;
 
@@ -644,7 +731,10 @@ namespace engine::scene
         else
         {
             layer.previousClip.clear();
-            layer.previousTimeSeconds = 0.0;
+
+            layer.previousTimeSeconds =
+                0.0;
+
             layer.previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
 
@@ -656,18 +746,16 @@ namespace engine::scene
             layer.loopMode ==
                 CharacterAnimationLoopMode::Once &&
             !layer.currentClip.empty() &&
-            std::isfinite(clipDurationSeconds) &&
-            clipDurationSeconds > 0.0)
+            std::isfinite(
+                clipDurationSeconds) &&
+            clipDurationSeconds > 0.0 &&
+            layer.currentTimeSeconds >=
+                clipDurationSeconds)
         {
-            if (
-                layer.currentTimeSeconds >=
-                    clipDurationSeconds)
-            {
-                layer.currentTimeSeconds =
-                    clipDurationSeconds;
+            layer.currentTimeSeconds =
+                clipDurationSeconds;
 
-                layer.completed = true;
-            }
+            layer.completed = true;
         }
 
         if (
@@ -679,8 +767,11 @@ namespace engine::scene
             layer.currentTimeSeconds = 0.0;
             layer.previousTimeSeconds = 0.0;
 
-            layer.transitionDurationSeconds = 0.0F;
-            layer.transitionElapsedSeconds = 0.0F;
+            layer.transitionDurationSeconds =
+                0.0F;
+
+            layer.transitionElapsedSeconds =
+                0.0F;
 
             layer.completed = false;
         }
@@ -700,10 +791,6 @@ namespace engine::scene
                 ? *animationPath
                 : emptyClip;
 
-        /*
-         * Клип и loop mode не изменились — продолжаем
-         * текущее воспроизведение без сброса времени.
-         */
         if (
             !restart &&
             layer.currentClip == desiredClip &&
@@ -714,18 +801,11 @@ namespace engine::scene
 
         std::wstring transitionSourceClip;
         double transitionSourceTime = 0.0;
+
         CharacterAnimationLoopMode
             transitionSourceLoopMode =
                 CharacterAnimationLoopMode::Loop;
 
-        /*
-         * Обычно источником transition является
-         * currentClip.
-         *
-         * Если слой уже выполняет fade-out,
-         * currentClip пустой, но previousClip ещё
-         * содержит видимый клип.
-         */
         if (!layer.currentClip.empty())
         {
             transitionSourceClip =
@@ -749,6 +829,23 @@ namespace engine::scene
                 layer.previousLoopMode;
         }
 
+        /*
+         * WarZ сохранял fCurFrame при смене
+         * lower/upper locomotion-анимации.
+         *
+         * У нас все старые player clips работают
+         * с одинаковой частотой кадров, поэтому
+         * сохраняем elapsed time.
+         */
+        const bool preserveLoopPosition =
+            !restart &&
+            !transitionSourceClip.empty() &&
+            !desiredClip.empty() &&
+            transitionSourceLoopMode ==
+                CharacterAnimationLoopMode::Loop &&
+            loopMode ==
+                CharacterAnimationLoopMode::Loop;
+
         layer.previousClip =
             std::move(
                 transitionSourceClip);
@@ -762,29 +859,42 @@ namespace engine::scene
         layer.currentClip =
             desiredClip;
 
-        layer.currentTimeSeconds = 0.0;
+        layer.currentTimeSeconds =
+            preserveLoopPosition
+                ? transitionSourceTime
+                : 0.0;
 
         layer.transitionDurationSeconds =
             (std::max)(
                 transitionSeconds,
                 0.0F);
 
-        layer.transitionElapsedSeconds = 0.0F;
+        layer.transitionElapsedSeconds =
+            0.0F;
 
-        layer.loopMode = loopMode;
-        layer.completed = false;
+        layer.loopMode =
+            loopMode;
+
+        layer.completed =
+            false;
 
         if (
             layer.transitionDurationSeconds <=
                 0.0F)
         {
             layer.previousClip.clear();
-            layer.previousTimeSeconds = 0.0;
+
+            layer.previousTimeSeconds =
+                0.0;
+
             layer.previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
 
-            layer.transitionDurationSeconds = 0.0F;
-            layer.transitionElapsedSeconds = 0.0F;
+            layer.transitionDurationSeconds =
+                0.0F;
+
+            layer.transitionElapsedSeconds =
+                0.0F;
         }
 
         layer.active =
@@ -797,10 +907,6 @@ namespace engine::scene
                 0.0F,
                 1.0F);
 
-        /*
-         * Новый активный слой по умолчанию имеет
-         * полный вес.
-         */
         if (
             layer.active &&
             layer.weight <= 0.0F)

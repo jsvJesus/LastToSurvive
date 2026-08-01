@@ -17,13 +17,6 @@ namespace lts::editor
         constexpr float MinimumQuaternionLength =
             0.0000001F;
 
-        constexpr float MinimumLoopEndpointRotationDot =
-            0.99995F;
-
-        constexpr float
-            MaximumLoopEndpointTranslationDistanceSquared =
-                0.000001F;
-
         [[nodiscard]]
         DirectX::XMMATRIX LoadMatrix(
             const std::array<float, 16U>&
@@ -83,58 +76,6 @@ namespace lts::editor
             return
                 DirectX::XMQuaternionNormalize(
                     quaternion);
-        }
-
-        [[nodiscard]]
-        bool AnimationKeysMatchForLoop(
-            const engine::assets::AnimationKey& first,
-            const engine::assets::AnimationKey& second) noexcept
-        {
-            const DirectX::XMVECTOR firstRotation =
-                NormalizeQuaternion(
-                    DirectX::XMVectorSet(
-                        first.rotation[0],
-                        first.rotation[1],
-                        first.rotation[2],
-                        first.rotation[3]));
-
-            const DirectX::XMVECTOR secondRotation =
-                NormalizeQuaternion(
-                    DirectX::XMVectorSet(
-                        second.rotation[0],
-                        second.rotation[1],
-                        second.rotation[2],
-                        second.rotation[3]));
-
-            const float rotationDot =
-                std::fabs(
-                    DirectX::XMVectorGetX(
-                        DirectX::XMVector4Dot(
-                            firstRotation,
-                            secondRotation)));
-
-            const float translationX =
-                first.translation[0] -
-                second.translation[0];
-
-            const float translationY =
-                first.translation[1] -
-                second.translation[1];
-
-            const float translationZ =
-                first.translation[2] -
-                second.translation[2];
-
-            const float translationDistanceSquared =
-                translationX * translationX +
-                translationY * translationY +
-                translationZ * translationZ;
-
-            return
-                rotationDot >=
-                    MinimumLoopEndpointRotationDot &&
-                translationDistanceSquared <=
-                    MaximumLoopEndpointTranslationDistanceSquared;
         }
 
         [[nodiscard]]
@@ -573,56 +514,10 @@ namespace lts::editor
         };
 
         [[nodiscard]]
-        bool AnimationHasDuplicateLoopEndpoint(
-            const engine::assets::AnimationAsset&
-                animation) noexcept
-        {
-            const std::size_t frameCount =
-                static_cast<std::size_t>(
-                    animation.GetFrameCount());
-
-            if (frameCount < 2U)
-            {
-                return false;
-            }
-
-            const std::size_t trackCount =
-                animation.GetTrackCount();
-
-            if (trackCount == 0U)
-            {
-                return false;
-            }
-
-            for (
-                std::size_t trackIndex = 0U;
-                trackIndex < trackCount;
-                ++trackIndex)
-            {
-                const engine::assets::AnimationTrack*
-                    track =
-                        animation.GetTrack(
-                            trackIndex);
-
-                if (
-                    track == nullptr ||
-                    track->keys.size() < frameCount ||
-                    !AnimationKeysMatchForLoop(
-                        track->keys.front(),
-                        track->keys[frameCount - 1U]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        [[nodiscard]]
-        AnimationLoopSamplingInfo
-            BuildAnimationLoopSamplingInfo(
-                const engine::assets::AnimationAsset*
-                    animation) noexcept
+AnimationLoopSamplingInfo
+    BuildAnimationLoopSamplingInfo(
+        const engine::assets::AnimationAsset*
+            animation) noexcept
         {
             AnimationLoopSamplingInfo result;
 
@@ -642,48 +537,51 @@ namespace lts::editor
                 return result;
             }
 
-            const bool duplicateEndpoint =
-                AnimationHasDuplicateLoopEndpoint(
-                    *animation);
-
+            /*
+             * WarZ loop semantics:
+             *
+             * Последний authored frame является копией
+             * первого и не образует отдельный интервал.
+             */
             result.frameCount =
-                duplicateEndpoint &&
                 declaredFrameCount > 1U
                     ? declaredFrameCount - 1U
-                    : declaredFrameCount;
+                    : 1U;
 
             const double frameRate =
                 static_cast<double>(
                     animation->GetFrameRate());
 
-            const double authoredDurationSeconds =
-                static_cast<double>(
-                    animation->GetDurationSeconds());
-
             if (
-                declaredFrameCount > 1U &&
-                std::isfinite(
-                    authoredDurationSeconds) &&
-                authoredDurationSeconds > 0.0)
-            {
-                result.sampleIntervalSeconds =
-                    authoredDurationSeconds /
-                    static_cast<double>(
-                        declaredFrameCount - 1U);
-            }
-            else if (
                 std::isfinite(frameRate) &&
                 frameRate > 0.0)
             {
                 result.sampleIntervalSeconds =
-                    1.0 /
-                    frameRate;
+                    1.0 / frameRate;
+            }
+            else
+            {
+                const double authoredDurationSeconds =
+                    static_cast<double>(
+                        animation->GetDurationSeconds());
+
+                if (
+                    declaredFrameCount > 1U &&
+                    std::isfinite(
+                        authoredDurationSeconds) &&
+                    authoredDurationSeconds > 0.0)
+                {
+                    result.sampleIntervalSeconds =
+                        authoredDurationSeconds /
+                        static_cast<double>(
+                            declaredFrameCount - 1U);
+                }
             }
 
             if (
-                result.sampleIntervalSeconds > 0.0 &&
                 std::isfinite(
-                    result.sampleIntervalSeconds))
+                    result.sampleIntervalSeconds) &&
+                result.sampleIntervalSeconds > 0.0)
             {
                 result.durationSeconds =
                     static_cast<double>(
@@ -796,7 +694,8 @@ namespace lts::editor
                     sampleIntervalSeconds;
 
             if (
-                !std::isfinite(sampleIntervalSeconds) ||
+                !std::isfinite(
+                    sampleIntervalSeconds) ||
                 sampleIntervalSeconds <= 0.0)
             {
                 const double frameRate =
@@ -813,7 +712,8 @@ namespace lts::editor
             const bool looping =
                 loopMode ==
                     engine::scene::
-                        CharacterAnimationLoopMode::Loop;
+                        CharacterAnimationLoopMode::
+                            Loop;
 
             std::size_t activeFrameCount =
                 usableKeyCount;
@@ -823,31 +723,26 @@ namespace lts::editor
             if (looping)
             {
                 /*
-                 * Endpoint classification is clip-global. Duplicate
-                 * endpoints use N-1 frames; non-duplicate clips use N
-                 * frames and therefore interpolate last -> first.
+                 * Точная логика старого WarZ:
+                 *
+                 * activeFrameCount = NumFrames - 1.
                  */
-                if (loopSamplingInfo.frameCount > 0U)
-                {
-                    activeFrameCount =
-                        (std::min)(
+                activeFrameCount =
+                    loopSamplingInfo.frameCount > 0U
+                        ? (std::min)(
                             usableKeyCount,
-                            loopSamplingInfo.frameCount);
-                }
+                            loopSamplingInfo.frameCount)
+                        : usableKeyCount - 1U;
 
-                double loopDurationSeconds =
-                    loopSamplingInfo.
-                        durationSeconds;
+                activeFrameCount =
+                    (std::max)(
+                        activeFrameCount,
+                        1U);
 
-                if (
-                    !std::isfinite(loopDurationSeconds) ||
-                    loopDurationSeconds <= 0.0)
-                {
-                    loopDurationSeconds =
-                        static_cast<double>(
-                            activeFrameCount) *
-                        sampleIntervalSeconds;
-                }
+                const double loopDurationSeconds =
+                    static_cast<double>(
+                        activeFrameCount) *
+                    sampleIntervalSeconds;
 
                 timeSeconds =
                     std::fmod(
@@ -863,42 +758,19 @@ namespace lts::editor
                 framePosition =
                     timeSeconds /
                     sampleIntervalSeconds;
-
-                framePosition =
-                    (std::min)(
-                        framePosition,
-                        static_cast<double>(
-                            activeFrameCount));
             }
             else
             {
-                double clipDurationSeconds =
+                const double maximumFrame =
                     static_cast<double>(
-                        animation->GetDurationSeconds());
-
-                if (
-                    !std::isfinite(clipDurationSeconds) ||
-                    clipDurationSeconds <= 0.0)
-                {
-                    clipDurationSeconds =
-                        static_cast<double>(
-                            usableKeyCount - 1U) *
-                        sampleIntervalSeconds;
-                }
-
-                timeSeconds =
-                    std::clamp(
-                        timeSeconds,
-                        0.0,
-                        clipDurationSeconds);
+                        usableKeyCount - 1U);
 
                 framePosition =
                     std::clamp(
                         timeSeconds /
                             sampleIntervalSeconds,
                         0.0,
-                        static_cast<double>(
-                            usableKeyCount - 1U));
+                        maximumFrame);
             }
 
             std::size_t firstFrame =
@@ -915,12 +787,19 @@ namespace lts::editor
             std::size_t secondFrame =
                 firstFrame + 1U;
 
-            if (secondFrame >= activeFrameCount)
+            if (looping)
+            {
+                if (secondFrame >= activeFrameCount)
+                {
+                    secondFrame = 0U;
+                }
+            }
+            else
             {
                 secondFrame =
-                    looping
-                        ? 0U
-                        : activeFrameCount - 1U;
+                    (std::min)(
+                        secondFrame,
+                        usableKeyCount - 1U);
             }
 
             const float interpolation =
@@ -1051,47 +930,10 @@ namespace lts::editor
             return false;
         }
 
-        [[nodiscard]]
-        bool LayerMarksRootMotionBone(
-            const CharacterAnimationLayerSample& layer,
-            const std::size_t boneIndex) noexcept
-        {
-            const auto isRootTrack =
-                [boneIndex](
-                    const engine::assets::AnimationAsset*
-                        animation) noexcept
-                {
-                    if (
-                        animation == nullptr ||
-                        !animation->IsValid())
-                    {
-                        return false;
-                    }
-
-                    const engine::assets::AnimationTrack*
-                        track =
-                            animation->GetTrackForBone(
-                                boneIndex);
-
-                    return
-                        track != nullptr &&
-                        track->IsRootTrack();
-                };
-
-            return
-                isRootTrack(layer.currentAnimation) ||
-                isRootTrack(layer.previousAnimation);
-        }
-
         void PreserveControllerOwnedRootTransform(
-            const DirectX::XMMATRIX& bindLocal,
-            DirectX::XMMATRIX& animatedLocal) noexcept
+    const DirectX::XMMATRIX& bindLocal,
+    DirectX::XMMATRIX& animatedLocal) noexcept
         {
-            /*
-             * CharacterController owns horizontal movement and yaw.
-             * Keep animated root Y plus pitch/roll, but remove the
-             * animated Y-twist which would rotate the actor twice.
-             */
             DirectX::XMFLOAT4X4 bindStored;
             DirectX::XMFLOAT4X4 animatedStored;
 
@@ -1103,62 +945,24 @@ namespace lts::editor
                 &animatedStored,
                 animatedLocal);
 
-            const float animatedTranslationY =
-                animatedStored._42;
+            /*
+             * Как в r3dSkeleton::Recalc:
+             *
+             * controller управляет горизонтальным
+             * перемещением, поэтому блокируются X/Z.
+             *
+             * Y и rotation остаются из анимации.
+             */
+            animatedStored._41 =
+                bindStored._41;
 
-            const float bindHorizontalForwardLength =
-                std::sqrt(
-                    bindStored._31 * bindStored._31 +
-                    bindStored._33 * bindStored._33);
-
-            const float animatedHorizontalForwardLength =
-                std::sqrt(
-                    animatedStored._31 * animatedStored._31 +
-                    animatedStored._33 * animatedStored._33);
-
-            if (
-                std::isfinite(bindHorizontalForwardLength) &&
-                std::isfinite(animatedHorizontalForwardLength) &&
-                bindHorizontalForwardLength > 0.000001F &&
-                animatedHorizontalForwardLength > 0.000001F)
-            {
-                const float bindYawRadians =
-                    std::atan2(
-                        bindStored._31,
-                        bindStored._33);
-
-                const float animatedYawRadians =
-                    std::atan2(
-                        animatedStored._31,
-                        animatedStored._33);
-
-                const float animatedYawDelta =
-                    std::remainder(
-                        animatedYawRadians -
-                            bindYawRadians,
-                        DirectX::XM_2PI);
-
-                animatedStored._41 = 0.0F;
-                animatedStored._42 = 0.0F;
-                animatedStored._43 = 0.0F;
-
-                DirectX::XMStoreFloat4x4(
-                    &animatedStored,
-                    DirectX::XMLoadFloat4x4(
-                        &animatedStored) *
-                    DirectX::XMMatrixRotationY(
-                        -animatedYawDelta));
-            }
-
-            animatedStored._41 = bindStored._41;
-            animatedStored._42 = animatedTranslationY;
-            animatedStored._43 = bindStored._43;
+            animatedStored._43 =
+                bindStored._43;
 
             animatedLocal =
                 DirectX::XMLoadFloat4x4(
                     &animatedStored);
         }
-
     }
 
     void CharacterAnimationPose::Reset() noexcept
@@ -1434,9 +1238,7 @@ namespace lts::editor
 
             if (
                 input.blockControllerOwnedRootTransform &&
-                LayerMarksRootMotionBone(
-                    input.lowerBody,
-                    boneIndex))
+                bone->parentIndex < 0)
             {
                 PreserveControllerOwnedRootTransform(
                     bindLocal,

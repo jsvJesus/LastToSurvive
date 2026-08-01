@@ -3115,10 +3115,12 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool TryGetAnimationDuration(
-            const std::wstring& animationPath,
-            double& durationSeconds) const noexcept
+bool TryGetAnimationDuration(
+    const std::wstring& animationPath,
+    double& durationSeconds) const noexcept
         {
+            durationSeconds = 0.0;
+
             if (animationPath.empty())
             {
                 return false;
@@ -3135,23 +3137,35 @@ namespace lts::editor
                 return false;
             }
 
-            const double resolvedDurationSeconds =
+            const std::uint32_t frameCount =
+                animation->asset.
+                    GetFrameCount();
+
+            const double frameRate =
                 static_cast<double>(
                     animation->asset.
-                        GetDurationSeconds());
+                        GetFrameRate());
 
             if (
-                !std::isfinite(
-                    resolvedDurationSeconds) ||
-                resolvedDurationSeconds <= 0.0)
+                frameCount <= 1U ||
+                !std::isfinite(frameRate) ||
+                frameRate <= 0.0)
             {
                 return false;
             }
 
+            /*
+             * One-shot заканчивается на кадре N - 1.
+             * Это соответствует WarZ PauseOnEnd.
+             */
             durationSeconds =
-                resolvedDurationSeconds;
+                static_cast<double>(
+                    frameCount - 1U) /
+                frameRate;
 
-            return true;
+            return
+                std::isfinite(durationSeconds) &&
+                durationSeconds > 0.0;
         }
 
         [[nodiscard]]
