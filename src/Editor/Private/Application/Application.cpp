@@ -1179,6 +1179,7 @@ namespace lts::editor
                 deltaSeconds,
                 sceneDocument_,
                 terrainRenderer_,
+                modularCharacterRenderer_,
                 imguiViewportX_,
                 imguiViewportY_,
                 imguiViewportWidth_,

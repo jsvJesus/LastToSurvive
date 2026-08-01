@@ -91,11 +91,8 @@ namespace lts::editor
         };
 
         /*
-         * Стабилизированный camera anchor.
-         *
-         * Высота берётся из Bip01_Head,
-         * X/Z следуют за CharacterController,
-         * чтобы шаги не раскачивали всю камеру.
+         * X/Z следуют за CharacterController.
+         * Y сглаженно следует за Bip01_Head.
          */
         DirectX::XMFLOAT3 cameraAnchor_
         {
@@ -113,14 +110,14 @@ namespace lts::editor
 
         /*
          * -1 = Turn Left
-         *  0 = не поворачиваем ноги
+         *  0 = поворот ног не активен
          * +1 = Turn Right
          */
         std::int32_t turnDirection_ = 0;
 
         float cameraYawRadians_ = 0.0F;
         float cameraPitchRadians_ =
-            -0.261799388F;
+            -0.087266463F;
 
         engine::scene::CharacterViewMode viewMode_ =
             engine::scene::
@@ -150,7 +147,6 @@ namespace lts::editor
         bool reloadWasDown_ = false;
 
         bool cursorCaptured_ = false;
-        
         bool cameraAnchorValid_ = false;
     };
 }

@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -48,12 +49,12 @@
 #include <memory>
 #include <new>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <string_view>
 
 namespace lts::editor
 {
@@ -1866,6 +1867,7 @@ namespace lts::editor
             failedMaterials_.clear();
             textures_.clear();
             failedTextures_.clear();
+            characterPoses_.clear();
 
             if (transparentPipeline_.IsValid())
             {
@@ -1947,6 +1949,12 @@ namespace lts::editor
                 return engine::graphics::
                     GraphicsResult::InvalidState;
             }
+
+            /*
+             * Update() читает позу предыдущего кадра.
+             * Перед сборкой текущего кадра очищаем cache.
+             */
+            characterPoses_.clear();
 
             engine::graphics::GraphicsResult result =
                 context.SetGraphicsPipeline(
@@ -2410,7 +2418,13 @@ namespace lts::editor
                                     upperBodyYawOffsetDegrees;
 
                         evaluationInput.
-                            blockHorizontalRootMotion =
+                            lookPitchOffsetDegrees =
+                                animationComponent->
+                                    runtime.
+                                    upperBodyPitchOffsetDegrees;
+
+                        evaluationInput.
+                            blockControllerOwnedRootTransform =
                                 !entity.
                                     characterController.
                                     has_value() ||
@@ -2440,6 +2454,31 @@ namespace lts::editor
 
                             skinning.boneMatrices =
                                 pose.boneMatrices;
+
+                            if (
+                                pose.boneCount > 0U &&
+                                characterPoses_.find(
+                                    entity.id) ==
+                                    characterPoses_.end())
+                            {
+                                CachedCharacterPose cachedPose;
+
+                                cachedPose.skeleton =
+                                    cached->skeleton;
+
+                                cachedPose.modelBoneMatrices =
+                                    pose.modelBoneMatrices;
+
+                                cachedPose.world =
+                                    constants.world;
+
+                                cachedPose.boneCount =
+                                    pose.boneCount;
+
+                                characterPoses_.emplace(
+                                    entity.id,
+                                    std::move(cachedPose));
+                            }
 
                             skinningReady = true;
                         }
@@ -2800,6 +2839,106 @@ namespace lts::editor
             context.UnbindGraphicsPipeline();
 
             return result;
+        }
+
+        [[nodiscard]]
+        bool TryGetBoneWorldPosition(
+            const EditorEntityId entityId,
+            const std::string_view boneName,
+            DirectX::XMFLOAT3& position) const noexcept
+        {
+            if (boneName.empty())
+            {
+                return false;
+            }
+
+            const auto poseIterator =
+                characterPoses_.find(
+                    entityId);
+
+            if (
+                poseIterator ==
+                    characterPoses_.end() ||
+                poseIterator->second.skeleton ==
+                    nullptr)
+            {
+                return false;
+            }
+
+            const CachedCharacterPose& pose =
+                poseIterator->second;
+
+            const engine::assets::SkeletonAsset&
+                skeleton =
+                    pose.skeleton->asset;
+
+            const std::size_t boneCount =
+                (std::min)(
+                    static_cast<std::size_t>(
+                        pose.boneCount),
+                    skeleton.GetBoneCount());
+
+            std::size_t foundBoneIndex =
+                boneCount;
+
+            for (
+                std::size_t boneIndex = 0U;
+                boneIndex < boneCount;
+                ++boneIndex)
+            {
+                const engine::assets::SkeletonBone*
+                    bone =
+                        skeleton.GetBone(
+                            boneIndex);
+
+                if (
+                    bone != nullptr &&
+                    EqualAsciiInsensitive(
+                        bone->name,
+                        boneName))
+                {
+                    foundBoneIndex =
+                        boneIndex;
+
+                    break;
+                }
+            }
+
+            if (foundBoneIndex >= boneCount)
+            {
+                return false;
+            }
+
+            const DirectX::XMMATRIX boneModel =
+                DirectX::XMLoadFloat4x4(
+                    &pose.modelBoneMatrices[
+                        foundBoneIndex]);
+
+            const DirectX::XMMATRIX world =
+                DirectX::XMLoadFloat4x4(
+                    &pose.world);
+
+            const DirectX::XMVECTOR worldPosition =
+                DirectX::XMVector3TransformCoord(
+                    DirectX::XMVectorZero(),
+                    boneModel * world);
+
+            DirectX::XMFLOAT3 resolved;
+
+            DirectX::XMStoreFloat3(
+                &resolved,
+                worldPosition);
+
+            if (
+                !std::isfinite(resolved.x) ||
+                !std::isfinite(resolved.y) ||
+                !std::isfinite(resolved.z))
+            {
+                return false;
+            }
+
+            position = resolved;
+            return true;
         }
 
     private:
@@ -3891,7 +4030,10 @@ namespace lts::editor
             std::shared_ptr<CachedTexture>>
             textures_;
 
-        characterPoses_.clear();
+        std::unordered_map<
+            EditorEntityId,
+            CachedCharacterPose>
+            characterPoses_;
 
         std::unordered_set<std::wstring>
             failedMeshes_;
@@ -3981,10 +4123,10 @@ namespace lts::editor
     }
 
     bool ModularCharacterRenderer::
-    TryGetBoneWorldPosition(
-        const EditorEntityId entityId,
-        const std::string_view boneName,
-        DirectX::XMFLOAT3& position) const noexcept
+        TryGetBoneWorldPosition(
+            const EditorEntityId entityId,
+            const std::string_view boneName,
+            DirectX::XMFLOAT3& position) const noexcept
     {
         return
             impl_ != nullptr &&

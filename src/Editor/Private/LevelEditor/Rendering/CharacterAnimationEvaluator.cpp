@@ -99,9 +99,6 @@ namespace lts::editor
                         second.rotation[2],
                         second.rotation[3]));
 
-            /*
-             * q и -q описывают одно вращение.
-             */
             const float rotationDot =
                 std::fabs(
                     DirectX::XMVectorGetX(
@@ -618,17 +615,16 @@ namespace lts::editor
                 return true;
             }
 
-            /*
-             * Многие legacy .anm содержат последний кадр,
-             * полностью дублирующий первый.
-             *
-             * Если использовать оба, на границе loop
-             * персонаж два раза показывает одну позу:
-             * визуально это выглядит как потеря кадра.
-             */
             std::size_t loopKeyCount =
                 usableKeyCount;
 
+            /*
+             * Legacy-анимации иногда содержат
+             * последний кадр, полностью повторяющий первый.
+             * Такой кадр исключается только при точном
+             * совпадении позы, поэтому обычные циклы
+             * не укорачиваются.
+             */
             if (
                 loopMode ==
                     engine::scene::
@@ -698,17 +694,17 @@ namespace lts::editor
                             usableKeyCount - 1U));
             }
 
-            std::size_t firstFrame =
-                static_cast<std::size_t>(
-                    std::floor(
-                        framePosition));
-
             const std::size_t activeFrameCount =
                 loopMode ==
                     engine::scene::
                         CharacterAnimationLoopMode::Loop
                     ? loopKeyCount
                     : usableKeyCount;
+
+            std::size_t firstFrame =
+                static_cast<std::size_t>(
+                    std::floor(
+                        framePosition));
 
             if (firstFrame >= activeFrameCount)
             {
@@ -854,24 +850,15 @@ namespace lts::editor
             DirectX::XMMATRIX& animatedLocal) noexcept
         {
             /*
-             * CharacterController уже управляет:
-             *
-             * - X/Z перемещением;
-             * - высотой над Terrain;
-             * - world yaw персонажа.
-             *
-             * Поэтому анимационная Bip01 не должна повторно:
-             *
-             * - поднимать модель по Y;
-             * - двигать её по X/Z;
-             * - наклонять и раскачивать весь скелет.
-             *
-             * Pelvis и дочерние кости продолжают
-             * воспроизводить анимацию.
+             * CharacterController управляет world X/Y/Z и yaw.
+             * Анимационный Bip01 не должен второй раз
+             * перемещать, наклонять или раскачивать модель.
+             * Pelvis и все дочерние кости остаются анимированными.
              */
             animatedLocal =
                 bindLocal;
         }
+
     }
 
     void CharacterAnimationPose::Reset() noexcept
@@ -947,8 +934,8 @@ namespace lts::editor
 
         const std::int32_t lookSpineBoneIndex =
             FindBoneIndex(
-            skeleton,
-            input.upperBodyRootBone);
+                skeleton,
+                input.upperBodyRootBone);
 
         const std::int32_t lookRootBoneIndex =
             FindBoneIndex(
@@ -1157,15 +1144,10 @@ namespace lts::editor
             }
 
             /*
-             * Аналог старого WarZ AdjustBoneCallback:
-             *
-             * половина yaw/pitch применяется к Spine1,
-             * половина — к Neck.
-             *
-             * Вращаем уже собранную absolute matrix,
-             * затем возвращаем исходную translation.
-             * Поэтому корпус наклоняется, но кости
-             * не улетают вверх или вниз.
+             * Поведение повторяет принцип старого
+             * AdjustBoneCallback: yaw/pitch делятся
+             * между Spine1 и Neck, а translation
+             * каждой absolute matrix сохраняется.
              */
             const bool isLookSpineBone =
                 lookSpineBoneIndex >= 0 &&

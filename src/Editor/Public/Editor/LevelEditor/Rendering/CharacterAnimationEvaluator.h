@@ -13,12 +13,6 @@
 
 namespace lts::editor
 {
-    /*
-     * Уже загруженные ресурсы одного runtime-слоя.
-     *
-     * Evaluator не занимается файловой системой
-     * и не загружает .anim самостоятельно.
-     */
     struct CharacterAnimationLayerSample final
     {
         const engine::assets::AnimationAsset*
@@ -30,15 +24,7 @@ namespace lts::editor
         double currentTimeSeconds = 0.0;
         double previousTimeSeconds = 0.0;
 
-        /*
-         * 0 = полностью previousAnimation.
-         * 1 = полностью currentAnimation.
-         */
         float transitionAlpha = 1.0F;
-
-        /*
-         * Итоговый вес слоя.
-         */
         float weight = 1.0F;
 
         engine::scene::CharacterAnimationLoopMode
@@ -60,43 +46,22 @@ namespace lts::editor
         CharacterAnimationLayerSample upperBody;
         CharacterAnimationLayerSample action;
 
-        /*
-         * Начало маски верхней части тела.
-         */
         std::string upperBodyRootBone =
-            "Bip01_Spine";
+            "Bip01_Spine1";
 
-        /*
-         * Начало маски action-слоя.
-         */
         std::string actionRootBone =
-            "Bip01_Spine";
+            "Bip01_Spine1";
 
-        /*
-         * Кость, которая процедурно следует
-         * за направлением камеры.
-         */
         std::string lookRootBone =
             "Bip01_Neck";
 
-        /*
-         * Горизонтальный поворот Look относительно
-         * текущего направления ног.
-         */
         float lookYawOffsetDegrees = 0.0F;
-
-        /*
-         * Вертикальный угол камеры.
-         *
-         * Поворот будет распределён между
-         * upperBodyRootBone и lookRootBone.
-         */
         float lookPitchOffsetDegrees = 0.0F;
 
         /*
-         * Пока CharacterController управляет положением
-         * и направлением сущности, Bip01 не должен
-         * перемещать или вращать модель самостоятельно.
+         * CharacterController владеет world position/yaw.
+         * При true анимационный Bip01 возвращается
+         * к bind-local transform.
          */
         bool blockControllerOwnedRootTransform = true;
     };
@@ -109,10 +74,8 @@ namespace lts::editor
             boneMatrices{};
 
         /*
-         * Текущие абсолютные bone matrices в model-space.
-         *
-         * Используются не для skinning, а для attachment,
-         * камеры и будущих socket-компонентов.
+         * Абсолютная model-space поза после pivot.
+         * Используется камерой и будущими sockets.
          */
         std::array<
             DirectX::XMFLOAT4X4,
@@ -120,29 +83,11 @@ namespace lts::editor
             modelBoneMatrices{};
 
         std::uint32_t boneCount = 0U;
-
-        /*
-         * true, если хотя бы один animation track
-         * участвовал в построении позы.
-         */
         bool animated = false;
 
         void Reset() noexcept;
     };
 
-    /*
-     * Собирает итоговую позу:
-     *
-     * Lower Body
-     *     ↓
-     * Upper Body по bone mask
-     *     ↓
-     * Action по bone mask
-     *     ↓
-     * Absolute pose
-     *     ↓
-     * Skinning matrices
-     */
     class CharacterAnimationEvaluator final
     {
     public:

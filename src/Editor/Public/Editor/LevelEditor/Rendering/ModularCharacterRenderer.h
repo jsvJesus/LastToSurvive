@@ -5,8 +5,9 @@
 #include <Graphics/GraphicsResult.h>
 
 #include <DirectXMath.h>
-#include <string_view>
+
 #include <memory>
+#include <string_view>
 
 namespace engine::graphics
 {
@@ -46,10 +47,8 @@ namespace lts::editor
                 viewProjection) noexcept;
 
         /*
-         * Возвращает позицию кости из последней
-         * отрисованной позы персонажа.
-         *
-         * Результат находится в world-space.
+         * Позиция кости из последней успешно
+         * собранной layered-позы персонажа.
          */
         [[nodiscard]]
         bool TryGetBoneWorldPosition(

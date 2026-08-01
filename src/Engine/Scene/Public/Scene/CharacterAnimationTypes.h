@@ -392,14 +392,14 @@ namespace engine::scene
          * Это имя кости, а не путь к анимации.
          */
         std::string upperBodyRootBone =
-            "Bip01_Spine";
+            "Bip01_Spine1";
 
         /*
          * Action-слой обычно использует ту же
          * границу, но оставляем настройку отдельной.
          */
         std::string actionRootBone =
-            "Bip01_Spine";
+            "Bip01_Spine1";
 
         /*
          * Корневая кость процедурного Look.
@@ -528,12 +528,9 @@ namespace engine::scene
         float upperBodyYawOffsetDegrees = 0.0F;
 
         /*
-         * Вертикальный наклон корпуса относительно
-         * направления ног.
-         *
-         * Положительный угол — взгляд вверх.
-         * Отрицательный — вниз.
-        */
+         * Вертикальный наклон Spine/Neck.
+         * Положительный угол соответствует взгляду вверх.
+         */
         float upperBodyPitchOffsetDegrees = 0.0F;
 
         /*
@@ -577,7 +574,6 @@ namespace engine::scene
             lowerBodyYawDegrees = 0.0F;
             upperBodyYawOffsetDegrees = 0.0F;
             upperBodyPitchOffsetDegrees = 0.0F;
-
             turnTargetYawDegrees = 0.0F;
 
             grounded = true;

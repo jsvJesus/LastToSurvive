@@ -15,32 +15,43 @@ namespace lts::editor
     namespace
     {
         constexpr float MinimumPitchRadians =
-            -1.13446401F;
+            -1.04719755F;
 
         constexpr float MaximumPitchRadians =
-            0.261799388F;
+            0.872664626F;
 
         constexpr float MouseSensitivity =
             0.0025F;
 
         constexpr float ThirdPersonCameraDistance =
-            4.5F;
+            3.35F;
 
-        constexpr float
-            ThirdPersonStandingTargetHeight =
-                0.55F;
+        constexpr float ThirdPersonShoulderOffset =
+            0.58F;
 
-        constexpr float
-            ThirdPersonCrouchedTargetHeight =
-                0.18F;
+        constexpr float ThirdPersonTargetUpOffset =
+            0.06F;
 
-        constexpr float
-            FirstPersonStandingEyeHeight =
-                0.65F;
+        constexpr float StandingFallbackHeadHeight =
+            1.66F;
 
-        constexpr float
-            FirstPersonCrouchedEyeHeight =
-                0.12F;
+        constexpr float CrouchedFallbackHeadHeight =
+            1.18F;
+
+        constexpr float FirstPersonForwardOffset =
+            0.06F;
+
+        constexpr float FirstPersonUpOffset =
+            0.02F;
+
+        constexpr float CameraHeadFollowSpeed =
+            11.0F;
+
+        constexpr float CameraHeadVerticalDeadZone =
+            0.012F;
+
+        constexpr float MaximumLookPitchDegrees =
+            50.0F;
 
         constexpr float CrouchedSpeedMultiplier =
             0.55F;
@@ -501,21 +512,18 @@ namespace lts::editor
                     bodyYawDegrees_ +
                         CharacterVisualYawOffsetDegrees);
 
-        const float groundHeight = ResolveGroundHeight(
-            document,
-            terrainRenderer,
-            player->transform.
-                position[0],
-            player->transform.
-                position[2]);
+        const float groundHeight =
+            ResolveGroundHeight(
+                document,
+                terrainRenderer,
+                player->transform.
+                    position[0],
+                player->transform.
+                    position[2]);
 
         /*
-         * Transform персонажа — положение ступней,
-         * а не центр физической капсулы.
-         *
-         * Отдельного physics transform в PIE пока нет,
-         * поэтому добавление capsuleHeight / 2
-         * поднимало весь mesh над Terrain.
+         * Transform персонажа хранит позицию ступней.
+         * Capsule height не прибавляется к render transform.
          */
         player->transform.position[1] =
             groundHeight;
@@ -525,7 +533,7 @@ namespace lts::editor
                 bodyYawDegrees_);
 
         cameraPitchRadians_ =
-            -0.087266463F; // -5°
+            -0.087266463F;
 
         viewMode_ =
             engine::scene::
@@ -560,6 +568,10 @@ namespace lts::editor
             upperBodyYawOffsetDegrees =
                 0.0F;
 
+        animationRuntime.
+            upperBodyPitchOffsetDegrees =
+                0.0F;
+
         animationRuntime.turnInPlaceActive =
             false;
 
@@ -578,10 +590,22 @@ namespace lts::editor
         primaryActionWasDown_ = false;
         reloadWasDown_ = false;
 
+        turnDirection_ = 0;
+
+        cameraAnchor_ =
+        {
+            player->transform.position[0],
+            player->transform.position[1] +
+                StandingFallbackHeadHeight,
+            player->transform.position[2]
+        };
+
+        cameraAnchorValid_ = true;
+
         const DirectX::XMVECTOR forward =
-    BuildForwardVector(
-        cameraYawRadians_,
-        cameraPitchRadians_);
+            BuildForwardVector(
+                cameraYawRadians_,
+                cameraPitchRadians_);
 
         const DirectX::XMVECTOR right =
             BuildRightVector(
@@ -591,7 +615,6 @@ namespace lts::editor
             DirectX::XMVectorAdd(
                 DirectX::XMLoadFloat3(
                     &cameraAnchor_),
-
                 DirectX::XMVectorSet(
                     0.0F,
                     ThirdPersonTargetUpOffset,
@@ -615,19 +638,6 @@ namespace lts::editor
         DirectX::XMStoreFloat3(
             &cameraPosition_,
             initialCamera);
-
-        const DirectX::XMVECTOR forward =
-            BuildForwardVector(
-                cameraYawRadians_,
-                cameraPitchRadians_);
-
-        DirectX::XMStoreFloat3(
-            &cameraPosition_,
-            DirectX::XMVectorSubtract(
-                target,
-                DirectX::XMVectorScale(
-                    forward,
-                    ThirdPersonCameraDistance)));
 
         document.ClearSelection();
 
@@ -673,6 +683,16 @@ namespace lts::editor
         verticalVelocity_ = 0.0F;
 
         bodyYawDegrees_ = 0.0F;
+        turnDirection_ = 0;
+
+        cameraAnchor_ =
+        {
+            0.0F,
+            1.65F,
+            0.0F
+        };
+
+        cameraAnchorValid_ = false;
 
         viewMode_ =
             engine::scene::
@@ -708,6 +728,8 @@ namespace lts::editor
         const double deltaSeconds,
         SceneDocument& document,
         TerrainRenderer& terrainRenderer,
+        const ModularCharacterRenderer&
+            characterRenderer,
         const float viewportX,
         const float viewportY,
         const float viewportWidth,
@@ -1115,15 +1137,8 @@ namespace lts::editor
             velocityZ_ *
                 safeDeltaSeconds;
 
-        float groundHeight =
-            ResolveGroundHeight(
-                document,
-                terrainRenderer,
-                nextX,
-                nextZ);
-
         /*
-         * Y хранит уровень ступней.
+         * Transform Y — уровень ступней.
          */
         float standingHeight =
             groundHeight;
@@ -1244,6 +1259,15 @@ namespace lts::editor
                 DirectX::XMConvertToDegrees(
                     cameraYawRadians_));
 
+        const float cameraPitchDegrees =
+            DirectX::XMConvertToDegrees(
+                cameraPitchRadians_);
+
+        const bool firstPersonView =
+            viewMode_ ==
+                engine::scene::
+                    CharacterViewMode::FirstPerson;
+
         const float turnEnterDegrees =
             (std::max)(
                 std::fabs(
@@ -1277,15 +1301,46 @@ namespace lts::editor
                         0.0F) *
                     safeDeltaSeconds);
 
-            animationRuntime.
-                turnInPlaceActive =
-                    false;
+            animationRuntime.turnInPlaceActive =
+                false;
 
-            animationRuntime.
-                turnTargetYawDegrees =
-                    bodyYawDegrees_;
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
+
+            turnDirection_ = 0;
         }
-        else if (grounded_)
+        else if (!grounded_)
+        {
+            animationRuntime.turnInPlaceActive =
+                false;
+
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
+
+            turnDirection_ = 0;
+        }
+        else if (firstPersonView)
+        {
+            /*
+             * Для локального FPS отдельный turn-track
+             * не нужен: корпус следует за камерой.
+             */
+            bodyYawDegrees_ =
+                MoveAngleDegrees(
+                    bodyYawDegrees_,
+                    cameraYawDegrees,
+                    turnSpeedDegrees *
+                        safeDeltaSeconds);
+
+            animationRuntime.turnInPlaceActive =
+                false;
+
+            animationRuntime.turnTargetYawDegrees =
+                bodyYawDegrees_;
+
+            turnDirection_ = 0;
+        }
+        else
         {
             const float cameraBodyDifference =
                 AngleDifferenceDegrees(
@@ -1293,28 +1348,28 @@ namespace lts::editor
                     bodyYawDegrees_);
 
             if (
-                !animationRuntime.
-                    turnInPlaceActive &&
-                std::fabs(
-                    cameraBodyDifference) >=
+                !animationRuntime.turnInPlaceActive &&
+                std::fabs(cameraBodyDifference) >=
                     turnEnterDegrees)
             {
-                animationRuntime.
-                    turnInPlaceActive =
-                        true;
+                animationRuntime.turnInPlaceActive =
+                    true;
 
-                animationRuntime.
-                    turnTargetYawDegrees =
-                        cameraYawDegrees;
+                /*
+                 * Target фиксируется в момент запуска,
+                 * иначе ноги никогда не догоняют мышь.
+                 */
+                animationRuntime.turnTargetYawDegrees =
+                    cameraYawDegrees;
+
+                turnDirection_ =
+                    cameraBodyDifference >= 0.0F
+                        ? 1
+                        : -1;
             }
 
-            if (animationRuntime.
-                    turnInPlaceActive)
+            if (animationRuntime.turnInPlaceActive)
             {
-                animationRuntime.
-                    turnTargetYawDegrees =
-                        cameraYawDegrees;
-
                 const float remainingDifference =
                     AngleDifferenceDegrees(
                         animationRuntime.
@@ -1322,17 +1377,17 @@ namespace lts::editor
                         bodyYawDegrees_);
 
                 if (
-                    std::fabs(
-                        remainingDifference) <=
+                    std::fabs(remainingDifference) <=
                         turnExitDegrees)
                 {
                     bodyYawDegrees_ =
                         animationRuntime.
                             turnTargetYawDegrees;
 
-                    animationRuntime.
-                        turnInPlaceActive =
-                            false;
+                    animationRuntime.turnInPlaceActive =
+                        false;
+
+                    turnDirection_ = 0;
                 }
                 else
                 {
@@ -1347,20 +1402,11 @@ namespace lts::editor
             }
             else
             {
-                animationRuntime.
-                    turnTargetYawDegrees =
-                        bodyYawDegrees_;
-            }
-        }
-        else
-        {
-            animationRuntime.
-                turnInPlaceActive =
-                    false;
-
-            animationRuntime.
-                turnTargetYawDegrees =
+                animationRuntime.turnTargetYawDegrees =
                     bodyYawDegrees_;
+
+                turnDirection_ = 0;
+            }
         }
 
         bodyYawDegrees_ =
@@ -1395,6 +1441,13 @@ namespace lts::editor
                     -maximumLookYaw,
                     maximumLookYaw);
 
+        animationRuntime.
+            upperBodyPitchOffsetDegrees =
+                std::clamp(
+                    cameraPitchDegrees,
+                    -MaximumLookPitchDegrees,
+                    MaximumLookPitchDegrees);
+
         const float horizontalSpeed =
             std::sqrt(
                 velocityX_ *
@@ -1417,6 +1470,19 @@ namespace lts::editor
                         JumpLoop;
         }
         else if (
+            animationRuntime.turnInPlaceActive &&
+            turnDirection_ != 0)
+        {
+            locomotionState =
+                turnDirection_ < 0
+                    ? engine::scene::
+                        CharacterLocomotionState::
+                            TurnInPlaceLeft
+                    : engine::scene::
+                        CharacterLocomotionState::
+                            TurnInPlaceRight;
+        }
+        else if (
             moving &&
             !crouched &&
             sprinting)
@@ -1431,9 +1497,6 @@ namespace lts::editor
             !crouched &&
             aiming)
         {
-            /*
-             * Walk используется только при Aim Mode.
-             */
             locomotionState =
                 engine::scene::
                     CharacterLocomotionState::
@@ -1441,12 +1504,6 @@ namespace lts::editor
         }
         else if (moving)
         {
-            /*
-             * Обычное движение стоя или crouch move.
-             *
-             * Для Crouched state machine автоматически
-             * выберет lowerBody.crouchedMove.
-             */
             locomotionState =
                 engine::scene::
                     CharacterLocomotionState::
@@ -1518,63 +1575,148 @@ namespace lts::editor
             animationInput,
             characterAnimation);
 
-        const bool firstPerson =
-            viewMode_ ==
+        const bool crouchedCamera =
+            stance_ ==
                 engine::scene::
-                    CharacterViewMode::
-                        FirstPerson;
+                    CharacterStance::Crouched;
 
-        if (firstPerson)
+        float resolvedHeadY =
+            nextY +
+            (
+                crouchedCamera
+                    ? CrouchedFallbackHeadHeight
+                    : StandingFallbackHeadHeight
+            );
+
+        DirectX::XMFLOAT3 animatedHeadPosition;
+
+        if (
+            characterRenderer.TryGetBoneWorldPosition(
+                playerEntityId_,
+                "Bip01_Head",
+                animatedHeadPosition))
         {
-            const float eyeHeight =
-                stance_ ==
-                    engine::scene::
-                        CharacterStance::
-                            Crouched
-                    ? FirstPersonCrouchedEyeHeight
-                    : FirstPersonStandingEyeHeight;
+            const float minimumHeadHeight =
+                crouchedCamera
+                    ? nextY + 0.75F
+                    : nextY + 1.20F;
 
-            cameraPosition_ =
-            {
-                nextX,
-                nextY +
-                    eyeHeight,
-                nextZ
-            };
+            const float maximumHeadHeight =
+                crouchedCamera
+                    ? nextY + 1.60F
+                    : nextY + 2.15F;
+
+            resolvedHeadY =
+                std::clamp(
+                    animatedHeadPosition.y,
+                    minimumHeadHeight,
+                    maximumHeadHeight);
+        }
+
+        const DirectX::XMFLOAT3 targetAnchor
+        {
+            nextX,
+            resolvedHeadY,
+            nextZ
+        };
+
+        if (!cameraAnchorValid_)
+        {
+            cameraAnchor_ = targetAnchor;
+            cameraAnchorValid_ = true;
         }
         else
         {
-            const float targetHeight =
-                stance_ ==
-                    engine::scene::
-                        CharacterStance::
-                            Crouched
-                    ? ThirdPersonCrouchedTargetHeight
-                    : ThirdPersonStandingTargetHeight;
+            /*
+             * Горизонталь следует за controller без lag.
+             * Только высота Bip01_Head фильтруется,
+             * поэтому шаги не трясут TPS-камеру.
+             */
+            cameraAnchor_.x = targetAnchor.x;
+            cameraAnchor_.z = targetAnchor.z;
 
-            const DirectX::XMVECTOR target =
-                DirectX::XMVectorSet(
-                    nextX,
-                    nextY +
-                        targetHeight,
-                    nextZ,
-                    1.0F);
+            const float verticalDifference =
+                targetAnchor.y -
+                cameraAnchor_.y;
 
-            const DirectX::XMVECTOR
-                cameraForward =
-                    BuildForwardVector(
-                        cameraYawRadians_,
-                        cameraPitchRadians_);
+            if (
+                std::fabs(verticalDifference) >
+                    CameraHeadVerticalDeadZone)
+            {
+                const float anchorBlend =
+                    1.0F -
+                    std::exp(
+                        -CameraHeadFollowSpeed *
+                        safeDeltaSeconds);
+
+                cameraAnchor_.y +=
+                    verticalDifference *
+                    anchorBlend;
+            }
+        }
+
+        const DirectX::XMVECTOR cameraForward =
+            BuildForwardVector(
+                cameraYawRadians_,
+                cameraPitchRadians_);
+
+        const DirectX::XMVECTOR cameraRight =
+            BuildRightVector(
+                cameraYawRadians_);
+
+        if (firstPersonView)
+        {
+            DirectX::XMVECTOR firstPersonCamera =
+                DirectX::XMLoadFloat3(
+                    &cameraAnchor_);
+
+            firstPersonCamera =
+                DirectX::XMVectorAdd(
+                    firstPersonCamera,
+                    DirectX::XMVectorScale(
+                        cameraForward,
+                        FirstPersonForwardOffset));
+
+            firstPersonCamera =
+                DirectX::XMVectorAdd(
+                    firstPersonCamera,
+                    DirectX::XMVectorSet(
+                        0.0F,
+                        FirstPersonUpOffset,
+                        0.0F,
+                        0.0F));
+
+            DirectX::XMStoreFloat3(
+                &cameraPosition_,
+                firstPersonCamera);
+        }
+        else
+        {
+            DirectX::XMVECTOR cameraTarget =
+                DirectX::XMVectorAdd(
+                    DirectX::XMLoadFloat3(
+                        &cameraAnchor_),
+                    DirectX::XMVectorSet(
+                        0.0F,
+                        ThirdPersonTargetUpOffset,
+                        0.0F,
+                        0.0F));
 
             DirectX::XMVECTOR desiredCamera =
+                DirectX::XMVectorAdd(
+                    cameraTarget,
+                    DirectX::XMVectorScale(
+                        cameraRight,
+                        ThirdPersonShoulderOffset));
+
+            desiredCamera =
                 DirectX::XMVectorSubtract(
-                    target,
+                    desiredCamera,
                     DirectX::XMVectorScale(
                         cameraForward,
                         ThirdPersonCameraDistance));
 
-            DirectX::XMFLOAT3
-                desiredCameraPosition{};
+            DirectX::XMFLOAT3 desiredCameraPosition;
 
             DirectX::XMStoreFloat3(
                 &desiredCameraPosition,
@@ -1593,23 +1735,8 @@ namespace lts::editor
                     cameraGround +
                         CameraGroundClearance);
 
-            desiredCamera =
-                DirectX::XMLoadFloat3(
-                    &desiredCameraPosition);
-
-            const float cameraBlend =
-                1.0F -
-                std::exp(
-                    -12.0F *
-                    safeDeltaSeconds);
-
-            DirectX::XMStoreFloat3(
-                &cameraPosition_,
-                DirectX::XMVectorLerp(
-                    DirectX::XMLoadFloat3(
-                        &cameraPosition_),
-                    desiredCamera,
-                    cameraBlend));
+            cameraPosition_ =
+                desiredCameraPosition;
         }
     }
 
