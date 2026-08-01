@@ -734,10 +734,10 @@ AnimationLoopSamplingInfo
                             loopSamplingInfo.frameCount)
                         : usableKeyCount - 1U;
 
-                activeFrameCount =
-                    (std::max)(
-                        activeFrameCount,
-                        1U);
+                if (activeFrameCount == 0U)
+                {
+                    activeFrameCount = 1U;
+                }
 
                 const double loopDurationSeconds =
                     static_cast<double>(

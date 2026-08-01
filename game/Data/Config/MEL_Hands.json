@@ -47,7 +47,6 @@
       },
       "turnInPlaceLeft": "Data/Animations/Characters/walk_stand_BL.anim",
 	  "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BL.anim",
-
       "crouchedTurnInPlaceLeft": "Data/Animations/Characters/Crouch_Str.anim",
       "crouchedTurnInPlaceRight": "Data/Animations/Characters/Crouch_Str.anim",
       "jumpStart": "Data/Animations/Characters/Jump_ASR_Idle_S.anim",
