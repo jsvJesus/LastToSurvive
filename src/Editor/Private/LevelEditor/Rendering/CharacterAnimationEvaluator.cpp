@@ -892,11 +892,11 @@ AnimationLoopSamplingInfo
                     1.0F);
 
             const bool transitioning =
-                layer.previousAnimation != nullptr &&
                 transitionAlpha < 1.0F;
 
             const bool previousSampled =
                 transitioning &&
+                layer.previousAnimation != nullptr &&
                 SampleAnimationBone(
                     layer.previousAnimation,
                     skeleton,
@@ -1103,6 +1103,11 @@ AnimationLoopSamplingInfo
                     input.lowerBody);
 
         const LayerLoopSamplingInfo
+            turnInPlaceLoopSampling =
+                BuildLayerLoopSamplingInfo(
+                    input.turnInPlace);
+
+        const LayerLoopSamplingInfo
             upperBodyLoopSampling =
                 BuildLayerLoopSamplingInfo(
                     input.upperBody);
@@ -1187,7 +1192,44 @@ AnimationLoopSamplingInfo
             }
 
             /*
-             * 2. Upper Body.
+             * 2. Turn In Place overlay.
+             *
+             * В старом CUberAnim turn-track
+             * вставлялся вторым lower animation.
+             *
+             * Он накладывается на Idle, после чего
+             * Upper Body снова заменяет Spine2+
+             * своей позой.
+             */
+            DirectX::XMMATRIX turnMatrix;
+            float turnCoverage = 0.0F;
+
+            if (SampleLayerBone(
+                    input.turnInPlace,
+                    turnInPlaceLoopSampling,
+                    skeleton,
+                    boneIndex,
+                    turnMatrix,
+                    turnCoverage))
+            {
+                const float turnWeight =
+                    std::clamp(
+                        input.turnInPlace.weight *
+                            turnCoverage,
+                        0.0F,
+                        1.0F);
+
+                localMatrix =
+                    BlendMatrices(
+                        localMatrix,
+                        turnMatrix,
+                        turnWeight);
+
+                usedAnimationTrack = true;
+            }
+
+            /*
+             * 3. Upper Body.
              *
              * Применяется только к root bone
              * верхней маски и его потомкам.
@@ -1223,7 +1265,7 @@ AnimationLoopSamplingInfo
             }
 
             /*
-             * 3. Action.
+             * 4. Action.
              *
              * Action накладывается последним:
              * удар, выстрел, перезарядка.

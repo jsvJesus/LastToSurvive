@@ -392,6 +392,11 @@ namespace engine::scene
         const bool moving =
             IsCharacterMoving(input);
 
+        AdvanceLayer(
+            runtime.turnInPlace,
+            animationDeltaSeconds,
+            input.turnClipDurationSeconds);
+
         const float turnEnterDegrees =
             (std::max)(
                 std::fabs(
@@ -414,22 +419,15 @@ namespace engine::scene
                         turnInPlaceSpeedDegrees),
                 1.0F);
 
-        const bool lowerLayerContainsTurnClip =
-            (
-                runtime.locomotionState ==
-                    CharacterLocomotionState::
-                        TurnInPlaceLeft ||
-                runtime.locomotionState ==
-                    CharacterLocomotionState::
-                        TurnInPlaceRight
-            ) &&
-            runtime.lowerBody.loopMode ==
+        const bool turnLayerContainsClip =
+            runtime.turnInPlace.active &&
+            runtime.turnInPlace.loopMode ==
                 CharacterAnimationLoopMode::Once &&
-            !runtime.lowerBody.currentClip.empty();
+            !runtime.turnInPlace.currentClip.empty();
 
         const bool turnClipFinished =
-            lowerLayerContainsTurnClip &&
-            runtime.lowerBody.completed;
+            turnLayerContainsClip &&
+            runtime.turnInPlace.completed;
 
         float bodyYawOffsetDegrees =
             std::isfinite(
@@ -450,14 +448,15 @@ namespace engine::scene
             input.locomotionState ==
                 CharacterLocomotionState::Idle;
 
+        bool startedTurnThisUpdate = false;
+
         if (
             input.viewMode ==
                 CharacterViewMode::FirstPerson)
         {
             /*
-             * CUberAnim::StartTurnInPlaceAnim в FPS
-             * сразу выходит. Actor доворачивается к
-             * camera yaw без TPS torso offset.
+             * WarZ не запускает Turn In Place
+             * для локального FPS-персонажа.
              */
             actorYawDegrees =
                 MoveAngleDegrees(
@@ -470,19 +469,17 @@ namespace engine::scene
 
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
+
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
+
+            runtime.turnInPlace.Reset();
         }
         else if (moving)
         {
             /*
-             * AI_Player::UpdateRotation:
-             * StopTurnInPlaceAnim();
-             * UpdateBodyAdjustX(&bodyAdjust_x, 0, dt * 4);
-             *
-             * Сам helper ещё раз умножает на 4,
-             * поэтому возврат torso offset имеет
-             * response 16.
+             * При начале движения старый WarZ
+             * делал FadeOut(turnTrack, 0.1).
              */
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
@@ -510,8 +507,8 @@ namespace engine::scene
         else if (canTurnInPlace)
         {
             /*
-             * Сначала torso догоняет camera target.
-             * После 45 градусов запускается Rot Legs.
+             * Сначала камера отклоняет верх тела.
+             * Ноги пока стоят на месте.
              */
             bodyYawOffsetDegrees =
                 SmoothWarZBodyYaw(
@@ -527,6 +524,11 @@ namespace engine::scene
                     turnEnterDegrees)
             {
                 runtime.turnInPlaceActive = true;
+
+                /*
+                 * Старый код использовал текущий
+                 * m_fPlayerRotationTarget.
+                 */
                 runtime.turnTargetYawDegrees =
                     desiredActorYawDegrees;
 
@@ -540,10 +542,19 @@ namespace engine::scene
                         bodyYawOffsetDegrees,
                         -turnEnterDegrees,
                         turnEnterDegrees);
+
+                startedTurnThisUpdate = true;
             }
 
             if (runtime.turnInPlaceActive)
             {
+                /*
+                 * Пока turn-track существует,
+                 * ноги/actor доворачиваются к камере.
+                 */
+                runtime.turnTargetYawDegrees =
+                    desiredActorYawDegrees;
+
                 actorYawDegrees =
                     MoveAngleDegrees(
                         actorYawDegrees,
@@ -562,10 +573,27 @@ namespace engine::scene
                         actorYawDegrees);
 
                 if (
-                    turnClipFinished ||
                     std::fabs(
                         remainingDifference) <=
                         turnExitDegrees)
+                {
+                    actorYawDegrees =
+                        NormalizeAngleDegrees(
+                            runtime.
+                                turnTargetYawDegrees);
+
+                    bodyYawOffsetDegrees =
+                        AngleDifferenceDegrees(
+                            desiredActorYawDegrees,
+                            actorYawDegrees);
+                }
+
+                /*
+                 * В WarZ turn завершался не в момент,
+                 * когда actor достиг target, а когда
+                 * animation track исчезал.
+                 */
+                if (turnClipFinished)
                 {
                     actorYawDegrees =
                         NormalizeAngleDegrees(
@@ -593,6 +621,7 @@ namespace engine::scene
         {
             runtime.turnInPlaceActive = false;
             runtime.turnDirection = 0;
+
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
 
@@ -652,20 +681,69 @@ namespace engine::scene
                 BodyPitchSpeedDegreesPerSecond *
                     rotationDeltaSeconds);
 
-        CharacterLocomotionState resolvedLocomotionState =
-            input.locomotionState;
-
         if (
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson &&
             runtime.turnInPlaceActive &&
             runtime.turnDirection != 0)
         {
-            resolvedLocomotionState =
-                runtime.turnDirection < 0
-                    ? CharacterLocomotionState::
-                        TurnInPlaceLeft
-                    : CharacterLocomotionState::
-                        TurnInPlaceRight;
+            const std::wstring* const
+                desiredTurnClip =
+                    ResolveTurnInPlaceClip(
+                        animationSet,
+                        input,
+                        runtime.turnDirection);
+
+            if (
+                desiredTurnClip != nullptr &&
+                !desiredTurnClip->empty())
+            {
+                /*
+                 * StartAnimation(
+                 *     aid,
+                 *     0,
+                 *     0.0f,
+                 *     1.0f,
+                 *     0.1f);
+                 */
+                SetLayerClip(
+                    runtime.turnInPlace,
+                    desiredTurnClip,
+                    0.10F,
+                    CharacterAnimationLoopMode::Once,
+                    startedTurnThisUpdate);
+            }
+            else
+            {
+                runtime.turnInPlaceActive = false;
+                runtime.turnDirection = 0;
+
+                SetLayerClip(
+                    runtime.turnInPlace,
+                    nullptr,
+                    0.10F,
+                    CharacterAnimationLoopMode::Once,
+                    false);
+            }
         }
+        else if (
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson)
+        {
+            /*
+             * FadeOut(turnInPlaceTrackID, 0.1f).
+             */
+            SetLayerClip(
+                runtime.turnInPlace,
+                nullptr,
+                0.10F,
+                CharacterAnimationLoopMode::Once,
+                false);
+        }
+
+        const CharacterLocomotionState
+            resolvedLocomotionState =
+                input.locomotionState;
 
         CharacterAnimationStateInput resolvedInput =
             input;
@@ -706,6 +784,7 @@ namespace engine::scene
              * актуальным даже при выключенной анимации.
              */
             runtime.lowerBody.Reset();
+            runtime.turnInPlace.Reset();
             runtime.upperBody.Reset();
             runtime.action.Reset();
             runtime.actionState =
@@ -1026,42 +1105,63 @@ namespace engine::scene
                 safeDeltaSeconds;
         }
 
-        if (
-            !layer.previousClip.empty() &&
-            layer.transitionDurationSeconds > 0.0F)
+        /*
+         * Поддерживает три варианта:
+         *
+         * previous -> current : cross-fade
+         * empty    -> current : fade-in
+         * previous -> empty   : fade-out
+         */
+        const bool transitionActive =
+            layer.transitionDurationSeconds > 0.0F &&
+            layer.transitionElapsedSeconds <
+                layer.transitionDurationSeconds &&
+            (
+                !layer.currentClip.empty() ||
+                !layer.previousClip.empty()
+            );
+
+        if (transitionActive)
         {
-            layer.transitionElapsedSeconds +=
-                static_cast<float>(
-                    safeDeltaSeconds);
+            layer.transitionElapsedSeconds =
+                (std::min)(
+                    layer.transitionElapsedSeconds +
+                        static_cast<float>(
+                            safeDeltaSeconds),
+
+                    layer.transitionDurationSeconds);
 
             if (
                 layer.transitionElapsedSeconds >=
                     layer.transitionDurationSeconds)
             {
                 layer.previousClip.clear();
-
-                layer.previousTimeSeconds =
-                    0.0;
+                layer.previousTimeSeconds = 0.0;
 
                 layer.previousLoopMode =
                     CharacterAnimationLoopMode::Loop;
-
-                layer.transitionElapsedSeconds =
-                    layer.transitionDurationSeconds;
             }
         }
         else
         {
-            layer.previousClip.clear();
+            if (
+                layer.transitionDurationSeconds >
+                    0.0F)
+            {
+                layer.transitionElapsedSeconds =
+                    layer.transitionDurationSeconds;
+            }
+            else
+            {
+                layer.transitionElapsedSeconds =
+                    0.0F;
+            }
 
-            layer.previousTimeSeconds =
-                0.0;
+            layer.previousClip.clear();
+            layer.previousTimeSeconds = 0.0;
 
             layer.previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
-
-            layer.transitionElapsedSeconds =
-                layer.transitionDurationSeconds;
         }
 
         if (
@@ -1096,6 +1196,7 @@ namespace engine::scene
                 0.0F;
 
             layer.completed = false;
+            layer.weight = 1.0F;
         }
     }
 
@@ -1456,6 +1557,78 @@ namespace engine::scene
                 });
             }
         }
+    }
+
+    const std::wstring*
+        CharacterAnimationStateMachine::
+            ResolveTurnInPlaceClip(
+                const CharacterAnimationSet&
+                    animationSet,
+
+                const CharacterAnimationStateInput&
+                    input,
+
+                const std::int32_t
+                    turnDirection) noexcept
+    {
+        if (turnDirection == 0)
+        {
+            return nullptr;
+        }
+
+        const CharacterLowerBodyAnimationSet&
+            lowerBody =
+                animationSet.lowerBody;
+
+        const bool crouched =
+            IsCrouched(input);
+
+        if (crouched)
+        {
+            /*
+             * Старый WarZ использовал один Crouch_Str
+             * для обоих направлений.
+             */
+            return turnDirection < 0
+                ? FirstNonEmpty(
+                {
+                    &lowerBody.
+                        crouchedTurnInPlaceLeft,
+
+                    &lowerBody.
+                        crouchedTurnInPlaceRight,
+
+                    &lowerBody.crouchedIdle
+                })
+                : FirstNonEmpty(
+                {
+                    &lowerBody.
+                        crouchedTurnInPlaceRight,
+
+                    &lowerBody.
+                        crouchedTurnInPlaceLeft,
+
+                    &lowerBody.crouchedIdle
+                });
+        }
+
+        /*
+         * Старый WarZ использовал один
+         * walk_stand_BL для обоих направлений.
+         */
+        return turnDirection < 0
+            ? FirstNonEmpty(
+            {
+                &lowerBody.turnInPlaceLeft,
+                &lowerBody.turnInPlaceRight,
+                &lowerBody.standingIdle
+            })
+            : FirstNonEmpty(
+            {
+                &lowerBody.turnInPlaceRight,
+                &lowerBody.turnInPlaceLeft,
+                &lowerBody.standingIdle
+            });
     }
 
     const std::wstring*

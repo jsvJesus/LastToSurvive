@@ -498,17 +498,16 @@ namespace engine::scene
                     transitionDurationSeconds;
         }
     };
-
-    /*
-     * Полностью transient runtime.
-     *
-     * Эти данные не должны записываться в .level:
-     * таймеры, текущие клипы и поворот ног
-     * пересоздаются при запуске игры.
-     */
+    
     struct CharacterAnimationRuntime final
     {
+        /*
+         * Основной locomotion:
+         * Idle / Walk / Run / Sprint / Crouch / Jump.
+         */
         CharacterAnimationLayerRuntime lowerBody;
+        
+        CharacterAnimationLayerRuntime turnInPlace;
         CharacterAnimationLayerRuntime upperBody;
         CharacterAnimationLayerRuntime action;
 
@@ -577,6 +576,7 @@ namespace engine::scene
         void Reset() noexcept
         {
             lowerBody.Reset();
+            turnInPlace.Reset();
             upperBody.Reset();
             action.Reset();
 

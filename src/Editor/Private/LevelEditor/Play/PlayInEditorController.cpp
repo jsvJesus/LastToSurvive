@@ -39,10 +39,10 @@ namespace lts::editor
             1.18F;
 
         constexpr float FirstPersonStandingEyeHeight =
-            1.58F;
+            1.72F;
 
         constexpr float FirstPersonCrouchedEyeHeight =
-            1.08F;
+            1.22F;
 
         constexpr float FirstPersonForwardOffset =
             0.0F;
@@ -78,6 +78,10 @@ namespace lts::editor
         constexpr double
             InvalidOneShotFallbackDurationSeconds =
                 1.0 / 30.0;
+
+        constexpr double
+            InvalidTurnInPlaceFallbackDurationSeconds =
+                0.50;
 
         [[nodiscard]]
         bool IsKeyDown(
@@ -1534,6 +1538,23 @@ namespace lts::editor
                         jumpOneShot
                             ? InvalidOneShotFallbackDurationSeconds
                             : 0.0;
+            }
+        }
+
+        if (
+            !animationRuntime.
+                turnInPlace.currentClip.empty())
+        {
+            if (!characterRenderer.
+                    TryGetAnimationDuration(
+                        animationRuntime.
+                            turnInPlace.currentClip,
+                        animationInput.
+                            turnClipDurationSeconds))
+            {
+                animationInput.
+                    turnClipDurationSeconds =
+                        InvalidTurnInPlaceFallbackDurationSeconds;
             }
         }
 

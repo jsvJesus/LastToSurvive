@@ -78,7 +78,7 @@ namespace lts::editor
 
         constexpr float
             FirstPersonPresentationHeadOffset =
-                -0.18F;
+                -0.05F;
 
         constexpr float
             FirstPersonPresentationForwardOffset =
@@ -2297,6 +2297,9 @@ namespace lts::editor
                     lowerBodySample;
 
                 CharacterAnimationLayerSample
+                    turnInPlaceSample;
+
+                CharacterAnimationLayerSample
                     upperBodySample;
 
                 CharacterAnimationLayerSample
@@ -2368,7 +2371,6 @@ namespace lts::editor
                             }
 
                             if (
-                                runtime.IsTransitioning() &&
                                 !runtime.previousClip.
                                     empty())
                             {
@@ -2385,25 +2387,27 @@ namespace lts::editor
                                         previousAnimation =
                                             &previous->asset;
                                 }
+                            }
 
-                                sample.transitionAlpha =
-                                    runtime.
-                                        transitionDurationSeconds >
-                                            0.0F
-                                        ? std::clamp(
-                                            runtime.
-                                                transitionElapsedSeconds /
-                                            runtime.
-                                                transitionDurationSeconds,
-                                            0.0F,
-                                            1.0F)
-                                        : 1.0F;
-                            }
-                            else
-                            {
-                                sample.transitionAlpha =
-                                    1.0F;
-                            }
+                            const bool transitionActive =
+                                runtime.
+                                    transitionDurationSeconds >
+                                        0.0F &&
+                                runtime.
+                                    transitionElapsedSeconds <
+                                runtime.
+                                    transitionDurationSeconds;
+
+                            sample.transitionAlpha =
+                                transitionActive
+                                    ? std::clamp(
+                                        runtime.
+                                            transitionElapsedSeconds /
+                                        runtime.
+                                            transitionDurationSeconds,
+                                        0.0F,
+                                        1.0F)
+                                    : 1.0F;
 
                             /*
                              * Слой считается активным только
@@ -2427,6 +2431,11 @@ namespace lts::editor
                             animationComponent->
                                 runtime.lowerBody);
 
+                    turnInPlaceSample =
+                        resolveLayer(
+                            animationComponent->
+                                runtime.turnInPlace);
+
                     upperBodySample =
                         resolveLayer(
                             animationComponent->
@@ -2439,6 +2448,7 @@ namespace lts::editor
 
                     useLayeredAnimation =
                         lowerBodySample.active ||
+                        turnInPlaceSample.active ||
                         upperBodySample.active ||
                         actionSample.active;
                 }
@@ -2556,6 +2566,9 @@ namespace lts::editor
 
                         evaluationInput.lowerBody =
                             lowerBodySample;
+
+                        evaluationInput.turnInPlace =
+                            turnInPlaceSample;
 
                         evaluationInput.upperBody =
                             upperBodySample;

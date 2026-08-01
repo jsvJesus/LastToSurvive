@@ -48,6 +48,12 @@ namespace lts::editor
         std::array<float, 3U> pivot{};
 
         CharacterAnimationLayerSample lowerBody;
+
+        /*
+         * Второй lower-body track как в CUberAnim.
+         */
+        CharacterAnimationLayerSample turnInPlace;
+
         CharacterAnimationLayerSample upperBody;
         CharacterAnimationLayerSample action;
 

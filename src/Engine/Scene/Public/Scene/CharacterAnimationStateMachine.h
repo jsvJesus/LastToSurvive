@@ -88,6 +88,7 @@ namespace engine::scene
          * Для JumpStart и JumpLand.
          */
         double lowerClipDurationSeconds = 0.0;
+        double turnClipDurationSeconds = 0.0;
     };
 
     /*
@@ -150,6 +151,17 @@ namespace engine::scene
 
                 const CharacterAnimationStateInput&
                     input) noexcept;
+
+        [[nodiscard]]
+        static const std::wstring*
+            ResolveTurnInPlaceClip(
+                const CharacterAnimationSet&
+                    animationSet,
+
+                const CharacterAnimationStateInput&
+                    input,
+
+                std::int32_t turnDirection) noexcept;
 
         [[nodiscard]]
         static const std::wstring*
