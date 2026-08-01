@@ -39,10 +39,10 @@ namespace lts::editor
             1.18F;
 
         constexpr float FirstPersonStandingEyeHeight =
-            1.72F;
+            1.58F;
 
         constexpr float FirstPersonCrouchedEyeHeight =
-            1.22F;
+            1.08F;
 
         constexpr float FirstPersonForwardOffset =
             0.0F;
