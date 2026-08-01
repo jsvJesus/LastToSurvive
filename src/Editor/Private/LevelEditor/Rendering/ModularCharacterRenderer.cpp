@@ -64,6 +64,30 @@ namespace lts::editor
             MaximumSkeletalMeshFileSize =
                 512U * 1024U * 1024U;
 
+        /*
+         * Camera-space placement used by the original WarZ FPS pass.
+         * The BodyFPS mesh remains a normal skeletal asset; only its
+         * presentation matrix is detached from the world-space actor.
+         */
+        constexpr float
+            FirstPersonPresentationRightOffset =
+                0.0053F;
+
+        constexpr float
+            FirstPersonPresentationHeadOffset =
+                /*
+                 * BodyFPS contains the arms but no separately rendered
+                 * weapon.  Its highest skinned vertex sits about 0.22 m
+                 * below Bip01_Head, so the legacy 0.0409 m correction would
+                 * leave the whole mesh below a 60-degree vertical field of
+                 * view.  Keep a small visible portion of the arms in frame.
+                 */
+                0.30F;
+
+        constexpr float
+            FirstPersonPresentationForwardOffset =
+                0.10F;
+
         struct alignas(16)
             ObjectConstants final
         {
@@ -757,6 +781,143 @@ namespace lts::editor
                 std::isfinite(value) &&
                 std::fabs(value) >
                     0.0000001F;
+        }
+
+        [[nodiscard]]
+        bool TryResolveBoneModelPosition(
+            const engine::assets::SkeletonAsset&
+                skeleton,
+            const DirectX::XMFLOAT4X4* const
+                modelBoneMatrices,
+            const std::size_t matrixCount,
+            const std::string_view boneName,
+            DirectX::XMFLOAT3& position) noexcept
+        {
+            if (
+                modelBoneMatrices == nullptr ||
+                boneName.empty())
+            {
+                return false;
+            }
+
+            const std::size_t boneCount =
+                (std::min)(
+                    matrixCount,
+                    skeleton.GetBoneCount());
+
+            for (
+                std::size_t boneIndex = 0U;
+                boneIndex < boneCount;
+                ++boneIndex)
+            {
+                const engine::assets::SkeletonBone*
+                    bone =
+                        skeleton.GetBone(
+                            boneIndex);
+
+                if (
+                    bone == nullptr ||
+                    !EqualAsciiInsensitive(
+                        bone->name,
+                        boneName))
+                {
+                    continue;
+                }
+
+                const DirectX::XMVECTOR
+                    modelPosition =
+                        DirectX::XMVector3TransformCoord(
+                            DirectX::XMVectorZero(),
+                            DirectX::XMLoadFloat4x4(
+                                &modelBoneMatrices[
+                                    boneIndex]));
+
+                DirectX::XMFLOAT3 resolved;
+
+                DirectX::XMStoreFloat3(
+                    &resolved,
+                    modelPosition);
+
+                if (
+                    !std::isfinite(resolved.x) ||
+                    !std::isfinite(resolved.y) ||
+                    !std::isfinite(resolved.z))
+                {
+                    return false;
+                }
+
+                position = resolved;
+                return true;
+            }
+
+            return false;
+        }
+
+        [[nodiscard]]
+        bool TryResolveBindBoneModelPosition(
+            const engine::assets::SkeletonAsset&
+                skeleton,
+            const std::array<float, 3U>& pivot,
+            const std::string_view boneName,
+            DirectX::XMFLOAT3& position) noexcept
+        {
+            if (boneName.empty())
+            {
+                return false;
+            }
+
+            const DirectX::XMMATRIX pivotTransform =
+                DirectX::XMMatrixTranslation(
+                    -pivot[0],
+                    -pivot[1],
+                    -pivot[2]);
+
+            for (
+                std::size_t boneIndex = 0U;
+                boneIndex < skeleton.GetBoneCount();
+                ++boneIndex)
+            {
+                const engine::assets::SkeletonBone*
+                    bone =
+                        skeleton.GetBone(
+                            boneIndex);
+
+                if (
+                    bone == nullptr ||
+                    !EqualAsciiInsensitive(
+                        bone->name,
+                        boneName))
+                {
+                    continue;
+                }
+
+                const DirectX::XMVECTOR
+                    modelPosition =
+                        DirectX::XMVector3TransformCoord(
+                            DirectX::XMVectorZero(),
+                            LoadMatrix(
+                                bone->absoluteBindMatrix) *
+                                pivotTransform);
+
+                DirectX::XMFLOAT3 resolved;
+
+                DirectX::XMStoreFloat3(
+                    &resolved,
+                    modelPosition);
+
+                if (
+                    !std::isfinite(resolved.x) ||
+                    !std::isfinite(resolved.y) ||
+                    !std::isfinite(resolved.z))
+                {
+                    return false;
+                }
+
+                position = resolved;
+                return true;
+            }
+
+            return false;
         }
 
         [[nodiscard]]
@@ -1940,7 +2101,11 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept
+                viewProjection,
+            const DirectX::XMFLOAT4X4* const
+                firstPersonInverseView,
+            const DirectX::XMFLOAT4X4* const
+                firstPersonViewProjection) noexcept
         {
             if (
                 !initialized_ ||
@@ -1982,6 +2147,20 @@ namespace lts::editor
                     vertexConstantBuffers.data(),
                     vertexConstantBuffers.size());
 
+            if (engine::graphics::Failed(result))
+            {
+                static_cast<void>(
+                    context.UnbindConstantBuffers(
+                        engine::graphics::
+                            ShaderStage::Vertex,
+                        0U,
+                        vertexConstantBuffers.size()));
+
+                context.UnbindGraphicsPipeline();
+
+                return result;
+            }
+
             result =
                 context.SetConstantBuffers(
                     engine::graphics::
@@ -1998,20 +2177,6 @@ namespace lts::editor
                             ShaderStage::Vertex,
                         0U,
                         vertexConstantBuffers.size()));
-
-                context.UnbindGraphicsPipeline();
-
-                return result;
-            }
-
-            if (engine::graphics::Failed(result))
-            {
-                static_cast<void>(
-                    context.UnbindConstantBuffers(
-                        engine::graphics::
-                            ShaderStage::Vertex,
-                        0U,
-                        1U));
 
                 context.UnbindGraphicsPipeline();
 
@@ -2183,6 +2348,9 @@ namespace lts::editor
 
                             sample.loopMode =
                                 runtime.loopMode;
+
+                            sample.previousLoopMode =
+                                runtime.previousLoopMode;
 
                             if (
                                 !runtime.currentClip.
@@ -2364,6 +2532,12 @@ namespace lts::editor
                         GpuSkeletalMesh* const mesh =
                             cached->gpu.get();
 
+                    DirectX::XMFLOAT3
+                        firstPersonHeadModelPosition{};
+
+                    bool firstPersonHeadResolved =
+                        false;
+
                     SkinningConstants skinning{};
 
                     bool skinningReady = false;
@@ -2425,9 +2599,9 @@ namespace lts::editor
 
                         evaluationInput.
                             blockControllerOwnedRootTransform =
-                                !entity.
+                                entity.
                                     characterController.
-                                    has_value() ||
+                                    has_value() &&
                                 !entity.
                                     characterController->
                                     useRootMotion;
@@ -2455,11 +2629,27 @@ namespace lts::editor
                             skinning.boneMatrices =
                                 pose.boneMatrices;
 
+                            const bool preferredPoseSlot =
+                                firstPersonView
+                                    ? slot ==
+                                        engine::scene::
+                                            CharacterMeshSlot::
+                                                FirstPersonBody
+                                    : slot ==
+                                        engine::scene::
+                                            CharacterMeshSlot::Body;
+
+                            auto cachedPoseIterator =
+                                characterPoses_.find(
+                                    entity.id);
+
                             if (
                                 pose.boneCount > 0U &&
-                                characterPoses_.find(
-                                    entity.id) ==
-                                    characterPoses_.end())
+                                (
+                                    preferredPoseSlot ||
+                                    cachedPoseIterator ==
+                                        characterPoses_.end()
+                                ))
                             {
                                 CachedCharacterPose cachedPose;
 
@@ -2475,9 +2665,41 @@ namespace lts::editor
                                 cachedPose.boneCount =
                                     pose.boneCount;
 
-                                characterPoses_.emplace(
-                                    entity.id,
-                                    std::move(cachedPose));
+                                if (
+                                    cachedPoseIterator ==
+                                        characterPoses_.end())
+                                {
+                                    characterPoses_.emplace(
+                                        entity.id,
+                                        std::move(cachedPose));
+                                }
+                                else
+                                {
+                                    cachedPoseIterator->second =
+                                        std::move(cachedPose);
+                                }
+                            }
+
+                            if (
+                                firstPersonView &&
+                                slot ==
+                                    engine::scene::
+                                        CharacterMeshSlot::
+                                            FirstPersonBody)
+                            {
+                                firstPersonHeadResolved =
+                                    TryResolveBoneModelPosition(
+                                        cached->skeleton->
+                                            asset,
+                                        pose.
+                                            modelBoneMatrices.
+                                                data(),
+                                        static_cast<
+                                            std::size_t>(
+                                                pose.
+                                                    boneCount),
+                                        "Bip01_Head",
+                                        firstPersonHeadModelPosition);
                             }
 
                             skinningReady = true;
@@ -2524,6 +2746,57 @@ namespace lts::editor
                                 continue;
                             }
                         }
+                    }
+
+                    const bool firstPersonPresentation =
+                        firstPersonView &&
+                        slot ==
+                            engine::scene::
+                                CharacterMeshSlot::
+                                    FirstPersonBody &&
+                        firstPersonInverseView != nullptr &&
+                        firstPersonViewProjection !=
+                            nullptr;
+
+                    if (
+                        firstPersonPresentation &&
+                        !firstPersonHeadResolved)
+                    {
+                        firstPersonHeadResolved =
+                            TryResolveBindBoneModelPosition(
+                                cached->skeleton->asset,
+                                cached->pivot,
+                                "Bip01_Head",
+                                firstPersonHeadModelPosition);
+                    }
+
+                    if (
+                        firstPersonPresentation &&
+                        firstPersonHeadResolved)
+                    {
+                        /*
+                         * Row-vector convention: local BodyFPS pose is
+                         * first normalized around Bip01_Head in camera
+                         * space, then moved into world through inverse view.
+                         * The anatomical pose cache above intentionally keeps
+                         * entity world space for the next camera update.
+                         */
+                        const DirectX::XMMATRIX
+                            cameraSpacePresentation =
+                                DirectX::XMMatrixTranslation(
+                                    FirstPersonPresentationRightOffset,
+                                    -firstPersonHeadModelPosition.y +
+                                        FirstPersonPresentationHeadOffset,
+                                    FirstPersonPresentationForwardOffset);
+
+                        DirectX::XMStoreFloat4x4(
+                            &constants.world,
+                            cameraSpacePresentation *
+                                DirectX::XMLoadFloat4x4(
+                                    firstPersonInverseView));
+
+                        constants.viewProjection =
+                            *firstPersonViewProjection;
                     }
 
                     result =
@@ -2839,6 +3112,46 @@ namespace lts::editor
             context.UnbindGraphicsPipeline();
 
             return result;
+        }
+
+        [[nodiscard]]
+        bool TryGetAnimationDuration(
+            const std::wstring& animationPath,
+            double& durationSeconds) const noexcept
+        {
+            if (animationPath.empty())
+            {
+                return false;
+            }
+
+            const std::shared_ptr<CachedAnimation>
+                animation =
+                    const_cast<Impl*>(this)->
+                        GetOrLoadAnimation(
+                            animationPath);
+
+            if (animation == nullptr)
+            {
+                return false;
+            }
+
+            const double resolvedDurationSeconds =
+                static_cast<double>(
+                    animation->asset.
+                        GetDurationSeconds());
+
+            if (
+                !std::isfinite(
+                    resolvedDurationSeconds) ||
+                resolvedDurationSeconds <= 0.0)
+            {
+                return false;
+            }
+
+            durationSeconds =
+                resolvedDurationSeconds;
+
+            return true;
         }
 
         [[nodiscard]]
@@ -4108,7 +4421,11 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept
+                viewProjection,
+            const DirectX::XMFLOAT4X4* const
+                firstPersonInverseView,
+            const DirectX::XMFLOAT4X4* const
+                firstPersonViewProjection) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -4119,7 +4436,21 @@ namespace lts::editor
         return impl_->Render(
             context,
             document,
-            viewProjection);
+            viewProjection,
+            firstPersonInverseView,
+            firstPersonViewProjection);
+    }
+
+    bool ModularCharacterRenderer::
+        TryGetAnimationDuration(
+            const std::wstring& animationPath,
+            double& durationSeconds) const noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->TryGetAnimationDuration(
+                animationPath,
+                durationSeconds);
     }
 
     bool ModularCharacterRenderer::

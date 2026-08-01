@@ -485,31 +485,36 @@ namespace lts::editor
                 component =
                     *entity->characterAnimation;
 
-        if (
-            component.profilePath ==
-            profilePath)
+        engine::scene::CharacterAnimationSet
+            loadedSet;
+
+        if (!LevelSerializer::
+                LoadCharacterAnimationProfile(
+                    profilePath,
+                    loadedSet,
+                    error))
         {
             return false;
         }
 
-        component.profilePath =
+        engine::scene::
+            CharacterAnimationComponent
+                loadedComponent =
+                    component;
+
+        loadedComponent.profilePath =
             std::move(profilePath);
 
-        component.animationSet = {};
-        component.runtime.Reset();
+        loadedComponent.animationSet =
+            std::move(loadedSet);
 
-        component.profileLoaded = false;
-        component.profileError.clear();
+        loadedComponent.runtime.Reset();
 
-        std::wstring loadError;
+        loadedComponent.profileLoaded = true;
+        loadedComponent.profileError.clear();
 
-        static_cast<void>(
-            ReloadCharacterAnimationProfile(
-                entity->id,
-                loadError));
-
-        error =
-            std::move(loadError);
+        component =
+            std::move(loadedComponent);
 
         dirty_ = true;
         return true;

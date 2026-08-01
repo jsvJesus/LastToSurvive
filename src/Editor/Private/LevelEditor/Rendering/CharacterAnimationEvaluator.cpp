@@ -17,6 +17,13 @@ namespace lts::editor
         constexpr float MinimumQuaternionLength =
             0.0000001F;
 
+        constexpr float MinimumLoopEndpointRotationDot =
+            0.99995F;
+
+        constexpr float
+            MaximumLoopEndpointTranslationDistanceSquared =
+                0.000001F;
+
         [[nodiscard]]
         DirectX::XMMATRIX LoadMatrix(
             const std::array<float, 16U>&
@@ -124,8 +131,10 @@ namespace lts::editor
                 translationZ * translationZ;
 
             return
-                rotationDot >= 0.99995F &&
-                translationDistanceSquared <= 0.000001F;
+                rotationDot >=
+                    MinimumLoopEndpointRotationDot &&
+                translationDistanceSquared <=
+                    MaximumLoopEndpointTranslationDistanceSquared;
         }
 
         [[nodiscard]]
@@ -550,6 +559,160 @@ namespace lts::editor
                     skeleton);
         }
 
+        struct AnimationLoopSamplingInfo final
+        {
+            std::size_t frameCount = 0U;
+            double sampleIntervalSeconds = 0.0;
+            double durationSeconds = 0.0;
+        };
+
+        struct LayerLoopSamplingInfo final
+        {
+            AnimationLoopSamplingInfo current;
+            AnimationLoopSamplingInfo previous;
+        };
+
+        [[nodiscard]]
+        bool AnimationHasDuplicateLoopEndpoint(
+            const engine::assets::AnimationAsset&
+                animation) noexcept
+        {
+            const std::size_t frameCount =
+                static_cast<std::size_t>(
+                    animation.GetFrameCount());
+
+            if (frameCount < 2U)
+            {
+                return false;
+            }
+
+            const std::size_t trackCount =
+                animation.GetTrackCount();
+
+            if (trackCount == 0U)
+            {
+                return false;
+            }
+
+            for (
+                std::size_t trackIndex = 0U;
+                trackIndex < trackCount;
+                ++trackIndex)
+            {
+                const engine::assets::AnimationTrack*
+                    track =
+                        animation.GetTrack(
+                            trackIndex);
+
+                if (
+                    track == nullptr ||
+                    track->keys.size() < frameCount ||
+                    !AnimationKeysMatchForLoop(
+                        track->keys.front(),
+                        track->keys[frameCount - 1U]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        AnimationLoopSamplingInfo
+            BuildAnimationLoopSamplingInfo(
+                const engine::assets::AnimationAsset*
+                    animation) noexcept
+        {
+            AnimationLoopSamplingInfo result;
+
+            if (
+                animation == nullptr ||
+                !animation->IsValid())
+            {
+                return result;
+            }
+
+            const std::size_t declaredFrameCount =
+                static_cast<std::size_t>(
+                    animation->GetFrameCount());
+
+            if (declaredFrameCount == 0U)
+            {
+                return result;
+            }
+
+            const bool duplicateEndpoint =
+                AnimationHasDuplicateLoopEndpoint(
+                    *animation);
+
+            result.frameCount =
+                duplicateEndpoint &&
+                declaredFrameCount > 1U
+                    ? declaredFrameCount - 1U
+                    : declaredFrameCount;
+
+            const double frameRate =
+                static_cast<double>(
+                    animation->GetFrameRate());
+
+            const double authoredDurationSeconds =
+                static_cast<double>(
+                    animation->GetDurationSeconds());
+
+            if (
+                declaredFrameCount > 1U &&
+                std::isfinite(
+                    authoredDurationSeconds) &&
+                authoredDurationSeconds > 0.0)
+            {
+                result.sampleIntervalSeconds =
+                    authoredDurationSeconds /
+                    static_cast<double>(
+                        declaredFrameCount - 1U);
+            }
+            else if (
+                std::isfinite(frameRate) &&
+                frameRate > 0.0)
+            {
+                result.sampleIntervalSeconds =
+                    1.0 /
+                    frameRate;
+            }
+
+            if (
+                result.sampleIntervalSeconds > 0.0 &&
+                std::isfinite(
+                    result.sampleIntervalSeconds))
+            {
+                result.durationSeconds =
+                    static_cast<double>(
+                        result.frameCount) *
+                    result.sampleIntervalSeconds;
+            }
+
+            return result;
+        }
+
+        [[nodiscard]]
+        LayerLoopSamplingInfo
+            BuildLayerLoopSamplingInfo(
+                const CharacterAnimationLayerSample&
+                    layer) noexcept
+        {
+            LayerLoopSamplingInfo result;
+
+            result.current =
+                BuildAnimationLoopSamplingInfo(
+                    layer.currentAnimation);
+
+            result.previous =
+                BuildAnimationLoopSamplingInfo(
+                    layer.previousAnimation);
+
+            return result;
+        }
+
         [[nodiscard]]
         bool SampleAnimationBone(
             const engine::assets::AnimationAsset*
@@ -565,6 +728,9 @@ namespace lts::editor
             const engine::scene::
                 CharacterAnimationLoopMode
                     loopMode,
+
+            const AnimationLoopSamplingInfo&
+                loopSamplingInfo,
 
             DirectX::XMMATRIX&
                 output) noexcept
@@ -615,30 +781,6 @@ namespace lts::editor
                 return true;
             }
 
-            std::size_t loopKeyCount =
-                usableKeyCount;
-
-            /*
-             * Legacy-анимации иногда содержат
-             * последний кадр, полностью повторяющий первый.
-             * Такой кадр исключается только при точном
-             * совпадении позы, поэтому обычные циклы
-             * не укорачиваются.
-             */
-            if (
-                loopMode ==
-                    engine::scene::
-                        CharacterAnimationLoopMode::Loop &&
-                usableKeyCount > 2U &&
-                AnimationKeysMatchForLoop(
-                    track->keys[0U],
-                    track->keys[
-                        usableKeyCount - 1U]))
-            {
-                loopKeyCount =
-                    usableKeyCount - 1U;
-            }
-
             double timeSeconds =
                 std::isfinite(timeSecondsValue)
                     ? timeSecondsValue
@@ -649,57 +791,115 @@ namespace lts::editor
                     timeSeconds,
                     0.0);
 
-            const double frameRate =
-                static_cast<double>(
-                    animation->GetFrameRate());
+            double sampleIntervalSeconds =
+                loopSamplingInfo.
+                    sampleIntervalSeconds;
+
+            if (
+                !std::isfinite(sampleIntervalSeconds) ||
+                sampleIntervalSeconds <= 0.0)
+            {
+                const double frameRate =
+                    static_cast<double>(
+                        animation->GetFrameRate());
+
+                sampleIntervalSeconds =
+                    std::isfinite(frameRate) &&
+                    frameRate > 0.0
+                        ? 1.0 / frameRate
+                        : 1.0;
+            }
+
+            const bool looping =
+                loopMode ==
+                    engine::scene::
+                        CharacterAnimationLoopMode::Loop;
+
+            std::size_t activeFrameCount =
+                usableKeyCount;
 
             double framePosition = 0.0;
 
-            if (
-                std::isfinite(frameRate) &&
-                frameRate > 0.0)
+            if (looping)
             {
-                framePosition =
-                    timeSeconds *
-                    frameRate;
-            }
-
-            if (
-                loopMode ==
-                    engine::scene::
-                        CharacterAnimationLoopMode::Loop)
-            {
-                const double loopFrameCount =
-                    static_cast<double>(
-                        loopKeyCount);
-
-                framePosition =
-                    std::fmod(
-                        framePosition,
-                        loopFrameCount);
-
-                if (framePosition < 0.0)
+                /*
+                 * Endpoint classification is clip-global. Duplicate
+                 * endpoints use N-1 frames; non-duplicate clips use N
+                 * frames and therefore interpolate last -> first.
+                 */
+                if (loopSamplingInfo.frameCount > 0U)
                 {
-                    framePosition +=
-                        loopFrameCount;
+                    activeFrameCount =
+                        (std::min)(
+                            usableKeyCount,
+                            loopSamplingInfo.frameCount);
                 }
+
+                double loopDurationSeconds =
+                    loopSamplingInfo.
+                        durationSeconds;
+
+                if (
+                    !std::isfinite(loopDurationSeconds) ||
+                    loopDurationSeconds <= 0.0)
+                {
+                    loopDurationSeconds =
+                        static_cast<double>(
+                            activeFrameCount) *
+                        sampleIntervalSeconds;
+                }
+
+                timeSeconds =
+                    std::fmod(
+                        timeSeconds,
+                        loopDurationSeconds);
+
+                if (timeSeconds < 0.0)
+                {
+                    timeSeconds +=
+                        loopDurationSeconds;
+                }
+
+                framePosition =
+                    timeSeconds /
+                    sampleIntervalSeconds;
+
+                framePosition =
+                    (std::min)(
+                        framePosition,
+                        static_cast<double>(
+                            activeFrameCount));
             }
             else
             {
+                double clipDurationSeconds =
+                    static_cast<double>(
+                        animation->GetDurationSeconds());
+
+                if (
+                    !std::isfinite(clipDurationSeconds) ||
+                    clipDurationSeconds <= 0.0)
+                {
+                    clipDurationSeconds =
+                        static_cast<double>(
+                            usableKeyCount - 1U) *
+                        sampleIntervalSeconds;
+                }
+
+                timeSeconds =
+                    std::clamp(
+                        timeSeconds,
+                        0.0,
+                        clipDurationSeconds);
+
                 framePosition =
                     std::clamp(
-                        framePosition,
+                        timeSeconds /
+                            sampleIntervalSeconds,
                         0.0,
                         static_cast<double>(
                             usableKeyCount - 1U));
             }
-
-            const std::size_t activeFrameCount =
-                loopMode ==
-                    engine::scene::
-                        CharacterAnimationLoopMode::Loop
-                    ? loopKeyCount
-                    : usableKeyCount;
 
             std::size_t firstFrame =
                 static_cast<std::size_t>(
@@ -718,18 +918,19 @@ namespace lts::editor
             if (secondFrame >= activeFrameCount)
             {
                 secondFrame =
-                    loopMode ==
-                        engine::scene::
-                            CharacterAnimationLoopMode::Loop
+                    looping
                         ? 0U
                         : activeFrameCount - 1U;
             }
 
             const float interpolation =
                 static_cast<float>(
-                    framePosition -
-                    static_cast<double>(
-                        firstFrame));
+                    std::clamp(
+                        framePosition -
+                            static_cast<double>(
+                                firstFrame),
+                        0.0,
+                        1.0));
 
             output =
                 BuildKeyMatrix(
@@ -751,6 +952,9 @@ namespace lts::editor
         bool SampleLayerBone(
             const CharacterAnimationLayerSample&
                 layer,
+
+            const LayerLoopSamplingInfo&
+                loopSamplingInfo,
 
             const engine::assets::SkeletonAsset&
                 skeleton,
@@ -782,6 +986,7 @@ namespace lts::editor
                     boneIndex,
                     layer.currentTimeSeconds,
                     layer.loopMode,
+                    loopSamplingInfo.current,
                     currentMatrix);
 
             const float transitionAlpha =
@@ -801,7 +1006,8 @@ namespace lts::editor
                     skeleton,
                     boneIndex,
                     layer.previousTimeSeconds,
-                    layer.loopMode,
+                    layer.previousLoopMode,
+                    loopSamplingInfo.previous,
                     previousMatrix);
 
             if (
@@ -845,18 +1051,112 @@ namespace lts::editor
             return false;
         }
 
+        [[nodiscard]]
+        bool LayerMarksRootMotionBone(
+            const CharacterAnimationLayerSample& layer,
+            const std::size_t boneIndex) noexcept
+        {
+            const auto isRootTrack =
+                [boneIndex](
+                    const engine::assets::AnimationAsset*
+                        animation) noexcept
+                {
+                    if (
+                        animation == nullptr ||
+                        !animation->IsValid())
+                    {
+                        return false;
+                    }
+
+                    const engine::assets::AnimationTrack*
+                        track =
+                            animation->GetTrackForBone(
+                                boneIndex);
+
+                    return
+                        track != nullptr &&
+                        track->IsRootTrack();
+                };
+
+            return
+                isRootTrack(layer.currentAnimation) ||
+                isRootTrack(layer.previousAnimation);
+        }
+
         void PreserveControllerOwnedRootTransform(
             const DirectX::XMMATRIX& bindLocal,
             DirectX::XMMATRIX& animatedLocal) noexcept
         {
             /*
-             * CharacterController управляет world X/Y/Z и yaw.
-             * Анимационный Bip01 не должен второй раз
-             * перемещать, наклонять или раскачивать модель.
-             * Pelvis и все дочерние кости остаются анимированными.
+             * CharacterController owns horizontal movement and yaw.
+             * Keep animated root Y plus pitch/roll, but remove the
+             * animated Y-twist which would rotate the actor twice.
              */
+            DirectX::XMFLOAT4X4 bindStored;
+            DirectX::XMFLOAT4X4 animatedStored;
+
+            DirectX::XMStoreFloat4x4(
+                &bindStored,
+                bindLocal);
+
+            DirectX::XMStoreFloat4x4(
+                &animatedStored,
+                animatedLocal);
+
+            const float animatedTranslationY =
+                animatedStored._42;
+
+            const float bindHorizontalForwardLength =
+                std::sqrt(
+                    bindStored._31 * bindStored._31 +
+                    bindStored._33 * bindStored._33);
+
+            const float animatedHorizontalForwardLength =
+                std::sqrt(
+                    animatedStored._31 * animatedStored._31 +
+                    animatedStored._33 * animatedStored._33);
+
+            if (
+                std::isfinite(bindHorizontalForwardLength) &&
+                std::isfinite(animatedHorizontalForwardLength) &&
+                bindHorizontalForwardLength > 0.000001F &&
+                animatedHorizontalForwardLength > 0.000001F)
+            {
+                const float bindYawRadians =
+                    std::atan2(
+                        bindStored._31,
+                        bindStored._33);
+
+                const float animatedYawRadians =
+                    std::atan2(
+                        animatedStored._31,
+                        animatedStored._33);
+
+                const float animatedYawDelta =
+                    std::remainder(
+                        animatedYawRadians -
+                            bindYawRadians,
+                        DirectX::XM_2PI);
+
+                animatedStored._41 = 0.0F;
+                animatedStored._42 = 0.0F;
+                animatedStored._43 = 0.0F;
+
+                DirectX::XMStoreFloat4x4(
+                    &animatedStored,
+                    DirectX::XMLoadFloat4x4(
+                        &animatedStored) *
+                    DirectX::XMMatrixRotationY(
+                        -animatedYawDelta));
+            }
+
+            animatedStored._41 = bindStored._41;
+            animatedStored._42 = animatedTranslationY;
+            animatedStored._43 = bindStored._43;
+
             animatedLocal =
-                bindLocal;
+                DirectX::XMLoadFloat4x4(
+                    &animatedStored);
         }
 
     }
@@ -971,6 +1271,21 @@ namespace lts::editor
                 : input.actionRootBone,
             actionMask);
 
+        const LayerLoopSamplingInfo
+            lowerBodyLoopSampling =
+                BuildLayerLoopSamplingInfo(
+                    input.lowerBody);
+
+        const LayerLoopSamplingInfo
+            upperBodyLoopSampling =
+                BuildLayerLoopSamplingInfo(
+                    input.upperBody);
+
+        const LayerLoopSamplingInfo
+            actionLoopSampling =
+                BuildLayerLoopSamplingInfo(
+                    input.action);
+
         std::array<
             DirectX::XMFLOAT4X4,
             engine::assets::MaximumSkeletonBones>
@@ -1023,6 +1338,7 @@ namespace lts::editor
 
             if (SampleLayerBone(
                     input.lowerBody,
+                    lowerBodyLoopSampling,
                     skeleton,
                     boneIndex,
                     lowerMatrix,
@@ -1057,6 +1373,7 @@ namespace lts::editor
 
                 if (SampleLayerBone(
                         input.upperBody,
+                        upperBodyLoopSampling,
                         skeleton,
                         boneIndex,
                         upperMatrix,
@@ -1092,6 +1409,7 @@ namespace lts::editor
 
                 if (SampleLayerBone(
                         input.action,
+                        actionLoopSampling,
                         skeleton,
                         boneIndex,
                         actionMatrix,
@@ -1116,7 +1434,9 @@ namespace lts::editor
 
             if (
                 input.blockControllerOwnedRootTransform &&
-                bone->parentIndex < 0)
+                LayerMarksRootMotionBone(
+                    input.lowerBody,
+                    boneIndex))
             {
                 PreserveControllerOwnedRootTransform(
                     bindLocal,

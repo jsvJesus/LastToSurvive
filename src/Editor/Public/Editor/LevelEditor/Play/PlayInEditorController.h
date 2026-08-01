@@ -56,7 +56,12 @@ namespace lts::editor
             std::uint32_t viewportWidth,
             std::uint32_t viewportHeight,
             DirectX::XMFLOAT4X4&
-                viewProjection) const noexcept;
+                viewProjection,
+            DirectX::XMFLOAT4X4*
+                inverseView = nullptr,
+            DirectX::XMFLOAT4X4*
+                firstPersonViewProjection =
+                    nullptr) const noexcept;
 
         [[nodiscard]]
         DirectX::XMFLOAT3
@@ -101,20 +106,6 @@ namespace lts::editor
             0.0F
         };
 
-        /*
-         * Игровое направление корпуса и ног.
-         * Визуальный offset модели +180° здесь
-         * не хранится.
-         */
-        float bodyYawDegrees_ = 0.0F;
-
-        /*
-         * -1 = Turn Left
-         *  0 = поворот ног не активен
-         * +1 = Turn Right
-         */
-        std::int32_t turnDirection_ = 0;
-
         float cameraYawRadians_ = 0.0F;
         float cameraPitchRadians_ =
             -0.087266463F;
@@ -130,6 +121,7 @@ namespace lts::editor
         float velocityX_ = 0.0F;
         float velocityZ_ = 0.0F;
         float verticalVelocity_ = 0.0F;
+        float lastValidGroundHeight_ = 0.0F;
 
         std::int32_t restoreCursorX_ = 0;
         std::int32_t restoreCursorY_ = 0;

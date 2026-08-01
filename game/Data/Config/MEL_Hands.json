@@ -2,9 +2,11 @@
   "format": "LTS.CharacterAnimationProfile",
   "version": 1,
   "animationSet": {
-    "upperBodyRootBone": "Bip01_Spine1",
-    "actionRootBone": "Bip01_Spine1",
-    "lookRootBone": "Bip01_Neck",
+    "bones": {
+      "upperBodyRoot": "Bip01_Spine1",
+      "actionRoot": "Bip01_Spine1",
+      "lookRoot": "Bip01_Neck"
+    },
     "lowerBody": {
       "standingIdle": "Data/Animations/Characters/idle_stand_MEL_Hands.anim",
       "walk": {
@@ -21,8 +23,8 @@
         "forward": "Data/Animations/Characters/run_stand_F.anim",
         "forwardLeft": "Data/Animations/Characters/run_stand_FL.anim",
         "forwardRight": "Data/Animations/Characters/run_stand_FR.anim",
-        "left": "",
-        "right": "",
+        "left": "Data/Animations/Characters/run_stand_L.anim",
+        "right": "Data/Animations/Characters/run_stand_R.anim",
         "backward": "Data/Animations/Characters/run_stand_B.anim",
         "backwardLeft": "Data/Animations/Characters/run_stand_BL.anim",
         "backwardRight": "Data/Animations/Characters/run_stand_BR.anim"
@@ -45,8 +47,8 @@
       },
       "turnInPlaceLeft": "Data/Animations/Characters/walk_stand_BL.anim",
       "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BR.anim",
-      "crouchedTurnInPlaceLeft": "Data/Animations/Characters/run_crouch_L.anim",
-      "crouchedTurnInPlaceRight": "Data/Animations/Characters/run_crouch_R.anim",
+      "crouchedTurnInPlaceLeft": "Data/Animations/Characters/crouch_turn_L.anim",
+      "crouchedTurnInPlaceRight": "Data/Animations/Characters/crouch_turn_R.anim",
       "jumpStart": "Data/Animations/Characters/Jump_ASR_Idle_S.anim",
       "jumpLoop": "Data/Animations/Characters/Jump_ASR_Idle_A.anim",
       "jumpLand": "Data/Animations/Characters/Jump_ASR_Idle_L.anim"
@@ -60,15 +62,15 @@
         "crouchedRelaxedIdle": "Data/Animations/Characters/idle_crouch_MEL_Hands.anim",
         "crouchedRelaxedMove": "Data/Animations/Characters/Crouch_Blend_MEL_Hands.anim",
         "crouchedAimIdle": "Data/Animations/Characters/idle_crouch_MEL_Hands.anim",
-        "crouchedAimMove": "Data/Animations/Characters/aimIdle_crouchBlend_MEL_Hands.anim"
+        "crouchedAimMove": "Data/Animations/Characters/aimidle_crouchBlend_MEL_Hands.anim"
       },
       "actions": {
-        "primaryStanding": "Data/Animations/Characters/standAim_shooting_MEL_hands_L_Hook.anim",
-        "primaryMoving": "Data/Animations/Characters/standAim_shooting_MEL_hands_L_Hook.anim",
+        "primaryStanding": "Data/Animations/Characters/StandAim_Shooting_MEL_Hands_L_Hook.anim",
+        "primaryMoving": "Data/Animations/Characters/StandAim_Shooting_MEL_Hands_L_Hook.anim",
         "primaryCrouched": "Data/Animations/Characters/Crouch_MEL_Hands_L_Hook.anim",
-        "secondaryStanding": "",
-        "secondaryMoving": "",
-        "secondaryCrouched": "",
+        "secondaryStanding": "Data/Animations/Characters/StandAim_Shooting_MEL_Hands_R_Punch.anim",
+        "secondaryMoving": "Data/Animations/Characters/StandAim_Shooting_MEL_Hands_R_Punch.anim",
+        "secondaryCrouched": "Data/Animations/Characters/crouch_MEL_Hands_R_Hook.anim",
         "reloadStanding": "",
         "reloadMoving": "",
         "reloadCrouched": ""
@@ -86,12 +88,12 @@
         "crouchedAimMove": "Data/Animations/Characters/FPS_Crouch_Aim_Mel_Hands.anim"
       },
       "actions": {
-        "primaryStanding": "Data/Animations/Characters/FPS_Stand_MEL_Hands_L_Hook.anim",
-        "primaryMoving": "Data/Animations/Characters/FPS_Stand_MEL_Hands_L_Hook.anim",
+        "primaryStanding": "Data/Animations/Characters/FPS_StandAim_Shooting_Mel_Hands_L_Hook.anim",
+        "primaryMoving": "Data/Animations/Characters/FPS_StandAim_Shooting_Mel_Hands_L_Hook.anim",
         "primaryCrouched": "Data/Animations/Characters/FPS_Crouch_MEL_Hands_L_Hook.anim",
-        "secondaryStanding": "",
-        "secondaryMoving": "",
-        "secondaryCrouched": "",
+        "secondaryStanding": "Data/Animations/Characters/FPS_StandAim_Shooting_Mel_Hands_R_Punch.anim",
+        "secondaryMoving": "Data/Animations/Characters/FPS_StandAim_Shooting_Mel_Hands_R_Punch.anim",
+        "secondaryCrouched": "Data/Animations/Characters/FPS_Crouch_MEL_Hands_R_Hook.anim",
         "reloadStanding": "",
         "reloadMoving": "",
         "reloadCrouched": ""

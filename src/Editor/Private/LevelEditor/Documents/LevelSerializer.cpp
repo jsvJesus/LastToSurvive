@@ -1905,6 +1905,10 @@ namespace lts::editor
             engine::scene::
                 CharacterAnimationSet& value)
         {
+            const JsonValue* const bones =
+                json.Find(
+                    "bones");
+
             const JsonValue* const lowerBody =
                 RequireField(
                     json,
@@ -1925,29 +1929,64 @@ namespace lts::editor
                     json,
                     "tuning");
 
+            bool bonesRead = false;
+
+            if (bones != nullptr)
+            {
+                bonesRead =
+                    bones->type ==
+                        JsonValue::Type::Object &&
+
+                    ReadString(
+                        RequireField(
+                            *bones,
+                            "upperBodyRoot"),
+                        value.upperBodyRootBone) &&
+
+                    ReadString(
+                        RequireField(
+                            *bones,
+                            "actionRoot"),
+                        value.actionRootBone) &&
+
+                    ReadString(
+                        RequireField(
+                            *bones,
+                            "lookRoot"),
+                        value.lookRootBone);
+            }
+            else
+            {
+                /*
+                 * Backward compatibility with version 1 profiles and
+                 * inline CharacterAnimation sets from level version 5.
+                 */
+                bonesRead =
+                    ReadString(
+                        RequireField(
+                            json,
+                            "upperBodyRootBone"),
+                        value.upperBodyRootBone) &&
+
+                    ReadString(
+                        RequireField(
+                            json,
+                            "actionRootBone"),
+                        value.actionRootBone) &&
+
+                    ReadString(
+                        RequireField(
+                            json,
+                            "lookRootBone"),
+                        value.lookRootBone);
+            }
+
             return
                 lowerBody != nullptr &&
                 thirdPerson != nullptr &&
                 firstPerson != nullptr &&
                 tuning != nullptr &&
-
-                ReadString(
-                    RequireField(
-                        json,
-                        "upperBodyRootBone"),
-                    value.upperBodyRootBone) &&
-
-                ReadString(
-                    RequireField(
-                        json,
-                        "actionRootBone"),
-                    value.actionRootBone) &&
-
-                ReadString(
-                    RequireField(
-                        json,
-                        "lookRootBone"),
-                    value.lookRootBone) &&
+                bonesRead &&
 
                 ReadLowerBodyAnimationSet(
                     *lowerBody,
@@ -2029,8 +2068,7 @@ namespace lts::editor
             }
 
             value.profilePath =
-                L"Data/Config/CharacterAnimations/"
-                L"MEL_Hands.json";
+                L"Data/Config/MEL_Hands.json";
 
             value.runtime.Reset();
 

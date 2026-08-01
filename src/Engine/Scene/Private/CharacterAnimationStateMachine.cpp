@@ -12,6 +12,46 @@ namespace engine::scene
         constexpr double MaximumAnimationDeltaSeconds =
             0.10;
 
+        constexpr float MaximumProceduralPitchDegrees =
+            89.0F;
+
+        [[nodiscard]]
+        float NormalizeAngleDegrees(
+            const float angleDegrees) noexcept
+        {
+            return std::isfinite(angleDegrees)
+                ? std::remainder(angleDegrees, 360.0F)
+                : 0.0F;
+        }
+
+        [[nodiscard]]
+        float AngleDifferenceDegrees(
+            const float targetDegrees,
+            const float currentDegrees) noexcept
+        {
+            return NormalizeAngleDegrees(
+                targetDegrees - currentDegrees);
+        }
+
+        [[nodiscard]]
+        float MoveAngleDegrees(
+            const float currentDegrees,
+            const float targetDegrees,
+            const float maximumDeltaDegrees) noexcept
+        {
+            const float differenceDegrees =
+                AngleDifferenceDegrees(
+                    targetDegrees,
+                    currentDegrees);
+
+            return NormalizeAngleDegrees(
+                currentDegrees +
+                std::clamp(
+                    differenceDegrees,
+                    -(std::max)(maximumDeltaDegrees, 0.0F),
+                    (std::max)(maximumDeltaDegrees, 0.0F)));
+        }
+
         [[nodiscard]]
         const std::wstring* FirstNonEmpty(
             const std::initializer_list<
@@ -141,12 +181,6 @@ namespace engine::scene
         CharacterAnimationRuntime& runtime =
             component.runtime;
 
-        if (!component.enabled)
-        {
-            runtime.Reset();
-            return;
-        }
-
         double deltaSeconds =
             std::isfinite(input.deltaSeconds)
                 ? input.deltaSeconds
@@ -157,6 +191,261 @@ namespace engine::scene
                 deltaSeconds,
                 0.0,
                 MaximumAnimationDeltaSeconds);
+
+        const CharacterAnimationSet& animationSet =
+            component.animationSet;
+
+        const bool firstUpdate =
+            runtime.firstUpdate;
+
+        const float desiredActorYawDegrees =
+            NormalizeAngleDegrees(
+                input.desiredActorYawDegrees);
+
+        float actorYawDegrees =
+            NormalizeAngleDegrees(
+                runtime.actorYawDegrees);
+
+        const bool moving =
+            IsCharacterMoving(input);
+
+        const float turnEnterDegrees =
+            (std::max)(
+                std::fabs(
+                    animationSet.tuning.
+                        turnInPlaceEnterDegrees),
+                1.0F);
+
+        const float turnExitDegrees =
+            std::clamp(
+                std::fabs(
+                    animationSet.tuning.
+                        turnInPlaceExitDegrees),
+                0.0F,
+                turnEnterDegrees);
+
+        const float turnSpeedDegrees =
+            (std::max)(
+                std::fabs(
+                    animationSet.tuning.
+                        turnInPlaceSpeedDegrees),
+                1.0F);
+
+        const float frameTurnDelta =
+            turnSpeedDegrees *
+            static_cast<float>(deltaSeconds);
+
+        const bool canTurnInPlace =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson &&
+            input.grounded &&
+            !moving &&
+            input.locomotionState ==
+                CharacterLocomotionState::Idle;
+
+        if (moving)
+        {
+            actorYawDegrees =
+                MoveAngleDegrees(
+                    actorYawDegrees,
+                    desiredActorYawDegrees,
+                    (std::max)(
+                        input.movementRotationSpeedDegrees,
+                        0.0F) *
+                    static_cast<float>(deltaSeconds));
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+            runtime.turnTargetYawDegrees =
+                actorYawDegrees;
+        }
+        else if (
+            input.viewMode ==
+                CharacterViewMode::FirstPerson)
+        {
+            /*
+             * Локальный FPS не запускает TPS turn-track.
+             * Корпус плавно следует за направлением камеры.
+             */
+            actorYawDegrees =
+                MoveAngleDegrees(
+                    actorYawDegrees,
+                    desiredActorYawDegrees,
+                    frameTurnDelta);
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+            runtime.turnTargetYawDegrees =
+                actorYawDegrees;
+        }
+        else if (!canTurnInPlace)
+        {
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+            runtime.turnTargetYawDegrees =
+                actorYawDegrees;
+        }
+        else
+        {
+            const float cameraBodyDifference =
+                AngleDifferenceDegrees(
+                    desiredActorYawDegrees,
+                    actorYawDegrees);
+
+            bool startedTurnThisUpdate = false;
+
+            if (
+                !runtime.turnInPlaceActive &&
+                std::fabs(cameraBodyDifference) >=
+                    turnEnterDegrees)
+            {
+                runtime.turnInPlaceActive = true;
+
+                /*
+                 * Target фиксируется один раз на текущий
+                 * turn, поэтому ноги не гонятся бесконечно
+                 * за каждым новым mouse delta.
+                 */
+                runtime.turnTargetYawDegrees =
+                    desiredActorYawDegrees;
+
+                runtime.turnDirection =
+                    cameraBodyDifference >= 0.0F
+                        ? 1
+                        : -1;
+
+                startedTurnThisUpdate = true;
+            }
+
+            if (runtime.turnInPlaceActive)
+            {
+                if (!startedTurnThisUpdate)
+                {
+                    actorYawDegrees =
+                        MoveAngleDegrees(
+                            actorYawDegrees,
+                            runtime.turnTargetYawDegrees,
+                            frameTurnDelta);
+
+                    const float remainingDifference =
+                        AngleDifferenceDegrees(
+                            runtime.turnTargetYawDegrees,
+                            actorYawDegrees);
+
+                    if (
+                        std::fabs(remainingDifference) <=
+                            turnExitDegrees)
+                    {
+                        actorYawDegrees =
+                            NormalizeAngleDegrees(
+                                runtime.turnTargetYawDegrees);
+
+                        runtime.turnInPlaceActive = false;
+                        runtime.turnDirection = 0;
+                    }
+                }
+            }
+            else
+            {
+                runtime.turnTargetYawDegrees =
+                    actorYawDegrees;
+
+                runtime.turnDirection = 0;
+            }
+        }
+
+        runtime.actorYawDegrees =
+            NormalizeAngleDegrees(
+                actorYawDegrees);
+
+        runtime.lowerBodyYawDegrees =
+            runtime.actorYawDegrees;
+
+        const float maximumLookYaw =
+            (std::max)(
+                std::fabs(
+                    animationSet.tuning.
+                        maximumUpperBodyYawDegrees),
+                0.0F);
+
+        runtime.upperBodyYawOffsetDegrees =
+            std::clamp(
+                AngleDifferenceDegrees(
+                    desiredActorYawDegrees,
+                    runtime.actorYawDegrees),
+                -maximumLookYaw,
+                maximumLookYaw);
+
+        runtime.upperBodyPitchOffsetDegrees =
+            std::clamp(
+                std::isfinite(
+                    input.lookPitchOffsetDegrees)
+                    ? input.lookPitchOffsetDegrees
+                    : 0.0F,
+                -MaximumProceduralPitchDegrees,
+                MaximumProceduralPitchDegrees);
+
+        CharacterLocomotionState resolvedLocomotionState =
+            input.locomotionState;
+
+        if (
+            runtime.turnInPlaceActive &&
+            runtime.turnDirection != 0)
+        {
+            resolvedLocomotionState =
+                runtime.turnDirection < 0
+                    ? CharacterLocomotionState::
+                        TurnInPlaceLeft
+                    : CharacterLocomotionState::
+                        TurnInPlaceRight;
+        }
+
+        CharacterAnimationStateInput resolvedInput =
+            input;
+
+        resolvedInput.locomotionState =
+            resolvedLocomotionState;
+
+        runtime.viewMode =
+            input.viewMode;
+
+        runtime.stance =
+            input.stance;
+
+        runtime.movementDirection =
+            input.movementDirection;
+
+        runtime.locomotionState =
+            resolvedLocomotionState;
+
+        runtime.upperBodyState =
+            input.upperBodyState;
+
+        runtime.movementSpeed =
+            (std::max)(
+                input.movementSpeed,
+                0.0F);
+
+        runtime.grounded =
+            input.grounded;
+
+        runtime.aiming =
+            input.aiming;
+
+        if (!component.enabled)
+        {
+            /*
+             * Presentation state (особенно FPS/TPS) остаётся
+             * актуальным даже при выключенной анимации.
+             */
+            runtime.lowerBody.Reset();
+            runtime.upperBody.Reset();
+            runtime.action.Reset();
+            runtime.actionState =
+                CharacterActionState::None;
+            runtime.firstUpdate = true;
+            return;
+        }
 
         /*
          * Сначала продвигаем существующие клипы.
@@ -176,39 +465,6 @@ namespace engine::scene
             deltaSeconds,
             input.actionClipDurationSeconds);
 
-        runtime.viewMode =
-            input.viewMode;
-
-        runtime.stance =
-            input.stance;
-
-        runtime.movementDirection =
-            input.movementDirection;
-
-        runtime.locomotionState =
-            input.locomotionState;
-
-        runtime.upperBodyState =
-            input.upperBodyState;
-
-        runtime.movementSpeed =
-            (std::max)(
-                input.movementSpeed,
-                0.0F);
-
-        runtime.grounded =
-            input.grounded;
-
-        runtime.aiming =
-            input.aiming;
-
-        const CharacterAnimationSet&
-            animationSet =
-                component.animationSet;
-
-        const bool firstUpdate =
-            runtime.firstUpdate;
-
         /*
          * Нижняя часть тела.
          */
@@ -216,7 +472,7 @@ namespace engine::scene
             desiredLowerBodyClip =
                 ResolveLowerBodyClip(
                     animationSet,
-                    input);
+                    resolvedInput);
 
         SetLayerClip(
             runtime.lowerBody,
@@ -228,7 +484,7 @@ namespace engine::scene
                     locomotionBlendSeconds,
 
             ResolveLowerBodyLoopMode(
-                input.locomotionState),
+                resolvedLocomotionState),
 
             false);
 
@@ -239,7 +495,7 @@ namespace engine::scene
             desiredUpperBodyClip =
                 ResolveUpperBodyClip(
                     animationSet,
-                    input);
+                    resolvedInput);
 
         SetLayerClip(
             runtime.upperBody,
@@ -267,7 +523,7 @@ namespace engine::scene
                 desiredActionClip =
                     ResolveActionClip(
                         animationSet,
-                        input);
+                        resolvedInput);
 
             if (
                 desiredActionClip != nullptr &&
@@ -378,6 +634,8 @@ namespace engine::scene
             {
                 layer.previousClip.clear();
                 layer.previousTimeSeconds = 0.0;
+                layer.previousLoopMode =
+                    CharacterAnimationLoopMode::Loop;
 
                 layer.transitionElapsedSeconds =
                     layer.transitionDurationSeconds;
@@ -387,6 +645,8 @@ namespace engine::scene
         {
             layer.previousClip.clear();
             layer.previousTimeSeconds = 0.0;
+            layer.previousLoopMode =
+                CharacterAnimationLoopMode::Loop;
 
             layer.transitionElapsedSeconds =
                 layer.transitionDurationSeconds;
@@ -441,19 +701,22 @@ namespace engine::scene
                 : emptyClip;
 
         /*
-         * Клип не изменился — продолжаем текущее
-         * воспроизведение без сброса времени.
+         * Клип и loop mode не изменились — продолжаем
+         * текущее воспроизведение без сброса времени.
          */
         if (
             !restart &&
-            layer.currentClip == desiredClip)
+            layer.currentClip == desiredClip &&
+            layer.loopMode == loopMode)
         {
-            layer.loopMode = loopMode;
             return;
         }
 
         std::wstring transitionSourceClip;
         double transitionSourceTime = 0.0;
+        CharacterAnimationLoopMode
+            transitionSourceLoopMode =
+                CharacterAnimationLoopMode::Loop;
 
         /*
          * Обычно источником transition является
@@ -470,6 +733,9 @@ namespace engine::scene
 
             transitionSourceTime =
                 layer.currentTimeSeconds;
+
+            transitionSourceLoopMode =
+                layer.loopMode;
         }
         else if (!layer.previousClip.empty())
         {
@@ -478,6 +744,9 @@ namespace engine::scene
 
             transitionSourceTime =
                 layer.previousTimeSeconds;
+
+            transitionSourceLoopMode =
+                layer.previousLoopMode;
         }
 
         layer.previousClip =
@@ -486,6 +755,9 @@ namespace engine::scene
 
         layer.previousTimeSeconds =
             transitionSourceTime;
+
+        layer.previousLoopMode =
+            transitionSourceLoopMode;
 
         layer.currentClip =
             desiredClip;
@@ -508,6 +780,8 @@ namespace engine::scene
         {
             layer.previousClip.clear();
             layer.previousTimeSeconds = 0.0;
+            layer.previousLoopMode =
+                CharacterAnimationLoopMode::Loop;
 
             layer.transitionDurationSeconds = 0.0F;
             layer.transitionElapsedSeconds = 0.0F;

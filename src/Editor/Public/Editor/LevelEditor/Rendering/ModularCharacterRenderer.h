@@ -7,6 +7,7 @@
 #include <DirectXMath.h>
 
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace engine::graphics
@@ -44,7 +45,17 @@ namespace lts::editor
                 context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept;
+                viewProjection,
+            const DirectX::XMFLOAT4X4*
+                firstPersonInverseView = nullptr,
+            const DirectX::XMFLOAT4X4*
+                firstPersonViewProjection =
+                    nullptr) noexcept;
+
+        [[nodiscard]]
+        bool TryGetAnimationDuration(
+            const std::wstring& animationPath,
+            double& durationSeconds) const noexcept;
 
         /*
          * Позиция кости из последней успешно

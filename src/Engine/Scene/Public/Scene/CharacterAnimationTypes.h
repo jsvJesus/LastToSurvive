@@ -443,6 +443,14 @@ namespace engine::scene
         CharacterAnimationLoopMode loopMode =
             CharacterAnimationLoopMode::Loop;
 
+        /*
+         * Loop mode предыдущего клипа нужен во время
+         * cross-fade: Once-клип нельзя семплировать как
+         * новый Loop-клип (и наоборот).
+         */
+        CharacterAnimationLoopMode previousLoopMode =
+            CharacterAnimationLoopMode::Loop;
+
         bool active = false;
         bool completed = false;
 
@@ -460,6 +468,9 @@ namespace engine::scene
             weight = 1.0F;
 
             loopMode =
+                CharacterAnimationLoopMode::Loop;
+
+            previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
 
             active = false;
@@ -538,6 +549,14 @@ namespace engine::scene
          */
         float turnTargetYawDegrees = 0.0F;
 
+        /*
+         * -1 = поворот влево, +1 = вправо.
+         * Хранится в animation runtime, чтобы выбор
+         * lower-body turn clip и поворот ног были одним
+         * согласованным состоянием.
+         */
+        std::int32_t turnDirection = 0;
+
         bool grounded = true;
         bool aiming = false;
 
@@ -575,6 +594,7 @@ namespace engine::scene
             upperBodyYawOffsetDegrees = 0.0F;
             upperBodyPitchOffsetDegrees = 0.0F;
             turnTargetYawDegrees = 0.0F;
+            turnDirection = 0;
 
             grounded = true;
             aiming = false;

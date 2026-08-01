@@ -45,6 +45,25 @@ namespace engine::scene
 
         float movementSpeed = 0.0F;
 
+        /*
+         * Camera/gameplay yaw is the direction requested
+         * for the character. The state machine keeps the
+         * actor/legs yaw separate and owns Turn In Place.
+         */
+        float desiredActorYawDegrees = 0.0F;
+
+        /*
+         * Camera pitch is consumed by the procedural
+         * Spine1/Neck evaluator as rotation only.
+         */
+        float lookPitchOffsetDegrees = 0.0F;
+
+        /*
+         * Rotation speed while the character is moving.
+         * Idle Turn In Place uses tuning.turnInPlaceSpeedDegrees.
+         */
+        float movementRotationSpeedDegrees = 360.0F;
+
         bool grounded = true;
         bool aiming = false;
 
@@ -66,7 +85,7 @@ namespace engine::scene
         double actionClipDurationSeconds = 0.0;
 
         /*
-         * Для JumpStart, JumpLand и Turn In Place.
+         * Для JumpStart и JumpLand.
          */
         double lowerClipDurationSeconds = 0.0;
     };

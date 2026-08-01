@@ -4852,6 +4852,12 @@ namespace lts::editor
 
             DirectX::XMFLOAT4X4 viewProjection{};
 
+            DirectX::XMFLOAT4X4
+                firstPersonInverseView{};
+
+            DirectX::XMFLOAT4X4
+                firstPersonViewProjection{};
+
             const std::uint32_t viewportWidth =
                 static_cast<std::uint32_t>(
                     (std::max)(imguiViewportWidth_, 1.0F));
@@ -4878,7 +4884,9 @@ namespace lts::editor
                         BuildViewProjection(
                             viewportWidth,
                             viewportHeight,
-                            viewProjection)
+                            viewProjection,
+                            &firstPersonInverseView,
+                            &firstPersonViewProjection)
                     : cameraController_.
                         BuildViewProjection(
                             viewportWidth,
@@ -4935,7 +4943,13 @@ namespace lts::editor
                         modularCharacterRenderer_.Render(
                             *commandContext_,
                             sceneDocument_,
-                            viewProjection);
+                            viewProjection,
+                            playMode
+                                ? &firstPersonInverseView
+                                : nullptr,
+                            playMode
+                                ? &firstPersonViewProjection
+                                : nullptr);
                 }
 
                 if (

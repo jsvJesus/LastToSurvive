@@ -32,6 +32,11 @@ namespace lts::editor
                 engine::scene::
                     CharacterAnimationLoopMode::Loop;
 
+        engine::scene::CharacterAnimationLoopMode
+            previousLoopMode =
+                engine::scene::
+                    CharacterAnimationLoopMode::Loop;
+
         bool active = false;
     };
 
@@ -59,9 +64,9 @@ namespace lts::editor
         float lookPitchOffsetDegrees = 0.0F;
 
         /*
-         * CharacterController владеет world position/yaw.
-         * При true анимационный Bip01 возвращается
-         * к bind-local transform.
+         * CharacterController владеет горизонтальным movement и yaw.
+         * При true у root-motion track блокируются X/Z и Y-twist;
+         * animated Y, pitch и roll сохраняются.
          */
         bool blockControllerOwnedRootTransform = true;
     };
