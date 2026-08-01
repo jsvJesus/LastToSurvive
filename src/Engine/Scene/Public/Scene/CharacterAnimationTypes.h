@@ -585,9 +585,32 @@ namespace engine::scene
      */
     struct CharacterAnimationComponent final
     {
+        /*
+         * Единственное поле Animation Set,
+         * сохраняемое внутри level.
+         */
+        std::wstring profilePath =
+            L"Data/Config/CharacterAnimations/"
+            L"MEL_Hands.json";
+
+        /*
+         * Загружается из profilePath.
+         * В level больше не сериализуется.
+         */
         CharacterAnimationSet animationSet;
+
+        /*
+         * Полностью transient runtime.
+         */
         CharacterAnimationRuntime runtime;
 
+        /*
+         * Последняя ошибка загрузки профиля.
+         * В level не сохраняется.
+         */
+        std::wstring profileError;
+
         bool enabled = true;
+        bool profileLoaded = false;
     };
 }

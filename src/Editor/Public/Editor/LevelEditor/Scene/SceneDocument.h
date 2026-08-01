@@ -92,6 +92,22 @@ namespace lts::editor
             engine::scene::
                 CharacterAnimationComponent component);
 
+        [[nodiscard]]
+        bool SetSelectedCharacterAnimationProfile(
+            std::wstring profilePath,
+            std::wstring& error);
+
+        [[nodiscard]]
+        bool ReloadSelectedCharacterAnimationProfile(
+            std::wstring& error);
+
+        [[nodiscard]]
+        bool ReloadCharacterAnimationProfile(
+            EditorEntityId entityId,
+            std::wstring& error);
+
+        void ReloadCharacterAnimationProfiles();
+
         [[nodiscard]] bool SetSelectedTerrainLayers(
             std::vector<engine::scene::TerrainComponent::LayerOverride> layers);
         

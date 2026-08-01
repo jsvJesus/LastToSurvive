@@ -30,5 +30,12 @@ namespace lts::editor
             const std::filesystem::path& path,
             EditorLevelFileData& data,
             std::wstring& error);
+
+        [[nodiscard]]
+        static bool LoadCharacterAnimationProfile(
+            const std::filesystem::path& profilePath,
+            engine::scene::CharacterAnimationSet&
+                animationSet,
+            std::wstring& error);
     };
 }

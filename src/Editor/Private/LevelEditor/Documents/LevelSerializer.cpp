@@ -23,16 +23,22 @@ namespace lts::editor
     namespace
     {
         /*
-         * Version 5:
-         * CharacterAnimation component persistence.
+         * Version 6:
+         * CharacterAnimation хранит только
+         * ссылку на внешний JSON-профиль.
          */
         constexpr std::uint64_t
-            CurrentFormatVersion = 5U;
+            CurrentFormatVersion = 6U;
 
         /*
-         * Version 4:
-         * modular character parts and BodyFPS.
+         * Version 5:
+         * CharacterAnimationSet был встроен
+         * непосредственно в level.
          */
+        constexpr std::uint64_t
+            InlineCharacterAnimationFormatVersion =
+                5U;
+
         constexpr std::uint64_t
             ModularCharacterFormatVersion = 4U;
 
@@ -47,6 +53,14 @@ namespace lts::editor
 
         constexpr std::string_view FormatName =
             "LTS.Level";
+
+        constexpr std::string_view
+            CharacterAnimationProfileFormatName =
+                "LTS.CharacterAnimationProfile";
+
+        constexpr std::uint64_t
+            CharacterAnimationProfileFormatVersion =
+                1U;
 
         constexpr std::uintmax_t MaximumLevelFileSize =
             64U * 1024U * 1024U;
@@ -1027,6 +1041,7 @@ namespace lts::editor
             return true;
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteWideString(
             std::ostream& output,
@@ -1062,6 +1077,7 @@ namespace lts::editor
                     output);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteDirectionalAnimationSet(
             std::ostream& output,
@@ -1185,6 +1201,7 @@ namespace lts::editor
                     value.backwardRight);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteSprintAnimationSet(
             std::ostream& output,
@@ -1243,6 +1260,7 @@ namespace lts::editor
                     value.forwardRight);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteUpperBodyAnimationSet(
             std::ostream& output,
@@ -1366,6 +1384,7 @@ namespace lts::editor
                     value.crouchedAimMove);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteActionAnimationSet(
             std::ostream& output,
@@ -1502,6 +1521,7 @@ namespace lts::editor
                     value.reloadCrouched);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteViewAnimationSet(
             std::ostream& output,
@@ -1557,6 +1577,7 @@ namespace lts::editor
                     value.actions);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteLowerBodyAnimationSet(
             std::ostream& output,
@@ -1767,6 +1788,7 @@ namespace lts::editor
                     value.jumpLand);
         }
 
+        [[maybe_unused]]
         [[nodiscard]]
         bool WriteAnimationTuning(
             std::ostream& output,
@@ -1850,9 +1872,14 @@ namespace lts::editor
             const engine::scene::
                 CharacterAnimationComponent& value)
         {
-            const engine::scene::
-                CharacterAnimationSet& animationSet =
-                    value.animationSet;
+            std::string profilePath;
+
+            if (!ToUtf8(
+                    value.profilePath,
+                    profilePath))
+            {
+                return false;
+            }
 
             output
                 << "{\"enabled\": "
@@ -1861,69 +1888,22 @@ namespace lts::editor
                         ? "true"
                         : "false"
                 )
-                << ", \"upperBodyRootBone\": ";
+                << ", \"profile\": ";
 
             WriteJsonString(
                 output,
-                animationSet.upperBodyRootBone);
-
-            output << ", \"actionRootBone\": ";
-
-            WriteJsonString(
-                output,
-                animationSet.actionRootBone);
-
-            output << ", \"lookRootBone\": ";
-
-            WriteJsonString(
-                output,
-                animationSet.lookRootBone);
-
-            output << ", \"lowerBody\": ";
-
-            if (!WriteLowerBodyAnimationSet(
-                    output,
-                    animationSet.lowerBody))
-            {
-                return false;
-            }
-
-            output << ", \"thirdPerson\": ";
-
-            if (!WriteViewAnimationSet(
-                    output,
-                    animationSet.thirdPerson))
-            {
-                return false;
-            }
-
-            output << ", \"firstPerson\": ";
-
-            if (!WriteViewAnimationSet(
-                    output,
-                    animationSet.firstPerson))
-            {
-                return false;
-            }
-
-            output << ", \"tuning\": ";
-
-            if (!WriteAnimationTuning(
-                    output,
-                    animationSet.tuning))
-            {
-                return false;
-            }
+                profilePath);
 
             output << '}';
+
             return output.good();
         }
 
         [[nodiscard]]
-        bool ReadCharacterAnimationComponent(
+        bool ReadCharacterAnimationSet(
             const JsonValue& json,
             engine::scene::
-                CharacterAnimationComponent& value)
+                CharacterAnimationSet& value)
         {
             const JsonValue* const lowerBody =
                 RequireField(
@@ -1945,58 +1925,122 @@ namespace lts::editor
                     json,
                     "tuning");
 
+            return
+                lowerBody != nullptr &&
+                thirdPerson != nullptr &&
+                firstPerson != nullptr &&
+                tuning != nullptr &&
+
+                ReadString(
+                    RequireField(
+                        json,
+                        "upperBodyRootBone"),
+                    value.upperBodyRootBone) &&
+
+                ReadString(
+                    RequireField(
+                        json,
+                        "actionRootBone"),
+                    value.actionRootBone) &&
+
+                ReadString(
+                    RequireField(
+                        json,
+                        "lookRootBone"),
+                    value.lookRootBone) &&
+
+                ReadLowerBodyAnimationSet(
+                    *lowerBody,
+                    value.lowerBody) &&
+
+                ReadViewAnimationSet(
+                    *thirdPerson,
+                    value.thirdPerson) &&
+
+                ReadViewAnimationSet(
+                    *firstPerson,
+                    value.firstPerson) &&
+
+                ReadAnimationTuning(
+                    *tuning,
+                    value.tuning);
+        }
+
+        [[nodiscard]]
+        bool ReadCharacterAnimationComponent(
+            const JsonValue& json,
+            engine::scene::
+                CharacterAnimationComponent& value)
+        {
             if (
-                lowerBody == nullptr ||
-                thirdPerson == nullptr ||
-                firstPerson == nullptr ||
-                tuning == nullptr ||
                 !ReadBoolean(
                     RequireField(
                         json,
                         "enabled"),
-                    value.enabled) ||
-                !ReadString(
-                    RequireField(
-                        json,
-                        "upperBodyRootBone"),
-                    value.animationSet.
-                        upperBodyRootBone) ||
-                !ReadString(
-                    RequireField(
-                        json,
-                        "actionRootBone"),
-                    value.animationSet.
-                        actionRootBone) ||
-                !ReadString(
-                    RequireField(
-                        json,
-                        "lookRootBone"),
-                    value.animationSet.
-                        lookRootBone) ||
-                !ReadLowerBodyAnimationSet(
-                    *lowerBody,
-                    value.animationSet.
-                        lowerBody) ||
-                !ReadViewAnimationSet(
-                    *thirdPerson,
-                    value.animationSet.
-                        thirdPerson) ||
-                !ReadViewAnimationSet(
-                    *firstPerson,
-                    value.animationSet.
-                        firstPerson) ||
-                !ReadAnimationTuning(
-                    *tuning,
-                    value.animationSet.
-                        tuning))
+                    value.enabled))
             {
                 return false;
             }
 
             /*
-             * Runtime никогда не загружается из level.
+             * Level version 6:
+             *
+             * {
+             *     "enabled": true,
+             *     "profile": "Data/Config/..."
+             * }
              */
+            if (
+                const JsonValue* const profileField =
+                    json.Find("profile"))
+            {
+                std::string profilePath;
+
+                if (
+                    !ReadString(
+                        profileField,
+                        profilePath) ||
+                    !FromUtf8(
+                        profilePath,
+                        value.profilePath))
+                {
+                    return false;
+                }
+
+                value.animationSet = {};
+                value.runtime.Reset();
+
+                value.profileLoaded = false;
+                value.profileError.clear();
+
+                return true;
+            }
+
+            /*
+             * Совместимость с version 5,
+             * где полный Animation Set хранился
+             * непосредственно внутри level.
+             */
+            if (!ReadCharacterAnimationSet(
+                    json,
+                    value.animationSet))
+            {
+                return false;
+            }
+
+            value.profilePath =
+                L"Data/Config/CharacterAnimations/"
+                L"MEL_Hands.json";
+
             value.runtime.Reset();
+
+            /*
+             * Оставляем загруженный inline-набор
+             * как fallback, если внешний профиль
+             * пока отсутствует.
+             */
+            value.profileLoaded = false;
+            value.profileError.clear();
 
             return true;
         }
@@ -3589,6 +3633,7 @@ namespace lts::editor
                     version != ComponentFormatVersion &&
                     version != SingleMeshCharacterFormatVersion &&
                     version != ModularCharacterFormatVersion &&
+                    version != InlineCharacterAnimationFormatVersion &&
                     version != CurrentFormatVersion
                 ) ||
                 !FromUtf8(name, data.name) ||
@@ -3699,6 +3744,115 @@ namespace lts::editor
             }
 
             return Validate(data, error);
+        }
+
+        [[nodiscard]]
+        bool ResolveCharacterAnimationProfilePath(
+            const std::filesystem::path& profilePath,
+            std::filesystem::path& resolvedPath,
+            std::wstring& error)
+        {
+            resolvedPath.clear();
+
+            if (profilePath.empty())
+            {
+                error =
+                    L"Character animation profile "
+                    L"path is empty.";
+
+                return false;
+            }
+
+            const auto isRegularFile =
+                [](
+                    const std::filesystem::path&
+                        path) noexcept
+                {
+                    std::error_code filesystemError;
+
+                    return
+                        std::filesystem::is_regular_file(
+                            path,
+                            filesystemError) &&
+                        !filesystemError;
+                };
+
+            if (
+                profilePath.is_absolute() &&
+                isRegularFile(profilePath))
+            {
+                resolvedPath =
+                    profilePath.lexically_normal();
+
+                return true;
+            }
+
+            std::error_code filesystemError;
+
+            std::filesystem::path current =
+                std::filesystem::current_path(
+                    filesystemError);
+
+            if (filesystemError)
+            {
+                error =
+                    L"Failed to resolve the current "
+                    L"working directory.";
+
+                return false;
+            }
+
+            current =
+                current.lexically_normal();
+
+            while (!current.empty())
+            {
+                const std::filesystem::path direct =
+                    (
+                        current /
+                        profilePath
+                    ).lexically_normal();
+
+                if (isRegularFile(direct))
+                {
+                    resolvedPath = direct;
+                    return true;
+                }
+
+                const std::filesystem::path gamePath =
+                    (
+                        current /
+                        L"game" /
+                        profilePath
+                    ).lexically_normal();
+
+                if (isRegularFile(gamePath))
+                {
+                    resolvedPath = gamePath;
+                    return true;
+                }
+
+                const std::filesystem::path parent =
+                    current.parent_path();
+
+                if (
+                    parent.empty() ||
+                    parent == current)
+                {
+                    break;
+                }
+
+                current = parent;
+            }
+
+            error =
+                L"Character animation profile "
+                L"was not found: ";
+
+            error +=
+                profilePath.generic_wstring();
+
+            return false;
         }
 
         [[nodiscard]]
@@ -3884,5 +4038,142 @@ namespace lts::editor
             contents,
             data,
             error);
+    }
+
+    bool LevelSerializer::
+        LoadCharacterAnimationProfile(
+            const std::filesystem::path& profilePath,
+            engine::scene::
+                CharacterAnimationSet& animationSet,
+            std::wstring& error)
+    {
+        error.clear();
+
+        std::filesystem::path resolvedPath;
+
+        if (!ResolveCharacterAnimationProfilePath(
+                profilePath,
+                resolvedPath,
+                error))
+        {
+            return false;
+        }
+
+        std::string contents;
+
+        if (!ReadFile(
+                resolvedPath,
+                contents,
+                error))
+        {
+            return false;
+        }
+
+        /*
+         * Поддерживаем UTF-8 BOM.
+         */
+        if (
+            contents.size() >= 3U &&
+            static_cast<unsigned char>(
+                contents[0U]) == 0xEFU &&
+            static_cast<unsigned char>(
+                contents[1U]) == 0xBBU &&
+            static_cast<unsigned char>(
+                contents[2U]) == 0xBFU)
+        {
+            contents.erase(
+                0U,
+                3U);
+        }
+
+        JsonValue root;
+        std::string parserError;
+
+        JsonParser parser(contents);
+
+        if (!parser.Parse(
+                root,
+                parserError))
+        {
+            error =
+                L"Character animation profile "
+                L"JSON is malformed.";
+
+            return false;
+        }
+
+        std::string format;
+        std::uint64_t version = 0U;
+
+        if (
+            !ReadString(
+                RequireField(
+                    root,
+                    "format"),
+                format) ||
+            !ReadUnsigned(
+                RequireField(
+                    root,
+                    "version"),
+                version) ||
+            format !=
+                CharacterAnimationProfileFormatName ||
+            version !=
+                CharacterAnimationProfileFormatVersion)
+        {
+            error =
+                L"Character animation profile "
+                L"format or version is invalid.";
+
+            return false;
+        }
+
+        const JsonValue* const animationSetJson =
+            RequireField(
+                root,
+                "animationSet");
+
+        if (
+            animationSetJson == nullptr ||
+            animationSetJson->type !=
+                JsonValue::Type::Object)
+        {
+            error =
+                L"Character animation profile "
+                L"does not contain animationSet.";
+
+            return false;
+        }
+
+        engine::scene::CharacterAnimationSet
+            loadedSet;
+
+        if (!ReadCharacterAnimationSet(
+                *animationSetJson,
+                loadedSet))
+        {
+            error =
+                L"Character animation profile "
+                L"contains invalid fields.";
+
+            return false;
+        }
+
+        if (
+            loadedSet.upperBodyRootBone.empty() ||
+            loadedSet.actionRootBone.empty() ||
+            loadedSet.lookRootBone.empty())
+        {
+            error =
+                L"Character animation profile "
+                L"contains an empty bone name.";
+
+            return false;
+        }
+
+        animationSet =
+            std::move(loadedSet);
+
+        return true;
     }
 }

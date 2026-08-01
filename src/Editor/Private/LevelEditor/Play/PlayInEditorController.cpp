@@ -410,9 +410,22 @@ namespace lts::editor
         }
 
         if (!player->characterAnimation.
-                has_value())
+                 has_value())
         {
             player->characterAnimation.emplace();
+        }
+
+        if (
+            !player->characterAnimation->
+                profileLoaded)
+        {
+            std::wstring profileError;
+
+            static_cast<void>(
+                document.
+                    ReloadCharacterAnimationProfile(
+                        playerEntityId_,
+                        profileError));
         }
 
         animationStateMachine_.Reset(

@@ -178,6 +178,8 @@ packages/
 
 !/game/Data/Shaders/
 !/game/Data/Shaders/**
+!/game/Data/Config/
+!/game/Data/Config/**
 !/game/Data/UI/
 !/game/Data/UI/**
 !/tools/LTS/

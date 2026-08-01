@@ -1,0 +1,139 @@
+{
+  "format": "LTS.CharacterAnimationProfile",
+  "version": 1,
+
+  "animationSet": {
+    "upperBodyRootBone": "Bip01_Spine",
+    "actionRootBone": "Bip01_Spine",
+    "lookRootBone": "Bip01_Neck",
+
+    "lowerBody": {
+      "standingIdle": "Data/Animations/idle_stand_MEL_Hands.anim",
+
+      "walk": {
+        "forward": "Data/Animations/walk_stand_F.anim",
+        "forwardLeft": "Data/Animations/walk_stand_FL.anim",
+        "forwardRight": "Data/Animations/walk_stand_FR.anim",
+        "left": "Data/Animations/walk_stand_L.anim",
+        "right": "Data/Animations/walk_stand_R.anim",
+        "backward": "Data/Animations/walk_stand_B.anim",
+        "backwardLeft": "Data/Animations/walk_stand_BL.anim",
+        "backwardRight": "Data/Animations/walk_stand_BR.anim"
+      },
+
+      "run": {
+        "forward": "Data/Animations/run_stand_F.anim",
+        "forwardLeft": "Data/Animations/run_stand_FL.anim",
+        "forwardRight": "Data/Animations/run_stand_FR.anim",
+        "left": "",
+        "right": "",
+        "backward": "Data/Animations/run_stand_B.anim",
+        "backwardLeft": "Data/Animations/run_stand_BL.anim",
+        "backwardRight": "Data/Animations/run_stand_BR.anim"
+      },
+
+      "sprint": {
+        "forward": "Data/Animations/sprint_stand_F.anim",
+        "forwardLeft": "Data/Animations/sprint_stand_FL.anim",
+        "forwardRight": "Data/Animations/sprint_stand_FR.anim"
+      },
+
+      "crouchedIdle": "Data/Animations/idle_crouch_1.anim",
+
+      "crouchedMove": {
+        "forward": "Data/Animations/run_crouch_F.anim",
+        "forwardLeft": "Data/Animations/run_crouch_FL.anim",
+        "forwardRight": "Data/Animations/run_crouch_FR.anim",
+        "left": "Data/Animations/run_crouch_L.anim",
+        "right": "Data/Animations/run_crouch_R.anim",
+        "backward": "Data/Animations/run_crouch_B.anim",
+        "backwardLeft": "Data/Animations/run_crouch_BL.anim",
+        "backwardRight": "Data/Animations/run_crouch_BR.anim"
+      },
+
+      "turnInPlaceLeft": "",
+      "turnInPlaceRight": "",
+
+      "crouchedTurnInPlaceLeft": "",
+      "crouchedTurnInPlaceRight": "",
+
+      "jumpStart": "Data/Animations/Jump_ASR_Idle_S.anim",
+      "jumpLoop": "Data/Animations/Jump_ASR_Idle_A.anim",
+      "jumpLand": "Data/Animations/Jump_ASR_Idle_L.anim"
+    },
+
+    "thirdPerson": {
+      "upperBody": {
+        "standingRelaxedIdle": "Data/Animations/idle_stand_MEL_Hands.anim",
+        "standingRelaxedMove": "Data/Animations/Run_Blend_MEL_Hands.anim",
+
+        "standingAimIdle": "Data/Animations/idle_stand_MEL_Hands.anim",
+        "standingAimMove": "Data/Animations/Run_Blend_MEL_Hands.anim",
+
+        "crouchedRelaxedIdle": "Data/Animations/idle_crouch_MEL_Hands.anim",
+        "crouchedRelaxedMove": "Data/Animations/Crouch_Blend_MEL_Hands.anim",
+
+        "crouchedAimIdle": "Data/Animations/idle_crouch_MEL_Hands.anim",
+        "crouchedAimMove": "Data/Animations/aimIdle_crouchBlend_MEL_Hands.anim"
+      },
+
+      "actions": {
+        "primaryStanding": "Data/Animations/standAim_shooting_MEL_hands_L_Hook.anim",
+        "primaryMoving": "Data/Animations/standAim_shooting_MEL_hands_L_Hook.anim",
+        "primaryCrouched": "Data/Animations/Crouch_MEL_Hands_L_Hook.anim",
+
+        "secondaryStanding": "",
+        "secondaryMoving": "",
+        "secondaryCrouched": "",
+
+        "reloadStanding": "",
+        "reloadMoving": "",
+        "reloadCrouched": ""
+      }
+    },
+
+    "firstPerson": {
+      "upperBody": {
+        "standingRelaxedIdle": "Data/Animations/FPS_idle_stand_MEL_Hands.anim",
+        "standingRelaxedMove": "Data/Animations/FPS_Run_Blend_MEL_Hands.anim",
+
+        "standingAimIdle": "Data/Animations/FPS_idle_stand_MEL_Hands.anim",
+        "standingAimMove": "Data/Animations/FPS_Run_Blend_MEL_Hands.anim",
+
+        "crouchedRelaxedIdle": "Data/Animations/FPS_idle_crouch_MEL_Hands.anim",
+        "crouchedRelaxedMove": "Data/Animations/FPS_Crouch_Blend_MEL_Hands.anim",
+
+        "crouchedAimIdle": "Data/Animations/FPS_idle_crouch_MEL_Hands.anim",
+        "crouchedAimMove": "Data/Animations/FPS_Crouch_Aim_Mel_Hands.anim"
+      },
+
+      "actions": {
+        "primaryStanding": "Data/Animations/FPS_Stand_MEL_Hands_L_Hook.anim",
+        "primaryMoving": "Data/Animations/FPS_Stand_MEL_Hands_L_Hook.anim",
+        "primaryCrouched": "Data/Animations/FPS_Crouch_MEL_Hands_L_Hook.anim",
+
+        "secondaryStanding": "",
+        "secondaryMoving": "",
+        "secondaryCrouched": "",
+
+        "reloadStanding": "",
+        "reloadMoving": "",
+        "reloadCrouched": ""
+      }
+    },
+
+    "tuning": {
+      "locomotionBlendSeconds": 0.15,
+      "upperBodyBlendSeconds": 0.10,
+
+      "actionBlendInSeconds": 0.05,
+      "actionBlendOutSeconds": 0.10,
+
+      "maximumUpperBodyYawDegrees": 45.0,
+
+      "turnInPlaceEnterDegrees": 45.0,
+      "turnInPlaceExitDegrees": 5.0,
+      "turnInPlaceSpeedDegrees": 240.0
+    }
+  }
+}

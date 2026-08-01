@@ -1,8 +1,10 @@
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
+#include "Editor/LevelEditor/Documents/LevelSerializer.h"
 
 #include <algorithm>
 #include <cmath>
 #include <utility>
+#include <filesystem>
 
 namespace lts::editor
 {
@@ -296,9 +298,28 @@ namespace lts::editor
                 kind,
                 transform);
 
-        selectedIndex_ = world_.FindEntityIndex(entityId);
-        selectedEntityIds_.assign(1U, entityId);
-        selectionAnchorId_ = entityId;
+        selectedIndex_ =
+            world_.FindEntityIndex(
+                entityId);
+
+        selectedEntityIds_.assign(
+            1U,
+            entityId);
+
+        selectionAnchorId_ =
+            entityId;
+
+        if (
+            kind ==
+                EditorEntityKind::Character)
+        {
+            std::wstring ignoredError;
+
+            static_cast<void>(
+                ReloadCharacterAnimationProfile(
+                    entityId,
+                    ignoredError));
+        }
 
         dirty_ = true;
         return entityId;
@@ -421,6 +442,179 @@ namespace lts::editor
 
         dirty_ = true;
         return true;
+    }
+
+    bool SceneDocument::
+        SetSelectedCharacterAnimationProfile(
+            std::wstring profilePath,
+            std::wstring& error)
+    {
+        error.clear();
+
+        EditorSceneEntity* const entity =
+            GetSelectedEntityMutable();
+
+        if (
+            entity == nullptr ||
+            !entity->characterAnimation.has_value())
+        {
+            error =
+                L"The selected entity has no "
+                L"CharacterAnimation component.";
+
+            return false;
+        }
+
+        if (profilePath.empty())
+        {
+            error =
+                L"Character animation profile "
+                L"path is empty.";
+
+            return false;
+        }
+
+        profilePath =
+            std::filesystem::path(
+                profilePath).
+                lexically_normal().
+                generic_wstring();
+
+        engine::scene::
+            CharacterAnimationComponent&
+                component =
+                    *entity->characterAnimation;
+
+        if (
+            component.profilePath ==
+            profilePath)
+        {
+            return false;
+        }
+
+        component.profilePath =
+            std::move(profilePath);
+
+        component.animationSet = {};
+        component.runtime.Reset();
+
+        component.profileLoaded = false;
+        component.profileError.clear();
+
+        std::wstring loadError;
+
+        static_cast<void>(
+            ReloadCharacterAnimationProfile(
+                entity->id,
+                loadError));
+
+        error =
+            std::move(loadError);
+
+        dirty_ = true;
+        return true;
+    }
+
+    bool SceneDocument::
+        ReloadSelectedCharacterAnimationProfile(
+            std::wstring& error)
+    {
+        const EditorSceneEntity* const entity =
+            GetSelectedEntity();
+
+        if (entity == nullptr)
+        {
+            error =
+                L"No entity is selected.";
+
+            return false;
+        }
+
+        return ReloadCharacterAnimationProfile(
+            entity->id,
+            error);
+    }
+
+    bool SceneDocument::
+        ReloadCharacterAnimationProfile(
+            const EditorEntityId entityId,
+            std::wstring& error)
+    {
+        error.clear();
+
+        EditorSceneEntity* const entity =
+            world_.FindEntity(
+                entityId);
+
+        if (
+            entity == nullptr ||
+            !entity->characterAnimation.has_value())
+        {
+            error =
+                L"The entity has no "
+                L"CharacterAnimation component.";
+
+            return false;
+        }
+
+        engine::scene::
+            CharacterAnimationComponent&
+                component =
+                    *entity->characterAnimation;
+
+        engine::scene::CharacterAnimationSet
+            loadedSet;
+
+        if (!LevelSerializer::
+                LoadCharacterAnimationProfile(
+                    component.profilePath,
+                    loadedSet,
+                    error))
+        {
+            /*
+             * Последний валидный set сохраняется.
+             *
+             * Это также сохраняет compatibility
+             * с inline Animation Set версии 5.
+             */
+            component.runtime.Reset();
+
+            component.profileLoaded = false;
+            component.profileError = error;
+
+            return false;
+        }
+
+        component.animationSet =
+            std::move(loadedSet);
+
+        component.runtime.Reset();
+
+        component.profileLoaded = true;
+        component.profileError.clear();
+
+        return true;
+    }
+
+    void SceneDocument::
+        ReloadCharacterAnimationProfiles()
+    {
+        for (
+            EditorSceneEntity& entity :
+            world_.GetEntitiesMutable())
+        {
+            if (!entity.characterAnimation.has_value())
+            {
+                continue;
+            }
+
+            std::wstring ignoredError;
+
+            static_cast<void>(
+                ReloadCharacterAnimationProfile(
+                    entity.id,
+                    ignoredError));
+        }
     }
 
     bool SceneDocument::SetSelectedTerrainLayers(
@@ -1145,6 +1339,13 @@ namespace lts::editor
             snapshot.nextEntityId;
 
         world_.RestoreState(state);
+
+        /*
+         * animationSet не хранится в level.
+         * После восстановления сцены загружаем
+         * его из внешнего profilePath.
+         */
+        ReloadCharacterAnimationProfiles();
 
         selectedEntityIds_.clear();
         for (const EditorEntityId entityId : snapshot.selectedEntityIds)

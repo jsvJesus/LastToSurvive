@@ -738,9 +738,8 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        bool SelectAnimationFile(
+        bool SelectCharacterAnimationProfileFile(
             const HWND owner,
-            const wchar_t* const title,
             std::filesystem::path& output)
         {
             Microsoft::WRL::ComPtr<
@@ -762,8 +761,9 @@ namespace lts::editor
                 filters[]
                 {
                     {
-                        L"LTS Animation (*.anim)",
-                        L"*.anim"
+                        L"Character Animation Profile "
+                        L"(*.json)",
+                        L"*.json"
                     },
                     {
                         L"All files (*.*)",
@@ -779,12 +779,11 @@ namespace lts::editor
                 FAILED(
                     dialog->
                         SetDefaultExtension(
-                            L"anim")) ||
+                            L"json")) ||
                 FAILED(
                     dialog->SetTitle(
-                        title != nullptr
-                            ? title
-                            : L"Select Animation")) ||
+                        L"Select Character "
+                        L"Animation Profile")) ||
                 FAILED(
                     dialog->Show(
                         owner)))
@@ -2973,7 +2972,7 @@ namespace lts::editor
                             has_value())
                     {
                         ImGui::SeparatorText(
-                            "Character Animation Set");
+                            "Animation Profile");
 
                         const engine::scene::
                             CharacterAnimationComponent
@@ -2981,43 +2980,111 @@ namespace lts::editor
                                     *entity->
                                         characterAnimation;
 
-                        const auto applyCharacterAnimation =
-                            [this](
-                                engine::scene::
-                                    CharacterAnimationComponent
-                                        updated)
+                        const std::string profileLabel =
+                            currentAnimation.
+                                profilePath.empty()
+                                ? std::string("<None>")
+                                : ToUtf8(
+                                    currentAnimation.
+                                        profilePath);
+
+                        ImGui::TextWrapped(
+                            "Profile: %s",
+                            profileLabel.c_str());
+
+                        if (
+                            currentAnimation.
+                                profileLoaded)
+                        {
+                            ImGui::TextColored(
+                                ImVec4(
+                                    0.35F,
+                                    0.85F,
+                                    0.40F,
+                                    1.0F),
+                                "Status: Loaded");
+                        }
+                        else
+                        {
+                            ImGui::TextColored(
+                                ImVec4(
+                                    0.95F,
+                                    0.35F,
+                                    0.30F,
+                                    1.0F),
+                                "Status: Not Loaded");
+                        }
+
+                        if (
+                            !currentAnimation.
+                                profileError.empty())
+                        {
+                            const std::string profileError =
+                                ToUtf8(
+                                    currentAnimation.
+                                        profileError);
+
+                            ImGui::TextWrapped(
+                                "%s",
+                                profileError.c_str());
+                        }
+
+                        bool animationEnabled =
+                            currentAnimation.enabled;
+
+                        if (
+                            ImGui::Checkbox(
+                                "Animation Enabled",
+                                &animationEnabled))
+                        {
+                            engine::scene::
+                                CharacterAnimationComponent
+                                    updated =
+                                        currentAnimation;
+
+                            updated.enabled =
+                                animationEnabled;
+
+                            const EditorSceneSnapshot before =
+                                sceneDocument_.
+                                    CreateSnapshot();
+
+                            if (
+                                sceneDocument_.
+                                    UpdateSelectedCharacterAnimation(
+                                        std::move(updated)))
                             {
-                                updated.runtime.Reset();
+                                static_cast<void>(
+                                    commandHistory_.Push(
+                                        before,
+                                        sceneDocument_.
+                                            CreateSnapshot()));
+                            }
+                        }
 
-                                const EditorSceneSnapshot before =
-                                    sceneDocument_.
-                                        CreateSnapshot();
-
-                                if (
-                                    sceneDocument_.
-                                        UpdateSelectedCharacterAnimation(
-                                            std::move(updated)))
-                                {
-                                    static_cast<void>(
-                                        commandHistory_.Push(
-                                            before,
-                                            sceneDocument_.
-                                                CreateSnapshot()));
-                                }
-                            };
-
-                        const HWND animationDialogOwner =
+                        const HWND owner =
                             reinterpret_cast<HWND>(
                                 GetWindow().
                                     GetNativeHandle().
                                     Value());
 
-                        const auto makeStoredAnimationPath =
-                            [](
-                                const std::filesystem::path&
-                                    selectedAnimation)
-                                -> std::wstring
+                        if (
+                            ImGui::Button(
+                                "Select Profile..."))
+                        {
+                            std::filesystem::path
+                                selectedProfile;
+
+                            if (
+                                SelectCharacterAnimationProfileFile(
+                                    owner,
+                                    selectedProfile))
                             {
+                                std::wstring storedPath =
+                                    selectedProfile.
+                                        lexically_normal().
+                                        generic_wstring();
+
                                 const std::filesystem::path
                                     gameRoot =
                                         FindEditorGameRoot();
@@ -3031,7 +3098,7 @@ namespace lts::editor
                                         relativePath =
                                             std::filesystem::
                                                 relative(
-                                                    selectedAnimation,
+                                                    selectedProfile,
                                                     gameRoot,
                                                     relativeError);
 
@@ -3047,928 +3114,45 @@ namespace lts::editor
                                             L"..",
                                             0U) != 0U)
                                     {
-                                        return relativeText;
+                                        storedPath =
+                                            relativeText;
                                     }
                                 }
 
-                                return
-                                    selectedAnimation.
-                                        lexically_normal().
-                                        generic_wstring();
-                            };
+                                const EditorSceneSnapshot before =
+                                    sceneDocument_.
+                                        CreateSnapshot();
 
-                        const auto drawAnimationPath =
-                            [&](
-                                const char* const label,
-                                const std::wstring&
-                                    animationPath,
-                                auto assignPath)
-                            {
-                                ImGui::PushID(label);
-
-                                std::string preview =
-                                    "<None>";
-
-                                if (!animationPath.empty())
-                                {
-                                    const std::wstring fileName =
-                                        std::filesystem::path(
-                                            animationPath).
-                                            filename().
-                                            wstring();
-
-                                    preview =
-                                        ToUtf8(fileName);
-                                }
-
-                                ImGui::TextWrapped(
-                                    "%s: %s",
-                                    label,
-                                    preview.c_str());
+                                std::wstring profileError;
 
                                 if (
-                                    !animationPath.empty() &&
-                                    ImGui::IsItemHovered())
+                                    sceneDocument_.
+                                        SetSelectedCharacterAnimationProfile(
+                                            std::move(storedPath),
+                                            profileError))
                                 {
-                                    const std::string fullPath =
-                                        ToUtf8(animationPath);
-
-                                    ImGui::SetTooltip(
-                                        "%s",
-                                        fullPath.c_str());
+                                    static_cast<void>(
+                                        commandHistory_.Push(
+                                            before,
+                                            sceneDocument_.
+                                                CreateSnapshot()));
                                 }
-
-                                if (ImGui::Button("Select..."))
-                                {
-                                    std::filesystem::path
-                                        selectedAnimation;
-
-                                    if (
-                                        SelectAnimationFile(
-                                            animationDialogOwner,
-                                            L"Select Character Animation",
-                                            selectedAnimation))
-                                    {
-                                        engine::scene::
-                                            CharacterAnimationComponent
-                                                updated =
-                                                    currentAnimation;
-
-                                        assignPath(
-                                            updated.animationSet,
-                                            makeStoredAnimationPath(
-                                                selectedAnimation));
-
-                                        applyCharacterAnimation(
-                                            std::move(updated));
-                                    }
-                                }
-
-                                if (!animationPath.empty())
-                                {
-                                    ImGui::SameLine();
-
-                                    if (ImGui::Button("Clear"))
-                                    {
-                                        engine::scene::
-                                            CharacterAnimationComponent
-                                                updated =
-                                                    currentAnimation;
-
-                                        assignPath(
-                                            updated.animationSet,
-                                            std::wstring{});
-
-                                        applyCharacterAnimation(
-                                            std::move(updated));
-                                    }
-                                }
-
-                                ImGui::PopID();
-                            };
-
-                        const auto drawDirectionalSet =
-                            [&](
-                                const char* const label,
-                                const engine::scene::
-                                    CharacterDirectionalAnimationSet&
-                                        directional,
-                                auto selectDirectional)
-                            {
-                                if (!ImGui::TreeNode(label))
-                                {
-                                    return;
-                                }
-
-                                ImGui::PushID(label);
-
-                                drawAnimationPath(
-                                    "F",
-                                    directional.forward,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            forward =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "FL",
-                                    directional.forwardLeft,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            forwardLeft =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "FR",
-                                    directional.forwardRight,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            forwardRight =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "L",
-                                    directional.left,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            left =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "R",
-                                    directional.right,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            right =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "B",
-                                    directional.backward,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            backward =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "BL",
-                                    directional.backwardLeft,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            backwardLeft =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "BR",
-                                    directional.backwardRight,
-                                    [selectDirectional](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        selectDirectional(
-                                            animationSet).
-                                            backwardRight =
-                                                std::move(path);
-                                    });
-
-                                ImGui::PopID();
-                                ImGui::TreePop();
-                            };
-
-                        const auto drawSprintSet =
-                            [&](
-                                const engine::scene::
-                                    CharacterSprintAnimationSet&
-                                        sprint)
-                            {
-                                if (!ImGui::TreeNode("Sprint"))
-                                {
-                                    return;
-                                }
-
-                                ImGui::PushID("Sprint");
-
-                                drawAnimationPath(
-                                    "F",
-                                    sprint.forward,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            sprint.
-                                            forward =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "FL",
-                                    sprint.forwardLeft,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            sprint.
-                                            forwardLeft =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "FR",
-                                    sprint.forwardRight,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            sprint.
-                                            forwardRight =
-                                                std::move(path);
-                                    });
-
-                                ImGui::PopID();
-                                ImGui::TreePop();
-                            };
-
-                        const auto drawViewSet =
-                            [&](
-                                const char* const label,
-                                const engine::scene::
-                                    CharacterViewAnimationSet&
-                                        view,
-                                auto selectView)
-                            {
-                                if (
-                                    !ImGui::TreeNodeEx(
-                                        label,
-                                        ImGuiTreeNodeFlags_DefaultOpen))
-                                {
-                                    return;
-                                }
-
-                                ImGui::PushID(label);
-
-                                if (
-                                    ImGui::TreeNodeEx(
-                                        "Upper Body",
-                                        ImGuiTreeNodeFlags_DefaultOpen))
-                                {
-                                    ImGui::PushID(
-                                        "UpperBody");
-
-                                    drawAnimationPath(
-                                        "Standing Relaxed Idle",
-                                        view.upperBody.
-                                            standingRelaxedIdle,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                standingRelaxedIdle =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Standing Relaxed Move",
-                                        view.upperBody.
-                                            standingRelaxedMove,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                standingRelaxedMove =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Standing Aim Idle",
-                                        view.upperBody.
-                                            standingAimIdle,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                standingAimIdle =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Standing Aim Move",
-                                        view.upperBody.
-                                            standingAimMove,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                standingAimMove =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched Relaxed Idle",
-                                        view.upperBody.
-                                            crouchedRelaxedIdle,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                crouchedRelaxedIdle =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched Relaxed Move",
-                                        view.upperBody.
-                                            crouchedRelaxedMove,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                crouchedRelaxedMove =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched Aim Idle",
-                                        view.upperBody.
-                                            crouchedAimIdle,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                crouchedAimIdle =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched Aim Move",
-                                        view.upperBody.
-                                            crouchedAimMove,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                upperBody.
-                                                crouchedAimMove =
-                                                    std::move(path);
-                                        });
-
-                                    ImGui::PopID();
-                                    ImGui::TreePop();
-                                }
-
-                                if (
-                                    ImGui::TreeNodeEx(
-                                        "Primary",
-                                        ImGuiTreeNodeFlags_DefaultOpen))
-                                {
-                                    ImGui::PushID("Primary");
-
-                                    drawAnimationPath(
-                                        "Standing",
-                                        view.actions.
-                                            primaryStanding,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                primaryStanding =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Moving",
-                                        view.actions.
-                                            primaryMoving,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                primaryMoving =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched",
-                                        view.actions.
-                                            primaryCrouched,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                primaryCrouched =
-                                                    std::move(path);
-                                        });
-
-                                    ImGui::PopID();
-                                    ImGui::TreePop();
-                                }
-
-                                if (ImGui::TreeNode("Secondary"))
-                                {
-                                    ImGui::PushID("Secondary");
-
-                                    drawAnimationPath(
-                                        "Standing",
-                                        view.actions.
-                                            secondaryStanding,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                secondaryStanding =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Moving",
-                                        view.actions.
-                                            secondaryMoving,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                secondaryMoving =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched",
-                                        view.actions.
-                                            secondaryCrouched,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                secondaryCrouched =
-                                                    std::move(path);
-                                        });
-
-                                    ImGui::PopID();
-                                    ImGui::TreePop();
-                                }
-
-                                if (ImGui::TreeNode("Reload"))
-                                {
-                                    ImGui::PushID("Reload");
-
-                                    drawAnimationPath(
-                                        "Standing",
-                                        view.actions.
-                                            reloadStanding,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                reloadStanding =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Moving",
-                                        view.actions.
-                                            reloadMoving,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                reloadMoving =
-                                                    std::move(path);
-                                        });
-
-                                    drawAnimationPath(
-                                        "Crouched",
-                                        view.actions.
-                                            reloadCrouched,
-                                        [selectView](
-                                            engine::scene::
-                                                CharacterAnimationSet&
-                                                    animationSet,
-                                            std::wstring path)
-                                        {
-                                            selectView(
-                                                animationSet).
-                                                actions.
-                                                reloadCrouched =
-                                                    std::move(path);
-                                        });
-
-                                    ImGui::PopID();
-                                    ImGui::TreePop();
-                                }
-
-                                ImGui::PopID();
-                                ImGui::TreePop();
-                            };
-
-                        bool animationEnabled =
-                            currentAnimation.enabled;
-
-                        if (
-                            ImGui::Checkbox(
-                                "Enabled",
-                                &animationEnabled))
-                        {
-                            engine::scene::
-                                CharacterAnimationComponent
-                                    updated =
-                                        currentAnimation;
-
-                            updated.enabled =
-                                animationEnabled;
-
-                            applyCharacterAnimation(
-                                std::move(updated));
-                        }
-
-                        if (
-                            ImGui::TreeNodeEx(
-                                "Lower Body",
-                                ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushID("LowerBody");
-
-                            const auto& lowerBody =
-                                currentAnimation.
-                                    animationSet.
-                                    lowerBody;
-
-                            drawAnimationPath(
-                                "Standing Idle",
-                                lowerBody.standingIdle,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        standingIdle =
-                                            std::move(path);
-                                });
-
-                            drawDirectionalSet(
-                                "Walk - Aim Mode",
-                                lowerBody.walk,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet)
-                                    -> engine::scene::
-                                        CharacterDirectionalAnimationSet&
-                                {
-                                    return
-                                        animationSet.
-                                            lowerBody.walk;
-                                });
-
-                            drawDirectionalSet(
-                                "Run",
-                                lowerBody.run,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet)
-                                    -> engine::scene::
-                                        CharacterDirectionalAnimationSet&
-                                {
-                                    return
-                                        animationSet.
-                                            lowerBody.run;
-                                });
-
-                            drawSprintSet(
-                                lowerBody.sprint);
-
-                            drawAnimationPath(
-                                "Crouch Idle",
-                                lowerBody.crouchedIdle,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        crouchedIdle =
-                                            std::move(path);
-                                });
-
-                            drawDirectionalSet(
-                                "Crouch Move",
-                                lowerBody.crouchedMove,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet)
-                                    -> engine::scene::
-                                        CharacterDirectionalAnimationSet&
-                                {
-                                    return
-                                        animationSet.
-                                            lowerBody.
-                                            crouchedMove;
-                                });
-
-                            drawAnimationPath(
-                                "Turn Left",
-                                lowerBody.turnInPlaceLeft,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        turnInPlaceLeft =
-                                            std::move(path);
-                                });
-
-                            drawAnimationPath(
-                                "Turn Right",
-                                lowerBody.turnInPlaceRight,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        turnInPlaceRight =
-                                            std::move(path);
-                                });
-
-                            drawAnimationPath(
-                                "Crouch Turn Left",
-                                lowerBody.
-                                    crouchedTurnInPlaceLeft,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        crouchedTurnInPlaceLeft =
-                                            std::move(path);
-                                });
-
-                            drawAnimationPath(
-                                "Crouch Turn Right",
-                                lowerBody.
-                                    crouchedTurnInPlaceRight,
-                                [](
-                                    engine::scene::
-                                        CharacterAnimationSet&
-                                            animationSet,
-                                    std::wstring path)
-                                {
-                                    animationSet.
-                                        lowerBody.
-                                        crouchedTurnInPlaceRight =
-                                            std::move(path);
-                                });
-
-                            if (
-                                ImGui::TreeNodeEx(
-                                    "Jump",
-                                    ImGuiTreeNodeFlags_DefaultOpen))
-                            {
-                                ImGui::PushID("Jump");
-
-                                drawAnimationPath(
-                                    "Start",
-                                    lowerBody.jumpStart,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            jumpStart =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "Loop",
-                                    lowerBody.jumpLoop,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            jumpLoop =
-                                                std::move(path);
-                                    });
-
-                                drawAnimationPath(
-                                    "Land",
-                                    lowerBody.jumpLand,
-                                    [](
-                                        engine::scene::
-                                            CharacterAnimationSet&
-                                                animationSet,
-                                        std::wstring path)
-                                    {
-                                        animationSet.
-                                            lowerBody.
-                                            jumpLand =
-                                                std::move(path);
-                                    });
-
-                                ImGui::PopID();
-                                ImGui::TreePop();
                             }
-
-                            ImGui::TextDisabled(
-                                "Empty directional slots use "
-                                "the nearest available fallback.");
-
-                            ImGui::PopID();
-                            ImGui::TreePop();
                         }
 
-                        drawViewSet(
-                            "Third Person",
-                            currentAnimation.
-                                animationSet.
-                                thirdPerson,
-                            [](
-                                engine::scene::
-                                    CharacterAnimationSet&
-                                        animationSet)
-                                -> engine::scene::
-                                    CharacterViewAnimationSet&
-                            {
-                                return
-                                    animationSet.thirdPerson;
-                            });
+                        ImGui::SameLine();
 
-                        drawViewSet(
-                            "First Person",
-                            currentAnimation.
-                                animationSet.
-                                firstPerson,
-                            [](
-                                engine::scene::
-                                    CharacterAnimationSet&
-                                        animationSet)
-                                -> engine::scene::
-                                    CharacterViewAnimationSet&
-                            {
-                                return
-                                    animationSet.firstPerson;
-                            });
+                        if (
+                            ImGui::Button(
+                                "Reload Profile"))
+                        {
+                            std::wstring profileError;
+
+                            static_cast<void>(
+                                sceneDocument_.
+                                    ReloadSelectedCharacterAnimationProfile(
+                                        profileError));
+                        }
                     }
 
                     bool characterVisible =
