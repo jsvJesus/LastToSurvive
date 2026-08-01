@@ -79,6 +79,59 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool AnimationKeysMatchForLoop(
+            const engine::assets::AnimationKey& first,
+            const engine::assets::AnimationKey& second) noexcept
+        {
+            const DirectX::XMVECTOR firstRotation =
+                NormalizeQuaternion(
+                    DirectX::XMVectorSet(
+                        first.rotation[0],
+                        first.rotation[1],
+                        first.rotation[2],
+                        first.rotation[3]));
+
+            const DirectX::XMVECTOR secondRotation =
+                NormalizeQuaternion(
+                    DirectX::XMVectorSet(
+                        second.rotation[0],
+                        second.rotation[1],
+                        second.rotation[2],
+                        second.rotation[3]));
+
+            /*
+             * q и -q описывают одно вращение.
+             */
+            const float rotationDot =
+                std::fabs(
+                    DirectX::XMVectorGetX(
+                        DirectX::XMVector4Dot(
+                            firstRotation,
+                            secondRotation)));
+
+            const float translationX =
+                first.translation[0] -
+                second.translation[0];
+
+            const float translationY =
+                first.translation[1] -
+                second.translation[1];
+
+            const float translationZ =
+                first.translation[2] -
+                second.translation[2];
+
+            const float translationDistanceSquared =
+                translationX * translationX +
+                translationY * translationY +
+                translationZ * translationZ;
+
+            return
+                rotationDot >= 0.99995F &&
+                translationDistanceSquared <= 0.000001F;
+        }
+
+        [[nodiscard]]
         DirectX::XMMATRIX BuildKeyMatrix(
             const engine::assets::AnimationKey&
                 first,
@@ -538,10 +591,23 @@ namespace lts::editor
                 return false;
             }
 
-            const std::size_t keyCount =
-                track->keys.size();
+            const std::size_t declaredFrameCount =
+                static_cast<std::size_t>(
+                    animation->GetFrameCount());
 
-            if (keyCount == 1U)
+            const std::size_t usableKeyCount =
+                declaredFrameCount > 0U
+                    ? (std::min)(
+                        track->keys.size(),
+                        declaredFrameCount)
+                    : track->keys.size();
+
+            if (usableKeyCount == 0U)
+            {
+                return false;
+            }
+
+            if (usableKeyCount == 1U)
             {
                 output =
                     BuildKeyMatrix(
@@ -550,6 +616,31 @@ namespace lts::editor
                         0.0F);
 
                 return true;
+            }
+
+            /*
+             * Многие legacy .anm содержат последний кадр,
+             * полностью дублирующий первый.
+             *
+             * Если использовать оба, на границе loop
+             * персонаж два раза показывает одну позу:
+             * визуально это выглядит как потеря кадра.
+             */
+            std::size_t loopKeyCount =
+                usableKeyCount;
+
+            if (
+                loopMode ==
+                    engine::scene::
+                        CharacterAnimationLoopMode::Loop &&
+                usableKeyCount > 2U &&
+                AnimationKeysMatchForLoop(
+                    track->keys[0U],
+                    track->keys[
+                        usableKeyCount - 1U]))
+            {
+                loopKeyCount =
+                    usableKeyCount - 1U;
             }
 
             double timeSeconds =
@@ -577,24 +668,24 @@ namespace lts::editor
                     frameRate;
             }
 
-            const double keyCountDouble =
-                static_cast<double>(
-                    keyCount);
-
             if (
                 loopMode ==
-                engine::scene::
-                    CharacterAnimationLoopMode::Loop)
+                    engine::scene::
+                        CharacterAnimationLoopMode::Loop)
             {
+                const double loopFrameCount =
+                    static_cast<double>(
+                        loopKeyCount);
+
                 framePosition =
                     std::fmod(
                         framePosition,
-                        keyCountDouble);
+                        loopFrameCount);
 
                 if (framePosition < 0.0)
                 {
                     framePosition +=
-                        keyCountDouble;
+                        loopFrameCount;
                 }
             }
             else
@@ -603,8 +694,8 @@ namespace lts::editor
                     std::clamp(
                         framePosition,
                         0.0,
-                        keyCountDouble -
-                            1.0);
+                        static_cast<double>(
+                            usableKeyCount - 1U));
             }
 
             std::size_t firstFrame =
@@ -612,24 +703,30 @@ namespace lts::editor
                     std::floor(
                         framePosition));
 
-            if (firstFrame >= keyCount)
+            const std::size_t activeFrameCount =
+                loopMode ==
+                    engine::scene::
+                        CharacterAnimationLoopMode::Loop
+                    ? loopKeyCount
+                    : usableKeyCount;
+
+            if (firstFrame >= activeFrameCount)
             {
                 firstFrame =
-                    keyCount - 1U;
+                    activeFrameCount - 1U;
             }
 
             std::size_t secondFrame =
                 firstFrame + 1U;
 
-            if (secondFrame >= keyCount)
+            if (secondFrame >= activeFrameCount)
             {
                 secondFrame =
                     loopMode ==
                         engine::scene::
-                            CharacterAnimationLoopMode::
-                                Loop
+                            CharacterAnimationLoopMode::Loop
                         ? 0U
-                        : keyCount - 1U;
+                        : activeFrameCount - 1U;
             }
 
             const float interpolation =
@@ -752,36 +849,28 @@ namespace lts::editor
             return false;
         }
 
-        void PreserveBlockedRootMotion(
+        void PreserveControllerOwnedRootTransform(
             const DirectX::XMMATRIX& bindLocal,
             DirectX::XMMATRIX& animatedLocal) noexcept
         {
-            DirectX::XMFLOAT4X4 bindStored;
-            DirectX::XMFLOAT4X4 animatedStored;
-
-            DirectX::XMStoreFloat4x4(
-                &bindStored,
-                bindLocal);
-
-            DirectX::XMStoreFloat4x4(
-                &animatedStored,
-                animatedLocal);
-
             /*
-             * Y оставляем клипу, чтобы evaluator
-             * мог позже поддерживать прыжки и подъёмы.
+             * CharacterController уже управляет:
              *
-             * X/Z контролируются CharacterController.
+             * - X/Z перемещением;
+             * - высотой над Terrain;
+             * - world yaw персонажа.
+             *
+             * Поэтому анимационная Bip01 не должна повторно:
+             *
+             * - поднимать модель по Y;
+             * - двигать её по X/Z;
+             * - наклонять и раскачивать весь скелет.
+             *
+             * Pelvis и дочерние кости продолжают
+             * воспроизводить анимацию.
              */
-            animatedStored._41 =
-                bindStored._41;
-
-            animatedStored._43 =
-                bindStored._43;
-
             animatedLocal =
-                DirectX::XMLoadFloat4x4(
-                    &animatedStored);
+                bindLocal;
         }
     }
 
@@ -793,6 +882,15 @@ namespace lts::editor
         for (
             DirectX::XMFLOAT4X4& matrix :
             boneMatrices)
+        {
+            DirectX::XMStoreFloat4x4(
+                &matrix,
+                DirectX::XMMatrixIdentity());
+        }
+
+        for (
+            DirectX::XMFLOAT4X4& matrix :
+            modelBoneMatrices)
         {
             DirectX::XMStoreFloat4x4(
                 &matrix,
@@ -847,10 +945,37 @@ namespace lts::editor
             input.upperBodyRootBone,
             upperBodyMask);
 
+        const std::int32_t lookSpineBoneIndex =
+            FindBoneIndex(
+            skeleton,
+            input.upperBodyRootBone);
+
         const std::int32_t lookRootBoneIndex =
             FindBoneIndex(
                 skeleton,
                 input.lookRootBone);
+
+        std::size_t proceduralLookBoneCount = 0U;
+
+        if (lookSpineBoneIndex >= 0)
+        {
+            ++proceduralLookBoneCount;
+        }
+
+        if (
+            lookRootBoneIndex >= 0 &&
+            lookRootBoneIndex !=
+                lookSpineBoneIndex)
+        {
+            ++proceduralLookBoneCount;
+        }
+
+        const float proceduralLookBoneWeight =
+            proceduralLookBoneCount > 0U
+                ? 1.0F /
+                    static_cast<float>(
+                        proceduralLookBoneCount)
+                : 0.0F;
 
         BuildBoneMask(
             skeleton,
@@ -1002,50 +1127,11 @@ namespace lts::editor
                 }
             }
 
-            /*
-             * Процедурный Look применяется только
-             * к корневой кости look-chain.
-             *
-             * Все дочерние кости Neck/Head получат
-             * поворот через skeleton hierarchy.
-             */
             if (
-                lookRootBoneIndex >= 0 &&
-                boneIndex ==
-                    static_cast<std::size_t>(
-                        lookRootBoneIndex) &&
-                std::isfinite(
-                    input.lookYawOffsetDegrees))
-            {
-                const float lookYawDegrees =
-                    std::remainder(
-                        input.lookYawOffsetDegrees,
-                        360.0F);
-
-                if (
-                    std::fabs(lookYawDegrees) >
-                        0.001F)
-                {
-                    const DirectX::XMMATRIX
-                        lookRotation =
-                            DirectX::XMMatrixRotationY(
-                                DirectX::
-                                    XMConvertToRadians(
-                                        lookYawDegrees));
-
-                    localMatrix =
-                        lookRotation *
-                        localMatrix;
-
-                    usedAnimationTrack = true;
-                }
-            }
-
-            if (
-                input.blockHorizontalRootMotion &&
+                input.blockControllerOwnedRootTransform &&
                 bone->parentIndex < 0)
             {
-                PreserveBlockedRootMotion(
+                PreserveControllerOwnedRootTransform(
                     bindLocal,
                     localMatrix);
             }
@@ -1070,6 +1156,101 @@ namespace lts::editor
                             parentIndex]);
             }
 
+            /*
+             * Аналог старого WarZ AdjustBoneCallback:
+             *
+             * половина yaw/pitch применяется к Spine1,
+             * половина — к Neck.
+             *
+             * Вращаем уже собранную absolute matrix,
+             * затем возвращаем исходную translation.
+             * Поэтому корпус наклоняется, но кости
+             * не улетают вверх или вниз.
+             */
+            const bool isLookSpineBone =
+                lookSpineBoneIndex >= 0 &&
+                boneIndex ==
+                    static_cast<std::size_t>(
+                        lookSpineBoneIndex);
+
+            const bool isLookNeckBone =
+                lookRootBoneIndex >= 0 &&
+                lookRootBoneIndex !=
+                    lookSpineBoneIndex &&
+                boneIndex ==
+                    static_cast<std::size_t>(
+                        lookRootBoneIndex);
+
+            if (
+                proceduralLookBoneWeight > 0.0F &&
+                (isLookSpineBone || isLookNeckBone) &&
+                std::isfinite(
+                    input.lookYawOffsetDegrees) &&
+                std::isfinite(
+                    input.lookPitchOffsetDegrees))
+            {
+                const float yawDegrees =
+                    std::remainder(
+                        input.lookYawOffsetDegrees,
+                        360.0F) *
+                    proceduralLookBoneWeight;
+
+                const float pitchDegrees =
+                    std::remainder(
+                        input.lookPitchOffsetDegrees,
+                        360.0F) *
+                    proceduralLookBoneWeight;
+
+                const DirectX::XMMATRIX pitchRotation =
+                    DirectX::XMMatrixRotationX(
+                        DirectX::XMConvertToRadians(
+                            -pitchDegrees));
+
+                const DirectX::XMMATRIX yawRotation =
+                    DirectX::XMMatrixRotationY(
+                        DirectX::XMConvertToRadians(
+                            yawDegrees));
+
+                DirectX::XMFLOAT4X4 storedAbsolute;
+
+                DirectX::XMStoreFloat4x4(
+                    &storedAbsolute,
+                    absoluteMatrix);
+
+                const float translationX =
+                    storedAbsolute._41;
+
+                const float translationY =
+                    storedAbsolute._42;
+
+                const float translationZ =
+                    storedAbsolute._43;
+
+                absoluteMatrix =
+                    absoluteMatrix *
+                    pitchRotation *
+                    yawRotation;
+
+                DirectX::XMStoreFloat4x4(
+                    &storedAbsolute,
+                    absoluteMatrix);
+
+                storedAbsolute._41 =
+                    translationX;
+
+                storedAbsolute._42 =
+                    translationY;
+
+                storedAbsolute._43 =
+                    translationZ;
+
+                absoluteMatrix =
+                    DirectX::XMLoadFloat4x4(
+                        &storedAbsolute);
+
+                usedAnimationTrack = true;
+            }
+
             DirectX::XMStoreFloat4x4(
                 &currentAbsolute[boneIndex],
                 absoluteMatrix);
@@ -1085,6 +1266,11 @@ namespace lts::editor
             const DirectX::XMMATRIX shiftedCurrent =
                 absoluteMatrix *
                 pivotTransform;
+
+            DirectX::XMStoreFloat4x4(
+                &output.modelBoneMatrices[
+                    boneIndex],
+                shiftedCurrent);
 
             DirectX::XMMATRIX inverseBind;
 

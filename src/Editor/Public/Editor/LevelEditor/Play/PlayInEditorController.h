@@ -13,6 +13,7 @@
 namespace lts::editor
 {
     class TerrainRenderer;
+    class ModularCharacterRenderer;
 
     class PlayInEditorController final
     {
@@ -43,6 +44,8 @@ namespace lts::editor
             double deltaSeconds,
             SceneDocument& document,
             TerrainRenderer& terrainRenderer,
+            const ModularCharacterRenderer&
+                characterRenderer,
             float viewportX,
             float viewportY,
             float viewportWidth,
@@ -88,11 +91,32 @@ namespace lts::editor
         };
 
         /*
+         * Стабилизированный camera anchor.
+         *
+         * Высота берётся из Bip01_Head,
+         * X/Z следуют за CharacterController,
+         * чтобы шаги не раскачивали всю камеру.
+         */
+        DirectX::XMFLOAT3 cameraAnchor_
+        {
+            0.0F,
+            1.65F,
+            0.0F
+        };
+
+        /*
          * Игровое направление корпуса и ног.
          * Визуальный offset модели +180° здесь
          * не хранится.
          */
         float bodyYawDegrees_ = 0.0F;
+
+        /*
+         * -1 = Turn Left
+         *  0 = не поворачиваем ноги
+         * +1 = Turn Right
+         */
+        std::int32_t turnDirection_ = 0;
 
         float cameraYawRadians_ = 0.0F;
         float cameraPitchRadians_ =
@@ -126,5 +150,7 @@ namespace lts::editor
         bool reloadWasDown_ = false;
 
         bool cursorCaptured_ = false;
+        
+        bool cameraAnchorValid_ = false;
     };
 }

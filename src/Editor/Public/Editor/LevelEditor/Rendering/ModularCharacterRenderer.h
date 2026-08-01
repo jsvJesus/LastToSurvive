@@ -5,7 +5,7 @@
 #include <Graphics/GraphicsResult.h>
 
 #include <DirectXMath.h>
-
+#include <string_view>
 #include <memory>
 
 namespace engine::graphics
@@ -44,6 +44,18 @@ namespace lts::editor
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
                 viewProjection) noexcept;
+
+        /*
+         * Возвращает позицию кости из последней
+         * отрисованной позы персонажа.
+         *
+         * Результат находится в world-space.
+         */
+        [[nodiscard]]
+        bool TryGetBoneWorldPosition(
+            EditorEntityId entityId,
+            std::string_view boneName,
+            DirectX::XMFLOAT3& position) const noexcept;
 
     private:
         class Impl;

@@ -86,11 +86,19 @@ namespace lts::editor
         float lookYawOffsetDegrees = 0.0F;
 
         /*
-         * Пока CharacterController сам перемещает
-         * персонажа, горизонтальный root motion
-         * из клипа блокируется.
+         * Вертикальный угол камеры.
+         *
+         * Поворот будет распределён между
+         * upperBodyRootBone и lookRootBone.
          */
-        bool blockHorizontalRootMotion = true;
+        float lookPitchOffsetDegrees = 0.0F;
+
+        /*
+         * Пока CharacterController управляет положением
+         * и направлением сущности, Bip01 не должен
+         * перемещать или вращать модель самостоятельно.
+         */
+        bool blockControllerOwnedRootTransform = true;
     };
 
     struct CharacterAnimationPose final
@@ -99,6 +107,17 @@ namespace lts::editor
             DirectX::XMFLOAT4X4,
             engine::assets::MaximumSkeletonBones>
             boneMatrices{};
+
+        /*
+         * Текущие абсолютные bone matrices в model-space.
+         *
+         * Используются не для skinning, а для attachment,
+         * камеры и будущих socket-компонентов.
+         */
+        std::array<
+            DirectX::XMFLOAT4X4,
+            engine::assets::MaximumSkeletonBones>
+            modelBoneMatrices{};
 
         std::uint32_t boneCount = 0U;
 

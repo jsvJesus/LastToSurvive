@@ -528,6 +528,15 @@ namespace engine::scene
         float upperBodyYawOffsetDegrees = 0.0F;
 
         /*
+         * Вертикальный наклон корпуса относительно
+         * направления ног.
+         *
+         * Положительный угол — взгляд вверх.
+         * Отрицательный — вниз.
+        */
+        float upperBodyPitchOffsetDegrees = 0.0F;
+
+        /*
          * Целевой угол для Rot Legs.
          */
         float turnTargetYawDegrees = 0.0F;
@@ -567,6 +576,8 @@ namespace engine::scene
             actorYawDegrees = 0.0F;
             lowerBodyYawDegrees = 0.0F;
             upperBodyYawOffsetDegrees = 0.0F;
+            upperBodyPitchOffsetDegrees = 0.0F;
+
             turnTargetYawDegrees = 0.0F;
 
             grounded = true;

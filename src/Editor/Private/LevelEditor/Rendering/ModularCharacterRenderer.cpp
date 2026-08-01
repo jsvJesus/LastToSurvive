@@ -53,6 +53,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <string_view>
 
 namespace lts::editor
 {
@@ -362,6 +363,40 @@ namespace lts::editor
             }
 
             return value;
+        }
+
+        [[nodiscard]]
+        bool EqualAsciiInsensitive(
+            const std::string_view first,
+            const std::string_view second) noexcept
+        {
+            if (first.size() != second.size())
+            {
+                return false;
+            }
+
+            for (
+                std::size_t index = 0U;
+                index < first.size();
+                ++index)
+            {
+                const unsigned char firstCharacter =
+                    static_cast<unsigned char>(
+                        first[index]);
+
+                const unsigned char secondCharacter =
+                    static_cast<unsigned char>(
+                        second[index]);
+
+                if (
+                    std::tolower(firstCharacter) !=
+                    std::tolower(secondCharacter))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         [[nodiscard]]
@@ -1352,6 +1387,21 @@ namespace lts::editor
                 materials;
 
             std::array<float, 3U> pivot{};
+        };
+
+        struct CachedCharacterPose final
+        {
+            std::shared_ptr<CachedSkeleton>
+                skeleton;
+
+            std::array<
+                DirectX::XMFLOAT4X4,
+                engine::assets::MaximumSkeletonBones>
+                modelBoneMatrices{};
+
+            DirectX::XMFLOAT4X4 world{};
+
+            std::uint32_t boneCount = 0U;
         };
 
     public:
@@ -3841,6 +3891,8 @@ namespace lts::editor
             std::shared_ptr<CachedTexture>>
             textures_;
 
+        characterPoses_.clear();
+
         std::unordered_set<std::wstring>
             failedMeshes_;
 
@@ -3926,5 +3978,19 @@ namespace lts::editor
             context,
             document,
             viewProjection);
+    }
+
+    bool ModularCharacterRenderer::
+    TryGetBoneWorldPosition(
+        const EditorEntityId entityId,
+        const std::string_view boneName,
+        DirectX::XMFLOAT3& position) const noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->TryGetBoneWorldPosition(
+                entityId,
+                boneName,
+                position);
     }
 }

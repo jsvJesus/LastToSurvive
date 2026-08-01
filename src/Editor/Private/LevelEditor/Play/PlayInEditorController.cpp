@@ -1,6 +1,7 @@
 #include "Editor/LevelEditor/Play/PlayInEditorController.h"
 
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
+#include "Editor/LevelEditor/Rendering/ModularCharacterRenderer.h"
 
 #include <Core/Log.h>
 
@@ -98,6 +99,17 @@ namespace lts::editor
                         cosinePitch,
 
                     0.0F));
+        }
+
+        [[nodiscard]]
+        DirectX::XMVECTOR BuildRightVector(
+            const float yawRadians) noexcept
+        {
+            return DirectX::XMVectorSet(
+                std::cos(yawRadians),
+                0.0F,
+                -std::sin(yawRadians),
+                0.0F);
         }
 
         [[nodiscard]]
@@ -489,34 +501,31 @@ namespace lts::editor
                     bodyYawDegrees_ +
                         CharacterVisualYawOffsetDegrees);
 
-        const auto& controller =
-            *player->characterController;
+        const float groundHeight = ResolveGroundHeight(
+            document,
+            terrainRenderer,
+            player->transform.
+                position[0],
+            player->transform.
+                position[2]);
 
-        const float halfHeight =
-            (std::max)(
-                controller.capsuleHeight *
-                    0.5F,
-                controller.capsuleRadius);
-
-        const float groundHeight =
-            ResolveGroundHeight(
-                document,
-                terrainRenderer,
-                player->transform.
-                    position[0],
-                player->transform.
-                    position[2]);
-
+        /*
+         * Transform персонажа — положение ступней,
+         * а не центр физической капсулы.
+         *
+         * Отдельного physics transform в PIE пока нет,
+         * поэтому добавление capsuleHeight / 2
+         * поднимало весь mesh над Terrain.
+         */
         player->transform.position[1] =
-            groundHeight +
-            halfHeight;
+            groundHeight;
 
         cameraYawRadians_ =
             DirectX::XMConvertToRadians(
                 bodyYawDegrees_);
 
         cameraPitchRadians_ =
-            -0.261799388F;
+            -0.087266463F; // -5°
 
         viewMode_ =
             engine::scene::
@@ -569,15 +578,43 @@ namespace lts::editor
         primaryActionWasDown_ = false;
         reloadWasDown_ = false;
 
+        const DirectX::XMVECTOR forward =
+    BuildForwardVector(
+        cameraYawRadians_,
+        cameraPitchRadians_);
+
+        const DirectX::XMVECTOR right =
+            BuildRightVector(
+                cameraYawRadians_);
+
         const DirectX::XMVECTOR target =
-            DirectX::XMVectorSet(
-                player->transform.position[0],
+            DirectX::XMVectorAdd(
+                DirectX::XMLoadFloat3(
+                    &cameraAnchor_),
 
-                player->transform.position[1] +
-                    ThirdPersonStandingTargetHeight,
+                DirectX::XMVectorSet(
+                    0.0F,
+                    ThirdPersonTargetUpOffset,
+                    0.0F,
+                    0.0F));
 
-                player->transform.position[2],
-                1.0F);
+        DirectX::XMVECTOR initialCamera =
+            DirectX::XMVectorAdd(
+                target,
+                DirectX::XMVectorScale(
+                    right,
+                    ThirdPersonShoulderOffset));
+
+        initialCamera =
+            DirectX::XMVectorSubtract(
+                initialCamera,
+                DirectX::XMVectorScale(
+                    forward,
+                    ThirdPersonCameraDistance));
+
+        DirectX::XMStoreFloat3(
+            &cameraPosition_,
+            initialCamera);
 
         const DirectX::XMVECTOR forward =
             BuildForwardVector(
@@ -1078,12 +1115,6 @@ namespace lts::editor
             velocityZ_ *
                 safeDeltaSeconds;
 
-        const float halfHeight =
-            (std::max)(
-                controller.capsuleHeight *
-                    0.5F,
-                controller.capsuleRadius);
-
         float groundHeight =
             ResolveGroundHeight(
                 document,
@@ -1091,9 +1122,11 @@ namespace lts::editor
                 nextX,
                 nextZ);
 
+        /*
+         * Y хранит уровень ступней.
+         */
         float standingHeight =
-            groundHeight +
-            halfHeight;
+            groundHeight;
 
         if (
             grounded_ &&
@@ -1118,8 +1151,7 @@ namespace lts::editor
                     nextZ);
 
             standingHeight =
-                groundHeight +
-                halfHeight;
+                groundHeight;
         }
 
         const bool spaceDown =
