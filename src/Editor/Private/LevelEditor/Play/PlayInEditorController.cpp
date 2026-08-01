@@ -1137,6 +1137,13 @@ namespace lts::editor
             velocityZ_ *
                 safeDeltaSeconds;
 
+        float groundHeight =
+            ResolveGroundHeight(
+                document,
+                terrainRenderer,
+                nextX,
+                nextZ);
+
         /*
          * Transform Y — уровень ступней.
          */
@@ -1165,8 +1172,7 @@ namespace lts::editor
                     nextX,
                     nextZ);
 
-            standingHeight =
-                groundHeight;
+            standingHeight = groundHeight;
         }
 
         const bool spaceDown =
