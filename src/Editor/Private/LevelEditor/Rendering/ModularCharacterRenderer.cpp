@@ -2775,19 +2775,45 @@ namespace lts::editor
                         firstPersonHeadResolved)
                     {
                         /*
-                         * Row-vector convention: local BodyFPS pose is
-                         * first normalized around Bip01_Head in camera
-                         * space, then moved into world through inverse view.
-                         * The anatomical pose cache above intentionally keeps
-                         * entity world space for the next camera update.
+                         * Сначала переносим Bip01_Head
+                         * в начало camera-space.
+                         *
+                         * Затем разворачиваем BodyFPS
+                         * на 180 градусов вокруг Y.
+                         *
+                         * После этого добавляем FPS offset.
+                         *
+                         * Проект использует row-vector
+                         * convention, поэтому порядок:
+                         *
+                         * headToOrigin *
+                         * facingCorrection *
+                         * cameraOffset
                          */
                         const DirectX::XMMATRIX
-                            cameraSpacePresentation =
+                            headToOrigin =
+                                DirectX::XMMatrixTranslation(
+                                    -firstPersonHeadModelPosition.x,
+                                    -firstPersonHeadModelPosition.y,
+                                    -firstPersonHeadModelPosition.z);
+
+                        const DirectX::XMMATRIX
+                            facingCorrection =
+                                DirectX::XMMatrixRotationY(
+                                    DirectX::XM_PI);
+
+                        const DirectX::XMMATRIX
+                            cameraOffset =
                                 DirectX::XMMatrixTranslation(
                                     FirstPersonPresentationRightOffset,
-                                    -firstPersonHeadModelPosition.y +
-                                        FirstPersonPresentationHeadOffset,
+                                    FirstPersonPresentationHeadOffset,
                                     FirstPersonPresentationForwardOffset);
+
+                        const DirectX::XMMATRIX
+                            cameraSpacePresentation =
+                                headToOrigin *
+                                facingCorrection *
+                                cameraOffset;
 
                         DirectX::XMStoreFloat4x4(
                             &constants.world,

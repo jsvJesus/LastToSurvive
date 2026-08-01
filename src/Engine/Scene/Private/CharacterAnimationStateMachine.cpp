@@ -1161,7 +1161,18 @@ namespace engine::scene
         const bool moving =
             IsCharacterMoving(input);
 
+        /*
+         * Aim upper-body нужен только BodyFPS.
+         *
+         * В TPS RMB продолжает управлять:
+         * - Walk Aim locomotion;
+         * - gameplay aiming;
+         *
+         * Но TPS upper-body остаётся Relaxed.
+         */
         const bool aiming =
+            input.viewMode ==
+                CharacterViewMode::FirstPerson &&
             IsAiming(input);
 
         if (crouched)

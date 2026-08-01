@@ -785,21 +785,38 @@ AnimationLoopSamplingInfo
             }
 
             std::size_t secondFrame =
-                firstFrame + 1U;
+                firstFrame;
 
             if (looping)
             {
-                if (secondFrame >= activeFrameCount)
-                {
-                    secondFrame = 0U;
-                }
+                /*
+                 * В старом WarZ loop имеет период
+                 * NumFrames - 1, но интерполяция
+                 * последнего интервала выполняется:
+                 *
+                 * frame N-2 -> authored frame N-1.
+                 *
+                 * Кадр N-1 является конечной копией
+                 * первого кадра. Нельзя сразу заменять
+                 * его индексом 0: старые анимации могут
+                 * содержать небольшую разницу между
+                 * authored endpoint и первым кадром.
+                 */
+                secondFrame =
+                    (std::min)(
+                        firstFrame +
+                            std::size_t{1U},
+                        usableKeyCount -
+                            std::size_t{1U});
             }
             else
             {
                 secondFrame =
                     (std::min)(
-                        secondFrame,
-                        usableKeyCount - 1U);
+                        firstFrame +
+                            std::size_t{1U},
+                        usableKeyCount -
+                            std::size_t{1U});
             }
 
             const float interpolation =
@@ -1308,7 +1325,7 @@ AnimationLoopSamplingInfo
                 const DirectX::XMMATRIX pitchRotation =
                     DirectX::XMMatrixRotationX(
                         DirectX::XMConvertToRadians(
-                            -pitchDegrees));
+                            pitchDegrees));
 
                 const DirectX::XMMATRIX yawRotation =
                     DirectX::XMMatrixRotationY(
