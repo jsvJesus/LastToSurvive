@@ -3362,8 +3362,7 @@ namespace lts::editor
                                 if (
                                     !ImGui::TreeNodeEx(
                                         label,
-                                        ImGuiTreeNodeFlags_
-                                            DefaultOpen))
+                                        ImGuiTreeNodeFlags_DefaultOpen))
                                 {
                                     return;
                                 }
@@ -3373,8 +3372,7 @@ namespace lts::editor
                                 if (
                                     ImGui::TreeNodeEx(
                                         "Upper Body",
-                                        ImGuiTreeNodeFlags_
-                                            DefaultOpen))
+                                        ImGuiTreeNodeFlags_DefaultOpen))
                                 {
                                     ImGui::PushID(
                                         "UpperBody");
@@ -3522,8 +3520,7 @@ namespace lts::editor
                                 if (
                                     ImGui::TreeNodeEx(
                                         "Primary",
-                                        ImGuiTreeNodeFlags_
-                                            DefaultOpen))
+                                        ImGuiTreeNodeFlags_DefaultOpen))
                                 {
                                     ImGui::PushID("Primary");
 
@@ -3727,8 +3724,7 @@ namespace lts::editor
                         if (
                             ImGui::TreeNodeEx(
                                 "Lower Body",
-                                ImGuiTreeNodeFlags_
-                                    DefaultOpen))
+                                ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushID("LowerBody");
 
@@ -3881,8 +3877,7 @@ namespace lts::editor
                             if (
                                 ImGui::TreeNodeEx(
                                     "Jump",
-                                    ImGuiTreeNodeFlags_
-                                        DefaultOpen))
+                                    ImGuiTreeNodeFlags_DefaultOpen))
                             {
                                 ImGui::PushID("Jump");
 
