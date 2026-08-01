@@ -948,8 +948,8 @@ AnimationLoopSamplingInfo
         }
 
         void PreserveControllerOwnedRootTransform(
-    const DirectX::XMMATRIX& bindLocal,
-    DirectX::XMMATRIX& animatedLocal) noexcept
+            const DirectX::XMMATRIX& bindLocal,
+            DirectX::XMMATRIX& animatedLocal) noexcept
         {
             DirectX::XMFLOAT4X4 bindStored;
             DirectX::XMFLOAT4X4 animatedStored;
@@ -1322,10 +1322,11 @@ AnimationLoopSamplingInfo
                         360.0F) *
                     proceduralLookBoneWeight;
 
-                const DirectX::XMMATRIX pitchRotation =
-                    DirectX::XMMatrixRotationX(
-                        DirectX::XMConvertToRadians(
-                            pitchDegrees));
+                const DirectX::XMMATRIX
+                    pitchRotation =
+                        DirectX::XMMatrixRotationX(
+                            DirectX::XMConvertToRadians(
+                                -pitchDegrees));
 
                 const DirectX::XMMATRIX yawRotation =
                     DirectX::XMMatrixRotationY(

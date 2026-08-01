@@ -9,8 +9,25 @@ namespace engine::scene
 {
     namespace
     {
-        constexpr float MaximumProceduralPitchDegrees =
-            89.0F;
+        /*
+         * Старый WarZ ограничивал TPS body bend
+         * примерно значением 0.4 радиана.
+         *
+         * Это около 22.9 градуса на всю цепочку,
+         * после чего evaluator делит угол между
+         * Spine1 и Neck.
+         */
+        constexpr float
+            MaximumThirdPersonBodyPitchDegrees =
+                22.918312F;
+
+        /*
+         * Старый WarZ использовал экспоненциальное
+         * сглаживание с коэффициентом 10.
+         */
+        constexpr float
+            BodyPitchResponsePerSecond =
+                10.0F;
 
         [[nodiscard]]
         float NormalizeAngleDegrees(
@@ -47,6 +64,53 @@ namespace engine::scene
                     differenceDegrees,
                     -(std::max)(maximumDeltaDegrees, 0.0F),
                     (std::max)(maximumDeltaDegrees, 0.0F)));
+        }
+
+        [[nodiscard]]
+        float SmoothExponential(
+            const float currentValue,
+            const float targetValue,
+            const float responsePerSecond,
+            const float deltaSeconds) noexcept
+        {
+            if (
+                !std::isfinite(currentValue) ||
+                !std::isfinite(targetValue))
+            {
+                return 0.0F;
+            }
+
+            if (
+                !std::isfinite(deltaSeconds) ||
+                deltaSeconds <= 0.0F ||
+                !std::isfinite(responsePerSecond) ||
+                responsePerSecond <= 0.0F)
+            {
+                return currentValue;
+            }
+
+            /*
+             * Повторяет WarZ:
+             *
+             * 1 - pow(0.5, 10 * dt)
+             */
+            const float alpha =
+                1.0F -
+                std::pow(
+                    0.5F,
+                    responsePerSecond *
+                        deltaSeconds);
+
+            return
+                currentValue +
+                (
+                    targetValue -
+                    currentValue
+                ) *
+                std::clamp(
+                    alpha,
+                    0.0F,
+                    1.0F);
         }
 
         [[nodiscard]]
@@ -462,14 +526,33 @@ namespace engine::scene
                 -maximumLookYaw,
                 maximumLookYaw);
 
+        const float requestedPitchDegrees =
+            std::isfinite(
+                input.lookPitchOffsetDegrees)
+                ? input.lookPitchOffsetDegrees
+                : 0.0F;
+
+        /*
+         * BodyFPS уже размещается в camera-space.
+         * Дополнительный procedural pitch в FPS
+         * создавал бы двойной наклон рук.
+         */
+        const float targetBodyPitchDegrees =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson
+                ? std::clamp(
+                    requestedPitchDegrees,
+                    -MaximumThirdPersonBodyPitchDegrees,
+                    MaximumThirdPersonBodyPitchDegrees)
+                : 0.0F;
+
         runtime.upperBodyPitchOffsetDegrees =
-            std::clamp(
-                std::isfinite(
-                    input.lookPitchOffsetDegrees)
-                    ? input.lookPitchOffsetDegrees
-                    : 0.0F,
-                -MaximumProceduralPitchDegrees,
-                MaximumProceduralPitchDegrees);
+            SmoothExponential(
+                runtime.
+                    upperBodyPitchOffsetDegrees,
+                targetBodyPitchDegrees,
+                BodyPitchResponsePerSecond,
+                rotationDeltaSeconds);
 
         CharacterLocomotionState resolvedLocomotionState =
             input.locomotionState;
@@ -594,6 +677,98 @@ namespace engine::scene
 
             CharacterAnimationLoopMode::Loop,
             false);
+
+        /*
+         * Синхронизация Idle как в старом WarZ.
+         *
+         * Lower и Upper могут использовать один
+         * и тот же full-body idle clip, но их
+         * runtime clocks до этого обновлялись
+         * независимо.
+         *
+         * При разной фазе нижняя часть бралась
+         * из одного кадра Idle, а Spine/руки —
+         * из другого. Визуально это выглядело
+         * как потеря кадра или короткий рывок.
+         */
+        const bool stationaryThirdPersonIdle =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson &&
+            !moving &&
+            resolvedLocomotionState ==
+                CharacterLocomotionState::Idle;
+
+        if (stationaryThirdPersonIdle)
+        {
+            const bool crouchedIdle =
+                IsCrouched(
+                    resolvedInput);
+
+            if (crouchedIdle)
+            {
+                /*
+                 * В оригинальном WarZ:
+                 *
+                 * CrouchBlend / CrouchAim при
+                 * MoveDir == Stand устанавливались
+                 * на frame 0 и ставились на Pause.
+                 *
+                 * Lower Body продолжает проигрывать
+                 * idle_crouch_1, а Upper Body
+                 * остаётся в стабильной позе.
+                 */
+                if (
+                    !runtime.upperBody.
+                        currentClip.empty())
+                {
+                    runtime.upperBody.
+                        currentTimeSeconds =
+                            0.0;
+                }
+            }
+            else
+            {
+                /*
+                 * Standing Idle:
+                 *
+                 * Когда Lower и Upper используют
+                 * одинаковый clip, они обязаны
+                 * использовать один animation clock.
+                 */
+                if (
+                    !runtime.lowerBody.
+                        currentClip.empty() &&
+                    runtime.upperBody.
+                        currentClip ==
+                            runtime.lowerBody.
+                                currentClip)
+                {
+                    runtime.upperBody.
+                        currentTimeSeconds =
+                            runtime.lowerBody.
+                                currentTimeSeconds;
+                }
+
+                /*
+                 * Во время cross-fade предыдущий
+                 * Idle также должен оставаться
+                 * синхронизированным.
+                 */
+                if (
+                    !runtime.lowerBody.
+                        previousClip.empty() &&
+                    runtime.upperBody.
+                        previousClip ==
+                            runtime.lowerBody.
+                                previousClip)
+                {
+                    runtime.upperBody.
+                        previousTimeSeconds =
+                            runtime.lowerBody.
+                                previousTimeSeconds;
+                }
+            }
+        }
 
         /*
          * Запуск нового one-shot действия.
