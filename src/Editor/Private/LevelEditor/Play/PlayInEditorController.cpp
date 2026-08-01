@@ -1470,12 +1470,16 @@ namespace lts::editor
         animationInput.lookPitchOffsetDegrees =
             cameraPitchDegrees;
 
+        /*
+         * AI_Player.CPP:
+         * _ai_fTurnSpeedWalk = 720 deg/sec.
+         */
         animationInput.
             movementRotationSpeedDegrees =
                 (std::max)(
                     controller.
                         rotationSpeedDegrees,
-                    0.0F);
+                    720.0F);
 
         animationInput.grounded =
             grounded_;

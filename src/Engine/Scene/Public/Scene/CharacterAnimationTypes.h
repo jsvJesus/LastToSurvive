@@ -391,15 +391,26 @@ namespace engine::scene
          *
          * Это имя кости, а не путь к анимации.
          */
+        /*
+         * AI_PlayerAnim::LoadUpperBlendStartBones:
+         * обычные Idle/Stand upper tracks начинаются
+         * с Bip01_Spine2. Spine1 остаётся lower pose.
+         */
         std::string upperBodyRootBone =
-            "Bip01_Spine1";
+            "Bip01_Spine2";
 
         /*
          * Action-слой обычно использует ту же
          * границу, но оставляем настройку отдельной.
          */
+        /*
+         * Для текущего MEL_Hands profile action
+         * также не должен полностью заменять Spine1.
+         * Позже mask root станет per-action field,
+         * как blendStartBones_[AIDX] в WarZ.
+         */
         std::string actionRootBone =
-            "Bip01_Spine1";
+            "Bip01_Spine2";
 
         /*
          * Корневая кость процедурного Look.

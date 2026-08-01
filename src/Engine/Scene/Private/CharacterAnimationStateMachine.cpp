@@ -10,24 +10,30 @@ namespace engine::scene
     namespace
     {
         /*
-         * Старый WarZ ограничивал TPS body bend
-         * примерно значением 0.4 радиана.
+         * AI_Player::UpdateRotation двигает
+         * bodyAdjust_y к цели линейно:
          *
-         * Это около 22.9 градуса на всю цепочку,
-         * после чего evaluator делит угол между
-         * Spine1 и Neck.
+         * frameTime * 3.2 rad/sec.
+         *
+         * Верхний/нижний предел задаёт Camera Rig
+         * в HUD_TPSGame, а не дополнительный clamp 0.4 rad.
          */
         constexpr float
-            MaximumThirdPersonBodyPitchDegrees =
-                22.918312F;
+            MaximumProceduralPitchDegrees =
+                89.0F;
+
+        constexpr float
+            BodyPitchSpeedDegreesPerSecond =
+                183.346497F;
 
         /*
-         * Старый WarZ использовал экспоненциальное
-         * сглаживание с коэффициентом 10.
+         * PLAYER_IDLEAIM / PLAYER_MOVE_WALK_AIM:
+         * old upper track фиксируется на frame 1.
+         * Legacy character clips экспортированы 30 FPS.
          */
-        constexpr float
-            BodyPitchResponsePerSecond =
-                10.0F;
+        constexpr double
+            LegacyUpperPoseFrameSeconds =
+                1.0 / 30.0;
 
         [[nodiscard]]
         float NormalizeAngleDegrees(
@@ -67,7 +73,37 @@ namespace engine::scene
         }
 
         [[nodiscard]]
-        float SmoothExponential(
+        float MoveTowardsValue(
+            const float currentValue,
+            const float targetValue,
+            const float maximumDelta) noexcept
+        {
+            const float safeDelta =
+                std::isfinite(maximumDelta)
+                    ? (std::max)(maximumDelta, 0.0F)
+                    : 0.0F;
+
+            if (currentValue < targetValue)
+            {
+                return
+                    (std::min)(
+                        currentValue + safeDelta,
+                        targetValue);
+            }
+
+            if (currentValue > targetValue)
+            {
+                return
+                    (std::max)(
+                        currentValue - safeDelta,
+                        targetValue);
+            }
+
+            return targetValue;
+        }
+
+        [[nodiscard]]
+        float SmoothWarZBodyYaw(
             const float currentValue,
             const float targetValue,
             const float responsePerSecond,
@@ -75,31 +111,28 @@ namespace engine::scene
         {
             if (
                 !std::isfinite(currentValue) ||
-                !std::isfinite(targetValue))
-            {
-                return 0.0F;
-            }
-
-            if (
-                !std::isfinite(deltaSeconds) ||
-                deltaSeconds <= 0.0F ||
+                !std::isfinite(targetValue) ||
                 !std::isfinite(responsePerSecond) ||
-                responsePerSecond <= 0.0F)
+                !std::isfinite(deltaSeconds) ||
+                responsePerSecond <= 0.0F ||
+                deltaSeconds <= 0.0F)
             {
-                return currentValue;
+                return
+                    std::isfinite(currentValue)
+                        ? currentValue
+                        : 0.0F;
             }
 
             /*
-             * Повторяет WarZ:
-             *
-             * 1 - pow(0.5, 10 * dt)
+             * UpdateBodyAdjustX:
+             * current += (target-current) * dt * response.
              */
             const float alpha =
-                1.0F -
-                std::pow(
-                    0.5F,
+                std::clamp(
                     responsePerSecond *
-                        deltaSeconds);
+                        deltaSeconds,
+                    0.0F,
+                    1.0F);
 
             return
                 currentValue +
@@ -107,10 +140,63 @@ namespace engine::scene
                     targetValue -
                     currentValue
                 ) *
-                std::clamp(
-                    alpha,
-                    0.0F,
-                    1.0F);
+                alpha;
+        }
+
+        [[nodiscard]]
+        bool IsForwardDirectionGroup(
+            const CharacterMovementDirection direction) noexcept
+        {
+            return
+                direction ==
+                    CharacterMovementDirection::Forward ||
+                direction ==
+                    CharacterMovementDirection::ForwardLeft ||
+                direction ==
+                    CharacterMovementDirection::ForwardRight;
+        }
+
+        [[nodiscard]]
+        bool IsBackwardDirectionGroup(
+            const CharacterMovementDirection direction) noexcept
+        {
+            return
+                direction ==
+                    CharacterMovementDirection::Backward ||
+                direction ==
+                    CharacterMovementDirection::BackwardLeft ||
+                direction ==
+                    CharacterMovementDirection::BackwardRight;
+        }
+
+        [[nodiscard]]
+        bool IsSynchronizedDirectionTransition(
+            const CharacterMovementDirection previousDirection,
+            const CharacterMovementDirection currentDirection) noexcept
+        {
+            if (
+                previousDirection == currentDirection ||
+                previousDirection ==
+                    CharacterMovementDirection::None ||
+                currentDirection ==
+                    CharacterMovementDirection::None)
+            {
+                return false;
+            }
+
+            return
+                (
+                    IsForwardDirectionGroup(
+                        previousDirection) &&
+                    IsForwardDirectionGroup(
+                        currentDirection)
+                ) ||
+                (
+                    IsBackwardDirectionGroup(
+                        previousDirection) &&
+                    IsBackwardDirectionGroup(
+                        currentDirection)
+                );
         }
 
         [[nodiscard]]
@@ -242,6 +328,37 @@ namespace engine::scene
         CharacterAnimationRuntime& runtime =
             component.runtime;
 
+        /*
+         * CUberAnim::SwitchToState сохранял старое
+         * состояние, направление и fCurFrame до
+         * пересборки animation stack.
+         */
+        const CharacterViewMode previousViewMode =
+            runtime.viewMode;
+
+        const CharacterStance previousStance =
+            runtime.stance;
+
+        const CharacterMovementDirection
+            previousMovementDirection =
+                runtime.movementDirection;
+
+        const CharacterLocomotionState
+            previousLocomotionState =
+                runtime.locomotionState;
+
+        const std::wstring previousLowerClip =
+            runtime.lowerBody.currentClip;
+
+        const std::wstring previousUpperClip =
+            runtime.upperBody.currentClip;
+
+        const double previousLowerTimeSeconds =
+            runtime.lowerBody.currentTimeSeconds;
+
+        const double previousUpperTimeSeconds =
+            runtime.upperBody.currentTimeSeconds;
+
         const double animationDeltaSeconds =
             std::isfinite(input.deltaSeconds) &&
             input.deltaSeconds > 0.0
@@ -297,18 +414,6 @@ namespace engine::scene
                         turnInPlaceSpeedDegrees),
                 1.0F);
 
-        const float frameTurnDelta =
-            turnSpeedDegrees *
-                rotationDeltaSeconds;
-
-        const bool canTurnInPlace =
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson &&
-            input.grounded &&
-            !moving &&
-            input.locomotionState ==
-                CharacterLocomotionState::Idle;
-
         const bool lowerLayerContainsTurnClip =
             (
                 runtime.locomotionState ==
@@ -326,8 +431,69 @@ namespace engine::scene
             lowerLayerContainsTurnClip &&
             runtime.lowerBody.completed;
 
-        if (moving)
+        float bodyYawOffsetDegrees =
+            std::isfinite(
+                runtime.upperBodyYawOffsetDegrees)
+                ? runtime.upperBodyYawOffsetDegrees
+                : 0.0F;
+
+        const float cameraBodyDifference =
+            AngleDifferenceDegrees(
+                desiredActorYawDegrees,
+                actorYawDegrees);
+
+        const bool canTurnInPlace =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson &&
+            input.grounded &&
+            !moving &&
+            input.locomotionState ==
+                CharacterLocomotionState::Idle;
+
+        if (
+            input.viewMode ==
+                CharacterViewMode::FirstPerson)
         {
+            /*
+             * CUberAnim::StartTurnInPlaceAnim в FPS
+             * сразу выходит. Actor доворачивается к
+             * camera yaw без TPS torso offset.
+             */
+            actorYawDegrees =
+                MoveAngleDegrees(
+                    actorYawDegrees,
+                    desiredActorYawDegrees,
+                    turnSpeedDegrees *
+                        rotationDeltaSeconds);
+
+            bodyYawOffsetDegrees = 0.0F;
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+            runtime.turnTargetYawDegrees =
+                actorYawDegrees;
+        }
+        else if (moving)
+        {
+            /*
+             * AI_Player::UpdateRotation:
+             * StopTurnInPlaceAnim();
+             * UpdateBodyAdjustX(&bodyAdjust_x, 0, dt * 4);
+             *
+             * Сам helper ещё раз умножает на 4,
+             * поэтому возврат torso offset имеет
+             * response 16.
+             */
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+
+            bodyYawOffsetDegrees =
+                SmoothWarZBodyYaw(
+                    bodyYawOffsetDegrees,
+                    0.0F,
+                    16.0F,
+                    rotationDeltaSeconds);
+
             actorYawDegrees =
                 MoveAngleDegrees(
                     actorYawDegrees,
@@ -338,161 +504,81 @@ namespace engine::scene
                         0.0F) *
                     rotationDeltaSeconds);
 
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
             runtime.turnTargetYawDegrees =
                 actorYawDegrees;
         }
-        else if (
-            input.viewMode ==
-                CharacterViewMode::FirstPerson)
+        else if (canTurnInPlace)
         {
-            actorYawDegrees =
-                MoveAngleDegrees(
-                    actorYawDegrees,
-                    desiredActorYawDegrees,
-                    frameTurnDelta);
-
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
-            runtime.turnTargetYawDegrees =
-                actorYawDegrees;
-        }
-        else if (!canTurnInPlace)
-        {
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
-            runtime.turnTargetYawDegrees =
-                actorYawDegrees;
-        }
-        else
-        {
-            const float cameraBodyDifference =
-                AngleDifferenceDegrees(
-                    desiredActorYawDegrees,
-                    actorYawDegrees);
-
-            bool startedTurnThisUpdate =
-                false;
+            /*
+             * Сначала torso догоняет camera target.
+             * После 45 градусов запускается Rot Legs.
+             */
+            bodyYawOffsetDegrees =
+                SmoothWarZBodyYaw(
+                    bodyYawOffsetDegrees,
+                    cameraBodyDifference,
+                    4.0F,
+                    rotationDeltaSeconds);
 
             if (
                 !runtime.turnInPlaceActive &&
                 std::fabs(
-                    cameraBodyDifference) >=
+                    bodyYawOffsetDegrees) >=
                     turnEnterDegrees)
             {
-                runtime.turnInPlaceActive =
-                    true;
-
+                runtime.turnInPlaceActive = true;
                 runtime.turnTargetYawDegrees =
                     desiredActorYawDegrees;
 
                 runtime.turnDirection =
-                    cameraBodyDifference >= 0.0F
+                    bodyYawOffsetDegrees >= 0.0F
                         ? 1
                         : -1;
 
-                startedTurnThisUpdate =
-                    true;
+                bodyYawOffsetDegrees =
+                    std::clamp(
+                        bodyYawOffsetDegrees,
+                        -turnEnterDegrees,
+                        turnEnterDegrees);
             }
 
             if (runtime.turnInPlaceActive)
             {
-                float remainingDifference =
+                actorYawDegrees =
+                    MoveAngleDegrees(
+                        actorYawDegrees,
+                        runtime.turnTargetYawDegrees,
+                        turnSpeedDegrees *
+                            rotationDeltaSeconds);
+
+                bodyYawOffsetDegrees =
                     AngleDifferenceDegrees(
-                        runtime.
-                            turnTargetYawDegrees,
+                        desiredActorYawDegrees,
                         actorYawDegrees);
 
-                if (turnClipFinished)
+                const float remainingDifference =
+                    AngleDifferenceDegrees(
+                        runtime.turnTargetYawDegrees,
+                        actorYawDegrees);
+
+                if (
+                    turnClipFinished ||
+                    std::fabs(
+                        remainingDifference) <=
+                        turnExitDegrees)
                 {
                     actorYawDegrees =
                         NormalizeAngleDegrees(
                             runtime.
                                 turnTargetYawDegrees);
 
-                    runtime.turnInPlaceActive =
-                        false;
-
-                    runtime.turnDirection = 0;
-                }
-                else if (!startedTurnThisUpdate)
-                {
-                    float maximumTurnDelta =
-                        frameTurnDelta;
-
-                    /*
-                     * Когда длительность turn-клипа известна,
-                     * угол ног синхронизируется с оставшимся
-                     * временем клипа.
-                     */
-                    if (
-                        lowerLayerContainsTurnClip &&
-                        std::isfinite(
-                            input.
-                                lowerClipDurationSeconds) &&
-                        input.
-                            lowerClipDurationSeconds >
-                                0.0)
-                    {
-                        const double remainingClipSeconds =
-                            (std::max)(
-                                input.
-                                    lowerClipDurationSeconds -
-                                runtime.lowerBody.
-                                    currentTimeSeconds,
-                                0.0);
-
-                        if (
-                            remainingClipSeconds >
-                                0.000001 &&
-                            animationDeltaSeconds > 0.0)
-                        {
-                            const double stepSeconds =
-                                (std::min)(
-                                    animationDeltaSeconds,
-                                    remainingClipSeconds);
-
-                            maximumTurnDelta =
-                                std::fabs(
-                                    remainingDifference) *
-                                static_cast<float>(
-                                    stepSeconds /
-                                    remainingClipSeconds);
-                        }
-                    }
-
-                    actorYawDegrees =
-                        MoveAngleDegrees(
-                            actorYawDegrees,
-                            runtime.
-                                turnTargetYawDegrees,
-                            maximumTurnDelta);
-
-                    remainingDifference =
+                    bodyYawOffsetDegrees =
                         AngleDifferenceDegrees(
-                            runtime.
-                                turnTargetYawDegrees,
+                            desiredActorYawDegrees,
                             actorYawDegrees);
 
-                    if (
-                        std::fabs(
-                            remainingDifference) <=
-                            turnExitDegrees)
-                    {
-                        actorYawDegrees =
-                            NormalizeAngleDegrees(
-                                runtime.
-                                    turnTargetYawDegrees);
-
-                        runtime.turnInPlaceActive =
-                            false;
-
-                        runtime.turnDirection = 0;
-                    }
+                    runtime.turnInPlaceActive = false;
+                    runtime.turnDirection = 0;
                 }
             }
             else
@@ -502,6 +588,20 @@ namespace engine::scene
 
                 runtime.turnDirection = 0;
             }
+        }
+        else
+        {
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+            runtime.turnTargetYawDegrees =
+                actorYawDegrees;
+
+            bodyYawOffsetDegrees =
+                SmoothWarZBodyYaw(
+                    bodyYawOffsetDegrees,
+                    cameraBodyDifference,
+                    4.0F,
+                    rotationDeltaSeconds);
         }
 
         runtime.actorYawDegrees =
@@ -520,9 +620,7 @@ namespace engine::scene
 
         runtime.upperBodyYawOffsetDegrees =
             std::clamp(
-                AngleDifferenceDegrees(
-                    desiredActorYawDegrees,
-                    runtime.actorYawDegrees),
+                bodyYawOffsetDegrees,
                 -maximumLookYaw,
                 maximumLookYaw);
 
@@ -532,27 +630,27 @@ namespace engine::scene
                 ? input.lookPitchOffsetDegrees
                 : 0.0F;
 
-        /*
-         * BodyFPS уже размещается в camera-space.
-         * Дополнительный procedural pitch в FPS
-         * создавал бы двойной наклон рук.
-         */
         const float targetBodyPitchDegrees =
             input.viewMode ==
                 CharacterViewMode::ThirdPerson
                 ? std::clamp(
                     requestedPitchDegrees,
-                    -MaximumThirdPersonBodyPitchDegrees,
-                    MaximumThirdPersonBodyPitchDegrees)
+                    -MaximumProceduralPitchDegrees,
+                    MaximumProceduralPitchDegrees)
                 : 0.0F;
 
+        /*
+         * AI_Player::UpdateRotation:
+         * bodyAdjust_y[0] догоняет target
+         * линейно со скоростью 3.2 rad/sec.
+         */
         runtime.upperBodyPitchOffsetDegrees =
-            SmoothExponential(
+            MoveTowardsValue(
                 runtime.
                     upperBodyPitchOffsetDegrees,
                 targetBodyPitchDegrees,
-                BodyPitchResponsePerSecond,
-                rotationDeltaSeconds);
+                BodyPitchSpeedDegreesPerSecond *
+                    rotationDeltaSeconds);
 
         CharacterLocomotionState resolvedLocomotionState =
             input.locomotionState;
@@ -617,16 +715,37 @@ namespace engine::scene
         }
 
         /*
-         * Сначала продвигаем существующие клипы.
+         * FillAnimStatesSpeed:
+         * Run = 1.05, Sprint = 1.10,
+         * остальные locomotion states = 1.0.
          */
+        double locomotionPlaybackSpeed = 1.0;
+
+        if (
+            resolvedLocomotionState ==
+                CharacterLocomotionState::Run)
+        {
+            locomotionPlaybackSpeed = 1.05;
+        }
+        else if (
+            resolvedLocomotionState ==
+                CharacterLocomotionState::Sprint)
+        {
+            locomotionPlaybackSpeed = 1.10;
+        }
+
+        const double locomotionDeltaSeconds =
+            animationDeltaSeconds *
+                locomotionPlaybackSpeed;
+
         AdvanceLayer(
             runtime.lowerBody,
-            animationDeltaSeconds,
+            locomotionDeltaSeconds,
             input.lowerClipDurationSeconds);
 
         AdvanceLayer(
             runtime.upperBody,
-            animationDeltaSeconds,
+            locomotionDeltaSeconds,
             0.0);
 
         AdvanceLayer(
@@ -634,14 +753,31 @@ namespace engine::scene
             animationDeltaSeconds,
             input.actionClipDurationSeconds);
 
+        const bool firstPerson =
+            input.viewMode ==
+                CharacterViewMode::FirstPerson;
+
+        const bool synchronizedDirectionChange =
+            !firstUpdate &&
+            previousViewMode == input.viewMode &&
+            previousStance == input.stance &&
+            previousLocomotionState ==
+                input.locomotionState &&
+            IsSynchronizedDirectionTransition(
+                previousMovementDirection,
+                input.movementDirection);
+
         /*
-         * Нижняя часть тела.
+         * SwitchToState в FPS вообще не запускает
+         * lower body animation.
          */
         const std::wstring*
             desiredLowerBodyClip =
-                ResolveLowerBodyClip(
-                    animationSet,
-                    resolvedInput);
+                firstPerson
+                    ? nullptr
+                    : ResolveLowerBodyClip(
+                        animationSet,
+                        resolvedInput);
 
         SetLayerClip(
             runtime.lowerBody,
@@ -657,14 +793,43 @@ namespace engine::scene
 
             false);
 
-        /*
-         * Верхняя часть тела.
-         */
+        if (firstPerson)
+        {
+            runtime.lowerBody.Reset();
+        }
+        else if (
+            synchronizedDirectionChange &&
+            runtime.lowerBody.currentClip !=
+                previousLowerClip &&
+            !runtime.lowerBody.currentClip.empty())
+        {
+            /*
+             * F/FL/FR и B/BL/BR сохраняют текущий
+             * animation frame при смене направления.
+             */
+            runtime.lowerBody.currentTimeSeconds =
+                previousLowerTimeSeconds;
+        }
+
+        const bool suppressThirdPersonUpperForJump =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson &&
+            (
+                resolvedLocomotionState ==
+                    CharacterLocomotionState::JumpStart ||
+                resolvedLocomotionState ==
+                    CharacterLocomotionState::JumpLoop ||
+                resolvedLocomotionState ==
+                    CharacterLocomotionState::JumpLand
+            );
+
         const std::wstring*
             desiredUpperBodyClip =
-                ResolveUpperBodyClip(
-                    animationSet,
-                    resolvedInput);
+                suppressThirdPersonUpperForJump
+                    ? nullptr
+                    : ResolveUpperBodyClip(
+                        animationSet,
+                        resolvedInput);
 
         SetLayerClip(
             runtime.upperBody,
@@ -678,95 +843,77 @@ namespace engine::scene
             CharacterAnimationLoopMode::Loop,
             false);
 
-        /*
-         * Синхронизация Idle как в старом WarZ.
-         *
-         * Lower и Upper могут использовать один
-         * и тот же full-body idle clip, но их
-         * runtime clocks до этого обновлялись
-         * независимо.
-         *
-         * При разной фазе нижняя часть бралась
-         * из одного кадра Idle, а Spine/руки —
-         * из другого. Визуально это выглядело
-         * как потеря кадра или короткий рывок.
-         */
-        const bool stationaryThirdPersonIdle =
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson &&
-            !moving &&
-            resolvedLocomotionState ==
-                CharacterLocomotionState::Idle;
-
-        if (stationaryThirdPersonIdle)
+        if (
+            synchronizedDirectionChange &&
+            runtime.upperBody.currentClip !=
+                previousUpperClip &&
+            !runtime.upperBody.currentClip.empty())
         {
-            const bool crouchedIdle =
+            runtime.upperBody.currentTimeSeconds =
+                previousUpperTimeSeconds;
+        }
+
+        /*
+         * Точная legacy frame policy:
+         *
+         * PLAYER_IDLE:
+         * lower и upper используют один frame.
+         *
+         * Crouch Stand:
+         * upper frame 0 + paused.
+         *
+         * IDLEAIM / WALK_AIM:
+         * upper frame 1 + paused.
+         */
+        if (
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson)
+        {
+            const bool stationary =
+                !moving &&
+                resolvedLocomotionState ==
+                    CharacterLocomotionState::Idle;
+
+            if (
+                stationary &&
                 IsCrouched(
-                    resolvedInput);
-
-            if (crouchedIdle)
+                    resolvedInput))
             {
-                /*
-                 * В оригинальном WarZ:
-                 *
-                 * CrouchBlend / CrouchAim при
-                 * MoveDir == Stand устанавливались
-                 * на frame 0 и ставились на Pause.
-                 *
-                 * Lower Body продолжает проигрывать
-                 * idle_crouch_1, а Upper Body
-                 * остаётся в стабильной позе.
-                 */
-                if (
-                    !runtime.upperBody.
-                        currentClip.empty())
-                {
-                    runtime.upperBody.
-                        currentTimeSeconds =
-                            0.0;
-                }
+                runtime.upperBody.currentTimeSeconds =
+                    0.0;
+
+                runtime.upperBody.previousTimeSeconds =
+                    0.0;
             }
-            else
+            else if (
+                IsAiming(
+                    resolvedInput) &&
+                (
+                    stationary ||
+                    resolvedLocomotionState ==
+                        CharacterLocomotionState::Walk
+                ))
+            {
+                runtime.upperBody.currentTimeSeconds =
+                    LegacyUpperPoseFrameSeconds;
+
+                runtime.upperBody.previousTimeSeconds =
+                    LegacyUpperPoseFrameSeconds;
+            }
+            else if (stationary)
             {
                 /*
-                 * Standing Idle:
-                 *
-                 * Когда Lower и Upper используют
-                 * одинаковый clip, они обязаны
-                 * использовать один animation clock.
+                 * Не сравниваем clip path:
+                 * WarZ синхронизирует fCurFrame даже
+                 * между разными lower/upper IDs.
                  */
-                if (
-                    !runtime.lowerBody.
-                        currentClip.empty() &&
-                    runtime.upperBody.
-                        currentClip ==
-                            runtime.lowerBody.
-                                currentClip)
-                {
-                    runtime.upperBody.
-                        currentTimeSeconds =
-                            runtime.lowerBody.
-                                currentTimeSeconds;
-                }
+                runtime.upperBody.currentTimeSeconds =
+                    runtime.lowerBody.
+                        currentTimeSeconds;
 
-                /*
-                 * Во время cross-fade предыдущий
-                 * Idle также должен оставаться
-                 * синхронизированным.
-                 */
-                if (
-                    !runtime.lowerBody.
-                        previousClip.empty() &&
-                    runtime.upperBody.
-                        previousClip ==
-                            runtime.lowerBody.
-                                previousClip)
-                {
-                    runtime.upperBody.
-                        previousTimeSeconds =
-                            runtime.lowerBody.
-                                previousTimeSeconds;
-                }
+                runtime.upperBody.previousTimeSeconds =
+                    runtime.lowerBody.
+                        previousTimeSeconds;
             }
         }
 

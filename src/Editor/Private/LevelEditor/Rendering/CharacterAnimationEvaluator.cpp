@@ -1053,10 +1053,15 @@ AnimationLoopSamplingInfo
             input.upperBodyRootBone,
             upperBodyMask);
 
+        /*
+         * Upper mask начинается с Spine2, но
+         * _player_AdjustBoneCallback работал
+         * конкретно с Spine1 и Neck.
+         */
         const std::int32_t lookSpineBoneIndex =
             FindBoneIndex(
                 skeleton,
-                input.upperBodyRootBone);
+                "Bip01_Spine1");
 
         const std::int32_t lookRootBoneIndex =
             FindBoneIndex(
@@ -1253,40 +1258,15 @@ AnimationLoopSamplingInfo
                 }
             }
 
-            if (
-                input.blockControllerOwnedRootTransform &&
-                bone->parentIndex < 0)
-            {
-                PreserveControllerOwnedRootTransform(
-                    bindLocal,
-                    localMatrix);
-            }
-
-            DirectX::XMMATRIX absoluteMatrix =
-                localMatrix;
-
-            if (bone->parentIndex >= 0)
-            {
-                const std::size_t parentIndex =
-                    static_cast<std::size_t>(
-                        bone->parentIndex);
-
-                if (parentIndex >= boneIndex)
-                {
-                    return false;
-                }
-
-                absoluteMatrix *=
-                    DirectX::XMLoadFloat4x4(
-                        &currentAbsolute[
-                            parentIndex]);
-            }
-
             /*
-             * Поведение повторяет принцип старого
-             * AdjustBoneCallback: yaw/pitch делятся
-             * между Spine1 и Neck, а translation
-             * каждой absolute matrix сохраняется.
+             * AI_Player::_player_AdjustBoneCallback
+             * изменял LOCAL matrix mp:
+             *
+             * mp = mp * (pitch * yaw)
+             *
+             * Затем skeleton умножал её на parent.
+             * Вращение absoluteMatrix здесь было
+             * основной причиной выворачивания плеч.
              */
             const bool isLookSpineBone =
                 lookSpineBoneIndex >= 0 &&
@@ -1333,44 +1313,68 @@ AnimationLoopSamplingInfo
                         DirectX::XMConvertToRadians(
                             yawDegrees));
 
-                DirectX::XMFLOAT4X4 storedAbsolute;
+                DirectX::XMFLOAT4X4 storedLocal;
 
                 DirectX::XMStoreFloat4x4(
-                    &storedAbsolute,
-                    absoluteMatrix);
+                    &storedLocal,
+                    localMatrix);
 
                 const float translationX =
-                    storedAbsolute._41;
+                    storedLocal._41;
 
                 const float translationY =
-                    storedAbsolute._42;
+                    storedLocal._42;
 
                 const float translationZ =
-                    storedAbsolute._43;
+                    storedLocal._43;
 
-                absoluteMatrix =
-                    absoluteMatrix *
+                localMatrix =
+                    localMatrix *
                     pitchRotation *
                     yawRotation;
 
                 DirectX::XMStoreFloat4x4(
-                    &storedAbsolute,
-                    absoluteMatrix);
+                    &storedLocal,
+                    localMatrix);
 
-                storedAbsolute._41 =
-                    translationX;
+                storedLocal._41 = translationX;
+                storedLocal._42 = translationY;
+                storedLocal._43 = translationZ;
 
-                storedAbsolute._42 =
-                    translationY;
-
-                storedAbsolute._43 =
-                    translationZ;
-
-                absoluteMatrix =
+                localMatrix =
                     DirectX::XMLoadFloat4x4(
-                        &storedAbsolute);
+                        &storedLocal);
 
                 usedAnimationTrack = true;
+            }
+
+            if (
+                input.blockControllerOwnedRootTransform &&
+                bone->parentIndex < 0)
+            {
+                PreserveControllerOwnedRootTransform(
+                    bindLocal,
+                    localMatrix);
+            }
+
+            DirectX::XMMATRIX absoluteMatrix =
+                localMatrix;
+
+            if (bone->parentIndex >= 0)
+            {
+                const std::size_t parentIndex =
+                    static_cast<std::size_t>(
+                        bone->parentIndex);
+
+                if (parentIndex >= boneIndex)
+                {
+                    return false;
+                }
+
+                absoluteMatrix *=
+                    DirectX::XMLoadFloat4x4(
+                        &currentAbsolute[
+                            parentIndex]);
             }
 
             DirectX::XMStoreFloat4x4(

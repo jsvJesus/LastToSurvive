@@ -3,12 +3,12 @@
   "version": 1,
   "animationSet": {
     "bones": {
-      "upperBodyRoot": "Bip01_Spine1",
-      "actionRoot": "Bip01_Spine1",
+      "upperBodyRoot": "Bip01_Spine2",
+      "actionRoot": "Bip01_Spine2",
       "lookRoot": "Bip01_Neck"
     },
     "lowerBody": {
-      "standingIdle": "Data/Animations/Characters/idle_stand_MEL_Hands.anim",
+      "standingIdle": "Data/Animations/Characters/idle_stand_1.anim",
       "walk": {
         "forward": "Data/Animations/Characters/walk_stand_F.anim",
         "forwardLeft": "Data/Animations/Characters/walk_stand_FL.anim",
@@ -24,7 +24,7 @@
         "forwardLeft": "Data/Animations/Characters/run_stand_FL.anim",
         "forwardRight": "Data/Animations/Characters/run_stand_FR.anim",
         "left": "Data/Animations/Characters/run_stand_B.anim",
-		"right": "Data/Animations/Characters/run_stand_F.anim",
+        "right": "Data/Animations/Characters/run_stand_F.anim",
         "backward": "Data/Animations/Characters/run_stand_B.anim",
         "backwardLeft": "Data/Animations/Characters/run_stand_BL.anim",
         "backwardRight": "Data/Animations/Characters/run_stand_BR.anim"
@@ -46,7 +46,7 @@
         "backwardRight": "Data/Animations/Characters/run_crouch_BR.anim"
       },
       "turnInPlaceLeft": "Data/Animations/Characters/walk_stand_BL.anim",
-	  "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BL.anim",
+      "turnInPlaceRight": "Data/Animations/Characters/walk_stand_BL.anim",
       "crouchedTurnInPlaceLeft": "Data/Animations/Characters/Crouch_Str.anim",
       "crouchedTurnInPlaceRight": "Data/Animations/Characters/Crouch_Str.anim",
       "jumpStart": "Data/Animations/Characters/Jump_ASR_Idle_S.anim",
@@ -59,9 +59,9 @@
         "standingRelaxedMove": "Data/Animations/Characters/Run_Blend_MEL_Hands.anim",
         "standingAimIdle": "Data/Animations/Characters/idle_stand_MEL_Hands.anim",
         "standingAimMove": "Data/Animations/Characters/Run_Blend_MEL_Hands.anim",
-        "crouchedRelaxedIdle": "Data/Animations/Characters/idle_crouch_MEL_Hands.anim",
+        "crouchedRelaxedIdle": "Data/Animations/Characters/Crouch_Blend_MEL_Hands.anim",
         "crouchedRelaxedMove": "Data/Animations/Characters/Crouch_Blend_MEL_Hands.anim",
-        "crouchedAimIdle": "Data/Animations/Characters/idle_crouch_MEL_Hands.anim",
+        "crouchedAimIdle": "Data/Animations/Characters/aimidle_crouchBlend_MEL_Hands.anim",
         "crouchedAimMove": "Data/Animations/Characters/aimidle_crouchBlend_MEL_Hands.anim"
       },
       "actions": {
@@ -101,13 +101,13 @@
     },
     "tuning": {
       "locomotionBlendSeconds": 0.1,
-      "upperBodyBlendSeconds": 0.08,
+      "upperBodyBlendSeconds": 0.1,
       "actionBlendInSeconds": 0.05,
       "actionBlendOutSeconds": 0.1,
       "maximumUpperBodyYawDegrees": 45.0,
       "turnInPlaceEnterDegrees": 45.0,
       "turnInPlaceExitDegrees": 3.0,
-      "turnInPlaceSpeedDegrees": 180.0
+      "turnInPlaceSpeedDegrees": 360.0
     }
   }
 }
