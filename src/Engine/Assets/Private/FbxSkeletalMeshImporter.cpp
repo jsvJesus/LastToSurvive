@@ -171,6 +171,26 @@ namespace engine::assets
             FbxImportReport& report,
             std::wstring& error)
         {
+            if (!skeleton.IsValid())
+            {
+                error =
+                    L"Cannot write .skm without a valid skeleton.";
+
+                return AssetResult::InvalidArgument;
+            }
+
+            if (
+                skeleton.bones.empty() ||
+                skeleton.bones.size() >
+                    MaximumSkeletonBones)
+            {
+                error =
+                    L"Skeleton bone count is not supported "
+                    L"by the .skm runtime format.";
+
+                return AssetResult::UnsupportedFeature;
+            }
+            
             if (
                 mesh.skin_deformers.count == 0U)
             {
