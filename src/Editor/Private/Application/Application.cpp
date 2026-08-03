@@ -16,10 +16,7 @@
 #include <Runtime/EngineMode.h>
 #include <Runtime/RendererBackend.h>
 
-#include <cwctype>
 #include <limits>
-#include <map>
-#include <string_view>
 #include <vector>
 #include <cmath>
 #include <filesystem>
@@ -172,549 +169,6 @@ namespace lts::editor
             return {};
         }
 
-        struct CharacterMeshOption final
-        {
-            std::uint32_t variant = 0U;
-
-            std::wstring fileName;
-            std::wstring assetPath;
-        };
-
-        struct CharacterMeshFamily final
-        {
-            std::wstring name;
-
-            std::array<
-                std::vector<CharacterMeshOption>,
-                engine::scene::
-                    CharacterMeshSlotCount>
-                slots;
-        };
-
-        [[nodiscard]]
-        bool ParseCharacterVariant(
-            const std::wstring_view text,
-            std::uint32_t& result) noexcept
-        {
-            if (text.empty())
-            {
-                return false;
-            }
-
-            std::uint64_t value = 0U;
-
-            for (const wchar_t character : text)
-            {
-                if (
-                    character < L'0' ||
-                    character > L'9')
-                {
-                    return false;
-                }
-
-                value =
-                    value * 10U +
-                    static_cast<std::uint64_t>(
-                        character - L'0');
-
-                if (
-                    value >
-                    static_cast<std::uint64_t>(
-                        (std::numeric_limits<
-                            std::uint32_t>::max)()))
-                {
-                    return false;
-                }
-            }
-
-            result =
-                static_cast<std::uint32_t>(
-                    value);
-
-            return true;
-        }
-
-        [[nodiscard]]
-        bool ParseCharacterMeshFileName(
-            const std::filesystem::path& path,
-            std::wstring& family,
-            engine::scene::CharacterMeshSlot& slot,
-            std::uint32_t& variant)
-        {
-            std::wstring extension =
-                path.extension().wstring();
-
-            std::transform(
-                extension.begin(),
-                extension.end(),
-                extension.begin(),
-                [](const wchar_t character)
-                {
-                    return static_cast<wchar_t>(
-                        std::towlower(character));
-                });
-
-            if (extension != L".skm")
-            {
-                return false;
-            }
-
-            const std::wstring originalStem =
-                path.stem().wstring();
-
-            std::wstring lowerStem =
-                originalStem;
-
-            std::transform(
-                lowerStem.begin(),
-                lowerStem.end(),
-                lowerStem.begin(),
-                [](const wchar_t character)
-                {
-                    return static_cast<wchar_t>(
-                        std::towlower(character));
-                });
-
-            /*
-             * FPS-модуль:
-             *
-             * char_lms_bodyfps01
-             * char_male_01_bodyfps01
-             * skies_survivor1_bodyfps01
-             */
-            constexpr std::wstring_view
-                firstPersonMarker =
-                    L"_bodyfps";
-
-            const std::size_t firstPersonPosition =
-                lowerStem.rfind(
-                    firstPersonMarker);
-
-            if (
-                firstPersonPosition !=
-                    std::wstring::npos &&
-                firstPersonPosition > 0U)
-            {
-                const std::size_t variantOffset =
-                    firstPersonPosition +
-                    firstPersonMarker.size();
-
-                if (
-                    ParseCharacterVariant(
-                        std::wstring_view(
-                            lowerStem).substr(
-                                variantOffset),
-                        variant))
-                {
-                    family =
-                        originalStem.substr(
-                            0U,
-                            firstPersonPosition);
-
-                    slot =
-                        engine::scene::
-                            CharacterMeshSlot::
-                                FirstPersonBody;
-
-                    return !family.empty();
-                }
-            }
-
-            struct SlotMarker final
-            {
-                std::wstring_view marker;
-
-                engine::scene::
-                    CharacterMeshSlot slot;
-            };
-
-            constexpr std::array<
-                SlotMarker,
-                5U>
-                markers
-                {{
-                    {
-                        L"_hair_",
-                        engine::scene::
-                            CharacterMeshSlot::Hair
-                    },
-                    {
-                        L"_head_",
-                        engine::scene::
-                            CharacterMeshSlot::Head
-                    },
-                    {
-                        L"_body_",
-                        engine::scene::
-                            CharacterMeshSlot::Body
-                    },
-                    {
-                        L"_legs_",
-                        engine::scene::
-                            CharacterMeshSlot::Legs
-                    },
-                    {
-                        L"_shoes_",
-                        engine::scene::
-                            CharacterMeshSlot::Shoes
-                    }
-                }};
-
-            for (
-                const SlotMarker& marker :
-                markers)
-            {
-                const std::size_t position =
-                    lowerStem.rfind(
-                        marker.marker);
-
-                if (
-                    position ==
-                        std::wstring::npos ||
-                    position == 0U)
-                {
-                    continue;
-                }
-
-                const std::size_t variantOffset =
-                    position +
-                    marker.marker.size();
-
-                if (!ParseCharacterVariant(
-                        std::wstring_view(
-                            lowerStem).substr(
-                                variantOffset),
-                        variant))
-                {
-                    continue;
-                }
-
-                family =
-                    originalStem.substr(
-                        0U,
-                        position);
-
-                slot = marker.slot;
-
-                return !family.empty();
-            }
-
-            return false;
-        }
-
-        class CharacterMeshCatalog final
-        {
-        public:
-            [[nodiscard]]
-            bool Refresh() noexcept
-            {
-                try
-                {
-                    families_.clear();
-                    scanned_ = true;
-
-                    const std::filesystem::path
-                        gameRoot =
-                            FindEditorGameRoot();
-
-                    if (gameRoot.empty())
-                    {
-                        return false;
-                    }
-
-                    const std::filesystem::path
-                        directory =
-                            gameRoot /
-                            L"Data" /
-                            L"SkeletalMeshes" /
-                            L"Characters";
-
-                    std::error_code error;
-
-                    if (!std::filesystem::is_directory(
-                            directory,
-                            error))
-                    {
-                        return false;
-                    }
-
-                    std::filesystem::
-                        recursive_directory_iterator
-                            iterator(
-                                directory,
-                                error);
-
-                    const std::filesystem::
-                        recursive_directory_iterator
-                            end;
-
-                    while (
-                        !error &&
-                        iterator != end)
-                    {
-                        if (iterator->is_regular_file(
-                                error))
-                        {
-                            std::wstring familyName;
-
-                            engine::scene::
-                                CharacterMeshSlot slot =
-                                    engine::scene::
-                                        CharacterMeshSlot::
-                                            Body;
-
-                            std::uint32_t variant = 0U;
-
-                            if (
-                                ParseCharacterMeshFileName(
-                                    iterator->path(),
-                                    familyName,
-                                    slot,
-                                    variant))
-                            {
-                                std::error_code
-                                    relativeError;
-
-                                const std::filesystem::path
-                                    relativePath =
-                                        std::filesystem::
-                                            relative(
-                                                iterator->path(),
-                                                gameRoot,
-                                                relativeError);
-
-                                if (!relativeError)
-                                {
-                                    CharacterMeshFamily&
-                                        family =
-                                            families_[
-                                                familyName];
-
-                                    family.name =
-                                        familyName;
-
-                                    CharacterMeshOption
-                                        option;
-
-                                    option.variant =
-                                        variant;
-
-                                    option.fileName =
-                                        iterator->path().
-                                            filename().
-                                            wstring();
-
-                                    option.assetPath =
-                                        relativePath.
-                                            generic_wstring();
-
-                                    family.slots[
-                                        static_cast<
-                                            std::size_t>(
-                                                slot)]
-                                        .push_back(
-                                            std::move(
-                                                option));
-                                }
-                            }
-                        }
-
-                        iterator.increment(error);
-                    }
-
-                    for (auto& familyPair : families_)
-                    {
-                        for (
-                            auto& options :
-                            familyPair.second.slots)
-                        {
-                            std::sort(
-                                options.begin(),
-                                options.end(),
-                                [](
-                                    const CharacterMeshOption&
-                                        left,
-                                    const CharacterMeshOption&
-                                        right)
-                                {
-                                    if (
-                                        left.variant !=
-                                        right.variant)
-                                    {
-                                        return
-                                            left.variant <
-                                            right.variant;
-                                    }
-
-                                    return
-                                        left.assetPath <
-                                        right.assetPath;
-                                });
-                        }
-                    }
-
-                    return true;
-                }
-                catch (...)
-                {
-                    families_.clear();
-                    scanned_ = true;
-                    return false;
-                }
-            }
-
-            void EnsureScanned() noexcept
-            {
-                if (!scanned_)
-                {
-                    static_cast<void>(
-                        Refresh());
-                }
-            }
-
-            [[nodiscard]]
-            const std::map<
-                std::wstring,
-                CharacterMeshFamily>&
-                    GetFamilies() const noexcept
-            {
-                return families_;
-            }
-
-            [[nodiscard]]
-            const std::vector<
-                CharacterMeshOption>&
-                    GetOptions(
-                        const std::wstring& family,
-                        const engine::scene::
-                            CharacterMeshSlot slot)
-                        const noexcept
-            {
-                static const std::vector<
-                    CharacterMeshOption>
-                    empty;
-
-                const auto familyIterator =
-                    families_.find(family);
-
-                if (
-                    familyIterator ==
-                    families_.end())
-                {
-                    return empty;
-                }
-
-                return
-                    familyIterator->second.slots[
-                        static_cast<std::size_t>(
-                            slot)];
-            }
-
-            [[nodiscard]]
-            const CharacterMeshOption*
-                FindByPath(
-                    const std::wstring& family,
-                    const engine::scene::
-                        CharacterMeshSlot slot,
-                    const std::wstring& assetPath)
-                    const noexcept
-            {
-                const auto& options =
-                    GetOptions(
-                        family,
-                        slot);
-
-                const auto iterator =
-                    std::find_if(
-                        options.begin(),
-                        options.end(),
-                        [&assetPath](
-                            const CharacterMeshOption&
-                                option)
-                        {
-                            return
-                                option.assetPath ==
-                                assetPath;
-                        });
-
-                return
-                    iterator != options.end()
-                        ? &*iterator
-                        : nullptr;
-            }
-
-            [[nodiscard]]
-            const CharacterMeshOption*
-                FindByVariant(
-                    const std::wstring& family,
-                    const engine::scene::
-                        CharacterMeshSlot slot,
-                    const std::uint32_t variant)
-                    const noexcept
-            {
-                const auto& options =
-                    GetOptions(
-                        family,
-                        slot);
-
-                const auto iterator =
-                    std::find_if(
-                        options.begin(),
-                        options.end(),
-                        [variant](
-                            const CharacterMeshOption&
-                                option)
-                        {
-                            return
-                                option.variant ==
-                                variant;
-                        });
-
-                return
-                    iterator != options.end()
-                        ? &*iterator
-                        : nullptr;
-            }
-
-            [[nodiscard]]
-            const CharacterMeshOption*
-                GetFirst(
-                    const std::wstring& family,
-                    const engine::scene::
-                        CharacterMeshSlot slot)
-                    const noexcept
-            {
-                const auto& options =
-                    GetOptions(
-                        family,
-                        slot);
-
-                return
-                    options.empty()
-                        ? nullptr
-                        : &options.front();
-            }
-
-        private:
-            std::map<
-                std::wstring,
-                CharacterMeshFamily>
-                families_;
-
-            bool scanned_ = false;
-        };
-
-        [[nodiscard]]
-        CharacterMeshCatalog&
-            GetCharacterMeshCatalog() noexcept
-        {
-            static CharacterMeshCatalog catalog;
-
-            catalog.EnsureScanned();
-
-            return catalog;
-        }
-
         [[nodiscard]] bool SelectTerrainFile(
             const HWND owner, std::filesystem::path& output)
         {
@@ -735,90 +189,6 @@ namespace lts::editor
             PWSTR path = nullptr;
             if (FAILED(item->GetDisplayName(SIGDN_FILESYSPATH, &path))) return false;
             output = path; CoTaskMemFree(path); return true;
-        }
-
-        [[nodiscard]]
-        bool SelectCharacterAnimationProfileFile(
-            const HWND owner,
-            std::filesystem::path& output)
-        {
-            Microsoft::WRL::ComPtr<
-                IFileOpenDialog>
-                dialog;
-
-            if (FAILED(
-                    CoCreateInstance(
-                        CLSID_FileOpenDialog,
-                        nullptr,
-                        CLSCTX_INPROC_SERVER,
-                        IID_PPV_ARGS(
-                            &dialog))))
-            {
-                return false;
-            }
-
-            constexpr COMDLG_FILTERSPEC
-                filters[]
-                {
-                    {
-                        L"Character Animation Profile "
-                        L"(*.json)",
-                        L"*.json"
-                    },
-                    {
-                        L"All files (*.*)",
-                        L"*.*"
-                    }
-                };
-
-            if (
-                FAILED(
-                    dialog->SetFileTypes(
-                        2U,
-                        filters)) ||
-                FAILED(
-                    dialog->
-                        SetDefaultExtension(
-                            L"json")) ||
-                FAILED(
-                    dialog->SetTitle(
-                        L"Select Character "
-                        L"Animation Profile")) ||
-                FAILED(
-                    dialog->Show(
-                        owner)))
-            {
-                return false;
-            }
-
-            Microsoft::WRL::ComPtr<
-                IShellItem>
-                item;
-
-            if (FAILED(
-                    dialog->GetResult(
-                        &item)))
-            {
-                return false;
-            }
-
-            PWSTR selectedPath = nullptr;
-
-            if (FAILED(
-                    item->GetDisplayName(
-                        SIGDN_FILESYSPATH,
-                        &selectedPath)))
-            {
-                return false;
-            }
-
-            output =
-                selectedPath;
-
-            CoTaskMemFree(
-                selectedPath);
-
-            return true;
         }
 
         [[nodiscard]] bool SelectTerrainTexture(
@@ -1010,11 +380,9 @@ namespace lts::editor
                     ClientInitializationFailed;
         }
 
-        if (!modularCharacterRenderer_.Initialize(
-                graphicsDevice_))
+        if (!sceneRenderer_.Initialize(graphicsDevice_))
         {
             staticMeshRenderer_.Shutdown(graphicsDevice_);
-
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
             ShutdownGraphics();
@@ -1024,28 +392,10 @@ namespace lts::editor
                     ClientInitializationFailed;
         }
 
-        if (!sceneRenderer_.Initialize(
-                graphicsDevice_))
-        {
-            modularCharacterRenderer_.Shutdown(graphicsDevice_);
-            staticMeshRenderer_.Shutdown(graphicsDevice_);
-
-            levelDocument_.Shutdown();
-            sceneDocument_.Clear();
-            ShutdownGraphics();
-
-            return lts::application::
-                ApplicationResult::
-                    ClientInitializationFailed;
-        }
-
-        if (!terrainRenderer_.Initialize(
-                graphicsDevice_))
+        if (!terrainRenderer_.Initialize(graphicsDevice_))
         {
             sceneRenderer_.Shutdown(graphicsDevice_);
             staticMeshRenderer_.Shutdown(graphicsDevice_);
-            modularCharacterRenderer_.Shutdown(graphicsDevice_);
-
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
             ShutdownGraphics();
@@ -1059,7 +409,6 @@ namespace lts::editor
         {
             terrainRenderer_.Shutdown(graphicsDevice_);
             sceneRenderer_.Shutdown(graphicsDevice_);
-            modularCharacterRenderer_.Shutdown(graphicsDevice_);
             staticMeshRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
@@ -1089,7 +438,6 @@ namespace lts::editor
             terrainRenderer_.Shutdown(graphicsDevice_);
             sceneRenderer_.Shutdown(graphicsDevice_);
             staticMeshRenderer_.Shutdown(graphicsDevice_);
-            modularCharacterRenderer_.Shutdown(graphicsDevice_);
 
             levelDocument_.Shutdown();
             sceneDocument_.Clear();
@@ -1134,12 +482,6 @@ namespace lts::editor
             "LTS.Editor",
             "Shutting down editor.");
 
-        if (playInEditorController_.IsPlaying())
-        {
-            playInEditorController_.Stop(
-                sceneDocument_);
-        }
-
         toolWindowManager_.Shutdown();
         ShutdownEditorUi();
 
@@ -1154,7 +496,6 @@ namespace lts::editor
 
         terrainRenderer_.Shutdown(graphicsDevice_);
         sceneRenderer_.Shutdown(graphicsDevice_);
-        modularCharacterRenderer_.Shutdown(graphicsDevice_);
         staticMeshRenderer_.Shutdown(graphicsDevice_);
 
         sceneDocument_.Clear();
@@ -1166,28 +507,6 @@ namespace lts::editor
     {
         if (!imguiHost_.IsInitialized())
         {
-            return;
-        }
-
-        /*
-         * В режиме Play редакторские камера, gizmo,
-         * выделение и изменение документа отключены.
-         */
-        if (playInEditorController_.IsPlaying())
-        {
-            playInEditorController_.Update(
-                deltaSeconds,
-                sceneDocument_,
-                terrainRenderer_,
-                modularCharacterRenderer_,
-                imguiViewportX_,
-                imguiViewportY_,
-                imguiViewportWidth_,
-                imguiViewportHeight_);
-
-            levelDocument_.SynchronizeWindowTitle(
-                sceneDocument_);
-
             return;
         }
 
@@ -2159,62 +1478,6 @@ namespace lts::editor
                     snapSteps[0], snapSteps[1], snapSteps[2]);
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Move / Rotate / Scale snap steps");
-        
-            ImGui::SameLine();
-
-            const bool playMode =
-                playInEditorController_.
-                    IsPlaying();
-
-            if (playMode)
-            {
-                ImGui::PushStyleColor(
-                    ImGuiCol_Button,
-                    ImVec4(
-                        0.52F,
-                        0.12F,
-                        0.10F,
-                        1.0F));
-            }
-
-            if (ImGui::Button(
-                    playMode
-                        ? "Stop"
-                        : "Play"))
-            {
-                if (playMode)
-                {
-                    playInEditorController_.Stop(
-                        sceneDocument_);
-                }
-                else
-                {
-                    static_cast<void>(
-                        playInEditorController_.Start(
-                            sceneDocument_,
-                            terrainRenderer_,
-                            GetWindow().
-                                GetNativeHandle(),
-                            imguiViewportX_,
-                            imguiViewportY_,
-                            imguiViewportWidth_,
-                            imguiViewportHeight_));
-                }
-            }
-
-            if (playMode)
-            {
-                ImGui::PopStyleColor();
-            }
-
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::SetTooltip(
-                    playMode
-                        ? "Stop Play In Editor "
-                          "(Esc or F5)"
-                        : "Play In Editor (F5)");
-            }
 
             ImGui::End();
 
@@ -2224,34 +1487,6 @@ namespace lts::editor
                 const EditorTransform transform{};
                 static_cast<void>(sceneDocument_.CreateEntity(
                     L"Empty Actor", EditorEntityKind::Empty, transform));
-            }
-            if (ImGui::Button("Character", ImVec2(-1.0F, 0.0F)))
-            {
-                const EditorSceneSnapshot before =
-                    sceneDocument_.CreateSnapshot();
-
-                EditorTransform transform;
-
-                transform.position =
-                {
-                    0.0F,
-                    1.0F,
-                    0.0F
-                };
-
-                const EditorEntityId characterId =
-                    sceneDocument_.CreateEntity(
-                        L"Character",
-                        EditorEntityKind::Character,
-                        transform);
-
-                if (characterId != 0U)
-                {
-                    static_cast<void>(
-                        commandHistory_.Push(
-                            before,
-                            sceneDocument_.CreateSnapshot()));
-                }
             }
             if (ImGui::Button("Sky / Environment", ImVec2(-1.0F, 0.0F)))
             {
@@ -2518,7 +1753,9 @@ namespace lts::editor
                     transformClipboardValid_ = true;
                 }
                 ImGui::SameLine();
+                
                 if (!transformClipboardValid_) ImGui::BeginDisabled();
+                
                 if (ImGui::Button("Paste"))
                 {
                     const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
@@ -2526,684 +1763,9 @@ namespace lts::editor
                         static_cast<void>(commandHistory_.Push(
                             before, sceneDocument_.CreateSnapshot()));
                 }
+                
                 if (!transformClipboardValid_) ImGui::EndDisabled();
-                if (entity->skeletalMesh.has_value())
-                {
-                    ImGui::SeparatorText(
-                        "Modular Character");
-
-                    CharacterMeshCatalog& catalog =
-                        GetCharacterMeshCatalog();
-
-                    if (ImGui::Button(
-                            "Rescan Character Meshes"))
-                    {
-                        static_cast<void>(
-                            catalog.Refresh());
-                    }
-
-                    const engine::scene::
-                        SkeletalMeshComponent current =
-                            *entity->skeletalMesh;
-
-                    const auto applyCharacter =
-                        [this](
-                            engine::scene::
-                                SkeletalMeshComponent
-                                    updated)
-                    {
-                        const EditorSceneSnapshot before =
-                            sceneDocument_.
-                                CreateSnapshot();
-
-                        if (
-                            sceneDocument_.
-                                UpdateSelectedSkeletalMesh(
-                                    std::move(updated)))
-                        {
-                            static_cast<void>(
-                                commandHistory_.Push(
-                                    before,
-                                    sceneDocument_.
-                                        CreateSnapshot()));
-                        }
-                    };
-
-                    const auto synchronizeFirstPersonBody =
-                        [&catalog](
-                            engine::scene::
-                                SkeletalMeshComponent&
-                                    component)
-                    {
-                        if (
-                            !component.
-                                autoFirstPersonBody)
-                        {
-                            return;
-                        }
-
-                        auto& firstPersonPart =
-                            component.GetPart(
-                                engine::scene::
-                                    CharacterMeshSlot::
-                                        FirstPersonBody);
-
-                        firstPersonPart.assetPath.clear();
-
-                        const auto& bodyPart =
-                            component.GetPart(
-                                engine::scene::
-                                    CharacterMeshSlot::
-                                        Body);
-
-                        const CharacterMeshOption*
-                            bodyOption =
-                                catalog.FindByPath(
-                                    component.
-                                        characterFamily,
-                                    engine::scene::
-                                        CharacterMeshSlot::
-                                            Body,
-                                    bodyPart.assetPath);
-
-                        if (bodyOption == nullptr)
-                        {
-                            return;
-                        }
-
-                        const CharacterMeshOption*
-                            fpsOption =
-                                catalog.FindByVariant(
-                                    component.
-                                        characterFamily,
-                                    engine::scene::
-                                        CharacterMeshSlot::
-                                            FirstPersonBody,
-                                    bodyOption->variant);
-
-                        if (fpsOption != nullptr)
-                        {
-                            firstPersonPart.assetPath =
-                                fpsOption->assetPath;
-                        }
-                    };
-
-                    std::string familyPreview =
-                        current.characterFamily.empty()
-                            ? "<Select Family>"
-                            : ToUtf8(
-                                current.characterFamily);
-
-                    if (ImGui::BeginCombo(
-                            "Family",
-                            familyPreview.c_str()))
-                    {
-                        for (
-                            const auto& familyPair :
-                            catalog.GetFamilies())
-                        {
-                            const std::wstring&
-                                familyName =
-                                    familyPair.first;
-
-                            const bool selected =
-                                current.characterFamily ==
-                                familyName;
-
-                            const std::string label =
-                                ToUtf8(familyName);
-
-                            if (ImGui::Selectable(
-                                    label.c_str(),
-                                    selected))
-                            {
-                                engine::scene::
-                                    SkeletalMeshComponent
-                                        updated =
-                                            current;
-
-                                updated.characterFamily =
-                                    familyName;
-
-                                /*
-                                 * При смене семейства старые
-                                 * несовместимые части удаляем.
-                                 */
-                                updated.parts = {};
-
-                                constexpr std::array<
-                                    engine::scene::
-                                        CharacterMeshSlot,
-                                    5U>
-                                    thirdPersonSlots
-                                    {{
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Hair,
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Head,
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Body,
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Legs,
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Shoes
-                                    }};
-
-                                for (
-                                    const auto slot :
-                                    thirdPersonSlots)
-                                {
-                                    const CharacterMeshOption*
-                                        first =
-                                            catalog.GetFirst(
-                                                familyName,
-                                                slot);
-
-                                    if (first != nullptr)
-                                    {
-                                        updated.GetPart(
-                                            slot).
-                                            assetPath =
-                                                first->
-                                                    assetPath;
-                                    }
-                                }
-
-                                synchronizeFirstPersonBody(
-                                    updated);
-
-                                applyCharacter(
-                                    std::move(updated));
-                            }
-
-                            if (selected)
-                            {
-                                ImGui::
-                                    SetItemDefaultFocus();
-                            }
-                        }
-
-                        ImGui::EndCombo();
-                    }
-
-                    const auto drawPart =
-                        [&catalog,
-                         &current,
-                         &applyCharacter,
-                         &synchronizeFirstPersonBody](
-                            const char* const label,
-                            const engine::scene::
-                                CharacterMeshSlot slot)
-                    {
-                        const auto& currentPart =
-                            current.GetPart(slot);
-
-                        const CharacterMeshOption*
-                            selectedOption =
-                                catalog.FindByPath(
-                                    current.
-                                        characterFamily,
-                                    slot,
-                                    currentPart.
-                                        assetPath);
-
-                        std::string preview;
-
-                        if (selectedOption != nullptr)
-                        {
-                            preview =
-                                ToUtf8(
-                                    selectedOption->
-                                        fileName);
-                        }
-                        else if (
-                            currentPart.
-                                assetPath.empty())
-                        {
-                            preview = "<None>";
-                        }
-                        else
-                        {
-                            preview =
-                                ToUtf8(
-                                    currentPart.
-                                        assetPath);
-                        }
-
-                        if (ImGui::BeginCombo(
-                                label,
-                                preview.c_str()))
-                        {
-                            const bool noneSelected =
-                                currentPart.
-                                    assetPath.empty();
-
-                            if (ImGui::Selectable(
-                                    "<None>",
-                                    noneSelected))
-                            {
-                                engine::scene::
-                                    SkeletalMeshComponent
-                                        updated =
-                                            current;
-
-                                updated.GetPart(
-                                    slot).
-                                    assetPath.clear();
-
-                                if (
-                                    slot ==
-                                    engine::scene::
-                                        CharacterMeshSlot::
-                                            Body)
-                                {
-                                    synchronizeFirstPersonBody(
-                                        updated);
-                                }
-
-                                applyCharacter(
-                                    std::move(updated));
-                            }
-
-                            const auto& options =
-                                catalog.GetOptions(
-                                    current.
-                                        characterFamily,
-                                    slot);
-
-                            for (
-                                const CharacterMeshOption&
-                                    option :
-                                options)
-                            {
-                                const bool selected =
-                                    option.assetPath ==
-                                    currentPart.
-                                        assetPath;
-
-                                const std::string
-                                    optionLabel =
-                                        ToUtf8(
-                                            option.
-                                                fileName);
-
-                                if (ImGui::Selectable(
-                                        optionLabel.c_str(),
-                                        selected))
-                                {
-                                    engine::scene::
-                                        SkeletalMeshComponent
-                                            updated =
-                                                current;
-
-                                    updated.GetPart(
-                                        slot).
-                                        assetPath =
-                                            option.
-                                                assetPath;
-
-                                    /*
-                                     * body_01 автоматически
-                                     * связывается с bodyfps01.
-                                     */
-                                    if (
-                                        slot ==
-                                        engine::scene::
-                                            CharacterMeshSlot::
-                                                Body)
-                                    {
-                                        synchronizeFirstPersonBody(
-                                            updated);
-                                    }
-
-                                    applyCharacter(
-                                        std::move(
-                                            updated));
-                                }
-
-                                if (selected)
-                                {
-                                    ImGui::
-                                        SetItemDefaultFocus();
-                                }
-                            }
-
-                            ImGui::EndCombo();
-                        }
-
-                        bool partVisible =
-                            currentPart.visible;
-
-                        std::string visibleLabel =
-                            "Visible##";
-
-                        visibleLabel += label;
-
-                        if (ImGui::Checkbox(
-                                visibleLabel.c_str(),
-                                &partVisible))
-                        {
-                            engine::scene::
-                                SkeletalMeshComponent
-                                    updated =
-                                        current;
-
-                            updated.GetPart(
-                                slot).visible =
-                                    partVisible;
-
-                            applyCharacter(
-                                std::move(updated));
-                        }
-                    };
-
-                    drawPart(
-                        "Hair",
-                        engine::scene::
-                            CharacterMeshSlot::Hair);
-
-                    drawPart(
-                        "Head",
-                        engine::scene::
-                            CharacterMeshSlot::Head);
-
-                    drawPart(
-                        "Body",
-                        engine::scene::
-                            CharacterMeshSlot::Body);
-
-                    drawPart(
-                        "Legs",
-                        engine::scene::
-                            CharacterMeshSlot::Legs);
-
-                    drawPart(
-                        "Shoes",
-                        engine::scene::
-                            CharacterMeshSlot::Shoes);
-
-                    bool autoFirstPersonBody =
-                        current.autoFirstPersonBody;
-
-                    if (ImGui::Checkbox(
-                            "Auto First Person Body",
-                            &autoFirstPersonBody))
-                    {
-                        engine::scene::
-                            SkeletalMeshComponent
-                                updated =
-                                    current;
-
-                        updated.autoFirstPersonBody =
-                            autoFirstPersonBody;
-
-                        if (autoFirstPersonBody)
-                        {
-                            synchronizeFirstPersonBody(
-                                updated);
-                        }
-
-                        applyCharacter(
-                            std::move(updated));
-                    }
-
-                    if (autoFirstPersonBody)
-                    {
-                        ImGui::BeginDisabled();
-                    }
-
-                    drawPart(
-                        "First Person Body",
-                        engine::scene::
-                            CharacterMeshSlot::
-                                FirstPersonBody);
-
-                    if (autoFirstPersonBody)
-                    {
-                        ImGui::EndDisabled();
-                    }
-
-                    if (
-                        entity->characterAnimation.
-                            has_value())
-                    {
-                        ImGui::SeparatorText(
-                            "Animation Profile");
-
-                        const engine::scene::
-                            CharacterAnimationComponent
-                                currentAnimation =
-                                    *entity->
-                                        characterAnimation;
-
-                        const std::string profileLabel =
-                            currentAnimation.
-                                profilePath.empty()
-                                ? std::string("<None>")
-                                : ToUtf8(
-                                    currentAnimation.
-                                        profilePath);
-
-                        ImGui::TextWrapped(
-                            "Profile: %s",
-                            profileLabel.c_str());
-
-                        if (
-                            currentAnimation.
-                                profileLoaded)
-                        {
-                            ImGui::TextColored(
-                                ImVec4(
-                                    0.35F,
-                                    0.85F,
-                                    0.40F,
-                                    1.0F),
-                                "Status: Loaded");
-                        }
-                        else
-                        {
-                            ImGui::TextColored(
-                                ImVec4(
-                                    0.95F,
-                                    0.35F,
-                                    0.30F,
-                                    1.0F),
-                                "Status: Not Loaded");
-                        }
-
-                        if (
-                            !currentAnimation.
-                                profileError.empty())
-                        {
-                            const std::string profileError =
-                                ToUtf8(
-                                    currentAnimation.
-                                        profileError);
-
-                            ImGui::TextWrapped(
-                                "%s",
-                                profileError.c_str());
-                        }
-
-                        bool animationEnabled =
-                            currentAnimation.enabled;
-
-                        if (
-                            ImGui::Checkbox(
-                                "Animation Enabled",
-                                &animationEnabled))
-                        {
-                            engine::scene::
-                                CharacterAnimationComponent
-                                    updated =
-                                        currentAnimation;
-
-                            updated.enabled =
-                                animationEnabled;
-
-                            const EditorSceneSnapshot before =
-                                sceneDocument_.
-                                    CreateSnapshot();
-
-                            if (
-                                sceneDocument_.
-                                    UpdateSelectedCharacterAnimation(
-                                        std::move(updated)))
-                            {
-                                static_cast<void>(
-                                    commandHistory_.Push(
-                                        before,
-                                        sceneDocument_.
-                                            CreateSnapshot()));
-                            }
-                        }
-
-                        const HWND owner =
-                            reinterpret_cast<HWND>(
-                                GetWindow().
-                                    GetNativeHandle().
-                                    Value());
-
-                        if (
-                            ImGui::Button(
-                                "Select Profile..."))
-                        {
-                            std::filesystem::path
-                                selectedProfile;
-
-                            if (
-                                SelectCharacterAnimationProfileFile(
-                                    owner,
-                                    selectedProfile))
-                            {
-                                std::wstring storedPath =
-                                    selectedProfile.
-                                        lexically_normal().
-                                        generic_wstring();
-
-                                const std::filesystem::path
-                                    gameRoot =
-                                        FindEditorGameRoot();
-
-                                if (!gameRoot.empty())
-                                {
-                                    std::error_code
-                                        relativeError;
-
-                                    const std::filesystem::path
-                                        relativePath =
-                                            std::filesystem::
-                                                relative(
-                                                    selectedProfile,
-                                                    gameRoot,
-                                                    relativeError);
-
-                                    const std::wstring
-                                        relativeText =
-                                            relativePath.
-                                                generic_wstring();
-
-                                    if (
-                                        !relativeError &&
-                                        !relativeText.empty() &&
-                                        relativeText.rfind(
-                                            L"..",
-                                            0U) != 0U)
-                                    {
-                                        storedPath =
-                                            relativeText;
-                                    }
-                                }
-
-                                const EditorSceneSnapshot before =
-                                    sceneDocument_.
-                                        CreateSnapshot();
-
-                                std::wstring profileError;
-
-                                if (
-                                    sceneDocument_.
-                                        SetSelectedCharacterAnimationProfile(
-                                            std::move(storedPath),
-                                            profileError))
-                                {
-                                    static_cast<void>(
-                                        commandHistory_.Push(
-                                            before,
-                                            sceneDocument_.
-                                                CreateSnapshot()));
-                                }
-                            }
-                        }
-
-                        ImGui::SameLine();
-
-                        if (
-                            ImGui::Button(
-                                "Reload Profile"))
-                        {
-                            std::wstring profileError;
-
-                            static_cast<void>(
-                                sceneDocument_.
-                                    ReloadSelectedCharacterAnimationProfile(
-                                        profileError));
-                        }
-                    }
-
-                    bool characterVisible =
-                        current.visible;
-
-                    if (ImGui::Checkbox(
-                            "Character Visible",
-                            &characterVisible))
-                    {
-                        engine::scene::
-                            SkeletalMeshComponent
-                                updated =
-                                    current;
-
-                        updated.visible =
-                            characterVisible;
-
-                        applyCharacter(
-                            std::move(updated));
-                    }
-
-                    bool castShadows =
-                        current.castShadows;
-
-                    if (ImGui::Checkbox(
-                            "Cast Shadows",
-                            &castShadows))
-                    {
-                        engine::scene::
-                            SkeletalMeshComponent
-                                updated =
-                                    current;
-
-                        updated.castShadows =
-                            castShadows;
-
-                        applyCharacter(
-                            std::move(updated));
-                    }
-
-                    if (
-                        catalog.GetFamilies().empty())
-                    {
-                        ImGui::TextDisabled(
-                            "No character .skm files found in:");
-
-                        ImGui::TextWrapped(
-                            "Data/SkeletalMeshes/Characters");
-                    }
-                }
+                
                 if (entity->environment.has_value())
                 {
                     ImGui::SeparatorText("Sky / Environment");
@@ -4596,40 +3158,9 @@ namespace lts::editor
                     key,
                     false);
             };
-
-        /*
-         * В Play Mode работают только команды выхода.
-         * Escape также обрабатывается самим контроллером.
-         */
-        if (playInEditorController_.IsPlaying())
-        {
-            if (pressed(ImGuiKey_F5))
-            {
-                playInEditorController_.Stop(
-                    sceneDocument_);
-            }
-
-            return;
-        }
-
+        
         if (io.WantTextInput)
         {
-            return;
-        }
-
-        if (pressed(ImGuiKey_F5))
-        {
-            static_cast<void>(
-                playInEditorController_.Start(
-                    sceneDocument_,
-                    terrainRenderer_,
-                    GetWindow().
-                        GetNativeHandle(),
-                    imguiViewportX_,
-                    imguiViewportY_,
-                    imguiViewportWidth_,
-                    imguiViewportHeight_));
-
             return;
         }
 
@@ -4852,46 +3383,29 @@ namespace lts::editor
 
             DirectX::XMFLOAT4X4 viewProjection{};
 
-            DirectX::XMFLOAT4X4
-                firstPersonInverseView{};
-
-            DirectX::XMFLOAT4X4
-                firstPersonViewProjection{};
-
             const std::uint32_t viewportWidth =
                 static_cast<std::uint32_t>(
-                    (std::max)(imguiViewportWidth_, 1.0F));
+                    (std::max)(
+                        imguiViewportWidth_,
+                        1.0F));
 
             const std::uint32_t viewportHeight =
                 static_cast<std::uint32_t>(
-                    (std::max)(imguiViewportHeight_, 1.0F));
-
-            const bool playMode =
-                playInEditorController_.
-                    IsPlaying();
+                    (std::max)(
+                        imguiViewportHeight_,
+                        1.0F));
 
             const DirectX::XMFLOAT3
                 renderCameraPosition =
-                    playMode
-                        ? playInEditorController_.
-                            GetCameraPosition()
-                        : cameraController_.
-                            GetPosition();
+                    cameraController_.
+                        GetPosition();
 
             const bool cameraReady =
-                playMode
-                    ? playInEditorController_.
-                        BuildViewProjection(
-                            viewportWidth,
-                            viewportHeight,
-                            viewProjection,
-                            &firstPersonInverseView,
-                            &firstPersonViewProjection)
-                    : cameraController_.
-                        BuildViewProjection(
-                            viewportWidth,
-                            viewportHeight,
-                            viewProjection);
+                cameraController_.
+                    BuildViewProjection(
+                        viewportWidth,
+                        viewportHeight,
+                        viewProjection);
 
             if (
                 !engine::graphics::Failed(result) &&
@@ -4904,13 +3418,7 @@ namespace lts::editor
                         viewProjection,
                         renderCameraPosition);
 
-                /*
-                 * Editor Grid и gizmo в игровом
-                 * режиме не отображаются.
-                 */
-                if (
-                    !engine::graphics::Failed(result) &&
-                    !playMode)
+                if (!engine::graphics::Failed(result))
                 {
                     result =
                         gridRenderer_.Render(
@@ -4940,23 +3448,6 @@ namespace lts::editor
                 if (!engine::graphics::Failed(result))
                 {
                     result =
-                        modularCharacterRenderer_.Render(
-                            *commandContext_,
-                            sceneDocument_,
-                            viewProjection,
-                            playMode
-                                ? &firstPersonInverseView
-                                : nullptr,
-                            playMode
-                                ? &firstPersonViewProjection
-                                : nullptr);
-                }
-
-                if (
-                    !engine::graphics::Failed(result) &&
-                    !playMode)
-                {
-                    result =
                         sceneRenderer_.Render(
                             *commandContext_,
                             sceneDocument_,
@@ -4968,7 +3459,6 @@ namespace lts::editor
 
                 if (
                     !engine::graphics::Failed(result) &&
-                    !playMode &&
                     terrainPaintMode_ &&
                     terrainBrushHitValid_)
                 {
@@ -4984,7 +3474,6 @@ namespace lts::editor
                                 KeyShift);
                 }
             }
-        }
 
         if (engine::graphics::Failed(result))
         {

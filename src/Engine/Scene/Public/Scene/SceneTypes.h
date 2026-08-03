@@ -120,6 +120,8 @@ namespace engine::scene
      *
      * assetPath должен ссылаться только на новый
      * ресурс, созданный FbxStaticMeshImporter.
+     *
+     * Никакой WarZ geometry/skeleton логики здесь нет.
      */
     struct StaticMeshComponent final
     {

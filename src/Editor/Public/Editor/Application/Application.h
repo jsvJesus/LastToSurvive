@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Editor/LevelEditor/Viewport/CameraController.h"
-#include "Editor/LevelEditor/Play/PlayInEditorController.h"
 #include "Editor/Commands/CommandHistory.h"
 #include "Editor/Commands/CommandSystem.h"
 #include "Editor/LevelEditor/UI/ContentBrowserPanel.h"
@@ -13,7 +12,6 @@
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
 #include "Editor/LevelEditor/Rendering/SceneRenderer.h"
 #include "Editor/LevelEditor/Rendering/StaticMeshRenderer.h"
-#include "Editor/LevelEditor/Rendering/ModularCharacterRenderer.h"
 #include "Editor/LevelEditor/Viewport/TransformController.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
 #include "Editor/LevelEditor/Terrain/TerrainImporter.h"
@@ -110,12 +108,10 @@ namespace lts::editor
         CommandHistory commandHistory_;
         CommandSystem commandSystem_;
         CameraController cameraController_;
-        PlayInEditorController playInEditorController_;
         TransformController transformController_;
         GridRenderer gridRenderer_;
         SkyRenderer skyRenderer_;
         StaticMeshRenderer staticMeshRenderer_;
-        ModularCharacterRenderer modularCharacterRenderer_;
         TerrainRenderer terrainRenderer_;
         TerrainImporter terrainImporter_;
         SceneRenderer sceneRenderer_;

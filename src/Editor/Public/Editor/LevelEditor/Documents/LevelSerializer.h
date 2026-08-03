@@ -11,6 +11,7 @@ namespace lts::editor
     {
         std::wstring name;
         std::wstring guid;
+
         EditorSceneSnapshot snapshot;
     };
 
@@ -29,13 +30,6 @@ namespace lts::editor
         static bool Load(
             const std::filesystem::path& path,
             EditorLevelFileData& data,
-            std::wstring& error);
-
-        [[nodiscard]]
-        static bool LoadCharacterAnimationProfile(
-            const std::filesystem::path& profilePath,
-            engine::scene::CharacterAnimationSet&
-                animationSet,
             std::wstring& error);
     };
 }
