@@ -21,11 +21,6 @@ namespace engine::scene
         Terrain
     };
 
-    structomaly,
-        LootContainer,
-        Terrain
-    };
-
     struct SceneTransform final
     {
         std::array<float, 3U> position
@@ -50,12 +45,12 @@ namespace engine::scene
         };
     };
 
-    struct NameComponent final
+    struct NameComponent
     {
         std::wstring name;
     };
 
-    struct TransformComponent final
+    struct TransformComponent
     {
         SceneTransform transform;
     };

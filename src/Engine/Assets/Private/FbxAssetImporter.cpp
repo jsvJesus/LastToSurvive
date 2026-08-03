@@ -1015,7 +1015,7 @@ namespace engine::assets
                 };
 
             const AssetResult result =
-                AppendGeometry(
+                AppendGeometry<FbxStaticVertex>(
                     node,
                     mesh,
                     output.vertices,
@@ -1310,7 +1310,7 @@ namespace engine::assets
                 };
 
             const AssetResult result =
-                AppendGeometry(
+                AppendGeometry<FbxSkeletalVertex>(
                     node,
                     mesh,
                     output.vertices,
