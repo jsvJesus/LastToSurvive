@@ -920,35 +920,29 @@ namespace lts::editor
                     FillMode::Solid;
 
             pipelineDescription.rasterizer.cullMode =
-                engine::graphics::
-                    CullMode::None;
+                engine::graphics::CullMode::Back;
 
-            pipelineDescription.rasterizer.
-                depthClipEnable = true;
+            pipelineDescription.rasterizer.depthClipEnable =
+                true;
 
-            pipelineDescription.blend.
-                renderTargets[0].
-                    blendEnable = false;
+            pipelineDescription.blend.renderTargets[0].
+                blendEnable = false;
 
-            pipelineDescription.depthStencil.
-                depthEnable = true;
+            pipelineDescription.depthStencil.depthEnable =
+                true;
 
-            pipelineDescription.depthStencil.
-                depthWriteEnable = true;
+            pipelineDescription.depthStencil.depthWriteEnable =
+                true;
 
-            pipelineDescription.depthStencil.
-                depthFunction =
-                    engine::graphics::
-                        ComparisonFunction::
-                            LessEqual;
+            pipelineDescription.depthStencil.depthFunction =
+                engine::graphics::ComparisonFunction::LessEqual;
 
             pipelineDescription.debugName =
                 "EditorStaticMesh.Pipeline";
 
-            result =
-                device.CreateGraphicsPipeline(
-                    pipelineDescription,
-                    pipeline_);
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                pipeline_);
 
             if (engine::graphics::Failed(result))
             {
@@ -960,19 +954,99 @@ namespace lts::editor
                 return false;
             }
 
-            pipelineDescription.blend.renderTargets[0].blendEnable = true;
-            pipelineDescription.blend.renderTargets[0].sourceColor =
-                engine::graphics::BlendFactor::SourceAlpha;
-            pipelineDescription.blend.renderTargets[0].destinationColor =
-                engine::graphics::BlendFactor::InverseSourceAlpha;
-            pipelineDescription.blend.renderTargets[0].sourceAlpha =
-                engine::graphics::BlendFactor::One;
-            pipelineDescription.blend.renderTargets[0].destinationAlpha =
-                engine::graphics::BlendFactor::InverseSourceAlpha;
-            pipelineDescription.depthStencil.depthWriteEnable = false;
-            pipelineDescription.debugName = "EditorStaticMesh.TransparentPipeline";
+            /*
+             * Opaque / Mask, Double Sided.
+             */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.DoubleSidedPipeline";
+
             result = device.CreateGraphicsPipeline(
-                pipelineDescription, transparentPipeline_);
+                pipelineDescription,
+                doubleSidedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create double-sided static mesh pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Blend, односторонний материал.
+             */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::Back;
+
+            pipelineDescription.blend.renderTargets[0].
+                blendEnable = true;
+
+            pipelineDescription.blend.renderTargets[0].
+                sourceColor =
+                    engine::graphics::BlendFactor::SourceAlpha;
+
+            pipelineDescription.blend.renderTargets[0].
+                destinationColor =
+                    engine::graphics::BlendFactor::
+                        InverseSourceAlpha;
+
+            pipelineDescription.blend.renderTargets[0].
+                sourceAlpha =
+                    engine::graphics::BlendFactor::One;
+
+            pipelineDescription.blend.renderTargets[0].
+                destinationAlpha =
+                    engine::graphics::BlendFactor::
+                        InverseSourceAlpha;
+
+            pipelineDescription.depthStencil.depthWriteEnable =
+                false;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.TransparentPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                transparentPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create transparent static mesh pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Blend, Double Sided.
+             */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.TransparentDoubleSidedPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                transparentDoubleSidedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create transparent double-sided pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+            
             if (engine::graphics::Failed(result))
             {
                 LogGraphicsFailure("Create transparent static mesh pipeline", result);
@@ -1016,10 +1090,31 @@ namespace lts::editor
             meshes_.clear();
             failedMeshes_.clear();
 
+            if (transparentDoubleSidedPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        transparentDoubleSidedPipeline_));
+
+                transparentDoubleSidedPipeline_ = {};
+            }
+
             if (transparentPipeline_.IsValid())
             {
-                static_cast<void>(device.DestroyGraphicsPipeline(transparentPipeline_));
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        transparentPipeline_));
+
                 transparentPipeline_ = {};
+            }
+
+            if (doubleSidedPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        doubleSidedPipeline_));
+
+                doubleSidedPipeline_ = {};
             }
 
             if (pipeline_.IsValid())
@@ -1272,7 +1367,10 @@ namespace lts::editor
 
                     engine::graphics::TextureHandle texture;
                     engine::graphics::SamplerHandle sampler;
+
                     bool transparent = false;
+                    bool doubleSided = false;
+                    
                     if (submesh->materialSlot < cachedMesh->materials.size())
                     {
                         const CachedMaterial& material =
@@ -1282,7 +1380,9 @@ namespace lts::editor
                             material.desc.baseColorFactor[2], material.desc.baseColorFactor[3] };
                         texture = material.baseColorTexture;
                         sampler = material.sampler;
+                        
                         transparent = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Blend;
+                        doubleSided = material.desc.doubleSided;
                         constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
                         constants.materialParameters.w = material.desc.alphaCutoff;
                         constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
@@ -1294,8 +1394,27 @@ namespace lts::editor
                         constants.materialParameters.z = 0.0F;
                         constants.materialParameters.w = 0.5F;
                     }
+                    
+                    engine::graphics::PipelineStateHandle selectedPipeline;
+
+                    if (transparent)
+                    {
+                        selectedPipeline =
+                            doubleSided
+                                ? transparentDoubleSidedPipeline_
+                                : transparentPipeline_;
+                    }
+                    else
+                    {
+                        selectedPipeline =
+                            doubleSided
+                                ? doubleSidedPipeline_
+                                : pipeline_;
+                    }
+
                     result = context.SetGraphicsPipeline(
-                        transparent ? transparentPipeline_ : pipeline_);
+                        selectedPipeline);
+                    
                     if (engine::graphics::Failed(result)) break;
                     result = context.UpdateBuffer(objectBuffer_, &constants, sizeof(constants));
                     if (engine::graphics::Failed(result)) break;
@@ -1666,27 +1785,25 @@ namespace lts::editor
                     const auto* loadedMaterial = static_cast<engine::assets::MaterialLoadedAsset*>(loaded.get());
                     CachedMaterial material;
                     material.desc = loadedMaterial->GetMaterial().GetDesc();
-                    if (material.desc.baseColorTexture)
+                    
+                    if (material.desc.baseColorTexture.has_value())
                     {
-                        const auto texturePath = gameRoot /
-                            std::filesystem::u8path(material.desc.baseColorTexture->String());
-                        
-                        if (material.desc.baseColorTexture)
-                        {
-                            const std::filesystem::path texturePath =
-                                gameRoot /
-                                std::filesystem::u8path(
-                                    material.desc.
-                                        baseColorTexture->
-                                        String());
+                        const std::filesystem::path texturePath =
+                            gameRoot /
+                            std::filesystem::u8path(
+                                material.desc.
+                                    baseColorTexture->
+                                    String());
 
-                            static_cast<void>(
-                                CreateTextureFromFile(
-                                    *device_,
-                                    texturePath,
-                                    material.baseColorTexture));
+                        if (!CreateTextureFromFile(
+                                *device_,
+                                texturePath,
+                                material.baseColorTexture))
+                        {
+                            material.baseColorTexture = {};
                         }
                     }
+                    
                     if (material.baseColorTexture.IsValid())
                     {
                         engine::graphics::SamplerDesc samplerDesc = material.desc.sampler;
@@ -1859,11 +1976,16 @@ namespace lts::editor
         engine::graphics::InputLayoutHandle
             inputLayout_;
 
+        engine::graphics::PipelineStateHandle pipeline_;
+
         engine::graphics::PipelineStateHandle
-            pipeline_;
+            doubleSidedPipeline_;
 
         engine::graphics::PipelineStateHandle
             transparentPipeline_;
+
+        engine::graphics::PipelineStateHandle
+            transparentDoubleSidedPipeline_;
 
         std::unordered_map<
             std::wstring,
