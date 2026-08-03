@@ -227,6 +227,7 @@
     <ClInclude Include="Public\Editor\Commands\CommandSystem.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Play\PlayInEditorController.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\CharacterAnimationEvaluator.h" />
+    <ClInclude Include="Public\Editor\LevelEditor\Rendering\FbxPreviewMeshBuilder.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\ModularCharacterRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\SkyRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Terrain\TerrainImporter.h" />
@@ -687,6 +688,7 @@
     </ClCompile>
     <ClCompile Include="Private\LevelEditor\Play\PlayInEditorController.cpp" />
     <ClCompile Include="Private\LevelEditor\Rendering\CharacterAnimationEvaluator.cpp" />
+    <ClCompile Include="Private\LevelEditor\Rendering\FbxPreviewMeshBuilder.cpp" />
     <ClCompile Include="Private\LevelEditor\Rendering\GridRenderer.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>Z:\WarZ\src\Editor\..\..\build\x64\Release\Obj\LTS.Editor\</AssemblerListingLocation>
