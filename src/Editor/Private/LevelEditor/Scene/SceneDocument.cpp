@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <utility>
 
 namespace lts::editor
@@ -44,6 +45,55 @@ namespace lts::editor
             };
 
             return transform;
+        }
+
+        [[nodiscard]]
+        std::vector<EditorEntityId>ExpandWithDescendants(
+            const std::vector<EditorSceneEntity>&
+                entities,
+            const std::vector<EditorEntityId>&
+                selectedIds)
+        {
+            std::vector<EditorEntityId> result =
+                selectedIds;
+
+            bool changed = true;
+
+            while (changed)
+            {
+                changed = false;
+
+                for (
+                    const EditorSceneEntity& entity :
+                    entities)
+                {
+                    if (
+                        entity.parentId == 0U ||
+                        std::find(
+                            result.begin(),
+                            result.end(),
+                            entity.id) !=
+                            result.end())
+                    {
+                        continue;
+                    }
+
+                    if (
+                        std::find(
+                            result.begin(),
+                            result.end(),
+                            entity.parentId) ==
+                        result.end())
+                    {
+                        continue;
+                    }
+
+                    result.push_back(entity.id);
+                    changed = true;
+                }
+            }
+
+            return result;
         }
 
         [[nodiscard]]
@@ -351,6 +401,135 @@ namespace lts::editor
 
         dirty_ = true;
         return true;
+    }
+
+    bool SceneDocument::CreateStaticMeshPrefab(const engine::assets::StaticMeshPrefab& prefab,
+        const EditorTransform& transform)
+    {
+        if (
+        !prefab.IsValid() ||
+        !engine::scene::SceneWorld::
+            IsFiniteTransform(transform))
+        {
+            return false;
+        }
+
+        const EditorSceneSnapshot before =
+            CreateSnapshot();
+
+        try
+        {
+            const std::wstring rootName =
+                std::filesystem::u8path(
+                    prefab.name).
+                    wstring();
+
+            const EditorEntityId rootId =
+                world_.CreateEntity(
+                    MakeUniqueName(
+                        rootName.empty()
+                            ? L"Prefab"
+                            : rootName),
+                    EditorEntityKind::Empty,
+                    transform);
+
+            if (rootId == 0U)
+            {
+                RestoreSnapshot(
+                    before,
+                    false);
+
+                return false;
+            }
+
+            std::vector<EditorEntityId>
+                createdIds;
+
+            createdIds.reserve(
+                prefab.parts.size() + 1U);
+
+            createdIds.push_back(rootId);
+
+            for (
+                const engine::assets::
+                    StaticMeshPrefabPart& part :
+                prefab.parts)
+            {
+                const std::wstring partName =
+                    std::filesystem::u8path(
+                        part.name).
+                        wstring();
+
+                const std::wstring meshPath =
+                    std::filesystem::u8path(
+                        part.meshPath.String()).
+                        generic_wstring();
+
+                const EditorEntityId childId =
+                    world_.CreateEntity(
+                        MakeUniqueName(
+                            partName.empty()
+                                ? L"Prefab Part"
+                                : partName),
+                        EditorEntityKind::Empty,
+                        transform);
+
+                EditorSceneEntity* const child =
+                    world_.FindEntity(childId);
+
+                if (child == nullptr)
+                {
+                    RestoreSnapshot(
+                        before,
+                        false);
+
+                    return false;
+                }
+
+                child->parentId = rootId;
+
+                child->staticMesh.emplace();
+
+                child->staticMesh->assetPath =
+                    meshPath;
+
+                child->staticMesh->visible = true;
+
+                child->staticMesh->castShadows =
+                    true;
+
+                createdIds.push_back(childId);
+            }
+
+            /*
+             * Все части имеют одинаковый transform,
+             * потому что текущий FBX importer уже
+             * запекает geometry_to_world внутрь .sm.
+             *
+             * Выделяем всю группу, чтобы gizmo
+             * двигал prefab целиком.
+             */
+            selectedEntityIds_ =
+                std::move(createdIds);
+
+            selectionAnchorId_ =
+                rootId;
+
+            selectedIndex_ =
+                world_.FindEntityIndex(rootId);
+
+            dirty_ = true;
+
+            return true;
+        }
+        catch (...)
+        {
+            RestoreSnapshot(
+                before,
+                false);
+
+            return false;
+        }
     }
 
     bool SceneDocument::CreateTerrainEntity(
@@ -920,7 +1099,7 @@ namespace lts::editor
         }
 
         const std::size_t previousIndex = selectedIndex_;
-        const std::vector<EditorEntityId> ids = selectedEntityIds_;
+        const std::vector<EditorEntityId> ids = ExpandWithDescendants(world_.GetEntities(), selectedEntityIds_);
         for (const EditorSceneEntity& entity : world_.GetEntities())
         {
             if (std::find(ids.begin(), ids.end(), entity.parentId) != ids.end())
@@ -992,7 +1171,10 @@ namespace lts::editor
     bool SceneDocument::MoveSelectionToFolder(std::wstring folder)
     {
         bool changed = false;
-        for (const EditorEntityId entityId : selectedEntityIds_)
+        const std::vector<EditorEntityId>transformTargets = ExpandWithDescendants(world_.GetEntities(), selectedEntityIds_);
+        for (
+            const EditorEntityId entityId :
+            transformTargets)
         {
             EditorSceneEntity* const entity = world_.FindEntity(entityId);
             if (entity != nullptr && entity->editorFolder != folder)

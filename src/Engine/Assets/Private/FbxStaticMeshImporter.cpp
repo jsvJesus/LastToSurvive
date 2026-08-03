@@ -7,6 +7,7 @@
 #include "Assets/MaterialAsset.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/MeshAssetBuilder.h"
+#include "Assets/StaticMeshPrefab.h"
 
 #include "FbxImporterCommon.h"
 
@@ -1273,6 +1274,13 @@ namespace engine::assets
                 std::size_t>
                 usedNames;
 
+            StaticMeshPrefab prefab;
+
+            prefab.name =
+                fbx_detail::SanitizeName(
+                    sourcePath.stem().u8string(),
+                    "ImportedPrefab");
+
             for (
                 std::size_t meshIndex = 0U;
                 meshIndex <
@@ -1332,7 +1340,87 @@ namespace engine::assets
                     {
                         return result;
                     }
+
+                    std::string runtimeMeshPath;
+
+                    result =
+                        fbx_detail::MakeAssetPath(
+                            destination,
+                            runtimeMeshPath,
+                            error);
+
+                    if (Failed(result))
+                    {
+                        return result;
+                    }
+
+                    AssetPath meshAssetPath;
+
+                    result =
+                        AssetPath::TryCreate(
+                            runtimeMeshPath,
+                            meshAssetPath);
+
+                    if (Failed(result))
+                    {
+                        error =
+                            L"Imported .sm has an invalid "
+                            L"runtime asset path.";
+
+                        return result;
+                    }
+
+                    StaticMeshPrefabPart prefabPart;
+
+                    prefabPart.name =
+                        fbx_detail::SanitizeName(
+                            fbx_detail::ToString(
+                                node->name,
+                                mesh->name.data != nullptr
+                                    ? mesh->name.data
+                                    : "StaticMesh"),
+                            "StaticMesh");
+
+                    prefabPart.meshPath =
+                        std::move(meshAssetPath);
+
+                    prefab.parts.push_back(
+                        std::move(prefabPart));
                 }
+            }
+
+            const bool shouldCreatePrefab =
+            options.createPrefab &&
+            (
+                prefab.parts.size() > 1U ||
+                (
+                    options.createSingleMeshPrefab &&
+                    prefab.parts.size() == 1U
+                )
+            );
+
+            if (shouldCreatePrefab)
+            {
+                const std::filesystem::path prefabPath =
+                    package.meshDirectory /
+                    std::filesystem::u8path(
+                        prefab.name + ".prefab");
+
+                result =
+                    StaticMeshPrefabCodec::Save(
+                        prefabPath,
+                        prefab,
+                        options.overwriteExisting,
+                        error);
+
+                if (Failed(result))
+                {
+                    return result;
+                }
+
+                AppendWrittenFile(
+                    report,
+                    prefabPath);
             }
 
             const auto meshFile =

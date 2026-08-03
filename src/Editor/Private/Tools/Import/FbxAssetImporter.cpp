@@ -350,6 +350,9 @@ namespace lts::editor
         importStaticMeshes_ =
             sourceInfo_.HasStaticMeshes();
 
+        createStaticMeshPrefab_ =
+            sourceInfo_.staticMeshCount > 1U;
+
         importSkeletalMeshes_ =
             sourceInfo_.HasSkeletalMeshes();
 
@@ -412,6 +415,12 @@ namespace lts::editor
 
             options.destinationDirectory =
                 destinationDirectory_;
+
+            options.createPrefab =
+                createStaticMeshPrefab_;
+
+            options.createSingleMeshPrefab =
+                false;
 
             options.overwriteExisting = true;
 
@@ -674,6 +683,14 @@ namespace lts::editor
         ImGui::Checkbox(
             "Static Meshes (.sm)",
             &importStaticMeshes_);
+
+        ImGui::BeginDisabled(!importStaticMeshes_ || sourceInfo_.staticMeshCount < 2U);
+
+        ImGui::Checkbox(
+            "Create grouped prefab (.prefab)",
+            &createStaticMeshPrefab_);
+
+        ImGui::EndDisabled();
 
         ImGui::EndDisabled();
 

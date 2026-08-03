@@ -12,6 +12,17 @@ namespace engine::assets
     {
         std::filesystem::path destinationDirectory;
 
+        /*
+         * Если FBX содержит несколько static mesh nodes,
+         * рядом с .sm будет создан общий .prefab.
+         */
+        bool createPrefab = true;
+
+        /*
+         * Создавать prefab даже для одного .sm.
+         */
+        bool createSingleMeshPrefab = false;
+
         bool overwriteExisting = true;
     };
 

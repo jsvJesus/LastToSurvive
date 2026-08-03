@@ -6,6 +6,8 @@
 #include "Editor/LevelEditor/Rendering/StaticMeshRenderer.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
 
+#include <Assets/StaticMeshPrefab.h>
+
 #include <imgui.h>
 
 #include <DirectXMath.h>
@@ -53,9 +55,17 @@ namespace lts::editor
             return value;
         }
 
+        enum class ContentAssetKind
+        {
+            Unsupported,
+            StaticMesh,
+            StaticMeshPrefab
+        };
+
         [[nodiscard]]
-        bool IsStaticMeshFile(
-            const std::filesystem::path& path) noexcept
+        ContentAssetKind GetContentAssetKind(
+            const std::filesystem::path& path)
+            noexcept
         {
             try
             {
@@ -72,11 +82,24 @@ namespace lts::editor
                             std::towlower(character));
                     });
 
-                return extension == L".sm";
+                if (extension == L".sm")
+                {
+                    return
+                        ContentAssetKind::StaticMesh;
+                }
+
+                if (extension == L".prefab")
+                {
+                    return
+                        ContentAssetKind::
+                            StaticMeshPrefab;
+                }
+
+                return ContentAssetKind::Unsupported;
             }
             catch (...)
             {
-                return false;
+                return ContentAssetKind::Unsupported;
             }
         }
     }
@@ -133,8 +156,7 @@ namespace lts::editor
                     continue;
                 }
 
-                if (
-                    iterator->is_regular_file(error) && !error && IsStaticMeshFile(iterator->path()))
+                if (iterator->is_regular_file(error) && !error && GetContentAssetKind(iterator->path()) != ContentAssetKind::Unsupported)
                 {
                     meshFiles_.push_back(iterator->path().lexically_normal());
                 }

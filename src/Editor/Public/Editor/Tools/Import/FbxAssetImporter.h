@@ -49,6 +49,8 @@ namespace lts::editor
         bool importSkeletalMeshes_ = false;
         bool importSkeleton_ = false;
         bool importAnimations_ = false;
+        
+        bool createStaticMeshPrefab_ = true;
 
         int maximumBoneInfluences_ = 4;
         float animationSampleRate_ = 30.0F;

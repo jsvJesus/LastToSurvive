@@ -156,6 +156,7 @@
     <ClInclude Include="Public\Assets\SkeletalMeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\SkeletonAsset.h" />
     <ClInclude Include="Public\Assets\SkeletonAssetLoader.h" />
+    <ClInclude Include="Public\Assets\StaticMeshPrefab.h" />
     <ClInclude Include="Public\Assets\StaticModelAsset.h" />
     <ClInclude Include="Public\Assets\StaticModelAssetLoader.h" />
     <ClInclude Include="Public\Assets\ShaderAsset.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Private\SkeletalMeshAssetLoader.cpp" />
     <ClCompile Include="Private\SkeletonAsset.cpp" />
     <ClCompile Include="Private\SkeletonAssetLoader.cpp" />
+    <ClCompile Include="Private\StaticMeshPrefab.cpp" />
     <ClCompile Include="Private\StaticModelAsset.cpp" />
     <ClCompile Include="Private\StaticModelAssetLoader.cpp" />
     <ClCompile Include="Private\ShaderAsset.cpp" />

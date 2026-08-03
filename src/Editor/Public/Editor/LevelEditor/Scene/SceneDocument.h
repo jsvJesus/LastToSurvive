@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Scene/SceneWorld.h>
+#include <Assets/StaticMeshPrefab.h>
 
 #include <cstddef>
 #include <array>
@@ -76,6 +77,11 @@ namespace lts::editor
         bool CreateStaticMeshEntity(
             std::wstring name,
             std::wstring assetPath,
+            const EditorTransform& transform);
+
+        [[nodiscard]]
+        bool CreateStaticMeshPrefab(
+            const engine::assets::StaticMeshPrefab& prefab,
             const EditorTransform& transform);
 
         [[nodiscard]] bool CreateTerrainEntity(
