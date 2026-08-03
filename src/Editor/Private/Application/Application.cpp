@@ -3468,6 +3468,7 @@ namespace lts::editor
                                 KeyShift);
                 }
             }
+        }
 
         if (engine::graphics::Failed(result))
         {
