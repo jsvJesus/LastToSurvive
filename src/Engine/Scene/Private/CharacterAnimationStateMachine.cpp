@@ -10,260 +10,169 @@ namespace engine::scene
     namespace
     {
         /*
-         * AI_Player::UpdateRotation двигает
-         * bodyAdjust_y к цели линейно:
-         *
-         * frameTime * 3.2 rad/sec.
-         *
-         * Верхний/нижний предел задаёт Camera Rig
-         * в HUD_TPSGame, а не дополнительный clamp 0.4 rad.
+         * Original AI_Player.CPP values.
          */
-        constexpr float
-            MaximumProceduralPitchDegrees =
-                89.0F;
+        constexpr float WarZIdleTurnSpeedDegrees =
+            360.0F;
 
-        constexpr float
-            BodyPitchSpeedDegreesPerSecond =
-                183.346497F;
+        constexpr float WarZMoveTurnSpeedDegrees =
+            720.0F;
+
+        constexpr float WarZBodyYawResponseIdle =
+            4.0F;
 
         /*
-         * PLAYER_IDLEAIM / PLAYER_MOVE_WALK_AIM:
-         * old upper track фиксируется на frame 1.
-         * Legacy character clips экспортированы 30 FPS.
+         * Moving code called:
+         *
+         * UpdateBodyAdjustX(&bodyAdjust_x, 0, dt * 4)
+         *
+         * and UpdateBodyAdjustX multiplies dt by 4
+         * internally. Effective response: 16.
          */
-        constexpr double
-            LegacyUpperPoseFrameSeconds =
-                1.0 / 30.0;
+        constexpr float WarZBodyYawResponseMoving =
+            16.0F;
+
+        /*
+         * AI_Player::UpdateRotation:
+         * frameTime * 3.2 radians per second.
+         */
+        constexpr float WarZBodyPitchSpeedDegrees =
+            183.346497F;
+
+        constexpr float MaximumBodyPitchDegrees =
+            89.0F;
+
+        constexpr double LegacyFrameRate =
+            30.0;
+
+        constexpr double LegacyPausedFrameOneSeconds =
+            1.0 / LegacyFrameRate;
 
         [[nodiscard]]
         float NormalizeAngleDegrees(
-            const float angleDegrees) noexcept
+            const float value) noexcept
         {
-            return std::isfinite(angleDegrees)
-                ? std::remainder(angleDegrees, 360.0F)
-                : 0.0F;
+            return
+                std::isfinite(value)
+                    ? std::remainder(
+                        value,
+                        360.0F)
+                    : 0.0F;
         }
 
         [[nodiscard]]
         float AngleDifferenceDegrees(
-            const float targetDegrees,
-            const float currentDegrees) noexcept
+            const float target,
+            const float current) noexcept
         {
             return NormalizeAngleDegrees(
-                targetDegrees - currentDegrees);
+                target - current);
         }
 
         [[nodiscard]]
         float MoveAngleDegrees(
-            const float currentDegrees,
-            const float targetDegrees,
-            const float maximumDeltaDegrees) noexcept
-        {
-            const float differenceDegrees =
-                AngleDifferenceDegrees(
-                    targetDegrees,
-                    currentDegrees);
-
-            return NormalizeAngleDegrees(
-                currentDegrees +
-                std::clamp(
-                    differenceDegrees,
-                    -(std::max)(maximumDeltaDegrees, 0.0F),
-                    (std::max)(maximumDeltaDegrees, 0.0F)));
-        }
-
-        [[nodiscard]]
-        float MoveTowardsValue(
-            const float currentValue,
-            const float targetValue,
+            const float current,
+            const float target,
             const float maximumDelta) noexcept
         {
             const float safeDelta =
                 std::isfinite(maximumDelta)
-                    ? (std::max)(maximumDelta, 0.0F)
+                    ? (std::max)(
+                        maximumDelta,
+                        0.0F)
                     : 0.0F;
 
-            if (currentValue < targetValue)
-            {
-                return
-                    (std::min)(
-                        currentValue + safeDelta,
-                        targetValue);
-            }
+            const float difference =
+                AngleDifferenceDegrees(
+                    target,
+                    current);
 
-            if (currentValue > targetValue)
-            {
-                return
-                    (std::max)(
-                        currentValue - safeDelta,
-                        targetValue);
-            }
-
-            return targetValue;
+            return NormalizeAngleDegrees(
+                current +
+                std::clamp(
+                    difference,
+                    -safeDelta,
+                    safeDelta));
         }
 
+        /*
+         * Exact UpdateBodyAdjustX behaviour:
+         *
+         * current += (target - current) * dt * 4
+         */
         [[nodiscard]]
-        float SmoothWarZBodyYaw(
-            const float currentValue,
-            const float targetValue,
-            const float responsePerSecond,
+        float UpdateBodyAdjust(
+            const float current,
+            const float target,
+            const float response,
             const float deltaSeconds) noexcept
         {
             if (
-                !std::isfinite(currentValue) ||
-                !std::isfinite(targetValue) ||
-                !std::isfinite(responsePerSecond) ||
+                !std::isfinite(current) ||
+                !std::isfinite(target) ||
+                !std::isfinite(response) ||
                 !std::isfinite(deltaSeconds) ||
-                responsePerSecond <= 0.0F ||
+                response <= 0.0F ||
                 deltaSeconds <= 0.0F)
             {
                 return
-                    std::isfinite(currentValue)
-                        ? currentValue
+                    std::isfinite(current)
+                        ? current
                         : 0.0F;
             }
 
-            /*
-             * UpdateBodyAdjustX:
-             * current += (target-current) * dt * response.
-             */
             const float alpha =
                 std::clamp(
-                    responsePerSecond *
-                        deltaSeconds,
+                    deltaSeconds *
+                        response,
                     0.0F,
                     1.0F);
 
             return
-                currentValue +
+                current +
                 (
-                    targetValue -
-                    currentValue
+                    target -
+                    current
                 ) *
                 alpha;
         }
 
         [[nodiscard]]
-        bool IsForwardDirectionGroup(
-            const CharacterMovementDirection direction) noexcept
+        float MoveTowardsValue(
+            const float current,
+            const float target,
+            const float maximumDelta) noexcept
         {
-            return
-                direction ==
-                    CharacterMovementDirection::Forward ||
-                direction ==
-                    CharacterMovementDirection::ForwardLeft ||
-                direction ==
-                    CharacterMovementDirection::ForwardRight;
-        }
+            const float safeDelta =
+                std::isfinite(maximumDelta)
+                    ? (std::max)(
+                        maximumDelta,
+                        0.0F)
+                    : 0.0F;
 
-        [[nodiscard]]
-        bool IsBackwardDirectionGroup(
-            const CharacterMovementDirection direction) noexcept
-        {
-            return
-                direction ==
-                    CharacterMovementDirection::Backward ||
-                direction ==
-                    CharacterMovementDirection::BackwardLeft ||
-                direction ==
-                    CharacterMovementDirection::BackwardRight;
-        }
-
-        [[nodiscard]]
-        bool IsSynchronizedDirectionTransition(
-            const CharacterMovementDirection previousDirection,
-            const CharacterMovementDirection currentDirection) noexcept
-        {
-            if (
-                previousDirection == currentDirection ||
-                previousDirection ==
-                    CharacterMovementDirection::None ||
-                currentDirection ==
-                    CharacterMovementDirection::None)
+            if (current < target)
             {
-                return false;
+                return
+                    (std::min)(
+                        current +
+                            safeDelta,
+                        target);
             }
 
-            return
-                (
-                    IsForwardDirectionGroup(
-                        previousDirection) &&
-                    IsForwardDirectionGroup(
-                        currentDirection)
-                ) ||
-                (
-                    IsBackwardDirectionGroup(
-                        previousDirection) &&
-                    IsBackwardDirectionGroup(
-                        currentDirection)
-                );
-        }
-
-        [[nodiscard]]
-        const std::wstring* FirstNonEmpty(
-            const std::initializer_list<
-                const std::wstring*>&
-                    candidates) noexcept
-        {
-            for (
-                const std::wstring* const candidate :
-                candidates)
+            if (current > target)
             {
-                if (
-                    candidate != nullptr &&
-                    !candidate->empty())
-                {
-                    return candidate;
-                }
+                return
+                    (std::max)(
+                        current -
+                            safeDelta,
+                        target);
             }
 
-            return nullptr;
+            return target;
         }
 
         [[nodiscard]]
-        const std::wstring* ResolveDirectionalClip(
-            const CharacterDirectionalAnimationSet&
-                directionalSet,
-
-            const CharacterMovementDirection
-                movementDirection) noexcept
-        {
-            const std::wstring&
-                directionalClip =
-                    directionalSet.Resolve(
-                        movementDirection);
-
-            return FirstNonEmpty(
-            {
-                &directionalClip,
-                &directionalSet.forward
-            });
-        }
-
-        [[nodiscard]]
-        const std::wstring* ResolveSprintClip(
-            const CharacterSprintAnimationSet&
-                sprintSet,
-
-            const CharacterMovementDirection
-                movementDirection) noexcept
-        {
-            const std::wstring&
-                directionalClip =
-                    sprintSet.Resolve(
-                        movementDirection);
-
-            return FirstNonEmpty(
-            {
-                &directionalClip,
-                &sprintSet.forward,
-                &sprintSet.forwardLeft,
-                &sprintSet.forwardRight
-            });
-        }
-        
-        [[nodiscard]]
-        bool IsCharacterMoving(
+        bool IsMoving(
             const CharacterAnimationStateInput&
                 input) noexcept
         {
@@ -295,19 +204,196 @@ namespace engine::scene
         }
 
         [[nodiscard]]
-        const CharacterViewAnimationSet&
-            ResolveViewSet(
-                const CharacterAnimationSet&
-                    animationSet,
-
-                const CharacterViewMode
-                    viewMode) noexcept
+        bool IsJumpState(
+            const CharacterLocomotionState
+                state) noexcept
         {
             return
-                viewMode ==
+                state ==
+                    CharacterLocomotionState::
+                        JumpStart ||
+                state ==
+                    CharacterLocomotionState::
+                        JumpLoop ||
+                state ==
+                    CharacterLocomotionState::
+                        JumpLand;
+        }
+
+        [[nodiscard]]
+        bool IsForwardDirectionGroup(
+            const CharacterMovementDirection
+                direction) noexcept
+        {
+            return
+                direction ==
+                    CharacterMovementDirection::
+                        Forward ||
+                direction ==
+                    CharacterMovementDirection::
+                        ForwardLeft ||
+                direction ==
+                    CharacterMovementDirection::
+                        ForwardRight;
+        }
+
+        [[nodiscard]]
+        bool IsBackwardDirectionGroup(
+            const CharacterMovementDirection
+                direction) noexcept
+        {
+            return
+                direction ==
+                    CharacterMovementDirection::
+                        Backward ||
+                direction ==
+                    CharacterMovementDirection::
+                        BackwardLeft ||
+                direction ==
+                    CharacterMovementDirection::
+                        BackwardRight;
+        }
+
+        [[nodiscard]]
+        bool IsSynchronizedDirectionTransition(
+            const CharacterMovementDirection
+                previousDirection,
+
+            const CharacterMovementDirection
+                currentDirection) noexcept
+        {
+            if (
+                previousDirection ==
+                    currentDirection ||
+                previousDirection ==
+                    CharacterMovementDirection::None ||
+                currentDirection ==
+                    CharacterMovementDirection::None)
+            {
+                return false;
+            }
+
+            return
+                (
+                    IsForwardDirectionGroup(
+                        previousDirection) &&
+                    IsForwardDirectionGroup(
+                        currentDirection)
+                ) ||
+                (
+                    IsBackwardDirectionGroup(
+                        previousDirection) &&
+                    IsBackwardDirectionGroup(
+                        currentDirection)
+                );
+        }
+
+        [[nodiscard]]
+        double PlaybackSpeed(
+            const CharacterLocomotionState
+                state) noexcept
+        {
+            switch (state)
+            {
+                case CharacterLocomotionState::Run:
+                    return 1.05;
+
+                case CharacterLocomotionState::Sprint:
+                    return 1.10;
+
+                default:
+                    return 1.0;
+            }
+        }
+
+        [[nodiscard]]
+        const std::wstring* FirstNonEmpty(
+            const std::initializer_list<
+                const std::wstring*>&
+                    candidates) noexcept
+        {
+            for (
+                const std::wstring* const candidate :
+                candidates)
+            {
+                if (
+                    candidate != nullptr &&
+                    !candidate->empty())
+                {
+                    return candidate;
+                }
+            }
+
+            return nullptr;
+        }
+
+        [[nodiscard]]
+        const std::wstring* ResolveDirectional(
+            const CharacterDirectionalAnimationSet&
+                set,
+
+            CharacterMovementDirection
+                direction) noexcept
+        {
+            if (
+                direction ==
+                    CharacterMovementDirection::None)
+            {
+                direction =
+                    CharacterMovementDirection::
+                        Forward;
+            }
+
+            const std::wstring& resolved =
+                set.Resolve(direction);
+
+            return FirstNonEmpty(
+            {
+                &resolved,
+                &set.forward,
+                &set.backward,
+                &set.forwardLeft,
+                &set.forwardRight
+            });
+        }
+
+        [[nodiscard]]
+        const std::wstring* ResolveSprint(
+            const CharacterSprintAnimationSet& set,
+            CharacterMovementDirection
+                direction) noexcept
+        {
+            if (
+                direction ==
+                    CharacterMovementDirection::None)
+            {
+                direction =
+                    CharacterMovementDirection::
+                        Forward;
+            }
+
+            const std::wstring& resolved =
+                set.Resolve(direction);
+
+            return FirstNonEmpty(
+            {
+                &resolved,
+                &set.forward,
+                &set.forwardLeft,
+                &set.forwardRight
+            });
+        }
+
+        [[nodiscard]]
+        const CharacterViewAnimationSet& ResolveView(
+            const CharacterAnimationSet& set,
+            const CharacterViewMode mode) noexcept
+        {
+            return
+                mode ==
                     CharacterViewMode::FirstPerson
-                    ? animationSet.firstPerson
-                    : animationSet.thirdPerson;
+                    ? set.firstPerson
+                    : set.thirdPerson;
         }
     }
 
@@ -319,45 +405,18 @@ namespace engine::scene
     }
 
     void CharacterAnimationStateMachine::Update(
-        const CharacterAnimationStateInput&
-            input,
-
+        const CharacterAnimationStateInput& input,
         CharacterAnimationComponent&
             component) const noexcept
     {
         CharacterAnimationRuntime& runtime =
             component.runtime;
 
-        /*
-         * CUberAnim::SwitchToState сохранял старое
-         * состояние, направление и fCurFrame до
-         * пересборки animation stack.
-         */
-        const CharacterViewMode previousViewMode =
-            runtime.viewMode;
-
-        const CharacterStance previousStance =
-            runtime.stance;
-
-        const CharacterMovementDirection
-            previousMovementDirection =
-                runtime.movementDirection;
-
-        const CharacterLocomotionState
-            previousLocomotionState =
-                runtime.locomotionState;
-
-        const std::wstring previousLowerClip =
-            runtime.lowerBody.currentClip;
-
-        const std::wstring previousUpperClip =
-            runtime.upperBody.currentClip;
-
-        const double previousLowerTimeSeconds =
-            runtime.lowerBody.currentTimeSeconds;
-
-        const double previousUpperTimeSeconds =
-            runtime.upperBody.currentTimeSeconds;
+        if (!component.enabled)
+        {
+            runtime.Reset();
+            return;
+        }
 
         const double animationDeltaSeconds =
             std::isfinite(input.deltaSeconds) &&
@@ -366,8 +425,8 @@ namespace engine::scene
                 : 0.0;
 
         /*
-         * Поворот и physics остаются ограниченными.
-         * Animation clock получает полное время кадра.
+         * Physics/rotation remains bounded.
+         * Animation clocks receive the full delta.
          */
         const float rotationDeltaSeconds =
             static_cast<float>(
@@ -375,452 +434,55 @@ namespace engine::scene
                     animationDeltaSeconds,
                     0.05));
 
-        const CharacterAnimationSet& animationSet =
-            component.animationSet;
-
         const bool firstUpdate =
             runtime.firstUpdate;
 
-        const float desiredActorYawDegrees =
-            NormalizeAngleDegrees(
-                input.desiredActorYawDegrees);
+        const CharacterViewMode previousViewMode =
+            runtime.viewMode;
 
-        float actorYawDegrees =
-            NormalizeAngleDegrees(
-                runtime.actorYawDegrees);
+        const CharacterStance previousStance =
+            runtime.stance;
 
-        const bool moving =
-            IsCharacterMoving(input);
-
-        AdvanceLayer(
-            runtime.turnInPlace,
-            animationDeltaSeconds,
-            input.turnClipDurationSeconds);
-
-        const float turnEnterDegrees =
-            (std::max)(
-                std::fabs(
-                    animationSet.tuning.
-                        turnInPlaceEnterDegrees),
-                1.0F);
-
-        const float turnExitDegrees =
-            std::clamp(
-                std::fabs(
-                    animationSet.tuning.
-                        turnInPlaceExitDegrees),
-                0.0F,
-                turnEnterDegrees);
-
-        const float turnSpeedDegrees =
-            (std::max)(
-                std::fabs(
-                    animationSet.tuning.
-                        turnInPlaceSpeedDegrees),
-                1.0F);
-
-        const bool turnLayerContainsClip =
-            runtime.turnInPlace.active &&
-            runtime.turnInPlace.loopMode ==
-                CharacterAnimationLoopMode::Once &&
-            !runtime.turnInPlace.currentClip.empty();
-
-        const bool turnClipFinished =
-            turnLayerContainsClip &&
-            runtime.turnInPlace.completed;
-
-        float bodyYawOffsetDegrees =
-            std::isfinite(
-                runtime.upperBodyYawOffsetDegrees)
-                ? runtime.upperBodyYawOffsetDegrees
-                : 0.0F;
-
-        const float cameraBodyDifference =
-            AngleDifferenceDegrees(
-                desiredActorYawDegrees,
-                actorYawDegrees);
-
-        const bool canTurnInPlace =
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson &&
-            input.grounded &&
-            !moving &&
-            input.locomotionState ==
-                CharacterLocomotionState::Idle;
-
-        bool startedTurnThisUpdate = false;
-
-        if (
-            input.viewMode ==
-                CharacterViewMode::FirstPerson)
-        {
-            /*
-             * WarZ не запускает Turn In Place
-             * для локального FPS-персонажа.
-             */
-            actorYawDegrees =
-                MoveAngleDegrees(
-                    actorYawDegrees,
-                    desiredActorYawDegrees,
-                    turnSpeedDegrees *
-                        rotationDeltaSeconds);
-
-            bodyYawOffsetDegrees = 0.0F;
-
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
-            runtime.turnTargetYawDegrees =
-                actorYawDegrees;
-
-            runtime.turnInPlace.Reset();
-        }
-        else if (moving)
-        {
-            /*
-             * При начале движения старый WarZ
-             * делал FadeOut(turnTrack, 0.1).
-             */
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
-            bodyYawOffsetDegrees =
-                SmoothWarZBodyYaw(
-                    bodyYawOffsetDegrees,
-                    0.0F,
-                    16.0F,
-                    rotationDeltaSeconds);
-
-            actorYawDegrees =
-                MoveAngleDegrees(
-                    actorYawDegrees,
-                    desiredActorYawDegrees,
-                    (std::max)(
-                        input.
-                            movementRotationSpeedDegrees,
-                        0.0F) *
-                    rotationDeltaSeconds);
-
-            runtime.turnTargetYawDegrees =
-                actorYawDegrees;
-        }
-        else if (canTurnInPlace)
-        {
-            /*
-             * Сначала камера отклоняет верх тела.
-             * Ноги пока стоят на месте.
-             */
-            bodyYawOffsetDegrees =
-                SmoothWarZBodyYaw(
-                    bodyYawOffsetDegrees,
-                    cameraBodyDifference,
-                    4.0F,
-                    rotationDeltaSeconds);
-
-            if (
-                !runtime.turnInPlaceActive &&
-                std::fabs(
-                    bodyYawOffsetDegrees) >=
-                    turnEnterDegrees)
-            {
-                runtime.turnInPlaceActive = true;
-
-                /*
-                 * Старый код использовал текущий
-                 * m_fPlayerRotationTarget.
-                 */
-                runtime.turnTargetYawDegrees =
-                    desiredActorYawDegrees;
-
-                runtime.turnDirection =
-                    bodyYawOffsetDegrees >= 0.0F
-                        ? 1
-                        : -1;
-
-                bodyYawOffsetDegrees =
-                    std::clamp(
-                        bodyYawOffsetDegrees,
-                        -turnEnterDegrees,
-                        turnEnterDegrees);
-
-                startedTurnThisUpdate = true;
-            }
-
-            if (runtime.turnInPlaceActive)
-            {
-                /*
-                 * Пока turn-track существует,
-                 * ноги/actor доворачиваются к камере.
-                 */
-                runtime.turnTargetYawDegrees =
-                    desiredActorYawDegrees;
-
-                actorYawDegrees =
-                    MoveAngleDegrees(
-                        actorYawDegrees,
-                        runtime.turnTargetYawDegrees,
-                        turnSpeedDegrees *
-                            rotationDeltaSeconds);
-
-                bodyYawOffsetDegrees =
-                    AngleDifferenceDegrees(
-                        desiredActorYawDegrees,
-                        actorYawDegrees);
-
-                const float remainingDifference =
-                    AngleDifferenceDegrees(
-                        runtime.turnTargetYawDegrees,
-                        actorYawDegrees);
-
-                if (
-                    std::fabs(
-                        remainingDifference) <=
-                        turnExitDegrees)
-                {
-                    actorYawDegrees =
-                        NormalizeAngleDegrees(
-                            runtime.
-                                turnTargetYawDegrees);
-
-                    bodyYawOffsetDegrees =
-                        AngleDifferenceDegrees(
-                            desiredActorYawDegrees,
-                            actorYawDegrees);
-                }
-
-                /*
-                 * В WarZ turn завершался не в момент,
-                 * когда actor достиг target, а когда
-                 * animation track исчезал.
-                 */
-                if (turnClipFinished)
-                {
-                    actorYawDegrees =
-                        NormalizeAngleDegrees(
-                            runtime.
-                                turnTargetYawDegrees);
-
-                    bodyYawOffsetDegrees =
-                        AngleDifferenceDegrees(
-                            desiredActorYawDegrees,
-                            actorYawDegrees);
-
-                    runtime.turnInPlaceActive = false;
-                    runtime.turnDirection = 0;
-                }
-            }
-            else
-            {
-                runtime.turnTargetYawDegrees =
-                    actorYawDegrees;
-
-                runtime.turnDirection = 0;
-            }
-        }
-        else
-        {
-            runtime.turnInPlaceActive = false;
-            runtime.turnDirection = 0;
-
-            runtime.turnTargetYawDegrees =
-                actorYawDegrees;
-
-            bodyYawOffsetDegrees =
-                SmoothWarZBodyYaw(
-                    bodyYawOffsetDegrees,
-                    cameraBodyDifference,
-                    4.0F,
-                    rotationDeltaSeconds);
-        }
-
-        runtime.actorYawDegrees =
-            NormalizeAngleDegrees(
-                actorYawDegrees);
-
-        runtime.lowerBodyYawDegrees =
-            runtime.actorYawDegrees;
-
-        const float maximumLookYaw =
-            (std::max)(
-                std::fabs(
-                    animationSet.tuning.
-                        maximumUpperBodyYawDegrees),
-                0.0F);
-
-        runtime.upperBodyYawOffsetDegrees =
-            std::clamp(
-                bodyYawOffsetDegrees,
-                -maximumLookYaw,
-                maximumLookYaw);
-
-        const float requestedPitchDegrees =
-            std::isfinite(
-                input.lookPitchOffsetDegrees)
-                ? input.lookPitchOffsetDegrees
-                : 0.0F;
-
-        const float targetBodyPitchDegrees =
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson
-                ? std::clamp(
-                    requestedPitchDegrees,
-                    -MaximumProceduralPitchDegrees,
-                    MaximumProceduralPitchDegrees)
-                : 0.0F;
-
-        /*
-         * AI_Player::UpdateRotation:
-         * bodyAdjust_y[0] догоняет target
-         * линейно со скоростью 3.2 rad/sec.
-         */
-        runtime.upperBodyPitchOffsetDegrees =
-            MoveTowardsValue(
-                runtime.
-                    upperBodyPitchOffsetDegrees,
-                targetBodyPitchDegrees,
-                BodyPitchSpeedDegreesPerSecond *
-                    rotationDeltaSeconds);
-
-        if (
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson &&
-            runtime.turnInPlaceActive &&
-            runtime.turnDirection != 0)
-        {
-            const std::wstring* const
-                desiredTurnClip =
-                    ResolveTurnInPlaceClip(
-                        animationSet,
-                        input,
-                        runtime.turnDirection);
-
-            if (
-                desiredTurnClip != nullptr &&
-                !desiredTurnClip->empty())
-            {
-                /*
-                 * StartAnimation(
-                 *     aid,
-                 *     0,
-                 *     0.0f,
-                 *     1.0f,
-                 *     0.1f);
-                 */
-                SetLayerClip(
-                    runtime.turnInPlace,
-                    desiredTurnClip,
-                    0.10F,
-                    CharacterAnimationLoopMode::Once,
-                    startedTurnThisUpdate);
-            }
-            else
-            {
-                runtime.turnInPlaceActive = false;
-                runtime.turnDirection = 0;
-
-                SetLayerClip(
-                    runtime.turnInPlace,
-                    nullptr,
-                    0.10F,
-                    CharacterAnimationLoopMode::Once,
-                    false);
-            }
-        }
-        else if (
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson)
-        {
-            /*
-             * FadeOut(turnInPlaceTrackID, 0.1f).
-             */
-            SetLayerClip(
-                runtime.turnInPlace,
-                nullptr,
-                0.10F,
-                CharacterAnimationLoopMode::Once,
-                false);
-        }
+        const CharacterMovementDirection
+            previousDirection =
+                runtime.movementDirection;
 
         const CharacterLocomotionState
-            resolvedLocomotionState =
-                input.locomotionState;
+            previousLocomotion =
+                runtime.locomotionState;
 
-        CharacterAnimationStateInput resolvedInput =
-            input;
+        const std::wstring previousLowerClip =
+            runtime.lowerBody.currentClip;
 
-        resolvedInput.locomotionState =
-            resolvedLocomotionState;
+        const std::wstring previousUpperClip =
+            runtime.upperBody.currentClip;
 
-        runtime.viewMode =
-            input.viewMode;
+        const double previousLowerTime =
+            runtime.lowerBody.currentTimeSeconds;
 
-        runtime.stance =
-            input.stance;
-
-        runtime.movementDirection =
-            input.movementDirection;
-
-        runtime.locomotionState =
-            resolvedLocomotionState;
-
-        runtime.upperBodyState =
-            input.upperBodyState;
-
-        runtime.movementSpeed =
-            (std::max)(
-                input.movementSpeed,
-                0.0F);
-
-        runtime.grounded =
-            input.grounded;
-
-        runtime.aiming =
-            input.aiming;
-
-        if (!component.enabled)
-        {
-            /*
-             * Presentation state (особенно FPS/TPS) остаётся
-             * актуальным даже при выключенной анимации.
-             */
-            runtime.lowerBody.Reset();
-            runtime.turnInPlace.Reset();
-            runtime.upperBody.Reset();
-            runtime.action.Reset();
-            runtime.actionState =
-                CharacterActionState::None;
-            runtime.firstUpdate = true;
-            return;
-        }
+        const double previousUpperTime =
+            runtime.upperBody.currentTimeSeconds;
 
         /*
-         * FillAnimStatesSpeed:
-         * Run = 1.05, Sprint = 1.10,
-         * остальные locomotion states = 1.0.
+         * WarZ animation speeds:
+         *
+         * Run    1.05
+         * Sprint 1.10
+         * Other  1.00
          */
-        double locomotionPlaybackSpeed = 1.0;
-
-        if (
-            resolvedLocomotionState ==
-                CharacterLocomotionState::Run)
-        {
-            locomotionPlaybackSpeed = 1.05;
-        }
-        else if (
-            resolvedLocomotionState ==
-                CharacterLocomotionState::Sprint)
-        {
-            locomotionPlaybackSpeed = 1.10;
-        }
-
         const double locomotionDeltaSeconds =
             animationDeltaSeconds *
-                locomotionPlaybackSpeed;
+            PlaybackSpeed(previousLocomotion);
 
         AdvanceLayer(
             runtime.lowerBody,
             locomotionDeltaSeconds,
             input.lowerClipDurationSeconds);
+
+        AdvanceLayer(
+            runtime.turnInPlace,
+            animationDeltaSeconds,
+            input.turnClipDurationSeconds);
 
         AdvanceLayer(
             runtime.upperBody,
@@ -832,91 +494,401 @@ namespace engine::scene
             animationDeltaSeconds,
             input.actionClipDurationSeconds);
 
-        const bool firstPerson =
+        /*
+         * Completed top/action animation fades out.
+         */
+        if (
+            runtime.action.completed &&
+            runtime.actionState !=
+                CharacterActionState::None)
+        {
+            SetLayerClip(
+                runtime.action,
+                nullptr,
+                component.animationSet.tuning.
+                    actionBlendOutSeconds,
+                CharacterAnimationLoopMode::Once,
+                false);
+
+            runtime.actionState =
+                CharacterActionState::None;
+        }
+
+        const bool moving =
+            IsMoving(input);
+
+        const float desiredYaw =
+            NormalizeAngleDegrees(
+                input.desiredActorYawDegrees);
+
+        float actorYaw =
+            NormalizeAngleDegrees(
+                runtime.actorYawDegrees);
+
+        float bodyAdjustYaw =
+            std::isfinite(
+                runtime.upperBodyYawOffsetDegrees)
+                ? runtime.
+                    upperBodyYawOffsetDegrees
+                : 0.0F;
+
+        const float cameraToBodyDifference =
+            AngleDifferenceDegrees(
+                desiredYaw,
+                actorYaw);
+
+        const float turnEnterDegrees =
+            (std::max)(
+                std::fabs(
+                    component.animationSet.tuning.
+                        turnInPlaceEnterDegrees),
+                1.0F);
+
+        const float idleTurnSpeed =
+            (std::max)(
+                std::fabs(
+                    component.animationSet.tuning.
+                        turnInPlaceSpeedDegrees),
+                WarZIdleTurnSpeedDegrees);
+
+        /*
+         * Natural completion removes the temporary
+         * Turn In Place track, exactly like
+         * UpdateTurnInPlaceAnim observing that the
+         * old r3dAnimation track disappeared.
+         */
+        if (runtime.turnInPlace.completed)
+        {
+            SetLayerClip(
+                runtime.turnInPlace,
+                nullptr,
+                0.10F,
+                CharacterAnimationLoopMode::Once,
+                false);
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+        }
+
+        if (
             input.viewMode ==
-                CharacterViewMode::FirstPerson;
+                CharacterViewMode::FirstPerson)
+        {
+            /*
+             * CUberAnim::StartTurnInPlaceAnim:
+             * no Turn In Place for local FPS.
+             */
+            runtime.turnInPlace.Reset();
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+
+            actorYaw =
+                MoveAngleDegrees(
+                    actorYaw,
+                    desiredYaw,
+                    idleTurnSpeed *
+                        rotationDeltaSeconds);
+
+            bodyAdjustYaw = 0.0F;
+
+            runtime.turnTargetYawDegrees =
+                actorYaw;
+        }
+        else if (moving)
+        {
+            /*
+             * AI_Player::UpdateRotation:
+             * moving immediately fades out the
+             * temporary turn track.
+             */
+            if (
+                runtime.turnInPlace.active ||
+                runtime.turnInPlaceActive)
+            {
+                SetLayerClip(
+                    runtime.turnInPlace,
+                    nullptr,
+                    0.10F,
+                    CharacterAnimationLoopMode::Once,
+                    false);
+            }
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+
+            bodyAdjustYaw =
+                UpdateBodyAdjust(
+                    bodyAdjustYaw,
+                    0.0F,
+                    WarZBodyYawResponseMoving,
+                    rotationDeltaSeconds);
+
+            actorYaw =
+                MoveAngleDegrees(
+                    actorYaw,
+                    desiredYaw,
+                    (std::max)(
+                        input.
+                            movementRotationSpeedDegrees,
+                        WarZMoveTurnSpeedDegrees) *
+                    rotationDeltaSeconds);
+
+            runtime.turnTargetYawDegrees =
+                actorYaw;
+        }
+        else if (
+            input.grounded &&
+            input.locomotionState ==
+                CharacterLocomotionState::Idle)
+        {
+            /*
+             * UpdateUpperBodyAngLegs:
+             *
+             * 1. torso follows the camera;
+             * 2. after 45 degrees a temporary
+             *    lower turn track starts;
+             * 3. while that track exists, actor/legs
+             *    rotate with _ai_fTurnSpeedIdle.
+             */
+            bodyAdjustYaw =
+                UpdateBodyAdjust(
+                    bodyAdjustYaw,
+                    cameraToBodyDifference,
+                    WarZBodyYawResponseIdle,
+                    rotationDeltaSeconds);
+
+            if (
+                !runtime.turnInPlaceActive &&
+                std::fabs(bodyAdjustYaw) >
+                    turnEnterDegrees)
+            {
+                const std::int32_t direction =
+                    bodyAdjustYaw >= 0.0F
+                        ? 1
+                        : -1;
+
+                const std::wstring* const turnClip =
+                    ResolveTurnInPlaceClip(
+                        component.animationSet,
+                        input,
+                        direction);
+
+                if (
+                    turnClip != nullptr &&
+                    !turnClip->empty())
+                {
+                    runtime.turnInPlaceActive = true;
+                    runtime.turnDirection = direction;
+                    runtime.turnTargetYawDegrees =
+                        desiredYaw;
+
+                    bodyAdjustYaw =
+                        std::clamp(
+                            bodyAdjustYaw,
+                            -turnEnterDegrees,
+                            turnEnterDegrees);
+
+                    SetLayerClip(
+                        runtime.turnInPlace,
+                        turnClip,
+                        0.10F,
+                        CharacterAnimationLoopMode::Once,
+                        true);
+                }
+            }
+
+            if (runtime.turnInPlaceActive)
+            {
+                /*
+                 * Original code recalculated fY from
+                 * the live camera target every frame.
+                 */
+                runtime.turnTargetYawDegrees =
+                    desiredYaw;
+
+                actorYaw =
+                    MoveAngleDegrees(
+                        actorYaw,
+                        desiredYaw,
+                        idleTurnSpeed *
+                            rotationDeltaSeconds);
+
+                bodyAdjustYaw =
+                    AngleDifferenceDegrees(
+                        desiredYaw,
+                        actorYaw);
+            }
+            else
+            {
+                runtime.turnTargetYawDegrees =
+                    actorYaw;
+            }
+        }
+        else
+        {
+            /*
+             * Airborne/non-idle non-moving fallback.
+             */
+            if (
+                runtime.turnInPlace.active ||
+                runtime.turnInPlaceActive)
+            {
+                SetLayerClip(
+                    runtime.turnInPlace,
+                    nullptr,
+                    0.10F,
+                    CharacterAnimationLoopMode::Once,
+                    false);
+            }
+
+            runtime.turnInPlaceActive = false;
+            runtime.turnDirection = 0;
+
+            bodyAdjustYaw =
+                UpdateBodyAdjust(
+                    bodyAdjustYaw,
+                    cameraToBodyDifference,
+                    WarZBodyYawResponseIdle,
+                    rotationDeltaSeconds);
+
+            runtime.turnTargetYawDegrees =
+                actorYaw;
+        }
+
+        runtime.actorYawDegrees =
+            NormalizeAngleDegrees(actorYaw);
+
+        runtime.lowerBodyYawDegrees =
+            runtime.actorYawDegrees;
+
+        runtime.upperBodyYawOffsetDegrees =
+            std::clamp(
+                bodyAdjustYaw,
+                -std::fabs(
+                    component.animationSet.tuning.
+                        maximumUpperBodyYawDegrees),
+                std::fabs(
+                    component.animationSet.tuning.
+                        maximumUpperBodyYawDegrees));
+
+        const float requestedPitch =
+            std::isfinite(
+                input.lookPitchOffsetDegrees)
+                ? input.lookPitchOffsetDegrees
+                : 0.0F;
+
+        const float targetPitch =
+            input.viewMode ==
+                CharacterViewMode::ThirdPerson
+                ? std::clamp(
+                    requestedPitch,
+                    -MaximumBodyPitchDegrees,
+                    MaximumBodyPitchDegrees)
+                : 0.0F;
+
+        runtime.upperBodyPitchOffsetDegrees =
+            MoveTowardsValue(
+                runtime.upperBodyPitchOffsetDegrees,
+                targetPitch,
+                WarZBodyPitchSpeedDegrees *
+                    rotationDeltaSeconds);
+
+        /*
+         * Base locomotion remains independent from
+         * the temporary Turn In Place track.
+         */
+        const CharacterLocomotionState
+            resolvedLocomotion =
+                input.locomotionState;
 
         const bool synchronizedDirectionChange =
             !firstUpdate &&
             previousViewMode == input.viewMode &&
             previousStance == input.stance &&
-            previousLocomotionState ==
-                input.locomotionState &&
+            previousLocomotion ==
+                resolvedLocomotion &&
             IsSynchronizedDirectionTransition(
-                previousMovementDirection,
+                previousDirection,
                 input.movementDirection);
 
         /*
-         * SwitchToState в FPS вообще не запускает
-         * lower body animation.
+         * Lower body.
+         *
+         * In FPS the original SwitchToState did not
+         * start a lower-body animation.
          */
-        const std::wstring*
-            desiredLowerBodyClip =
-                firstPerson
-                    ? nullptr
-                    : ResolveLowerBodyClip(
-                        animationSet,
-                        resolvedInput);
-
-        SetLayerClip(
-            runtime.lowerBody,
-            desiredLowerBodyClip,
-
-            firstUpdate
-                ? 0.0F
-                : animationSet.tuning.
-                    locomotionBlendSeconds,
-
-            ResolveLowerBodyLoopMode(
-                resolvedLocomotionState),
-
-            false);
-
-        if (firstPerson)
+        if (
+            input.viewMode ==
+                CharacterViewMode::FirstPerson)
         {
             runtime.lowerBody.Reset();
         }
-        else if (
-            synchronizedDirectionChange &&
-            runtime.lowerBody.currentClip !=
-                previousLowerClip &&
-            !runtime.lowerBody.currentClip.empty())
+        else
         {
-            /*
-             * F/FL/FR и B/BL/BR сохраняют текущий
-             * animation frame при смене направления.
-             */
-            runtime.lowerBody.currentTimeSeconds =
-                previousLowerTimeSeconds;
+            const std::wstring* const lowerClip =
+                ResolveLowerBodyClip(
+                    component.animationSet,
+                    input);
+
+            SetLayerClip(
+                runtime.lowerBody,
+                lowerClip,
+
+                firstUpdate
+                    ? 0.0F
+                    : component.animationSet.tuning.
+                        locomotionBlendSeconds,
+
+                ResolveLowerBodyLoopMode(
+                    resolvedLocomotion),
+
+                false);
+
+            if (
+                synchronizedDirectionChange &&
+                runtime.lowerBody.currentClip !=
+                    previousLowerClip &&
+                !runtime.lowerBody.
+                    currentClip.empty())
+            {
+                /*
+                 * Equivalent to copying fCurFrame
+                 * between synchronized directional
+                 * animations.
+                 */
+                runtime.lowerBody.currentTimeSeconds =
+                    previousLowerTime;
+            }
         }
 
-        const bool suppressThirdPersonUpperForJump =
-            input.viewMode ==
-                CharacterViewMode::ThirdPerson &&
-            (
-                resolvedLocomotionState ==
-                    CharacterLocomotionState::JumpStart ||
-                resolvedLocomotionState ==
-                    CharacterLocomotionState::JumpLoop ||
-                resolvedLocomotionState ==
-                    CharacterLocomotionState::JumpLand
-            );
+        /*
+         * Upper body.
+         *
+         * TPS jump removes upper animation, matching
+         * the old jumpState/FallingDown branches.
+         */
+        const std::wstring* upperClip =
+            nullptr;
 
-        const std::wstring*
-            desiredUpperBodyClip =
-                suppressThirdPersonUpperForJump
-                    ? nullptr
-                    : ResolveUpperBodyClip(
-                        animationSet,
-                        resolvedInput);
+        if (!(
+                input.viewMode ==
+                    CharacterViewMode::ThirdPerson &&
+                IsJumpState(
+                    resolvedLocomotion)))
+        {
+            upperClip =
+                ResolveUpperBodyClip(
+                    component.animationSet,
+                    input);
+        }
 
         SetLayerClip(
             runtime.upperBody,
-            desiredUpperBodyClip,
+            upperClip,
 
             firstUpdate
                 ? 0.0F
-                : animationSet.tuning.
+                : component.animationSet.tuning.
                     upperBodyBlendSeconds,
 
             CharacterAnimationLoopMode::Loop,
@@ -929,20 +901,11 @@ namespace engine::scene
             !runtime.upperBody.currentClip.empty())
         {
             runtime.upperBody.currentTimeSeconds =
-                previousUpperTimeSeconds;
+                previousUpperTime;
         }
 
         /*
-         * Точная legacy frame policy:
-         *
-         * PLAYER_IDLE:
-         * lower и upper используют один frame.
-         *
-         * Crouch Stand:
-         * upper frame 0 + paused.
-         *
-         * IDLEAIM / WALK_AIM:
-         * upper frame 1 + paused.
+         * Exact SwitchToState frame policies.
          */
         if (
             input.viewMode ==
@@ -950,14 +913,17 @@ namespace engine::scene
         {
             const bool stationary =
                 !moving &&
-                resolvedLocomotionState ==
+                resolvedLocomotion ==
                     CharacterLocomotionState::Idle;
 
             if (
                 stationary &&
-                IsCrouched(
-                    resolvedInput))
+                IsCrouched(input))
             {
+                /*
+                 * CrouchBlend / CrouchAim:
+                 * frame 0 + paused.
+                 */
                 runtime.upperBody.currentTimeSeconds =
                     0.0;
 
@@ -965,26 +931,33 @@ namespace engine::scene
                     0.0;
             }
             else if (
-                IsAiming(
-                    resolvedInput) &&
+                IsAiming(input) &&
                 (
                     stationary ||
-                    resolvedLocomotionState ==
+                    resolvedLocomotion ==
                         CharacterLocomotionState::Walk
                 ))
             {
+                /*
+                 * StandUpper / WalkAim:
+                 * frame 1 + paused.
+                 */
                 runtime.upperBody.currentTimeSeconds =
-                    LegacyUpperPoseFrameSeconds;
+                    LegacyPausedFrameOneSeconds;
 
                 runtime.upperBody.previousTimeSeconds =
-                    LegacyUpperPoseFrameSeconds;
+                    LegacyPausedFrameOneSeconds;
             }
-            else if (stationary)
+            else if (
+                stationary &&
+                !IsCrouched(input) &&
+                runtime.lowerBody.active)
             {
                 /*
-                 * Не сравниваем clip path:
-                 * WarZ синхронизирует fCurFrame даже
-                 * между разными lower/upper IDs.
+                 * PLAYER_IDLE:
+                 * lower and upper share one
+                 * fIdleAnimFrame even when the clip
+                 * names are different.
                  */
                 runtime.upperBody.currentTimeSeconds =
                     runtime.lowerBody.
@@ -997,84 +970,79 @@ namespace engine::scene
         }
 
         /*
-         * Запуск нового one-shot действия.
-         *
-         * actionRequest должен подаваться только
-         * в кадр нажатия кнопки.
+         * Top/action track.
          */
         if (
             input.actionRequest !=
                 CharacterActionState::None)
         {
-            const std::wstring*
-                desiredActionClip =
-                    ResolveActionClip(
-                        animationSet,
-                        resolvedInput);
+            const std::wstring* const actionClip =
+                ResolveActionClip(
+                    component.animationSet,
+                    input);
 
             if (
-                desiredActionClip != nullptr &&
-                !desiredActionClip->empty())
+                actionClip != nullptr &&
+                !actionClip->empty())
             {
-                runtime.actionState =
-                    input.actionRequest;
-
                 SetLayerClip(
                     runtime.action,
-                    desiredActionClip,
-
-                    firstUpdate
-                        ? 0.0F
-                        : animationSet.tuning.
-                            actionBlendInSeconds,
-
+                    actionClip,
+                    component.animationSet.tuning.
+                        actionBlendInSeconds,
                     CharacterAnimationLoopMode::Once,
-
                     input.restartAction);
+
+                runtime.actionState =
+                    input.actionRequest;
             }
         }
 
-        /*
-         * One-shot завершился.
-         *
-         * Переводим action-слой в плавный fade-out.
-         */
-        if (
-            runtime.action.completed &&
-            runtime.actionState !=
-                CharacterActionState::None)
-        {
-            runtime.actionState =
-                CharacterActionState::None;
+        runtime.viewMode =
+            input.viewMode;
 
-            SetLayerClip(
-                runtime.action,
-                nullptr,
+        runtime.stance =
+            input.stance;
 
-                animationSet.tuning.
-                    actionBlendOutSeconds,
+        runtime.movementDirection =
+            input.movementDirection;
 
-                CharacterAnimationLoopMode::Once,
+        runtime.locomotionState =
+            resolvedLocomotion;
 
-                false);
-        }
+        runtime.upperBodyState =
+            input.upperBodyState;
 
-        runtime.firstUpdate = false;
+        runtime.movementSpeed =
+            std::isfinite(input.movementSpeed)
+                ? (std::max)(
+                    input.movementSpeed,
+                    0.0F)
+                : 0.0F;
+
+        runtime.grounded =
+            input.grounded;
+
+        runtime.aiming =
+            IsAiming(input);
+
+        runtime.firstUpdate =
+            false;
     }
 
     void CharacterAnimationStateMachine::StopAction(
         CharacterAnimationComponent& component,
         const float blendOutSeconds) const noexcept
     {
-        component.runtime.actionState =
-            CharacterActionState::None;
-
         SetLayerClip(
             component.runtime.action,
             nullptr,
             blendOutSeconds,
             CharacterAnimationLoopMode::Once,
             false);
+
+        component.runtime.actionState =
+            CharacterActionState::None;
     }
 
     void CharacterAnimationStateMachine::AdvanceLayer(
@@ -1105,21 +1073,10 @@ namespace engine::scene
                 safeDeltaSeconds;
         }
 
-        /*
-         * Поддерживает три варианта:
-         *
-         * previous -> current : cross-fade
-         * empty    -> current : fade-in
-         * previous -> empty   : fade-out
-         */
         const bool transitionActive =
             layer.transitionDurationSeconds > 0.0F &&
             layer.transitionElapsedSeconds <
-                layer.transitionDurationSeconds &&
-            (
-                !layer.currentClip.empty() ||
-                !layer.previousClip.empty()
-            );
+                layer.transitionDurationSeconds;
 
         if (transitionActive)
         {
@@ -1144,19 +1101,6 @@ namespace engine::scene
         }
         else
         {
-            if (
-                layer.transitionDurationSeconds >
-                    0.0F)
-            {
-                layer.transitionElapsedSeconds =
-                    layer.transitionDurationSeconds;
-            }
-            else
-            {
-                layer.transitionElapsedSeconds =
-                    0.0F;
-            }
-
             layer.previousClip.clear();
             layer.previousTimeSeconds = 0.0;
 
@@ -1185,17 +1129,14 @@ namespace engine::scene
             layer.previousClip.empty())
         {
             layer.active = false;
+            layer.completed = false;
 
             layer.currentTimeSeconds = 0.0;
             layer.previousTimeSeconds = 0.0;
 
-            layer.transitionDurationSeconds =
-                0.0F;
+            layer.transitionDurationSeconds = 0.0F;
+            layer.transitionElapsedSeconds = 0.0F;
 
-            layer.transitionElapsedSeconds =
-                0.0F;
-
-            layer.completed = false;
             layer.weight = 1.0F;
         }
     }
@@ -1215,77 +1156,79 @@ namespace engine::scene
                 : emptyClip;
 
         if (
-            !restart &&
             layer.currentClip == desiredClip &&
             layer.loopMode == loopMode)
         {
+            if (restart)
+            {
+                /*
+                 * Repeated shoot/melee restarts the
+                 * same top track without rebuilding
+                 * the whole animation stack.
+                 */
+                layer.currentTimeSeconds = 0.0;
+                layer.completed = false;
+                layer.active =
+                    !layer.currentClip.empty();
+
+                layer.previousClip.clear();
+                layer.previousTimeSeconds = 0.0;
+
+                layer.transitionDurationSeconds =
+                    0.0F;
+
+                layer.transitionElapsedSeconds =
+                    0.0F;
+            }
+
             return;
         }
 
-        std::wstring transitionSourceClip;
-        double transitionSourceTime = 0.0;
+        std::wstring previousClip;
+        double previousTimeSeconds = 0.0;
 
         CharacterAnimationLoopMode
-            transitionSourceLoopMode =
+            previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
 
         if (!layer.currentClip.empty())
         {
-            transitionSourceClip =
-                layer.currentClip;
+            previousClip =
+                std::move(layer.currentClip);
 
-            transitionSourceTime =
+            previousTimeSeconds =
                 layer.currentTimeSeconds;
 
-            transitionSourceLoopMode =
+            previousLoopMode =
                 layer.loopMode;
         }
         else if (!layer.previousClip.empty())
         {
-            transitionSourceClip =
-                layer.previousClip;
+            previousClip =
+                std::move(layer.previousClip);
 
-            transitionSourceTime =
+            previousTimeSeconds =
                 layer.previousTimeSeconds;
 
-            transitionSourceLoopMode =
+            previousLoopMode =
                 layer.previousLoopMode;
         }
 
-        /*
-         * WarZ сохранял fCurFrame при смене
-         * lower/upper locomotion-анимации.
-         *
-         * У нас все старые player clips работают
-         * с одинаковой частотой кадров, поэтому
-         * сохраняем elapsed time.
-         */
-        const bool preserveLoopPosition =
-            !restart &&
-            !transitionSourceClip.empty() &&
-            !desiredClip.empty() &&
-            transitionSourceLoopMode ==
-                CharacterAnimationLoopMode::Loop &&
-            loopMode ==
-                CharacterAnimationLoopMode::Loop;
-
         layer.previousClip =
-            std::move(
-                transitionSourceClip);
+            std::move(previousClip);
 
         layer.previousTimeSeconds =
-            transitionSourceTime;
+            previousTimeSeconds;
 
         layer.previousLoopMode =
-            transitionSourceLoopMode;
+            previousLoopMode;
 
         layer.currentClip =
             desiredClip;
 
-        layer.currentTimeSeconds =
-            preserveLoopPosition
-                ? transitionSourceTime
-                : 0.0;
+        layer.currentTimeSeconds = 0.0;
+        layer.loopMode = loopMode;
+        layer.completed = false;
 
         layer.transitionDurationSeconds =
             (std::max)(
@@ -1295,47 +1238,22 @@ namespace engine::scene
         layer.transitionElapsedSeconds =
             0.0F;
 
-        layer.loopMode =
-            loopMode;
-
-        layer.completed =
-            false;
-
         if (
             layer.transitionDurationSeconds <=
                 0.0F)
         {
             layer.previousClip.clear();
-
-            layer.previousTimeSeconds =
-                0.0;
+            layer.previousTimeSeconds = 0.0;
 
             layer.previousLoopMode =
                 CharacterAnimationLoopMode::Loop;
-
-            layer.transitionDurationSeconds =
-                0.0F;
-
-            layer.transitionElapsedSeconds =
-                0.0F;
         }
 
         layer.active =
             !layer.currentClip.empty() ||
             !layer.previousClip.empty();
 
-        layer.weight =
-            std::clamp(
-                layer.weight,
-                0.0F,
-                1.0F);
-
-        if (
-            layer.active &&
-            layer.weight <= 0.0F)
-        {
-            layer.weight = 1.0F;
-        }
+        layer.weight = 1.0F;
     }
 
     const std::wstring*
@@ -1347,215 +1265,78 @@ namespace engine::scene
                 const CharacterAnimationStateInput&
                     input) noexcept
     {
-        const CharacterLowerBodyAnimationSet&
-            lowerBody =
-                animationSet.lowerBody;
+        const CharacterLowerBodyAnimationSet& lower =
+            animationSet.lowerBody;
 
-        const bool crouched =
-            IsCrouched(input);
+        if (IsCrouched(input))
+        {
+            if (!IsMoving(input))
+            {
+                return FirstNonEmpty(
+                {
+                    &lower.crouchedIdle,
+                    &lower.standingIdle
+                });
+            }
+
+            return ResolveDirectional(
+                lower.crouchedMove,
+                input.movementDirection);
+        }
 
         switch (input.locomotionState)
         {
             case CharacterLocomotionState::Walk:
-            {
-                if (crouched)
-                {
-                    const std::wstring*
-                        crouchedMove =
-                            ResolveDirectionalClip(
-                                lowerBody.crouchedMove,
-                                input.
-                                    movementDirection);
-
-                    return FirstNonEmpty(
-                    {
-                        crouchedMove,
-                        &lowerBody.crouchedIdle,
-                        &lowerBody.standingIdle
-                    });
-                }
-
-                const std::wstring* walk =
-                    ResolveDirectionalClip(
-                        lowerBody.walk,
-                        input.movementDirection);
-
-                return FirstNonEmpty(
-                {
-                    walk,
-                    &lowerBody.standingIdle
-                });
-            }
+                return ResolveDirectional(
+                    lower.walk,
+                    input.movementDirection);
 
             case CharacterLocomotionState::Run:
-            {
-                if (crouched)
-                {
-                    const std::wstring*
-                        crouchedMove =
-                            ResolveDirectionalClip(
-                                lowerBody.crouchedMove,
-                                input.
-                                    movementDirection);
+                return ResolveDirectional(
+                    lower.run,
+                    input.movementDirection);
 
-                    return FirstNonEmpty(
-                    {
-                        crouchedMove,
-                        &lowerBody.crouchedIdle,
-                        &lowerBody.standingIdle
-                    });
-                }
+            case CharacterLocomotionState::Sprint:
+                return ResolveSprint(
+                    lower.sprint,
+                    input.movementDirection);
 
-                const std::wstring* run =
-                    ResolveDirectionalClip(
-                        lowerBody.run,
-                        input.movementDirection);
-
-                const std::wstring* walk =
-                    ResolveDirectionalClip(
-                        lowerBody.walk,
-                        input.movementDirection);
-
+            case CharacterLocomotionState::JumpStart:
                 return FirstNonEmpty(
                 {
-                    run,
-                    walk,
-                    &lowerBody.standingIdle
-                });
-            }
-
-        case CharacterLocomotionState::Sprint:
-                {
-                    if (crouched)
-                    {
-                        const std::wstring*
-                            crouchedMove =
-                                ResolveDirectionalClip(
-                                    lowerBody.crouchedMove,
-                                    input.movementDirection);
-
-                        return FirstNonEmpty(
-                        {
-                            crouchedMove,
-                            &lowerBody.crouchedIdle,
-                            &lowerBody.standingIdle
-                        });
-                    }
-
-                    const std::wstring* sprint =
-                        ResolveSprintClip(
-                            lowerBody.sprint,
-                            input.movementDirection);
-
-                    const std::wstring* run =
-                        ResolveDirectionalClip(
-                            lowerBody.run,
-                            input.movementDirection);
-
-                    const std::wstring* walk =
-                        ResolveDirectionalClip(
-                            lowerBody.walk,
-                            input.movementDirection);
-
-                    return FirstNonEmpty(
-                    {
-                        sprint,
-                        run,
-                        walk,
-                        &lowerBody.standingIdle
-                    });
-                }
-
-            case CharacterLocomotionState::
-                JumpStart:
-                return FirstNonEmpty(
-                {
-                    &lowerBody.jumpStart,
-                    &lowerBody.jumpLoop,
-                    &lowerBody.standingIdle
+                    &lower.jumpStart,
+                    &lower.jumpLoop,
+                    &lower.standingIdle
                 });
 
-            case CharacterLocomotionState::
-                JumpLoop:
+            case CharacterLocomotionState::JumpLoop:
                 return FirstNonEmpty(
                 {
-                    &lowerBody.jumpLoop,
-                    &lowerBody.jumpStart,
-                    &lowerBody.standingIdle
+                    &lower.jumpLoop,
+                    &lower.jumpStart,
+                    &lower.standingIdle
                 });
 
-            case CharacterLocomotionState::
-                JumpLand:
+            case CharacterLocomotionState::JumpLand:
                 return FirstNonEmpty(
                 {
-                    &lowerBody.jumpLand,
-                    &lowerBody.standingIdle
+                    &lower.jumpLand,
+                    &lower.standingIdle
                 });
 
             case CharacterLocomotionState::
                 TurnInPlaceLeft:
-            {
-                if (crouched)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &lowerBody.
-                            crouchedTurnInPlaceLeft,
-
-                        &lowerBody.turnInPlaceLeft,
-                        &lowerBody.crouchedIdle,
-                        &lowerBody.standingIdle
-                    });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &lowerBody.turnInPlaceLeft,
-                    &lowerBody.standingIdle
-                });
-            }
 
             case CharacterLocomotionState::
                 TurnInPlaceRight:
-            {
-                if (crouched)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &lowerBody.
-                            crouchedTurnInPlaceRight,
-
-                        &lowerBody.turnInPlaceRight,
-                        &lowerBody.crouchedIdle,
-                        &lowerBody.standingIdle
-                    });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &lowerBody.turnInPlaceRight,
-                    &lowerBody.standingIdle
-                });
-            }
 
             case CharacterLocomotionState::Idle:
 
             default:
-            {
-                if (crouched)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &lowerBody.crouchedIdle,
-                        &lowerBody.standingIdle
-                    });
-                }
-
                 return FirstNonEmpty(
                 {
-                    &lowerBody.standingIdle
+                    &lower.standingIdle
                 });
-            }
         }
     }
 
@@ -1576,59 +1357,51 @@ namespace engine::scene
             return nullptr;
         }
 
-        const CharacterLowerBodyAnimationSet&
-            lowerBody =
-                animationSet.lowerBody;
+        const CharacterLowerBodyAnimationSet& lower =
+            animationSet.lowerBody;
 
-        const bool crouched =
-            IsCrouched(input);
-
-        if (crouched)
+        if (IsCrouched(input))
         {
             /*
-             * Старый WarZ использовал один Crouch_Str
-             * для обоих направлений.
+             * Original data uses one Crouch_Str
+             * clip for both directions.
              */
-            return turnDirection < 0
-                ? FirstNonEmpty(
-                {
-                    &lowerBody.
-                        crouchedTurnInPlaceLeft,
+            return
+                turnDirection < 0
+                    ? FirstNonEmpty(
+                    {
+                        &lower.
+                            crouchedTurnInPlaceLeft,
 
-                    &lowerBody.
-                        crouchedTurnInPlaceRight,
+                        &lower.
+                            crouchedTurnInPlaceRight
+                    })
+                    : FirstNonEmpty(
+                    {
+                        &lower.
+                            crouchedTurnInPlaceRight,
 
-                    &lowerBody.crouchedIdle
-                })
-                : FirstNonEmpty(
-                {
-                    &lowerBody.
-                        crouchedTurnInPlaceRight,
-
-                    &lowerBody.
-                        crouchedTurnInPlaceLeft,
-
-                    &lowerBody.crouchedIdle
-                });
+                        &lower.
+                            crouchedTurnInPlaceLeft
+                    });
         }
 
         /*
-         * Старый WarZ использовал один
-         * walk_stand_BL для обоих направлений.
+         * Original data uses one walk_stand_BL
+         * clip for both directions.
          */
-        return turnDirection < 0
-            ? FirstNonEmpty(
-            {
-                &lowerBody.turnInPlaceLeft,
-                &lowerBody.turnInPlaceRight,
-                &lowerBody.standingIdle
-            })
-            : FirstNonEmpty(
-            {
-                &lowerBody.turnInPlaceRight,
-                &lowerBody.turnInPlaceLeft,
-                &lowerBody.standingIdle
-            });
+        return
+            turnDirection < 0
+                ? FirstNonEmpty(
+                {
+                    &lower.turnInPlaceLeft,
+                    &lower.turnInPlaceRight
+                })
+                : FirstNonEmpty(
+                {
+                    &lower.turnInPlaceRight,
+                    &lower.turnInPlaceLeft
+                });
     }
 
     const std::wstring*
@@ -1640,116 +1413,89 @@ namespace engine::scene
                 const CharacterAnimationStateInput&
                     input) noexcept
     {
-        const CharacterViewAnimationSet&
-            viewSet =
-                ResolveViewSet(
-                    animationSet,
-                    input.viewMode);
-
-        const CharacterUpperBodyAnimationSet&
-            upperBody =
-                viewSet.upperBody;
+        const CharacterUpperBodyAnimationSet& upper =
+            ResolveView(
+                animationSet,
+                input.viewMode).
+                    upperBody;
 
         const bool crouched =
             IsCrouched(input);
 
         const bool moving =
-            IsCharacterMoving(input);
+            IsMoving(input);
 
-        /*
-         * Aim upper-body нужен только BodyFPS.
-         *
-         * В TPS RMB продолжает управлять:
-         * - Walk Aim locomotion;
-         * - gameplay aiming;
-         *
-         * Но TPS upper-body остаётся Relaxed.
-         */
         const bool aiming =
-            input.viewMode ==
-                CharacterViewMode::FirstPerson &&
             IsAiming(input);
 
         if (crouched)
         {
             if (aiming)
             {
-                if (moving)
-                {
-                    return FirstNonEmpty(
+                return
+                    moving
+                        ? FirstNonEmpty(
+                        {
+                            &upper.crouchedAimMove,
+                            &upper.crouchedAimIdle,
+                            &upper.crouchedRelaxedMove,
+                            &upper.crouchedRelaxedIdle
+                        })
+                        : FirstNonEmpty(
+                        {
+                            &upper.crouchedAimIdle,
+                            &upper.crouchedAimMove,
+                            &upper.crouchedRelaxedIdle,
+                            &upper.crouchedRelaxedMove
+                        });
+            }
+
+            return
+                moving
+                    ? FirstNonEmpty(
                     {
-                        &upperBody.crouchedAimMove,
-                        &upperBody.crouchedAimIdle,
-
-                        &upperBody.
-                            crouchedRelaxedMove,
-
-                        &upperBody.
-                            crouchedRelaxedIdle
+                        &upper.crouchedRelaxedMove,
+                        &upper.crouchedRelaxedIdle
+                    })
+                    : FirstNonEmpty(
+                    {
+                        &upper.crouchedRelaxedIdle,
+                        &upper.crouchedRelaxedMove
                     });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &upperBody.crouchedAimIdle,
-
-                    &upperBody.
-                        crouchedRelaxedIdle
-                });
-            }
-
-            if (moving)
-            {
-                return FirstNonEmpty(
-                {
-                    &upperBody.crouchedRelaxedMove,
-                    &upperBody.crouchedRelaxedIdle
-                });
-            }
-
-            return FirstNonEmpty(
-            {
-                &upperBody.crouchedRelaxedIdle
-            });
         }
 
         if (aiming)
         {
-            if (moving)
-            {
-                return FirstNonEmpty(
+            return
+                moving
+                    ? FirstNonEmpty(
+                    {
+                        &upper.standingAimMove,
+                        &upper.standingAimIdle,
+                        &upper.standingRelaxedMove,
+                        &upper.standingRelaxedIdle
+                    })
+                    : FirstNonEmpty(
+                    {
+                        &upper.standingAimIdle,
+                        &upper.standingAimMove,
+                        &upper.standingRelaxedIdle,
+                        &upper.standingRelaxedMove
+                    });
+        }
+
+        return
+            moving
+                ? FirstNonEmpty(
                 {
-                    &upperBody.standingAimMove,
-                    &upperBody.standingAimIdle,
-
-                    &upperBody.
-                        standingRelaxedMove,
-
-                    &upperBody.
-                        standingRelaxedIdle
+                    &upper.standingRelaxedMove,
+                    &upper.standingRelaxedIdle
+                })
+                : FirstNonEmpty(
+                {
+                    &upper.standingRelaxedIdle,
+                    &upper.standingRelaxedMove
                 });
-            }
-
-            return FirstNonEmpty(
-            {
-                &upperBody.standingAimIdle,
-                &upperBody.standingRelaxedIdle
-            });
-        }
-
-        if (moving)
-        {
-            return FirstNonEmpty(
-            {
-                &upperBody.standingRelaxedMove,
-                &upperBody.standingRelaxedIdle
-            });
-        }
-
-        return FirstNonEmpty(
-        {
-            &upperBody.standingRelaxedIdle
-        });
     }
 
     const std::wstring*
@@ -1761,21 +1507,17 @@ namespace engine::scene
                 const CharacterAnimationStateInput&
                     input) noexcept
     {
-        const CharacterViewAnimationSet&
-            viewSet =
-                ResolveViewSet(
-                    animationSet,
-                    input.viewMode);
-
-        const CharacterActionAnimationSet&
-            actions =
-                viewSet.actions;
+        const CharacterActionAnimationSet& actions =
+            ResolveView(
+                animationSet,
+                input.viewMode).
+                    actions;
 
         const bool crouched =
             IsCrouched(input);
 
         const bool moving =
-            IsCharacterMoving(input);
+            IsMoving(input);
 
         switch (input.actionRequest)
         {
@@ -1786,23 +1528,23 @@ namespace engine::scene
                     return FirstNonEmpty(
                     {
                         &actions.primaryCrouched,
-                        &actions.primaryStanding
+                        &actions.primaryStanding,
+                        &actions.primaryMoving
                     });
                 }
 
-                if (moving)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &actions.primaryMoving,
-                        &actions.primaryStanding
-                    });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &actions.primaryStanding
-                });
+                return
+                    moving
+                        ? FirstNonEmpty(
+                        {
+                            &actions.primaryMoving,
+                            &actions.primaryStanding
+                        })
+                        : FirstNonEmpty(
+                        {
+                            &actions.primaryStanding,
+                            &actions.primaryMoving
+                        });
             }
 
             case CharacterActionState::Secondary:
@@ -1812,23 +1554,23 @@ namespace engine::scene
                     return FirstNonEmpty(
                     {
                         &actions.secondaryCrouched,
-                        &actions.secondaryStanding
+                        &actions.secondaryStanding,
+                        &actions.secondaryMoving
                     });
                 }
 
-                if (moving)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &actions.secondaryMoving,
-                        &actions.secondaryStanding
-                    });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &actions.secondaryStanding
-                });
+                return
+                    moving
+                        ? FirstNonEmpty(
+                        {
+                            &actions.secondaryMoving,
+                            &actions.secondaryStanding
+                        })
+                        : FirstNonEmpty(
+                        {
+                            &actions.secondaryStanding,
+                            &actions.secondaryMoving
+                        });
             }
 
             case CharacterActionState::Reload:
@@ -1838,23 +1580,23 @@ namespace engine::scene
                     return FirstNonEmpty(
                     {
                         &actions.reloadCrouched,
-                        &actions.reloadStanding
+                        &actions.reloadStanding,
+                        &actions.reloadMoving
                     });
                 }
 
-                if (moving)
-                {
-                    return FirstNonEmpty(
-                    {
-                        &actions.reloadMoving,
-                        &actions.reloadStanding
-                    });
-                }
-
-                return FirstNonEmpty(
-                {
-                    &actions.reloadStanding
-                });
+                return
+                    moving
+                        ? FirstNonEmpty(
+                        {
+                            &actions.reloadMoving,
+                            &actions.reloadStanding
+                        })
+                        : FirstNonEmpty(
+                        {
+                            &actions.reloadStanding,
+                            &actions.reloadMoving
+                        });
             }
 
             case CharacterActionState::None:
@@ -1868,29 +1610,14 @@ namespace engine::scene
         CharacterAnimationStateMachine::
             ResolveLowerBodyLoopMode(
                 const CharacterLocomotionState
-                    locomotionState) noexcept
+                    state) noexcept
     {
-        switch (locomotionState)
+        switch (state)
         {
-            case CharacterLocomotionState::
-                JumpStart:
-
-            case CharacterLocomotionState::
-                JumpLand:
-
-            case CharacterLocomotionState::
-                TurnInPlaceLeft:
-
-            case CharacterLocomotionState::
-                TurnInPlaceRight:
+            case CharacterLocomotionState::JumpStart:
+            case CharacterLocomotionState::JumpLand:
                 return
                     CharacterAnimationLoopMode::Once;
-
-            case CharacterLocomotionState::Idle:
-            case CharacterLocomotionState::Walk:
-            case CharacterLocomotionState::Run:
-            case CharacterLocomotionState::Sprint:
-            case CharacterLocomotionState::JumpLoop:
 
             default:
                 return

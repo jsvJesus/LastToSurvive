@@ -5,11 +5,10 @@
 namespace engine::scene
 {
     /*
-     * Полный набор данных, поступающих в
-     * animation state machine за один кадр.
+     * Input for one CUberAnim-style update.
      *
-     * Здесь нет Win32 input, файловой системы,
-     * renderer или загрузки ресурсов.
+     * Animation paths remain in CharacterAnimationSet,
+     * loaded from the external JSON profile.
      */
     struct CharacterAnimationStateInput final
     {
@@ -21,82 +20,60 @@ namespace engine::scene
         CharacterStance stance =
             CharacterStance::Standing;
 
-        CharacterMovementDirection
-            movementDirection =
-                CharacterMovementDirection::None;
+        CharacterMovementDirection movementDirection =
+            CharacterMovementDirection::None;
 
-        CharacterLocomotionState
-            locomotionState =
-                CharacterLocomotionState::Idle;
+        CharacterLocomotionState locomotionState =
+            CharacterLocomotionState::Idle;
 
-        CharacterUpperBodyState
-            upperBodyState =
-                CharacterUpperBodyState::Relaxed;
+        CharacterUpperBodyState upperBodyState =
+            CharacterUpperBodyState::Relaxed;
 
-        /*
-         * None:
-         * не запускать новое действие.
-         *
-         * Primary / Secondary / Reload:
-         * запустить соответствующий one-shot.
-         */
         CharacterActionState actionRequest =
             CharacterActionState::None;
 
         float movementSpeed = 0.0F;
 
         /*
-         * Camera/gameplay yaw is the direction requested
-         * for the character. The state machine keeps the
-         * actor/legs yaw separate and owns Turn In Place.
+         * Camera/gameplay yaw requested by the player.
+         * actorYawDegrees remains the actual legs yaw.
          */
         float desiredActorYawDegrees = 0.0F;
 
         /*
-         * Camera pitch is consumed by the procedural
-         * Spine1/Neck evaluator as rotation only.
+         * Camera pitch consumed by procedural
+         * Bip01_Spine1 / Bip01_Neck adjustment.
          */
         float lookPitchOffsetDegrees = 0.0F;
 
         /*
-         * Rotation speed while the character is moving.
-         * Idle Turn In Place uses tuning.turnInPlaceSpeedDegrees.
+         * Moving rotation speed.
+         * WarZ default is 720 degrees per second.
          */
-        float movementRotationSpeedDegrees = 360.0F;
+        float movementRotationSpeedDegrees = 720.0F;
 
         bool grounded = true;
         bool aiming = false;
 
-        /*
-         * Повторно запускает action-клип,
-         * даже если он уже является текущим.
-         *
-         * Используется при каждом новом клике ЛКМ.
-         */
         bool restartAction = false;
 
-        /*
-         * Длительность one-shot action.
-         *
-         * Значение 0 означает, что длительность
-         * пока неизвестна. Позже её будет передавать
-         * AnimationAsset runtime.
-         */
         double actionClipDurationSeconds = 0.0;
-
-        /*
-         * Для JumpStart и JumpLand.
-         */
         double lowerClipDurationSeconds = 0.0;
         double turnClipDurationSeconds = 0.0;
     };
 
     /*
-     * Выбирает пути из CharacterAnimationSet
-     * и обновляет CharacterAnimationRuntime.
+     * WarZ-style animation stack controller.
      *
-     * State machine ничего не знает о содержимом
-     * файлов .anim. Сэмплирование выполняет evaluator.
+     * Runtime order:
+     *
+     * 1. lowerBody
+     * 2. turnInPlace
+     * 3. upperBody
+     * 4. action
+     *
+     * The evaluator already consumes the layers
+     * in exactly this order.
      */
     class CharacterAnimationStateMachine final
     {
@@ -116,15 +93,13 @@ namespace engine::scene
                 delete;
 
         void Reset(
-            CharacterAnimationComponent&
-                component) const noexcept;
+            CharacterAnimationComponent& component)
+            const noexcept;
 
         void Update(
-            const CharacterAnimationStateInput&
-                input,
-
-            CharacterAnimationComponent&
-                component) const noexcept;
+            const CharacterAnimationStateInput& input,
+            CharacterAnimationComponent& component)
+            const noexcept;
 
         void StopAction(
             CharacterAnimationComponent& component,
@@ -146,45 +121,34 @@ namespace engine::scene
         [[nodiscard]]
         static const std::wstring*
             ResolveLowerBodyClip(
-                const CharacterAnimationSet&
-                    animationSet,
-
-                const CharacterAnimationStateInput&
-                    input) noexcept;
+                const CharacterAnimationSet& animationSet,
+                const CharacterAnimationStateInput& input)
+                noexcept;
 
         [[nodiscard]]
         static const std::wstring*
             ResolveTurnInPlaceClip(
-                const CharacterAnimationSet&
-                    animationSet,
-
-                const CharacterAnimationStateInput&
-                    input,
-
+                const CharacterAnimationSet& animationSet,
+                const CharacterAnimationStateInput& input,
                 std::int32_t turnDirection) noexcept;
 
         [[nodiscard]]
         static const std::wstring*
             ResolveUpperBodyClip(
-                const CharacterAnimationSet&
-                    animationSet,
-
-                const CharacterAnimationStateInput&
-                    input) noexcept;
+                const CharacterAnimationSet& animationSet,
+                const CharacterAnimationStateInput& input)
+                noexcept;
 
         [[nodiscard]]
         static const std::wstring*
             ResolveActionClip(
-                const CharacterAnimationSet&
-                    animationSet,
-
-                const CharacterAnimationStateInput&
-                    input) noexcept;
+                const CharacterAnimationSet& animationSet,
+                const CharacterAnimationStateInput& input)
+                noexcept;
 
         [[nodiscard]]
         static CharacterAnimationLoopMode
             ResolveLowerBodyLoopMode(
-                CharacterLocomotionState
-                    locomotionState) noexcept;
+                CharacterLocomotionState state) noexcept;
     };
 }
