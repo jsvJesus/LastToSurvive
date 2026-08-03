@@ -66,16 +66,6 @@ namespace engine::scene
 
         EnsureDefaultComponents(duplicate);
 
-        /*
-         * Конфигурация AnimationSet копируется,
-         * transient runtime начинается заново.
-         */
-        if (duplicate.characterAnimation.has_value())
-        {
-            duplicate.characterAnimation->
-                runtime.Reset();
-        }
-
         entities_.push_back(
             std::move(duplicate));
 
@@ -208,16 +198,6 @@ namespace engine::scene
             }
 
             EnsureDefaultComponents(entity);
-
-            /*
-             * Runtime animation state не является
-             * частью сохранённого состояния уровня.
-             */
-            if (entity.characterAnimation.has_value())
-            {
-                entity.characterAnimation->
-                    runtime.Reset();
-            }
         }
 
         nextEntityId_ =
@@ -309,23 +289,6 @@ namespace engine::scene
                 if (!entity.terrain.has_value())
                 {
                     entity.terrain.emplace();
-                }
-                break;
-
-            case SceneEntityKind::Character:
-                if (!entity.skeletalMesh.has_value())
-                {
-                    entity.skeletalMesh.emplace();
-                }
-
-                if (!entity.characterAnimation.has_value())
-                {
-                    entity.characterAnimation.emplace();
-                }
-
-                if (!entity.characterController.has_value())
-                {
-                    entity.characterController.emplace();
                 }
                 break;
 
