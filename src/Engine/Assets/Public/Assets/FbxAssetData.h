@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Assets/AssetResult.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -229,4 +232,64 @@ namespace engine::assets
         [[nodiscard]]
         bool IsEmpty() const noexcept;
     };
+
+    struct FbxSourceInfo final
+    {
+        std::size_t staticMeshCount = 0U;
+        std::size_t skeletalMeshCount = 0U;
+        std::size_t skeletonBoneCount = 0U;
+        std::size_t animationClipCount = 0U;
+
+        [[nodiscard]]
+        bool HasStaticMeshes() const noexcept
+        {
+            return staticMeshCount != 0U;
+        }
+
+        [[nodiscard]]
+        bool HasSkeletalMeshes() const noexcept
+        {
+            return skeletalMeshCount != 0U;
+        }
+
+        [[nodiscard]]
+        bool HasSkeleton() const noexcept
+        {
+            return skeletonBoneCount != 0U;
+        }
+
+        [[nodiscard]]
+        bool HasAnimations() const noexcept
+        {
+            return animationClipCount != 0U;
+        }
+
+        [[nodiscard]]
+        bool IsEmpty() const noexcept
+        {
+            return
+                !HasStaticMeshes() &&
+                !HasSkeletalMeshes() &&
+                !HasSkeleton() &&
+                !HasAnimations();
+        }
+    };
+
+    struct FbxImportReport final
+    {
+        std::vector<std::filesystem::path> writtenFiles;
+        std::vector<std::wstring> warnings;
+
+        void Clear() noexcept
+        {
+            writtenFiles.clear();
+            warnings.clear();
+        }
+    };
+
+    [[nodiscard]]
+    AssetResult InspectFbxSource(
+        const std::filesystem::path& sourcePath,
+        FbxSourceInfo& output,
+        std::wstring& error) noexcept;
 }

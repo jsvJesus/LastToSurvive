@@ -8,17 +8,25 @@
 
 namespace engine::assets
 {
-    struct FbxStaticMeshImportOptions final
+    struct FbxAnimationImportOptions final
     {
         std::filesystem::path destinationDirectory;
+
+        /*
+         * Существующий или только что созданный
+         * файл .skeleton.
+         */
+        std::filesystem::path skeletonFile;
+
+        float sampleRate = 30.0F;
 
         bool overwriteExisting = true;
     };
 
-    class FbxStaticMeshImporter final
+    class FbxAnimationsImporter final
     {
     public:
-        FbxStaticMeshImporter() = delete;
+        FbxAnimationsImporter() = delete;
 
         [[nodiscard]]
         static bool IsSupportedSource(
@@ -28,7 +36,7 @@ namespace engine::assets
         [[nodiscard]]
         static AssetResult Import(
             const std::filesystem::path& sourcePath,
-            const FbxStaticMeshImportOptions&
+            const FbxAnimationImportOptions&
                 options,
             FbxImportReport& report,
             std::wstring& error) noexcept;

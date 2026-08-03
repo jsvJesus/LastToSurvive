@@ -111,7 +111,7 @@ namespace lts::editor
                     !error &&
                     iterator->path().
                         extension() ==
-                        L".mesh")
+                        L".sm")
                 {
                     meshFiles_.push_back(
                         iterator->path().

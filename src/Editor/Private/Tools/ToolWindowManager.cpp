@@ -60,10 +60,16 @@ namespace lts::editor
             nullptr,
             &physicsEditorOpen_);
 
-        ImGui::MenuItem(
-            "FBX Importer",
-            nullptr,
-            &fbxImporterOpen_);
+        bool importerOpen = fbxAssetImporter_.IsOpen();
+
+        if (ImGui::MenuItem(
+                "FBX Model Importer",
+                nullptr,
+                importerOpen))
+        {
+            fbxAssetImporter_.SetOpen(
+                !importerOpen);
+        }
 
         ImGui::MenuItem(
             "Icon Generator",
@@ -80,8 +86,9 @@ namespace lts::editor
     {
         DrawCharacterEditor();
         DrawPhysicsEditor();
-        DrawFbxImporter();
         DrawIconGenerator();
+
+        fbxAssetImporter_.Draw();
     }
 
     void ToolWindowManager::
@@ -246,102 +253,6 @@ namespace lts::editor
         }
 
         DrawDevelopmentNotice();
-        ImGui::End();
-    }
-
-    void ToolWindowManager::
-        DrawFbxImporter() noexcept
-    {
-        if (!fbxImporterOpen_)
-        {
-            return;
-        }
-
-        ImGui::SetNextWindowSize(
-            ImVec2(760.0F, 580.0F),
-            ImGuiCond_FirstUseEver);
-
-        if (!ImGui::Begin(
-                "FBX Importer",
-                &fbxImporterOpen_,
-                ImGuiWindowFlags_NoCollapse))
-        {
-            ImGui::End();
-            return;
-        }
-
-        ImGui::TextUnformatted(
-            "Import FBX assets into LTS asset formats");
-        ImGui::Separator();
-
-        ImGui::SeparatorText("Source");
-        ImGui::TextDisabled("Source FBX: Not selected");
-        ImGui::TextDisabled("Destination: Data/Meshes");
-
-        ImGui::SeparatorText("Asset Type");
-
-        static int assetType = 0;
-
-        ImGui::RadioButton(
-            "Static Mesh",
-            &assetType,
-            0);
-
-        ImGui::SameLine();
-
-        ImGui::RadioButton(
-            "Skeletal Mesh",
-            &assetType,
-            1);
-
-        ImGui::SeparatorText("Import Settings");
-
-        static float importScale = 1.0F;
-        static bool importMaterials = true;
-        static bool importAnimations = true;
-        static bool generateCollision = true;
-        static bool recalculateNormals = false;
-        static bool recalculateTangents = true;
-
-        ImGui::DragFloat(
-            "Import Scale",
-            &importScale,
-            0.01F,
-            0.001F,
-            1000.0F);
-
-        ImGui::Checkbox(
-            "Import Materials",
-            &importMaterials);
-
-        ImGui::Checkbox(
-            "Import Animations",
-            &importAnimations);
-
-        ImGui::Checkbox(
-            "Generate Collision",
-            &generateCollision);
-
-        ImGui::Checkbox(
-            "Recalculate Normals",
-            &recalculateNormals);
-
-        ImGui::Checkbox(
-            "Recalculate Tangents",
-            &recalculateTangents);
-
-        ImGui::Spacing();
-
-        ImGui::BeginDisabled();
-        ImGui::Button(
-            "Import FBX",
-            ImVec2(160.0F, 32.0F));
-        ImGui::EndDisabled();
-
-        ImGui::TextDisabled(
-            "The import button will be connected to "
-            "FbxStaticMeshImporter later.");
-
         ImGui::End();
     }
 

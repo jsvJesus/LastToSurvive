@@ -19,9 +19,14 @@ AssetResult StaticModelAsset::Initialize(
     std::string debugName) noexcept
 {
     Clear();
-    if (!meshPath.IsValid() || !HasSuffix(meshPath, ".mesh") || materialPaths.empty() ||
-        materialPaths.size() > MaximumMaterialCount || debugName.size() > MaximumDebugNameLength)
+    if (!meshPath.IsValid() ||
+        !HasSuffix(meshPath, ".sm") ||
+        materialPaths.empty() ||
+        materialPaths.size() > MaximumMaterialCount ||
+        debugName.size() > MaximumDebugNameLength)
+    {
         return AssetResult::InvalidArgument;
+    }
     for (const AssetPath& path : materialPaths)
         if (!path.IsValid() || !HasSuffix(path, ".material"))
             return AssetResult::InvalidArgument;
