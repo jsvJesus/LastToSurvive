@@ -64,13 +64,11 @@ namespace lts::editor
 
         [[nodiscard]]
         ContentAssetKind GetContentAssetKind(
-            const std::filesystem::path& path)
-            noexcept
+            const std::filesystem::path& path) noexcept
         {
             try
             {
-                std::wstring extension =
-                    path.extension().wstring();
+                std::wstring extension = path.extension().wstring();
 
                 std::transform(
                     extension.begin(),
@@ -84,15 +82,12 @@ namespace lts::editor
 
                 if (extension == L".sm")
                 {
-                    return
-                        ContentAssetKind::StaticMesh;
+                    return ContentAssetKind::StaticMesh;
                 }
 
                 if (extension == L".prefab")
                 {
-                    return
-                        ContentAssetKind::
-                            StaticMeshPrefab;
+                    return ContentAssetKind::StaticMeshPrefab;
                 }
 
                 return ContentAssetKind::Unsupported;
@@ -133,22 +128,13 @@ namespace lts::editor
 
             std::error_code error;
 
-            for (
-                std::filesystem::
-                    recursive_directory_iterator
-                        iterator
-                        {
-                            meshesRoot_,
-                            std::filesystem::
-                                directory_options::
-                                    skip_permission_denied,
-                            error
-                        },
-                        end;
+            for (std::filesystem::recursive_directory_iterator iterator
+            {
+                meshesRoot_, std::filesystem::directory_options::skip_permission_denied, error
+            }, end;
 
-                iterator != end;
-
-                iterator.increment(error))
+            iterator != end;
+            iterator.increment(error))
             {
                 if (error)
                 {
@@ -156,10 +142,29 @@ namespace lts::editor
                     continue;
                 }
 
-                if (iterator->is_regular_file(error) && !error && GetContentAssetKind(iterator->path()) != ContentAssetKind::Unsupported)
+                const bool isRegularFile = iterator->is_regular_file(error);
+
+                if (error)
                 {
-                    meshFiles_.push_back(iterator->path().lexically_normal());
+                    error.clear();
+                    continue;
                 }
+
+                if (!isRegularFile)
+                {
+                    continue;
+                }
+
+                const ContentAssetKind assetKind =
+                    GetContentAssetKind(iterator->path());
+
+                if (assetKind == ContentAssetKind::Unsupported)
+                {
+                    continue;
+                }
+
+                meshFiles_.push_back(
+                    iterator->path().lexically_normal());
             }
 
             std::sort(
@@ -295,108 +300,78 @@ namespace lts::editor
         ImGui::TreePop();
     }
 
-    bool ContentBrowserPanel::
-        PlaceAssetAtViewportCenter(
-            const std::filesystem::path& file,
-            EditorContentBrowserContext& context) noexcept
+    bool ContentBrowserPanel::PlaceAssetAtViewportCenter(
+        const std::filesystem::path& file,
+        EditorContentBrowserContext& context) noexcept
     {
         try
         {
-            const std::filesystem::path gameRoot =
-                meshesRoot_.
-                    parent_path().
-                    parent_path();
+            const ContentAssetKind assetKind =
+                GetContentAssetKind(file);
 
-            std::error_code relativeError;
-
-            const std::filesystem::path
-                relativePath =
-                    std::filesystem::relative(
-                        file,
-                        gameRoot,
-                        relativeError);
-
-            if (relativeError)
+            if (assetKind == ContentAssetKind::Unsupported)
             {
                 return false;
             }
 
-            const EditorSceneSnapshot before =
-                context.sceneDocument.
-                    CreateSnapshot();
+            const std::filesystem::path gameRoot =
+                meshesRoot_.parent_path().parent_path();
 
             EditorTransform transform{};
             EditorPickRay ray{};
 
             const std::uint32_t viewportWidth =
                 static_cast<std::uint32_t>(
-                    (std::max)(
-                        context.viewportWidth,
-                        1.0F));
+                    (std::max)(context.viewportWidth, 1.0F));
 
             const std::uint32_t viewportHeight =
                 static_cast<std::uint32_t>(
-                    (std::max)(
-                        context.viewportHeight,
-                        1.0F));
+                    (std::max)(context.viewportHeight, 1.0F));
 
-            if (context.cameraController.
-                    BuildPickRay(
-                        viewportWidth / 2U,
-                        viewportHeight / 2U,
-                        viewportWidth,
-                        viewportHeight,
-                        ray))
+            if (context.cameraController.BuildPickRay(
+                    viewportWidth / 2U,
+                    viewportHeight / 2U,
+                    viewportWidth,
+                    viewportHeight,
+                    ray))
             {
                 float distance = 10.0F;
 
-                if (
-                    std::abs(
-                        ray.direction.y) >
-                    0.00001F)
+                if (std::abs(ray.direction.y) > 0.00001F)
                 {
                     const float planeDistance =
-                        -ray.origin.y /
-                        ray.direction.y;
+                        -ray.origin.y / ray.direction.y;
 
                     if (planeDistance >= 0.0F)
                     {
-                        distance =
-                            planeDistance;
+                        distance = planeDistance;
                     }
 
                     float terrainHeight = 0.0F;
 
-                    for (
-                        std::uint32_t iteration = 0U;
-                        iteration < 8U;
-                        ++iteration)
+                    for (std::uint32_t iteration = 0U;
+                         iteration < 8U;
+                         ++iteration)
                     {
                         const float x =
                             ray.origin.x +
-                            ray.direction.x *
-                                distance;
+                            ray.direction.x * distance;
 
                         const float z =
                             ray.origin.z +
-                            ray.direction.z *
-                                distance;
+                            ray.direction.z * distance;
 
-                        if (!context.terrainRenderer.
-                                TryGetSurfaceHeight(
-                                    context.sceneDocument,
-                                    x,
-                                    z,
-                                    terrainHeight))
+                        if (!context.terrainRenderer.TryGetSurfaceHeight(
+                                context.sceneDocument,
+                                x,
+                                z,
+                                terrainHeight))
                         {
                             break;
                         }
 
                         const float refinedDistance =
-                            (
-                                terrainHeight -
-                                ray.origin.y
-                            ) /
+                            (terrainHeight - ray.origin.y) /
                             ray.direction.y;
 
                         if (refinedDistance < 0.0F)
@@ -404,63 +379,95 @@ namespace lts::editor
                             break;
                         }
 
-                        distance =
-                            refinedDistance;
+                        distance = refinedDistance;
                     }
                 }
 
                 transform.position =
                 {
-                    ray.origin.x +
-                        ray.direction.x *
-                            distance,
-
-                    ray.origin.y +
-                        ray.direction.y *
-                            distance,
-
-                    ray.origin.z +
-                        ray.direction.z *
-                            distance
+                    ray.origin.x + ray.direction.x * distance,
+                    ray.origin.y + ray.direction.y * distance,
+                    ray.origin.z + ray.direction.z * distance
                 };
 
                 float terrainHeight = 0.0F;
 
-                if (context.terrainRenderer.
-                        TryGetSurfaceHeight(
-                            context.sceneDocument,
-                            transform.position[0],
-                            transform.position[2],
-                            terrainHeight))
+                if (context.terrainRenderer.TryGetSurfaceHeight(
+                        context.sceneDocument,
+                        transform.position[0],
+                        transform.position[2],
+                        terrainHeight))
                 {
-                    transform.position[1] =
-                        terrainHeight;
-                }
-
-                DirectX::XMFLOAT3
-                    boundsMinimum{};
-
-                DirectX::XMFLOAT3
-                    boundsMaximum{};
-
-                if (context.staticMeshRenderer.
-                        TryGetMeshBounds(
-                            relativePath.
-                                generic_wstring(),
-                            boundsMinimum,
-                            boundsMaximum))
-                {
-                    transform.position[1] -=
-                        boundsMinimum.y;
+                    transform.position[1] = terrainHeight;
                 }
             }
 
-            if (!context.sceneDocument.
-                    CreateStaticMeshEntity(
+            const EditorSceneSnapshot before =
+                context.sceneDocument.CreateSnapshot();
+
+            bool created = false;
+
+            if (assetKind == ContentAssetKind::StaticMesh)
+            {
+                std::error_code relativeError;
+
+                const std::filesystem::path relativePath =
+                    std::filesystem::relative(
+                        file,
+                        gameRoot,
+                        relativeError);
+
+                if (relativeError)
+                {
+                    return false;
+                }
+
+                /*
+                 * Поднимаем отдельный mesh над поверхностью
+                 * с учётом его нижней границы.
+                 */
+                DirectX::XMFLOAT3 boundsMinimum{};
+                DirectX::XMFLOAT3 boundsMaximum{};
+
+                if (context.staticMeshRenderer.TryGetMeshBounds(
+                        relativePath.generic_wstring(),
+                        boundsMinimum,
+                        boundsMaximum))
+                {
+                    transform.position[1] -= boundsMinimum.y;
+                }
+
+                created =
+                    context.sceneDocument.CreateStaticMeshEntity(
                         file.stem().wstring(),
-                        relativePath.
-                            generic_wstring(),
-                        transform))
+                        relativePath.generic_wstring(),
+                        transform);
+            }
+            else if (
+                assetKind ==
+                ContentAssetKind::StaticMeshPrefab)
+            {
+                engine::assets::StaticMeshPrefab prefab;
+                std::wstring prefabError;
+
+                const engine::assets::AssetResult loadResult =
+                    engine::assets::StaticMeshPrefabCodec::Load(
+                        file,
+                        prefab,
+                        prefabError);
+
+                if (engine::assets::Failed(loadResult))
+                {
+                    return false;
+                }
+
+                created =
+                    context.sceneDocument.CreateStaticMeshPrefab(
+                        prefab,
+                        transform);
+            }
+
+            if (!created)
             {
                 return false;
             }
@@ -468,8 +475,7 @@ namespace lts::editor
             static_cast<void>(
                 context.commandHistory.Push(
                     before,
-                    context.sceneDocument.
-                        CreateSnapshot()));
+                    context.sceneDocument.CreateSnapshot()));
 
             return true;
         }
@@ -611,6 +617,16 @@ namespace lts::editor
             const std::string name =
                 file.stem().u8string();
 
+            const ContentAssetKind assetKind = GetContentAssetKind(file);
+
+            const bool isPrefab =
+                assetKind == ContentAssetKind::StaticMeshPrefab;
+
+            const std::string displayName =
+                isPrefab
+                    ? "[Prefab] " + name
+                    : name;
+
             std::error_code displayPathError;
 
             const std::string displayPath =
@@ -653,9 +669,7 @@ namespace lts::editor
                     : 24.0F;
 
             const bool selected =
-                ImGui::Selectable(
-                    name.c_str(),
-                    selectedAsset_ == file, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(itemWidth, itemHeight));
+                ImGui::Selectable(displayName.c_str(), selectedAsset_ == file, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(itemWidth, itemHeight));
 
             if (selected)
             {
@@ -667,7 +681,7 @@ namespace lts::editor
              * Payload оставляем совместимым
              * с существующим Viewport.
              */
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            if (!isPrefab && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 std::error_code relativeError;
 
@@ -713,7 +727,9 @@ namespace lts::editor
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
-                    "%s\nDouble-click to add to scene",
+                    isPrefab
+                        ? "%s\nDouble-click to instantiate prefab"
+                        : "%s\nDouble-click to add mesh to scene",
                     identifier.c_str());
             }
 
@@ -782,8 +798,8 @@ namespace lts::editor
         if (visibleMeshCount == 0U)
         {
             ImGui::TextDisabled(
-                "No .sm files found "
-                "in the selected folder");
+            "No .sm or .prefab assets found "
+            "in the selected folder");
         }
 
         ImGui::EndChild();
