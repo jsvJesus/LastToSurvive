@@ -492,6 +492,25 @@ namespace lts::editor
         }
     }
 
+    bool ContentBrowserPanel::PlaceAssetAtViewportCenter(
+        const std::filesystem::path& file,
+        EditorContentBrowserContext& context) noexcept
+    {
+        const std::uint32_t viewportWidth =
+            static_cast<std::uint32_t>(
+                (std::max)(context.viewportWidth, 1.0F));
+
+        const std::uint32_t viewportHeight =
+            static_cast<std::uint32_t>(
+                (std::max)(context.viewportHeight, 1.0F));
+
+        return PlaceAssetAtViewportPosition(
+            file,
+            viewportWidth / 2U,
+            viewportHeight / 2U,
+            context);
+    }
+
     void ContentBrowserPanel::Draw(
         EditorContentBrowserContext& context) noexcept
     {
