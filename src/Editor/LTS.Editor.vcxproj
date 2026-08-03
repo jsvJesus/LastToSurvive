@@ -227,6 +227,7 @@
     <ClInclude Include="Public\Editor\Commands\CommandSystem.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\SkyRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Terrain\TerrainImporter.h" />
+    <ClInclude Include="Public\Editor\LevelEditor\UI\ContentAssetPayload.h" />
     <ClInclude Include="Public\Editor\LevelEditor\UI\ContentBrowserPanel.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\GridRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Rendering\SceneRenderer.h" />

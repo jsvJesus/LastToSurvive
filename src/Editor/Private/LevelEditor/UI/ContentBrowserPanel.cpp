@@ -5,6 +5,7 @@
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
 #include "Editor/LevelEditor/Rendering/StaticMeshRenderer.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
+#include "Editor/LevelEditor/UI/ContentAssetPayload.h"
 
 #include <Assets/StaticMeshPrefab.h>
 
@@ -18,6 +19,7 @@
 #include <cstdint>
 #include <cwctype>
 #include <string>
+#include <cstring>
 #include <system_error>
 
 namespace lts::editor
@@ -300,8 +302,10 @@ namespace lts::editor
         ImGui::TreePop();
     }
 
-    bool ContentBrowserPanel::PlaceAssetAtViewportCenter(
+    bool ContentBrowserPanel::PlaceAssetAtViewportPosition(
         const std::filesystem::path& file,
+        const std::uint32_t viewportX,
+        const std::uint32_t viewportY,
         EditorContentBrowserContext& context) noexcept
     {
         try
@@ -328,9 +332,12 @@ namespace lts::editor
                 static_cast<std::uint32_t>(
                     (std::max)(context.viewportHeight, 1.0F));
 
+            const std::uint32_t safeX = (std::min)(viewportX, viewportWidth - 1U);
+            const std::uint32_t safeY = (std::min)(viewportY, viewportHeight - 1U);
+
             if (context.cameraController.BuildPickRay(
-                    viewportWidth / 2U,
-                    viewportHeight / 2U,
+                    safeX,
+                    safeY,
                     viewportWidth,
                     viewportHeight,
                     ray))
@@ -736,9 +743,7 @@ namespace lts::editor
              *
              * Prefab пока создаётся двойным кликом.
              */
-            if (!isPrefab &&
-                ImGui::BeginDragDropSource(
-                    ImGuiDragDropFlags_SourceAllowNullID))
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
             {
                 std::error_code relativeError;
 
@@ -753,17 +758,39 @@ namespace lts::editor
 
                 if (!relativeError)
                 {
-                    const std::string payload =
+                    const std::string gamePath =
                         relativePath.generic_u8string();
 
-                    ImGui::SetDragDropPayload(
-                        "LTS_MESH_ASSET",
-                        payload.c_str(),
-                        payload.size() + 1U);
+                    ContentAssetPayload payload;
 
-                    ImGui::Text(
-                        "Place %s",
-                        name.c_str());
+                    payload.kind =
+                        isPrefab
+                            ? ContentAssetPayloadKind::StaticMeshPrefab
+                            : ContentAssetPayloadKind::StaticMesh;
+
+                    if (gamePath.size() < payload.gamePath.size())
+                    {
+                        std::memcpy(
+                            payload.gamePath.data(),
+                            gamePath.data(),
+                            gamePath.size());
+
+                        payload.gamePath[gamePath.size()] = '\0';
+
+                        ImGui::SetDragDropPayload(
+                            ContentAssetPayloadType,
+                            &payload,
+                            sizeof(payload));
+
+                        ImGui::TextUnformatted(
+                            isPrefab
+                                ? "Place prefab"
+                                : "Place static mesh");
+
+                        ImGui::TextDisabled(
+                            "%s",
+                            gamePath.c_str());
+                    }
                 }
 
                 ImGui::EndDragDropSource();
@@ -866,5 +893,80 @@ namespace lts::editor
 
         ImGui::EndChild();
         ImGui::End();
+    }
+
+    bool ContentBrowserPanel::AcceptViewportDrop(EditorContentBrowserContext& context) noexcept
+    {
+        if (!ImGui::BeginDragDropTarget())
+        {
+            return false;
+        }
+
+        bool placed = false;
+
+        const ImGuiPayload* payload =
+            ImGui::AcceptDragDropPayload(
+                ContentAssetPayloadType);
+
+        if (payload != nullptr &&
+            payload->Data != nullptr &&
+            payload->DataSize ==
+                static_cast<int>(sizeof(ContentAssetPayload)))
+        {
+            const auto& contentPayload =
+                *static_cast<const ContentAssetPayload*>(
+                    payload->Data);
+
+            const void* terminator =
+                std::memchr(
+                    contentPayload.gamePath.data(),
+                    '\0',
+                    contentPayload.gamePath.size());
+
+            if (terminator != nullptr)
+            {
+                const std::string gamePath(
+                    contentPayload.gamePath.data());
+
+                const std::filesystem::path gameRoot =
+                    DiscoverGameRoot();
+
+                const std::filesystem::path file =
+                    (gameRoot /
+                        std::filesystem::u8path(gamePath)).
+                        lexically_normal();
+
+                const ImVec2 itemMinimum =
+                    ImGui::GetItemRectMin();
+
+                const ImVec2 mouse =
+                    ImGui::GetMousePos();
+
+                const float localX =
+                    mouse.x - itemMinimum.x;
+
+                const float localY =
+                    mouse.y - itemMinimum.y;
+
+                const std::uint32_t viewportX =
+                    static_cast<std::uint32_t>(
+                        (std::max)(localX, 0.0F));
+
+                const std::uint32_t viewportY =
+                    static_cast<std::uint32_t>(
+                        (std::max)(localY, 0.0F));
+
+                placed =
+                    PlaceAssetAtViewportPosition(
+                        file,
+                        viewportX,
+                        viewportY,
+                        context);
+            }
+        }
+
+        ImGui::EndDragDropTarget();
+
+        return placed;
     }
 }

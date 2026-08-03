@@ -3,6 +3,7 @@
 #include <array>
 #include <filesystem>
 #include <vector>
+#include <cstdint>
 
 namespace lts::editor
 {
@@ -40,6 +41,10 @@ namespace lts::editor
         void Draw(
             EditorContentBrowserContext& context) noexcept;
 
+        [[nodiscard]]
+        bool AcceptViewportDrop(
+            EditorContentBrowserContext& context) noexcept;
+
     private:
         void DrawDirectoryTree(
             const std::filesystem::path& directory,
@@ -48,6 +53,13 @@ namespace lts::editor
         [[nodiscard]]
         bool PlaceAssetAtViewportCenter(
             const std::filesystem::path& file,
+            EditorContentBrowserContext& context) noexcept;
+
+        [[nodiscard]]
+        bool PlaceAssetAtViewportPosition(
+            const std::filesystem::path& file,
+            std::uint32_t viewportX,
+            std::uint32_t viewportY,
             EditorContentBrowserContext& context) noexcept;
 
         std::filesystem::path meshesRoot_;
