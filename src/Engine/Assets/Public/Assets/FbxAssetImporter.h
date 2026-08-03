@@ -37,13 +37,7 @@ namespace engine::assets
         static bool IsSupportedSource(
             const std::filesystem::path&
                 sourcePath) noexcept;
-
-        /*
-         * Direct source import.
-         *
-         * No WarZ .mesh/.skm/.sk/.anim conversion is used.
-         * The returned data owns all imported CPU-side content.
-         */
+        
         [[nodiscard]]
         static AssetResult Import(
             const std::filesystem::path& sourcePath,

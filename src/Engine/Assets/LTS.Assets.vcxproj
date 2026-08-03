@@ -133,6 +133,8 @@
     <ClInclude Include="Public\Assets\AssetType.h" />
     <ClInclude Include="Public\Assets\DdsTextureDecoder.h" />
     <ClInclude Include="Public\Assets\DdsTextureLoader.h" />
+    <ClInclude Include="Public\Assets\FbxAssetData.h" />
+    <ClInclude Include="Public\Assets\FbxAssetImporter.h" />
     <ClInclude Include="Public\Assets\FileAssetSource.h" />
     <ClInclude Include="Public\Assets\FbxStaticMeshImporter.h" />
     <ClInclude Include="Public\Assets\GpuSkeletalMesh.h" />
@@ -175,6 +177,8 @@
     <ClCompile Include="Private\AssetType.cpp" />
     <ClCompile Include="Private\DdsTextureDecoder.cpp" />
     <ClCompile Include="Private\DdsTextureLoader.cpp" />
+    <ClCompile Include="Private\FbxAssetData.cpp" />
+    <ClCompile Include="Private\FbxAssetImporter.cpp" />
     <ClCompile Include="Private\FileAssetSource.cpp" />
     <ClCompile Include="Private\FbxStaticMeshImporter.cpp" />
     <ClCompile Include="Private\GpuSkeletalMesh.cpp" />
