@@ -488,8 +488,7 @@ namespace lts::editor
     void ContentBrowserPanel::Draw(
         EditorContentBrowserContext& context) noexcept
     {
-        if (!ImGui::Begin(
-                "Content Browser"))
+        if (!ImGui::Begin("Content Browser"))
         {
             ImGui::End();
             return;
@@ -501,9 +500,7 @@ namespace lts::editor
         }
 
         ImGui::SameLine();
-
-        ImGui::SetNextItemWidth(
-            260.0F);
+        ImGui::SetNextItemWidth(260.0F);
 
         ImGui::InputTextWithHint(
             "##ContentSearch",
@@ -513,14 +510,29 @@ namespace lts::editor
 
         ImGui::SameLine();
 
-        if (ImGui::Button(
-                gridView_
-                    ? "List"
-                    : "Tiles"))
+        /*
+         * Две отдельные кнопки, чтобы было понятно,
+         * какой режим сейчас активен.
+         */
+        ImGui::BeginDisabled(!gridView_);
+
+        if (ImGui::Button("List"))
         {
-            gridView_ =
-                !gridView_;
+            gridView_ = false;
         }
+
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+
+        ImGui::BeginDisabled(gridView_);
+
+        if (ImGui::Button("Tiles"))
+        {
+            gridView_ = true;
+        }
+
+        ImGui::EndDisabled();
 
         ImGui::Separator();
 
@@ -541,31 +553,29 @@ namespace lts::editor
             ImVec2(0.0F, 0.0F),
             ImGuiChildFlags_Borders);
 
+        /*
+         * Breadcrumbs.
+         */
         std::error_code breadcrumbError;
 
-        const std::filesystem::path
-            relativeDirectory =
-                std::filesystem::relative(
-                    selectedDirectory_,
-                    meshesRoot_,
-                    breadcrumbError);
+        const std::filesystem::path relativeDirectory =
+            std::filesystem::relative(
+                selectedDirectory_,
+                meshesRoot_,
+                breadcrumbError);
 
         if (ImGui::SmallButton("Meshes"))
         {
-            selectedDirectory_ =
-                meshesRoot_;
+            selectedDirectory_ = meshesRoot_;
         }
 
-        if (
-            !breadcrumbError &&
+        if (!breadcrumbError &&
             relativeDirectory != L".")
         {
             std::filesystem::path current =
                 meshesRoot_;
 
-            for (
-                const auto& part :
-                    relativeDirectory)
+            for (const auto& part : relativeDirectory)
             {
                 current /= part;
 
@@ -579,14 +589,11 @@ namespace lts::editor
                 const std::string identifier =
                     current.generic_u8string();
 
-                ImGui::PushID(
-                    identifier.c_str());
+                ImGui::PushID(identifier.c_str());
 
-                if (ImGui::SmallButton(
-                        partLabel.c_str()))
+                if (ImGui::SmallButton(partLabel.c_str()))
                 {
-                    selectedDirectory_ =
-                        current;
+                    selectedDirectory_ = current;
                 }
 
                 ImGui::PopID();
@@ -596,20 +603,57 @@ namespace lts::editor
         ImGui::Separator();
 
         const std::string search =
-            ToLower(
-                std::string(
-                    search_.data()));
+            ToLower(std::string(search_.data()));
 
         bool refreshRequested = false;
-        std::size_t visibleMeshCount = 0U;
+        std::size_t visibleAssetCount = 0U;
+        std::size_t tileIndex = 0U;
 
-        for (const std::filesystem::path& file :meshFiles_)
+        /*
+         * Размер области вычисляется один раз.
+         * Поэтому плитки не уезжают за пределы окна.
+         */
+        const float contentWidth =
+            (std::max)(
+                ImGui::GetContentRegionAvail().x - 1.0F,
+                1.0F);
+
+        const float desiredTileWidth = 150.0F;
+        const float itemSpacing =
+            ImGui::GetStyle().ItemSpacing.x;
+
+        const int tileColumnCount =
+            (std::max)(
+                1,
+                static_cast<int>(
+                    (contentWidth + itemSpacing) /
+                    (desiredTileWidth + itemSpacing)));
+
+        const float tileWidth =
+            (
+                contentWidth -
+                itemSpacing *
+                    static_cast<float>(
+                        tileColumnCount - 1)
+            ) /
+            static_cast<float>(tileColumnCount);
+
+        for (const std::filesystem::path& file : meshFiles_)
         {
-            if (
-                selectedDirectory_ !=
-                    meshesRoot_ &&
-                file.parent_path() !=
-                    selectedDirectory_)
+            /*
+             * Показываем только содержимое выбранной папки.
+             * Раньше корень Meshes показывал все вложенные
+             * ресурсы одновременно.
+             */
+            if (file.parent_path() != selectedDirectory_)
+            {
+                continue;
+            }
+
+            const ContentAssetKind assetKind =
+                GetContentAssetKind(file);
+
+            if (assetKind == ContentAssetKind::Unsupported)
             {
                 continue;
             }
@@ -617,10 +661,9 @@ namespace lts::editor
             const std::string name =
                 file.stem().u8string();
 
-            const ContentAssetKind assetKind = GetContentAssetKind(file);
-
             const bool isPrefab =
-                assetKind == ContentAssetKind::StaticMeshPrefab;
+                assetKind ==
+                ContentAssetKind::StaticMeshPrefab;
 
             const std::string displayName =
                 isPrefab
@@ -629,76 +672,89 @@ namespace lts::editor
 
             std::error_code displayPathError;
 
-            const std::string displayPath =
+            const std::filesystem::path relativeDisplayPath =
                 std::filesystem::relative(
                     file,
                     meshesRoot_,
-                    displayPathError).
-                    generic_u8string();
+                    displayPathError);
+
+            const std::string displayPath =
+                displayPathError
+                    ? file.filename().u8string()
+                    : relativeDisplayPath.generic_u8string();
 
             const std::string searchableName =
-                ToLower(
-                    displayPathError
-                        ? name
-                        : displayPath);
+                ToLower(displayPath);
 
-            if (
-                !search.empty() &&
+            if (!search.empty() &&
                 searchableName.find(search) ==
                     std::string::npos)
             {
                 continue;
             }
 
+            /*
+             * SameLine вызывается перед следующим элементом,
+             * а не после предыдущего.
+             *
+             * Количество колонок заранее известно.
+             */
+            if (gridView_ &&
+                tileIndex > 0U &&
+                tileIndex %
+                    static_cast<std::size_t>(
+                        tileColumnCount) != 0U)
+            {
+                ImGui::SameLine();
+            }
+
             const std::string identifier =
                 file.generic_u8string();
 
-            ++visibleMeshCount;
+            ImGui::PushID(identifier.c_str());
 
-            ImGui::PushID(
-                identifier.c_str());
-
-            const float itemWidth =
+            const ImVec2 itemSize =
                 gridView_
-                    ? 150.0F
-                    : -1.0F;
+                    ? ImVec2(tileWidth, 58.0F)
+                    : ImVec2(contentWidth, 24.0F);
 
-            const float itemHeight =
-                gridView_
-                    ? 58.0F
-                    : 24.0F;
+            const bool pressed =
+                ImGui::Selectable(
+                    displayName.c_str(),
+                    selectedAsset_ == file,
+                    ImGuiSelectableFlags_AllowDoubleClick,
+                    itemSize);
 
-            const bool selected =
-                ImGui::Selectable(displayName.c_str(), selectedAsset_ == file, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(itemWidth, itemHeight));
-
-            if (selected)
+            if (pressed)
             {
-                selectedAsset_ =
-                    file;
+                selectedAsset_ = file;
             }
 
             /*
-             * Payload оставляем совместимым
-             * с существующим Viewport.
+             * Обычные .sm разрешено перетаскивать
+             * существующим mesh payload.
+             *
+             * Prefab пока создаётся двойным кликом.
              */
-            if (!isPrefab && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+            if (!isPrefab &&
+                ImGui::BeginDragDropSource(
+                    ImGuiDragDropFlags_SourceAllowNullID))
             {
                 std::error_code relativeError;
 
-                const std::filesystem::path
-                    relativePath =
-                        std::filesystem::relative(
-                            file,
-                            meshesRoot_.
-                                parent_path().
-                                parent_path(),
-                            relativeError);
+                const std::filesystem::path gameRoot =
+                    meshesRoot_.parent_path().parent_path();
+
+                const std::filesystem::path relativePath =
+                    std::filesystem::relative(
+                        file,
+                        gameRoot,
+                        relativeError);
 
                 if (!relativeError)
                 {
                     const std::string payload =
-                        relativePath.
-                            generic_u8string();
+                        relativePath.generic_u8string();
 
                     ImGui::SetDragDropPayload(
                         "LTS_MESH_ASSET",
@@ -713,8 +769,7 @@ namespace lts::editor
                 ImGui::EndDragDropSource();
             }
 
-            if (
-                selected &&
+            if (pressed &&
                 ImGui::IsMouseDoubleClicked(
                     ImGuiMouseButton_Left))
             {
@@ -726,45 +781,53 @@ namespace lts::editor
 
             if (ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip(
+                ImGui::BeginTooltip();
+
+                ImGui::TextUnformatted(
+                    displayName.c_str());
+
+                ImGui::TextDisabled(
+                    "%s",
+                    displayPath.c_str());
+
+                ImGui::Separator();
+
+                ImGui::TextUnformatted(
                     isPrefab
-                        ? "%s\nDouble-click to instantiate prefab"
-                        : "%s\nDouble-click to add mesh to scene",
-                    identifier.c_str());
+                        ? "Double-click to instantiate prefab"
+                        : "Double-click to add mesh to scene");
+
+                ImGui::EndTooltip();
             }
 
             if (ImGui::BeginPopupContextItem(
                     "AssetContext"))
             {
-                selectedAsset_ =
-                    file;
+                selectedAsset_ = file;
 
-                if (ImGui::MenuItem(
-                        "Copy Asset Path"))
+                if (ImGui::MenuItem("Copy Asset Path"))
                 {
                     ImGui::SetClipboardText(
                         identifier.c_str());
                 }
 
-                if (ImGui::MenuItem(
-                        "Copy Game Path"))
+                if (ImGui::MenuItem("Copy Game Path"))
                 {
                     std::error_code relativeError;
 
-                    const std::filesystem::path
-                        relativePath =
-                            std::filesystem::relative(
-                                file,
-                                meshesRoot_.
-                                    parent_path().
-                                    parent_path(),
-                                relativeError);
+                    const std::filesystem::path gameRoot =
+                        meshesRoot_.parent_path().parent_path();
+
+                    const std::filesystem::path relativePath =
+                        std::filesystem::relative(
+                            file,
+                            gameRoot,
+                            relativeError);
 
                     if (!relativeError)
                     {
                         const std::string path =
-                            relativePath.
-                                generic_u8string();
+                            relativePath.generic_u8string();
 
                         ImGui::SetClipboardText(
                             path.c_str());
@@ -781,12 +844,11 @@ namespace lts::editor
 
             ImGui::PopID();
 
-            if (
-                gridView_ &&
-                ImGui::GetContentRegionAvail().x >
-                    310.0F)
+            ++visibleAssetCount;
+
+            if (gridView_)
             {
-                ImGui::SameLine();
+                ++tileIndex;
             }
         }
 
@@ -795,11 +857,11 @@ namespace lts::editor
             Refresh();
         }
 
-        if (visibleMeshCount == 0U)
+        if (visibleAssetCount == 0U)
         {
             ImGui::TextDisabled(
-            "No .sm or .prefab assets found "
-            "in the selected folder");
+                "No .sm or .prefab assets found "
+                "in the selected folder");
         }
 
         ImGui::EndChild();
