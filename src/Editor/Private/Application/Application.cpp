@@ -2800,15 +2800,35 @@ namespace lts::editor
                 
                 const ImVec2 position = ImGui::GetCursorScreenPos();
                 const ImVec2 available = ImGui::GetContentRegionAvail();
+
                 imguiViewportX_ = position.x;
                 imguiViewportY_ = position.y;
                 imguiViewportWidth_ = std::max(available.x, 1.0F);
                 imguiViewportHeight_ = std::max(available.y, 1.0F);
-                ImGui::InvisibleButton("SceneViewport", available);
+
+                /*
+                 * InvisibleButton представляет всю область 3D Viewport
+                 * внутри ImGui. Она принимает мышь и drag-and-drop.
+                 */
+                ImGui::InvisibleButton(
+                    "SceneViewport",
+                    available);
+
+                const bool viewportHovered =
+                    ImGui::IsItemHovered();
+
+                /*
+                 * ВАЖНО: вызов должен находиться сразу после
+                 * InvisibleButton, потому что BeginDragDropTarget()
+                 * работает с последним ImGui-элементом.
+                 */
+                static_cast<void>(
+                    contentBrowserPanel_.AcceptViewportDrop(
+                        contentBrowserContext));
 
                 const bool paintHovered =
                     terrainPaintMode_ &&
-                    ImGui::IsItemHovered();
+                    viewportHovered;
 
                 terrainBrushHitValid_ = false;
 
@@ -3014,82 +3034,6 @@ namespace lts::editor
                 {
                     static_cast<void>(terrainRenderer_.EndPaintStroke());
                     terrainPaintStrokeActive_=false;
-                }
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (const ImGuiPayload* const payload =
-                            ImGui::AcceptDragDropPayload("LTS_MESH_ASSET"))
-                    {
-                        if (payload->IsDelivery() && payload->Data != nullptr)
-                        {
-                            const char* const assetPath =
-                                static_cast<const char*>(payload->Data);
-                            const ImVec2 mouse = ImGui::GetMousePos();
-                            EditorPickRay ray;
-                            const float localX = mouse.x - imguiViewportX_;
-                            const float localY = mouse.y - imguiViewportY_;
-                            if (localX >= 0.0F && localY >= 0.0F &&
-                                cameraController_.BuildPickRay(
-                                    static_cast<std::uint32_t>(localX),
-                                    static_cast<std::uint32_t>(localY),
-                                    static_cast<std::uint32_t>(imguiViewportWidth_),
-                                    static_cast<std::uint32_t>(imguiViewportHeight_),
-                                    ray))
-                            {
-                                const std::filesystem::path path = FromUtf8(assetPath);
-                                constexpr float fallbackDistance = 10.0F;
-                                float distance = fallbackDistance;
-                                if (std::abs(ray.direction.y) > 0.00001F)
-                                {
-                                    const float groundDistance =
-                                        -ray.origin.y / ray.direction.y;
-                                    if (groundDistance >= 0.0F)
-                                        distance = groundDistance;
-                                }
-
-                                // Refine the old Y=0 plane hit against the actual
-                                // terrain height. A few fixed-point iterations are
-                                // enough because the heightfield is continuous.
-                                float terrainHeight = 0.0F;
-                                if (std::abs(ray.direction.y) > 0.00001F)
-                                {
-                                    for (std::uint32_t iteration = 0; iteration < 8U; ++iteration)
-                                    {
-                                        const float x = ray.origin.x + ray.direction.x * distance;
-                                        const float z = ray.origin.z + ray.direction.z * distance;
-                                        if (!terrainRenderer_.TryGetSurfaceHeight(
-                                                sceneDocument_, x, z, terrainHeight)) break;
-                                        const float refinedDistance =
-                                            (terrainHeight - ray.origin.y) / ray.direction.y;
-                                        if (refinedDistance < 0.0F) break;
-                                        distance = refinedDistance;
-                                    }
-                                }
-
-                                EditorTransform transform{};
-                                transform.position = {
-                                    ray.origin.x + ray.direction.x * distance,
-                                    terrainHeight,
-                                    ray.origin.z + ray.direction.z * distance};
-                                DirectX::XMFLOAT3 boundsMinimum{}, boundsMaximum{};
-                                if (staticMeshRenderer_.TryGetMeshBounds(
-                                        path.generic_wstring(), boundsMinimum, boundsMaximum))
-                                {
-                                    transform.position[1] -= boundsMinimum.y;
-                                }
-                                const EditorSceneSnapshot before = sceneDocument_.CreateSnapshot();
-                                if (sceneDocument_.CreateStaticMeshEntity(
-                                        path.stem().wstring(),
-                                        path.generic_wstring(),
-                                        transform))
-                                {
-                                    static_cast<void>(commandHistory_.Push(
-                                        before, sceneDocument_.CreateSnapshot()));
-                                }
-                            }
-                        }
-                    }
-                    ImGui::EndDragDropTarget();
                 }
             }
             else

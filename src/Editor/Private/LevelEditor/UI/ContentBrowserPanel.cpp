@@ -908,10 +908,7 @@ namespace lts::editor
             ImGui::AcceptDragDropPayload(
                 ContentAssetPayloadType);
 
-        if (payload != nullptr &&
-            payload->Data != nullptr &&
-            payload->DataSize ==
-                static_cast<int>(sizeof(ContentAssetPayload)))
+        if (payload != nullptr && payload->IsDelivery() && payload->Data != nullptr && payload->DataSize == static_cast<int>(sizeof(ContentAssetPayload)))
         {
             const auto& contentPayload =
                 *static_cast<const ContentAssetPayload*>(
