@@ -1108,13 +1108,6 @@ namespace lts::editor
 
         world_.RestoreState(state);
 
-        /*
-         * animationSet не хранится в level.
-         * После восстановления сцены загружаем
-         * его из внешнего profilePath.
-         */
-        ReloadCharacterAnimationProfiles();
-
         selectedEntityIds_.clear();
         for (const EditorEntityId entityId : snapshot.selectedEntityIds)
         {

@@ -24,6 +24,7 @@ namespace lts::editor
     {
         constexpr std::uint64_t CurrentFormatVersion = 7U;
         constexpr std::uint64_t MinimumSupportedFormatVersion = 1U;
+        constexpr std::uint64_t LegacyFormatVersion = MinimumSupportedFormatVersion;
         constexpr std::string_view FormatName = "LTS.Level";
         constexpr std::uintmax_t MaximumLevelFileSize = 64U * 1024U * 1024U;
 

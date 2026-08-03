@@ -65,16 +65,6 @@ namespace lts::editor
             nullptr,
             &fbxImporterOpen_);
 
-        const bool warZImporterOpen = warZImporterWindow_.IsOpen();
-        if (ImGui::MenuItem(
-                "WarZ Importer",
-                nullptr,
-                warZImporterOpen))
-        {
-            warZImporterWindow_.SetOpen(
-                !warZImporterOpen);
-        }
-
         ImGui::MenuItem(
             "Icon Generator",
             nullptr,
@@ -92,18 +82,6 @@ namespace lts::editor
         DrawPhysicsEditor();
         DrawFbxImporter();
         DrawIconGenerator();
-
-        warZImporterWindow_.Draw();
-    }
-
-    void ToolWindowManager::Initialize(ID3D11Device* device, ID3D11DeviceContext* context) noexcept
-    {
-        warZImporterWindow_.Initialize(device, context);
-    }
-
-    void ToolWindowManager::Shutdown() noexcept
-    {
-        warZImporterWindow_.Shutdown();
     }
 
     void ToolWindowManager::
