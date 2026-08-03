@@ -1356,16 +1356,86 @@ namespace lts::editor
                 const auto directory = meshesRoot.parent_path() / L"Materials" / package;
                 if (!std::filesystem::is_directory(directory, filesystemError) || filesystemError)
                     return;
-                std::vector<std::filesystem::path> files;
-                for (std::filesystem::directory_iterator iterator(directory, filesystemError), end;
-                     !filesystemError && iterator != end; iterator.increment(filesystemError))
+                
+                std::vector<std::filesystem::path>
+    matchingFiles;
+
+                std::vector<std::filesystem::path>
+                    legacyFiles;
+
+                const std::wstring materialPrefix =
+                    LowercasePath(
+                        meshPath.stem().wstring() +
+                        L"_");
+
+                for (
+                    std::filesystem::directory_iterator
+                        iterator(
+                            directory,
+                            filesystemError),
+                        end;
+
+                    !filesystemError &&
+                    iterator != end;
+
+                    iterator.increment(filesystemError))
                 {
-                    if (iterator->is_regular_file() &&
-                        LowercasePath(iterator->path().extension().wstring()) == L".material")
-                        files.push_back(iterator->path());
+                    if (
+                        !iterator->is_regular_file() ||
+                        LowercasePath(
+                            iterator->path().
+                                extension().
+                                wstring()) !=
+                            L".material")
+                    {
+                        continue;
+                    }
+
+                    const std::filesystem::path file =
+                        iterator->path();
+
+                    legacyFiles.push_back(file);
+
+                    const std::wstring filename =
+                        LowercasePath(
+                            file.filename().wstring());
+
+                    if (
+                        filename.rfind(
+                            materialPrefix,
+                            0U) == 0U)
+                    {
+                        matchingFiles.push_back(file);
+                    }
                 }
-                std::sort(files.begin(), files.end(), [](const auto& left, const auto& right)
-                { return LowercasePath(left.filename().wstring()) < LowercasePath(right.filename().wstring()); });
+                
+                /*
+                 * Новые материалы:
+                 *
+                 * MeshName_0000_Material.material
+                 *
+                 * Для старых ресурсов оставляем fallback,
+                 * где материалы назывались просто
+                 * 0000_Material.material.
+                 */
+                std::vector<std::filesystem::path> files =
+                    !matchingFiles.empty()
+                        ? std::move(matchingFiles)
+                        : std::move(legacyFiles);
+
+                std::sort(
+                    files.begin(),
+                    files.end(),
+                    [](const auto& left,
+                       const auto& right)
+                    {
+                        return
+                            LowercasePath(
+                                left.filename().wstring()) <
+                            LowercasePath(
+                                right.filename().wstring());
+                    });
+                
                 for (const auto& file : files)
                 {
                     engine::assets::AssetData data;

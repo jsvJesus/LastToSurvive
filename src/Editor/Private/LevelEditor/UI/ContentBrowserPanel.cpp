@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cctype>
 #include <cstdint>
+#include <cwctype>
 #include <string>
 #include <system_error>
 
@@ -50,6 +51,33 @@ namespace lts::editor
                 });
 
             return value;
+        }
+
+        [[nodiscard]]
+        bool IsStaticMeshFile(
+            const std::filesystem::path& path) noexcept
+        {
+            try
+            {
+                std::wstring extension =
+                    path.extension().wstring();
+
+                std::transform(
+                    extension.begin(),
+                    extension.end(),
+                    extension.begin(),
+                    [](const wchar_t character)
+                    {
+                        return static_cast<wchar_t>(
+                            std::towlower(character));
+                    });
+
+                return extension == L".sm";
+            }
+            catch (...)
+            {
+                return false;
+            }
         }
     }
 
@@ -106,16 +134,9 @@ namespace lts::editor
                 }
 
                 if (
-                    iterator->is_regular_file(
-                        error) &&
-                    !error &&
-                    iterator->path().
-                        extension() ==
-                        L".sm")
+                    iterator->is_regular_file(error) && !error && IsStaticMeshFile(iterator->path()))
                 {
-                    meshFiles_.push_back(
-                        iterator->path().
-                            lexically_normal());
+                    meshFiles_.push_back(iterator->path().lexically_normal());
                 }
             }
 
@@ -552,10 +573,9 @@ namespace lts::editor
                     search_.data()));
 
         bool refreshRequested = false;
+        std::size_t visibleMeshCount = 0U;
 
-        for (
-            const std::filesystem::path& file :
-                meshFiles_)
+        for (const std::filesystem::path& file :meshFiles_)
         {
             if (
                 selectedDirectory_ !=
@@ -594,6 +614,8 @@ namespace lts::editor
 
             const std::string identifier =
                 file.generic_u8string();
+
+            ++visibleMeshCount;
 
             ImGui::PushID(
                 identifier.c_str());
@@ -735,11 +757,11 @@ namespace lts::editor
             Refresh();
         }
 
-        if (meshFiles_.empty())
+        if (visibleMeshCount == 0U)
         {
             ImGui::TextDisabled(
-                "No .mesh files found "
-                "in Data/Meshes");
+                "No .sm files found "
+                "in the selected folder");
         }
 
         ImGui::EndChild();
