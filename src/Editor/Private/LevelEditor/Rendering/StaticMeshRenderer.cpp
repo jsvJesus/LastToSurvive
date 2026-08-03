@@ -10,6 +10,8 @@
 #include <Assets/MaterialAssetLoader.h>
 #include <Assets/MeshAsset.h>
 #include <Assets/MeshAssetLoader.h>
+#include <Assets/DdsTextureDecoder.h>
+#include <Assets/TextureAsset.h>
 
 #include <Core/Log.h>
 
@@ -416,6 +418,134 @@ namespace lts::editor
 
                 return engine::assets::
                     AssetResult::InternalError;
+            }
+        }
+
+        [[nodiscard]]
+        bool CreateTextureFromFile(
+            engine::graphics::RenderDevice& device,
+            const std::filesystem::path& file,
+            engine::graphics::TextureHandle& output) noexcept
+        {
+            output = {};
+
+            try
+            {
+                const std::wstring extension =
+                    LowercasePath(
+                        file.extension().wstring());
+
+                if (extension == L".dds")
+                {
+                    engine::assets::AssetData source;
+
+                    if (engine::assets::Failed(
+                            ReadAssetData(
+                                file,
+                                source)))
+                    {
+                        return false;
+                    }
+
+                    engine::assets::TextureAsset texture;
+
+                    engine::assets::DdsTextureDecodeOptions
+                        options;
+
+                    options.forceSrgb = true;
+                    options.allowBc7 = true;
+
+                    const auto decodeResult =
+                        engine::assets::DdsTextureDecoder::Decode(
+                            source,
+                            options,
+                            texture);
+
+                    if (engine::assets::Failed(
+                            decodeResult) ||
+                        !texture.IsValid())
+                    {
+                        return false;
+                    }
+
+                    std::vector<
+                        engine::graphics::
+                            TextureSubresourceData>
+                        subresources;
+
+                    subresources.resize(
+                        texture.GetSubresourceCount());
+
+                    for (std::size_t index = 0U;
+                         index < subresources.size();
+                         ++index)
+                    {
+                        if (engine::assets::Failed(
+                                texture.GetSubresourceData(
+                                    index,
+                                    subresources[index])))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return engine::graphics::Succeeded(
+                        device.CreateTexture(
+                            texture.GetDesc(),
+                            subresources.data(),
+                            subresources.size(),
+                            output));
+                }
+
+                std::vector<std::byte> pixels;
+
+                std::uint32_t width = 0U;
+                std::uint32_t height = 0U;
+
+                if (!DecodeWicRgba(
+                        file,
+                        pixels,
+                        width,
+                        height))
+                {
+                    return false;
+                }
+
+                engine::graphics::TextureDesc description;
+
+                description.width = width;
+                description.height = height;
+
+                description.format =
+                    engine::graphics::Format::
+                        R8G8B8A8UNormSrgb;
+
+                engine::graphics::TextureSubresourceData
+                    initialData;
+
+                initialData.data = pixels.data();
+                initialData.dataSize = pixels.size();
+
+                initialData.rowPitch =
+                    static_cast<std::size_t>(
+                        width) *
+                    4U;
+
+                initialData.slicePitch =
+                    pixels.size();
+
+                return engine::graphics::Succeeded(
+                    device.CreateTexture(
+                        description,
+                        &initialData,
+                        1U,
+                        output));
+            }
+            catch (...)
+            {
+                output = {};
+
+                return false;
             }
         }
 
@@ -1040,7 +1170,7 @@ namespace lts::editor
 
                 constants.baseColor = { 0.58F, 0.63F, 0.66F, 1.0F };
                 constants.materialParameters = {
-                    entityIndex == selectedIndex ? 1.0F : 0.0F, 0.0F, 0.0F, 0.0F };
+                    entityIndex == selectedIndex ? 1.0F : 0.0F, 0.0F, 0.0F, 0.5F };
                 
                 constants.sunDirectionIntensity =
                 {
@@ -1152,14 +1282,17 @@ namespace lts::editor
                             material.desc.baseColorFactor[2], material.desc.baseColorFactor[3] };
                         texture = material.baseColorTexture;
                         sampler = material.sampler;
-                        transparent = material.desc.alphaMode ==
-                            engine::assets::MaterialAlphaMode::Blend;
+                        transparent = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Blend;
+                        constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
+                        constants.materialParameters.w = material.desc.alphaCutoff;
                         constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
                     }
                     else
                     {
                         constants.baseColor = { 0.58F, 0.63F, 0.66F, 1.0F };
                         constants.materialParameters.y = 0.0F;
+                        constants.materialParameters.z = 0.0F;
+                        constants.materialParameters.w = 0.5F;
                     }
                     result = context.SetGraphicsPipeline(
                         transparent ? transparentPipeline_ : pipeline_);
@@ -1221,6 +1354,83 @@ namespace lts::editor
             context.UnbindGraphicsPipeline();
 
             return result;
+        }
+
+        [[nodiscard]]
+        bool ReloadMaterials(
+            const std::wstring& assetPath) noexcept
+        {
+            if (!initialized_ || device_ == nullptr)
+            {
+                return false;
+            }
+
+            try
+            {
+                std::filesystem::path path(assetPath);
+
+                if (!path.is_absolute())
+                {
+                    std::error_code error;
+
+                    const std::filesystem::path gameRoot =
+                        std::filesystem::current_path(error);
+
+                    if (error)
+                    {
+                        return false;
+                    }
+
+                    path = gameRoot / path;
+                }
+
+                path = path.lexically_normal();
+
+                const std::wstring key =
+                    LowercasePath(path.wstring());
+
+                const auto found =
+                    meshes_.find(key);
+
+                /*
+                 * Если mesh ещё не загружен, то при первом
+                 * рендере он сразу прочитает новый материал.
+                 */
+                if (found == meshes_.end())
+                {
+                    return true;
+                }
+
+                for (CachedMaterial& material :
+                     found->second.materials)
+                {
+                    if (material.baseColorTexture.IsValid())
+                    {
+                        static_cast<void>(
+                            device_->DestroyTexture(
+                                material.baseColorTexture));
+                    }
+
+                    if (material.sampler.IsValid())
+                    {
+                        static_cast<void>(
+                            device_->DestroySampler(
+                                material.sampler));
+                    }
+                }
+
+                found->second.materials.clear();
+
+                LoadMaterials(
+                    path,
+                    found->second.materials);
+
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
         }
 
         [[nodiscard]] bool TryGetMeshBounds(
@@ -1357,11 +1567,8 @@ namespace lts::editor
                 if (!std::filesystem::is_directory(directory, filesystemError) || filesystemError)
                     return;
                 
-                std::vector<std::filesystem::path>
-    matchingFiles;
-
-                std::vector<std::filesystem::path>
-                    legacyFiles;
+                std::vector<std::filesystem::path>matchingFiles;
+                std::vector<std::filesystem::path>legacyFiles;
 
                 const std::wstring materialPrefix =
                     LowercasePath(
@@ -1463,20 +1670,21 @@ namespace lts::editor
                     {
                         const auto texturePath = gameRoot /
                             std::filesystem::u8path(material.desc.baseColorTexture->String());
-                        std::vector<std::byte> pixels;
-                        std::uint32_t width = 0U, height = 0U;
-                        if (DecodeWicRgba(texturePath, pixels, width, height))
+                        
+                        if (material.desc.baseColorTexture)
                         {
-                            engine::graphics::TextureDesc desc;
-                            desc.width = width; desc.height = height;
-                            desc.format = engine::graphics::Format::R8G8B8A8UNormSrgb;
-                            engine::graphics::TextureSubresourceData initial;
-                            initial.data = pixels.data(); initial.dataSize = pixels.size();
-                            initial.rowPitch = static_cast<std::size_t>(width) * 4U;
-                            initial.slicePitch = pixels.size();
-                            if (engine::graphics::Failed(device_->CreateTexture(
-                                    desc, &initial, 1U, material.baseColorTexture)))
-                                material.baseColorTexture = {};
+                            const std::filesystem::path texturePath =
+                                gameRoot /
+                                std::filesystem::u8path(
+                                    material.desc.
+                                        baseColorTexture->
+                                        String());
+
+                            static_cast<void>(
+                                CreateTextureFromFile(
+                                    *device_,
+                                    texturePath,
+                                    material.baseColorTexture));
                         }
                     }
                     if (material.baseColorTexture.IsValid())
@@ -1674,6 +1882,14 @@ namespace lts::editor
     StaticMeshRenderer::
         ~StaticMeshRenderer() noexcept =
             default;
+
+    bool StaticMeshRenderer::ReloadMaterials(
+        const std::wstring& assetPath) noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->ReloadMaterials(assetPath);
+    }
 
     bool StaticMeshRenderer::Initialize(
         engine::graphics::

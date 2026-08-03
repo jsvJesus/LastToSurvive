@@ -1759,6 +1759,21 @@ namespace lts::editor
                 }
                 
                 if (!transformClipboardValid_) ImGui::EndDisabled();
+
+                if (entity->staticMesh.has_value())
+                {
+                    materialInspector_.Draw(
+                        entity->staticMesh->assetPath,
+                        staticMeshRenderer_);
+                }
+                else
+                {
+                    /*
+                     * Выбран объект без StaticMeshComponent:
+                     * light, terrain, environment, prefab root.
+                     */
+                    materialInspector_.Reset();
+                }
                 
                 if (entity->environment.has_value())
                 {
@@ -2752,8 +2767,10 @@ namespace lts::editor
             }
             else
             {
+                materialInspector_.Reset();
                 ImGui::TextDisabled("No selection");
             }
+
             ImGui::End();
 
             EditorContentBrowserContext

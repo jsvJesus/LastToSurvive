@@ -237,6 +237,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Scene\ScenePicker.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Terrain\TerrainRenderer.h" />
     <ClInclude Include="Public\Editor\LevelEditor\UI\DockLayout.h" />
+    <ClInclude Include="Public\Editor\LevelEditor\UI\MaterialInspector.h" />
     <ClInclude Include="Public\Editor\LevelEditor\UI\WorldOutlinerPanel.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\CameraController.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\TransformController.h" />
@@ -1749,6 +1750,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Private\LevelEditor\UI\MaterialInspector.cpp" />
     <ClCompile Include="Private\LevelEditor\UI\WorldOutlinerPanel.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>Z:\WarZ\src\Editor\..\..\build\x64\Release\Obj\LTS.Editor\</AssemblerListingLocation>

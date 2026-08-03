@@ -17,6 +17,8 @@
 #include "Editor/LevelEditor/Terrain/TerrainImporter.h"
 #include "Editor/Tools/ToolWindowManager.h"
 
+#include "Editor/LevelEditor/UI/MaterialInspector.h"
+
 #include <Application/Application.h>
 
 #include <Graphics/CommandContext.h>
@@ -115,6 +117,7 @@ namespace lts::editor
         TerrainRenderer terrainRenderer_;
         TerrainImporter terrainImporter_;
         SceneRenderer sceneRenderer_;
+        MaterialInspector materialInspector_;
         
         engine::graphics::d3d11::
             D3D11Device graphicsDevice_;

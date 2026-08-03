@@ -37,6 +37,10 @@ namespace lts::editor
             engine::graphics::RenderDevice& device) noexcept;
 
         [[nodiscard]]
+        bool ReloadMaterials(
+            const std::wstring& assetPath) noexcept;
+
+        [[nodiscard]]
         engine::graphics::GraphicsResult Render(
             engine::graphics::CommandContext& context,
             const SceneDocument& document,

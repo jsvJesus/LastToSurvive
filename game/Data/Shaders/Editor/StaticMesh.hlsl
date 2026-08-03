@@ -31,7 +31,7 @@ struct VertexOutput
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD0;
     float4 baseColor : COLOR0;
-    float2 materialParameters : TEXCOORD1;
+    float4 materialParameters : TEXCOORD1;
 };
 
 VertexOutput VSMain(VertexInput input)
@@ -52,7 +52,7 @@ VertexOutput VSMain(VertexInput input)
 
     output.texcoord = input.texcoord;
     output.baseColor = BaseColor;
-    output.materialParameters = MaterialParameters.xy;
+    output.materialParameters = MaterialParameters;
 
     return output;
 }
@@ -91,6 +91,17 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             MaterialSampler,
             input.texcoord);
     }
+	
+	/*
+	 * z = material uses Mask alpha mode
+	 * w = alpha cutoff
+	 */
+	if (input.materialParameters.z > 0.5F)
+	{
+		clip(
+			surface.a -
+			input.materialParameters.w);
+	}
 
     float3 color = surface.rgb * lighting;
 
