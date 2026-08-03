@@ -961,24 +961,61 @@ namespace lts::editor
     bool SceneDocument::SetSelectedTransform(
         const EditorTransform& transform) noexcept
     {
-        EditorSceneEntity* const entity =
-            GetSelectedEntityMutable();
+        const EditorSceneEntity* const selectedEntity =
+            GetSelectedEntity();
 
-        if (
-            entity == nullptr ||
+        if (selectedEntity == nullptr ||
             !engine::scene::SceneWorld::
                 IsFiniteTransform(transform) ||
             TransformsEqual(
-                entity->transform,
+                selectedEntity->transform,
                 transform))
         {
             return false;
         }
 
-        entity->transform = transform;
-        dirty_ = true;
+        constexpr float minimumScale = 0.001F;
 
-        return true;
+        std::array<float, 3U> positionDelta{};
+        std::array<float, 3U> rotationDelta{};
+        std::array<float, 3U> scaleRatio
+        {
+            1.0F,
+            1.0F,
+            1.0F
+        };
+
+        for (std::size_t axis = 0U; axis < 3U; ++axis)
+        {
+            positionDelta[axis] =
+                transform.position[axis] -
+                selectedEntity->transform.position[axis];
+
+            rotationDelta[axis] =
+                transform.rotationDegrees[axis] -
+                selectedEntity->
+                    transform.rotationDegrees[axis];
+
+            const float currentScale =
+                std::max(
+                    std::abs(
+                        selectedEntity->
+                            transform.scale[axis]),
+                    minimumScale);
+
+            const float targetScale =
+                std::max(
+                    transform.scale[axis],
+                    minimumScale);
+
+            scaleRatio[axis] =
+                targetScale / currentScale;
+        }
+
+        return ApplySelectionTransformDelta(
+            positionDelta,
+            rotationDelta,
+            scaleRatio);
     }
 
     std::wstring SceneDocument::MakeUniqueName(
@@ -1210,45 +1247,85 @@ namespace lts::editor
         const std::array<float, 3U>& rotationDelta,
         const std::array<float, 3U>& scaleRatio) noexcept
     {
-        bool changed = false;
-        for (const EditorEntityId entityId : selectedEntityIds_)
+        if (selectedEntityIds_.empty())
         {
-            EditorSceneEntity* const entity = world_.FindEntity(entityId);
-            if (entity == nullptr) continue;
-            EditorTransform transform = entity->transform;
-            for (std::size_t axis = 0U; axis < 3U; ++axis)
+            return false;
+        }
+
+        for (std::size_t axis = 0U; axis < 3U; ++axis)
+        {
+            if (!std::isfinite(positionDelta[axis]) ||
+                !std::isfinite(rotationDelta[axis]) ||
+                !std::isfinite(scaleRatio[axis]) ||
+                scaleRatio[axis] <= 0.0F)
             {
-                transform.position[axis] += positionDelta[axis];
-                transform.rotationDegrees[axis] += rotationDelta[axis];
-                transform.scale[axis] = std::max(
-                    0.001F, transform.scale[axis] * scaleRatio[axis]);
-            }
-            if (!TransformsEqual(transform, entity->transform))
-            {
-                entity->transform = transform;
-                changed = true;
+                return false;
             }
         }
+
+        const std::vector<EditorEntityId> transformTargets =
+            ExpandWithDescendants(
+                world_.GetEntities(),
+                selectedEntityIds_);
+
+        bool changed = false;
+
+        for (const EditorEntityId entityId : transformTargets)
+        {
+            EditorSceneEntity* const entity =
+                world_.FindEntity(entityId);
+
+            if (entity == nullptr)
+            {
+                continue;
+            }
+
+            EditorTransform transform =
+                entity->transform;
+
+            for (std::size_t axis = 0U; axis < 3U; ++axis)
+            {
+                transform.position[axis] +=
+                    positionDelta[axis];
+
+                transform.rotationDegrees[axis] +=
+                    rotationDelta[axis];
+
+                transform.scale[axis] =
+                    std::max(
+                        0.001F,
+                        transform.scale[axis] *
+                            scaleRatio[axis]);
+            }
+
+            if (!engine::scene::SceneWorld::
+                    IsFiniteTransform(transform))
+            {
+                continue;
+            }
+
+            if (TransformsEqual(
+                    transform,
+                    entity->transform))
+            {
+                continue;
+            }
+
+            entity->transform =
+                transform;
+
+            changed = true;
+        }
+
         dirty_ = dirty_ || changed;
+
         return changed;
     }
 
     bool SceneDocument::SetSelectionTransform(
         const EditorTransform& transform) noexcept
     {
-        if (!engine::scene::SceneWorld::IsFiniteTransform(transform)) return false;
-        bool changed = false;
-        for (const EditorEntityId entityId : selectedEntityIds_)
-        {
-            EditorSceneEntity* const entity = world_.FindEntity(entityId);
-            if (entity != nullptr && !TransformsEqual(entity->transform, transform))
-            {
-                entity->transform = transform;
-                changed = true;
-            }
-        }
-        dirty_ = dirty_ || changed;
-        return changed;
+        return SetSelectedTransform(transform);
     }
 
     EditorSceneSnapshot
