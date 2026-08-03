@@ -70,7 +70,5 @@ namespace lts::editor
             meshFiles_;
 
         std::array<char, 128U> search_{};
-
-        bool gridView_ = true;
     };
 }

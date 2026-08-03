@@ -534,32 +534,6 @@ namespace lts::editor
             search_.data(),
             search_.size());
 
-        ImGui::SameLine();
-
-        /*
-         * Две отдельные кнопки, чтобы было понятно,
-         * какой режим сейчас активен.
-         */
-        ImGui::BeginDisabled(!gridView_);
-
-        if (ImGui::Button("List"))
-        {
-            gridView_ = false;
-        }
-
-        ImGui::EndDisabled();
-
-        ImGui::SameLine();
-
-        ImGui::BeginDisabled(gridView_);
-
-        if (ImGui::Button("Tiles"))
-        {
-            gridView_ = true;
-        }
-
-        ImGui::EndDisabled();
-
         ImGui::Separator();
 
         ImGui::BeginChild(
@@ -633,36 +607,11 @@ namespace lts::editor
 
         bool refreshRequested = false;
         std::size_t visibleAssetCount = 0U;
-        std::size_t tileIndex = 0U;
 
-        /*
-         * Размер области вычисляется один раз.
-         * Поэтому плитки не уезжают за пределы окна.
-         */
         const float contentWidth =
             (std::max)(
                 ImGui::GetContentRegionAvail().x - 1.0F,
                 1.0F);
-
-        const float desiredTileWidth = 150.0F;
-        const float itemSpacing =
-            ImGui::GetStyle().ItemSpacing.x;
-
-        const int tileColumnCount =
-            (std::max)(
-                1,
-                static_cast<int>(
-                    (contentWidth + itemSpacing) /
-                    (desiredTileWidth + itemSpacing)));
-
-        const float tileWidth =
-            (
-                contentWidth -
-                itemSpacing *
-                    static_cast<float>(
-                        tileColumnCount - 1)
-            ) /
-            static_cast<float>(tileColumnCount);
 
         for (const std::filesystem::path& file : meshFiles_)
         {
@@ -719,30 +668,12 @@ namespace lts::editor
                 continue;
             }
 
-            /*
-             * SameLine вызывается перед следующим элементом,
-             * а не после предыдущего.
-             *
-             * Количество колонок заранее известно.
-             */
-            if (gridView_ &&
-                tileIndex > 0U &&
-                tileIndex %
-                    static_cast<std::size_t>(
-                        tileColumnCount) != 0U)
-            {
-                ImGui::SameLine();
-            }
-
             const std::string identifier =
                 file.generic_u8string();
 
             ImGui::PushID(identifier.c_str());
 
-            const ImVec2 itemSize =
-                gridView_
-                    ? ImVec2(tileWidth, 58.0F)
-                    : ImVec2(contentWidth, 24.0F);
+            const ImVec2 itemSize(contentWidth, 24.0F);
 
             const bool pressed =
                 ImGui::Selectable(
@@ -891,11 +822,6 @@ namespace lts::editor
             ImGui::PopID();
 
             ++visibleAssetCount;
-
-            if (gridView_)
-            {
-                ++tileIndex;
-            }
         }
 
         if (refreshRequested)
