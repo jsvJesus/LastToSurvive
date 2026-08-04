@@ -56,7 +56,7 @@ namespace lts::editor
 
         constexpr float GizmoLength = 2.55F;
         constexpr float GizmoDeadZone = 0.18F;
-        constexpr float GizmoPickRadius = 0.12F;
+        constexpr float GizmoPickRadius = 0.22F;
 
         constexpr float RotationRadius = 1.75F;
         constexpr float RotationPickTolerance = 0.11F;
@@ -258,8 +258,8 @@ namespace lts::editor
             if (std::abs(denominator) > Epsilon)
             {
                 segmentParameter =
-                    (raySegmentDot * rayOriginDot -
-                        segmentOriginDot) /
+                    (segmentOriginDot -
+                        raySegmentDot * rayOriginDot) /
                     denominator;
             }
 
