@@ -1660,7 +1660,7 @@ namespace lts::editor
                 engine::assets::MaterialAssetDesc& material =
                     slot.edited;
 
-                if (ImGui::ColorEdit3("Base Color", material.baseColorFactor.data(), ImGuiColorEditFlags_Float))
+                const auto previewMaterial = [&]()
                 {
                     slot.dirty = true;
                     slot.error = false;
@@ -1680,200 +1680,155 @@ namespace lts::editor
 
                         slot.error = true;
                     }
+                };
+
+                const auto saveAfterEdit = [&]()
+                {
+                    if (ImGui::IsItemDeactivatedAfterEdit())
+                    {
+                        static_cast<void>(
+                            SaveMaterial(
+                                slotIndex,
+                                renderer));
+                    }
+                };
+
+                const auto applyDiscreteValue = [&]()
+                {
+                    previewMaterial();
+
+                    static_cast<void>(
+                        SaveMaterial(
+                            slotIndex,
+                            renderer));
+                };
+
+                /*
+                 * Base Color
+                 */
+                if (ImGui::ColorEdit3("Base Color", material.baseColorFactor.data(), ImGuiColorEditFlags_Float))
+                {
+                    previewMaterial();
+                }
+                saveAfterEdit();
+
+                /*
+                 * Opacity
+                 */
+                if (ImGui::SliderFloat("Opacity", &material.baseColorFactor[3U], 0.0F, 1.0F, "%.3f"))
+                {
+                    previewMaterial();
+                }
+                saveAfterEdit();
+
+                /*
+                 * Alpha Mode
+                 */
+                static constexpr const char* AlphaModes[]
+                {
+	                "Opaque", "Mask", "Blend"
+                };
+
+                int alphaMode = static_cast<int>(material.alphaMode);
+
+                if (ImGui::Combo("Alpha Mode", &alphaMode, AlphaModes, static_cast<int>(std::size(AlphaModes))))
+                {
+                    material.alphaMode = static_cast<engine::assets::MaterialAlphaMode>(alphaMode);
+                    applyDiscreteValue();
                 }
 
                 /*
-                 * Вызывается сразу после ColorEdit3.
-                 * Пока цвет двигается — работает PreviewMaterial().
-                 * Когда редактирование закончено — сохраняем файл.
+                 * Alpha Cutoff
                  */
-                if (ImGui::IsItemDeactivatedAfterEdit())
+                if (material.alphaMode == engine::assets::MaterialAlphaMode::Mask)
                 {
-                    static_cast<void>(
-                        SaveMaterial(
-                            slotIndex,
-                            renderer));
-                }
-
-                if (ImGui::SliderFloat("Opacity", &material.baseColorFactor[3U], 0.0F, 1.0F, "%.3f"))
-                {
-                    slot.dirty = true;
-                    slot.error = false;
-
-                    if (renderer.PreviewMaterial(
-                            meshAssetPath_,
-                            slotIndex,
-                            material))
+                    if (ImGui::SliderFloat("Alpha Cutoff", &material.alphaCutoff, 0.0F, 1.0F, "%.3f"))
                     {
-                        slot.message =
-                            "Live preview. Release to save.";
+                        previewMaterial();
                     }
-                    else
-                    {
-                        slot.message =
-                            "Failed to update opacity preview.";
-
-                        slot.error = true;
-                    }
+	                
+                    saveAfterEdit();
                 }
 
-                if (ImGui::IsItemDeactivatedAfterEdit())
+                /*
+                 * Double Sided
+                 */
+                if (ImGui::Checkbox("Double Sided", &material.doubleSided))
                 {
-                    static_cast<void>(
-                        SaveMaterial(
-                            slotIndex,
-                            renderer));
+                    applyDiscreteValue();
                 }
 
-                static constexpr const char*
-                    AlphaModes[]
+                /*
+                 * Metallic
+                 */
+                if (ImGui::SliderFloat("Metallic", &material.metallicFactor, 0.0F, 1.0F, "%.3f"))
                 {
-                    "Opaque",
-                    "Mask",
-                    "Blend"
-                };
-
-                int alphaMode =
-                    static_cast<int>(
-                        material.alphaMode);
-
-                if (ImGui::Combo(
-                        "Alpha Mode",
-                        &alphaMode,
-                        AlphaModes,
-                        static_cast<int>(
-                            std::size(
-                                AlphaModes))))
-                {
-                    material.alphaMode =
-                        static_cast<
-                            engine::assets::
-                                MaterialAlphaMode>(
-                                    alphaMode);
-
-                    slot.dirty = true;
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (material.alphaMode ==
-                    engine::assets::
-                        MaterialAlphaMode::Mask)
+                /*
+                 * Roughness
+                 */
+                if (ImGui::SliderFloat("Roughness", &material.roughnessFactor, 0.0F, 1.0F, "%.3f"))
                 {
-                    if (ImGui::SliderFloat(
-                            "Alpha Cutoff",
-                            &material.alphaCutoff,
-                            0.0F,
-                            1.0F,
-                            "%.3f"))
-                    {
-                        slot.dirty = true;
-                    }
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::Checkbox(
-                        "Double Sided",
-                        &material.doubleSided))
+                /*
+                 * Normal Scale
+                 */
+                if (ImGui::DragFloat("Normal Scale", &material.normalScale, 0.01F, 0.0F, 4.0F, "%.3f"))
                 {
-                    slot.dirty = true;
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::SliderFloat(
-                        "Metallic",
-                        &material.metallicFactor,
-                        0.0F,
-                        1.0F,
-                        "%.3f"))
+                /*
+                 * Specular Intensity
+                 */
+                if (ImGui::DragFloat("Specular Intensity", &material.specularIntensity, 0.01F, 0.0F, 16.0F, "%.3f"))
                 {
-                    slot.dirty = true;
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::SliderFloat(
-                        "Roughness",
-                        &material.roughnessFactor,
-                        0.0F,
-                        1.0F,
-                        "%.3f"))
+                /*
+                 * Specular Power
+                 */
+                if (ImGui::DragFloat("Specular Power", &material.specularPower, 1.0F, 1.0F, 8192.0F, "%.1f"))
                 {
-                    slot.dirty = true;
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::DragFloat(
-                        "Normal Scale",
-                        &material.normalScale,
-                        0.01F,
-                        0.0F,
-                        4.0F,
-                        "%.3f"))
+                /*
+                 * Reflection
+                 */
+                if (ImGui::DragFloat("Reflection", &material.reflectionFactor, 0.01F, 0.0F, 16.0F, "%.3f"))
                 {
-                    slot.dirty = true;
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::DragFloat(
-                        "Specular Intensity",
-                        &material.specularIntensity,
-                        0.01F,
-                        0.0F,
-                        16.0F,
-                        "%.3f"))
-                {
-                    slot.dirty = true;
-                }
-
-                if (ImGui::DragFloat(
-                        "Specular Power",
-                        &material.specularPower,
-                        1.0F,
-                        1.0F,
-                        8192.0F,
-                        "%.1f"))
-                {
-                    slot.dirty = true;
-                }
-
-                if (ImGui::DragFloat(
-                        "Reflection",
-                        &material.reflectionFactor,
-                        0.01F,
-                        0.0F,
-                        16.0F,
-                        "%.3f"))
-                {
-                    slot.dirty = true;
-                }
-
+                /*
+                 * Emissive Color
+                 */
                 if (ImGui::ColorEdit3("Emissive Color", material.emissiveFactor.data(), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR))
                 {
-                    slot.dirty = true;
-                    slot.error = false;
-
-                    static_cast<void>(
-                        renderer.PreviewMaterial(
-                            meshAssetPath_,
-                            slotIndex,
-                            material));
-
-                    slot.message =
-                        "Live preview. Release to save.";
+                    previewMaterial();
                 }
+                saveAfterEdit();
 
-                if (ImGui::IsItemDeactivatedAfterEdit())
+                /*
+                 * Emissive Strength
+                 */
+                if (ImGui::DragFloat("Emissive Strength", &material.emissiveStrength, 0.05F, 0.0F, 64.0F, "%.3f"))
                 {
-                    static_cast<void>(
-                        SaveMaterial(
-                            slotIndex,
-                            renderer));
+                    previewMaterial();
                 }
-
-                if (ImGui::DragFloat(
-                        "Emissive Strength",
-                        &material.emissiveStrength,
-                        0.05F,
-                        0.0F,
-                        64.0F,
-                        "%.3f"))
-                {
-                    slot.dirty = true;
-                }
-
+                saveAfterEdit();
                 ImGui::SeparatorText("Textures");
 
                 DrawTexture("Base Color", 0, slotIndex, material.baseColorTexture, renderer);
