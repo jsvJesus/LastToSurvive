@@ -1485,10 +1485,16 @@ namespace lts::editor
         vertexBufferDescription.indexFormat =
             engine::graphics::IndexFormat::None;
 
-        result = device.CreateBuffer(
-            vertexBufferDescription,
-            nullptr,
-            vertexBuffer_);
+        result = device.CreateBuffer(vertexBufferDescription, nullptr, vertexBuffer_);
+        if (engine::graphics::Failed(result))
+        {
+            LogGraphicsFailure(
+                "Create scene marker vertex buffer",
+                result);
+
+            Shutdown(device);
+            return false;
+        }
 
         result = device.CreateBuffer(
             vertexBufferDescription,
@@ -1499,16 +1505,6 @@ namespace lts::editor
         {
             LogGraphicsFailure(
                 "Create scene gizmo solid vertex buffer",
-                result);
-
-            Shutdown(device);
-            return false;
-        }
-
-        if (engine::graphics::Failed(result))
-        {
-            LogGraphicsFailure(
-                "Create scene marker vertex buffer",
                 result);
 
             Shutdown(device);
@@ -1627,6 +1623,15 @@ namespace lts::editor
     {
         initialized_ = false;
 
+        if (solidPipeline_.IsValid())
+        {
+            static_cast<void>(
+                device.DestroyGraphicsPipeline(
+                    solidPipeline_));
+
+            solidPipeline_ = {};
+        }
+
         if (pipeline_.IsValid())
         {
             static_cast<void>(
@@ -1732,105 +1737,112 @@ namespace lts::editor
             return result;
         }
 
-        result =
-            context.SetConstantBuffers(
-                engine::graphics::ShaderStage::Vertex,
-                0U,
-                &cameraBuffer_,
-                1U);
-
-        if (engine::graphics::Failed(result))
-        {
-            return result;
-        }
-
         const auto drawGeometry =
-            [&](const engine::graphics::BufferHandle buffer,
+            [&](
+                const engine::graphics::BufferHandle buffer,
                 const engine::graphics::PipelineStateHandle pipeline,
-                const MarkerVertex* const vertices,
+                const std::array<
+                    MarkerVertex,
+                    MaxMarkerVertices>& vertices,
                 const std::size_t vertexCount)
+                -> engine::graphics::GraphicsResult
+        {
+            if (vertexCount == 0U)
             {
-                if (vertexCount == 0U)
-                {
-                    return engine::graphics::GraphicsResult::Success;
-                }
+                return engine::graphics::
+                    GraphicsResult::Success;
+            }
 
-                auto drawResult =
-                    context.UpdateBuffer(
-                        buffer,
-                        vertices,
-                        sizeof(MarkerVertex) *
-                            vertexCount);
+            auto drawResult =
+                context.UpdateBuffer(
+                    buffer,
+                    vertices.data(),
+                    sizeof(vertices));
 
-                if (engine::graphics::Failed(drawResult))
-                {
-                    return drawResult;
-                }
+            if (engine::graphics::Failed(drawResult))
+            {
+                return drawResult;
+            }
+                
+            drawResult =
+                context.SetGraphicsPipeline(
+                    pipeline);
 
-                drawResult =
-                    context.SetGraphicsPipeline(
-                        pipeline);
+            if (engine::graphics::Failed(drawResult))
+            {
+                return drawResult;
+            }
 
-                if (engine::graphics::Failed(drawResult))
-                {
-                    return drawResult;
-                }
+            engine::graphics::VertexBufferBinding
+                vertexBinding{};
 
-                engine::graphics::VertexBufferBinding
-                    vertexBinding{};
+            vertexBinding.buffer =
+                buffer;
 
-                vertexBinding.buffer = buffer;
-                vertexBinding.stride =
-                    static_cast<std::uint32_t>(
-                        sizeof(MarkerVertex));
+            vertexBinding.stride =
+                static_cast<std::uint32_t>(
+                    sizeof(MarkerVertex));
 
-                vertexBinding.offset = 0U;
+            vertexBinding.offset = 0U;
 
-                drawResult =
-                    context.SetVertexBuffers(
-                        0U,
-                        &vertexBinding,
-                        1U);
+            drawResult =
+                context.SetVertexBuffers(
+                    0U,
+                    &vertexBinding,
+                    1U);
 
-                if (engine::graphics::Failed(drawResult))
-                {
-                    return drawResult;
-                }
+            if (engine::graphics::Failed(drawResult))
+            {
+                context.UnbindGraphicsPipeline();
+                return drawResult;
+            }
+                
+            drawResult =
+                context.SetConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    0U,
+                    &cameraBuffer_,
+                    1U);
 
-                return context.Draw(
+            if (engine::graphics::Failed(drawResult))
+            {
+                context.UnbindGraphicsPipeline();
+                return drawResult;
+            }
+
+            drawResult =
+                context.Draw(
                     static_cast<std::uint32_t>(
                         vertexCount),
                     0U);
-            };
 
-        /*
-         * Сначала заполненный gizmo,
-         * затем поверх него selection-box и marker lines.
-         */
+            static_cast<void>(
+                context.UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    0U,
+                    1U));
+
+            context.UnbindGraphicsPipeline();
+
+            return drawResult;
+        };
+        
         result =
             drawGeometry(
                 solidVertexBuffer_,
                 solidPipeline_,
-                solidVertices.data(),
+                solidVertices,
                 solidVertexCount);
-
+        
         if (!engine::graphics::Failed(result))
         {
             result =
                 drawGeometry(
                     vertexBuffer_,
                     pipeline_,
-                    lineVertices.data(),
+                    lineVertices,
                     lineVertexCount);
         }
-
-        static_cast<void>(
-            context.UnbindConstantBuffers(
-                engine::graphics::ShaderStage::Vertex,
-                0U,
-                1U));
-
-        context.UnbindGraphicsPipeline();
 
         return result;
     }
