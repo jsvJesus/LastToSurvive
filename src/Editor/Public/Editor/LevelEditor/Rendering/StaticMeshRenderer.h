@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Editor/LevelEditor/Scene/SceneDocument.h"
-
+#include <Assets/MaterialAsset.h>
 #include <Graphics/GraphicsResult.h>
 
 #include <DirectXMath.h>
 
 #include <memory>
 #include <string>
+#include <cstddef>
 
 namespace engine::graphics
 {
@@ -39,6 +40,12 @@ namespace lts::editor
         [[nodiscard]]
         bool ReloadMaterials(
             const std::wstring& assetPath) noexcept;
+
+        [[nodiscard]]
+        bool PreviewMaterial(
+            const std::wstring& assetPath,
+            std::size_t materialSlot,
+            const engine::assets::MaterialAssetDesc& material) noexcept;
 
         [[nodiscard]]
         engine::graphics::GraphicsResult Render(

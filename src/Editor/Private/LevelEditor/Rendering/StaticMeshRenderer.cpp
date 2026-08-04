@@ -1476,6 +1476,44 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool PreviewMaterial(
+            const std::wstring& assetPath,
+            const std::size_t materialSlot,
+            const engine::assets::MaterialAssetDesc& material) noexcept
+        {
+            if (!initialized_)
+            {
+                return false;
+            }
+
+            try
+            {
+                CachedMesh* const cachedMesh =
+                    GetOrLoadMesh(assetPath);
+
+                if (cachedMesh == nullptr ||
+                    materialSlot >= cachedMesh->materials.size())
+                {
+                    return false;
+                }
+
+                /*
+                 * TextureHandle и SamplerHandle не трогаем.
+                 * Здесь обновляются цвет, прозрачность,
+                 * Double Sided и остальные параметры.
+                 */
+                cachedMesh->materials[materialSlot].desc =
+                    material;
+
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
         bool ReloadMaterials(
             const std::wstring& assetPath) noexcept
         {
@@ -2004,6 +2042,19 @@ namespace lts::editor
     StaticMeshRenderer::
         ~StaticMeshRenderer() noexcept =
             default;
+
+    bool StaticMeshRenderer::PreviewMaterial(
+        const std::wstring& assetPath,
+        const std::size_t materialSlot,
+        const engine::assets::MaterialAssetDesc& material) noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->PreviewMaterial(
+                assetPath,
+                materialSlot,
+                material);
+    }
 
     bool StaticMeshRenderer::ReloadMaterials(
         const std::wstring& assetPath) noexcept

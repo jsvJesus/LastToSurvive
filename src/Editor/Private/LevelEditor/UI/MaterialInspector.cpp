@@ -1660,25 +1660,69 @@ namespace lts::editor
                 engine::assets::MaterialAssetDesc& material =
                     slot.edited;
 
-                if (ImGui::ColorEdit3(
-                        "Base Color",
-                        material.
-                            baseColorFactor.
-                            data(),
-                        ImGuiColorEditFlags_Float))
+                if (ImGui::ColorEdit3("Base Color", material.baseColorFactor.data(), ImGuiColorEditFlags_Float))
                 {
                     slot.dirty = true;
+                    slot.error = false;
+
+                    if (renderer.PreviewMaterial(
+                            meshAssetPath_,
+                            slotIndex,
+                            material))
+                    {
+                        slot.message =
+                            "Live preview. Release to save.";
+                    }
+                    else
+                    {
+                        slot.message =
+                            "Failed to update material preview.";
+
+                        slot.error = true;
+                    }
                 }
 
-                if (ImGui::SliderFloat(
-                        "Opacity",
-                        &material.
-                            baseColorFactor[3U],
-                        0.0F,
-                        1.0F,
-                        "%.3f"))
+                /*
+                 * Вызывается сразу после ColorEdit3.
+                 * Пока цвет двигается — работает PreviewMaterial().
+                 * Когда редактирование закончено — сохраняем файл.
+                 */
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    static_cast<void>(
+                        SaveMaterial(
+                            slotIndex,
+                            renderer));
+                }
+
+                if (ImGui::SliderFloat("Opacity", &material.baseColorFactor[3U], 0.0F, 1.0F, "%.3f"))
                 {
                     slot.dirty = true;
+                    slot.error = false;
+
+                    if (renderer.PreviewMaterial(
+                            meshAssetPath_,
+                            slotIndex,
+                            material))
+                    {
+                        slot.message =
+                            "Live preview. Release to save.";
+                    }
+                    else
+                    {
+                        slot.message =
+                            "Failed to update opacity preview.";
+
+                        slot.error = true;
+                    }
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    static_cast<void>(
+                        SaveMaterial(
+                            slotIndex,
+                            renderer));
                 }
 
                 static constexpr const char*
@@ -1796,15 +1840,27 @@ namespace lts::editor
                     slot.dirty = true;
                 }
 
-                if (ImGui::ColorEdit3(
-                        "Emissive Color",
-                        material.
-                            emissiveFactor.
-                            data(),
-                        ImGuiColorEditFlags_Float |
-                        ImGuiColorEditFlags_HDR))
+                if (ImGui::ColorEdit3("Emissive Color", material.emissiveFactor.data(), ImGuiColorEditFlags_Float | ImGuiColorEditFlags_HDR))
                 {
                     slot.dirty = true;
+                    slot.error = false;
+
+                    static_cast<void>(
+                        renderer.PreviewMaterial(
+                            meshAssetPath_,
+                            slotIndex,
+                            material));
+
+                    slot.message =
+                        "Live preview. Release to save.";
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                {
+                    static_cast<void>(
+                        SaveMaterial(
+                            slotIndex,
+                            renderer));
                 }
 
                 if (ImGui::DragFloat(
