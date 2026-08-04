@@ -52,8 +52,8 @@ namespace lts::editor
             const char* label,
             int controlId,
             std::size_t slotIndex,
-            std::optional<engine::assets::AssetPath>&
-                texture) noexcept;
+            std::optional<engine::assets::AssetPath>& texture,
+            StaticMeshRenderer& renderer) noexcept;
 
         std::wstring meshAssetPath_;
 

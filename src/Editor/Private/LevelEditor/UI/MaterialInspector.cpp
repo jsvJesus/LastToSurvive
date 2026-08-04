@@ -1287,16 +1287,15 @@ namespace lts::editor
     }
 
     bool MaterialInspector::SaveMaterial(
-        const std::size_t slotIndex,
-        StaticMeshRenderer& renderer) noexcept
+    const std::size_t slotIndex,
+    StaticMeshRenderer& renderer) noexcept
     {
         if (slotIndex >= slots_.size())
         {
             return false;
         }
 
-        MaterialSlot& slot =
-            slots_[slotIndex];
+        MaterialSlot& slot = slots_[slotIndex];
 
         slot.message.clear();
         slot.error = false;
@@ -1307,21 +1306,28 @@ namespace lts::editor
                 slot.message))
         {
             slot.error = true;
-
             return false;
         }
 
-        slot.original =
-            slot.edited;
-
+        /*
+         * Файл уже сохранён, поэтому это становится
+         * новым исходным состоянием даже при ошибке
+         * обновления GPU-кэша.
+         */
+        slot.original = slot.edited;
         slot.dirty = false;
 
-        slot.message =
-            "Material saved.";
+        if (!renderer.ReloadMaterials(meshAssetPath_))
+        {
+            slot.message =
+                "Material saved, but renderer reload failed.";
 
-        static_cast<void>(
-            renderer.ReloadMaterials(
-                meshAssetPath_));
+            slot.error = true;
+            return false;
+        }
+
+        slot.message =
+            "Material saved and applied to the scene.";
 
         return true;
     }
@@ -1458,12 +1464,17 @@ namespace lts::editor
     }
 
     void MaterialInspector::DrawTexture(
-        const char* const label,
-        const int controlId,
-        const std::size_t slotIndex,
-        std::optional<engine::assets::AssetPath>&
-            texture) noexcept
+    const char* const label,
+    const int controlId,
+    const std::size_t slotIndex,
+    std::optional<engine::assets::AssetPath>& texture,
+    StaticMeshRenderer& renderer) noexcept
     {
+        if (slotIndex >= slots_.size())
+        {
+            return;
+        }
+
         ImGui::PushID(controlId);
 
         ImGui::TextUnformatted(label);
@@ -1481,10 +1492,19 @@ namespace lts::editor
 
         if (ImGui::Button("Select..."))
         {
-            static_cast<void>(
-                SelectTexture(
+            if (SelectTexture(
                     slotIndex,
-                    texture));
+                    texture))
+            {
+                /*
+                 * Новая текстура сразу записывается
+                 * в .material и появляется во Viewport.
+                 */
+                static_cast<void>(
+                    SaveMaterial(
+                        slotIndex,
+                        renderer));
+            }
         }
 
         ImGui::SameLine();
@@ -1496,11 +1516,20 @@ namespace lts::editor
         {
             texture.reset();
 
-            slots_[slotIndex].dirty = true;
-            slots_[slotIndex].error = false;
+            MaterialSlot& slot =
+                slots_[slotIndex];
 
-            slots_[slotIndex].message =
-                "Texture cleared. Press Save Material.";
+            slot.dirty = true;
+            slot.error = false;
+
+            /*
+             * Очистка сразу записывается в .material
+             * и сбрасывает GPU-текстуру.
+             */
+            static_cast<void>(
+                SaveMaterial(
+                    slotIndex,
+                    renderer));
         }
 
         ImGui::EndDisabled();
@@ -1791,41 +1820,12 @@ namespace lts::editor
 
                 ImGui::SeparatorText("Textures");
 
-                DrawTexture(
-                    "Base Color",
-                    0,
-                    slotIndex,
-                    material.baseColorTexture);
-
-                DrawTexture(
-                    "Normal",
-                    1,
-                    slotIndex,
-                    material.normalTexture);
-
-                DrawTexture(
-                    "Specular / Gloss",
-                    2,
-                    slotIndex,
-                    material.specularGlossTexture);
-
-                DrawTexture(
-                    "Roughness",
-                    3,
-                    slotIndex,
-                    material.roughnessTexture);
-
-                DrawTexture(
-                    "Emissive",
-                    4,
-                    slotIndex,
-                    material.emissiveTexture);
-
-                DrawTexture(
-                    "Specular Power",
-                    5,
-                    slotIndex,
-                    material.specularPowerTexture);
+                DrawTexture("Base Color", 0, slotIndex, material.baseColorTexture, renderer);
+                DrawTexture("Normal", 1, slotIndex, material.normalTexture, renderer);
+                DrawTexture("Specular / Gloss", 2, slotIndex, material.specularGlossTexture, renderer);
+                DrawTexture("Roughness", 3, slotIndex, material.roughnessTexture, renderer);
+                DrawTexture("Emissive", 4, slotIndex, material.emissiveTexture, renderer);
+                DrawTexture("Specular Power", 5, slotIndex, material.specularPowerTexture, renderer);
 
                 ImGui::Separator();
 
