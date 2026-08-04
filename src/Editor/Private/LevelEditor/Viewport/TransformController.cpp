@@ -50,16 +50,16 @@ namespace lts::editor
 
     namespace
     {
-        constexpr float GizmoLength = 2.5F;
-        constexpr float GizmoDeadZone = 0.40F;
-        constexpr float MinimumGizmoPickRadius = 0.30F;
-        constexpr float MaximumGizmoPickRadius = 1.35F;
-        constexpr float GizmoPickRadiusPerDistance = 0.022F;
+        constexpr float GizmoScalePerDistance = 0.075F;
+        constexpr float MinimumGizmoScale = 0.65F;
+        constexpr float MaximumGizmoScale = 8.0F;
 
-        constexpr float RotationRadius = 2.0F;
-        constexpr float MinimumRotationPickTolerance = 0.30F;
-        constexpr float MaximumRotationPickTolerance = 1.20F;
-        constexpr float RotationPickTolerancePerDistance = 0.022F;
+        constexpr float GizmoLength = 2.55F;
+        constexpr float GizmoDeadZone = 0.18F;
+        constexpr float GizmoPickRadius = 0.12F;
+
+        constexpr float RotationRadius = 1.75F;
+        constexpr float RotationPickTolerance = 0.11F;
 
         constexpr float Epsilon = 0.000001F;
 
@@ -360,6 +360,15 @@ namespace lts::editor
             }
 
             return std::round(value / increment) * increment;
+        }
+
+        [[nodiscard]]
+        float CalculateGizmoScale(const float cameraDistance) noexcept
+        {
+            return std::clamp(
+                cameraDistance * GizmoScalePerDistance,
+                MinimumGizmoScale,
+                MaximumGizmoScale);
         }
 
         [[nodiscard]]
@@ -1122,19 +1131,9 @@ namespace lts::editor
                 origin,
                 ray.origin));
 
-        const float gizmoPickRadius =
-            std::clamp(
-                cameraDistance *
-                    GizmoPickRadiusPerDistance,
-                MinimumGizmoPickRadius,
-                MaximumGizmoPickRadius);
-
-        const float rotationPickTolerance =
-            std::clamp(
-                cameraDistance *
-                    RotationPickTolerancePerDistance,
-                MinimumRotationPickTolerance,
-                MaximumRotationPickTolerance);
+        const float gizmoScale = CalculateGizmoScale(cameraDistance);
+        const float gizmoPickRadius = GizmoPickRadius * gizmoScale;
+        const float rotationPickTolerance = RotationPickTolerance * gizmoScale;
 
         constexpr std::array<EditorTransformAxis, 3U> axes
         {
@@ -1187,7 +1186,7 @@ namespace lts::editor
                     const float ringDistance =
                         std::abs(
                             radius -
-                            RotationRadius);
+                            RotationRadius * gizmoScale);
 
                     hit =
                         ringDistance <=
@@ -1212,14 +1211,14 @@ namespace lts::editor
                         origin,
                         Multiply(
                             axisVector,
-                            GizmoDeadZone));
+                            GizmoDeadZone * gizmoScale));
 
                 const DirectX::XMFLOAT3 segmentEnd =
                     Add(
                         origin,
                         Multiply(
                             axisVector,
-                            GizmoLength));
+                            GizmoLength * gizmoScale));
 
                 const float distance =
                     DistanceRayToSegment(

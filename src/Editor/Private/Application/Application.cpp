@@ -3407,8 +3407,8 @@ namespace lts::editor
                             *commandContext_,
                             sceneDocument_,
                             viewProjection,
-                            transformController_.
-                                GetVisualState(),
+                            renderCameraPosition,
+                            transformController_.GetVisualState(),
                             &staticMeshRenderer_);
                 }
 

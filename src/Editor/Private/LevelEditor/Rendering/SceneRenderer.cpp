@@ -30,6 +30,21 @@ namespace lts::editor
         constexpr std::size_t MaxMarkerVertices = 4096U;
         constexpr std::size_t CircleSegments = 48U;
 
+        constexpr std::size_t GizmoSegments = 16U;
+        constexpr std::size_t GizmoRingSegments = 72U;
+
+        constexpr float GizmoScalePerDistance = 0.075F;
+        constexpr float MinimumGizmoScale = 0.65F;
+        constexpr float MaximumGizmoScale = 8.0F;
+
+        constexpr MarkerColor GizmoCenterColor
+        {
+            0.92F,
+            0.92F,
+            0.92F,
+            1.0F
+        };
+
         constexpr wchar_t SceneMarkerShaderFile[] = L"SceneMarkers.hlsl";
 
         using MarkerColor = std::array<float, 4U>;
@@ -253,6 +268,377 @@ namespace lts::editor
 
             PushVertex(vertices, vertexCount, start, color);
             PushVertex(vertices, vertexCount, end, color);
+        }
+
+        void AddSolidTriangle(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& first,
+            const DirectX::XMFLOAT3& second,
+            const DirectX::XMFLOAT3& third,
+            const MarkerColor& color) noexcept
+        {
+            if (vertexCount + 3U > vertices.size())
+            {
+                return;
+            }
+
+            PushVertex(vertices, vertexCount, first, color);
+            PushVertex(vertices, vertexCount, second, color);
+            PushVertex(vertices, vertexCount, third, color);
+        }
+
+        void AddSolidQuad(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& first,
+            const DirectX::XMFLOAT3& second,
+            const DirectX::XMFLOAT3& third,
+            const DirectX::XMFLOAT3& fourth,
+            const MarkerColor& color) noexcept
+        {
+            AddSolidTriangle(
+                vertices,
+                vertexCount,
+                first,
+                second,
+                third,
+                color);
+
+            AddSolidTriangle(
+                vertices,
+                vertexCount,
+                first,
+                third,
+                fourth,
+                color);
+        }
+
+        void BuildAxisBasis(
+            const DirectX::XMFLOAT3& axis,
+            DirectX::XMFLOAT3& sideA,
+            DirectX::XMFLOAT3& sideB) noexcept
+        {
+            const DirectX::XMFLOAT3 reference =
+                std::abs(axis.y) < 0.90F
+                    ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
+                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
+
+            sideA = NormalizeVector(
+                CrossVector(axis, reference));
+
+            sideB = NormalizeVector(
+                CrossVector(axis, sideA));
+        }
+
+        void AddSolidCylinder(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axis,
+            const float startDistance,
+            const float endDistance,
+            const float radius,
+            const MarkerColor& color) noexcept
+        {
+            DirectX::XMFLOAT3 sideA{};
+            DirectX::XMFLOAT3 sideB{};
+
+            BuildAxisBasis(
+                axis,
+                sideA,
+                sideB);
+
+            const DirectX::XMFLOAT3 startCenter =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, startDistance));
+
+            const DirectX::XMFLOAT3 endCenter =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, endDistance));
+
+            for (std::size_t index = 0U;
+                 index < GizmoSegments;
+                 ++index)
+            {
+                const float firstAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index) /
+                    static_cast<float>(GizmoSegments);
+
+                const float secondAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index + 1U) /
+                    static_cast<float>(GizmoSegments);
+
+                const DirectX::XMFLOAT3 firstOffset =
+                    AddVector(
+                        MultiplyVector(
+                            sideA,
+                            std::cos(firstAngle) * radius),
+                        MultiplyVector(
+                            sideB,
+                            std::sin(firstAngle) * radius));
+
+                const DirectX::XMFLOAT3 secondOffset =
+                    AddVector(
+                        MultiplyVector(
+                            sideA,
+                            std::cos(secondAngle) * radius),
+                        MultiplyVector(
+                            sideB,
+                            std::sin(secondAngle) * radius));
+
+                AddSolidQuad(
+                    vertices,
+                    vertexCount,
+                    AddVector(startCenter, firstOffset),
+                    AddVector(startCenter, secondOffset),
+                    AddVector(endCenter, secondOffset),
+                    AddVector(endCenter, firstOffset),
+                    color);
+            }
+        }
+
+        void AddSolidCone(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& axis,
+            const float baseDistance,
+            const float tipDistance,
+            const float radius,
+            const MarkerColor& color) noexcept
+        {
+            DirectX::XMFLOAT3 sideA{};
+            DirectX::XMFLOAT3 sideB{};
+
+            BuildAxisBasis(
+                axis,
+                sideA,
+                sideB);
+
+            const DirectX::XMFLOAT3 baseCenter =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, baseDistance));
+
+            const DirectX::XMFLOAT3 tip =
+                AddVector(
+                    origin,
+                    MultiplyVector(axis, tipDistance));
+
+            for (std::size_t index = 0U;
+                 index < GizmoSegments;
+                 ++index)
+            {
+                const float firstAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index) /
+                    static_cast<float>(GizmoSegments);
+
+                const float secondAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index + 1U) /
+                    static_cast<float>(GizmoSegments);
+
+                const DirectX::XMFLOAT3 first =
+                    AddVector(
+                        baseCenter,
+                        AddVector(
+                            MultiplyVector(
+                                sideA,
+                                std::cos(firstAngle) * radius),
+                            MultiplyVector(
+                                sideB,
+                                std::sin(firstAngle) * radius)));
+
+                const DirectX::XMFLOAT3 second =
+                    AddVector(
+                        baseCenter,
+                        AddVector(
+                            MultiplyVector(
+                                sideA,
+                                std::cos(secondAngle) * radius),
+                            MultiplyVector(
+                                sideB,
+                                std::sin(secondAngle) * radius)));
+
+                AddSolidTriangle(
+                    vertices,
+                    vertexCount,
+                    tip,
+                    first,
+                    second,
+                    color);
+
+                AddSolidTriangle(
+                    vertices,
+                    vertexCount,
+                    baseCenter,
+                    second,
+                    first,
+                    color);
+            }
+        }
+
+        void AddOrientedBox(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& center,
+            const DirectX::XMFLOAT3& axisX,
+            const DirectX::XMFLOAT3& axisY,
+            const DirectX::XMFLOAT3& axisZ,
+            const float halfSize,
+            const MarkerColor& color) noexcept
+        {
+            const auto makePoint =
+                [&](const float x,
+                    const float y,
+                    const float z)
+                {
+                    return AddVector(
+                        center,
+                        AddVector(
+                            MultiplyVector(axisX, x * halfSize),
+                            AddVector(
+                                MultiplyVector(axisY, y * halfSize),
+                                MultiplyVector(axisZ, z * halfSize))));
+                };
+
+            const std::array<DirectX::XMFLOAT3, 8U> points
+            {{
+                makePoint(-1.0F, -1.0F, -1.0F),
+                makePoint( 1.0F, -1.0F, -1.0F),
+                makePoint( 1.0F,  1.0F, -1.0F),
+                makePoint(-1.0F,  1.0F, -1.0F),
+
+                makePoint(-1.0F, -1.0F,  1.0F),
+                makePoint( 1.0F, -1.0F,  1.0F),
+                makePoint( 1.0F,  1.0F,  1.0F),
+                makePoint(-1.0F,  1.0F,  1.0F)
+            }};
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[0U], points[1U], points[2U], points[3U],
+                color);
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[5U], points[4U], points[7U], points[6U],
+                color);
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[4U], points[0U], points[3U], points[7U],
+                color);
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[1U], points[5U], points[6U], points[2U],
+                color);
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[3U], points[2U], points[6U], points[7U],
+                color);
+
+            AddSolidQuad(
+                vertices, vertexCount,
+                points[4U], points[5U], points[1U], points[0U],
+                color);
+        }
+
+        void AddSolidRing(
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+            std::size_t& vertexCount,
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& normal,
+            const float radius,
+            const float halfWidth,
+            const MarkerColor& color) noexcept
+        {
+            DirectX::XMFLOAT3 axisA{};
+            DirectX::XMFLOAT3 axisB{};
+
+            BuildAxisBasis(
+                normal,
+                axisA,
+                axisB);
+
+            const float innerRadius =
+                radius - halfWidth;
+
+            const float outerRadius =
+                radius + halfWidth;
+
+            for (std::size_t index = 0U;
+                 index < GizmoRingSegments;
+                 ++index)
+            {
+                const float firstAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index) /
+                    static_cast<float>(GizmoRingSegments);
+
+                const float secondAngle =
+                    DirectX::XM_2PI *
+                    static_cast<float>(index + 1U) /
+                    static_cast<float>(GizmoRingSegments);
+
+                const auto pointAt =
+                    [&](const float angle,
+                        const float currentRadius)
+                    {
+                        return AddVector(
+                            origin,
+                            AddVector(
+                                MultiplyVector(
+                                    axisA,
+                                    std::cos(angle) *
+                                        currentRadius),
+                                MultiplyVector(
+                                    axisB,
+                                    std::sin(angle) *
+                                        currentRadius)));
+                    };
+
+                AddSolidQuad(
+                    vertices,
+                    vertexCount,
+                    pointAt(firstAngle, innerRadius),
+                    pointAt(firstAngle, outerRadius),
+                    pointAt(secondAngle, outerRadius),
+                    pointAt(secondAngle, innerRadius),
+                    color);
+            }
+        }
+
+        [[nodiscard]]
+        float CalculateGizmoScale(
+            const DirectX::XMFLOAT3& origin,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
+        {
+            const DirectX::XMFLOAT3 difference
+            {
+                origin.x - cameraPosition.x,
+                origin.y - cameraPosition.y,
+                origin.z - cameraPosition.z
+            };
+
+            const float distance =
+                std::sqrt(
+                    difference.x * difference.x +
+                    difference.y * difference.y +
+                    difference.z * difference.z);
+
+            return std::clamp(
+                distance * GizmoScalePerDistance,
+                MinimumGizmoScale,
+                MaximumGizmoScale);
         }
 
         void AddLocalLine(
@@ -619,89 +1005,32 @@ namespace lts::editor
                         rotation)));
         }
 
-        void AddGizmoArrow(
-            std::array<MarkerVertex, MaxMarkerVertices>& vertices,
-            std::size_t& vertexCount,
-            const DirectX::XMFLOAT3& origin,
-            const DirectX::XMFLOAT3& axis,
-            const MarkerColor& color) noexcept
+        void AddMoveGizmoAxis(
+    std::array<MarkerVertex, MaxMarkerVertices>& vertices,
+    std::size_t& vertexCount,
+    const DirectX::XMFLOAT3& origin,
+    const DirectX::XMFLOAT3& axis,
+    const float scale,
+    const MarkerColor& color) noexcept
         {
-            constexpr float AxisLength = 2.5F;
-            constexpr float ArrowLength = 0.48F;
-            constexpr float ArrowWidth = 0.30F;
-
-            const DirectX::XMFLOAT3 end =
-                AddVector(
-                    origin,
-                    MultiplyVector(axis, AxisLength));
-
-            const DirectX::XMFLOAT3 arrowBase =
-                AddVector(
-                    end,
-                    MultiplyVector(axis, -ArrowLength));
-
-            const DirectX::XMFLOAT3 reference =
-                std::abs(axis.y) < 0.9F
-                    ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
-                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
-
-            const DirectX::XMFLOAT3 sideA =
-                NormalizeVector(
-                    CrossVector(axis, reference));
-
-            const DirectX::XMFLOAT3 sideB =
-                NormalizeVector(
-                    CrossVector(axis, sideA));
-
-            const DirectX::XMFLOAT3 thicknessAxis =
-                std::abs(axis.y) < 0.9F
-                    ? NormalizeVector(CrossVector(axis, {0.0F, 1.0F, 0.0F}))
-                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
-            constexpr float LineHalfWidth = 0.045F;
-            AddWorldLine(vertices, vertexCount, origin, end, color);
-            AddWorldLine(
-                vertices, vertexCount,
-                AddVector(origin, MultiplyVector(thicknessAxis, LineHalfWidth)),
-                AddVector(end, MultiplyVector(thicknessAxis, LineHalfWidth)), color);
-            AddWorldLine(
-                vertices, vertexCount,
-                AddVector(origin, MultiplyVector(thicknessAxis, -LineHalfWidth)),
-                AddVector(end, MultiplyVector(thicknessAxis, -LineHalfWidth)), color);
-
-            AddWorldLine(
+            AddSolidCylinder(
                 vertices,
                 vertexCount,
-                end,
-                AddVector(
-                    arrowBase,
-                    MultiplyVector(sideA, ArrowWidth)),
+                origin,
+                axis,
+                0.18F * scale,
+                1.95F * scale,
+                0.045F * scale,
                 color);
 
-            AddWorldLine(
+            AddSolidCone(
                 vertices,
                 vertexCount,
-                end,
-                AddVector(
-                    arrowBase,
-                    MultiplyVector(sideA, -ArrowWidth)),
-                color);
-
-            AddWorldLine(
-                vertices,
-                vertexCount,
-                end,
-                AddVector(
-                    arrowBase,
-                    MultiplyVector(sideB, ArrowWidth)),
-                color);
-
-            AddWorldLine(
-                vertices,
-                vertexCount,
-                end,
-                AddVector(
-                    arrowBase,
-                    MultiplyVector(sideB, -ArrowWidth)),
+                origin,
+                axis,
+                1.92F * scale,
+                2.55F * scale,
+                0.20F * scale,
                 color);
         }
 
@@ -710,40 +1039,37 @@ namespace lts::editor
             std::size_t& vertexCount,
             const DirectX::XMFLOAT3& origin,
             const DirectX::XMFLOAT3& axis,
+            const DirectX::XMFLOAT3& axisX,
+            const DirectX::XMFLOAT3& axisY,
+            const DirectX::XMFLOAT3& axisZ,
+            const float scale,
             const MarkerColor& color) noexcept
         {
-            constexpr float AxisLength = 2.5F;
-            constexpr float CubeHalfSize = 0.24F;
-
-            const DirectX::XMFLOAT3 end =
-                AddVector(
-                    origin,
-                    MultiplyVector(axis, AxisLength));
-
-            const DirectX::XMFLOAT3 thicknessAxis =
-                std::abs(axis.y) < 0.9F
-                    ? NormalizeVector(CrossVector(axis, {0.0F, 1.0F, 0.0F}))
-                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
-            AddWorldLine(vertices, vertexCount, origin, end, color);
-            AddWorldLine(vertices, vertexCount,
-                AddVector(origin, MultiplyVector(thicknessAxis, 0.045F)),
-                AddVector(end, MultiplyVector(thicknessAxis, 0.045F)), color);
-            AddWorldLine(vertices, vertexCount,
-                AddVector(origin, MultiplyVector(thicknessAxis, -0.045F)),
-                AddVector(end, MultiplyVector(thicknessAxis, -0.045F)), color);
-
-            const DirectX::XMMATRIX cubeWorld =
-                DirectX::XMMatrixTranslation(
-                    end.x,
-                    end.y,
-                    end.z);
-
-            AddWireBox(
+            AddSolidCylinder(
                 vertices,
                 vertexCount,
-                cubeWorld,
-                {-CubeHalfSize, -CubeHalfSize, -CubeHalfSize},
-                {CubeHalfSize, CubeHalfSize, CubeHalfSize},
+                origin,
+                axis,
+                0.18F * scale,
+                2.20F * scale,
+                0.045F * scale,
+                color);
+
+            const DirectX::XMFLOAT3 cubeCenter =
+                AddVector(
+                    origin,
+                    MultiplyVector(
+                        axis,
+                        2.35F * scale));
+
+            AddOrientedBox(
+                vertices,
+                vertexCount,
+                cubeCenter,
+                axisX,
+                axisY,
+                axisZ,
+                0.16F * scale,
                 color);
         }
 
@@ -752,38 +1078,25 @@ namespace lts::editor
             std::size_t& vertexCount,
             const DirectX::XMFLOAT3& origin,
             const DirectX::XMFLOAT3& axis,
+            const float scale,
             const MarkerColor& color) noexcept
         {
-            const DirectX::XMFLOAT3 reference =
-                std::abs(axis.y) < 0.9F
-                    ? DirectX::XMFLOAT3{0.0F, 1.0F, 0.0F}
-                    : DirectX::XMFLOAT3{1.0F, 0.0F, 0.0F};
-
-            const DirectX::XMFLOAT3 axisA =
-                NormalizeVector(
-                    CrossVector(axis, reference));
-
-            const DirectX::XMFLOAT3 axisB =
-                NormalizeVector(
-                    CrossVector(axis, axisA));
-
-            AddCircle(
+            AddSolidRing(
                 vertices,
                 vertexCount,
                 origin,
-                axisA,
-                axisB,
-                2.0F,
+                axis,
+                1.75F * scale,
+                0.035F * scale,
                 color);
-            AddCircle(vertices, vertexCount, origin, axisA, axisB, 1.94F, color);
-            AddCircle(vertices, vertexCount, origin, axisA, axisB, 2.06F, color);
         }
 
         void AddTransformGizmo(
             std::array<MarkerVertex, MaxMarkerVertices>& vertices,
             std::size_t& vertexCount,
             const EditorSceneEntity& entity,
-            const EditorTransformVisualState& state) noexcept
+            const EditorTransformVisualState& state,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
         {
             const DirectX::XMFLOAT3 origin
             {
@@ -792,9 +1105,9 @@ namespace lts::editor
                 entity.transform.position[2]
             };
 
-            DirectX::XMFLOAT3 axisX;
-            DirectX::XMFLOAT3 axisY;
-            DirectX::XMFLOAT3 axisZ;
+            DirectX::XMFLOAT3 axisX{};
+            DirectX::XMFLOAT3 axisY{};
+            DirectX::XMFLOAT3 axisZ{};
 
             GetGizmoAxes(
                 entity,
@@ -803,14 +1116,25 @@ namespace lts::editor
                 axisY,
                 axisZ);
 
+            const float gizmoScale =
+                CalculateGizmoScale(
+                    origin,
+                    cameraPosition);
+
             const MarkerColor colorX =
-                GetGizmoAxisColor(EditorTransformAxis::X, state);
+                GetGizmoAxisColor(
+                    EditorTransformAxis::X,
+                    state);
 
             const MarkerColor colorY =
-                GetGizmoAxisColor(EditorTransformAxis::Y, state);
+                GetGizmoAxisColor(
+                    EditorTransformAxis::Y,
+                    state);
 
             const MarkerColor colorZ =
-                GetGizmoAxisColor(EditorTransformAxis::Z, state);
+                GetGizmoAxisColor(
+                    EditorTransformAxis::Z,
+                    state);
 
             switch (state.operation)
             {
@@ -818,25 +1142,38 @@ namespace lts::editor
                     break;
 
                 case EditorTransformOperation::Move:
-                    AddGizmoArrow(
+                    AddOrientedBox(
                         vertices,
                         vertexCount,
                         origin,
                         axisX,
+                        axisY,
+                        axisZ,
+                        0.095F * gizmoScale,
+                        GizmoCenterColor);
+
+                    AddMoveGizmoAxis(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisX,
+                        gizmoScale,
                         colorX);
 
-                    AddGizmoArrow(
+                    AddMoveGizmoAxis(
                         vertices,
                         vertexCount,
                         origin,
                         axisY,
+                        gizmoScale,
                         colorY);
 
-                    AddGizmoArrow(
+                    AddMoveGizmoAxis(
                         vertices,
                         vertexCount,
                         origin,
                         axisZ,
+                        gizmoScale,
                         colorZ);
                     break;
 
@@ -846,6 +1183,7 @@ namespace lts::editor
                         vertexCount,
                         origin,
                         axisX,
+                        gizmoScale,
                         colorX);
 
                     AddRotationGizmoAxis(
@@ -853,6 +1191,7 @@ namespace lts::editor
                         vertexCount,
                         origin,
                         axisY,
+                        gizmoScale,
                         colorY);
 
                     AddRotationGizmoAxis(
@@ -860,15 +1199,30 @@ namespace lts::editor
                         vertexCount,
                         origin,
                         axisZ,
+                        gizmoScale,
                         colorZ);
                     break;
 
                 case EditorTransformOperation::Scale:
+                    AddOrientedBox(
+                        vertices,
+                        vertexCount,
+                        origin,
+                        axisX,
+                        axisY,
+                        axisZ,
+                        0.11F * gizmoScale,
+                        GizmoCenterColor);
+
                     AddScaleGizmoAxis(
                         vertices,
                         vertexCount,
                         origin,
                         axisX,
+                        axisX,
+                        axisY,
+                        axisZ,
+                        gizmoScale,
                         colorX);
 
                     AddScaleGizmoAxis(
@@ -876,6 +1230,10 @@ namespace lts::editor
                         vertexCount,
                         origin,
                         axisY,
+                        axisX,
+                        axisY,
+                        axisZ,
+                        gizmoScale,
                         colorY);
 
                     AddScaleGizmoAxis(
@@ -883,6 +1241,10 @@ namespace lts::editor
                         vertexCount,
                         origin,
                         axisZ,
+                        axisX,
+                        axisY,
+                        axisZ,
+                        gizmoScale,
                         colorZ);
                     break;
 
@@ -894,7 +1256,6 @@ namespace lts::editor
         [[nodiscard]]
         std::size_t BuildSceneVertices(
             const SceneDocument& document,
-            const EditorTransformVisualState& transformState,
             std::array<MarkerVertex, MaxMarkerVertices>& vertices,
             const StaticMeshRenderer* const meshRenderer) noexcept
         {
@@ -919,16 +1280,35 @@ namespace lts::editor
                 }
             }
 
-            if (
-                selectedIndex < entities.size() &&
-                vertexCount < vertices.size())
+            return vertexCount;
+        }
+
+        [[nodiscard]]
+        std::size_t BuildGizmoVertices(
+            const SceneDocument& document,
+            const EditorTransformVisualState& transformState,
+            const DirectX::XMFLOAT3& cameraPosition,
+            std::array<MarkerVertex, MaxMarkerVertices>& vertices) noexcept
+        {
+            const auto& entities =
+                document.GetEntities();
+
+            const std::size_t selectedIndex =
+                document.GetSelectedIndex();
+
+            if (selectedIndex >= entities.size())
             {
-                AddTransformGizmo(
-                    vertices,
-                    vertexCount,
-                    entities[selectedIndex],
-                    transformState);
+                return 0U;
             }
+
+            std::size_t vertexCount = 0U;
+
+            AddTransformGizmo(
+                vertices,
+                vertexCount,
+                entities[selectedIndex],
+                transformState,
+                cameraPosition);
 
             return vertexCount;
         }
@@ -1114,6 +1494,21 @@ namespace lts::editor
             nullptr,
             vertexBuffer_);
 
+        result = device.CreateBuffer(
+            vertexBufferDescription,
+            nullptr,
+            solidVertexBuffer_);
+
+        if (engine::graphics::Failed(result))
+        {
+            LogGraphicsFailure(
+                "Create scene gizmo solid vertex buffer",
+                result);
+
+            Shutdown(device);
+            return false;
+        }
+
         if (engine::graphics::Failed(result))
         {
             LogGraphicsFailure(
@@ -1198,6 +1593,29 @@ namespace lts::editor
             return false;
         }
 
+        pipelineDescription.topology = engine::graphics::PrimitiveTopology::TriangleList;
+        pipelineDescription.rasterizer.cullMode = engine::graphics::CullMode::None;
+        pipelineDescription.blend.renderTargets[0].blendEnable = true;
+        pipelineDescription.blend.renderTargets[0].sourceColor = engine::graphics::BlendFactor::SourceAlpha;
+        pipelineDescription.blend.renderTargets[0].destinationColor = engine::graphics::BlendFactor::InverseSourceAlpha;
+        pipelineDescription.blend.renderTargets[0].sourceAlpha = engine::graphics::BlendFactor::One;
+        pipelineDescription.blend.renderTargets[0].destinationAlpha = engine::graphics::BlendFactor::InverseSourceAlpha;
+        pipelineDescription.depthStencil.depthEnable = true;
+        pipelineDescription.depthStencil.depthWriteEnable = false;
+        pipelineDescription.debugName = "EditorSceneRenderer.SolidGizmoPipeline";
+
+        result = device.CreateGraphicsPipeline(pipelineDescription, solidPipeline_);
+
+        if (engine::graphics::Failed(result))
+        {
+            LogGraphicsFailure(
+                "Create solid transform gizmo pipeline",
+                result);
+
+            Shutdown(device);
+            return false;
+        }
+
         initialized_ = true;
 
         engine::core::GetLogger().Write(
@@ -1218,6 +1636,15 @@ namespace lts::editor
             static_cast<void>(
                 device.DestroyGraphicsPipeline(pipeline_));
             pipeline_ = {};
+        }
+
+        if (solidVertexBuffer_.IsValid())
+        {
+            static_cast<void>(
+                device.DestroyBuffer(
+                    solidVertexBuffer_));
+
+            solidVertexBuffer_ = {};
         }
 
         if (inputLayout_.IsValid())
@@ -1260,6 +1687,7 @@ namespace lts::editor
         engine::graphics::CommandContext& context,
         const SceneDocument& document,
         const DirectX::XMFLOAT4X4& viewProjection,
+        const DirectX::XMFLOAT3& cameraPosition,
         const EditorTransformVisualState& transformState,
         const StaticMeshRenderer* const meshRenderer) noexcept
     {
@@ -1268,83 +1696,137 @@ namespace lts::editor
             return engine::graphics::GraphicsResult::InvalidState;
         }
 
-        std::array<MarkerVertex, MaxMarkerVertices> vertices{};
+        std::array<MarkerVertex, MaxMarkerVertices>
+            lineVertices{};
 
-        const std::size_t vertexCount =
+        std::array<MarkerVertex, MaxMarkerVertices>
+            solidVertices{};
+
+        const std::size_t lineVertexCount =
             BuildSceneVertices(
                 document,
-                transformState,
-                vertices,
+                lineVertices,
                 meshRenderer);
 
-        if (vertexCount == 0U)
+        const std::size_t solidVertexCount =
+            BuildGizmoVertices(
+                document,
+                transformState,
+                cameraPosition,
+                solidVertices);
+
+        if (lineVertexCount == 0U &&
+            solidVertexCount == 0U)
         {
             return engine::graphics::GraphicsResult::Success;
         }
 
-        auto result = context.UpdateBuffer(
-            vertexBuffer_,
-            vertices.data(),
-            sizeof(vertices));
+        CameraConstants cameraConstants{};
+        cameraConstants.viewProjection =
+            viewProjection;
+
+        auto result =
+            context.UpdateBuffer(
+                cameraBuffer_,
+                &cameraConstants,
+                sizeof(cameraConstants));
 
         if (engine::graphics::Failed(result))
         {
             return result;
         }
 
-        CameraConstants cameraConstants;
-        cameraConstants.viewProjection = viewProjection;
-
-        result = context.UpdateBuffer(
-            cameraBuffer_,
-            &cameraConstants,
-            sizeof(cameraConstants));
-
-        if (engine::graphics::Failed(result))
-        {
-            return result;
-        }
-
-        result = context.SetGraphicsPipeline(pipeline_);
+        result =
+            context.SetConstantBuffers(
+                engine::graphics::ShaderStage::Vertex,
+                0U,
+                &cameraBuffer_,
+                1U);
 
         if (engine::graphics::Failed(result))
         {
             return result;
         }
 
-        engine::graphics::VertexBufferBinding vertexBinding;
-        vertexBinding.buffer = vertexBuffer_;
-        vertexBinding.stride =
-            static_cast<std::uint32_t>(
-                sizeof(MarkerVertex));
-        vertexBinding.offset = 0U;
+        const auto drawGeometry =
+            [&](const engine::graphics::BufferHandle buffer,
+                const engine::graphics::PipelineStateHandle pipeline,
+                const MarkerVertex* const vertices,
+                const std::size_t vertexCount)
+            {
+                if (vertexCount == 0U)
+                {
+                    return engine::graphics::GraphicsResult::Success;
+                }
 
-        result = context.SetVertexBuffers(
-            0U,
-            &vertexBinding,
-            1U);
+                auto drawResult =
+                    context.UpdateBuffer(
+                        buffer,
+                        vertices,
+                        sizeof(MarkerVertex) *
+                            vertexCount);
 
-        if (engine::graphics::Failed(result))
+                if (engine::graphics::Failed(drawResult))
+                {
+                    return drawResult;
+                }
+
+                drawResult =
+                    context.SetGraphicsPipeline(
+                        pipeline);
+
+                if (engine::graphics::Failed(drawResult))
+                {
+                    return drawResult;
+                }
+
+                engine::graphics::VertexBufferBinding
+                    vertexBinding{};
+
+                vertexBinding.buffer = buffer;
+                vertexBinding.stride =
+                    static_cast<std::uint32_t>(
+                        sizeof(MarkerVertex));
+
+                vertexBinding.offset = 0U;
+
+                drawResult =
+                    context.SetVertexBuffers(
+                        0U,
+                        &vertexBinding,
+                        1U);
+
+                if (engine::graphics::Failed(drawResult))
+                {
+                    return drawResult;
+                }
+
+                return context.Draw(
+                    static_cast<std::uint32_t>(
+                        vertexCount),
+                    0U);
+            };
+
+        /*
+         * Сначала заполненный gizmo,
+         * затем поверх него selection-box и marker lines.
+         */
+        result =
+            drawGeometry(
+                solidVertexBuffer_,
+                solidPipeline_,
+                solidVertices.data(),
+                solidVertexCount);
+
+        if (!engine::graphics::Failed(result))
         {
-            context.UnbindGraphicsPipeline();
-            return result;
+            result =
+                drawGeometry(
+                    vertexBuffer_,
+                    pipeline_,
+                    lineVertices.data(),
+                    lineVertexCount);
         }
-
-        result = context.SetConstantBuffers(
-            engine::graphics::ShaderStage::Vertex,
-            0U,
-            &cameraBuffer_,
-            1U);
-
-        if (engine::graphics::Failed(result))
-        {
-            context.UnbindGraphicsPipeline();
-            return result;
-        }
-
-        result = context.Draw(
-            static_cast<std::uint32_t>(vertexCount),
-            0U);
 
         static_cast<void>(
             context.UnbindConstantBuffers(
@@ -1353,6 +1835,7 @@ namespace lts::editor
                 1U));
 
         context.UnbindGraphicsPipeline();
+
         return result;
     }
 

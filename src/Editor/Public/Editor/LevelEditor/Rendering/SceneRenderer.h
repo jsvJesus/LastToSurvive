@@ -36,6 +36,7 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4& viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition,
             const EditorTransformVisualState& transformState,
             const StaticMeshRenderer* meshRenderer = nullptr) noexcept;
 
@@ -44,13 +45,16 @@ namespace lts::editor
 
     private:
         engine::graphics::BufferHandle vertexBuffer_;
+        engine::graphics::BufferHandle solidVertexBuffer_;
         engine::graphics::BufferHandle cameraBuffer_;
 
         engine::graphics::ShaderHandle vertexShader_;
         engine::graphics::ShaderHandle pixelShader_;
 
         engine::graphics::InputLayoutHandle inputLayout_;
+
         engine::graphics::PipelineStateHandle pipeline_;
+        engine::graphics::PipelineStateHandle solidPipeline_;
 
         bool initialized_ = false;
     };
