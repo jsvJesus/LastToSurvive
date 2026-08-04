@@ -26,17 +26,17 @@ namespace lts::editor
     namespace
     {
         using Microsoft::WRL::ComPtr;
-
+        using MarkerColor = std::array<float, 4U>;
+        
         constexpr std::size_t MaxMarkerVertices = 4096U;
         constexpr std::size_t CircleSegments = 48U;
-
         constexpr std::size_t GizmoSegments = 16U;
         constexpr std::size_t GizmoRingSegments = 72U;
-
         constexpr float GizmoScalePerDistance = 0.075F;
         constexpr float MinimumGizmoScale = 0.65F;
         constexpr float MaximumGizmoScale = 8.0F;
-
+        constexpr wchar_t SceneMarkerShaderFile[] = L"SceneMarkers.hlsl";
+        
         constexpr MarkerColor GizmoCenterColor
         {
             0.92F,
@@ -44,10 +44,6 @@ namespace lts::editor
             0.92F,
             1.0F
         };
-
-        constexpr wchar_t SceneMarkerShaderFile[] = L"SceneMarkers.hlsl";
-
-        using MarkerColor = std::array<float, 4U>;
 
         struct MarkerVertex final
         {
