@@ -479,19 +479,14 @@ namespace lts::editor
         
         ShutdownEditorUi();
 
-        transformController_.
-            SetViewportWindow({});
-
-        cameraController_.
-            SetViewportWindow({});
-
+        toolWindowManager_.Shutdown(graphicsDevice_);
+        transformController_.SetViewportWindow({});
+        cameraController_.SetViewportWindow({});
         levelDocument_.Shutdown();
         commandHistory_.Clear();
-
         terrainRenderer_.Shutdown(graphicsDevice_);
         sceneRenderer_.Shutdown(graphicsDevice_);
         staticMeshRenderer_.Shutdown(graphicsDevice_);
-
         sceneDocument_.Clear();
 
         ShutdownGraphics();
@@ -3084,7 +3079,13 @@ namespace lts::editor
         };
 
         terrainImporter_.Draw(terrainImportContext);
-        toolWindowManager_.DrawOpenWindows();
+        
+        if (commandContext_ != nullptr)
+        {
+            toolWindowManager_.DrawOpenWindows(
+                graphicsDevice_,
+                *commandContext_);
+        }
     }
 
     bool Application::ExecuteEditorCommand(const EditorCommand command)

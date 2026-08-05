@@ -1,5 +1,9 @@
 #include "Editor/Tools/Character/CharacterEditor.h"
 
+#include <Graphics/CommandContext.h>
+#include <Graphics/GraphicsResult.h>
+#include <Graphics/RenderDevice.h>
+
 #include <imgui.h>
 
 #include <Windows.h>
@@ -428,7 +432,9 @@ namespace lts::editor
         return open_;
     }
 
-    void CharacterEditor::Draw() noexcept
+    void CharacterEditor::Draw(
+        engine::graphics::RenderDevice& device,
+        engine::graphics::CommandContext& context) noexcept
     {
         if (!open_)
         {
@@ -450,10 +456,28 @@ namespace lts::editor
         }
 
         DrawToolbar();
-        DrawContent();
+        DrawContent(
+            device,
+            context);
+
         DrawStatusBar();
 
         ImGui::End();
+    }
+
+    void CharacterEditor::Shutdown(
+        engine::graphics::RenderDevice& device) noexcept
+    {
+        if (!previewInitialized_)
+        {
+            return;
+        }
+
+        previewRenderer_.Shutdown(
+            device);
+
+        previewInitialized_ = false;
+        previewDirty_ = true;
     }
 
     void CharacterEditor::DrawToolbar() noexcept
@@ -534,7 +558,9 @@ namespace lts::editor
         }
     }
 
-    void CharacterEditor::DrawContent() noexcept
+    void CharacterEditor::DrawContent(
+        engine::graphics::RenderDevice& device,
+        engine::graphics::CommandContext& context) noexcept
     {
         const ImGuiTableFlags flags =
             ImGuiTableFlags_Resizable |
@@ -567,7 +593,7 @@ namespace lts::editor
         DrawHierarchy();
 
         ImGui::TableNextColumn();
-        DrawPreview();
+        DrawPreview(device, context);
 
         ImGui::TableNextColumn();
         DrawInspector();
@@ -749,7 +775,9 @@ namespace lts::editor
         ImGui::EndChild();
     }
 
-    void CharacterEditor::DrawPreview() noexcept
+    void CharacterEditor::DrawPreview(
+        engine::graphics::RenderDevice& device,
+        engine::graphics::CommandContext& context) noexcept
     {
         ImGui::BeginChild(
             "CharacterPreview",
@@ -794,103 +822,205 @@ namespace lts::editor
 
         ImGui::Separator();
 
-        const ImVec2 available =
-            ImGui::GetContentRegionAvail();
-
-        const ImVec2 previewStart =
-            ImGui::GetCursorScreenPos();
-
-        const ImVec2 previewEnd
+        if (!previewInitialized_)
         {
-            previewStart.x + available.x,
-            previewStart.y + std::max(
-                available.y - 90.0F,
-                100.0F)
-        };
+            previewInitialized_ =
+                previewRenderer_.Initialize(
+                    device);
 
-        ImDrawList* drawList =
-            ImGui::GetWindowDrawList();
-
-        drawList->AddRectFilled(
-            previewStart,
-            previewEnd,
-            IM_COL32(20, 22, 25, 255));
-
-        drawList->AddRect(
-            previewStart,
-            previewEnd,
-            IM_COL32(70, 75, 82, 255));
-
-        const ImVec2 center
-        {
-            (previewStart.x + previewEnd.x) * 0.5F,
-            (previewStart.y + previewEnd.y) * 0.5F
-        };
-
-        drawList->AddText(
-            ImVec2(
-                center.x - 95.0F,
-                center.y - 10.0F),
-            IM_COL32(150, 155, 165, 255),
-            "DX11 skeletal preview target");
-
-        ImGui::InvisibleButton(
-            "CharacterPreviewInteraction",
-            ImVec2(
-                available.x,
-                std::max(
-                    available.y - 90.0F,
-                    100.0F)));
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGuiIO& io = ImGui::GetIO();
-
-            if (ImGui::IsMouseDragging(
-                    ImGuiMouseButton_Left))
+            if (!previewInitialized_)
             {
-                previewYaw_ +=
-                    io.MouseDelta.x * 0.4F;
-
-                previewPitch_ +=
-                    io.MouseDelta.y * 0.4F;
-
-                previewPitch_ =
-                    std::clamp(
-                        previewPitch_,
-                        -80.0F,
-                        80.0F);
-            }
-
-            if (io.MouseWheel != 0.0F)
-            {
-                previewDistance_ -=
-                    io.MouseWheel * 0.2F;
-
-                previewDistance_ =
-                    std::clamp(
-                        previewDistance_,
-                        0.5F,
-                        20.0F);
+                SetStatus(
+                    "Failed to initialize Character Preview.",
+                    true);
             }
         }
 
-        ImGui::Separator();
+        const ImVec2 available =
+            ImGui::GetContentRegionAvail();
+
+        const float footerHeight =
+            ImGui::GetTextLineHeightWithSpacing() +
+            12.0F;
+
+        const ImVec2 previewSize
+        {
+            std::max(
+                available.x,
+                64.0F),
+
+            std::max(
+                available.y - footerHeight,
+                128.0F)
+        };
+
+        bool previewReady = false;
+
+        if (previewInitialized_)
+        {
+            if (previewDirty_)
+            {
+                previewDirty_ = false;
+
+                if (character_.bodySkeletonFile.empty())
+                {
+                    SetStatus(
+                        "Select body.skeleton to build preview.");
+                }
+                else if (!previewRenderer_.LoadCharacter(
+                             device,
+                             character_))
+                {
+                    SetStatus(
+                        previewRenderer_.GetStatus(),
+                        true);
+                }
+                else
+                {
+                    SetStatus(
+                        previewRenderer_.GetStatus());
+                }
+            }
+
+            const auto resizeResult =
+                previewRenderer_.Resize(
+                    device,
+                    static_cast<std::uint32_t>(
+                        previewSize.x),
+                    static_cast<std::uint32_t>(
+                        previewSize.y));
+
+            if (engine::graphics::Succeeded(
+                    resizeResult))
+            {
+                const auto renderResult =
+                    previewRenderer_.Render(
+                        context,
+                        previewYaw_,
+                        previewPitch_,
+                        previewDistance_);
+
+                previewReady =
+                    engine::graphics::Succeeded(
+                        renderResult);
+            }
+        }
+
+        void* const textureId =
+            previewReady
+                ? previewRenderer_.GetImGuiTextureId(
+                    device)
+                : nullptr;
+
+        if (textureId != nullptr)
+        {
+            ImGui::Image(
+                reinterpret_cast<ImTextureID>(
+                    textureId),
+                previewSize,
+                ImVec2(0.0F, 0.0F),
+                ImVec2(1.0F, 1.0F));
+
+            if (ImGui::IsItemHovered())
+            {
+                ImGuiIO& io =
+                    ImGui::GetIO();
+
+                if (ImGui::IsMouseDragging(
+                        ImGuiMouseButton_Left))
+                {
+                    previewYaw_ +=
+                        io.MouseDelta.x *
+                        0.4F;
+
+                    previewPitch_ +=
+                        io.MouseDelta.y *
+                        0.4F;
+
+                    previewPitch_ =
+                        std::clamp(
+                            previewPitch_,
+                            -80.0F,
+                            80.0F);
+                }
+
+                if (io.MouseWheel != 0.0F)
+                {
+                    previewDistance_ -=
+                        io.MouseWheel *
+                        0.2F;
+
+                    previewDistance_ =
+                        std::clamp(
+                            previewDistance_,
+                            0.5F,
+                            20.0F);
+                }
+            }
+        }
+        else
+        {
+            const ImVec2 previewStart =
+                ImGui::GetCursorScreenPos();
+
+            const ImVec2 previewEnd
+            {
+                previewStart.x +
+                    previewSize.x,
+
+                previewStart.y +
+                    previewSize.y
+            };
+
+            ImDrawList* const drawList =
+                ImGui::GetWindowDrawList();
+
+            drawList->AddRectFilled(
+                previewStart,
+                previewEnd,
+                IM_COL32(
+                    20,
+                    22,
+                    25,
+                    255));
+
+            drawList->AddRect(
+                previewStart,
+                previewEnd,
+                IM_COL32(
+                    70,
+                    75,
+                    82,
+                    255));
+
+            ImGui::InvisibleButton(
+                "CharacterPreviewUnavailable",
+                previewSize);
+
+            const std::string& previewStatus =
+                previewRenderer_.GetStatus();
+
+            const char* const message =
+                previewStatus.empty()
+                    ? "Character Preview is not ready."
+                    : previewStatus.c_str();
+
+            drawList->AddText(
+                ImVec2(
+                    previewStart.x + 12.0F,
+                    previewStart.y + 12.0F),
+                IM_COL32(
+                    190,
+                    195,
+                    205,
+                    255),
+                message);
+        }
 
         ImGui::Text(
-            "Yaw: %.1f",
-            previewYaw_);
-
-        ImGui::SameLine();
-
-        ImGui::Text(
-            "Pitch: %.1f",
-            previewPitch_);
-
-        ImGui::SameLine();
-
-        ImGui::Text(
-            "Distance: %.2f",
+            "Yaw %.1f | Pitch %.1f | Distance %.2f",
+            previewYaw_,
+            previewPitch_,
             previewDistance_);
 
         ImGui::EndChild();
@@ -1381,6 +1511,8 @@ namespace lts::editor
 
         SetStatus(
             "Created new character definition.");
+
+        previewDirty_ = true;
     }
 
     void CharacterEditor::OpenCharacter() noexcept
@@ -2068,6 +2200,8 @@ namespace lts::editor
         character_.sourceFile =
             file;
 
+        previewDirty_ = true;
+
         return true;
     }
 
@@ -2079,6 +2213,7 @@ namespace lts::editor
     void CharacterEditor::MarkDirty() noexcept
     {
         dirty_ = true;
+        previewDirty_ = true;
     }
 
     void CharacterEditor::SetStatus(

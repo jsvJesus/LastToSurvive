@@ -1,5 +1,8 @@
 #include "Editor/Tools/ToolWindowManager.h"
 
+#include <Graphics/CommandContext.h>
+#include <Graphics/RenderDevice.h>
+
 #include <imgui.h>
 #include <iterator>
 
@@ -87,14 +90,25 @@ namespace lts::editor
         return action;
     }
 
-    void ToolWindowManager::
-        DrawOpenWindows() noexcept
+    void ToolWindowManager::DrawOpenWindows(
+        engine::graphics::RenderDevice& device,
+        engine::graphics::CommandContext& context) noexcept
     {
         DrawPhysicsEditor();
         DrawIconGenerator();
 
-        characterEditor_.Draw();
+        characterEditor_.Draw(
+            device,
+            context);
+
         fbxAssetImporter_.Draw();
+    }
+
+    void ToolWindowManager::Shutdown(
+        engine::graphics::RenderDevice& device) noexcept
+    {
+        characterEditor_.Shutdown(
+            device);
     }
 
     void ToolWindowManager::

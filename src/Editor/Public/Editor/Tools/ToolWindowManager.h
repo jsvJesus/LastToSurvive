@@ -5,6 +5,12 @@
 
 #include <cstdint>
 
+namespace engine::graphics
+{
+    class CommandContext;
+    class RenderDevice;
+}
+
 namespace lts::editor
 {
     enum class EditorToolAction : std::uint8_t
@@ -19,7 +25,8 @@ namespace lts::editor
         [[nodiscard]]
         EditorToolAction DrawToolsMenu() noexcept;
 
-        void DrawOpenWindows() noexcept;
+        void DrawOpenWindows(engine::graphics::RenderDevice& device, engine::graphics::CommandContext& context) noexcept;
+        void Shutdown(engine::graphics::RenderDevice& device) noexcept;
 
     private:
         void DrawPhysicsEditor() noexcept;

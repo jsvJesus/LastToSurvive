@@ -245,6 +245,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelDocument.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelSerializer.h" />
     <ClInclude Include="Public\Editor\Tools\Character\CharacterEditor.h" />
+    <ClInclude Include="Public\Editor\Tools\Character\CharacterPreviewRenderer.h" />
     <ClInclude Include="Public\Editor\Tools\Import\FbxAssetImporter.h" />
     <ClInclude Include="Public\Editor\Tools\TestGame\Launcher.h" />
     <ClInclude Include="Public\Editor\Tools\ToolWindowManager.h" />
@@ -2075,6 +2076,7 @@
     </ClCompile>
     <ClCompile Include="Private\Main.cpp" />
     <ClCompile Include="Private\Tools\Character\CharacterEditor.cpp" />
+    <ClCompile Include="Private\Tools\Character\CharacterPreviewRenderer.cpp" />
     <ClCompile Include="Private\Tools\Import\FbxAssetImporter.cpp" />
     <ClCompile Include="Private\Tools\TestGame\Launcher.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>

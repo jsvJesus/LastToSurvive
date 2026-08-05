@@ -1,10 +1,18 @@
 #pragma once
 
+#include "Editor/Tools/Character/CharacterPreviewRenderer.h"
+
 #include <array>
 #include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
+
+namespace engine::graphics
+{
+    class CommandContext;
+    class RenderDevice;
+}
 
 namespace lts::editor
 {
@@ -119,7 +127,8 @@ namespace lts::editor
         [[nodiscard]]
         bool IsOpen() const noexcept;
 
-        void Draw() noexcept;
+        void Draw(engine::graphics::RenderDevice& device, engine::graphics::CommandContext& context) noexcept;
+        void Shutdown(engine::graphics::RenderDevice& device) noexcept;
 
     private:
         enum class InspectorSection : std::uint8_t
@@ -132,10 +141,10 @@ namespace lts::editor
         };
 
         void DrawToolbar() noexcept;
-        void DrawContent() noexcept;
+        void DrawContent(engine::graphics::RenderDevice& device, engine::graphics::CommandContext& context) noexcept;
         void DrawHierarchy() noexcept;
         void DrawInspector() noexcept;
-        void DrawPreview() noexcept;
+        void DrawPreview(engine::graphics::RenderDevice& device, engine::graphics::CommandContext& context) noexcept;
         void DrawStatusBar() noexcept;
 
         void DrawCharacterInspector() noexcept;
@@ -210,6 +219,11 @@ namespace lts::editor
 
         std::vector<std::string> validationErrors_;
         std::vector<std::string> validationWarnings_;
+
+        CharacterPreviewRenderer previewRenderer_;
+
+        bool previewInitialized_ = false;
+        bool previewDirty_ = true;
 
         std::string status_ = "Character Editor ready.";
 
