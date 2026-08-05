@@ -1950,7 +1950,8 @@ namespace lts::editor
 
                 if (key == prefix + ".mesh")
                 {
-                    weapon.meshFile = value;
+                    weapon.meshFile =
+                        value;
                 }
                 else if (
                     key ==
@@ -1977,112 +1978,80 @@ namespace lts::editor
                     key ==
                     prefix + ".right_hand_bone")
                 {
-                    weapon.ik.rightHandBone = value;
+                    weapon.ik.rightHandBone =
+                        value;
                 }
                 else if (
                     key ==
                     prefix + ".left_hand_bone")
                 {
-                    weapon.ik.leftHandBone = value;
+                    weapon.ik.leftHandBone =
+                        value;
                 }
-                else if (
-                    key ==
-                    prefix +
-                    ".weapon_transform.position")
+                else
                 {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .weaponTransform
-                            .position);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".weapon_transform.rotation")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .weaponTransform
-                            .rotation);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".weapon_transform.scale")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .weaponTransform
-                            .scale);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".right_hand.position")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .rightHandTransform
-                            .position);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".right_hand.rotation")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .rightHandTransform
-                            .rotation);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".right_hand.scale")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .rightHandTransform
-                            .scale);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".left_hand.position")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .leftHandTransform
-                            .position);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".left_hand.rotation")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .leftHandTransform
-                            .rotation);
-                }
-                else if (
-                    key ==
-                    prefix +
-                    ".left_hand.scale")
-                {
-                    ParseVector(
-                        value,
-                        weapon.ik
-                            .leftHandTransform
-                            .scale);
+                    const std::string weaponTransformPrefix =
+                        prefix +
+                        ".weapon_transform";
+
+                    const TransformParseResult weaponResult =
+                        ParseTransformField(
+                            key,
+                            weaponTransformPrefix,
+                            value,
+                            weapon.ik.weaponTransform);
+
+                    if (weaponResult ==
+                        TransformParseResult::Invalid)
+                    {
+                        return false;
+                    }
+
+                    if (weaponResult ==
+                        TransformParseResult::Parsed)
+                    {
+                        continue;
+                    }
+
+                    const std::string rightHandPrefix =
+                        prefix +
+                        ".right_hand";
+
+                    const TransformParseResult rightHandResult =
+                        ParseTransformField(
+                            key,
+                            rightHandPrefix,
+                            value,
+                            weapon.ik.rightHandTransform);
+
+                    if (rightHandResult ==
+                        TransformParseResult::Invalid)
+                    {
+                        return false;
+                    }
+
+                    if (rightHandResult ==
+                        TransformParseResult::Parsed)
+                    {
+                        continue;
+                    }
+
+                    const std::string leftHandPrefix =
+                        prefix +
+                        ".left_hand";
+
+                    const TransformParseResult leftHandResult =
+                        ParseTransformField(
+                            key,
+                            leftHandPrefix,
+                            value,
+                            weapon.ik.leftHandTransform);
+
+                    if (leftHandResult ==
+                        TransformParseResult::Invalid)
+                    {
+                        return false;
+                    }
                 }
             }
         }
