@@ -50,10 +50,16 @@ namespace lts::editor
 
         ImGui::Separator();
 
-        ImGui::MenuItem(
-            "Character Editor",
-            nullptr,
-            &characterEditorOpen_);
+        bool characterEditorOpen = characterEditor_.IsOpen();
+
+        if (ImGui::MenuItem(
+                "Character Editor",
+                nullptr,
+                characterEditorOpen))
+        {
+            characterEditor_.SetOpen(
+                !characterEditorOpen);
+        }
 
         ImGui::MenuItem(
             "Physics Editor",
@@ -84,89 +90,11 @@ namespace lts::editor
     void ToolWindowManager::
         DrawOpenWindows() noexcept
     {
-        DrawCharacterEditor();
         DrawPhysicsEditor();
         DrawIconGenerator();
 
+        characterEditor_.Draw();
         fbxAssetImporter_.Draw();
-    }
-
-    void ToolWindowManager::
-        DrawCharacterEditor() noexcept
-    {
-        if (!characterEditorOpen_)
-        {
-            return;
-        }
-
-        ImGui::SetNextWindowSize(
-            ImVec2(840.0F, 620.0F),
-            ImGuiCond_FirstUseEver);
-
-        if (!ImGui::Begin(
-                "Character Editor",
-                &characterEditorOpen_,
-                ImGuiWindowFlags_NoCollapse))
-        {
-            ImGui::End();
-            return;
-        }
-
-        ImGui::TextUnformatted(
-            "Character asset editor and preview");
-        ImGui::Separator();
-
-        if (ImGui::BeginTable(
-                "CharacterEditorLayout",
-                2,
-                ImGuiTableFlags_BordersInnerV |
-                    ImGuiTableFlags_Resizable))
-        {
-            ImGui::TableSetupColumn(
-                "Settings",
-                ImGuiTableColumnFlags_WidthFixed,
-                300.0F);
-
-            ImGui::TableSetupColumn(
-                "Preview",
-                ImGuiTableColumnFlags_WidthStretch);
-
-            ImGui::TableNextColumn();
-
-            ImGui::SeparatorText("Character");
-
-            DrawPlannedFields(
-                {
-                    "Character Asset",
-                    "Skeletal Mesh",
-                    "Skeleton",
-                    "Materials",
-                    "Animation Set",
-                    "First-Person Arms"
-                });
-
-            ImGui::SeparatorText("Equipment");
-
-            DrawPlannedFields(
-                {
-                    "Equipment Sockets",
-                    "Weapon Attachments",
-                    "Backpack Socket",
-                    "Vest Socket"
-                });
-
-            ImGui::TableNextColumn();
-
-            ImGui::SeparatorText("Character Preview");
-            ImGui::TextDisabled(
-                "3D character preview render target");
-            ImGui::Dummy(ImVec2(1.0F, 400.0F));
-
-            ImGui::EndTable();
-        }
-
-        DrawDevelopmentNotice();
-        ImGui::End();
     }
 
     void ToolWindowManager::

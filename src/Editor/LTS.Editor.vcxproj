@@ -244,6 +244,7 @@
     <ClInclude Include="Public\Editor\LevelEditor\Viewport\TransformTypes.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelDocument.h" />
     <ClInclude Include="Public\Editor\LevelEditor\Documents\LevelSerializer.h" />
+    <ClInclude Include="Public\Editor\Tools\Character\CharacterEditor.h" />
     <ClInclude Include="Public\Editor\Tools\Import\FbxAssetImporter.h" />
     <ClInclude Include="Public\Editor\Tools\TestGame\Launcher.h" />
     <ClInclude Include="Public\Editor\Tools\ToolWindowManager.h" />
@@ -2073,6 +2074,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Private\Main.cpp" />
+    <ClCompile Include="Private\Tools\Character\CharacterEditor.cpp" />
     <ClCompile Include="Private\Tools\Import\FbxAssetImporter.cpp" />
     <ClCompile Include="Private\Tools\TestGame\Launcher.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
@@ -2354,11 +2356,9 @@
 
   <ItemGroup>
     <Folder Include="Private\LevelEditor\Play\" />
-    <Folder Include="Private\Tools\Character\" />
     <Folder Include="Private\Tools\Icon\" />
     <Folder Include="Private\Tools\Physics\" />
     <Folder Include="Public\Editor\LevelEditor\Play\" />
-    <Folder Include="Public\Editor\Tools\Character\" />
     <Folder Include="Public\Editor\Tools\Icon\" />
     <Folder Include="Public\Editor\Tools\Physics\" />
   </ItemGroup>

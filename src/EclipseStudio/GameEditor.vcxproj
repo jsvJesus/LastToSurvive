@@ -191,6 +191,7 @@
         ..\..\External\SLikeNet\Source\include;
         ..\..\External\RmlUI\Include;
         .\..\External\dxsdk\Include;
+        .\..\External\DearImGui;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>

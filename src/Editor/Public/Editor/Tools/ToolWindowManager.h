@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Editor/Tools/Character/CharacterEditor.h"
 #include "Editor/Tools/Import/FbxAssetImporter.h"
 
 #include <cstdint>
@@ -21,14 +22,13 @@ namespace lts::editor
         void DrawOpenWindows() noexcept;
 
     private:
-        void DrawCharacterEditor() noexcept;
         void DrawPhysicsEditor() noexcept;
         void DrawIconGenerator() noexcept;
 
-        bool characterEditorOpen_ = false;
         bool physicsEditorOpen_ = false;
         bool iconGeneratorOpen_ = false;
 
+        CharacterEditor characterEditor_;
         FbxAssetImporter fbxAssetImporter_;
     };
 }
