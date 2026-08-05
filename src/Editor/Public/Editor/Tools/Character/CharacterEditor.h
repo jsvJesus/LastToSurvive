@@ -69,9 +69,9 @@ namespace lts::editor
     {
         bool enabled = true;
 
-        std::string weaponBone = "Weapon_R";
-        std::string rightHandBone = "Bip01_R_Hand";
-        std::string leftHandBone = "Bip01_L_Hand";
+        std::string attachmentBone = "hand_r";
+        std::string rightHandBone = "hand_r";
+        std::string leftHandBone = "hand_l";
 
         CharacterTransform weaponTransform;
         CharacterTransform rightHandTransform;

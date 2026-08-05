@@ -36,14 +36,11 @@ namespace lts::editor
             "Secondary Weapon"
         };
 
-        constexpr const wchar_t* SkinnedMeshFilter =
-            L"Skinned Mesh (*.skm)";
-
-        constexpr const wchar_t* SkeletonFilter =
-            L"Skeleton (*.skeleton)";
-
-        constexpr const wchar_t* CharacterFilter =
-            L"LTS Character (*.ltscharacter)";
+        constexpr const wchar_t* SkinnedMeshFilter = L"Skinned Mesh (*.skm)";
+        constexpr const wchar_t* SkeletonFilter = L"Skeleton (*.skeleton)";
+        constexpr const wchar_t* CharacterFilter = L"Character Definition (*.character)";
+        constexpr const wchar_t* CharacterFilePattern = L"*.character";
+        constexpr const wchar_t* CharacterDefaultExtension = L"character";
 
         [[nodiscard]]
         std::filesystem::path SelectOpenFile(
@@ -337,6 +334,52 @@ namespace lts::editor
                 secondSeparator == ',';
         }
 
+        enum class TransformParseResult : std::uint8_t
+        {
+            NotMatched = 0,
+            Parsed,
+            Invalid
+        };
+
+        [[nodiscard]]
+        TransformParseResult ParseTransformField(
+            const std::string& key,
+            const std::string& prefix,
+            const std::string& value,
+            CharacterTransform& transform)
+        {
+            CharacterVector3* destination = nullptr;
+
+            if (key == prefix + ".position")
+            {
+                destination =
+                    &transform.position;
+            }
+            else if (key == prefix + ".rotation")
+            {
+                destination =
+                    &transform.rotation;
+            }
+            else if (key == prefix + ".scale")
+            {
+                destination =
+                    &transform.scale;
+            }
+            else
+            {
+                return TransformParseResult::NotMatched;
+            }
+
+            if (!ParseVector(
+                    value,
+                    *destination))
+            {
+                return TransformParseResult::Invalid;
+            }
+
+            return TransformParseResult::Parsed;
+        }
+
         [[nodiscard]]
         std::size_t ToIndex(
             const CharacterModuleType type) noexcept
@@ -363,15 +406,15 @@ namespace lts::editor
     {
         character_.armor[
             ToIndex(CharacterArmorType::Helmet)]
-            .attachmentBone = "Bip01_Head";
+            .attachmentBone = "head";
 
         character_.armor[
             ToIndex(CharacterArmorType::Mask)]
-            .attachmentBone = "Bip01_Head";
+            .attachmentBone = "head";
 
         character_.armor[
             ToIndex(CharacterArmorType::Armor)]
-            .attachmentBone = "Bip01_Spine2";
+            .attachmentBone = "spine_03";
     }
 
     void CharacterEditor::SetOpen(
@@ -925,15 +968,10 @@ namespace lts::editor
         CharacterArmorSlot& slot =
             character_.armor[index];
 
-        const char* defaultBone =
-            "Bip01_Spine2";
-
-        if (selectedArmor_ ==
-                CharacterArmorType::Helmet ||
-            selectedArmor_ ==
-                CharacterArmorType::Mask)
+        const char* defaultBone = "spine_03";
+        if (selectedArmor_ == CharacterArmorType::Helmet || selectedArmor_ == CharacterArmorType::Mask)
         {
-            defaultBone = "Bip01_Head";
+            defaultBone = "head";
         }
 
         DrawArmorSlot(
@@ -1235,8 +1273,8 @@ namespace lts::editor
             };
 
         drawBoneName(
-            "Weapon Bone",
-            weapon.ik.weaponBone);
+            "Attachment Bone",
+            weapon.ik.attachmentBone);
 
         drawBoneName(
             "Right Hand Bone",
@@ -1326,15 +1364,15 @@ namespace lts::editor
 
         character_.armor[
             ToIndex(CharacterArmorType::Helmet)]
-            .attachmentBone = "Bip01_Head";
+            .attachmentBone = "head";
 
         character_.armor[
             ToIndex(CharacterArmorType::Mask)]
-            .attachmentBone = "Bip01_Head";
+            .attachmentBone = "head";
 
         character_.armor[
             ToIndex(CharacterArmorType::Armor)]
-            .attachmentBone = "Bip01_Spine2";
+            .attachmentBone = "spine_03";
 
         dirty_ = false;
 
@@ -1349,9 +1387,9 @@ namespace lts::editor
     {
         const std::filesystem::path selected =
             SelectOpenFile(
-                L"Open LTS Character",
+                L"Open Character Definition",
                 CharacterFilter,
-                L"*.ltscharacter");
+                CharacterFilePattern);
 
         if (selected.empty())
         {
@@ -1402,10 +1440,10 @@ namespace lts::editor
     {
         const std::filesystem::path selected =
             SelectSaveFile(
-                L"Save LTS Character",
+                L"Save Character Definition",
                 CharacterFilter,
-                L"*.ltscharacter",
-                L"ltscharacter");
+                CharacterFilePattern,
+                CharacterDefaultExtension);
 
         if (selected.empty())
         {
@@ -1413,6 +1451,7 @@ namespace lts::editor
         }
 
         character_.sourceFile = selected;
+
         SaveCharacter();
     }
 
@@ -1544,13 +1583,13 @@ namespace lts::editor
                 continue;
             }
 
-            if (weapon.ik.weaponBone.empty())
+            if (weapon.ik.attachmentBone.empty())
             {
                 std::string error =
                     WeaponSlotNames[index];
 
                 error +=
-                    " weapon bone is empty.";
+                    " attachment bone is empty.";
 
                 validationErrors_.push_back(
                     std::move(error));
@@ -1642,7 +1681,7 @@ namespace lts::editor
             return false;
         }
 
-        stream << "lts_character_version=1\n";
+        stream << "character_version=1\n";
 
         WritePath(
             stream,
@@ -1737,9 +1776,9 @@ namespace lts::editor
 
             stream
                 << prefix
-                << ".weapon_bone="
+                << ".attachment_bone="
                 << std::quoted(
-                    weapon.ik.weaponBone)
+                    weapon.ik.attachmentBone)
                 << '\n';
 
             stream
@@ -1880,29 +1919,20 @@ namespace lts::editor
                     armor.attachmentBone =
                         value;
                 }
-                else if (
-                    key ==
-                    prefix + ".position")
+                else
                 {
-                    ParseVector(
-                        value,
-                        armor.localTransform.position);
-                }
-                else if (
-                    key ==
-                    prefix + ".rotation")
-                {
-                    ParseVector(
-                        value,
-                        armor.localTransform.rotation);
-                }
-                else if (
-                    key ==
-                    prefix + ".scale")
-                {
-                    ParseVector(
-                        value,
-                        armor.localTransform.scale);
+                    const TransformParseResult result =
+                        ParseTransformField(
+                            key,
+                            prefix,
+                            value,
+                            armor.localTransform);
+
+                    if (result ==
+                        TransformParseResult::Invalid)
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -1938,24 +1968,22 @@ namespace lts::editor
                 }
                 else if (
                     key ==
-                    prefix + ".weapon_bone")
+                    prefix + ".attachment_bone")
                 {
-                    weapon.ik.weaponBone =
+                    weapon.ik.attachmentBone =
                         value;
                 }
                 else if (
                     key ==
                     prefix + ".right_hand_bone")
                 {
-                    weapon.ik.rightHandBone =
-                        value;
+                    weapon.ik.rightHandBone = value;
                 }
                 else if (
                     key ==
                     prefix + ".left_hand_bone")
                 {
-                    weapon.ik.leftHandBone =
-                        value;
+                    weapon.ik.leftHandBone = value;
                 }
                 else if (
                     key ==
