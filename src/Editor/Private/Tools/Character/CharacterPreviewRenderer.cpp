@@ -2,6 +2,7 @@
 
 #include "Editor/LevelEditor/Rendering/ShaderCompiler.h"
 #include "Editor/Tools/Character/CharacterEditor.h"
+#include "Editor/Tools/Character/CharacterPose.h"
 
 #include <Assets/AssetData.h>
 #include <Assets/AssetMetadata.h>
@@ -71,6 +72,8 @@ namespace lts::editor
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 lightDirection;
             DirectX::XMFLOAT4 ambientColor;
+
+            DirectX::XMFLOAT4 renderParameters;
         };
 
         static_assert(
@@ -645,6 +648,8 @@ namespace lts::editor
                 0.70F,
                 1.0F
             };
+
+            bool skinned = true;
         };
 
     public:
@@ -770,7 +775,7 @@ namespace lts::editor
 
             const std::array<
                 engine::graphics::VertexElementDesc,
-                2U> inputElements
+                4U> inputElements
             {{
                 {
                     "POSITION",
@@ -787,6 +792,24 @@ namespace lts::editor
                     engine::graphics::Format::R32G32B32Float,
                     0U,
                     12U,
+                    engine::graphics::VertexInputRate::PerVertex,
+                    0U
+                },
+                {
+                    "BLENDINDICES",
+                    0U,
+                    engine::graphics::Format::R8G8B8A8UInt,
+                    0U,
+                    48U,
+                    engine::graphics::VertexInputRate::PerVertex,
+                    0U
+                },
+                {
+                    "BLENDWEIGHT",
+                    0U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    0U,
+                    52U,
                     engine::graphics::VertexInputRate::PerVertex,
                     0U
                 }
@@ -1032,6 +1055,14 @@ namespace lts::editor
                 status_ =
                     std::move(loadError);
 
+                return false;
+            }
+
+            if (!pose_.Initialize(skeleton_))
+            {
+                status_ = "Failed to build bind pose from skeleton.";
+
+                ReleaseCharacter(device);
                 return false;
             }
 
@@ -1335,6 +1366,14 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::InvalidState;
             }
 
+            if (!animationPlayer_.Evaluate(pose_))
+            {
+                status_ =
+                    "Failed to evaluate Character Pose.";
+
+                return engine::graphics::GraphicsResult::InvalidState;
+            }
+
             auto graphicsResult =
                 context.SetRenderTargets(
                     &colorTarget_,
@@ -1595,6 +1634,17 @@ namespace lts::editor
                     0.22F,
                     0.25F,
                     1.0F
+                };
+
+                constants.renderParameters =
+{
+                    mesh.skinned
+                        ? 1.0F
+                        : 0.0F,
+
+                    0.0F,
+                    0.0F,
+                    0.0F
                 };
 
                 graphicsResult =
@@ -1999,6 +2049,9 @@ namespace lts::editor
         std::vector<PreviewMesh>
             meshes_;
 
+        engine::graphics::BufferHandle
+            bonePaletteBuffer_;
+
         DirectX::XMFLOAT3 focusCenter_
         {
             0.0F,
@@ -2068,6 +2121,48 @@ namespace lts::editor
         return impl_->LoadCharacter(
             device,
             character);
+    }
+
+    void CharacterPreviewRenderer::Update(float deltaSeconds) noexcept
+    {
+        animationPlayer_.Update(deltaSeconds);
+    }
+
+    [[nodiscard]]
+    bool CharacterPreviewRenderer::SetAnimationClip(std::shared_ptr<const CharacterAnimationClip> clip) noexcept
+    {
+        return animationPlayer_.SetClip(
+        std::move(clip));
+    }
+
+    void CharacterPreviewRenderer::ClearAnimationClip() noexcept
+    {
+        animationPlayer_.ClearClip();
+    }
+
+    void CharacterPreviewRenderer::PlayAnimation() noexcept
+    {
+        animationPlayer_.Play();
+    }
+
+    void CharacterPreviewRenderer::PauseAnimation() noexcept
+    {
+        animationPlayer_.Pause();
+    }
+
+    void CharacterPreviewRenderer::StopAnimation() noexcept
+    {
+        animationPlayer_.Stop();
+    }
+
+    void CharacterPreviewRenderer::SetAnimationLooping(bool looping) noexcept
+    {
+        animationPlayer_.SetLooping(looping);
+    }
+
+    void CharacterPreviewRenderer::SetAnimationSpeed(float speed) noexcept
+    {
+        animationPlayer_.SetPlaybackSpeed(speed);
     }
 
     engine::graphics::GraphicsResult

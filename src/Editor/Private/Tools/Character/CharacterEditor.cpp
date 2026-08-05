@@ -24,7 +24,8 @@ namespace lts::editor
             "Head",
             "Body",
             "Legs",
-            "Shoes"
+            "Shoes",
+            "Hands"
         };
 
         constexpr const char* ArmorSlotNames[]

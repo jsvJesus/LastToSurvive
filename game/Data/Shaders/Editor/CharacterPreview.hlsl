@@ -6,12 +6,25 @@ cbuffer PreviewConstants : register(b0)
     float4 BaseColor;
     float4 LightDirection;
     float4 AmbientColor;
+
+    /*
+     * x = GPU skinning enabled.
+     */
+    float4 RenderParameters;
+};
+
+cbuffer BonePaletteConstants : register(b1)
+{
+    row_major float4x4 BonePalette[128];
 };
 
 struct VertexInput
 {
     float3 position : POSITION;
     float3 normal : NORMAL;
+
+    uint4 boneIndices : BLENDINDICES;
+    float4 boneWeights : BLENDWEIGHT;
 };
 
 struct VertexOutput
@@ -20,13 +33,72 @@ struct VertexOutput
     float3 worldNormal : TEXCOORD0;
 };
 
+row_major float4x4 BuildSkinMatrix(
+    uint4 boneIndices,
+    float4 boneWeights)
+{
+    const float totalWeight =
+        boneWeights.x +
+        boneWeights.y +
+        boneWeights.z +
+        boneWeights.w;
+
+    if (totalWeight <= 0.00001F)
+    {
+        return BonePalette[0];
+    }
+
+    const float4 normalizedWeights =
+        boneWeights /
+        totalWeight;
+
+    return
+        BonePalette[boneIndices.x] *
+            normalizedWeights.x +
+        BonePalette[boneIndices.y] *
+            normalizedWeights.y +
+        BonePalette[boneIndices.z] *
+            normalizedWeights.z +
+        BonePalette[boneIndices.w] *
+            normalizedWeights.w;
+}
+
 VertexOutput VSMain(VertexInput input)
 {
     VertexOutput output;
 
+    float4 localPosition =
+        float4(
+            input.position,
+            1.0F);
+
+    float3 localNormal =
+        input.normal;
+
+    if (RenderParameters.x > 0.5F)
+    {
+        const row_major float4x4 skinMatrix =
+            BuildSkinMatrix(
+                input.boneIndices,
+                input.boneWeights);
+
+        localPosition =
+            mul(
+                localPosition,
+                skinMatrix);
+
+        localNormal =
+            normalize(
+                mul(
+                    float4(
+                        localNormal,
+                        0.0F),
+                    skinMatrix).xyz);
+    }
+
     const float4 worldPosition =
         mul(
-            float4(input.position, 1.0F),
+            localPosition,
             World);
 
     output.position =
@@ -37,7 +109,9 @@ VertexOutput VSMain(VertexInput input)
     output.worldNormal =
         normalize(
             mul(
-                float4(input.normal, 0.0F),
+                float4(
+                    localNormal,
+                    0.0F),
                 World).xyz);
 
     return output;

@@ -22,6 +22,7 @@ namespace lts::editor
         Body,
         Legs,
         Shoes,
+        Hands,
         Count
     };
 

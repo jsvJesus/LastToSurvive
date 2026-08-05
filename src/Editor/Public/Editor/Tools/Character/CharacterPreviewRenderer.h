@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Editor/Tools/Character/CharacterPose.h"
+
 #include <Graphics/GraphicsResult.h>
 
 #include <cstdint>
@@ -39,6 +41,18 @@ namespace lts::editor
         bool LoadCharacter(
             engine::graphics::RenderDevice& device,
             const CharacterDefinition& character) noexcept;
+
+        void Update(float deltaSeconds) noexcept;
+
+        [[nodiscard]]
+        bool SetAnimationClip(std::shared_ptr<const CharacterAnimationClip> clip) noexcept;
+        
+        void ClearAnimationClip() noexcept;
+        void PlayAnimation() noexcept;
+        void PauseAnimation() noexcept;
+        void StopAnimation() noexcept;
+        void SetAnimationLooping(bool looping) noexcept;
+        void SetAnimationSpeed(float speed) noexcept;
 
         [[nodiscard]]
         engine::graphics::GraphicsResult Resize(
