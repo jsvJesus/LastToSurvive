@@ -32,7 +32,10 @@ namespace lts::editor
         {
             "Helmet",
             "Mask",
-            "Armor"
+            "Eye Wear",
+            "Gloves",
+            "Armor",
+            "Backpack"
         };
 
         constexpr const char* WeaponSlotNames[]
@@ -405,21 +408,85 @@ namespace lts::editor
         {
             return static_cast<std::size_t>(slot);
         }
+
+        void InitializeNewCharacterDefinition(
+            CharacterDefinition& character) noexcept
+        {
+            character = CharacterDefinition {};
+
+            CharacterArmorSlot& helmet =
+                character.armor[
+                    ToIndex(CharacterArmorType::Helmet)];
+
+            helmet.attachmentBone = "head";
+            helmet.skinned = false;
+
+            CharacterArmorSlot& mask =
+                character.armor[
+                    ToIndex(CharacterArmorType::Mask)];
+
+            mask.attachmentBone = "head";
+            mask.skinned = false;
+
+            CharacterArmorSlot& eyeWear =
+                character.armor[
+                    ToIndex(CharacterArmorType::EyeWear)];
+
+            eyeWear.attachmentBone = "head";
+            eyeWear.skinned = false;
+
+            CharacterArmorSlot& gloves =
+                character.armor[
+                    ToIndex(CharacterArmorType::Gloves)];
+
+            gloves.attachmentBone = "hand_r";
+            gloves.skinned = true;
+
+            CharacterArmorSlot& armor =
+                character.armor[
+                    ToIndex(CharacterArmorType::Armor)];
+
+            armor.attachmentBone = "spine_03";
+            armor.skinned = true;
+
+            CharacterArmorSlot& backpack =
+                character.armor[
+                    ToIndex(CharacterArmorType::Backpack)];
+
+            backpack.attachmentBone = "spine_03";
+            backpack.skinned = false;
+
+            CharacterWeapon& primaryWeapon =
+                character.weapons[
+                    ToIndex(CharacterWeaponSlot::Primary)];
+
+            primaryWeapon.ik.enabled = true;
+            primaryWeapon.ik.attachmentBone = "hand_r";
+            primaryWeapon.ik.rightHandBone = "hand_r";
+            primaryWeapon.ik.leftUpperArmBone = "upperarm_l";
+            primaryWeapon.ik.leftLowerArmBone = "lowerarm_l";
+            primaryWeapon.ik.leftHandBone = "hand_l";
+
+            CharacterWeapon& secondaryWeapon =
+                character.weapons[
+                    ToIndex(CharacterWeaponSlot::Secondary)];
+
+            /*
+             * По умолчанию вторичное оружие находится на персонаже,
+             * но не управляет руками.
+             */
+            secondaryWeapon.ik.enabled = false;
+            secondaryWeapon.ik.attachmentBone = "spine_03";
+            secondaryWeapon.ik.rightHandBone = "hand_r";
+            secondaryWeapon.ik.leftUpperArmBone = "upperarm_l";
+            secondaryWeapon.ik.leftLowerArmBone = "lowerarm_l";
+            secondaryWeapon.ik.leftHandBone = "hand_l";
+        }
     }
 
     CharacterEditor::CharacterEditor() noexcept
     {
-        character_.armor[
-            ToIndex(CharacterArmorType::Helmet)]
-            .attachmentBone = "head";
-
-        character_.armor[
-            ToIndex(CharacterArmorType::Mask)]
-            .attachmentBone = "head";
-
-        character_.armor[
-            ToIndex(CharacterArmorType::Armor)]
-            .attachmentBone = "spine_03";
+        InitializeNewCharacterDefinition(character_);
     }
 
     void CharacterEditor::SetOpen(
@@ -1166,8 +1233,7 @@ namespace lts::editor
             "as the common character skeleton.");
     }
 
-    void CharacterEditor::
-        DrawArmorInspector() noexcept
+    void CharacterEditor::DrawArmorInspector() noexcept
     {
         const std::size_t index =
             ToIndex(selectedArmor_);
@@ -1176,9 +1242,34 @@ namespace lts::editor
             character_.armor[index];
 
         const char* defaultBone = "spine_03";
-        if (selectedArmor_ == CharacterArmorType::Helmet || selectedArmor_ == CharacterArmorType::Mask)
+
+        switch (selectedArmor_)
         {
-            defaultBone = "head";
+        case CharacterArmorType::Helmet:
+        case CharacterArmorType::Mask:
+        case CharacterArmorType::EyeWear:
+            {
+                defaultBone = "head";
+                break;
+            }
+
+        case CharacterArmorType::Gloves:
+            {
+                defaultBone = "hand_r";
+                break;
+            }
+
+        case CharacterArmorType::Armor:
+        case CharacterArmorType::Backpack:
+            {
+                defaultBone = "spine_03";
+                break;
+            }
+
+        case CharacterArmorType::Count:
+            {
+                break;
+            }
         }
 
         DrawArmorSlot(
@@ -1367,54 +1458,79 @@ namespace lts::editor
 
         ImGui::SeparatorText("Mesh");
 
-        DrawPathValue(slot.meshFile);
+        DrawPathValue(
+            slot.meshFile);
 
         if (ImGui::Button(
-                "Select armor .skm",
+                "Select equipment .skm",
                 ImVec2(-1.0F, 0.0F)))
         {
-            SelectMeshFile(slot.meshFile);
-            changed = true;
-        }
-
-        ImGui::SeparatorText("Attachment");
-
-        std::array<char, 128> boneBuffer {};
-
-        const std::size_t copyLength =
-            std::min(
-                slot.attachmentBone.size(),
-                boneBuffer.size() - 1);
-
-        std::copy_n(
-            slot.attachmentBone.data(),
-            copyLength,
-            boneBuffer.data());
-
-        if (ImGui::InputText(
-                "Bone",
-                boneBuffer.data(),
-                boneBuffer.size()))
-        {
-            slot.attachmentBone =
-                boneBuffer.data();
+            SelectMeshFile(
+                slot.meshFile);
 
             changed = true;
         }
 
-        if (ImGui::Button(
-                "Use default bone",
+        if (!slot.meshFile.empty() &&
+            ImGui::Button(
+                "Clear mesh",
                 ImVec2(-1.0F, 0.0F)))
         {
-            slot.attachmentBone =
-                defaultBone;
-
+            slot.meshFile.clear();
             changed = true;
         }
 
-        DrawTransform(
-            "ArmorTransform",
-            slot.localTransform);
+        ImGui::SeparatorText("Binding");
+
+        changed |= ImGui::Checkbox(
+            "Use body skeleton skinning",
+            &slot.skinned);
+
+        if (slot.skinned)
+        {
+            ImGui::TextWrapped(
+                "This mesh uses body.skeleton and the common "
+                "character skinning palette.");
+        }
+        else
+        {
+            std::array<char, 128> boneBuffer {};
+
+            const std::size_t copyLength =
+                std::min(
+                    slot.attachmentBone.size(),
+                    boneBuffer.size() - 1U);
+
+            std::copy_n(
+                slot.attachmentBone.data(),
+                copyLength,
+                boneBuffer.data());
+
+            if (ImGui::InputText(
+                    "Attachment Bone",
+                    boneBuffer.data(),
+                    boneBuffer.size()))
+            {
+                slot.attachmentBone =
+                    boneBuffer.data();
+
+                changed = true;
+            }
+
+            if (ImGui::Button(
+                    "Use default bone",
+                    ImVec2(-1.0F, 0.0F)))
+            {
+                slot.attachmentBone =
+                    defaultBone;
+
+                changed = true;
+            }
+
+            DrawTransform(
+                "EquipmentTransform",
+                slot.localTransform);
+        }
 
         if (changed)
         {
@@ -1479,21 +1595,17 @@ namespace lts::editor
                 }
             };
 
-        drawBoneName(
-            "Attachment Bone",
-            weapon.ik.attachmentBone);
-
-        drawBoneName(
-            "Right Hand Bone",
-            weapon.ik.rightHandBone);
-
-        drawBoneName(
-            "Left Hand Bone",
-            weapon.ik.leftHandBone);
+        drawBoneName("Attachment Bone", weapon.ik.attachmentBone);
+        drawBoneName("Right Hand Bone", weapon.ik.rightHandBone);
+        drawBoneName("Left Upper Arm Bone", weapon.ik.leftUpperArmBone);
+        drawBoneName("Left Lower Arm Bone", weapon.ik.leftLowerArmBone);
+        
+        changed |= ImGui::DragFloat3("Left Elbow Pole Offset", &weapon.ik.leftElbowPoleOffset.x, 0.005F);
+        drawBoneName("Left Hand Bone", weapon.ik.leftHandBone);
 
         if (ImGui::CollapsingHeader(
-                "Weapon transform",
-                ImGuiTreeNodeFlags_DefaultOpen))
+        "Weapon correction",
+        ImGuiTreeNodeFlags_DefaultOpen))
         {
             DrawTransform(
                 "Weapon",
@@ -1501,18 +1613,24 @@ namespace lts::editor
         }
 
         if (ImGui::CollapsingHeader(
-                "Right hand IK",
+                "Right grip",
                 ImGuiTreeNodeFlags_DefaultOpen))
         {
+            ImGui::TextWrapped(
+                "Main grip transform in weapon local space.");
+
             DrawTransform(
                 "RightHand",
                 weapon.ik.rightHandTransform);
         }
 
         if (ImGui::CollapsingHeader(
-                "Left hand IK",
+                "Left foregrip",
                 ImGuiTreeNodeFlags_DefaultOpen))
         {
+            ImGui::TextWrapped(
+                "Left-hand target transform in weapon local space.");
+
             DrawTransform(
                 "LeftHand",
                 weapon.ik.leftHandTransform);
@@ -1567,19 +1685,8 @@ namespace lts::editor
 
     void CharacterEditor::NewCharacter() noexcept
     {
-        character_ = CharacterDefinition {};
-
-        character_.armor[
-            ToIndex(CharacterArmorType::Helmet)]
-            .attachmentBone = "head";
-
-        character_.armor[
-            ToIndex(CharacterArmorType::Mask)]
-            .attachmentBone = "head";
-
-        character_.armor[
-            ToIndex(CharacterArmorType::Armor)]
-            .attachmentBone = "spine_03";
+        InitializeNewCharacterDefinition(
+            character_);
 
         dirty_ = false;
 
@@ -1890,7 +1997,7 @@ namespace lts::editor
             return false;
         }
 
-        stream << "character_version=1\n";
+        stream << "character_version=2\n";
 
         WritePath(
             stream,

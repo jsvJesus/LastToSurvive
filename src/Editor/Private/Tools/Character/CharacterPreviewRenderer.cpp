@@ -61,8 +61,8 @@ namespace lts::editor
         constexpr std::uint32_t MinimumPreviewSize = 64U;
         constexpr std::uint32_t MaximumPreviewSize = 4096U;
 
-        constexpr const char* PreviewLogCategory =
-            "LTS.Editor.CharacterPreview";
+        constexpr const char* PreviewLogCategory = "Editor.CharacterPreview";
+        constexpr std::size_t InvalidPreviewWeaponIndex = (std::numeric_limits<std::size_t>::max)();
 
         struct alignas(16) PreviewConstants final
         {
@@ -634,7 +634,7 @@ namespace lts::editor
         struct PreviewMesh final
         {
             std::filesystem::path sourcePath;
-
+            std::size_t weaponStateIndex = InvalidPreviewWeaponIndex;
             std::unique_ptr<engine::assets::GpuSkeletalMesh> gpuMesh;
 
             DirectX::XMFLOAT4X4 world{};
@@ -658,13 +658,15 @@ namespace lts::editor
         struct PreviewWeaponState final
         {
             CharacterTransform weaponTransform;
+            CharacterTransform rightHandTransform;
             CharacterTransform leftHandTransform;
-
-            std::size_t attachmentBone =
-                InvalidCharacterBoneIndex;
-
-            std::size_t leftHandBone =
-                InvalidCharacterBoneIndex;
+            CharacterVector3 leftElbowPoleOffset;
+            
+            std::size_t attachmentBone = InvalidCharacterBoneIndex;
+            std::size_t rightHandBone = InvalidCharacterBoneIndex;
+            std::size_t leftUpperArmBone = InvalidCharacterBoneIndex;
+            std::size_t leftLowerArmBone = InvalidCharacterBoneIndex;
+            std::size_t leftHandBone = InvalidCharacterBoneIndex;
 
             bool active = false;
             bool ikEnabled = false;
@@ -1131,12 +1133,6 @@ namespace lts::editor
                 return false;
             }
 
-            leftUpperArmBone_ =
-                pose_.FindBone("upperarm_l");
-
-            leftLowerArmBone_ =
-                pose_.FindBone("lowerarm_l");
-
             focusCenter_ =
             {
                 0.0F,
@@ -1147,16 +1143,14 @@ namespace lts::editor
             focusRadius_ = 1.0F;
             focusResolved_ = false;
 
-            static constexpr std::array<
-                DirectX::XMFLOAT4,
-                static_cast<std::size_t>(CharacterModuleType::Count)>
-                moduleColors
+            static constexpr std::array<DirectX::XMFLOAT4, static_cast<std::size_t>(CharacterArmorType::Count)>armorColors
             {{
-                {0.76F, 0.62F, 0.52F, 1.0F}, // Head
-                {0.38F, 0.43F, 0.46F, 1.0F}, // Body
-                {0.24F, 0.28F, 0.31F, 1.0F}, // Legs
-                {0.16F, 0.17F, 0.18F, 1.0F}, // Shoes
-                {0.58F, 0.48F, 0.42F, 1.0F}  // Hands
+                {0.25F, 0.29F, 0.24F, 1.0F}, // Helmet
+                {0.20F, 0.24F, 0.22F, 1.0F}, // Mask
+                {0.18F, 0.21F, 0.23F, 1.0F}, // EyeWear
+                {0.32F, 0.27F, 0.23F, 1.0F}, // Gloves
+                {0.31F, 0.34F, 0.27F, 1.0F}, // Armor
+                {0.22F, 0.25F, 0.20F, 1.0F}  // Backpack
             }};
 
             for (std::size_t index = 0U;
@@ -1170,19 +1164,23 @@ namespace lts::editor
                     index == static_cast<std::size_t>(
                         CharacterModuleType::Body);
 
+                const std::size_t renderingBone = state.ikEnabled ? state.rightHandBone: state.attachmentBone;
+
                 if (!AddMesh(
-                        device,
-                        slot.meshFile,
-                        slot.visible,
-                        moduleColors[index],
-                        preferForFocus,
-                        true,
-                        InvalidCharacterBoneIndex,
-                        CharacterTransform{}))
+                    device,
+                    weapon.meshFile,
+                    true,
+                    weaponColors[index],
+                    false,
+                    false,
+                    renderingBone,
+                    state.weaponTransform))
                 {
                     ReleaseCharacter(device);
                     return false;
                 }
+
+                meshes_.back().weaponStateIndex = index;
             }
 
             static constexpr std::array<DirectX::XMFLOAT4, 3U>
@@ -1193,28 +1191,48 @@ namespace lts::editor
                 {0.31F, 0.34F, 0.27F, 1.0F}
             }};
 
-            for (std::size_t index = 0U;
-                 index < character.armor.size();
-                 ++index)
+            for (std::size_t index = 0U; index < character.armor.size(); ++index)
             {
                 const CharacterArmorSlot& slot =
                     character.armor[index];
 
-                if (!slot.visible || slot.meshFile.empty())
+                if (!slot.visible ||
+                    slot.meshFile.empty())
                 {
                     continue;
                 }
 
+                if (slot.skinned)
+                {
+                    if (!AddMesh(
+                            device,
+                            slot.meshFile,
+                            true,
+                            armorColors[index],
+                            false,
+                            true,
+                            InvalidCharacterBoneIndex,
+                            CharacterTransform {}))
+                    {
+                        ReleaseCharacter(device);
+                        return false;
+                    }
+
+                    continue;
+                }
+
                 const std::size_t attachmentBone =
-                    pose_.FindBone(slot.attachmentBone);
+                    pose_.FindBone(
+                        slot.attachmentBone);
 
                 if (attachmentBone ==
                     InvalidCharacterBoneIndex)
                 {
                     status_ =
-                        "Armor attachment bone not found: ";
+                        "Equipment attachment bone not found: ";
 
-                    status_ += slot.attachmentBone;
+                    status_ +=
+                        slot.attachmentBone;
 
                     ReleaseCharacter(device);
                     return false;
@@ -2141,6 +2159,85 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool BuildWeaponWorld(
+            const PreviewWeaponState& weapon,
+            DirectX::XMMATRIX& output) noexcept
+        {
+            if (!weapon.active)
+            {
+                status_ =
+                    "Weapon state is not active.";
+
+                return false;
+            }
+
+            if (!weapon.ikEnabled)
+            {
+                return BuildAttachmentWorld(
+                    weapon.attachmentBone,
+                    weapon.weaponTransform,
+                    output);
+            }
+
+            const DirectX::XMFLOAT4X4* rightHandMatrix =
+                pose_.GetAbsoluteMatrix(
+                    weapon.rightHandBone);
+
+            if (rightHandMatrix == nullptr)
+            {
+                status_ =
+                    "Right-hand matrix is unavailable.";
+
+                return false;
+            }
+
+            /*
+             * rightHandTransform описывает основную рукоять
+             * в локальном пространстве оружия.
+             *
+             * rightGripLocal * weaponWorld = desiredGripWorld
+             */
+            const DirectX::XMMATRIX rightGripLocal =
+                BuildTransformMatrix(
+                    weapon.rightHandTransform);
+
+            DirectX::XMVECTOR determinant;
+
+            const DirectX::XMMATRIX inverseRightGrip =
+                DirectX::XMMatrixInverse(
+                    &determinant,
+                    rightGripLocal);
+
+            const float determinantValue =
+                std::fabs(
+                    DirectX::XMVectorGetX(
+                        determinant));
+
+            if (determinantValue <= 0.000001F)
+            {
+                status_ =
+                    "Right-hand grip transform is not invertible.";
+
+                return false;
+            }
+
+            const DirectX::XMMATRIX handCorrection =
+                BuildTransformMatrix(
+                    weapon.weaponTransform);
+
+            const DirectX::XMMATRIX desiredGripWorld =
+                handCorrection *
+                DirectX::XMLoadFloat4x4(
+                    rightHandMatrix);
+
+            output =
+                inverseRightGrip *
+                desiredGripWorld;
+
+            return true;
+        }
+
+        [[nodiscard]]
         bool ApplyWeaponIk() noexcept
         {
             for (const PreviewWeaponState& weapon : weapons_)
@@ -2151,30 +2248,35 @@ namespace lts::editor
                     continue;
                 }
 
-                if (leftUpperArmBone_ ==
+                if (weapon.rightHandBone ==
                         InvalidCharacterBoneIndex ||
-                    leftLowerArmBone_ ==
+                    weapon.leftUpperArmBone ==
+                        InvalidCharacterBoneIndex ||
+                    weapon.leftLowerArmBone ==
                         InvalidCharacterBoneIndex ||
                     weapon.leftHandBone ==
                         InvalidCharacterBoneIndex)
                 {
                     status_ =
-                        "Left-hand IK bone chain is invalid.";
+                        "Weapon IK bone chain is invalid.";
 
                     return false;
                 }
 
                 DirectX::XMMATRIX weaponWorld;
 
-                if (!BuildAttachmentWorld(
-                        weapon.attachmentBone,
-                        weapon.weaponTransform,
+                if (!BuildWeaponWorld(
+                        weapon,
                         weaponWorld))
                 {
                     return false;
                 }
 
-                const DirectX::XMMATRIX targetWorld =
+                /*
+                 * leftHandTransform является точкой цевья
+                 * в локальном пространстве оружия.
+                 */
+                const DirectX::XMMATRIX leftHandTargetWorld =
                     BuildTransformMatrix(
                         weapon.leftHandTransform) *
                     weaponWorld;
@@ -2183,32 +2285,41 @@ namespace lts::editor
 
                 DirectX::XMStoreFloat4x4(
                     &targetMatrix,
-                    targetWorld);
+                    leftHandTargetWorld);
 
                 /*
-                 * Текущее положение локтя используется как pole.
-                 * Так сохраняется естественная сторона сгиба руки.
+                 * Базой для pole position остаётся текущее
+                 * положение локтя из анимации.
                  */
-                const DirectX::XMFLOAT3 polePosition =
+                DirectX::XMFLOAT3 polePosition =
                     pose_.GetBonePosition(
-                        leftLowerArmBone_);
+                        weapon.leftLowerArmBone);
+
+                polePosition.x +=
+                    weapon.leftElbowPoleOffset.x;
+
+                polePosition.y +=
+                    weapon.leftElbowPoleOffset.y;
+
+                polePosition.z +=
+                    weapon.leftElbowPoleOffset.z;
 
                 if (!pose_.ApplyTwoBoneIk(
-                        leftUpperArmBone_,
-                        leftLowerArmBone_,
+                        weapon.leftUpperArmBone,
+                        weapon.leftLowerArmBone,
                         weapon.leftHandBone,
                         targetMatrix,
                         polePosition))
                 {
                     status_ =
-                        "Failed to solve left-hand two-bone IK.";
+                        "Failed to solve left-hand weapon IK.";
 
                     return false;
                 }
 
                 /*
-                 * Только первое активное оружие управляет левой рукой.
-                 * Secondary Weapon обычно находится в holster.
+                 * Одновременно только одно оружие управляет руками.
+                 * Остальные отображаются как attachments.
                  */
                 break;
             }
@@ -2221,6 +2332,33 @@ namespace lts::editor
             const PreviewMesh& mesh,
             DirectX::XMFLOAT4X4& output) noexcept
         {
+            if (mesh.weaponStateIndex != InvalidPreviewWeaponIndex)
+            {
+                if (mesh.weaponStateIndex >=
+                    weapons_.size())
+                {
+                    status_ =
+                        "Weapon state index is invalid.";
+
+                    return false;
+                }
+
+                DirectX::XMMATRIX weaponWorld;
+
+                if (!BuildWeaponWorld(
+                        weapons_[mesh.weaponStateIndex],
+                        weaponWorld))
+                {
+                    return false;
+                }
+
+                DirectX::XMStoreFloat4x4(
+                    &output,
+                    weaponWorld);
+
+                return true;
+            }
+
             if (mesh.attachmentBone ==
                 InvalidCharacterBoneIndex)
             {
@@ -2384,8 +2522,6 @@ namespace lts::editor
             skeleton_.Clear();
             pose_.Clear();
             weapons_ = {};
-            leftUpperArmBone_ = InvalidCharacterBoneIndex;
-            leftLowerArmBone_ = InvalidCharacterBoneIndex;
             hasViewProjection_ = false;
             characterLoaded_ = false;
             focusResolved_ = false;
@@ -2463,12 +2599,6 @@ namespace lts::editor
             PreviewWeaponState,
             static_cast<std::size_t>(CharacterWeaponSlot::Count)>
             weapons_{};
-
-        std::size_t leftUpperArmBone_ =
-            InvalidCharacterBoneIndex;
-
-        std::size_t leftLowerArmBone_ =
-            InvalidCharacterBoneIndex;
 
         DirectX::XMFLOAT4X4 lastViewProjection_{};
 

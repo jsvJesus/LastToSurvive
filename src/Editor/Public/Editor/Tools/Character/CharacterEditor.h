@@ -30,7 +30,10 @@ namespace lts::editor
     {
         Helmet = 0,
         Mask,
+        EyeWear,
+        Gloves,
         Armor,
+        Backpack,
         Count
     };
 
@@ -71,6 +74,15 @@ namespace lts::editor
         std::filesystem::path meshFile;
         std::string attachmentBone;
         CharacterTransform localTransform;
+
+        /*
+         * true:
+         * mesh использует body.skeleton и общую skinning palette.
+         *
+         * false:
+         * mesh является жёстким attachment к attachmentBone.
+         */
+        bool skinned = false;
         bool visible = true;
     };
 
@@ -78,12 +90,44 @@ namespace lts::editor
     {
         bool enabled = true;
 
+        /*
+         * Используется для оружия без IK:
+         * holster, спина, пояс и другие attachment-позиции.
+         */
         std::string attachmentBone = "hand_r";
+
+        /*
+         * Основная рука.
+         * Оружие позиционируется относительно этой кости.
+         */
         std::string rightHandBone = "hand_r";
+
+        /*
+         * Цепочка IK вспомогательной руки.
+         */
+        std::string leftUpperArmBone = "upperarm_l";
+        std::string leftLowerArmBone = "lowerarm_l";
         std::string leftHandBone = "hand_l";
 
+        /*
+         * Дополнительное смещение pole position локтя.
+         * Значение задаётся в пространстве персонажа.
+         */
+        CharacterVector3 leftElbowPoleOffset;
+
+        /*
+         * Поправка положения оружия относительно правой руки.
+         */
         CharacterTransform weaponTransform;
+
+        /*
+         * Положение основной рукояти в локальном пространстве оружия.
+         */
         CharacterTransform rightHandTransform;
+
+        /*
+         * Положение цевья в локальном пространстве оружия.
+         */
         CharacterTransform leftHandTransform;
     };
 
@@ -222,7 +266,7 @@ namespace lts::editor
         std::vector<std::string> validationWarnings_;
 
         CharacterPreviewRenderer previewRenderer_;
-        std::vector<CharacterPreviewDebugBone>previewDebugBones_;
+        std::vector<CharacterPreviewDebugBone> previewDebugBones_;
 
         bool previewInitialized_ = false;
         bool previewDirty_ = true;
