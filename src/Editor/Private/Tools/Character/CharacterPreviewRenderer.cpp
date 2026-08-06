@@ -1133,24 +1133,39 @@ namespace lts::editor
                 return false;
             }
 
-            focusCenter_ =
-            {
-                0.0F,
-                0.0F,
-                0.0F
-            };
-
+            focusCenter_ = {0.0F, 0.0F, 0.0F};
             focusRadius_ = 1.0F;
             focusResolved_ = false;
 
-            static constexpr std::array<DirectX::XMFLOAT4, static_cast<std::size_t>(CharacterArmorType::Count)>armorColors
+            const auto resolveBone =
+                [this](
+                    const std::string& boneName,
+                    const char* errorPrefix,
+                    std::size_t& boneIndex)
+                {
+                    boneIndex = pose_.FindBone(boneName);
+
+                    if (boneIndex != InvalidCharacterBoneIndex)
+                    {
+                        return true;
+                    }
+
+                    status_ = errorPrefix;
+                    status_ += boneName;
+
+                    return false;
+                };
+
+            static constexpr std::array<
+                DirectX::XMFLOAT4,
+                static_cast<std::size_t>(
+                    CharacterModuleType::Count)> moduleColors
             {{
-                {0.25F, 0.29F, 0.24F, 1.0F}, // Helmet
-                {0.20F, 0.24F, 0.22F, 1.0F}, // Mask
-                {0.18F, 0.21F, 0.23F, 1.0F}, // EyeWear
-                {0.32F, 0.27F, 0.23F, 1.0F}, // Gloves
-                {0.31F, 0.34F, 0.27F, 1.0F}, // Armor
-                {0.22F, 0.25F, 0.20F, 1.0F}  // Backpack
+                {0.76F, 0.62F, 0.52F, 1.0F},
+                {0.38F, 0.43F, 0.46F, 1.0F},
+                {0.24F, 0.28F, 0.31F, 1.0F},
+                {0.16F, 0.17F, 0.18F, 1.0F},
+                {0.58F, 0.48F, 0.42F, 1.0F}
             }};
 
             for (std::size_t index = 0U;
@@ -1164,40 +1179,42 @@ namespace lts::editor
                     index == static_cast<std::size_t>(
                         CharacterModuleType::Body);
 
-                const std::size_t renderingBone = state.ikEnabled ? state.rightHandBone: state.attachmentBone;
-
                 if (!AddMesh(
-                    device,
-                    weapon.meshFile,
-                    true,
-                    weaponColors[index],
-                    false,
-                    false,
-                    renderingBone,
-                    state.weaponTransform))
+                        device,
+                        slot.meshFile,
+                        slot.visible,
+                        moduleColors[index],
+                        preferForFocus,
+                        true,
+                        InvalidCharacterBoneIndex,
+                        CharacterTransform {}))
                 {
                     ReleaseCharacter(device);
                     return false;
                 }
-
-                meshes_.back().weaponStateIndex = index;
             }
 
-            static constexpr std::array<DirectX::XMFLOAT4, 3U>
-                armorColors
+            static constexpr std::array<
+                DirectX::XMFLOAT4,
+                static_cast<std::size_t>(
+                    CharacterArmorType::Count)> armorColors
             {{
                 {0.25F, 0.29F, 0.24F, 1.0F},
                 {0.20F, 0.24F, 0.22F, 1.0F},
-                {0.31F, 0.34F, 0.27F, 1.0F}
+                {0.18F, 0.21F, 0.23F, 1.0F},
+                {0.32F, 0.27F, 0.23F, 1.0F},
+                {0.31F, 0.34F, 0.27F, 1.0F},
+                {0.22F, 0.25F, 0.20F, 1.0F}
             }};
 
-            for (std::size_t index = 0U; index < character.armor.size(); ++index)
+            for (std::size_t index = 0U;
+                 index < character.armor.size();
+                 ++index)
             {
                 const CharacterArmorSlot& slot =
                     character.armor[index];
 
-                if (!slot.visible ||
-                    slot.meshFile.empty())
+                if (!slot.visible || slot.meshFile.empty())
                 {
                     continue;
                 }
@@ -1221,19 +1238,14 @@ namespace lts::editor
                     continue;
                 }
 
-                const std::size_t attachmentBone =
-                    pose_.FindBone(
-                        slot.attachmentBone);
+                std::size_t attachmentBone =
+                    InvalidCharacterBoneIndex;
 
-                if (attachmentBone ==
-                    InvalidCharacterBoneIndex)
+                if (!resolveBone(
+                        slot.attachmentBone,
+                        "Equipment attachment bone not found: ",
+                        attachmentBone))
                 {
-                    status_ =
-                        "Equipment attachment bone not found: ";
-
-                    status_ +=
-                        slot.attachmentBone;
-
                     ReleaseCharacter(device);
                     return false;
                 }
@@ -1253,8 +1265,10 @@ namespace lts::editor
                 }
             }
 
-            static constexpr std::array<DirectX::XMFLOAT4, 2U>
-                weaponColors
+            static constexpr std::array<
+                DirectX::XMFLOAT4,
+                static_cast<std::size_t>(
+                    CharacterWeaponSlot::Count)> weaponColors
             {{
                 {0.30F, 0.31F, 0.32F, 1.0F},
                 {0.24F, 0.25F, 0.27F, 1.0F}
@@ -1270,61 +1284,84 @@ namespace lts::editor
                 PreviewWeaponState& state =
                     weapons_[index];
 
-                state = {};
+                state = PreviewWeaponState {};
 
                 if (!weapon.visible || weapon.meshFile.empty())
                 {
                     continue;
                 }
 
-                state.attachmentBone =
-                    pose_.FindBone(
-                        weapon.ik.attachmentBone);
-
-                if (state.attachmentBone ==
-                    InvalidCharacterBoneIndex)
-                {
-                    status_ =
-                        "Weapon attachment bone not found: ";
-
-                    status_ +=
-                        weapon.ik.attachmentBone;
-
-                    ReleaseCharacter(device);
-                    return false;
-                }
-
-                state.leftHandBone =
-                    pose_.FindBone(
-                        weapon.ik.leftHandBone);
-
                 state.weaponTransform =
                     weapon.ik.weaponTransform;
+
+                state.rightHandTransform =
+                    weapon.ik.rightHandTransform;
 
                 state.leftHandTransform =
                     weapon.ik.leftHandTransform;
 
-                state.active = true;
+                state.leftElbowPoleOffset =
+                    weapon.ik.leftElbowPoleOffset;
+
                 state.ikEnabled =
                     weapon.ik.enabled;
 
                 if (state.ikEnabled)
                 {
-                    if (leftUpperArmBone_ ==
-                            InvalidCharacterBoneIndex ||
-                        leftLowerArmBone_ ==
-                            InvalidCharacterBoneIndex ||
-                        state.leftHandBone ==
-                            InvalidCharacterBoneIndex)
+                    if (!resolveBone(
+                            weapon.ik.rightHandBone,
+                            "Right-hand bone not found: ",
+                            state.rightHandBone))
                     {
-                        status_ =
-                            "Left-hand IK bones were not found. "
-                            "Expected upperarm_l, lowerarm_l and hand_l.";
+                        ReleaseCharacter(device);
+                        return false;
+                    }
 
+                    if (!resolveBone(
+                            weapon.ik.leftUpperArmBone,
+                            "Left upper-arm bone not found: ",
+                            state.leftUpperArmBone))
+                    {
+                        ReleaseCharacter(device);
+                        return false;
+                    }
+
+                    if (!resolveBone(
+                            weapon.ik.leftLowerArmBone,
+                            "Left lower-arm bone not found: ",
+                            state.leftLowerArmBone))
+                    {
+                        ReleaseCharacter(device);
+                        return false;
+                    }
+
+                    if (!resolveBone(
+                            weapon.ik.leftHandBone,
+                            "Left-hand bone not found: ",
+                            state.leftHandBone))
+                    {
                         ReleaseCharacter(device);
                         return false;
                     }
                 }
+                else
+                {
+                    if (!resolveBone(
+                            weapon.ik.attachmentBone,
+                            "Weapon attachment bone not found: ",
+                            state.attachmentBone))
+                    {
+                        ReleaseCharacter(device);
+                        return false;
+                    }
+                }
+
+                state.active = true;
+
+                const std::size_t renderingBone =
+                    state.ikEnabled
+                        ? state.rightHandBone
+                        : state.attachmentBone;
 
                 if (!AddMesh(
                         device,
@@ -1333,27 +1370,27 @@ namespace lts::editor
                         weaponColors[index],
                         false,
                         false,
-                        state.attachmentBone,
+                        renderingBone,
                         state.weaponTransform))
                 {
                     ReleaseCharacter(device);
                     return false;
                 }
+
+                meshes_.back().weaponStateIndex = index;
             }
 
             characterLoaded_ = true;
 
             std::ostringstream message;
 
-            message
-                << "Preview loaded: "
-                << meshes_.size()
-                << " mesh(es), "
-                << pose_.GetBoneCount()
-                << " bones.";
+            message << "Preview loaded: "
+                    << meshes_.size()
+                    << " mesh(es), "
+                    << pose_.GetBoneCount()
+                    << " bones.";
 
             status_ = message.str();
-
             return true;
         }
 

@@ -409,6 +409,221 @@ namespace lts::editor
             return static_cast<std::size_t>(slot);
         }
 
+        constexpr std::uint32_t CurrentCharacterFileVersion = 2U;
+
+        void WriteBoolean(
+            std::ostream& stream,
+            const std::string& key,
+            bool value)
+        {
+            stream << key << '=' << (value ? 1 : 0) << '\n';
+        }
+
+        void WriteString(
+            std::ostream& stream,
+            const std::string& key,
+            const std::string& value)
+        {
+            stream << key << '=' << std::quoted(value) << '\n';
+        }
+
+        void WriteVector3(
+            std::ostream& stream,
+            const std::string& key,
+            const CharacterVector3& value)
+        {
+            stream << key << '='
+                   << value.x << ','
+                   << value.y << ','
+                   << value.z << '\n';
+        }
+
+        bool ParseBoolean(
+            const std::string& value,
+            bool& output) noexcept
+        {
+            if (value == "1" || value == "true")
+            {
+                output = true;
+                return true;
+            }
+
+            if (value == "0" || value == "false")
+            {
+                output = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool ParseUnsigned(
+            const std::string& value,
+            std::uint32_t& output)
+        {
+            std::istringstream stream(value);
+            stream >> output;
+
+            if (stream.fail())
+            {
+                return false;
+            }
+
+            stream >> std::ws;
+            return stream.eof();
+        }
+
+        bool ParseIndexedField(
+            const std::string& key,
+            const char* group,
+            std::size_t& index,
+            std::string& field)
+        {
+            const std::string prefix = std::string(group) + '.';
+
+            if (key.compare(0, prefix.size(), prefix) != 0)
+            {
+                return false;
+            }
+
+            const std::size_t fieldSeparator =
+                key.find('.', prefix.size());
+
+            if (fieldSeparator == std::string::npos)
+            {
+                return false;
+            }
+
+            const std::string indexText =
+                key.substr(
+                    prefix.size(),
+                    fieldSeparator - prefix.size());
+
+            if (indexText.empty())
+            {
+                return false;
+            }
+
+            std::istringstream indexStream(indexText);
+            indexStream >> index;
+
+            if (indexStream.fail())
+            {
+                return false;
+            }
+
+            indexStream >> std::ws;
+
+            if (!indexStream.eof())
+            {
+                return false;
+            }
+
+            field = key.substr(fieldSeparator + 1U);
+            return !field.empty();
+        }
+
+        bool ResolveArmorSlotIndex(
+            std::uint32_t version,
+            std::size_t serializedIndex,
+            std::size_t& destinationIndex) noexcept
+        {
+            if (version >= 2U)
+            {
+                const std::size_t slotCount =
+                    static_cast<std::size_t>(
+                        CharacterArmorType::Count);
+
+                if (serializedIndex >= slotCount)
+                {
+                    return false;
+                }
+
+                destinationIndex = serializedIndex;
+                return true;
+            }
+
+            switch (serializedIndex)
+            {
+                case 0U:
+                    destinationIndex =
+                        ToIndex(CharacterArmorType::Helmet);
+                    return true;
+
+                case 1U:
+                    destinationIndex =
+                        ToIndex(CharacterArmorType::Mask);
+                    return true;
+
+                case 2U:
+                    destinationIndex =
+                        ToIndex(CharacterArmorType::Armor);
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        bool IsAssetFileAvailable(
+            const std::filesystem::path& path) noexcept
+        {
+            if (path.empty())
+            {
+                return false;
+            }
+
+            std::error_code error;
+
+            if (std::filesystem::is_regular_file(path, error) && !error)
+            {
+                return true;
+            }
+
+            if (path.is_absolute())
+            {
+                return false;
+            }
+
+            error.clear();
+
+            const std::filesystem::path workingDirectory =
+                std::filesystem::current_path(error);
+
+            if (error)
+            {
+                return false;
+            }
+
+            error.clear();
+
+            const std::filesystem::path directPath =
+                workingDirectory / path;
+
+            if (std::filesystem::is_regular_file(directPath, error) && !error)
+            {
+                return true;
+            }
+
+            error.clear();
+
+            const std::filesystem::path gamePath =
+                workingDirectory / L"game" / path;
+
+            return std::filesystem::is_regular_file(gamePath, error) && !error;
+        }
+
+        void AddValidationMessage(
+            std::vector<std::string>& messages,
+            const char* slotName,
+            const char* description)
+        {
+            std::string message = slotName;
+            message += description;
+
+            messages.emplace_back(std::move(message));
+        }
+
         void InitializeNewCharacterDefinition(
             CharacterDefinition& character) noexcept
         {
@@ -1816,8 +2031,7 @@ namespace lts::editor
             "Skinned mesh selected.");
     }
 
-    void CharacterEditor::
-        ValidateCharacter() noexcept
+    void CharacterEditor::ValidateCharacter() noexcept
     {
         validationErrors_.clear();
         validationWarnings_.clear();
@@ -1827,16 +2041,17 @@ namespace lts::editor
             validationErrors_.emplace_back(
                 "Body skeleton is not selected.");
         }
-        else if (!std::filesystem::exists(
-                     character_.bodySkeletonFile))
+        else if (!IsAssetFileAvailable(character_.bodySkeletonFile))
         {
             validationErrors_.emplace_back(
                 "Body skeleton file does not exist.");
         }
 
+        const std::size_t bodyIndex =
+            ToIndex(CharacterModuleType::Body);
+
         const CharacterMeshSlot& body =
-            character_.modules[
-                ToIndex(CharacterModuleType::Body)];
+            character_.modules[bodyIndex];
 
         if (body.meshFile.empty())
         {
@@ -1844,7 +2059,7 @@ namespace lts::editor
                 "Body mesh is not selected.");
         }
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.modules.size();
              ++index)
         {
@@ -1852,42 +2067,46 @@ namespace lts::editor
                 character_.modules[index];
 
             if (!slot.meshFile.empty() &&
-                !std::filesystem::exists(
-                    slot.meshFile))
+                !IsAssetFileAvailable(slot.meshFile))
             {
-                std::string error =
-                    CharacterModuleNames[index];
-
-                error +=
-                    " mesh file does not exist.";
-
-                validationErrors_.push_back(
-                    std::move(error));
+                AddValidationMessage(
+                    validationErrors_,
+                    CharacterModuleNames[index],
+                    " mesh file does not exist.");
             }
         }
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.armor.size();
              ++index)
         {
             const CharacterArmorSlot& slot =
                 character_.armor[index];
 
-            if (!slot.meshFile.empty() &&
+            if (slot.meshFile.empty())
+            {
+                continue;
+            }
+
+            if (!IsAssetFileAvailable(slot.meshFile))
+            {
+                AddValidationMessage(
+                    validationErrors_,
+                    ArmorSlotNames[index],
+                    " mesh file does not exist.");
+            }
+
+            if (!slot.skinned &&
                 slot.attachmentBone.empty())
             {
-                std::string error =
-                    ArmorSlotNames[index];
-
-                error +=
-                    " attachment bone is empty.";
-
-                validationErrors_.push_back(
-                    std::move(error));
+                AddValidationMessage(
+                    validationErrors_,
+                    ArmorSlotNames[index],
+                    " attachment bone is empty.");
             }
         }
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.weapons.size();
              ++index)
         {
@@ -1899,73 +2118,76 @@ namespace lts::editor
                 continue;
             }
 
-            if (weapon.ik.attachmentBone.empty())
+            if (!IsAssetFileAvailable(weapon.meshFile))
             {
-                std::string error =
-                    WeaponSlotNames[index];
-
-                error +=
-                    " attachment bone is empty.";
-
-                validationErrors_.push_back(
-                    std::move(error));
+                AddValidationMessage(
+                    validationErrors_,
+                    WeaponSlotNames[index],
+                    " mesh file does not exist.");
             }
 
-            if (weapon.ik.enabled &&
-                weapon.ik.rightHandBone.empty())
+            if (!weapon.ik.enabled)
             {
-                std::string error =
-                    WeaponSlotNames[index];
+                if (weapon.ik.attachmentBone.empty())
+                {
+                    AddValidationMessage(
+                        validationErrors_,
+                        WeaponSlotNames[index],
+                        " attachment bone is empty.");
+                }
 
-                error +=
-                    " right hand bone is empty.";
-
-                validationErrors_.push_back(
-                    std::move(error));
+                continue;
             }
 
-            if (weapon.ik.enabled &&
-                weapon.ik.leftHandBone.empty())
+            if (weapon.ik.rightHandBone.empty())
             {
-                std::string error =
-                    WeaponSlotNames[index];
+                AddValidationMessage(
+                    validationErrors_,
+                    WeaponSlotNames[index],
+                    " right hand bone is empty.");
+            }
 
-                error +=
-                    " left hand bone is empty.";
+            if (weapon.ik.leftUpperArmBone.empty())
+            {
+                AddValidationMessage(
+                    validationErrors_,
+                    WeaponSlotNames[index],
+                    " left upper-arm bone is empty.");
+            }
 
-                validationErrors_.push_back(
-                    std::move(error));
+            if (weapon.ik.leftLowerArmBone.empty())
+            {
+                AddValidationMessage(
+                    validationErrors_,
+                    WeaponSlotNames[index],
+                    " left lower-arm bone is empty.");
+            }
+
+            if (weapon.ik.leftHandBone.empty())
+            {
+                AddValidationMessage(
+                    validationErrors_,
+                    WeaponSlotNames[index],
+                    " left hand bone is empty.");
             }
         }
 
-        const CharacterMeshSlot& head =
-            character_.modules[
-                ToIndex(CharacterModuleType::Head)];
-
-        const CharacterMeshSlot& legs =
-            character_.modules[
-                ToIndex(CharacterModuleType::Legs)];
-
-        const CharacterMeshSlot& shoes =
-            character_.modules[
-                ToIndex(CharacterModuleType::Shoes)];
-
-        if (head.meshFile.empty())
+        for (std::size_t index = 0U;
+             index < character_.modules.size();
+             ++index)
         {
-            validationWarnings_.emplace_back(
-                "Head mesh is not selected.");
-        }
+            if (index == bodyIndex)
+            {
+                continue;
+            }
 
-        if (legs.meshFile.empty())
-        {
-            validationWarnings_.emplace_back(
-                "Legs mesh is not selected.");
-        }
-
-        if (shoes.meshFile.empty())
-        {
-            validationWarnings_.emplace_back(
-                "Shoes mesh is not selected.");
+            if (character_.modules[index].meshFile.empty())
+            {
+                AddValidationMessage(
+                    validationWarnings_,
+                    CharacterModuleNames[index],
+                    " mesh is not selected.");
+            }
         }
 
         selectedSection_ =
@@ -1989,22 +2211,23 @@ namespace lts::editor
     {
         std::ofstream stream(
             file,
-            std::ios::binary |
-                std::ios::trunc);
+            std::ios::binary | std::ios::trunc);
 
         if (!stream)
         {
             return false;
         }
 
-        stream << "character_version=2\n";
+        stream << "character_version="
+               << CurrentCharacterFileVersion
+               << '\n';
 
         WritePath(
             stream,
             "body_skeleton",
             character_.bodySkeletonFile);
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.modules.size();
              ++index)
         {
@@ -2012,22 +2235,23 @@ namespace lts::editor
                 character_.modules[index];
 
             const std::string prefix =
-                "module." +
-                std::to_string(index);
+                "module." + std::to_string(index);
+
+            const std::string meshKey =
+                prefix + ".mesh";
 
             WritePath(
                 stream,
-                (prefix + ".mesh").c_str(),
+                meshKey.c_str(),
                 slot.meshFile);
 
-            stream
-                << prefix
-                << ".visible="
-                << (slot.visible ? 1 : 0)
-                << '\n';
+            WriteBoolean(
+                stream,
+                prefix + ".visible",
+                slot.visible);
         }
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.armor.size();
              ++index)
         {
@@ -2035,26 +2259,30 @@ namespace lts::editor
                 character_.armor[index];
 
             const std::string prefix =
-                "armor." +
-                std::to_string(index);
+                "armor." + std::to_string(index);
+
+            const std::string meshKey =
+                prefix + ".mesh";
 
             WritePath(
                 stream,
-                (prefix + ".mesh").c_str(),
+                meshKey.c_str(),
                 slot.meshFile);
 
-            stream
-                << prefix
-                << ".visible="
-                << (slot.visible ? 1 : 0)
-                << '\n';
+            WriteBoolean(
+                stream,
+                prefix + ".visible",
+                slot.visible);
 
-            stream
-                << prefix
-                << ".bone="
-                << std::quoted(
-                    slot.attachmentBone)
-                << '\n';
+            WriteBoolean(
+                stream,
+                prefix + ".skinned",
+                slot.skinned);
+
+            WriteString(
+                stream,
+                prefix + ".bone",
+                slot.attachmentBone);
 
             WriteTransform(
                 stream,
@@ -2062,81 +2290,90 @@ namespace lts::editor
                 slot.localTransform);
         }
 
-        for (std::size_t index = 0;
+        for (std::size_t index = 0U;
              index < character_.weapons.size();
              ++index)
         {
             const CharacterWeapon& weapon =
                 character_.weapons[index];
 
+            const CharacterWeaponIk& ik =
+                weapon.ik;
+
             const std::string prefix =
-                "weapon." +
-                std::to_string(index);
+                "weapon." + std::to_string(index);
+
+            const std::string meshKey =
+                prefix + ".mesh";
 
             WritePath(
                 stream,
-                (prefix + ".mesh").c_str(),
+                meshKey.c_str(),
                 weapon.meshFile);
 
-            stream
-                << prefix
-                << ".visible="
-                << (weapon.visible ? 1 : 0)
-                << '\n';
+            WriteBoolean(
+                stream,
+                prefix + ".visible",
+                weapon.visible);
 
-            stream
-                << prefix
-                << ".ik_enabled="
-                << (weapon.ik.enabled ? 1 : 0)
-                << '\n';
+            WriteBoolean(
+                stream,
+                prefix + ".ik_enabled",
+                ik.enabled);
 
-            stream
-                << prefix
-                << ".attachment_bone="
-                << std::quoted(
-                    weapon.ik.attachmentBone)
-                << '\n';
+            WriteString(
+                stream,
+                prefix + ".attachment_bone",
+                ik.attachmentBone);
 
-            stream
-                << prefix
-                << ".right_hand_bone="
-                << std::quoted(
-                    weapon.ik.rightHandBone)
-                << '\n';
+            WriteString(
+                stream,
+                prefix + ".right_hand_bone",
+                ik.rightHandBone);
 
-            stream
-                << prefix
-                << ".left_hand_bone="
-                << std::quoted(
-                    weapon.ik.leftHandBone)
-                << '\n';
+            WriteString(
+                stream,
+                prefix + ".left_upper_arm_bone",
+                ik.leftUpperArmBone);
+
+            WriteString(
+                stream,
+                prefix + ".left_lower_arm_bone",
+                ik.leftLowerArmBone);
+
+            WriteString(
+                stream,
+                prefix + ".left_hand_bone",
+                ik.leftHandBone);
+
+            WriteVector3(
+                stream,
+                prefix + ".left_elbow_pole",
+                ik.leftElbowPoleOffset);
 
             const std::string weaponTransformPrefix =
-                prefix +
-                ".weapon_transform";
+                prefix + ".weapon_transform";
 
             const std::string rightHandPrefix =
-                prefix +
-                ".right_hand";
+                prefix + ".right_hand";
 
             const std::string leftHandPrefix =
-                prefix +
-                ".left_hand";
+                prefix + ".left_hand";
 
             WriteTransform(
                 stream,
                 weaponTransformPrefix.c_str(),
-                weapon.ik.weaponTransform);
+                ik.weaponTransform);
 
             WriteTransform(
                 stream,
                 rightHandPrefix.c_str(),
-                weapon.ik.rightHandTransform);
+                ik.rightHandTransform);
 
             WriteTransform(
                 stream,
                 leftHandPrefix.c_str(),
-                weapon.ik.leftHandTransform);
+                ik.leftHandTransform);
         }
 
         return stream.good();
@@ -2145,16 +2382,14 @@ namespace lts::editor
     bool CharacterEditor::DeserializeCharacter(
         const std::filesystem::path& file) noexcept
     {
-        std::ifstream stream(
-            file,
-            std::ios::binary);
+        std::ifstream stream(file, std::ios::binary);
 
         if (!stream)
         {
             return false;
         }
 
-        CharacterDefinition loadedCharacter;
+        std::vector<std::pair<std::string, std::string>> fields;
 
         std::string line;
 
@@ -2163,227 +2398,323 @@ namespace lts::editor
             std::string key;
             std::string value;
 
-            if (!ReadQuotedValue(
-                    line,
-                    key,
-                    value))
+            if (!ReadQuotedValue(line, key, value))
+            {
+                continue;
+            }
+
+            fields.emplace_back(
+                std::move(key),
+                std::move(value));
+        }
+
+        if (!stream.eof() && stream.fail())
+        {
+            return false;
+        }
+
+        std::uint32_t version = 1U;
+
+        for (const auto& field : fields)
+        {
+            if (field.first != "character_version")
+            {
+                continue;
+            }
+
+            if (!ParseUnsigned(field.second, version))
+            {
+                return false;
+            }
+        }
+
+        if (version == 0U ||
+            version > CurrentCharacterFileVersion)
+        {
+            return false;
+        }
+
+        CharacterDefinition loadedCharacter;
+        InitializeNewCharacterDefinition(loadedCharacter);
+
+        /*
+         * В первой версии Armor был жёстким attachment.
+         */
+        if (version == 1U)
+        {
+            loadedCharacter
+                .armor[ToIndex(CharacterArmorType::Armor)]
+                .skinned = false;
+        }
+
+        for (const auto& serializedField : fields)
+        {
+            const std::string& key =
+                serializedField.first;
+
+            const std::string& value =
+                serializedField.second;
+
+            if (key == "character_version")
             {
                 continue;
             }
 
             if (key == "body_skeleton")
             {
-                loadedCharacter.bodySkeletonFile =
-                    value;
+                loadedCharacter.bodySkeletonFile = value;
+                continue;
+            }
+
+            std::size_t serializedIndex = 0U;
+            std::string fieldName;
+
+            if (ParseIndexedField(
+                    key,
+                    "module",
+                    serializedIndex,
+                    fieldName))
+            {
+                if (serializedIndex >=
+                    loadedCharacter.modules.size())
+                {
+                    return false;
+                }
+
+                CharacterMeshSlot& slot =
+                    loadedCharacter.modules[serializedIndex];
+
+                if (fieldName == "mesh")
+                {
+                    slot.meshFile = value;
+                }
+                else if (fieldName == "visible")
+                {
+                    if (!ParseBoolean(value, slot.visible))
+                    {
+                        return false;
+                    }
+                }
 
                 continue;
             }
 
-            for (std::size_t index = 0;
-                 index <
-                 loadedCharacter.modules.size();
-                 ++index)
+            if (ParseIndexedField(
+                    key,
+                    "armor",
+                    serializedIndex,
+                    fieldName))
             {
-                const std::string prefix =
-                    "module." +
-                    std::to_string(index);
+                std::size_t destinationIndex = 0U;
 
-                if (key == prefix + ".mesh")
+                if (!ResolveArmorSlotIndex(
+                        version,
+                        serializedIndex,
+                        destinationIndex))
                 {
-                    loadedCharacter
-                        .modules[index]
-                        .meshFile = value;
+                    return false;
                 }
-                else if (
-                    key ==
-                    prefix + ".visible")
-                {
-                    loadedCharacter
-                        .modules[index]
-                        .visible =
-                        value == "1";
-                }
-            }
 
-            for (std::size_t index = 0;
-                 index <
-                 loadedCharacter.armor.size();
-                 ++index)
-            {
-                const std::string prefix =
-                    "armor." +
-                    std::to_string(index);
+                CharacterArmorSlot& slot =
+                    loadedCharacter.armor[destinationIndex];
 
-                CharacterArmorSlot& armor =
-                    loadedCharacter.armor[index];
+                if (fieldName == "mesh")
+                {
+                    slot.meshFile = value;
+                    continue;
+                }
 
-                if (key == prefix + ".mesh")
+                if (fieldName == "visible")
                 {
-                    armor.meshFile = value;
-                }
-                else if (
-                    key ==
-                    prefix + ".visible")
-                {
-                    armor.visible =
-                        value == "1";
-                }
-                else if (
-                    key ==
-                    prefix + ".bone")
-                {
-                    armor.attachmentBone =
-                        value;
-                }
-                else
-                {
-                    const TransformParseResult result =
-                        ParseTransformField(
-                            key,
-                            prefix,
-                            value,
-                            armor.localTransform);
-
-                    if (result ==
-                        TransformParseResult::Invalid)
+                    if (!ParseBoolean(value, slot.visible))
                     {
                         return false;
                     }
+
+                    continue;
                 }
+
+                if (fieldName == "skinned")
+                {
+                    if (!ParseBoolean(value, slot.skinned))
+                    {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (fieldName == "bone")
+                {
+                    slot.attachmentBone = value;
+                    continue;
+                }
+
+                const std::string transformPrefix =
+                    "armor." + std::to_string(serializedIndex);
+
+                const TransformParseResult result =
+                    ParseTransformField(
+                        key,
+                        transformPrefix,
+                        value,
+                        slot.localTransform);
+
+                if (result == TransformParseResult::Invalid)
+                {
+                    return false;
+                }
+
+                continue;
             }
 
-            for (std::size_t index = 0;
-                 index <
-                 loadedCharacter.weapons.size();
-                 ++index)
+            if (ParseIndexedField(
+                    key,
+                    "weapon",
+                    serializedIndex,
+                    fieldName))
             {
-                const std::string prefix =
-                    "weapon." +
-                    std::to_string(index);
+                if (serializedIndex >=
+                    loadedCharacter.weapons.size())
+                {
+                    return false;
+                }
 
                 CharacterWeapon& weapon =
-                    loadedCharacter.weapons[index];
+                    loadedCharacter.weapons[serializedIndex];
 
-                if (key == prefix + ".mesh")
-                {
-                    weapon.meshFile =
-                        value;
-                }
-                else if (
-                    key ==
-                    prefix + ".visible")
-                {
-                    weapon.visible =
-                        value == "1";
-                }
-                else if (
-                    key ==
-                    prefix + ".ik_enabled")
-                {
-                    weapon.ik.enabled =
-                        value == "1";
-                }
-                else if (
-                    key ==
-                    prefix + ".attachment_bone")
-                {
-                    weapon.ik.attachmentBone =
-                        value;
-                }
-                else if (
-                    key ==
-                    prefix + ".right_hand_bone")
-                {
-                    weapon.ik.rightHandBone =
-                        value;
-                }
-                else if (
-                    key ==
-                    prefix + ".left_hand_bone")
-                {
-                    weapon.ik.leftHandBone =
-                        value;
-                }
-                else
-                {
-                    const std::string weaponTransformPrefix =
-                        prefix +
-                        ".weapon_transform";
+                CharacterWeaponIk& ik =
+                    weapon.ik;
 
-                    const TransformParseResult weaponResult =
-                        ParseTransformField(
-                            key,
-                            weaponTransformPrefix,
-                            value,
-                            weapon.ik.weaponTransform);
+                if (fieldName == "mesh")
+                {
+                    weapon.meshFile = value;
+                    continue;
+                }
 
-                    if (weaponResult ==
-                        TransformParseResult::Invalid)
+                if (fieldName == "visible")
+                {
+                    if (!ParseBoolean(value, weapon.visible))
                     {
                         return false;
                     }
 
-                    if (weaponResult ==
-                        TransformParseResult::Parsed)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    const std::string rightHandPrefix =
-                        prefix +
-                        ".right_hand";
-
-                    const TransformParseResult rightHandResult =
-                        ParseTransformField(
-                            key,
-                            rightHandPrefix,
-                            value,
-                            weapon.ik.rightHandTransform);
-
-                    if (rightHandResult ==
-                        TransformParseResult::Invalid)
+                if (fieldName == "ik_enabled")
+                {
+                    if (!ParseBoolean(value, ik.enabled))
                     {
                         return false;
                     }
 
-                    if (rightHandResult ==
-                        TransformParseResult::Parsed)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    const std::string leftHandPrefix =
-                        prefix +
-                        ".left_hand";
+                if (fieldName == "attachment_bone")
+                {
+                    ik.attachmentBone = value;
+                    continue;
+                }
 
-                    const TransformParseResult leftHandResult =
-                        ParseTransformField(
-                            key,
-                            leftHandPrefix,
+                if (fieldName == "right_hand_bone")
+                {
+                    ik.rightHandBone = value;
+                    continue;
+                }
+
+                if (fieldName == "left_upper_arm_bone")
+                {
+                    ik.leftUpperArmBone = value;
+                    continue;
+                }
+
+                if (fieldName == "left_lower_arm_bone")
+                {
+                    ik.leftLowerArmBone = value;
+                    continue;
+                }
+
+                if (fieldName == "left_hand_bone")
+                {
+                    ik.leftHandBone = value;
+                    continue;
+                }
+
+                if (fieldName == "left_elbow_pole")
+                {
+                    if (!ParseVector(
                             value,
-                            weapon.ik.leftHandTransform);
-
-                    if (leftHandResult ==
-                        TransformParseResult::Invalid)
+                            ik.leftElbowPoleOffset))
                     {
                         return false;
                     }
+
+                    continue;
+                }
+
+                const std::string prefix =
+                    "weapon." + std::to_string(serializedIndex);
+
+                const std::string weaponTransformPrefix =
+                    prefix + ".weapon_transform";
+
+                TransformParseResult result =
+                    ParseTransformField(
+                        key,
+                        weaponTransformPrefix,
+                        value,
+                        ik.weaponTransform);
+
+                if (result == TransformParseResult::Invalid)
+                {
+                    return false;
+                }
+
+                if (result == TransformParseResult::Parsed)
+                {
+                    continue;
+                }
+
+                const std::string rightHandPrefix =
+                    prefix + ".right_hand";
+
+                result = ParseTransformField(
+                    key,
+                    rightHandPrefix,
+                    value,
+                    ik.rightHandTransform);
+
+                if (result == TransformParseResult::Invalid)
+                {
+                    return false;
+                }
+
+                if (result == TransformParseResult::Parsed)
+                {
+                    continue;
+                }
+
+                const std::string leftHandPrefix =
+                    prefix + ".left_hand";
+
+                result = ParseTransformField(
+                    key,
+                    leftHandPrefix,
+                    value,
+                    ik.leftHandTransform);
+
+                if (result == TransformParseResult::Invalid)
+                {
+                    return false;
                 }
             }
         }
 
-        if (!stream.eof() &&
-            stream.fail())
-        {
-            return false;
-        }
+        loadedCharacter.sourceFile = file;
 
-        character_ =
-            std::move(loadedCharacter);
-
-        character_.sourceFile =
-            file;
-
+        character_ = std::move(loadedCharacter);
         previewDirty_ = true;
 
         return true;
