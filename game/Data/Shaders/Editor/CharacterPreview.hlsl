@@ -44,9 +44,13 @@ row_major float4x4 BuildSkinMatrix(
         boneWeights.w;
 
     if (totalWeight <= 0.00001F)
-    {
-        return BonePalette[0];
-    }
+	{
+		return float4x4(
+			1.0F, 0.0F, 0.0F, 0.0F,
+			0.0F, 1.0F, 0.0F, 0.0F,
+			0.0F, 0.0F, 1.0F, 0.0F,
+			0.0F, 0.0F, 0.0F, 1.0F);
+	}
 
     const float4 normalizedWeights =
         boneWeights /

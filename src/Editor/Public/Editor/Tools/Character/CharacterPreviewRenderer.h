@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace engine::graphics
 {
@@ -17,6 +18,17 @@ namespace engine::graphics
 namespace lts::editor
 {
     struct CharacterDefinition;
+
+    struct CharacterPreviewDebugBone final
+    {
+        float x = 0.0F;
+        float y = 0.0F;
+
+        float parentX = 0.0F;
+        float parentY = 0.0F;
+
+        bool hasParent = false;
+    };
 
     class CharacterPreviewRenderer final
     {
@@ -45,14 +57,21 @@ namespace lts::editor
         void Update(float deltaSeconds) noexcept;
 
         [[nodiscard]]
-        bool SetAnimationClip(std::shared_ptr<const CharacterAnimationClip> clip) noexcept;
-        
+        bool SetAnimationClip(
+            std::shared_ptr<const CharacterAnimationClip> clip) noexcept;
+
         void ClearAnimationClip() noexcept;
+
         void PlayAnimation() noexcept;
         void PauseAnimation() noexcept;
         void StopAnimation() noexcept;
+
         void SetAnimationLooping(bool looping) noexcept;
         void SetAnimationSpeed(float speed) noexcept;
+
+        [[nodiscard]]
+        bool BuildDebugBones(
+            std::vector<CharacterPreviewDebugBone>& output) const noexcept;
 
         [[nodiscard]]
         engine::graphics::GraphicsResult Resize(

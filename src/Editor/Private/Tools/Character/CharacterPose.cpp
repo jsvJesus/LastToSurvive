@@ -650,31 +650,9 @@ namespace lts::editor
             return false;
         }
 
-        localTransforms_[boneIndex] =
-            transform;
-
-        localTransforms_[boneIndex].rotation =
-        {
-            DirectX::XMVectorGetX(
-                DirectX::XMQuaternionNormalize(
-                    DirectX::XMLoadFloat4(
-                        &transform.rotation))),
-
-            DirectX::XMVectorGetY(
-                DirectX::XMQuaternionNormalize(
-                    DirectX::XMLoadFloat4(
-                        &transform.rotation))),
-
-            DirectX::XMVectorGetZ(
-                DirectX::XMQuaternionNormalize(
-                    DirectX::XMLoadFloat4(
-                        &transform.rotation))),
-
-            DirectX::XMVectorGetW(
-                DirectX::XMQuaternionNormalize(
-                    DirectX::XMLoadFloat4(
-                        &transform.rotation)))
-        };
+        localTransforms_[boneIndex] = transform;
+        const DirectX::XMVECTOR normalizedRotation = DirectX::XMQuaternionNormalize(DirectX::XMLoadFloat4(&transform.rotation));
+        DirectX::XMStoreFloat4(&localTransforms_[boneIndex].rotation, normalizedRotation);
 
         return true;
     }
@@ -779,8 +757,7 @@ namespace lts::editor
             return false;
         }
 
-        localTransforms_[boneIndex] =
-            transform;
+        localTransforms_[boneIndex] = transform;
 
         return true;
     }

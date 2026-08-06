@@ -635,11 +635,9 @@ namespace lts::editor
         {
             std::filesystem::path sourcePath;
 
-            std::unique_ptr<
-                engine::assets::GpuSkeletalMesh>
-                gpuMesh;
+            std::unique_ptr<engine::assets::GpuSkeletalMesh> gpuMesh;
 
-            DirectX::XMFLOAT4X4 world;
+            DirectX::XMFLOAT4X4 world{};
 
             DirectX::XMFLOAT4 color
             {
@@ -649,7 +647,27 @@ namespace lts::editor
                 1.0F
             };
 
+            CharacterTransform attachmentTransform;
+
+            std::size_t attachmentBone =
+                InvalidCharacterBoneIndex;
+
             bool skinned = true;
+        };
+
+        struct PreviewWeaponState final
+        {
+            CharacterTransform weaponTransform;
+            CharacterTransform leftHandTransform;
+
+            std::size_t attachmentBone =
+                InvalidCharacterBoneIndex;
+
+            std::size_t leftHandBone =
+                InvalidCharacterBoneIndex;
+
+            bool active = false;
+            bool ikEnabled = false;
         };
 
     public:
@@ -735,6 +753,46 @@ namespace lts::editor
 
                 status_ =
                     "Failed to create Character Preview vertex shader.";
+
+                Shutdown(device);
+                return false;
+            }
+
+            engine::graphics::BufferDesc paletteBufferDescription;
+
+            paletteBufferDescription.byteSize =
+                sizeof(DirectX::XMFLOAT4X4) *
+                engine::assets::MaximumSkeletonBones;
+
+            paletteBufferDescription.stride = 0U;
+            paletteBufferDescription.usage =
+                engine::graphics::ResourceUsage::Default;
+
+            paletteBufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Constant;
+
+            paletteBufferDescription.miscFlags =
+                engine::graphics::BufferMiscFlags::None;
+
+            paletteBufferDescription.cpuAccess =
+                engine::graphics::CpuAccessFlags::None;
+
+            paletteBufferDescription.indexFormat =
+                engine::graphics::IndexFormat::None;
+
+            graphicsResult = device.CreateBuffer(
+                paletteBufferDescription,
+                nullptr,
+                bonePaletteBuffer_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogGraphicsFailure(
+                    "Create Character Preview bone palette",
+                    graphicsResult);
+
+                status_ =
+                    "Failed to create Character Preview bone palette.";
 
                 Shutdown(device);
                 return false;
@@ -1005,6 +1063,15 @@ namespace lts::editor
                 vertexShader_ = {};
             }
 
+            if (bonePaletteBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(
+                        bonePaletteBuffer_));
+
+                bonePaletteBuffer_ = {};
+            }
+
             if (constantBuffer_.IsValid())
             {
                 static_cast<void>(
@@ -1026,8 +1093,7 @@ namespace lts::editor
             engine::graphics::RenderDevice& device,
             const CharacterDefinition& character) noexcept
         {
-            if (!initialized_ ||
-                device_ != &device)
+            if (!initialized_ || device_ != &device)
             {
                 status_ =
                     "Character Preview renderer is not initialized.";
@@ -1052,19 +1118,24 @@ namespace lts::editor
                     skeleton_,
                     loadError))
             {
-                status_ =
-                    std::move(loadError);
-
+                status_ = std::move(loadError);
                 return false;
             }
 
             if (!pose_.Initialize(skeleton_))
             {
-                status_ = "Failed to build bind pose from skeleton.";
+                status_ =
+                    "Failed to build bind pose from skeleton.";
 
                 ReleaseCharacter(device);
                 return false;
             }
+
+            leftUpperArmBone_ =
+                pose_.FindBone("upperarm_l");
+
+            leftLowerArmBone_ =
+                pose_.FindBone("lowerarm_l");
 
             focusCenter_ =
             {
@@ -1078,12 +1149,14 @@ namespace lts::editor
 
             static constexpr std::array<
                 DirectX::XMFLOAT4,
-                4U> moduleColors
+                static_cast<std::size_t>(CharacterModuleType::Count)>
+                moduleColors
             {{
-                {0.76F, 0.62F, 0.52F, 1.0F},
-                {0.38F, 0.43F, 0.46F, 1.0F},
-                {0.24F, 0.28F, 0.31F, 1.0F},
-                {0.16F, 0.17F, 0.18F, 1.0F}
+                {0.76F, 0.62F, 0.52F, 1.0F}, // Head
+                {0.38F, 0.43F, 0.46F, 1.0F}, // Body
+                {0.24F, 0.28F, 0.31F, 1.0F}, // Legs
+                {0.16F, 0.17F, 0.18F, 1.0F}, // Shoes
+                {0.58F, 0.48F, 0.42F, 1.0F}  // Hands
             }};
 
             for (std::size_t index = 0U;
@@ -1094,26 +1167,26 @@ namespace lts::editor
                     character.modules[index];
 
                 const bool preferForFocus =
-                    index ==
-                    static_cast<std::size_t>(
+                    index == static_cast<std::size_t>(
                         CharacterModuleType::Body);
 
                 if (!AddMesh(
                         device,
                         slot.meshFile,
                         slot.visible,
-                        DirectX::XMMatrixIdentity(),
                         moduleColors[index],
-                        preferForFocus))
+                        preferForFocus,
+                        true,
+                        InvalidCharacterBoneIndex,
+                        CharacterTransform{}))
                 {
                     ReleaseCharacter(device);
                     return false;
                 }
             }
 
-            static constexpr std::array<
-                DirectX::XMFLOAT4,
-                3U> armorColors
+            static constexpr std::array<DirectX::XMFLOAT4, 3U>
+                armorColors
             {{
                 {0.25F, 0.29F, 0.24F, 1.0F},
                 {0.20F, 0.24F, 0.22F, 1.0F},
@@ -1127,19 +1200,22 @@ namespace lts::editor
                 const CharacterArmorSlot& slot =
                     character.armor[index];
 
-                if (!slot.visible ||
-                    slot.meshFile.empty())
+                if (!slot.visible || slot.meshFile.empty())
                 {
                     continue;
                 }
 
-                DirectX::XMMATRIX world;
+                const std::size_t attachmentBone =
+                    pose_.FindBone(slot.attachmentBone);
 
-                if (!BuildAttachmentWorld(
-                        slot.attachmentBone,
-                        slot.localTransform,
-                        world))
+                if (attachmentBone ==
+                    InvalidCharacterBoneIndex)
                 {
+                    status_ =
+                        "Armor attachment bone not found: ";
+
+                    status_ += slot.attachmentBone;
+
                     ReleaseCharacter(device);
                     return false;
                 }
@@ -1148,18 +1224,19 @@ namespace lts::editor
                         device,
                         slot.meshFile,
                         true,
-                        world,
                         armorColors[index],
-                        false))
+                        false,
+                        false,
+                        attachmentBone,
+                        slot.localTransform))
                 {
                     ReleaseCharacter(device);
                     return false;
                 }
             }
 
-            static constexpr std::array<
-                DirectX::XMFLOAT4,
-                2U> weaponColors
+            static constexpr std::array<DirectX::XMFLOAT4, 2U>
+                weaponColors
             {{
                 {0.30F, 0.31F, 0.32F, 1.0F},
                 {0.24F, 0.25F, 0.27F, 1.0F}
@@ -1172,30 +1249,74 @@ namespace lts::editor
                 const CharacterWeapon& weapon =
                     character.weapons[index];
 
-                if (!weapon.visible ||
-                    weapon.meshFile.empty())
+                PreviewWeaponState& state =
+                    weapons_[index];
+
+                state = {};
+
+                if (!weapon.visible || weapon.meshFile.empty())
                 {
                     continue;
                 }
 
-                DirectX::XMMATRIX world;
+                state.attachmentBone =
+                    pose_.FindBone(
+                        weapon.ik.attachmentBone);
 
-                if (!BuildAttachmentWorld(
-                        weapon.ik.attachmentBone,
-                        weapon.ik.weaponTransform,
-                        world))
+                if (state.attachmentBone ==
+                    InvalidCharacterBoneIndex)
                 {
+                    status_ =
+                        "Weapon attachment bone not found: ";
+
+                    status_ +=
+                        weapon.ik.attachmentBone;
+
                     ReleaseCharacter(device);
                     return false;
+                }
+
+                state.leftHandBone =
+                    pose_.FindBone(
+                        weapon.ik.leftHandBone);
+
+                state.weaponTransform =
+                    weapon.ik.weaponTransform;
+
+                state.leftHandTransform =
+                    weapon.ik.leftHandTransform;
+
+                state.active = true;
+                state.ikEnabled =
+                    weapon.ik.enabled;
+
+                if (state.ikEnabled)
+                {
+                    if (leftUpperArmBone_ ==
+                            InvalidCharacterBoneIndex ||
+                        leftLowerArmBone_ ==
+                            InvalidCharacterBoneIndex ||
+                        state.leftHandBone ==
+                            InvalidCharacterBoneIndex)
+                    {
+                        status_ =
+                            "Left-hand IK bones were not found. "
+                            "Expected upperarm_l, lowerarm_l and hand_l.";
+
+                        ReleaseCharacter(device);
+                        return false;
+                    }
                 }
 
                 if (!AddMesh(
                         device,
                         weapon.meshFile,
                         true,
-                        world,
                         weaponColors[index],
-                        false))
+                        false,
+                        false,
+                        state.attachmentBone,
+                        state.weaponTransform))
                 {
                     ReleaseCharacter(device);
                     return false;
@@ -1210,11 +1331,10 @@ namespace lts::editor
                 << "Preview loaded: "
                 << meshes_.size()
                 << " mesh(es), "
-                << skeleton_.GetBoneCount()
+                << pose_.GetBoneCount()
                 << " bones.";
 
-            status_ =
-                message.str();
+            status_ = message.str();
 
             return true;
         }
@@ -1366,14 +1486,6 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::InvalidState;
             }
 
-            if (!animationPlayer_.Evaluate(pose_))
-            {
-                status_ =
-                    "Failed to evaluate Character Pose.";
-
-                return engine::graphics::GraphicsResult::InvalidState;
-            }
-
             auto graphicsResult =
                 context.SetRenderTargets(
                     &colorTarget_,
@@ -1394,6 +1506,12 @@ namespace lts::editor
                         context.UnbindConstantBuffers(
                             engine::graphics::ShaderStage::Vertex,
                             0U,
+                            1U));
+
+                    static_cast<void>(
+                        context.UnbindConstantBuffers(
+                            engine::graphics::ShaderStage::Vertex,
+                            1U,
                             1U));
 
                     static_cast<void>(
@@ -1465,6 +1583,23 @@ namespace lts::editor
                 finishRendering();
 
                 return engine::graphics::GraphicsResult::Success;
+            }
+
+            if (!animationPlayer_.Evaluate(pose_))
+            {
+                status_ =
+                    "Failed to evaluate Character Pose.";
+
+                finishRendering();
+
+                return engine::graphics::GraphicsResult::InvalidState;
+            }
+
+            if (!ApplyWeaponIk())
+            {
+                finishRendering();
+
+                return engine::graphics::GraphicsResult::InvalidState;
             }
 
             const float safeRadius =
@@ -1565,6 +1700,9 @@ namespace lts::editor
                 &viewProjection,
                 view * projection);
 
+            lastViewProjection_ = viewProjection;
+            hasViewProjection_ = true;
+
             graphicsResult =
                 context.SetGraphicsPipeline(
                     pipeline_);
@@ -1580,6 +1718,30 @@ namespace lts::editor
                     engine::graphics::ShaderStage::Vertex,
                     0U,
                     &constantBuffer_,
+                    1U);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                finishRendering();
+                return graphicsResult;
+            }
+
+            graphicsResult = context.UpdateBuffer(
+                bonePaletteBuffer_,
+                pose_.GetPaletteData(),
+                pose_.GetPaletteByteSize());
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                finishRendering();
+                return graphicsResult;
+            }
+
+            graphicsResult =
+                context.SetConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    1U,
+                    &bonePaletteBuffer_,
                     1U);
 
             if (engine::graphics::Failed(graphicsResult))
@@ -1611,8 +1773,13 @@ namespace lts::editor
 
                 PreviewConstants constants;
 
-                constants.world =
-                    mesh.world;
+                if (!ResolveMeshWorld(mesh, constants.world))
+                {
+                    graphicsResult =
+                        engine::graphics::GraphicsResult::InvalidState;
+
+                    break;
+                }
 
                 constants.viewProjection =
                     viewProjection;
@@ -1776,72 +1943,304 @@ namespace lts::editor
             return status_;
         }
 
+        [[nodiscard]]
+        bool BuildDebugBones(
+            std::vector<CharacterPreviewDebugBone>& output) const noexcept
+        {
+            output.clear();
+
+            if (!pose_.IsValid() ||
+                !hasViewProjection_)
+            {
+                return false;
+            }
+
+            try
+            {
+                output.reserve(
+                    pose_.GetBoneCount());
+
+                const DirectX::XMMATRIX viewProjection =
+                    DirectX::XMLoadFloat4x4(
+                        &lastViewProjection_);
+
+                for (std::size_t boneIndex = 0U;
+                     boneIndex < pose_.GetBoneCount();
+                     ++boneIndex)
+                {
+                    const DirectX::XMFLOAT3 bonePosition =
+                        pose_.GetBonePosition(
+                            boneIndex);
+
+                    const DirectX::XMVECTOR clipPosition =
+                        DirectX::XMVector4Transform(
+                            DirectX::XMVectorSet(
+                                bonePosition.x,
+                                bonePosition.y,
+                                bonePosition.z,
+                                1.0F),
+                            viewProjection);
+
+                    const float clipW =
+                        DirectX::XMVectorGetW(
+                            clipPosition);
+
+                    if (clipW <= 0.00001F)
+                    {
+                        continue;
+                    }
+
+                    const float ndcX =
+                        DirectX::XMVectorGetX(
+                            clipPosition) / clipW;
+
+                    const float ndcY =
+                        DirectX::XMVectorGetY(
+                            clipPosition) / clipW;
+
+                    CharacterPreviewDebugBone debugBone;
+
+                    debugBone.x =
+                        ndcX * 0.5F + 0.5F;
+
+                    debugBone.y =
+                        0.5F - ndcY * 0.5F;
+
+                    const std::int32_t parentIndex =
+                        pose_.GetParentIndex(
+                            boneIndex);
+
+                    if (parentIndex >= 0)
+                    {
+                        const DirectX::XMFLOAT3 parentPosition =
+                            pose_.GetBonePosition(
+                                static_cast<std::size_t>(
+                                    parentIndex));
+
+                        const DirectX::XMVECTOR parentClip =
+                            DirectX::XMVector4Transform(
+                                DirectX::XMVectorSet(
+                                    parentPosition.x,
+                                    parentPosition.y,
+                                    parentPosition.z,
+                                    1.0F),
+                                viewProjection);
+
+                        const float parentW =
+                            DirectX::XMVectorGetW(
+                                parentClip);
+
+                        if (parentW > 0.00001F)
+                        {
+                            debugBone.parentX =
+                                DirectX::XMVectorGetX(
+                                    parentClip) /
+                                    parentW *
+                                    0.5F +
+                                0.5F;
+
+                            debugBone.parentY =
+                                0.5F -
+                                DirectX::XMVectorGetY(
+                                    parentClip) /
+                                    parentW *
+                                    0.5F;
+
+                            debugBone.hasParent = true;
+                        }
+                    }
+
+                    output.push_back(debugBone);
+                }
+            }
+            catch (...)
+            {
+                output.clear();
+                return false;
+            }
+
+            return !output.empty();
+        }
+
+        void Update(float deltaSeconds) noexcept
+        {
+            animationPlayer_.Update(deltaSeconds);
+        }
+
+        [[nodiscard]]
+        bool SetAnimationClip(
+            std::shared_ptr<const CharacterAnimationClip> clip) noexcept
+        {
+            return animationPlayer_.SetClip(
+                std::move(clip));
+        }
+
+        void ClearAnimationClip() noexcept
+        {
+            animationPlayer_.ClearClip();
+        }
+
+        void PlayAnimation() noexcept
+        {
+            animationPlayer_.Play();
+        }
+
+        void PauseAnimation() noexcept
+        {
+            animationPlayer_.Pause();
+        }
+
+        void StopAnimation() noexcept
+        {
+            animationPlayer_.Stop();
+        }
+
+        void SetAnimationLooping(bool looping) noexcept
+        {
+            animationPlayer_.SetLooping(looping);
+        }
+
+        void SetAnimationSpeed(float speed) noexcept
+        {
+            animationPlayer_.SetPlaybackSpeed(speed);
+        }
+
     private:
         [[nodiscard]]
         bool BuildAttachmentWorld(
-            const std::string& attachmentBone,
+            std::size_t attachmentBone,
             const CharacterTransform& localTransform,
             DirectX::XMMATRIX& output) noexcept
         {
-            if (attachmentBone.empty())
+            if (attachmentBone ==
+                InvalidCharacterBoneIndex)
             {
                 status_ =
-                    "Attachment bone name is empty.";
+                    "Attachment bone index is invalid.";
 
                 return false;
             }
 
-            const engine::assets::SkeletonBone*
-                selectedBone = nullptr;
+            const DirectX::XMFLOAT4X4* boneMatrix =
+                pose_.GetAbsoluteMatrix(
+                    attachmentBone);
 
-            for (std::size_t index = 0U;
-                 index < skeleton_.GetBoneCount();
-                 ++index)
-            {
-                const auto* const bone =
-                    skeleton_.GetBone(index);
-
-                if (bone != nullptr &&
-                    bone->name == attachmentBone)
-                {
-                    selectedBone = bone;
-                    break;
-                }
-            }
-
-            if (selectedBone == nullptr)
+            if (boneMatrix == nullptr)
             {
                 status_ =
-                    "Attachment bone not found in skeleton: ";
-
-                status_ +=
-                    attachmentBone;
+                    "Attachment bone matrix is unavailable.";
 
                 return false;
             }
-
-            DirectX::XMFLOAT4X4
-                bindMatrix;
-
-            static_assert(
-                sizeof(bindMatrix) ==
-                sizeof(selectedBone->absoluteBindMatrix));
-
-            std::memcpy(
-                &bindMatrix,
-                selectedBone
-                    ->absoluteBindMatrix
-                    .data(),
-                sizeof(bindMatrix));
-
-            const DirectX::XMMATRIX boneWorld =
-                DirectX::XMLoadFloat4x4(
-                    &bindMatrix);
 
             output =
-                BuildTransformMatrix(
-                    localTransform) *
-                boneWorld;
+                BuildTransformMatrix(localTransform) *
+                DirectX::XMLoadFloat4x4(boneMatrix);
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool ApplyWeaponIk() noexcept
+        {
+            for (const PreviewWeaponState& weapon : weapons_)
+            {
+                if (!weapon.active ||
+                    !weapon.ikEnabled)
+                {
+                    continue;
+                }
+
+                if (leftUpperArmBone_ ==
+                        InvalidCharacterBoneIndex ||
+                    leftLowerArmBone_ ==
+                        InvalidCharacterBoneIndex ||
+                    weapon.leftHandBone ==
+                        InvalidCharacterBoneIndex)
+                {
+                    status_ =
+                        "Left-hand IK bone chain is invalid.";
+
+                    return false;
+                }
+
+                DirectX::XMMATRIX weaponWorld;
+
+                if (!BuildAttachmentWorld(
+                        weapon.attachmentBone,
+                        weapon.weaponTransform,
+                        weaponWorld))
+                {
+                    return false;
+                }
+
+                const DirectX::XMMATRIX targetWorld =
+                    BuildTransformMatrix(
+                        weapon.leftHandTransform) *
+                    weaponWorld;
+
+                DirectX::XMFLOAT4X4 targetMatrix;
+
+                DirectX::XMStoreFloat4x4(
+                    &targetMatrix,
+                    targetWorld);
+
+                /*
+                 * Текущее положение локтя используется как pole.
+                 * Так сохраняется естественная сторона сгиба руки.
+                 */
+                const DirectX::XMFLOAT3 polePosition =
+                    pose_.GetBonePosition(
+                        leftLowerArmBone_);
+
+                if (!pose_.ApplyTwoBoneIk(
+                        leftUpperArmBone_,
+                        leftLowerArmBone_,
+                        weapon.leftHandBone,
+                        targetMatrix,
+                        polePosition))
+                {
+                    status_ =
+                        "Failed to solve left-hand two-bone IK.";
+
+                    return false;
+                }
+
+                /*
+                 * Только первое активное оружие управляет левой рукой.
+                 * Secondary Weapon обычно находится в holster.
+                 */
+                break;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool ResolveMeshWorld(
+            const PreviewMesh& mesh,
+            DirectX::XMFLOAT4X4& output) noexcept
+        {
+            if (mesh.attachmentBone ==
+                InvalidCharacterBoneIndex)
+            {
+                output = mesh.world;
+                return true;
+            }
+
+            DirectX::XMMATRIX attachmentWorld;
+
+            if (!BuildAttachmentWorld(
+                    mesh.attachmentBone,
+                    mesh.attachmentTransform,
+                    attachmentWorld))
+            {
+                return false;
+            }
+
+            DirectX::XMStoreFloat4x4(
+                &output,
+                attachmentWorld);
 
             return true;
         }
@@ -1850,20 +2249,19 @@ namespace lts::editor
         bool AddMesh(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& requestedPath,
-            const bool visible,
-            DirectX::FXMMATRIX world,
+            bool visible,
             const DirectX::XMFLOAT4& color,
-            const bool preferForFocus) noexcept
+            bool preferForFocus,
+            bool skinned,
+            std::size_t attachmentBone,
+            const CharacterTransform& attachmentTransform) noexcept
         {
-            if (!visible ||
-                requestedPath.empty())
+            if (!visible || requestedPath.empty())
             {
                 return true;
             }
 
-            engine::assets::SkeletalMeshAsset
-                skeletalMesh;
-
+            engine::assets::SkeletalMeshAsset skeletalMesh;
             std::string loadError;
 
             if (!LoadSkeletalMeshFile(
@@ -1871,13 +2269,17 @@ namespace lts::editor
                     skeletalMesh,
                     loadError))
             {
-                status_ =
-                    std::move(loadError);
-
+                status_ = std::move(loadError);
                 return false;
             }
 
-            if (!ValidateBoneIndices(
+            /*
+             * Проверяем bone indices только у частей персонажа.
+             * Оружие и жёсткие attachment-модели могут иметь
+             * собственный skeleton или вообще не использовать веса.
+             */
+            if (skinned &&
+                !ValidateBoneIndices(
                     skeletalMesh,
                     skeleton_,
                     loadError))
@@ -1886,23 +2288,20 @@ namespace lts::editor
                     requestedPath.generic_u8string();
 
                 status_ += ": ";
-                status_ +=
-                    loadError;
+                status_ += loadError;
 
                 return false;
             }
 
             auto gpuMesh =
-                std::make_unique<
-                    engine::assets::GpuSkeletalMesh>();
+                std::make_unique<engine::assets::GpuSkeletalMesh>();
 
             const auto uploadResult =
                 gpuMesh->Upload(
                     device,
                     skeletalMesh);
 
-            if (engine::graphics::Failed(
-                    uploadResult))
+            if (engine::graphics::Failed(uploadResult))
             {
                 status_ =
                     "Failed to upload skeletal mesh to GPU: ";
@@ -1912,8 +2311,7 @@ namespace lts::editor
 
                 status_ += " (";
                 status_ +=
-                    engine::graphics::ToString(
-                        uploadResult);
+                    engine::graphics::ToString(uploadResult);
 
                 status_ += ')';
 
@@ -1924,8 +2322,7 @@ namespace lts::editor
                 skeletalMesh.GetBounds();
 
             if (bounds.IsValid() &&
-                (preferForFocus ||
-                 !focusResolved_))
+                (preferForFocus || !focusResolved_))
             {
                 focusCenter_ =
                 {
@@ -1945,18 +2342,23 @@ namespace lts::editor
             PreviewMesh previewMesh;
 
             previewMesh.sourcePath =
-                ResolveAssetPath(
-                    requestedPath);
+                ResolveAssetPath(requestedPath);
 
             previewMesh.gpuMesh =
                 std::move(gpuMesh);
 
-            previewMesh.color =
-                color;
+            previewMesh.color = color;
+            previewMesh.skinned = skinned;
+
+            previewMesh.attachmentBone =
+                attachmentBone;
+
+            previewMesh.attachmentTransform =
+                attachmentTransform;
 
             DirectX::XMStoreFloat4x4(
                 &previewMesh.world,
-                world);
+                DirectX::XMMatrixIdentity());
 
             meshes_.push_back(
                 std::move(previewMesh));
@@ -1980,7 +2382,11 @@ namespace lts::editor
 
             meshes_.clear();
             skeleton_.Clear();
-
+            pose_.Clear();
+            weapons_ = {};
+            leftUpperArmBone_ = InvalidCharacterBoneIndex;
+            leftLowerArmBone_ = InvalidCharacterBoneIndex;
+            hasViewProjection_ = false;
             characterLoaded_ = false;
             focusResolved_ = false;
 
@@ -2043,14 +2449,30 @@ namespace lts::editor
         engine::graphics::TextureHandle
             depthTarget_;
 
-        engine::assets::SkeletonAsset
-            skeleton_;
-
-        std::vector<PreviewMesh>
-            meshes_;
-
         engine::graphics::BufferHandle
             bonePaletteBuffer_;
+
+        engine::assets::SkeletonAsset skeleton_;
+
+        CharacterPose pose_;
+        CharacterAnimationPlayer animationPlayer_;
+
+        std::vector<PreviewMesh> meshes_;
+
+        std::array<
+            PreviewWeaponState,
+            static_cast<std::size_t>(CharacterWeaponSlot::Count)>
+            weapons_{};
+
+        std::size_t leftUpperArmBone_ =
+            InvalidCharacterBoneIndex;
+
+        std::size_t leftLowerArmBone_ =
+            InvalidCharacterBoneIndex;
+
+        DirectX::XMFLOAT4X4 lastViewProjection_{};
+
+        bool hasViewProjection_ = false;
 
         DirectX::XMFLOAT3 focusCenter_
         {
@@ -2072,14 +2494,10 @@ namespace lts::editor
             "Character Preview is not initialized.";
     };
 
-    CharacterPreviewRenderer::
-        CharacterPreviewRenderer() noexcept = default;
+    CharacterPreviewRenderer::CharacterPreviewRenderer() noexcept = default;
+    CharacterPreviewRenderer::~CharacterPreviewRenderer() noexcept = default;
 
-    CharacterPreviewRenderer::
-        ~CharacterPreviewRenderer() noexcept = default;
-
-    bool CharacterPreviewRenderer::Initialize(
-        engine::graphics::RenderDevice& device) noexcept
+    bool CharacterPreviewRenderer::Initialize(engine::graphics::RenderDevice& device) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2097,8 +2515,7 @@ namespace lts::editor
         return impl_->Initialize(device);
     }
 
-    void CharacterPreviewRenderer::Shutdown(
-        engine::graphics::RenderDevice& device) noexcept
+    void CharacterPreviewRenderer::Shutdown(engine::graphics::RenderDevice& device) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2109,9 +2526,7 @@ namespace lts::editor
         impl_.reset();
     }
 
-    bool CharacterPreviewRenderer::LoadCharacter(
-        engine::graphics::RenderDevice& device,
-        const CharacterDefinition& character) noexcept
+    bool CharacterPreviewRenderer::LoadCharacter(engine::graphics::RenderDevice& device, const CharacterDefinition& character) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2125,49 +2540,83 @@ namespace lts::editor
 
     void CharacterPreviewRenderer::Update(float deltaSeconds) noexcept
     {
-        animationPlayer_.Update(deltaSeconds);
+        if (impl_ != nullptr)
+        {
+            impl_->Update(deltaSeconds);
+        }
     }
 
-    [[nodiscard]]
     bool CharacterPreviewRenderer::SetAnimationClip(std::shared_ptr<const CharacterAnimationClip> clip) noexcept
     {
-        return animationPlayer_.SetClip(
-        std::move(clip));
+        if (impl_ == nullptr)
+        {
+            return false;
+        }
+
+        return impl_->SetAnimationClip(
+            std::move(clip));
     }
 
     void CharacterPreviewRenderer::ClearAnimationClip() noexcept
     {
-        animationPlayer_.ClearClip();
+        if (impl_ != nullptr)
+        {
+            impl_->ClearAnimationClip();
+        }
     }
 
     void CharacterPreviewRenderer::PlayAnimation() noexcept
     {
-        animationPlayer_.Play();
+        if (impl_ != nullptr)
+        {
+            impl_->PlayAnimation();
+        }
     }
 
     void CharacterPreviewRenderer::PauseAnimation() noexcept
     {
-        animationPlayer_.Pause();
+        if (impl_ != nullptr)
+        {
+            impl_->PauseAnimation();
+        }
     }
 
     void CharacterPreviewRenderer::StopAnimation() noexcept
     {
-        animationPlayer_.Stop();
+        if (impl_ != nullptr)
+        {
+            impl_->StopAnimation();
+        }
     }
 
     void CharacterPreviewRenderer::SetAnimationLooping(bool looping) noexcept
     {
-        animationPlayer_.SetLooping(looping);
+        if (impl_ != nullptr)
+        {
+            impl_->SetAnimationLooping(looping);
+        }
     }
 
     void CharacterPreviewRenderer::SetAnimationSpeed(float speed) noexcept
     {
-        animationPlayer_.SetPlaybackSpeed(speed);
+        if (impl_ != nullptr)
+        {
+            impl_->SetAnimationSpeed(speed);
+        }
     }
 
-    engine::graphics::GraphicsResult
-    CharacterPreviewRenderer::Resize(
-        engine::graphics::RenderDevice& device,
+    bool CharacterPreviewRenderer::BuildDebugBones(std::vector<CharacterPreviewDebugBone>& output) const noexcept
+    {
+        if (impl_ == nullptr)
+        {
+            output.clear();
+            return false;
+        }
+
+        return impl_->BuildDebugBones(output);
+    }
+
+    engine::graphics::GraphicsResult CharacterPreviewRenderer::Resize(engine::graphics::RenderDevice& device,
         const std::uint32_t width,
         const std::uint32_t height) noexcept
     {
@@ -2182,9 +2631,7 @@ namespace lts::editor
             height);
     }
 
-    engine::graphics::GraphicsResult
-    CharacterPreviewRenderer::Render(
-        engine::graphics::CommandContext& context,
+    engine::graphics::GraphicsResult CharacterPreviewRenderer::Render(engine::graphics::CommandContext& context,
         const float yawDegrees,
         const float pitchDegrees,
         const float distanceMultiplier) noexcept
@@ -2201,8 +2648,7 @@ namespace lts::editor
             distanceMultiplier);
     }
 
-    void* CharacterPreviewRenderer::GetImGuiTextureId(
-        const engine::graphics::RenderDevice& device) const noexcept
+    void* CharacterPreviewRenderer::GetImGuiTextureId(const engine::graphics::RenderDevice& device) const noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2225,8 +2671,7 @@ namespace lts::editor
             impl_->HasCharacter();
     }
 
-    const std::string&
-    CharacterPreviewRenderer::GetStatus() const noexcept
+    const std::string& CharacterPreviewRenderer::GetStatus() const noexcept
     {
         static const std::string emptyStatus;
 

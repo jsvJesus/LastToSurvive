@@ -222,6 +222,7 @@ namespace lts::editor
         std::vector<std::string> validationWarnings_;
 
         CharacterPreviewRenderer previewRenderer_;
+        std::vector<CharacterPreviewDebugBone>previewDebugBones_;
 
         bool previewInitialized_ = false;
         bool previewDirty_ = true;

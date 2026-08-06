@@ -859,6 +859,9 @@ namespace lts::editor
 
         if (previewInitialized_)
         {
+            previewRenderer_.Update(
+                ImGui::GetIO().DeltaTime);
+
             if (previewDirty_)
             {
                 previewDirty_ = false;
@@ -921,6 +924,79 @@ namespace lts::editor
                 previewSize,
                 ImVec2(0.0F, 0.0F),
                 ImVec2(1.0F, 1.0F));
+
+            const ImVec2 imageMinimum = ImGui::GetItemRectMin();
+
+            const ImVec2 imageMaximum =
+                ImGui::GetItemRectMax();
+
+            if ((showSkeleton_ || showBones_) &&
+                previewRenderer_.BuildDebugBones(
+                    previewDebugBones_))
+            {
+                ImDrawList* drawList =
+                    ImGui::GetWindowDrawList();
+
+                const float imageWidth =
+                    imageMaximum.x -
+                    imageMinimum.x;
+
+                const float imageHeight =
+                    imageMaximum.y -
+                    imageMinimum.y;
+
+                for (const CharacterPreviewDebugBone& bone :
+                     previewDebugBones_)
+                {
+                    const ImVec2 bonePosition
+                    {
+                        imageMinimum.x +
+                            bone.x *
+                            imageWidth,
+
+                        imageMinimum.y +
+                            bone.y *
+                            imageHeight
+                    };
+
+                    if (showSkeleton_ &&
+                        bone.hasParent)
+                    {
+                        const ImVec2 parentPosition
+                        {
+                            imageMinimum.x +
+                                bone.parentX *
+                                imageWidth,
+
+                            imageMinimum.y +
+                                bone.parentY *
+                                imageHeight
+                        };
+
+                        drawList->AddLine(
+                            parentPosition,
+                            bonePosition,
+                            IM_COL32(
+                                235,
+                                155,
+                                70,
+                                230),
+                            1.5F);
+                    }
+
+                    if (showBones_)
+                    {
+                        drawList->AddCircleFilled(
+                            bonePosition,
+                            2.5F,
+                            IM_COL32(
+                                255,
+                                205,
+                                110,
+                                255));
+                    }
+                }
+            }
 
             if (ImGui::IsItemHovered())
             {
