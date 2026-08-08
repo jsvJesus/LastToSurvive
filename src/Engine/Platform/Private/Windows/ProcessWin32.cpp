@@ -173,6 +173,82 @@ namespace engine::platform
         return GetExecutablePath();
     }
 
+    bool HasCurrentProcessArgument(const std::wstring_view argument) noexcept
+    {
+        if (argument.empty())
+        {
+            return false;
+        }
+
+        const wchar_t* const commandLine =
+            ::GetCommandLineW();
+
+        if (
+            commandLine == nullptr ||
+            commandLine[0] == L'\0'
+        )
+        {
+            return false;
+        }
+
+        int argumentCount = 0;
+
+        LPWSTR* const arguments =
+            ::CommandLineToArgvW(
+                commandLine,
+                &argumentCount);
+
+        if (arguments == nullptr)
+        {
+            return false;
+        }
+
+        bool found = false;
+
+        for (
+            int index = 0;
+            index < argumentCount;
+            ++index
+        )
+        {
+            const wchar_t* const currentArgument =
+                arguments[index];
+
+            if (currentArgument == nullptr)
+            {
+                continue;
+            }
+
+            const std::wstring_view current(
+                currentArgument);
+
+            if (current.size() != argument.size())
+            {
+                continue;
+            }
+
+            const int comparison =
+                ::CompareStringOrdinal(
+                    current.data(),
+                    static_cast<int>(
+                        current.size()),
+                    argument.data(),
+                    static_cast<int>(
+                        argument.size()),
+                    TRUE);
+
+            if (comparison == CSTR_EQUAL)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        ::LocalFree(arguments);
+
+        return found;
+    }
+
     const char* ToString(
         const ProcessWaitResult result) noexcept
     {

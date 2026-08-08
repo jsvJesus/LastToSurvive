@@ -1,9 +1,19 @@
-#include "r3dPCH.h"
-#include "r3d.h"
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <Windows.h>
 
 #include "Editors/StudioEditorUI.h"
 #include "StudioGraphicsShell.h"
 #include "StudioRuntimeBridge.h"
+
+#include <Core/Log.h>
+
 #include <ImGui/ImGuiHost.h>
 
 #include <Graphics/CommandContext.h>
@@ -16,15 +26,20 @@
 
 #include <Platform/Clock.h>
 #include <Platform/MessagePump.h>
+#include <Platform/Process.h>
 #include <Platform/Window.h>
 
 #include <Runtime/Engine.h>
 #include <Runtime/RendererBackend.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
+#include <string_view>
 
 extern void RegisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
@@ -32,51 +47,61 @@ extern void RegisterMsgProc(
 extern void UnregisterMsgProc(
     bool (*proc)(UINT, WPARAM, LPARAM));
 
-extern char __r3dCmdLine[1024];
-
-PCHAR* CommandLineToArgvA(
-    PCHAR commandLine,
-    int* argumentCount);
-
 namespace
 {
     using engine::graphics::GraphicsResult;
     using studio::StudioGraphicsShellResult;
+    using engine::core::LogLevel;
 
-    bool HasCommandLineSwitch(
-        const char* value)
+    void WriteLog(
+        const LogLevel level,
+        const std::string_view category,
+        const std::string_view text) noexcept
     {
-        int argumentCount = 0;
+        engine::core::GetLogger().Write(
+            level,
+            category,
+            text);
+    }
 
-        PCHAR* arguments =
-            CommandLineToArgvA(
-                __r3dCmdLine,
-                &argumentCount);
+    template <typename... Args>
+    void WriteFormattedLog(
+        const LogLevel level,
+        const std::string_view category,
+        const char* const format,
+        Args... args) noexcept
+    {
+        std::array<char, 512> buffer{};
 
-        if (arguments == nullptr)
+        const int written =
+            std::snprintf(
+                buffer.data(),
+                buffer.size(),
+                format,
+                args...);
+
+        if (written <= 0)
         {
-            return false;
+            WriteLog(
+                LogLevel::Error,
+                "Logging",
+                "Failed to format log message");
+
+            return;
         }
 
-        bool found = false;
+        const std::size_t length =
+            (std::min)(
+                static_cast<std::size_t>(
+                    written),
+                buffer.size() - 1);
 
-        for (
-            int index = 0;
-            index < argumentCount;
-            ++index)
-        {
-            if (_stricmp(
-                    arguments[index],
-                    value) == 0)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        GlobalFree(arguments);
-
-        return found;
+        WriteLog(
+            level,
+            category,
+            std::string_view(
+                buffer.data(),
+                length));
     }
 
     StudioGraphicsShellResult
@@ -247,8 +272,7 @@ namespace
                     GraphicsResult::BackendFailure);
             }
 
-            r3dOutToLog(
-                "[Editor][ImGui] Dear ImGui initialized\n");
+            WriteLog(LogLevel::Information, "Editor.ImGui", "Dear ImGui initialized");
 
             width_ =
                 clientSize.width;
@@ -265,13 +289,8 @@ namespace
 
             initialized_ = true;
 
-            r3dOutToLog(
-                "[Graphics][DX11] Bootstrap initialized: "
-                "%ux%u\n",
-                static_cast<unsigned int>(
-                    width_),
-                static_cast<unsigned int>(
-                    height_));
+            WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Bootstrap initialized: %ux%u",
+                static_cast<unsigned int>(width_), static_cast<unsigned int>(height_));
 
             return true;
         }
@@ -691,13 +710,8 @@ namespace
             width_ = width;
             height_ = height;
 
-            r3dOutToLog(
-                "[Graphics][DX11] Backbuffer resized: "
-                "%ux%u\n",
-                static_cast<unsigned int>(
-                    width_),
-                static_cast<unsigned int>(
-                    height_));
+            WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Backbuffer resized: %ux%u",
+                static_cast<unsigned int>(width_), static_cast<unsigned int>(height_));
 
             return true;
         }
@@ -789,37 +803,24 @@ namespace
             styleChanged_ = false;
         }
 
-        [[nodiscard]] bool
-            FailInitialization(
-                const char* phase,
-                const GraphicsResult result) noexcept
+        [[nodiscard]] bool FailInitialization(
+        const char* phase,
+        const GraphicsResult result) noexcept
         {
-            r3dOutToLog(
-                "[Graphics][DX11] Initialization failed "
-                "at %s: %s\n",
-                phase,
-                engine::graphics::
-                    ToString(result));
+            WriteFormattedLog(LogLevel::Error, "Graphics.DX11", "Initialization failed at %s: %s", phase,
+                engine::graphics::ToString(result));
 
             Shutdown();
 
             return false;
         }
 
-        [[nodiscard]] bool FailFrame(
-            const char* phase,
-            const GraphicsResult result) noexcept
+        [[nodiscard]] bool FailFrame(const char* phase, const GraphicsResult result) noexcept
         {
-            r3dOutToLog(
-                "[Graphics][DX11] Frame failed "
-                "at %s: %s\n",
-                phase,
-                engine::graphics::
-                    ToString(result));
+            WriteFormattedLog(LogLevel::Error, "Graphics.DX11", "Frame failed at %s: %s", phase,
+                engine::graphics::ToString(result));
 
-            failureResult_ =
-                ResultFromGraphicsFailure(
-                    result);
+            failureResult_ = ResultFromGraphicsFailure(result);
 
             return false;
         }
@@ -905,9 +906,7 @@ namespace studio
 {
     bool WantsDX11Shell() noexcept
     {
-        return
-            HasCommandLineSwitch(
-                "-dx11");
+        return engine::platform::HasCurrentProcessArgument(L"-dx11");
     }
 
     const char* ToString(
@@ -953,8 +952,7 @@ namespace studio
                     NotRequested;
         }
 
-        r3dOutToLog(
-            "[Graphics] Renderer backend: D3D11\n");
+        WriteLog(LogLevel::Information, "Graphics", "Renderer backend: D3D11");
 
         /*
          * Сначала Runtime получает выбранный backend.
@@ -964,13 +962,9 @@ namespace studio
                 engine::runtime::
                     RendererBackend::D3D11))
         {
-            r3dOutToLog(
-                "[Graphics][DX11] Runtime "
-                "initialization failed\n");
+            WriteLog(LogLevel::Error, "Graphics.DX11", "Runtime initialization failed");
 
-            return
-                StudioGraphicsShellResult::
-                    RuntimeInitializationFailed;
+            return StudioGraphicsShellResult::RuntimeInitializationFailed;
         }
 
         engine::runtime::Engine*
@@ -1097,12 +1091,9 @@ namespace studio
             if (!runtimeEngine->BeginFrame(
                     deltaSeconds))
             {
-                r3dOutToLog(
-                    "[Runtime] DX11 BeginFrame failed\n");
+                WriteLog(LogLevel::Error, "Runtime", "DX11 BeginFrame failed");
 
-                finalResult =
-                    StudioGraphicsShellResult::
-                        FrameFailed;
+                finalResult = StudioGraphicsShellResult::FrameFailed;
 
                 break;
             }
@@ -1123,12 +1114,9 @@ namespace studio
 
             if (!endFrameSucceeded)
             {
-                r3dOutToLog(
-                    "[Runtime] DX11 EndFrame failed\n");
+                WriteLog(LogLevel::Error, "Runtime", "DX11 EndFrame failed");
 
-                finalResult =
-                    StudioGraphicsShellResult::
-                        FrameFailed;
+                finalResult = StudioGraphicsShellResult::FrameFailed;
 
                 break;
             }
@@ -1154,10 +1142,7 @@ namespace studio
 
         ShutdownStudioRuntimeBridge();
 
-        r3dOutToLog(
-            "[Graphics][DX11] Bootstrap stopped: %s\n",
-            ToString(
-                finalResult));
+        WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Bootstrap stopped: %s", ToString(finalResult));
 
         return finalResult;
     }

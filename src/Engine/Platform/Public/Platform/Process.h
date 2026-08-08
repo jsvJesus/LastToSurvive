@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace engine::platform
 {
@@ -31,14 +32,10 @@ namespace engine::platform
             ProcessWindowMode::Normal;
     };
 
-    [[nodiscard]] std::uint32_t
-        GetCurrentProcessId() noexcept;
-
-    [[nodiscard]] Path
-        GetCurrentProcessPath();
-
-    [[nodiscard]] const char* ToString(
-        ProcessWaitResult result) noexcept;
+    [[nodiscard]] std::uint32_t GetCurrentProcessId() noexcept;
+    [[nodiscard]] Path GetCurrentProcessPath();
+    [[nodiscard]] bool HasCurrentProcessArgument(std::wstring_view argument) noexcept;
+    [[nodiscard]] const char* ToString(ProcessWaitResult result) noexcept;
 
     class Process final
     {
