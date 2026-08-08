@@ -1,114 +1,356 @@
+#if defined(_WIN64)
+
+#include <Core/Log.h>
+
+#else
+
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#endif
 
 #include "AObject.h"
-#include "GameObj.h"
 
-IMPLEMENT_CLASS(AObject, "AObject", "Core")
+#include <array>
+#include <cstdio>
+#include <cstdlib>
+#include <string_view>
+
+IMPLEMENT_CLASS(
+    AObject,
+    "AObject",
+    "Core")
+
+namespace
+{
+    constexpr int MaxRegisteredObjects =
+        1024;
+
+    void ReportRegistryCapacityExceeded() noexcept
+    {
+#if defined(_WIN64)
+
+        engine::core::GetLogger().Write(
+            engine::core::LogLevel::Error,
+            "GameObject.Registry",
+            "Maximum registered object class "
+            "count reached");
+
+#else
+
+        r3dArtBug(
+            "ERROR: AObjectTable - "
+            "MAX_REGISTERED_UOBJECTS reached\n\n");
+
+#endif
+    }
+
+    [[noreturn]]
+    void FailInvalidClassId(
+        const int id) noexcept
+    {
+#if defined(_WIN64)
+
+        std::array<char, 128> message{};
+
+        const int written =
+            std::snprintf(
+                message.data(),
+                message.size(),
+                "Object class ID %d is not registered",
+                id);
+
+        if (written > 0)
+        {
+            const std::size_t length =
+                static_cast<std::size_t>(
+                    written) <
+                        message.size()
+                    ? static_cast<std::size_t>(
+                        written)
+                    : message.size() - 1;
+
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "GameObject.Registry",
+                std::string_view(
+                    message.data(),
+                    length));
+        }
+        else
+        {
+            engine::core::GetLogger().Write(
+                engine::core::LogLevel::Critical,
+                "GameObject.Registry",
+                "Invalid object class ID");
+        }
+
+        std::abort();
+
+#else
+
+        r3dError(
+            "GetClassID: class %d isn't present",
+            id);
+
+        /*
+         * r3dError historically behaves as a fatal
+         * error. Keep a hard fallback in case its
+         * implementation ever returns.
+         */
+        std::abort();
+
+#endif
+    }
+}
 
 class AObjectTable
 {
-  private:
-static	AObjectTable	*pInstance;
-	AObjectTable();
-	~AObjectTable();
+private:
+    struct Entry
+    {
+        int ID = -1;
+        AClass* Class = nullptr;
+    };
 
-  public:
-static	AObjectTable*	This();
+private:
+    static AObjectTable* instance_;
 
-	struct entry_s
-	{
-	  int		ID;		// same index as idx in TableEntries[idx]
-	  AClass	*Class;
-	};
-	#define	MAX_REGISTERED_UOBJECTS	1024
-	entry_s		table[MAX_REGISTERED_UOBJECTS];
-	int		entries;
+    AObjectTable() noexcept;
+    ~AObjectTable() noexcept;
 
-  public:
-	int		RegisterClass(AClass *cl);
+public:
+    static AObjectTable* Get();
 
-	int		GetClassID(const char* name, const char* type);
-	AObject*	CreateObject(int ID);
-	stringlist_t GetRegisteredClassesList () const;
+    int RegisterClass(
+        AClass* objectClass);
+
+    int GetClassID(
+        const char* name,
+        const char* type) const noexcept;
+
+    AObject* CreateObject(
+        int id);
+
+    stringlist_t
+        GetRegisteredClassesList() const;
+
+private:
+    Entry table_[MaxRegisteredObjects]{};
+
+    int entryCount_ = 0;
 };
 
-	AObjectTable*  	AObjectTable::pInstance = NULL;
+AObjectTable*
+    AObjectTable::instance_ =
+        nullptr;
 
-AObjectTable::AObjectTable()
+AObjectTable::AObjectTable() noexcept = default;
+
+AObjectTable::~AObjectTable() noexcept
 {
-  //r3dOutToLog("AObjectTable Inited\n");
-  
-  entries = 0;
+    entryCount_ = 0;
 }
 
-AObjectTable::~AObjectTable()
+AObjectTable* AObjectTable::Get()
 {
-  //FIXME: delete pInstance at the program termination.. create list of classes to destroy, or something.
-  entries = 0;
+    if (instance_ == nullptr)
+    {
+        instance_ =
+            new AObjectTable;
+    }
+
+    return instance_;
 }
 
-AObjectTable* AObjectTable::This()
+int AObjectTable::RegisterClass(
+    AClass* const objectClass)
 {
-  if(!pInstance)
-    pInstance = new AObjectTable;
-  return pInstance;
+    if (objectClass == nullptr)
+    {
+        return 0;
+    }
+
+    if (
+        entryCount_ + 1 >=
+        MaxRegisteredObjects
+    )
+    {
+        ReportRegistryCapacityExceeded();
+
+        return 0;
+    }
+
+    Entry& entry =
+        table_[entryCount_];
+
+    entry.ID =
+        entryCount_;
+
+    entry.Class =
+        objectClass;
+
+    objectClass->ID =
+        entryCount_;
+
+    ++entryCount_;
+
+    return 1;
 }
 
-
-int AObjectTable::RegisterClass(AClass *cl)
+AObject* AObjectTable::CreateObject(
+    const int id)
 {
-  if(entries + 1 >= MAX_REGISTERED_UOBJECTS) 
-  {
-    r3dArtBug("ERROR: AObjectTable - MAX_REGISTERED_UOBJECTS reached\n\n");
-    return 0;
-  }
-   
-  table[entries].ID    = entries;
-  table[entries].Class = cl;
-  cl->ID               = entries;
+    if (
+        id < 0 ||
+        id >= entryCount_ ||
+        table_[id].ID != id ||
+        table_[id].Class == nullptr ||
+        table_[id].Class->
+            ClassConstructor == nullptr
+    )
+    {
+        FailInvalidClassId(id);
+    }
 
-  //r3dOutToLog("AObjectTable: class \"%s\" registered\n", cl->Name.c_str());
+    AClass* const objectClass =
+        table_[id].Class;
 
-  entries++;
-  return 1;
+    AObject* const object =
+        objectClass->
+            ClassConstructor();
+
+    if (object == nullptr)
+    {
+#if defined(_WIN64)
+
+        engine::core::GetLogger().Write(
+            engine::core::LogLevel::Critical,
+            "GameObject.Registry",
+            "Object class constructor "
+            "returned null");
+
+        std::abort();
+
+#else
+
+        r3dError(
+            "Object class constructor "
+            "returned NULL");
+
+        std::abort();
+
+#endif
+    }
+
+    object->Class =
+        objectClass;
+
+    return object;
 }
 
-AObject *AObjectTable::CreateObject(int ID)
+int AObjectTable::GetClassID(
+    const char* const name,
+    const char* const type) const noexcept
 {
-	AObject	 	*obj;
+    if (
+        name == nullptr ||
+        type == nullptr
+    )
+    {
+        return -1;
+    }
 
-	if(ID < 0 || ID >= entries || table[ID].ID != ID) {
-		r3dError("GetClassID: class %d isn't present", ID);
-	}
+    for (
+        int index = 0;
+        index < entryCount_;
+        ++index
+    )
+    {
+        const AClass* const objectClass =
+            table_[index].Class;
 
-	obj        = (AObject *)table[ID].Class->ClassConstructor();
-	obj->Class = table[ID].Class;
+        if (objectClass == nullptr)
+        {
+            continue;
+        }
 
-	return obj;
+        if (
+            objectClass->Name == name &&
+            objectClass->Type == type
+        )
+        {
+            return index;
+        }
+    }
+
+    return -1;
 }
 
-int AObjectTable::GetClassID(const char* name, const char* type)
+stringlist_t
+    AObjectTable::
+        GetRegisteredClassesList() const
 {
-	for(int i=0; i<entries; i++) {
-		if(table[i].Class->Name == name && table[i].Class->Type == type)
-			return i;
-	}
+    stringlist_t list;
 
-	return -1;
+    list.reserve(
+        static_cast<std::size_t>(
+            entryCount_));
+
+    for (
+        int index = 0;
+        index < entryCount_;
+        ++index
+    )
+    {
+        const AClass* const objectClass =
+            table_[index].Class;
+
+        if (objectClass == nullptr)
+        {
+            continue;
+        }
+
+        list.push_back(
+            objectClass->Name);
+    }
+
+    return list;
 }
 
-stringlist_t AObjectTable::GetRegisteredClassesList () const
+int AObjectTable_RegisterClass(
+    AClass* const objectClass)
 {
-	stringlist_t list;
-	for(int i=0; i<entries; i++) 
-		list.push_back(table[i].Class->Name.c_str());
-
-	return list;
+    return
+        AObjectTable::Get()->
+            RegisterClass(
+                objectClass);
 }
 
-int		AObjectTable_RegisterClass(AClass *cl)		{ return AObjectTable::This()->RegisterClass(cl); }
-int		AObjectTable_GetClassID(const char* name, const char* type)	{ return AObjectTable::This()->GetClassID(name, type); }
-AObject*	AObjectTable_CreateObject(int id)		{ return AObjectTable::This()->CreateObject(id); }
-extern stringlist_t AObjectTable_GetRegisteredClassesList () {return AObjectTable::This()->GetRegisteredClassesList();}
+int AObjectTable_GetClassID(
+    const char* const name,
+    const char* const type)
+{
+    return
+        AObjectTable::Get()->
+            GetClassID(
+                name,
+                type);
+}
+
+AObject* AObjectTable_CreateObject(
+    const int id)
+{
+    return
+        AObjectTable::Get()->
+            CreateObject(
+                id);
+}
+
+stringlist_t
+    AObjectTable_GetRegisteredClassesList()
+{
+    return
+        AObjectTable::Get()->
+            GetRegisteredClassesList();
+}
