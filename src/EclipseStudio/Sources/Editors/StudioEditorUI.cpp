@@ -6,44 +6,47 @@ namespace studio::editor
 {
     namespace
     {
-        EditorWorkspace g_activeWorkspace =
-            EditorWorkspace::Settings;
+        LevelEditorPage g_activePage =
+            LevelEditorPage::Settings;
 
         bool g_showRendererWindow = true;
 
-        const char* GetWorkspaceName(
-            const EditorWorkspace workspace) noexcept
+        const char* GetPageName(
+            const LevelEditorPage page) noexcept
         {
-            switch (workspace)
+            switch (page)
             {
-            case EditorWorkspace::Settings:
+            case LevelEditorPage::Settings:
                 return "Settings";
 
-            case EditorWorkspace::Objects:
+            case LevelEditorPage::Terrain:
+                return "Terrain";
+
+            case LevelEditorPage::Objects:
                 return "Objects";
 
-            case EditorWorkspace::Materials:
+            case LevelEditorPage::Materials:
                 return "Materials";
 
-            case EditorWorkspace::Environment:
+            case LevelEditorPage::Environment:
                 return "Environment";
 
-            case EditorWorkspace::Collections:
+            case LevelEditorPage::Collections:
                 return "Collections";
 
-            case EditorWorkspace::Decorators:
+            case LevelEditorPage::Decorators:
                 return "Decorators";
 
-            case EditorWorkspace::Roads:
+            case LevelEditorPage::Roads:
                 return "Roads";
 
-            case EditorWorkspace::Gameplay:
+            case LevelEditorPage::Gameplay:
                 return "Gameplay";
 
-            case EditorWorkspace::PostFX:
+            case LevelEditorPage::PostFX:
                 return "Post FX";
 
-            case EditorWorkspace::ColorCorrection:
+            case LevelEditorPage::ColorCorrection:
                 return "Color Correction";
 
             default:
@@ -51,49 +54,13 @@ namespace studio::editor
             }
         }
 
-        void DrawMainMenu() noexcept
+        void DrawPageButton(
+            const LevelEditorPage page) noexcept
         {
-            if (!ImGui::BeginMenuBar())
-            {
-                return;
-            }
+            const bool active =
+                g_activePage == page;
 
-            if (ImGui::BeginMenu("File"))
-            {
-                ImGui::TextDisabled(
-                    "DX11 editor commands will be migrated here");
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Edit"))
-            {
-                ImGui::TextDisabled(
-                    "Undo / Redo migration pending");
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("View"))
-            {
-                ImGui::MenuItem(
-                    "Renderer",
-                    nullptr,
-                    &g_showRendererWindow);
-
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenuBar();
-        }
-
-        void DrawWorkspaceButton(
-            const EditorWorkspace workspace) noexcept
-        {
-            const bool selected =
-                g_activeWorkspace == workspace;
-
-            if (selected)
+            if (active)
             {
                 ImGui::PushStyleColor(
                     ImGuiCol_Button,
@@ -102,145 +69,215 @@ namespace studio::editor
             }
 
             if (ImGui::Button(
-                    GetWorkspaceName(workspace)))
+                    GetPageName(page)))
             {
-                g_activeWorkspace = workspace;
+                g_activePage = page;
             }
 
-            if (selected)
+            if (active)
             {
                 ImGui::PopStyleColor();
             }
         }
 
-        void DrawWorkspaceBar() noexcept
+        void DrawLevelEditorToolbar() noexcept
         {
-            DrawWorkspaceButton(
-                EditorWorkspace::Settings);
+            DrawPageButton(
+                LevelEditorPage::Settings);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Objects);
+            DrawPageButton(
+                LevelEditorPage::Terrain);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Materials);
+            DrawPageButton(
+                LevelEditorPage::Objects);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Environment);
+            DrawPageButton(
+                LevelEditorPage::Materials);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Collections);
+            DrawPageButton(
+                LevelEditorPage::Environment);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Decorators);
+            DrawPageButton(
+                LevelEditorPage::Collections);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Roads);
+            DrawPageButton(
+                LevelEditorPage::Decorators);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::Gameplay);
+            DrawPageButton(
+                LevelEditorPage::Roads);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::PostFX);
+            DrawPageButton(
+                LevelEditorPage::Gameplay);
 
             ImGui::SameLine();
 
-            DrawWorkspaceButton(
-                EditorWorkspace::ColorCorrection);
+            DrawPageButton(
+                LevelEditorPage::PostFX);
+
+            ImGui::SameLine();
+
+            DrawPageButton(
+                LevelEditorPage::ColorCorrection);
         }
 
-        void DrawDockSpace() noexcept
+        void DrawTerrainPage() noexcept
         {
-            const ImGuiViewport* viewport =
-                ImGui::GetMainViewport();
-
-            ImGui::SetNextWindowPos(
-                viewport->WorkPos);
-
-            ImGui::SetNextWindowSize(
-                viewport->WorkSize);
-
-            ImGui::SetNextWindowViewport(
-                viewport->ID);
-
-            ImGuiWindowFlags windowFlags =
-                ImGuiWindowFlags_MenuBar |
-                ImGuiWindowFlags_NoDocking |
-                ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoBringToFrontOnFocus |
-                ImGuiWindowFlags_NoNavFocus;
-
-            ImGui::PushStyleVar(
-                ImGuiStyleVar_WindowRounding,
-                0.0F);
-
-            ImGui::PushStyleVar(
-                ImGuiStyleVar_WindowBorderSize,
-                0.0F);
-
-            ImGui::PushStyleVar(
-                ImGuiStyleVar_WindowPadding,
-                ImVec2(0.0F, 0.0F));
-
-            ImGui::Begin(
-                "EditorDockSpace",
-                nullptr,
-                windowFlags);
-
-            ImGui::PopStyleVar(3);
-
-            DrawMainMenu();
-
-            const ImGuiID dockSpaceId =
-                ImGui::GetID(
-                    "EditorMainDockSpace");
-
-            ImGui::DockSpace(
-                dockSpaceId,
-                ImVec2(0.0F, 0.0F),
-                ImGuiDockNodeFlags_PassthruCentralNode);
-
-            ImGui::End();
-        }
-
-        void DrawWorkspaceWindow() noexcept
-        {
-            ImGui::SetNextWindowSize(
-                ImVec2(720.0F, 90.0F),
-                ImGuiCond_FirstUseEver);
-
-            if (!ImGui::Begin("Editor"))
-            {
-                ImGui::End();
-                return;
-            }
-
-            DrawWorkspaceBar();
+            ImGui::TextUnformatted(
+                "Terrain");
 
             ImGui::Separator();
 
-            ImGui::Text(
-                "Workspace: %s",
-                GetWorkspaceName(
-                    g_activeWorkspace));
+            ImGui::TextUnformatted(
+                "DX11 Terrain");
+
+            ImGui::Spacing();
+
+            ImGui::TextDisabled(
+                "Legacy Terrain V1 / Terrain V2 are not used.");
+
+            ImGui::Spacing();
+
+            if (ImGui::Button(
+                    "Import .r16",
+                    ImVec2(140.0F, 28.0F)))
+            {
+                // R16 importer will be connected here.
+            }
+
+            ImGui::SameLine();
+
+            ImGui::TextDisabled(
+                "No heightmap loaded");
+        }
+
+        void DrawPlaceholderPage(
+            const char* title) noexcept
+        {
+            ImGui::TextUnformatted(title);
+
+            ImGui::Separator();
+
+            ImGui::TextDisabled(
+                "Dear ImGui migration pending.");
+        }
+
+        void DrawActivePage() noexcept
+        {
+            switch (g_activePage)
+            {
+            case LevelEditorPage::Terrain:
+
+                DrawTerrainPage();
+
+                break;
+
+            case LevelEditorPage::Settings:
+
+                DrawPlaceholderPage(
+                    "Settings");
+
+                break;
+
+            case LevelEditorPage::Objects:
+
+                DrawPlaceholderPage(
+                    "Objects");
+
+                break;
+
+            case LevelEditorPage::Materials:
+
+                DrawPlaceholderPage(
+                    "Materials");
+
+                break;
+
+            case LevelEditorPage::Environment:
+
+                DrawPlaceholderPage(
+                    "Environment");
+
+                break;
+
+            case LevelEditorPage::Collections:
+
+                DrawPlaceholderPage(
+                    "Collections");
+
+                break;
+
+            case LevelEditorPage::Decorators:
+
+                DrawPlaceholderPage(
+                    "Decorators");
+
+                break;
+
+            case LevelEditorPage::Roads:
+
+                DrawPlaceholderPage(
+                    "Roads");
+
+                break;
+
+            case LevelEditorPage::Gameplay:
+
+                DrawPlaceholderPage(
+                    "Gameplay");
+
+                break;
+
+            case LevelEditorPage::PostFX:
+
+                DrawPlaceholderPage(
+                    "Post FX");
+
+                break;
+
+            case LevelEditorPage::ColorCorrection:
+
+                DrawPlaceholderPage(
+                    "Color Correction");
+
+                break;
+            }
+        }
+
+        void DrawLevelEditor() noexcept
+        {
+            ImGui::SetNextWindowSize(
+                ImVec2(1000.0F, 600.0F),
+                ImGuiCond_FirstUseEver);
+
+            if (!ImGui::Begin(
+                    "Level Editor"))
+            {
+                ImGui::End();
+
+                return;
+            }
+
+            DrawLevelEditorToolbar();
+
+            ImGui::Separator();
+
+            DrawActivePage();
 
             ImGui::End();
         }
@@ -261,6 +298,7 @@ namespace studio::editor
                     &g_showRendererWindow))
             {
                 ImGui::End();
+
                 return;
             }
 
@@ -288,25 +326,24 @@ namespace studio::editor
                 "FPS: %.1f",
                 io.Framerate);
 
-            ImGui::Text(
-                "Display: %.0f x %.0f",
-                io.DisplaySize.x,
-                io.DisplaySize.y);
-
             ImGui::End();
         }
     }
 
-    EditorWorkspace
-        GetActiveWorkspace() noexcept
+    LevelEditorPage
+        GetActiveLevelEditorPage() noexcept
     {
-        return g_activeWorkspace;
+        return g_activePage;
     }
 
     void DrawEditorUI() noexcept
     {
-        DrawDockSpace();
-        DrawWorkspaceWindow();
+        ImGui::DockSpaceOverViewport(
+            0,
+            nullptr,
+            ImGuiDockNodeFlags_PassthruCentralNode);
+
+        DrawLevelEditor();
         DrawRendererWindow();
     }
 }

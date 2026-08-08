@@ -4,9 +4,10 @@
 
 namespace studio::editor
 {
-    enum class EditorWorkspace : std::uint8_t
+    enum class LevelEditorPage : std::uint8_t
     {
         Settings = 0,
+        Terrain,
         Objects,
         Materials,
         Environment,
@@ -18,8 +19,8 @@ namespace studio::editor
         ColorCorrection
     };
 
-    [[nodiscard]] EditorWorkspace
-        GetActiveWorkspace() noexcept;
+    [[nodiscard]] LevelEditorPage
+        GetActiveLevelEditorPage() noexcept;
 
     void DrawEditorUI() noexcept;
 }
