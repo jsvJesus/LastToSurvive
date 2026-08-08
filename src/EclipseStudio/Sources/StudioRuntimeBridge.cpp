@@ -1,6 +1,3 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "StudioRuntimeBridge.h"
 #include "TasksRuntimeBridge.h"
 
@@ -11,6 +8,10 @@
 #include <Tasks/MainThreadDispatcher.h>
 
 #include <Platform/Thread.h>
+#include "Platform/Clock.h"
+
+#include "Core/Log.h"
+#include "Core/Logger.h"
 
 #include <cstdint>
 #include <memory>
@@ -53,6 +54,92 @@ namespace
     std::uint64_t g_endFrameFailureCount = 0;
 
     std::uint64_t g_recoveredFrameCount = 0;
+    engine::platform::Clock::Tick g_previousFrameTick = 0;
+
+    using engine::core::LogLevel;
+
+    void WriteLog(
+        const LogLevel level,
+        const std::string_view category,
+        const std::string_view text) noexcept
+    {
+        engine::core::GetLogger().Write(
+            level,
+            category,
+            text);
+    }
+
+    template <typename... Args>
+    void WriteFormattedLog(
+        const LogLevel level,
+        const std::string_view category,
+        const char* const format,
+        Args... args) noexcept
+    {
+        std::array<char, 768> buffer{};
+
+        const int written =
+            std::snprintf(
+                buffer.data(),
+                buffer.size(),
+                format,
+                args...);
+
+        if (written <= 0)
+        {
+            WriteLog(
+                LogLevel::Error,
+                "Logging",
+                "Failed to format runtime log message");
+
+            return;
+        }
+
+        const std::size_t length =
+            (std::min)(
+                static_cast<std::size_t>(written),
+                buffer.size() - 1);
+
+        WriteLog(
+            level,
+            category,
+            std::string_view(
+                buffer.data(),
+                length));
+    }
+
+    [[nodiscard]]
+    double GetFrameDeltaSeconds() noexcept
+    {
+        const engine::platform::Clock::Tick
+            currentTick =
+                engine::platform::Clock::Now();
+
+        if (currentTick == 0)
+        {
+            g_previousFrameTick = 0;
+            return 0.0;
+        }
+
+        if (g_previousFrameTick == 0)
+        {
+            g_previousFrameTick =
+                currentTick;
+
+            return 0.0;
+        }
+
+        const double deltaSeconds =
+            engine::platform::Clock::
+                ElapsedSeconds(
+                    g_previousFrameTick,
+                    currentTick);
+
+        g_previousFrameTick =
+            currentTick;
+
+        return deltaSeconds;
+    }
 
     void StudioRuntimeFrameStart()
     {
@@ -97,9 +184,7 @@ namespace
             }
         }
 
-        const double deltaSeconds =
-            static_cast<double>(
-                r3dGetFrameTime2());
+        const double deltaSeconds = GetFrameDeltaSeconds();
 
         if (!g_runtimeEngine->BeginFrame(
                 deltaSeconds))
@@ -108,23 +193,11 @@ namespace
 
             if (g_beginFrameFailureCount == 1)
             {
-                r3dOutToLog(
-                    "[Runtime] Studio BeginFrame failed: "
+                WriteFormattedLog(LogLevel::Error, "Runtime", "Studio BeginFrame failed: "
                     "state=%s, active=%d, owner=%u, "
-                    "current=%u, delta=%.6f\n",
-                    engine::runtime::ToString(
-                        g_runtimeEngine->GetState()),
-                    g_runtimeEngine->
-                        IsFrameActive()
-                            ? 1
-                            : 0,
-                    static_cast<unsigned int>(
-                        g_runtimeEngine->
-                            GetOwnerThreadId()),
-                    static_cast<unsigned int>(
-                        engine::platform::
-                            GetCurrentThreadId()),
-                    deltaSeconds);
+                    "current=%u, delta=%.6f",
+                    engine::runtime::ToString(g_runtimeEngine->GetState()), g_runtimeEngine->IsFrameActive() ? 1 : 0,
+                    static_cast<unsigned int>(g_runtimeEngine->GetOwnerThreadId()), static_cast<unsigned int>(engine::platform::GetCurrentThreadId()), deltaSeconds);
             }
 
             return;
@@ -141,17 +214,11 @@ namespace
                     g_runtimeEngine->
                         GetFrameContext();
 
-            r3dOutToLog(
-                "[Runtime] Studio first frame: "
+            WriteFormattedLog(LogLevel::Information, "Runtime", "Studio first frame: "
                 "index=%llu, delta=%.6f, "
-                "elapsed=%.6f, thread=%u\n",
-                static_cast<unsigned long long>(
-                    frameContext.frameIndex),
-                frameContext.deltaSeconds,
-                frameContext.elapsedSeconds,
-                static_cast<unsigned int>(
-                    engine::platform::
-                        GetCurrentThreadId()));
+                "elapsed=%.6f, thread=%u",
+                static_cast<unsigned long long>(frameContext.frameIndex), frameContext.deltaSeconds, frameContext.elapsedSeconds,
+                static_cast<unsigned int>(engine::platform::GetCurrentThreadId()));
         }
     }
 
@@ -175,18 +242,11 @@ namespace
 
                 if (g_endFrameFailureCount == 1)
                 {
-                    r3dOutToLog(
-                        "[Runtime] Studio EndFrame failed: "
-                        "state=%s, owner=%u, current=%u\n",
-                        engine::runtime::ToString(
-                            g_runtimeEngine->
-                                GetState()),
-                        static_cast<unsigned int>(
-                            g_runtimeEngine->
-                                GetOwnerThreadId()),
-                        static_cast<unsigned int>(
-                            engine::platform::
-                                GetCurrentThreadId()));
+                    WriteFormattedLog(LogLevel::Error, "Runtime", "Studio EndFrame failed: "
+                        "state=%s, owner=%u, current=%u",
+                        engine::runtime::ToString(g_runtimeEngine->GetState()),
+                        static_cast<unsigned int>(g_runtimeEngine->GetOwnerThreadId()),
+                        static_cast<unsigned int>(engine::platform::GetCurrentThreadId()));
                 }
             }
         }
@@ -276,9 +336,7 @@ namespace studio
 
             if (!taskModuleAdded)
             {
-                r3dOutToLog(
-                    "[Runtime] Failed to add "
-                    "TaskRuntimeModule\n");
+                WriteLog(LogLevel::Error, "Runtime", "Failed to add TaskRuntimeModule");
 
                 return false;
             }
@@ -307,11 +365,9 @@ namespace studio
             if (!runtimeEngine->Initialize(
                     std::move(config)))
             {
-                r3dOutToLog(
-                    "[Runtime] Studio runtime "
-                    "initialization failed: state=%s\n",
-                    engine::runtime::ToString(
-                        runtimeEngine->GetState()));
+                WriteFormattedLog(LogLevel::Error,"Runtime", "Studio runtime initialization failed: " 
+                    "state=%s",
+                    engine::runtime::ToString(runtimeEngine->GetState()));
 
                 return false;
             }
@@ -363,6 +419,7 @@ namespace studio
             g_endFrameFailureCount = 0;
 
             g_recoveredFrameCount = 0;
+            g_previousFrameTick = 0;
 
             g_shuttingDown = false;
             g_initialized = true;
@@ -373,29 +430,14 @@ namespace studio
             r3dFrameEndCallback =
                 &StudioRuntimeFrameEnd;
 
-            r3dOutToLog(
-                "[Runtime] Studio bridge initialized: "
+            WriteFormattedLog(LogLevel::Information, "Runtime", "Studio bridge initialized: "
                 "state=%s, mode=%s, renderer=%s, "
                 "ownerThread=%u, services=%u, "
-                "taskServices=%d, frameHooks=2\n",
-                engine::runtime::ToString(
-                    g_runtimeEngine->GetState()),
-                engine::runtime::ToString(
-                    g_runtimeEngine->
-                        GetConfig().mode),
-                engine::runtime::ToString(
-                    g_runtimeEngine->
-                        GetConfig().rendererBackend),
-                static_cast<unsigned int>(
-                    g_runtimeEngine->
-                        GetOwnerThreadId()),
-                static_cast<unsigned int>(
-                    g_runtimeEngine->
-                        GetServices().
-                            GetServiceCount()),
-                            taskServicesRegistered
-                    ? 1
-                    : 0);
+                "taskServices=%d, frameHooks=2",
+                engine::runtime::ToString(g_runtimeEngine->GetState()), engine::runtime::ToString(g_runtimeEngine->GetConfig().mode),
+                engine::runtime::ToString(g_runtimeEngine->GetConfig().rendererBackend), 
+                static_cast<unsigned int>(g_runtimeEngine->GetOwnerThreadId()),
+                static_cast<unsigned int>(g_runtimeEngine->GetServices().GetServiceCount()), taskServicesRegistered ? 1 : 0);
 
             return true;
         }
@@ -411,10 +453,10 @@ namespace studio
 
             g_initialized = false;
             g_shuttingDown = false;
+            g_previousFrameTick = 0;
 
-            r3dOutToLog(
-                "[Runtime] Studio bridge "
-                "initialization failed with exception\n");
+            WriteLog(LogLevel::Error, "Runtime", "Studio bridge initialization "
+                "failed with exception");
 
             return false;
         }
@@ -482,47 +524,43 @@ namespace studio
                     : engine::runtime::
                         EngineState::Stopped;
 
-        r3dOutToLog(
-            "[Runtime] Studio bridge shutdown: "
+        WriteFormattedLog(LogLevel::Information, "Runtime", "Studio bridge shutdown: "
             "stateBefore=%s, stateAfter=%s, "
             "runtimeFrames=%llu, "
             "started=%llu, ended=%llu, "
             "recovered=%llu, "
             "beginFailures=%llu, "
-            "endFailures=%llu\n",
-            engine::runtime::ToString(
-                stateBeforeShutdown),
-            engine::runtime::ToString(
-                finalState),
-            static_cast<unsigned long long>(
-                runtimeFrameIndex),
-            static_cast<unsigned long long>(
-                g_startedFrameCount),
-            static_cast<unsigned long long>(
-                g_endedFrameCount),
-            static_cast<unsigned long long>(
-                g_recoveredFrameCount),
-            static_cast<unsigned long long>(
-                g_beginFrameFailureCount),
-            static_cast<unsigned long long>(
-                g_endFrameFailureCount));
+            "endFailures=%llu",
+            engine::runtime::ToString(stateBeforeShutdown),
+            engine::runtime::ToString(finalState),
+            static_cast<unsigned long long>(runtimeFrameIndex),
+            static_cast<unsigned long long>(g_startedFrameCount),
+            static_cast<unsigned long long>(g_endedFrameCount),
+            static_cast<unsigned long long>(g_recoveredFrameCount),
+            static_cast<unsigned long long>(g_beginFrameFailureCount),
+            static_cast<unsigned long long>(g_endFrameFailureCount));
 
-        r3d_assert(
-            g_startedFrameCount ==
-            g_endedFrameCount);
-
-        r3d_assert(
-            g_beginFrameFailureCount == 0);
-
-        r3d_assert(
-            g_endFrameFailureCount == 0);
-
-        if (g_runtimeEngine != nullptr)
+        if (g_startedFrameCount !=g_endedFrameCount)
         {
-            r3d_assert(
-                g_runtimeEngine->GetState() ==
-                engine::runtime::
-                    EngineState::Stopped);
+            WriteFormattedLog(LogLevel::Error, "Runtime", "Frame counter mismatch: "
+                "started=%llu, ended=%llu",
+                static_cast<unsigned long long>(g_startedFrameCount),
+                static_cast<unsigned long long>(g_endedFrameCount));
+        }
+
+        if (g_beginFrameFailureCount != 0 || g_endFrameFailureCount != 0)
+        {
+            WriteFormattedLog(LogLevel::Error, "Runtime", "Frame failures detected: "
+                "begin=%llu, end=%llu",
+                static_cast<unsigned long long>(g_beginFrameFailureCount),
+                static_cast<unsigned long long>(g_endFrameFailureCount));
+        }
+
+        if (g_runtimeEngine != nullptr && g_runtimeEngine->GetState() != engine::runtime::EngineState::Stopped)
+        {
+            WriteFormattedLog(LogLevel::Error, "Runtime", "Unexpected runtime state "
+                "after shutdown: %s",
+                engine::runtime::ToString(g_runtimeEngine->GetState()));
         }
 
         g_runtimeEngine.reset();
@@ -539,6 +577,8 @@ namespace studio
         g_endFrameFailureCount = 0;
 
         g_recoveredFrameCount = 0;
+        
+        g_previousFrameTick = 0;
     }
 
     bool IsStudioRuntimeBridgeInitialized() noexcept
