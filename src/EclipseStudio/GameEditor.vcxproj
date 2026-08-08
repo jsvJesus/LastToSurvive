@@ -776,7 +776,9 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\SteamHelper.cpp" />
     <ClCompile Include="Sources\StudioRuntimeBridge.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
-    <ClCompile Include="Sources\TasksRuntimeBridge.cpp" />
+    <ClCompile Include="Sources\TasksRuntimeBridge.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp" />
     <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
     <ClCompile Include="Sources\UI\HUDCameraEffects.cpp" />
