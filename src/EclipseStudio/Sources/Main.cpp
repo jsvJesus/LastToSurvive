@@ -3715,35 +3715,53 @@ void game::MainLoop()
 #if defined(_WIN64)
 	if (studio::WantsDX11Shell())
 	{
-		r3dOutToLog("[Graphics] DX11 Studio shell requested\n");
-		const studio::StudioGraphicsShellResult shellResult =
-			studio::RunDX11Shell(
-				reinterpret_cast<std::uintptr_t>(win::hWnd));
-		r3dOutToLog("[Graphics] DX11 Studio shell exited: %s\n",
-			studio::ToString(shellResult));
-		if (shellResult == studio::StudioGraphicsShellResult::Completed ||
-			shellResult == studio::StudioGraphicsShellResult::FrameFailed ||
-			shellResult == studio::StudioGraphicsShellResult::DeviceLost ||
-			shellResult == studio::StudioGraphicsShellResult::DeviceRemoved)
+		r3dOutToLog(
+			"[Graphics] Renderer backend: D3D11\n");
+
+		const studio::StudioGraphicsShellResult
+			dx11Result =
+				studio::RunDX11Shell(
+					reinterpret_cast<std::uintptr_t>(
+						win::hWnd));
+
+		r3dOutToLog(
+			"[Graphics] D3D11 Studio stopped: %s\n",
+			studio::ToString(
+				dx11Result));
+
+		if (
+			dx11Result !=
+			studio::StudioGraphicsShellResult::
+				Completed)
 		{
-			return;
+			r3dError(
+				"D3D11 Studio initialization failed: %s",
+				studio::ToString(
+					dx11Result));
 		}
-		r3dOutToLog("[Graphics] DX11 initialization fallback; starting DX9 Studio backend\n");
+
+		/*
+		 * В режиме -dx11 мы никогда
+		 * не переходим в legacy DX9 startup.
+		 */
+		return;
 	}
-	r3dOutToLog("[Graphics] Selected DX9 Studio backend\n");
+
+	r3dOutToLog(
+		"[Graphics] Renderer backend: D3D9\n");
 #endif
+
 	// init steam we need to initialize this before the renderer for the overlay.
 	{
 		gSteam.InitSteam();
-		if(gSteam.steamID) {
+
+		if (gSteam.steamID)
+		{
 			gUserProfile.RegisterSteamCallbacks();
 		}
 	}
 
 	InitRender(1);
-
-
-
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();
