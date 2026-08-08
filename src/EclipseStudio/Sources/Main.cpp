@@ -2,8 +2,6 @@
 #include "r3d.h"
 
 #include "PlatformInputBridge.h"
-#include "TasksRuntimeBridge.h"
-#include "StudioRuntimeBridge.h"
 #include "StudioGraphicsShell.h"
 
 #if defined(_WIN64)
@@ -3779,75 +3777,18 @@ void game::MainLoop()
 		studio::InitializePlatformInputBridge();
 
 	r3dOutToLog(
-		"[Platform] Input live connection: initialized=%d\n",
-		platformInputBridgeInitialized ? 1 : 0);
+		"[Platform] Input live connection: "
+		"initialized=%d\n",
+		platformInputBridgeInitialized
+			? 1
+			: 0);
 
 	r3d_assert(
 		platformInputBridgeInitialized);
 
 	r3d_assert(
-		studio::IsPlatformInputBridgeInitialized());
-
-
-	/*
-	 * Studio Runtime создаёт Engine и TaskRuntimeModule.
-	 * Поэтому он должен запускаться раньше
-	 * compatibility TasksRuntimeBridge.
-	 */
-	const bool studioRuntimeInitialized =
-		studio::InitializeStudioRuntimeBridge(
-			engine::runtime::RendererBackend::D3D9);
-
-	r3dOutToLog(
-		"[Runtime] Studio runtime connection: "
-		"initialized=%d\n",
-		studioRuntimeInitialized ? 1 : 0);
-
-	if (!studioRuntimeInitialized)
-	{
-		r3dOutToLog(
-			"[Runtime] Studio continues through "
-			"legacy lifecycle\n");
-	}
-
-
-	/*
-	 * TasksRuntimeBridge теперь получает JobSystem
-	 * и MainThreadDispatcher из Runtime ServiceRegistry.
-	 */
-	const bool tasksRuntimeInitialized =
-		studioRuntimeInitialized &&
-		studio::InitializeTasksRuntimeBridge();
-
-	r3dOutToLog(
-		"[Tasks] Studio runtime connection: "
-		"initialized=%d\n",
-		tasksRuntimeInitialized ? 1 : 0);
-
-	if (!tasksRuntimeInitialized)
-	{
-		if (!studioRuntimeInitialized)
-		{
-			r3dOutToLog(
-				"[Tasks] Compatibility bridge was not "
-				"started because Studio Runtime "
-				"is unavailable\n");
-		}
-		else
-		{
-			r3dOutToLog(
-				"[Tasks] LTS.Tasks compatibility bridge "
-				"is unavailable; legacy background "
-				"dispatcher remains active\n");
-		}
-	}
-
-	r3dOutToLog(
-		"[Runtime] Connections: "
-		"input=%d, runtime=%d, tasks=%d\n",
-		platformInputBridgeInitialized ? 1 : 0,
-		studioRuntimeInitialized ? 1 : 0,
-		tasksRuntimeInitialized ? 1 : 0);
+		studio::
+			IsPlatformInputBridgeInitialized());
 #endif
 
 	RegisterMsgProc(
@@ -4054,14 +3995,7 @@ void game::MainLoop()
 	g_pDefaultConsole = NULL;
 
 #if defined(_WIN64)
-	studio::
-		ShutdownTasksRuntimeBridge();
-
-	studio::
-		ShutdownStudioRuntimeBridge();
-
-	studio::
-		ShutdownPlatformInputBridge();
+	studio::ShutdownPlatformInputBridge();
 #endif
 	
 	ReleaseDesktopSystem();
