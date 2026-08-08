@@ -15,11 +15,14 @@ namespace studio
         DeviceRemoved
     };
 
-    [[nodiscard]] bool WantsDX11Shell() noexcept;
+    [[nodiscard]]
+    bool WantsDX11Shell() noexcept;
 
-    [[nodiscard]] StudioGraphicsShellResult RunDX11Shell(
-        std::uintptr_t nativeWindow) noexcept;
+    [[nodiscard]]
+    StudioGraphicsShellResult
+        RunDX11Shell() noexcept;
 
-    [[nodiscard]] const char* ToString(
+    [[nodiscard]]
+    const char* ToString(
         StudioGraphicsShellResult result) noexcept;
 }

@@ -166,6 +166,7 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <AdditionalIncludeDirectories>
         ..\Engine\Core\Public;
+        ..\Engine\Application\Public;
         ..\Engine\Math\Public;
         ..\Engine\Assets\Public;
         ..\Engine\Legacy\Public;
@@ -773,7 +774,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\RENDERING\Probes\ProbeMaster.cpp" />
     <ClCompile Include="Sources\RENDERING\World\WorldDX11.cpp" />
     <ClCompile Include="Sources\SteamHelper.cpp" />
-    <ClCompile Include="Sources\StudioRuntimeBridge.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp" />
     <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
@@ -1105,6 +1105,11 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
 
     <ProjectReference Include="..\Engine\Assets\LTS.Assets.vcxproj">
       <Project>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="..\Engine\Application\LTS.Application.vcxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
 

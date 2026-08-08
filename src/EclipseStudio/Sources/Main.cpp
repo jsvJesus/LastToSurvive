@@ -3715,11 +3715,22 @@ void game::MainLoop()
 		r3dOutToLog(
 			"[Graphics] Renderer backend: D3D11\n");
 
-		const studio::StudioGraphicsShellResult
-			dx11Result =
-				studio::RunDX11Shell(
-					reinterpret_cast<std::uintptr_t>(
-						win::hWnd));
+		/*
+		 * Старое Eternity-окно уже было создано
+		 * до входа в game::MainLoop().
+		 *
+		 * DX11 Studio больше его не использует.
+		 * Оставляем HWND существовать только до
+		 * завершения legacy bootstrap, но скрываем его.
+		 */
+		if (win::hWnd != nullptr)
+		{
+			ShowWindow(
+				win::hWnd,
+				SW_HIDE);
+		}
+
+		const studio::StudioGraphicsShellResult dx11Result = studio::RunDX11Shell();
 
 		r3dOutToLog(
 			"[Graphics] D3D11 Studio stopped: %s\n",

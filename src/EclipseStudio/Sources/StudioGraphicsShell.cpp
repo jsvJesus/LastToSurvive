@@ -10,7 +10,8 @@
 
 #include "Editors/StudioEditorUI.h"
 #include "StudioGraphicsShell.h"
-#include "StudioRuntimeBridge.h"
+
+#include <Application/Application.h>
 
 #include <Core/Log.h>
 
@@ -24,34 +25,27 @@
 
 #include <GraphicsDX11/D3D11Device.h>
 
-#include <Platform/Clock.h>
-#include <Platform/MessagePump.h>
 #include <Platform/Process.h>
+#include <Platform/Thread.h>
 #include <Platform/Window.h>
 
-#include <Runtime/Engine.h>
+#include <Runtime/EngineConfig.h>
+#include <Runtime/EngineMode.h>
 #include <Runtime/RendererBackend.h>
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string_view>
 
-extern void RegisterMsgProc(
-    bool (*proc)(UINT, WPARAM, LPARAM));
-
-extern void UnregisterMsgProc(
-    bool (*proc)(UINT, WPARAM, LPARAM));
-
 namespace
 {
+    using engine::core::LogLevel;
     using engine::graphics::GraphicsResult;
     using studio::StudioGraphicsShellResult;
-    using engine::core::LogLevel;
 
     void WriteLog(
         const LogLevel level,
@@ -104,6 +98,7 @@ namespace
                 length));
     }
 
+    [[nodiscard]]
     StudioGraphicsShellResult
         ResultFromGraphicsFailure(
             const GraphicsResult result) noexcept
@@ -127,6 +122,85 @@ namespace
         }
     }
 
+    [[nodiscard]]
+    lts::application::ApplicationDesc
+        CreateStudioApplicationDescription()
+    {
+        lts::application::ApplicationDesc
+            description;
+
+        description.title =
+            L"DX11 Studio";
+
+        description.logFileName =
+            "Studio.log";
+
+        description.width = 1600;
+        description.height = 900;
+
+        description.resizable = true;
+        description.startMaximized = false;
+        description.enableDpiAwareness = true;
+
+        description.engineConfig.applicationName =
+            "DX11 Studio";
+
+        description.engineConfig.mode =
+            engine::runtime::
+                EngineMode::Studio;
+
+        description.engineConfig.rendererBackend =
+            engine::runtime::
+                RendererBackend::D3D11;
+
+        description.engineConfig.enableValidation =
+            true;
+
+        description.engineConfig.
+            enableMainThreadChecks =
+                true;
+
+        return description;
+    }
+
+    [[nodiscard]]
+    StudioGraphicsShellResult
+        MapApplicationResult(
+            const lts::application::
+                ApplicationResult result) noexcept
+    {
+        switch (result)
+        {
+        case lts::application::
+            ApplicationResult::Success:
+
+            return
+                StudioGraphicsShellResult::
+                    Completed;
+
+        case lts::application::
+            ApplicationResult::
+                RuntimeInitializationFailed:
+
+            return
+                StudioGraphicsShellResult::
+                    RuntimeInitializationFailed;
+
+        case lts::application::
+            ApplicationResult::
+                RuntimeFrameFailed:
+
+            return
+                StudioGraphicsShellResult::
+                    FrameFailed;
+
+        default:
+            return
+                StudioGraphicsShellResult::
+                    InitializationFailed;
+        }
+    }
+
     class StudioDX11Bootstrap final
     {
     public:
@@ -143,57 +217,55 @@ namespace
         StudioDX11Bootstrap& operator=(
             const StudioDX11Bootstrap&) = delete;
 
-        [[nodiscard]] bool Initialize(
-            const std::uintptr_t nativeWindow) noexcept
+        [[nodiscard]]
+        bool Initialize(
+            engine::platform::Window&
+                window) noexcept
         {
             Shutdown();
 
-            HWND windowHandle =
+            failureResult_ =
+                StudioGraphicsShellResult::
+                    InitializationFailed;
+
+            const engine::platform::
+                NativeWindowHandle nativeWindow =
+                    window.GetNativeHandle();
+
+            if (!nativeWindow.IsValid())
+            {
+                return FailInitialization(
+                    "invalid native window",
+                    GraphicsResult::
+                        InvalidArgument);
+            }
+
+            windowHandle_ =
                 reinterpret_cast<HWND>(
-                    nativeWindow);
+                    nativeWindow.Value());
 
-            if (windowHandle == nullptr)
+            if (windowHandle_ == nullptr)
             {
                 return FailInitialization(
-                    "invalid window handle",
-                    GraphicsResult::InvalidArgument);
-            }
-
-            if (!EnableWindowResize(
-                    windowHandle))
-            {
-                return FailInitialization(
-                    "window style",
-                    GraphicsResult::BackendFailure);
-            }
-
-            window_ =
-                engine::platform::Window(
-                    engine::platform::
-                        NativeWindowHandle::
-                            FromValue(
-                                nativeWindow));
-
-            if (!window_.IsValid())
-            {
-                return FailInitialization(
-                    "platform window",
-                    GraphicsResult::InvalidArgument);
+                    "invalid Win32 window",
+                    GraphicsResult::
+                        InvalidArgument);
             }
 
             const engine::platform::WindowSize
                 clientSize =
-                    window_.GetClientSize();
+                    window.GetClientSize();
 
             if (clientSize.IsEmpty())
             {
                 return FailInitialization(
                     "window client size",
-                    GraphicsResult::InvalidArgument);
+                    GraphicsResult::
+                        InvalidArgument);
             }
 
-            engine::graphics::RenderDeviceDesc
-                deviceDesc;
+            engine::graphics::
+                RenderDeviceDesc deviceDesc;
 
             deviceDesc.backend =
                 engine::graphics::
@@ -220,18 +292,20 @@ namespace
 
             if (
                 context_ == nullptr ||
-                !context_->IsValid())
+                !context_->IsValid()
+            )
             {
                 return FailInitialization(
                     "immediate context",
-                    GraphicsResult::InvalidState);
+                    GraphicsResult::
+                        InvalidState);
             }
 
-            engine::graphics::SwapChainDesc
-                swapChainDesc;
+            engine::graphics::
+                SwapChainDesc swapChainDesc;
 
             swapChainDesc.window =
-                window_.GetNativeHandle();
+                nativeWindow;
 
             swapChainDesc.width =
                 clientSize.width;
@@ -265,14 +339,18 @@ namespace
                 return false;
             }
 
-            if (!imguiHost_.Initialize(windowHandle, device_.GetNativeDevice(), device_.GetNativeImmediateContext(), "StudioEditor.ini"))
+            if (!imguiHost_.Initialize(
+                    windowHandle_,
+                    device_.GetNativeDevice(),
+                    device_.
+                        GetNativeImmediateContext(),
+                    "StudioEditor.ini"))
             {
                 return FailInitialization(
                     "Dear ImGui",
-                    GraphicsResult::BackendFailure);
+                    GraphicsResult::
+                        BackendFailure);
             }
-
-            WriteLog(LogLevel::Information, "Editor.ImGui", "Dear ImGui initialized");
 
             width_ =
                 clientSize.width;
@@ -280,17 +358,32 @@ namespace
             height_ =
                 clientSize.height;
 
-            minimized_ = false;
-            resizePending_ = false;
-            closeRequested_ = false;
-            occluded_ = false;
+            pendingWidth_ = 0;
+            pendingHeight_ = 0;
 
-            timerResetPending_ = true;
+            resizePending_ = false;
+            minimized_ = false;
+            occluded_ = false;
 
             initialized_ = true;
 
-            WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Bootstrap initialized: %ux%u",
-                static_cast<unsigned int>(width_), static_cast<unsigned int>(height_));
+            failureResult_ =
+                StudioGraphicsShellResult::
+                    FrameFailed;
+
+            WriteFormattedLog(
+                LogLevel::Information,
+                "Graphics.DX11",
+                "Bootstrap initialized: %ux%u",
+                static_cast<unsigned int>(
+                    width_),
+                static_cast<unsigned int>(
+                    height_));
+
+            WriteLog(
+                LogLevel::Information,
+                "Editor.ImGui",
+                "Dear ImGui initialized");
 
             return true;
         }
@@ -303,7 +396,9 @@ namespace
 
             if (context_ != nullptr)
             {
-                context_->UnbindRenderTargets();
+                context_->
+                    UnbindRenderTargets();
+
                 context_->ClearState();
                 context_->Flush();
             }
@@ -316,10 +411,7 @@ namespace
 
             device_.Shutdown();
 
-            window_ =
-                engine::platform::Window();
-
-            RestoreWindowStyle();
+            windowHandle_ = nullptr;
 
             width_ = 0;
             height_ = 0;
@@ -329,14 +421,10 @@ namespace
 
             resizePending_ = false;
             minimized_ = false;
-            closeRequested_ = false;
             occluded_ = false;
-
-            timerResetPending_ = true;
         }
 
-        void OnWindowSize(
-            const WPARAM sizeType,
+        void OnResize(
             const std::uint32_t width,
             const std::uint32_t height) noexcept
         {
@@ -346,11 +434,10 @@ namespace
             }
 
             if (
-                sizeType == SIZE_MINIMIZED ||
                 width == 0 ||
-                height == 0)
+                height == 0
+            )
             {
-                minimized_ = true;
                 return;
             }
 
@@ -358,52 +445,35 @@ namespace
             pendingHeight_ = height;
 
             resizePending_ = true;
-
-            if (minimized_)
-            {
-                timerResetPending_ = true;
-            }
-
             minimized_ = false;
         }
 
-        void RequestClose() noexcept
+        void OnMinimized() noexcept
         {
-            closeRequested_ = true;
+            minimized_ = true;
         }
 
-        [[nodiscard]] bool
-            IsCloseRequested() const noexcept
+        void OnRestored() noexcept
         {
-            return closeRequested_;
+            minimized_ = false;
+            occluded_ = false;
         }
 
-        [[nodiscard]] bool
-            ShouldWaitForMessage() const noexcept
+        [[nodiscard]]
+        bool IsOccluded() const noexcept
         {
-            return
-                minimized_ ||
-                occluded_;
+            return occluded_;
         }
 
-        [[nodiscard]] bool
-            ConsumeTimerReset() noexcept
-        {
-            const bool reset =
-                timerResetPending_;
-
-            timerResetPending_ = false;
-
-            return reset;
-        }
-
-        [[nodiscard]] StudioGraphicsShellResult
+        [[nodiscard]]
+        StudioGraphicsShellResult
             GetFailureResult() const noexcept
         {
             return failureResult_;
         }
 
-        [[nodiscard]] bool RenderFrame() noexcept
+        [[nodiscard]]
+        bool RenderFrame() noexcept
         {
             if (!initialized_)
             {
@@ -488,8 +558,8 @@ namespace
                     result);
             }
 
-            const engine::graphics::ClearColor
-                clearColor
+            const engine::graphics::
+                ClearColor clearColor
                 {
                     0.025f,
                     0.035f,
@@ -532,14 +602,16 @@ namespace
                     result);
             }
 
-            engine::graphics::PresentStatus
-                presentStatus =
+            engine::graphics::
+                PresentStatus presentStatus =
                     engine::graphics::
-                        PresentStatus::Presented;
+                        PresentStatus::
+                            Presented;
 
             imguiHost_.BeginFrame();
 
-            studio::editor::DrawEditorUI();
+            studio::editor::
+                DrawEditorUI();
 
             imguiHost_.Render();
 
@@ -586,34 +658,34 @@ namespace
                 break;
             }
 
-            if (occluded_)
-            {
-                occluded_ = false;
-                timerResetPending_ = true;
-            }
+            occluded_ = false;
 
             return true;
         }
 
-        [[nodiscard]] bool ProcessNativeMessage(const UINT message, const WPARAM wordParameter, const LPARAM longParameter) noexcept
+        [[nodiscard]]
+        bool ProcessNativeMessage(
+            void* const nativeWindow,
+            const std::uint32_t message,
+            const std::uintptr_t wordParameter,
+            const std::intptr_t longParameter) noexcept
         {
             if (!imguiHost_.IsInitialized())
             {
                 return false;
             }
 
-            return imguiHost_.ProcessNativeMessage(
-                windowHandle_,
-                static_cast<std::uint32_t>(
-                    message),
-                static_cast<std::uintptr_t>(
-                    wordParameter),
-                static_cast<std::intptr_t>(
-                    longParameter));
+            return
+                imguiHost_.ProcessNativeMessage(
+                    nativeWindow,
+                    message,
+                    wordParameter,
+                    longParameter);
         }
 
     private:
-        [[nodiscard]] bool CreateDepthBuffer(
+        [[nodiscard]]
+        bool CreateDepthBuffer(
             const std::uint32_t width,
             const std::uint32_t height) noexcept
         {
@@ -663,7 +735,8 @@ namespace
             depthBuffer_ = {};
         }
 
-        [[nodiscard]] bool Resize(
+        [[nodiscard]]
+        bool Resize(
             const std::uint32_t width,
             const std::uint32_t height) noexcept
         {
@@ -671,19 +744,22 @@ namespace
 
             if (
                 width == 0 ||
-                height == 0)
+                height == 0
+            )
             {
                 return true;
             }
 
             if (
                 width == width_ &&
-                height == height_)
+                height == height_
+            )
             {
                 return true;
             }
 
-            context_->UnbindRenderTargets();
+            context_->
+                UnbindRenderTargets();
 
             DestroyDepthBuffer();
 
@@ -710,128 +786,79 @@ namespace
             width_ = width;
             height_ = height;
 
-            WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Backbuffer resized: %ux%u",
-                static_cast<unsigned int>(width_), static_cast<unsigned int>(height_));
+            WriteFormattedLog(
+                LogLevel::Information,
+                "Graphics.DX11",
+                "Backbuffer resized: %ux%u",
+                static_cast<unsigned int>(
+                    width_),
+                static_cast<unsigned int>(
+                    height_));
 
             return true;
         }
 
-        [[nodiscard]] bool
-            EnableWindowResize(
-                HWND windowHandle) noexcept
+        [[nodiscard]]
+        bool FailInitialization(
+            const char* const phase,
+            const GraphicsResult result) noexcept
         {
-            windowHandle_ = windowHandle;
+            failureResult_ =
+                StudioGraphicsShellResult::
+                    InitializationFailed;
 
-            originalWindowStyle_ =
-                GetWindowLongPtr(
-                    windowHandle_,
-                    GWL_STYLE);
-
-            const LONG_PTR newStyle =
-                originalWindowStyle_ |
-                WS_THICKFRAME |
-                WS_MAXIMIZEBOX;
-
-            if (newStyle == originalWindowStyle_)
-            {
-                return true;
-            }
-
-            SetLastError(
-                ERROR_SUCCESS);
-
-            const LONG_PTR previousStyle =
-                SetWindowLongPtr(
-                    windowHandle_,
-                    GWL_STYLE,
-                    newStyle);
-
-            if (
-                previousStyle == 0 &&
-                GetLastError() != ERROR_SUCCESS)
-            {
-                windowHandle_ = nullptr;
-
-                return false;
-            }
-
-            styleChanged_ = true;
-
-            SetWindowPos(
-                windowHandle_,
-                nullptr,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOMOVE |
-                SWP_NOSIZE |
-                SWP_NOZORDER |
-                SWP_NOACTIVATE |
-                SWP_FRAMECHANGED);
-
-            return true;
-        }
-
-        void RestoreWindowStyle() noexcept
-        {
-            if (
-                styleChanged_ &&
-                windowHandle_ != nullptr)
-            {
-                SetWindowLongPtr(
-                    windowHandle_,
-                    GWL_STYLE,
-                    originalWindowStyle_);
-
-                SetWindowPos(
-                    windowHandle_,
-                    nullptr,
-                    0,
-                    0,
-                    0,
-                    0,
-                    SWP_NOMOVE |
-                    SWP_NOSIZE |
-                    SWP_NOZORDER |
-                    SWP_NOACTIVATE |
-                    SWP_FRAMECHANGED);
-            }
-
-            windowHandle_ = nullptr;
-            originalWindowStyle_ = 0;
-            styleChanged_ = false;
-        }
-
-        [[nodiscard]] bool FailInitialization(
-        const char* phase,
-        const GraphicsResult result) noexcept
-        {
-            WriteFormattedLog(LogLevel::Error, "Graphics.DX11", "Initialization failed at %s: %s", phase,
-                engine::graphics::ToString(result));
+            WriteFormattedLog(
+                LogLevel::Error,
+                "Graphics.DX11",
+                "Initialization failed at %s: %s",
+                phase,
+                engine::graphics::
+                    ToString(result));
 
             Shutdown();
 
             return false;
         }
 
-        [[nodiscard]] bool FailFrame(const char* phase, const GraphicsResult result) noexcept
+        [[nodiscard]]
+        bool FailFrame(
+            const char* const phase,
+            const GraphicsResult result) noexcept
         {
-            WriteFormattedLog(LogLevel::Error, "Graphics.DX11", "Frame failed at %s: %s", phase,
-                engine::graphics::ToString(result));
+            failureResult_ =
+                ResultFromGraphicsFailure(
+                    result);
 
-            failureResult_ = ResultFromGraphicsFailure(result);
+            WriteFormattedLog(
+                LogLevel::Error,
+                "Graphics.DX11",
+                "Frame failed at %s: %s",
+                phase,
+                engine::graphics::
+                    ToString(result));
 
             return false;
         }
 
     private:
-        engine::platform::Window window_;
-        engine::ui::ImGuiHost imguiHost_;
-        engine::graphics::d3d11::D3D11Device device_;
-        engine::graphics::CommandContext* context_ = nullptr;
-        std::unique_ptr<engine::graphics::SwapChain>swapChain_;
-        engine::graphics::TextureHandle depthBuffer_;
+        engine::ui::ImGuiHost
+            imguiHost_;
+
+        engine::graphics::d3d11::
+            D3D11Device device_;
+
+        engine::graphics::
+            CommandContext* context_ =
+                nullptr;
+
+        std::unique_ptr<
+            engine::graphics::SwapChain>
+                swapChain_;
+
+        engine::graphics::TextureHandle
+            depthBuffer_;
+
+        HWND windowHandle_ = nullptr;
 
         std::uint32_t width_ = 0;
         std::uint32_t height_ = 0;
@@ -842,71 +869,162 @@ namespace
         bool initialized_ = false;
         bool resizePending_ = false;
         bool minimized_ = false;
-        bool closeRequested_ = false;
         bool occluded_ = false;
 
-        bool timerResetPending_ = true;
-
-        HWND windowHandle_ = nullptr;
-
-        LONG_PTR originalWindowStyle_ = 0;
-
-        bool styleChanged_ = false;
-
-        StudioGraphicsShellResult failureResult_ =
-            StudioGraphicsShellResult::
-                FrameFailed;
+        StudioGraphicsShellResult
+            failureResult_ =
+                StudioGraphicsShellResult::
+                    InitializationFailed;
     };
 
-    StudioDX11Bootstrap*
-        g_activeDX11Bootstrap =
-            nullptr;
-
-    bool StudioDX11MessageProc(const UINT message, const WPARAM wParam, const LPARAM lParam)
+    class StudioApplication final
+        : public lts::application::Application
     {
-        if (g_activeDX11Bootstrap == nullptr)
+    public:
+        StudioApplication()
+            : Application(
+                CreateStudioApplicationDescription())
         {
-            return false;
         }
 
-        const bool handledByEditorUI =
-            g_activeDX11Bootstrap->
-                ProcessNativeMessage(
+        [[nodiscard]]
+        StudioGraphicsShellResult
+            GetShellResult() const noexcept
+        {
+            return shellResult_;
+        }
+
+    protected:
+        [[nodiscard]]
+        lts::application::ApplicationResult
+            OnInitialize() noexcept override
+        {
+            if (!bootstrap_.Initialize(
+                    GetWindow()))
+            {
+                shellResult_ =
+                    bootstrap_.
+                        GetFailureResult();
+
+                return
+                    lts::application::
+                        ApplicationResult::
+                            ClientInitializationFailed;
+            }
+
+            shellResult_ =
+                StudioGraphicsShellResult::
+                    Completed;
+
+            return
+                lts::application::
+                    ApplicationResult::
+                        Success;
+        }
+
+        void OnShutdown() noexcept override
+        {
+            bootstrap_.Shutdown();
+        }
+
+        void OnUpdate(
+            const double) noexcept override
+        {
+            if (bootstrap_.IsOccluded())
+            {
+                engine::platform::
+                    SleepForMilliseconds(16);
+            }
+        }
+
+        void OnRender() noexcept override
+        {
+            if (
+                shellResult_ !=
+                StudioGraphicsShellResult::
+                    Completed
+            )
+            {
+                return;
+            }
+
+            if (!bootstrap_.RenderFrame())
+            {
+                shellResult_ =
+                    bootstrap_.
+                        GetFailureResult();
+
+                RequestExit();
+            }
+        }
+
+        void OnEvent(
+            const lts::application::
+                ApplicationEvent& event) noexcept override
+        {
+            switch (event.type)
+            {
+            case lts::application::
+                ApplicationEventType::Resize:
+
+                bootstrap_.OnResize(
+                    event.width,
+                    event.height);
+
+                break;
+
+            case lts::application::
+                ApplicationEventType::Minimized:
+
+                bootstrap_.OnMinimized();
+
+                break;
+
+            case lts::application::
+                ApplicationEventType::Restored:
+
+                bootstrap_.OnRestored();
+
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        [[nodiscard]]
+        bool OnNativeMessage(
+            void* const nativeWindow,
+            const std::uint32_t message,
+            const std::uintptr_t wordParameter,
+            const std::intptr_t longParameter) noexcept override
+        {
+            return
+                bootstrap_.ProcessNativeMessage(
+                    nativeWindow,
                     message,
-                    wParam,
-                    lParam);
-
-        switch (message)
-        {
-        case WM_SIZE:
-            g_activeDX11Bootstrap->
-                OnWindowSize(
-                    wParam,
-                    static_cast<std::uint32_t>(
-                        LOWORD(lParam)),
-                    static_cast<std::uint32_t>(
-                        HIWORD(lParam)));
-
-            return false;
-
-        case WM_CLOSE:
-        case WM_DESTROY:
-            g_activeDX11Bootstrap->
-                RequestClose();
-
-            return true;
-
-        default:
-            return handledByEditorUI;
+                    wordParameter,
+                    longParameter);
         }
-    }
+
+    private:
+        StudioDX11Bootstrap bootstrap_;
+
+        StudioGraphicsShellResult
+            shellResult_ =
+                StudioGraphicsShellResult::
+                    InitializationFailed;
+    };
 }
 
 namespace studio
 {
     bool WantsDX11Shell() noexcept
     {
-        return engine::platform::HasCurrentProcessArgument(L"-dx11");
+        return
+            engine::platform::
+                HasCurrentProcessArgument(
+                    L"-dx11");
     }
 
     const char* ToString(
@@ -914,27 +1032,39 @@ namespace studio
     {
         switch (result)
         {
-        case StudioGraphicsShellResult::NotRequested:
+        case StudioGraphicsShellResult::
+            NotRequested:
+
             return "NotRequested";
 
-        case StudioGraphicsShellResult::Completed:
+        case StudioGraphicsShellResult::
+            Completed:
+
             return "Completed";
 
         case StudioGraphicsShellResult::
             InitializationFailed:
+
             return "InitializationFailed";
 
         case StudioGraphicsShellResult::
             RuntimeInitializationFailed:
+
             return "RuntimeInitializationFailed";
 
-        case StudioGraphicsShellResult::FrameFailed:
+        case StudioGraphicsShellResult::
+            FrameFailed:
+
             return "FrameFailed";
 
-        case StudioGraphicsShellResult::DeviceLost:
+        case StudioGraphicsShellResult::
+            DeviceLost:
+
             return "DeviceLost";
 
-        case StudioGraphicsShellResult::DeviceRemoved:
+        case StudioGraphicsShellResult::
+            DeviceRemoved:
+
             return "DeviceRemoved";
 
         default:
@@ -942,8 +1072,8 @@ namespace studio
         }
     }
 
-    StudioGraphicsShellResult RunDX11Shell(
-        const std::uintptr_t nativeWindow) noexcept
+    StudioGraphicsShellResult
+        RunDX11Shell() noexcept
     {
         if (!WantsDX11Shell())
         {
@@ -952,198 +1082,48 @@ namespace studio
                     NotRequested;
         }
 
-        WriteLog(LogLevel::Information, "Graphics", "Renderer backend: D3D11");
+        WriteLog(
+            LogLevel::Information,
+            "Graphics",
+            "Starting native DX11 Studio application");
 
-        /*
-         * Сначала Runtime получает выбранный backend.
-         * Затем создаётся конкретный GraphicsDX11 backend.
-         */
-        if (!InitializeStudioRuntimeBridge(
-                engine::runtime::
-                    RendererBackend::D3D11))
+        try
         {
-            WriteLog(LogLevel::Error, "Graphics.DX11", "Runtime initialization failed");
+            StudioApplication application;
 
-            return StudioGraphicsShellResult::RuntimeInitializationFailed;
-        }
+            const lts::application::
+                ApplicationResult applicationResult =
+                    application.Run();
 
-        engine::runtime::Engine*
-            runtimeEngine =
-                TryGetRuntimeEngine();
+            const StudioGraphicsShellResult
+                shellResult =
+                    application.
+                        GetShellResult();
 
-        if (
-            runtimeEngine == nullptr ||
-            !runtimeEngine->IsInitialized())
-        {
-            ShutdownStudioRuntimeBridge();
+            if (
+                shellResult !=
+                StudioGraphicsShellResult::
+                    Completed
+            )
+            {
+                return shellResult;
+            }
 
             return
-                StudioGraphicsShellResult::
-                    RuntimeInitializationFailed;
+                MapApplicationResult(
+                    applicationResult);
         }
-
-        StudioDX11Bootstrap bootstrap;
-
-        if (!bootstrap.Initialize(
-                nativeWindow))
+        catch (...)
         {
-            ShutdownStudioRuntimeBridge();
+            WriteLog(
+                LogLevel::Critical,
+                "Graphics.DX11",
+                "Unhandled exception while "
+                "creating Studio application");
 
             return
                 StudioGraphicsShellResult::
                     InitializationFailed;
         }
-
-        g_activeDX11Bootstrap =
-            &bootstrap;
-
-        RegisterMsgProc(
-            &StudioDX11MessageProc);
-
-        HWND windowHandle =
-            reinterpret_cast<HWND>(
-                nativeWindow);
-
-        ShowWindow(
-            windowHandle,
-            SW_SHOW);
-
-        UpdateWindow(
-            windowHandle);
-
-        StudioGraphicsShellResult finalResult =
-            StudioGraphicsShellResult::
-                Completed;
-
-        bool running = true;
-
-        engine::platform::Clock::Tick
-            previousTime =
-                engine::platform::Clock::Now();
-
-        bool timerValid =
-            previousTime != 0;
-
-        while (running)
-        {
-            if (bootstrap.ShouldWaitForMessage())
-            {
-                (void)engine::platform::
-                    MessagePump::
-                        WaitForMessage();
-            }
-
-            const auto messages =
-                engine::platform::
-                    MessagePump::
-                        ProcessPendingMessages();
-
-            if (
-                messages.quitRequested ||
-                bootstrap.IsCloseRequested())
-            {
-                break;
-            }
-
-            const engine::platform::Clock::Tick
-                currentTime =
-                    engine::platform::
-                        Clock::Now();
-
-            double deltaSeconds = 0.0;
-
-            if (bootstrap.ConsumeTimerReset())
-            {
-                timerValid = false;
-            }
-
-            if (
-                timerValid &&
-                currentTime != 0)
-            {
-                deltaSeconds =
-                    engine::platform::
-                        Clock::
-                            ElapsedSeconds(
-                                previousTime,
-                                currentTime);
-            }
-
-            if (
-                !std::isfinite(
-                    deltaSeconds) ||
-                deltaSeconds < 0.0)
-            {
-                deltaSeconds = 0.0;
-            }
-
-            deltaSeconds =
-                (std::min)(
-                    deltaSeconds,
-                    0.25);
-
-            previousTime =
-                currentTime;
-
-            timerValid =
-                currentTime != 0;
-
-            if (!runtimeEngine->BeginFrame(
-                    deltaSeconds))
-            {
-                WriteLog(LogLevel::Error, "Runtime", "DX11 BeginFrame failed");
-
-                finalResult = StudioGraphicsShellResult::FrameFailed;
-
-                break;
-            }
-
-            const bool frameSucceeded =
-                bootstrap.RenderFrame();
-
-            const bool endFrameSucceeded =
-                runtimeEngine->EndFrame();
-
-            if (!frameSucceeded)
-            {
-                finalResult =
-                    bootstrap.GetFailureResult();
-
-                break;
-            }
-
-            if (!endFrameSucceeded)
-            {
-                WriteLog(LogLevel::Error, "Runtime", "DX11 EndFrame failed");
-
-                finalResult = StudioGraphicsShellResult::FrameFailed;
-
-                break;
-            }
-        }
-
-        UnregisterMsgProc(
-            &StudioDX11MessageProc);
-
-        g_activeDX11Bootstrap =
-            nullptr;
-
-        /*
-         * Сначала освобождаем GraphicsDX11:
-         *
-         * RT bindings
-         * depth
-         * swap chain
-         * device
-         *
-         * После этого Runtime.
-         */
-        bootstrap.Shutdown();
-
-        ShutdownStudioRuntimeBridge();
-
-        WriteFormattedLog(LogLevel::Information, "Graphics.DX11", "Bootstrap stopped: %s", ToString(finalResult));
-
-        return finalResult;
     }
 }
