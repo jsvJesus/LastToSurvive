@@ -173,80 +173,117 @@ namespace engine::platform
         return GetExecutablePath();
     }
 
-    bool HasCurrentProcessArgument(const std::wstring_view argument) noexcept
+    bool HasCurrentProcessArgument(
+        const std::wstring_view argument) noexcept
     {
         if (argument.empty())
         {
             return false;
         }
 
-        const wchar_t* const commandLine =
+        const wchar_t* commandLine =
             ::GetCommandLineW();
 
         if (
             commandLine == nullptr ||
-            commandLine[0] == L'\0'
+            *commandLine == L'\0'
         )
         {
             return false;
         }
 
-        int argumentCount = 0;
+        const wchar_t* cursor = commandLine;
 
-        LPWSTR* const arguments =
-            ::CommandLineToArgvW(
-                commandLine,
-                &argumentCount);
-
-        if (arguments == nullptr)
+        while (*cursor != L'\0')
         {
-            return false;
-        }
-
-        bool found = false;
-
-        for (
-            int index = 0;
-            index < argumentCount;
-            ++index
-        )
-        {
-            const wchar_t* const currentArgument =
-                arguments[index];
-
-            if (currentArgument == nullptr)
+            while (
+                *cursor == L' ' ||
+                *cursor == L'\t'
+            )
             {
-                continue;
+                ++cursor;
             }
 
-            const std::wstring_view current(
-                currentArgument);
-
-            if (current.size() != argument.size())
+            if (*cursor == L'\0')
             {
-                continue;
+                break;
             }
 
-            const int comparison =
+            bool quoted = false;
+
+            if (*cursor == L'"')
+            {
+                quoted = true;
+                ++cursor;
+            }
+
+            const wchar_t* tokenBegin =
+                cursor;
+
+            while (*cursor != L'\0')
+            {
+                if (
+                    quoted &&
+                    *cursor == L'"'
+                )
+                {
+                    break;
+                }
+
+                if (
+                    !quoted &&
+                    (
+                        *cursor == L' ' ||
+                        *cursor == L'\t'
+                    )
+                )
+                {
+                    break;
+                }
+
+                ++cursor;
+            }
+
+            const std::wstring_view token(
+                tokenBegin,
+                static_cast<std::size_t>(
+                    cursor - tokenBegin));
+
+            if (
+                token.size() ==
+                    argument.size() &&
                 ::CompareStringOrdinal(
-                    current.data(),
+                    token.data(),
                     static_cast<int>(
-                        current.size()),
+                        token.size()),
                     argument.data(),
                     static_cast<int>(
                         argument.size()),
-                    TRUE);
-
-            if (comparison == CSTR_EQUAL)
+                    TRUE) == CSTR_EQUAL
+            )
             {
-                found = true;
-                break;
+                return true;
+            }
+
+            if (
+                quoted &&
+                *cursor == L'"'
+            )
+            {
+                ++cursor;
+            }
+
+            while (
+                *cursor != L'\0' &&
+                *cursor != L' ' &&
+                *cursor != L'\t'
+            )
+            {
+                ++cursor;
             }
         }
 
-        ::LocalFree(arguments);
-
-        return found;
+        return false;
     }
 
     const char* ToString(
@@ -268,10 +305,9 @@ namespace engine::platform
         }
     }
 
-    Process::Process(
-        const ProcessStartInfo& startInfo)
+    Process::Process(const ProcessStartInfo& startInfo)
     {
-        Start(startInfo);
+        (void)Start(startInfo);
     }
 
     Process::~Process() noexcept
