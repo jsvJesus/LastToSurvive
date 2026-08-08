@@ -190,8 +190,9 @@
         ..\..\External\SLikeNet\Source;
         ..\..\External\SLikeNet\Source\include;
         ..\..\External\RmlUI\Include;
-        .\..\External\dxsdk\Include;
-        .\..\External\DearImGui;
+        ..\..\External\dxsdk\Include;
+        ..\Engine\ImGui\Public;
+        ..\..\External\DearImGui;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>
@@ -603,6 +604,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\Editors\ParticleEditor.cpp" />
     <ClCompile Include="Sources\Editors\ParticleEditorUndoSubsystem.cpp" />
     <ClCompile Include="Sources\Editors\RoadEditor.cpp" />
+    <ClCompile Include="Sources\Editors\StudioEditorUI.cpp" />
     <ClCompile Include="Sources\Editors\Terrain2Editor.cpp" />
     <ClCompile Include="Sources\Editors\TerrainMods.cpp" />
     <ClCompile Include="Sources\Editors\Tool_AxisControl.cpp" />
@@ -874,6 +876,7 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClInclude Include="Sources\Editors\ObjectManipulator3d.h" />
     <ClInclude Include="Sources\Editors\ParticleEditorUndoSubsystem.h" />
     <ClInclude Include="Sources\Editors\RoadEditor.h" />
+    <ClInclude Include="Sources\Editors\StudioEditorUI.h" />
     <ClInclude Include="Sources\Editors\Terrain2Editor.h" />
     <ClInclude Include="Sources\Editors\TerrainMods.h" />
     <ClInclude Include="Sources\Editors\Tool_AxisControl.h" />
@@ -1124,17 +1127,26 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
       <Project>{F2A9D6C4-7B31-4E88-A5D2-1C9F603B74E6}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    
     <ProjectReference Include="..\Engine\Graphics\LTS.Graphics.vcxproj">
       <Project>{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    
     <ProjectReference Include="..\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj">
       <Project>{91B4D7E8-3C6A-4A72-9F50-2D8E1B6C4A37}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    
     <ProjectReference Include="..\Engine\Renderer\LTS.Renderer.vcxproj">
       <Project>{7A8D95E1-8F42-4CC1-A52B-513947E62D10}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    
+    <ProjectReference Include="..\Engine\ImGui\LTS.ImGui.vcxproj">
+      <Project>{2F8D71A4-68C3-4D19-AE52-9417B60C35F8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

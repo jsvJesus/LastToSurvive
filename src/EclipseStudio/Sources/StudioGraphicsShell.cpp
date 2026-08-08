@@ -1,8 +1,10 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include "Editors/StudioEditorUI.h"
 #include "StudioGraphicsShell.h"
 #include "StudioRuntimeBridge.h"
+#include <ImGui/ImGuiHost.h>
 
 #include <Graphics/CommandContext.h>
 #include <Graphics/RenderDevice.h>
@@ -238,6 +240,16 @@ namespace
                 return false;
             }
 
+            if (!imguiHost_.Initialize(windowHandle, device_.GetNativeDevice(), device_.GetNativeImmediateContext(), "StudioEditor.ini"))
+            {
+                return FailInitialization(
+                    "Dear ImGui",
+                    GraphicsResult::BackendFailure);
+            }
+
+            r3dOutToLog(
+                "[Editor][ImGui] Dear ImGui initialized\n");
+
             width_ =
                 clientSize.width;
 
@@ -267,6 +279,8 @@ namespace
         void Shutdown() noexcept
         {
             initialized_ = false;
+
+            imguiHost_.Shutdown();
 
             if (context_ != nullptr)
             {
@@ -504,6 +518,12 @@ namespace
                     engine::graphics::
                         PresentStatus::Presented;
 
+            imguiHost_.BeginFrame();
+
+            studio::editor::DrawEditorUI();
+
+            imguiHost_.Render();
+
             result =
                 swapChain_->Present(
                     presentStatus);
@@ -554,6 +574,23 @@ namespace
             }
 
             return true;
+        }
+
+        [[nodiscard]] bool ProcessNativeMessage(const UINT message, const WPARAM wordParameter, const LPARAM longParameter) noexcept
+        {
+            if (!imguiHost_.IsInitialized())
+            {
+                return false;
+            }
+
+            return imguiHost_.ProcessNativeMessage(
+                windowHandle_,
+                static_cast<std::uint32_t>(
+                    message),
+                static_cast<std::uintptr_t>(
+                    wordParameter),
+                static_cast<std::intptr_t>(
+                    longParameter));
         }
 
     private:
@@ -788,22 +825,12 @@ namespace
         }
 
     private:
-        engine::platform::Window
-            window_;
-
-        engine::graphics::d3d11::
-            D3D11Device device_;
-
-        engine::graphics::
-            CommandContext* context_ =
-                nullptr;
-
-        std::unique_ptr<
-            engine::graphics::SwapChain>
-                swapChain_;
-
-        engine::graphics::TextureHandle
-            depthBuffer_;
+        engine::platform::Window window_;
+        engine::ui::ImGuiHost imguiHost_;
+        engine::graphics::d3d11::D3D11Device device_;
+        engine::graphics::CommandContext* context_ = nullptr;
+        std::unique_ptr<engine::graphics::SwapChain>swapChain_;
+        engine::graphics::TextureHandle depthBuffer_;
 
         std::uint32_t width_ = 0;
         std::uint32_t height_ = 0;
@@ -834,15 +861,19 @@ namespace
         g_activeDX11Bootstrap =
             nullptr;
 
-    bool StudioDX11MessageProc(
-        const UINT message,
-        const WPARAM wParam,
-        const LPARAM lParam)
+    bool StudioDX11MessageProc(const UINT message, const WPARAM wParam, const LPARAM lParam)
     {
         if (g_activeDX11Bootstrap == nullptr)
         {
             return false;
         }
+
+        const bool handledByEditorUI =
+            g_activeDX11Bootstrap->
+                ProcessNativeMessage(
+                    message,
+                    wParam,
+                    lParam);
 
         switch (message)
         {
@@ -865,7 +896,7 @@ namespace
             return true;
 
         default:
-            return false;
+            return handledByEditorUI;
         }
     }
 }

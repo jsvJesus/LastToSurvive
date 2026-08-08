@@ -40,6 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Renderer", "..\Engine\R
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.Application", "..\Engine\Application\LTS.Application.vcxproj", "{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LTS.ImGui", "..\Engine\ImGui\LTS.ImGui.vcxproj", "{2F8D71A4-68C3-4D19-AE52-9417B60C35F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -147,14 +149,10 @@ Global
 		{7A8D95E1-8F42-4CC1-A52B-513947E62D10}.Release|Win32.Build.0 = Release|x64
 		{7A8D95E1-8F42-4CC1-A52B-513947E62D10}.Release|x64.ActiveCfg = Release|x64
 		{7A8D95E1-8F42-4CC1-A52B-513947E62D10}.Release|x64.Build.0 = Release|x64
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Debug|Win32.Build.0 = Debug|Win32
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Final|Win32.ActiveCfg = Debug|Win32
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Final|Win32.Build.0 = Debug|Win32
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Release|Win32.ActiveCfg = Release|Win32
-		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Release|Win32.Build.0 = Release|Win32
 		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Release|x64.ActiveCfg = Release|x64
 		{3FF9CE1A-990E-4972-8CFE-8CD036FE04B8}.Release|x64.Build.0 = Release|x64
+		{2F8D71A4-68C3-4D19-AE52-9417B60C35F8}.Release|x64.ActiveCfg = Release|x64
+		{2F8D71A4-68C3-4D19-AE52-9417B60C35F8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
