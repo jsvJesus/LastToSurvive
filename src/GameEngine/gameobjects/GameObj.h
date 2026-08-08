@@ -266,8 +266,9 @@ private:
 protected:
 	// linked list pointers inside ObjectManager
 	friend class ObjectManager;
-	r3dSec_type<GameObject*, 0x1FAA913A> pNextObject;
-	r3dSec_type<GameObject*, 0x37CFDEF5> pPrevObject;
+
+	GameObject* pNextObject = nullptr;
+	GameObject* pPrevObject = nullptr;
 
 protected:
 	int				FirstUpdate;

@@ -168,28 +168,28 @@ GameObject *srv_CreateGameObject(const char* class_name, const char* load_name, 
 #if USE_VMPROTECT
   #pragma optimize("g", off)
 #endif
-static r3dSec_type<ObjectManager*, 0xFB8DA94A> g_pGameWorld = NULL;
+static ObjectManager* g_pGameWorld = nullptr;
 void GameWorld_Create()
 {
-	VMPROTECT_BeginVirtualization("GameWorld_Create()");
+	//VMPROTECT_BeginVirtualization("GameWorld_Create()");
 	r3d_assert(g_pGameWorld == NULL);
 	g_pGameWorld = new ObjectManager();
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 void GameWorld_Destroy()
 {
-	VMPROTECT_BeginVirtualization("GameWorld_Destroy()");
+	//VMPROTECT_BeginVirtualization("GameWorld_Destroy()");
 	SAFE_DELETE(g_pGameWorld);
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 ObjectManager& GameWorld()
 {
-	VMPROTECT_BeginMutation("GameWorld()");
+	//VMPROTECT_BeginMutation("GameWorld()");
 	r3d_assert(g_pGameWorld);
 	return *g_pGameWorld;
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 #if USE_VMPROTECT
   #pragma optimize("g", on)
@@ -396,7 +396,7 @@ int ObjectManager::AddObject(GameObject *obj)
 
 	// add object to linked list
 	{
-		VMPROTECT_BeginMutation("ObjectManager::AddObject-LList");
+		//VMPROTECT_BeginMutation("ObjectManager::AddObject-LList");
 
 		if( !obj->IsStatic() )
 		{
@@ -408,8 +408,8 @@ int ObjectManager::AddObject(GameObject *obj)
 			if(pLastObject) 
 			{
 				r3d_assert(pLastObject->pNextObject == NULL);
-				r3d_assert(obj->pPrevObject == NULL);
-				r3d_assert(obj->pNextObject == NULL);
+				r3d_assert(obj->pPrevObject == nullptr);
+				r3d_assert(obj->pNextObject == nullptr);
 
 				pLastObject->pNextObject = obj;
 				obj->pPrevObject = pLastObject;
@@ -417,7 +417,7 @@ int ObjectManager::AddObject(GameObject *obj)
 			pLastObject = obj;
 		}
 
-		VMPROTECT_End();
+		//VMPROTECT_End();
 	}
 
 #ifndef WO_SERVER
@@ -491,27 +491,49 @@ int ObjectManager::DeleteObject(GameObject* obj, bool call_delete)
 
 	// remove from linked list
 	{
-		VMPROTECT_BeginMutation("ObjectManager::DeleteObject-LList");
+		//VMPROTECT_BeginMutation("ObjectManager::DeleteObject-LList");
 
 		if( !obj->IsStatic() )
 		{
-			if(pFirstObject == obj)
-				pFirstObject = obj->pNextObject;
-			if(pLastObject == obj)
-				pLastObject = obj->pPrevObject;
-			if(obj->pPrevObject) {
-				r3d_assert(obj->pPrevObject->pNextObject == obj);
-				obj->pPrevObject->pNextObject = obj->pNextObject;
+			if (pFirstObject == obj)
+			{
+				pFirstObject =
+					obj->pNextObject;
 			}
-			if(obj->pNextObject) {
-				r3d_assert(obj->pNextObject->pPrevObject == obj);
-				obj->pNextObject->pPrevObject = obj->pPrevObject;
+
+			if (pLastObject == obj)
+			{
+				pLastObject =
+					obj->pPrevObject;
 			}
-			obj->pNextObject = NULL;
-			obj->pPrevObject = NULL;
+
+			if (obj->pPrevObject)
+			{
+				r3d_assert(
+					obj->pPrevObject->
+						pNextObject == obj);
+
+				obj->pPrevObject->
+					pNextObject =
+						obj->pNextObject;
+			}
+
+			if (obj->pNextObject)
+			{
+				r3d_assert(
+					obj->pNextObject->
+						pPrevObject == obj);
+
+				obj->pNextObject->
+					pPrevObject =
+						obj->pPrevObject;
+			}
+
+			obj->pNextObject = nullptr;
+			obj->pPrevObject = nullptr;
 		}
 
-		VMPROTECT_End();
+		//VMPROTECT_End();
 	}
 	
 	obj->OnDestroy();
@@ -883,7 +905,7 @@ void ObjectManager::EndFrame()
 #endif
 GameObject* ObjectManager::GetFirstObject()
 {
-	VMPROTECT_BeginMutation("ObjectManager::GetFirstObject");
+	//VMPROTECT_BeginMutation("ObjectManager::GetFirstObject");
 
 	for(GameObject* obj = pFirstObject; obj; obj = obj->pNextObject)
 	{
@@ -893,12 +915,12 @@ GameObject* ObjectManager::GetFirstObject()
 	}
 	return NULL;
 	
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 GameObject* ObjectManager::GetNextObject(const GameObject* in_obj)
 {
-	VMPROTECT_BeginMutation("ObjectManager::GetNextObject");
+	//VMPROTECT_BeginMutation("ObjectManager::GetNextObject");
 
 	for(GameObject* obj = in_obj->pNextObject; obj; obj = obj->pNextObject)
 	{
@@ -908,7 +930,7 @@ GameObject* ObjectManager::GetNextObject(const GameObject* in_obj)
 	}
 	return NULL;
 
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 #if USE_VMPROTECT
@@ -1332,7 +1354,8 @@ uint8_t getShadowSliceBit(GameObject* userObject, const r3dCamera& Cam )
 }
 
 GameObject* TreeObject = 0; // declare it here because of server
-
+
+
 void ObjectManager::DrawDebug(const r3dCamera& Cam)
 {
 	r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_ZC);
