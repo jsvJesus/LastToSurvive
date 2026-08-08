@@ -711,7 +711,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\ObjectsCode\WORLD\waterAnim\fft.cpp" />
     <ClCompile Include="Sources\ObjectsCode\WORLD\waterAnim\wavesGenerator.cpp" />
     <ClCompile Include="Sources\ObjectsCode\WORLD\WaterPlane.CPP" />
-    <ClCompile Include="Sources\PlatformInputBridge.cpp" />
     <ClCompile Include="Sources\r3dAtmosphere.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\CommonPostFX.cpp" />
     <ClCompile Include="Sources\RENDERING\Deffered\D3DMiscFunctions.cpp" />
@@ -776,9 +775,6 @@ copy /Y "$(ProjectDir)..\..\External\RmlUI\Dependencies\Bin-Dynamic\bin\freetype
     <ClCompile Include="Sources\SteamHelper.cpp" />
     <ClCompile Include="Sources\StudioRuntimeBridge.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
-    <ClCompile Include="Sources\TasksRuntimeBridge.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Sources\UIFilters\NightVisionController.cpp" />
     <ClCompile Include="Sources\UI\FrontendLegacyBridge.cpp" />
     <ClCompile Include="Sources\UI\HUDCameraEffects.cpp" />
