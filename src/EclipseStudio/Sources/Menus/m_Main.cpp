@@ -46,9 +46,9 @@ static int g_MainRmlMapScroll = 0;
 
 void SaveLevelData( char* Str );
 
-static void* ____DummyObjectConstructor()
+static AObject* ____DummyObjectConstructor()
 {
-	return NULL;
+	return nullptr;
 }
 
 bool gNewLevelCreated = false ;

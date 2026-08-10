@@ -1,11 +1,12 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "RmlSystemInterface.h"
+
+#include <Core/Log.h>
+#include <Platform/Clock.h>
 
 #include <RmlUi/Core/StringUtilities.h>
 #include <RmlUi/Core/TextInputContext.h>
 
+#include <algorithm>
 #include <imm.h>
 #include <cstring>
 #include <string>
@@ -14,8 +15,8 @@
 
 RmlSystemInterface::RmlSystemInterface()
 {
-    QueryPerformanceFrequency(&Frequency);
-    QueryPerformanceCounter(&StartTime);
+	StartTime =
+		engine::platform::Clock::Now();
 
 	CursorDefault =
 		LoadCursor(
@@ -70,37 +71,43 @@ void RmlSystemInterface::SetWindow(
 
 double RmlSystemInterface::GetElapsedTime()
 {
-    LARGE_INTEGER Current{};
-    QueryPerformanceCounter(&Current);
-
-    const double Ticks = static_cast<double>(Current.QuadPart - StartTime.QuadPart);
-    return Ticks / static_cast<double>(Frequency.QuadPart);
+	return engine::platform::Clock::ElapsedSeconds(
+		StartTime,
+		engine::platform::Clock::Now());
 }
 
 bool RmlSystemInterface::LogMessage(Rml::Log::Type type, const Rml::String& message)
 {
-    const char* TypeText = "Info";
+	engine::core::LogLevel Level =
+		engine::core::LogLevel::Information;
 
     switch (type)
     {
-    case Rml::Log::LT_ALWAYS:  TypeText = "Always"; break;
-    case Rml::Log::LT_ERROR:   TypeText = "Error"; break;
-    case Rml::Log::LT_ASSERT:  TypeText = "Assert"; break;
-    case Rml::Log::LT_WARNING: TypeText = "Warning"; break;
-    case Rml::Log::LT_INFO:    TypeText = "Info"; break;
-    case Rml::Log::LT_DEBUG:   TypeText = "Debug"; break;
+	case Rml::Log::LT_ERROR:
+		Level = engine::core::LogLevel::Error;
+		break;
+
+	case Rml::Log::LT_ASSERT:
+		Level = engine::core::LogLevel::Critical;
+		break;
+
+	case Rml::Log::LT_WARNING:
+		Level = engine::core::LogLevel::Warning;
+		break;
+
+	case Rml::Log::LT_DEBUG:
+		Level = engine::core::LogLevel::Debug;
+		break;
+
+	case Rml::Log::LT_ALWAYS:
+	case Rml::Log::LT_INFO:
     default: break;
     }
 
-    std::string Text;
-    Text.reserve(message.size() + 64);
-    Text += "[RmlUI][";
-    Text += TypeText;
-    Text += "] ";
-    Text += message;
-    Text += "\n";
-
-    OutputDebugStringA(Text.c_str());
+	engine::core::GetLogger().Write(
+		Level,
+		"RmlUI",
+		message);
 
     return true;
 }
@@ -163,7 +170,7 @@ void RmlSystemInterface::JoinPath(Rml::String& translated_path, const Rml::Strin
 
     const size_t SlashA = document_path.find_last_of('/');
     const size_t SlashB = document_path.find_last_of('\\');
-    const size_t Slash = std::max(
+    const size_t Slash = (std::max)(
         SlashA == Rml::String::npos ? 0 : SlashA,
         SlashB == Rml::String::npos ? 0 : SlashB
     );

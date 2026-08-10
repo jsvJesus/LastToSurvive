@@ -16,7 +16,7 @@ namespace engine::runtime
             EngineMode::Studio;
 
         RendererBackend rendererBackend =
-            RendererBackend::D3D9;
+            RendererBackend::D3D11;
 
         bool enableValidation = true;
 

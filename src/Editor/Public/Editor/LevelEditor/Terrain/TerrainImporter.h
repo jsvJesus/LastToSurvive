@@ -1,8 +1,10 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace engine::graphics
 {
@@ -11,6 +13,38 @@ namespace engine::graphics
 
 namespace lts::editor
 {
+    struct R16TerrainImportSettings final
+    {
+        std::filesystem::path sourcePath;
+        std::filesystem::path destinationPath;
+        std::filesystem::path layerDescriptionPath;
+        std::filesystem::path colorMapPath;
+        std::filesystem::path normalMapPath;
+        std::vector<std::filesystem::path> layerMaskPaths;
+
+        std::uint32_t width = 0U;
+        std::uint32_t height = 0U;
+        std::uint32_t splatWidth = 0U;
+        std::uint32_t splatHeight = 0U;
+        float tileSize = 1.0F;
+        float heightOffset = -256.0F;
+        float heightRange = 512.0F;
+        bool transposeAxes = false;
+        bool flipX = false;
+        bool flipY = true;
+        bool masksArePreorientedDds = false;
+    };
+
+    [[nodiscard]] bool DetectR16TerrainImportSettings(
+        const std::filesystem::path& sourcePath,
+        R16TerrainImportSettings& settings,
+        float& terrainCenterHeight,
+        std::string& status) noexcept;
+
+    [[nodiscard]] bool WriteR16TerrainAsset(
+        const R16TerrainImportSettings& settings,
+        std::string& status) noexcept;
+
     class CameraController;
     class CommandHistory;
     class SceneDocument;
@@ -44,6 +78,10 @@ namespace lts::editor
         void DetectResolution() noexcept;
 
         std::filesystem::path sourcePath_;
+        std::filesystem::path layerDescriptionPath_;
+        std::filesystem::path colorMapPath_;
+        std::filesystem::path normalMapPath_;
+        std::vector<std::filesystem::path> layerMaskPaths_;
         std::array<char, 128> outputName_{};
 
         int width_ = 0;
@@ -57,9 +95,16 @@ namespace lts::editor
         };
 
         float baseHeight_ = 0.0F;
+        float tileSize_ = 1.0F;
+        float heightOffset_ = -256.0F;
+        float heightRange_ = 512.0F;
+        std::uint32_t splatWidth_ = 0U;
+        std::uint32_t splatHeight_ = 0U;
 
+        bool transposeAxes_ = false;
         bool flipX_ = false;
         bool flipY_ = true;
+        bool masksArePreorientedDds_ = false;
         bool overwriteExisting_ = false;
         bool openRequested_ = false;
         bool importSucceeded_ = false;

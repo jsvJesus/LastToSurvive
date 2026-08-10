@@ -117,6 +117,13 @@ namespace engine::graphics::d3d11
             std::uint32_t firstIndex,
             std::int32_t baseVertex) noexcept override;
 
+        [[nodiscard]] GraphicsResult DrawIndexedInstanced(
+            std::uint32_t indexCountPerInstance,
+            std::uint32_t instanceCount,
+            std::uint32_t firstIndex,
+            std::int32_t baseVertex,
+            std::uint32_t firstInstance) noexcept override;
+
         void ClearState() noexcept override;
         void Flush() noexcept override;
 

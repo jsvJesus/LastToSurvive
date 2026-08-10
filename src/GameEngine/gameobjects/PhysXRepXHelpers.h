@@ -8,6 +8,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "foundation/PxIO.h"
+#include "foundation/PxAllocatorCallback.h"
+#include <Platform/File.h>
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -20,63 +22,87 @@ namespace physx
 }
 //////////////////////////////////////////////////////////////////////////
 
-physx::repx::RepXCollection* loadCollection(const char* inPath, PxAllocatorCallback& inCallback);
+physx::repx::RepXCollection* loadCollection(const char* inPath, physx::PxAllocatorCallback& inCallback);
 
 //////////////////////////////////////////////////////////////////////////
 
-class PhysxUserFileReadStream : public PxInputStream
+class PhysxUserFileReadStream : public physx::PxInputStream
 {
 public:
-	PhysxUserFileReadStream(const char* filename);
-	virtual                     ~PhysxUserFileReadStream();
-	virtual     PxU32			read(void* buffer, PxU32 size);
+	explicit PhysxUserFileReadStream(const char* filename)
+		: fpr(
+			engine::platform::Path(filename),
+			engine::platform::FileAccess::Read,
+			engine::platform::FileCreation::OpenExisting)
+	{
+	}
 
-	r3dFile*    fpr;	// reading stream can be used from archives
+	~PhysxUserFileReadStream() override = default;
+
+	physx::PxU32 read(void* buffer, physx::PxU32 size) override
+	{
+		const engine::platform::FileIoResult result = fpr.Read(buffer, size);
+		return static_cast<physx::PxU32>(result.bytesTransferred);
+	}
+
+	engine::platform::File fpr;
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-class PhysxUserMemoryReadStream: public PxInputStream
+class PhysxUserMemoryReadStream: public physx::PxInputStream
 {
 public:
-	PhysxUserMemoryReadStream(PxU8* data, PxU32 length);
+	PhysxUserMemoryReadStream(physx::PxU8* data, physx::PxU32 length);
 
-	PxU32		read(void* dest, PxU32 count);
-	PxU32		getLength() const;
-	void		seek(PxU32 pos);
-	PxU32		tell() const;
+	physx::PxU32	read(void* dest, physx::PxU32 count);
+	physx::PxU32	getLength() const;
+	void			seek(physx::PxU32 pos);
+	physx::PxU32	tell() const;
 
 private:
-	PxU32		mSize;
-	const PxU8*	mData;
-	PxU32		mPos;
+	physx::PxU32		mSize;
+	const physx::PxU8*	mData;
+	physx::PxU32		mPos;
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-class PhysxUserFileWriteStream: public PxOutputStream
+class PhysxUserFileWriteStream: public physx::PxOutputStream
 {
 public:
-	PhysxUserFileWriteStream(const char *fileName);
-	virtual				~PhysxUserFileWriteStream();
-	virtual		PxU32	write(const void* src, PxU32 count);
-	FILE*       fpw;	// direct writing stream
+	explicit PhysxUserFileWriteStream(const char* fileName)
+		: fpw(
+			engine::platform::Path(fileName),
+			engine::platform::FileAccess::Write,
+			engine::platform::FileCreation::CreateAlways)
+	{
+	}
+
+	~PhysxUserFileWriteStream() override = default;
+
+	physx::PxU32 write(const void* src, physx::PxU32 count) override
+	{
+		const engine::platform::FileIoResult result = fpw.Write(src, count);
+		return static_cast<physx::PxU32>(result.bytesTransferred);
+	}
+	engine::platform::File fpw;
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-class PhysxUserMemoryWriteStream: public PxOutputStream
+class PhysxUserMemoryWriteStream: public physx::PxOutputStream
 {
 public:
 				 PhysxUserMemoryWriteStream();
 	virtual		~PhysxUserMemoryWriteStream();
 
-	PxU32		write(const void* src, PxU32 count);
+	physx::PxU32	write(const void* src, physx::PxU32 count);
 
-	PxU32		getSize()	const	{ return mSize; }
-	PxU8*		getData()	const	{ return mData; }
+	physx::PxU32	getSize()	const	{ return mSize; }
+	physx::PxU8*	getData()	const	{ return mData; }
 private:
-	PxU8*		mData;
-	PxU32		mSize;
-	PxU32		mCapacity;
+	physx::PxU8*	mData;
+	physx::PxU32	mSize;
+	physx::PxU32	mCapacity;
 };

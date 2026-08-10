@@ -10,9 +10,6 @@ namespace engine::runtime
         case RendererBackend::None:
             return "none";
 
-        case RendererBackend::D3D9:
-            return "d3d9";
-
         case RendererBackend::D3D11:
             return "d3d11";
 

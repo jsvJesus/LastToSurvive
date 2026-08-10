@@ -8,6 +8,46 @@
 
 namespace lts::editor
 {
+    namespace
+    {
+        [[nodiscard]] std::filesystem::path FindBinRoot(
+            std::filesystem::path current)
+        {
+            std::error_code error;
+
+            for (;;)
+            {
+                if (current.filename() == L"bin" &&
+                    std::filesystem::is_directory(
+                        current / L"Data" / L"Shaders" / L"DX11_P1" / L"Editor",
+                        error))
+                {
+                    return current;
+                }
+
+                error.clear();
+                const std::filesystem::path nested = current / L"bin";
+
+                if (std::filesystem::is_directory(
+                        nested / L"Data" / L"Shaders" / L"DX11_P1" / L"Editor",
+                        error))
+                {
+                    return nested;
+                }
+
+                const std::filesystem::path parent = current.parent_path();
+
+                if (parent.empty() || parent == current)
+                {
+                    return {};
+                }
+
+                current = parent;
+                error.clear();
+            }
+        }
+    }
+
     bool CompileEditorShaderFile(
         const wchar_t* const shaderFileName,
         const char* const entryPoint,
@@ -40,24 +80,27 @@ namespace lts::editor
         {
             std::error_code filesystemError;
 
-            const std::filesystem::path gameRoot =
-                std::filesystem::current_path(
-                    filesystemError);
+            const std::filesystem::path workingDirectory =
+                std::filesystem::current_path(filesystemError);
 
-            if (filesystemError)
+            const std::filesystem::path binRoot =
+                FindBinRoot(workingDirectory);
+
+            if (filesystemError || binRoot.empty())
             {
                 engine::core::GetLogger().Write(
                     engine::core::LogLevel::Error,
                     category,
-                    "Failed to resolve the editor working directory.");
+                    "Failed to resolve the Studio bin working directory.");
 
                 return false;
             }
 
             const std::filesystem::path shaderPath =
-                gameRoot /
+                binRoot /
                 L"Data" /
                 L"Shaders" /
+                L"DX11_P1" /
                 L"Editor" /
                 shaderFileName;
 

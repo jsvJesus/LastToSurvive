@@ -41,9 +41,6 @@
 /bin/
 
 # Track shader sources, but never runtime shader cache
-!/bin/Data/Shaders/
-!/bin/Data/Shaders/**
-
 /bin/Data/Shaders/Cache/
 /bin/Data/Shaders/Cache/**
 /bin/Data/Shaders/TEXTURE/
@@ -166,6 +163,9 @@ packages/
 /tools/*
 !/bin/Data/
 /bin/Data/*
+
+!/bin/Data/Shaders/
+!/bin/Data/Shaders/**
 
 !/bin/Data/Rml/
 !/bin/Data/Rml/**

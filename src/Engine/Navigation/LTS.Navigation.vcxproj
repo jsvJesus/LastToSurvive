@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Final|x64"><Configuration>Final</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{F26E37A1-62DD-4EE8-9CF5-2DB31D460A71}</ProjectGuid>
+    <RootNamespace>EngineNavigation</RootNamespace>
+    <ProjectName>LTS.Navigation</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" /><ImportGroup Label="Shared" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets"><Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" /></ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="PropertySheets"><Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" /></ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup><OutDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir><IntDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir><TargetName>LTS.Navigation</TargetName></PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode><AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions><PreprocessorDefinitions>DT_POLYREF64=1;NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions><AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\..\External\recastnavigation\Recast\Include;$(ProjectDir)..\..\..\External\recastnavigation\Detour\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><PrecompiledHeader>NotUsing</PrecompiledHeader><MultiProcessorCompilation>true</MultiProcessorCompilation><Optimization>MaxSpeed</Optimization><IntrinsicFunctions>true</IntrinsicFunctions><FunctionLevelLinking>true</FunctionLevelLinking><BufferSecurityCheck>true</BufferSecurityCheck><SDLCheck>true</SDLCheck><ControlFlowGuard>Guard</ControlFlowGuard><FloatingPointModel>Precise</FloatingPointModel><DebugInformationFormat>ProgramDatabase</DebugInformationFormat><CompileAs>CompileAsCpp</CompileAs></ClCompile>
+    <Lib><OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile></Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
+    <ClCompile><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode><AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions><PreprocessorDefinitions>DT_POLYREF64=1;NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions><AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Math\Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\..\..\External\recastnavigation\Recast\Include;$(ProjectDir)..\..\..\External\recastnavigation\Detour\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><PrecompiledHeader>NotUsing</PrecompiledHeader><MultiProcessorCompilation>true</MultiProcessorCompilation><Optimization>MaxSpeed</Optimization><IntrinsicFunctions>true</IntrinsicFunctions><FunctionLevelLinking>true</FunctionLevelLinking><BufferSecurityCheck>true</BufferSecurityCheck><SDLCheck>true</SDLCheck><ControlFlowGuard>Guard</ControlFlowGuard><FloatingPointModel>Precise</FloatingPointModel><DebugInformationFormat>ProgramDatabase</DebugInformationFormat><CompileAs>CompileAsCpp</CompileAs></ClCompile>
+    <Lib><OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile></Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup><ClInclude Include="Public\Navigation\NavigationAgent.h" /><ClInclude Include="Public\Navigation\NavigationMesh.h" /></ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\NavigationAgent.cpp" />
+    <ClCompile Include="Private\NavigationMesh.cpp" />
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourAlloc.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourAssert.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourCommon.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourNavMesh.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourNavMeshBuilder.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourNavMeshQuery.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Detour\Source\DetourNode.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\Recast.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastAlloc.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastArea.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastAssert.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastContour.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastFilter.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastLayers.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastMesh.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastMeshDetail.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastRasterization.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+    <ClCompile Include="..\..\..\External\recastnavigation\Recast\Source\RecastRegion.cpp"><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Math\LTS.Math.vcxproj"><Project>{4B0FCA15-7A6E-4D89-8A47-3C1E6D2F9B50}</Project><ReferenceOutputAssembly>false</ReferenceOutputAssembly></ProjectReference>
+    <ProjectReference Include="..\Platform\LTS.Platform.vcxproj"><Project>{FE3B3E25-BDC2-476E-AB9B-6C64B70DCB91}</Project><ReferenceOutputAssembly>false</ReferenceOutputAssembly></ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" /><ImportGroup Label="ExtensionTargets" />
+</Project>

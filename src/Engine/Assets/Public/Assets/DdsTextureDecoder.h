@@ -12,7 +12,7 @@ namespace engine::assets
         // в их sRGB-вариант.
         bool forceSrgb = false;
 
-        // BC7 работает в DX11, но не поддерживается DX9 backend.
+        // BC7 is supported by the DX11 backend.
         bool allowBc7 = true;
     };
 

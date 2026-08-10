@@ -21,8 +21,8 @@ struct IDXGIFactory2;
 
 namespace engine::graphics::d3d11
 {
-    // Primary graphics backend. Unlike the temporary DX9 adapter, this class
-    // owns the native device and immediate context created during Initialize.
+    // Primary graphics backend. This class owns the native device and
+    // immediate context created during Initialize.
     class D3D11Device final : public RenderDevice
     {
     public:

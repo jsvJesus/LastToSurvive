@@ -1,220 +1,345 @@
-#ifndef	__PWAR_OBJMANAG_H
-#define	__PWAR_OBJMANAG_H
+#ifndef __PWAR_OBJMANAG_H
+#define __PWAR_OBJMANAG_H
 
 #include "GameObj.h"
 
+#include <Platform/Synchronization.h>
+
+#include <array>
+#include <cstdint>
+#include <unordered_map>
+
 enum SnapType_t
 {
-	eSnapType_Pivot,
-	eSnapType_Vertex,
+    eSnapType_Pivot,
+    eSnapType_Vertex,
 
-	eSnapType_Count
+    eSnapType_Count
 };
 
 struct SnapInfo_t
 {
-	SnapType_t	eType;
-	float		fRadius;	
+    SnapType_t eType;
+    float fRadius;
 };
-
 
 struct SnapPointResult_t
 {
-	GameObject *	pObj;
-	r3dVector		vPos;
+    GameObject* pObj;
+    r3dVector vPos;
 };
 
-struct draw_s {
-	GameObject	*obj;
-	float		distSq;
-	uint8_t		shadow_slice; // 1,2,3 bit flag
+struct draw_s
+{
+    GameObject* obj;
+    float distSq;
+    uint8_t shadow_slice; // 1,2,3 bit flag
 };
+
 #define OBJECTMANAGER_MAXOBJECTS 8192
 #define OBJECTMANAGER_MAXSTATICOBJECTS 32768
 
 #define OBJECTMANAGER_STATICBIT 0x80000000
 
 #include "sceneBox.h"
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	>	
+// Object Manager
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct ObjectIterator
 {
-	GameObject* current;
-	int staticIndex;
+    GameObject* current;
+    int staticIndex;
 };
 
 class ObjectManagerResourceHelper : public r3dIResource
 {
 public:
+    ObjectManagerResourceHelper();
+    virtual ~ObjectManagerResourceHelper();
 
-	ObjectManagerResourceHelper();
-	virtual ~ObjectManagerResourceHelper();
+    virtual void D3DCreateResource()
+    {
+    }
 
-	virtual	void		D3DCreateResource() {};
-	virtual	void		D3DReleaseResource();
+    virtual void D3DReleaseResource();
 };
 
 class ObjectManager
 {
 private:
-	typedef void (*GameObjEvent_fn)(GameObject * pObj);
+    typedef void (*GameObjEvent_fn)(
+        GameObject* pObj);
 
-	GameObjEvent_fn pObjectAddEvent;
-	GameObjEvent_fn pObjectDeleteEvent;
+    GameObjEvent_fn pObjectAddEvent;
+    GameObjEvent_fn pObjectDeleteEvent;
 
-	int				m_FrameId ;
-	SceneBox*		m_pRootBox;
-	ObjectManagerResourceHelper* m_ResourceHelper;
+    int m_FrameId;
+    SceneBox* m_pRootBox;
+    ObjectManagerResourceHelper* m_ResourceHelper;
 
-	CRITICAL_SECTION m_CS ;
+    engine::platform::Mutex m_Mutex;
 
 public:
-	bool			GetSnapPoint		( const r3dPoint2D &vCursor, const SnapInfo_t &tInfo, SnapPointResult_t &tRes );
-	void			DrawDebug(const r3dCamera& Cam);
-	void			AppendDebugBoxes();
+    bool GetSnapPoint(
+        const r3dPoint2D& vCursor,
+        const SnapInfo_t& tInfo,
+        SnapPointResult_t& tRes);
 
-	int				GetFrameId() ;
+    void DrawDebug(
+        const r3dCamera& Cam);
 
-	r3dSec_type<int, 0x1FDCFDE1> MaxObjects;
-	r3dSec_type<GameObject*, 0x0F9CD8CA> pFirstObject;
-	r3dSec_type<int, 0xFDF1CDDF> NumObjects;
-	r3dSec_type<GameObject*, 0xFF3D8CD2> pLastObject;
+    void AppendDebugBoxes();
 
-	int		bInited;
+    int GetFrameId();
 
-	r3dSec_type<int, 0xF2DEB5C0> CurObjID;
-	r3dSec_type<GameObject**, 0x3016FD4C> pObjectArray;
-	r3dSec_type<int, 0x1A4CD36C> LastFreeObject;
+    int MaxObjects = 0;
 
-	r3dSec_type<int, 0x2FACFEE3> MaxStaticObjects;
-	r3dSec_type<int, 0xFDF1CDDF> NumStaticObjects;
-	r3dSec_type<GameObject**, 0x1DC9A54C> pStaticObjectArray;
+    GameObject* pFirstObject = nullptr;
 
-	int LastStaticUpdateIdx;
+    int NumObjects = 0;
 
-	typedef std::unordered_map<DWORD, GameObject*> NetMapType;
-	NetMapType NetworkIDMap;
+    GameObject* pLastObject = nullptr;
 
-	// prolly no need to protect these - they're unimportant - used for particle
-	// shadow casting only
-	r3dTL::TFixedArray< GameObject*, 512 >	TransparentShadowCasters ;
-	int										TransparentShadowCasterCount ;
+    int bInited = 0;
 
-	r3dCamera	PrepCam;
-	r3dCamera	PrepCamInterm;
+    int CurObjID = 1;
 
-	r3dPoint3D		m_MinimapOrigin;
-	r3dPoint3D		m_MinimapSize;
+    GameObject** pObjectArray = nullptr;
+
+    int LastFreeObject = 0;
+
+    int MaxStaticObjects = 0;
+
+    int NumStaticObjects = 0;
+
+    GameObject** pStaticObjectArray = nullptr;
+
+    int LastStaticUpdateIdx;
+
+    typedef std::unordered_map<
+        std::uint32_t,
+        GameObject*>
+        NetMapType;
+
+    NetMapType NetworkIDMap;
+
+    // Used for particle shadow casting only.
+    std::array<GameObject*, 512>
+        TransparentShadowCasters{};
+
+    int TransparentShadowCasterCount;
+
+    r3dCamera PrepCam;
+    r3dCamera PrepCamInterm;
+
+    r3dPoint3D m_MinimapOrigin;
+    r3dPoint3D m_MinimapSize;
 
 #ifndef WO_SERVER
-	class BulletShellMngr* m_BulletMngr;
+    class BulletShellMngr* m_BulletMngr;
 #endif
 
-	int JustLoaded;
+    int JustLoaded;
 
-  public:
-	ObjectManager();
-	~ObjectManager();
+public:
+    ObjectManager();
+    ~ObjectManager();
 
-	int	    	Init(int MaxObjects, int MaxStaticObjects);
-	int	    	Destroy();
-	
-	void		OnResetDevice();
+    int Init(
+        int MaxObjects,
+        int MaxStaticObjects);
 
-	int			GetNumObjects() const { return NumObjects; }
+    int Destroy();
 
-	void		SetAddObjectEvent (GameObjEvent_fn pEvent);
-	void		SetDeleteObjectEvent (GameObjEvent_fn pEvent);
+    void OnResetDevice();
 
-	int	    	AddObject(GameObject *obj);
-	int	    	DeleteObject(GameObject *obj, bool call_delete=true);
+    int GetNumObjects() const
+    {
+        return NumObjects;
+    }
 
-	void		LinkObject		( GameObject* obj );
-	void		UnlinkObject	( GameObject* obj );
+    void SetAddObjectEvent(
+        GameObjEvent_fn pEvent);
 
-	int			SetDrawingOrder(GameObject *obj, int order);
+    void SetDeleteObjectEvent(
+        GameObjEvent_fn pEvent);
 
-	GameObject*	GetObject(gobjid_t ID);
-	GameObject*	GetObject(const char* name);
-	GameObject*	GetObjectByHash(uint32_t hash);
-	GameObject*	GetFirstObject();
-	GameObject*	GetNextObject(const GameObject* obj);
+    int AddObject(
+        GameObject* obj);
 
-	ObjectIterator GetFirstOfAllObjects();
-	ObjectIterator GetNextOfAllObjects( const ObjectIterator& it );
+    int DeleteObject(
+        GameObject* obj,
+        bool call_delete = true);
 
-	GameObject* GetStaticObject( int idx );
-	int			GetStaticObjectCount() const;
+    void LinkObject(
+        GameObject* obj);
 
-	GameObject*	GetNetworkObject(DWORD netID);
+    void UnlinkObject(
+        GameObject* obj);
 
-	void		GetObjectsInCube(const r3dBoundBox& box, GameObject**& result, int& objectsCount);
+    int SetDrawingOrder(
+        GameObject* obj,
+        int order);
 
-	void		StartFrame();
-	void		Update();
-	void		EndFrame();
+    GameObject* GetObject(
+        gobjid_t ID);
 
-	void		DumpObjects();
+    GameObject* GetObject(
+        const char* name);
 
-	void		PrepareSlicedShadowsInterm( const r3dCamera& Cam, D3DXPLANE (&mainFrustumPlanes)[ 6 ] );
-	void		PrepareShadowsInterm( const r3dCamera& Cam );
-	void		PrepareTransparentShadowsInterm( const r3dCamera& Cam );
-	void		Prepare( const r3dCamera& Cam );
+    GameObject* GetObjectByHash(
+        uint32_t hash);
 
-	// to force managed resources into vmem
-	void		WarmUp();
+    GameObject* GetFirstObject();
 
-	void		IssueOcclusionQueries();
+    GameObject* GetNextObject(
+        const GameObject* obj);
 
-	void		Draw( eRenderStageID DrawState );
-	void		DrawIntermediate( eRenderStageID DrawState );
+    ObjectIterator GetFirstOfAllObjects();
 
-	void		ResetObjFlags();
+    ObjectIterator GetNextOfAllObjects(
+        const ObjectIterator& it);
 
-	GameObject*	CastRay(const r3dPoint3D& pos, const r3dPoint3D& vRay, float RayLen, CollisionInfo *cInfo, int bboxonly = false);
-	GameObject*	CastMeshRay(const r3dPoint3D& pos, const r3dPoint3D& vRay, float RayLen, CollisionInfo *cInfo);
-	GameObject*	CastQuickRay(const r3dPoint3D& pos, const r3dPoint3D& vRay, float RayLen, CollisionInfo *cInfo);
-	GameObject*	CastBBoxRay(const r3dPoint3D& pos, const r3dPoint3D& vRay, float RayLen, CollisionInfo *cInfo);
+    GameObject* GetStaticObject(
+        int idx);
 
-	int			SendEvent_to_All(int event, void *data);
-	int			SendEvent_to_ObjClass(const char* name, int event, void *data);
-	int			SendEvent_to_ObjName(const char* name, int event, void *data);
-	void		RecalcIntermObjectMatrices();
-	void		RecalcObjectMatrices();
+    int GetStaticObjectCount() const;
 
-	SceneBox*	GetRoot() const ;
+    GameObject* GetNetworkObject(
+        std::uint32_t netID);
 
-	void		UpdateTransparentShadowCaster( GameObject* obj ) ;
+    void GetObjectsInCube(
+        const r3dBoundBox& box,
+        GameObject**& result,
+        int& objectsCount);
 
-	void		OnGameEnded();
+    void StartFrame();
+    void Update();
+    void EndFrame();
+
+    void DumpObjects();
+
+    void PrepareSlicedShadowsInterm(
+        const r3dCamera& Cam,
+        D3DXPLANE (&mainFrustumPlanes)[6]);
+
+    void PrepareShadowsInterm(
+        const r3dCamera& Cam);
+
+    void PrepareTransparentShadowsInterm(
+        const r3dCamera& Cam);
+
+    void Prepare(
+        const r3dCamera& Cam);
+
+    // Force managed resources into video memory.
+    void WarmUp();
+
+    void IssueOcclusionQueries();
+
+    void Draw(
+        eRenderStageID DrawState);
+
+    void DrawIntermediate(
+        eRenderStageID DrawState);
+
+    void ResetObjFlags();
+
+    GameObject* CastRay(
+        const r3dPoint3D& pos,
+        const r3dPoint3D& vRay,
+        float RayLen,
+        CollisionInfo* cInfo,
+        int bboxonly = false);
+
+    GameObject* CastMeshRay(
+        const r3dPoint3D& pos,
+        const r3dPoint3D& vRay,
+        float RayLen,
+        CollisionInfo* cInfo);
+
+    GameObject* CastQuickRay(
+        const r3dPoint3D& pos,
+        const r3dPoint3D& vRay,
+        float RayLen,
+        CollisionInfo* cInfo);
+
+    GameObject* CastBBoxRay(
+        const r3dPoint3D& pos,
+        const r3dPoint3D& vRay,
+        float RayLen,
+        CollisionInfo* cInfo);
+
+    int SendEvent_to_All(
+        int event,
+        void* data);
+
+    int SendEvent_to_ObjClass(
+        const char* name,
+        int event,
+        void* data);
+
+    int SendEvent_to_ObjName(
+        const char* name,
+        int event,
+        void* data);
+
+    void RecalcIntermObjectMatrices();
+    void RecalcObjectMatrices();
+
+    SceneBox* GetRoot() const;
+
+    void UpdateTransparentShadowCaster(
+        GameObject* obj);
+
+    void OnGameEnded();
+
 private:
-	void		DoPreparedDraw( const r3dCamera& Cam, eRenderStageID DrawState );
+    void DoPreparedDraw(
+        const r3dCamera& Cam,
+        eRenderStageID DrawState);
 
-	void		AddToTransparentShadowCasters( GameObject* obj ) ;
-	void		RemoveFromTransparentShadowCasters( GameObject* obj ) ;
+    void AddToTransparentShadowCasters(
+        GameObject* obj);
+
+    void RemoveFromTransparentShadowCasters(
+        GameObject* obj);
 };
 
-// gameworld creation/destroying/getting
+// Game world creation / destruction / access.
 extern void GameWorld_Create();
 extern void GameWorld_Destroy();
 extern ObjectManager& GameWorld();
 
-	// create game object either by ID or by name
-	//  flags:
-#define OBJ_CREATE_LOCAL	(1<<0)			// object will NOT be added to world
-#define OBJ_CREATE_DYNAMIC	(1<<1)			// object will be added to dynamic list - no collision, etc.
-#define OBJ_CREATE_SKIP_LOAD	(1<<5)			// loadname invalid.
-#define OBJ_CREATE_SKIP_POS	(1<<6)			// Pos invalid - do not call setpos
+// Object creation flags.
+#define OBJ_CREATE_LOCAL       (1 << 0)
+#define OBJ_CREATE_DYNAMIC     (1 << 1)
+#define OBJ_CREATE_SKIP_LOAD   (1 << 5)
+#define OBJ_CREATE_SKIP_POS    (1 << 6)
 
-	//  *data will be used later for passing object data to creation functions
-extern	GameObject* 	srv_CreateGameObject(int class_type, const char* load_name, const r3dPoint3D& Pos, long flags = 0, void *data = NULL);
-extern	GameObject*	srv_CreateGameObject(const char* class_name, const char* load_name, const r3dPoint3D &Pos, long flags = 0, void *data = NULL);
+extern GameObject* srv_CreateGameObject(
+    int class_type,
+    const char* load_name,
+    const r3dPoint3D& Pos,
+    long flags = 0,
+    void* data = NULL);
 
-bool		DoesShadowCullNeedRecalc() ;
-void		PrecalculateWorldMatrices(void* Data, size_t ItemStart, size_t ItemCount);
+extern GameObject* srv_CreateGameObject(
+    const char* class_name,
+    const char* load_name,
+    const r3dPoint3D& Pos,
+    long flags = 0,
+    void* data = NULL);
 
-#endif	//__PWAR_OBJMANAG_H
+bool DoesShadowCullNeedRecalc();
+
+void PrecalculateWorldMatrices(
+    void* Data,
+    size_t ItemStart,
+    size_t ItemCount);
+
+#endif // __PWAR_OBJMANAG_H

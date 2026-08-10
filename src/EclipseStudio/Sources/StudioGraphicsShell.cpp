@@ -339,6 +339,13 @@ namespace
                 return false;
             }
 
+            if (!CreateSceneColorBuffer(
+                    clientSize.width,
+                    clientSize.height))
+            {
+                return false;
+            }
+
             if (!imguiHost_.Initialize(
                     windowHandle_,
                     device_.GetNativeDevice(),
@@ -350,6 +357,15 @@ namespace
                     "Dear ImGui",
                     GraphicsResult::
                         BackendFailure);
+            }
+
+            if (!studio::editor::InitializeEditorUI(
+                    device_,
+                    nativeWindow))
+            {
+                return FailInitialization(
+                    "DX11 terrain editor",
+                    GraphicsResult::BackendFailure);
             }
 
             width_ =
@@ -392,6 +408,8 @@ namespace
         {
             initialized_ = false;
 
+            studio::editor::ShutdownEditorUI(device_);
+
             imguiHost_.Shutdown();
 
             if (context_ != nullptr)
@@ -403,6 +421,7 @@ namespace
                 context_->Flush();
             }
 
+            DestroySceneColorBuffer();
             DestroyDepthBuffer();
 
             swapChain_.reset();
@@ -496,10 +515,10 @@ namespace
             }
 
             GraphicsResult result =
-                context_->
-                    SetSwapChainRenderTarget(
-                        *swapChain_,
-                        depthBuffer_);
+                context_->SetRenderTargets(
+                    &sceneColorBuffer_,
+                    1U,
+                    depthBuffer_);
 
             if (engine::graphics::Failed(
                     result))
@@ -568,10 +587,9 @@ namespace
                 };
 
             result =
-                context_->
-                    ClearSwapChainColor(
-                        *swapChain_,
-                        clearColor);
+                context_->ClearColorTarget(
+                    sceneColorBuffer_,
+                    clearColor);
 
             if (engine::graphics::Failed(
                     result))
@@ -609,6 +627,42 @@ namespace
                             Presented;
 
             imguiHost_.BeginFrame();
+
+            result = studio::editor::RenderEditorWorld(
+                *context_,
+                width_,
+                height_);
+
+            if (engine::graphics::Failed(result))
+            {
+                return FailFrame(
+                    "terrain editor render",
+                    result);
+            }
+
+            context_->UnbindRenderTargets();
+
+            result = context_->SetSwapChainRenderTarget(*swapChain_);
+            if (engine::graphics::Failed(result))
+            {
+                return FailFrame("set post-process target", result);
+            }
+
+            result = context_->ClearSwapChainColor(*swapChain_, clearColor);
+            if (engine::graphics::Failed(result))
+            {
+                return FailFrame("clear post-process target", result);
+            }
+
+            result = studio::editor::RenderEditorColorCorrection(
+                *context_,
+                sceneColorBuffer_,
+                width_,
+                height_);
+            if (engine::graphics::Failed(result))
+            {
+                return FailFrame("color correction", result);
+            }
 
             studio::editor::
                 DrawEditorUI();
@@ -722,6 +776,42 @@ namespace
             return true;
         }
 
+        [[nodiscard]]
+        bool CreateSceneColorBuffer(
+            const std::uint32_t width,
+            const std::uint32_t height) noexcept
+        {
+            engine::graphics::TextureDesc description;
+            description.width = width;
+            description.height = height;
+            description.format =
+                engine::graphics::Format::R16G16B16A16Float;
+            description.bindFlags =
+                engine::graphics::TextureBindFlags::RenderTarget |
+                engine::graphics::TextureBindFlags::ShaderResource;
+
+            const GraphicsResult result = device_.CreateTexture(
+                description,
+                nullptr,
+                0U,
+                sceneColorBuffer_);
+            if (engine::graphics::Failed(result))
+            {
+                return FailInitialization("scene color buffer", result);
+            }
+            return true;
+        }
+
+        void DestroySceneColorBuffer() noexcept
+        {
+            if (!sceneColorBuffer_.IsValid())
+            {
+                return;
+            }
+            static_cast<void>(device_.DestroyTexture(sceneColorBuffer_));
+            sceneColorBuffer_ = {};
+        }
+
         void DestroyDepthBuffer() noexcept
         {
             if (!depthBuffer_.IsValid())
@@ -761,6 +851,7 @@ namespace
             context_->
                 UnbindRenderTargets();
 
+            DestroySceneColorBuffer();
             DestroyDepthBuffer();
 
             const GraphicsResult result =
@@ -779,6 +870,11 @@ namespace
             if (!CreateDepthBuffer(
                     width,
                     height))
+            {
+                return false;
+            }
+
+            if (!CreateSceneColorBuffer(width, height))
             {
                 return false;
             }
@@ -857,6 +953,9 @@ namespace
 
         engine::graphics::TextureHandle
             depthBuffer_;
+
+        engine::graphics::TextureHandle
+            sceneColorBuffer_;
 
         HWND windowHandle_ = nullptr;
 

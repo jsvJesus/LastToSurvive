@@ -3398,7 +3398,8 @@ namespace lts::editor
                         staticMeshRenderer_.Render(
                             *commandContext_,
                             sceneDocument_,
-                            viewProjection);
+                            viewProjection,
+                            renderCameraPosition);
                 }
 
                 if (!engine::graphics::Failed(result))

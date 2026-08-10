@@ -51,7 +51,8 @@ namespace lts::editor
         engine::graphics::GraphicsResult Render(
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
-            const DirectX::XMFLOAT4X4& viewProjection) noexcept;
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept;
 
         [[nodiscard]] bool TryGetMeshBounds(
             const std::wstring& assetPath,

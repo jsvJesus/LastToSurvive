@@ -79,8 +79,6 @@
 
 #include "Terrain2Editor.h"
 #include "../../../GameEngine/ai/NavGenerationHelpers.h"
-#include "../../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
-#include "../../../GameEngine/ai/AutodeskNav/AutodeskNavAgent.h"
 #include "../ObjectsCode/Gameplay/obj_Zombie.h"
 #include "CollectionsManager.h"
 
@@ -970,15 +968,6 @@ int LoadLevel( float startLoadingProgress )
 		GetGrassPlaneManager()->Load(r3dGameLevel::GetHomeDir());
 #endif
 	}
-
-	//------------------------------------------------------------------------	
-
-#if ENABLE_AUTODESK_NAVIGATION
-	{
-		r3dOutToLog( "gAutodeskNavMesh.Load...\n" );
-		gAutodeskNavMesh.Init();
-	}
-#endif // ENABLE_AUTODESK_NAVIGATION
 
 	//------------------------------------------------------------------------	
 
@@ -3077,9 +3066,6 @@ void Editor_Level::SaveLevel( const char* targetDir, bool showSign, bool autoSav
 	
 	r3dMaterialLibrary::UpdateDepotMaterials();
 
-#if ENABLE_AUTODESK_NAVIGATION
-	gAutodeskNavMesh.SaveBuildConfig();
-#endif
 }
 
 void
@@ -3616,10 +3602,6 @@ void Editor_Level :: Process(bool enable)
 {
 	R3DPROFILE_FUNCTION( "Editor_Level::Process" );
 
-#if ENABLE_AUTODESK_NAVIGATION
-	enable &= Nav::gNavMeshBuildComplete != 0;
-#endif
-
 	if( g_DrawSunPath )
 	{
 		void DrawSunPath();
@@ -3783,13 +3765,6 @@ void Editor_Level :: Process(bool enable)
 
 		r3dDrawBox2D(5, r3dRenderer->ScreenH-30, r3dRenderer->ScreenW-10, 25, imgui_bkgDlg);
 
-#if ENABLE_AUTODESK_NAVIGATION
-		if (Nav::gNavMeshBuildComplete == 0)
-		{
-			Nav::gDrawBuildInfo.Draw();
-		}
-		else
-#endif
 		{
 			char text[ 1024 ];
 
@@ -3843,10 +3818,6 @@ void Editor_Level :: Process(bool enable)
 		const float WI = 220.f ;
 		imgui_Static( r3dRenderer->ScreenW2 - WI * 0.5f, r3dRenderer->ScreenH2, "Saved!", WI, false, 22, false ) ;
 	}
-
-#if ENABLE_AUTODESK_NAVIGATION
-	Nav::gDrawBuildInfo.Draw();
-#endif
 
 	if( !enable )
 		return ;
@@ -7527,9 +7498,6 @@ Editor_Level::ProcessTerrain2()
 	{
 		if( editMode && imgui_lbp )
 		{
-#if ENABLE_AUTODESK_NAVIGATION
-			Nav::ResetCachedLevelGeometry();
-#endif
 			if ( ! g_pTerrain2Editor->IsUndoRecord() )
 			{
 				gTerrainHeightDirtiness.Reset( 128, 128 );
@@ -14658,7 +14626,7 @@ void Editor_Level::ProcessNavigation()
 	switch (navEditTab)
 	{
 	case 1:
-		ProcessAutodeskNavigation(SliderX, SliderY);
+		ProcessRecastNavigation(SliderX, SliderY);
 		break;
 	case 0:
 		ProcessNavigationRegions(SliderX, SliderY);
@@ -14775,154 +14743,10 @@ void Editor_Level::ProcessNavigationRegions(float SliderX, float SliderY)
 
 //////////////////////////////////////////////////////////////////////////
 
-void Editor_Level::ProcessAutodeskNavigation(float SliderX, float SliderY)
+void Editor_Level::ProcessRecastNavigation(float SliderX, float SliderY)
 {
-#if ENABLE_AUTODESK_NAVIGATION
-
-	static int selectedRegion = 0;
-	//	0 - normal mode, 1 - create agent mode, 2 - navigate agent mode
-	//	3 - create obstacle
-	//	4 - create 100 agents around the point
-	//	5 - define seed point
-	static int uiMode = 0;
-
-	static bool doReinit = false;
-	static r3dTL::TArray<AutodeskNavAgent *> testAgents;
-
-	if (uiMode == 1)
-	{
-		SliderY += imgui_Static(SliderX, SliderY, "Click on map to place test navigation agent");
-		if (imgui_lbr)
-		{
- 			AutodeskNavAgent *a = gAutodeskNavMesh.CreateNavAgent(Navigation_GetWorldCursorPos());
- 			testAgents.PushBack(a);
- 			uiMode = 0;
-		}
-	}
-	else if (uiMode == 2)
-	{
-		SliderY += imgui_Static(SliderX, SliderY, "Click on map to define navigation target");
-		if (imgui_lbr)
-		{
-			r3dPoint3D target = Navigation_GetWorldCursorPos();
-			for (uint32_t i = 0; i < testAgents.Count(); ++i)
-			{
-				testAgents[i]->StartMove(target);
-				if(Keyboard->IsPressed(kbsLeftShift)) break;
-			}
-			uiMode = 0;
-		}
-	}
-	else if (uiMode == 3)
-	{
-		SliderY += imgui_Static(SliderX, SliderY, "Click on map to define obstacle position");
-		if (imgui_lbr)
-		{
-			r3dPoint3D target = Navigation_GetWorldCursorPos();
-			r3dBoundBox bb;
-			bb.Org  = target;
-			bb.Size = r3dVector(4.0f, 4.0f, 4.0f);
-			bb.Org.x -= bb.Size.x / 2;
-			bb.Org.z -= bb.Size.z / 2;
-			
-			float rot = 0;
-			gAutodeskNavMesh.AddObstacle(bb, rot);
-			uiMode = 0;
-		}
-	}
-	else if (uiMode == 4)
-	{
-		SliderY += imgui_Static(SliderX, SliderY, "Click on map to define area of agents spawn");
-		if (imgui_lbr)
-		{
-			for (uint32_t i = 0; i < 100; ++i)
-			{
-				PxVec3 randomVec(r3dRandomFloat(), 0, r3dRandomFloat());
-				randomVec.normalize();
-				PxVec3 tp(UI_TargetPos.x, UI_TargetPos.y, UI_TargetPos.z);
-				randomVec = tp + randomVec * random(RAND_MAX) / static_cast<float>(RAND_MAX) * 20;
-				randomVec.y += 1000.0f;
-
-				PxSceneQueryFilterData filter(PxFilterData(COLLIDABLE_STATIC_MASK,0,0,0), PxSceneQueryFilterFlags(PxSceneQueryFilterFlag::eDYNAMIC|PxSceneQueryFilterFlag::eSTATIC));
-				PxSceneQueryFlags queryFlags(PxSceneQueryFlag::eIMPACT);
-				PxRaycastHit hit;
-				if (g_pPhysicsWorld->raycastSingle(randomVec, PxVec3(0, -1, 0), 20000.0f, queryFlags, hit, filter))
-				{
-					randomVec.y = hit.impact.y;
-				}
-
-				AutodeskNavAgent *a = gAutodeskNavMesh.CreateNavAgent(r3dPoint3D(randomVec.x, randomVec.y, randomVec.z));
-				testAgents.PushBack(a);
-			}
-			uiMode = 0;
-		}
-	}
-	else
-	{
-		Kaim::GeneratorParameters &gc = gAutodeskNavMesh.buildGlobalConfig;
-
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Entity Height (m)", &gc.m_entityHeight, 0.5f, 2.5f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Entity Radius (m)", &gc.m_entityRadius, 0.1f, 0.7f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Step Max (m)", &gc.m_stepMax, 0.1f, 1.5f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Slope Max (deg)", &gc.m_slopeMax, 0.1f, 90.0f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Raster Precision (m)", &gc.m_rasterPrecision, 0.01f, 1.0f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Cell size (m)", &gc.m_cellSize, 1.0f, 40.0f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "Alt. Precision (m)", &gc.m_altitudeTolerance, 0.05f, 2.0f, "%-02.02f");
-		SliderY += imgui_Value_Slider(SliderX, SliderY, "V. Sample Step (m)", &gc.m_advancedParameters.m_altitudeToleranceSamplingStep, 0.01f, 0.7f, "%-02.02f");
-
-		static int visNavMesh = 1;
-		SliderY += imgui_Checkbox(SliderX, SliderY, "Visualize Navigation Mesh", &visNavMesh, 1);
-		gAutodeskNavMesh.doDebugDraw = visNavMesh != 0;
-
-		float button2W = DEFAULT_CONTROLS_WIDTH / 2;
-		if (imgui_Button(SliderX, SliderY, button2W, DEFAULT_CONTROLS_HEIGHT, "Build Navigation Mesh"))
-		{
-			gAutodeskNavMesh.BuildForCurrentLevel();
-			doReinit = true;
-		}
-		if (imgui_Button(SliderX + button2W, SliderY, button2W, DEFAULT_CONTROLS_HEIGHT, "Export level to obj"))
-		{
-			gAutodeskNavMesh.ExportToObj();
-		}
-		SliderY += DEFAULT_CONTROLS_HEIGHT;
-		SliderY += imgui_Static(SliderX, SliderY, "Navigation test:");
-		float button3W = DEFAULT_CONTROLS_WIDTH / 3;
-
-		if (imgui_Button(SliderX, SliderY, button3W, DEFAULT_CONTROLS_HEIGHT, "Create agent"))
-		{
-			uiMode = 1;
-		}
-		if (imgui_Button(SliderX + button3W, SliderY, button3W, DEFAULT_CONTROLS_HEIGHT, "Navigate to"))
-		{
-			uiMode = 2;
-		}
-		if (imgui_Button(SliderX + button3W * 2, SliderY, button3W, DEFAULT_CONTROLS_HEIGHT, "Create obstacle"))
-		{
-			uiMode = 3;
-		}
-		SliderY += DEFAULT_CONTROLS_HEIGHT;
-		if (imgui_Button(SliderX, SliderY, button2W, DEFAULT_CONTROLS_HEIGHT, "Create 100 agents"))
-		{
-			uiMode = 4;
-		}
-		if (imgui_Button(SliderX + button2W, SliderY, button2W, DEFAULT_CONTROLS_HEIGHT, "Remove all agents"))
-		{
-			for (uint32_t i = 0; i < testAgents.Count(); ++i)
-			{
-				gAutodeskNavMesh.DeleteNavAgent(testAgents[i]);
-			}
-			testAgents.Clear();
-		}
-	}
-	
-	if (doReinit && Nav::gNavMeshBuildComplete != 0)
-	{
-		gAutodeskNavMesh.Init();
-		doReinit = false;
-		testAgents.Clear();
-	}
-
-#endif
+	(void)SliderX;
+	(void)SliderY;
 }
 
 //------------------------------------------------------------------------

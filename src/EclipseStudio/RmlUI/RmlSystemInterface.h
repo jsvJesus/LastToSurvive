@@ -2,6 +2,7 @@
 
 #include <RmlUi/Core/SystemInterface.h>
 #include <RmlUi/Core/TextInputHandler.h>
+#include <cstdint>
 #include <windows.h>
 
 class RmlSystemInterface final : public Rml::SystemInterface
@@ -32,8 +33,7 @@ public:
 	void SetCompositionCursorPosition(int cursor_pos, bool update);
 
 private:
-    LARGE_INTEGER Frequency{};
-    LARGE_INTEGER StartTime{};
+	std::uint64_t StartTime = 0;
 	HWND WindowHandle = nullptr;
 
 	HCURSOR CursorDefault = nullptr;

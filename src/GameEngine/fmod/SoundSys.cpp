@@ -1,6 +1,13 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/File.h>
+
+#include <limits>
+#include <new>
+#include <optional>
+#include <vector>
+
 #include "SoundSys.h"
 
 static	int	gNextSoundID = 5000;
@@ -43,34 +50,66 @@ CSoundSystem::~CSoundSystem()
 // define file system callbacks
 FMOD_RESULT F_CALLBACK FMOD_OpenCallback(const char* name, int unicode, unsigned int* filesize, void** handle, void** userdata)
 {
-	r3dFile* file = r3d_open(name, "rb");
-	if(!file)
+	engine::platform::File* file =
+		new (std::nothrow) engine::platform::File(
+			engine::platform::Path(name),
+			engine::platform::FileAccess::Read,
+			engine::platform::FileCreation::OpenExisting);
+	if(!file || !*file)
+	{
+		delete file;
 		return FMOD_ERR_FILE_NOTFOUND;
-	*filesize = file->size;
-	*handle = (void*)file;
+	}
+
+	const std::optional<std::uint64_t> fileSize = file->GetSize();
+	if(!fileSize || *fileSize > std::numeric_limits<unsigned int>::max())
+	{
+		delete file;
+		return FMOD_ERR_FILE_BAD;
+	}
+
+	*filesize = static_cast<unsigned int>(*fileSize);
+	*handle = file;
 
 	return FMOD_OK;
 }
 
 FMOD_RESULT F_CALLBACK FMOD_CloseCallback(void* handle, void* userdata)
 {
-	r3dFile* file = (r3dFile*)handle;
-	fclose(file);
+	engine::platform::File* file =
+		static_cast<engine::platform::File*>(handle);
+	delete file;
 
 	return FMOD_OK;
 }
 
 FMOD_RESULT F_CALLBACK FMOD_ReadCallback(void* handle, void* buffer, unsigned int sizebytes, unsigned int* bytesread, void* userdata)
 {
-	r3dFile* file = (r3dFile*)handle;
-	*bytesread = fread(buffer, 1, sizebytes, file);
+	engine::platform::File* file =
+		static_cast<engine::platform::File*>(handle);
+	if(!file || !bytesread)
+		return FMOD_ERR_INVALID_PARAM;
+
+	const engine::platform::FileIoResult result =
+		file->Read(buffer, sizebytes);
+	*bytesread = static_cast<unsigned int>(result.bytesTransferred);
+	if(!result)
+		return FMOD_ERR_FILE_DISKEJECTED;
+
 	return FMOD_OK;
 }
 
 FMOD_RESULT F_CALLBACK FMOD_SeekCallback(void* handle, unsigned int pos, void* userdata)
 {
-	r3dFile* file = (r3dFile*)handle;
-	fseek(file, pos, SEEK_SET);
+	engine::platform::File* file =
+		static_cast<engine::platform::File*>(handle);
+	if(
+		!file ||
+		!file->Seek(pos, engine::platform::FileSeekOrigin::Begin)
+	)
+	{
+		return FMOD_ERR_FILE_COULDNOTSEEK;
+	}
 	
 	return FMOD_OK;
 }
@@ -255,28 +294,42 @@ int CSoundSystem::LoadSoundEffects(const char *basedir, const char *fname)
 	sprintf(full_name, "%s\\%s", basedir, fname);
 	r3dOutToLog("FMOD: LoadSoundEffects: Loading from %s\n", full_name);
 
-	r3dFile* f = r3d_open(full_name, "rb");
-	if ( !f )
+	engine::platform::File file{
+		engine::platform::Path(full_name),
+		engine::platform::FileAccess::Read,
+		engine::platform::FileCreation::OpenExisting
+	};
+	if ( !file )
 	{
 		r3dOutToLog("Failed to open %s\n", full_name);
 		return 0;
 	}
 
+	const std::optional<std::uint64_t> fileSize = file.GetSize();
+	if(!fileSize || *fileSize > std::numeric_limits<unsigned int>::max())
+	{
+		r3dOutToLog("Invalid sound project size for %s\n", full_name);
+		return 0;
+	}
+
+	const std::size_t bufferSize = static_cast<std::size_t>(*fileSize);
+	std::vector<char> fileBuffer(bufferSize + 1);
+	const engine::platform::FileIoResult readResult =
+		file.Read(fileBuffer.data(), bufferSize);
+	if(!readResult || readResult.bytesTransferred != bufferSize)
+	{
+		r3dOutToLog("Failed to read %s\n", full_name);
+		return 0;
+	}
+	fileBuffer[bufferSize] = 0;
+
 	sprintf(full_name, "%s\\", basedir);
 	rv = FMODEventSystem->setMediaPath(full_name); SND_ERR_CHK(rv);
 
-	char* fileBuffer = new char[f->size + 1];
-	r3d_assert(fileBuffer);
-	fread(fileBuffer, f->size, 1, f);
-	fileBuffer[f->size] = 0;
-
 	FMOD_EVENT_LOADINFO loadInfo;
 	loadInfo.size = sizeof(FMOD_EVENT_LOADINFO);
-	loadInfo.loadfrommemory_length = f->size;
-	rv = FMODEventSystem->load(fileBuffer, &loadInfo, &soundsProject); SND_ERR_CHK(rv);
-
-	fclose(f);
-	delete [] fileBuffer;
+	loadInfo.loadfrommemory_length = static_cast<unsigned int>(bufferSize);
+	rv = FMODEventSystem->load(fileBuffer.data(), &loadInfo, &soundsProject); SND_ERR_CHK(rv);
 
 	// preload FSB files, as otherwise we will have lags during gameplay
 	FMOD::System *FMODSystem = 0;

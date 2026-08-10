@@ -1,6 +1,3 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "APIScaleformGfx.h"
 
 //

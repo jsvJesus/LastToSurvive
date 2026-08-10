@@ -7,7 +7,6 @@ namespace engine::graphics
     enum class GraphicsBackend : std::uint8_t
     {
         None = 0,
-        D3D9,
         D3D11
     };
 

@@ -1,6 +1,8 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/Path.h>
+
 #include "GameCommon.h"
 #include "GameObj.h"
 #include "PhysObj.h"
@@ -13,6 +15,17 @@
 #include "../TrueNature/Terrain.h"
 
 bool g_bAllowPhysObjCreation = true;
+
+namespace
+{
+	bool FileExists(const char* fileName)
+	{
+		return
+			fileName != nullptr &&
+			engine::platform::PathExists(
+				engine::platform::Path(fileName));
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -54,7 +67,7 @@ static bool CookTrianglePhysicsMesh(const PhysicsObjectConfig& params, const r3d
 		int len = strlen(collisionMeshFilename);
 		r3dscpy(&collisionMeshFilename[len-4], "_collision.sco");
 
-		if(!r3dFileExists(collisionMeshFilename))
+		if(!FileExists(collisionMeshFilename))
 			return false;
 
 		r3dMesh* collisionMesh = r3dGOBAddMesh(collisionMeshFilename, false);
@@ -80,7 +93,7 @@ static bool CookConvexPhysicsMesh(const PhysicsObjectConfig& params, const r3dMe
 		int len = strlen(collisionMeshFilename);
 		r3dscpy(&collisionMeshFilename[len-4], "_collision.sco");
 
-		if(!r3dFileExists(collisionMeshFilename))
+		if(!FileExists(collisionMeshFilename))
 			return false;
 
 		r3dMesh* collisionMesh = r3dGOBAddMesh(collisionMeshFilename, false);
@@ -327,7 +340,7 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 		int len = strlen(cookedMeshFilename);
 		r3dscpy(&cookedMeshFilename[len-3], "mpx");
 
-		if(!r3dFileExists(cookedMeshFilename))
+		if(!FileExists(cookedMeshFilename))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -360,7 +373,7 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 		r3dscpy(&rawMeshFilenamePlayerOnly[len-4], "_playerOnly.sco");
 
 		// auto cook
-		if(!r3dFileExists(cookedMeshFilename) && r3dFileExists(rawMeshFilenamePlayerOnly))
+		if(!FileExists(cookedMeshFilename) && FileExists(rawMeshFilenamePlayerOnly))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -376,10 +389,10 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 			SAFE_DELETE(playerOnlyMesh);
 		}
 
-		if(r3dFileExists(cookedMeshFilename))
+		if(FileExists(cookedMeshFilename))
 		{
 			PxTriangleMesh* playerOnlyTriangleMesh = g_pPhysicsWorld->getCookedMesh(cookedMeshFilename);
-			if(!playerOnlyTriangleMesh && r3dFileExists(rawMeshFilenamePlayerOnly))
+			if(!playerOnlyTriangleMesh && FileExists(rawMeshFilenamePlayerOnly))
 				playerOnlyTriangleMesh = LoadPlayerOnlyTriangleMeshOrRecook(cookedMeshFilename, rawMeshFilenamePlayerOnly);
 
 			if(playerOnlyTriangleMesh)
@@ -402,7 +415,7 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 		int len = strlen(cookedMeshFilename);
 		r3dscpy(&cookedMeshFilename[len-3], "cpx");
 
-		if(!r3dFileExists(cookedMeshFilename))
+		if(!FileExists(cookedMeshFilename))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -435,7 +448,7 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 		r3dscpy(&rawMeshFilenamePlayerOnly[len-4], "_playerOnly.sco");
 
 		// auto cook
-		if(!r3dFileExists(cookedMeshFilename) && r3dFileExists(rawMeshFilenamePlayerOnly))
+		if(!FileExists(cookedMeshFilename) && FileExists(rawMeshFilenamePlayerOnly))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -452,10 +465,10 @@ BasePhysicsObject* BasePhysicsObject::CreateDynamicObject(const PhysicsObjectCon
 		}
 
 
-		if(r3dFileExists(cookedMeshFilename))
+		if(FileExists(cookedMeshFilename))
 		{
 			PxConvexMesh* playerOnlyConvexMesh = g_pPhysicsWorld->getConvexMesh(cookedMeshFilename);
-			if(!playerOnlyConvexMesh && r3dFileExists(rawMeshFilenamePlayerOnly))
+			if(!playerOnlyConvexMesh && FileExists(rawMeshFilenamePlayerOnly))
 				playerOnlyConvexMesh = LoadPlayerOnlyConvexMeshOrRecook(cookedMeshFilename, rawMeshFilenamePlayerOnly);
 
 			if(playerOnlyConvexMesh)
@@ -625,7 +638,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 		int len = strlen(cookedMeshFilename);
 		r3dscpy(&cookedMeshFilename[len-3], "mpx");
 
-		if(!r3dFileExists(cookedMeshFilename))
+		if(!FileExists(cookedMeshFilename))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -639,7 +652,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 				r3dscpy(&MeshFilenameCollision[len-4], "_collision.sco");
 
 				// auto cook
-				if(r3dFileExists(MeshFilenameCollision))
+				if(FileExists(MeshFilenameCollision))
 				{
 					r3dMesh* CollisionMesh = r3dGOBAddMesh(MeshFilenameCollision, false);
 					// auto bake it
@@ -685,7 +698,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 		r3dscpy(&rawMeshFilenamePlayerOnly[len-4], "_playerOnly.sco");
 
 		// auto cook
-		if(!r3dFileExists(cookedMeshFilename) && r3dFileExists(rawMeshFilenamePlayerOnly))
+		if(!FileExists(cookedMeshFilename) && FileExists(rawMeshFilenamePlayerOnly))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -702,10 +715,10 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 		}
 
 
-		if(r3dFileExists(cookedMeshFilename))
+		if(FileExists(cookedMeshFilename))
 		{
 			PxTriangleMesh* playerOnlyTriangleMesh = g_pPhysicsWorld->getCookedMesh(cookedMeshFilename);
-			if(!playerOnlyTriangleMesh && r3dFileExists(rawMeshFilenamePlayerOnly))
+			if(!playerOnlyTriangleMesh && FileExists(rawMeshFilenamePlayerOnly))
 				playerOnlyTriangleMesh = LoadPlayerOnlyTriangleMeshOrRecook(cookedMeshFilename, rawMeshFilenamePlayerOnly);
 
 			if(playerOnlyTriangleMesh)
@@ -728,7 +741,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 		int len = strlen(cookedMeshFilename);
 		r3dscpy(&cookedMeshFilename[len-3], "cpx");
 
-		if(!r3dFileExists(cookedMeshFilename))
+		if(!FileExists(cookedMeshFilename))
 		{
 			if(params.needExplicitCollisionMesh)
 			{
@@ -738,7 +751,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 				r3dscpy(&MeshFilenameCollision[len-4], "_collision.sco");
 
 				// auto cook
-				if(r3dFileExists(MeshFilenameCollision))
+				if(FileExists(MeshFilenameCollision))
 				{
 #ifdef WO_SERVER
 					r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -792,7 +805,7 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 		r3dscpy(&rawMeshFilenamePlayerOnly[len-4], "_playerOnly.sco");
 
 		// auto cook
-		if(!r3dFileExists(cookedMeshFilename) && r3dFileExists(rawMeshFilenamePlayerOnly))
+		if(!FileExists(cookedMeshFilename) && FileExists(rawMeshFilenamePlayerOnly))
 		{
 #ifdef WO_SERVER
 			r3dOutToLog("!!!! no cooked mesh for '%s', server cannot build those!\n", cookedMeshFilename);
@@ -808,10 +821,10 @@ BasePhysicsObject* BasePhysicsObject::CreateStaticObject(const PhysicsObjectConf
 			SAFE_DELETE(playerOnlyMesh);
 		}
 
-		if(r3dFileExists(cookedMeshFilename))
+		if(FileExists(cookedMeshFilename))
 		{
 			PxConvexMesh* playerOnlyConvexMesh = g_pPhysicsWorld->getConvexMesh(cookedMeshFilename);
-			if(!playerOnlyConvexMesh && r3dFileExists(rawMeshFilenamePlayerOnly))
+			if(!playerOnlyConvexMesh && FileExists(rawMeshFilenamePlayerOnly))
 				playerOnlyConvexMesh = LoadPlayerOnlyConvexMeshOrRecook(cookedMeshFilename, rawMeshFilenamePlayerOnly);
 
 			if(playerOnlyConvexMesh)

@@ -1,6 +1,6 @@
-#include "r3dPCH.h"
-#include "stdio.h"
 #include "VersionNo.h"
+
+#include <cstdio>
 
 extern const char* versionGetString();
 
@@ -31,11 +31,22 @@ const char* versionGetString()
 {
   static char version[128];
   #ifdef _DEBUG
-    sprintf(version, "build%d(debug) (%s %s)", BUILD_VERSION, __DATE__, __TIME__);
+    std::snprintf(
+      version,
+      sizeof(version),
+      "build%d(debug) (%s %s)",
+      BUILD_VERSION,
+      __DATE__,
+      __TIME__);
   #else
-    sprintf(version, "build%d (%s %s)", BUILD_VERSION, __DATE__, __TIME__);
+    std::snprintf(
+      version,
+      sizeof(version),
+      "build%d (%s %s)",
+      BUILD_VERSION,
+      __DATE__,
+      __TIME__);
   #endif
-  
+
   return version;
 }
-		 

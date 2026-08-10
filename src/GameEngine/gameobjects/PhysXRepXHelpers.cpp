@@ -3,13 +3,19 @@
 //	Copyright (C) 2011.
 //=========================================================================
 
-#pragma once
-#include "r3dPCH.h"
-#include "r3d.h"
-
-//////////////////////////////////////////////////////////////////////////
-
 #include "PhysXRepXHelpers.h"
+
+#include "foundation/PxAssert.h"
+#include "foundation/PxMath.h"
+
+#include <cstring>
+#include <limits>
+#include <optional>
+
+using physx::PxAllocatorCallback;
+using physx::PxMin;
+using physx::PxU32;
+using physx::PxU8;
 
 #if !(defined(WO_SERVER) && defined(_WIN64))
 #include "RepX\RepX.h"
@@ -23,29 +29,53 @@
 #if defined(WO_SERVER) && defined(_WIN64)
 physx::repx::RepXCollection* loadCollection(const char* inPath, PxAllocatorCallback& inCallback)
 {
-	r3dOutToLog("RepX load skipped for server x64: %s\n", inPath);
+	(void)inPath;
+	(void)inCallback;
 	return NULL;
 }
 #else
 class MyPhysXFileBuf_ReadOnly : public PxInputData
 {
 private:
-	r3dFile* f;
+	engine::platform::File f;
+	PxU32 length;
 public:
 	MyPhysXFileBuf_ReadOnly(const char* fname)
+	: f(
+		engine::platform::Path(fname),
+		engine::platform::FileAccess::Read,
+		engine::platform::FileCreation::OpenExisting)
+	, length(0)
 	{
-		f = r3d_open(fname, "rb");
-		r3d_assert(f);
+		PX_ASSERT(f);
+
+		const std::optional<std::uint64_t> fileSize = f.GetSize();
+		if(fileSize && *fileSize <= std::numeric_limits<PxU32>::max())
+			length = static_cast<PxU32>(*fileSize);
+		else
+			PX_ASSERT(false);
 	}
 
-	virtual ~MyPhysXFileBuf_ReadOnly(void) {
-		fclose(f);
-	}
+	virtual ~MyPhysXFileBuf_ReadOnly(void) {}
 
-	virtual PxU32	getLength(void) const { return f->size; }
-	virtual void	seek(PxU32 loc) { fseek(f, loc, SEEK_SET); }
-	virtual PxU32	read(void *mem, PxU32 len) { return fread(mem, 1, len, f); }
-	virtual PxU32	tell(void) const { return ftell(f); }
+	virtual PxU32	getLength(void) const { return length; }
+	virtual void	seek(PxU32 loc)
+	{
+		(void)f.Seek(loc, engine::platform::FileSeekOrigin::Begin);
+	}
+	virtual PxU32	read(void *mem, PxU32 len)
+	{
+		const engine::platform::FileIoResult result = f.Read(mem, len);
+		return static_cast<PxU32>(result.bytesTransferred);
+	}
+	virtual PxU32	tell(void) const
+	{
+		const std::optional<std::uint64_t> position = f.GetPosition();
+		return
+			position && *position <= std::numeric_limits<PxU32>::max()
+				? static_cast<PxU32>(*position)
+				: 0;
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,30 +94,6 @@ physx::repx::RepXCollection* loadCollection(const char* inPath, PxAllocatorCallb
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-
-#if !defined(_WIN64)
-PhysxUserFileReadStream::PhysxUserFileReadStream(const char* filename) : 
-fpr(NULL)
-{
-	fpr = r3d_open(filename, "rb");
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-PhysxUserFileReadStream::~PhysxUserFileReadStream()
-{
-	if(fpr)  fclose(fpr);
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-PxU32 PhysxUserFileReadStream::read(void* buffer, PxU32 size)
-{
-	size_t w = fread(buffer, size, 1, fpr);
-	PX_ASSERT(w);
-	return w;
-}
-#endif
 
 //-------------------------------------------------------------------------
 //	PhysxUserMemoryReadStream
@@ -135,30 +141,6 @@ PxU32 PhysxUserMemoryWriteStream::write(const void* src, PxU32 size)
 //-------------------------------------------------------------------------
 //	PhysxUserFileWriteStream
 //-------------------------------------------------------------------------
-
-#if !defined(_WIN64)
-PhysxUserFileWriteStream::PhysxUserFileWriteStream(const char *fileName)
-: fpw(0)
-{
-	fpw = fopen_for_write(fileName, "wb");
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-PhysxUserFileWriteStream::~PhysxUserFileWriteStream()
-{
-	if (fpw)
-		fclose(fpw);
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-PxU32 PhysxUserFileWriteStream::write(const void* src, PxU32 count)
-{
-	PxU32 cnt = fwrite(src, count, 1, fpw);
-	return cnt;
-}
-#endif
 
 //-------------------------------------------------------------------------
 //	PhysxUserMemoryWriteStream
