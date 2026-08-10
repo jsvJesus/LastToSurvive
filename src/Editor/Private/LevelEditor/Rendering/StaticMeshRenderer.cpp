@@ -2760,19 +2760,17 @@ namespace lts::editor
         [[nodiscard]]
         bool EnsureMaterialSampler() noexcept
         {
-            if (materialSampler_.IsValid())
-            {
-                return true;
-            }
-            if (device_ == nullptr)
-            {
-                return false;
-            }
+            if (materialSampler_.IsValid()) { return true; }
+
+            if (device_ == nullptr) { return false; }
 
             engine::graphics::SamplerDesc description;
+            description.filter = engine::graphics::TextureFilter::Anisotropic;
             description.addressU = engine::graphics::TextureAddressMode::Wrap;
             description.addressV = engine::graphics::TextureAddressMode::Wrap;
             description.addressW = engine::graphics::TextureAddressMode::Wrap;
+            description.maximumAnisotropy = 16U;
+
             return engine::graphics::Succeeded(
                 device_->CreateSampler(description, materialSampler_));
         }

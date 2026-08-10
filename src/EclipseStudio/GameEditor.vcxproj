@@ -48,7 +48,7 @@
 
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Bin\</OutDir>
+    <OutDir>$(ProjectDir)..\..\bin\</OutDir>
     <IntDir>$(ProjectDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
     <TargetName>Studio</TargetName>
   </PropertyGroup>
