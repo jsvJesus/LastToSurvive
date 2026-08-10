@@ -2138,12 +2138,43 @@ namespace lts::editor
                     lighting.shadowSoftness,
                     lighting.shadowDistance,
                     0.0F};
-
-                std::vector<InstanceData> instanceUpload(
-                    MaximumInstancesPerDraw);
+                
                 std::size_t meshLoads = 0U;
-                engine::graphics::GraphicsResult result =
-                    engine::graphics::GraphicsResult::Success;
+                engine::graphics::GraphicsResult result = engine::graphics::GraphicsResult::Success;
+                engine::graphics::PipelineStateHandle boundPipeline = pipeline_;
+                std::array<engine::graphics::TextureHandle, 6U> boundMaterialTextures{};
+
+                /*
+                 * Сбрасываем material SRV один раз перед всем StaticMesh pass.
+                 * Дальше меняем только реально изменившиеся slots.
+                 */
+                result = context.UnbindShaderResources(
+                    engine::graphics::ShaderStage::Pixel,
+                    0U,
+                    boundMaterialTextures.size());
+
+                if (engine::graphics::Failed(result))
+                {
+                    return result;
+                }
+
+                /*
+                 * Все StaticMesh материалы сейчас используют один material sampler.
+                 * Биндим его один раз на весь pass.
+                 */
+                if (EnsureMaterialSampler())
+                {
+                    result = context.SetSamplers(
+                        engine::graphics::ShaderStage::Pixel,
+                        0U,
+                        &materialSampler_,
+                        1U);
+
+                    if (engine::graphics::Failed(result))
+                    {
+                        return result;
+                    }
+                }
 
                 for (VisibleBatch& batch : batches)
                 {
@@ -2197,17 +2228,10 @@ namespace lts::editor
                          firstInstance < batch.instances.size();
                          firstInstance += MaximumInstancesPerDraw)
                     {
-                        const std::size_t instanceCount = (std::min)(
-                            MaximumInstancesPerDraw,
-                            batch.instances.size() - firstInstance);
-                        std::copy_n(
-                            batch.instances.data() + firstInstance,
-                            instanceCount,
-                            instanceUpload.data());
-                        result = context.UpdateBuffer(
-                            instanceBuffer_,
-                            instanceUpload.data(),
-                            instanceUpload.size() * sizeof(InstanceData));
+                        const std::size_t instanceCount = (std::min)(MaximumInstancesPerDraw, batch.instances.size() - firstInstance);
+                        const InstanceData* const instanceData = batch.instances.data() + firstInstance;
+                        result = context.UpdateBuffer(instanceBuffer_, instanceData, instanceCount * sizeof(InstanceData));
+                        
                         if (engine::graphics::Failed(result))
                         {
                             break;
@@ -2230,7 +2254,6 @@ namespace lts::editor
                             engine::graphics::TextureHandle detailNormalTexture;
                             engine::graphics::TextureHandle emissiveTexture;
                             engine::graphics::TextureHandle specularPowerTexture;
-                            engine::graphics::SamplerHandle sampler;
                             bool transparent = false;
                             bool doubleSided = false;
                             if (submesh->materialSlot < cachedMesh->materials.size())
@@ -2248,39 +2271,35 @@ namespace lts::editor
                                 detailNormalTexture = material.detailNormalTexture;
                                 emissiveTexture = material.emissiveTexture;
                                 specularPowerTexture = material.specularPowerTexture;
-                                sampler = material.sampler;
-                                transparent = material.desc.alphaMode ==
-                                    engine::assets::MaterialAlphaMode::Blend;
+                                transparent = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Blend;
                                 doubleSided = material.desc.doubleSided;
-                                constants.materialParameters.y =
-                                    texture.IsValid() ? 1.0F : 0.0F;
-                                constants.materialParameters.z =
-                                    material.desc.alphaMode ==
-                                            engine::assets::MaterialAlphaMode::Mask
-                                        ? 1.0F
-                                        : 0.0F;
-                                constants.materialParameters.w =
-                                    material.desc.alphaCutoff;
+                                constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
+                                constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
+                                constants.materialParameters.w = material.desc.alphaCutoff;
                                 constants.legacySurfaceParameters = {
                                     material.desc.specularIntensity,
                                     material.desc.specularPower,
                                     material.desc.reflectionFactor,
-                                    material.desc.metallicFactor};
+                                    material.desc.metallicFactor
+                                };
                                 constants.legacyDetailParameters = {
                                     material.desc.normalScale,
                                     material.detailScale,
                                     material.detailAmount,
-                                    material.desc.emissiveStrength};
+                                    material.desc.emissiveStrength
+                                };
                                 constants.legacyTextureFlags = {
                                     normalTexture.IsValid() ? 1.0F : 0.0F,
                                     specularTexture.IsValid() ? 1.0F : 0.0F,
                                     detailNormalTexture.IsValid() ? 1.0F : 0.0F,
-                                    emissiveTexture.IsValid() ? 1.0F : 0.0F};
+                                    emissiveTexture.IsValid() ? 1.0F : 0.0F
+                                };
                                 constants.legacyFeatureFlags = {
                                     specularPowerTexture.IsValid() ? 1.0F : 0.0F,
                                     material.camouflage ? 1.0F : 0.0F,
                                     material.displacementEnabled ? 1.0F : 0.0F,
-                                    material.displacementValue};
+                                    material.displacementValue
+                                };
                             }
                             else
                             {
@@ -2288,27 +2307,29 @@ namespace lts::editor
                                 constants.materialParameters.y = 0.0F;
                                 constants.materialParameters.z = 0.0F;
                                 constants.materialParameters.w = 0.5F;
-                                constants.legacySurfaceParameters = {
-                                    0.0F, 32.0F, 0.0F, 0.0F};
-                                constants.legacyDetailParameters = {
-                                    1.0F, 1.0F, 0.0F, 0.0F};
+                                constants.legacySurfaceParameters = {0.0F, 32.0F, 0.0F, 0.0F};
+                                constants.legacyDetailParameters = {1.0F, 1.0F, 0.0F, 0.0F};
                                 constants.legacyTextureFlags = {};
                                 constants.legacyFeatureFlags = {};
                             }
 
-                            const engine::graphics::PipelineStateHandle selectedPipeline =
-                                transparent
-                                    ? (doubleSided
-                                           ? transparentDoubleSidedPipeline_
-                                           : transparentPipeline_)
-                                    : (doubleSided
-                                           ? doubleSidedPipeline_
-                                           : pipeline_);
-                            result = context.SetGraphicsPipeline(selectedPipeline);
-                            if (engine::graphics::Failed(result))
+                            const engine::graphics::PipelineStateHandle selectedPipeline = transparent
+                                ? (doubleSided ? transparentDoubleSidedPipeline_ : transparentPipeline_) : (doubleSided
+                                ? doubleSidedPipeline_ : pipeline_);
+                            
+                            if (selectedPipeline != boundPipeline)
                             {
-                                break;
+                                result = context.SetGraphicsPipeline(
+                                    selectedPipeline);
+
+                                if (engine::graphics::Failed(result))
+                                {
+                                    break;
+                                }
+
+                                boundPipeline = selectedPipeline;
                             }
+                            
                             result = context.UpdateBuffer(
                                 objectBuffer_,
                                 &constants,
@@ -2326,49 +2347,46 @@ namespace lts::editor
                                     detailNormalTexture,
                                     emissiveTexture,
                                     specularPowerTexture}};
-                            static_cast<void>(context.UnbindShaderResources(
-                                engine::graphics::ShaderStage::Pixel,
-                                0U,
-                                materialTextureHandles.size()));
-                            bool anyTexture = false;
-                            for (std::size_t textureSlot = 0U;
-                                 textureSlot < materialTextureHandles.size();
-                                 ++textureSlot)
+                            
+                            for (std::size_t textureSlot = 0U; textureSlot < materialTextureHandles.size(); ++textureSlot)
                             {
-                                if (!materialTextureHandles[textureSlot].IsValid())
+                                const engine::graphics::TextureHandle requestedTexture =
+                                    materialTextureHandles[textureSlot];
+
+                                if (requestedTexture ==
+                                    boundMaterialTextures[textureSlot])
                                 {
                                     continue;
                                 }
-                                anyTexture = true;
-                                result = context.SetShaderResources(
-                                    engine::graphics::ShaderStage::Pixel,
-                                    static_cast<std::uint32_t>(textureSlot),
-                                    &materialTextureHandles[textureSlot],
-                                    1U);
-                                if (engine::graphics::Failed(result)) break;
-                            }
-                            if (engine::graphics::Failed(result))
-                            {
-                                break;
-                            }
-                            if (anyTexture && sampler.IsValid())
-                            {
-                                result = context.SetSamplers(
-                                    engine::graphics::ShaderStage::Pixel,
-                                    0U,
-                                    &sampler,
-                                    1U);
+
+                                if (requestedTexture.IsValid())
+                                {
+                                    result = context.SetShaderResources(
+                                        engine::graphics::ShaderStage::Pixel,
+                                        static_cast<std::uint32_t>(textureSlot),
+                                        &requestedTexture,
+                                        1U);
+                                }
+                                else
+                                {
+                                    result = context.UnbindShaderResources(
+                                        engine::graphics::ShaderStage::Pixel,
+                                        static_cast<std::uint32_t>(textureSlot),
+                                        1U);
+                                }
+
                                 if (engine::graphics::Failed(result))
                                 {
                                     break;
                                 }
+
+                                boundMaterialTextures[textureSlot] =
+                                    requestedTexture;
                             }
-                            else
+
+                            if (engine::graphics::Failed(result))
                             {
-                                static_cast<void>(context.UnbindSamplers(
-                                    engine::graphics::ShaderStage::Pixel,
-                                    0U,
-                                    1U));
+                                break;
                             }
 
                             result = context.DrawIndexedInstanced(

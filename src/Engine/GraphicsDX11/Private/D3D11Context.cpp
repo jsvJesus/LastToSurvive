@@ -716,33 +716,96 @@ namespace engine::graphics::d3d11
         const void* const data,
         const std::size_t dataSize) noexcept
     {
-        if (!IsValid()) return GraphicsResult::InvalidState;
-        if (!buffer.IsValid() || data == nullptr || dataSize == 0U)
+        if (!IsValid())
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        if (!buffer.IsValid() ||
+            data == nullptr ||
+            dataSize == 0U)
+        {
             return GraphicsResult::InvalidArgument;
+        }
+
         const detail::D3D11BufferResource* const resource =
             resources_->GetBuffer(buffer);
-        if (resource == nullptr) return GraphicsResult::NotFound;
-        if (!resource->native || dataSize > resource->desc.byteSize ||
-            dataSize != resource->desc.byteSize)
+
+        if (resource == nullptr)
+        {
+            return GraphicsResult::NotFound;
+        }
+
+        if (!resource->native ||
+            dataSize > resource->desc.byteSize)
+        {
             return GraphicsResult::InvalidArgument;
+        }
+
         if (resource->desc.usage == ResourceUsage::Immutable)
+        {
             return GraphicsResult::InvalidArgument;
+        }
+
         if (resource->desc.usage == ResourceUsage::Staging)
+        {
             return GraphicsResult::Unsupported;
+        }
+
         if (resource->desc.usage == ResourceUsage::Dynamic)
         {
-            if (!HasAnyFlag(resource->desc.cpuAccess, CpuAccessFlags::Write))
+            if (!HasAnyFlag(
+                    resource->desc.cpuAccess,
+                    CpuAccessFlags::Write))
+            {
                 return GraphicsResult::InvalidArgument;
+            }
+
             D3D11_MAPPED_SUBRESOURCE mapped{};
-            const HRESULT result = context_->Map(resource->native.Get(), 0U,
-                D3D11_MAP_WRITE_DISCARD, 0U, &mapped);
-            if (FAILED(result)) return GraphicsResult::BackendFailure;
-            std::memcpy(mapped.pData, data, dataSize);
-            context_->Unmap(resource->native.Get(), 0U);
+
+            const HRESULT result = context_->Map(
+                resource->native.Get(),
+                0U,
+                D3D11_MAP_WRITE_DISCARD,
+                0U,
+                &mapped);
+
+            if (FAILED(result))
+            {
+                return GraphicsResult::BackendFailure;
+            }
+
+            std::memcpy(
+                mapped.pData,
+                data,
+                dataSize);
+
+            context_->Unmap(
+                resource->native.Get(),
+                0U);
+
             return GraphicsResult::Success;
         }
+
+        /*
+         * Для Default buffer пока сохраняем старое правило:
+         * UpdateSubresource обновляет весь ресурс.
+         *
+         * Частичный upload разрешаем только Dynamic buffer.
+         */
+        if (dataSize != resource->desc.byteSize)
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+
         context_->UpdateSubresource(
-            resource->native.Get(), 0U, nullptr, data, 0U, 0U);
+            resource->native.Get(),
+            0U,
+            nullptr,
+            data,
+            0U,
+            0U);
+
         return GraphicsResult::Success;
     }
 
