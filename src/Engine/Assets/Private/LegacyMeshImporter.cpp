@@ -43,6 +43,26 @@ namespace engine::assets
         constexpr std::int32_t MaximumStringLength =
             4096;
 
+        [[nodiscard]] bool HasScbSignature(
+            const std::filesystem::path& path) noexcept
+        {
+            try
+            {
+                std::ifstream input(path, std::ios::binary);
+                std::uint32_t version = 0U;
+
+                return
+                    input.read(
+                        reinterpret_cast<char*>(&version),
+                        sizeof(version)).good() &&
+                    version == LegacyScbVersion;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
         [[nodiscard]]
         std::wstring Lowercase(
             std::wstring value)
@@ -309,6 +329,7 @@ namespace engine::assets
         AssetResult LoadSco(
             const std::filesystem::path& sourcePath,
             MeshAsset& output,
+            std::vector<std::string>& materialNames,
             std::wstring& error)
         {
             std::ifstream input(sourcePath);
@@ -740,6 +761,15 @@ namespace engine::assets
             submeshes.push_back(
                 finalSubmesh);
 
+            materialNames.assign(materialSlots.size(), {});
+            for (const auto& [name, slot] : materialSlots)
+            {
+                if (slot < materialNames.size())
+                {
+                    materialNames[slot] = name;
+                }
+            }
+
             return BuildMesh(
                 vertices,
                 indices,
@@ -854,6 +884,7 @@ namespace engine::assets
         AssetResult LoadScb(
             const std::filesystem::path& sourcePath,
             MeshAsset& output,
+            std::vector<std::string>& materialNames,
             std::wstring& error)
         {
             BinaryReader reader(sourcePath);
@@ -1187,6 +1218,15 @@ namespace engine::assets
                 vertices[index] = vertex;
             }
 
+            materialNames.assign(materialSlots.size(), {});
+            for (const auto& [name, slot] : materialSlots)
+            {
+                if (slot < materialNames.size())
+                {
+                    materialNames[slot] = name;
+                }
+            }
+
             return BuildMesh(
                 vertices,
                 indices,
@@ -1313,6 +1353,64 @@ namespace engine::assets
 
             return AssetResult::Success;
         }
+
+        [[nodiscard]]
+        AssetResult SaveMaterialSlots(
+            const std::filesystem::path& meshPath,
+            const std::vector<std::string>& materialNames,
+            std::wstring& error)
+        {
+            std::filesystem::path sidecarPath = meshPath;
+            sidecarPath += L".materials";
+            std::filesystem::path temporaryPath = sidecarPath;
+            temporaryPath += L".tmp";
+
+            std::error_code filesystemError;
+            std::filesystem::remove(temporaryPath, filesystemError);
+            filesystemError.clear();
+
+            {
+                std::ofstream output(
+                    temporaryPath,
+                    std::ios::binary | std::ios::trunc);
+                if (!output)
+                {
+                    error = L"Failed to create the legacy material sidecar.";
+                    return AssetResult::IoError;
+                }
+
+                for (const std::string& name : materialNames)
+                {
+                    output.write(
+                        name.data(),
+                        static_cast<std::streamsize>(name.size()));
+                    output.put('\n');
+                }
+                output.flush();
+                if (!output.good())
+                {
+                    error = L"Failed to write the legacy material sidecar.";
+                    output.close();
+                    std::filesystem::remove(temporaryPath, filesystemError);
+                    return AssetResult::IoError;
+                }
+            }
+
+            std::filesystem::remove(sidecarPath, filesystemError);
+            filesystemError.clear();
+            std::filesystem::rename(
+                temporaryPath,
+                sidecarPath,
+                filesystemError);
+            if (filesystemError)
+            {
+                error = L"Failed to replace the legacy material sidecar.";
+                std::filesystem::remove(temporaryPath, filesystemError);
+                return AssetResult::IoError;
+            }
+
+            return AssetResult::Success;
+        }
     }
 
     bool LegacyMeshImporter::IsSupportedSource(
@@ -1360,24 +1458,27 @@ namespace engine::assets
                         wstring());
 
             MeshAsset mesh;
+            std::vector<std::string> materialNames;
 
             AssetResult loadResult =
                 AssetResult::UnsupportedFormat;
 
-            if (extension == L".sco")
+            if (extension == L".sco" && !HasScbSignature(sourcePath))
             {
                 loadResult =
                     LoadSco(
                         sourcePath,
                         mesh,
+                        materialNames,
                         error);
             }
-            else if (extension == L".scb")
+            else if (extension == L".scb" || extension == L".sco")
             {
                 loadResult =
                     LoadScb(
                         sourcePath,
                         mesh,
+                        materialNames,
                         error);
             }
             else
@@ -1393,9 +1494,19 @@ namespace engine::assets
                 return loadResult;
             }
 
-            return SaveMesh(
+            const AssetResult saveResult = SaveMesh(
                 destinationPath,
                 mesh,
+                error);
+
+            if (Failed(saveResult))
+            {
+                return saveResult;
+            }
+
+            return SaveMaterialSlots(
+                destinationPath,
+                materialNames,
                 error);
         }
         catch (const std::bad_alloc&)

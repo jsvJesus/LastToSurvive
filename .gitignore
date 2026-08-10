@@ -167,6 +167,9 @@ packages/
 !/bin/Data/
 /bin/Data/*
 
+!/bin/Data/Shaders/
+!/bin/Data/Shaders/**
+
 !/bin/Data/Rml/
 !/bin/Data/Rml/**
 

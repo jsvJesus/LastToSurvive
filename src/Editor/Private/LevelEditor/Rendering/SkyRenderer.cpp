@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <string>
@@ -45,6 +46,10 @@ namespace lts::editor
             DirectX::XMFLOAT4 groundColor{};
             DirectX::XMFLOAT4 sunDirectionSize{};
             DirectX::XMFLOAT4 sunColorIntensity{};
+            DirectX::XMFLOAT4 fogColorEnabled{};
+            DirectX::XMFLOAT4 cloudColorCoverage{};
+            DirectX::XMFLOAT4 cloudParameters{};
+            DirectX::XMFLOAT4 cloudMotion{};
         };
 
         static_assert(sizeof(SkyConstants) % 16U == 0U);
@@ -557,7 +562,43 @@ namespace lts::editor
             sun.color.x,
             sun.color.y,
             sun.color.z,
-            sun.intensity
+            environment->sunEnabled
+                ? sun.intensity
+                : 0.0F
+        };
+
+        constants.fogColorEnabled =
+        {
+            environment->fogColor[0],
+            environment->fogColor[1],
+            environment->fogColor[2],
+            environment->fogEnabled ? 1.0F : 0.0F
+        };
+
+        constants.cloudColorCoverage =
+        {
+            environment->cloudColor[0],
+            environment->cloudColor[1],
+            environment->cloudColor[2],
+            std::clamp(environment->cloudCoverage, 0.0F, 1.0F)
+        };
+
+        constants.cloudParameters =
+        {
+            std::clamp(environment->cloudDensity, 0.0F, 1.0F),
+            (std::max)(environment->cloudScale, 0.000001F),
+            (std::max)(environment->cloudHeight, 1.0F),
+            environment->cloudPlaneEnabled ? 1.0F : 0.0F
+        };
+
+        const auto now = std::chrono::steady_clock::now().time_since_epoch();
+        const float elapsedSeconds = std::chrono::duration<float>(now).count();
+        constants.cloudMotion =
+        {
+            environment->cloudSpeed[0],
+            environment->cloudSpeed[1],
+            elapsedSeconds,
+            environment->timeOfDay
         };
 
         auto result = context.UpdateBuffer(

@@ -9,8 +9,6 @@ namespace engine::graphics
         {
         case GraphicsBackend::None:
             return "None";
-        case GraphicsBackend::D3D9:
-            return "D3D9";
         case GraphicsBackend::D3D11:
             return "D3D11";
         default:

@@ -13,17 +13,22 @@
 
 #include <Windows.h>
 #include <ShObjIdl.h>
+#include <wincodec.h>
 #include <wrl/client.h>
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <cwctype>
 #include <fstream>
+#include <iomanip>
 #include <limits>
+#include <map>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -35,6 +40,33 @@ namespace lts::editor
         constexpr std::uint32_t TerrainSignature = 0x5453544CU;
         constexpr std::uint32_t TerrainVersion = 1U;
         constexpr std::uint64_t MaximumSampleCount = 268435456ULL;
+        constexpr std::uint32_t MaximumLayerCount = 18U;
+        constexpr std::uint32_t MaximumMaskCount = 6U;
+        constexpr std::uint64_t MaximumEmbeddedTextureSize =
+            512ULL * 1024ULL * 1024ULL;
+
+        struct SourceLayer final
+        {
+            std::string name;
+            std::string diffusePath;
+            std::string normalPath;
+            std::string materialType;
+            float scaleU = 16.0F;
+            float scaleV = 16.0F;
+            float specular = 0.0F;
+        };
+
+        struct SourceTerrainDescription final
+        {
+            std::uint32_t width = 0U;
+            std::uint32_t height = 0U;
+            std::uint32_t splatWidth = 0U;
+            std::uint32_t splatHeight = 0U;
+            float tileSize = 0.0F;
+            float heightOffset = 0.0F;
+            float heightScale = 0.0F;
+            std::vector<SourceLayer> layers;
+        };
 
         struct DdsPixelFormat final
         {
@@ -132,6 +164,222 @@ namespace lts::editor
             return data;
         }
 
+        std::vector<std::byte> CreateRgbaDds(
+            const std::uint32_t width,
+            const std::uint32_t height,
+            const std::vector<std::byte>& pixels)
+        {
+            constexpr std::uint32_t magic = 0x20534444U;
+            const std::uint64_t expectedSize =
+                static_cast<std::uint64_t>(width) * height * 4ULL;
+
+            if (width == 0U || height == 0U || pixels.size() != expectedSize)
+            {
+                return {};
+            }
+
+            DdsHeader header{};
+            header.width = width;
+            header.height = height;
+            header.pitch = width * 4U;
+
+            std::vector<std::byte> data(
+                sizeof(magic) + sizeof(header) + pixels.size());
+
+            std::memcpy(data.data(), &magic, sizeof(magic));
+            std::memcpy(data.data() + sizeof(magic), &header, sizeof(header));
+            std::memcpy(
+                data.data() + sizeof(magic) + sizeof(header),
+                pixels.data(),
+                pixels.size());
+
+            return data;
+        }
+
+        bool ReadFileBlob(
+            const std::filesystem::path& path,
+            std::vector<std::byte>& output)
+        {
+            std::error_code error;
+            const std::uintmax_t fileSize = std::filesystem::file_size(path, error);
+
+            if (error || fileSize == 0U || fileSize > MaximumEmbeddedTextureSize)
+            {
+                return false;
+            }
+
+            std::ifstream stream(path, std::ios::binary);
+
+            if (!stream)
+            {
+                return false;
+            }
+
+            output.resize(static_cast<std::size_t>(fileSize));
+            return static_cast<bool>(stream.read(
+                reinterpret_cast<char*>(output.data()),
+                static_cast<std::streamsize>(output.size())));
+        }
+
+        bool DecodeRgbaImage(
+            const std::filesystem::path& path,
+            std::uint32_t& width,
+            std::uint32_t& height,
+            std::vector<std::byte>& pixels)
+        {
+            const HRESULT initializeResult =
+                CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+            const bool uninitialize = SUCCEEDED(initializeResult);
+
+            Microsoft::WRL::ComPtr<IWICImagingFactory> factory;
+            Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
+            Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
+            Microsoft::WRL::ComPtr<IWICFormatConverter> converter;
+
+            HRESULT result = CoCreateInstance(
+                CLSID_WICImagingFactory,
+                nullptr,
+                CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS(&factory));
+
+            if (SUCCEEDED(result))
+            {
+                result = factory->CreateDecoderFromFilename(
+                    path.c_str(),
+                    nullptr,
+                    GENERIC_READ,
+                    WICDecodeMetadataCacheOnDemand,
+                    &decoder);
+            }
+
+            if (SUCCEEDED(result))
+            {
+                result = decoder->GetFrame(0U, &frame);
+            }
+
+            if (SUCCEEDED(result))
+            {
+                result = factory->CreateFormatConverter(&converter);
+            }
+
+            if (SUCCEEDED(result))
+            {
+                result = converter->Initialize(
+                    frame.Get(),
+                    GUID_WICPixelFormat32bppRGBA,
+                    WICBitmapDitherTypeNone,
+                    nullptr,
+                    0.0,
+                    WICBitmapPaletteTypeCustom);
+            }
+
+            UINT decodedWidth = 0U;
+            UINT decodedHeight = 0U;
+
+            if (SUCCEEDED(result))
+            {
+                result = converter->GetSize(&decodedWidth, &decodedHeight);
+            }
+
+            const std::uint64_t byteCount =
+                static_cast<std::uint64_t>(decodedWidth) * decodedHeight * 4ULL;
+
+            if (SUCCEEDED(result) &&
+                byteCount > 0U &&
+                byteCount <= MaximumEmbeddedTextureSize &&
+                byteCount <= static_cast<std::uint64_t>(UINT_MAX))
+            {
+                pixels.resize(static_cast<std::size_t>(byteCount));
+                result = converter->CopyPixels(
+                    nullptr,
+                    decodedWidth * 4U,
+                    static_cast<UINT>(byteCount),
+                    reinterpret_cast<BYTE*>(pixels.data()));
+            }
+            else if (SUCCEEDED(result))
+            {
+                result = E_INVALIDARG;
+            }
+
+            converter.Reset();
+            frame.Reset();
+            decoder.Reset();
+            factory.Reset();
+
+            if (uninitialize)
+            {
+                CoUninitialize();
+            }
+
+            if (FAILED(result))
+            {
+                pixels.clear();
+                width = 0U;
+                height = 0U;
+                return false;
+            }
+
+            width = decodedWidth;
+            height = decodedHeight;
+            return true;
+        }
+
+        bool TransformRgbaPixels(
+            std::vector<std::byte>& pixels,
+            const std::uint32_t targetWidth,
+            const std::uint32_t targetHeight,
+            const bool transposeAxes,
+            const bool flipX,
+            const bool flipY)
+        {
+            const std::uint32_t sourceWidth = transposeAxes
+                ? targetHeight
+                : targetWidth;
+            const std::uint32_t sourceHeight = transposeAxes
+                ? targetWidth
+                : targetHeight;
+            const std::uint64_t byteCount =
+                static_cast<std::uint64_t>(sourceWidth) * sourceHeight * 4ULL;
+
+            if (pixels.size() != byteCount)
+            {
+                return false;
+            }
+
+            if (!transposeAxes && !flipX && !flipY)
+            {
+                return true;
+            }
+
+            std::vector<std::byte> source = pixels;
+
+            for (std::uint32_t z = 0U; z < targetHeight; ++z)
+            {
+                for (std::uint32_t x = 0U; x < targetWidth; ++x)
+                {
+                    const std::uint32_t transformedX =
+                        flipX ? targetWidth - 1U - x : x;
+                    const std::uint32_t transformedZ =
+                        flipY ? targetHeight - 1U - z : z;
+                    const std::uint32_t sourceX =
+                        transposeAxes ? transformedZ : transformedX;
+                    const std::uint32_t sourceZ =
+                        transposeAxes ? transformedX : transformedZ;
+                    const std::size_t sourceOffset =
+                        (static_cast<std::size_t>(sourceZ) * sourceWidth + sourceX) * 4U;
+                    const std::size_t targetOffset =
+                        (static_cast<std::size_t>(z) * targetWidth + x) * 4U;
+
+                    std::memcpy(
+                        pixels.data() + targetOffset,
+                        source.data() + sourceOffset,
+                        4U);
+                }
+            }
+
+            return true;
+        }
+
         std::string ToUtf8(const std::wstring& value)
         {
             if (value.empty())
@@ -155,6 +403,376 @@ namespace lts::editor
                 result.data(), size, nullptr, nullptr);
 
             return result;
+        }
+
+        std::string Trim(std::string value)
+        {
+            const auto isWhitespace = [](const unsigned char character)
+            {
+                return std::isspace(character) != 0;
+            };
+
+            value.erase(
+                value.begin(),
+                std::find_if_not(value.begin(), value.end(), isWhitespace));
+            value.erase(
+                std::find_if_not(value.rbegin(), value.rend(), isWhitespace).base(),
+                value.end());
+
+            if (value.size() >= 2U && value.front() == '"' && value.back() == '"')
+            {
+                value = value.substr(1U, value.size() - 2U);
+            }
+
+            return value;
+        }
+
+        bool ParseFloat(const std::string& text, float& output)
+        {
+            try
+            {
+                std::size_t parsed = 0U;
+                const float value = std::stof(text, &parsed);
+
+                if (parsed != text.size() || !std::isfinite(value))
+                {
+                    return false;
+                }
+
+                output = value;
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        bool ParseUnsigned(const std::string& text, std::uint32_t& output)
+        {
+            try
+            {
+                std::size_t parsed = 0U;
+                const unsigned long value = std::stoul(text, &parsed, 10);
+
+                if (parsed != text.size() ||
+                    value > static_cast<unsigned long>(UINT32_MAX))
+                {
+                    return false;
+                }
+
+                output = static_cast<std::uint32_t>(value);
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        std::string NormalizeLogicalPath(std::string path)
+        {
+            std::replace(path.begin(), path.end(), '\\', '/');
+            return path;
+        }
+
+        bool ParseTerrainDescription(
+            const std::filesystem::path& path,
+            SourceTerrainDescription& description)
+        {
+            std::ifstream stream(path);
+
+            if (!stream)
+            {
+                return false;
+            }
+
+            SourceTerrainDescription result;
+            SourceLayer* current = nullptr;
+            bool baseFound = false;
+            std::string line;
+
+            while (std::getline(stream, line))
+            {
+                line = Trim(std::move(line));
+
+                if (line.empty() || line.rfind("//", 0U) == 0U ||
+                    line.rfind("#", 0U) == 0U)
+                {
+                    continue;
+                }
+
+                if (line == "base_layer" || line == "layer")
+                {
+                    if ((line == "base_layer" && (baseFound || !result.layers.empty())) ||
+                        (line == "layer" && !baseFound) ||
+                        result.layers.size() >= MaximumLayerCount)
+                    {
+                        return false;
+                    }
+
+                    result.layers.emplace_back();
+                    current = &result.layers.back();
+                    baseFound = true;
+                    current->name = result.layers.size() == 1U
+                        ? "Base Layer"
+                        : "Layer " + std::to_string(result.layers.size() - 1U);
+                    continue;
+                }
+
+                if (line == "{")
+                {
+                    continue;
+                }
+
+                if (line == "}")
+                {
+                    current = nullptr;
+                    continue;
+                }
+
+                const std::size_t separator = line.find(':');
+
+                if (separator == std::string::npos)
+                {
+                    continue;
+                }
+
+                const std::string key = Trim(line.substr(0U, separator));
+                const std::string value = Trim(line.substr(separator + 1U));
+
+                if (current == nullptr)
+                {
+                    if (key == "vert_count_x" && !ParseUnsigned(value, result.width))
+                    {
+                        return false;
+                    }
+                    if (key == "vert_count_z" && !ParseUnsigned(value, result.height))
+                    {
+                        return false;
+                    }
+                    if (key == "splat_res_u" && !ParseUnsigned(value, result.splatWidth))
+                    {
+                        return false;
+                    }
+                    if (key == "splat_res_v" && !ParseUnsigned(value, result.splatHeight))
+                    {
+                        return false;
+                    }
+                    if (key == "tile_unit_size" && !ParseFloat(value, result.tileSize))
+                    {
+                        return false;
+                    }
+                    if (key == "height_offset" && !ParseFloat(value, result.heightOffset))
+                    {
+                        return false;
+                    }
+                    if (key == "height_scale" && !ParseFloat(value, result.heightScale))
+                    {
+                        return false;
+                    }
+                    continue;
+                }
+
+                if (key == "name")
+                {
+                    current->name = value;
+                }
+                else if (key == "map_diffuse")
+                {
+                    current->diffusePath = NormalizeLogicalPath(value);
+                }
+                else if (key == "map_normal")
+                {
+                    current->normalPath = NormalizeLogicalPath(value);
+                }
+                else if (key == "mat_type")
+                {
+                    current->materialType = value;
+                }
+                else if (key == "scale_u" && !ParseFloat(value, current->scaleU))
+                {
+                    return false;
+                }
+                else if (key == "scale_v" && !ParseFloat(value, current->scaleV))
+                {
+                    return false;
+                }
+                else if (key == "specular" && !ParseFloat(value, current->specular))
+                {
+                    return false;
+                }
+            }
+
+            if (result.splatWidth == 0U)
+            {
+                result.splatWidth = result.width;
+            }
+
+            if (result.splatHeight == 0U)
+            {
+                result.splatHeight = result.height;
+            }
+
+            if (!baseFound || result.width < 2U || result.height < 2U ||
+                result.splatWidth == 0U || result.splatHeight == 0U ||
+                !std::isfinite(result.tileSize) || result.tileSize <= 0.0F ||
+                !std::isfinite(result.heightOffset) ||
+                !std::isfinite(result.heightScale) || result.heightScale <= 0.0F ||
+                result.layers.empty() || result.layers.size() > MaximumLayerCount)
+            {
+                return false;
+            }
+
+            description = std::move(result);
+            return true;
+        }
+
+        bool ConvertTerrain2LayerScalesToWorldTileSizes(
+            SourceTerrainDescription& description)
+        {
+            // Terrain2 stores scale_u/scale_v as the number of texture repeats
+            // across the full X extent of the terrain.  The DX11 terrain shader
+            // stores the inverse representation: the size of one repeat in
+            // world units.  Terrain2 intentionally used the X extent for both
+            // axes to keep the layer texels square on non-square terrains.
+            const float terrainWidth =
+                static_cast<float>(description.width) * description.tileSize;
+
+            if (!std::isfinite(terrainWidth) || terrainWidth <= 0.0F)
+            {
+                return false;
+            }
+
+            for (SourceLayer& layer : description.layers)
+            {
+                if (!std::isfinite(layer.scaleU) || layer.scaleU <= 0.0F ||
+                    !std::isfinite(layer.scaleV) || layer.scaleV <= 0.0F)
+                {
+                    return false;
+                }
+
+                layer.scaleU = terrainWidth / layer.scaleU;
+                layer.scaleV = terrainWidth / layer.scaleV;
+            }
+
+            return true;
+        }
+
+        bool ParseExportMetadata(
+            const std::filesystem::path& path,
+            std::uint32_t& width,
+            std::uint32_t& height,
+            float& tileSize,
+            float& minimumHeight,
+            float& maximumHeight)
+        {
+            std::ifstream stream(path);
+
+            if (!stream)
+            {
+                return false;
+            }
+
+            float exportedWidth = 0.0F;
+            bool hasWidth = false;
+            bool hasHeight = false;
+            bool hasTileSize = false;
+            bool hasMinimum = false;
+            bool hasMaximum = false;
+            std::string line;
+
+            while (std::getline(stream, line))
+            {
+                line = Trim(std::move(line));
+                const std::size_t separator = line.find('=');
+
+                if (separator == std::string::npos)
+                {
+                    continue;
+                }
+
+                const std::string key = Trim(line.substr(0U, separator));
+                const std::string value = Trim(line.substr(separator + 1U));
+
+                if (key == "ExportWidthSamples")
+                {
+                    hasWidth = ParseUnsigned(value, width);
+                }
+                else if (key == "ExportLengthSamples")
+                {
+                    hasHeight = ParseUnsigned(value, height);
+                }
+                else if (key == "CellSize")
+                {
+                    hasTileSize = ParseFloat(value, tileSize);
+                }
+                else if (key == "ExportWidthWorld")
+                {
+                    static_cast<void>(ParseFloat(value, exportedWidth));
+                }
+                else if (key == "TerrainMinHeight" || key == "ExportMinHeight")
+                {
+                    hasMinimum = ParseFloat(value, minimumHeight);
+                }
+                else if (key == "TerrainMaxHeight" || key == "ExportMaxHeight")
+                {
+                    hasMaximum = ParseFloat(value, maximumHeight);
+                }
+            }
+
+            if (!hasTileSize && exportedWidth > 0.0F && width > 1U)
+            {
+                tileSize = exportedWidth / static_cast<float>(width - 1U);
+                hasTileSize = true;
+            }
+
+            return hasWidth && hasHeight && hasTileSize && hasMinimum && hasMaximum &&
+                width > 1U && height > 1U && tileSize > 0.0F && maximumHeight > minimumHeight;
+        }
+
+        bool ParseLayerMaskRange(
+            const std::filesystem::path& path,
+            std::uint32_t& firstLayer,
+            std::uint32_t& lastLayer)
+        {
+            std::wstring name = path.filename().wstring();
+            std::transform(name.begin(), name.end(), name.begin(), [](const wchar_t value)
+            {
+                return static_cast<wchar_t>(std::towlower(value));
+            });
+
+            const std::wstring marker = L"_layers_";
+            const std::size_t begin = name.find(marker);
+
+            if (begin == std::wstring::npos)
+            {
+                return false;
+            }
+
+            const std::size_t numberBegin = begin + marker.size();
+            const std::size_t dash = name.find(L'-', numberBegin);
+            const std::size_t suffix = name.find(L"_rgba", dash);
+
+            if (dash == std::wstring::npos || suffix == std::wstring::npos)
+            {
+                return false;
+            }
+
+            try
+            {
+                firstLayer = static_cast<std::uint32_t>(
+                    std::stoul(name.substr(numberBegin, dash - numberBegin)));
+                lastLayer = static_cast<std::uint32_t>(
+                    std::stoul(name.substr(dash + 1U, suffix - dash - 1U)));
+            }
+            catch (...)
+            {
+                return false;
+            }
+
+            return firstLayer > 0U && lastLayer >= firstLayer &&
+                lastLayer <= MaximumLayerCount - 1U;
         }
 
         void SetTextBuffer(std::array<char, 128>& buffer, const std::string& value)
@@ -223,6 +841,11 @@ namespace lts::editor
             return (std::filesystem::current_path() / L"game").lexically_normal();
         }
 
+        std::filesystem::path FindBinRoot()
+        {
+            return (FindGameRoot().parent_path() / L"bin").lexically_normal();
+        }
+
         std::wstring SanitizeOutputName(const char* value)
         {
             if (value == nullptr || *value == '\0')
@@ -252,6 +875,141 @@ namespace lts::editor
             }
 
             return result;
+        }
+
+        std::string SanitizeIniValue(std::string value)
+        {
+            std::replace(value.begin(), value.end(), '\r', ' ');
+            std::replace(value.begin(), value.end(), '\n', ' ');
+            return value;
+        }
+
+        bool WriteTerrainIni(
+            const std::filesystem::path& iniPath,
+            const std::wstring& levelName,
+            const R16TerrainImportSettings& settings,
+            const engine::assets::TerrainAsset& terrain,
+            const float centerHeight,
+            const std::array<float, 3U>& actorScale,
+            std::string& status)
+        {
+            std::error_code error;
+            std::filesystem::path temporaryPath = iniPath;
+            temporaryPath += L".tmp";
+            std::filesystem::remove(temporaryPath, error);
+            error.clear();
+
+            std::ofstream stream(
+                temporaryPath,
+                std::ios::binary | std::ios::trunc);
+
+            if (!stream)
+            {
+                status = "Could not create Terrain.ini.";
+                return false;
+            }
+
+            const auto pathValue = [](const std::filesystem::path& path)
+            {
+                return SanitizeIniValue(ToUtf8(path.generic_wstring()));
+            };
+
+            stream << std::setprecision(9);
+
+            if (!settings.layerDescriptionPath.empty())
+            {
+                std::ifstream description(
+                    settings.layerDescriptionPath,
+                    std::ios::binary);
+
+                if (!description)
+                {
+                    stream.close();
+                    std::filesystem::remove(temporaryPath, error);
+                    status = "Could not read the Terrain2 description for Terrain.ini.";
+                    return false;
+                }
+
+                stream << description.rdbuf();
+                stream << "\n\n// Studio R16 import metadata\n";
+                stream << "source_r16:\t\"" << pathValue(settings.sourcePath) << "\"\n";
+                stream << "asset:\t\"Terrain.terrain\"\n";
+                stream << "level_name:\t\""
+                       << SanitizeIniValue(ToUtf8(levelName)) << "\"\n";
+                stream << "transpose_axes:\t" << (settings.transposeAxes ? 1 : 0) << "\n";
+                stream << "flip_x:\t" << (settings.flipX ? 1 : 0) << "\n";
+                stream << "flip_y:\t" << (settings.flipY ? 1 : 0) << "\n";
+                stream << "center_height:\t" << centerHeight << "\n";
+                stream << "actor_scale_x:\t" << actorScale[0] << "\n";
+                stream << "actor_scale_y:\t" << actorScale[1] << "\n";
+                stream << "actor_scale_z:\t" << actorScale[2] << "\n";
+            }
+            else
+            {
+                stream << "[Terrain]\n";
+                stream << "Version=1\n";
+                stream << "LevelName=" << SanitizeIniValue(ToUtf8(levelName)) << "\n";
+                stream << "Asset=Terrain.terrain\n";
+                stream << "SourceR16=" << pathValue(settings.sourcePath) << "\n";
+                stream << "Width=" << terrain.width << "\n";
+                stream << "Height=" << terrain.height << "\n";
+                stream << "SampleSpacing=" << terrain.tileSize << "\n";
+                stream << "HeightOffset=" << terrain.heightOffset << "\n";
+                stream << "HeightRange=" << terrain.heightScale << "\n";
+                stream << "CenterHeight=" << centerHeight << "\n";
+                stream << "ScaleX=" << actorScale[0] << "\n";
+                stream << "ScaleY=" << actorScale[1] << "\n";
+                stream << "ScaleZ=" << actorScale[2] << "\n";
+                stream << "TransposeAxes=" << (settings.transposeAxes ? 1 : 0) << "\n";
+                stream << "FlipX=" << (settings.flipX ? 1 : 0) << "\n";
+                stream << "FlipY=" << (settings.flipY ? 1 : 0) << "\n";
+                stream << "SplatWidth=" << terrain.splatWidth << "\n";
+                stream << "SplatHeight=" << terrain.splatHeight << "\n";
+                stream << "LayerCount=" << terrain.layers.size() << "\n";
+                stream << "MaskCount=" << terrain.masks.size() << "\n";
+                stream << "ColorMap=" << pathValue(settings.colorMapPath) << "\n";
+                stream << "NormalMap=" << pathValue(settings.normalMapPath) << "\n";
+                stream << "MaterialsRoot="
+                       << pathValue(FindBinRoot() / L"Data" / L"TerrainData" / L"Materials")
+                       << "\n";
+
+                for (std::size_t index = 0U; index < terrain.layers.size(); ++index)
+                {
+                    const engine::assets::TerrainLayer& layer = terrain.layers[index];
+                    stream << "\n[Layer" << index << "]\n";
+                    stream << "Name=" << SanitizeIniValue(layer.name) << "\n";
+                    stream << "Diffuse=" << SanitizeIniValue(layer.diffusePath) << "\n";
+                    stream << "Normal=" << SanitizeIniValue(layer.normalPath) << "\n";
+                    stream << "MaterialType=" << SanitizeIniValue(layer.materialType) << "\n";
+                    stream << "ScaleU=" << layer.scaleU << "\n";
+                    stream << "ScaleV=" << layer.scaleV << "\n";
+                    stream << "Specular=" << layer.specular << "\n";
+                }
+            }
+
+            stream.flush();
+
+            if (!stream)
+            {
+                stream.close();
+                std::filesystem::remove(temporaryPath, error);
+                status = "Could not write Terrain.ini.";
+                return false;
+            }
+
+            stream.close();
+
+            if (!MoveFileExW(
+                    temporaryPath.c_str(),
+                    iniPath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(temporaryPath, error);
+                status = "Could not commit Terrain.ini.";
+                return false;
+            }
+
+            return true;
         }
 
         std::vector<engine::scene::TerrainComponent::LayerOverride>
@@ -302,9 +1060,16 @@ namespace lts::editor
             const std::filesystem::path& outputPath,
             const std::uint32_t width,
             const std::uint32_t height,
+            const std::uint32_t splatWidth,
+            const std::uint32_t splatHeight,
             const float tileSize,
+            const float heightOffset,
             const float heightRange,
-            const std::vector<std::int16_t>& heights)
+            const std::vector<std::int16_t>& heights,
+            const std::vector<SourceLayer>& layers,
+            const std::vector<std::vector<std::byte>>& masks,
+            const std::vector<std::byte>& colorMap,
+            const std::vector<std::byte>& normalMap)
         {
             const std::uint64_t sampleCount =
                 static_cast<std::uint64_t>(width) * static_cast<std::uint64_t>(height);
@@ -321,13 +1086,18 @@ namespace lts::editor
                 return false;
             }
 
-            const std::uint32_t splatWidth = (std::min)(width, 2048U);
-            const std::uint32_t splatHeight = (std::min)(height, 2048U);
-            const float heightOffset = -heightRange * 0.5F;
             const float heightScale = heightRange;
-            const std::uint32_t layerCount = 1U;
-            const std::uint32_t maskCount = 0U;
+            const std::uint32_t layerCount = static_cast<std::uint32_t>(layers.size());
+            const std::uint32_t maskCount = static_cast<std::uint32_t>(masks.size());
             const std::uint64_t heightBytes = sampleCount * sizeof(std::int16_t);
+
+            if (splatWidth == 0U || splatHeight == 0U ||
+                layerCount == 0U || layerCount > MaximumLayerCount ||
+                maskCount != (layerCount - 1U + 2U) / 3U ||
+                maskCount > MaximumMaskCount || colorMap.empty() || normalMap.empty())
+            {
+                return false;
+            }
 
             if (!WriteValue(stream, TerrainSignature) ||
                 !WriteValue(stream, TerrainVersion) ||
@@ -354,25 +1124,27 @@ namespace lts::editor
                 return false;
             }
 
-            const std::string layerName = "Base";
-            const std::string emptyPath;
-            const std::string materialType = "Default";
-            const float textureScale = 16.0F;
-            const float specular = 0.0F;
-
-            if (!WriteString(stream, layerName) ||
-                !WriteString(stream, emptyPath) ||
-                !WriteString(stream, emptyPath) ||
-                !WriteString(stream, materialType) ||
-                !WriteValue(stream, textureScale) ||
-                !WriteValue(stream, textureScale) ||
-                !WriteValue(stream, specular))
+            for (const SourceLayer& layer : layers)
             {
-                return false;
+                if (!WriteString(stream, layer.name) ||
+                    !WriteString(stream, layer.diffusePath) ||
+                    !WriteString(stream, layer.normalPath) ||
+                    !WriteString(stream, layer.materialType) ||
+                    !WriteValue(stream, layer.scaleU) ||
+                    !WriteValue(stream, layer.scaleV) ||
+                    !WriteValue(stream, layer.specular))
+                {
+                    return false;
+                }
             }
 
-            const std::vector<std::byte> colorMap = CreateSolidDds(96U, 96U, 96U, 255U);
-            const std::vector<std::byte> normalMap = CreateSolidDds(128U, 128U, 255U, 255U);
+            for (const std::vector<std::byte>& mask : masks)
+            {
+                if (!WriteBlob(stream, mask))
+                {
+                    return false;
+                }
+            }
 
             if (!WriteBlob(stream, colorMap) || !WriteBlob(stream, normalMap))
             {
@@ -381,6 +1153,524 @@ namespace lts::editor
 
             stream.flush();
             return static_cast<bool>(stream);
+        }
+    }
+
+    bool DetectR16TerrainImportSettings(
+        const std::filesystem::path& sourcePath,
+        R16TerrainImportSettings& settings,
+        float& terrainCenterHeight,
+        std::string& status) noexcept
+    {
+        try
+        {
+            R16TerrainImportSettings result;
+            result.sourcePath = sourcePath.lexically_normal();
+            terrainCenterHeight = 0.0F;
+
+            if (sourcePath.empty() || !HasR16Extension(sourcePath))
+            {
+                status = "Select a valid .r16 heightmap.";
+                return false;
+            }
+
+            std::error_code error;
+            const std::uintmax_t fileSize = std::filesystem::file_size(sourcePath, error);
+
+            if (error || fileSize == 0U || fileSize % sizeof(std::uint16_t) != 0U)
+            {
+                status = "The selected file is not a valid 16-bit RAW heightmap.";
+                return false;
+            }
+
+            const std::uint64_t sampleCount = fileSize / sizeof(std::uint16_t);
+            const std::uint64_t side = static_cast<std::uint64_t>(
+                std::sqrt(static_cast<long double>(sampleCount)));
+
+            if (side * side == sampleCount && side <= UINT32_MAX)
+            {
+                result.width = static_cast<std::uint32_t>(side);
+                result.height = static_cast<std::uint32_t>(side);
+            }
+
+            std::filesystem::path metadataPath = sourcePath;
+            metadataPath.replace_extension(L".txt");
+
+            float minimumHeight = -256.0F;
+            float maximumHeight = 256.0F;
+            std::uint32_t metadataWidth = result.width;
+            std::uint32_t metadataHeight = result.height;
+
+            if (std::filesystem::is_regular_file(metadataPath, error) && !error &&
+                ParseExportMetadata(
+                    metadataPath,
+                    metadataWidth,
+                    metadataHeight,
+                    result.tileSize,
+                    minimumHeight,
+                    maximumHeight))
+            {
+                result.width = metadataWidth;
+                result.height = metadataHeight;
+                result.heightRange = maximumHeight - minimumHeight;
+                result.heightOffset = -result.heightRange * 0.5F;
+                terrainCenterHeight = (minimumHeight + maximumHeight) * 0.5F;
+            }
+
+            result.splatWidth = result.width;
+            result.splatHeight = result.height;
+
+            std::map<std::uint32_t, std::filesystem::path> orderedMasks;
+            std::uint32_t highestPaintedLayer = 0U;
+
+            for (const auto& entry : std::filesystem::directory_iterator(
+                     sourcePath.parent_path(), error))
+            {
+                if (error || !entry.is_regular_file())
+                {
+                    continue;
+                }
+
+                std::uint32_t firstLayer = 0U;
+                std::uint32_t lastLayer = 0U;
+
+                if (ParseLayerMaskRange(entry.path(), firstLayer, lastLayer))
+                {
+                    orderedMasks[firstLayer] = entry.path().lexically_normal();
+                    highestPaintedLayer = (std::max)(highestPaintedLayer, lastLayer);
+                }
+            }
+
+            std::uint32_t expectedFirstLayer = 1U;
+
+            for (const auto& [firstLayer, path] : orderedMasks)
+            {
+                if (firstLayer != expectedFirstLayer || result.layerMaskPaths.size() >= MaximumMaskCount)
+                {
+                    status = "Layer masks must form consecutive groups: 1-3, 4-6, ...";
+                    return false;
+                }
+
+                result.layerMaskPaths.push_back(path);
+                expectedFirstLayer += 3U;
+            }
+
+            std::wstring lowerSource = sourcePath.wstring();
+            std::transform(
+                lowerSource.begin(), lowerSource.end(), lowerSource.begin(),
+                [](const wchar_t value)
+                {
+                    return static_cast<wchar_t>(std::towlower(value));
+                });
+
+            const std::filesystem::path gameRoot = FindGameRoot();
+            const std::filesystem::path workspaceRoot = gameRoot.parent_path();
+
+            if (lowerSource.find(L"colorado") != std::wstring::npos)
+            {
+                const std::filesystem::path terrain2 =
+                    workspaceRoot / L"bin" / L"Levels" / L"WZ_Colorado" / L"Terrain2";
+                const std::filesystem::path description = terrain2 / L"terrain2.ini";
+
+                error.clear();
+                if (std::filesystem::is_regular_file(description, error) && !error)
+                {
+                    SourceTerrainDescription terrain2Description;
+
+                    if (!ParseTerrainDescription(description, terrain2Description))
+                    {
+                        status = "Could not parse the matching Terrain2.ini.";
+                        return false;
+                    }
+
+                    const std::uint64_t terrain2SampleCount =
+                        static_cast<std::uint64_t>(terrain2Description.width) *
+                        terrain2Description.height;
+
+                    if (terrain2SampleCount != sampleCount)
+                    {
+                        status = "The R16 resolution does not match Terrain2.ini.";
+                        return false;
+                    }
+
+                    result.width = terrain2Description.width;
+                    result.height = terrain2Description.height;
+                    result.splatWidth = terrain2Description.splatWidth;
+                    result.splatHeight = terrain2Description.splatHeight;
+                    result.tileSize = terrain2Description.tileSize;
+                    result.heightOffset = terrain2Description.heightOffset;
+                    result.heightRange = terrain2Description.heightScale;
+                    result.layerDescriptionPath = description;
+                    result.colorMapPath = terrain2 / L"Color.dds";
+                    result.normalMapPath = terrain2 / L"Normal.dds";
+                    result.layerMaskPaths.clear();
+
+                    const std::size_t terrain2MaskCount =
+                        (terrain2Description.layers.size() - 1U + 2U) / 3U;
+
+                    for (std::size_t index = 0U; index < terrain2MaskCount; ++index)
+                    {
+                        result.layerMaskPaths.push_back(
+                            terrain2 / (L"Mat-Splat" + std::to_wstring(index) + L".dds"));
+                    }
+
+                    /*
+                     * UE R16 export orientation -> WarZ world X/Z.
+                     *
+                     * LevelData coordinates prove that the exported rows map
+                     * directly to X and must only be mirrored along Z.  The
+                     * previous transpose + X flip reproduced terrain2.bin's
+                     * storage order, not Terrain2's world-space sampling.
+                     */
+                    result.transposeAxes = false;
+                    result.flipX = false;
+                    result.flipY = true;
+                    result.masksArePreorientedDds = true;
+                    terrainCenterHeight = 0.0F;
+                }
+            }
+
+            if (result.width < 2U || result.height < 2U)
+            {
+                status = "The heightmap is not square and its metadata has no resolution.";
+                return false;
+            }
+
+            if (!result.layerMaskPaths.empty() && highestPaintedLayer == 0U)
+            {
+                status = "Layer mask filenames do not contain valid layer ranges.";
+                return false;
+            }
+
+            settings = std::move(result);
+            status = "Detected " + std::to_string(settings.width) + "x" +
+                std::to_string(settings.height) + ", " +
+                std::to_string(highestPaintedLayer) + " painted layers in " +
+                std::to_string(settings.layerMaskPaths.size()) + " RGBA masks.";
+            return true;
+        }
+        catch (...)
+        {
+            status = "Could not inspect the .r16 terrain source.";
+            return false;
+        }
+    }
+
+    bool WriteR16TerrainAsset(
+        const R16TerrainImportSettings& settings,
+        std::string& status) noexcept
+    {
+        try
+        {
+            const std::uint64_t sampleCount =
+                static_cast<std::uint64_t>(settings.width) * settings.height;
+
+            if (settings.sourcePath.empty() || settings.destinationPath.empty() ||
+                settings.width < 2U || settings.height < 2U ||
+                sampleCount > MaximumSampleCount ||
+                !std::isfinite(settings.tileSize) || settings.tileSize <= 0.0F ||
+                !std::isfinite(settings.heightOffset) ||
+                !std::isfinite(settings.heightRange) || settings.heightRange <= 0.0F)
+            {
+                status = "Invalid R16 terrain import settings.";
+                return false;
+            }
+
+            std::error_code error;
+            const std::uint64_t expectedFileSize = sampleCount * sizeof(std::uint16_t);
+
+            if (std::filesystem::file_size(settings.sourcePath, error) != expectedFileSize || error)
+            {
+                status = "File size does not match Width x Height x 2 bytes.";
+                return false;
+            }
+
+            std::vector<SourceLayer> layers;
+
+            if (!settings.layerDescriptionPath.empty())
+            {
+                SourceTerrainDescription description;
+
+                if (!ParseTerrainDescription(settings.layerDescriptionPath, description))
+                {
+                    status = "Could not parse the terrain layer description.";
+                    return false;
+                }
+
+                if (!ConvertTerrain2LayerScalesToWorldTileSizes(description))
+                {
+                    status = "The Terrain2 layer scales are invalid.";
+                    return false;
+                }
+
+                layers = std::move(description.layers);
+            }
+            else
+            {
+                std::uint32_t highestLayer = 0U;
+
+                for (const std::filesystem::path& maskPath : settings.layerMaskPaths)
+                {
+                    std::uint32_t firstLayer = 0U;
+                    std::uint32_t lastLayer = 0U;
+
+                    if (!ParseLayerMaskRange(maskPath, firstLayer, lastLayer))
+                    {
+                        status = "A layer mask filename has no valid layer range.";
+                        return false;
+                    }
+
+                    highestLayer = (std::max)(highestLayer, lastLayer);
+                }
+
+                layers.resize(static_cast<std::size_t>(highestLayer) + 1U);
+
+                for (std::size_t index = 0U; index < layers.size(); ++index)
+                {
+                    layers[index].name = index == 0U
+                        ? "Base"
+                        : "Layer " + std::to_string(index);
+                }
+            }
+
+            if (layers.empty())
+            {
+                layers.push_back(SourceLayer{"Base"});
+            }
+
+            const std::size_t expectedMaskCount = (layers.size() - 1U + 2U) / 3U;
+
+            if (layers.size() > MaximumLayerCount ||
+                expectedMaskCount != settings.layerMaskPaths.size() ||
+                expectedMaskCount > MaximumMaskCount)
+            {
+                status = "Layer count does not match the imported RGBA masks.";
+                return false;
+            }
+
+            const std::filesystem::path gameRoot = FindGameRoot();
+            const std::filesystem::path workspaceRoot = gameRoot.parent_path();
+
+            for (const SourceLayer& layer : layers)
+            {
+                for (const std::string* logicalPath : {&layer.diffusePath, &layer.normalPath})
+                {
+                    if (logicalPath->empty())
+                    {
+                        continue;
+                    }
+
+                    const std::filesystem::path path = std::filesystem::u8path(*logicalPath);
+                    error.clear();
+                    const bool existsInGame =
+                        std::filesystem::is_regular_file(gameRoot / path, error) && !error;
+                    error.clear();
+                    const bool existsInBin =
+                        std::filesystem::is_regular_file(workspaceRoot / L"bin" / path, error) && !error;
+
+                    if (!existsInGame && !existsInBin)
+                    {
+                        status = "Terrain material is missing: " + *logicalPath;
+                        return false;
+                    }
+                }
+            }
+
+            std::ifstream source(settings.sourcePath, std::ios::binary);
+            std::vector<std::uint16_t> sourceHeights(static_cast<std::size_t>(sampleCount));
+
+            if (!source || !source.read(
+                    reinterpret_cast<char*>(sourceHeights.data()),
+                    static_cast<std::streamsize>(expectedFileSize)))
+            {
+                status = "Could not read the complete source heightmap.";
+                return false;
+            }
+
+            std::vector<std::int16_t> terrainHeights(static_cast<std::size_t>(sampleCount));
+            const std::uint32_t sourceWidth = settings.transposeAxes
+                ? settings.height
+                : settings.width;
+            const float maximumHeight = settings.heightOffset + settings.heightRange;
+            const float amplitude = (std::max)(
+                std::fabs(settings.heightOffset),
+                std::fabs(maximumHeight));
+
+            if (!std::isfinite(amplitude) || amplitude <= 0.0F)
+            {
+                status = "The terrain height interval is invalid.";
+                return false;
+            }
+
+            for (std::uint32_t z = 0U; z < settings.height; ++z)
+            {
+                for (std::uint32_t x = 0U; x < settings.width; ++x)
+                {
+                    const std::uint32_t transformedX =
+                        settings.flipX ? settings.width - 1U - x : x;
+                    const std::uint32_t transformedZ =
+                        settings.flipY ? settings.height - 1U - z : z;
+                    const std::uint32_t sourceX = settings.transposeAxes
+                        ? transformedZ
+                        : transformedX;
+                    const std::uint32_t sourceZ = settings.transposeAxes
+                        ? transformedX
+                        : transformedZ;
+                    const std::size_t sourceIndex =
+                        static_cast<std::size_t>(sourceZ) * sourceWidth + sourceX;
+                    const std::size_t targetIndex =
+                        static_cast<std::size_t>(z) * settings.width + x;
+                    const double normalized =
+                        static_cast<double>(sourceHeights[sourceIndex]) / 65535.0;
+
+                    const double worldHeight =
+                        static_cast<double>(settings.heightOffset) +
+                        normalized * static_cast<double>(settings.heightRange);
+                    const long encodedHeight = std::lround(
+                        worldHeight / static_cast<double>(amplitude) * 32767.0);
+
+                    terrainHeights[targetIndex] = static_cast<std::int16_t>(
+                        (std::clamp)(encodedHeight, -32767L, 32767L));
+                }
+            }
+
+            std::vector<std::vector<std::byte>> masks;
+            masks.reserve(settings.layerMaskPaths.size());
+
+            for (const std::filesystem::path& maskPath : settings.layerMaskPaths)
+            {
+                if (settings.masksArePreorientedDds)
+                {
+                    std::vector<std::byte> mask;
+
+                    if (!ReadFileBlob(maskPath, mask))
+                    {
+                        status = "Could not read the Terrain2 layer mask: " +
+                            ToUtf8(maskPath.wstring());
+                        return false;
+                    }
+
+                    masks.push_back(std::move(mask));
+                    continue;
+                }
+
+                std::uint32_t maskWidth = 0U;
+                std::uint32_t maskHeight = 0U;
+                std::vector<std::byte> pixels;
+                const std::uint32_t expectedMaskWidth = settings.transposeAxes
+                    ? settings.height
+                    : settings.width;
+                const std::uint32_t expectedMaskHeight = settings.transposeAxes
+                    ? settings.width
+                    : settings.height;
+
+                if (!DecodeRgbaImage(maskPath, maskWidth, maskHeight, pixels) ||
+                    maskWidth != expectedMaskWidth || maskHeight != expectedMaskHeight)
+                {
+                    status = "Layer mask must match the heightmap resolution: " +
+                        ToUtf8(maskPath.wstring());
+                    return false;
+                }
+
+                if (!TransformRgbaPixels(
+                    pixels,
+                    settings.width,
+                    settings.height,
+                    settings.transposeAxes,
+                    settings.flipX,
+                    settings.flipY))
+                {
+                    status = "Could not transform a terrain layer mask.";
+                    return false;
+                }
+
+                masks.push_back(CreateRgbaDds(settings.width, settings.height, pixels));
+
+                if (masks.back().empty())
+                {
+                    status = "Could not encode a layer mask.";
+                    return false;
+                }
+            }
+
+            std::vector<std::byte> colorMap;
+            std::vector<std::byte> normalMap;
+
+            if (settings.colorMapPath.empty() || !ReadFileBlob(settings.colorMapPath, colorMap))
+            {
+                colorMap = CreateSolidDds(255U, 255U, 255U, 255U);
+            }
+
+            if (settings.normalMapPath.empty() || !ReadFileBlob(settings.normalMapPath, normalMap))
+            {
+                normalMap = CreateSolidDds(128U, 128U, 255U, 255U);
+            }
+
+            std::filesystem::create_directories(settings.destinationPath.parent_path(), error);
+
+            if (error)
+            {
+                status = "Could not create the terrain output directory.";
+                return false;
+            }
+
+            std::filesystem::path temporary = settings.destinationPath;
+            temporary += L".tmp";
+            std::filesystem::remove(temporary, error);
+            error.clear();
+
+            if (!WriteTerrainFile(
+                    temporary,
+                    settings.width,
+                    settings.height,
+                    settings.splatWidth == 0U ? settings.width : settings.splatWidth,
+                    settings.splatHeight == 0U ? settings.height : settings.splatHeight,
+                    settings.tileSize,
+                    settings.heightOffset,
+                    settings.heightRange,
+                    terrainHeights,
+                    layers,
+                    masks,
+                    colorMap,
+                    normalMap))
+            {
+                status = "Could not write the .terrain file.";
+                return false;
+            }
+
+            engine::assets::TerrainAsset validation;
+
+            if (engine::assets::Failed(
+                    engine::assets::TerrainAsset::Load(temporary, validation)) ||
+                !validation.IsValid())
+            {
+                std::filesystem::remove(temporary, error);
+                status = "The generated terrain failed validation.";
+                return false;
+            }
+
+            if (!MoveFileExW(
+                    temporary.c_str(),
+                    settings.destinationPath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(temporary, error);
+                status = "Could not commit the generated terrain file.";
+                return false;
+            }
+
+            status = "Terrain asset written: " + ToUtf8(settings.destinationPath.wstring());
+            return true;
+        }
+        catch (const std::bad_alloc&)
+        {
+            status = "Not enough memory to import the terrain.";
+            return false;
+        }
+        catch (...)
+        {
+            status = "Unexpected error while importing the terrain.";
+            return false;
         }
     }
 
@@ -467,8 +1757,20 @@ namespace lts::editor
         sourcePath_ = std::filesystem::path(rawPath).lexically_normal();
         CoTaskMemFree(rawPath);
 
-        SetTextBuffer(outputName_, ToUtf8(sourcePath_.stem().wstring()));
         DetectResolution();
+
+        if (!layerDescriptionPath_.empty())
+        {
+            const std::filesystem::path detectedLevelDirectory =
+                layerDescriptionPath_.parent_path().parent_path();
+            SetTextBuffer(
+                outputName_,
+                ToUtf8(detectedLevelDirectory.filename().wstring()));
+        }
+        else
+        {
+            SetTextBuffer(outputName_, ToUtf8(sourcePath_.parent_path().filename().wstring()));
+        }
 
         return true;
     }
@@ -481,41 +1783,32 @@ namespace lts::editor
         statusIsError_ = false;
         status_.clear();
 
-        std::error_code error;
-        const std::uintmax_t fileSize = std::filesystem::file_size(sourcePath_, error);
+        R16TerrainImportSettings settings;
+        float terrainCenterHeight = 0.0F;
 
-        if (error || fileSize == 0U || fileSize % sizeof(std::uint16_t) != 0U)
+        if (!DetectR16TerrainImportSettings(
+                sourcePath_, settings, terrainCenterHeight, status_))
         {
-            status_ = "The selected file is not a valid 16-bit RAW heightmap.";
             statusIsError_ = true;
             return;
         }
 
-        const std::uint64_t sampleCount =
-            static_cast<std::uint64_t>(fileSize / sizeof(std::uint16_t));
-
-        std::uint64_t side = static_cast<std::uint64_t>(
-            std::sqrt(static_cast<long double>(sampleCount)));
-
-        while (side * side < sampleCount)
-        {
-            ++side;
-        }
-
-        while (side > 0U && side * side > sampleCount)
-        {
-            --side;
-        }
-
-        if (side * side == sampleCount &&
-            side <= static_cast<std::uint64_t>((std::numeric_limits<int>::max)()))
-        {
-            width_ = static_cast<int>(side);
-            height_ = static_cast<int>(side);
-            return;
-        }
-
-        status_ = "The heightmap is not square. Enter Width and Height manually.";
+        width_ = static_cast<int>(settings.width);
+        height_ = static_cast<int>(settings.height);
+        tileSize_ = settings.tileSize;
+        heightOffset_ = settings.heightOffset;
+        heightRange_ = settings.heightRange;
+        splatWidth_ = settings.splatWidth;
+        splatHeight_ = settings.splatHeight;
+        baseHeight_ = terrainCenterHeight;
+        layerDescriptionPath_ = std::move(settings.layerDescriptionPath);
+        colorMapPath_ = std::move(settings.colorMapPath);
+        normalMapPath_ = std::move(settings.normalMapPath);
+        layerMaskPaths_ = std::move(settings.layerMaskPaths);
+        transposeAxes_ = settings.transposeAxes;
+        flipX_ = settings.flipX;
+        flipY_ = settings.flipY;
+        masksArePreorientedDds_ = settings.masksArePreorientedDds;
     }
 
     bool TerrainImporter::Import(TerrainImportContext& context) noexcept
@@ -545,6 +1838,13 @@ namespace lts::editor
             }
         }
 
+        if (!std::isfinite(tileSize_) || tileSize_ <= 0.0F ||
+            !std::isfinite(heightRange_) || heightRange_ <= 0.0F)
+        {
+            status_ = "Sample Spacing and Height Range must be greater than zero.";
+            return false;
+        }
+
         if (!std::isfinite(baseHeight_))
         {
             status_ = "Base Height is invalid.";
@@ -555,7 +1855,7 @@ namespace lts::editor
 
         if (outputName.empty())
         {
-            status_ = "Enter a valid output name.";
+            status_ = "Enter a valid level name.";
             return false;
         }
 
@@ -579,71 +1879,30 @@ namespace lts::editor
             return false;
         }
 
-        std::ifstream source(sourcePath_, std::ios::binary);
-
-        if (!source)
-        {
-            status_ = "Could not open the source heightmap.";
-            return false;
-        }
-
-        std::vector<std::uint16_t> sourceHeights(static_cast<std::size_t>(sampleCount));
-
-        source.read(
-            reinterpret_cast<char*>(sourceHeights.data()),
-            static_cast<std::streamsize>(expectedFileSize));
-
-        if (!source)
-        {
-            status_ = "Could not read the complete source heightmap.";
-            return false;
-        }
-
-        std::vector<std::int16_t> terrainHeights(static_cast<std::size_t>(sampleCount));
-
         const std::uint32_t width = static_cast<std::uint32_t>(width_);
         const std::uint32_t height = static_cast<std::uint32_t>(height_);
 
-        for (std::uint32_t z = 0U; z < height; ++z)
-        {
-            const std::uint32_t sourceZ = flipY_ ? height - 1U - z : z;
-
-            for (std::uint32_t x = 0U; x < width; ++x)
-            {
-                const std::uint32_t sourceX = flipX_ ? width - 1U - x : x;
-
-                const std::size_t sourceIndex =
-                    static_cast<std::size_t>(sourceZ) * width + sourceX;
-
-                const std::size_t targetIndex =
-                    static_cast<std::size_t>(z) * width + x;
-
-                const double normalized =
-                    static_cast<double>(sourceHeights[sourceIndex]) / 65535.0;
-
-                const double signedValue = (normalized * 2.0 - 1.0) * 32767.0;
-
-                terrainHeights[targetIndex] =
-                    static_cast<std::int16_t>(std::lround(signedValue));
-            }
-        }
-
-        const std::filesystem::path gameRoot = FindGameRoot();
-        const std::filesystem::path outputDirectory = gameRoot / L"Data" / L"Terrains";
-        const std::filesystem::path outputPath =
-            (outputDirectory / outputName).replace_extension(L".terrain");
+        const std::filesystem::path binRoot = FindBinRoot();
+        const std::filesystem::path outputDirectory =
+            binRoot / L"Levels" / outputName / L"Terrain";
+        const std::filesystem::path outputPath = outputDirectory / L"Terrain.terrain";
+        const std::filesystem::path iniPath = outputDirectory / L"Terrain.ini";
 
         std::filesystem::create_directories(outputDirectory, error);
 
         if (error)
         {
-            status_ = "Could not create Data/Terrains.";
+            status_ = "Could not create the level Terrain directory.";
             return false;
         }
 
-        if (!overwriteExisting_ && std::filesystem::exists(outputPath, error) && !error)
+        const bool terrainExists = std::filesystem::exists(outputPath, error) && !error;
+        error.clear();
+        const bool iniExists = std::filesystem::exists(iniPath, error) && !error;
+
+        if (!overwriteExisting_ && (terrainExists || iniExists))
         {
-            status_ = "The output terrain already exists. Enable Overwrite Existing.";
+            status_ = "This level already has Terrain data. Enable Overwrite Existing.";
             return false;
         }
 
@@ -655,18 +1914,27 @@ namespace lts::editor
           *
           * Реальный масштаб карты задаётся Transform Terrain Actor.
           */
-        constexpr float terrainTileSize = 1.0F;
-        constexpr float terrainHeightRange = 512.0F;
+        R16TerrainImportSettings settings;
+        settings.sourcePath = sourcePath_;
+        settings.destinationPath = outputPath;
+        settings.layerDescriptionPath = layerDescriptionPath_;
+        settings.colorMapPath = colorMapPath_;
+        settings.normalMapPath = normalMapPath_;
+        settings.layerMaskPaths = layerMaskPaths_;
+        settings.width = width;
+        settings.height = height;
+        settings.splatWidth = splatWidth_ == 0U ? width : splatWidth_;
+        settings.splatHeight = splatHeight_ == 0U ? height : splatHeight_;
+        settings.tileSize = tileSize_;
+        settings.heightOffset = heightOffset_;
+        settings.heightRange = heightRange_;
+        settings.transposeAxes = transposeAxes_;
+        settings.flipX = flipX_;
+        settings.flipY = flipY_;
+        settings.masksArePreorientedDds = masksArePreorientedDds_;
 
-        if (!WriteTerrainFile(
-            outputPath,
-            width,
-            height,
-            terrainTileSize,
-            terrainHeightRange,
-            terrainHeights))
+        if (!WriteR16TerrainAsset(settings, status_))
         {
-            status_ = "Could not write the .terrain file.";
             return false;
         }
 
@@ -680,13 +1948,25 @@ namespace lts::editor
             return false;
         }
 
+        if (!WriteTerrainIni(
+                iniPath,
+                outputName,
+                settings,
+                terrainAsset,
+                baseHeight_,
+                resultScale_,
+                status_))
+        {
+            return false;
+        }
+
         error.clear();
         const std::filesystem::path relativePath =
-            std::filesystem::relative(outputPath, gameRoot, error);
+            std::filesystem::relative(outputPath, binRoot, error);
 
         if (error)
         {
-            status_ = "Could not create a game-relative terrain path.";
+            status_ = "Could not create a bin-relative terrain path.";
             return false;
         }
 
@@ -705,13 +1985,11 @@ namespace lts::editor
          * X/Z = горизонтальная плоскость.
          * Y   = вертикальная высота.
          */
-        constexpr float centimetersToMeters = 0.01F;
-
         transform.scale =
         {
-            resultScale_[0] * centimetersToMeters, // Source X -> Engine X
-            resultScale_[2] * centimetersToMeters, // Source Z -> Engine Y
-            resultScale_[1] * centimetersToMeters  // Source Y -> Engine Z
+            resultScale_[0],
+            resultScale_[1],
+            resultScale_[2]
         };
 
         if (!context.sceneDocument.CreateTerrainEntity(
@@ -753,7 +2031,7 @@ namespace lts::editor
         context.loadedTerrainPath = outputPath.lexically_normal();
         FocusCamera(context.cameraController, terrainAsset, transform);
 
-        status_ = "Terrain imported successfully: " + ToUtf8(outputPath.wstring());
+        status_ = "Terrain and Terrain.ini saved: " + ToUtf8(outputDirectory.wstring());
         statusIsError_ = false;
         importSucceeded_ = true;
 
@@ -809,7 +2087,37 @@ namespace lts::editor
         ImGui::SetNextItemWidth(140.0F);
         ImGui::InputInt("Height", &height_);
 
-        ImGui::SeparatorText("Result Scale");
+        ImGui::SeparatorText("Terrain Dimensions");
+
+        ImGui::SetNextItemWidth(180.0F);
+        ImGui::DragFloat(
+            "Sample Spacing",
+            &tileSize_,
+            0.01F,
+            0.001F,
+            10000.0F,
+            "%.6f");
+
+        ImGui::SetNextItemWidth(180.0F);
+        ImGui::DragFloat(
+            "Height Range",
+            &heightRange_,
+            0.1F,
+            0.001F,
+            1000000.0F,
+            "%.3f");
+
+        ImGui::SetNextItemWidth(180.0F);
+
+        ImGui::DragFloat(
+            "Terrain Center Height",
+            &baseHeight_,
+            1.0F,
+            -1000000.0F,
+            1000000.0F,
+            "%.3f");
+
+        ImGui::SeparatorText("Actor Scale");
 
         ImGui::SetNextItemWidth(360.0F);
 
@@ -821,39 +2129,22 @@ namespace lts::editor
             1000000.0F,
             "%.6f");
 
-        ImGui::TextDisabled("Source UE scale in centimeters: X/Y plane, Z height");
-
-        ImGui::TextDisabled("Engine scale (meters): X=%.6f, Y=%.6f, Z=%.6f",
-            resultScale_[0] * 0.01F,
-            resultScale_[2] * 0.01F,
-            resultScale_[1] * 0.01F);
-
-        ImGui::SetNextItemWidth(180.0F);
-
-        ImGui::DragFloat(
-            "Base Height",
-            &baseHeight_,
-            1.0F,
-            -1000000.0F,
-            1000000.0F,
-            "%.3f");
+        ImGui::TextDisabled("Engine X/Y/Z multiplier (normally 1, 1, 1)");
 
         if (width_ > 1 &&
             height_ > 1 &&
             resultScale_[0] > 0.0F &&
             resultScale_[1] > 0.0F)
         {
-            constexpr double centimetersToMeters = 0.01;
-
             const double worldWidth =
                 static_cast<double>(width_ - 1) *
-                static_cast<double>(resultScale_[0]) *
-                centimetersToMeters;
+                static_cast<double>(tileSize_) *
+                static_cast<double>(resultScale_[0]);
 
             const double worldDepth =
                 static_cast<double>(height_ - 1) *
-                static_cast<double>(resultScale_[1]) *
-                centimetersToMeters;
+                static_cast<double>(tileSize_) *
+                static_cast<double>(resultScale_[2]);
 
             ImGui::TextDisabled(
                 "Map size: %.3f x %.3f",
@@ -861,13 +2152,34 @@ namespace lts::editor
                 worldDepth);
         }
 
+        ImGui::Text("Layer masks: %zu", layerMaskPaths_.size());
+
+        if (!layerDescriptionPath_.empty())
+        {
+            const std::string description = ToUtf8(layerDescriptionPath_.wstring());
+            ImGui::TextWrapped("Layers: %s", description.c_str());
+        }
+
+        ImGui::TextWrapped(
+            "Materials root: %s",
+            ToUtf8((FindBinRoot() / L"Data" /
+                L"TerrainData" / L"Materials").wstring()).c_str());
+
+        ImGui::TextDisabled(
+            "R16 transform: transpose=%d, flip X=%d, flip Y=%d",
+            transposeAxes_ ? 1 : 0,
+            flipX_ ? 1 : 0,
+            flipY_ ? 1 : 0);
+
+        ImGui::BeginDisabled(masksArePreorientedDds_);
         ImGui::Checkbox("Flip X", &flipX_);
         ImGui::SameLine();
         ImGui::Checkbox("Flip Y", &flipY_);
+        ImGui::EndDisabled();
 
         ImGui::Separator();
 
-        ImGui::InputText("Output Name", outputName_.data(), outputName_.size());
+        ImGui::InputText("Level Name", outputName_.data(), outputName_.size());
         ImGui::Checkbox("Overwrite Existing", &overwriteExisting_);
 
         const std::wstring cleanOutputName = SanitizeOutputName(outputName_.data());
@@ -875,11 +2187,11 @@ namespace lts::editor
         if (!cleanOutputName.empty())
         {
             const std::filesystem::path preview =
-                FindGameRoot() / L"Data" / L"Terrains" /
-                (cleanOutputName + L".terrain");
+                FindBinRoot() / L"Levels" / cleanOutputName / L"Terrain";
 
             const std::string previewText = ToUtf8(preview.wstring());
-            ImGui::TextWrapped("Output: %s", previewText.c_str());
+            ImGui::TextWrapped("Output folder: %s", previewText.c_str());
+            ImGui::TextDisabled("Files: Terrain.terrain, Terrain.ini");
         }
 
         if (!status_.empty())

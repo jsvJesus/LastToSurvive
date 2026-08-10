@@ -204,6 +204,16 @@ namespace engine::graphics
             std::uint32_t firstIndex,
             std::int32_t baseVertex) noexcept = 0;
 
+        [[nodiscard]] virtual GraphicsResult DrawIndexedInstanced(
+            std::uint32_t,
+            std::uint32_t,
+            std::uint32_t,
+            std::int32_t,
+            std::uint32_t) noexcept
+        {
+            return GraphicsResult::Unsupported;
+        }
+
         virtual void ClearState() noexcept = 0;
         virtual void Flush() noexcept = 0;
 

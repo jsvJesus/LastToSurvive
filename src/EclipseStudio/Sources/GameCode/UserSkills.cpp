@@ -1,7 +1,3 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-#include "shellapi.h"
-
 #include "UserSkills.h"
 
 // there is no data here yet..

@@ -6,6 +6,12 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/Synchronization.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <vector>
+
 #include "GameObj.h"
 #include "ObjManag.h"
 #include "../../EclipseStudio/Sources/rendering/Deffered/RenderDeffered.h"
@@ -17,7 +23,6 @@
 #include "ObjectsCode/World/obj_road.h"
 #include "obj_Mesh.h"
 #include "obj_Dummy.h"
-#include "..\..\Eternity\Include\ParallelQuickSort.h"
 
 
 #include "..\TrueNature\Terrain.h"
@@ -28,7 +33,6 @@
 #include "../../EclipseStudio/Sources/ObjectsCode/weapons/BulletShellManager.h"
 #include "../../EclipseStudio/Sources/Editors/CollectionElementProxyObject.h"
 #include "../../EclipseStudio/Sources/Editors/CollectionsManager.h"
-#include "obj_Apex.hpp"
 
 #ifndef WO_SERVER
 #include "../../EclipseStudio/Sources/ObjectsCode/Gameplay/obj_ItemSpawnPoint.h"
@@ -36,7 +40,7 @@
 
 bool gDestroyingWorld = false;
 
-static r3dTL::TArray< GameObject* > TemporaryObjects ;
+static std::vector<GameObject*> TemporaryObjects;
 
 void ObjectManagerResourceHelper::D3DReleaseResource()
 {
@@ -225,7 +229,7 @@ int ObjectManager::Init(int _MaxObjects, int _MaxStaticObjects)
 	if(bInited) return 0;
 	bInited        = 1;
 
-	TemporaryObjects.Reserve( 1024 );
+	TemporaryObjects.reserve( 1024 );
 
 	m_pRootBox = new SceneBox();
 	m_ResourceHelper = 0;
@@ -261,7 +265,6 @@ int ObjectManager::Init(int _MaxObjects, int _MaxStaticObjects)
 #endif
 #endif
 
-	InitializeCriticalSection( &m_CS ) ;
 	return 1;
 }
 
@@ -676,7 +679,7 @@ GameObject* ObjectManager::GetObject(gobjid_t ID)
 	return NULL;
 }
 
-GameObject* ObjectManager::GetNetworkObject(DWORD netID)
+GameObject* ObjectManager::GetNetworkObject(std::uint32_t netID)
 {
 	R3DPROFILE_FUNCTION("ObjectManager::GetNetworkObject");
 
@@ -775,7 +778,7 @@ void ObjectManager::Update()
 	}
 	R3DPROFILE_END("OnCreate");
 
-	TemporaryObjects.Clear();
+	TemporaryObjects.clear();
 
 	// update & move objects
 	R3DPROFILE_START("Update&Move");
@@ -785,7 +788,7 @@ void ObjectManager::Update()
 
 		if( obj->ObjTypeFlags & OBJTYPE_Particle )
 		{
-			TemporaryObjects.PushBack( obj );
+			TemporaryObjects.push_back( obj );
 		}
 		else
 		{
@@ -843,10 +846,10 @@ void ObjectManager::Update()
 #endif
 #endif
 
-	if( TemporaryObjects.Count() )
+	if( !TemporaryObjects.empty() )
 	{
 		R3DPROFILE_START("Particles - Update");
-		g_pJobChief->Exec( CallUpdate, &TemporaryObjects[ 0 ], TemporaryObjects.Count() );
+		g_pJobChief->Exec( CallUpdate, TemporaryObjects.data(), TemporaryObjects.size() );
 		R3DPROFILE_END("Particles - Update");
 	}
 
@@ -1118,14 +1121,6 @@ GameObject* ObjectManager::CastRay(const r3dPoint3D& vStart, const r3dPoint3D& v
 		}
 #endif
 #endif
-#if APEX_ENABLED
-		else if (obj->isObjType(OBJTYPE_ApexDestructible))
-		{
-			obj_ApexDestructible *oad = reinterpret_cast<obj_ApexDestructible*>(obj);
-			mtrl = oad->GetMaterial(0);
-		}
-#endif
-
 		if(dst >= MinDistSoFar)
 			continue; 
 
@@ -1813,11 +1808,10 @@ ObjectManager::PrepareTransparentShadowsInterm( const r3dCamera& Cam )
 
 void SortRenderArray( RenderArray& rarr, int start )
 {
- 	if(rarr.Count() >= 2 && (int)rarr.Count() > start)
+	if(rarr.Count() >= 2 && (int)rarr.Count() > start)
 	{
 		size_t numElems = static_cast<size_t>(rarr.Count() - start);
-  		ParallelQSort pqs(numElems / g_pJobChief->GetThreadCount());
-  		pqs.Sort(&rarr[start], numElems, RenderArray::TAB_SIZE, renderable_Comparator);
+		std::qsort(&rarr[start], numElems, RenderArray::TAB_SIZE, renderable_Comparator);
 	}
 }
 
@@ -2241,9 +2235,9 @@ ObjectManager::AddToTransparentShadowCasters( GameObject* obj )
 {
 	if( obj->IsTransparentShadowCaster() )
 	{
-		r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
+		engine::platform::MutexLockGuard lock(m_Mutex);
 
-		if( TransparentShadowCasterCount < TransparentShadowCasters.COUNT )
+		if( TransparentShadowCasterCount < static_cast<int>(TransparentShadowCasters.size()) )
 		{
 			TransparentShadowCasters[ TransparentShadowCasterCount++ ] = obj ;
 		}		
@@ -2253,14 +2247,18 @@ ObjectManager::AddToTransparentShadowCasters( GameObject* obj )
 void
 ObjectManager::RemoveFromTransparentShadowCasters( GameObject* obj )
 {
-	r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
+	engine::platform::MutexLockGuard lock(m_Mutex);
 
 	for( int i = 0, e = TransparentShadowCasterCount ; i < e ; i ++ )
 	{
 		if( TransparentShadowCasters[ i ] == obj )
 		{
-			TransparentShadowCasters.Move( i, i + 1, TransparentShadowCasterCount - i - 1 ) ;
+			std::move(
+				TransparentShadowCasters.begin() + i + 1,
+				TransparentShadowCasters.begin() + TransparentShadowCasterCount,
+				TransparentShadowCasters.begin() + i);
 			TransparentShadowCasterCount -- ;
+			TransparentShadowCasters[TransparentShadowCasterCount] = nullptr;
 			break ;
 		}
 	}

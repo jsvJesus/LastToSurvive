@@ -1,20 +1,41 @@
 #pragma once
 
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavAgent.h"
+#if ENABLE_RECAST_NAVIGATION
 
-#if ENABLE_AUTODESK_NAVIGATION
+#include "Navigation/NavigationAgent.h"
 
-class ZombieNavAgent : public AutodeskNavAgent
+class ZombieNavAgent
 {
 public:
+	enum Status
+	{
+		Idle,
+		ComputingPath,
+		Moving,
+		Arrived,
+		PathNotFound,
+		Failed
+	};
+
+	bool StartMove(const r3dPoint3D& position, float maximumPathRange);
+	void StopMove();
+	void SetTargetSpeed(float speed);
+	void Update(float elapsedSeconds);
+	r3dPoint3D GetPosition() const;
+
+	Status m_status;
+	r3dPoint3D m_velocity;
 
 public:
 	friend ZombieNavAgent* CreateZombieNavAgent(const r3dPoint3D &pos);
 	friend void DeleteZombieNavAgent(ZombieNavAgent* a);
 	
 protected:
-	ZombieNavAgent();
+	ZombieNavAgent(engine::navigation::NavigationMesh& navigationMesh, const r3dPoint3D& position);
 	~ZombieNavAgent();
+
+private:
+	engine::navigation::NavigationAgent agent_;
 }; 
 
 //////////////////////////////////////////////////////////////////////////

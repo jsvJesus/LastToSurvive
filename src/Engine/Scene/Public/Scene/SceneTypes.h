@@ -106,6 +106,45 @@ namespace engine::scene
         float horizonExponent = 0.55F;
         float sunDiskSizeDegrees = 1.25F;
 
+        // Independent DX11 Studio day/night environment state.
+        float timeOfDay = 12.0F;
+        bool timeControlsSun = true;
+        bool sunEnabled = true;
+
+        bool fogEnabled = true;
+        std::array<float, 3U> fogColor
+        {
+            0.45F,
+            0.62F,
+            0.78F
+        };
+        float fogStart = 450.0F;
+        float fogEnd = 5000.0F;
+        float fogDensity = 0.00018F;
+        float fogHeightFalloff = 0.0015F;
+
+        bool shadowsEnabled = true;
+        float shadowStrength = 0.82F;
+        float shadowSoftness = 1.25F;
+        float shadowDistance = 1800.0F;
+
+        bool cloudPlaneEnabled = true;
+        std::array<float, 3U> cloudColor
+        {
+            0.92F,
+            0.95F,
+            1.0F
+        };
+        float cloudCoverage = 0.48F;
+        float cloudDensity = 0.72F;
+        float cloudScale = 0.00032F;
+        float cloudHeight = 1400.0F;
+        std::array<float, 2U> cloudSpeed
+        {
+            0.0035F,
+            0.0012F
+        };
+
         bool visible = true;
         bool linkSun = true;
     };

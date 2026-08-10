@@ -83,6 +83,10 @@ namespace lts::editor
             DirectX::XMFLOAT4 sunDirectionIntensity{};
             DirectX::XMFLOAT4 sunColor{};
             DirectX::XMFLOAT4 ambientColor{};
+            DirectX::XMFLOAT4 cameraPositionFogDensity{};
+            DirectX::XMFLOAT4 fogColorEnabled{};
+            DirectX::XMFLOAT4 fogDistancesHeight{};
+            DirectX::XMFLOAT4 shadowParameters{};
         };
 
         struct ResolvedDirectionalLight final
@@ -111,6 +115,24 @@ namespace lts::editor
             };
 
             float ambientIntensity = 1.0F;
+
+            DirectX::XMFLOAT3 fogColor
+            {
+                0.45F,
+                0.62F,
+                0.78F
+            };
+
+            float fogStart = 450.0F;
+            float fogEnd = 5000.0F;
+            float fogDensity = 0.00018F;
+            float fogHeightFalloff = 0.0015F;
+            bool fogEnabled = false;
+            bool sunEnabled = true;
+            bool shadowsEnabled = true;
+            float shadowStrength = 0.82F;
+            float shadowSoftness = 1.25F;
+            float shadowDistance = 1800.0F;
         };
 
         [[nodiscard]]
@@ -149,6 +171,23 @@ namespace lts::editor
                     (std::max)(
                         environment.ambientIntensity,
                         0.0F);
+
+                result.fogColor =
+                {
+                    (std::max)(environment.fogColor[0], 0.0F),
+                    (std::max)(environment.fogColor[1], 0.0F),
+                    (std::max)(environment.fogColor[2], 0.0F)
+                };
+                result.fogStart = (std::max)(environment.fogStart, 0.0F);
+                result.fogEnd = (std::max)(environment.fogEnd, result.fogStart + 1.0F);
+                result.fogDensity = (std::max)(environment.fogDensity, 0.0F);
+                result.fogHeightFalloff = (std::max)(environment.fogHeightFalloff, 0.0F);
+                result.fogEnabled = environment.fogEnabled;
+                result.sunEnabled = environment.sunEnabled;
+                result.shadowsEnabled = environment.shadowsEnabled;
+                result.shadowStrength = std::clamp(environment.shadowStrength, 0.0F, 1.0F);
+                result.shadowSoftness = std::clamp(environment.shadowSoftness, 0.05F, 4.0F);
+                result.shadowDistance = (std::max)(environment.shadowDistance, 1.0F);
 
                 break;
             }
@@ -192,6 +231,11 @@ namespace lts::editor
                 result.intensity =
                     (std::max)(light.intensity, 0.0F) *
                     0.25F;
+
+                if (!light.castShadows)
+                {
+                    result.shadowsEnabled = false;
+                }
 
                 break;
             }
@@ -1950,6 +1994,23 @@ namespace lts::editor
                 workspace = workspace.parent_path();
             }
 
+            std::error_code workspaceError;
+
+            while (!std::filesystem::is_directory(
+                       workspace / L"bin" / L"Data" / L"TerrainData" / L"Materials",
+                       workspaceError))
+            {
+                const std::filesystem::path parent = workspace.parent_path();
+
+                if (parent.empty() || parent == workspace)
+                {
+                    break;
+                }
+
+                workspace = parent;
+                workspaceError.clear();
+            }
+
             workspaceRoot_ = workspace;
 
             const auto loadLayerTexture =
@@ -2500,6 +2561,43 @@ namespace lts::editor
                     lighting.ambientIntensity,
 
                 1.0F
+            };
+
+            if (!lighting.sunEnabled)
+            {
+                constants.sunDirectionIntensity.w = 0.0F;
+            }
+
+            constants.cameraPositionFogDensity =
+            {
+                cameraPosition.x,
+                cameraPosition.y,
+                cameraPosition.z,
+                lighting.fogDensity
+            };
+
+            constants.fogColorEnabled =
+            {
+                lighting.fogColor.x,
+                lighting.fogColor.y,
+                lighting.fogColor.z,
+                lighting.fogEnabled ? 1.0F : 0.0F
+            };
+
+            constants.fogDistancesHeight =
+            {
+                lighting.fogStart,
+                lighting.fogEnd,
+                lighting.fogHeightFalloff,
+                0.0F
+            };
+
+            constants.shadowParameters =
+            {
+                lighting.shadowsEnabled ? lighting.shadowStrength : 0.0F,
+                lighting.shadowSoftness,
+                lighting.shadowDistance,
+                0.0F
             };
 
             engine::graphics::GraphicsResult result =

@@ -102,7 +102,7 @@ struct Editor_Level
 	void	ProcessParticleGun();
 
 	void	ProcessNavigation();
-	void	ProcessAutodeskNavigation(float SliderX, float SliderY);
+	void	ProcessRecastNavigation(float SliderX, float SliderY);
 	void	ProcessNavigationRegions(float SliderX, float SliderY);
 
 	void	ProcessLightProbesCreate();

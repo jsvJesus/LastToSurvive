@@ -32,14 +32,17 @@
 
 #include <array>
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
 #include <limits>
 #include <memory>
 #include <new>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <unordered_map>
@@ -53,6 +56,9 @@ namespace lts::editor
     {
         constexpr std::uintmax_t MaximumMeshFileSize =
             512U * 1024U * 1024U;
+        constexpr std::size_t MaximumInstancesPerDraw = 2048U;
+        constexpr std::size_t MaximumMeshLoadsPerFrame = 1U;
+        constexpr float StaticMeshRenderDistance = 1600.0F;
 
         struct alignas(16) ObjectConstants final
         {
@@ -68,10 +74,235 @@ namespace lts::editor
 
             DirectX::XMFLOAT4 sunColor;
             DirectX::XMFLOAT4 ambientColor;
+            DirectX::XMFLOAT4 cameraPositionFogDensity;
+            DirectX::XMFLOAT4 fogColorEnabled;
+            DirectX::XMFLOAT4 fogDistancesHeight;
+            DirectX::XMFLOAT4 shadowParameters;
+            DirectX::XMFLOAT4 legacySurfaceParameters;
+            DirectX::XMFLOAT4 legacyDetailParameters;
+            DirectX::XMFLOAT4 legacyTextureFlags;
+            DirectX::XMFLOAT4 legacyFeatureFlags;
         };
 
         static_assert(
             sizeof(ObjectConstants) % 16U == 0U);
+
+        struct alignas(16) InstanceData final
+        {
+            DirectX::XMFLOAT4X4 world{};
+            DirectX::XMFLOAT4 parameters{};
+        };
+
+        static_assert(sizeof(InstanceData) == 80U);
+
+        struct LegacyMaterialDefinition final
+        {
+            engine::assets::MaterialAssetDesc desc;
+            float detailScale = 1.0F;
+            float detailAmount = 0.0F;
+            float displacementValue = 0.0F;
+            bool displacementEnabled = false;
+            bool camouflage = false;
+            std::string type;
+            std::string diffuseTexture;
+            std::string normalTexture;
+            std::string specularTexture;
+            std::string specularPowerTexture;
+            std::string detailNormalTexture;
+            std::string emissiveTexture;
+        };
+
+        [[nodiscard]] std::string TrimAscii(std::string value)
+        {
+            const auto isSpace = [](const unsigned char character)
+            {
+                return std::isspace(character) != 0;
+            };
+            value.erase(
+                value.begin(),
+                std::find_if(value.begin(), value.end(),
+                    [&](const char character)
+                    {
+                        return !isSpace(static_cast<unsigned char>(character));
+                    }));
+            value.erase(
+                std::find_if(value.rbegin(), value.rend(),
+                    [&](const char character)
+                    {
+                        return !isSpace(static_cast<unsigned char>(character));
+                    }).base(),
+                value.end());
+            return value;
+        }
+
+        [[nodiscard]] std::string LowercaseAscii(std::string value)
+        {
+            std::transform(
+                value.begin(),
+                value.end(),
+                value.begin(),
+                [](const unsigned char character)
+                {
+                    return static_cast<char>(std::tolower(character));
+                });
+            return value;
+        }
+
+        [[nodiscard]] float ParseLegacyFloat(
+            const std::string& value,
+            const float fallback) noexcept
+        {
+            char* end = nullptr;
+            const float parsed = std::strtof(value.c_str(), &end);
+            return end != value.c_str() && std::isfinite(parsed)
+                ? parsed
+                : fallback;
+        }
+
+        [[nodiscard]] bool ParseLegacyBool(
+            const std::string& value) noexcept
+        {
+            const std::string lowered = LowercaseAscii(TrimAscii(value));
+            return lowered == "1" || lowered == "true" || lowered == "yes";
+        }
+
+        [[nodiscard]] bool ParseLegacyMaterial(
+            const std::filesystem::path& path,
+            LegacyMaterialDefinition& output) noexcept
+        {
+            try
+            {
+                std::ifstream input(path);
+                if (!input)
+                {
+                    return false;
+                }
+                input.imbue(std::locale::classic());
+
+                LegacyMaterialDefinition material;
+                bool forceTransparent = false;
+                bool alphaTransparent = false;
+                bool glows = false;
+                float lowQualitySelfIllumination = 0.0F;
+                float selfIlluminationMultiplier = 0.0F;
+                float alphaReference = 0.0F;
+                std::string line;
+
+                while (std::getline(input, line))
+                {
+                    const std::size_t separator = line.find('=');
+                    if (separator == std::string::npos)
+                    {
+                        continue;
+                    }
+                    const std::string key = LowercaseAscii(
+                        TrimAscii(line.substr(0U, separator)));
+                    const std::string value = TrimAscii(
+                        line.substr(separator + 1U));
+
+                    if (key == "name") material.desc.debugName = value;
+                    else if (key == "texture") material.diffuseTexture = value;
+                    else if (key == "normalmap") material.normalTexture = value;
+                    else if (key == "specularmap") material.specularTexture = value;
+                    else if (key == "specpowmap") material.specularPowerTexture = value;
+                    else if (key == "detailnmap") material.detailNormalTexture = value;
+                    else if (key == "glowmap") material.emissiveTexture = value;
+                    else if (key == "specularpower")
+                        material.desc.specularIntensity = (std::max)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                    else if (key == "specular1power")
+                    {
+                        const float gloss = (std::clamp)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
+                        material.desc.specularPower = 4.0F + gloss * 124.0F;
+                    }
+                    else if (key == "reflectionpower")
+                        material.desc.reflectionFactor = (std::max)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                    else if (key == "detailscale")
+                        material.detailScale = (std::max)(
+                            ParseLegacyFloat(value, 1.0F), 0.001F);
+                    else if (key == "detailammount" || key == "diffdetailammount")
+                        material.detailAmount = (std::max)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                    else if (key == "normalscale")
+                        material.desc.normalScale = ParseLegacyFloat(value, 1.0F);
+                    else if (key == "displace")
+                        material.displacementEnabled = ParseLegacyBool(value);
+                    else if (key == "displ_val")
+                        material.displacementValue = ParseLegacyFloat(value, 0.0F);
+                    else if (key == "lowqmetallness")
+                        material.desc.metallicFactor = (std::clamp)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
+                    else if (key == "lowqselfillum")
+                        lowQualitySelfIllumination = (std::max)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                    else if (key == "selfillummultiplier")
+                        selfIlluminationMultiplier = (std::max)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                    else if (key == "doublesided")
+                        material.desc.doubleSided = ParseLegacyBool(value);
+                    else if (key == "forcetransparent")
+                        forceTransparent = ParseLegacyBool(value);
+                    else if (key == "alphatransparent")
+                        alphaTransparent = ParseLegacyBool(value);
+                    else if (key == "camouflage")
+                        material.camouflage = ParseLegacyBool(value);
+                    else if (key == "glows")
+                        glows = ParseLegacyBool(value);
+                    else if (key == "alpharef")
+                        alphaReference = ParseLegacyFloat(value, 0.0F);
+                    else if (key == "type") material.type = value;
+                    else if (key == "color24")
+                    {
+                        std::istringstream colors(value);
+                        colors.imbue(std::locale::classic());
+                        int red = 255;
+                        int green = 255;
+                        int blue = 255;
+                        if (colors >> red >> green >> blue)
+                        {
+                            material.desc.baseColorFactor = {
+                                (std::clamp)(red, 0, 255) / 255.0F,
+                                (std::clamp)(green, 0, 255) / 255.0F,
+                                (std::clamp)(blue, 0, 255) / 255.0F,
+                                1.0F};
+                        }
+                    }
+                }
+
+                material.desc.emissiveStrength = (std::max)(
+                    lowQualitySelfIllumination,
+                    selfIlluminationMultiplier);
+                if (glows && material.desc.emissiveStrength <= 0.0F)
+                {
+                    material.desc.emissiveStrength = 1.0F;
+                }
+                if (forceTransparent || alphaTransparent)
+                {
+                    material.desc.alphaMode =
+                        engine::assets::MaterialAlphaMode::Blend;
+                }
+                else if (alphaReference > 0.0F)
+                {
+                    material.desc.alphaMode =
+                        engine::assets::MaterialAlphaMode::Mask;
+                    material.desc.alphaCutoff = (std::clamp)(
+                        alphaReference > 1.0F
+                            ? alphaReference / 255.0F
+                            : alphaReference,
+                        0.0F,
+                        1.0F);
+                }
+
+                output = std::move(material);
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
 
         [[nodiscard]] bool DecodeWicRgba(
             const std::filesystem::path& path,
@@ -127,10 +358,10 @@ namespace lts::editor
                 DirectX::XMMatrixRotationRollPitchYaw(
                     DirectX::XMConvertToRadians(
                         transform.
-                            rotationDegrees[0]),
+                            rotationDegrees[1]),
                     DirectX::XMConvertToRadians(
                         transform.
-                            rotationDegrees[1]),
+                            rotationDegrees[0]),
                     DirectX::XMConvertToRadians(
                         transform.
                             rotationDegrees[2]));
@@ -173,6 +404,24 @@ namespace lts::editor
             };
 
             float ambientIntensity = 1.0F;
+
+            DirectX::XMFLOAT3 fogColor
+            {
+                0.45F,
+                0.62F,
+                0.78F
+            };
+
+            float fogStart = 450.0F;
+            float fogEnd = 5000.0F;
+            float fogDensity = 0.00018F;
+            float fogHeightFalloff = 0.0015F;
+            bool fogEnabled = false;
+            bool sunEnabled = true;
+            bool shadowsEnabled = true;
+            float shadowStrength = 0.82F;
+            float shadowSoftness = 1.25F;
+            float shadowDistance = 1800.0F;
         };
 
         [[nodiscard]]
@@ -211,6 +460,23 @@ namespace lts::editor
                     (std::max)(
                         environment.ambientIntensity,
                         0.0F);
+
+                result.fogColor =
+                {
+                    (std::max)(environment.fogColor[0], 0.0F),
+                    (std::max)(environment.fogColor[1], 0.0F),
+                    (std::max)(environment.fogColor[2], 0.0F)
+                };
+                result.fogStart = (std::max)(environment.fogStart, 0.0F);
+                result.fogEnd = (std::max)(environment.fogEnd, result.fogStart + 1.0F);
+                result.fogDensity = (std::max)(environment.fogDensity, 0.0F);
+                result.fogHeightFalloff = (std::max)(environment.fogHeightFalloff, 0.0F);
+                result.fogEnabled = environment.fogEnabled;
+                result.sunEnabled = environment.sunEnabled;
+                result.shadowsEnabled = environment.shadowsEnabled;
+                result.shadowStrength = std::clamp(environment.shadowStrength, 0.0F, 1.0F);
+                result.shadowSoftness = std::clamp(environment.shadowSoftness, 0.05F, 4.0F);
+                result.shadowDistance = (std::max)(environment.shadowDistance, 1.0F);
 
                 break;
             }
@@ -258,6 +524,11 @@ namespace lts::editor
                 result.intensity =
                     (std::max)(light.intensity, 0.0F) *
                     0.25F;
+
+                if (!light.castShadows)
+                {
+                    result.shadowsEnabled = false;
+                }
 
                 break;
             }
@@ -425,6 +696,7 @@ namespace lts::editor
         bool CreateTextureFromFile(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& file,
+            const bool forceSrgb,
             engine::graphics::TextureHandle& output) noexcept
         {
             output = {};
@@ -452,7 +724,7 @@ namespace lts::editor
                     engine::assets::DdsTextureDecodeOptions
                         options;
 
-                    options.forceSrgb = true;
+                    options.forceSrgb = forceSrgb;
                     options.allowBc7 = true;
 
                     const auto decodeResult =
@@ -517,8 +789,9 @@ namespace lts::editor
                 description.height = height;
 
                 description.format =
-                    engine::graphics::Format::
-                        R8G8B8A8UNormSrgb;
+                    forceSrgb
+                        ? engine::graphics::Format::R8G8B8A8UNormSrgb
+                        : engine::graphics::Format::R8G8B8A8UNorm;
 
                 engine::graphics::TextureSubresourceData
                     initialData;
@@ -563,34 +836,11 @@ namespace lts::editor
 
                 if (logicalPath.is_absolute())
                 {
-                    std::error_code currentPathError;
+                    logicalPath = logicalPath.relative_path();
 
-                    const std::filesystem::path gameRoot =
-                        std::filesystem::current_path(
-                            currentPathError);
-
-                    if (!currentPathError)
+                    if (logicalPath.empty())
                     {
-                        std::error_code relativeError;
-
-                        const std::filesystem::path relative =
-                            std::filesystem::relative(
-                                logicalPath,
-                                gameRoot,
-                                relativeError);
-
-                        if (
-                            !relativeError &&
-                            !relative.empty())
-                        {
-                            logicalPath = relative;
-                        }
-                    }
-
-                    if (logicalPath.is_absolute())
-                    {
-                        logicalPath =
-                            logicalPath.filename();
+                        logicalPath = requestedPath.filename();
                     }
                 }
 
@@ -655,7 +905,18 @@ namespace lts::editor
         {
             engine::assets::MaterialAssetDesc desc;
             engine::graphics::TextureHandle baseColorTexture;
+            engine::graphics::TextureHandle normalTexture;
+            engine::graphics::TextureHandle specularTexture;
+            engine::graphics::TextureHandle specularPowerTexture;
+            engine::graphics::TextureHandle detailNormalTexture;
+            engine::graphics::TextureHandle emissiveTexture;
             engine::graphics::SamplerHandle sampler;
+            float detailScale = 1.0F;
+            float detailAmount = 0.0F;
+            float displacementValue = 0.0F;
+            bool displacementEnabled = false;
+            bool camouflage = false;
+            std::string type;
         };
 
         struct CachedMesh final
@@ -774,7 +1035,7 @@ namespace lts::editor
             const std::array<
                 engine::graphics::
                     VertexElementDesc,
-                4U> elements
+                9U> elements
             {{
                 {
                     "POSITION",
@@ -819,6 +1080,41 @@ namespace lts::editor
                     engine::graphics::
                         VertexInputRate::PerVertex,
                     0U
+                },
+                {
+                    "INSTANCEWORLD", 0U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    1U, 0U,
+                    engine::graphics::VertexInputRate::PerInstance,
+                    1U
+                },
+                {
+                    "INSTANCEWORLD", 1U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    1U, 16U,
+                    engine::graphics::VertexInputRate::PerInstance,
+                    1U
+                },
+                {
+                    "INSTANCEWORLD", 2U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    1U, 32U,
+                    engine::graphics::VertexInputRate::PerInstance,
+                    1U
+                },
+                {
+                    "INSTANCEWORLD", 3U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    1U, 48U,
+                    engine::graphics::VertexInputRate::PerInstance,
+                    1U
+                },
+                {
+                    "INSTANCEPARAM", 0U,
+                    engine::graphics::Format::R32G32B32A32Float,
+                    1U, 64U,
+                    engine::graphics::VertexInputRate::PerInstance,
+                    1U
                 }
             }};
 
@@ -893,6 +1189,35 @@ namespace lts::editor
                     "Create static mesh object buffer",
                     result);
 
+                Shutdown(device);
+                return false;
+            }
+
+            engine::graphics::BufferDesc instanceBufferDescription;
+            instanceBufferDescription.byteSize =
+                sizeof(InstanceData) * MaximumInstancesPerDraw;
+            instanceBufferDescription.stride = sizeof(InstanceData);
+            instanceBufferDescription.usage =
+                engine::graphics::ResourceUsage::Dynamic;
+            instanceBufferDescription.bindFlags =
+                engine::graphics::BufferBindFlags::Vertex;
+            instanceBufferDescription.miscFlags =
+                engine::graphics::BufferMiscFlags::None;
+            instanceBufferDescription.cpuAccess =
+                engine::graphics::CpuAccessFlags::Write;
+            instanceBufferDescription.indexFormat =
+                engine::graphics::IndexFormat::None;
+
+            result = device.CreateBuffer(
+                instanceBufferDescription,
+                nullptr,
+                instanceBuffer_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create static mesh instance buffer",
+                    result);
                 Shutdown(device);
                 return false;
             }
@@ -1054,6 +1379,7 @@ namespace lts::editor
                 return false;
             }
 
+            BuildLegacyAssetIndex();
             initialized_ = true;
 
             engine::core::GetLogger().Write(
@@ -1072,13 +1398,6 @@ namespace lts::editor
 
             for (auto& entry : meshes_)
             {
-                for (CachedMaterial& material : entry.second.materials)
-                {
-                    if (material.baseColorTexture.IsValid())
-                        static_cast<void>(device.DestroyTexture(material.baseColorTexture));
-                    if (material.sampler.IsValid())
-                        static_cast<void>(device.DestroySampler(material.sampler));
-                }
                 if (entry.second.gpu != nullptr)
                 {
                     static_cast<void>(
@@ -1089,6 +1408,25 @@ namespace lts::editor
 
             meshes_.clear();
             failedMeshes_.clear();
+
+            for (const auto& [key, texture] : materialTextures_)
+            {
+                static_cast<void>(key);
+                if (texture.IsValid())
+                {
+                    static_cast<void>(device.DestroyTexture(texture));
+                }
+            }
+            materialTextures_.clear();
+            failedMaterialTextures_.clear();
+            legacyMaterialIndex_.clear();
+            legacyTextureIndex_.clear();
+
+            if (materialSampler_.IsValid())
+            {
+                static_cast<void>(device.DestroySampler(materialSampler_));
+                materialSampler_ = {};
+            }
 
             if (transparentDoubleSidedPipeline_.IsValid())
             {
@@ -1153,6 +1491,13 @@ namespace lts::editor
                 vertexShader_ = {};
             }
 
+            if (instanceBuffer_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyBuffer(instanceBuffer_));
+                instanceBuffer_ = {};
+            }
+
             if (objectBuffer_.IsValid())
             {
                 static_cast<void>(
@@ -1170,7 +1515,8 @@ namespace lts::editor
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept
+                viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
         {
             if (
                 !initialized_ ||
@@ -1225,6 +1571,18 @@ namespace lts::editor
             const ResolvedDirectionalLight lighting =
                 ResolveDirectionalLight(document);
 
+            if (instanceBuffer_.IsValid())
+            {
+                result = RenderInstancedBatches(
+                    context,
+                    entities,
+                    selectedIndex,
+                    lighting,
+                    viewProjection,
+                    cameraPosition);
+            }
+            else
+            {
             for (
                 std::size_t entityIndex = 0U;
                 entityIndex < entities.size();
@@ -1238,6 +1596,31 @@ namespace lts::editor
                     !entity.staticMesh->visible ||
                     entity.staticMesh->
                         assetPath.empty())
+                {
+                    continue;
+                }
+
+                const DirectX::XMVECTOR objectOrigin =
+                    DirectX::XMVectorSet(
+                        entity.transform.position[0],
+                        entity.transform.position[1],
+                        entity.transform.position[2],
+                        1.0F);
+                const DirectX::XMVECTOR clipPosition =
+                    DirectX::XMVector4Transform(
+                        objectOrigin,
+                        DirectX::XMLoadFloat4x4(&viewProjection));
+                DirectX::XMFLOAT4 clip{};
+                DirectX::XMStoreFloat4(&clip, clipPosition);
+
+                if (
+                    clip.w <= 0.001F ||
+                    clip.x < -clip.w * 1.25F ||
+                    clip.x > clip.w * 1.25F ||
+                    clip.y < -clip.w * 1.25F ||
+                    clip.y > clip.w * 1.25F ||
+                    clip.z < -clip.w * 0.10F ||
+                    clip.z > clip.w * 1.20F)
                 {
                     continue;
                 }
@@ -1295,6 +1678,43 @@ namespace lts::editor
                         lighting.ambientIntensity,
 
                     1.0F
+                };
+
+                if (!lighting.sunEnabled)
+                {
+                    constants.sunDirectionIntensity.w = 0.0F;
+                }
+
+                constants.cameraPositionFogDensity =
+                {
+                    cameraPosition.x,
+                    cameraPosition.y,
+                    cameraPosition.z,
+                    lighting.fogDensity
+                };
+
+                constants.fogColorEnabled =
+                {
+                    lighting.fogColor.x,
+                    lighting.fogColor.y,
+                    lighting.fogColor.z,
+                    lighting.fogEnabled ? 1.0F : 0.0F
+                };
+
+                constants.fogDistancesHeight =
+                {
+                    lighting.fogStart,
+                    lighting.fogEnd,
+                    lighting.fogHeightFalloff,
+                    0.0F
+                };
+
+                constants.shadowParameters =
+                {
+                    lighting.shadowsEnabled ? lighting.shadowStrength : 0.0F,
+                    lighting.shadowSoftness,
+                    lighting.shadowDistance,
+                    0.0F
                 };
 
                 result =
@@ -1454,10 +1874,11 @@ namespace lts::editor
                     break;
                 }
             }
+            }
 
             context.UnbindIndexBuffer();
             static_cast<void>(context.UnbindShaderResources(
-                engine::graphics::ShaderStage::Pixel, 0U, 1U));
+                engine::graphics::ShaderStage::Pixel, 0U, 6U));
             static_cast<void>(context.UnbindSamplers(
                 engine::graphics::ShaderStage::Pixel, 0U, 1U));
 
@@ -1473,6 +1894,419 @@ namespace lts::editor
             context.UnbindGraphicsPipeline();
 
             return result;
+        }
+
+        [[nodiscard]]
+        engine::graphics::GraphicsResult RenderInstancedBatches(
+            engine::graphics::CommandContext& context,
+            const std::vector<EditorSceneEntity>& entities,
+            const std::size_t selectedIndex,
+            const ResolvedDirectionalLight& lighting,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
+        {
+            struct VisibleBatch final
+            {
+                std::wstring assetPath;
+                std::vector<InstanceData> instances;
+            };
+
+            try
+            {
+                std::vector<VisibleBatch> batches;
+                batches.reserve(1024U);
+
+                std::unordered_map<std::wstring, std::size_t> batchLookup;
+                batchLookup.reserve(1024U);
+
+                const DirectX::XMMATRIX viewProjectionMatrix =
+                    DirectX::XMLoadFloat4x4(&viewProjection);
+                constexpr float renderDistanceSquared =
+                    StaticMeshRenderDistance * StaticMeshRenderDistance;
+
+                for (std::size_t entityIndex = 0U;
+                     entityIndex < entities.size();
+                     ++entityIndex)
+                {
+                    const EditorSceneEntity& entity = entities[entityIndex];
+                    if (!entity.staticMesh.has_value() ||
+                        !entity.staticMesh->visible ||
+                        entity.staticMesh->assetPath.empty())
+                    {
+                        continue;
+                    }
+
+                    const float deltaX =
+                        entity.transform.position[0] - cameraPosition.x;
+                    const float deltaZ =
+                        entity.transform.position[2] - cameraPosition.z;
+                    if (deltaX * deltaX + deltaZ * deltaZ > renderDistanceSquared)
+                    {
+                        continue;
+                    }
+
+                    const DirectX::XMVECTOR objectOrigin =
+                        DirectX::XMVectorSet(
+                            entity.transform.position[0],
+                            entity.transform.position[1],
+                            entity.transform.position[2],
+                            1.0F);
+                    const DirectX::XMVECTOR clipPosition =
+                        DirectX::XMVector4Transform(
+                            objectOrigin,
+                            viewProjectionMatrix);
+                    DirectX::XMFLOAT4 clip{};
+                    DirectX::XMStoreFloat4(&clip, clipPosition);
+
+                    if (clip.w <= 0.001F ||
+                        clip.x < -clip.w * 1.25F ||
+                        clip.x > clip.w * 1.25F ||
+                        clip.y < -clip.w * 1.25F ||
+                        clip.y > clip.w * 1.25F ||
+                        clip.z < -clip.w * 0.10F ||
+                        clip.z > clip.w * 1.20F)
+                    {
+                        continue;
+                    }
+
+                    const std::wstring key = LowercasePath(
+                        std::filesystem::path(entity.staticMesh->assetPath)
+                            .lexically_normal()
+                            .wstring());
+                    auto foundBatch = batchLookup.find(key);
+                    std::size_t batchIndex = 0U;
+                    if (foundBatch == batchLookup.end())
+                    {
+                        batchIndex = batches.size();
+                        VisibleBatch batch;
+                        batch.assetPath = entity.staticMesh->assetPath;
+                        batch.instances.reserve(8U);
+                        batches.push_back(std::move(batch));
+                        batchLookup.emplace(key, batchIndex);
+                    }
+                    else
+                    {
+                        batchIndex = foundBatch->second;
+                    }
+
+                    InstanceData instance{};
+                    DirectX::XMStoreFloat4x4(
+                        &instance.world,
+                        BuildWorldMatrix(entity.transform));
+                    instance.parameters.x =
+                        entityIndex == selectedIndex ? 1.0F : 0.0F;
+                    batches[batchIndex].instances.push_back(instance);
+                }
+
+                ObjectConstants constants{};
+                DirectX::XMStoreFloat4x4(
+                    &constants.world,
+                    DirectX::XMMatrixIdentity());
+                constants.viewProjection = viewProjection;
+                constants.baseColor = {0.58F, 0.63F, 0.66F, 1.0F};
+                constants.materialParameters = {0.0F, 0.0F, 0.0F, 0.5F};
+                constants.sunDirectionIntensity = {
+                    lighting.direction.x,
+                    lighting.direction.y,
+                    lighting.direction.z,
+                    lighting.sunEnabled ? lighting.intensity : 0.0F};
+                constants.sunColor = {
+                    lighting.color.x,
+                    lighting.color.y,
+                    lighting.color.z,
+                    1.0F};
+                constants.ambientColor = {
+                    lighting.ambientColor.x * lighting.ambientIntensity,
+                    lighting.ambientColor.y * lighting.ambientIntensity,
+                    lighting.ambientColor.z * lighting.ambientIntensity,
+                    1.0F};
+                constants.cameraPositionFogDensity = {
+                    cameraPosition.x,
+                    cameraPosition.y,
+                    cameraPosition.z,
+                    lighting.fogDensity};
+                constants.fogColorEnabled = {
+                    lighting.fogColor.x,
+                    lighting.fogColor.y,
+                    lighting.fogColor.z,
+                    lighting.fogEnabled ? 1.0F : 0.0F};
+                constants.fogDistancesHeight = {
+                    lighting.fogStart,
+                    lighting.fogEnd,
+                    lighting.fogHeightFalloff,
+                    0.0F};
+                constants.shadowParameters = {
+                    lighting.shadowsEnabled ? lighting.shadowStrength : 0.0F,
+                    lighting.shadowSoftness,
+                    lighting.shadowDistance,
+                    0.0F};
+
+                std::vector<InstanceData> instanceUpload(
+                    MaximumInstancesPerDraw);
+                std::size_t meshLoads = 0U;
+                engine::graphics::GraphicsResult result =
+                    engine::graphics::GraphicsResult::Success;
+
+                for (VisibleBatch& batch : batches)
+                {
+                    bool loadAttempted = false;
+                    CachedMesh* const cachedMesh = GetOrLoadMesh(
+                        batch.assetPath,
+                        meshLoads < MaximumMeshLoadsPerFrame,
+                        &loadAttempted);
+                    if (loadAttempted)
+                    {
+                        ++meshLoads;
+                    }
+                    if (cachedMesh == nullptr || cachedMesh->gpu == nullptr)
+                    {
+                        continue;
+                    }
+
+                    engine::assets::GpuMesh* const mesh = cachedMesh->gpu.get();
+                    const std::array<engine::graphics::VertexBufferBinding, 2U>
+                        vertexBindings{{
+                            {
+                                mesh->GetVertexBuffer(),
+                                mesh->GetVertexStride(),
+                                0U
+                            },
+                            {
+                                instanceBuffer_,
+                                static_cast<std::uint32_t>(sizeof(InstanceData)),
+                                0U
+                            }
+                        }};
+                    result = context.SetVertexBuffers(
+                        0U,
+                        vertexBindings.data(),
+                        vertexBindings.size());
+                    if (engine::graphics::Failed(result))
+                    {
+                        break;
+                    }
+
+                    engine::graphics::IndexBufferBinding indexBinding;
+                    indexBinding.buffer = mesh->GetIndexBuffer();
+                    indexBinding.offset = 0U;
+                    result = context.SetIndexBuffer(indexBinding);
+                    if (engine::graphics::Failed(result))
+                    {
+                        break;
+                    }
+
+                    for (std::size_t firstInstance = 0U;
+                         firstInstance < batch.instances.size();
+                         firstInstance += MaximumInstancesPerDraw)
+                    {
+                        const std::size_t instanceCount = (std::min)(
+                            MaximumInstancesPerDraw,
+                            batch.instances.size() - firstInstance);
+                        std::copy_n(
+                            batch.instances.data() + firstInstance,
+                            instanceCount,
+                            instanceUpload.data());
+                        result = context.UpdateBuffer(
+                            instanceBuffer_,
+                            instanceUpload.data(),
+                            instanceUpload.size() * sizeof(InstanceData));
+                        if (engine::graphics::Failed(result))
+                        {
+                            break;
+                        }
+
+                        for (std::size_t submeshIndex = 0U;
+                             submeshIndex < mesh->GetSubmeshCount();
+                             ++submeshIndex)
+                        {
+                            const engine::assets::MeshSubmesh* const submesh =
+                                mesh->GetSubmesh(submeshIndex);
+                            if (submesh == nullptr)
+                            {
+                                continue;
+                            }
+
+                            engine::graphics::TextureHandle texture;
+                            engine::graphics::TextureHandle normalTexture;
+                            engine::graphics::TextureHandle specularTexture;
+                            engine::graphics::TextureHandle detailNormalTexture;
+                            engine::graphics::TextureHandle emissiveTexture;
+                            engine::graphics::TextureHandle specularPowerTexture;
+                            engine::graphics::SamplerHandle sampler;
+                            bool transparent = false;
+                            bool doubleSided = false;
+                            if (submesh->materialSlot < cachedMesh->materials.size())
+                            {
+                                const CachedMaterial& material =
+                                    cachedMesh->materials[submesh->materialSlot];
+                                constants.baseColor = {
+                                    material.desc.baseColorFactor[0],
+                                    material.desc.baseColorFactor[1],
+                                    material.desc.baseColorFactor[2],
+                                    material.desc.baseColorFactor[3]};
+                                texture = material.baseColorTexture;
+                                normalTexture = material.normalTexture;
+                                specularTexture = material.specularTexture;
+                                detailNormalTexture = material.detailNormalTexture;
+                                emissiveTexture = material.emissiveTexture;
+                                specularPowerTexture = material.specularPowerTexture;
+                                sampler = material.sampler;
+                                transparent = material.desc.alphaMode ==
+                                    engine::assets::MaterialAlphaMode::Blend;
+                                doubleSided = material.desc.doubleSided;
+                                constants.materialParameters.y =
+                                    texture.IsValid() ? 1.0F : 0.0F;
+                                constants.materialParameters.z =
+                                    material.desc.alphaMode ==
+                                            engine::assets::MaterialAlphaMode::Mask
+                                        ? 1.0F
+                                        : 0.0F;
+                                constants.materialParameters.w =
+                                    material.desc.alphaCutoff;
+                                constants.legacySurfaceParameters = {
+                                    material.desc.specularIntensity,
+                                    material.desc.specularPower,
+                                    material.desc.reflectionFactor,
+                                    material.desc.metallicFactor};
+                                constants.legacyDetailParameters = {
+                                    material.desc.normalScale,
+                                    material.detailScale,
+                                    material.detailAmount,
+                                    material.desc.emissiveStrength};
+                                constants.legacyTextureFlags = {
+                                    normalTexture.IsValid() ? 1.0F : 0.0F,
+                                    specularTexture.IsValid() ? 1.0F : 0.0F,
+                                    detailNormalTexture.IsValid() ? 1.0F : 0.0F,
+                                    emissiveTexture.IsValid() ? 1.0F : 0.0F};
+                                constants.legacyFeatureFlags = {
+                                    specularPowerTexture.IsValid() ? 1.0F : 0.0F,
+                                    material.camouflage ? 1.0F : 0.0F,
+                                    material.displacementEnabled ? 1.0F : 0.0F,
+                                    material.displacementValue};
+                            }
+                            else
+                            {
+                                constants.baseColor = {0.58F, 0.63F, 0.66F, 1.0F};
+                                constants.materialParameters.y = 0.0F;
+                                constants.materialParameters.z = 0.0F;
+                                constants.materialParameters.w = 0.5F;
+                                constants.legacySurfaceParameters = {
+                                    0.0F, 32.0F, 0.0F, 0.0F};
+                                constants.legacyDetailParameters = {
+                                    1.0F, 1.0F, 0.0F, 0.0F};
+                                constants.legacyTextureFlags = {};
+                                constants.legacyFeatureFlags = {};
+                            }
+
+                            const engine::graphics::PipelineStateHandle selectedPipeline =
+                                transparent
+                                    ? (doubleSided
+                                           ? transparentDoubleSidedPipeline_
+                                           : transparentPipeline_)
+                                    : (doubleSided
+                                           ? doubleSidedPipeline_
+                                           : pipeline_);
+                            result = context.SetGraphicsPipeline(selectedPipeline);
+                            if (engine::graphics::Failed(result))
+                            {
+                                break;
+                            }
+                            result = context.UpdateBuffer(
+                                objectBuffer_,
+                                &constants,
+                                sizeof(constants));
+                            if (engine::graphics::Failed(result))
+                            {
+                                break;
+                            }
+
+                            const std::array<engine::graphics::TextureHandle, 6U>
+                                materialTextureHandles{{
+                                    texture,
+                                    normalTexture,
+                                    specularTexture,
+                                    detailNormalTexture,
+                                    emissiveTexture,
+                                    specularPowerTexture}};
+                            static_cast<void>(context.UnbindShaderResources(
+                                engine::graphics::ShaderStage::Pixel,
+                                0U,
+                                materialTextureHandles.size()));
+                            bool anyTexture = false;
+                            for (std::size_t textureSlot = 0U;
+                                 textureSlot < materialTextureHandles.size();
+                                 ++textureSlot)
+                            {
+                                if (!materialTextureHandles[textureSlot].IsValid())
+                                {
+                                    continue;
+                                }
+                                anyTexture = true;
+                                result = context.SetShaderResources(
+                                    engine::graphics::ShaderStage::Pixel,
+                                    static_cast<std::uint32_t>(textureSlot),
+                                    &materialTextureHandles[textureSlot],
+                                    1U);
+                                if (engine::graphics::Failed(result)) break;
+                            }
+                            if (engine::graphics::Failed(result))
+                            {
+                                break;
+                            }
+                            if (anyTexture && sampler.IsValid())
+                            {
+                                result = context.SetSamplers(
+                                    engine::graphics::ShaderStage::Pixel,
+                                    0U,
+                                    &sampler,
+                                    1U);
+                                if (engine::graphics::Failed(result))
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                static_cast<void>(context.UnbindSamplers(
+                                    engine::graphics::ShaderStage::Pixel,
+                                    0U,
+                                    1U));
+                            }
+
+                            result = context.DrawIndexedInstanced(
+                                submesh->indexCount,
+                                static_cast<std::uint32_t>(instanceCount),
+                                submesh->firstIndex,
+                                submesh->baseVertex,
+                                0U);
+                            if (engine::graphics::Failed(result))
+                            {
+                                break;
+                            }
+                        }
+
+                        if (engine::graphics::Failed(result))
+                        {
+                            break;
+                        }
+                    }
+
+                    if (engine::graphics::Failed(result))
+                    {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+            catch (const std::bad_alloc&)
+            {
+                return engine::graphics::GraphicsResult::OutOfMemory;
+            }
+            catch (...)
+            {
+                return engine::graphics::GraphicsResult::BackendFailure;
+            }
         }
 
         [[nodiscard]]
@@ -1558,24 +2392,6 @@ namespace lts::editor
                     return true;
                 }
 
-                for (CachedMaterial& material :
-                     found->second.materials)
-                {
-                    if (material.baseColorTexture.IsValid())
-                    {
-                        static_cast<void>(
-                            device_->DestroyTexture(
-                                material.baseColorTexture));
-                    }
-
-                    if (material.sampler.IsValid())
-                    {
-                        static_cast<void>(
-                            device_->DestroySampler(
-                                material.sampler));
-                    }
-                }
-
                 found->second.materials.clear();
 
                 LoadMaterials(
@@ -1623,8 +2439,15 @@ namespace lts::editor
     private:
         [[nodiscard]]
         CachedMesh* GetOrLoadMesh(
-            const std::wstring& assetPath) noexcept
+            const std::wstring& assetPath,
+            const bool allowLoad = true,
+            bool* const loadAttempted = nullptr) noexcept
         {
+            if (loadAttempted != nullptr)
+            {
+                *loadAttempted = false;
+            }
+
             try
             {
                 std::filesystem::path path(
@@ -1671,6 +2494,16 @@ namespace lts::editor
                     return nullptr;
                 }
 
+                if (!allowLoad)
+                {
+                    return nullptr;
+                }
+
+                if (loadAttempted != nullptr)
+                {
+                    *loadAttempted = true;
+                }
+
                 std::unique_ptr<engine::assets::GpuMesh> mesh =
                         LoadGpuMesh(
                             path,
@@ -1695,6 +2528,410 @@ namespace lts::editor
             }
         }
 
+        void BuildLegacyAssetIndex() noexcept
+        {
+            legacyMaterialIndex_.clear();
+            legacyTextureIndex_.clear();
+
+            try
+            {
+                std::filesystem::path objectsDepot =
+                    std::filesystem::current_path() / L"Data" / L"ObjectsDepot";
+                std::error_code error;
+                if (!std::filesystem::is_directory(objectsDepot, error) || error)
+                {
+                    error.clear();
+                    objectsDepot = std::filesystem::current_path() /
+                        L"bin" / L"Data" / L"ObjectsDepot";
+                }
+                if (!std::filesystem::is_directory(objectsDepot, error) || error)
+                {
+                    return;
+                }
+
+                for (std::filesystem::recursive_directory_iterator iterator(
+                         objectsDepot,
+                         std::filesystem::directory_options::skip_permission_denied,
+                         error),
+                     end;
+                     !error && iterator != end;
+                     iterator.increment(error))
+                {
+                    if (!iterator->is_regular_file(error) || error)
+                    {
+                        error.clear();
+                        continue;
+                    }
+
+                    const std::filesystem::path path = iterator->path();
+                    const std::wstring extension = LowercasePath(
+                        path.extension().wstring());
+                    const std::wstring filename = LowercasePath(
+                        path.filename().wstring());
+                    if (extension == L".mat")
+                    {
+                        legacyMaterialIndex_.try_emplace(filename, path);
+                    }
+                    else if (extension == L".dds" || extension == L".png" ||
+                             extension == L".jpg" || extension == L".jpeg" ||
+                             extension == L".bmp")
+                    {
+                        legacyTextureIndex_.try_emplace(filename, path);
+                    }
+                }
+
+                std::string message = "Legacy ObjectsDepot index: ";
+                message += std::to_string(legacyMaterialIndex_.size());
+                message += " materials, ";
+                message += std::to_string(legacyTextureIndex_.size());
+                message += " textures.";
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Information,
+                    "LTS.Editor.StaticMesh",
+                    message);
+            }
+            catch (...)
+            {
+                legacyMaterialIndex_.clear();
+                legacyTextureIndex_.clear();
+            }
+        }
+
+        [[nodiscard]]
+        engine::graphics::TextureHandle GetOrLoadMaterialTexture(
+            const std::filesystem::path& path,
+            const bool forceSrgb) noexcept
+        {
+            if (device_ == nullptr || path.empty())
+            {
+                return {};
+            }
+
+            try
+            {
+                std::error_code error;
+                if (!std::filesystem::is_regular_file(path, error) || error)
+                {
+                    return {};
+                }
+
+                std::wstring key = LowercasePath(
+                    path.lexically_normal().wstring());
+                key += forceSrgb ? L"|srgb" : L"|linear";
+                const auto existing = materialTextures_.find(key);
+                if (existing != materialTextures_.end())
+                {
+                    return existing->second;
+                }
+                if (failedMaterialTextures_.find(key) !=
+                    failedMaterialTextures_.end())
+                {
+                    return {};
+                }
+
+                engine::graphics::TextureHandle texture;
+                if (!CreateTextureFromFile(
+                        *device_,
+                        path,
+                        forceSrgb,
+                        texture))
+                {
+                    failedMaterialTextures_.insert(std::move(key));
+                    return {};
+                }
+
+                materialTextures_.emplace(std::move(key), texture);
+                if (materialTextures_.size() == 1U ||
+                    materialTextures_.size() % 250U == 0U)
+                {
+                    std::string message = "Legacy material textures loaded: ";
+                    message += std::to_string(materialTextures_.size());
+                    engine::core::GetLogger().Write(
+                        engine::core::LogLevel::Information,
+                        "LTS.Editor.StaticMesh",
+                        message);
+                }
+                return texture;
+            }
+            catch (...)
+            {
+                return {};
+            }
+        }
+
+        [[nodiscard]]
+        bool EnsureMaterialSampler() noexcept
+        {
+            if (materialSampler_.IsValid())
+            {
+                return true;
+            }
+            if (device_ == nullptr)
+            {
+                return false;
+            }
+
+            engine::graphics::SamplerDesc description;
+            description.addressU = engine::graphics::TextureAddressMode::Wrap;
+            description.addressV = engine::graphics::TextureAddressMode::Wrap;
+            description.addressW = engine::graphics::TextureAddressMode::Wrap;
+            return engine::graphics::Succeeded(
+                device_->CreateSampler(description, materialSampler_));
+        }
+
+        [[nodiscard]]
+        static std::filesystem::path FirstRegularFile(
+            const std::vector<std::filesystem::path>& candidates) noexcept
+        {
+            try
+            {
+                for (const std::filesystem::path& candidate : candidates)
+                {
+                    std::error_code error;
+                    if (std::filesystem::is_regular_file(candidate, error) && !error)
+                    {
+                        return candidate.lexically_normal();
+                    }
+                }
+            }
+            catch (...)
+            {
+            }
+            return {};
+        }
+
+        [[nodiscard]]
+        std::filesystem::path ResolveLegacyTexturePath(
+            const std::string& value,
+            const std::filesystem::path& materialPath,
+            const std::filesystem::path& packageRoot,
+            const std::filesystem::path& sourceDirectory,
+            const std::filesystem::path& workspaceRoot) noexcept
+        {
+            try
+            {
+                if (value.empty())
+                {
+                    return {};
+                }
+                std::filesystem::path requested =
+                    std::filesystem::u8path(value).lexically_normal();
+                if (requested.is_absolute())
+                {
+                    return FirstRegularFile({requested});
+                }
+
+                const std::filesystem::path local = FirstRegularFile({
+                    materialPath.parent_path().parent_path() / L"Textures" / requested,
+                    packageRoot / L"Textures" / requested,
+                    sourceDirectory / L"Textures" / requested,
+                    materialPath.parent_path() / requested,
+                    packageRoot / requested,
+                    sourceDirectory / requested,
+                    workspaceRoot / L"bin" / requested});
+                if (!local.empty())
+                {
+                    return local;
+                }
+
+                const auto global = legacyTextureIndex_.find(
+                    LowercasePath(requested.filename().wstring()));
+                return global != legacyTextureIndex_.end()
+                    ? global->second
+                    : std::filesystem::path{};
+            }
+            catch (...)
+            {
+                return {};
+            }
+        }
+
+        [[nodiscard]]
+        bool LoadLegacyMaterials(
+            const std::filesystem::path& meshPath,
+            std::vector<CachedMaterial>& output) noexcept
+        {
+            try
+            {
+                std::filesystem::path sidecarPath = meshPath;
+                sidecarPath += L".materials";
+                std::ifstream sidecar(sidecarPath, std::ios::binary);
+                if (!sidecar)
+                {
+                    return false;
+                }
+
+                std::filesystem::path meshesRoot;
+                std::filesystem::path cursor = meshPath.parent_path();
+                while (!cursor.empty())
+                {
+                    if (LowercasePath(cursor.filename().wstring()) == L"meshes")
+                    {
+                        meshesRoot = cursor;
+                        break;
+                    }
+                    const std::filesystem::path parent = cursor.parent_path();
+                    if (parent == cursor) break;
+                    cursor = parent;
+                }
+                if (meshesRoot.empty())
+                {
+                    return false;
+                }
+
+                std::filesystem::path workspaceRoot = meshesRoot;
+                while (!workspaceRoot.empty())
+                {
+                    std::error_code error;
+                    if (std::filesystem::is_directory(
+                            workspaceRoot / L"bin" / L"Data" / L"ObjectsDepot",
+                            error) && !error)
+                    {
+                        break;
+                    }
+                    const std::filesystem::path parent = workspaceRoot.parent_path();
+                    if (parent == workspaceRoot)
+                    {
+                        workspaceRoot.clear();
+                        break;
+                    }
+                    workspaceRoot = parent;
+                }
+                if (workspaceRoot.empty())
+                {
+                    return false;
+                }
+
+                std::error_code error;
+                std::filesystem::path relativeMesh = std::filesystem::relative(
+                    meshPath,
+                    meshesRoot,
+                    error);
+                if (error)
+                {
+                    return false;
+                }
+                std::filesystem::path sourcePath =
+                    workspaceRoot / L"bin" / relativeMesh;
+                sourcePath.replace_extension(L".sco");
+                if (!std::filesystem::is_regular_file(sourcePath, error) || error)
+                {
+                    error.clear();
+                    sourcePath.replace_extension(L".scb");
+                }
+                const std::filesystem::path sourceDirectory =
+                    sourcePath.parent_path();
+
+                std::filesystem::path packageRoot = sourceDirectory;
+                cursor = sourceDirectory;
+                while (!cursor.empty() &&
+                       LowercasePath(cursor.filename().wstring()) != L"objectsdepot")
+                {
+                    error.clear();
+                    if (std::filesystem::is_directory(cursor / L"Materials", error) &&
+                        !error)
+                    {
+                        packageRoot = cursor;
+                        break;
+                    }
+                    const std::filesystem::path parent = cursor.parent_path();
+                    if (parent == cursor) break;
+                    cursor = parent;
+                }
+
+                std::vector<std::string> materialNames;
+                std::string materialName;
+                while (std::getline(sidecar, materialName))
+                {
+                    if (!materialName.empty() && materialName.back() == '\r')
+                    {
+                        materialName.pop_back();
+                    }
+                    materialNames.push_back(TrimAscii(std::move(materialName)));
+                }
+                if (materialNames.empty())
+                {
+                    return false;
+                }
+
+                static_cast<void>(EnsureMaterialSampler());
+                output.clear();
+                output.reserve(materialNames.size());
+
+                for (const std::string& name : materialNames)
+                {
+                    CachedMaterial cached;
+                    cached.desc.debugName = name;
+
+                    const std::filesystem::path materialFilename =
+                        std::filesystem::u8path(
+                            name.empty() || name == "__default"
+                                ? "_DEFAULT_.mat"
+                                : name + ".mat");
+                    std::filesystem::path materialPath = FirstRegularFile({
+                        packageRoot / L"Materials" / materialFilename,
+                        sourceDirectory / L"Materials" / materialFilename,
+                        sourceDirectory / materialFilename,
+                        packageRoot / materialFilename});
+                    if (materialPath.empty())
+                    {
+                        const auto global = legacyMaterialIndex_.find(
+                            LowercasePath(materialFilename.filename().wstring()));
+                        if (global != legacyMaterialIndex_.end())
+                        {
+                            materialPath = global->second;
+                        }
+                    }
+
+                    LegacyMaterialDefinition legacy;
+                    if (!materialPath.empty() &&
+                        ParseLegacyMaterial(materialPath, legacy))
+                    {
+                        cached.desc = legacy.desc;
+                        cached.detailScale = legacy.detailScale;
+                        cached.detailAmount = legacy.detailAmount;
+                        cached.displacementEnabled = legacy.displacementEnabled;
+                        cached.displacementValue = legacy.displacementValue;
+                        cached.camouflage = legacy.camouflage;
+                        cached.type = std::move(legacy.type);
+
+                        const auto resolveTexture =
+                            [&](const std::string& textureName)
+                            {
+                                return ResolveLegacyTexturePath(
+                                    textureName,
+                                    materialPath,
+                                    packageRoot,
+                                    sourceDirectory,
+                                    workspaceRoot);
+                            };
+                        cached.baseColorTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.diffuseTexture), true);
+                        cached.normalTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.normalTexture), false);
+                        cached.specularTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.specularTexture), false);
+                        cached.specularPowerTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.specularPowerTexture), false);
+                        cached.detailNormalTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.detailNormalTexture), false);
+                        cached.emissiveTexture = GetOrLoadMaterialTexture(
+                            resolveTexture(legacy.emissiveTexture), true);
+                    }
+
+                    cached.sampler = materialSampler_;
+                    output.push_back(std::move(cached));
+                }
+
+                return !output.empty();
+            }
+            catch (...)
+            {
+                output.clear();
+                return false;
+            }
+        }
+
         void LoadMaterials(
             const std::filesystem::path& meshPath,
             std::vector<CachedMaterial>& output) noexcept
@@ -1702,6 +2939,11 @@ namespace lts::editor
             output.clear();
             try
             {
+                if (LoadLegacyMaterials(meshPath, output))
+                {
+                    return;
+                }
+
                 std::filesystem::path meshesRoot;
                 std::filesystem::path cursor = meshPath.parent_path();
                 while (!cursor.empty())
@@ -1833,26 +3075,14 @@ namespace lts::editor
                                     baseColorTexture->
                                     String());
 
-                        if (!CreateTextureFromFile(
-                                *device_,
-                                texturePath,
-                                material.baseColorTexture))
-                        {
-                            material.baseColorTexture = {};
-                        }
+                        material.baseColorTexture =
+                            GetOrLoadMaterialTexture(texturePath, true);
                     }
-                    
-                    if (material.baseColorTexture.IsValid())
+
+                    if (material.baseColorTexture.IsValid() &&
+                        EnsureMaterialSampler())
                     {
-                        engine::graphics::SamplerDesc samplerDesc = material.desc.sampler;
-                        samplerDesc.addressU = engine::graphics::TextureAddressMode::Wrap;
-                        samplerDesc.addressV = engine::graphics::TextureAddressMode::Wrap;
-                        if (engine::graphics::Failed(device_->CreateSampler(
-                                samplerDesc, material.sampler)))
-                        {
-                            static_cast<void>(device_->DestroyTexture(material.baseColorTexture));
-                            material.baseColorTexture = {};
-                        }
+                        material.sampler = materialSampler_;
                     }
                     output.push_back(std::move(material));
                 }
@@ -2005,6 +3235,9 @@ namespace lts::editor
         engine::graphics::BufferHandle
             objectBuffer_;
 
+        engine::graphics::BufferHandle
+            instanceBuffer_;
+
         engine::graphics::ShaderHandle
             vertexShader_;
 
@@ -2031,6 +3264,23 @@ namespace lts::editor
 
         std::unordered_set<
             std::wstring> failedMeshes_;
+
+        std::unordered_map<
+            std::wstring,
+            engine::graphics::TextureHandle> materialTextures_;
+
+        std::unordered_set<
+            std::wstring> failedMaterialTextures_;
+
+        std::unordered_map<
+            std::wstring,
+            std::filesystem::path> legacyMaterialIndex_;
+
+        std::unordered_map<
+            std::wstring,
+            std::filesystem::path> legacyTextureIndex_;
+
+        engine::graphics::SamplerHandle materialSampler_;
 
         bool initialized_ = false;
     };
@@ -2111,7 +3361,8 @@ namespace lts::editor
                 CommandContext& context,
             const SceneDocument& document,
             const DirectX::XMFLOAT4X4&
-                viewProjection) noexcept
+                viewProjection,
+            const DirectX::XMFLOAT3& cameraPosition) noexcept
     {
         if (impl_ == nullptr)
         {
@@ -2122,7 +3373,8 @@ namespace lts::editor
         return impl_->Render(
             context,
             document,
-            viewProjection);
+            viewProjection,
+            cameraPosition);
     }
 
     bool StaticMeshRenderer::TryGetMeshBounds(

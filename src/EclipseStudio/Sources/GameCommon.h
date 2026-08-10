@@ -4,7 +4,6 @@
 #include "GameObjects\GameObj.h"
 #include "GameObjects\ObjManag.h"
 #include "gameobjects\PhysXWorld.h"
-#include "gameobjects\ApexWorld.h"
 
 #include "TrueNature\skydome.h"
 #include "TrueNature\sun.h"

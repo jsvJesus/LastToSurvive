@@ -1,17 +1,14 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "RmlFrontEndShop.h"
+
+#include <cstddef>
 
 namespace
 {
-	const char* ShopItemButtonPrefix =
+	constexpr char ShopItemButtonPrefix[] =
 		"shop_item_";
 
-	const size_t ShopItemButtonPrefixLength =
-		strlen(
-			ShopItemButtonPrefix
-		);
+	constexpr std::size_t ShopItemButtonPrefixLength =
+		sizeof(ShopItemButtonPrefix) - 1;
 }
 
 RmlFrontEndShop::RmlFrontEndShop()

@@ -1,13 +1,4 @@
-#if defined(_WIN64)
-
 #include <Core/Log.h>
-
-#else
-
-#include "r3dPCH.h"
-#include "r3d.h"
-
-#endif
 
 #include "AObject.h"
 
@@ -28,29 +19,18 @@ namespace
 
     void ReportRegistryCapacityExceeded() noexcept
     {
-#if defined(_WIN64)
-
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Error,
             "GameObject.Registry",
             "Maximum registered object class "
             "count reached");
 
-#else
-
-        r3dArtBug(
-            "ERROR: AObjectTable - "
-            "MAX_REGISTERED_UOBJECTS reached\n\n");
-
-#endif
     }
 
     [[noreturn]]
     void FailInvalidClassId(
         const int id) noexcept
     {
-#if defined(_WIN64)
-
         std::array<char, 128> message{};
 
         const int written =
@@ -87,20 +67,6 @@ namespace
 
         std::abort();
 
-#else
-
-        r3dError(
-            "GetClassID: class %d isn't present",
-            id);
-
-        /*
-         * r3dError historically behaves as a fatal
-         * error. Keep a hard fallback in case its
-         * implementation ever returns.
-         */
-        std::abort();
-
-#endif
     }
 }
 
@@ -222,8 +188,6 @@ AObject* AObjectTable::CreateObject(
 
     if (object == nullptr)
     {
-#if defined(_WIN64)
-
         engine::core::GetLogger().Write(
             engine::core::LogLevel::Critical,
             "GameObject.Registry",
@@ -232,15 +196,6 @@ AObject* AObjectTable::CreateObject(
 
         std::abort();
 
-#else
-
-        r3dError(
-            "Object class constructor "
-            "returned NULL");
-
-        std::abort();
-
-#endif
     }
 
     object->Class =

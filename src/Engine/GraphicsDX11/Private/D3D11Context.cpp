@@ -781,6 +781,32 @@ namespace engine::graphics::d3d11
         return GraphicsResult::Success;
     }
 
+    GraphicsResult D3D11Context::DrawIndexedInstanced(
+        const std::uint32_t indexCountPerInstance,
+        const std::uint32_t instanceCount,
+        const std::uint32_t firstIndex,
+        const std::int32_t baseVertex,
+        const std::uint32_t firstInstance) noexcept
+    {
+        if (!IsValid())
+        {
+            return GraphicsResult::InvalidState;
+        }
+
+        if (indexCountPerInstance == 0U || instanceCount == 0U)
+        {
+            return GraphicsResult::InvalidArgument;
+        }
+
+        context_->DrawIndexedInstanced(
+            indexCountPerInstance,
+            instanceCount,
+            firstIndex,
+            baseVertex,
+            firstInstance);
+        return GraphicsResult::Success;
+    }
+
     void D3D11Context::ClearState() noexcept
     {
         if (context_ != nullptr)

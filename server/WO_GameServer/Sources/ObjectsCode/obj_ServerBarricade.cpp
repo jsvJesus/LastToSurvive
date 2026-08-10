@@ -8,7 +8,6 @@
 #include "obj_ServerBarricade.h"
 #include "ServerGameLogic.h"
 #include "../EclipseStudio/Sources/ObjectsCode/weapons/WeaponArmory.h"
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 
 IMPLEMENT_CLASS(obj_ServerBarricade, "obj_ServerBarricade", "Object");
 AUTOREGISTER_CLASS(obj_ServerBarricade);
@@ -69,15 +68,12 @@ BOOL obj_ServerBarricade::OnCreate()
 
 	parent::OnCreate();
 	
-	// add navigational obstacle
+	// Keep the collision bounds for zombie/barricade interaction. Dynamic Recast
+	// obstacles will be handled by a tile-cache layer, not by the removed Kaim API.
 	r3dBoundBox obb;
 	obb.Size = bsize;
 	obb.Org  = r3dPoint3D(GetPosition().x - obb.Size.x/2, GetPosition().y, GetPosition().z - obb.Size.z/2);
-#if ENABLE_AUTODESK_NAVIGATION
-	m_ObstacleId = gAutodeskNavMesh.AddObstacle(obb, GetRotationVector().x);
-#else
 	m_ObstacleId = -1;
-#endif
 	
 	// calc 2d radius
 	m_Radius = R3D_MAX(obb.Size.x, obb.Size.z) / 2;
@@ -88,13 +84,6 @@ BOOL obj_ServerBarricade::OnCreate()
 
 BOOL obj_ServerBarricade::OnDestroy()
 {
-	if(m_ObstacleId >= 0)
-	{
-#if ENABLE_AUTODESK_NAVIGATION
-		gAutodeskNavMesh.RemoveObstacle(m_ObstacleId);
-#endif
-	}
-	
 	return parent::OnDestroy();
 }
 

@@ -61,7 +61,6 @@
 #include "../../Eternity/Source/r3dEternityWebBrowser.h"
 #include "../../GameEngine/gameobjects/obj_Vehicle.h"
 #include "../../GameEngine/ai/NavGenerationHelpers.h"
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 
 #include "rendering/Deffered/D3DMiscFunctions.h"
 #include "rendering/World/WorldRenderer.h"
@@ -511,13 +510,6 @@ void DestroyGame()
 	SAFE_DELETE(SkyDome);
 	SAFE_DELETE(Sun);
 
-#if ENABLE_AUTODESK_NAVIGATION
-	{
-		r3dOutToLog( "gAutodeskNavMesh.Close...\n" );
-		gAutodeskNavMesh.Close();
-	}
-#endif // ENABLE_AUTODESK_NAVIGATION
-
 	WaterBase::FlushRefractionBuffer();
 
 
@@ -789,10 +781,6 @@ void GameStateGameLoop()
 	g_pPhysicsWorld->EndSimulation();
 	R3DPROFILE_END("Physics EndSimulation");
 
-#if ENABLE_AUTODESK_NAVIGATION
-	gAutodeskNavMesh.Update();
-#endif // ENABLE_AUTODESK_NAVIGATION
-
 	if( r3dRenderer->DeviceAvailable )
 	{
 		g_pPhysicsWorld->DrawDebug();
@@ -815,9 +803,6 @@ void GameStateGameLoop()
 		}
 
 		Nav::gConvexRegionsManager.VisualizeRegions();
-	#if ENABLE_AUTODESK_NAVIGATION
-		gAutodeskNavMesh.DebugDraw();
-	#endif
 
 #endif
 
