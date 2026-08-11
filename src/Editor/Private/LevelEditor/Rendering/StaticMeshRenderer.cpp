@@ -1379,58 +1379,6 @@ namespace lts::editor
             }
 
             /*
-             * Alpha Mask, односторонний.
-             *
-             * Blend остаётся выключенным.
-             * Запись глубины остаётся включённой.
-            */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::CullMode::Back;
-
-            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
-            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
-
-            pipelineDescription.debugName =
-                "EditorStaticMesh.MaskedPipeline";
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create masked static mesh pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Alpha Mask, Double Sided.
-             */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::CullMode::None;
-
-            pipelineDescription.debugName =
-                "EditorStaticMesh.MaskedDoubleSidedPipeline";
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create masked double-sided pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Следующие pipelines — настоящая прозрачность.
-             * Для них DepthBias не нужен.
-             */
-            pipelineDescription.rasterizer.depthBias = 0;
-            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
-            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
-
-            /*
              * Blend, односторонний материал.
              */
             pipelineDescription.rasterizer.cullMode =
@@ -2971,7 +2919,8 @@ namespace lts::editor
                 }
 
                 const std::filesystem::path requested =
-    std::filesystem::u8path(value).lexically_normal();
+                    std::filesystem::u8path(value).
+                        lexically_normal();
 
                 const auto findTextureInDirectory =
                     [&](const std::filesystem::path& directory)
@@ -2992,7 +2941,10 @@ namespace lts::editor
 
                 if (requested.is_absolute())
                 {
-                    return FirstRegularFile({ requested });
+                    return FirstRegularFile(
+                        {
+                            requested
+                        });
                 }
 
                 /*
@@ -3035,16 +2987,41 @@ namespace lts::editor
                         }
                     }
 
+                    const std::filesystem::path imageResult =
+                        findTextureInDirectory(imagesBase);
+
+                    if (!imageResult.empty())
+                    {
+                        return imageResult;
+                    }
+
                     /*
-                     * При заданном ImagesDir глобального fallback быть не должно:
-                     * иначе снова будет выбрана одноимённая чужая DDS.
+                     * В части старых пакетов ImagesDir записан
+                     * относительно каталога материала или пакета.
                      */
-                    return findTextureInDirectory(imagesBase);
-                }
-                
-                if (requested.is_absolute())
-                {
-                    return FirstRegularFile({requested});
+                    const std::filesystem::path relativeImages =
+                        std::filesystem::u8path(
+                            imagesDirectory).
+                                lexically_normal();
+
+                    for (const std::filesystem::path& directory :
+                        {
+                            materialPath.parent_path() /
+                                relativeImages,
+                            packageRoot /
+                                relativeImages,
+                            sourceDirectory /
+                                relativeImages
+                        })
+                    {
+                        const std::filesystem::path relativeResult =
+                            findTextureInDirectory(directory);
+
+                        if (!relativeResult.empty())
+                        {
+                            return relativeResult;
+                        }
+                    }
                 }
 
                 const std::filesystem::path local = FirstRegularFile({
@@ -3225,6 +3202,23 @@ namespace lts::editor
                         cached.displacementValue = legacy.displacementValue;
                         cached.camouflage = legacy.camouflage;
                         cached.type = std::move(legacy.type);
+
+                        /*
+                         * В старом рендере дороги шли отдельным pass:
+                         * alpha использовалась для краёв, но alpha clip
+                         * для FILL_ROADS не выполнялся.
+                         */
+                        for (const auto& component : materialPath)
+                        {
+                            if (
+                                LowercasePath(
+                                    component.wstring()) ==
+                                L"_roads")
+                            {
+                                cached.roadSurface = true;
+                                break;
+                            }
+                        }
 
                         const auto resolveTexture =
                             [&](const std::string& textureName)
