@@ -28,7 +28,8 @@ Texture2D Masks[6] : register(t0);
 Texture2D DiffuseLayers[18] : register(t6);
 Texture2D NormalLayers[18] : register(t24);
 
-SamplerState TerrainSampler : register(s0);
+SamplerState MaterialSampler : register(s0);
+SamplerState MaskSampler     : register(s1);
 
 struct VSIn
 {
@@ -85,12 +86,12 @@ float3 SampleMask(uint maskIndex, float2 uv)
 {
     switch (maskIndex)
     {
-        case 0U: return Masks[0].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 1U: return Masks[1].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 2U: return Masks[2].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 3U: return Masks[3].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 4U: return Masks[4].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
-        case 5U: return Masks[5].SampleLevel(TerrainSampler, uv, 0.0F).rgb;
+        case 0U: return Masks[0].SampleLevel(MaskSampler, uv, 0.0F).rgb;
+        case 1U: return Masks[1].SampleLevel(MaskSampler, uv, 0.0F).rgb;
+        case 2U: return Masks[2].SampleLevel(MaskSampler, uv, 0.0F).rgb;
+        case 3U: return Masks[3].SampleLevel(MaskSampler, uv, 0.0F).rgb;
+        case 4U: return Masks[4].SampleLevel(MaskSampler, uv, 0.0F).rgb;
+        case 5U: return Masks[5].SampleLevel(MaskSampler, uv, 0.0F).rgb;
         default: return float3(0.0F, 0.0F, 0.0F);
     }
 }
@@ -103,24 +104,24 @@ float3 SampleDiffuse(
 {
     switch (layerIndex)
     {
-        case 0U:  return DiffuseLayers[0].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 1U:  return DiffuseLayers[1].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 2U:  return DiffuseLayers[2].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 3U:  return DiffuseLayers[3].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 4U:  return DiffuseLayers[4].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 5U:  return DiffuseLayers[5].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 6U:  return DiffuseLayers[6].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 7U:  return DiffuseLayers[7].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 8U:  return DiffuseLayers[8].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 9U:  return DiffuseLayers[9].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 10U: return DiffuseLayers[10].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 11U: return DiffuseLayers[11].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 12U: return DiffuseLayers[12].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 13U: return DiffuseLayers[13].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 14U: return DiffuseLayers[14].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 15U: return DiffuseLayers[15].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 16U: return DiffuseLayers[16].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
-        case 17U: return DiffuseLayers[17].SampleGrad(TerrainSampler, uv, gradientX, gradientY).rgb;
+        case 0U:  return DiffuseLayers[0].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 1U:  return DiffuseLayers[1].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 2U:  return DiffuseLayers[2].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 3U:  return DiffuseLayers[3].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 4U:  return DiffuseLayers[4].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 5U:  return DiffuseLayers[5].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 6U:  return DiffuseLayers[6].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 7U:  return DiffuseLayers[7].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 8U:  return DiffuseLayers[8].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 9U:  return DiffuseLayers[9].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 10U: return DiffuseLayers[10].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 11U: return DiffuseLayers[11].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 12U: return DiffuseLayers[12].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 13U: return DiffuseLayers[13].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 14U: return DiffuseLayers[14].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 15U: return DiffuseLayers[15].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 16U: return DiffuseLayers[16].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
+        case 17U: return DiffuseLayers[17].SampleGrad(MaterialSampler, uv, gradientX, gradientY).rgb;
         default: return float3(0.08F, 0.08F, 0.08F);
     }
 }
@@ -387,6 +388,9 @@ float4 PSMain(VSOut input) : SV_TARGET
         float fogAmount = saturate(max(linearFog, exponentialFog) * heightFog);
         litColor = lerp(litColor, FogColorEnabled.rgb, fogAmount);
     }
+	
+	litColor = litColor / (1.0F + litColor * 0.18F);
+	litColor = pow(saturate(litColor), 1.0F / 2.2F);
 
 	return float4(litColor, 1.0F);
 }

@@ -2092,16 +2092,45 @@ namespace lts::editor
                 }
             }
 
-            engine::graphics::SamplerDesc samplerDescription{};
-            samplerDescription.addressU =
-                engine::graphics::TextureAddressMode::Wrap;
-            samplerDescription.addressV =
-                engine::graphics::TextureAddressMode::Wrap;
+            engine::graphics::SamplerDesc maskSamplerDescription{};
+
+            maskSamplerDescription.filter =
+                engine::graphics::TextureFilter::Linear;
+
+            maskSamplerDescription.addressU =
+                engine::graphics::TextureAddressMode::Clamp;
+
+            maskSamplerDescription.addressV =
+                engine::graphics::TextureAddressMode::Clamp;
+
+            maskSamplerDescription.addressW =
+                engine::graphics::TextureAddressMode::Clamp;
+
+            maskSamplerDescription.debugName =
+                "EditorTerrain.MaskSampler";
 
             graphicsResult =
                 device.CreateSampler(
-                    samplerDescription,
-                    sampler_);
+                    maskSamplerDescription,
+                    maskSampler_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain mask sampler",
+                    graphicsResult);
+
+                return false;
+            }
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain material sampler",
+                    graphicsResult);
+
+                return false;
+            }
 
             if (engine::graphics::Failed(graphicsResult))
             {
@@ -2153,10 +2182,18 @@ namespace lts::editor
                 mask = {};
             }
 
-            if (sampler_.IsValid())
+            if (materialSampler_.IsValid())
             {
                 static_cast<void>(
-                    device.DestroySampler(sampler_));
+                    device.DestroySampler(
+                        materialSampler_));
+            }
+
+            if (maskSampler_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroySampler(
+                        maskSampler_));
             }
 
             if (brushPipeline_.IsValid())
@@ -2250,7 +2287,8 @@ namespace lts::editor
                         vertexBuffer_));
             }
 
-            sampler_ = {};
+            materialSampler_ = {};
+            maskSampler_ = {};
             brushPipeline_ = {};
             brushInputLayout_ = {};
             brushVertexShader_ = {};
@@ -2693,12 +2731,18 @@ namespace lts::editor
 
             if (!engine::graphics::Failed(result))
             {
+                const std::array<engine::graphics::SamplerHandle, 2U> terrainSamplers
+                {
+                    materialSampler_,
+                    maskSampler_
+                };
+
                 result =
                     context.SetSamplers(
                         engine::graphics::ShaderStage::Pixel,
                         0U,
-                        &sampler_,
-                        1U);
+                        terrainSamplers.data(),
+                        terrainSamplers.size());
             }
 
             if (!engine::graphics::Failed(result))
@@ -4013,7 +4057,8 @@ namespace lts::editor
         std::array<std::string, MaximumTerrainLayerCount> materialPaths_{};
         std::array<engine::graphics::TextureHandle, MaximumTerrainLayerCount> normalMaterials_{};
         std::array<std::string, MaximumTerrainLayerCount> normalMaterialPaths_{};
-        engine::graphics::SamplerHandle sampler_{};
+        engine::graphics::SamplerHandle materialSampler_{};
+        engine::graphics::SamplerHandle maskSampler_{};
 
         std::unordered_map<std::uint32_t, std::array<std::uint8_t, MaximumPaintedLayerCount>>activePaintBefore_;
 
