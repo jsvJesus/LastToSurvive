@@ -2092,6 +2092,41 @@ namespace lts::editor
                 }
             }
 
+            engine::graphics::SamplerDesc materialSamplerDescription{};
+
+            materialSamplerDescription.filter =
+                engine::graphics::TextureFilter::Anisotropic;
+
+            materialSamplerDescription.addressU =
+                engine::graphics::TextureAddressMode::Wrap;
+
+            materialSamplerDescription.addressV =
+                engine::graphics::TextureAddressMode::Wrap;
+
+            materialSamplerDescription.addressW =
+                engine::graphics::TextureAddressMode::Wrap;
+
+            materialSamplerDescription.mipLodBias = 0.0F;
+            materialSamplerDescription.maximumAnisotropy = 16U;
+
+            materialSamplerDescription.debugName =
+                "EditorTerrain.MaterialSampler";
+
+            graphicsResult =
+                device.CreateSampler(
+                    materialSamplerDescription,
+                    materialSampler_);
+
+            if (engine::graphics::Failed(graphicsResult))
+            {
+                LogTerrainGraphicsFailure(
+                    "Create terrain material sampler",
+                    graphicsResult);
+
+                return false;
+            }
+
+
             engine::graphics::SamplerDesc maskSamplerDescription{};
 
             maskSamplerDescription.filter =
@@ -2118,24 +2153,6 @@ namespace lts::editor
             {
                 LogTerrainGraphicsFailure(
                     "Create terrain mask sampler",
-                    graphicsResult);
-
-                return false;
-            }
-
-            if (engine::graphics::Failed(graphicsResult))
-            {
-                LogTerrainGraphicsFailure(
-                    "Create terrain material sampler",
-                    graphicsResult);
-
-                return false;
-            }
-
-            if (engine::graphics::Failed(graphicsResult))
-            {
-                LogTerrainGraphicsFailure(
-                    "Create terrain sampler",
                     graphicsResult);
 
                 return false;
@@ -2805,12 +2822,9 @@ namespace lts::editor
                 }
             }
 
-            static_cast<void>(
-                context.UnbindShaderResources(
-                    engine::graphics::ShaderStage::Pixel,
-                    0U,
-                    42U));
-
+            static_cast<void>(context.UnbindShaderResources(engine::graphics::ShaderStage::Pixel, 0U, 42U));
+            static_cast<void>(context.UnbindSamplers(engine::graphics::ShaderStage::Pixel, 0U, 2U));
+            
             context.UnbindIndexBuffer();
             context.UnbindGraphicsPipeline();
 
