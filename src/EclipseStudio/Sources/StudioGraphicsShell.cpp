@@ -260,13 +260,14 @@ namespace
             engine::platform::Window window(
                 nativeWindow);
 
-            std::wstring title =
-                L"DX11 Studio | FPS: ";
+            std::wstring title = L"DX11 Studio | FPS: ";
 
-            title += std::to_wstring(
-                roundedFps);
+            title += std::to_wstring(roundedFps);
 
-            window.SetTitle(title);
+            if (!window.SetTitle(title))
+            {
+                WriteLog(LogLevel::Warning, "Studio", "Failed to update window FPS title");
+            }
 
             fpsFrameCount_ = 0;
             fpsSampleStart_ = now;
