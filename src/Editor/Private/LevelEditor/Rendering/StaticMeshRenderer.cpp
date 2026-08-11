@@ -1377,6 +1377,69 @@ namespace lts::editor
             }
 
             /*
+             * Alpha Mask, односторонний.
+             *
+             * Blend остаётся выключенным.
+             * Запись глубины остаётся включённой.
+            */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::Back;
+
+            pipelineDescription.rasterizer.depthBias =
+                LegacyMaskedDepthBias;
+
+            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
+            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.MaskedPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                maskedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create masked static mesh pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Alpha Mask, Double Sided.
+             */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.MaskedDoubleSidedPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                maskedDoubleSidedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create masked double-sided pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Следующие pipelines — настоящая прозрачность.
+             * Для них DepthBias не нужен.
+             */
+            pipelineDescription.rasterizer.depthBias = 0;
+            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
+            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
+
+            /*
              * Blend, односторонний материал.
              */
             pipelineDescription.rasterizer.cullMode =
@@ -1446,76 +1509,6 @@ namespace lts::editor
                 return false;
             }
 
-            /*
-             * Alpha Mask, односторонний.
-             *
-             * Старые WarZ вывески, дорожные накладки и другие cutout-плоскости
-             * расположены почти вплотную к основной геометрии.
-             * Малый отрицательный bias применяется только к Mask-материалам.
-            */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::CullMode::Back;
-
-            pipelineDescription.rasterizer.depthBias =
-                LegacyMaskedDepthBias;
-
-            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
-            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
-
-            pipelineDescription.debugName =
-                "EditorStaticMesh.MaskedPipeline";
-
-            result = device.CreateGraphicsPipeline(
-                pipelineDescription,
-                maskedPipeline_);
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create masked static mesh pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Alpha Mask, Double Sided.
-             */
-            pipelineDescription.rasterizer.cullMode =
-                engine::graphics::CullMode::None;
-
-            pipelineDescription.debugName =
-                "EditorStaticMesh.MaskedDoubleSidedPipeline";
-
-            result = device.CreateGraphicsPipeline(
-                pipelineDescription,
-                maskedDoubleSidedPipeline_);
-
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure(
-                    "Create masked double-sided pipeline",
-                    result);
-
-                Shutdown(device);
-                return false;
-            }
-
-            /*
-             * Обязательно сбрасываем bias перед созданием Blend pipelines.
-             */
-            pipelineDescription.rasterizer.depthBias = 0;
-            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
-            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
-            
-            if (engine::graphics::Failed(result))
-            {
-                LogGraphicsFailure("Create transparent static mesh pipeline", result);
-                Shutdown(device);
-                return false;
-            }
-
             BuildLegacyAssetIndex();
             initialized_ = true;
 
@@ -1566,6 +1559,24 @@ namespace lts::editor
             {
                 static_cast<void>(device.DestroySampler(materialSampler_));
                 materialSampler_ = {};
+            }
+
+            if (maskedDoubleSidedPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        maskedDoubleSidedPipeline_));
+
+                maskedDoubleSidedPipeline_ = {};
+            }
+
+            if (maskedPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        maskedPipeline_));
+
+                maskedPipeline_ = {};
             }
 
             if (transparentDoubleSidedPipeline_.IsValid())
@@ -1948,7 +1959,7 @@ namespace lts::editor
                     engine::graphics::TextureHandle texture;
                     engine::graphics::SamplerHandle sampler;
 
-                    bool transparent = false;
+                    engine::assets::MaterialAlphaMode alphaMode =engine::assets::MaterialAlphaMode::Opaque;
                     bool doubleSided = false;
                     
                     if (submesh->materialSlot < cachedMesh->materials.size())
@@ -1960,8 +1971,7 @@ namespace lts::editor
                             material.desc.baseColorFactor[2], material.desc.baseColorFactor[3] };
                         texture = material.baseColorTexture;
                         sampler = material.sampler;
-                        
-                        transparent = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Blend;
+                        alphaMode = material.desc.alphaMode;
                         doubleSided = material.desc.doubleSided;
                         constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
                         constants.materialParameters.w = material.desc.alphaCutoff;
@@ -1974,10 +1984,8 @@ namespace lts::editor
                         constants.materialParameters.z = 0.0F;
                         constants.materialParameters.w = 0.5F;
                     }
-                    
-                    engine::graphics::PipelineStateHandle selectedPipeline;
 
-                    const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(material.desc.alphaMode, material.desc.doubleSided);
+                    const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
 
                     result = context.SetGraphicsPipeline(
                         selectedPipeline);
@@ -2374,8 +2382,10 @@ namespace lts::editor
                             engine::graphics::TextureHandle detailNormalTexture;
                             engine::graphics::TextureHandle emissiveTexture;
                             engine::graphics::TextureHandle specularPowerTexture;
-                            bool transparent = false;
+                            
+                            engine::assets::MaterialAlphaMode alphaMode = engine::assets::MaterialAlphaMode::Opaque;
                             bool doubleSided = false;
+                            
                             if (submesh->materialSlot < cachedMesh->materials.size())
                             {
                                 const CachedMaterial& material =
@@ -2391,7 +2401,7 @@ namespace lts::editor
                                 detailNormalTexture = material.detailNormalTexture;
                                 emissiveTexture = material.emissiveTexture;
                                 specularPowerTexture = material.specularPowerTexture;
-                                transparent = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Blend;
+                                alphaMode = material.desc.alphaMode;
                                 doubleSided = material.desc.doubleSided;
                                 constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
                                 constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
@@ -2433,9 +2443,7 @@ namespace lts::editor
                                 constants.legacyFeatureFlags = {};
                             }
 
-                            const engine::graphics::PipelineStateHandle selectedPipeline = transparent
-                                ? (doubleSided ? transparentDoubleSidedPipeline_ : transparentPipeline_) : (doubleSided
-                                ? doubleSidedPipeline_ : pipeline_);
+                            const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
                             
                             if (selectedPipeline != boundPipeline)
                             {
