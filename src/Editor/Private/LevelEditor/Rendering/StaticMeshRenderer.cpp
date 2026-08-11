@@ -64,6 +64,7 @@ namespace lts::editor
         constexpr float StaticMeshStreamingDistance = 1024.0F;
 
         constexpr float LegacyAlphaTestCutoff = 0.15F;
+        constexpr std::int32_t LegacyMaskedDepthBias = -2;
 
         struct alignas(16) ObjectConstants final
         {
@@ -1444,6 +1445,69 @@ namespace lts::editor
                 Shutdown(device);
                 return false;
             }
+
+            /*
+             * Alpha Mask, односторонний.
+             *
+             * Старые WarZ вывески, дорожные накладки и другие cutout-плоскости
+             * расположены почти вплотную к основной геометрии.
+             * Малый отрицательный bias применяется только к Mask-материалам.
+            */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::Back;
+
+            pipelineDescription.rasterizer.depthBias =
+                LegacyMaskedDepthBias;
+
+            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
+            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.MaskedPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                maskedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create masked static mesh pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Alpha Mask, Double Sided.
+             */
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+
+            pipelineDescription.debugName =
+                "EditorStaticMesh.MaskedDoubleSidedPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                maskedDoubleSidedPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create masked double-sided pipeline",
+                    result);
+
+                Shutdown(device);
+                return false;
+            }
+
+            /*
+             * Обязательно сбрасываем bias перед созданием Blend pipelines.
+             */
+            pipelineDescription.rasterizer.depthBias = 0;
+            pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
+            pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
             
             if (engine::graphics::Failed(result))
             {
@@ -1584,6 +1648,31 @@ namespace lts::editor
             }
 
             device_ = nullptr;
+        }
+
+        [[nodiscard]]
+        engine::graphics::PipelineStateHandle SelectMaterialPipeline(
+            const engine::assets::MaterialAlphaMode alphaMode,
+            const bool doubleSided) const noexcept
+        {
+            switch (alphaMode)
+            {
+            case engine::assets::MaterialAlphaMode::Mask:
+                return doubleSided
+                    ? maskedDoubleSidedPipeline_
+                    : maskedPipeline_;
+
+            case engine::assets::MaterialAlphaMode::Blend:
+                return doubleSided
+                    ? transparentDoubleSidedPipeline_
+                    : transparentPipeline_;
+
+            case engine::assets::MaterialAlphaMode::Opaque:
+            default:
+                return doubleSided
+                    ? doubleSidedPipeline_
+                    : pipeline_;
+            }
         }
 
         [[nodiscard]]
@@ -1888,20 +1977,7 @@ namespace lts::editor
                     
                     engine::graphics::PipelineStateHandle selectedPipeline;
 
-                    if (transparent)
-                    {
-                        selectedPipeline =
-                            doubleSided
-                                ? transparentDoubleSidedPipeline_
-                                : transparentPipeline_;
-                    }
-                    else
-                    {
-                        selectedPipeline =
-                            doubleSided
-                                ? doubleSidedPipeline_
-                                : pipeline_;
-                    }
+                    const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(material.desc.alphaMode, material.desc.doubleSided);
 
                     result = context.SetGraphicsPipeline(
                         selectedPipeline);
@@ -2730,13 +2806,32 @@ namespace lts::editor
                         path.filename().wstring());
                     if (extension == L".mat")
                     {
-                        legacyMaterialIndex_.try_emplace(filename, path);
+                        const auto [entry, inserted] =
+                            legacyMaterialIndex_.try_emplace(filename, path);
+
+                        if (!inserted && entry->second != path)
+                        {
+                            /*
+                             * Пустой path означает неоднозначное глобальное имя.
+                             * Такой ресурс нельзя молча брать из чужого пакета.
+                             */
+                            entry->second.clear();
+                        }
                     }
-                    else if (extension == L".dds" || extension == L".png" ||
-                             extension == L".jpg" || extension == L".jpeg" ||
-                             extension == L".bmp")
+                    else if (
+                        extension == L".dds" ||
+                        extension == L".png" ||
+                        extension == L".jpg" ||
+                        extension == L".jpeg" ||
+                        extension == L".bmp")
                     {
-                        legacyTextureIndex_.try_emplace(filename, path);
+                        const auto [entry, inserted] =
+                            legacyTextureIndex_.try_emplace(filename, path);
+
+                        if (!inserted && entry->second != path)
+                        {
+                            entry->second.clear();
+                        }
                     }
                 }
 
@@ -2893,8 +2988,10 @@ namespace lts::editor
                 }
 
                 const auto global = legacyTextureIndex_.find(
-                    LowercasePath(requested.filename().wstring()));
-                return global != legacyTextureIndex_.end()
+            LowercasePath(requested.filename().wstring()));
+
+                return global != legacyTextureIndex_.end() &&
+                       !global->second.empty()
                     ? global->second
                     : std::filesystem::path{};
             }
@@ -3034,8 +3131,11 @@ namespace lts::editor
                     if (materialPath.empty())
                     {
                         const auto global = legacyMaterialIndex_.find(
-                            LowercasePath(materialFilename.filename().wstring()));
-                        if (global != legacyMaterialIndex_.end())
+                    LowercasePath(materialFilename.filename().wstring()));
+
+                        if (
+                            global != legacyMaterialIndex_.end() &&
+                            !global->second.empty())
                         {
                             materialPath = global->second;
                         }
@@ -3415,6 +3515,12 @@ namespace lts::editor
 
         engine::graphics::PipelineStateHandle
             transparentDoubleSidedPipeline_;
+
+        engine::graphics::PipelineStateHandle
+            maskedPipeline_;
+
+        engine::graphics::PipelineStateHandle
+            maskedDoubleSidedPipeline_;
 
         engine::scene::SpatialGrid spatialGrid_ { StaticMeshSpatialCellSize };
         std::vector<std::size_t> spatialCandidates_;
