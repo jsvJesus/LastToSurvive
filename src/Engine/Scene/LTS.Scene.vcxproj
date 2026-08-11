@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="Public\Scene\SceneTypes.h" />
     <ClInclude Include="Public\Scene\SceneWorld.h" />
+    <ClInclude Include="Public\Scene\SpatialGrid.h" />
   </ItemGroup>
 
   <ItemGroup>

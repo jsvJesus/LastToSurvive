@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 namespace engine::scene
 {
@@ -18,6 +19,11 @@ namespace engine::scene
         SceneWorld& operator=(const SceneWorld&) = delete;
 
         void Clear() noexcept;
+        
+        [[nodiscard]]
+        std::uint64_t GetRevision() const noexcept;
+
+        void MarkChanged() noexcept;
 
         [[nodiscard]]
         SceneEntityId CreateEntity(
@@ -72,5 +78,6 @@ namespace engine::scene
         std::vector<SceneEntity> entities_;
 
         SceneEntityId nextEntityId_ = 1U;
+        std::uint64_t revision_ = 1U;
     };
 }

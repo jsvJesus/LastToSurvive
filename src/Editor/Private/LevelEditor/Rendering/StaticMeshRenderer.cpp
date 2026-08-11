@@ -14,6 +14,7 @@
 #include <Assets/TextureAsset.h>
 
 #include <Core/Log.h>
+#include <Scene/SpatialGrid.h>
 
 #include <Graphics/Buffer.h>
 #include <Graphics/CommandContext.h>
@@ -54,11 +55,13 @@ namespace lts::editor
 {
     namespace
     {
-        constexpr std::uintmax_t MaximumMeshFileSize =
-            512U * 1024U * 1024U;
+        constexpr std::uintmax_t MaximumMeshFileSize = 512U * 1024U * 1024U;
+        
         constexpr std::size_t MaximumInstancesPerDraw = 2048U;
         constexpr std::size_t MaximumMeshLoadsPerFrame = 1U;
-        constexpr float StaticMeshRenderDistance = 1600.0F;
+
+        constexpr float StaticMeshSpatialCellSize = 128.0F;
+        constexpr float StaticMeshStreamingDistance = 1024.0F;
 
         struct alignas(16) ObjectConstants final
         {
@@ -1466,6 +1469,9 @@ namespace lts::editor
 
             meshes_.clear();
             failedMeshes_.clear();
+            spatialGrid_.Clear();
+            spatialCandidates_.clear();
+            spatialGridRevision_ = 0U;
 
             for (const auto& [key, texture] : materialTextures_)
             {
@@ -1631,13 +1637,8 @@ namespace lts::editor
 
             if (instanceBuffer_.IsValid())
             {
-                result = RenderInstancedBatches(
-                    context,
-                    entities,
-                    selectedIndex,
-                    lighting,
-                    viewProjection,
-                    cameraPosition);
+                result = RenderInstancedBatches(context, entities, document.GetSceneWorld().GetRevision(),
+                    selectedIndex, lighting, viewProjection, cameraPosition);
             }
             else
             {
@@ -1958,6 +1959,7 @@ namespace lts::editor
         engine::graphics::GraphicsResult RenderInstancedBatches(
             engine::graphics::CommandContext& context,
             const std::vector<EditorSceneEntity>& entities,
+            const std::uint64_t sceneRevision,
             const std::size_t selectedIndex,
             const ResolvedDirectionalLight& lighting,
             const DirectX::XMFLOAT4X4& viewProjection,
@@ -1971,7 +1973,32 @@ namespace lts::editor
 
             try
             {
+                if (spatialGridRevision_ != sceneRevision)
+                {
+                    if (!spatialGrid_.Rebuild(entities))
+                    {
+                        return
+                            engine::graphics::
+                                GraphicsResult::OutOfMemory;
+                    }
+
+                    spatialGridRevision_ =
+                        sceneRevision;
+                }
+
+                if (!spatialGrid_.QueryRadius(
+                        cameraPosition.x,
+                        cameraPosition.z,
+                        StaticMeshStreamingDistance,
+                        spatialCandidates_))
+                {
+                    return
+                        engine::graphics::
+                            GraphicsResult::OutOfMemory;
+                }
+
                 std::vector<VisibleBatch> batches;
+                
                 batches.reserve(1024U);
 
                 std::unordered_map<std::wstring, std::size_t> batchLookup;
@@ -1982,14 +2009,19 @@ namespace lts::editor
 
                 const DirectX::XMMATRIX viewProjectionMatrix =
                     DirectX::XMLoadFloat4x4(&viewProjection);
-                constexpr float renderDistanceSquared =
-                    StaticMeshRenderDistance * StaticMeshRenderDistance;
+                
+                constexpr float renderDistanceSquared = StaticMeshStreamingDistance * StaticMeshStreamingDistance;
 
-                for (std::size_t entityIndex = 0U;
-                     entityIndex < entities.size();
-                     ++entityIndex)
+                for (const std::size_t entityIndex : spatialCandidates_)
                 {
-                    const EditorSceneEntity& entity = entities[entityIndex];
+                    if (entityIndex >= entities.size())
+                    {
+                        continue;
+                    }
+
+                    const EditorSceneEntity& entity =
+                        entities[entityIndex];
+                    
                     if (!entity.staticMesh.has_value() ||
                         !entity.staticMesh->visible ||
                         entity.staticMesh->assetPath.empty())
@@ -3371,6 +3403,10 @@ namespace lts::editor
 
         engine::graphics::PipelineStateHandle
             transparentDoubleSidedPipeline_;
+
+        engine::scene::SpatialGrid spatialGrid_ { StaticMeshSpatialCellSize };
+        std::vector<std::size_t> spatialCandidates_;
+        std::uint64_t spatialGridRevision_ = 0U;
 
         std::unordered_map<
             std::wstring,

@@ -13,10 +13,27 @@ namespace engine::scene
             std::numeric_limits<std::size_t>::max();
     }
 
+    std::uint64_t SceneWorld::GetRevision() const noexcept
+    {
+        return revision_;
+    }
+
+    void SceneWorld::MarkChanged() noexcept
+    {
+        ++revision_;
+
+        if (revision_ == 0U)
+        {
+            revision_ = 1U;
+        }
+    }
+
     void SceneWorld::Clear() noexcept
     {
         entities_.clear();
         nextEntityId_ = 1U;
+
+        MarkChanged();
     }
 
     SceneEntityId SceneWorld::CreateEntity(
@@ -41,8 +58,9 @@ namespace engine::scene
 
         EnsureDefaultComponents(entity);
 
-        entities_.push_back(
-            std::move(entity));
+        entities_.push_back(std::move(entity));
+
+        MarkChanged();
 
         return entities_.back().id;
     }
@@ -66,8 +84,9 @@ namespace engine::scene
 
         EnsureDefaultComponents(duplicate);
 
-        entities_.push_back(
-            std::move(duplicate));
+        entities_.push_back(std::move(duplicate));
+
+        MarkChanged();
 
         return entities_.back().id;
     }
@@ -91,6 +110,9 @@ namespace engine::scene
         }
 
         entities_.erase(iterator);
+
+        MarkChanged();
+
         return true;
     }
 
@@ -147,6 +169,8 @@ namespace engine::scene
 
     std::vector<SceneEntity>& SceneWorld::GetEntitiesMutable() noexcept
     {
+        MarkChanged();
+
         return entities_;
     }
 
@@ -209,6 +233,8 @@ namespace engine::scene
         {
             nextEntityId_ = 1U;
         }
+
+        MarkChanged();
     }
 
     bool SceneWorld::IsFiniteTransform(

@@ -834,8 +834,14 @@ namespace lts::editor
 
     EditorSceneEntity* SceneDocument::FindEntityMutable(EditorEntityId entityId) noexcept
     {
-        return world_.FindEntity(
-            entityId);
+        EditorSceneEntity* const entity = world_.FindEntity(entityId);
+
+        if (entity != nullptr)
+        {
+            world_.MarkChanged();
+        }
+
+        return entity;
     }
 
     const EditorSceneEntity*
@@ -865,8 +871,14 @@ namespace lts::editor
             return nullptr;
         }
 
-        return world_.FindEntity(
-            selected->id);
+        EditorSceneEntity* const entity = world_.FindEntity(selected->id);
+
+        if (entity != nullptr)
+        {
+            world_.MarkChanged();
+        }
+
+        return entity;
     }
 
     std::size_t
@@ -1318,6 +1330,11 @@ namespace lts::editor
         }
 
         dirty_ = dirty_ || changed;
+
+        if (changed)
+        {
+            world_.MarkChanged();
+        }
 
         return changed;
     }
