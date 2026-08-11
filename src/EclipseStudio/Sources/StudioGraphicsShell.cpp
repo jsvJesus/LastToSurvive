@@ -25,6 +25,7 @@
 
 #include <GraphicsDX11/D3D11Device.h>
 
+#include <Platform/Clock.h>
 #include <Platform/Process.h>
 #include <Platform/Thread.h>
 #include <Platform/Window.h>
@@ -40,6 +41,7 @@
 #include <cstdio>
 #include <memory>
 #include <string_view>
+#include <string>
 
 namespace
 {
@@ -203,6 +205,73 @@ namespace
 
     class StudioDX11Bootstrap final
     {
+        void ResetFpsCounter() noexcept
+        {
+            fpsSampleStart_ =
+                engine::platform::Clock::Now();
+
+            fpsFrameCount_ = 0;
+        }
+        
+        void UpdateWindowTitleFps() noexcept
+        {
+            if (windowHandle_ == nullptr)
+            {
+                return;
+            }
+
+            ++fpsFrameCount_;
+
+            const engine::platform::Clock::Tick now =
+                engine::platform::Clock::Now();
+
+            if (fpsSampleStart_ == 0)
+            {
+                fpsSampleStart_ = now;
+                fpsFrameCount_ = 0;
+                return;
+            }
+
+            const double elapsedSeconds =
+                engine::platform::Clock::ElapsedSeconds(
+                    fpsSampleStart_,
+                    now);
+
+            constexpr double updateIntervalSeconds = 0.5;
+
+            if (elapsedSeconds < updateIntervalSeconds)
+            {
+                return;
+            }
+
+            const double fps =
+                static_cast<double>(fpsFrameCount_) /
+                elapsedSeconds;
+
+            const std::uint32_t roundedFps =
+                static_cast<std::uint32_t>(
+                    fps + 0.5);
+
+            const engine::platform::NativeWindowHandle nativeWindow =
+                engine::platform::NativeWindowHandle::FromValue(
+                    reinterpret_cast<std::uintptr_t>(
+                        windowHandle_));
+
+            engine::platform::Window window(
+                nativeWindow);
+
+            std::wstring title =
+                L"DX11 Studio | FPS: ";
+
+            title += std::to_wstring(
+                roundedFps);
+
+            window.SetTitle(title);
+
+            fpsFrameCount_ = 0;
+            fpsSampleStart_ = now;
+        }
+        
     public:
         StudioDX11Bootstrap() = default;
 
@@ -381,6 +450,7 @@ namespace
             minimized_ = false;
             occluded_ = false;
 
+            ResetFpsCounter();
             initialized_ = true;
 
             failureResult_ =
@@ -431,6 +501,9 @@ namespace
             device_.Shutdown();
 
             windowHandle_ = nullptr;
+            
+            fpsSampleStart_ = 0;
+            fpsFrameCount_ = 0;
 
             width_ = 0;
             height_ = 0;
@@ -470,12 +543,15 @@ namespace
         void OnMinimized() noexcept
         {
             minimized_ = true;
+            fpsSampleStart_ = 0;
+            fpsFrameCount_ = 0;
         }
 
         void OnRestored() noexcept
         {
             minimized_ = false;
             occluded_ = false;
+            ResetFpsCounter();
         }
 
         [[nodiscard]]
@@ -713,6 +789,8 @@ namespace
             }
 
             occluded_ = false;
+
+            UpdateWindowTitleFps();
 
             return true;
         }
@@ -961,6 +1039,9 @@ namespace
 
         std::uint32_t width_ = 0;
         std::uint32_t height_ = 0;
+
+        engine::platform::Clock::Tick fpsSampleStart_ = 0;
+        std::uint32_t fpsFrameCount_ = 0;
 
         std::uint32_t pendingWidth_ = 0;
         std::uint32_t pendingHeight_ = 0;
