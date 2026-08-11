@@ -63,6 +63,8 @@ namespace lts::editor
         constexpr float StaticMeshSpatialCellSize = 128.0F;
         constexpr float StaticMeshStreamingDistance = 1024.0F;
 
+        constexpr float LegacyAlphaTestCutoff = 0.15F;
+
         struct alignas(16) ObjectConstants final
         {
             DirectX::XMFLOAT4X4 world;
@@ -183,7 +185,7 @@ namespace lts::editor
                 input.imbue(std::locale::classic());
 
                 LegacyMaterialDefinition material;
-                bool forceTransparent = false;
+                bool forceAlphaTest = false;
                 bool alphaTransparent = false;
                 bool glows = false;
                 float lowQualitySelfIllumination = 0.0F;
@@ -246,7 +248,7 @@ namespace lts::editor
                     else if (key == "doublesided")
                         material.desc.doubleSided = ParseLegacyBool(value);
                     else if (key == "forcetransparent")
-                        forceTransparent = ParseLegacyBool(value);
+                        forceAlphaTest = ParseLegacyBool(value);
                     else if (key == "alphatransparent")
                         alphaTransparent = ParseLegacyBool(value);
                     else if (key == "camouflage")
@@ -281,21 +283,31 @@ namespace lts::editor
                 {
                     material.desc.emissiveStrength = 1.0F;
                 }
-                if (forceTransparent || alphaTransparent)
+
+                if (alphaTransparent)
                 {
                     material.desc.alphaMode =
                         engine::assets::MaterialAlphaMode::Blend;
                 }
-                else if (alphaReference > 0.0F)
+                else if (forceAlphaTest || alphaReference > 0.0F)
                 {
                     material.desc.alphaMode =
                         engine::assets::MaterialAlphaMode::Mask;
-                    material.desc.alphaCutoff = (std::clamp)(
-                        alphaReference > 1.0F
-                            ? alphaReference / 255.0F
-                            : alphaReference,
-                        0.0F,
-                        1.0F);
+
+                    material.desc.alphaCutoff =
+                        alphaReference > 0.0F
+                            ? (std::clamp)(
+                                alphaReference > 1.0F
+                                    ? alphaReference / 255.0F
+                                    : alphaReference,
+                                0.0F,
+                                1.0F)
+                            : LegacyAlphaTestCutoff;
+                }
+                else
+                {
+                    material.desc.alphaMode =
+                        engine::assets::MaterialAlphaMode::Opaque;
                 }
 
                 output = std::move(material);
