@@ -64,7 +64,6 @@ namespace lts::editor
         constexpr float StaticMeshStreamingDistance = 1024.0F;
 
         constexpr float LegacyAlphaTestCutoff = 0.15F;
-        constexpr std::int32_t LegacyMaskedDepthBias = -2;
 
         struct alignas(16) ObjectConstants final
         {
@@ -116,6 +115,7 @@ namespace lts::editor
             std::string specularPowerTexture;
             std::string detailNormalTexture;
             std::string emissiveTexture;
+            std::string imagesDirectory;
         };
 
         [[nodiscard]] std::string TrimAscii(std::string value)
@@ -208,6 +208,7 @@ namespace lts::editor
 
                     if (key == "name") material.desc.debugName = value;
                     else if (key == "texture") material.diffuseTexture = value;
+                    else if (key == "imagesdir") material.imagesDirectory = value;
                     else if (key == "normalmap") material.normalTexture = value;
                     else if (key == "specularmap") material.specularTexture = value;
                     else if (key == "specpowmap") material.specularPowerTexture = value;
@@ -991,6 +992,7 @@ namespace lts::editor
             bool displacementEnabled = false;
             bool camouflage = false;
             std::string type;
+            bool roadSurface = false;
         };
 
         struct CachedMesh final
@@ -1385,18 +1387,11 @@ namespace lts::editor
             pipelineDescription.rasterizer.cullMode =
                 engine::graphics::CullMode::Back;
 
-            pipelineDescription.rasterizer.depthBias =
-                LegacyMaskedDepthBias;
-
             pipelineDescription.rasterizer.depthBiasClamp = 0.0F;
             pipelineDescription.rasterizer.slopeScaledDepthBias = 0.0F;
 
             pipelineDescription.debugName =
                 "EditorStaticMesh.MaskedPipeline";
-
-            result = device.CreateGraphicsPipeline(
-                pipelineDescription,
-                maskedPipeline_);
 
             if (engine::graphics::Failed(result))
             {
@@ -1416,10 +1411,6 @@ namespace lts::editor
 
             pipelineDescription.debugName =
                 "EditorStaticMesh.MaskedDoubleSidedPipeline";
-
-            result = device.CreateGraphicsPipeline(
-                pipelineDescription,
-                maskedDoubleSidedPipeline_);
 
             if (engine::graphics::Failed(result))
             {
@@ -1561,24 +1552,6 @@ namespace lts::editor
                 materialSampler_ = {};
             }
 
-            if (maskedDoubleSidedPipeline_.IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyGraphicsPipeline(
-                        maskedDoubleSidedPipeline_));
-
-                maskedDoubleSidedPipeline_ = {};
-            }
-
-            if (maskedPipeline_.IsValid())
-            {
-                static_cast<void>(
-                    device.DestroyGraphicsPipeline(
-                        maskedPipeline_));
-
-                maskedPipeline_ = {};
-            }
-
             if (transparentDoubleSidedPipeline_.IsValid())
             {
                 static_cast<void>(
@@ -1666,24 +1639,20 @@ namespace lts::editor
             const engine::assets::MaterialAlphaMode alphaMode,
             const bool doubleSided) const noexcept
         {
-            switch (alphaMode)
+            if (alphaMode == engine::assets::MaterialAlphaMode::Blend)
             {
-            case engine::assets::MaterialAlphaMode::Mask:
-                return doubleSided
-                    ? maskedDoubleSidedPipeline_
-                    : maskedPipeline_;
-
-            case engine::assets::MaterialAlphaMode::Blend:
                 return doubleSided
                     ? transparentDoubleSidedPipeline_
                     : transparentPipeline_;
-
-            case engine::assets::MaterialAlphaMode::Opaque:
-            default:
-                return doubleSided
-                    ? doubleSidedPipeline_
-                    : pipeline_;
             }
+
+            /*
+             * Opaque и Mask используют одинаковый rasterizer/depth state.
+             * Alpha Mask выполняется в StaticMesh.hlsl через clip().
+             */
+            return doubleSided
+                ? doubleSidedPipeline_
+                : pipeline_;
         }
 
         [[nodiscard]]
@@ -1971,9 +1940,21 @@ namespace lts::editor
                             material.desc.baseColorFactor[2], material.desc.baseColorFactor[3] };
                         texture = material.baseColorTexture;
                         sampler = material.sampler;
-                        alphaMode = material.desc.alphaMode;
                         doubleSided = material.desc.doubleSided;
-                        constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
+
+                        alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
+
+                        /*
+                         * Старый road pass использовал alpha для смешивания краёв,
+                         * но не выполнял alpha clip.
+                         */
+                        constants.materialParameters.z =
+                            !material.roadSurface &&
+                            material.desc.alphaMode ==
+                                engine::assets::MaterialAlphaMode::Mask
+                                    ? 1.0F
+                                    : 0.0F;
+                        
                         constants.materialParameters.w = material.desc.alphaCutoff;
                         constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
                     }
@@ -2401,10 +2382,22 @@ namespace lts::editor
                                 detailNormalTexture = material.detailNormalTexture;
                                 emissiveTexture = material.emissiveTexture;
                                 specularPowerTexture = material.specularPowerTexture;
-                                alphaMode = material.desc.alphaMode;
                                 doubleSided = material.desc.doubleSided;
                                 constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
-                                constants.materialParameters.z = material.desc.alphaMode == engine::assets::MaterialAlphaMode::Mask ? 1.0F : 0.0F;
+
+                                alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
+
+                                /*
+                                 * Старый road pass использовал alpha для смешивания краёв,
+                                 * но не выполнял alpha clip.
+                                 */
+                                constants.materialParameters.z =
+                                    !material.roadSurface &&
+                                    material.desc.alphaMode ==
+                                        engine::assets::MaterialAlphaMode::Mask
+                                            ? 1.0F
+                                            : 0.0F;
+                                
                                 constants.materialParameters.w = material.desc.alphaCutoff;
                                 constants.legacySurfaceParameters = {
                                     material.desc.specularIntensity,
@@ -2964,6 +2957,7 @@ namespace lts::editor
         [[nodiscard]]
         std::filesystem::path ResolveLegacyTexturePath(
             const std::string& value,
+            const std::string& imagesDirectory,
             const std::filesystem::path& materialPath,
             const std::filesystem::path& packageRoot,
             const std::filesystem::path& sourceDirectory,
@@ -2975,8 +2969,79 @@ namespace lts::editor
                 {
                     return {};
                 }
-                std::filesystem::path requested =
-                    std::filesystem::u8path(value).lexically_normal();
+
+                const std::filesystem::path requested =
+    std::filesystem::u8path(value).lexically_normal();
+
+                const auto findTextureInDirectory =
+                    [&](const std::filesystem::path& directory)
+                        -> std::filesystem::path
+                    {
+                        std::filesystem::path original =
+                            directory / requested;
+
+                        std::filesystem::path dds = original;
+                        dds.replace_extension(L".dds");
+
+                        return FirstRegularFile(
+                            {
+                                original,
+                                dds
+                            });
+                    };
+
+                if (requested.is_absolute())
+                {
+                    return FirstRegularFile({ requested });
+                }
+
+                /*
+                 * ImagesDir в старом .mat заменяет стандартную папку Textures.
+                 * Его нельзя игнорировать или продолжать глобальный поиск.
+                 */
+                if (!imagesDirectory.empty())
+                {
+                    std::filesystem::path imagesBase =
+                        std::filesystem::u8path(
+                            imagesDirectory).lexically_normal();
+
+                    if (!imagesBase.is_absolute())
+                    {
+                        const std::filesystem::path dataRoot =
+                            workspaceRoot / L"bin" / L"Data";
+
+                        auto component = imagesBase.begin();
+
+                        if (
+                            component != imagesBase.end() &&
+                            LowercasePath(component->wstring()) == L"data")
+                        {
+                            std::filesystem::path relativeImages;
+
+                            for (++component;
+                                 component != imagesBase.end();
+                                 ++component)
+                            {
+                                relativeImages /= *component;
+                            }
+
+                            imagesBase =
+                                dataRoot / relativeImages;
+                        }
+                        else
+                        {
+                            imagesBase =
+                                dataRoot / imagesBase;
+                        }
+                    }
+
+                    /*
+                     * При заданном ImagesDir глобального fallback быть не должно:
+                     * иначе снова будет выбрана одноимённая чужая DDS.
+                     */
+                    return findTextureInDirectory(imagesBase);
+                }
+                
                 if (requested.is_absolute())
                 {
                     return FirstRegularFile({requested});
@@ -3164,9 +3229,8 @@ namespace lts::editor
                         const auto resolveTexture =
                             [&](const std::string& textureName)
                             {
-                                return ResolveLegacyTexturePath(
-                                    textureName,
-                                    materialPath,
+                                return ResolveLegacyTexturePath(textureName,
+                                    legacy.imagesDirectory, materialPath,
                                     packageRoot,
                                     sourceDirectory,
                                     workspaceRoot);
@@ -3523,12 +3587,6 @@ namespace lts::editor
 
         engine::graphics::PipelineStateHandle
             transparentDoubleSidedPipeline_;
-
-        engine::graphics::PipelineStateHandle
-            maskedPipeline_;
-
-        engine::graphics::PipelineStateHandle
-            maskedDoubleSidedPipeline_;
 
         engine::scene::SpatialGrid spatialGrid_ { StaticMeshSpatialCellSize };
         std::vector<std::size_t> spatialCandidates_;
