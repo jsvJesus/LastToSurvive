@@ -134,24 +134,24 @@ float3 SampleNormal(
 {
     switch (layerIndex)
     {
-        case 0U:  return NormalLayers[0].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 1U:  return NormalLayers[1].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 2U:  return NormalLayers[2].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 3U:  return NormalLayers[3].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 4U:  return NormalLayers[4].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 5U:  return NormalLayers[5].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 6U:  return NormalLayers[6].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 7U:  return NormalLayers[7].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 8U:  return NormalLayers[8].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 9U:  return NormalLayers[9].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 10U: return NormalLayers[10].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 11U: return NormalLayers[11].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 12U: return NormalLayers[12].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 13U: return NormalLayers[13].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 14U: return NormalLayers[14].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 15U: return NormalLayers[15].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 16U: return NormalLayers[16].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
-        case 17U: return NormalLayers[17].SampleGrad(TerrainSampler, uv, gradientX, gradientY).xyz;
+        case 0U:  return NormalLayers[0].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 1U:  return NormalLayers[1].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 2U:  return NormalLayers[2].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 3U:  return NormalLayers[3].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 4U:  return NormalLayers[4].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 5U:  return NormalLayers[5].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 6U:  return NormalLayers[6].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 7U:  return NormalLayers[7].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 8U:  return NormalLayers[8].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 9U:  return NormalLayers[9].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 10U: return NormalLayers[10].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 11U: return NormalLayers[11].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 12U: return NormalLayers[12].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 13U: return NormalLayers[13].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 14U: return NormalLayers[14].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 15U: return NormalLayers[15].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 16U: return NormalLayers[16].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
+        case 17U: return NormalLayers[17].SampleGrad(MaterialSampler, uv, gradientX, gradientY).xyz;
         default: return float3(0.5F, 0.5F, 1.0F);
     }
 }
