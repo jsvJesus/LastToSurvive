@@ -241,8 +241,8 @@ namespace studio::editor
                 }
 
                 /*
-                 * Старые .terrain могут не иметь Terrain.ini.
-                 * Для них сохраняем прежний transform:
+                 * РЎС‚Р°СЂС‹Рµ .terrain РјРѕРіСѓС‚ РЅРµ РёРјРµС‚СЊ Terrain.ini.
+                 * Р”Р»СЏ РЅРёС… СЃРѕС…СЂР°РЅСЏРµРј РїСЂРµР¶РЅРёР№ transform:
                  * position = 0, scale = 1.
                  */
                 if (!iniExists)
@@ -364,11 +364,11 @@ namespace studio::editor
                     hasScaleZ;
 
                 /*
-                 * Terrain.ini, созданный новым R16 importer,
-                 * обязан содержать полный transform.
+                 * Terrain.ini, СЃРѕР·РґР°РЅРЅС‹Р№ РЅРѕРІС‹Рј R16 importer,
+                 * РѕР±СЏР·Р°РЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РїРѕР»РЅС‹Р№ transform.
                  *
-                 * Если в старом Terrain.ini нет ни одного
-                 * transform-поля, используем default transform.
+                 * Р•СЃР»Рё РІ СЃС‚Р°СЂРѕРј Terrain.ini РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ
+                 * transform-РїРѕР»СЏ, РёСЃРїРѕР»СЊР·СѓРµРј default transform.
                  */
                 if (
                     hasAnyTransformValue &&
@@ -949,8 +949,12 @@ namespace studio::editor
             g_levelLoadStats = result.stats;
             
             g_levelLoadStatus = "Colorado loaded: " +
-                std::to_string(result.stats.importedObjects) +
-                " obj_Building entries, " +
+                std::to_string(result.stats.buildingObjects) +
+                " buildings, " +
+                std::to_string(result.stats.roadObjects) +
+                " roads, " +
+                std::to_string(result.stats.waterPlaneObjects) +
+                " water planes; " +
                 std::to_string(result.stats.staticMeshObjects) +
                 " visible.";
 
@@ -1049,13 +1053,13 @@ namespace studio::editor
             }
 
             /*
-             * R16 importer хранит вертикальный центр
-             * и итоговый actor scale в Terrain.ini.
+             * R16 importer С…СЂР°РЅРёС‚ РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ С†РµРЅС‚СЂ
+             * Рё РёС‚РѕРіРѕРІС‹Р№ actor scale РІ Terrain.ini.
              *
-             * Без восстановления этого transform
-             * Terrain загружается в position 0 и scale 1,
-             * из-за чего перестаёт совпадать с объектами
-             * из LevelData.xml.
+             * Р‘РµР· РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЌС‚РѕРіРѕ transform
+             * Terrain Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ РІ position 0 Рё scale 1,
+             * РёР·-Р·Р° С‡РµРіРѕ РїРµСЂРµСЃС‚Р°С‘С‚ СЃРѕРІРїР°РґР°С‚СЊ СЃ РѕР±СЉРµРєС‚Р°РјРё
+             * РёР· LevelData.xml.
              */
             lts::editor::EditorTransform transform{};
 

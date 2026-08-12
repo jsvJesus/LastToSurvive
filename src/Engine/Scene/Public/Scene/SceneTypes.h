@@ -152,10 +152,10 @@ namespace engine::scene
     /*
      * Generic static mesh component.
      *
-     * assetPath должен ссылаться только на новый
-     * ресурс, созданный FbxStaticMeshImporter.
+     * assetPath РґРѕР»Р¶РµРЅ СЃСЃС‹Р»Р°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ РЅР° РЅРѕРІС‹Р№
+     * СЂРµСЃСѓСЂСЃ, СЃРѕР·РґР°РЅРЅС‹Р№ FbxStaticMeshImporter.
      *
-     * Никакой WarZ geometry/skeleton логики здесь нет.
+     * РќРёРєР°РєРѕР№ WarZ geometry/skeleton Р»РѕРіРёРєРё Р·РґРµСЃСЊ РЅРµС‚.
      */
     struct StaticMeshComponent final
     {
@@ -163,6 +163,8 @@ namespace engine::scene
 
         bool visible = true;
         bool castShadows = true;
+        bool disableDistanceCulling = false;
+        std::int32_t renderOrder = 0;
     };
 
     struct TerrainComponent final

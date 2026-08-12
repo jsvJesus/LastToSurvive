@@ -2208,6 +2208,7 @@ namespace lts::editor
             {
                 std::wstring assetPath;
                 std::vector<InstanceData> instances;
+                std::int32_t renderOrder = 0;
             };
 
             try
@@ -2234,6 +2235,28 @@ namespace lts::editor
                     return
                         engine::graphics::
                             GraphicsResult::OutOfMemory;
+                }
+
+                for (
+                    std::size_t entityIndex = 0U;
+                    entityIndex < entities.size();
+                    ++entityIndex)
+                {
+                    const EditorSceneEntity& entity =
+                        entities[entityIndex];
+
+                    if (
+                        !entity.staticMesh.has_value() ||
+                        !entity.staticMesh->disableDistanceCulling ||
+                        std::find(
+                            spatialCandidates_.begin(),
+                            spatialCandidates_.end(),
+                            entityIndex) != spatialCandidates_.end())
+                    {
+                        continue;
+                    }
+
+                    spatialCandidates_.push_back(entityIndex);
                 }
 
                 std::vector<VisibleBatch> batches;
@@ -2272,7 +2295,10 @@ namespace lts::editor
                         entity.transform.position[0] - cameraPosition.x;
                     const float deltaZ =
                         entity.transform.position[2] - cameraPosition.z;
-                    if (deltaX * deltaX + deltaZ * deltaZ > renderDistanceSquared)
+                    if (
+                        !entity.staticMesh->disableDistanceCulling &&
+                        deltaX * deltaX + deltaZ * deltaZ >
+                            renderDistanceSquared)
                     {
                         continue;
                     }
@@ -2330,7 +2356,9 @@ namespace lts::editor
                             continue;
                         }
                     }
-                    else if (!originVisible)
+                    else if (
+                        !originVisible &&
+                        !entity.staticMesh->disableDistanceCulling)
                     {
                         // Keep unloaded meshes on the old cheap candidate path.
                         // Their bounds become available after the normal
@@ -2338,10 +2366,13 @@ namespace lts::editor
                         continue;
                     }
 
-                    const std::wstring key = LowercasePath(
+                    std::wstring key = LowercasePath(
                         std::filesystem::path(entity.staticMesh->assetPath)
                             .lexically_normal()
                             .wstring());
+                    key += L"#";
+                    key += std::to_wstring(
+                        entity.staticMesh->renderOrder);
                     auto foundBatch = batchLookup.find(key);
                     std::size_t batchIndex = 0U;
                     if (foundBatch == batchLookup.end())
@@ -2349,6 +2380,8 @@ namespace lts::editor
                         batchIndex = batches.size();
                         VisibleBatch batch;
                         batch.assetPath = entity.staticMesh->assetPath;
+                        batch.renderOrder =
+                            entity.staticMesh->renderOrder;
                         batch.instances.reserve(8U);
                         batches.push_back(std::move(batch));
                         batchLookup.emplace(key, batchIndex);
@@ -2366,6 +2399,17 @@ namespace lts::editor
                         entityIndex == selectedIndex ? 1.0F : 0.0F;
                     batches[batchIndex].instances.push_back(instance);
                 }
+
+                std::stable_sort(
+                    batches.begin(),
+                    batches.end(),
+                    [](const VisibleBatch& left,
+                       const VisibleBatch& right)
+                    {
+                        return
+                            left.renderOrder <
+                            right.renderOrder;
+                    });
 
                 ObjectConstants constants{};
                 DirectX::XMStoreFloat4x4(
@@ -3714,6 +3758,21 @@ namespace lts::editor
                         loadedMaterial->
                             GetMaterial().
                             GetDesc();
+
+                    for (const auto& component : meshPath)
+                    {
+                        const std::wstring name =
+                            LowercasePath(
+                                component.wstring());
+
+                        if (
+                            name == L"roads" ||
+                            name == L"_roads")
+                        {
+                            material.roadSurface = true;
+                            break;
+                        }
+                    }
 
                     const auto loadTexture =
                         [&](const std::optional<

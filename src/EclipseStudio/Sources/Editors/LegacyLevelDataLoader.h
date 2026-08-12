@@ -14,6 +14,9 @@ namespace studio::editor
         std::size_t totalObjects = 0U;
         std::size_t importedObjects = 0U;
         std::size_t staticMeshObjects = 0U;
+        std::size_t buildingObjects = 0U;
+        std::size_t roadObjects = 0U;
+        std::size_t waterPlaneObjects = 0U;
         std::size_t uniqueMeshes = 0U;
         std::size_t convertedMeshes = 0U;
         std::size_t cachedMeshes = 0U;

@@ -1,7 +1,13 @@
 #include "LegacyLevelDataLoader.h"
 
 #include <Assets/AssetResult.h>
+#include <Assets/AssetData.h>
 #include <Assets/LegacyMeshImporter.h>
+#include <Assets/LtsMeshWriter.h>
+#include <Assets/MaterialAsset.h>
+#include <Assets/MaterialAssetWriter.h>
+#include <Assets/MeshAssetBuilder.h>
+#include <Assets/ScbMaterialConverter.h>
 
 #include <pugixml.hpp>
 
@@ -12,10 +18,15 @@
 #include <Windows.h>
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
+#include <limits>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -55,6 +66,7 @@ namespace studio::editor
             pugi::xml_node node;
 
             std::wstring originalName;
+            std::wstring editorFolder;
 
             std::filesystem::path meshPath;
             std::filesystem::path logicalMeshPath;
@@ -65,6 +77,9 @@ namespace studio::editor
 
             bool rewriteXml = false;
             bool available = false;
+            bool castShadows = true;
+            bool disableDistanceCulling = false;
+            std::int32_t renderOrder = 0;
         };
 
         [[nodiscard]]
@@ -772,6 +787,8 @@ namespace studio::editor
 
             if (
                 MeshFileExists(
+                    reference.meshPath) &&
+                MaterialSetExists(
                     reference.meshPath))
             {
                 const auto sourceTime =
@@ -839,6 +856,1140 @@ namespace studio::editor
                 result);
 
             return result;
+        }
+
+        struct RoadDiskVertex final
+        {
+            float position[3U];
+            float texcoord[2U];
+            float normal[3U];
+            std::int32_t controlPoint = 0;
+        };
+
+        static_assert(sizeof(RoadDiskVertex) == 36U);
+
+        template<typename Value>
+        [[nodiscard]]
+        bool ReadBinary(
+            std::ifstream& input,
+            Value& value) noexcept
+        {
+            return
+                input.read(
+                    reinterpret_cast<char*>(&value),
+                    sizeof(value)).good();
+        }
+
+        template<typename Value>
+        [[nodiscard]]
+        bool ReadHeaderValue(
+            const std::vector<std::byte>& header,
+            const std::size_t offset,
+            Value& value) noexcept
+        {
+            if (
+                offset > header.size() ||
+                sizeof(value) > header.size() - offset)
+            {
+                return false;
+            }
+
+            std::memcpy(
+                &value,
+                header.data() + offset,
+                sizeof(value));
+
+            return true;
+        }
+
+        [[nodiscard]]
+        std::array<float, 3U> NormalizeVector(
+            const std::array<float, 3U>& value,
+            const std::array<float, 3U>& fallback) noexcept
+        {
+            const float lengthSquared =
+                value[0] * value[0] +
+                value[1] * value[1] +
+                value[2] * value[2];
+
+            if (
+                !std::isfinite(lengthSquared) ||
+                lengthSquared <= 1.0e-12F)
+            {
+                return fallback;
+            }
+
+            const float inverseLength =
+                1.0F / std::sqrt(lengthSquared);
+
+            return
+            {
+                value[0] * inverseLength,
+                value[1] * inverseLength,
+                value[2] * inverseLength
+            };
+        }
+
+        void BuildTangents(
+            std::vector<engine::assets::StaticMeshVertex>& vertices,
+            const std::vector<std::uint32_t>& indices) noexcept
+        {
+            std::vector<std::array<float, 3U>> accumulated(
+                vertices.size());
+
+            for (
+                std::size_t index = 0U;
+                index + 2U < indices.size();
+                index += 3U)
+            {
+                const std::uint32_t index0 = indices[index];
+                const std::uint32_t index1 = indices[index + 1U];
+                const std::uint32_t index2 = indices[index + 2U];
+
+                if (
+                    index0 >= vertices.size() ||
+                    index1 >= vertices.size() ||
+                    index2 >= vertices.size())
+                {
+                    continue;
+                }
+
+                const auto& vertex0 = vertices[index0];
+                const auto& vertex1 = vertices[index1];
+                const auto& vertex2 = vertices[index2];
+
+                const std::array<float, 3U> edge1
+                {
+                    vertex1.position[0] - vertex0.position[0],
+                    vertex1.position[1] - vertex0.position[1],
+                    vertex1.position[2] - vertex0.position[2]
+                };
+
+                const std::array<float, 3U> edge2
+                {
+                    vertex2.position[0] - vertex0.position[0],
+                    vertex2.position[1] - vertex0.position[1],
+                    vertex2.position[2] - vertex0.position[2]
+                };
+
+                const float deltaU1 =
+                    vertex1.texcoord0[0] - vertex0.texcoord0[0];
+                const float deltaV1 =
+                    vertex1.texcoord0[1] - vertex0.texcoord0[1];
+                const float deltaU2 =
+                    vertex2.texcoord0[0] - vertex0.texcoord0[0];
+                const float deltaV2 =
+                    vertex2.texcoord0[1] - vertex0.texcoord0[1];
+                const float denominator =
+                    deltaU1 * deltaV2 - deltaU2 * deltaV1;
+
+                if (
+                    !std::isfinite(denominator) ||
+                    std::abs(denominator) <= 1.0e-10F)
+                {
+                    continue;
+                }
+
+                const float scale = 1.0F / denominator;
+                const std::array<float, 3U> tangent
+                {
+                    (edge1[0] * deltaV2 - edge2[0] * deltaV1) * scale,
+                    (edge1[1] * deltaV2 - edge2[1] * deltaV1) * scale,
+                    (edge1[2] * deltaV2 - edge2[2] * deltaV1) * scale
+                };
+
+                for (const std::uint32_t vertexIndex :
+                    {index0, index1, index2})
+                {
+                    accumulated[vertexIndex][0] += tangent[0];
+                    accumulated[vertexIndex][1] += tangent[1];
+                    accumulated[vertexIndex][2] += tangent[2];
+                }
+            }
+
+            for (
+                std::size_t index = 0U;
+                index < vertices.size();
+                ++index)
+            {
+                auto& vertex = vertices[index];
+                const auto normal = NormalizeVector(
+                    vertex.normal,
+                    {0.0F, 1.0F, 0.0F});
+
+                const float projection =
+                    accumulated[index][0] * normal[0] +
+                    accumulated[index][1] * normal[1] +
+                    accumulated[index][2] * normal[2];
+
+                const auto tangent = NormalizeVector(
+                    {
+                        accumulated[index][0] - normal[0] * projection,
+                        accumulated[index][1] - normal[1] * projection,
+                        accumulated[index][2] - normal[2] * projection
+                    },
+                    {1.0F, 0.0F, 0.0F});
+
+                vertex.normal = normal;
+                vertex.tangent =
+                {
+                    tangent[0],
+                    tangent[1],
+                    tangent[2],
+                    1.0F
+                };
+            }
+        }
+
+        [[nodiscard]]
+        bool WriteAssetData(
+            const std::filesystem::path& path,
+            const engine::assets::AssetData& data,
+            std::wstring& error)
+        {
+            std::error_code filesystemError;
+
+            std::filesystem::create_directories(
+                path.parent_path(),
+                filesystemError);
+
+            if (filesystemError)
+            {
+                error = L"Cannot create generated asset directory.";
+                return false;
+            }
+
+            std::filesystem::path temporaryPath = path;
+            temporaryPath += L".tmp";
+
+            std::filesystem::remove(
+                temporaryPath,
+                filesystemError);
+
+            {
+                std::ofstream output(
+                    temporaryPath,
+                    std::ios::binary |
+                        std::ios::trunc);
+
+                if (!output)
+                {
+                    error = L"Cannot create generated asset.";
+                    return false;
+                }
+
+                output.write(
+                    reinterpret_cast<const char*>(
+                        data.GetData()),
+                    static_cast<std::streamsize>(
+                        data.GetSize()));
+
+                output.flush();
+
+                if (!output.good())
+                {
+                    output.close();
+                    std::filesystem::remove(
+                        temporaryPath,
+                        filesystemError);
+                    error = L"Cannot write generated asset.";
+                    return false;
+                }
+            }
+
+            if (!MoveFileExW(
+                    temporaryPath.c_str(),
+                    path.c_str(),
+                    MOVEFILE_REPLACE_EXISTING |
+                        MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(
+                    temporaryPath,
+                    filesystemError);
+                error = L"Cannot replace generated asset.";
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool WriteMesh(
+            const std::filesystem::path& path,
+            const engine::assets::MeshAsset& mesh,
+            std::wstring& error)
+        {
+            engine::assets::AssetData encoded;
+
+            if (engine::assets::Failed(
+                    engine::assets::LtsMeshWriter::Encode(
+                        mesh,
+                        encoded)))
+            {
+                error = L"Cannot encode generated mesh.";
+                return false;
+            }
+
+            return WriteAssetData(path, encoded, error);
+        }
+
+        [[nodiscard]]
+        bool OutputIsCurrent(
+            const std::filesystem::path& sourcePath,
+            const std::filesystem::path& destinationPath) noexcept
+        {
+            try
+            {
+                if (
+                    !MeshFileExists(destinationPath) ||
+                    !MaterialSetExists(destinationPath))
+                {
+                    return false;
+                }
+
+                std::error_code error;
+                const auto sourceTime =
+                    std::filesystem::last_write_time(
+                        sourcePath,
+                        error);
+
+                if (error)
+                {
+                    return false;
+                }
+
+                const auto destinationTime =
+                    std::filesystem::last_write_time(
+                        destinationPath,
+                        error);
+
+                return
+                    !error &&
+                    destinationTime >= sourceTime;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        std::filesystem::path BuildGeneratedMeshPath(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& levelRoot,
+            const wchar_t* const category,
+            const std::filesystem::path& sourceName)
+        {
+            std::filesystem::path filename =
+                sourceName.filename();
+
+            filename.replace_extension(L".mesh");
+
+            return
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"Data" /
+                L"StaticMeshes" /
+                L"LevelGenerated" /
+                levelRoot.filename() /
+                category /
+                filename;
+        }
+
+        [[nodiscard]]
+        bool ImportRoadMesh(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& sourcePath,
+            const std::filesystem::path& settingsSourcePath,
+            const std::filesystem::path& destinationPath,
+            const std::array<float, 3U>& origin,
+            bool& converted,
+            std::wstring& error)
+        {
+            converted = false;
+
+            std::ifstream input(sourcePath, std::ios::binary);
+
+            if (!input)
+            {
+                error = L"Road data file is missing.";
+                return false;
+            }
+
+            std::uint16_t version = 0U;
+            std::uint32_t headerLength = 0U;
+
+            if (
+                !ReadBinary(input, version) ||
+                version != 4U ||
+                !ReadBinary(input, headerLength) ||
+                headerLength < 29U ||
+                headerLength > 4096U)
+            {
+                error = L"Unsupported or corrupt road header.";
+                return false;
+            }
+
+            std::vector<std::byte> header(headerLength);
+            std::memcpy(
+                header.data(),
+                &headerLength,
+                sizeof(headerLength));
+
+            if (!input.read(
+                    reinterpret_cast<char*>(
+                        header.data() + sizeof(headerLength)),
+                    static_cast<std::streamsize>(
+                        header.size() - sizeof(headerLength))).good())
+            {
+                error = L"Road header is truncated.";
+                return false;
+            }
+
+            std::uint32_t pointCount = 0U;
+            std::uint32_t vertexCount = 0U;
+            std::uint32_t indexCount = 0U;
+
+            if (
+                !ReadHeaderValue(header, 4U, pointCount) ||
+                !ReadHeaderValue(header, 16U, vertexCount) ||
+                !ReadHeaderValue(header, 20U, indexCount) ||
+                pointCount < 2U ||
+                pointCount > 1000000U ||
+                vertexCount == 0U ||
+                vertexCount > 16000000U ||
+                indexCount == 0U ||
+                indexCount > 48000000U ||
+                indexCount % 3U != 0U)
+            {
+                error = L"Road mesh counts are invalid.";
+                return false;
+            }
+
+            const std::uint64_t expectedFileSize =
+                2U +
+                static_cast<std::uint64_t>(headerLength) +
+                static_cast<std::uint64_t>(pointCount) * 28U +
+                static_cast<std::uint64_t>(vertexCount) *
+                    sizeof(RoadDiskVertex) +
+                static_cast<std::uint64_t>(indexCount) *
+                    sizeof(std::int32_t);
+            std::error_code fileSizeError;
+            const std::uintmax_t actualFileSize =
+                std::filesystem::file_size(
+                    sourcePath,
+                    fileSizeError);
+
+            if (
+                fileSizeError ||
+                actualFileSize != expectedFileSize)
+            {
+                error = L"Road data size does not match its header.";
+                return false;
+            }
+
+            const char* const materialBegin =
+                reinterpret_cast<const char*>(
+                    header.data() + 28U);
+            const std::size_t materialCapacity =
+                header.size() - 28U;
+            const void* const terminator =
+                std::memchr(
+                    materialBegin,
+                    '\0',
+                    materialCapacity);
+
+            if (terminator == nullptr)
+            {
+                error = L"Road material name is invalid.";
+                return false;
+            }
+
+            const std::string materialName(
+                materialBegin,
+                static_cast<const char*>(terminator));
+
+            const std::filesystem::path sourceMaterialPath =
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"ObjectsDepot" /
+                L"_roads" /
+                L"Materials" /
+                std::filesystem::u8path(
+                    materialName.empty()
+                        ? "_DEFAULT_.mat"
+                        : materialName + ".mat");
+
+            std::error_code materialFileError;
+            const bool sourceMaterialExists =
+                std::filesystem::is_regular_file(
+                    sourceMaterialPath,
+                    materialFileError) &&
+                !materialFileError;
+
+            if (
+                OutputIsCurrent(sourcePath, destinationPath) &&
+                OutputIsCurrent(
+                    settingsSourcePath,
+                    destinationPath) &&
+                (!sourceMaterialExists ||
+                    OutputIsCurrent(
+                        sourceMaterialPath,
+                        destinationPath)))
+            {
+                return true;
+            }
+
+            constexpr std::uint64_t PointSize = 28U;
+            const std::uint64_t pointBytes =
+                static_cast<std::uint64_t>(pointCount) *
+                PointSize;
+
+            if (
+                pointBytes >
+                static_cast<std::uint64_t>(
+                    (std::numeric_limits<std::streamoff>::max)()))
+            {
+                error = L"Road control point data is too large.";
+                return false;
+            }
+
+            input.seekg(
+                static_cast<std::streamoff>(pointBytes),
+                std::ios::cur);
+
+            if (!input.good())
+            {
+                error = L"Road control point data is truncated.";
+                return false;
+            }
+
+            std::vector<engine::assets::StaticMeshVertex>
+                vertices(vertexCount);
+
+            for (
+                std::uint32_t index = 0U;
+                index < vertexCount;
+                ++index)
+            {
+                RoadDiskVertex sourceVertex;
+
+                if (!ReadBinary(input, sourceVertex))
+                {
+                    error = L"Road vertex data is truncated.";
+                    return false;
+                }
+
+                auto& destinationVertex = vertices[index];
+                destinationVertex.position =
+                {
+                    sourceVertex.position[0] - origin[0],
+                    sourceVertex.position[1] - origin[1],
+                    sourceVertex.position[2] - origin[2]
+                };
+                destinationVertex.normal =
+                {
+                    sourceVertex.normal[0],
+                    sourceVertex.normal[1],
+                    sourceVertex.normal[2]
+                };
+                destinationVertex.texcoord0 =
+                {
+                    sourceVertex.texcoord[0],
+                    sourceVertex.texcoord[1]
+                };
+            }
+
+            std::vector<std::uint32_t> indices(indexCount);
+
+            for (
+                std::uint32_t index = 0U;
+                index < indexCount;
+                ++index)
+            {
+                std::int32_t sourceIndex = 0;
+
+                if (
+                    !ReadBinary(input, sourceIndex) ||
+                    sourceIndex < 0 ||
+                    static_cast<std::uint32_t>(sourceIndex) >=
+                        vertexCount)
+                {
+                    error = L"Road index data is invalid.";
+                    return false;
+                }
+
+                indices[index] =
+                    static_cast<std::uint32_t>(sourceIndex);
+            }
+
+            BuildTangents(vertices, indices);
+
+            const engine::assets::MeshSubmesh submesh
+            {
+                0U,
+                indexCount,
+                0,
+                0U
+            };
+
+            engine::assets::MeshAsset mesh;
+
+            const std::string debugName =
+                sourcePath.stem().u8string();
+
+            if (engine::assets::Failed(
+                    engine::assets::MeshAssetBuilder::Build(
+                        vertices.data(),
+                        vertices.size(),
+                        indices.data(),
+                        indices.size(),
+                        &submesh,
+                        1U,
+                        1U,
+                        debugName,
+                        mesh)) ||
+                !WriteMesh(destinationPath, mesh, error))
+            {
+                if (error.empty())
+                {
+                    error = L"Cannot build road mesh.";
+                }
+                return false;
+            }
+
+            const std::filesystem::path materialSource =
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"ObjectsDepot" /
+                L"_roads" /
+                L"road_material_source.scb";
+
+            std::wstring materialError;
+
+            if (engine::assets::Failed(
+                    engine::assets::ScbMaterialConverter::Convert(
+                        materialSource,
+                        destinationPath,
+                        {
+                            materialName.empty()
+                                ? "__default"
+                                : materialName
+                        },
+                        materialError)))
+            {
+                error = materialError.empty()
+                    ? L"Cannot convert road material."
+                    : std::move(materialError);
+                return false;
+            }
+
+            converted = true;
+            return true;
+        }
+
+        [[nodiscard]]
+        std::filesystem::path ResolveLegacyDataPath(
+            const std::filesystem::path& workspaceRoot,
+            const std::string& logicalPath)
+        {
+            std::filesystem::path path =
+                std::filesystem::u8path(logicalPath).
+                    lexically_normal();
+
+            auto component = path.begin();
+
+            if (
+                component != path.end() &&
+                Lowercase(component->wstring()) == L"data")
+            {
+                ++component;
+                std::filesystem::path relative;
+
+                for (; component != path.end(); ++component)
+                {
+                    relative /= *component;
+                }
+
+                path = std::move(relative);
+            }
+
+            if (!IsSafeRelativePath(path))
+            {
+                return {};
+            }
+
+            return
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                path;
+        }
+
+        [[nodiscard]]
+        bool CopyMaterialTexture(
+            const std::filesystem::path& sourcePath,
+            const std::filesystem::path& destinationMeshPath,
+            const std::filesystem::path& gameRoot,
+            std::optional<engine::assets::AssetPath>& outputPath)
+        {
+            outputPath.reset();
+
+            if (sourcePath.empty())
+            {
+                return true;
+            }
+
+            std::error_code error;
+
+            if (
+                !std::filesystem::is_regular_file(
+                    sourcePath,
+                    error) ||
+                error)
+            {
+                return true;
+            }
+
+            const std::filesystem::path destinationPath =
+                destinationMeshPath.parent_path() /
+                L"Textures" /
+                sourcePath.filename();
+
+            std::filesystem::create_directories(
+                destinationPath.parent_path(),
+                error);
+
+            if (error)
+            {
+                return false;
+            }
+
+            std::filesystem::copy_file(
+                sourcePath,
+                destinationPath,
+                std::filesystem::copy_options::update_existing,
+                error);
+
+            if (error)
+            {
+                return false;
+            }
+
+            const std::filesystem::path logicalPath =
+                std::filesystem::relative(
+                    destinationPath,
+                    gameRoot,
+                    error);
+
+            if (error)
+            {
+                return false;
+            }
+
+            engine::assets::AssetPath assetPath;
+
+            if (engine::assets::Failed(
+                    engine::assets::AssetPath::TryCreate(
+                        logicalPath.generic_u8string(),
+                        assetPath)))
+            {
+                return false;
+            }
+
+            outputPath = std::move(assetPath);
+            return true;
+        }
+
+        [[nodiscard]]
+        std::array<float, 3U> PackedColor(
+            const std::uint32_t color) noexcept
+        {
+            constexpr float Scale = 1.0F / 255.0F;
+
+            return
+            {
+                static_cast<float>((color >> 16U) & 0xFFU) * Scale,
+                static_cast<float>((color >> 8U) & 0xFFU) * Scale,
+                static_cast<float>(color & 0xFFU) * Scale
+            };
+        }
+
+        [[nodiscard]]
+        bool WriteWaterMaterial(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& destinationMeshPath,
+            const pugi::xml_node& settings,
+            std::wstring& error)
+        {
+            engine::assets::MaterialAssetDesc description;
+
+            const std::uint32_t packedColor =
+                settings.attribute("deep_color")
+                    ? settings.attribute("deep_color").as_uint()
+                    : 0xFF245A73U;
+            const auto color = PackedColor(packedColor);
+
+            description.baseColorFactor =
+            {
+                color[0],
+                color[1],
+                color[2],
+                0.78F
+            };
+            description.metallicFactor = 0.0F;
+            description.roughnessFactor = 0.12F;
+            description.alphaMode =
+                engine::assets::MaterialAlphaMode::Blend;
+            description.doubleSided = true;
+            description.normalScale = 1.0F;
+            description.specularIntensity =
+                (std::clamp)(
+                    AttributeFloat(
+                        settings.attribute("specIntensity"),
+                        1.0F),
+                    0.0F,
+                    16.0F);
+            description.specularPower =
+                (std::clamp)(
+                    AttributeFloat(
+                        settings.attribute("specular"),
+                        128.0F),
+                    1.0F,
+                    8192.0F);
+            description.reflectionFactor =
+                (std::clamp)(
+                    AttributeFloat(
+                        settings.attribute("reflectionIntensity"),
+                        1.0F),
+                    0.0F,
+                    16.0F);
+            description.debugName = "water";
+            description.sampler.filter =
+                engine::graphics::TextureFilter::Anisotropic;
+            description.sampler.addressU =
+                engine::graphics::TextureAddressMode::Wrap;
+            description.sampler.addressV =
+                engine::graphics::TextureAddressMode::Wrap;
+            description.sampler.addressW =
+                engine::graphics::TextureAddressMode::Wrap;
+            description.sampler.maximumAnisotropy = 16U;
+
+            const std::filesystem::path gameRoot =
+                workspaceRoot / L"bin" / L"Data";
+            const std::filesystem::path colorTexture =
+                gameRoot / L"Water" / L"LakeColor.dds";
+
+            std::string waveTexture =
+                settings.attribute("wave_tex").value();
+
+            if (!waveTexture.empty())
+            {
+                waveTexture += "00.dds";
+            }
+
+            if (
+                !CopyMaterialTexture(
+                    colorTexture,
+                    destinationMeshPath,
+                    gameRoot,
+                    description.baseColorTexture) ||
+                !CopyMaterialTexture(
+                    ResolveLegacyDataPath(
+                        workspaceRoot,
+                        waveTexture),
+                    destinationMeshPath,
+                    gameRoot,
+                    description.normalTexture))
+            {
+                error = L"Cannot copy water material textures.";
+                return false;
+            }
+
+            engine::assets::MaterialAsset material;
+
+            if (engine::assets::Failed(
+                    material.Initialize(
+                        std::move(description))))
+            {
+                error = L"Water material is invalid.";
+                return false;
+            }
+
+            engine::assets::AssetData encoded;
+
+            if (engine::assets::Failed(
+                    engine::assets::MaterialAssetWriter::Encode(
+                        material,
+                        encoded)))
+            {
+                error = L"Cannot encode water material.";
+                return false;
+            }
+
+            const std::filesystem::path materialPath =
+                destinationMeshPath.parent_path() /
+                L"Materials" /
+                (destinationMeshPath.stem().wstring() +
+                    L"_0000_water.material");
+
+            return WriteAssetData(materialPath, encoded, error);
+        }
+
+        [[nodiscard]]
+        bool ImportWaterPlaneMesh(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& sourcePath,
+            const std::filesystem::path& settingsSourcePath,
+            const std::filesystem::path& destinationPath,
+            const pugi::xml_node& settings,
+            bool& converted,
+            std::wstring& error)
+        {
+            converted = false;
+
+            if (
+                OutputIsCurrent(sourcePath, destinationPath) &&
+                OutputIsCurrent(
+                    settingsSourcePath,
+                    destinationPath))
+            {
+                return true;
+            }
+
+            const float waterHeight =
+                AttributeFloat(
+                    settings.attribute("waterplaneheight"),
+                    0.0F);
+            const float cellSize =
+                AttributeFloat(
+                    settings.attribute("cellgridsize"),
+                    50.0F);
+            const float planeWidth =
+                AttributeFloat(
+                    settings.attribute("total_x_size"),
+                    0.0F);
+            const float planeDepth =
+                AttributeFloat(
+                    settings.attribute("total_z_size"),
+                    0.0F);
+            const float centerX =
+                AttributeFloat(
+                    settings.attribute("center_x"),
+                    0.0F);
+            const float centerZ =
+                AttributeFloat(
+                    settings.attribute("center_z"),
+                    0.0F);
+            const float textureScale =
+                AttributeFloat(
+                    settings.attribute("waterColorTile"),
+                    0.05F);
+
+            if (
+                !std::isfinite(waterHeight) ||
+                !std::isfinite(cellSize) ||
+                !std::isfinite(planeWidth) ||
+                !std::isfinite(planeDepth) ||
+                !std::isfinite(centerX) ||
+                !std::isfinite(centerZ) ||
+                !std::isfinite(textureScale) ||
+                cellSize <= 0.0F ||
+                planeWidth <= 0.0F ||
+                planeDepth <= 0.0F)
+            {
+                error = L"Water plane settings are invalid.";
+                return false;
+            }
+
+            std::ifstream input(sourcePath, std::ios::binary);
+
+            if (!input)
+            {
+                error = L"Water plane data file is missing.";
+                return false;
+            }
+
+            std::uint16_t version = 0U;
+            std::uint32_t width = 0U;
+            std::uint32_t height = 0U;
+
+            if (
+                !ReadBinary(input, version) ||
+                (version != 3U && version != 4U) ||
+                !ReadBinary(input, width) ||
+                !ReadBinary(input, height) ||
+                width == 0U ||
+                height == 0U ||
+                width > 65536U ||
+                height > 65536U ||
+                static_cast<std::uint64_t>(width) * height >
+                    16000000U)
+            {
+                error = L"Water plane grid header is invalid.";
+                return false;
+            }
+
+            std::error_code waterFileSizeError;
+            const std::uintmax_t waterFileSize =
+                std::filesystem::file_size(
+                    sourcePath,
+                    waterFileSizeError);
+            const std::uint64_t expectedWaterFileSize =
+                10U +
+                static_cast<std::uint64_t>(width) * height;
+
+            if (
+                waterFileSizeError ||
+                waterFileSize != expectedWaterFileSize)
+            {
+                error = L"Water plane data size does not match its header.";
+                return false;
+            }
+
+            std::vector<std::uint8_t> grid(
+                static_cast<std::size_t>(width) * height);
+
+            if (!input.read(
+                    reinterpret_cast<char*>(grid.data()),
+                    static_cast<std::streamsize>(grid.size())).good())
+            {
+                error = L"Water plane grid is truncated.";
+                return false;
+            }
+
+            const std::size_t activeCellCount =
+                static_cast<std::size_t>(
+                    std::count_if(
+                        grid.begin(),
+                        grid.end(),
+                        [](const std::uint8_t value)
+                        {
+                            return value != 0U;
+                        }));
+
+            if (
+                activeCellCount == 0U ||
+                activeCellCount >
+                    (std::numeric_limits<std::uint32_t>::max)() /
+                        6U)
+            {
+                error = L"Water plane has no valid cells.";
+                return false;
+            }
+
+            std::vector<engine::assets::StaticMeshVertex> vertices;
+            std::vector<std::uint32_t> indices;
+            vertices.reserve(activeCellCount * 4U);
+            indices.reserve(activeCellCount * 6U);
+
+            const float offsetX =
+                centerX - planeWidth * 0.5F;
+            const float offsetZ =
+                centerZ - planeDepth * 0.5F;
+
+            for (
+                std::uint32_t z = 0U;
+                z < height;
+                ++z)
+            {
+                for (
+                    std::uint32_t x = 0U;
+                    x < width;
+                    ++x)
+                {
+                    if (grid[static_cast<std::size_t>(z) * width + x] == 0U)
+                    {
+                        continue;
+                    }
+
+                    const float x0 =
+                        offsetX + static_cast<float>(x) * cellSize;
+                    const float x1 = x0 + cellSize;
+                    const float z0 =
+                        offsetZ + static_cast<float>(z) * cellSize;
+                    const float z1 = z0 + cellSize;
+                    const std::uint32_t firstVertex =
+                        static_cast<std::uint32_t>(vertices.size());
+
+                    for (const std::array<float, 2U>& position :
+                        {
+                            std::array<float, 2U>{x0, z0},
+                            std::array<float, 2U>{x0, z1},
+                            std::array<float, 2U>{x1, z1},
+                            std::array<float, 2U>{x1, z0}
+                        })
+                    {
+                        engine::assets::StaticMeshVertex vertex;
+                        vertex.position =
+                        {
+                            position[0] - centerX,
+                            0.0F,
+                            position[1] - centerZ
+                        };
+                        vertex.normal = {0.0F, 1.0F, 0.0F};
+                        vertex.tangent = {1.0F, 0.0F, 0.0F, 1.0F};
+                        vertex.texcoord0 =
+                        {
+                            position[0] * textureScale,
+                            position[1] * textureScale
+                        };
+                        vertices.push_back(vertex);
+                    }
+
+                    indices.insert(
+                        indices.end(),
+                        {
+                            firstVertex,
+                            firstVertex + 1U,
+                            firstVertex + 2U,
+                            firstVertex,
+                            firstVertex + 2U,
+                            firstVertex + 3U
+                        });
+                }
+            }
+
+            const engine::assets::MeshSubmesh submesh
+            {
+                0U,
+                static_cast<std::uint32_t>(indices.size()),
+                0,
+                0U
+            };
+
+            engine::assets::MeshAsset mesh;
+
+            if (engine::assets::Failed(
+                    engine::assets::MeshAssetBuilder::Build(
+                        vertices.data(),
+                        vertices.size(),
+                        indices.data(),
+                        indices.size(),
+                        &submesh,
+                        1U,
+                        1U,
+                        sourcePath.stem().u8string(),
+                        mesh)) ||
+                !WriteMesh(destinationPath, mesh, error) ||
+                !WriteWaterMaterial(
+                    workspaceRoot,
+                    destinationPath,
+                    settings,
+                    error))
+            {
+                if (error.empty())
+                {
+                    error = L"Cannot build water plane mesh.";
+                }
+                return false;
+            }
+
+            converted = true;
+            return true;
         }
 
         [[nodiscard]]
@@ -940,7 +2091,7 @@ namespace studio::editor
             }
 
             std::string message =
-                "Static mesh migration completed with warnings. ";
+                "Level geometry import completed with warnings. ";
 
             message += "Missing SCB: ";
             message +=
@@ -1062,16 +2213,190 @@ namespace studio::editor
                             "className").
                             value());
 
-                if (className != L"obj_Building")
-                {
-                    continue;
-                }
-
                 const std::wstring fileName =
                     ToWide(
                         object.attribute(
                             "fileName").
                             value());
+
+                if (className == L"obj_Road")
+                {
+                    const std::filesystem::path sourceName(fileName);
+
+                    if (
+                        sourceName.empty() ||
+                        sourceName.filename() != sourceName)
+                    {
+                        ++result.stats.failedMeshes;
+                        AddError(
+                            reportedErrors,
+                            "Invalid obj_Road name:",
+                            sourceName);
+                        continue;
+                    }
+
+                    const std::filesystem::path sourcePath =
+                        levelDataPath.parent_path() /
+                        L"roads" /
+                        (sourceName.wstring() + L".dat");
+                    const std::filesystem::path destinationPath =
+                        BuildGeneratedMeshPath(
+                            workspaceRoot,
+                            levelDataPath.parent_path(),
+                            L"Roads",
+                            sourceName);
+                    bool converted = false;
+                    std::wstring importError;
+                    engine::scene::SceneTransform roadTransform;
+
+                    ReadTransform(object, roadTransform);
+                    roadTransform.rotationDegrees =
+                        {0.0F, 0.0F, 0.0F};
+                    roadTransform.scale =
+                        {1.0F, 1.0F, 1.0F};
+
+                    ++result.stats.uniqueMeshes;
+
+                    if (!ImportRoadMesh(
+                            workspaceRoot,
+                            sourcePath,
+                            levelDataPath,
+                            destinationPath,
+                            roadTransform.position,
+                            converted,
+                            importError))
+                    {
+                        ++result.stats.failedMeshes;
+                        AddError(
+                            reportedErrors,
+                            "Road import failed:",
+                            sourcePath);
+                        continue;
+                    }
+
+                    if (converted)
+                    {
+                        ++result.stats.convertedMeshes;
+                    }
+                    else
+                    {
+                        ++result.stats.cachedMeshes;
+                    }
+
+                    PendingObject pending;
+                    pending.node = object;
+                    pending.originalName = fileName;
+                    pending.editorFolder = L"LevelData/obj_Road";
+                    pending.meshPath = destinationPath;
+                    pending.transform = roadTransform;
+                    pending.available = true;
+                    pending.castShadows = false;
+                    pending.disableDistanceCulling = true;
+                    const pugi::xml_attribute drawPriority =
+                        object.child("road").attribute(
+                            "draw_priority");
+                    pending.renderOrder =
+                        (drawPriority
+                            ? drawPriority.as_int()
+                            : 5) + 8;
+                    pending.objectIndex = objectIndex;
+                    pendingObjects.push_back(std::move(pending));
+                    ++result.stats.roadObjects;
+                    continue;
+                }
+
+                if (className == L"obj_WaterPlane")
+                {
+                    const std::filesystem::path sourceName(fileName);
+                    const pugi::xml_node settings =
+                        object.child("new_lake");
+
+                    if (
+                        sourceName.empty() ||
+                        sourceName.filename() != sourceName ||
+                        !settings)
+                    {
+                        ++result.stats.failedMeshes;
+                        AddError(
+                            reportedErrors,
+                            "Invalid obj_WaterPlane entry:",
+                            sourceName);
+                        continue;
+                    }
+
+                    const std::filesystem::path sourcePath =
+                        levelDataPath.parent_path() /
+                        L"water_planes" /
+                        (sourceName.wstring() + L".dat");
+                    const std::filesystem::path destinationPath =
+                        BuildGeneratedMeshPath(
+                            workspaceRoot,
+                            levelDataPath.parent_path(),
+                            L"WaterPlanes",
+                            sourceName);
+                    bool converted = false;
+                    std::wstring importError;
+
+                    ++result.stats.uniqueMeshes;
+
+                    if (!ImportWaterPlaneMesh(
+                            workspaceRoot,
+                            sourcePath,
+                            levelDataPath,
+                            destinationPath,
+                            settings,
+                            converted,
+                            importError))
+                    {
+                        ++result.stats.failedMeshes;
+                        AddError(
+                            reportedErrors,
+                            "Water plane import failed:",
+                            sourcePath);
+                        continue;
+                    }
+
+                    if (converted)
+                    {
+                        ++result.stats.convertedMeshes;
+                    }
+                    else
+                    {
+                        ++result.stats.cachedMeshes;
+                    }
+
+                    PendingObject pending;
+                    pending.node = object;
+                    pending.originalName = fileName;
+                    pending.editorFolder =
+                        L"LevelData/obj_WaterPlane";
+                    pending.meshPath = destinationPath;
+                    pending.transform.position =
+                    {
+                        AttributeFloat(
+                            settings.attribute("center_x"),
+                            0.0F),
+                        AttributeFloat(
+                            settings.attribute("waterplaneheight"),
+                            0.0F),
+                        AttributeFloat(
+                            settings.attribute("center_z"),
+                            0.0F)
+                    };
+                    pending.available = true;
+                    pending.castShadows = false;
+                    pending.disableDistanceCulling = true;
+                    pending.renderOrder = 100;
+                    pending.objectIndex = objectIndex;
+                    pendingObjects.push_back(std::move(pending));
+                    ++result.stats.waterPlaneObjects;
+                    continue;
+                }
+
+                if (className != L"obj_Building")
+                {
+                    continue;
+                }
 
                 MeshReference reference;
 
@@ -1106,6 +2431,8 @@ namespace studio::editor
 
                 pending.node = object;
                 pending.originalName = fileName;
+                pending.editorFolder =
+                    L"LevelData/obj_Building";
                 pending.meshPath = mesh.path;
                 pending.available = mesh.available;
                 pending.logicalMeshPath = reference.logicalMeshPath;
@@ -1114,6 +2441,7 @@ namespace studio::editor
 
                 ReadTransform(object, pending.transform);
                 pendingObjects.push_back(std::move(pending));
+                ++result.stats.buildingObjects;
             }
 
             bool xmlChanged = false;
@@ -1193,7 +2521,7 @@ namespace studio::editor
                         pending.objectIndex);
 
                 entity.editorFolder =
-                    L"LevelData/obj_Building";
+                    pending.editorFolder;
 
                 entity.staticMesh.emplace();
 
@@ -1205,7 +2533,13 @@ namespace studio::editor
                 entity.staticMesh->visible = true;
 
                 entity.staticMesh->castShadows =
-                    true;
+                    pending.castShadows;
+
+                entity.staticMesh->disableDistanceCulling =
+                    pending.disableDistanceCulling;
+
+                entity.staticMesh->renderOrder =
+                    pending.renderOrder;
 
                 result.entities.push_back(
                     std::move(entity));
