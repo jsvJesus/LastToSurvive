@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_grp_a_lrg_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_grp_a_med_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_lrg_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_lrg_02.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_lrg_03.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_med_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_med_02.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/pinetrees_a_sml_03.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/aspen_tree_a_med_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>
+<collection>
+	<mesh val="data/objectsdepot/wz_nature/aspen_tree_a_sml_01.sco">
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<anim_layer>
+			<scale val="0" />
+			<freq val="0" />
+			<speed val="0" />
+		</anim_layer>
+		<stiffness val="32" />
+		<dissipation val="0.5" />
+		<bend_pow val="1" />
+		<mass val="2" />
+		<leaf_motion_randomness val="1" />
+	</mesh>
+	<scale x="1" y="1" z="1" />
+	<render_dist val="2000" />
+	<lod1_dist val="70" />
+	<lod2_dist val="400" />
+	<physics_enable val="0" />
+	<anim_enable val="0" />
+</collection>

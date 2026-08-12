@@ -185,5 +185,5 @@ packages/
 !/tools/LTS/
 !/tools/LTS/**
 
-!/External/SpeedTreeSDK/
-!/External/SpeedTreeSDK/**
+!/bin/Levels/
+!/bin/Levels/**

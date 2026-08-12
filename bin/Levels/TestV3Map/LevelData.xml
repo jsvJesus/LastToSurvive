@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_Terrain" fileName="terra1">
+		<position x="0.0000" y="0.0000" z="0.0000" />
+	</object>
+</level>

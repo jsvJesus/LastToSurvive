@@ -1,0 +1,446 @@
+<?xml version="1.0"?>
+<root version="3">
+	<misc>
+		<shadow_limit_height val="148" />
+		<near_plane val="0.2" />
+		<far_plane val="30989.5" />
+		<z_prepass_method val="0" />
+		<z_prepass_dist val="60" />
+		<z_prepass_area val="0.11" />
+		<detail_radius val="100" />
+		<grass_radius val="512" />
+		<default_draw_distance val="3072" />
+	</misc>
+	<sss>
+		<on val="0" />
+		<distortion val="0.33" />
+		<power val="1" />
+		<scale val="1" />
+		<ambient val="0" />
+		<translucency r="255" g="255" b="255" a="127" />
+	</sss>
+	<light_probes>
+		<r_lp_sky_direct val="0.926316" />
+		<r_lp_sky_bounce val="1.95789" />
+		<r_lp_sun_bounce val="1.72632" />
+		<default_bounce_color_up r="127" g="127" b="127" a="255" />
+		<default_bounce_color_down r="127" g="127" b="127" a="255" />
+		<volume_offset_y val="50.8271" />
+		<tiles_x val="32" />
+		<tiles_z val="32" />
+		<span_x val="258.779" />
+		<span_y val="121.474" />
+		<span_z val="357.979" />
+		<volume_width val="64" />
+		<volume_height val="64" />
+		<volume_depth val="8" />
+	</light_probes>
+	<shadows>
+		<collections_cast_shadows val="1" />
+		<collections_cast_shadow_distance val="1463.43" />
+		<size val="619.174" />
+		<distance val="944.804" />
+		<split_distances_1 val="17.2677" />
+		<split_distances_2 val="88.8457" />
+		<lq_distance_coef val="0.607895" />
+		<blur_phys_range val="883" />
+		<blur_bias val="0" />
+		<blur_sense val="765" />
+		<blur_radius val="3.22" />
+		<spot_light_shadow_bias_hw val="0.0309211" />
+		<spot_light_shadow_bias_pcf val="0.0184211" />
+		<slice_0>
+			<depth_bias val="1e-005" />
+			<depth_bias_hw val="1.44737e-005" />
+		</slice_0>
+		<slice_1>
+			<depth_bias val="1e-005" />
+			<depth_bias_hw val="1.97368e-005" />
+		</slice_1>
+		<slice_2>
+			<depth_bias val="1e-006" />
+			<depth_bias_hw val="9.73684e-005" />
+		</slice_2>
+	</shadows>
+	<postfx>
+		<nw_bloom>
+			<glow_amplify val="1" />
+			<glow_tint r="255" g="255" b="255" a="255" />
+			<glow_threshold val="0.5" />
+			<bloom_threshold val="0.8" />
+			<bloom_power val="2" />
+			<bloom_tint r="255" g="255" b="255" a="255" />
+			<bloom_blur_magnitude val="1" />
+			<bloom_blur_taps val="3" />
+		</nw_bloom>
+		<nw_film_grain>
+			<film_grain_scale val="1" />
+			<film_grain_strength val="0" />
+			<film_grain_fps val="4" />
+		</nw_film_grain>
+		<nw_lut3d_tex val="default.dds" />
+		<nw_override_hdr val="0" />
+		<nw_hdr_exposure_bias val="0" />
+		<dof_enable val="1" />
+		<dof_near val="0" />
+		<dof_far val="1" />
+		<dof_near_start val="94.2105" />
+		<dof_near_end val="0" />
+		<dof_near_amplify val="1" />
+		<dof_far_start val="1305.61" />
+		<dof_far_end val="1231.96" />
+		<dof_far_taps val="8" />
+		<dof_near_taps val="1" />
+		<film_grain_enable val="0" />
+		<film_grain_scale val="1" />
+		<film_grain_strength val="0" />
+		<film_grain_fps val="4" />
+		<radial_blur_enable val="0" />
+		<radial_blur_start val="0.45" />
+		<radial_blur_strength val="0" />
+		<object_motion_blur_enable val="0" />
+		<object_motion_blur_strength val="1" />
+		<camera_motion_blur_enable val="0" />
+		<camera_motion_scale val="2.5" />
+		<camera_motion_threshold val="0.005" />
+		<bloom_enable val="1" />
+		<glow_amplify val="0.430526" />
+		<glow_tint r="199" g="175" b="138" a="255" />
+		<glow_threshold val="0.5" />
+		<bloom_threshold val="10.3579" />
+		<bloom_power val="0.8" />
+		<bloom_tint r="109" g="176" b="219" a="255" />
+		<bloom_blur_magnitude val="1" />
+		<bloom_blur_taps val="0" />
+		<dir_streaks_strength val="0.578947" />
+		<dir_streaks_length val="0.5" />
+		<glow_multipiler val="0.99" />
+		<sun_rays_enable val="0" />
+		<sun_rays_density val="0.857895" />
+		<sun_rays_decay val="0.578947" />
+		<sun_rays_exposure val="1.35789" />
+		<sun_rays_weight val="0.268421" />
+		<sun_rays_radius val="0.273684" />
+		<explosion_max_strength val="0.2" />
+		<explosion_duration val="0.2" />
+		<explosion_max_distance val="30" />
+		<explosion_bright_threshold val="0.1" />
+		<mlaa_discont_factor val="1.35053" />
+		<r_film_tone_a val="0.22" />
+		<r_film_tone_b val="0.3" />
+		<r_film_tone_c val="0.1" />
+		<r_film_tone_d val="0.2" />
+		<r_film_tone_e val="0.01" />
+		<r_film_tone_f val="0.3" />
+		<r_exposure_bias val="0" />
+		<r_white_level val="11.2" />
+		<r_exposure_minl val="0" />
+		<r_exposure_maxl val="0.5" />
+		<r_exposure_targetl val="0.2" />
+		<r_exposure_range val="0" />
+		<r_exposure_rangeMin val="0" />
+		<r_light_adapt_speed_pos val="1" />
+		<r_light_adapt_speed_neg val="1" />
+		<clouds_shadows_enable val="1" />
+		<clouds_shadows_tex_name val="" />
+		<clouds_shadows_blend_factor val="1" />
+		<clouds_shadows_mask_tiling val="1" />
+		<clouds_shadows_mask_sspeedu val="1" />
+		<clouds_shadows_mask_sspeedv val="1" />
+		<clouds_shadows_noise1_tiling val="1" />
+		<clouds_shadows_noise1_sspeedu val="1" />
+		<clouds_shadows_noise1_sspeedv val="1" />
+		<clouds_shadows_noise2_tiling val="1" />
+		<clouds_shadows_noise2_sspeedu val="1" />
+		<clouds_shadows_noise2_sspeedv val="1" />
+		<ao_default>
+			<radius val="0.19" />
+			<depth_range val="0.31" />
+			<expand_start val="8.42105" />
+			<expand_coef val="0.07" />
+			<brightness val="1.33684" />
+			<contrast val="0.578947" />
+			<blur_depth_sensitivity val="50" />
+			<blur_strength val="1" />
+			<blur_taps val="4" />
+			<blur_passes val="2" />
+			<detail_path val="0" />
+			<detail_strength val="0.7" />
+			<detail_radius val="0.33" />
+			<detail_depth_range val="3.3" />
+			<detail_radius_expand_start val="0" />
+			<detail_radius_expand_coef val="0" />
+			<detail_fade_out val="8" />
+		</ao_default>
+		<ao_hq>
+			<radius val="1.03579" />
+			<depth_range val="0.129211" />
+			<expand_start val="8.42105" />
+			<expand_coef val="0.0198947" />
+			<brightness val="1.09474" />
+			<contrast val="0.652632" />
+			<blur_depth_sensitivity val="33" />
+			<blur_strength val="1" />
+			<blur_taps val="7" />
+			<blur_passes val="1" />
+			<detail_path val="1" />
+			<detail_strength val="2" />
+			<detail_radius val="0.37" />
+			<detail_depth_range val="0.310526" />
+			<detail_radius_expand_start val="8.42105" />
+			<detail_radius_expand_coef val="0.28" />
+			<detail_fade_out val="26.4421" />
+		</ao_hq>
+		<color_grading_0>
+			<midlights val="1" />
+			<shadows val="0" />
+			<hightlights val="255" />
+			<low_output val="0" />
+			<high_output val="255" />
+		</color_grading_0>
+		<color_grading_1>
+			<midlights val="1" />
+			<shadows val="0" />
+			<hightlights val="255" />
+			<low_output val="0" />
+			<high_output val="255" />
+		</color_grading_1>
+		<color_grading_2>
+			<midlights val="1" />
+			<shadows val="0" />
+			<hightlights val="255" />
+			<low_output val="0" />
+			<high_output val="255" />
+		</color_grading_2>
+		<color_grading_3>
+			<midlights val="1" />
+			<shadows val="0" />
+			<hightlights val="255" />
+			<low_output val="0" />
+			<high_output val="255" />
+		</color_grading_3>
+		<color_correction>
+			<enable val="1" />
+			<scheme val="2" />
+			<lut3d_tex_dawn val="wz_test1.dds" />
+			<lut3d_tex_day val="colorado1.dds" />
+			<lut3d_tex_dusk val="military_hard.dds" />
+			<lut3d_tex_night val="military_hard.dds" />
+			<r_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="1" x="1" y="1" z="1" />
+			</r_curve>
+			<g_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="1" x="1" y="1" z="1" />
+			</g_curve>
+			<b_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="1" x="1" y="1" z="1" />
+			</b_curve>
+			<h_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="1" x="0" y="1" z="1" />
+			</h_curve>
+			<s_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="0.546667" x="0.437086" y="0" z="0" />
+				<val t="1" x="1" y="1" z="1" />
+			</s_curve>
+			<v_curve>
+				<val t="0" x="0" y="1" z="1" />
+				<val t="0.553333" x="0.516556" y="0" z="0" />
+				<val t="1" x="1" y="1" z="1" />
+			</v_curve>
+		</color_correction>
+		<sun_glare>
+			<enable val="0" />
+			<num_slices val="1" />
+			<slice_00>
+				<tint r="178" g="51" b="230" a="255" />
+				<opacity val="0.842105" />
+				<blur_scale val="0.15" />
+				<tex_scale val="2" />
+				<threshold val="0.589474" />
+			</slice_00>
+		</sun_glare>
+		<fxaa_subpix_quality val="0.894737" />
+		<fxaa_edge_threshold val="0.136895" />
+		<fxaa_edge_threshold_min val="0.0833" />
+	</postfx>
+	<double_depth>
+		<ao_double_depth_ssao val="0" />
+		<ao_double_depth_ssao_blur val="32" />
+		<ao_double_depth_ssao_blur_sens val="0.125" />
+	</double_depth>
+	<atmosphere>
+		<cur_time val="8.8421" />
+		<sun_backlightintensity val="0.0578947" />
+		<sun_backlightcolor_curve smooth="0">
+			<val t="0" x="77.7439" y="129.832" z="153.933" />
+			<val t="0.355556" x="87.0732" y="104.954" z="132.942" />
+			<val t="1" x="185.03" y="200.579" z="220.793" />
+		</sun_backlightcolor_curve>
+		<sun_color_curve smooth="0">
+			<val t="0" x="2.33232" y="6.21951" z="6.99695" />
+			<val t="1" x="0" y="0" z="0" />
+		</sun_color_curve>
+		<moon_color_curve smooth="0">
+			<val t="0" x="1" y="1" z="1" />
+			<val t="1" x="1" y="1" z="1" />
+		</moon_color_curve>
+		<moon_ambi_curve smooth="0">
+			<val t="0" x="1" y="1" z="1" />
+			<val t="1" x="1" y="1" z="1" />
+		</moon_ambi_curve>
+		<sky_color_curve smooth="0">
+			<val t="0" x="2.33232" y="10.8841" z="24.878" />
+			<val t="1" x="0" y="0" z="0" />
+		</sky_color_curve>
+		<lambda_col_curve smooth="0">
+			<val t="0" x="0" y="0" z="0" />
+			<val t="1" x="8.55183" y="0" z="6.99695" />
+		</lambda_col_curve>
+		<hg_g_curve smooth="0">
+			<val t="0" x="0.99" y="0.9993" z="0.9993" />
+			<val t="1" x="0.993595" y="0" z="0" />
+		</hg_g_curve>
+		<inscattering_multiplier_curve smooth="0">
+			<val t="0" x="0.727273" y="1" z="1" />
+			<val t="1" x="1.70248" y="1" z="1" />
+		</inscattering_multiplier_curve>
+		<beta_ray_multiplier_curve smooth="0">
+			<val t="0" x="5.3719" y="4" z="4" />
+			<val t="1" x="0" y="4" z="4" />
+		</beta_ray_multiplier_curve>
+		<beta_mie_multiplier_curve smooth="0">
+			<val t="0" x="0" y="0.0006" z="0.0006" />
+			<val t="1" x="0.000206611" y="0.0006" z="0.0006" />
+		</beta_mie_multiplier_curve>
+		<sun_intensity_curve smooth="0">
+			<val t="0" x="0.123967" y="1" z="1" />
+			<val t="1" x="0.719008" y="1" z="1" />
+		</sun_intensity_curve>
+		<turbitity_curve smooth="0">
+			<val t="0" x="0" y="1" z="1" />
+			<val t="1" x="4.54545" y="1" z="1" />
+		</turbitity_curve>
+		<sun_spot_amplify smooth="0">
+			<val t="0" x="10.22" y="10.22" z="10.22" />
+			<val t="1" x="10.22" y="10.22" z="10.22" />
+		</sun_spot_amplify>
+		<sun_spot_pow smooth="0">
+			<val t="0" x="96" y="96" z="96" />
+			<val t="1" x="96" y="96" z="96" />
+		</sun_spot_pow>
+		<sun_spot_color smooth="0">
+			<val t="0" x="0" y="0" z="0" />
+			<val t="0.963889" x="0" y="0" z="0" />
+			<val t="1" x="255" y="255" z="255" />
+		</sun_spot_color>
+		<sun_spot_intensity smooth="0">
+			<val t="0" x="3" y="3" z="3" />
+			<val t="1" x="3" y="3" z="3" />
+		</sun_spot_intensity>
+		<fog_version val="2" />
+		<fog_color_curve smooth="0">
+			<val t="0" x="16.3262" y="17.1037" z="26.4329" />
+			<val t="0.95" x="0" y="0" z="0" />
+			<val t="0.972222" x="255" y="255" z="255" />
+			<val t="1" x="237.896" y="255" z="255" />
+		</fog_color_curve>
+		<fog_new_range_curve smooth="0">
+			<val t="0" x="66.9309" y="76.7229" z="76.7229" />
+			<val t="1" x="71.7619" y="29.9859" z="29.9859" />
+		</fog_new_range_curve>
+		<fog_distance_curve smooth="1">
+			<val t="0" x="0.50175" y="0" z="0" />
+			<val t="1" x="0.1" y="1" z="1" />
+		</fog_distance_curve>
+		<fog_new_density_curve smooth="0">
+			<val t="0" x="0.478873" y="0" z="0" />
+			<val t="0.793333" x="0.0140845" y="0" z="0" />
+			<val t="1" x="0" y="0" z="0" />
+		</fog_new_density_curve>
+		<fog_height_curve smooth="0">
+			<val t="0" x="88.9542" y="122.289" z="122.289" />
+			<val t="0.0433333" x="92.5124" y="0" z="0" />
+			<val t="1" x="120.978" y="156.56" z="156.56" />
+		</fog_height_curve>
+		<aerial_density_curve smooth="0">
+			<val t="0" x="0" y="0" z="0" />
+			<val t="1" x="0.056718" y="0.3" z="0.3" />
+		</aerial_density_curve>
+		<aerial_distance_curve smooth="0">
+			<val t="0" x="0.738944" y="0.9" z="0.9" />
+			<val t="1" x="1.17603" y="0.9" z="0.9" />
+		</aerial_distance_curve>
+		<skyfog_start val="1" />
+		<skyfog_end val="1" />
+		<skydome_wind_factor val="1" />
+		<skydome_clouds_scale val="1" />
+		<skydome_clouds_density val="0.5" />
+		<cloudfade_outstart_dist val="4000" />
+		<cloudfade_out_enddist val="7000" />
+		<sky_sunset_bumpness val="11.47" />
+		<sky_sunset_offset val="-0.0074" />
+		<sky_sunset_power val="3.17" />
+		<sky_sunset_startcoef val="0.3" />
+		<sky_clouds_fadestart val="2000" />
+		<sky_clouds_fadeend val="1000" />
+		<sun_elevation_angle val="15.1579" />
+		<sun_direction_angle val="-72" />
+		<moon_longitude val="0" />
+		<moon_latitude val="0" />
+		<sss_diffuse val="0" />
+		<sss_specular val="0" />
+		<sss_specpower val="100" />
+		<have_new_simple_fog val="0" />
+		<fog_max_height val="505.26" />
+		<aerial_mip_bias val="7.10526" />
+		<sun_intensity val="3.05263" />
+		<moon_intensity val="1" />
+		<static_sky_tex_name_phase0 val="Data/SkyDome/wz_night_02.dds" />
+		<static_sky_glow_tex_name_phase0 val="" />
+		<static_sky_intensity_phase0 val="1" />
+		<static_sky_tex_name_phase1 val="Data/SkyDome/wz_night_02.dds" />
+		<static_sky_glow_tex_name_phase1 val="" />
+		<static_sky_intensity_phase1 val="1" />
+		<static_sky_tex_name_phase2 val="Data/SkyDome/wz_night_02.dds" />
+		<static_sky_glow_tex_name_phase2 val="" />
+		<static_sky_intensity_phase2 val="1" />
+		<static_sky_tex_name_phase3 val="Data/SkyDome/wz_night_02.dds" />
+		<static_sky_glow_tex_name_phase3 val="" />
+		<static_sky_intensity_phase3 val="1" />
+		<static_sky_mesh_name val="Data/SkyDome/skydoome_01.sco" />
+		<static_sky_enable val="1" />
+		<static_sky_custom_mesh_enable val="1" />
+		<static_sky_planar_mapping val="0" />
+		<static_sky_dawn_start val="4" />
+		<static_sky_dawn_end val="7" />
+		<static_sky_dusk_start val="20" />
+		<static_sky_dusk_end val="22" />
+		<static_texgenscale_x val="1e-005" />
+		<static_texgenscale_y val="1e-005" />
+		<static_texgetoffset_x val="0.5" />
+		<static_texgetoffset_y val="0.5" />
+		<rain_particles val="" />
+		<sunlight val="1" />
+		<particle_shading_coef val="0.742105" />
+		<wind_dir_x val="0" />
+		<wind_dir_z val="1" />
+		<wind_pattern_scale val="256" />
+		<wind_pattern_speed val="4" />
+	</atmosphere>
+	<player_ai>
+		<stand_visibility val="20" />
+		<walk_visibility val="50" />
+		<run_visibility val="70" />
+		<sprint_visibility val="100" />
+		<walk_noise val="2" />
+		<run_noise val="5" />
+		<sprint_noise val="10" />
+		<shoot_noise val="40" />
+		<smell val="10" />
+	</player_ai>
+</root>

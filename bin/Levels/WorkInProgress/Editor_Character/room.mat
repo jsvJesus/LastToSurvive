@@ -1,0 +1,25 @@
+[MaterialBegin]
+Name= GroundPlane
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 1.00
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 109 112 106
+DetailScale= 1.99
+DetailAmmount= 0.07
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/editor/Textures
+NormalMap= floortile_n_1.dds
+SpecularMap= floortile_s.tga
+DetailNMap= floortile_n.tga
+SpecPowMap= floortile_chromeness.tga
+[MaterialEnd]
+

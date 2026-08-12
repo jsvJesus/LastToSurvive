@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!--ProbeMaster Settings File-->
+<root>
+	<settings maximum_probe_radius="16" maximum_probe_yradius="2" probe_radius_expansion="0" />
+</root>

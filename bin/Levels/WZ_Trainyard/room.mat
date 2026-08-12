@@ -1,0 +1,4926 @@
+[MaterialBegin]
+Name= Des_Bld_Wall_Concrete_05
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.93
+DetailAmmount= 0.49
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= des_bld_wall_concrete_05_d.dds
+NormalMap= des_bld_wall_concrete_05_n.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_details
+Flags= _unused_
+SpecularPower= 0.49
+Specular1Power= 0.23
+ReflectionPower= 0.82
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_details_d.dds
+NormalMap= city_building_01_details_n.dds
+SpecularMap= city_building_01_details_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_frontwall
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_frontwall_d.dds
+NormalMap= city_building_01_frontwall_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_windows_doors
+Flags= _unused_
+SpecularPower= 0.61
+Specular1Power= 0.61
+ReflectionPower= 0.95
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Ice
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_windows_doors_d.dds
+NormalMap= city_building_01_windows_doors_n.dds
+SpecularMap= city_building_01_windows_doors_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_arch
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_arch_d.dds
+NormalMap= city_building_01_arch_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_mainwall
+Flags= _unused_
+SpecularPower= 0.67
+Specular1Power= 0.38
+ReflectionPower= 0.84
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_mainwall_d.dds
+NormalMap= city_building_01_mainwall_n.dds
+SpecularMap= city_building_01_mainwall_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Ext_Tar_Roof_01
+Flags= _unused_
+SpecularPower= 0.17
+Specular1Power= 0.36
+ReflectionPower= 0.03
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= ext_tar_roof_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_backwall2
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Grass
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_backwall2_d.dds
+NormalMap= city_building_01_backwall2_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_01_backwall1
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_01_backwall1_d.dds
+NormalMap= city_building_01_backwall1_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Trim_01
+Flags= _unused_
+SpecularPower= 0.09
+Specular1Power= 0.34
+ReflectionPower= 0.12
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 8.44
+DetailAmmount= 0.15
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_trim_01_d.dds
+NormalMap= building_trim_01_n.dds
+SpecularMap= building_trim_01_s.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Window_01
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.52
+ReflectionPower= 0.76
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_window_01_d.dds
+NormalMap= building_window_01_n.dds
+SpecularMap= building_window_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Brick_Lower_01
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.78
+DetailAmmount= 0.23
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_brick_lower_01_d.dds
+NormalMap= building_brick_lower_01_n.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Brick_Upper_01
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 6.39
+DetailAmmount= 0.32
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_brick_upper_01_d.dds
+NormalMap= building_brick_upper_01_n.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_LoadingDock_01
+Flags= _unused_
+SpecularPower= 0.54
+Specular1Power= 0.25
+ReflectionPower= 0.77
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_loadingdock_01_d.dds
+NormalMap= building_loadingdock_01_n.dds
+SpecularMap= building_loadingdock_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_11_windows
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_11_windows_d.dds
+NormalMap= city_building_11_windows_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_11_details
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_11_details_d.dds
+NormalMap= city_building_11_details_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_08_bricks_trim
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_cityadmin_detail_01_d.dds
+NormalMap= city_building_08_bricks_trim_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Brick_Lower_Dark
+Flags= _unused_
+SpecularPower= 0.05
+Specular1Power= 0.05
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 183 181 181
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_brick_lower_01_d.dds
+NormalMap= building_brick_lower_01_n.dds
+SpecularMap= building_brick_lower_dark_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WallBareC01_D
+Flags= _unused_
+SpecularPower= 0.11
+Specular1Power= 0.35
+ReflectionPower= 0.16
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.93
+DetailAmmount= 0.65
+displace= 0
+displ_val= 0.000
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_wallbarec01_d.dds
+NormalMap= mv_wallbarec01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_MetalLeaking01_D
+Flags= _unused_
+SpecularPower= 0.45
+Specular1Power= 0.32
+ReflectionPower= 0.78
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_metalleaking01_d.dds
+NormalMap= mv_metalleaking01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WallLiked01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_wallliked01_d.dds
+NormalMap= mv_wallliked01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_ConcreteBare01_D
+Flags= _unused_
+SpecularPower= 0.05
+Specular1Power= 0.52
+ReflectionPower= 0.26
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_concretebare01_d.dds
+NormalMap= mv_wallbarec01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_ConcreteDirty01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.74
+ReflectionPower= 0.61
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_concretedirty01_d.dds
+NormalMap= mv_concretedirty01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_TilesBroken01_D
+Flags= _unused_
+SpecularPower= 0.21
+Specular1Power= 0.56
+ReflectionPower= 0.61
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_tilesbroken01_d.dds
+NormalMap= mv_tilesbroken01_n.dds
+SpecPowMap= mv_tilesbroken01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_TileSand02_D
+Flags= _unused_
+SpecularPower= 0.09
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 0.73
+DetailAmmount= 1.00
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_tilesand02_d.dds
+NormalMap= mv_tilesand02_n.dds
+DetailNMap= mv_detail01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WallDecals01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_walldecals01_d.dds
+NormalMap= mv_walldecals01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WallElements01_D
+Flags= _unused_
+SpecularPower= 0.72
+Specular1Power= 0.47
+ReflectionPower= 0.97
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_wallelements01_d.dds
+NormalMap= mv_wallelements01_n.dds
+SpecularMap= mv_wallelements01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Windows01_D
+Flags= _unused_
+SpecularPower= 0.85
+Specular1Power= 0.83
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_windows01_d.dds
+NormalMap= mv_windows01_n.dds
+SpecularMap= mv_windows01_m.dds
+SpecPowMap= mv_windows01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_DclsDmgConcrete02_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_dclsdmgconcrete02_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_BurnedConcrete01_D
+Flags= _unused_
+SpecularPower= 0.07
+Specular1Power= 0.00
+ReflectionPower= 0.72
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_burnedconcrete01_d.dds
+NormalMap= mv_burnedconcrete01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Grany01_D
+Flags= _unused_
+SpecularPower= 0.40
+Specular1Power= 0.42
+ReflectionPower= 0.24
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_grany01_d.dds
+NormalMap= mv_grany01_n.dds
+SpecularMap= mv_grany01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_ElementsModern01_D
+Flags= _unused_
+SpecularPower= 0.12
+Specular1Power= 0.52
+ReflectionPower= 0.90
+DoubleSided= 0
+Color24= 255 255 251
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_elementsmodern01_d.dds
+NormalMap= mv_elementsmodern01_n.dds
+SpecularMap= mv_elementsmodern01_m.dds
+GlowMap= mv_elementsmodern01_g.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_BrickModern01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.36
+ReflectionPower= 0.71
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_brickmodern01_d.dds
+NormalMap= mv_brickmodern01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_TilesPlain01_D
+Flags= _unused_
+SpecularPower= 0.25
+Specular1Power= 0.26
+ReflectionPower= 0.57
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_tilesplain01_d.dds
+NormalMap= mv_tileplain01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_MetalPlate01_D
+Flags= _unused_
+SpecularPower= 0.65
+Specular1Power= 0.53
+ReflectionPower= 0.81
+DoubleSided= 1
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_metalplate01_d.dds
+NormalMap= mv_metalplate01_n.dds
+SpecularMap= mv_metalplate01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WindowTiled01_D
+Flags= _unused_
+SpecularPower= 0.86
+Specular1Power= 0.65
+ReflectionPower= 0.86
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_windowtiled01_d.dds
+NormalMap= mv_windowtiled01_n.dds
+SpecularMap= mv_windowtiled01_m.dds
+SpecPowMap= mv_windowtiled01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Grany02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.06
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_grany02_d.dds
+NormalMap= mv_grany02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_RiseGlass01_D
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.64
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_riseglass01_d.dds
+NormalMap= mv_riseglass01_n.dds
+SpecularMap= mv_riseglass01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_RiseGlassH01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_riseglassh01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_MarbleWall01_D
+Flags= _unused_
+SpecularPower= 0.47
+Specular1Power= 0.43
+ReflectionPower= 0.43
+DoubleSided= 0
+Color24= 204 203 200
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_marblewall01_d.dds
+NormalMap= mv_marblewall01_n.dds
+SpecularMap= mv_marblewall01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_PropsSatelite01_D
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.82
+ReflectionPower= 0.96
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_propssatelite01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_RiseGlass02
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.65
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_riseglass02_d.dds
+NormalMap= mv_riseglass02_n.dds
+SpecularMap= mv_riseglass02_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_OfficeGlass_D
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.57
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_officeglass_d.dds
+NormalMap= mv_officeglass_n.dds
+SpecularMap= mv_officeglass_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Grany01_D_of01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_grany01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_MarbleWall01_D_of01
+Flags= _unused_
+SpecularPower= 0.11
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_marblewall01_d.dds
+NormalMap= mv_marblewall01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_RiseGlassH01_D_of01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_riseglassh01_d.dds
+NormalMap= mv_riseglassh01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_DclDMGPlaster01_D
+Flags= _unused_
+SpecularPower= 0.25
+Specular1Power= 0.31
+ReflectionPower= 0.67
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_dcldmgplaster01_d.dds
+NormalMap= mv_dcldmgplaster01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_DifferentElements_01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_differentelements_01_d.dds
+NormalMap= mv_differentelements_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_TilesPlain01_D_dof
+Flags= _unused_
+SpecularPower= 0.12
+Specular1Power= 0.58
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_tilesplain01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= DV_WallParkingReg01_D
+Flags= _unused_
+SpecularPower= 0.18
+Specular1Power= 0.20
+ReflectionPower= 0.31
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= dv_wallparkingreg01_d.dds
+NormalMap= dv_wallparkingreg01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_MarbleWall01_D_of02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_marblewall01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_BrickModern01_D_of01_dof
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_brickmodern01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= DV_ParkingAsphaltDoor01_D
+Flags= _unused_
+SpecularPower= 0.22
+Specular1Power= 0.37
+ReflectionPower= 0.28
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 1.67
+DetailAmmount= 0.51
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= dv_parkingasphaltdoor01_d.dds
+NormalMap= dv_parkingasphaltdoor01_n.dds
+DetailNMap= dv_wallparkingreg01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_OfficeGlass_D_dof
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.88
+ReflectionPower= 0.75
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_officeglass_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_FireFence01_D
+Flags= _unused_
+SpecularPower= 0.52
+Specular1Power= 0.32
+ReflectionPower= 0.18
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_firefence01_d.dds
+NormalMap= mv_firefence01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_TunnelEntrance_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= gz_tunnelentrance_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_TunnelEntrance_03
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= gz_tunnelentrance_03_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Street_01a
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.53
+ReflectionPower= 0.49
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 21.03
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_street_01a_d.dds
+NormalMap= road_street_01a_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Details_01
+Flags= _unused_
+SpecularPower= 0.68
+Specular1Power= 0.26
+ReflectionPower= 0.46
+DoubleSided= 0
+Color24= 229 229 226
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_details_01_dirty_d.dds
+NormalMap= road_details_01_n.dds
+SpecularMap= road_details_01_s.dds
+SpecPowMap= road_details_01_sp.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= freeway_Concrete_01
+Flags= _unused_
+SpecularPower= 0.06
+Specular1Power= 0.25
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= freeway_concrete_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= freeway_Concrete_02
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.12
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= freeway_concrete_02_d.dds
+NormalMap= freeway_concrete_02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= freeway_Concrete_03
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.13
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= freeway_concrete_03_d.dds
+NormalMap= freeway_concrete_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Sidewalk_01
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.08
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= trailer_des_sidewalk_01_d.dds
+NormalMap= des_sidewalk_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Street_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.57
+ReflectionPower= 0.93
+DoubleSided= 0
+Color24= 160 160 160
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_street_02a_d.dds
+NormalMap= road_street_01a_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Support_Concrete_01
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.07
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_support_concrete_01_d.dds
+NormalMap= road_support_concrete_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rail_ties_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Grass
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= rail_ties_01_d.dds
+NormalMap= rail_ties_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rail_rails_01
+Flags= _unused_
+SpecularPower= 0.80
+Specular1Power= 0.48
+ReflectionPower= 0.28
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= rail_rails_01_d.dds
+NormalMap= rail_rails_01_n.dds
+SpecularMap= rail_rails_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Town_Walls_01
+Flags= _unused_
+SpecularPower= 0.07
+Specular1Power= 0.42
+ReflectionPower= 0.37
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= cr_town_wall_01_d.dds
+NormalMap= cr_town_wall_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rail_BoxCar_01_A
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.67
+ReflectionPower= 0.71
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= rail_boxcar_01_a_d.dds
+NormalMap= rail_boxcar_01_a_n.dds
+SpecularMap= rail_boxcar_01_a_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rail_BoxCar_01_A_Int
+Flags= _unused_
+SpecularPower= 0.62
+Specular1Power= 0.38
+ReflectionPower= 0.66
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= rail_boxcar_01_a_int_d.dds
+NormalMap= rail_boxcar_01_a_int_n.dds
+SpecularMap= rail_boxcar_01_a_int_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Wood_A
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_wood_a_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Light_Post_01
+Flags= _unused_
+SpecularPower= 0.48
+Specular1Power= 0.63
+ReflectionPower= 0.71
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= cr_light_post_01_d.dds
+SpecularMap= cr_light_post_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownTrailer_01_details
+Flags= _unused_
+SpecularPower= 0.59
+Specular1Power= 0.66
+ReflectionPower= 0.51
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= towntrailer_01_details_d.dds
+NormalMap= towntrailer_01_details_n.dds
+SpecularMap= towntrailer_01_details_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownTrailer_02_Roof
+Flags= _unused_
+SpecularPower= 0.57
+Specular1Power= 0.53
+ReflectionPower= 0.76
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= towntrailer_02_roof_d.dds
+NormalMap= towntrailer_02_roof_n.dds
+SpecularMap= towntrailer_02_roof_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownTrailer_02_windows
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.84
+ReflectionPower= 0.91
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= towntrailer_02_windows_d.dds
+NormalMap= towntrailer_02_windows_n.dds
+SpecularMap= towntrailer_02_windows_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownTrailer_01_Walls
+Flags= _unused_
+SpecularPower= 0.51
+Specular1Power= 0.14
+ReflectionPower= 0.04
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= towntrailer_02_walls_d.dds
+NormalMap= towntrailer_02_walls_n.dds
+SpecularMap= towntrailer_02_walls_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Autogarage_floor
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= autogarage_floor_d.dds
+NormalMap= autogarage_floor_n.dds
+SpecularMap= autogarage_floor_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_stucco_autogarage1
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.62
+DetailAmmount= 0.21
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= building_stucco_autogarage1_d.dds
+NormalMap= building_stucco_autogarage1_n.dds
+SpecularMap= building_stucco_autogarage1_s.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Autogarage_detail
+Flags= _unused_
+SpecularPower= 0.78
+Specular1Power= 0.50
+ReflectionPower= 0.71
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= autogarage_detail_d.dds
+NormalMap= autogarage_detail_n.dds
+SpecularMap= autogarage_detail_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Detail_autogarage_wall
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 4.35
+DetailAmmount= 0.45
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= detail_autogarage_wall_d.dds
+NormalMap= detail_autogarage_wall_n.dds
+SpecularMap= detail_autogarage_wall_s.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Equipment_autogarage1
+Flags= _unused_
+SpecularPower= 0.41
+Specular1Power= 0.15
+ReflectionPower= 0.21
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= equipment_autogarage1_d.dds
+NormalMap= equipment_autogarage1_n.dds
+SpecularMap= equipment_autogarage1_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Townbuilding_12_Roof
+Flags= _unused_
+SpecularPower= 0.83
+Specular1Power= 0.60
+ReflectionPower= 0.28
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= townbuilding_12_roof_d.dds
+NormalMap= townbuilding_12_roof_n.dds
+SpecularMap= townbuilding_12_roof_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Town_AutoGarage_02_details
+Flags= _unused_
+SpecularPower= 0.63
+Specular1Power= 0.87
+ReflectionPower= 0.94
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= town_autogarage_02_details_d.dds
+NormalMap= town_autogarage_02_details_n.dds
+SpecularMap= town_autogarage_02_details_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Town_AutoGarage_02_wall
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.07
+ReflectionPower= 0.07
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 1.52
+DetailAmmount= 0.18
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= town_autogarage_02_wall_d.dds
+NormalMap= town_autogarage_02_wall_n.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Town_AutoGarage_02_stucco
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.06
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= town_autogarage_02_stucco_d.dds
+NormalMap= town_autogarage_02_stucco_n.dds
+SpecularMap= town_autogarage_02_stucco_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_TownOffice_WindowDoor_01
+Flags= _unused_
+SpecularPower= 0.93
+Specular1Power= 0.50
+ReflectionPower= 0.68
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= building_townoffice_windowdoor_01_d.dds
+NormalMap= building_townoffice_windowdoor_01_n.dds
+SpecularMap= building_townoffice_windowdoor_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Interior_A
+Flags= _unused_
+SpecularPower= 0.21
+Specular1Power= 0.30
+ReflectionPower= 0.61
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_inside_a_d.dds
+NormalMap= container_01_inside_a_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Hull_A_DBlue
+Flags= _unused_
+SpecularPower= 0.25
+Specular1Power= 0.50
+ReflectionPower= 0.27
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_hull_a_dblue_d.dds
+NormalMap= container_01_hull_a_n.dds
+SpecularMap= container_01_hull_a_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= City_Building_3_1st_floor
+Flags= _unused_
+SpecularPower= 0.81
+Specular1Power= 0.53
+ReflectionPower= 0.56
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_3_1st_floor_d.dds
+NormalMap= city_building_3_1st_floor_n.dds
+SpecularMap= city_building_3_1st_floor_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_3_wall_02
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.05
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_3_wall_02_d.dds
+NormalMap= city_building_3_wall_02_n.dds
+SpecularMap= city_building_3_wall_02_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_TownBuilding_01_Details
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= wz_townbuilding_01_details_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= City_Building_3_Details
+Flags= _unused_
+SpecularPower= 0.95
+Specular1Power= 0.50
+ReflectionPower= 0.75
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_3_details_d.dds
+NormalMap= city_building_3_details_n.dds
+SpecularMap= city_building_3_details_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_09_catwalks
+Flags= _unused_
+SpecularPower= 0.43
+Specular1Power= 0.86
+ReflectionPower= 0.45
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_09_catwalks_d.dds
+NormalMap= city_building_09_catwalks_n.dds
+SpecularMap= city_building_09_catwalks_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Rubble_Med_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.01
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 160 160 160
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_rubble_med_01_d.dds
+NormalMap= road_rubble_med_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Road_Rubble_Alpha_01
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.08
+ReflectionPower= 0.00
+DoubleSided= 1
+Color24= 172 171 170
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citystreets/Textures
+Texture= road_rubble_alpha_01_d.dds
+NormalMap= road_rubble_alpha_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rubble_Med_01
+Flags= _unused_
+SpecularPower= 0.15
+Specular1Power= 0.14
+ReflectionPower= 0.79
+DoubleSided= 0
+Color24= 184 182 182
+DetailScale= 2.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.000
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citydecay/Textures
+Texture= rubble_med_01_d.dds
+NormalMap= rubble_med_01_n.dds
+SpecularMap= rubble_med_01_d.dds
+DetailNMap= go_rubble_damage_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Rubble_Alpha_01
+Flags= _unused_
+SpecularPower= 0.06
+Specular1Power= 0.12
+ReflectionPower= 0.00
+DoubleSided= 1
+Color24= 255 255 255
+DetailScale= 3.14
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citydecay/Textures
+Texture= rubble_alpha_01_d.dds
+NormalMap= rubble_alpha_01_n.dds
+DetailNMap= go_rubble_damage_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownTrailer_02_Walls
+Flags= _unused_
+SpecularPower= 0.44
+Specular1Power= 0.16
+ReflectionPower= 0.17
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= towntrailer_02_walls_d.dds
+NormalMap= towntrailer_02_walls_n.dds
+SpecularMap= towntrailer_02_walls_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Propain_Concrete_05
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.35
+ReflectionPower= 0.43
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_concrete_trim_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Propain_Gas_Metal4
+Flags= _unused_
+SpecularPower= 0.43
+Specular1Power= 0.52
+ReflectionPower= 0.27
+DoubleSided= 0
+Color24= 242 216 180
+DetailScale= 0.57
+DetailAmmount= 0.03
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_gas_metal4_d.dds
+SpecularMap= cr_gas_metal4_m.dds
+DetailNMap= 1_detailnormal.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Propain_RustedSheet_Set5
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_rusted_sheet_set_05_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Propain_RustedSheet_01
+Flags= _unused_
+SpecularPower= 0.14
+Specular1Power= 0.59
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_rusted_sheet_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Semi_Cab_01
+Flags= _unused_
+SpecularPower= 0.56
+Specular1Power= 0.59
+ReflectionPower= 0.69
+DoubleSided= 1
+Color24= 216 217 224
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= cr_semi_cab_01.dds
+NormalMap= cr_semi_cab_01_n.dds
+SpecularMap= cr_semi_cab_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Semi_Tire_01
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.61
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= cr_semi_tire_01.dds
+NormalMap= cr_semi_tire_01_n.dds
+SpecularMap= cr_semi_tire_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Semi_Trailer_02
+Flags= _unused_
+SpecularPower= 0.17
+Specular1Power= 0.45
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 165 165 162
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= cr_semi_trailer_02.dds
+NormalMap= cr_semi_trailer_02_n.dds
+SpecularMap= cr_semi_trailer_02_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Semi_Trailer_01
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.08
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 89 85 83
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= cr_semi_trailer_01.dds
+NormalMap= cr_semi_trailer_01_n.dds
+SpecularMap= cr_semi_trailer_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Metal_Panels_04
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= cr_metal_panels_04_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Car_Universal
+Flags= _unused_
+SpecularPower= 0.66
+Specular1Power= 0.49
+ReflectionPower= 0.68
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= car_universal_crash_d.dds
+NormalMap= car_universal_crash_n.dds
+SpecularMap= car_universal_crash_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Car_Van
+Flags= _unused_
+SpecularPower= 0.16
+Specular1Power= 0.66
+ReflectionPower= 0.86
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= car_bus_d.dds
+NormalMap= car_bus_n.dds
+SpecularMap= car_bus_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Car_Interior
+Flags= _unused_
+SpecularPower= 0.47
+Specular1Power= 0.30
+ReflectionPower= 0.43
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= car_interior_d.dds
+NormalMap= car_interior_n.dds
+SpecularMap= car_interior_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Wreck_01_D
+Flags= _unused_
+SpecularPower= 0.29
+Specular1Power= 0.53
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= mv_carwreck_01_d.dds
+NormalMap= mv_carwreck_01_n.dds
+SpecularMap= mv_carwreck_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Car_Sedan
+Flags= _unused_
+SpecularPower= 0.26
+Specular1Power= 0.65
+ReflectionPower= 0.62
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= car_sedan_sport_d.dds
+NormalMap= car_sedan_sport_n.dds
+SpecularMap= car_sedan_sport_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Barrier_Small_02
+Flags= _unused_
+SpecularPower= 0.08
+Specular1Power= 0.10
+ReflectionPower= 0.05
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_roadobjects/Textures
+Texture= barrier_small_02_d.dds
+NormalMap= barrier_small_02_n.dds
+SpecularMap= barrier_small_02_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Wall_Concrete_02
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.05
+ReflectionPower= 0.72
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_wall_concrete_02_d.dds
+NormalMap= des_bld_wall_concrete_02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Wall_Concrete_04
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.09
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= building_brick_lower_01_d.dds
+NormalMap= building_brick_lower_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Fence_Chainlink_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.00
+ReflectionPower= 0.47
+DoubleSided= 1
+Color24= 141 140 140
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= fence_chainlink_01_d.dds
+NormalMap= fence_chainlink_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Fence_Covered_Metal_01
+Flags= _unused_
+SpecularPower= 0.38
+Specular1Power= 0.33
+ReflectionPower= 0.58
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= fence_covered_metal_01_d.dds
+NormalMap= fence_covered_metal_01_n.dds
+SpecularMap= fence_covered_metal_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RockCliff_S_03
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.00
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_natureambient/Textures
+Texture= wz_rockycliff_s_03_d.dds
+NormalMap= gz_rockycliff_s_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Rubbles_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 0.50
+DetailAmmount= 0.50
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_natureambient/Textures
+Texture= wz_rockycliff_new_01_d.dds
+NormalMap= wz_rubbles_01_n.dds
+SpecularMap= wz_rubbles_01_s.dds
+DetailNMap= wz_rock_noise_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_rubbles_01_V2
+Flags= _unused_
+SpecularPower= 0.31
+Specular1Power= 0.23
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 0.50
+DetailAmmount= 0.50
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_natureambient/Textures
+Texture= wz_rockycliff_new_02_d.dds
+NormalMap= wz_rubbles_01_n.dds
+SpecularMap= wz_rubbles_01_s.dds
+DetailNMap= wz_rock_noise_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RockCliff_L_01
+Flags= _unused_
+SpecularPower= 0.01
+Specular1Power= 0.07
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_natureambient/Textures
+Texture= wz_rockycliff_l_01_d.dds
+NormalMap= gz_rockycliff_l_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_RockCliff_M_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.00
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_natureambient/Textures
+Texture= wz_rockycliff_m_01_d.dds
+NormalMap= gz_rockycliff_m_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_BrickSmallBrown01_D_Gray
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.28
+ReflectionPower= 0.11
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.00
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Water
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_bricksmallbrown01_d.dds
+NormalMap= mv_bricksmallbrown01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Tile01_D
+Flags= _unused_
+SpecularPower= 0.14
+Specular1Power= 0.30
+ReflectionPower= 0.22
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_tile01_d.dds
+NormalMap= mv_tile01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Fronton01_D
+Flags= _unused_
+SpecularPower= 0.35
+Specular1Power= 0.26
+ReflectionPower= 0.52
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_fronton01_d.dds
+NormalMap= mv_fronton01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_BldNeoCls01_D
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_bldneocls01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WIndowResidential01_D
+Flags= _unused_
+SpecularPower= 0.91
+Specular1Power= 0.45
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_windowresidential01_d.dds
+NormalMap= mv_windowresidential01_n.dds
+SpecularMap= mv_windowresidential01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_WindowProm01_D
+Flags= _unused_
+SpecularPower= 0.76
+Specular1Power= 0.28
+ReflectionPower= 0.88
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_windowprom01_d.dds
+NormalMap= mv_windowprom01_n.dds
+SpecularMap= mv_windowprom01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Bld_Parts_01
+Flags= _unused_
+SpecularPower= 0.53
+Specular1Power= 0.60
+ReflectionPower= 0.51
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= bld_parts_01_d.dds
+NormalMap= bld_parts_01_n.dds
+SpecularMap= bld_parts_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Ivy_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_nature/Textures
+Texture= ivy_01_d.dds
+NormalMap= ivy_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_building_mossleaf_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_nature/Textures
+Texture= wz_building_mossleaf_01_d.dds
+NormalMap= wz_building_mossleaf_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Hull_A_DGreen
+Flags= _unused_
+SpecularPower= 0.24
+Specular1Power= 0.50
+ReflectionPower= 0.26
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_hull_a_dgreen_d.dds
+NormalMap= container_01_hull_a_n.dds
+SpecularMap= container_01_hull_a_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Bus_01_D
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 1.00
+ReflectionPower= 0.30
+DoubleSided= 0
+Color24= 216 216 215
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= mv_bus_01_d.dds
+NormalMap= mv_bus_01_n.dds
+SpecularMap= mv_bus_01_m.dds
+SpecPowMap= mv_bus_01_p.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Bus_01
+Flags= _unused_
+SpecularPower= 0.50
+Specular1Power= 0.45
+ReflectionPower= 0.64
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= bus_01_d.dds
+NormalMap= bus_01_n.dds
+SpecularMap= bus_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Bus_02
+Flags= _unused_
+SpecularPower= 0.72
+Specular1Power= 0.54
+ReflectionPower= 0.61
+DoubleSided= 1
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 1
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= bus_02_d.dds
+NormalMap= bus_02_n.dds
+SpecularMap= bus_02_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Ambulance_01
+Flags= _unused_
+SpecularPower= 0.90
+Specular1Power= 0.42
+ReflectionPower= 0.91
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= wz_ambulance_01_d.dds
+NormalMap= wz_ambulance_01_n.dds
+SpecularMap= wz_ambulance_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RV_01
+Flags= _unused_
+SpecularPower= 0.62
+Specular1Power= 0.46
+ReflectionPower= 0.34
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= wz_rv_01_d.dds
+NormalMap= wz_rv_01_n.dds
+SpecularMap= wz_rv_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RV_interior_Wall_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= wz_rv_interior_wall_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RV_interior_detail_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= wz_rv_interior_detail_01_d.dds
+NormalMap= wz_rv_interior_detail_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= bodybags_01
+Flags= _unused_
+SpecularPower= 0.58
+Specular1Power= 0.52
+ReflectionPower= 0.60
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= bodybags_01_d.dds
+NormalMap= bodybags_01_n.dds
+SpecularMap= bodybags_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_RV_interior_floor_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= wz_rv_interior_floor_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Wall_Concrete_03
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= des_bld_wall_concrete_03_d.dds
+NormalMap= des_bld_wall_concrete_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Humvee_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.64
+ReflectionPower= 0.15
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_vehicles/Textures
+Texture= wz_humvee_01_d.dds
+NormalMap= wz_humvee_01_n.dds
+SpecularMap= wz_humvee_01_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Hull_A_LOrange
+Flags= _unused_
+SpecularPower= 0.23
+Specular1Power= 0.50
+ReflectionPower= 0.34
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_hull_a_lorange_d.dds
+NormalMap= container_01_hull_a_n.dds
+SpecularMap= container_01_hull_a_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Container_01_Hull_A_LBlue
+Flags= _unused_
+SpecularPower= 0.17
+Specular1Power= 0.52
+ReflectionPower= 0.24
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_cityprops/Textures
+Texture= container_01_hull_a_lblue_d.dds
+NormalMap= container_01_hull_a_n.dds
+SpecularMap= container_01_hull_a_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Debr_MarketWoods_Combo_A
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.05
+ReflectionPower= 0.06
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_market_woods_comb_a_d.dds
+NormalMap= cr_market_woods_comb_a_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_Taxi_01_D
+Flags= _unused_
+SpecularPower= 1.00
+Specular1Power= 0.74
+ReflectionPower= 0.74
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= mv_taxi_01_d.dds
+NormalMap= mv_taxi_01_n.dds
+SpecularMap= mv_taxi_01_m.dds
+SpecPowMap= mv_taxi_01_p.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Policecar_01
+Flags= _unused_
+SpecularPower= 0.59
+Specular1Power= 0.27
+ReflectionPower= 0.66
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= wz_policecar_01_d.dds
+NormalMap= wz_policecar_01_n.dds
+SpecularMap= wz_policecar_01_m.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Static_Ford_EconoLine_Van_01
+Flags= _unused_
+SpecularPower= 0.06
+Specular1Power= 0.42
+ReflectionPower= 0.30
+DoubleSided= 0
+Color24= 197 197 201
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= static_ford_econoline_van_01_d.dds
+NormalMap= static_ford_econoline_van_01_n.dds
+SpecularMap= static_ford_econoline_van_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Static_Tire_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= static_tire_01_d.dds
+NormalMap= static_tire_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_CarGreen_01_D
+Flags= _unused_
+SpecularPower= 0.28
+Specular1Power= 0.53
+ReflectionPower= 0.66
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 0.10
+DetailAmmount= 0.35
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= mv_cargreen_01_d.dds
+NormalMap= mv_taxi_01_n.dds
+EnvMap= mv_taxi_01_p.dds
+SpecularMap= mv_taxi_01_m.dds
+DetailNMap= mv_cardetail_01_n.dds
+SpecPowMap= mv_taxi_01_p.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= ShortWall_Brick_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= shortwall_brick_01_d.dds
+NormalMap= cr_town_wall_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_08_bricks
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.05
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_brick_lower_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_08_windows
+Flags= _unused_
+SpecularPower= 0.76
+Specular1Power= 0.57
+ReflectionPower= 0.75
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_08_windows.dds
+NormalMap= city_building_08_windows_n.dds
+SpecularMap= city_building_08_windows_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_08_details
+Flags= _unused_
+SpecularPower= 0.17
+Specular1Power= 0.14
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_08_details.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_06_details
+Flags= _unused_
+SpecularPower= 0.07
+Specular1Power= 0.10
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_06_details_d.dds
+NormalMap= city_building_06_details_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_06_mainwall
+Flags= _unused_
+SpecularPower= 0.07
+Specular1Power= 0.27
+ReflectionPower= 0.31
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_06_mainwall_d.dds
+NormalMap= city_building_06_mainwall_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_buildng_06_windows
+Flags= _unused_
+SpecularPower= 0.45
+Specular1Power= 0.50
+ReflectionPower= 0.71
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_buildng_06_windows_d.dds
+NormalMap= city_buildng_06_windows_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= city_building_09_concrete
+Flags= _unused_
+SpecularPower= 0.02
+Specular1Power= 0.03
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.46
+DetailAmmount= 0.21
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= city_building_09_concrete_d.dds
+NormalMap= city_building_09_concrete_n.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Fence_Wood_01
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.04
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 1.36
+DetailAmmount= 0.12
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= des_fence_wood_01_d.dds
+NormalMap= des_fence_wood_01_n.dds
+SpecularMap= des_fence_wood_01_s.dds
+DetailNMap= 1_detail_wood_vert_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_Props_texture_02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_roadobjects/Textures
+Texture= gz_props_texture_02_d.dds
+NormalMap= gz_props_texture_02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Props_Bunker_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 188 188 178
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_roadobjects/Textures
+Texture= des_bld_props_bunker_01_d.dds
+NormalMap= des_bld_props_bunker_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Props_Bunker_02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 195 193 184
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_roadobjects/Textures
+Texture= des_bld_props_bunker_02_d.dds
+NormalMap= des_bld_props_bunker_02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= details_CB_10
+Flags= _unused_
+SpecularPower= 0.25
+Specular1Power= 0.50
+ReflectionPower= 0.38
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= details_cb_10.dds
+NormalMap= details_cb_10_n.dds
+SpecularMap= details_cb_10_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= brick_bright_CB_10
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= brick_bright_cb_10.dds
+NormalMap= brick_bright_cb_10_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= windows_tex
+Flags= _unused_
+SpecularPower= 0.77
+Specular1Power= 0.50
+ReflectionPower= 0.72
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= windows_tex.dds
+NormalMap= windows_tex_n.dds
+SpecularMap= windows_tex_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Interior_Wall_02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_interior_wall_02_d.dds
+NormalMap= building_interior_wall_02_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Interior_Wall_03
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_interior_wall_03_d.dds
+NormalMap= building_interior_wall_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_CityAdmin_floor_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.57
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_cityadmin_floor_01_d.dds
+NormalMap= building_cityadmin_floor_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_ConcreteBare01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_concretebare01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_interior_Carpet_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_interior_carpet_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Interior_Wall_04
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_interior_wall_04_d.dds
+NormalMap= building_interior_wall_04_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_FireFence01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= mv_firefence01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Building_Interior_metalfloor_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= building_interior_metalfloor_01_d.dds
+NormalMap= building_interior_metalfloor_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= brick_dirt_CB_10
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= brick_dirt_cb_10.dds
+NormalMap= brick_dirt_cb_10_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= brick_upper_CB_10
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.46
+ReflectionPower= 1.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= brick_upper_cb_10.dds
+NormalMap= brick_upper_cb_10_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Decor_CB_07
+Flags= _unused_
+SpecularPower= 0.89
+Specular1Power= 0.58
+ReflectionPower= 0.73
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= decor_cb_07.dds
+NormalMap= decor_cb_07_n.dds
+SpecularMap= decor_cb_07_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= decals_tex
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_citybuildings/Textures
+Texture= decals_tex.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_GasBarrel1
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_gasbarrel1_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Metal_Rusted_Sheet_02
+Flags= _unused_
+SpecularPower= 0.32
+Specular1Power= 0.27
+ReflectionPower= 0.54
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= metal_rusted_sheet_02_d.dds
+NormalMap= metal_rusted_sheet_02_n.dds
+SpecularMap= metal_rusted_sheet_02_s.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Wall_Concrete_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_wall_concrete_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Int_Concrete_Wall_01
+Flags= _unused_
+SpecularPower= 0.11
+Specular1Power= 0.21
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= int_concrete_wall_01_d.dds
+NormalMap= int_concrete_wall_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Int_Plaster_Wall_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_wall_concrete_03_d.dds
+NormalMap= int_plaster_wall_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Floor_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.37
+ReflectionPower= 0.72
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_floor_02_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Wall_decal_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_wall_decal_01_d.dds
+NormalMap= des_bld_wall_decal_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Des_Bld_Floor_02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= des_bld_floor_02_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Town_GeneralStore_Interior
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 2.62
+DetailAmmount= 0.22
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= town_generalstore_interior_d.dds
+NormalMap= town_generalstore_interior_n.dds
+SpecularMap= town_generalstore_interior_s.dds
+DetailNMap= 1_detail_concrete_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Metal_Sheet_01
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.62
+ReflectionPower= 0.37
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_walls/Textures
+Texture= cr_metal_sheet_01_d.dds
+NormalMap= cr_metal_sheet_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= MV_CarRed_01_D
+Flags= _unused_
+SpecularPower= 0.04
+Specular1Power= 0.62
+ReflectionPower= 0.46
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/vehicles/Textures
+Texture= mv_carred_01_d.dds
+NormalMap= mv_taxi_01_n.dds
+EnvMap= mv_taxi_01_p.dds
+SpecularMap= mv_taxi_01_p.dds
+SpecPowMap= mv_taxi_01_p.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Parking_Lines_01
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.03
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 1
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= parking_details_01_dirty_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= TownBuilding_15_wooden_floor
+Flags= _unused_
+SpecularPower= 0.03
+Specular1Power= 0.05
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 1.52
+DetailAmmount= 0.16
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= townbuilding_15_wooden_floor_d.dds
+NormalMap= townbuilding_15_wooden_floor_n.dds
+SpecularMap= townbuilding_15_wooden_floor_s.dds
+DetailNMap= 1_detail_wood_vert_01.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Gasstation_GMetal1
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_gas_metal1_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= Objects_01_D
+Flags= _unused_
+SpecularPower= 0.10
+Specular1Power= 0.35
+ReflectionPower= 0.86
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= objects_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_Props_texture_03
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= gz_props_texture_03_d.dds
+NormalMap= gz_props_texture_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Bench_Wood_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 161 161 159
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Wood
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_bench_wood_01_d.dds
+NormalMap= cr_bench_wood_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GO_Furniture_2
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= go_furniture_2.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Fridge
+Flags= _unused_
+SpecularPower= 0.25
+Specular1Power= 0.57
+ReflectionPower= 0.18
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_fridge_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Prop_PChair_01
+Flags= _unused_
+SpecularPower= 0.12
+Specular1Power= 0.11
+ReflectionPower= 0.09
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_prop_pchair_01_d.dds
+NormalMap= cr_prop_pchair_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Prop_Lawn_Table
+Flags= _unused_
+SpecularPower= 0.09
+Specular1Power= 0.06
+ReflectionPower= 0.09
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_prop_lawn_table_d.dds
+NormalMap= cr_prop_lawn_table_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GO_Furniture_1
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= go_furniture_1.dds
+NormalMap= go_furniture_1_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Gas_MetalRust_01
+Flags= _unused_
+SpecularPower= 0.14
+Specular1Power= 0.31
+ReflectionPower= 0.27
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_gas_con_01_d.dds
+NormalMap= cr_gasbarrel1_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_ConcertinaWire_01
+Flags= _unused_
+SpecularPower= 0.41
+Specular1Power= 0.53
+ReflectionPower= 0.22
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 1
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_military/Textures
+Texture= cr_concertinawire_01_d.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= CR_Debr_MarketMetals_Combo_A
+Flags= _unused_
+SpecularPower= 0.06
+Specular1Power= 0.05
+ReflectionPower= 0.19
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/wz_townprops/Textures
+Texture= cr_market_metals_comb_a_d.dds
+NormalMap= cr_market_metals_comb_a_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= GZ_Building_Shed_02
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Concrete
+ImagesDir= data/objectsdepot/wz_townbuildings/Textures
+Texture= gz_shed_03_d.dds
+NormalMap= gz_shed_03_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Aspen_01
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 1
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_nature/Textures
+Texture= wz_aspen_01_d.dds
+NormalMap= wz_aspen_01_n.dds
+[MaterialEnd]
+
+[MaterialBegin]
+Name= WZ_Aspen_01_LOD2
+Flags= _unused_
+SpecularPower= 0.00
+Specular1Power= 0.50
+ReflectionPower= 0.00
+DoubleSided= 1
+Color24= 174 178 169
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+ImagesDir= data/objectsdepot/wz_nature/Textures
+Texture= wz_aspen_01_lod2_d.dds
+NormalMap= wz_aspen_01_lod2_n.dds
+[MaterialEnd]
+

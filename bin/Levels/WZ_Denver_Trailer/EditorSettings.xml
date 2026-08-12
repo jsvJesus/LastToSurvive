@@ -1,0 +1,220 @@
+<?xml version="1.0"?>
+<!--Editor Settings File-->
+<root>
+	<start_position x="6830.29" y="82.1926" z="4903.12" />
+	<main_mode val="2" />
+	<terrain_mode val="4" />
+	<obj_mode val="1" />
+	<env_mode val="1" />
+	<paint_terrain_color r="255" g="255" b="255" a="255" />
+	<collections_brush_radius val="379.568" />
+	<water_brush_radius val="150" />
+	<water_edit_mode val="0" />
+	<brush_tedit_settings>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_settings>
+	<brush_tedit_down>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_down>
+	<brush_tedit_up>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_up>
+	<brush_tedit_level>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_level>
+	<brush_tedit_smooth>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_smooth>
+	<brush_tedit_noise>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_noise>
+	<brush_tedit_ramp>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_ramp>
+	<brush_tedit_erosion>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_erosion>
+	<brush_tedit_paint>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_paint>
+	<brush_tedit_color>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_color>
+	<brush_tedit_hmap>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_hmap>
+	<brush_tedit_new_func>
+		<radius val="10" />
+		<hardness val="0.8" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="1" />
+		<noise val="0.5" />
+		<noise_raise val="0" />
+	</brush_tedit_new_func>
+	<brush_terra2_edit_settings>
+		<radius val="10" />
+		<hardness val="0.5" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_settings>
+	<brush_terra2_edit_down>
+		<radius val="10.2526" />
+		<hardness val="0.5" />
+		<strength val="0.157895" />
+		<height val="0.157895" />
+		<height_adjust val="0.736842" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_down>
+	<brush_terra2_edit_up>
+		<radius val="5" />
+		<hardness val="0.531579" />
+		<strength val="0.305263" />
+		<height val="0.305263" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_up>
+	<brush_terra2_edit_level>
+		<radius val="12.3368" />
+		<hardness val="0.631579" />
+		<strength val="1" />
+		<height val="1" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_level>
+	<brush_terra2_edit_smooth>
+		<radius val="126.968" />
+		<hardness val="0.663158" />
+		<strength val="1" />
+		<height val="1" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_smooth>
+	<brush_terra2_edit_noise>
+		<radius val="10" />
+		<hardness val="0.5" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_noise>
+	<brush_terra2_edit_ramp>
+		<radius val="5" />
+		<hardness val="0.5" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_ramp>
+	<brush_terra2_edit_erosion>
+		<radius val="10" />
+		<hardness val="0.5" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_erosion>
+	<brush_terra2_edit_paint>
+		<radius val="10" />
+		<hardness val="0.815789" />
+		<strength val="1" />
+		<height val="1" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_paint>
+	<brush_terra2_edit_color>
+		<radius val="10.2526" />
+		<hardness val="0.726316" />
+		<strength val="0.205263" />
+		<height val="0.205263" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_color>
+	<brush_terra2_edit_hmap>
+		<radius val="10" />
+		<hardness val="0.5" />
+		<strength val="0.5" />
+		<height val="0.5" />
+		<height_adjust val="0.5" />
+		<noise val="0" />
+		<noise_raise val="0" />
+	</brush_terra2_edit_hmap>
+</root>

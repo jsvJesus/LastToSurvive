@@ -1,0 +1,14 @@
+terrain_v3_version 1
+name TestV3Map
+size_x 512.000
+size_z 512.000
+cell_size 1.000
+chunk_cells 64
+base_height 0.000
+height_amplitude 100.000
+min_height -100.000
+max_height 100.000
+height_source raw_f32_grid
+height_file height.v3
+height_width 513
+height_height 513

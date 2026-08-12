@@ -1,0 +1,2820 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="2048" minimapSize.z="2048">
+	<object className="obj_Terrain" fileName="terra2">
+		<position x="0.0000" y="0.0000" z="0.0000" />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_admin_01.sco">
+		<position x="1034.0242" y="103.8392" z="982.9588" />
+		<gameObject hash="856026154" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_01.sco">
+		<position x="1080.0142" y="103.5501" z="975.3911" />
+		<gameObject hash="3460634780" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_02.sco">
+		<position x="1114.6293" y="104.1777" z="969.0142" />
+		<gameObject hash="2913062343" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_03.sco">
+		<position x="1142.2878" y="103.7382" z="973.5700" />
+		<gameObject hash="3906421077" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_04.sco">
+		<position x="1231.4415" y="103.4877" z="964.2788" />
+		<gameObject hash="1276466729" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_05.sco">
+		<position x="1275.4037" y="104.0370" z="969.9247" />
+		<gameObject hash="1127956649" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_06.sco">
+		<position x="1314.7267" y="103.5598" z="969.9939" />
+		<gameObject hash="3512222501" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_07.sco">
+		<position x="1370.7557" y="104.0481" z="975.5320" />
+		<gameObject hash="2204538379" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_08.sco">
+		<position x="1183.7406" y="103.3852" z="968.2545" />
+		<gameObject hash="3374660987" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_09.sco">
+		<position x="1329.4136" y="99.9982" z="842.6804" />
+		<gameObject hash="2419892154" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_10.sco">
+		<position x="1264.5780" y="99.9982" z="843.3914" />
+		<gameObject hash="4060469585" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/city_building_11.sco">
+		<position x="1434.2922" y="102.7521" z="982.5409" />
+		<gameObject hash="992501820" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="90.0000" y="-0.0000" z="0.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahouseblue_01.sco">
+		<position x="1067.1265" y="99.9982" z="1184.9952" />
+		<gameObject hash="3498928458" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahousegray_01.sco">
+		<position x="1107.4266" y="99.9982" z="1184.2651" />
+		<gameObject hash="1958139444" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahousegray_01_basis.sco">
+		<position x="1098.7875" y="105.2523" z="1140.3618" />
+		<gameObject hash="648484306" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahousemagenta_01.sco">
+		<position x="1159.7208" y="99.9982" z="1168.4357" />
+		<gameObject hash="4245535709" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahousewhite_01.sco">
+		<position x="1201.2231" y="99.9982" z="1160.2897" />
+		<gameObject hash="1252965839" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_asiahouseyelow_01.sco">
+		<position x="1240.1042" y="99.9982" z="1151.3398" />
+		<gameObject hash="2158418755" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citybuildings/mv_house_bank.sco">
+		<position x="1290.8846" y="99.9982" z="1151.6713" />
+		<gameObject hash="970208580" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/firehydrant_01.sco">
+		<position x="1139.9678" y="99.9982" z="783.2312" />
+		<gameObject hash="3798959900" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/light_post_01.sco">
+		<position x="1136.2552" y="99.9982" z="782.8185" />
+		<gameObject hash="1892690702" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/light_post_02.sco">
+		<position x="1131.4907" y="99.9982" z="783.7263" />
+		<gameObject hash="4201167504" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/rail_car_box_01_closed.sco">
+		<position x="1122.4431" y="99.9982" z="782.0062" />
+		<gameObject hash="185884548" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/rail_car_box_01_open.sco">
+		<position x="1114.8430" y="99.9982" z="782.2131" />
+		<gameObject hash="2704470331" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/rail_car_flatbed_01_a.sco">
+		<position x="1104.6359" y="99.9982" z="783.6759" />
+		<gameObject hash="2758320396" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/rail_track_curve_18degx01.sco">
+		<position x="1104.0289" y="101.1905" z="788.8219" />
+		<gameObject hash="283307549" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/rail_track_str_01.sco">
+		<position x="1097.7577" y="99.9982" z="787.9678" />
+		<gameObject hash="3911215583" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_dblue_closed.sco">
+		<position x="1092.5760" y="99.9982" z="795.7726" />
+		<gameObject hash="1801415830" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_dgreen_closed.sco">
+		<position x="1092.5293" y="99.9982" z="802.3786" />
+		<gameObject hash="1977058463" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_dred_closed.sco">
+		<position x="1092.7727" y="99.9982" z="808.5858" />
+		<gameObject hash="1882244433" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_lblue_closed.sco">
+		<position x="1092.8450" y="99.9982" z="813.9175" />
+		<gameObject hash="2585108018" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_lorange_closed.sco">
+		<position x="1092.9495" y="99.9982" z="820.3856" />
+		<gameObject hash="3032107827" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/shipping_container_01_lred_closed.sco">
+		<position x="1092.6997" y="99.9982" z="828.3804" />
+		<gameObject hash="152354483" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/tower_electrical_01.sco">
+		<position x="1083.9487" y="109.2526" z="776.7372" />
+		<gameObject hash="2563953946" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/des_sidewalk_4x2_str.sco">
+		<position x="1105.0972" y="99.9982" z="748.6865" />
+		<gameObject hash="2087025360" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_barbwire_corner_01.sco">
+		<position x="1077.6720" y="100.6710" z="739.4642" />
+		<gameObject hash="3283888279" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_barbwire_straight_grp_03.sco">
+		<position x="1073.4489" y="100.6710" z="733.8075" />
+		<gameObject hash="3879751918" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_hedgehog_01.sco">
+		<position x="1069.8163" y="100.6710" z="738.8165" />
+		<gameObject hash="2478240346" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_hedgehog_02.sco">
+		<position x="1066.4761" y="100.6710" z="737.8320" />
+		<gameObject hash="187555311" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_hedgehog_barrier_01.sco">
+		<position x="1068.3280" y="100.6710" z="743.2661" />
+		<gameObject hash="3077454777" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_hesco_block_01.sco">
+		<position x="1071.5134" y="100.6710" z="724.9835" />
+		<gameObject hash="1777150729" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_hesco_block_02.sco">
+		<position x="1067.0125" y="100.6710" z="724.1620" />
+		<gameObject hash="1377373719" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_sandbag_01.sco">
+		<position x="1060.2728" y="100.6710" z="722.9379" />
+		<gameObject hash="1058784081" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/barrier_sandbag_01_01x01_01.sco">
+		<position x="1058.0568" y="100.6710" z="723.0629" />
+		<gameObject hash="2947880263" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/bld_barracks_01.sco">
+		<position x="1044.0492" y="100.6710" z="735.4658" />
+		<gameObject hash="2129288621" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/bld_barracks_02.sco">
+		<position x="1041.3826" y="100.6710" z="748.5874" />
+		<gameObject hash="2252837413" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/bld_carport_01_covered.sco">
+		<position x="1023.7808" y="99.9982" z="765.8385" />
+		<gameObject hash="935381528" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/bld_carport_04_short.sco">
+		<position x="1016.4317" y="99.9982" z="785.2378" />
+		<gameObject hash="304793376" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_container_01.sco">
+		<position x="1018.3907" y="99.9982" z="744.2754" />
+		<gameObject hash="1848524767" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/tent_camo_01.sco">
+		<position x="992.0084" y="99.9982" z="757.2162" />
+		<gameObject hash="1608409127" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/tent_camo_03.sco">
+		<position x="992.9910" y="99.9982" z="742.2354" />
+		<gameObject hash="4119604828" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/tent_camo_wall_01_short.sco">
+		<position x="1002.4503" y="99.9982" z="749.2628" />
+		<gameObject hash="2006061356" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_concrete_01.sco">
+		<position x="1085.0361" y="99.9982" z="753.3714" />
+		<gameObject hash="68836498" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_concrete_01_dmg.sco">
+		<position x="1090.6405" y="99.9982" z="753.4542" />
+		<gameObject hash="3433482009" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_metalrailings_01.sco">
+		<position x="1096.1432" y="99.9982" z="747.8365" />
+		<gameObject hash="2540800959" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_metalrailings_02.sco">
+		<position x="1094.3450" y="99.9982" z="757.3535" />
+		<gameObject hash="1069113743" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_security_pylons_01.sco">
+		<position x="1082.9425" y="99.9982" z="760.3859" />
+		<gameObject hash="1866541481" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/cr_prop_checkpointarm_01.sco">
+		<position x="1079.1570" y="99.9982" z="756.9129" />
+		<gameObject hash="1036985350" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/cr_prop_stopsign_01.sco">
+		<position x="1077.0566" y="99.9982" z="759.9446" />
+		<gameObject hash="829333836" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/trafficcone_01.sco">
+		<position x="1078.6812" y="99.9982" z="752.5953" />
+		<gameObject hash="220947729" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_prop_garage_closed.sco">
+		<position x="1341.8536" y="99.9982" z="714.0128" />
+		<gameObject hash="1098539994" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_prop_garage_open.sco">
+		<position x="1350.3402" y="99.9982" z="716.0314" />
+		<gameObject hash="1902013324" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_prop_metal_awning_01.sco">
+		<position x="1360.6042" y="99.9982" z="714.0248" />
+		<gameObject hash="2393847475" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_stair_metal_plt_01.sco">
+		<position x="1340.9406" y="99.9982" z="704.7789" />
+		<gameObject hash="346597780" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_stair_metal_str_01.sco">
+		<position x="1347.6278" y="99.9982" z="705.4219" />
+		<gameObject hash="1286144844" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/bld_stair_plaster_str_01.sco">
+		<position x="1356.1345" y="99.9982" z="705.1813" />
+		<gameObject hash="1867360107" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/church_01.sco">
+		<position x="1320.9089" y="99.9982" z="677.4384" />
+		<gameObject hash="417798710" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_arch_01.sco">
+		<position x="1302.9989" y="99.9982" z="672.2740" />
+		<gameObject hash="1596725876" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_construction_hotel_01.sco">
+		<position x="1421.2699" y="99.9982" z="762.4938" />
+		<gameObject hash="534497559" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_construction_hotel_02.sco">
+		<position x="1422.0728" y="99.9982" z="719.4286" />
+		<gameObject hash="4092681277" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_garage_01.sco">
+		<position x="1348.3646" y="99.9982" z="685.6708" />
+		<gameObject hash="3772896613" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_garage_02.sco">
+		<position x="1342.0272" y="99.9982" z="667.3110" />
+		<gameObject hash="3653261959" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_hotel_01.sco">
+		<position x="1372.3995" y="99.9982" z="684.0838" />
+		<gameObject hash="3170609546" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_house_01.sco">
+		<position x="1370.1105" y="100.1904" z="656.5677" />
+		<gameObject hash="2957890131" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_house_02.sco">
+		<position x="1346.3368" y="100.2657" z="646.1115" />
+		<gameObject hash="1520259921" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_light_01.sco">
+		<position x="1335.9025" y="99.9982" z="704.0768" />
+		<gameObject hash="249868400" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_01.sco">
+		<position x="1322.3658" y="99.9982" z="644.7076" />
+		<gameObject hash="3440145226" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_02.sco">
+		<position x="1290.2915" y="99.9982" z="646.2827" />
+		<gameObject hash="1397962315" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_03.sco">
+		<position x="1279.0034" y="99.9982" z="674.0028" />
+		<gameObject hash="2422046078" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_04.sco">
+		<position x="1252.8716" y="99.9982" z="640.9199" />
+		<gameObject hash="2422109410" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_05_tower.sco">
+		<position x="1247.2963" y="99.9982" z="673.7063" />
+		<gameObject hash="784949658" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gasstation_01_a.sco">
+		<position x="1270.6592" y="99.9982" z="700.5743" />
+		<gameObject hash="3356071243" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gasstation_01_b.sco">
+		<position x="1278.1003" y="99.9982" z="719.2322" />
+		<gameObject hash="1453433151" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gasstation_01_c.sco">
+		<position x="1262.2854" y="99.9982" z="716.2535" />
+		<gameObject hash="3353894076" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_01.sco">
+		<position x="1370.7979" y="99.9982" z="602.6956" />
+		<gameObject hash="694343688" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_02.sco">
+		<position x="1351.5049" y="99.9982" z="603.5143" />
+		<gameObject hash="4273514345" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_03.sco">
+		<position x="1331.6147" y="99.9982" z="603.0825" />
+		<gameObject hash="3473516140" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_03_crash.sco">
+		<position x="1311.5647" y="99.9982" z="603.6769" />
+		<gameObject hash="3604962338" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_04.sco">
+		<position x="1288.0223" y="99.9982" z="602.9577" />
+		<gameObject hash="521940869" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_05.sco">
+		<position x="1269.5959" y="99.9982" z="604.8578" />
+		<gameObject hash="3603664731" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_05_crash.sco">
+		<position x="1255.1329" y="99.9982" z="607.9933" />
+		<gameObject hash="2365375657" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_06.sco">
+		<position x="1371.6111" y="99.9982" z="584.9737" />
+		<gameObject hash="3666551999" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_07_02.sco">
+		<position x="1351.0479" y="99.9982" z="584.0244" />
+		<gameObject hash="4104108206" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_house_07_03.sco">
+		<position x="1337.0322" y="99.9982" z="584.4418" />
+		<gameObject hash="1458107428" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_shed_01.sco">
+		<position x="1323.3428" y="99.9982" z="585.2945" />
+		<gameObject hash="3796155936" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_shed_02.sco">
+		<position x="1310.3582" y="99.9982" z="585.3362" />
+		<gameObject hash="2777063353" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_building_shed_03.sco">
+		<position x="1290.6364" y="99.9982" z="586.5862" />
+		<gameObject hash="2607383213" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_house_8.sco">
+		<position x="1275.3428" y="99.9982" z="584.9669" />
+		<gameObject hash="1108865618" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_tunnelentrance_01.sco">
+		<position x="1228.3274" y="99.9982" z="613.5497" />
+		<gameObject hash="3463910946" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_tunnelsupportcolumn.sco">
+		<position x="1203.9398" y="99.9982" z="607.2006" />
+		<gameObject hash="1609950347" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_tunnelsupportwall.sco">
+		<position x="1196.2369" y="99.9982" z="595.1581" />
+		<gameObject hash="826990323" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_villagetown_building_01.sco">
+		<position x="1373.1478" y="99.9982" z="565.5728" />
+		<gameObject hash="360120408" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_villagetown_building_02.sco">
+		<position x="1355.1697" y="99.9982" z="566.4351" />
+		<gameObject hash="47371330" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_villagetown_building_03.sco">
+		<position x="1339.6648" y="99.9982" z="565.6063" />
+		<gameObject hash="4271126140" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gz_villagetown_building_04.sco">
+		<position x="1319.2500" y="99.9982" z="566.2059" />
+		<gameObject hash="3429010783" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/house_a.sco">
+		<position x="1241.5552" y="99.9982" z="719.1497" />
+		<gameObject hash="1149982978" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/house_b.sco">
+		<position x="1259.4136" y="99.9982" z="738.1320" />
+		<gameObject hash="3236969213" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/shack_wooden_01.sco">
+		<position x="1279.2689" y="99.9982" z="741.1063" />
+		<gameObject hash="681457130" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/shed_01.sco">
+		<position x="1289.9298" y="99.9982" z="732.9709" />
+		<gameObject hash="1420892720" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbarn_01.sco">
+		<position x="1509.9603" y="99.9982" z="746.6109" />
+		<gameObject hash="2987803692" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbarn_02.sco">
+		<position x="1533.0018" y="99.9982" z="739.6270" />
+		<gameObject hash="938777667" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbarn_03.sco">
+		<position x="1563.4991" y="99.9982" z="742.1223" />
+		<gameObject hash="2289862989" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_01.sco">
+		<position x="1505.6920" y="100.2750" z="715.4113" />
+		<gameObject hash="1353959550" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_02.sco">
+		<position x="1526.1829" y="99.9982" z="710.2617" />
+		<gameObject hash="3740064425" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_03.sco">
+		<position x="1545.1411" y="99.9982" z="715.1791" />
+		<gameObject hash="1460165828" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_04.sco">
+		<position x="1564.2358" y="99.9982" z="719.1274" />
+		<gameObject hash="4084607894" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_06.sco">
+		<position x="1564.9067" y="99.9982" z="685.4074" />
+		<gameObject hash="1695464949" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_07.sco">
+		<position x="1542.0464" y="99.9982" z="677.0959" />
+		<gameObject hash="3002601839" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_08.sco">
+		<position x="1523.8402" y="99.9982" z="679.0952" />
+		<gameObject hash="2880472764" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_09.sco">
+		<position x="1496.9451" y="99.9982" z="679.6434" />
+		<gameObject hash="3841048716" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_10.sco">
+		<position x="1569.5034" y="99.9982" z="653.6354" />
+		<gameObject hash="1698601206" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_11.sco">
+		<position x="1540.0315" y="99.9982" z="649.2230" />
+		<gameObject hash="2435921237" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_12.sco">
+		<position x="1513.1937" y="99.9982" z="651.9205" />
+		<gameObject hash="2502065527" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_13.sco">
+		<position x="1487.5364" y="99.9982" z="647.9728" />
+		<gameObject hash="1030159003" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_14.sco">
+		<position x="1567.8638" y="99.9982" z="627.1953" />
+		<gameObject hash="3177186836" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_15.sco">
+		<position x="1537.7635" y="99.9982" z="622.1595" />
+		<gameObject hash="2037457516" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_16.sco">
+		<position x="1510.4766" y="99.9982" z="622.3326" />
+		<gameObject hash="2960791957" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_17.sco">
+		<position x="1477.5844" y="99.9982" z="624.5237" />
+		<gameObject hash="3707516353" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_18.sco">
+		<position x="1565.2527" y="99.9982" z="605.1960" />
+		<gameObject hash="1447398309" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townbuilding_19.sco">
+		<position x="1538.1404" y="100.5795" z="602.2426" />
+		<gameObject hash="3929512907" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/townhall_01.sco">
+		<position x="1509.6986" y="99.9982" z="593.4828" />
+		<gameObject hash="3845506960" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/towntrailer_01.sco">
+		<position x="1478.0669" y="99.9982" z="605.6873" />
+		<gameObject hash="1527850153" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/towntrailer_02.sco">
+		<position x="1462.1295" y="99.9982" z="606.9478" />
+		<gameObject hash="786351848" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_autogarage_01.sco">
+		<position x="1443.8314" y="99.9982" z="612.5295" />
+		<gameObject hash="2698487413" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_autogarage_02.sco">
+		<position x="1445.4457" y="99.9982" z="650.1059" />
+		<gameObject hash="3972402950" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_clinic_01.sco">
+		<position x="1451.0449" y="99.9982" z="567.8152" />
+		<gameObject hash="2127889548" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_diner_01.sco">
+		<position x="1487.0641" y="99.9982" z="561.8051" />
+		<gameObject hash="873935274" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_firestation_01.sco">
+		<position x="1518.3578" y="99.9982" z="557.0245" />
+		<gameObject hash="1600899757" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_generalstore.sco">
+		<position x="1546.2734" y="99.9982" z="571.9325" />
+		<gameObject hash="1989241126" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_grocery_01.sco">
+		<position x="1626.1760" y="99.9982" z="735.0678" />
+		<gameObject hash="3738323767" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_office_01.sco">
+		<position x="1596.7083" y="99.9982" z="662.9550" />
+		<gameObject hash="3273216632" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_police_01.sco">
+		<position x="1627.2948" y="99.9982" z="665.0591" />
+		<gameObject hash="1042623735" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_postoffice_01.sco">
+		<position x="1655.6440" y="99.9982" z="669.7385" />
+		<gameObject hash="2409652374" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/town_warestore_01.sco">
+		<position x="1644.8756" y="99.9982" z="604.3307" />
+		<gameObject hash="2667087423" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/watertower_01.sco">
+		<position x="1612.5814" y="99.9982" z="618.6821" />
+		<gameObject hash="1230912209" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/watertower_02.sco">
+		<position x="1601.3279" y="99.9982" z="619.3005" />
+		<gameObject hash="3920433853" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/west_barn_01.sco">
+		<position x="1180.6107" y="99.9982" z="699.4951" />
+		<gameObject hash="949738636" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/west_outhouse.sco">
+		<position x="1178.9386" y="99.9982" z="686.7504" />
+		<gameObject hash="965191325" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/west_shack_01.sco">
+		<position x="1183.2483" y="99.9982" z="677.4009" />
+		<gameObject hash="60448062" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/west_shack_02.sco">
+		<position x="1184.0359" y="99.9982" z="670.2409" />
+		<gameObject hash="3412912993" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/west_shack_03.sco">
+		<position x="1183.1854" y="99.9982" z="661.9750" />
+		<gameObject hash="3617992258" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_barrel_01.sco">
+		<position x="1095.8542" y="100.5473" z="739.2482" />
+		<gameObject hash="2895954774" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_barrel_02.sco">
+		<position x="1096.8059" y="100.5473" z="739.1801" />
+		<gameObject hash="736258104" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_barrel_03.sco">
+		<position x="1097.5785" y="100.5473" z="739.0788" />
+		<gameObject hash="3098980105" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_barrel_04.sco">
+		<position x="1098.2664" y="100.5473" z="739.1155" />
+		<gameObject hash="2185139279" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_01.sco">
+		<position x="1093.8385" y="99.9982" z="741.9552" />
+		<gameObject hash="2011040605" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_02.sco">
+		<position x="1095.5045" y="99.9982" z="743.1995" />
+		<gameObject hash="201277876" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_03.sco">
+		<position x="1097.9071" y="99.9982" z="743.9131" />
+		<gameObject hash="2706331393" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_cord_01.sco">
+		<position x="1099.5023" y="100.1263" z="742.0598" />
+		<gameObject hash="1478664626" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_handle_01.sco">
+		<position x="1100.6227" y="100.1263" z="742.4400" />
+		<gameObject hash="2490052747" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_panel_01.sco">
+		<position x="1099.5490" y="99.9982" z="745.3803" />
+		<gameObject hash="1236330506" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_panel_02.sco">
+		<position x="1100.8346" y="100.1263" z="744.5225" />
+		<gameObject hash="1627295875" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_gaspump_panel_03.sco">
+		<position x="1101.7600" y="100.1263" z="743.3318" />
+		<gameObject hash="1629960096" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_oilcan_01.sco">
+		<position x="1101.6536" y="99.9982" z="741.3266" />
+		<gameObject hash="1672343796" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_oilcan_02.sco">
+		<position x="1101.8113" y="99.9982" z="740.2472" />
+		<gameObject hash="1666002004" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_sign_01.sco">
+		<position x="1085.1169" y="99.9982" z="744.4659" />
+		<gameObject hash="2264575666" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_station_light_01.sco">
+		<position x="1092.0747" y="100.1657" z="740.7247" />
+		<gameObject hash="2095278296" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_station_panel_01.sco">
+		<position x="1091.8186" y="100.1657" z="739.0203" />
+		<gameObject hash="2612665122" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_station_panel_03.sco">
+		<position x="1089.8629" y="100.1657" z="741.1713" />
+		<gameObject hash="1797922155" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_station_panel_02.sco">
+		<position x="1088.6437" y="100.1657" z="739.3765" />
+		<gameObject hash="3496486278" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_support_01.sco">
+		<position x="1085.7136" y="103.1369" z="740.6743" />
+		<gameObject hash="3575161748" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_tire_01.sco">
+		<position x="1094.7507" y="99.7746" z="736.6157" />
+		<gameObject hash="1193887442" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_tire_01a.sco">
+		<position x="1096.5077" y="100.2833" z="736.5032" />
+		<gameObject hash="3729206279" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_gas_wood_01.sco">
+		<position x="1098.5519" y="100.2833" z="736.8589" />
+		<gameObject hash="3526335387" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_prop_icemachine_01.sco">
+		<position x="1109.6545" y="99.9982" z="741.9196" />
+		<gameObject hash="1916912482" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_prop_light_stand_01_lit.sco">
+		<position x="1108.5865" y="99.9982" z="739.8087" />
+		<gameObject hash="2009978327" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_prop_newstand_01.sco">
+		<position x="1115.3955" y="99.9982" z="742.2393" />
+		<gameObject hash="3656005777" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_prop_newstand_02.sco">
+		<position x="1115.1510" y="99.9982" z="741.2004" />
+		<gameObject hash="2810210031" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_prop_powerbox_01.sco">
+		<position x="1108.1544" y="99.9982" z="736.9393" />
+		<gameObject hash="3271905195" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_cash_register_01.sco">
+		<position x="1121.3470" y="99.9982" z="755.3589" />
+		<gameObject hash="1238151874" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_cash_register_02.sco">
+		<position x="1121.4875" y="99.9982" z="752.2827" />
+		<gameObject hash="1634866473" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_cash_register_03.sco">
+		<position x="1120.9725" y="99.9982" z="750.1478" />
+		<gameObject hash="2132855639" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_cash_register_04.sco">
+		<position x="1120.6915" y="99.9982" z="748.2546" />
+		<gameObject hash="648818228" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_kitchen_cabinet_01.sco">
+		<position x="1123.0397" y="99.9982" z="748.8063" />
+		<gameObject hash="1782214222" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_kitchen_chair_01.sco">
+		<position x="1121.9220" y="99.9982" z="747.8527" />
+		<gameObject hash="165987858" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_kitchen_table_01.sco">
+		<position x="1123.6672" y="99.9982" z="746.8019" />
+		<gameObject hash="834915469" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_shelf_01.sco">
+		<position x="1120.4823" y="99.9982" z="745.4293" />
+		<gameObject hash="629409437" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_shelf_02.sco">
+		<position x="1122.6259" y="99.9982" z="744.6669" />
+		<gameObject hash="750379910" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_shelf_03.sco">
+		<position x="1124.7308" y="99.9982" z="744.5524" />
+		<gameObject hash="4202619639" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_shelf_04.sco">
+		<position x="1120.3574" y="99.9982" z="742.9708" />
+		<gameObject hash="2735130504" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_stove_01.sco">
+		<position x="1125.0781" y="99.9982" z="749.1393" />
+		<gameObject hash="2981305147" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_stove_02.sco">
+		<position x="1126.9741" y="99.9982" z="748.8890" />
+		<gameObject hash="1182080362" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/business_tray_01.sco">
+		<position x="1127.0096" y="101.0419" z="748.7319" />
+		<gameObject hash="2842882968" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_1big_01.sco">
+		<position x="1127.9211" y="99.9982" z="736.0167" />
+		<gameObject hash="2773333327" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_1big_02.sco">
+		<position x="1124.7461" y="99.9982" z="736.1212" />
+		<gameObject hash="1981708921" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_1big_03.sco">
+		<position x="1120.2811" y="99.9982" z="736.1033" />
+		<gameObject hash="3398535903" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_1small_01.sco">
+		<position x="1128.7819" y="99.9982" z="732.7964" />
+		<gameObject hash="2632064120" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_2small_01.sco">
+		<position x="1126.7480" y="99.9982" z="732.7960" />
+		<gameObject hash="1940281609" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crates_3small_01.sco">
+		<position x="1124.0322" y="99.9982" z="732.6774" />
+		<gameObject hash="702259461" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crate_01.sco">
+		<position x="1121.4725" y="99.9982" z="732.7491" />
+		<gameObject hash="1638619070" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crate_02.sco">
+		<position x="1118.6779" y="99.9982" z="732.4943" />
+		<gameObject hash="4238316211" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crate_milk.sco">
+		<position x="1128.5356" y="100.2210" z="730.7743" />
+		<gameObject hash="3398886866" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/crate_milk_stack_01.sco">
+		<position x="1126.6753" y="100.2210" z="730.5398" />
+		<gameObject hash="177427636" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_bucket_metal_01.sco">
+		<position x="1124.5598" y="100.2210" z="730.5792" />
+		<gameObject hash="2619222890" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_bucket_wood_01.sco">
+		<position x="1122.9711" y="100.2210" z="730.1727" />
+		<gameObject hash="1743742853" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_deadcow_01.sco">
+		<position x="1120.1737" y="100.2210" z="729.2160" />
+		<gameObject hash="656525252" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_firewood_01.sco">
+		<position x="1128.1791" y="100.2210" z="727.8221" />
+		<gameObject hash="2802758367" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_firewood_02.sco">
+		<position x="1125.3522" y="100.2210" z="727.1156" />
+		<gameObject hash="1063783425" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_firewood_03.sco">
+		<position x="1120.9565" y="100.2210" z="725.4028" />
+		<gameObject hash="157796254" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/farm_wheelbarrow_01.sco">
+		<position x="1117.2664" y="99.9982" z="726.2415" />
+		<gameObject hash="2924105951" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_fridge_01_closed.sco">
+		<position x="1114.3584" y="99.9982" z="736.8876" />
+		<gameObject hash="1161529411" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_fridge_01_open.sco">
+		<position x="1112.1017" y="99.9982" z="736.7074" />
+		<gameObject hash="3685946109" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_lawn_chair.sco">
+		<position x="1113.2574" y="99.9982" z="734.3052" />
+		<gameObject hash="3441095404" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_lawn_table.sco">
+		<position x="1110.4904" y="99.9982" z="733.2993" />
+		<gameObject hash="2999748088" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_music_column_01.sco">
+		<position x="1114.0253" y="100.3201" z="732.2577" />
+		<gameObject hash="816119804" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_propane_tank_sml_01.sco">
+		<position x="1111.8710" y="100.3201" z="731.6847" />
+		<gameObject hash="3323039376" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_recorder_01.sco">
+		<position x="1110.2676" y="100.3201" z="731.4703" />
+		<gameObject hash="3433444431" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_shoes_01.sco">
+		<position x="1113.6761" y="100.3201" z="730.9458" />
+		<gameObject hash="3714255742" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_shoes_02.sco">
+		<position x="1114.5620" y="99.9982" z="733.8936" />
+		<gameObject hash="861117811" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_suitcase_01.sco">
+		<position x="1115.4395" y="100.3201" z="730.8448" />
+		<gameObject hash="1319075532" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_suitcase_02.sco">
+		<position x="1115.7305" y="100.3201" z="732.7938" />
+		<gameObject hash="926429773" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_tv_01.sco">
+		<position x="1110.2883" y="100.3201" z="729.2003" />
+		<gameObject hash="4035494035" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_tv_02.sco">
+		<position x="1112.4380" y="100.3201" z="729.0159" />
+		<gameObject hash="482744015" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/house_video_recorder_01.sco">
+		<position x="1114.6722" y="100.3201" z="729.0198" />
+		<gameObject hash="3087442339" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_bbq_01.sco">
+		<position x="1133.0887" y="99.9982" z="750.7985" />
+		<gameObject hash="2875408133" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_bbq_02.sco">
+		<position x="1135.3998" y="99.9982" z="750.8359" />
+		<gameObject hash="4260114385" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_bbq_03.sco">
+		<position x="1138.0116" y="99.9982" z="750.3470" />
+		<gameObject hash="1283949521" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_bbq_04.sco">
+		<position x="1139.7056" y="99.9982" z="750.4841" />
+		<gameObject hash="761542648" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_crate_01.sco">
+		<position x="1133.2291" y="99.9982" z="747.2986" />
+		<gameObject hash="574382090" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_crate_woodpile_01.sco">
+		<position x="1135.6570" y="99.9982" z="747.6516" />
+		<gameObject hash="868514127" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_palletbox_01.sco">
+		<position x="1138.1545" y="99.9982" z="747.3856" />
+		<gameObject hash="1908831862" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_pallets_01.sco">
+		<position x="1140.9298" y="99.9982" z="747.5661" />
+		<gameObject hash="1217058749" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_pallet_stack_01.sco">
+		<position x="1145.0934" y="99.9982" z="748.0866" />
+		<gameObject hash="3488618345" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_roller_01.sco">
+		<position x="1133.8217" y="99.9982" z="743.9734" />
+		<gameObject hash="1174277736" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_shelfstep_01.sco">
+		<position x="1137.6693" y="99.9982" z="743.9959" />
+		<gameObject hash="3830373180" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_shelfstep_02.sco">
+		<position x="1141.3916" y="99.9982" z="744.3769" />
+		<gameObject hash="2743402654" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_shelf_01.sco">
+		<position x="1144.4056" y="99.9982" z="744.1895" />
+		<gameObject hash="4160012708" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_shelf_02.sco">
+		<position x="1145.0450" y="99.9982" z="741.6351" />
+		<gameObject hash="812728989" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_01.sco">
+		<position x="1142.1639" y="99.9982" z="741.6159" />
+		<gameObject hash="2249452532" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_02.sco">
+		<position x="1137.3759" y="99.9982" z="740.3817" />
+		<gameObject hash="2329849299" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_03.sco">
+		<position x="1138.1664" y="99.9982" z="736.0379" />
+		<gameObject hash="695565943" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_04.sco">
+		<position x="1142.5398" y="99.9982" z="737.0548" />
+		<gameObject hash="4107619406" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_05.sco">
+		<position x="1148.7238" y="99.9982" z="738.0576" />
+		<gameObject hash="2706910814" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_stand_woodpile_01.sco">
+		<position x="1149.1943" y="99.9982" z="747.9017" />
+		<gameObject hash="598087147" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_table_01.sco">
+		<position x="1149.3069" y="99.9982" z="744.1758" />
+		<gameObject hash="3509032232" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_table_02.sco">
+		<position x="1149.1364" y="99.9982" z="741.8934" />
+		<gameObject hash="2090770554" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_table_03.sco">
+		<position x="1153.9348" y="99.9982" z="746.0076" />
+		<gameObject hash="1358800516" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_table_04.sco">
+		<position x="1153.4288" y="99.9982" z="743.6904" />
+		<gameObject hash="3638765381" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/market_table_05.sco">
+		<position x="1153.7460" y="99.9982" z="741.2142" />
+		<gameObject hash="4294160977" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/playground_bars_01.sco">
+		<position x="1139.3546" y="99.9982" z="726.9283" />
+		<gameObject hash="369941692" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/playground_marrygoround_01.sco">
+		<position x="1144.4044" y="99.9982" z="727.9390" />
+		<gameObject hash="2038484966" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/playground_rocket_01.sco">
+		<position x="1148.4209" y="99.9982" z="729.4222" />
+		<gameObject hash="3875420630" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/playground_slide_01.sco">
+		<position x="1143.0951" y="99.9982" z="721.1378" />
+		<gameObject hash="3544500171" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/playground_toter_01.sco">
+		<position x="1147.4193" y="99.9982" z="722.6779" />
+		<gameObject hash="3827203662" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_bag_01.sco">
+		<position x="1130.0972" y="100.7080" z="719.1903" />
+		<gameObject hash="3216457239" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_can_01.sco">
+		<position x="1131.9923" y="99.9982" z="719.6614" />
+		<gameObject hash="2815425335" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_dumpster_01.sco">
+		<position x="1127.5422" y="99.9982" z="716.5931" />
+		<gameObject hash="424968271" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_dumpster_02.sco">
+		<position x="1132.0438" y="99.9982" z="717.1420" />
+		<gameObject hash="1344303" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_vehicles/rv_01.sco">
+		<position x="1151.6704" y="99.9982" z="772.0588" />
+		<gameObject hash="422291761" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_metal_01.sco">
+		<position x="1125.8599" y="99.9982" z="686.6142" />
+		<gameObject hash="2770931891" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_metal_01a.sco">
+		<position x="1121.3418" y="99.9982" z="684.3799" />
+		<gameObject hash="400179508" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_metal_02.sco">
+		<position x="1117.7578" y="99.9982" z="687.8397" />
+		<gameObject hash="3449085424" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_metal_03.sco">
+		<position x="1117.6851" y="99.9982" z="682.3021" />
+		<gameObject hash="596154288" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_02a.sco">
+		<position x="1113.3979" y="99.9982" z="685.4453" />
+		<gameObject hash="975842332" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_02b.sco">
+		<position x="1110.2095" y="99.9982" z="682.6287" />
+		<gameObject hash="3590441220" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_01a.sco">
+		<position x="1110.0194" y="99.9982" z="689.4195" />
+		<gameObject hash="1820813771" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_01b.sco">
+		<position x="1108.2823" y="99.9982" z="684.3645" />
+		<gameObject hash="2059685657" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_01c.sco">
+		<position x="1108.4503" y="99.9982" z="688.6100" />
+		<gameObject hash="1888103155" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_01d.sco">
+		<position x="1106.1799" y="99.9982" z="682.8558" />
+		<gameObject hash="1383405243" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_gate_01a.sco">
+		<position x="1106.0087" y="99.9982" z="686.9619" />
+		<gameObject hash="392662683" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_picket_post_01a.sco">
+		<position x="1106.3236" y="99.9982" z="688.9200" />
+		<gameObject hash="1930522930" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01c.sco">
+		<position x="1100.4622" y="99.9982" z="683.7018" />
+		<gameObject hash="4128986676" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01d.sco">
+		<position x="1094.3658" y="99.9982" z="683.1827" />
+		<gameObject hash="3235239066" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01e.sco">
+		<position x="1089.0513" y="99.9982" z="684.0698" />
+		<gameObject hash="2827210480" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01f.sco">
+		<position x="1083.6693" y="99.9982" z="682.1213" />
+		<gameObject hash="841079622" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_1.sco">
+		<position x="1078.9226" y="99.9982" z="682.9775" />
+		<gameObject hash="3674746743" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_1hs.sco">
+		<position x="1074.4307" y="99.9982" z="677.5799" />
+		<gameObject hash="1554242667" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_1hs_end.sco">
+		<position x="1074.5776" y="99.9982" z="682.1607" />
+		<gameObject hash="2074918879" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_1s.sco">
+		<position x="1075.0656" y="99.9982" z="687.8568" />
+		<gameObject hash="2598775926" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_1s_end.sco">
+		<position x="1075.4205" y="99.9982" z="694.2527" />
+		<gameObject hash="2044689396" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_2s.sco">
+		<position x="1078.7402" y="99.9982" z="695.7648" />
+		<gameObject hash="281748538" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_01_2s_end.sco">
+		<position x="1071.0594" y="99.9982" z="678.3187" />
+		<gameObject hash="3133311018" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_dmg_01hole_01.sco">
+		<position x="1070.7675" y="99.9982" z="687.5554" />
+		<gameObject hash="409597634" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_dmg_hole_02.sco">
+		<position x="1071.1254" y="99.9982" z="696.8510" />
+		<gameObject hash="893304645" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_dmg_l_01.sco">
+		<position x="1073.9357" y="99.9982" z="701.7654" />
+		<gameObject hash="2161480706" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_dmg_r_01.sco">
+		<position x="1066.8971" y="99.9982" z="699.8560" />
+		<gameObject hash="412202031" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_dmg_str2_01.sco">
+		<position x="1066.5753" y="99.9982" z="689.5811" />
+		<gameObject hash="1729628773" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_post_01.sco">
+		<position x="1066.6125" y="99.9982" z="681.0384" />
+		<gameObject hash="341012019" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_reg_section_01.sco">
+		<position x="1062.2112" y="99.9982" z="692.0912" />
+		<gameObject hash="274473907" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_short_dmg_hole_01.sco">
+		<position x="1062.1499" y="99.9982" z="698.7381" />
+		<gameObject hash="2628499856" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_short_dmg_l_01.sco">
+		<position x="1062.3462" y="99.9982" z="705.6125" />
+		<gameObject hash="2046159279" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_short_dmg_mid_01.sco">
+		<position x="1066.1548" y="99.9982" z="707.0463" />
+		<gameObject hash="3203443020" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_short_dmg_r_01.sco">
+		<position x="1058.5249" y="99.9982" z="699.8698" />
+		<gameObject hash="2997778555" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_short_dmg_r_02.sco">
+		<position x="1057.5249" y="99.9982" z="692.3251" />
+		<gameObject hash="169209734" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_EnvmapProbe" fileName="__envmap_probe">
+		<position x="1492.1750" y="118.9497" z="709.0087" />
+		<gameObject hash="2703413055" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true" />
+		<envmapProbe radius="150" infRadius="1" id="0" edge="128" />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_01.sco">
+		<position x="1074.0740" y="99.9982" z="555.8967" />
+		<gameObject hash="2190936011" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_02.sco">
+		<position x="1058.5151" y="99.9982" z="548.5279" />
+		<gameObject hash="3447433882" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_03.sco">
+		<position x="1037.4592" y="99.9982" z="549.4149" />
+		<gameObject hash="3044832134" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_04.sco">
+		<position x="1014.1790" y="99.9982" z="538.8237" />
+		<gameObject hash="1692904505" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_05.sco">
+		<position x="990.3403" y="99.9982" z="542.7952" />
+		<gameObject hash="2428191561" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_06.sco">
+		<position x="968.5154" y="99.9982" z="543.3989" />
+		<gameObject hash="1870995604" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_07.sco">
+		<position x="949.1940" y="99.9982" z="551.3248" />
+		<gameObject hash="2748033795" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_08.sco">
+		<position x="925.7708" y="99.9982" z="553.9695" />
+		<gameObject hash="1888569799" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_09.sco">
+		<position x="892.6758" y="99.9982" z="549.8718" />
+		<gameObject hash="112387795" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_10.sco">
+		<position x="861.9029" y="99.9982" z="558.8062" />
+		<gameObject hash="528999260" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_tree_01_grp.sco">
+		<position x="813.9766" y="99.9982" z="310.2686" />
+		<gameObject hash="2256415566" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_tree_02_grp.sco">
+		<position x="725.6062" y="99.9982" z="336.5221" />
+		<gameObject hash="1239227654" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_tree_04_grp.sco">
+		<position x="534.0320" y="99.9982" z="321.5363" />
+		<gameObject hash="1792854738" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_tree_l_01.sco">
+		<position x="576.5452" y="99.9982" z="454.8325" />
+		<gameObject hash="1046278047" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_08_lod1.sco">
+		<position x="649.4618" y="99.9982" z="416.8264" />
+		<gameObject hash="2616384980" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_08_lod2.sco">
+		<position x="617.5886" y="99.9982" z="411.8596" />
+		<gameObject hash="1879560477" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_10_lod2.sco">
+		<position x="703.7321" y="99.9982" z="406.5609" />
+		<gameObject hash="1268714634" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_02_lod2.sco">
+		<position x="688.6044" y="99.9982" z="442.6428" />
+		<gameObject hash="1742350516" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_nature/wz_pinetree_03_lod2.sco">
+		<position x="728.2527" y="99.9982" z="449.5001" />
+		<gameObject hash="2895897261" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/characters/hgear_baseball_01.sco">
+		<position x="1171.3342" y="99.9920" z="695.3179" />
+		<gameObject hash="491320693" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="358.2510" y="359.9999" z="0.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/characters/hgear_baseball_01.sco">
+		<position x="1169.8253" y="99.9982" z="694.1473" />
+		<gameObject hash="3745283476" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="0.0000" y="0.0000" z="359.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_tall_01.sco">
+		<position x="1160.3652" y="99.9982" z="689.6116" />
+		<gameObject hash="2477415705" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_tall_01_hole.sco">
+		<position x="1160.3673" y="99.9982" z="693.6679" />
+		<gameObject hash="2518136952" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_tall_01_post.sco">
+		<position x="1159.1871" y="99.9982" z="694.0594" />
+		<gameObject hash="647373059" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_tall_01_03x.sco">
+		<position x="1154.6173" y="99.9982" z="697.1934" />
+		<gameObject hash="2203246508" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_west_01_endbottom.sco">
+		<position x="1161.2050" y="99.9982" z="683.7189" />
+		<gameObject hash="3650753672" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_west_01_sectionbottom.sco">
+		<position x="1161.8971" y="99.9982" z="682.5781" />
+		<gameObject hash="475763823" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/fence_wood_west_05.sco">
+		<position x="1158.7744" y="99.9982" z="681.1213" />
+		<gameObject hash="3067339428" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_stone_short_02.sco">
+		<position x="1160.9396" y="99.9982" z="685.1953" />
+		<gameObject hash="2707206203" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citydecay/rubble_generic_pile_lrg_01.sco">
+		<position x="1150.7003" y="99.9982" z="1116.0739" />
+		<gameObject hash="2978645563" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citydecay/rubble_generic_pile_lrg_02_lng.sco">
+		<position x="1159.2424" y="99.9982" z="1120.9548" />
+		<gameObject hash="2329573612" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_bunker_01.sco">
+		<position x="1075.2971" y="99.9979" z="765.6780" />
+		<gameObject hash="4019038244" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_bunker_02.sco">
+		<position x="1078.0055" y="99.9979" z="765.6065" />
+		<gameObject hash="2432709843" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_bunker_03.sco">
+		<position x="1080.6265" y="99.9979" z="765.5596" />
+		<gameObject hash="3327665132" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_concrete_02.sco">
+		<position x="1084.2506" y="99.9979" z="765.9124" />
+		<gameObject hash="593039817" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_wall_02.sco">
+		<position x="1080.2499" y="99.9979" z="769.6049" />
+		<gameObject hash="2553691781" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/barrier_wall_01.sco">
+		<position x="1076.0114" y="99.9979" z="769.9362" />
+		<gameObject hash="2346729863" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_roadobjects/parking_block_02.sco">
+		<position x="1084.1708" y="99.9979" z="769.2625" />
+		<gameObject hash="3760698342" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_a.sco">
+		<position x="1079.5887" y="99.9979" z="666.0861" />
+		<gameObject hash="3061545064" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b.sco">
+		<position x="1079.5101" y="99.9979" z="659.1904" />
+		<gameObject hash="2234094561" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b_dmg_1.sco">
+		<position x="1082.6713" y="99.9979" z="659.3349" />
+		<gameObject hash="478601055" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b_dmg_2.sco">
+		<position x="1085.3475" y="99.9979" z="659.4117" />
+		<gameObject hash="1508755406" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b_dmg_3.sco">
+		<position x="1087.9825" y="99.9979" z="659.1698" />
+		<gameObject hash="2314019159" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b_dmg_4.sco">
+		<position x="1090.9210" y="99.9979" z="659.0154" />
+		<gameObject hash="886953086" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_b_dmg_5.sco">
+		<position x="1094.3829" y="99.9979" z="658.6780" />
+		<gameObject hash="2954843815" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_c_short.sco">
+		<position x="1079.2758" y="99.9979" z="653.5706" />
+		<gameObject hash="643952456" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_1_d_short.sco">
+		<position x="1079.4170" y="99.9979" z="650.4686" />
+		<gameObject hash="2456707068" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_2.sco">
+		<position x="1079.4006" y="99.9979" z="642.6010" />
+		<gameObject hash="2810660460" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_2_dmg_1.sco">
+		<position x="1083.2241" y="99.9979" z="645.6989" />
+		<gameObject hash="2370455809" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_3.sco">
+		<position x="1079.1440" y="99.9979" z="625.8828" />
+		<gameObject hash="849145755" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_post_1.sco">
+		<position x="1087.3245" y="99.9979" z="651.5248" />
+		<gameObject hash="1835112960" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_post_2.sco">
+		<position x="1087.3563" y="99.9979" z="647.6246" />
+		<gameObject hash="2243482839" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_walls/wall_concrete_mil_01_post_3.sco">
+		<position x="1086.7870" y="99.9979" z="644.8834" />
+		<gameObject hash="1519243042" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_l_01.sco">
+		<position x="770.0593" y="99.9979" z="548.5190" />
+		<gameObject hash="537647021" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_m_01.sco">
+		<position x="758.9871" y="99.9979" z="593.4595" />
+		<gameObject hash="1589653054" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_m_02.sco">
+		<position x="762.6573" y="99.9979" z="615.6198" />
+		<gameObject hash="3410225787" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_s_01.sco">
+		<position x="759.0345" y="101.9285" z="640.3067" />
+		<gameObject hash="3276225283" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_s_02.sco">
+		<position x="758.4760" y="101.9285" z="657.6421" />
+		<gameObject hash="2172804409" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_s_03.sco">
+		<position x="762.6641" y="103.8496" z="672.6925" />
+		<gameObject hash="1641105362" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rockcliff_s_04.sco">
+		<position x="762.4483" y="103.8496" z="686.0562" />
+		<gameObject hash="2268139437" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rock_bouldr_sml_01.sco">
+		<position x="759.4395" y="103.8496" z="683.9239" />
+		<gameObject hash="3456190558" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rock_bouldr_sml_01.sco">
+		<position x="759.4357" y="103.8496" z="682.1111" />
+		<gameObject hash="2952432744" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rock_cluster_sml_01_circle.sco">
+		<position x="758.3647" y="103.8496" z="681.3671" />
+		<gameObject hash="980081434" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rock_cluster_sml_02_line.sco">
+		<position x="756.1658" y="103.8496" z="681.4969" />
+		<gameObject hash="1776588337" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_rock_cluster_sml_03_circle.sco">
+		<position x="757.3856" y="103.8496" z="684.6132" />
+		<gameObject hash="1918384221" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_stoneblack_01.sco">
+		<position x="752.8352" y="103.8496" z="674.4974" />
+		<gameObject hash="3389538282" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_stonegreen_01.sco">
+		<position x="743.8619" y="103.8496" z="674.4221" />
+		<gameObject hash="3045886934" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_stonewhite_01.sco">
+		<position x="735.5079" y="103.5199" z="691.4362" />
+		<gameObject hash="634344803" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_stone_01.sco">
+		<position x="739.7956" y="101.9285" z="701.4009" />
+		<gameObject hash="2088528351" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_natureambient/gz_stone_02.sco">
+		<position x="743.0997" y="102.5318" z="696.2465" />
+		<gameObject hash="2515482619" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/shack_brick_01.sco">
+		<position x="1290.7462" y="99.9979" z="745.9904" />
+		<gameObject hash="903106583" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_01.sco">
+		<position x="1086.4900" y="99.9979" z="713.3089" />
+		<gameObject hash="481313765" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_02.sco">
+		<position x="1089.4557" y="99.9979" z="710.0034" />
+		<gameObject hash="751273512" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_03.sco">
+		<position x="1093.5990" y="99.9979" z="713.2143" />
+		<gameObject hash="1401388888" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_04.sco">
+		<position x="1095.9689" y="99.9979" z="710.3541" />
+		<gameObject hash="1503802022" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_05.sco">
+		<position x="1083.9420" y="99.9979" z="710.4666" />
+		<gameObject hash="3106988103" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_05.sco">
+		<position x="1085.8505" y="99.9979" z="708.0572" />
+		<gameObject hash="2759488984" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_06.sco">
+		<position x="1090.0654" y="99.9979" z="709.7710" />
+		<gameObject hash="2517472893" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_sign_08.sco">
+		<position x="1091.4420" y="99.9979" z="706.7996" />
+		<gameObject hash="1633172645" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/warehouse_box_l_01.sco">
+		<position x="1106.1825" y="99.9979" z="705.9664" />
+		<gameObject hash="473950414" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_dumpster_03.sco">
+		<position x="1098.5803" y="99.9979" z="704.2620" />
+		<gameObject hash="2823500653" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/warehouse_box_l_02.sco">
+		<position x="1105.2100" y="99.9979" z="712.0162" />
+		<gameObject hash="4104841653" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/warehouse_box_m_01.sco">
+		<position x="1109.8102" y="99.9979" z="710.6501" />
+		<gameObject hash="3838304887" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/warehouse_box_s_01.sco">
+		<position x="1101.9513" y="99.9979" z="710.0097" />
+		<gameObject hash="3871840760" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/warehouse_shelves_01.sco">
+		<position x="1101.6438" y="99.9979" z="714.5759" />
+		<gameObject hash="2814341213" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_boxes_02.sco">
+		<position x="1091.5898" y="99.9979" z="702.5474" />
+		<gameObject hash="336535049" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_boxes_01.sco">
+		<position x="1086.9517" y="99.9979" z="700.9264" />
+		<gameObject hash="2136051967" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/trash_boxes_03.sco">
+		<position x="1087.0857" y="99.9979" z="704.8503" />
+		<gameObject hash="876784585" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_propane_tank_02.sco">
+		<position x="1127.5265" y="99.9979" z="708.5408" />
+		<gameObject hash="1898528874" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townprops/bld_propane_tank_02_destroyed.sco">
+		<position x="1126.1215" y="99.9979" z="699.5043" />
+		<gameObject hash="1662893946" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_do_not_enter.sco">
+		<position x="1154.2491" y="99.9979" z="792.6592" />
+		<gameObject hash="3151223358" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_light_signal.sco">
+		<position x="1150.1382" y="99.9979" z="792.7165" />
+		<gameObject hash="971986173" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_parking_meter.sco">
+		<position x="1148.0767" y="99.9979" z="792.6954" />
+		<gameObject hash="1832290521" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_parking_meter.sco">
+		<position x="1146.7618" y="99.9979" z="792.6967" />
+		<gameObject hash="2656516743" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_handycap.sco">
+		<position x="1155.8324" y="99.9979" z="792.7830" />
+		<gameObject hash="185079569" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_noparking_01.sco">
+		<position x="1157.2699" y="99.9979" z="792.6730" />
+		<gameObject hash="3997924481" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_noparking_02.sco">
+		<position x="1158.8368" y="99.9979" z="792.7548" />
+		<gameObject hash="3302811875" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_noparking_03.sco">
+		<position x="1160.1654" y="99.9979" z="793.2889" />
+		<gameObject hash="1862723399" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_oneway.sco">
+		<position x="1161.5521" y="99.9979" z="793.3754" />
+		<gameObject hash="2973829778" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_rightlaneturn.sco">
+		<position x="1152.0573" y="99.9979" z="793.1110" />
+		<gameObject hash="1109509348" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_use_crosswalk.sco">
+		<position x="1162.9824" y="99.9979" z="793.4787" />
+		<gameObject hash="2315631419" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/traffic_sign_warning.sco">
+		<position x="1151.1205" y="99.9979" z="792.9693" />
+		<gameObject hash="1919396332" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane.sco">
+		<position x="897.1461" y="124.4528" z="674.9995" />
+		<gameObject hash="3347346173" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_half.sco">
+		<position x="865.3407" y="136.8564" z="680.2980" />
+		<gameObject hash="2698983001" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_rubble_pile_04_lrg.sco">
+		<position x="887.0494" y="124.4528" z="719.3962" />
+		<gameObject hash="3056316181" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_rubble_pile_03_med.sco">
+		<position x="901.7374" y="124.4528" z="711.7446" />
+		<gameObject hash="2195327284" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_rubble_pile_02_sml.sco">
+		<position x="904.0972" y="122.6347" z="729.5933" />
+		<gameObject hash="754921545" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_rubble_pile_02_lrg.sco">
+		<position x="888.4533" y="121.9970" z="743.7254" />
+		<gameObject hash="3450045767" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="0.0000" y="343.6603" z="0.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_rubble_pile_01.sco">
+		<position x="874.0246" y="124.4528" z="730.0573" />
+		<gameObject hash="1607616525" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/des_sidewalk_4_crnr_out.sco">
+		<position x="877.0442" y="124.4528" z="759.5735" />
+		<gameObject hash="106689463" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="865.4827" y="124.4528" z="768.2957" />
+		<gameObject hash="719917263" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_city_parking_2x2.sco">
+		<position x="894.6918" y="124.6713" z="762.5192" />
+		<gameObject hash="4218713214" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_t.sco">
+		<position x="843.8934" y="125.1079" z="725.4852" />
+		<gameObject hash="27173239" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_c.sco">
+		<position x="795.8140" y="124.4528" z="849.6009" />
+		<gameObject hash="599798024" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_i.sco">
+		<position x="840.6831" y="124.4528" z="850.3804" />
+		<gameObject hash="3858908441" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_sidestairs_01.sco">
+		<position x="848.3604" y="124.4528" z="934.4868" />
+		<gameObject hash="2989573840" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_t.sco">
+		<position x="883.6471" y="124.4528" z="898.6306" />
+		<gameObject hash="152288103" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_tosmall_t.sco">
+		<position x="883.3535" y="124.4528" z="850.0504" />
+		<gameObject hash="187291024" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_tosmall_x.sco">
+		<position x="928.3989" y="124.4528" z="898.9641" />
+		<gameObject hash="878786997" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_tunel_i.sco">
+		<position x="888.6011" y="124.4528" z="950.0156" />
+		<gameObject hash="3448653377" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_tunel_start.sco">
+		<position x="932.7662" y="124.4528" z="949.8935" />
+		<gameObject hash="3827796722" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_tunel_x.sco">
+		<position x="844.2616" y="124.4528" z="950.4598" />
+		<gameObject hash="2046999938" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_bigroad_x.sco">
+		<position x="798.7618" y="124.4528" z="949.7991" />
+		<gameObject hash="3262592206" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="820.4004" y="124.4528" z="771.8040" />
+		<gameObject hash="2716850032" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_park.sco">
+		<position x="774.7936" y="124.4528" z="768.9998" />
+		<gameObject hash="199171494" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_regular.sco">
+		<position x="730.0119" y="124.4528" z="768.1659" />
+		<gameObject hash="1609602832" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_city_parking_2x1.sco">
+		<position x="895.7967" y="124.4528" z="776.9598" />
+		<gameObject hash="1913994327" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_city_parking_1x1.sco">
+		<position x="892.0721" y="124.4528" z="787.5856" />
+		<gameObject hash="796549603" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cracked01.sco">
+		<position x="924.5735" y="124.4528" z="760.8234" />
+		<gameObject hash="3509119503" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_craterlarge_01.sco">
+		<position x="912.8723" y="124.4528" z="744.3936" />
+		<gameObject hash="4273083520" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cratermed_01.sco">
+		<position x="916.7601" y="124.4528" z="732.6043" />
+		<gameObject hash="286076483" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway.sco">
+		<position x="691.1204" y="124.4528" z="768.2570" />
+		<gameObject hash="3400111891" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2-3_lane_transition_01.sco">
+		<position x="706.1538" y="124.4528" z="806.6162" />
+		<gameObject hash="629551850" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane.sco">
+		<position x="705.8073" y="124.4528" z="840.9897" />
+		<gameObject hash="2322669119" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane_2x_str.sco">
+		<position x="669.1044" y="124.4528" z="852.4590" />
+		<gameObject hash="1389040790" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane_2x_str_bottom.sco">
+		<position x="663.4750" y="124.4528" z="889.5359" />
+		<gameObject hash="2826950890" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane_2x_str_top.sco">
+		<position x="654.2357" y="124.4528" z="914.1974" />
+		<gameObject hash="2016690303" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane_half.sco">
+		<position x="699.9935" y="124.4528" z="878.5580" />
+		<gameObject hash="1247838575" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2lane_turn.sco">
+		<position x="698.8158" y="124.4528" z="916.1558" />
+		<gameObject hash="1777126108" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2x.sco">
+		<position x="634.2623" y="124.4528" z="861.1250" />
+		<gameObject hash="1840660508" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2x_str.sco">
+		<position x="594.8799" y="124.4528" z="844.1431" />
+		<gameObject hash="4171687522" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2x_str_bottom.sco">
+		<position x="558.2858" y="124.4528" z="853.7969" />
+		<gameObject hash="3990156989" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_2x_str_top.sco">
+		<position x="558.4542" y="124.4528" z="824.7747" />
+		<gameObject hash="621998325" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_cross.sco">
+		<position x="557.7582" y="124.4528" z="798.8936" />
+		<gameObject hash="2577388457" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit.sco">
+		<position x="597.3038" y="124.4528" z="913.3151" />
+		<gameObject hash="948043803" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_2x.sco">
+		<position x="545.7932" y="124.4528" z="911.2125" />
+		<gameObject hash="2604734686" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_block.sco">
+		<position x="530.2465" y="124.4528" z="845.6479" />
+		<gameObject hash="702223126" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_radial.sco">
+		<position x="485.0628" y="124.4528" z="754.4133" />
+		<gameObject hash="3592302341" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_radial_2x.sco">
+		<position x="570.1611" y="124.4528" z="698.8920" />
+		<gameObject hash="2487602494" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_turn.sco">
+		<position x="497.0557" y="124.4528" z="849.3582" />
+		<gameObject hash="2156025422" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_exit_turn_up.sco">
+		<position x="488.7034" y="124.4528" z="900.0042" />
+		<gameObject hash="1797043614" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_foot.sco">
+		<position x="491.8130" y="124.4528" z="816.5031" />
+		<gameObject hash="1019218009" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_foot_2x.sco">
+		<position x="486.4385" y="124.4528" z="803.5624" />
+		<gameObject hash="3677969388" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_freeway_half.sco">
+		<position x="654.4872" y="124.4528" z="950.8824" />
+		<gameObject hash="761326198" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_c.sco">
+		<position x="923.6918" y="124.4528" z="1002.0556" />
+		<gameObject hash="3160022095" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_c_invert.sco">
+		<position x="880.6765" y="124.4528" z="1001.7390" />
+		<gameObject hash="2615693864" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="836.5317" y="124.4528" z="1002.2681" />
+		<gameObject hash="1479464673" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i_end.sco">
+		<position x="803.7819" y="124.4528" z="1002.2395" />
+		<gameObject hash="3588362371" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i_ramp8.sco">
+		<position x="779.2280" y="124.4528" z="1001.2131" />
+		<gameObject hash="2201292697" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_t.sco">
+		<position x="741.2865" y="124.4528" z="999.6614" />
+		<gameObject hash="3493497028" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_x.sco">
+		<position x="923.2139" y="124.4528" z="1046.4103" />
+		<gameObject hash="2718854469" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_c.sco">
+		<position x="883.1924" y="124.4528" z="1060.0924" />
+		<gameObject hash="1625029542" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_c_invert.sco">
+		<position x="837.9451" y="124.4528" z="1058.7632" />
+		<gameObject hash="469068438" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_i.sco">
+		<position x="801.3291" y="124.4528" z="1065.3990" />
+		<gameObject hash="2725228884" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_i_half.sco">
+		<position x="807.4343" y="124.4528" z="1046.7686" />
+		<gameObject hash="1837553114" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_i_quarter.sco">
+		<position x="784.4066" y="124.4528" z="1046.5720" />
+		<gameObject hash="1972957246" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_t.sco">
+		<position x="755.3823" y="124.4528" z="1065.8654" />
+		<gameObject hash="677420817" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_townroad_x.sco">
+		<position x="708.4834" y="124.4528" z="1064.4939" />
+		<gameObject hash="1814502131" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_trainu_down.sco">
+		<position x="658.6204" y="124.4528" z="1064.6337" />
+		<gameObject hash="1219935934" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_trainu_regular.sco">
+		<position x="636.9500" y="124.4528" z="1042.3577" />
+		<gameObject hash="3222088906" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_trainu_turn.sco">
+		<position x="607.6207" y="124.4528" z="1045.3656" />
+		<gameObject hash="2379456774" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_01.sco">
+		<position x="1187.3762" y="99.9979" z="770.8170" />
+		<gameObject hash="608952151" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_01_rust.sco">
+		<position x="1187.1473" y="99.9979" z="766.9475" />
+		<gameObject hash="3100539064" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_02.sco">
+		<position x="1187.3021" y="99.9979" z="762.4190" />
+		<gameObject hash="3663735449" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_02_rust.sco">
+		<position x="1186.8042" y="99.9979" z="758.3152" />
+		<gameObject hash="3868293570" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_03.sco">
+		<position x="1186.5754" y="99.9979" z="754.1301" />
+		<gameObject hash="3214718623" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_03_rust.sco">
+		<position x="1186.5162" y="99.9979" z="750.0665" />
+		<gameObject hash="2056063998" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_04_damaged_01.sco">
+		<position x="1186.8136" y="99.9979" z="745.9137" />
+		<gameObject hash="2987986709" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_04_hatchback_01.sco">
+		<position x="1186.7892" y="99.9979" z="741.6386" />
+		<gameObject hash="3709714648" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_04_sedan_01.sco">
+		<position x="1187.1899" y="99.9979" z="737.4614" />
+		<gameObject hash="4063445379" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_04_universal_01.sco">
+		<position x="1187.1208" y="99.9979" z="733.4017" />
+		<gameObject hash="355858115" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_car_04_van_01.sco">
+		<position x="1187.1323" y="99.9979" z="729.4022" />
+		<gameObject hash="2677191390" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_const_backhoe_01.sco">
+		<position x="1187.3582" y="99.9979" z="724.5056" />
+		<gameObject hash="1933303326" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_ford_econoline_van_01.sco">
+		<position x="1186.7285" y="99.9979" z="719.9062" />
+		<gameObject hash="130422754" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/vehicles/static_ford_econoline_van_01_dmg.sco">
+		<position x="1187.0825" y="99.9979" z="714.7129" />
+		<gameObject hash="2637937711" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/pose_test/hero_man_02_pose.sco">
+		<position x="1185.6713" y="102.5989" z="737.1298" />
+		<gameObject hash="708090623" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="102.3408" y="15.2372" z="0.6238" />
+		</gameObject>
+		<building AnimName="man_sit_drive_01.anm" Animated="1" />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_01.sco">
+		<position x="1128.5032" y="99.9979" z="764.7167" />
+		<gameObject hash="2730512528" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_02.sco">
+		<position x="1129.4299" y="99.9979" z="764.7228" />
+		<gameObject hash="1608568049" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_03.sco">
+		<position x="1128.9133" y="100.1504" z="766.5764" />
+		<gameObject hash="3643775601" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_04.sco">
+		<position x="1130.4602" y="99.9979" z="766.7501" />
+		<gameObject hash="1362986866" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_05.sco">
+		<position x="1130.5970" y="99.9979" z="765.0997" />
+		<gameObject hash="933553641" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_06.sco">
+		<position x="1131.7518" y="99.9979" z="767.4299" />
+		<gameObject hash="3798002903" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_bigstack_01.sco">
+		<position x="1134.8606" y="99.9979" z="767.6402" />
+		<gameObject hash="4025205999" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_military/mil_crate_smallstack_01.sco">
+		<position x="1133.7432" y="99.9979" z="765.2701" />
+		<gameObject hash="1562942052" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_10x10.sco">
+		<position x="1440.2279" y="104.2442" z="286.1490" />
+		<gameObject hash="2258821596" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true">
+			<scale x="8.4220" y="2.1063" z="1.0000" />
+		</gameObject>
+		<mesh color.r="18" color.g="22" color.b="20" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_10x10.sco">
+		<position x="1436.3381" y="104.2442" z="342.3018" />
+		<gameObject hash="1910386355" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<scale x="5.2641" y="2.1063" z="1.0536" />
+		</gameObject>
+		<mesh color.r="18" color.g="22" color.b="20" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_10x10.sco">
+		<position x="1468.3201" y="104.2442" z="318.3285" />
+		<gameObject hash="2863734115" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true">
+			<scale x="1.0000" y="2.1063" z="6.3168" />
+		</gameObject>
+		<mesh color.r="18" color.g="22" color.b="20" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_10x10.sco">
+		<position x="1437.7615" y="95.1258" z="314.6485" />
+		<gameObject hash="3302080034" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<scale x="5.2641" y="1.0536" z="5.2641" />
+		</gameObject>
+		<mesh color.r="18" color.g="22" color.b="20" />
+		<building />
+	</object>
+	<object className="obj_LightHelper" fileName="Omni">
+		<position x="1434.3318" y="114.0257" z="311.8203" />
+		<gameObject hash="2422285846" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<lightHelper outerRadius="3" innerRadius="0" color_r="45" color_g="64" color_b="92" intensity="10.5263" diffuse_only="0" casts_shadows="0" frozen_shadows="0" frozen_shadows_size="128" sssb="0" global_sssb="1" sssb_bias="0.22" sssb_physrange="512" sssb_radius="1.25" sssb_sense="32">
+			<on val="0" />
+			<distortion val="0.33" />
+			<power val="1" />
+			<scale val="1" />
+			<ambient val="0" />
+			<translucency r="255" g="255" b="255" a="127" />
+		</lightHelper>
+	</object>
+	<object className="obj_LightHelper" fileName="Omni">
+		<position x="1436.6316" y="115.0257" z="310.4203" />
+		<gameObject hash="32258923" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<lightHelper outerRadius="3" innerRadius="0" color_r="197" color_g="65" color_b="0" intensity="2.02105" diffuse_only="0" casts_shadows="1" frozen_shadows="0" frozen_shadows_size="128" sssb="0" global_sssb="1" sssb_bias="0.22" sssb_physrange="512" sssb_radius="1.25" sssb_sense="32">
+			<on val="0" />
+			<distortion val="0.33" />
+			<power val="1" />
+			<scale val="1" />
+			<ambient val="0" />
+			<translucency r="255" g="255" b="255" a="127" />
+		</lightHelper>
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_cityprops/firehydrant_01.sco">
+		<position x="1435.9879" y="113.1777" z="312.0058" />
+		<gameObject hash="3774807445" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1029.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="1586794406" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1029.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="3421519296" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1069.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="148766719" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1069.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="3586446454" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1109.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="1661985982" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1149.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="1401064667" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1189.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="4068781293" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1229.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="3444161485" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1269.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="2931101165" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1309.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="2571877359" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1349.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="3092221847" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1389.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="3241989030" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1429.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="2331205450" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_smallroad_i.sco">
+		<position x="1469.0703" y="103.4455" z="944.0884" />
+		<gameObject hash="1232471073" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1109.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="2466743532" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1149.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="1700275075" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1189.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="1456668003" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1229.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="2321120382" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1269.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="2999477417" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1309.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="640506675" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1349.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="1624819624" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1389.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="2322656602" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1429.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="4211688697" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1469.0703" y="103.4455" z="984.0884" />
+		<gameObject hash="2192815349" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1029.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="2694229790" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1069.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="3384897467" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1109.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="1921802121" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1149.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="1848297603" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1189.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="2298493785" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1229.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="2161220845" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1269.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="2989723690" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1309.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="1878311365" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1349.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="3216999063" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1389.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="2506075402" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1429.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="3895260395" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1469.0703" y="103.4455" z="1024.0884" />
+		<gameObject hash="1491032292" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1029.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="909159931" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1069.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="2399056586" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1109.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="696145205" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1149.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="3406380103" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1189.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="4044759691" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1229.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="3442522280" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1269.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="677775233" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1309.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="3951467075" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1349.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="2933378371" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1389.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="2489793447" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1429.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="1526755647" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_citystreets/wz_cityblock_plaza.sco">
+		<position x="1469.0703" y="112.4455" z="1052.0884" />
+		<gameObject hash="180286001" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_LightHelper" fileName="Omni">
+		<position x="1345.8914" y="102.1365" z="690.9646" />
+		<gameObject hash="3764804058" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<lightHelper outerRadius="15.7895" innerRadius="0" color_r="255" color_g="255" color_b="255" intensity="6.82105" diffuse_only="0" casts_shadows="1" frozen_shadows="0" frozen_shadows_size="128" sssb="0" global_sssb="1" sssb_bias="0.22" sssb_physrange="512" sssb_radius="1.25" sssb_sense="32">
+			<on val="0" />
+			<distortion val="0.33" />
+			<power val="1" />
+			<scale val="1" />
+			<ambient val="0" />
+			<translucency r="255" g="255" b="255" a="127" />
+		</lightHelper>
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/test_objs/cry_tree_04_grp.sco">
+		<position x="1116.4601" y="99.9968" z="562.4827" />
+		<gameObject hash="4251824230" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gasstation_02_main_01.sco">
+		<position x="1228.9829" y="99.9968" z="741.8234" />
+		<gameObject hash="1079072235" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/gasstation_02_garage_01.sco">
+		<position x="1225.2168" y="99.9968" z="720.2724" />
+		<gameObject hash="337144206" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/mel_hammer_fps.sco">
+		<position x="1462.1125" y="101.5658" z="727.8574" />
+		<gameObject hash="4069901540" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/mel_pickaxe_fps.sco">
+		<position x="1464.7493" y="101.5658" z="727.8237" />
+		<gameObject hash="3712810252" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/mel_hammer.sco">
+		<position x="1468.8431" y="100.9781" z="727.1367" />
+		<gameObject hash="3345568054" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/mel_pickaxe.sco">
+		<position x="1470.1525" y="100.9781" z="727.2841" />
+		<gameObject hash="647411492" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/exp_flare.sco">
+		<position x="1466.8298" y="100.4396" z="727.1865" />
+		<gameObject hash="3201970043" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/weapons/mel_baseballbat_spikes_01_fps.sco">
+		<position x="1469.3236" y="100.9144" z="730.2182" />
+		<gameObject hash="3310909291" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+</level>

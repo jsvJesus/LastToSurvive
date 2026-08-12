@@ -1,0 +1,25 @@
+[MaterialBegin]
+Name= MEL_Pickaxe
+Flags= _unused_
+SpecularPower= 0.47
+Specular1Power= 0.50
+ReflectionPower= 0.47
+DoubleSided= 0
+Color24= 255 255 255
+DetailScale= 10.00
+DetailAmmount= 0.30
+displace= 0
+displ_val= 0.100
+ForceTransparent= 0
+AlphaTransparent= 0
+Camouflage= 0
+lowQSelfIllum= 0.00
+lowQMetallness= 0.00
+SelfIllumMultiplier=0.0000
+Type= Metal
+ImagesDir= data/objectsdepot/weapons/Textures
+Texture= mel_pickaxe_d.dds
+NormalMap= mel_pickaxe_n.dds
+SpecularMap= mel_pickaxe_s.dds
+[MaterialEnd]
+

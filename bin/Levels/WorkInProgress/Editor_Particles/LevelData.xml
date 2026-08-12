@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="-0.6300" z="0.3300" />
+		<gameObject hash="291801431" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="5.4900" y="0.0000" z="-0.4200" />
+		<gameObject hash="2482012273" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="-0.4400" y="0.0000" z="-6.1700" />
+		<gameObject hash="2891717312" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="0.3600" y="0.0000" z="4.7400" />
+		<gameObject hash="1395767658" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="-6.6400" y="0.0000" z="-0.3100" />
+		<gameObject hash="2899630323" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_10x10.sco">
+		<position x="-5.3577" y="-0.6300" z="13.1800" />
+		<gameObject hash="94494465" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+</level>

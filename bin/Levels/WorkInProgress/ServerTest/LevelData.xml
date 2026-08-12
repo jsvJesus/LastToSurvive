@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="-0.6290" z="0.3270" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_EnvmapProbe" fileName="__envmap_probe">
+		<position x="-217.6439" y="5.8071" z="-173.3823" />
+		<gameObject hash="3977655724" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true" />
+		<envmapProbe radius="150" infRadius="1" id="1" edge="128" />
+	</object>
+	<object className="obj_PlayerSpawnPoint" fileName="data/objectsdepot/capture_points/flag_pole_01.sco">
+		<position x="43.2148" y="-0.6290" z="-69.8410" />
+		<gameObject hash="454620118" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<baseControlPoint spawnType="0" numSpawnPoints="3">
+			<point0 x="52.3911" y="-0.629002" z="-54.7428" dir="0" />
+			<point1 x="23.7847" y="-0.629005" z="-79.4835" dir="0" />
+			<point2 x="19.359" y="-0.629005" z="-51.9125" dir="0" />
+		</baseControlPoint>
+	</object>
+	<object className="obj_ItemSpawnPoint" fileName="data/objectsdepot/capture_points/flag_pole_01.sco">
+		<position x="-30.1731" y="-0.6290" z="16.4678" />
+		<gameObject hash="2058135164" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<BaseItemSpawnPoint m_TickPeriod="1" m_Cooldown="1" m_LootBoxID="301121" m_OneItemSpawn="false" numPoints="4">
+			<point0 x="-26.7073" y="-0.263567" z="17.9472" />
+			<point1 x="-26.8947" y="-0.447222" z="17.2536" />
+			<point2 x="-26.5108" y="-0.257528" z="17.4271" />
+			<point3 x="-33.4902" y="-0.394917" z="19.329" />
+		</BaseItemSpawnPoint>
+	</object>
+	<object className="obj_PlayerSpawnPoint" fileName="data/objectsdepot/capture_points/flag_pole_01.sco">
+		<position x="46.6936" y="-0.6290" z="73.1807" />
+		<gameObject hash="2009230462" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<baseControlPoint spawnType="0" numSpawnPoints="3">
+			<point0 x="46.0088" y="-0.629005" z="52.4853" dir="0" />
+			<point1 x="21.4657" y="-0.629009" z="74.6521" dir="0" />
+			<point2 x="24.3728" y="-0.629005" z="50.0523" dir="0" />
+		</baseControlPoint>
+	</object>
+	<object className="obj_PlayerSpawnPoint" fileName="data/objectsdepot/capture_points/flag_pole_01.sco">
+		<position x="-77.3334" y="-0.6290" z="7.5273" />
+		<gameObject hash="847214558" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<baseControlPoint spawnType="1" numSpawnPoints="3">
+			<point0 x="-9.26553" y="-0.629004" z="-4.40897" dir="0" />
+			<point1 x="-3.66145" y="-0.629005" z="-4.05613" dir="0" />
+			<point2 x="-3.71156" y="-0.629005" z="2.49517" dir="0" />
+		</baseControlPoint>
+	</object>
+	<object className="obj_PostBox" fileName="data/objectsdepot/wz_settlement/itemdrop_postalbox.sco">
+		<position x="-6.3540" y="-0.4148" z="-1.4005" />
+		<gameObject hash="502959040" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<post_box>
+			<useRadius val="15" />
+		</post_box>
+	</object>
+	<object className="obj_ZombieSpawn" fileName="ZombieSpawn">
+		<position x="-36.5148" y="-0.6290" z="38.0191" />
+		<gameObject hash="4086720221" PhysEnable="false" MinQuality="1" BulletPierceable="0" />
+		<spawn_parameters numZombieSelected="1">
+			<spawn_radius val="20" />
+			<max_zombies val="10" />
+			<sleepers_rate val="0" />
+			<zombies_spawn_delay val="1" />
+			<min_detection_radius val="1" />
+			<max_detection_radius val="1" />
+			<lootBoxID val="301136" />
+			<fastZombieChance val="50" />
+			<speedVariation val="5" />
+			<z0 id="20190" />
+		</spawn_parameters>
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/sphere01.sco">
+		<position x="-35.8569" y="3.1651" z="37.8567" />
+		<gameObject hash="3123068000" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/wz_townbuildings/des_bld_shop_01.sco">
+		<position x="-48.1230" y="-1.0211" z="31.3972" />
+		<gameObject hash="3424181006" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="-43.2952" y="-0.6290" z="13.2390" />
+		<gameObject hash="3931268382" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box_1x1.sco">
+		<position x="-40.2346" y="-0.6290" z="13.2504" />
+		<gameObject hash="4178092007" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/box2.sco">
+		<position x="-24.7419" y="-0.6290" z="18.8930" />
+		<gameObject hash="3848530433" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+</level>
