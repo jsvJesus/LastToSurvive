@@ -1682,7 +1682,7 @@ namespace lts::editor
             pipelineDescription.depthStencil.depthEnable = true;
             pipelineDescription.depthStencil.depthWriteEnable = true;
             pipelineDescription.depthStencil.depthFunction =
-                engine::graphics::ComparisonFunction::LessEqual;
+                engine::graphics::ComparisonFunction::GreaterEqual;
 
             graphicsResult =
                 device.CreateGraphicsPipeline(
@@ -1856,7 +1856,7 @@ namespace lts::editor
             brushPipelineDescription.depthStencil.depthEnable = true;
             brushPipelineDescription.depthStencil.depthWriteEnable = false;
             brushPipelineDescription.depthStencil.depthFunction =
-                engine::graphics::ComparisonFunction::LessEqual;
+                engine::graphics::ComparisonFunction::GreaterEqual;
 
             graphicsResult =
                 device.CreateGraphicsPipeline(

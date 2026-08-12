@@ -532,7 +532,7 @@ namespace lts::editor
 
         pipelineDescription.depthStencil.depthFunction =
             engine::graphics::
-                ComparisonFunction::LessEqual;
+                ComparisonFunction::GreaterEqual;
 
         pipelineDescription.debugName =
             "EditorGrid.Pipeline";

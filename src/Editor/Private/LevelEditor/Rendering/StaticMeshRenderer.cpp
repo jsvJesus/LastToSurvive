@@ -1551,7 +1551,7 @@ namespace lts::editor
                 true;
 
             pipelineDescription.depthStencil.depthFunction =
-                engine::graphics::ComparisonFunction::LessEqual;
+                engine::graphics::ComparisonFunction::GreaterEqual;
 
             pipelineDescription.debugName =
                 "EditorStaticMesh.Pipeline";

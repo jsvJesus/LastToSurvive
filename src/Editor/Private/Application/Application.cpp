@@ -3329,12 +3329,14 @@ namespace lts::editor
 
             if (!engine::graphics::Failed(result))
             {
-                result = commandContext_->ClearDepthStencilTarget(
-                    depthStencil_,
-                    engine::graphics::ClearDepthStencilFlags::Depth |
-                    engine::graphics::ClearDepthStencilFlags::Stencil,
-                    1.0F,
-                    0U);
+                result =
+                    commandContext_->
+                        ClearDepthStencilTarget(
+                            depthStencil_,
+                            engine::graphics::
+                                ClearDepthStencilFlags::Depth,
+                            0.0F,
+                            0U);
             }
 
             DirectX::XMFLOAT4X4 viewProjection{};
@@ -3583,7 +3585,7 @@ namespace lts::editor
         depthDescription.sampleCount = 1;
 
         depthDescription.format =
-            engine::graphics::Format::D24UNormS8UInt;
+            engine::graphics::Format::D32Float;
 
         depthDescription.usage =
             engine::graphics::ResourceUsage::Default;

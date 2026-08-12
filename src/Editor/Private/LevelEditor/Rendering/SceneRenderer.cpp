@@ -1566,7 +1566,7 @@ namespace lts::editor
         pipelineDescription.depthStencil.depthEnable = true;
         pipelineDescription.depthStencil.depthWriteEnable = false;
         pipelineDescription.depthStencil.depthFunction =
-            engine::graphics::ComparisonFunction::LessEqual;
+            engine::graphics::ComparisonFunction::GreaterEqual;
 
         pipelineDescription.debugName =
             "EditorSceneRenderer.Pipeline";

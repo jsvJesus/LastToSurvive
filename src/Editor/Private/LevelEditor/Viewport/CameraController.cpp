@@ -329,12 +329,27 @@ namespace lts::editor
                 forward,
                 up);
 
+        /*
+         * Reverse-Z:
+         * физическая near plane = 0.1,
+         * физическая far plane = 2000.
+         *
+         * DirectXMath создаёт reverse-Z projection,
+         * когда NearZ передаётся больше FarZ.
+        */
+        constexpr float PhysicalNearPlane =
+            0.1F;
+
+        constexpr float PhysicalFarPlane =
+            2000.0F;
+
         const DirectX::XMMATRIX projection =
             DirectX::XMMatrixPerspectiveFovLH(
-                DirectX::XMConvertToRadians(60.0F),
+                DirectX::XMConvertToRadians(
+                    60.0F),
                 aspectRatio,
-                0.1F,
-                2000.0F);
+                PhysicalFarPlane,
+                PhysicalNearPlane);
 
         const DirectX::XMMATRIX viewProjection =
             DirectX::XMMatrixMultiply(

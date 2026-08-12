@@ -682,12 +682,9 @@ namespace
                         depthBuffer_,
                         engine::graphics::
                             ClearDepthStencilFlags::
-                                Depth |
-                        engine::graphics::
-                            ClearDepthStencilFlags::
-                                Stencil,
-                        1.0f,
-                        0);
+                                Depth,
+                        0.0F,
+                        0U);
 
             if (engine::graphics::Failed(
                     result))
@@ -828,9 +825,7 @@ namespace
             depthDesc.width = width;
             depthDesc.height = height;
 
-            depthDesc.format =
-                engine::graphics::
-                    Format::D24UNormS8UInt;
+            depthDesc.format = engine::graphics::Format::D32Float;
 
             depthDesc.bindFlags =
                 engine::graphics::
