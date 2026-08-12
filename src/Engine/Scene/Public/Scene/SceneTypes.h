@@ -152,10 +152,10 @@ namespace engine::scene
     /*
      * Generic static mesh component.
      *
-     * assetPath РґРѕР»Р¶РµРЅ СЃСЃС‹Р»Р°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ РЅР° РЅРѕРІС‹Р№
-     * СЂРµСЃСѓСЂСЃ, СЃРѕР·РґР°РЅРЅС‹Р№ FbxStaticMeshImporter.
+     * assetPath должен ссылаться только на новый
+     * ресурс, созданный FbxStaticMeshImporter.
      *
-     * РќРёРєР°РєРѕР№ WarZ geometry/skeleton Р»РѕРіРёРєРё Р·РґРµСЃСЊ РЅРµС‚.
+     * Никакой WarZ geometry/skeleton логики здесь нет.
      */
     struct StaticMeshComponent final
     {

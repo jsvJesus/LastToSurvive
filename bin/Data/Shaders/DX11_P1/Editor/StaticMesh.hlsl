@@ -26,6 +26,8 @@ cbuffer ObjectBuffer : register(b0)
     float4 LegacyFeatureFlags;
     // x = world-space offset along the geometric normal.
     float4 GeometryParameters;
+    float4 WaterParameters;
+    float4 WaterAppearance;
 };
 
 Texture2D BaseColorTexture : register(t0);

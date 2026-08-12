@@ -39,9 +39,16 @@ namespace studio::editor
 {
     namespace
     {
-        constexpr std::uint32_t ScbSignature = 0xFADC0038U;
-        constexpr std::size_t MaximumReportedErrors = 12U;
-        constexpr wchar_t GeneratedSurfaceDirectory[] = L"LevelGeneratedV2";
+        constexpr std::uint32_t ScbSignature =
+            0xFADC0038U;
+
+        constexpr std::size_t MaximumReportedErrors =
+            12U;
+
+        constexpr wchar_t GeneratedSurfaceDirectory[] =
+            L"LevelGeneratedV3";
+
+        constexpr std::size_t MinimumWaterRegionCells = 64U;
 
         struct MeshReference final
         {
@@ -1189,7 +1196,7 @@ namespace studio::editor
                 L"Data" /
                 L"Data" /
                 L"StaticMeshes" /
-                GeneratedSurfaceDirectory  /
+                GeneratedSurfaceDirectory /
                 levelRoot.filename() /
                 category /
                 filename;
@@ -1787,7 +1794,10 @@ namespace studio::editor
                     settings.attribute("waterColorTile"),
                     0.05F);
             const int coastSmoothLevels =
-                    settings.attribute("coastsmoothlevels") ? settings.attribute("coastsmoothlevels").as_int() : 0;
+                settings.attribute("coastsmoothlevels")
+                    ? settings.attribute(
+                        "coastsmoothlevels").as_int()
+                    : 0;
 
             if (
                 !std::isfinite(waterHeight) ||
@@ -1863,6 +1873,95 @@ namespace studio::editor
                 return false;
             }
 
+            std::vector<std::uint8_t> visited(grid.size(), 0U);
+
+            for (
+                std::uint32_t startZ = 0U;
+                startZ < height;
+                ++startZ)
+            {
+                for (
+                    std::uint32_t startX = 0U;
+                    startX < width;
+                    ++startX)
+                {
+                    const std::size_t startIndex =
+                        static_cast<std::size_t>(startZ) * width +
+                        startX;
+
+                    if (
+                        grid[startIndex] == 0U ||
+                        visited[startIndex] != 0U)
+                    {
+                        continue;
+                    }
+
+                    std::vector<std::size_t> region;
+                    std::vector<std::size_t> pending;
+                    pending.push_back(startIndex);
+                    visited[startIndex] = 1U;
+
+                    while (!pending.empty())
+                    {
+                        const std::size_t index = pending.back();
+                        pending.pop_back();
+                        region.push_back(index);
+
+                        const std::uint32_t x =
+                            static_cast<std::uint32_t>(index % width);
+                        const std::uint32_t z =
+                            static_cast<std::uint32_t>(index / width);
+
+                        const auto visit =
+                            [&](const std::uint32_t neighborX,
+                                const std::uint32_t neighborZ)
+                            {
+                                const std::size_t neighborIndex =
+                                    static_cast<std::size_t>(neighborZ) *
+                                        width +
+                                    neighborX;
+
+                                if (
+                                    grid[neighborIndex] == 0U ||
+                                    visited[neighborIndex] != 0U)
+                                {
+                                    return;
+                                }
+
+                                visited[neighborIndex] = 1U;
+                                pending.push_back(neighborIndex);
+                            };
+
+                        if (x > 0U)
+                        {
+                            visit(x - 1U, z);
+                        }
+                        if (x + 1U < width)
+                        {
+                            visit(x + 1U, z);
+                        }
+                        if (z > 0U)
+                        {
+                            visit(x, z - 1U);
+                        }
+                        if (z + 1U < height)
+                        {
+                            visit(x, z + 1U);
+                        }
+                    }
+
+                    if (region.size() >= MinimumWaterRegionCells)
+                    {
+                        continue;
+                    }
+
+                    for (const std::size_t index : region)
+                    {
+                        grid[index] = 0U;
+                    }
+                }
+            }
+
             const std::size_t activeCellCount =
                 static_cast<std::size_t>(
                     std::count_if(
@@ -1920,12 +2019,9 @@ namespace studio::editor
                     std::array<float, 2U> point
                     {
                         offsetX +
-                            static_cast<float>(gridX) *
-                                cellSize,
-
+                            static_cast<float>(gridX) * cellSize,
                         offsetZ +
-                            static_cast<float>(gridZ) *
-                                cellSize
+                            static_cast<float>(gridZ) * cellSize
                     };
 
                     if (coastSmoothAmount <= 0.0F)
@@ -1935,25 +2031,18 @@ namespace studio::editor
 
                     float centerSumX = 0.0F;
                     float centerSumZ = 0.0F;
-
                     std::uint32_t activeCount = 0U;
 
                     for (const std::int32_t cellZ :
                         {
-                            static_cast<std::int32_t>(
-                                gridZ) - 1,
-
-                            static_cast<std::int32_t>(
-                                gridZ)
+                            static_cast<std::int32_t>(gridZ) - 1,
+                            static_cast<std::int32_t>(gridZ)
                         })
                     {
                         for (const std::int32_t cellX :
                             {
-                                static_cast<std::int32_t>(
-                                    gridX) - 1,
-
-                                static_cast<std::int32_t>(
-                                    gridX)
+                                static_cast<std::int32_t>(gridX) - 1,
+                                static_cast<std::int32_t>(gridX)
                             })
                         {
                             if (!isActiveCell(cellX, cellZ))
@@ -1963,28 +2052,16 @@ namespace studio::editor
 
                             centerSumX +=
                                 offsetX +
-                                (
-                                    static_cast<float>(cellX) +
-                                    0.5F
-                                ) *
-                                cellSize;
-
+                                (static_cast<float>(cellX) + 0.5F) *
+                                    cellSize;
                             centerSumZ +=
                                 offsetZ +
-                                (
-                                    static_cast<float>(cellZ) +
-                                    0.5F
-                                ) *
-                                cellSize;
-
+                                (static_cast<float>(cellZ) + 0.5F) *
+                                    cellSize;
                             ++activeCount;
                         }
                     }
 
-                    /*
-                     * Внутренние вершины не перемещаем.
-                     * Двигаются только вершины береговой линии.
-                     */
                     if (
                         activeCount == 0U ||
                         activeCount == 4U)
@@ -1995,22 +2072,50 @@ namespace studio::editor
                     const float inverseCount =
                         1.0F /
                         static_cast<float>(activeCount);
-
                     const float targetX =
                         centerSumX * inverseCount;
-
                     const float targetZ =
                         centerSumZ * inverseCount;
 
                     point[0] +=
                         (targetX - point[0]) *
                         coastSmoothAmount;
-
                     point[1] +=
                         (targetZ - point[1]) *
                         coastSmoothAmount;
 
                     return point;
+                };
+
+            const auto coastFactor =
+                [&](const std::uint32_t gridX,
+                    const std::uint32_t gridZ) noexcept
+                {
+                    std::uint32_t activeCount = 0U;
+
+                    for (const std::int32_t cellZ :
+                        {
+                            static_cast<std::int32_t>(gridZ) - 1,
+                            static_cast<std::int32_t>(gridZ)
+                        })
+                    {
+                        for (const std::int32_t cellX :
+                            {
+                                static_cast<std::int32_t>(gridX) - 1,
+                                static_cast<std::int32_t>(gridX)
+                            })
+                        {
+                            if (isActiveCell(cellX, cellZ))
+                            {
+                                ++activeCount;
+                            }
+                        }
+                    }
+
+                    return
+                        activeCount < 4U
+                            ? 1.0F
+                            : 0.0F;
                 };
 
             for (
@@ -2027,46 +2132,44 @@ namespace studio::editor
                     {
                         continue;
                     }
-                    
-                    const std::uint32_t firstVertex = static_cast<std::uint32_t>(vertices.size());
-                    for (const std::array<float, 2U>& position :
+
+                    const std::uint32_t firstVertex =
+                        static_cast<std::uint32_t>(vertices.size());
+
+                    for (const std::array<std::uint32_t, 2U>& coordinate :
                         {
-                            gridPoint(x, z),
-                            gridPoint(x, z + 1U),
-                            gridPoint(x + 1U, z + 1U),
-                            gridPoint(x + 1U, z)
+                            std::array<std::uint32_t, 2U>{x, z},
+                            std::array<std::uint32_t, 2U>{x, z + 1U},
+                            std::array<std::uint32_t, 2U>{x + 1U, z + 1U},
+                            std::array<std::uint32_t, 2U>{x + 1U, z}
                         })
                     {
+                        const std::array<float, 2U> position =
+                            gridPoint(
+                                coordinate[0],
+                                coordinate[1]);
                         engine::assets::StaticMeshVertex vertex;
-
                         vertex.position =
                         {
                             position[0] - centerX,
                             0.0F,
                             position[1] - centerZ
                         };
-
-                        vertex.normal =
-                        {
-                            0.0F,
-                            1.0F,
-                            0.0F
-                        };
-
+                        vertex.normal = {0.0F, 1.0F, 0.0F};
                         vertex.tangent =
                         {
                             1.0F,
                             0.0F,
                             0.0F,
-                            1.0F
+                            coastFactor(
+                                coordinate[0],
+                                coordinate[1])
                         };
-
                         vertex.texcoord0 =
                         {
                             position[0] * textureScale,
                             position[1] * textureScale
                         };
-
                         vertices.push_back(vertex);
                     }
 
@@ -2076,7 +2179,6 @@ namespace studio::editor
                             firstVertex,
                             firstVertex + 1U,
                             firstVertex + 2U,
-
                             firstVertex,
                             firstVertex + 2U,
                             firstVertex + 3U

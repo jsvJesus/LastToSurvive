@@ -241,8 +241,8 @@ namespace studio::editor
                 }
 
                 /*
-                 * РЎС‚Р°СЂС‹Рµ .terrain РјРѕРіСѓС‚ РЅРµ РёРјРµС‚СЊ Terrain.ini.
-                 * Р”Р»СЏ РЅРёС… СЃРѕС…СЂР°РЅСЏРµРј РїСЂРµР¶РЅРёР№ transform:
+                 * Старые .terrain могут не иметь Terrain.ini.
+                 * Для них сохраняем прежний transform:
                  * position = 0, scale = 1.
                  */
                 if (!iniExists)
@@ -364,11 +364,11 @@ namespace studio::editor
                     hasScaleZ;
 
                 /*
-                 * Terrain.ini, СЃРѕР·РґР°РЅРЅС‹Р№ РЅРѕРІС‹Рј R16 importer,
-                 * РѕР±СЏР·Р°РЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РїРѕР»РЅС‹Р№ transform.
+                 * Terrain.ini, созданный новым R16 importer,
+                 * обязан содержать полный transform.
                  *
-                 * Р•СЃР»Рё РІ СЃС‚Р°СЂРѕРј Terrain.ini РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ
-                 * transform-РїРѕР»СЏ, РёСЃРїРѕР»СЊР·СѓРµРј default transform.
+                 * Если в старом Terrain.ini нет ни одного
+                 * transform-поля, используем default transform.
                  */
                 if (
                     hasAnyTransformValue &&
@@ -1053,13 +1053,13 @@ namespace studio::editor
             }
 
             /*
-             * R16 importer С…СЂР°РЅРёС‚ РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ С†РµРЅС‚СЂ
-             * Рё РёС‚РѕРіРѕРІС‹Р№ actor scale РІ Terrain.ini.
+             * R16 importer хранит вертикальный центр
+             * и итоговый actor scale в Terrain.ini.
              *
-             * Р‘РµР· РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЌС‚РѕРіРѕ transform
-             * Terrain Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ РІ position 0 Рё scale 1,
-             * РёР·-Р·Р° С‡РµРіРѕ РїРµСЂРµСЃС‚Р°С‘С‚ СЃРѕРІРїР°РґР°С‚СЊ СЃ РѕР±СЉРµРєС‚Р°РјРё
-             * РёР· LevelData.xml.
+             * Без восстановления этого transform
+             * Terrain загружается в position 0 и scale 1,
+             * из-за чего перестаёт совпадать с объектами
+             * из LevelData.xml.
              */
             lts::editor::EditorTransform transform{};
 

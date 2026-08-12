@@ -33,6 +33,7 @@
 
 #include <array>
 #include <algorithm>
+#include <chrono>
 #include <cctype>
 #include <cmath>
 #include <cstddef>
@@ -67,6 +68,16 @@ namespace lts::editor
         constexpr float LegacyAlphaTestCutoff = 0.15F;
         constexpr float RoadSurfaceNormalOffset = 0.05F;
 
+        [[nodiscard]]
+        float WaterAnimationTime() noexcept
+        {
+            using Clock = std::chrono::steady_clock;
+            static const Clock::time_point start = Clock::now();
+            const std::chrono::duration<float> elapsed =
+                Clock::now() - start;
+            return std::fmod(elapsed.count(), 4096.0F);
+        }
+
         struct alignas(16) ObjectConstants final
         {
             DirectX::XMFLOAT4X4 world;
@@ -74,7 +85,9 @@ namespace lts::editor
 
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 materialParameters;
-            
+
+            // xyz = РЅР°РїСЂР°РІР»РµРЅРёРµ РѕС‚ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё Рє СЃРѕР»РЅС†Сѓ.
+            // w = РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ.
             DirectX::XMFLOAT4 sunDirectionIntensity;
 
             DirectX::XMFLOAT4 sunColor;
@@ -88,6 +101,8 @@ namespace lts::editor
             DirectX::XMFLOAT4 legacyTextureFlags;
             DirectX::XMFLOAT4 legacyFeatureFlags;
             DirectX::XMFLOAT4 geometryParameters;
+            DirectX::XMFLOAT4 waterParameters;
+            DirectX::XMFLOAT4 waterAppearance;
         };
 
         static_assert(
@@ -1208,6 +1223,7 @@ namespace lts::editor
             bool camouflage = false;
             std::string type;
             bool roadSurface = false;
+            bool waterSurface = false;
         };
 
         struct CachedMesh final
@@ -1235,12 +1251,35 @@ namespace lts::editor
             Microsoft::WRL::ComPtr<ID3DBlob>
                 pixelBytecode;
 
+            Microsoft::WRL::ComPtr<ID3DBlob>
+                waterVertexBytecode;
+
+            Microsoft::WRL::ComPtr<ID3DBlob>
+                waterPixelBytecode;
+
             if (!CompileEditorShaderFile(
                     L"StaticMesh.hlsl",
                     "VSMain",
                     "vs_5_0",
                     "LTS.Editor.StaticMesh",
                     vertexBytecode))
+            {
+                device_ = nullptr;
+                return false;
+            }
+
+            if (!CompileEditorShaderFile(
+                    L"Water.hlsl",
+                    "VSMain",
+                    "vs_5_0",
+                    "LTS.Editor.Water",
+                    waterVertexBytecode) ||
+                !CompileEditorShaderFile(
+                    L"Water.hlsl",
+                    "PSMain",
+                    "ps_5_0",
+                    "LTS.Editor.Water",
+                    waterPixelBytecode))
             {
                 device_ = nullptr;
                 return false;
@@ -1290,6 +1329,26 @@ namespace lts::editor
                 return false;
             }
 
+            vertexShaderDescription.bytecode.data =
+                waterVertexBytecode->GetBufferPointer();
+            vertexShaderDescription.bytecode.size =
+                waterVertexBytecode->GetBufferSize();
+            vertexShaderDescription.debugName =
+                "EditorWater.VertexShader";
+
+            result = device.CreateShader(
+                vertexShaderDescription,
+                waterVertexShader_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create water vertex shader",
+                    result);
+                Shutdown(device);
+                return false;
+            }
+
             engine::graphics::ShaderDesc
                 pixelShaderDescription;
 
@@ -1319,6 +1378,26 @@ namespace lts::editor
                     "Create static mesh pixel shader",
                     result);
 
+                Shutdown(device);
+                return false;
+            }
+
+            pixelShaderDescription.bytecode.data =
+                waterPixelBytecode->GetBufferPointer();
+            pixelShaderDescription.bytecode.size =
+                waterPixelBytecode->GetBufferSize();
+            pixelShaderDescription.debugName =
+                "EditorWater.PixelShader";
+
+            result = device.CreateShader(
+                pixelShaderDescription,
+                waterPixelShader_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create water pixel shader",
+                    result);
                 Shutdown(device);
                 return false;
             }
@@ -1662,6 +1741,34 @@ namespace lts::editor
                 Shutdown(device);
                 return false;
             }
+
+            pipelineDescription.vertexShader =
+                waterVertexShader_;
+            pipelineDescription.pixelShader =
+                waterPixelShader_;
+            pipelineDescription.rasterizer.cullMode =
+                engine::graphics::CullMode::None;
+            pipelineDescription.blend.renderTargets[0].blendEnable =
+                true;
+            pipelineDescription.depthStencil.depthEnable = true;
+            pipelineDescription.depthStencil.depthWriteEnable = false;
+            pipelineDescription.depthStencil.depthFunction =
+                engine::graphics::ComparisonFunction::GreaterEqual;
+            pipelineDescription.debugName =
+                "EditorWater.TransparentPipeline";
+
+            result = device.CreateGraphicsPipeline(
+                pipelineDescription,
+                waterPipeline_);
+
+            if (engine::graphics::Failed(result))
+            {
+                LogGraphicsFailure(
+                    "Create water pipeline",
+                    result);
+                Shutdown(device);
+                return false;
+            }
             
             initialized_ = true;
 
@@ -1723,6 +1830,14 @@ namespace lts::editor
                 transparentDoubleSidedPipeline_ = {};
             }
 
+            if (waterPipeline_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyGraphicsPipeline(
+                        waterPipeline_));
+                waterPipeline_ = {};
+            }
+
             if (transparentPipeline_.IsValid())
             {
                 static_cast<void>(
@@ -1768,6 +1883,14 @@ namespace lts::editor
                 pixelShader_ = {};
             }
 
+            if (waterPixelShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        waterPixelShader_));
+                waterPixelShader_ = {};
+            }
+
             if (vertexShader_.IsValid())
             {
                 static_cast<void>(
@@ -1775,6 +1898,14 @@ namespace lts::editor
                         vertexShader_));
 
                 vertexShader_ = {};
+            }
+
+            if (waterVertexShader_.IsValid())
+            {
+                static_cast<void>(
+                    device.DestroyShader(
+                        waterVertexShader_));
+                waterVertexShader_ = {};
             }
 
             if (instanceBuffer_.IsValid())
@@ -1799,8 +1930,14 @@ namespace lts::editor
         [[nodiscard]]
         engine::graphics::PipelineStateHandle SelectMaterialPipeline(
             const engine::assets::MaterialAlphaMode alphaMode,
-            const bool doubleSided) const noexcept
+            const bool doubleSided,
+            const bool waterSurface = false) const noexcept
         {
+            if (waterSurface)
+            {
+                return waterPipeline_;
+            }
+
             if (alphaMode == engine::assets::MaterialAlphaMode::Blend)
             {
                 return doubleSided
@@ -1939,6 +2076,22 @@ namespace lts::editor
                 engine::assets::GpuMesh* const mesh = cachedMesh->gpu.get();
 
                 ObjectConstants constants{};
+
+                constants.waterParameters =
+                {
+                    WaterAnimationTime(),
+                    0.32F,
+                    0.85F,
+                    0.018F
+                };
+
+                constants.waterAppearance =
+                {
+                    1.35F,
+                    5.0F,
+                    0.78F,
+                    1.0F
+                };
 
                 DirectX::XMStoreFloat4x4(
                     &constants.world,
@@ -2124,7 +2277,6 @@ namespace lts::editor
                             material.roadSurface
                                 ? RoadSurfaceNormalOffset
                                 : 0.0F,
-
                             0.0F,
                             0.0F,
                             0.0F
@@ -2139,7 +2291,16 @@ namespace lts::editor
                         constants.geometryParameters = {};
                     }
 
-                    const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
+                    const bool waterSurface =
+                        submesh->materialSlot <
+                            cachedMesh->materials.size() &&
+                        cachedMesh->materials[
+                            submesh->materialSlot].waterSurface;
+                    const engine::graphics::PipelineStateHandle selectedPipeline =
+                        SelectMaterialPipeline(
+                            alphaMode,
+                            doubleSided,
+                            waterSurface);
 
                     result = context.SetGraphicsPipeline(
                         selectedPipeline);
@@ -2423,6 +2584,22 @@ namespace lts::editor
                     });
 
                 ObjectConstants constants{};
+
+                constants.waterParameters =
+                {
+                    WaterAnimationTime(),
+                    0.32F,
+                    0.85F,
+                    0.018F
+                };
+
+                constants.waterAppearance =
+                {
+                    1.35F,
+                    5.0F,
+                    0.78F,
+                    1.0F
+                };
                 DirectX::XMStoreFloat4x4(
                     &constants.world,
                     DirectX::XMMatrixIdentity());
@@ -2645,7 +2822,6 @@ namespace lts::editor
                                     material.roadSurface
                                         ? RoadSurfaceNormalOffset
                                         : 0.0F,
-
                                     0.0F,
                                     0.0F,
                                     0.0F
@@ -2664,7 +2840,16 @@ namespace lts::editor
                                 constants.geometryParameters = {};
                             }
 
-                            const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
+                            const bool waterSurface =
+                                submesh->materialSlot <
+                                    cachedMesh->materials.size() &&
+                                cachedMesh->materials[
+                                    submesh->materialSlot].waterSurface;
+                            const engine::graphics::PipelineStateHandle selectedPipeline =
+                                SelectMaterialPipeline(
+                                    alphaMode,
+                                    doubleSided,
+                                    waterSurface);
                             
                             if (selectedPipeline != boundPipeline)
                             {
@@ -3794,6 +3979,11 @@ namespace lts::editor
                             material.roadSurface = true;
                             break;
                         }
+
+                        if (name == L"waterplanes")
+                        {
+                            material.waterSurface = true;
+                        }
                     }
 
                     const auto loadTexture =
@@ -4020,6 +4210,12 @@ namespace lts::editor
         engine::graphics::ShaderHandle
             pixelShader_;
 
+        engine::graphics::ShaderHandle
+            waterVertexShader_;
+
+        engine::graphics::ShaderHandle
+            waterPixelShader_;
+
         engine::graphics::InputLayoutHandle
             inputLayout_;
 
@@ -4033,6 +4229,9 @@ namespace lts::editor
 
         engine::graphics::PipelineStateHandle
             transparentDoubleSidedPipeline_;
+
+        engine::graphics::PipelineStateHandle
+            waterPipeline_;
 
         engine::scene::SpatialGrid spatialGrid_ { StaticMeshSpatialCellSize };
         std::vector<std::size_t> spatialCandidates_;
