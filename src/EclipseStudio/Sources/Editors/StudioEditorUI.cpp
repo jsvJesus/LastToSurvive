@@ -27,7 +27,9 @@
 #include <array>
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <future>
 #include <chrono>
 #include <limits>
@@ -123,6 +125,287 @@ namespace studio::editor
                 });
 
             return value;
+        }
+
+        [[nodiscard]]
+        std::string TrimAscii(
+            std::string value)
+        {
+            const auto isSpace =
+                [](const unsigned char character)
+                {
+                    return
+                        std::isspace(character) != 0;
+                };
+
+            value.erase(
+                value.begin(),
+                std::find_if(
+                    value.begin(),
+                    value.end(),
+                    [&](const char character)
+                    {
+                        return
+                            !isSpace(
+                                static_cast<unsigned char>(
+                                    character));
+                    }));
+
+            value.erase(
+                std::find_if(
+                    value.rbegin(),
+                    value.rend(),
+                    [&](const char character)
+                    {
+                        return
+                            !isSpace(
+                                static_cast<unsigned char>(
+                                    character));
+                    }).
+                    base(),
+                value.end());
+
+            return value;
+        }
+
+        [[nodiscard]]
+        bool TryParseFiniteFloat(
+            const std::string& text,
+            float& output) noexcept
+        {
+            const std::string value =
+                TrimAscii(text);
+
+            if (value.empty())
+            {
+                return false;
+            }
+
+            char* end = nullptr;
+
+            const float parsed =
+                std::strtof(
+                    value.c_str(),
+                    &end);
+
+            if (end == value.c_str())
+            {
+                return false;
+            }
+
+            while (
+                *end != '\0' &&
+                std::isspace(
+                    static_cast<unsigned char>(
+                        *end)) != 0)
+            {
+                ++end;
+            }
+
+            if (
+                *end != '\0' ||
+                !std::isfinite(parsed))
+            {
+                return false;
+            }
+
+            output = parsed;
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool LoadTerrainTransformFromIni(
+            const std::filesystem::path& terrainPath,
+            lts::editor::EditorTransform& transform) noexcept
+        {
+            transform =
+                lts::editor::EditorTransform{};
+
+            try
+            {
+                const std::filesystem::path iniPath =
+                    terrainPath.parent_path() /
+                    L"Terrain.ini";
+
+                std::error_code filesystemError;
+
+                const bool iniExists =
+                    std::filesystem::is_regular_file(
+                        iniPath,
+                        filesystemError);
+
+                if (filesystemError)
+                {
+                    return false;
+                }
+
+                /*
+                 * Старые .terrain могут не иметь Terrain.ini.
+                 * Для них сохраняем прежний transform:
+                 * position = 0, scale = 1.
+                 */
+                if (!iniExists)
+                {
+                    return true;
+                }
+
+                std::ifstream input(iniPath);
+
+                if (!input)
+                {
+                    return false;
+                }
+
+                float centerHeight = 0.0F;
+                float scaleX = 1.0F;
+                float scaleY = 1.0F;
+                float scaleZ = 1.0F;
+
+                bool hasCenterHeight = false;
+                bool hasScaleX = false;
+                bool hasScaleY = false;
+                bool hasScaleZ = false;
+
+                std::string line;
+
+                while (std::getline(input, line))
+                {
+                    line =
+                        TrimAscii(
+                            std::move(line));
+
+                    if (
+                        line.empty() ||
+                        line.front() == '#' ||
+                        line.front() == ';' ||
+                        line.front() == '[')
+                    {
+                        continue;
+                    }
+
+                    const std::size_t separator =
+                        line.find('=');
+
+                    if (separator ==
+                        std::string::npos)
+                    {
+                        continue;
+                    }
+
+                    const std::string key =
+                        LowercaseAscii(
+                            TrimAscii(
+                                line.substr(
+                                    0U,
+                                    separator)));
+
+                    const std::string value =
+                        TrimAscii(
+                            line.substr(
+                                separator + 1U));
+
+                    float parsed = 0.0F;
+
+                    if (key == "centerheight")
+                    {
+                        if (!TryParseFiniteFloat(
+                                value,
+                                parsed))
+                        {
+                            return false;
+                        }
+
+                        centerHeight = parsed;
+                        hasCenterHeight = true;
+                    }
+                    else if (key == "scalex")
+                    {
+                        if (!TryParseFiniteFloat(
+                                value,
+                                parsed))
+                        {
+                            return false;
+                        }
+
+                        scaleX = parsed;
+                        hasScaleX = true;
+                    }
+                    else if (key == "scaley")
+                    {
+                        if (!TryParseFiniteFloat(
+                                value,
+                                parsed))
+                        {
+                            return false;
+                        }
+
+                        scaleY = parsed;
+                        hasScaleY = true;
+                    }
+                    else if (key == "scalez")
+                    {
+                        if (!TryParseFiniteFloat(
+                                value,
+                                parsed))
+                        {
+                            return false;
+                        }
+
+                        scaleZ = parsed;
+                        hasScaleZ = true;
+                    }
+                }
+
+                const bool hasAnyTransformValue =
+                    hasCenterHeight ||
+                    hasScaleX ||
+                    hasScaleY ||
+                    hasScaleZ;
+
+                /*
+                 * Terrain.ini, созданный новым R16 importer,
+                 * обязан содержать полный transform.
+                 *
+                 * Если в старом Terrain.ini нет ни одного
+                 * transform-поля, используем default transform.
+                 */
+                if (
+                    hasAnyTransformValue &&
+                    (
+                        !hasCenterHeight ||
+                        !hasScaleX ||
+                        !hasScaleY ||
+                        !hasScaleZ
+                    ))
+                {
+                    return false;
+                }
+
+                if (
+                    scaleX <= 0.0F ||
+                    scaleY <= 0.0F ||
+                    scaleZ <= 0.0F)
+                {
+                    return false;
+                }
+
+                transform.position[1] =
+                    centerHeight;
+
+                transform.scale =
+                {
+                    scaleX,
+                    scaleY,
+                    scaleZ
+                };
+
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
         }
 
         void RefreshObjectDepot() noexcept
@@ -748,22 +1031,49 @@ namespace studio::editor
             return true;
         }
 
-        [[nodiscard]] bool LoadTerrainAsset(
+        [[nodiscard]]
+        bool LoadTerrainAsset(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& path)
         {
             engine::assets::TerrainAsset terrain;
 
-            if (engine::assets::Failed(
-                    engine::assets::TerrainAsset::Load(path, terrain)) ||
-                !terrain.IsValid() ||
-                !g_terrainRenderer.LoadTerrain(device, path))
+            if (
+                engine::assets::Failed(
+                    engine::assets::TerrainAsset::Load(
+                        path,
+                        terrain)) ||
+                !terrain.IsValid())
+            {
+                return false;
+            }
+
+            /*
+             * R16 importer хранит вертикальный центр
+             * и итоговый actor scale в Terrain.ini.
+             *
+             * Без восстановления этого transform
+             * Terrain загружается в position 0 и scale 1,
+             * из-за чего перестаёт совпадать с объектами
+             * из LevelData.xml.
+             */
+            lts::editor::EditorTransform transform{};
+
+            if (!LoadTerrainTransformFromIni(
+                    path,
+                    transform))
+            {
+                return false;
+            }
+
+            if (!g_terrainRenderer.LoadTerrain(
+                    device,
+                    path))
             {
                 return false;
             }
 
             g_sceneDocument.Clear();
-            lts::editor::EditorTransform transform{};
 
             if (!g_sceneDocument.CreateTerrainEntity(
                     path.stem().wstring(),
@@ -773,43 +1083,107 @@ namespace studio::editor
                 return false;
             }
 
-            std::vector<engine::scene::TerrainComponent::LayerOverride> layers;
-            layers.reserve(terrain.layers.size());
+            std::vector<
+                engine::scene::TerrainComponent::
+                    LayerOverride> layers;
 
-            for (const engine::assets::TerrainLayer& source : terrain.layers)
+            layers.reserve(
+                terrain.layers.size());
+
+            for (
+                const engine::assets::TerrainLayer& source :
+                terrain.layers)
             {
-                engine::scene::TerrainComponent::LayerOverride layer;
-                layer.name = source.name;
-                layer.diffusePath = source.diffusePath;
-                layer.normalPath = source.normalPath;
-                layer.scaleU = source.scaleU;
-                layer.scaleV = source.scaleV;
-                layers.push_back(std::move(layer));
+                engine::scene::TerrainComponent::
+                    LayerOverride layer;
+
+                layer.name =
+                    source.name;
+
+                layer.diffusePath =
+                    source.diffusePath;
+
+                layer.normalPath =
+                    source.normalPath;
+
+                layer.scaleU =
+                    source.scaleU;
+
+                layer.scaleV =
+                    source.scaleV;
+
+                layers.push_back(
+                    std::move(layer));
             }
 
-            if (!g_sceneDocument.SetSelectedTerrainLayers(std::move(layers)))
+            if (!g_sceneDocument.SetSelectedTerrainLayers(
+                    std::move(layers)))
             {
                 return false;
             }
 
             EnsureEnvironmentEntities();
 
-            const float width =
-                static_cast<float>(terrain.width - 1U) * terrain.tileSize;
-            const float depth =
-                static_cast<float>(terrain.height - 1U) * terrain.tileSize;
+            const float localWidth =
+                static_cast<float>(
+                    terrain.width - 1U) *
+                terrain.tileSize;
+
+            const float localDepth =
+                static_cast<float>(
+                    terrain.height - 1U) *
+                terrain.tileSize;
+
+            const float worldWidth =
+                localWidth *
+                std::fabs(
+                    transform.scale[0]);
+
+            const float worldDepth =
+                localDepth *
+                std::fabs(
+                    transform.scale[2]);
+
+            const float terrainAmplitude =
+                (std::max)(
+                    std::fabs(
+                        terrain.heightOffset),
+
+                    std::fabs(
+                        terrain.heightOffset +
+                        terrain.heightScale));
+
             const DirectX::XMFLOAT3 target
             {
-                width * 0.5F,
-                0.0F,
-                depth * 0.5F
+                transform.position[0] +
+                    localWidth *
+                    transform.scale[0] *
+                    0.5F,
+
+                transform.position[1] +
+                    terrainAmplitude *
+                    std::fabs(
+                        transform.scale[1]) *
+                    0.35F,
+
+                transform.position[2] +
+                    localDepth *
+                    transform.scale[2] *
+                    0.5F
             };
 
             g_cameraController.FocusOn(
                 target,
-                (std::max)(width, depth) * 0.64F);
-            g_loadedTerrainPath = path.lexically_normal();
+                (std::max)(
+                    worldWidth,
+                    worldDepth) *
+                0.64F);
+
+            g_loadedTerrainPath =
+                path.lexically_normal();
+
             g_activeLayer = 0U;
+
             return true;
         }
 
