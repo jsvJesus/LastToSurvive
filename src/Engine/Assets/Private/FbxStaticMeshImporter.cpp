@@ -890,10 +890,7 @@ namespace engine::assets
                 data == nullptr ||
                 encoded.GetSize() == 0U)
             {
-                error =
-                    L"LtsMaterialWriter returned "
-                    L"empty data.";
-
+                error = L"MaterialAssetWriter returned " L"empty data.";
                 return AssetResult::InternalError;
             }
 

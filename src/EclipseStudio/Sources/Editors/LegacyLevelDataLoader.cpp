@@ -64,6 +64,7 @@ namespace studio::editor
             std::size_t objectIndex = 0U;
 
             bool rewriteXml = false;
+            bool available = false;
         };
 
         [[nodiscard]]
@@ -1100,8 +1101,6 @@ namespace studio::editor
                         meshCache,
                         copiedTextureDirectories,
                         reportedErrors);
-
-                bool available = false;
 
                 PendingObject pending;
 
