@@ -7,7 +7,7 @@
 #include <Assets/AssetPath.h>
 #include <Assets/AssetResult.h>
 #include <Assets/AssetType.h>
-#include <Assets/LtsMaterialWriter.h>
+#include <Assets/MaterialAssetWriter.h>
 #include <Assets/MaterialAssetLoader.h>
 #include <Assets/SkeletalMeshAsset.h>
 #include <Assets/SkeletalMeshAssetLoader.h>
@@ -526,7 +526,7 @@ namespace lts::editor
             engine::assets::AssetData encoded;
 
             const auto encodeResult =
-                engine::assets::LtsMaterialWriter::Encode(
+                engine::assets::MaterialAssetWriter::Encode(
                     material,
                     encoded);
 
@@ -561,8 +561,7 @@ namespace lts::editor
             while (!cursor.empty())
             {
                 if (Lowercase(
-                        cursor.filename().wstring()) ==
-                    L"meshes")
+                        cursor.filename().wstring()) == L"staticmeshes"
                 {
                     output = cursor;
 
@@ -615,10 +614,7 @@ namespace lts::editor
                     return {};
                 }
 
-                const std::filesystem::path directory =
-                    meshesRoot.parent_path() /
-                    L"Materials" /
-                    package;
+                const std::filesystem::path directory = meshFile.parent_path() / L"Materials";
 
                 if (!std::filesystem::is_directory(
                         directory,
@@ -839,35 +835,21 @@ namespace lts::editor
         }
 
         [[nodiscard]]
-        std::filesystem::path ResolveTextureDirectory(
-            const std::filesystem::path& meshFile)
+        std::filesystem::path ResolveTextureDirectory(const std::filesystem::path& meshFile)
         {
-            std::filesystem::path meshesRoot;
+            std::filesystem::path staticMeshesRoot;
 
             if (!FindMeshesRoot(
                     meshFile,
-                    meshesRoot))
-            {
-                return {};
-            }
-
-            std::error_code error;
-
-            const std::filesystem::path package =
-                std::filesystem::relative(
-                    meshFile.parent_path(),
-                    meshesRoot,
-                    error);
-
-            if (error)
+                    staticMeshesRoot))
             {
                 return {};
             }
 
             return (
-                meshesRoot.parent_path() /
-                L"Textures" /
-                package).lexically_normal();
+                meshFile.parent_path() /
+                L"Textures").
+                    lexically_normal();
         }
 
         class ComScope final

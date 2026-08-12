@@ -571,6 +571,94 @@ namespace studio::editor
         }
 
         [[nodiscard]]
+        bool MaterialSetExists(const std::filesystem::path& meshPath) noexcept
+        {
+            try
+            {
+                const std::filesystem::path directory =
+                    meshPath.parent_path() /
+                    L"Materials";
+
+                std::error_code error;
+
+                if (
+                    !std::filesystem::is_directory(
+                        directory,
+                        error) ||
+                    error)
+                {
+                    return false;
+                }
+
+                const std::wstring prefix =
+                    Lowercase(
+                        meshPath.stem().wstring() +
+                        L"_");
+
+                for (
+                    std::filesystem::directory_iterator
+                        iterator(directory, error),
+                        end;
+
+                    !error &&
+                    iterator != end;
+
+                    iterator.increment(error))
+                {
+                    if (
+                        !iterator->is_regular_file(error) ||
+                        error)
+                    {
+                        error.clear();
+                        continue;
+                    }
+
+                    const std::filesystem::path file =
+                        iterator->path();
+
+                    if (
+                        Lowercase(
+                            file.extension().wstring()) !=
+                            L".material")
+                    {
+                        continue;
+                    }
+
+                    const std::wstring filename =
+                        Lowercase(
+                            file.filename().wstring());
+
+                    if (
+                        filename.rfind(
+                            prefix,
+                            0U) != 0U)
+                    {
+                        continue;
+                    }
+
+                    const std::uintmax_t size =
+                        std::filesystem::file_size(
+                            file,
+                            error);
+
+                    if (
+                        !error &&
+                        size >= 192U)
+                    {
+                        return true;
+                    }
+
+                    error.clear();
+                }
+            }
+            catch (...)
+            {
+            }
+
+            return false;
+        }
+
+        [[nodiscard]]
         CachedMesh ResolveMesh(
             const MeshReference& reference,
             LegacyLevelLoadStats& stats,
@@ -631,14 +719,25 @@ namespace studio::editor
 
             std::error_code filesystemError;
 
-            if (
-                !std::filesystem::is_regular_file(
-                    reference.sourcePath,
-                    filesystemError) ||
-                filesystemError ||
-                !HasScbSignature(
-                    reference.sourcePath))
+            if (!std::filesystem::is_regular_file(reference.sourcePath, filesystemError) || filesystemError || !HasScbSignature(reference.sourcePath))
             {
+                if (
+                    MeshFileExists(
+                        reference.meshPath) &&
+                    MaterialSetExists(
+                        reference.meshPath))
+                {
+                    result.available = true;
+
+                    ++stats.cachedMeshes;
+
+                    meshCache.emplace(
+                        key,
+                        result);
+
+                    return result;
+                }
+
                 ++stats.missingMeshes;
 
                 AddError(
@@ -667,8 +766,7 @@ namespace studio::editor
                 return result;
             }
 
-            bool needsImport = true;
-
+            bool needsImport = !MeshFileExists(reference.meshPath) || !MaterialSetExists(reference.meshPath);
             filesystemError.clear();
 
             if (
@@ -829,13 +927,19 @@ namespace studio::editor
         }
 
         [[nodiscard]]
-        std::string BuildErrorMessage(
+        std::string BuildWarningMessage(
             const LegacyLevelLoadStats& stats,
             const std::vector<std::string>& errors)
         {
+            if (
+                stats.missingMeshes == 0U &&
+                stats.failedMeshes == 0U)
+            {
+                return {};
+            }
+
             std::string message =
-                "Static mesh migration stopped. "
-                "LevelData.xml was not changed. ";
+                "Static mesh migration completed with warnings. ";
 
             message += "Missing SCB: ";
             message +=
@@ -847,9 +951,7 @@ namespace studio::editor
                 std::to_string(
                     stats.failedMeshes);
 
-            for (
-                const std::string& item :
-                errors)
+            for (const std::string& item : errors)
             {
                 message += "\n";
                 message += item;
@@ -999,45 +1101,20 @@ namespace studio::editor
                         copiedTextureDirectories,
                         reportedErrors);
 
-                if (!mesh.available)
-                {
-                    continue;
-                }
+                bool available = false;
 
                 PendingObject pending;
 
                 pending.node = object;
                 pending.originalName = fileName;
                 pending.meshPath = mesh.path;
-                pending.logicalMeshPath =
-                    reference.logicalMeshPath;
-                pending.objectIndex =
-                    objectIndex;
-                pending.rewriteXml =
-                    reference.sourceReference;
+                pending.available = mesh.available;
+                pending.logicalMeshPath = reference.logicalMeshPath;
+                pending.objectIndex = objectIndex;
+                pending.rewriteXml = reference.sourceReference;
 
-                ReadTransform(
-                    object,
-                    pending.transform);
-
-                pendingObjects.push_back(
-                    std::move(pending));
-            }
-
-            /*
-             * Если хотя бы один SCB отсутствует или не конвертируется,
-             * XML остаётся без изменений.
-             */
-            if (
-                result.stats.missingMeshes != 0U ||
-                result.stats.failedMeshes != 0U)
-            {
-                result.error =
-                    BuildErrorMessage(
-                        result.stats,
-                        reportedErrors);
-
-                return result;
+                ReadTransform(object, pending.transform);
+                pendingObjects.push_back(std::move(pending));
             }
 
             bool xmlChanged = false;
@@ -1097,6 +1174,11 @@ namespace studio::editor
                     engine::scene::
                         SceneEntityKind::Empty;
 
+                if (!pending.available)
+                {
+                    continue;
+                }
+
                 entity.transform =
                     pending.transform;
 
@@ -1136,6 +1218,7 @@ namespace studio::editor
             result.stats.staticMeshObjects =
                 result.entities.size();
 
+            result.warning =BuildWarningMessage(result.stats, reportedErrors);
             result.succeeded = true;
 
             return result;

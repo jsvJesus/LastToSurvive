@@ -25,6 +25,7 @@ namespace studio::editor
     {
         bool succeeded = false;
         std::string error;
+        std::string warning;
         LegacyLevelLoadStats stats;
         std::vector<engine::scene::SceneEntity> entities;
     };

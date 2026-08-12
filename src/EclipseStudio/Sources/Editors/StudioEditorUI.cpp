@@ -664,12 +664,18 @@ namespace studio::editor
             g_sceneDocument.RestoreSnapshot(snapshot, false);
             g_sceneDocument.MarkSaved();
             g_levelLoadStats = result.stats;
-            g_levelLoadStatus =
-                "Colorado loaded: " +
+            
+            g_levelLoadStatus = "Colorado loaded: " +
                 std::to_string(result.stats.importedObjects) +
                 " obj_Building entries, " +
                 std::to_string(result.stats.staticMeshObjects) +
                 " visible.";
+
+            if (!result.warning.empty())
+            {
+                g_levelLoadStatus += "\n";
+                g_levelLoadStatus += result.warning;
+            }
             g_loadedMapName = "Colorado";
         }
 

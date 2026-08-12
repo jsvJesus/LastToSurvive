@@ -2,7 +2,7 @@
 
 #include "Assets/AssetData.h"
 #include "Assets/AssetPath.h"
-#include "Assets/LtsMaterialWriter.h"
+#include "Assets/MaterialAssetWriter.h"
 #include "Assets/LtsMeshWriter.h"
 #include "Assets/MaterialAsset.h"
 #include "Assets/MeshAsset.h"
@@ -853,7 +853,7 @@ namespace engine::assets
             AssetData encoded;
 
             result =
-                LtsMaterialWriter::Encode(
+                MaterialWriter::Encode(
                     material,
                     encoded);
 

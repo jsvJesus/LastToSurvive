@@ -145,6 +145,10 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ClInclude Include="Sources\Editors\LegacyLevelDataLoader.h" />
+  </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

@@ -4,6 +4,7 @@
 #include "Assets/LtsMeshWriter.h"
 #include "Assets/MeshAsset.h"
 #include "Assets/MeshAssetBuilder.h"
+#include "Assets/ScbMaterialConverter.h"
 
 #include <algorithm>
 #include <array>
@@ -936,9 +937,17 @@ namespace engine::assets
              * построения materialSlot. Старый .mesh.materials sidecar
              * больше не записывается.
              */
-            return SaveMesh(
+            const AssetResult saveResult = SaveMesh(destinationPath, mesh, error);
+
+            if (Failed(saveResult))
+            {
+                return saveResult;
+            }
+
+            return ScbMaterialConverter::Convert(
+                sourcePath,
                 destinationPath,
-                mesh,
+                materialNames,
                 error);
         }
         catch (const std::bad_alloc&)

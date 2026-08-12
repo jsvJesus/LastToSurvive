@@ -144,7 +144,7 @@
     <ClInclude Include="Public\Assets\LegacyTerrain2Importer.h" />
     <ClInclude Include="Public\Assets\LegacyMeshImporter.h" />
     <ClInclude Include="Public\Assets\GpuTexture.h" />
-    <ClInclude Include="Public\Assets\LtsMaterialWriter.h" />
+    <ClInclude Include="Public\Assets\MaterialAssetWriter.h" />
     <ClInclude Include="Public\Assets\LtsMeshWriter.h" />
     <ClInclude Include="Public\Assets\GpuMesh.h" />
     <ClInclude Include="Public\Assets\MaterialAsset.h" />
@@ -153,6 +153,7 @@
     <ClInclude Include="Public\Assets\MeshAssetBuilder.h" />
     <ClInclude Include="Public\Assets\MeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\LtsStaticModelWriter.h" />
+    <ClInclude Include="Public\Assets\ScbMaterialConverter.h" />
     <ClInclude Include="Public\Assets\SkeletalMeshAsset.h" />
     <ClInclude Include="Public\Assets\SkeletalMeshAssetLoader.h" />
     <ClInclude Include="Public\Assets\SkeletonAsset.h" />
@@ -192,7 +193,7 @@
     <ClCompile Include="Private\LegacyTerrain2Importer.cpp" />
     <ClCompile Include="Private\LegacyMeshImporter.cpp" />
     <ClCompile Include="Private\GpuTexture.cpp" />
-    <ClCompile Include="Private\LtsMaterialWriter.cpp" />
+    <ClCompile Include="Private\MaterialAssetWriter.cpp" />
     <ClCompile Include="Private\LtsMeshWriter.cpp" />
     <ClCompile Include="Private\GpuMesh.cpp" />
     <ClCompile Include="Private\MaterialAsset.cpp" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Private\MeshAssetBuilder.cpp" />
     <ClCompile Include="Private\MeshAssetLoader.cpp" />
     <ClCompile Include="Private\LtsStaticModelWriter.cpp" />
+    <ClCompile Include="Private\ScbMaterialConverter.cpp" />
     <ClCompile Include="Private\SkeletalMeshAsset.cpp" />
     <ClCompile Include="Private\SkeletalMeshAssetLoader.cpp" />
     <ClCompile Include="Private\SkeletonAsset.cpp" />

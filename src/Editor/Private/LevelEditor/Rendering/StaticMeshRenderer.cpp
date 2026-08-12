@@ -3494,70 +3494,101 @@ namespace lts::editor
             }
         }
 
-        void LoadMaterials(
-            const std::filesystem::path& meshPath,
-            std::vector<CachedMaterial>& output) noexcept
+        void LoadMaterials(const std::filesystem::path& meshPath, std::vector<CachedMaterial>& output) noexcept
         {
             output.clear();
+
             try
             {
-                std::filesystem::path meshesRoot;
-                std::filesystem::path cursor = meshPath.parent_path();
-                while (!cursor.empty())
+                std::filesystem::path staticMeshesRoot =
+                    meshPath.parent_path();
+
+                while (!staticMeshesRoot.empty())
                 {
-                    if (LowercasePath(cursor.filename().wstring()) == L"meshes")
+                    if (
+                        LowercasePath(
+                            staticMeshesRoot.
+                                filename().
+                                wstring()) ==
+                        L"staticmeshes")
                     {
-                        meshesRoot = cursor;
                         break;
                     }
-                    const auto parent = cursor.parent_path();
-                    if (parent == cursor) break;
-                    cursor = parent;
-                }
-                if (meshesRoot.empty()) return;
-                std::error_code filesystemError;
-                const auto package = std::filesystem::relative(
-                    meshPath.parent_path(), meshesRoot, filesystemError);
-                if (filesystemError) return;
-                const auto directory = meshesRoot.parent_path() / L"Materials" / package;
-                if (!std::filesystem::is_directory(directory, filesystemError) || filesystemError)
-                    return;
-                
-                std::vector<std::filesystem::path>matchingFiles;
-                std::vector<std::filesystem::path>legacyFiles;
 
-                const std::wstring materialPrefix =
+                    const std::filesystem::path parent =
+                        staticMeshesRoot.parent_path();
+
+                    if (
+                        parent.empty() ||
+                        parent == staticMeshesRoot)
+                    {
+                        staticMeshesRoot.clear();
+                        break;
+                    }
+
+                    staticMeshesRoot = parent;
+                }
+
+                if (staticMeshesRoot.empty())
+                {
+                    return;
+                }
+
+                const std::filesystem::path materialDirectory =
+                    meshPath.parent_path() /
+                    L"Materials";
+
+                std::error_code filesystemError;
+
+                if (
+                    !std::filesystem::is_directory(
+                        materialDirectory,
+                        filesystemError) ||
+                    filesystemError)
+                {
+                    return;
+                }
+
+                const std::wstring prefix =
                     LowercasePath(
                         meshPath.stem().wstring() +
                         L"_");
 
+                std::vector<std::filesystem::path>
+                    files;
+
                 for (
                     std::filesystem::directory_iterator
                         iterator(
-                            directory,
+                            materialDirectory,
                             filesystemError),
                         end;
 
                     !filesystemError &&
                     iterator != end;
 
-                    iterator.increment(filesystemError))
+                    iterator.increment(
+                        filesystemError))
                 {
                     if (
-                        !iterator->is_regular_file() ||
-                        LowercasePath(
-                            iterator->path().
-                                extension().
-                                wstring()) !=
-                            L".material")
+                        !iterator->is_regular_file(
+                            filesystemError) ||
+                        filesystemError)
                     {
+                        filesystemError.clear();
                         continue;
                     }
 
                     const std::filesystem::path file =
                         iterator->path();
 
-                    legacyFiles.push_back(file);
+                    if (
+                        LowercasePath(
+                            file.extension().wstring()) !=
+                        L".material")
+                    {
+                        continue;
+                    }
 
                     const std::wstring filename =
                         LowercasePath(
@@ -3565,26 +3596,15 @@ namespace lts::editor
 
                     if (
                         filename.rfind(
-                            materialPrefix,
-                            0U) == 0U)
+                            prefix,
+                            0U) != 0U)
                     {
-                        matchingFiles.push_back(file);
+                        continue;
                     }
+
+                    files.push_back(
+                        file.lexically_normal());
                 }
-                
-                /*
-                 * РќРѕРІС‹Рµ РјР°С‚РµСЂРёР°Р»С‹:
-                 *
-                 * MeshName_0000_Material.material
-                 *
-                 * Р”Р»СЏ СЃС‚Р°СЂС‹С… СЂРµСЃСѓСЂСЃРѕРІ РѕСЃС‚Р°РІР»СЏРµРј fallback,
-                 * РіРґРµ РјР°С‚РµСЂРёР°Р»С‹ РЅР°Р·С‹РІР°Р»РёСЃСЊ РїСЂРѕСЃС‚Рѕ
-                 * 0000_Material.material.
-                 */
-                std::vector<std::filesystem::path> files =
-                    !matchingFiles.empty()
-                        ? std::move(matchingFiles)
-                        : std::move(legacyFiles);
 
                 std::sort(
                     files.begin(),
@@ -3598,53 +3618,171 @@ namespace lts::editor
                             LowercasePath(
                                 right.filename().wstring());
                     });
-                
+
+                const std::filesystem::path gameRoot =
+                    staticMeshesRoot.
+                        parent_path().
+                        parent_path();
+
+                static_cast<void>(
+                    EnsureMaterialSampler());
+
+                output.reserve(
+                    files.size());
+
                 for (const auto& file : files)
                 {
                     engine::assets::AssetData data;
-                    if (engine::assets::Failed(ReadAssetData(file, data))) continue;
-                    const auto gameRoot = meshesRoot.parent_path().parent_path();
-                    const auto logical = std::filesystem::relative(file, gameRoot, filesystemError);
-                    if (filesystemError) continue;
-                    engine::assets::AssetPath assetPath;
-                    if (engine::assets::Failed(engine::assets::AssetPath::TryCreate(
-                            logical.generic_u8string(), assetPath))) continue;
-                    engine::assets::AssetMetadata metadata;
-                    metadata.path = std::move(assetPath);
-                    metadata.id = metadata.path.GetId();
-                    metadata.type = engine::assets::AssetType::Material;
-                    metadata.schemaVersion = 2U;
-                    metadata.sourceSize = data.GetSize();
-                    engine::assets::MaterialAssetLoader loader;
-                    std::unique_ptr<engine::assets::LoadedAsset> loaded;
-                    if (engine::assets::Failed(loader.Load(metadata, data, loaded)) || !loaded)
-                        continue;
-                    const auto* loadedMaterial = static_cast<engine::assets::MaterialLoadedAsset*>(loaded.get());
-                    CachedMaterial material;
-                    material.desc = loadedMaterial->GetMaterial().GetDesc();
-                    
-                    if (material.desc.baseColorTexture.has_value())
-                    {
-                        const std::filesystem::path texturePath =
-                            gameRoot /
-                            std::filesystem::u8path(
-                                material.desc.
-                                    baseColorTexture->
-                                    String());
 
-                        material.baseColorTexture =
-                            GetOrLoadMaterialTexture(texturePath, true);
+                    if (engine::assets::Failed(
+                            ReadAssetData(
+                                file,
+                                data)))
+                    {
+                        continue;
                     }
 
-                    if (material.baseColorTexture.IsValid() &&
+                    filesystemError.clear();
+
+                    const std::filesystem::path logical =
+                        std::filesystem::relative(
+                            file,
+                            gameRoot,
+                            filesystemError);
+
+                    if (filesystemError)
+                    {
+                        continue;
+                    }
+
+                    engine::assets::AssetPath assetPath;
+
+                    if (engine::assets::Failed(
+                            engine::assets::
+                                AssetPath::TryCreate(
+                                    logical.generic_u8string(),
+                                    assetPath)))
+                    {
+                        continue;
+                    }
+
+                    engine::assets::AssetMetadata metadata;
+
+                    metadata.path =
+                        std::move(assetPath);
+
+                    metadata.id =
+                        metadata.path.GetId();
+
+                    metadata.type =
+                        engine::assets::
+                            AssetType::Material;
+
+                    metadata.schemaVersion = 2U;
+
+                    metadata.sourceSize =
+                        data.GetSize();
+
+                    engine::assets::MaterialAssetLoader loader;
+
+                    std::unique_ptr<
+                        engine::assets::LoadedAsset> loaded;
+
+                    if (
+                        engine::assets::Failed(
+                            loader.Load(
+                                metadata,
+                                data,
+                                loaded)) ||
+                        loaded == nullptr ||
+                        loaded->GetType() !=
+                            engine::assets::
+                                AssetType::Material)
+                    {
+                        continue;
+                    }
+
+                    const auto* const loadedMaterial =
+                        static_cast<
+                            engine::assets::
+                                MaterialLoadedAsset*>(
+                                    loaded.get());
+
+                    CachedMaterial material;
+
+                    material.desc =
+                        loadedMaterial->
+                            GetMaterial().
+                            GetDesc();
+
+                    const auto loadTexture =
+                        [&](const std::optional<
+                                engine::assets::AssetPath>& path,
+                            const bool forceSrgb)
+                        {
+                            if (!path.has_value())
+                            {
+                                return
+                                    engine::graphics::
+                                        TextureHandle{};
+                            }
+
+                            const std::filesystem::path texturePath =
+                                gameRoot /
+                                std::filesystem::u8path(
+                                    path->String());
+
+                            return
+                                GetOrLoadMaterialTexture(
+                                    texturePath,
+                                    forceSrgb);
+                        };
+
+                    material.baseColorTexture =
+                        loadTexture(
+                            material.desc.
+                                baseColorTexture,
+                            true);
+
+                    material.normalTexture =
+                        loadTexture(
+                            material.desc.
+                                normalTexture,
+                            false);
+
+                    material.specularTexture =
+                        loadTexture(
+                            material.desc.
+                                specularGlossTexture,
+                            false);
+
+                    material.specularPowerTexture =
+                        loadTexture(
+                            material.desc.
+                                specularPowerTexture,
+                            false);
+
+                    material.emissiveTexture =
+                        loadTexture(
+                            material.desc.
+                                emissiveTexture,
+                            true);
+
+                    if (
                         EnsureMaterialSampler())
                     {
-                        material.sampler = materialSampler_;
+                        material.sampler =
+                            materialSampler_;
                     }
-                    output.push_back(std::move(material));
+
+                    output.push_back(
+                        std::move(material));
                 }
             }
-            catch (...) { output.clear(); }
+            catch (...)
+            {
+                output.clear();
+            }
         }
 
         [[nodiscard]]
