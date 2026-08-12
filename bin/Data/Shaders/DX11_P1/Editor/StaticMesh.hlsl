@@ -24,6 +24,8 @@ cbuffer ObjectBuffer : register(b0)
     float4 LegacyTextureFlags;
     // x=specular-power map, y=camouflage, z=displacement enabled, w=displacement value.
     float4 LegacyFeatureFlags;
+    // x = world-space offset along the geometric normal.
+    float4 GeometryParameters;
 };
 
 Texture2D BaseColorTexture : register(t0);
@@ -72,14 +74,19 @@ VertexOutput VSMain(VertexInput input)
     float4 worldPosition =
         mul(float4(input.position, 1.0F), instanceWorld);
 
-    output.position =
-        mul(worldPosition, ViewProjection);
-
-    output.normal =
+    float3 worldNormal =
         normalize(
             mul(
                 float4(input.normal, 0.0F),
                 instanceWorld).xyz);
+
+    worldPosition.xyz +=
+        worldNormal * GeometryParameters.x;
+
+    output.position =
+        mul(worldPosition, ViewProjection);
+
+    output.normal = worldNormal;
 
     output.tangent.xyz =
         normalize(

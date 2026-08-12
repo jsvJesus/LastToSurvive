@@ -65,6 +65,7 @@ namespace lts::editor
         constexpr float StaticMeshStreamingDistance = 1024.0F;
 
         constexpr float LegacyAlphaTestCutoff = 0.15F;
+        constexpr float RoadSurfaceNormalOffset = 0.05F;
 
         struct alignas(16) ObjectConstants final
         {
@@ -73,9 +74,7 @@ namespace lts::editor
 
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 materialParameters;
-
-            // xyz = РЅР°РїСЂР°РІР»РµРЅРёРµ РѕС‚ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё Рє СЃРѕР»РЅС†Сѓ.
-            // w = РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ.
+            
             DirectX::XMFLOAT4 sunDirectionIntensity;
 
             DirectX::XMFLOAT4 sunColor;
@@ -88,6 +87,7 @@ namespace lts::editor
             DirectX::XMFLOAT4 legacyDetailParameters;
             DirectX::XMFLOAT4 legacyTextureFlags;
             DirectX::XMFLOAT4 legacyFeatureFlags;
+            DirectX::XMFLOAT4 geometryParameters;
         };
 
         static_assert(
@@ -2119,6 +2119,16 @@ namespace lts::editor
                         
                         constants.materialParameters.w = material.desc.alphaCutoff;
                         constants.materialParameters.y = texture.IsValid() ? 1.0F : 0.0F;
+                        constants.geometryParameters =
+                        {
+                            material.roadSurface
+                                ? RoadSurfaceNormalOffset
+                                : 0.0F,
+
+                            0.0F,
+                            0.0F,
+                            0.0F
+                        };
                     }
                     else
                     {
@@ -2126,6 +2136,7 @@ namespace lts::editor
                         constants.materialParameters.y = 0.0F;
                         constants.materialParameters.z = 0.0F;
                         constants.materialParameters.w = 0.5F;
+                        constants.geometryParameters = {};
                     }
 
                     const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
@@ -2629,6 +2640,16 @@ namespace lts::editor
                                     material.displacementEnabled ? 1.0F : 0.0F,
                                     material.displacementValue
                                 };
+                                constants.geometryParameters =
+                                {
+                                    material.roadSurface
+                                        ? RoadSurfaceNormalOffset
+                                        : 0.0F,
+
+                                    0.0F,
+                                    0.0F,
+                                    0.0F
+                                };
                             }
                             else
                             {
@@ -2640,6 +2661,7 @@ namespace lts::editor
                                 constants.legacyDetailParameters = {1.0F, 1.0F, 0.0F, 0.0F};
                                 constants.legacyTextureFlags = {};
                                 constants.legacyFeatureFlags = {};
+                                constants.geometryParameters = {};
                             }
 
                             const engine::graphics::PipelineStateHandle selectedPipeline = SelectMaterialPipeline(alphaMode, doubleSided);
