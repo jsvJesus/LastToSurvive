@@ -14,12 +14,12 @@ namespace engine::assets
 
         /*
          * Если FBX содержит несколько static mesh nodes,
-         * рядом с .sm будет создан общий .prefab.
+         * рядом с .mesh будет создан общий .prefab.
          */
         bool createPrefab = true;
 
         /*
-         * Создавать prefab даже для одного .sm.
+         * Создавать prefab даже для одного .mesh.
          */
         bool createSingleMeshPrefab = false;
 

@@ -1662,8 +1662,7 @@ namespace lts::editor
                 Shutdown(device);
                 return false;
             }
-
-            BuildLegacyAssetIndex();
+            
             initialized_ = true;
 
             engine::core::GetLogger().Write(
@@ -3502,11 +3501,6 @@ namespace lts::editor
             output.clear();
             try
             {
-                if (LoadLegacyMaterials(meshPath, output))
-                {
-                    return;
-                }
-
                 std::filesystem::path meshesRoot;
                 std::filesystem::path cursor = meshPath.parent_path();
                 while (!cursor.empty())

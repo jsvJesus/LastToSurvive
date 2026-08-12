@@ -13,9 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <limits>
-#include <locale>
 #include <new>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -197,44 +195,6 @@ namespace engine::assets
         }
 
         [[nodiscard]]
-        bool ReadMeaningfulLine(
-            std::istream& input,
-            std::string& line)
-        {
-            while (std::getline(input, line))
-            {
-                if (
-                    !line.empty() &&
-                    line.back() == '\r')
-                {
-                    line.pop_back();
-                }
-
-                const std::size_t first =
-                    line.find_first_not_of(
-                        " \t");
-
-                if (first == std::string::npos)
-                {
-                    continue;
-                }
-
-                if (
-                    line.compare(
-                        first,
-                        2U,
-                        "//") == 0)
-                {
-                    continue;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        [[nodiscard]]
         std::uint32_t GetMaterialSlot(
             std::unordered_map<
                 std::string,
@@ -323,464 +283,6 @@ namespace engine::assets
             }
 
             return result;
-        }
-
-        [[nodiscard]]
-        AssetResult LoadSco(
-            const std::filesystem::path& sourcePath,
-            MeshAsset& output,
-            std::vector<std::string>& materialNames,
-            std::wstring& error)
-        {
-            std::ifstream input(sourcePath);
-
-            if (!input)
-            {
-                error =
-                    L"Failed to open the SCO source file.";
-
-                return AssetResult::IoError;
-            }
-
-            input.imbue(
-                std::locale::classic());
-
-            std::string line;
-            bool objectBeginFound = false;
-
-            while (std::getline(input, line))
-            {
-                if (
-                    line.find("[ObjectBegin]") !=
-                    std::string::npos)
-                {
-                    objectBeginFound = true;
-                    break;
-                }
-            }
-
-            if (!objectBeginFound)
-            {
-                error =
-                    L"SCO does not contain [ObjectBegin].";
-
-                return AssetResult::CorruptData;
-            }
-
-            std::string objectName;
-
-            if (!ReadMeaningfulLine(input, line))
-            {
-                error =
-                    L"SCO object name is missing.";
-
-                return AssetResult::CorruptData;
-            }
-
-            {
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                std::string key;
-
-                if (
-                    !(stream >> key >> objectName) ||
-                    key != "Name=")
-                {
-                    error =
-                        L"SCO object name record is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-            }
-
-            std::array<float, 3U> pivot{};
-
-            if (!ReadMeaningfulLine(input, line))
-            {
-                error =
-                    L"SCO pivot is missing.";
-
-                return AssetResult::CorruptData;
-            }
-
-            {
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                std::string key;
-
-                if (
-                    !(stream >>
-                        key >>
-                        pivot[0] >>
-                        pivot[1] >>
-                        pivot[2]) ||
-                    key != "CentralPoint=" ||
-                    !IsFinite3(pivot))
-                {
-                    error =
-                        L"SCO pivot record is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-            }
-
-            std::uint32_t sourceVertexCount = 0U;
-
-            if (!ReadMeaningfulLine(input, line))
-            {
-                error =
-                    L"SCO vertex count is missing.";
-
-                return AssetResult::CorruptData;
-            }
-
-            {
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                std::string key;
-
-                if (
-                    !(stream >>
-                        key >>
-                        sourceVertexCount) ||
-                    key != "Verts=" ||
-                    sourceVertexCount == 0U ||
-                    sourceVertexCount >
-                        MaximumVertexCount)
-                {
-                    error =
-                        L"SCO vertex count is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-            }
-
-            std::vector<StaticMeshVertex>
-                sourceVertices;
-
-            sourceVertices.resize(
-                sourceVertexCount);
-
-            for (
-                std::uint32_t index = 0U;
-                index < sourceVertexCount;
-                ++index)
-            {
-                if (!ReadMeaningfulLine(
-                        input,
-                        line))
-                {
-                    error =
-                        L"SCO vertex data ended unexpectedly.";
-
-                    return AssetResult::CorruptData;
-                }
-
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                StaticMeshVertex vertex{};
-
-                if (
-                    !(stream >>
-                        vertex.position[0] >>
-                        vertex.position[1] >>
-                        vertex.position[2]))
-                {
-                    error =
-                        L"SCO vertex position is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-
-                if (
-                    !(stream >>
-                        vertex.normal[0] >>
-                        vertex.normal[1] >>
-                        vertex.normal[2]))
-                {
-                    stream.clear();
-
-                    vertex.normal =
-                    {
-                        0.0F,
-                        1.0F,
-                        0.0F
-                    };
-                }
-
-                if (
-                    !(stream >>
-                        vertex.tangent[0] >>
-                        vertex.tangent[1] >>
-                        vertex.tangent[2] >>
-                        vertex.tangent[3]))
-                {
-                    stream.clear();
-
-                    vertex.tangent =
-                    {
-                        1.0F,
-                        0.0F,
-                        0.0F,
-                        1.0F
-                    };
-                }
-
-                vertex.position[0] -= pivot[0];
-                vertex.position[1] -= pivot[1];
-                vertex.position[2] -= pivot[2];
-
-                NormalizeVertex(vertex);
-
-                sourceVertices[index] = vertex;
-            }
-
-            std::uint32_t faceCount = 0U;
-
-            if (!ReadMeaningfulLine(input, line))
-            {
-                error =
-                    L"SCO face count is missing.";
-
-                return AssetResult::CorruptData;
-            }
-
-            {
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                std::string key;
-
-                if (
-                    !(stream >>
-                        key >>
-                        faceCount) ||
-                    key != "Faces=" ||
-                    faceCount == 0U ||
-                    faceCount >
-                        MaximumIndexCount / 3U)
-                {
-                    error =
-                        L"SCO face count is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-            }
-
-            std::vector<StaticMeshVertex> vertices;
-            std::vector<std::uint32_t> indices;
-            std::vector<MeshSubmesh> submeshes;
-
-            vertices.reserve(
-                static_cast<std::size_t>(
-                    faceCount) *
-                3U);
-
-            indices.reserve(
-                static_cast<std::size_t>(
-                    faceCount) *
-                3U);
-
-            std::unordered_map<
-                std::string,
-                std::uint32_t> materialSlots;
-
-            std::string currentMaterial;
-            std::uint32_t currentMaterialSlot = 0U;
-            std::uint32_t currentFirstIndex = 0U;
-
-            for (
-                std::uint32_t face = 0U;
-                face < faceCount;
-                ++face)
-            {
-                if (!ReadMeaningfulLine(
-                        input,
-                        line))
-                {
-                    error =
-                        L"SCO face data ended unexpectedly.";
-
-                    return AssetResult::CorruptData;
-                }
-
-                std::istringstream stream(line);
-                stream.imbue(
-                    std::locale::classic());
-
-                int faceNumber = 0;
-
-                std::array<std::uint32_t, 3U>
-                    sourceIndices{};
-
-                std::string material;
-
-                std::array<float, 3U> textureU{};
-                std::array<float, 3U> textureV{};
-
-                if (
-                    !(stream >>
-                        faceNumber >>
-                        sourceIndices[0] >>
-                        sourceIndices[1] >>
-                        sourceIndices[2] >>
-                        material >>
-                        textureU[0] >>
-                        textureV[0] >>
-                        textureU[1] >>
-                        textureV[1] >>
-                        textureU[2] >>
-                        textureV[2]))
-                {
-                    error =
-                        L"SCO face record is invalid.";
-
-                    return AssetResult::CorruptData;
-                }
-
-                static_cast<void>(
-                    faceNumber);
-
-                if (
-                    face == 0U ||
-                    material != currentMaterial)
-                {
-                    if (face != 0U)
-                    {
-                        MeshSubmesh submesh;
-
-                        submesh.firstIndex =
-                            currentFirstIndex;
-
-                        submesh.indexCount =
-                            static_cast<std::uint32_t>(
-                                indices.size()) -
-                            currentFirstIndex;
-
-                        submesh.baseVertex = 0;
-
-                        submesh.materialSlot =
-                            currentMaterialSlot;
-
-                        submeshes.push_back(
-                            submesh);
-                    }
-
-                    currentMaterial = material;
-
-                    currentMaterialSlot =
-                        GetMaterialSlot(
-                            materialSlots,
-                            material);
-
-                    currentFirstIndex =
-                        static_cast<std::uint32_t>(
-                            indices.size());
-                }
-
-                for (
-                    std::size_t corner = 0U;
-                    corner < 3U;
-                    ++corner)
-                {
-                    if (
-                        sourceIndices[corner] >=
-                        sourceVertices.size())
-                    {
-                        error =
-                            L"SCO face references an invalid vertex.";
-
-                        return AssetResult::CorruptData;
-                    }
-
-                    if (
-                        vertices.size() >=
-                        MaximumVertexCount)
-                    {
-                        error =
-                            L"SCO expands beyond the supported vertex limit.";
-
-                        return AssetResult::ReferenceOverflow;
-                    }
-
-                    StaticMeshVertex vertex =
-                        sourceVertices[
-                            sourceIndices[corner]];
-
-                    vertex.texcoord0 =
-                    {
-                        textureU[corner],
-                        textureV[corner]
-                    };
-
-                    if (
-                        !std::isfinite(
-                            vertex.texcoord0[0]) ||
-                        !std::isfinite(
-                            vertex.texcoord0[1]))
-                    {
-                        error =
-                            L"SCO contains invalid texture coordinates.";
-
-                        return AssetResult::CorruptData;
-                    }
-
-                    const std::uint32_t newIndex =
-                        static_cast<std::uint32_t>(
-                            vertices.size());
-
-                    vertices.push_back(vertex);
-                    indices.push_back(newIndex);
-                }
-            }
-
-            MeshSubmesh finalSubmesh;
-
-            finalSubmesh.firstIndex =
-                currentFirstIndex;
-
-            finalSubmesh.indexCount =
-                static_cast<std::uint32_t>(
-                    indices.size()) -
-                currentFirstIndex;
-
-            finalSubmesh.baseVertex = 0;
-
-            finalSubmesh.materialSlot =
-                currentMaterialSlot;
-
-            submeshes.push_back(
-                finalSubmesh);
-
-            materialNames.assign(materialSlots.size(), {});
-            for (const auto& [name, slot] : materialSlots)
-            {
-                if (slot < materialNames.size())
-                {
-                    materialNames[slot] = name;
-                }
-            }
-
-            return BuildMesh(
-                vertices,
-                indices,
-                submeshes,
-                static_cast<std::uint32_t>(
-                    materialSlots.size()),
-                BuildDebugName(
-                    sourcePath,
-                    objectName),
-                output,
-                error);
         }
 
         class BinaryReader final
@@ -1299,8 +801,7 @@ namespace engine::assets
 
                 if (!output)
                 {
-                    error =
-                        L"Failed to create the temporary LTS mesh.";
+                    error = L"Failed to create the temporary mesh file.";
 
                     return AssetResult::IoError;
                 }
@@ -1315,8 +816,7 @@ namespace engine::assets
 
                 if (!output.good())
                 {
-                    error =
-                        L"Failed to write the complete LTS mesh.";
+                    error = L"Failed to write the complete mesh file.";
 
                     output.close();
 
@@ -1341,71 +841,12 @@ namespace engine::assets
 
             if (filesystemError)
             {
-                error =
-                    L"Failed to replace the destination LTS mesh.";
+                error = L"Failed to replace the destination mesh file.";
 
                 std::filesystem::remove(
                     temporaryPath,
                     filesystemError);
 
-                return AssetResult::IoError;
-            }
-
-            return AssetResult::Success;
-        }
-
-        [[nodiscard]]
-        AssetResult SaveMaterialSlots(
-            const std::filesystem::path& meshPath,
-            const std::vector<std::string>& materialNames,
-            std::wstring& error)
-        {
-            std::filesystem::path sidecarPath = meshPath;
-            sidecarPath += L".materials";
-            std::filesystem::path temporaryPath = sidecarPath;
-            temporaryPath += L".tmp";
-
-            std::error_code filesystemError;
-            std::filesystem::remove(temporaryPath, filesystemError);
-            filesystemError.clear();
-
-            {
-                std::ofstream output(
-                    temporaryPath,
-                    std::ios::binary | std::ios::trunc);
-                if (!output)
-                {
-                    error = L"Failed to create the legacy material sidecar.";
-                    return AssetResult::IoError;
-                }
-
-                for (const std::string& name : materialNames)
-                {
-                    output.write(
-                        name.data(),
-                        static_cast<std::streamsize>(name.size()));
-                    output.put('\n');
-                }
-                output.flush();
-                if (!output.good())
-                {
-                    error = L"Failed to write the legacy material sidecar.";
-                    output.close();
-                    std::filesystem::remove(temporaryPath, filesystemError);
-                    return AssetResult::IoError;
-                }
-            }
-
-            std::filesystem::remove(sidecarPath, filesystemError);
-            filesystemError.clear();
-            std::filesystem::rename(
-                temporaryPath,
-                sidecarPath,
-                filesystemError);
-            if (filesystemError)
-            {
-                error = L"Failed to replace the legacy material sidecar.";
-                std::filesystem::remove(temporaryPath, filesystemError);
                 return AssetResult::IoError;
             }
 
@@ -1418,13 +859,9 @@ namespace engine::assets
     {
         try
         {
-            const std::wstring extension =
-                Lowercase(
-                    path.extension().wstring());
-
             return
-                extension == L".sco" ||
-                extension == L".scb";
+                Lowercase(path.extension().wstring()) ==
+                L".scb";
         }
         catch (...)
         {
@@ -1451,75 +888,70 @@ namespace engine::assets
                 return AssetResult::InvalidPath;
             }
 
-            const std::wstring extension =
-                Lowercase(
-                    sourcePath.
-                        extension().
-                        wstring());
+            if (
+                Lowercase(sourcePath.extension().wstring()) !=
+                L".scb")
+            {
+                error =
+                    L"Only SCB source files are supported.";
+
+                return AssetResult::UnsupportedFormat;
+            }
+
+            if (
+                Lowercase(destinationPath.extension().wstring()) !=
+                L".mesh")
+            {
+                error =
+                    L"Converted static mesh must use the .mesh extension.";
+
+                return AssetResult::InvalidPath;
+            }
+
+            if (!HasScbSignature(sourcePath))
+            {
+                error =
+                    L"SCB signature 0xFADC0038 is missing.";
+
+                return AssetResult::CorruptData;
+            }
 
             MeshAsset mesh;
             std::vector<std::string> materialNames;
 
-            AssetResult loadResult =
-                AssetResult::UnsupportedFormat;
-
-            if (extension == L".sco" && !HasScbSignature(sourcePath))
-            {
-                loadResult =
-                    LoadSco(
-                        sourcePath,
-                        mesh,
-                        materialNames,
-                        error);
-            }
-            else if (extension == L".scb" || extension == L".sco")
-            {
-                loadResult =
-                    LoadScb(
-                        sourcePath,
-                        mesh,
-                        materialNames,
-                        error);
-            }
-            else
-            {
-                error =
-                    L"Only SCO and SCB sources are supported.";
-
-                return AssetResult::UnsupportedFormat;
-            }
+            const AssetResult loadResult =
+                LoadScb(
+                    sourcePath,
+                    mesh,
+                    materialNames,
+                    error);
 
             if (Failed(loadResult))
             {
                 return loadResult;
             }
 
-            const AssetResult saveResult = SaveMesh(
+            /*
+             * materialNames пока используются SCB-парсером для правильного
+             * построения materialSlot. Старый .mesh.materials sidecar
+             * больше не записывается.
+             */
+            return SaveMesh(
                 destinationPath,
                 mesh,
-                error);
-
-            if (Failed(saveResult))
-            {
-                return saveResult;
-            }
-
-            return SaveMaterialSlots(
-                destinationPath,
-                materialNames,
                 error);
         }
         catch (const std::bad_alloc&)
         {
             error =
-                L"Not enough memory to import the legacy mesh.";
+                L"Not enough memory to import the SCB mesh.";
 
             return AssetResult::OutOfMemory;
         }
         catch (...)
         {
             error =
-                L"Unexpected legacy mesh import failure.";
+                L"Unexpected SCB mesh import failure.";
 
             return AssetResult::InternalError;
         }

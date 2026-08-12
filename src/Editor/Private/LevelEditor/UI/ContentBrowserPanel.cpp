@@ -82,7 +82,7 @@ namespace lts::editor
                             std::towlower(character));
                     });
 
-                if (extension == L".sm")
+                if (extension == L".mesh")
                 {
                     return ContentAssetKind::StaticMesh;
                 }
@@ -688,7 +688,7 @@ namespace lts::editor
             }
 
             /*
-             * Обычные .sm разрешено перетаскивать
+             * Обычные .mesh разрешено перетаскивать
              * существующим mesh payload.
              *
              * Prefab пока создаётся двойным кликом.
@@ -832,7 +832,7 @@ namespace lts::editor
         if (visibleAssetCount == 0U)
         {
             ImGui::TextDisabled(
-                "No .sm or .prefab assets found "
+                "No .mesh or .prefab assets found "
                 "in the selected folder");
         }
 

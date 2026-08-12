@@ -389,7 +389,7 @@ bool BuildFixture(MemorySource &source, const bool useTexture) {
   assets::AssetData data;
   if (assets::Failed(assets::LtsMeshWriter::Encode(mesh, data)))
     return false;
-  source.Add(Path("mesh.ltsmesh"), data);
+  source.Add(Path("mesh.mesh"), data);
   assets::MaterialAssetDesc materialDescription;
   materialDescription.debugName = "material";
   if (useTexture) {
@@ -404,7 +404,7 @@ bool BuildFixture(MemorySource &source, const bool useTexture) {
     return false;
   source.Add(Path("material.ltsmat"), data);
   assets::StaticModelAsset model;
-  if (assets::Failed(model.Initialize(Path("mesh.ltsmesh"),
+  if (assets::Failed(model.Initialize(Path("mesh.mesh"),
                                       {Path("material.ltsmat")}, "model")) ||
       assets::Failed(assets::LtsStaticModelWriter::Encode(model, data)))
     return false;

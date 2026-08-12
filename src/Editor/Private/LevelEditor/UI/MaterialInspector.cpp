@@ -1203,7 +1203,7 @@ namespace lts::editor
                             meshFile_);
                 }
             }
-            else if (extension == L".sm")
+            else if (extension == L".mesh")
             {
                 materialFiles =
                     FindMirroredMaterialFiles(
@@ -1212,7 +1212,7 @@ namespace lts::editor
             else
             {
                 status_ =
-                    "Material Inspector supports only .sm and .skm.";
+                    "Material Inspector supports only .mesh and .skm.";
 
                 statusIsError_ = true;
 

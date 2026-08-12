@@ -405,7 +405,7 @@ int main()
 
     assets::AssetData mesh16,mesh32,materialData,materialTextureData;
     if(!Check(assets::Succeeded(BuildTestMesh(mesh16))&&assets::Succeeded(BuildTestMesh(mesh32,true))&&assets::Succeeded(BuildTestMaterial(materialData))&&assets::Succeeded(BuildTestMaterial(materialTextureData,"textures/test.dds")),"mesh/material fixtures"))return 1;
-    assets::AssetPath meshPath,materialPath; (void)assets::AssetPath::TryCreate("meshes/test.ltsmesh",meshPath);(void)assets::AssetPath::TryCreate("materials/test.ltsmat",materialPath);
+    assets::AssetPath meshPath,materialPath; (void)assets::AssetPath::TryCreate("meshes/test.mesh",meshPath);(void)assets::AssetPath::TryCreate("materials/test.ltsmat",materialPath);
     assets::AssetMetadata meshMetadata;meshMetadata.path=meshPath;meshMetadata.id=meshPath.GetId();meshMetadata.type=assets::AssetType::Mesh;meshMetadata.sourceSize=mesh16.GetSize();
     assets::AssetMetadata materialMetadata;materialMetadata.path=materialPath;materialMetadata.id=materialPath.GetId();materialMetadata.type=assets::AssetType::Material;materialMetadata.sourceSize=materialData.GetSize();
     std::unique_ptr<assets::LoadedAsset> foundationAsset;
@@ -455,7 +455,7 @@ int main()
     (void)TextData("[MaterialBegin]\nName=X\n[MaterialEnd]\n[MaterialBegin]\nName=x\n[MaterialEnd]\n",invalidText);if(!Check(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(invalidText,legacyLibrary)==assets::AssetResult::AlreadyExists,"duplicate material names rejected"))return 1;
     (void)TextData("[MaterialBegin]\nName=X\nNormalMap=a.dds\nnormalmap=b.dds\n[MaterialEnd]\n",invalidText);if(!Check(engine::legacy::assets::LegacyMaterialLibraryDecoder::Decode(invalidText,legacyLibrary)==assets::AssetResult::AlreadyExists,"conflicting duplicate fields rejected"))return 1;
 
-    assets::AssetPath modelMeshPath,modelMaterialPath,modelPath;(void)assets::AssetPath::TryCreate("models/test/model.ltsmesh",modelMeshPath);(void)assets::AssetPath::TryCreate("models/test/test.ltsmat",modelMaterialPath);(void)assets::AssetPath::TryCreate("models/test/model.ltsmodel",modelPath);
+    assets::AssetPath modelMeshPath,modelMaterialPath,modelPath;(void)assets::AssetPath::TryCreate("models/test/model.mesh",modelMeshPath);(void)assets::AssetPath::TryCreate("models/test/test.ltsmat",modelMaterialPath);(void)assets::AssetPath::TryCreate("models/test/model.ltsmodel",modelPath);
     std::vector<assets::AssetPath> modelMaterials;modelMaterials.push_back(modelMaterialPath);assets::StaticModelAsset staticModel;
     if(!Check(assets::Succeeded(staticModel.Initialize(std::move(modelMeshPath),std::move(modelMaterials),"test model")),"StaticModelAsset valid"))return 1;
     assets::AssetData modelBytesA,modelBytesB;if(!Check(assets::Succeeded(assets::LtsStaticModelWriter::Encode(staticModel,modelBytesA))&&assets::Succeeded(assets::LtsStaticModelWriter::Encode(staticModel,modelBytesB))&&modelBytesA.GetSize()==modelBytesB.GetSize()&&std::memcmp(modelBytesA.GetData(),modelBytesB.GetData(),modelBytesA.GetSize())==0,"deterministic static model writer"))return 1;

@@ -33,7 +33,7 @@ namespace engine::assets
                 path.View();
 
             constexpr std::string_view suffix =
-                ".sm";
+                ".mesh";
 
             return
                 value.size() >= suffix.size() &&
@@ -96,11 +96,11 @@ namespace engine::assets
                     second)
             {
                 /*
-                 * Один и тот же .sm может иметь
+                 * Один и тот же .mesh может иметь
                  * несколько FBX instances.
                  *
                  * Пока импортёр создаёт отдельный
-                 * .sm для каждого instance, поэтому
+                 * .mesh для каждого instance, поэтому
                  * дубликат пути считается ошибкой.
                  */
                 return false;

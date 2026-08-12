@@ -33,8 +33,6 @@ namespace engine::assets
      *
      * LTS_PREFAB 1
      * name "Truck_02"
-     * part "Body" "Data/Meshes/.../Body.sm"
-     * part "Door" "Data/Meshes/.../Door.sm"
      *
      * Prefab разворачивается в обычные SceneEntity.
      * Runtime loader для prefab пока не требуется.

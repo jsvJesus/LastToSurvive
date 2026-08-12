@@ -20,7 +20,7 @@ AssetResult StaticModelAsset::Initialize(
 {
     Clear();
     if (!meshPath.IsValid() ||
-        !HasSuffix(meshPath, ".sm") ||
+        !HasSuffix(meshPath, ".mesh") ||
         materialPaths.empty() ||
         materialPaths.size() > MaximumMaterialCount ||
         debugName.size() > MaximumDebugNameLength)

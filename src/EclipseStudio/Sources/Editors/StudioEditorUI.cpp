@@ -719,8 +719,7 @@ namespace studio::editor
 
             g_levelLoadStats = {};
             g_loadedMapName.clear();
-            g_levelLoadStatus =
-                "Loading LevelData.xml and converting uncached SCO meshes...";
+            g_levelLoadStatus = "Converting SCB assets to Data/StaticMeshes/*.mesh...";
 
             try
             {

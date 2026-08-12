@@ -504,7 +504,7 @@ namespace lts::editor
             /*
              * Все части имеют одинаковый transform,
              * потому что текущий FBX importer уже
-             * запекает geometry_to_world внутрь .sm.
+             * запекает geometry_to_world внутрь .mesh.
              *
              * Выделяем всю группу, чтобы gizmo
              * двигал prefab целиком.

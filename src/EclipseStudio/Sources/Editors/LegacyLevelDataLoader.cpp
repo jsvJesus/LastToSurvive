@@ -5,27 +5,86 @@
 
 #include <pugixml.hpp>
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <Windows.h>
+
 #include <algorithm>
+#include <cstdint>
 #include <cwctype>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <string_view>
 #include <system_error>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 namespace studio::editor
 {
     namespace
     {
-        [[nodiscard]] std::wstring ToWide(const char* const text)
+        constexpr std::uint32_t ScbSignature =
+            0xFADC0038U;
+
+        constexpr std::size_t MaximumReportedErrors =
+            12U;
+
+        struct MeshReference final
         {
-            if (text == nullptr || *text == '\0')
+            bool sourceReference = false;
+
+            std::filesystem::path sourcePath;
+            std::filesystem::path meshPath;
+            std::filesystem::path logicalMeshPath;
+        };
+
+        struct CachedMesh final
+        {
+            bool available = false;
+
+            std::filesystem::path path;
+        };
+
+        struct PendingObject final
+        {
+            pugi::xml_node node;
+
+            std::wstring originalName;
+
+            std::filesystem::path meshPath;
+            std::filesystem::path logicalMeshPath;
+
+            engine::scene::SceneTransform transform;
+
+            std::size_t objectIndex = 0U;
+
+            bool rewriteXml = false;
+        };
+
+        [[nodiscard]]
+        std::wstring ToWide(
+            const char* const text)
+        {
+            if (
+                text == nullptr ||
+                *text == '\0')
             {
                 return {};
             }
 
-            return std::filesystem::u8path(text).generic_wstring();
+            return
+                std::filesystem::u8path(text).
+                    generic_wstring();
         }
 
-        [[nodiscard]] std::wstring Lowercase(std::wstring value)
+        [[nodiscard]]
+        std::wstring Lowercase(
+            std::wstring value)
         {
             std::transform(
                 value.begin(),
@@ -33,23 +92,30 @@ namespace studio::editor
                 value.begin(),
                 [](const wchar_t character)
                 {
-                    return static_cast<wchar_t>(std::towlower(character));
+                    return static_cast<wchar_t>(
+                        std::towlower(character));
                 });
 
             return value;
         }
 
-        [[nodiscard]] bool IsSafeRelativePath(
+        [[nodiscard]]
+        bool IsSafeRelativePath(
             const std::filesystem::path& path) noexcept
         {
-            if (path.empty() || path.is_absolute() || path.has_root_path())
+            if (
+                path.empty() ||
+                path.is_absolute() ||
+                path.has_root_path())
             {
                 return false;
             }
 
-            for (const std::filesystem::path& part : path)
+            for (
+                const std::filesystem::path& component :
+                path)
             {
-                if (part == L"..")
+                if (component == L"..")
                 {
                     return false;
                 }
@@ -58,73 +124,470 @@ namespace studio::editor
             return true;
         }
 
-        [[nodiscard]] float AttributeFloat(
+        [[nodiscard]]
+        bool ExtractRelativePath(
+            const std::filesystem::path& logicalPath,
+            const std::wstring_view rootName,
+            std::filesystem::path& relativePath)
+        {
+            relativePath.clear();
+
+            if (!IsSafeRelativePath(logicalPath))
+            {
+                return false;
+            }
+
+            auto component =
+                logicalPath.begin();
+
+            if (
+                component == logicalPath.end() ||
+                Lowercase(component->wstring()) !=
+                    L"data")
+            {
+                return false;
+            }
+
+            ++component;
+
+            if (
+                component == logicalPath.end() ||
+                Lowercase(component->wstring()) !=
+                    rootName)
+            {
+                return false;
+            }
+
+            ++component;
+
+            for (
+                ;
+                component != logicalPath.end();
+                ++component)
+            {
+                relativePath /= *component;
+            }
+
+            return
+                IsSafeRelativePath(relativePath);
+        }
+
+        [[nodiscard]]
+        bool BuildMeshReference(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& logicalPath,
+            MeshReference& reference)
+        {
+            reference = {};
+
+            const std::filesystem::path normalized =
+                logicalPath.lexically_normal();
+
+            const std::wstring extension =
+                Lowercase(
+                    normalized.extension().wstring());
+
+            std::filesystem::path relativePath;
+
+            /*
+             * LevelData.xml уже был мигрирован.
+             * Runtime читает только StaticMeshes/*.mesh.
+             */
+            if (extension == L".mesh")
+            {
+                if (!ExtractRelativePath(
+                        normalized,
+                        L"staticmeshes",
+                        relativePath))
+                {
+                    return false;
+                }
+
+                reference.meshPath =
+                    workspaceRoot /
+                    L"bin" /
+                    L"Data" /
+                    L"StaticMeshes" /
+                    relativePath;
+
+                reference.logicalMeshPath =
+                    std::filesystem::path(L"Data") /
+                    L"StaticMeshes" /
+                    relativePath;
+
+                return true;
+            }
+
+            /*
+             * В старом XML может быть написано .sco или .scb.
+             * В обоих случаях физически читается только SCB.
+             */
+            if (
+                extension != L".sco" &&
+                extension != L".scb")
+            {
+                return false;
+            }
+
+            if (!ExtractRelativePath(
+                    normalized,
+                    L"objectsdepot",
+                    relativePath))
+            {
+                return false;
+            }
+
+            std::filesystem::path sourceRelativePath =
+                relativePath;
+
+            sourceRelativePath.replace_extension(
+                L".scb");
+
+            std::filesystem::path meshRelativePath =
+                relativePath;
+
+            meshRelativePath.replace_extension(
+                L".mesh");
+
+            reference.sourceReference = true;
+
+            reference.sourcePath =
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"ObjectsDepot" /
+                sourceRelativePath;
+
+            reference.meshPath =
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"StaticMeshes" /
+                meshRelativePath;
+
+            reference.logicalMeshPath =
+                std::filesystem::path(L"Data") /
+                L"StaticMeshes" /
+                meshRelativePath;
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool HasScbSignature(
+            const std::filesystem::path& path) noexcept
+        {
+            try
+            {
+                std::ifstream input(
+                    path,
+                    std::ios::binary);
+
+                std::uint32_t signature = 0U;
+
+                return
+                    input.read(
+                        reinterpret_cast<char*>(
+                            &signature),
+                        sizeof(signature)).
+                        good() &&
+                    signature == ScbSignature;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        float AttributeFloat(
             const pugi::xml_attribute& attribute,
             const float fallback) noexcept
         {
-            return attribute ? attribute.as_float() : fallback;
+            return
+                attribute
+                    ? attribute.as_float()
+                    : fallback;
         }
 
         void ReadTransform(
             const pugi::xml_node& objectNode,
             engine::scene::SceneTransform& transform) noexcept
         {
-            const pugi::xml_node position = objectNode.child("position");
+            const pugi::xml_node position =
+                objectNode.child("position");
+
             transform.position =
             {
-                AttributeFloat(position.attribute("x"), 0.0F),
-                AttributeFloat(position.attribute("y"), 0.0F),
-                AttributeFloat(position.attribute("z"), 0.0F)
+                AttributeFloat(
+                    position.attribute("x"),
+                    0.0F),
+
+                AttributeFloat(
+                    position.attribute("y"),
+                    0.0F),
+
+                AttributeFloat(
+                    position.attribute("z"),
+                    0.0F)
             };
 
-            const pugi::xml_node gameObject = objectNode.child("gameObject");
-            pugi::xml_node rotation = gameObject.child("rotation");
+            const pugi::xml_node gameObject =
+                objectNode.child("gameObject");
+
+            pugi::xml_node rotation =
+                gameObject.child("rotation");
 
             if (!rotation)
             {
-                rotation = objectNode.child("rotation");
+                rotation =
+                    objectNode.child("rotation");
             }
 
             transform.rotationDegrees =
             {
-                AttributeFloat(rotation.attribute("x"), 0.0F),
-                AttributeFloat(rotation.attribute("y"), 0.0F),
-                AttributeFloat(rotation.attribute("z"), 0.0F)
+                AttributeFloat(
+                    rotation.attribute("x"),
+                    0.0F),
+
+                AttributeFloat(
+                    rotation.attribute("y"),
+                    0.0F),
+
+                AttributeFloat(
+                    rotation.attribute("z"),
+                    0.0F)
             };
 
-            pugi::xml_node scale = gameObject.child("scale");
+            pugi::xml_node scale =
+                gameObject.child("scale");
 
             if (!scale)
             {
-                scale = objectNode.child("scale");
+                scale =
+                    objectNode.child("scale");
             }
 
             if (scale)
             {
                 transform.scale =
                 {
-                    AttributeFloat(scale.attribute("x"), 1.0F),
-                    AttributeFloat(scale.attribute("y"), 1.0F),
-                    AttributeFloat(scale.attribute("z"), 1.0F)
+                    AttributeFloat(
+                        scale.attribute("x"),
+                        1.0F),
+
+                    AttributeFloat(
+                        scale.attribute("y"),
+                        1.0F),
+
+                    AttributeFloat(
+                        scale.attribute("z"),
+                        1.0F)
                 };
             }
         }
 
-        struct CachedMeshPath final
+        void AddError(
+            std::vector<std::string>& errors,
+            const std::string_view message,
+            const std::filesystem::path& path)
         {
-            bool available = false;
-            std::wstring path;
-        };
+            if (
+                errors.size() >=
+                MaximumReportedErrors)
+            {
+                return;
+            }
 
-        [[nodiscard]] CachedMeshPath ResolveMesh(
-            const std::filesystem::path& workspaceRoot,
-            const std::filesystem::path& cacheRoot,
-            const std::filesystem::path& logicalPath,
-            LegacyLevelLoadStats& stats,
-            std::unordered_map<std::wstring, CachedMeshPath>& meshCache)
+            std::string text(message);
+
+            text += " ";
+            text += path.generic_u8string();
+
+            errors.push_back(
+                std::move(text));
+        }
+
+        [[nodiscard]]
+        std::filesystem::path FindSourceTexturesDirectory(
+            const std::filesystem::path& sourceMeshPath)
         {
-            const std::wstring key = Lowercase(logicalPath.generic_wstring());
-            const auto existing = meshCache.find(key);
+            std::filesystem::path directory =
+                sourceMeshPath.parent_path();
+
+            while (!directory.empty())
+            {
+                if (
+                    Lowercase(
+                        directory.filename().wstring()) ==
+                    L"objectsdepot")
+                {
+                    break;
+                }
+
+                std::error_code error;
+
+                const std::filesystem::path textures =
+                    directory / L"Textures";
+
+                if (
+                    std::filesystem::is_directory(
+                        textures,
+                        error) &&
+                    !error)
+                {
+                    return textures;
+                }
+
+                const std::filesystem::path parent =
+                    directory.parent_path();
+
+                if (parent == directory)
+                {
+                    break;
+                }
+
+                directory = parent;
+            }
+
+            return {};
+        }
+
+        [[nodiscard]]
+        bool PreparePackage(
+            const MeshReference& reference,
+            std::unordered_set<std::wstring>&
+                copiedTextureDirectories,
+            std::vector<std::string>& errors)
+        {
+            std::error_code filesystemError;
+
+            const std::filesystem::path packageDirectory =
+                reference.meshPath.parent_path();
+
+            for (
+                const wchar_t* const directoryName :
+                {
+                    L"Materials",
+                    L"Textures",
+                    L"Physics"
+                })
+            {
+                filesystemError.clear();
+
+                std::filesystem::create_directories(
+                    packageDirectory /
+                        directoryName,
+                    filesystemError);
+
+                if (filesystemError)
+                {
+                    AddError(
+                        errors,
+                        "Cannot create output directory:",
+                        packageDirectory /
+                            directoryName);
+
+                    return false;
+                }
+            }
+
+            const std::filesystem::path sourceTextures =
+                FindSourceTexturesDirectory(
+                    reference.sourcePath);
+
+            if (sourceTextures.empty())
+            {
+                return true;
+            }
+
+            const std::wstring textureKey =
+                Lowercase(
+                    sourceTextures.
+                        lexically_normal().
+                        wstring());
+
+            if (
+                !copiedTextureDirectories.
+                    insert(textureKey).
+                    second)
+            {
+                return true;
+            }
+
+            filesystemError.clear();
+
+            std::filesystem::copy(
+                sourceTextures,
+                packageDirectory /
+                    L"Textures",
+                std::filesystem::copy_options::recursive |
+                    std::filesystem::copy_options::update_existing,
+                filesystemError);
+
+            if (filesystemError)
+            {
+                AddError(
+                    errors,
+                    "Cannot copy original textures:",
+                    sourceTextures);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool MeshFileExists(
+            const std::filesystem::path& path) noexcept
+        {
+            try
+            {
+                std::error_code error;
+
+                if (
+                    !std::filesystem::is_regular_file(
+                        path,
+                        error) ||
+                    error)
+                {
+                    return false;
+                }
+
+                const std::uintmax_t fileSize =
+                    std::filesystem::file_size(
+                        path,
+                        error);
+
+                return
+                    !error &&
+                    fileSize >= 160U;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        CachedMesh ResolveMesh(
+            const MeshReference& reference,
+            LegacyLevelLoadStats& stats,
+            std::unordered_map<
+                std::wstring,
+                CachedMesh>& meshCache,
+            std::unordered_set<std::wstring>&
+                copiedTextureDirectories,
+            std::vector<std::string>& errors)
+        {
+            const std::wstring key =
+                Lowercase(
+                    reference.logicalMeshPath.
+                        generic_wstring());
+
+            const auto existing =
+                meshCache.find(key);
 
             if (existing != meshCache.end())
             {
@@ -132,80 +595,135 @@ namespace studio::editor
             }
 
             ++stats.uniqueMeshes;
-            CachedMeshPath resolved;
-            std::filesystem::path sourcePath =
-                workspaceRoot / L"bin" / logicalPath;
-            std::error_code error;
 
-            if (!std::filesystem::is_regular_file(sourcePath, error) || error)
+            CachedMesh result;
+            result.path = reference.meshPath;
+
+            /*
+             * XML уже указывает на готовый .mesh.
+             */
+            if (!reference.sourceReference)
             {
-                error.clear();
-                std::filesystem::path alternateSource = sourcePath;
-                const std::wstring extension =
-                    Lowercase(alternateSource.extension().wstring());
-                alternateSource.replace_extension(
-                    extension == L".sco" ? L".scb" : L".sco");
+                result.available =
+                    MeshFileExists(
+                        reference.meshPath);
 
-                if (
-                    !std::filesystem::is_regular_file(alternateSource, error) ||
-                    error)
+                if (result.available)
                 {
-                    ++stats.missingMeshes;
-                    meshCache.emplace(key, resolved);
-                    return resolved;
-                }
-
-                sourcePath = std::move(alternateSource);
-            }
-
-            std::filesystem::path destinationPath =
-                cacheRoot / L"Meshes" / logicalPath;
-            destinationPath.replace_extension(L".ltsmesh");
-
-            bool needsImport = true;
-            error.clear();
-
-            if (std::filesystem::is_regular_file(destinationPath, error) && !error)
-            {
-                std::filesystem::path materialSidecar = destinationPath;
-                materialSidecar += L".materials";
-
-                if (!std::filesystem::is_regular_file(materialSidecar, error) || error)
-                {
-                    error.clear();
+                    ++stats.cachedMeshes;
                 }
                 else
                 {
+                    ++stats.failedMeshes;
+
+                    AddError(
+                        errors,
+                        "Missing or invalid .mesh:",
+                        reference.meshPath);
+                }
+
+                meshCache.emplace(
+                    key,
+                    result);
+
+                return result;
+            }
+
+            std::error_code filesystemError;
+
+            if (
+                !std::filesystem::is_regular_file(
+                    reference.sourcePath,
+                    filesystemError) ||
+                filesystemError ||
+                !HasScbSignature(
+                    reference.sourcePath))
+            {
+                ++stats.missingMeshes;
+
+                AddError(
+                    errors,
+                    "Missing or invalid SCB:",
+                    reference.sourcePath);
+
+                meshCache.emplace(
+                    key,
+                    result);
+
+                return result;
+            }
+
+            if (!PreparePackage(
+                    reference,
+                    copiedTextureDirectories,
+                    errors))
+            {
+                ++stats.failedMeshes;
+
+                meshCache.emplace(
+                    key,
+                    result);
+
+                return result;
+            }
+
+            bool needsImport = true;
+
+            filesystemError.clear();
+
+            if (
+                MeshFileExists(
+                    reference.meshPath))
+            {
                 const auto sourceTime =
-                    std::filesystem::last_write_time(sourcePath, error);
+                    std::filesystem::last_write_time(
+                        reference.sourcePath,
+                        filesystemError);
 
-                if (!error)
+                if (!filesystemError)
                 {
-                    const auto destinationTime =
-                        std::filesystem::last_write_time(destinationPath, error);
+                    const auto meshTime =
+                        std::filesystem::last_write_time(
+                            reference.meshPath,
+                            filesystemError);
 
-                    if (!error && destinationTime >= sourceTime)
+                    if (
+                        !filesystemError &&
+                        meshTime >= sourceTime)
                     {
                         needsImport = false;
                     }
-                }
                 }
             }
 
             if (needsImport)
             {
                 std::wstring importError;
+
                 const engine::assets::AssetResult importResult =
                     engine::assets::LegacyMeshImporter::Import(
-                        sourcePath,
-                        destinationPath,
+                        reference.sourcePath,
+                        reference.meshPath,
                         importError);
 
-                if (engine::assets::Failed(importResult))
+                if (
+                    engine::assets::Failed(
+                        importResult) ||
+                    !MeshFileExists(
+                        reference.meshPath))
                 {
                     ++stats.failedMeshes;
-                    meshCache.emplace(key, resolved);
-                    return resolved;
+
+                    AddError(
+                        errors,
+                        "SCB conversion failed:",
+                        reference.sourcePath);
+
+                    meshCache.emplace(
+                        key,
+                        result);
+
+                    return result;
                 }
 
                 ++stats.convertedMeshes;
@@ -215,10 +733,129 @@ namespace studio::editor
                 ++stats.cachedMeshes;
             }
 
-            resolved.available = true;
-            resolved.path = destinationPath.lexically_normal().generic_wstring();
-            meshCache.emplace(key, resolved);
-            return resolved;
+            result.available = true;
+
+            meshCache.emplace(
+                key,
+                result);
+
+            return result;
+        }
+
+        [[nodiscard]]
+        bool SaveLevelData(
+            const std::filesystem::path& levelDataPath,
+            const pugi::xml_document& document,
+            std::string& error)
+        {
+            std::filesystem::path temporaryPath =
+                levelDataPath;
+
+            temporaryPath +=
+                L".mesh_migration.tmp";
+
+            std::filesystem::path backupPath =
+                levelDataPath;
+
+            backupPath +=
+                L".before_mesh_migration.bak";
+
+            std::error_code filesystemError;
+
+            std::filesystem::remove(
+                temporaryPath,
+                filesystemError);
+
+            const std::string temporaryUtf8 =
+                temporaryPath.u8string();
+
+            if (!document.save_file(
+                    temporaryUtf8.c_str(),
+                    "\t",
+                    pugi::format_default,
+                    pugi::encoding_utf8))
+            {
+                error =
+                    "Cannot write temporary LevelData.xml.";
+
+                return false;
+            }
+
+            /*
+             * Backup создаётся только один раз.
+             */
+            if (!CopyFileW(
+                    levelDataPath.c_str(),
+                    backupPath.c_str(),
+                    TRUE))
+            {
+                const DWORD copyError =
+                    GetLastError();
+
+                if (copyError != ERROR_FILE_EXISTS)
+                {
+                    std::filesystem::remove(
+                        temporaryPath,
+                        filesystemError);
+
+                    error =
+                        "Cannot create LevelData.xml backup.";
+
+                    return false;
+                }
+            }
+
+            /*
+             * Оригинальный XML заменяется только после полной
+             * конвертации всех уникальных SCB.
+             */
+            if (!MoveFileExW(
+                    temporaryPath.c_str(),
+                    levelDataPath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING |
+                        MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(
+                    temporaryPath,
+                    filesystemError);
+
+                error =
+                    "Cannot replace LevelData.xml.";
+
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]]
+        std::string BuildErrorMessage(
+            const LegacyLevelLoadStats& stats,
+            const std::vector<std::string>& errors)
+        {
+            std::string message =
+                "Static mesh migration stopped. "
+                "LevelData.xml was not changed. ";
+
+            message += "Missing SCB: ";
+            message +=
+                std::to_string(
+                    stats.missingMeshes);
+
+            message += ", failed: ";
+            message +=
+                std::to_string(
+                    stats.failedMeshes);
+
+            for (
+                const std::string& item :
+                errors)
+            {
+                message += "\n";
+                message += item;
+            }
+
+            return message;
         }
     }
 
@@ -229,116 +866,295 @@ namespace studio::editor
     {
         LegacyLevelLoadResult result;
 
+        /*
+         * mapName раньше использовался для
+         * game/Cache/LegacyLevels.
+         * Этого cache-каталога больше нет.
+         */
+        static_cast<void>(mapName);
+
         try
         {
-            if (workspaceRoot.empty() || levelDataPath.empty())
+            if (
+                workspaceRoot.empty() ||
+                levelDataPath.empty())
             {
-                result.error = "Workspace or LevelData.xml path is empty.";
+                result.error =
+                    "Workspace or LevelData.xml path is empty.";
+
                 return result;
             }
 
             pugi::xml_document document;
-            const std::string levelDataUtf8 = levelDataPath.u8string();
+
+            const std::string levelDataUtf8 =
+                levelDataPath.u8string();
+
             const pugi::xml_parse_result parseResult =
-                document.load_file(levelDataUtf8.c_str());
+                document.load_file(
+                    levelDataUtf8.c_str());
 
             if (!parseResult)
             {
-                result.error = "Cannot parse LevelData.xml: ";
-                result.error += parseResult.description();
+                result.error =
+                    "Cannot parse LevelData.xml: ";
+
+                result.error +=
+                    parseResult.description();
+
                 return result;
             }
 
-            const pugi::xml_node level = document.child("level");
+            const pugi::xml_node level =
+                document.child("level");
 
             if (!level)
             {
-                result.error = "LevelData.xml has no <level> root element.";
+                result.error =
+                    "LevelData.xml has no <level> root element.";
+
                 return result;
             }
 
-            std::size_t objectCount = 0U;
+            std::vector<PendingObject>
+                pendingObjects;
 
-            for (pugi::xml_node object = level.child("object"); object;
-                 object = object.next_sibling("object"))
-            {
-                ++objectCount;
-            }
+            pendingObjects.reserve(20000U);
 
-            result.entities.reserve(objectCount);
-            std::unordered_map<std::wstring, CachedMeshPath> meshCache;
+            std::unordered_map<
+                std::wstring,
+                CachedMesh> meshCache;
+
             meshCache.reserve(1024U);
-            const std::filesystem::path cacheRoot =
-                workspaceRoot / L"game" / L"Cache" / L"LegacyLevels" / mapName;
+
+            std::unordered_set<std::wstring>
+                copiedTextureDirectories;
+
+            copiedTextureDirectories.reserve(
+                256U);
+
+            std::vector<std::string>
+                reportedErrors;
+
+            reportedErrors.reserve(
+                MaximumReportedErrors);
+
             std::size_t objectIndex = 0U;
 
-            for (pugi::xml_node object = level.child("object"); object;
-                 object = object.next_sibling("object"))
+            for (
+                pugi::xml_node object =
+                    level.child("object");
+
+                object;
+
+                object =
+                    object.next_sibling("object"))
             {
                 ++objectIndex;
                 ++result.stats.totalObjects;
+
                 const std::wstring className =
-                    ToWide(object.attribute("className").value());
-                const std::wstring fileName =
-                    ToWide(object.attribute("fileName").value());
+                    ToWide(
+                        object.attribute(
+                            "className").
+                            value());
 
                 if (className != L"obj_Building")
                 {
                     continue;
                 }
 
-                engine::scene::SceneEntity entity;
-                entity.kind = engine::scene::SceneEntityKind::Empty;
-                ReadTransform(object, entity.transform);
-                entity.name = fileName.empty() ? className :
-                    std::filesystem::path(fileName).stem().wstring();
-                entity.name += L" #" + std::to_wstring(objectIndex);
-                entity.editorFolder = L"LevelData/" + className;
+                const std::wstring fileName =
+                    ToWide(
+                        object.attribute(
+                            "fileName").
+                            value());
 
-                if (!fileName.empty())
+                MeshReference reference;
+
+                if (
+                    fileName.empty() ||
+                    !BuildMeshReference(
+                        workspaceRoot,
+                        std::filesystem::path(
+                            fileName),
+                        reference))
                 {
-                    const std::filesystem::path logicalPath =
-                        std::filesystem::path(fileName).lexically_normal();
+                    ++result.stats.failedMeshes;
 
-                    if (
-                        IsSafeRelativePath(logicalPath) &&
-                        engine::assets::LegacyMeshImporter::IsSupportedSource(
-                            logicalPath))
-                    {
-                        const CachedMeshPath mesh = ResolveMesh(
-                            workspaceRoot,
-                            cacheRoot,
-                            logicalPath,
-                            result.stats,
-                            meshCache);
+                    AddError(
+                        reportedErrors,
+                        "Unsupported obj_Building path:",
+                        std::filesystem::path(
+                            fileName));
 
-                        if (mesh.available)
-                        {
-                            entity.staticMesh.emplace();
-                            entity.staticMesh->assetPath = mesh.path;
-                            entity.staticMesh->visible = true;
-                            entity.staticMesh->castShadows = true;
-                            ++result.stats.staticMeshObjects;
-                        }
-                    }
+                    continue;
                 }
 
-                result.entities.push_back(std::move(entity));
-                ++result.stats.importedObjects;
+                const CachedMesh mesh =
+                    ResolveMesh(
+                        reference,
+                        result.stats,
+                        meshCache,
+                        copiedTextureDirectories,
+                        reportedErrors);
+
+                if (!mesh.available)
+                {
+                    continue;
+                }
+
+                PendingObject pending;
+
+                pending.node = object;
+                pending.originalName = fileName;
+                pending.meshPath = mesh.path;
+                pending.logicalMeshPath =
+                    reference.logicalMeshPath;
+                pending.objectIndex =
+                    objectIndex;
+                pending.rewriteXml =
+                    reference.sourceReference;
+
+                ReadTransform(
+                    object,
+                    pending.transform);
+
+                pendingObjects.push_back(
+                    std::move(pending));
             }
 
+            /*
+             * Если хотя бы один SCB отсутствует или не конвертируется,
+             * XML остаётся без изменений.
+             */
+            if (
+                result.stats.missingMeshes != 0U ||
+                result.stats.failedMeshes != 0U)
+            {
+                result.error =
+                    BuildErrorMessage(
+                        result.stats,
+                        reportedErrors);
+
+                return result;
+            }
+
+            bool xmlChanged = false;
+
+            for (
+                const PendingObject& pending :
+                pendingObjects)
+            {
+                if (!pending.rewriteXml)
+                {
+                    continue;
+                }
+
+                pugi::xml_attribute fileName =
+                    pending.node.attribute(
+                        "fileName");
+
+                const std::string meshPath =
+                    pending.logicalMeshPath.
+                        generic_u8string();
+
+                if (
+                    !fileName ||
+                    !fileName.set_value(
+                        meshPath.c_str()))
+                {
+                    result.error =
+                        "Cannot update obj_Building path. "
+                        "LevelData.xml was not changed.";
+
+                    return result;
+                }
+
+                xmlChanged = true;
+            }
+
+            if (
+                xmlChanged &&
+                !SaveLevelData(
+                    levelDataPath,
+                    document,
+                    result.error))
+            {
+                return result;
+            }
+
+            result.entities.reserve(
+                pendingObjects.size());
+
+            for (
+                const PendingObject& pending :
+                pendingObjects)
+            {
+                engine::scene::SceneEntity entity;
+
+                entity.kind =
+                    engine::scene::
+                        SceneEntityKind::Empty;
+
+                entity.transform =
+                    pending.transform;
+
+                entity.name =
+                    std::filesystem::path(
+                        pending.originalName).
+                        stem().
+                        wstring();
+
+                entity.name +=
+                    L" #" +
+                    std::to_wstring(
+                        pending.objectIndex);
+
+                entity.editorFolder =
+                    L"LevelData/obj_Building";
+
+                entity.staticMesh.emplace();
+
+                entity.staticMesh->assetPath =
+                    pending.meshPath.
+                        lexically_normal().
+                        generic_wstring();
+
+                entity.staticMesh->visible = true;
+
+                entity.staticMesh->castShadows =
+                    true;
+
+                result.entities.push_back(
+                    std::move(entity));
+            }
+
+            result.stats.importedObjects =
+                result.entities.size();
+
+            result.stats.staticMeshObjects =
+                result.entities.size();
+
             result.succeeded = true;
+
             return result;
         }
         catch (const std::exception& exception)
         {
-            result.error = "LevelData.xml import failed: ";
-            result.error += exception.what();
+            result.error =
+                "LevelData.xml import failed: ";
+
+            result.error +=
+                exception.what();
+
             return result;
         }
         catch (...)
         {
-            result.error = "Unexpected LevelData.xml import failure.";
+            result.error =
+                "Unexpected LevelData.xml import failure.";
+
             return result;
         }
     }

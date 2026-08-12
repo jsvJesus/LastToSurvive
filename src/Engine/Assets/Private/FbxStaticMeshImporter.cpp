@@ -1095,7 +1095,7 @@ namespace engine::assets
              * MeshName_0001_Material.material
              *
              * Поэтому renderer может отличить
-             * материалы разных .sm в одной папке.
+             * материалы разных .mesh в одной папке.
              */
             for (
                 std::size_t slot = 0U;
@@ -1211,7 +1211,7 @@ namespace engine::assets
             return
                 directory /
                 std::filesystem::u8path(
-                    baseName + ".sm");
+                    baseName + ".mesh");
         }
     }
 
@@ -1364,7 +1364,7 @@ namespace engine::assets
                     if (Failed(result))
                     {
                         error =
-                            L"Imported .sm has an invalid "
+                            L"Imported .mesh has an invalid "
                             L"runtime asset path.";
 
                         return result;
@@ -1434,7 +1434,7 @@ namespace engine::assets
                             Lowercase(
                                 path.extension().
                                     wstring()) ==
-                            L".sm";
+                            L".mesh";
                     });
 
             if (
