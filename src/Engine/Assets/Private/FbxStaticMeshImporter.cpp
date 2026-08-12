@@ -853,7 +853,7 @@ namespace engine::assets
             AssetData encoded;
 
             result =
-                MaterialWriter::Encode(
+                MaterialAssetWriter::Encode(
                     material,
                     encoded);
 
