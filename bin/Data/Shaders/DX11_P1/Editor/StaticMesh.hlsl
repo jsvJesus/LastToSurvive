@@ -97,9 +97,20 @@ VertexOutput VSMain(VertexInput input)
     return output;
 }
 
-float4 PSMain(VertexOutput input) : SV_TARGET
+float4 PSMain(
+    VertexOutput input,
+    bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     float3 normal = normalize(input.normal);
+
+    /*
+     * The legacy double-sided path flipped the geometric normal for the
+     * back face before constructing the tangent basis.
+     */
+    if (!isFrontFace)
+    {
+        normal = -normal;
+    }
 
     if (LegacyTextureFlags.x > 0.5F || LegacyTextureFlags.z > 0.5F)
     {
@@ -189,33 +200,41 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     float3 viewDirection = normalize(
         CameraPositionFogDensity.xyz - input.worldPosition);
     float3 halfDirection = normalize(sunDirection + viewDirection);
-    float specularMask = 1.0F;
+    /*
+     * Missing legacy GlossMap used a black fallback. It must not make every
+     * surface fully specular.
+     */
+    float specularMask = 0.0F;
+
     if (LegacyTextureFlags.y > 0.5F)
     {
-        float3 sampledSpecular = SpecularTexture.Sample(
+        specularMask = SpecularTexture.Sample(
             MaterialSampler,
-            input.texcoord).rgb;
-        specularMask = dot(sampledSpecular, float3(0.299F, 0.587F, 0.114F));
+            input.texcoord).r;
     }
-    float specularExponent = max(LegacySurfaceParameters.y, 1.0F);
+
+    float specularControl = saturate(
+        (log2(max(LegacySurfaceParameters.y, 2.0F)) - 1.0F) /
+        10.0F);
+
     if (LegacyFeatureFlags.x > 0.5F)
     {
         float sampledPower = SpecularPowerTexture.Sample(
             MaterialSampler,
             input.texcoord).r;
-        specularExponent *= lerp(0.25F, 2.0F, sampledPower);
+
+        specularControl *= sampledPower;
     }
+
+    float specularExponent = exp2(
+        1.0F + specularControl * 10.0F);
+
     float directSpecular = pow(
         saturate(dot(normal, halfDirection)),
         specularExponent) *
         max(LegacySurfaceParameters.x, 0.0F) *
         specularMask *
         SunDirectionIntensity.w;
-    float fresnel = pow(
-        1.0F - saturate(dot(normal, viewDirection)),
-        5.0F);
-    float reflection =
-        fresnel * max(LegacySurfaceParameters.z, 0.0F);
     float3 specularColor = lerp(
         float3(1.0F, 1.0F, 1.0F),
         surface.rgb,
@@ -231,7 +250,6 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     float3 color =
         surface.rgb * lighting +
         specularColor * directSpecular * SunColor.rgb +
-        AmbientColor.rgb * reflection +
         emissiveColor;
 
     color = color / (1.0F + color * 0.18F);

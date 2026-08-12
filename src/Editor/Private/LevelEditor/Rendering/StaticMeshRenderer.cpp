@@ -34,6 +34,7 @@
 #include <array>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -73,8 +74,8 @@ namespace lts::editor
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 materialParameters;
 
-            // xyz = направление от поверхности к солнцу.
-            // w = нормализованная интенсивность.
+            // xyz = РЅР°РїСЂР°РІР»РµРЅРёРµ РѕС‚ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё Рє СЃРѕР»РЅС†Сѓ.
+            // w = РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ.
             DirectX::XMFLOAT4 sunDirectionIntensity;
 
             DirectX::XMFLOAT4 sunColor;
@@ -215,17 +216,23 @@ namespace lts::editor
                     else if (key == "detailnmap") material.detailNormalTexture = value;
                     else if (key == "glowmap") material.emissiveTexture = value;
                     else if (key == "specularpower")
-                        material.desc.specularIntensity = (std::max)(
-                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                        material.desc.specularIntensity = (std::clamp)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
                     else if (key == "specular1power")
                     {
-                        const float gloss = (std::clamp)(
+                        const float glossControl = (std::clamp)(
                             ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
-                        material.desc.specularPower = 4.0F + gloss * 124.0F;
+
+                        /*
+                         * Legacy Specular1Power is a normalized gloss control,
+                         * not a ready-to-use Blinn-Phong exponent.
+                         */
+                        material.desc.specularPower =
+                            std::exp2(1.0F + glossControl * 10.0F);
                     }
                     else if (key == "reflectionpower")
-                        material.desc.reflectionFactor = (std::max)(
-                            ParseLegacyFloat(value, 0.0F), 0.0F);
+                        material.desc.reflectionFactor = (std::clamp)(
+                            ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
                     else if (key == "detailscale")
                         material.detailScale = (std::max)(
                             ParseLegacyFloat(value, 1.0F), 0.001F);
@@ -239,8 +246,14 @@ namespace lts::editor
                     else if (key == "displ_val")
                         material.displacementValue = ParseLegacyFloat(value, 0.0F);
                     else if (key == "lowqmetallness")
-                        material.desc.metallicFactor = (std::clamp)(
-                            ParseLegacyFloat(value, 0.0F), 0.0F, 1.0F);
+                    {
+                        /*
+                         * Low-quality fallback value from the DX9 renderer.
+                         * It is not a PBR metallic factor.
+                         */
+                        static_cast<void>(
+                            ParseLegacyFloat(value, 0.0F));
+                    }
                     else if (key == "lowqselfillum")
                         lowQualitySelfIllumination = (std::max)(
                             ParseLegacyFloat(value, 0.0F), 0.0F);
@@ -249,7 +262,9 @@ namespace lts::editor
                             ParseLegacyFloat(value, 0.0F), 0.0F);
                     else if (key == "doublesided")
                         material.desc.doubleSided = ParseLegacyBool(value);
-                    else if (key == "forcetransparent")
+                    else if (
+                        key == "forcetransparent" ||
+                        key == "transparentshadows")
                         forceAlphaTest = ParseLegacyBool(value);
                     else if (key == "alphatransparent")
                         alphaTransparent = ParseLegacyBool(value);
@@ -278,9 +293,14 @@ namespace lts::editor
                     }
                 }
 
-                material.desc.emissiveStrength = (std::max)(
-                    lowQualitySelfIllumination,
-                    selfIlluminationMultiplier);
+                /*
+                 * lowQSelfIllum was used only by the low-quality DX9 path.
+                 * The regular material path uses SelfIllumMultiplier.
+                 */
+                static_cast<void>(lowQualitySelfIllumination);
+
+                material.desc.emissiveStrength =
+                    selfIlluminationMultiplier;
                 if (glows && material.desc.emissiveStrength <= 0.0F)
                 {
                     material.desc.emissiveStrength = 1.0F;
@@ -593,8 +613,8 @@ namespace lts::editor
                 };
 
                 /*
-                 * Старое значение по умолчанию равно 4.
-                 * Для shader нормализуем его к 1.
+                 * РЎС‚Р°СЂРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЂР°РІРЅРѕ 4.
+                 * Р”Р»СЏ shader РЅРѕСЂРјР°Р»РёР·СѓРµРј РµРіРѕ Рє 1.
                  */
                 result.intensity =
                     (std::max)(light.intensity, 0.0F) *
@@ -764,6 +784,201 @@ namespace lts::editor
 
                 return engine::assets::
                     AssetResult::InternalError;
+            }
+        }
+
+        [[nodiscard]]
+        bool Bc1TextureUsesTransparentSelector(
+            const engine::assets::TextureAsset& texture) noexcept
+        {
+            engine::graphics::TextureSubresourceData subresource;
+
+            if (
+                engine::assets::Failed(
+                    texture.GetSubresourceData(
+                        0U,
+                        subresource)) ||
+                subresource.data == nullptr ||
+                subresource.dataSize < 8U
+            )
+            {
+                return false;
+            }
+
+            for (std::size_t offset = 0U;
+                 offset + 8U <= subresource.dataSize;
+                 offset += 8U)
+            {
+                const std::byte* const block =
+                    subresource.data + offset;
+
+                const std::uint16_t color0 =
+                    static_cast<std::uint16_t>(
+                        std::to_integer<std::uint8_t>(block[0U])) |
+                    static_cast<std::uint16_t>(
+                        std::to_integer<std::uint8_t>(block[1U]) << 8U);
+
+                const std::uint16_t color1 =
+                    static_cast<std::uint16_t>(
+                        std::to_integer<std::uint8_t>(block[2U])) |
+                    static_cast<std::uint16_t>(
+                        std::to_integer<std::uint8_t>(block[3U]) << 8U);
+
+                if (color0 > color1)
+                {
+                    continue;
+                }
+
+                const std::uint32_t selectors =
+                    static_cast<std::uint32_t>(
+                        std::to_integer<std::uint8_t>(block[4U])) |
+                    (static_cast<std::uint32_t>(
+                        std::to_integer<std::uint8_t>(block[5U])) << 8U) |
+                    (static_cast<std::uint32_t>(
+                        std::to_integer<std::uint8_t>(block[6U])) << 16U) |
+                    (static_cast<std::uint32_t>(
+                        std::to_integer<std::uint8_t>(block[7U])) << 24U);
+
+                for (std::uint32_t texel = 0U;
+                     texel < 16U;
+                     ++texel)
+                {
+                    if (((selectors >> (texel * 2U)) & 3U) == 3U)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        [[nodiscard]]
+        bool UncompressedTextureUsesAlpha(
+            const engine::assets::TextureAsset& texture) noexcept
+        {
+            engine::graphics::TextureSubresourceData subresource;
+
+            if (
+                engine::assets::Failed(
+                    texture.GetSubresourceData(
+                        0U,
+                        subresource)) ||
+                subresource.data == nullptr ||
+                subresource.dataSize < 4U
+            )
+            {
+                return false;
+            }
+
+            for (std::size_t offset = 3U;
+                 offset < subresource.dataSize;
+                 offset += 4U)
+            {
+                if (
+                    std::to_integer<std::uint8_t>(
+                        subresource.data[offset]) < 255U
+                )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [[nodiscard]]
+        bool LegacyDiffuseTextureUsesAlpha(
+            const std::filesystem::path& path) noexcept
+        {
+            if (path.empty())
+            {
+                return false;
+            }
+
+            try
+            {
+                if (
+                    LowercasePath(
+                        path.extension().wstring()) != L".dds"
+                )
+                {
+                    std::vector<std::byte> pixels;
+                    std::uint32_t width = 0U;
+                    std::uint32_t height = 0U;
+
+                    if (!DecodeWicRgba(path, pixels, width, height))
+                    {
+                        return false;
+                    }
+
+                    for (std::size_t offset = 3U;
+                         offset < pixels.size();
+                         offset += 4U)
+                    {
+                        if (
+                            std::to_integer<std::uint8_t>(
+                                pixels[offset]) < 255U
+                        )
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                engine::assets::AssetData source;
+
+                if (
+                    engine::assets::Failed(
+                        ReadAssetData(path, source))
+                )
+                {
+                    return false;
+                }
+
+                engine::assets::TextureAsset texture;
+
+                if (
+                    engine::assets::Failed(
+                        engine::assets::DdsTextureDecoder::Decode(
+                            source,
+                            texture))
+                )
+                {
+                    return false;
+                }
+
+                using engine::graphics::Format;
+
+                switch (texture.GetDesc().format)
+                {
+                case Format::BC1UNorm:
+                case Format::BC1UNormSrgb:
+                    return Bc1TextureUsesTransparentSelector(texture);
+
+                case Format::BC2UNorm:
+                case Format::BC2UNormSrgb:
+                case Format::BC3UNorm:
+                case Format::BC3UNormSrgb:
+                case Format::BC7UNorm:
+                case Format::BC7UNormSrgb:
+                    return true;
+
+                case Format::R8G8B8A8UNorm:
+                case Format::R8G8B8A8UNormSrgb:
+                case Format::B8G8R8A8UNorm:
+                case Format::B8G8R8A8UNormSrgb:
+                    return UncompressedTextureUsesAlpha(texture);
+
+                default:
+                    return false;
+                }
+            }
+            catch (...)
+            {
+                return false;
             }
         }
 
@@ -1379,7 +1594,7 @@ namespace lts::editor
             }
 
             /*
-             * Blend, односторонний материал.
+             * Blend, РѕРґРЅРѕСЃС‚РѕСЂРѕРЅРЅРёР№ РјР°С‚РµСЂРёР°Р».
              */
             pipelineDescription.rasterizer.cullMode =
                 engine::graphics::CullMode::Back;
@@ -1595,8 +1810,8 @@ namespace lts::editor
             }
 
             /*
-             * Opaque и Mask используют одинаковый rasterizer/depth state.
-             * Alpha Mask выполняется в StaticMesh.hlsl через clip().
+             * Opaque Рё Mask РёСЃРїРѕР»СЊР·СѓСЋС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ rasterizer/depth state.
+             * Alpha Mask РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ StaticMesh.hlsl С‡РµСЂРµР· clip().
              */
             return doubleSided
                 ? doubleSidedPipeline_
@@ -1893,8 +2108,8 @@ namespace lts::editor
                         alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
 
                         /*
-                         * Старый road pass использовал alpha для смешивания краёв,
-                         * но не выполнял alpha clip.
+                         * РЎС‚Р°СЂС‹Р№ road pass РёСЃРїРѕР»СЊР·РѕРІР°Р» alpha РґР»СЏ СЃРјРµС€РёРІР°РЅРёСЏ РєСЂР°С‘РІ,
+                         * РЅРѕ РЅРµ РІС‹РїРѕР»РЅСЏР» alpha clip.
                          */
                         constants.materialParameters.z =
                             !material.roadSurface &&
@@ -2202,8 +2417,8 @@ namespace lts::editor
                 std::array<engine::graphics::TextureHandle, 6U> boundMaterialTextures{};
 
                 /*
-                 * Сбрасываем material SRV один раз перед всем StaticMesh pass.
-                 * Дальше меняем только реально изменившиеся slots.
+                 * РЎР±СЂР°СЃС‹РІР°РµРј material SRV РѕРґРёРЅ СЂР°Р· РїРµСЂРµРґ РІСЃРµРј StaticMesh pass.
+                 * Р”Р°Р»СЊС€Рµ РјРµРЅСЏРµРј С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅРѕ РёР·РјРµРЅРёРІС€РёРµСЃСЏ slots.
                  */
                 result = context.UnbindShaderResources(
                     engine::graphics::ShaderStage::Pixel,
@@ -2216,8 +2431,8 @@ namespace lts::editor
                 }
 
                 /*
-                 * Все StaticMesh материалы сейчас используют один material sampler.
-                 * Биндим его один раз на весь pass.
+                 * Р’СЃРµ StaticMesh РјР°С‚РµСЂРёР°Р»С‹ СЃРµР№С‡Р°СЃ РёСЃРїРѕР»СЊР·СѓСЋС‚ РѕРґРёРЅ material sampler.
+                 * Р‘РёРЅРґРёРј РµРіРѕ РѕРґРёРЅ СЂР°Р· РЅР° РІРµСЃСЊ pass.
                  */
                 if (EnsureMaterialSampler())
                 {
@@ -2336,8 +2551,8 @@ namespace lts::editor
                                 alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
 
                                 /*
-                                 * Старый road pass использовал alpha для смешивания краёв,
-                                 * но не выполнял alpha clip.
+                                 * РЎС‚Р°СЂС‹Р№ road pass РёСЃРїРѕР»СЊР·РѕРІР°Р» alpha РґР»СЏ СЃРјРµС€РёРІР°РЅРёСЏ РєСЂР°С‘РІ,
+                                 * РЅРѕ РЅРµ РІС‹РїРѕР»РЅСЏР» alpha clip.
                                  */
                                 constants.materialParameters.z =
                                     !material.roadSurface &&
@@ -2517,9 +2732,9 @@ namespace lts::editor
                 }
 
                 /*
-                 * TextureHandle и SamplerHandle не трогаем.
-                 * Здесь обновляются цвет, прозрачность,
-                 * Double Sided и остальные параметры.
+                 * TextureHandle Рё SamplerHandle РЅРµ С‚СЂРѕРіР°РµРј.
+                 * Р—РґРµСЃСЊ РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ С†РІРµС‚, РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ,
+                 * Double Sided Рё РѕСЃС‚Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹.
                  */
                 cachedMesh->materials[materialSlot].desc =
                     material;
@@ -2569,8 +2784,8 @@ namespace lts::editor
                     meshes_.find(key);
 
                 /*
-                 * Если mesh ещё не загружен, то при первом
-                 * рендере он сразу прочитает новый материал.
+                 * Р•СЃР»Рё mesh РµС‰С‘ РЅРµ Р·Р°РіСЂСѓР¶РµРЅ, С‚Рѕ РїСЂРё РїРµСЂРІРѕРј
+                 * СЂРµРЅРґРµСЂРµ РѕРЅ СЃСЂР°Р·Сѓ РїСЂРѕС‡РёС‚Р°РµС‚ РЅРѕРІС‹Р№ РјР°С‚РµСЂРёР°Р».
                  */
                 if (found == meshes_.end())
                 {
@@ -2761,8 +2976,8 @@ namespace lts::editor
                         if (!inserted && entry->second != path)
                         {
                             /*
-                             * Пустой path означает неоднозначное глобальное имя.
-                             * Такой ресурс нельзя молча брать из чужого пакета.
+                             * РџСѓСЃС‚РѕР№ path РѕР·РЅР°С‡Р°РµС‚ РЅРµРѕРґРЅРѕР·РЅР°С‡РЅРѕРµ РіР»РѕР±Р°Р»СЊРЅРѕРµ РёРјСЏ.
+                             * РўР°РєРѕР№ СЂРµСЃСѓСЂСЃ РЅРµР»СЊР·СЏ РјРѕР»С‡Р° Р±СЂР°С‚СЊ РёР· С‡СѓР¶РѕРіРѕ РїР°РєРµС‚Р°.
                              */
                             entry->second.clear();
                         }
@@ -2948,8 +3163,8 @@ namespace lts::editor
                 }
 
                 /*
-                 * ImagesDir в старом .mat заменяет стандартную папку Textures.
-                 * Его нельзя игнорировать или продолжать глобальный поиск.
+                 * ImagesDir РІ СЃС‚Р°СЂРѕРј .mat Р·Р°РјРµРЅСЏРµС‚ СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ РїР°РїРєСѓ Textures.
+                 * Р•РіРѕ РЅРµР»СЊР·СЏ РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ РёР»Рё РїСЂРѕРґРѕР»Р¶Р°С‚СЊ РіР»РѕР±Р°Р»СЊРЅС‹Р№ РїРѕРёСЃРє.
                  */
                 if (!imagesDirectory.empty())
                 {
@@ -2996,8 +3211,8 @@ namespace lts::editor
                     }
 
                     /*
-                     * В части старых пакетов ImagesDir записан
-                     * относительно каталога материала или пакета.
+                     * Р’ С‡Р°СЃС‚Рё СЃС‚Р°СЂС‹С… РїР°РєРµС‚РѕРІ ImagesDir Р·Р°РїРёСЃР°РЅ
+                     * РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєР°С‚Р°Р»РѕРіР° РјР°С‚РµСЂРёР°Р»Р° РёР»Рё РїР°РєРµС‚Р°.
                      */
                     const std::filesystem::path relativeImages =
                         std::filesystem::u8path(
@@ -3204,9 +3419,9 @@ namespace lts::editor
                         cached.type = std::move(legacy.type);
 
                         /*
-                         * В старом рендере дороги шли отдельным pass:
-                         * alpha использовалась для краёв, но alpha clip
-                         * для FILL_ROADS не выполнялся.
+                         * Р’ СЃС‚Р°СЂРѕРј СЂРµРЅРґРµСЂРµ РґРѕСЂРѕРіРё С€Р»Рё РѕС‚РґРµР»СЊРЅС‹Рј pass:
+                         * alpha РёСЃРїРѕР»СЊР·РѕРІР°Р»Р°СЃСЊ РґР»СЏ РєСЂР°С‘РІ, РЅРѕ alpha clip
+                         * РґР»СЏ FILL_ROADS РЅРµ РІС‹РїРѕР»РЅСЏР»СЃСЏ.
                          */
                         for (const auto& component : materialPath)
                         {
@@ -3229,8 +3444,32 @@ namespace lts::editor
                                     sourceDirectory,
                                     workspaceRoot);
                             };
+
+                        const std::filesystem::path baseColorPath =
+                            resolveTexture(legacy.diffuseTexture);
+
                         cached.baseColorTexture = GetOrLoadMaterialTexture(
-                            resolveTexture(legacy.diffuseTexture), true);
+                            baseColorPath, true);
+
+                        /*
+                         * r3dMaterial::SetAlphaFlag also selected alpha test
+                         * from the loaded diffuse texture format. Many real
+                         * vegetation and chain-link materials therefore keep
+                         * both transparency fields disabled in the .mat file.
+                         */
+                        if (
+                            cached.desc.alphaMode ==
+                                engine::assets::MaterialAlphaMode::Opaque &&
+                            LegacyDiffuseTextureUsesAlpha(baseColorPath)
+                        )
+                        {
+                            cached.desc.alphaMode =
+                                engine::assets::MaterialAlphaMode::Mask;
+
+                            cached.desc.alphaCutoff =
+                                LegacyAlphaTestCutoff;
+                        }
+
                         cached.normalTexture = GetOrLoadMaterialTexture(
                             resolveTexture(legacy.normalTexture), false);
                         cached.specularTexture = GetOrLoadMaterialTexture(
@@ -3340,12 +3579,12 @@ namespace lts::editor
                 }
                 
                 /*
-                 * Новые материалы:
+                 * РќРѕРІС‹Рµ РјР°С‚РµСЂРёР°Р»С‹:
                  *
                  * MeshName_0000_Material.material
                  *
-                 * Для старых ресурсов оставляем fallback,
-                 * где материалы назывались просто
+                 * Р”Р»СЏ СЃС‚Р°СЂС‹С… СЂРµСЃСѓСЂСЃРѕРІ РѕСЃС‚Р°РІР»СЏРµРј fallback,
+                 * РіРґРµ РјР°С‚РµСЂРёР°Р»С‹ РЅР°Р·С‹РІР°Р»РёСЃСЊ РїСЂРѕСЃС‚Рѕ
                  * 0000_Material.material.
                  */
                 std::vector<std::filesystem::path> files =
