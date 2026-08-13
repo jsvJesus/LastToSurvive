@@ -1674,6 +1674,302 @@ namespace lts::editor
         }
     }
 
+    bool CreateFlatTerrainLevel(
+        const FlatTerrainCreateSettings& settings,
+        std::filesystem::path& createdLevelRoot,
+        std::string& status) noexcept
+    {
+        createdLevelRoot.clear();
+
+        try
+        {
+            constexpr std::array<std::uint32_t, 5U>
+                allowedResolutions
+            {
+                512U,
+                1024U,
+                2048U,
+                4096U,
+                8192U
+            };
+
+            if (
+                std::find(
+                    allowedResolutions.begin(),
+                    allowedResolutions.end(),
+                    settings.resolution) ==
+                        allowedResolutions.end() ||
+                !std::isfinite(settings.tileSize) ||
+                settings.tileSize <= 0.0F ||
+                !std::isfinite(settings.heightRange) ||
+                settings.heightRange <= 0.0F)
+            {
+                status =
+                    "Invalid flat terrain settings.";
+
+                return false;
+            }
+
+            const std::wstring levelName =
+                SanitizeOutputName(
+                    settings.levelName.c_str());
+
+            if (levelName.empty())
+            {
+                status =
+                    "Enter a valid level name.";
+
+                return false;
+            }
+
+            const std::filesystem::path levelRoot =
+                FindBinRoot() /
+                L"Levels" /
+                levelName;
+
+            const std::filesystem::path terrainRoot =
+                levelRoot /
+                L"Terrain";
+
+            const std::filesystem::path terrainPath =
+                terrainRoot /
+                L"Terrain.terrain";
+
+            const std::filesystem::path terrainIniPath =
+                terrainRoot /
+                L"Terrain.ini";
+
+            const std::filesystem::path levelDataPath =
+                levelRoot /
+                L"LevelData.xml";
+
+            std::error_code error;
+
+            if (
+                std::filesystem::exists(
+                    levelRoot,
+                    error) ||
+                error)
+            {
+                status =
+                    "A level with this name already exists.";
+
+                return false;
+            }
+
+            std::filesystem::create_directories(
+                terrainRoot,
+                error);
+
+            if (error)
+            {
+                status =
+                    "Could not create bin/Levels terrain folder.";
+
+                return false;
+            }
+
+            const std::uint64_t sampleCount =
+                static_cast<std::uint64_t>(
+                    settings.resolution) *
+                settings.resolution;
+
+            std::vector<std::int16_t> heights(
+                static_cast<std::size_t>(sampleCount),
+                0);
+
+            SourceLayer baseLayer;
+            baseLayer.name = "Base";
+            baseLayer.materialType = "Dirt";
+            baseLayer.scaleU = 16.0F;
+            baseLayer.scaleV = 16.0F;
+
+            const std::vector<SourceLayer> layers
+            {
+                baseLayer
+            };
+
+            const std::vector<
+                std::vector<std::byte>> masks;
+
+            const std::vector<std::byte> colorMap =
+                CreateSolidDds(
+                    255U,
+                    255U,
+                    255U,
+                    255U);
+
+            const std::vector<std::byte> normalMap =
+                CreateSolidDds(
+                    128U,
+                    128U,
+                    255U,
+                    255U);
+
+            std::filesystem::path temporaryTerrain =
+                terrainPath;
+
+            temporaryTerrain += L".tmp";
+
+            if (!WriteTerrainFile(
+                    temporaryTerrain,
+                    settings.resolution,
+                    settings.resolution,
+                    settings.resolution,
+                    settings.resolution,
+                    settings.tileSize,
+                    -settings.heightRange * 0.5F,
+                    settings.heightRange,
+                    heights,
+                    layers,
+                    masks,
+                    colorMap,
+                    normalMap))
+            {
+                status =
+                    "Could not write the flat terrain asset.";
+
+                return false;
+            }
+
+            engine::assets::TerrainAsset terrainAsset;
+
+            if (
+                engine::assets::Failed(
+                    engine::assets::TerrainAsset::Load(
+                        temporaryTerrain,
+                        terrainAsset)) ||
+                !terrainAsset.IsValid())
+            {
+                std::filesystem::remove(
+                    temporaryTerrain,
+                    error);
+
+                status =
+                    "The generated terrain failed validation.";
+
+                return false;
+            }
+
+            if (!MoveFileExW(
+                    temporaryTerrain.c_str(),
+                    terrainPath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING |
+                        MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(
+                    temporaryTerrain,
+                    error);
+
+                status =
+                    "Could not commit Terrain.terrain.";
+
+                return false;
+            }
+
+            terrainAsset.sourcePath =
+                terrainPath;
+
+            R16TerrainImportSettings iniSettings;
+            iniSettings.destinationPath = terrainPath;
+            iniSettings.width = settings.resolution;
+            iniSettings.height = settings.resolution;
+            iniSettings.splatWidth = settings.resolution;
+            iniSettings.splatHeight = settings.resolution;
+            iniSettings.tileSize = settings.tileSize;
+            iniSettings.heightOffset =
+                -settings.heightRange * 0.5F;
+            iniSettings.heightRange =
+                settings.heightRange;
+
+            constexpr std::array<float, 3U> actorScale
+            {
+                1.0F,
+                1.0F,
+                1.0F
+            };
+
+            if (!WriteTerrainIni(
+                    terrainIniPath,
+                    levelName,
+                    iniSettings,
+                    terrainAsset,
+                    0.0F,
+                    actorScale,
+                    status))
+            {
+                return false;
+            }
+
+            std::filesystem::path temporaryLevelData =
+                levelDataPath;
+
+            temporaryLevelData += L".tmp";
+
+            {
+                std::ofstream output(
+                    temporaryLevelData,
+                    std::ios::binary |
+                        std::ios::trunc);
+
+                output <<
+                    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                    "<level>\n"
+                    "</level>\n";
+
+                output.flush();
+
+                if (!output)
+                {
+                    status =
+                        "Could not write LevelData.xml.";
+
+                    return false;
+                }
+            }
+
+            if (!MoveFileExW(
+                    temporaryLevelData.c_str(),
+                    levelDataPath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING |
+                        MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(
+                    temporaryLevelData,
+                    error);
+
+                status =
+                    "Could not commit LevelData.xml.";
+
+                return false;
+            }
+
+            createdLevelRoot =
+                levelRoot.lexically_normal();
+
+            status =
+                "Terrain created in bin/Levels/" +
+                ToUtf8(levelName) +
+                ".";
+
+            return true;
+        }
+        catch (const std::bad_alloc&)
+        {
+            status =
+                "Not enough memory to create terrain.";
+
+            return false;
+        }
+        catch (...)
+        {
+            status =
+                "Unexpected error while creating terrain.";
+
+            return false;
+        }
+    }
+
     void TerrainImporter::Open() noexcept
     {
         openRequested_ = true;

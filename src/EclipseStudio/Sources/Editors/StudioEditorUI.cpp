@@ -136,6 +136,10 @@ namespace studio::editor
 
         TerrainEditorUiState g_terrainEditorUi;
         bool g_terrainBrushHit = false;
+        
+        bool g_terrainPaintStrokeActive = false;
+        std::string g_terrainPaintStatus;
+        std::array<char, 128U> g_newTerrainLayerName{};
 
         float g_terrainBrushWorldX = 0.0F;
         float g_terrainBrushWorldZ = 0.0F;
@@ -1981,6 +1985,44 @@ namespace studio::editor
         }
 
         [[nodiscard]]
+bool IsActiveTerrainPaintTool() noexcept
+        {
+            return
+                g_activePage == LevelEditorPage::Terrain &&
+                g_activeTerrainPage == TerrainToolbarPage::TerrainEditor &&
+                g_activeTerrainEditorTool == TerrainEditorTool::Paint;
+        }
+
+        [[nodiscard]]
+        bool IsActiveTerrainBrushTool() noexcept
+        {
+            return
+                IsActiveTerrainSculptTool() ||
+                IsActiveTerrainPaintTool();
+        }
+
+        void FinishTerrainPaintStroke() noexcept
+        {
+            if (!g_terrainPaintStrokeActive)
+            {
+                return;
+            }
+
+            g_terrainPaintStrokeActive = false;
+
+            if (g_terrainRenderer.EndPaintStroke())
+            {
+                g_terrainPaintStatus =
+                    "Paint stroke saved to bin/Levels.";
+            }
+            else
+            {
+                g_terrainPaintStatus =
+                    "Paint stroke was empty.";
+            }
+        }
+
+        [[nodiscard]]
         lts::editor::TerrainSculptMode
             GetTerrainSculptMode() noexcept
         {
@@ -2160,13 +2202,21 @@ namespace studio::editor
             }
         }
 
-        void UpdateTerrainSculptViewport() noexcept
+        void UpdateTerrainBrushViewport() noexcept
         {
+            const bool sculptTool =
+                IsActiveTerrainSculptTool();
+
+            const bool paintTool =
+                IsActiveTerrainPaintTool();
+
             if (
-                !IsActiveTerrainSculptTool() ||
+                (!sculptTool && !paintTool) ||
+                !g_terrainRenderer.HasTerrain() ||
                 !g_terrainRenderer.CanSculpt())
             {
                 FinishTerrainSculptStroke();
+                FinishTerrainPaintStroke();
 
                 g_terrainBrushHit = false;
 
@@ -2176,13 +2226,18 @@ namespace studio::editor
             const ImGuiIO& io =
                 ImGui::GetIO();
 
-            if (
-                g_terrainRenderer.
-                    IsSculptStrokeActive() &&
-                ImGui::IsMouseReleased(
+            if (ImGui::IsMouseReleased(
                     ImGuiMouseButton_Left))
             {
-                FinishTerrainSculptStroke();
+                if (sculptTool)
+                {
+                    FinishTerrainSculptStroke();
+                }
+
+                if (paintTool)
+                {
+                    FinishTerrainPaintStroke();
+                }
             }
 
             if (io.WantCaptureMouse)
@@ -2205,38 +2260,76 @@ namespace studio::editor
             if (ImGui::IsMouseClicked(
                     ImGuiMouseButton_Left))
             {
-                if (!g_terrainRenderer.
-                        BeginSculptStroke())
+                if (sculptTool)
                 {
-                    g_terrainSculptStatus =
-                        "Cannot begin terrain stroke.";
+                    if (!g_terrainRenderer.BeginSculptStroke())
+                    {
+                        g_terrainSculptStatus =
+                            "Cannot begin terrain stroke.";
 
-                    return;
+                        return;
+                    }
+                }
+                else if (paintTool)
+                {
+                    if (!g_terrainRenderer.BeginPaintStroke())
+                    {
+                        g_terrainPaintStatus =
+                            "Cannot begin paint stroke.";
+
+                        return;
+                    }
+
+                    g_terrainPaintStrokeActive = true;
                 }
             }
 
-            if (
-                ImGui::IsMouseDown(
-                    ImGuiMouseButton_Left) &&
-                g_terrainRenderer.
-                    IsSculptStrokeActive())
+            if (ImGui::IsMouseDown(
+                    ImGuiMouseButton_Left))
             {
-                static_cast<void>(
-                    g_terrainRenderer.Sculpt(
-                        g_sceneDocument,
-                        GetTerrainSculptMode(),
-                        g_terrainBrushWorldX,
-                        g_terrainBrushWorldZ,
-                        g_terrainEditorUi.radius,
-                        g_terrainEditorUi.hardness,
-                        g_terrainEditorUi.strength,
-                        g_terrainEditorUi.deltaValue,
-                        g_terrainEditorUi.levelHeight,
-                        g_terrainEditorUi.
-                            smoothBoxHalfSize,
-                        g_terrainEditorUi.
-                            smoothSeconds,
-                        io.DeltaTime));
+                if (
+                    sculptTool &&
+                    g_terrainRenderer.IsSculptStrokeActive())
+                {
+                    static_cast<void>(
+                        g_terrainRenderer.Sculpt(
+                            g_sceneDocument,
+                            GetTerrainSculptMode(),
+                            g_terrainBrushWorldX,
+                            g_terrainBrushWorldZ,
+                            g_terrainEditorUi.radius,
+                            g_terrainEditorUi.hardness,
+                            g_terrainEditorUi.strength,
+                            g_terrainEditorUi.deltaValue,
+                            g_terrainEditorUi.levelHeight,
+                            g_terrainEditorUi.smoothBoxHalfSize,
+                            g_terrainEditorUi.smoothSeconds,
+                            io.DeltaTime));
+                }
+                else if (
+                    paintTool &&
+                    g_terrainPaintStrokeActive)
+                {
+                    const float frameStrength =
+                        std::clamp(
+                            g_terrainEditorUi.strength *
+                                io.DeltaTime *
+                                60.0F,
+                            0.0F,
+                            1.0F);
+
+                    static_cast<void>(
+                        g_terrainRenderer.Paint(
+                            g_sceneDocument,
+                            g_terrainBrushWorldX,
+                            g_terrainBrushWorldZ,
+                            g_terrainEditorUi.radius,
+                            frameStrength,
+                            1.0F -
+                                g_terrainEditorUi.hardness,
+                            g_activeLayer,
+                            g_terrainEditorUi.paintEraser));
+                }
             }
 
             if (
@@ -2246,10 +2339,21 @@ namespace studio::editor
                     ImGuiKey_Z,
                     false))
             {
-                if (g_terrainRenderer.UndoSculpt())
+                if (sculptTool)
                 {
-                    g_terrainSculptStatus =
-                        "Terrain Undo saved to bin/Levels.";
+                    if (g_terrainRenderer.UndoSculpt())
+                    {
+                        g_terrainSculptStatus =
+                            "Terrain Undo saved to bin/Levels.";
+                    }
+                }
+                else if (paintTool)
+                {
+                    if (g_terrainRenderer.UndoPaint())
+                    {
+                        g_terrainPaintStatus =
+                            "Paint Undo saved to bin/Levels.";
+                    }
                 }
             }
 
@@ -2260,10 +2364,21 @@ namespace studio::editor
                     ImGuiKey_Y,
                     false))
             {
-                if (g_terrainRenderer.RedoSculpt())
+                if (sculptTool)
                 {
-                    g_terrainSculptStatus =
-                        "Terrain Redo saved to bin/Levels.";
+                    if (g_terrainRenderer.RedoSculpt())
+                    {
+                        g_terrainSculptStatus =
+                            "Terrain Redo saved to bin/Levels.";
+                    }
+                }
+                else if (paintTool)
+                {
+                    if (g_terrainRenderer.RedoPaint())
+                    {
+                        g_terrainPaintStatus =
+                            "Paint Redo saved to bin/Levels.";
+                    }
                 }
             }
         }
@@ -3840,7 +3955,7 @@ namespace studio::editor
                 g_objectViewTab.UpdateViewport(objectContext);
             }
             
-            UpdateTerrainSculptViewport();
+            UpdateTerrainBrushViewport();
         }
     }
 
@@ -4036,6 +4151,35 @@ namespace studio::editor
             return meshResult;
         }
 
+        if (
+    g_terrainBrushHit &&
+    IsActiveTerrainBrushTool())
+        {
+            const bool erase =
+                g_activeTerrainEditorTool ==
+                    TerrainEditorTool::Down ||
+                (
+                    g_activeTerrainEditorTool ==
+                        TerrainEditorTool::Paint &&
+                    g_terrainEditorUi.paintEraser
+                );
+
+            const engine::graphics::GraphicsResult brushResult =
+                g_terrainRenderer.RenderBrush(
+                    context,
+                    g_sceneDocument,
+                    viewProjection,
+                    g_terrainBrushWorldX,
+                    g_terrainBrushWorldZ,
+                    g_terrainEditorUi.radius,
+                    erase);
+
+            if (engine::graphics::Failed(brushResult))
+            {
+                return brushResult;
+            }
+        }
+
         if (g_activePage != LevelEditorPage::Objects)
         {
             return engine::graphics::GraphicsResult::Success;
@@ -4054,31 +4198,6 @@ namespace studio::editor
             width,
             height
         };
-
-        if (
-            g_terrainBrushHit &&
-            IsActiveTerrainSculptTool())
-        {
-            const bool lowerTerrain =
-                g_activeTerrainEditorTool ==
-                    TerrainEditorTool::Down;
-
-            const engine::graphics::GraphicsResult brushResult =
-                g_terrainRenderer.RenderBrush(
-                    context,
-                    g_sceneDocument,
-                    viewProjection,
-                    g_terrainBrushWorldX,
-                    g_terrainBrushWorldZ,
-                    g_terrainEditorUi.radius,
-                    lowerTerrain);
-
-            if (engine::graphics::Failed(
-                    brushResult))
-            {
-                return brushResult;
-            }
-        }
 
         return g_objectViewTab.Render(
             context,

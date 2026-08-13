@@ -35,6 +35,22 @@ namespace lts::editor
         bool masksArePreorientedDds = false;
     };
 
+    struct FlatTerrainCreateSettings final
+    {
+        std::string levelName;
+
+        std::uint32_t resolution = 1024U;
+
+        float tileSize = 1.0F;
+        float heightRange = 512.0F;
+    };
+
+    [[nodiscard]]
+    bool CreateFlatTerrainLevel(
+        const FlatTerrainCreateSettings& settings,
+        std::filesystem::path& createdLevelRoot,
+        std::string& status) noexcept;
+
     [[nodiscard]] bool DetectR16TerrainImportSettings(
         const std::filesystem::path& sourcePath,
         R16TerrainImportSettings& settings,
