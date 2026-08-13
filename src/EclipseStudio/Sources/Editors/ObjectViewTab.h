@@ -60,7 +60,8 @@ namespace studio::editor
 
         void Refresh() noexcept;
 
-        void DrawToolbar() noexcept;
+        void DrawToolbar(
+            ObjectViewContext& context) noexcept;
 
         void DrawPage(
             ObjectViewContext& context) noexcept;

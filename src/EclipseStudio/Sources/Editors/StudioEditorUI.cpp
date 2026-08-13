@@ -2378,7 +2378,8 @@ namespace studio::editor
                     }
                     else if (objectsActive)
                     {
-                        g_objectViewTab.DrawToolbar();
+                        g_objectViewTab.DrawToolbar(
+                            objectContext);
                     }
                 }
 

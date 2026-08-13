@@ -387,7 +387,8 @@ namespace studio::editor
             }
         }
 
-        void DrawToolbar() noexcept
+        void DrawToolbar(
+            ObjectViewContext& context) noexcept
         {
             const auto operation =
                 transformController_.GetVisualState().operation;
@@ -459,6 +460,81 @@ namespace studio::editor
                     physicsWindowOpen_))
             {
                 physicsWindowOpen_ = !physicsWindowOpen_;
+            }
+
+            ImGui::SameLine();
+            ImGui::TextDisabled("|");
+            ImGui::SameLine();
+
+            const bool canDelete =
+                CanDeleteSelection(
+                    context.sceneDocument);
+
+            ImGui::BeginDisabled(!canDelete);
+
+            if (ImGui::Button("Delete"))
+            {
+                DeleteSelectedObjects(context);
+            }
+
+            ImGui::EndDisabled();
+
+            if (ImGui::IsItemHovered(
+                    ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                ImGui::SetTooltip(
+                    canDelete
+                        ? "Delete selected object"
+                        : "Select an obj_Building or placed StaticMesh first");
+            }
+
+            ImGui::SameLine();
+
+            ImGui::BeginDisabled(
+                !context.commandHistory.CanUndo());
+
+            if (ImGui::Button("Undo"))
+            {
+                if (context.commandHistory.Undo(
+                        context.sceneDocument))
+                {
+                    ResetInspectedObject();
+                    status_ =
+                        "Last object operation was undone.";
+                }
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+
+            ImGui::BeginDisabled(
+                !context.commandHistory.CanRedo());
+
+            if (ImGui::Button("Redo"))
+            {
+                if (context.commandHistory.Redo(
+                        context.sceneDocument))
+                {
+                    ResetInspectedObject();
+                    status_ =
+                        "Last object operation was restored.";
+                }
+            }
+
+            ImGui::EndDisabled();
+
+            const ImGuiIO& io =
+                ImGui::GetIO();
+
+            if (
+                canDelete &&
+                !io.WantTextInput &&
+                ImGui::IsKeyPressed(
+                    ImGuiKey_Delete,
+                    false))
+            {
+                DeleteSelectedObjects(context);
             }
         }
 
@@ -790,6 +866,136 @@ namespace studio::editor
         }
 
     private:
+        [[nodiscard]]
+        static bool IsDeletableObject(
+            const lts::editor::EditorSceneEntity& entity) noexcept
+        {
+            if (!entity.staticMesh.has_value())
+            {
+                return false;
+            }
+
+            /*
+             * Roads и WaterPlane пока управляются своими
+             * отдельными редакторами.
+             */
+            if (
+                entity.editorFolder ==
+                    L"LevelData/obj_Road" ||
+                entity.editorFolder ==
+                    L"LevelData/obj_WaterPlane")
+            {
+                return false;
+            }
+
+            /*
+             * Разрешаем:
+             * 1. obj_Building, загруженные из LevelData.xml;
+             * 2. новые StaticMesh, поставленные через Ctrl+LMB.
+             */
+            return
+                entity.editorFolder.empty() ||
+                entity.editorFolder ==
+                    L"LevelData/obj_Building";
+        }
+
+        [[nodiscard]]
+        static bool CanDeleteSelection(
+            const lts::editor::SceneDocument& document) noexcept
+        {
+            const auto& selectedIds =
+                document.GetSelectedEntityIds();
+
+            if (selectedIds.empty())
+            {
+                return false;
+            }
+
+            for (
+                const lts::editor::EditorEntityId entityId :
+                selectedIds)
+            {
+                const lts::editor::EditorSceneEntity* const entity =
+                    document.FindEntity(entityId);
+
+                if (
+                    entity == nullptr ||
+                    !IsDeletableObject(*entity))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        void ResetInspectedObject() noexcept
+        {
+            inspectedAssetPath_.clear();
+            previewAssetPath_.clear();
+            previewBoundsValid_ = false;
+
+            previewDocument_.Clear();
+            materialInspector_.Reset();
+        }
+
+        void DeleteSelectedObjects(
+            ObjectViewContext& context) noexcept
+        {
+            if (!CanDeleteSelection(
+                    context.sceneDocument))
+            {
+                status_ =
+                    "Only obj_Building and placed StaticMesh "
+                    "objects can be deleted here.";
+
+                return;
+            }
+
+            const std::size_t selectedCount =
+                context.sceneDocument.
+                    GetSelectedEntityIds().
+                    size();
+
+            const lts::editor::EditorSceneSnapshot before =
+                context.sceneDocument.CreateSnapshot();
+
+            if (!context.sceneDocument.DeleteSelectedEntity())
+            {
+                status_ =
+                    "Could not delete the selected object.";
+
+                return;
+            }
+
+            const lts::editor::EditorSceneSnapshot after =
+                context.sceneDocument.CreateSnapshot();
+
+            if (!context.commandHistory.Push(
+                    before,
+                    after))
+            {
+                context.sceneDocument.RestoreSnapshot(
+                    before,
+                    false);
+
+                status_ =
+                    "Could not register delete command.";
+
+                return;
+            }
+
+            ResetInspectedObject();
+
+            status_ =
+                std::to_string(selectedCount) +
+                (
+                    selectedCount == 1U
+                        ? " object deleted. Use Undo to restore it."
+                        : " objects deleted. Use Undo to restore them."
+                );
+        }
+        
         void SelectModel(
             const std::size_t modelIndex) noexcept
         {
@@ -1585,11 +1791,12 @@ namespace studio::editor
         }
     }
 
-    void ObjectViewTab::DrawToolbar() noexcept
+    void ObjectViewTab::DrawToolbar(
+        ObjectViewContext& context) noexcept
     {
         if (impl_ != nullptr)
         {
-            impl_->DrawToolbar();
+            impl_->DrawToolbar(context);
         }
     }
 
