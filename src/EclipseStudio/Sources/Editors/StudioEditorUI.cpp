@@ -149,6 +149,15 @@ namespace studio::editor
 
         std::string g_terrainSculptStatus;
 
+        std::array<char, 128U> g_createTerrainLevelName{};
+
+        int g_createTerrainResolutionIndex = 1;
+
+        float g_createTerrainTileSize = 1.0F;
+        float g_createTerrainHeightRange = 512.0F;
+
+        std::string g_createTerrainStatus;
+
         struct TerrainMapEntry final
         {
             std::filesystem::path levelRoot;
@@ -2654,15 +2663,42 @@ bool IsActiveTerrainPaintTool() noexcept
 
         void DrawTerrainLayerEditor() noexcept
         {
-            lts::editor::EditorSceneEntity* entity =
-                g_sceneDocument.GetSelectedEntityMutable();
+            /*
+             * Terrain не обязан быть выделен в Objects.
+             * На странице Paint автоматически находим Terrain entity.
+             */
+            lts::editor::EditorSceneEntity* entity = nullptr;
+
+            const auto& sceneEntities =
+                g_sceneDocument.GetEntities();
+
+            for (std::size_t entityIndex = 0U;
+                 entityIndex < sceneEntities.size();
+                 ++entityIndex)
+            {
+                if (!sceneEntities[entityIndex].
+                        terrain.has_value())
+                {
+                    continue;
+                }
+
+                static_cast<void>(
+                    g_sceneDocument.SelectEntityByIndex(
+                        entityIndex));
+
+                entity =
+                    g_sceneDocument.
+                        GetSelectedEntityMutable();
+
+                break;
+            }
 
             if (
                 entity == nullptr ||
                 !entity->terrain.has_value())
             {
                 DrawDisabledWrappedText(
-                    "Select the Terrain entity to edit its layers.");
+                    "Terrain entity is not available.");
 
                 return;
             }
@@ -2683,12 +2719,208 @@ bool IsActiveTerrainPaintTool() noexcept
                     g_activeLayer,
                     layers.size() - 1U);
 
-            ImGui::SeparatorText("Layers");
+            ImGui::SeparatorText(
+                "Layers");
 
             ImGui::Text(
                 "%zu / 18 layers",
                 layers.size());
 
+            /*
+             * Поле имени нового слоя.
+             * Пустое имя допустимо — backend создаст Layer N.
+             */
+            ImGui::SetNextItemWidth(
+                ImGui::GetContentRegionAvail().x);
+
+            ImGui::InputText(
+                "##NewTerrainLayerName",
+                g_newTerrainLayerName.data(),
+                g_newTerrainLayerName.size());
+
+            const float layerButtonWidth =
+                (
+                    ImGui::GetContentRegionAvail().x -
+                    ImGui::GetStyle().ItemSpacing.x
+                ) * 0.5F;
+
+            /*
+             * Add Layer.
+             */
+            ImGui::BeginDisabled(
+                layers.size() >= 18U);
+
+            if (ImGui::Button(
+                    "Add Layer",
+                    ImVec2(
+                        layerButtonWidth,
+                        28.0F)))
+            {
+                const std::size_t oldLayerCount =
+                    layers.size();
+
+                const lts::editor::EditorSceneSnapshot before =
+                    g_sceneDocument.CreateSnapshot();
+
+                const std::string requestedName =
+                    TrimAscii(
+                        g_newTerrainLayerName.data());
+
+                if (g_sceneDocument.
+                        AddSelectedTerrainLayer(
+                            requestedName))
+                {
+                    lts::editor::EditorSceneEntity*
+                        updatedEntity =
+                            g_sceneDocument.
+                                GetSelectedEntityMutable();
+
+                    const bool rendererUpdated =
+                        updatedEntity != nullptr &&
+                        updatedEntity->terrain.has_value() &&
+                        g_terrainRenderer.
+                            SetMaterialLayerCount(
+                                updatedEntity->
+                                    terrain->
+                                    layers.size());
+
+                    if (rendererUpdated)
+                    {
+                        g_activeLayer =
+                            updatedEntity->
+                                terrain->
+                                layers.size() -
+                            1U;
+
+                        g_newTerrainLayerName.fill('\0');
+
+                        g_terrainPaintStatus =
+                            "Terrain layer added.";
+
+                        /*
+                         * Выходим, потому что vector layers мог
+                         * перераспределить память.
+                         */
+                        ImGui::EndDisabled();
+
+                        return;
+                    }
+
+                    g_sceneDocument.RestoreSnapshot(
+                        before,
+                        false);
+
+                    static_cast<void>(
+                        g_terrainRenderer.
+                            SetMaterialLayerCount(
+                                oldLayerCount));
+
+                    g_terrainPaintStatus =
+                        "Could not allocate the layer mask.";
+
+                    ImGui::EndDisabled();
+
+                    return;
+                }
+
+                g_terrainPaintStatus =
+                    "Could not add the terrain layer.";
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+
+            /*
+             * Base layer с индексом 0 удалять нельзя.
+             */
+            ImGui::BeginDisabled(
+                g_activeLayer == 0U ||
+                layers.size() <= 1U);
+
+            if (ImGui::Button(
+                    "Delete Layer",
+                    ImVec2(
+                        layerButtonWidth,
+                        28.0F)))
+            {
+                const std::size_t oldLayerCount =
+                    layers.size();
+
+                const std::size_t removedLayer =
+                    g_activeLayer;
+
+                const lts::editor::EditorSceneSnapshot before =
+                    g_sceneDocument.CreateSnapshot();
+
+                /*
+                 * Сначала удаляем описание слоя из SceneDocument.
+                 * При ошибке renderer восстанавливаем snapshot.
+                 */
+                if (g_sceneDocument.
+                        RemoveSelectedTerrainLayer(
+                            removedLayer))
+                {
+                    if (g_terrainRenderer.
+                            RemoveMaterialLayer(
+                                removedLayer,
+                                oldLayerCount))
+                    {
+                        lts::editor::EditorSceneEntity*
+                            updatedEntity =
+                                g_sceneDocument.
+                                    GetSelectedEntityMutable();
+
+                        if (
+                            updatedEntity != nullptr &&
+                            updatedEntity->
+                                terrain.has_value() &&
+                            !updatedEntity->
+                                terrain->
+                                layers.empty())
+                        {
+                            g_activeLayer =
+                                (std::min)(
+                                    removedLayer,
+                                    updatedEntity->
+                                        terrain->
+                                        layers.size() -
+                                        1U);
+                        }
+
+                        g_terrainPaintStatus =
+                            "Terrain layer deleted.";
+
+                        ImGui::EndDisabled();
+
+                        return;
+                    }
+
+                    g_sceneDocument.RestoreSnapshot(
+                        before,
+                        false);
+
+                    static_cast<void>(
+                        g_terrainRenderer.
+                            SetMaterialLayerCount(
+                                oldLayerCount));
+                }
+
+                g_terrainPaintStatus =
+                    "Could not delete the terrain layer.";
+
+                ImGui::EndDisabled();
+
+                return;
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::Spacing();
+
+            /*
+             * Список слоёв.
+             */
             for (std::size_t layerIndex = 0U;
                  layerIndex < layers.size();
                  ++layerIndex)
@@ -2697,7 +2929,8 @@ bool IsActiveTerrainPaintTool() noexcept
                     layers[layerIndex];
 
                 ImGui::PushID(
-                    static_cast<int>(layerIndex));
+                    static_cast<int>(
+                        layerIndex));
 
                 const std::string label =
                     std::to_string(layerIndex) +
@@ -2706,9 +2939,11 @@ bool IsActiveTerrainPaintTool() noexcept
 
                 if (ImGui::Selectable(
                         label.c_str(),
-                        g_activeLayer == layerIndex))
+                        g_activeLayer ==
+                            layerIndex))
                 {
-                    g_activeLayer = layerIndex;
+                    g_activeLayer =
+                        layerIndex;
                 }
 
                 if (g_activeLayer == layerIndex)
@@ -2805,24 +3040,28 @@ bool IsActiveTerrainPaintTool() noexcept
                 "Wood"
             };
 
-            ImGui::TextUnformatted("Terrain Paint");
+            ImGui::TextUnformatted(
+                "Terrain Paint");
+
             ImGui::Separator();
 
             if (!g_terrainRenderer.HasTerrain())
             {
                 ImGui::TextDisabled(
-                    "Load or import a terrain first.");
+                    "Load, import or create a terrain first.");
             }
 
             DrawTerrainBrushSettings();
 
-            ImGui::SeparatorText("Paint");
+            ImGui::SeparatorText(
+                "Paint");
 
             if (ImGui::RadioButton(
                     "Eraser",
                     g_terrainEditorUi.paintEraser))
             {
-                g_terrainEditorUi.paintEraser = true;
+                g_terrainEditorUi.paintEraser =
+                    true;
             }
 
             ImGui::SameLine();
@@ -2831,12 +3070,14 @@ bool IsActiveTerrainPaintTool() noexcept
                     "Brush",
                     !g_terrainEditorUi.paintEraser))
             {
-                g_terrainEditorUi.paintEraser = false;
+                g_terrainEditorUi.paintEraser =
+                    false;
             }
 
             ImGui::Checkbox(
                 "Show Material Heaviness",
-                &g_terrainEditorUi.showMaterialHeaviness);
+                &g_terrainEditorUi.
+                    showMaterialHeaviness);
 
             ImGui::Checkbox(
                 "Use Bounds",
@@ -2844,7 +3085,8 @@ bool IsActiveTerrainPaintTool() noexcept
 
             ImGui::Checkbox(
                 "Enable Detail Normals",
-                &g_terrainEditorUi.enableDetailNormals);
+                &g_terrainEditorUi.
+                    enableDetailNormals);
 
             ImGui::SliderFloat(
                 "Tile Factor",
@@ -2860,24 +3102,302 @@ bool IsActiveTerrainPaintTool() noexcept
                 static_cast<int>(
                     std::size(materialTypes)));
 
+            const std::filesystem::path materialsPath =
+                FindWorkspaceRoot() /
+                L"bin" /
+                L"Data" /
+                L"TerrainData" /
+                L"Materials";
+
             ImGui::TextWrapped(
                 "Materials: %s",
-                (
-                    FindWorkspaceRoot() /
-                    L"bin" /
-                    L"Data" /
-                    L"TerrainData" /
-                    L"Materials"
-                ).
-                generic_u8string().
-                c_str());
+                materialsPath.
+                    generic_u8string().
+                    c_str());
 
+            /*
+             * Здесь отображаются Add/Delete и список слоёв.
+             */
             DrawTerrainLayerEditor();
 
             ImGui::Spacing();
+
+            ImGui::SeparatorText(
+                "Paint History");
+
+            const float historyButtonWidth =
+                (
+                    ImGui::GetContentRegionAvail().x -
+                    ImGui::GetStyle().ItemSpacing.x
+                ) * 0.5F;
+
+            /*
+             * Undo Paint.
+             */
+            ImGui::BeginDisabled(
+                !g_terrainRenderer.
+                    CanUndoPaint());
+
+            if (ImGui::Button(
+                    "Undo Paint",
+                    ImVec2(
+                        historyButtonWidth,
+                        28.0F)))
+            {
+                if (g_terrainRenderer.UndoPaint())
+                {
+                    g_terrainPaintStatus =
+                        "Paint Undo saved to bin/Levels.";
+                }
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+
+            /*
+             * Redo Paint.
+             */
+            ImGui::BeginDisabled(
+                !g_terrainRenderer.
+                    CanRedoPaint());
+
+            if (ImGui::Button(
+                    "Redo Paint",
+                    ImVec2(
+                        historyButtonWidth,
+                        28.0F)))
+            {
+                if (g_terrainRenderer.RedoPaint())
+                {
+                    g_terrainPaintStatus =
+                        "Paint Redo saved to bin/Levels.";
+                }
+            }
+
+            ImGui::EndDisabled();
+
             DrawDisabledWrappedText(
-                "Viewport material painting will be connected "
-                "to TerrainRenderer::Paint next.");
+                "Hold LMB over terrain to paint. "
+                "One LMB hold creates one Undo stroke.");
+
+            if (!g_terrainPaintStatus.empty())
+            {
+                ImGui::TextWrapped(
+                    "%s",
+                    g_terrainPaintStatus.c_str());
+            }
+        }
+
+        void DrawCreateTerrainButton() noexcept
+        {
+            if (g_terrainRenderer.HasTerrain())
+            {
+                return;
+            }
+
+            if (ImGui::Button(
+                    "Create Terrain",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        30.0F)))
+            {
+                g_createTerrainStatus.clear();
+
+                ImGui::OpenPopup(
+                    "Create Terrain##TerrainCreator");
+            }
+        }
+
+        void DrawCreateTerrainPopup() noexcept
+        {
+            constexpr const char* resolutionNames[]
+            {
+                "512 x 512",
+                "1024 x 1024",
+                "2048 x 2048",
+                "4096 x 4096",
+                "8192 x 8192"
+            };
+
+            constexpr std::uint32_t resolutions[]
+            {
+                512U,
+                1024U,
+                2048U,
+                4096U,
+                8192U
+            };
+
+            ImGui::SetNextWindowSize(
+                ImVec2(
+                    520.0F,
+                    0.0F),
+                ImGuiCond_Appearing);
+
+            if (!ImGui::BeginPopupModal(
+                    "Create Terrain##TerrainCreator",
+                    nullptr,
+                    ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                return;
+            }
+
+            ImGui::TextUnformatted(
+                "Create Flat Terrain");
+
+            ImGui::Separator();
+
+            ImGui::InputText(
+                "Level Name",
+                g_createTerrainLevelName.data(),
+                g_createTerrainLevelName.size());
+
+            ImGui::Combo(
+                "Resolution",
+                &g_createTerrainResolutionIndex,
+                resolutionNames,
+                static_cast<int>(
+                    std::size(resolutionNames)));
+
+            ImGui::DragFloat(
+                "Sample Spacing",
+                &g_createTerrainTileSize,
+                0.01F,
+                0.001F,
+                10000.0F,
+                "%.3f");
+
+            ImGui::DragFloat(
+                "Height Range",
+                &g_createTerrainHeightRange,
+                1.0F,
+                1.0F,
+                1000000.0F,
+                "%.1f");
+
+            g_createTerrainResolutionIndex =
+                std::clamp(
+                    g_createTerrainResolutionIndex,
+                    0,
+                    static_cast<int>(
+                        std::size(resolutions)) -
+                        1);
+
+            const std::filesystem::path outputPreview =
+                FindWorkspaceRoot() /
+                L"bin" /
+                L"Levels" /
+                std::filesystem::u8path(
+                    g_createTerrainLevelName.data());
+
+            ImGui::Spacing();
+
+            ImGui::TextWrapped(
+                "Output: %s",
+                outputPreview.
+                    generic_u8string().
+                    c_str());
+
+            ImGui::TextDisabled(
+                "Files will be stored inside bin/Levels.");
+
+            if (!g_createTerrainStatus.empty())
+            {
+                ImGui::Separator();
+
+                ImGui::TextWrapped(
+                    "%s",
+                    g_createTerrainStatus.c_str());
+            }
+
+            ImGui::Separator();
+
+            const bool validName =
+                !TrimAscii(
+                    g_createTerrainLevelName.data()).
+                    empty();
+
+            const bool canCreate =
+                validName &&
+                g_device != nullptr &&
+                !IsLevelLoading();
+
+            ImGui::BeginDisabled(
+                !canCreate);
+
+            if (ImGui::Button(
+                    "Create",
+                    ImVec2(
+                        120.0F,
+                        28.0F)))
+            {
+                lts::editor::FlatTerrainCreateSettings
+                    settings;
+
+                settings.levelName =
+                    TrimAscii(
+                        g_createTerrainLevelName.data());
+
+                settings.resolution =
+                    resolutions[
+                        static_cast<std::size_t>(
+                            g_createTerrainResolutionIndex)];
+
+                settings.tileSize =
+                    g_createTerrainTileSize;
+
+                settings.heightRange =
+                    g_createTerrainHeightRange;
+
+                std::filesystem::path createdLevelRoot;
+
+                if (lts::editor::CreateFlatTerrainLevel(
+                        settings,
+                        createdLevelRoot,
+                        g_createTerrainStatus))
+                {
+                    RefreshAvailableTerrainMaps();
+
+                    const std::string displayName =
+                        createdLevelRoot.
+                            filename().
+                            generic_u8string();
+
+                    if (
+                        g_device != nullptr &&
+                        LoadTerrainMap(
+                            *g_device,
+                            createdLevelRoot,
+                            displayName))
+                    {
+                        g_createTerrainLevelName.fill('\0');
+
+                        ImGui::CloseCurrentPopup();
+                    }
+                    else
+                    {
+                        g_createTerrainStatus =
+                            "Terrain was created, but the level "
+                            "could not be loaded.";
+                    }
+                }
+            }
+
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(
+                    "Cancel",
+                    ImVec2(
+                        120.0F,
+                        28.0F)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
 
         void DrawTerrainHeightmapToolPage() noexcept
@@ -2895,6 +3415,13 @@ bool IsActiveTerrainPaintTool() noexcept
                         28.0F)))
             {
                 g_terrainImporter.Open();
+            }
+
+            if (!g_terrainRenderer.HasTerrain())
+            {
+                ImGui::Spacing();
+
+                DrawCreateTerrainButton();
             }
 
             ImGui::BeginDisabled(true);
@@ -2986,6 +3513,13 @@ bool IsActiveTerrainPaintTool() noexcept
                         28.0F)))
             {
                 RefreshAvailableTerrainMaps();
+            }
+
+            if (!g_terrainRenderer.HasTerrain())
+            {
+                ImGui::Spacing();
+
+                DrawCreateTerrainButton();
             }
 
             if (!g_terrainMapScanStatus.empty())
@@ -3128,13 +3662,24 @@ bool IsActiveTerrainPaintTool() noexcept
             switch (g_activeTerrainPage)
             {
             case TerrainToolbarPage::TerrainLoader:
+
                 DrawTerrainLoaderPage();
+
                 break;
 
             case TerrainToolbarPage::TerrainEditor:
+
                 DrawTerrainEditorPage();
+
                 break;
             }
+
+            /*
+             * Вызывается ровно один раз за frame.
+             * Кнопка открытия может находиться и в Loader,
+             * и в Heightmap.
+             */
+            DrawCreateTerrainPopup();
         }
 
         void DrawEnvironmentPage() noexcept
@@ -3716,8 +4261,9 @@ bool IsActiveTerrainPaintTool() noexcept
 
         void DrawLevelEditor() noexcept
         {
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            
+            const ImGuiViewport* const viewport =
+                ImGui::GetMainViewport();
+
             constexpr float toolbarHeight = 42.0F;
             constexpr float secondaryToolbarHeight = 38.0F;
             constexpr float terrainToolToolbarHeight = 38.0F;
@@ -3793,12 +4339,21 @@ bool IsActiveTerrainPaintTool() noexcept
             ObjectViewContext objectContext =
                 BuildObjectViewContext();
 
-            ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
+            /*
+             * Главный Navbar.
+             */
+            ImGui::SetNextWindowDockID(
+                0U,
+                ImGuiCond_Always);
+
             ImGui::SetNextWindowPos(
                 viewport->WorkPos,
                 ImGuiCond_Always);
+
             ImGui::SetNextWindowSize(
-                ImVec2(viewport->WorkSize.x, toolbarHeight),
+                ImVec2(
+                    viewport->WorkSize.x,
+                    toolbarHeight),
                 ImGuiCond_Always);
 
             if (!ImGui::Begin(
@@ -3811,7 +4366,8 @@ bool IsActiveTerrainPaintTool() noexcept
                         ImGuiWindowFlags_NoTitleBar |
                         ImGuiWindowFlags_NoSavedSettings |
                         ImGuiWindowFlags_NoScrollbar |
-                        ImGuiWindowFlags_NoScrollWithMouse))
+                        ImGuiWindowFlags_NoScrollWithMouse |
+                        ImGuiWindowFlags_NoBringToFrontOnFocus))
             {
                 ImGui::End();
 
@@ -3820,8 +4376,12 @@ bool IsActiveTerrainPaintTool() noexcept
 
             g_editorToolbar.DrawMain(
                 g_activePage);
+
             ImGui::End();
 
+            /*
+             * Второй Navbar.
+             */
             if (secondaryToolbarVisible)
             {
                 ImGui::SetNextWindowDockID(
@@ -3831,8 +4391,7 @@ bool IsActiveTerrainPaintTool() noexcept
                 ImGui::SetNextWindowPos(
                     ImVec2(
                         viewport->WorkPos.x,
-                        viewport->WorkPos.y +
-                            toolbarHeight),
+                        secondaryToolbarTop),
                     ImGuiCond_Always);
 
                 ImGui::SetNextWindowSize(
@@ -3851,7 +4410,8 @@ bool IsActiveTerrainPaintTool() noexcept
                             ImGuiWindowFlags_NoTitleBar |
                             ImGuiWindowFlags_NoSavedSettings |
                             ImGuiWindowFlags_NoScrollbar |
-                            ImGuiWindowFlags_NoScrollWithMouse))
+                            ImGuiWindowFlags_NoScrollWithMouse |
+                            ImGuiWindowFlags_NoBringToFrontOnFocus))
                 {
                     if (settingsActive)
                     {
@@ -3872,21 +4432,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
                 ImGui::End();
             }
-
-            ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
-            ImGui::SetNextWindowPos(
-                ImVec2(
-                    viewport->WorkPos.x +
-                        viewport->WorkSize.x -
-                        panelWidth -
-                        5.0F,
-                    controlsTop),
-                ImGuiCond_Always);
-            ImGui::SetNextWindowSize(
-                ImVec2(panelWidth, panelHeight),
-                ImGuiCond_Always);
-            ImGui::SetNextWindowBgAlpha(0.92F);
-
+                    
             if (terrainToolToolbarVisible)
             {
                 ImGui::SetNextWindowDockID(
@@ -3896,19 +4442,13 @@ bool IsActiveTerrainPaintTool() noexcept
                 ImGui::SetNextWindowPos(
                     ImVec2(
                         viewport->WorkPos.x,
-                        secondaryToolbarTop),
+                        terrainToolToolbarTop),
                     ImGuiCond_Always);
 
                 ImGui::SetNextWindowSize(
                     ImVec2(
                         viewport->WorkSize.x,
                         terrainToolToolbarHeight),
-                    ImGuiCond_Always);
-
-                ImGui::SetNextWindowPos(
-                    ImVec2(
-                        viewport->WorkPos.x,
-                        terrainToolToolbarTop),
                     ImGuiCond_Always);
 
                 if (ImGui::Begin(
@@ -3921,16 +4461,35 @@ bool IsActiveTerrainPaintTool() noexcept
                             ImGuiWindowFlags_NoTitleBar |
                             ImGuiWindowFlags_NoSavedSettings |
                             ImGuiWindowFlags_NoScrollbar |
-                            ImGuiWindowFlags_NoScrollWithMouse))
+                            ImGuiWindowFlags_NoScrollWithMouse |
+                            ImGuiWindowFlags_NoBringToFrontOnFocus))
                 {
-                    g_editorToolbar.
-                        DrawTerrainEditorTools(
-                            g_activeTerrainEditorTool);
+                    g_editorToolbar.DrawTerrainEditorTools(
+                        g_activeTerrainEditorTool);
                 }
 
                 ImGui::End();
             }
+                    
+            ImGui::SetNextWindowDockID(
+                0U,
+                ImGuiCond_Always);
 
+            ImGui::SetNextWindowPos(
+                ImVec2(
+                    viewport->WorkPos.x +
+                        viewport->WorkSize.x -
+                        panelWidth -
+                        5.0F,
+                    controlsTop),
+                ImGuiCond_Always);
+
+            ImGui::SetNextWindowSize(
+                ImVec2(
+                    panelWidth,
+                    panelHeight),
+                ImGuiCond_Always);
+                    
             if (!ImGui::Begin(
                     "##WarZEditorControls",
                     nullptr,
@@ -3946,15 +4505,20 @@ bool IsActiveTerrainPaintTool() noexcept
                 return;
             }
 
-            DrawActivePage(objectContext);
+            DrawActivePage(
+                objectContext);
+
             ImGui::End();
 
             if (objectsActive)
             {
-                g_objectViewTab.DrawWindows(objectContext);
-                g_objectViewTab.UpdateViewport(objectContext);
+                g_objectViewTab.DrawWindows(
+                    objectContext);
+
+                g_objectViewTab.UpdateViewport(
+                    objectContext);
             }
-            
+                    
             UpdateTerrainBrushViewport();
         }
     }
@@ -4079,6 +4643,16 @@ bool IsActiveTerrainPaintTool() noexcept
         g_editorViewportHeight = 0U;
 
         g_terrainSculptStatus.clear();
+        g_terrainPaintStatus.clear();
+        g_terrainPaintStrokeActive = false;
+
+        g_newTerrainLayerName.fill('\0');
+
+        g_createTerrainLevelName.fill('\0');
+        g_createTerrainResolutionIndex = 1;
+        g_createTerrainTileSize = 1.0F;
+        g_createTerrainHeightRange = 512.0F;
+        g_createTerrainStatus.clear();
     }
 
     engine::graphics::GraphicsResult RenderEditorWorld(
