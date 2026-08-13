@@ -17,7 +17,7 @@ namespace studio::editor
         TerrainLoader = 0,
         TerrainEditor
     };
-    
+
     enum class TerrainEditorTool : std::uint8_t
     {
         Options = 0,
@@ -52,6 +52,9 @@ namespace studio::editor
 
         void DrawTerrain(
             TerrainToolbarPage& activePage) const noexcept;
+
+        void DrawTerrainEditorTools(
+            TerrainEditorTool& activeTool) const noexcept;
 
     private:
         [[nodiscard]]
