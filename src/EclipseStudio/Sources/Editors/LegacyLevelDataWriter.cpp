@@ -8,6 +8,7 @@
 
 #include <Windows.h>
 
+#include <map>
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -223,6 +224,25 @@ namespace studio::editor
         }
 
         [[nodiscard]]
+        pugi::xml_node AppendNamedChild(
+            pugi::xml_node parent,
+            const char* const name)
+        {
+            pugi::xml_node child =
+                parent.append_child(
+                    pugi::node_element);
+
+            if (
+                !child ||
+                !child.set_name(name))
+            {
+                return pugi::xml_node();
+            }
+
+            return child;
+        }
+
+        [[nodiscard]]
         pugi::xml_node EnsureChild(
             pugi::xml_node parent,
             const char* const name)
@@ -233,7 +253,9 @@ namespace studio::editor
             if (!child)
             {
                 child =
-                    parent.append_child(name);
+                    AppendNamedChild(
+                        parent,
+                        name);
             }
 
             return child;
@@ -245,14 +267,17 @@ namespace studio::editor
             const char* const name,
             const char* const value)
         {
-            const pugi::xml_attribute attribute =
+            pugi::xml_attribute attribute =
                 EnsureAttribute(
                     node,
                     name);
 
-            return
-                attribute &&
-                attribute.set_value(value);
+            if (!attribute)
+            {
+                return false;
+            }
+
+            return attribute.set_value(value);
         }
 
         [[nodiscard]]
@@ -261,14 +286,18 @@ namespace studio::editor
             const char* const name,
             const float value)
         {
-            const pugi::xml_attribute attribute =
+            pugi::xml_attribute attribute =
                 EnsureAttribute(
                     node,
                     name);
 
-            return
-                attribute &&
-                attribute.set_value(value);
+            if (!attribute)
+            {
+                return false;
+            }
+
+            return attribute.set_value(
+                static_cast<double>(value));
         }
 
         [[nodiscard]]
@@ -277,14 +306,18 @@ namespace studio::editor
             const char* const name,
             const std::uint32_t value)
         {
-            const pugi::xml_attribute attribute =
+            pugi::xml_attribute attribute =
                 EnsureAttribute(
                     node,
                     name);
 
-            return
-                attribute &&
-                attribute.set_value(value);
+            if (!attribute)
+            {
+                return false;
+            }
+
+            return attribute.set_value(
+                static_cast<unsigned int>(value));
         }
 
         [[nodiscard]]
@@ -683,7 +716,8 @@ namespace studio::editor
                 if (!object)
                 {
                     object =
-                        level.append_child(
+                        AppendNamedChild(
+                            level,
                             "object");
 
                     if (!object)
@@ -748,22 +782,20 @@ namespace studio::editor
                 ++result.removedObjects;
             }
 
-            std::unordered_map<
-                std::size_t,
+            std::map<
+                pugi::xml_node,
                 engine::scene::SceneEntityId>
                 entityByNode;
-
-            entityByNode.reserve(
-                bindings.size());
 
             for (
                 const SavedNodeBinding& binding :
                 bindings)
             {
                 const bool inserted =
-                    entityByNode.emplace(
-                        binding.node.hash_value(),
-                        binding.entityId).
+                    entityByNode.insert(
+                        std::make_pair(
+                            binding.node,
+                            binding.entityId)).
                         second;
 
                 if (!inserted)
@@ -789,10 +821,10 @@ namespace studio::editor
                 ++objectIndex;
 
                 const auto entity =
-                    entityByNode.find(
-                        object.hash_value());
+                    entityByNode.find(object);
 
-                if (entity ==
+                if (
+                    entity ==
                     entityByNode.end())
                 {
                     continue;
