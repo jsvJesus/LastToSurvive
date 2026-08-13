@@ -216,7 +216,11 @@ namespace studio::editor
 
             device_ = &device;
             window_ = window;
+            
             transformController_.SetViewportWindow(window);
+            transformController_.SetKeyboardShortcutsEnabled(false);
+            transformController_.SetEditorRoadPickingEnabled(false);
+            
             initialized_ = true;
 
             Refresh();
@@ -958,12 +962,13 @@ namespace studio::editor
             float distance = 0.0F;
 
             if (!lts::editor::ScenePicker::Pick(
-                    context.sceneDocument,
-                    ray,
-                    entityIndex,
-                    distance,
-                    &context.staticMeshRenderer) ||
-                !context.sceneDocument.SelectEntityByIndex(entityIndex))
+                context.sceneDocument,
+                ray,
+                entityIndex,
+                distance,
+                &context.staticMeshRenderer,
+                false) ||
+            !context.sceneDocument.SelectEntityByIndex(entityIndex))
             {
                 return;
             }

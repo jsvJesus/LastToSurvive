@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <cwctype>
 
 namespace lts::editor
 {
@@ -17,6 +18,60 @@ namespace lts::editor
             DirectX::XMFLOAT3 minimum;
             DirectX::XMFLOAT3 maximum;
         };
+
+        [[nodiscard]]
+        std::wstring LowercasePath(std::wstring value)
+        {
+            std::transform(
+                value.begin(),
+                value.end(),
+                value.begin(),
+                [](const wchar_t character)
+                {
+                    if (character == L'\\')
+                    {
+                        return L'/';
+                    }
+
+                    return static_cast<wchar_t>(
+                        std::towlower(character));
+                });
+
+            return value;
+        }
+
+        [[nodiscard]]
+        bool IsGeneratedEditorRoad(
+            const EditorSceneEntity& entity)
+        {
+            const std::wstring folder =
+                LowercasePath(entity.editorFolder);
+
+            if (folder == L"leveldata/obj_road")
+            {
+                return true;
+            }
+
+            if (!entity.staticMesh.has_value())
+            {
+                return false;
+            }
+
+            const std::wstring path =
+                LowercasePath(
+                    entity.staticMesh->assetPath);
+
+            const std::size_t generatedDirectory =
+                path.find(L"/levelgeneratedv3/");
+
+            const std::size_t roadAsset =
+                path.find(L"/roads/road_");
+
+            return
+                generatedDirectory != std::wstring::npos &&
+                roadAsset != std::wstring::npos &&
+                roadAsset > generatedDirectory;
+        }
 
         [[nodiscard]]
         PickBounds GetEntityBounds(const EditorEntityKind kind) noexcept
@@ -300,8 +355,8 @@ namespace lts::editor
         {
             if (
                 !includeEditorRoads &&
-                entities[index].editorFolder ==
-                    L"LevelData/obj_Road")
+                IsGeneratedEditorRoad(
+                    entities[index]))
             {
                 continue;
             }

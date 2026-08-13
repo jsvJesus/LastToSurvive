@@ -210,11 +210,7 @@ namespace studio::editor
                     normalized.extension().wstring());
 
             std::filesystem::path relativePath;
-
-            /*
-             * LevelData.xml СѓР¶Рµ Р±С‹Р» РјРёРіСЂРёСЂРѕРІР°РЅ.
-             * Runtime С‡РёС‚Р°РµС‚ С‚РѕР»СЊРєРѕ StaticMeshes/*.mesh.
-             */
+            
             if (extension == L".mesh")
             {
                 if (!ExtractRelativePath(
