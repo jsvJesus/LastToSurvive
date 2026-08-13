@@ -1803,6 +1803,29 @@ namespace studio::editor
             }
         }
 
+        void DrawDisabledWrappedText(
+            const char* const text) noexcept
+        {
+            if (
+                text == nullptr ||
+                text[0] == '\0')
+            {
+                return;
+            }
+
+            ImGui::PushStyleColor(
+                ImGuiCol_Text,
+                ImGui::GetStyleColorVec4(
+                    ImGuiCol_TextDisabled));
+
+            ImGui::PushTextWrapPos(0.0F);
+
+            ImGui::TextUnformatted(text);
+
+            ImGui::PopTextWrapPos();
+            ImGui::PopStyleColor();
+        }
+
         void DrawTerrainBrushSettings() noexcept
         {
             ImGui::SliderFloat(
@@ -1918,7 +1941,7 @@ namespace studio::editor
 
             ImGui::Spacing();
 
-            ImGui::TextDisabled(
+            DrawDisabledWrappedText(
                 "Terrain resize and geometry rebuild will be "
                 "connected with the DX11 sculpt system.");
         }
@@ -2106,10 +2129,12 @@ namespace studio::editor
                 ImGui::SeparatorText(
                     "Erosion Pattern");
 
-                ImGui::TextWrapped(
-                    "Source: bin/Data/Editor/ErosionPatterns/*.dds");
+                ImGui::TextDisabled("Source:");
 
-                ImGui::TextDisabled(
+                DrawDisabledWrappedText(
+                    "bin/Data/Editor/ErosionPatterns/*.dds");
+
+                DrawDisabledWrappedText(
                     "Pattern loading will be connected with "
                     "the erosion implementation.");
 
@@ -2122,7 +2147,7 @@ namespace studio::editor
             ImGui::Spacing();
             ImGui::SeparatorText("DX11 Sculpt Status");
 
-            ImGui::TextDisabled(
+            DrawDisabledWrappedText(
                 "The tool parameters are ready. Viewport brush "
                 "execution will be connected next.");
         }
@@ -2136,7 +2161,7 @@ namespace studio::editor
                 entity == nullptr ||
                 !entity->terrain.has_value())
             {
-                ImGui::TextDisabled(
+                DrawDisabledWrappedText(
                     "Select the Terrain entity to edit its layers.");
 
                 return;
@@ -2147,7 +2172,7 @@ namespace studio::editor
 
             if (layers.empty())
             {
-                ImGui::TextDisabled(
+                DrawDisabledWrappedText(
                     "Terrain has no material layers.");
 
                 return;
@@ -2350,7 +2375,7 @@ namespace studio::editor
             DrawTerrainLayerEditor();
 
             ImGui::Spacing();
-            ImGui::TextDisabled(
+            DrawDisabledWrappedText(
                 "Viewport material painting will be connected "
                 "to TerrainRenderer::Paint next.");
         }
@@ -2360,7 +2385,7 @@ namespace studio::editor
             ImGui::TextUnformatted("Terrain Heightmap");
             ImGui::Separator();
 
-            ImGui::TextDisabled(
+            DrawDisabledWrappedText(
                 "Legacy Terrain V1 / Terrain V2 are not used.");
 
             if (ImGui::Button(
@@ -2397,7 +2422,7 @@ namespace studio::editor
                 "The R16 importer automatically detects sidecar "
                 "metadata, RGBA masks and terrain material definitions.");
 
-            ImGui::TextDisabled(
+            DrawDisabledWrappedText(
                 "Export will be enabled after the editable CPU "
                 "heightmap storage is connected.");
         }
