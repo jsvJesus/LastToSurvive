@@ -2197,6 +2197,18 @@ namespace studio::editor
                         : 0.0F
                 );
 
+            const float panelWidth =
+                (std::min)(
+                    375.0F,
+                    viewport->WorkSize.x * 0.32F);
+
+            const float panelHeight =
+                (std::max)(
+                    180.0F,
+                    viewport->WorkSize.y -
+                        controlsTop -
+                        70.0F);
+
             ObjectViewContext objectContext =
                 BuildObjectViewContext();
 
