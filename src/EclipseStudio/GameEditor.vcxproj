@@ -102,15 +102,19 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ClCompile Include="Sources\Editors\ObjectViewTab.cpp" />
     <ClCompile Include="Sources\Studio\Main.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
     <ClCompile Include="Sources\Editors\StudioEditorUI.cpp" />
+    <ClCompile Include="Sources\Editors\ObjectViewTab.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\SceneRenderer.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Scene\ScenePicker.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\UI\MaterialInspector.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Viewport\TransformController.cpp" />
     <ClCompile Include="Sources\Editors\LegacyLevelDataLoader.cpp" />
     <ClCompile Include="..\Editor\Private\Commands\CommandHistory.cpp" />
-      <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\GridRenderer.cpp" />
-      <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\ColorCorrectionRenderer.cpp" />
-      <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\SkyRenderer.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\GridRenderer.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\ColorCorrectionRenderer.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\SkyRenderer.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\StaticMeshRenderer.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\ShaderCompiler.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Scene\SceneDocument.cpp" />

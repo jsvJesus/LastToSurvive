@@ -15,5 +15,8 @@
     <ClCompile Include="Sources\Editors\LegacyLevelDataLoader.cpp">
       <Filter>Studio</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Editors\ObjectViewTab.cpp">
+      <Filter>Studio</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
