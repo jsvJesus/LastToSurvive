@@ -3333,11 +3333,6 @@ namespace lts::editor
             return true;
         }
 
-        bool TerrainRenderer::CanSculpt() const noexcept
-        {
-            return impl_->CanSculpt();
-        }
-
         [[nodiscard]]
         bool CanSculpt() const noexcept
         {
@@ -4340,70 +4335,6 @@ namespace lts::editor
             return heightStrokeActive_;
         }
 
-        bool TerrainRenderer::BeginSculptStroke() noexcept
-        {
-            return impl_->BeginSculptStroke();
-        }
-
-        bool TerrainRenderer::Sculpt(
-            const SceneDocument& document,
-            const TerrainSculptMode mode,
-            const float worldX,
-            const float worldZ,
-            const float radius,
-            const float hardness,
-            const float strength,
-            const float deltaValue,
-            const float levelHeight,
-            const float smoothBoxHalfSize,
-            const float smoothSeconds,
-            const float deltaSeconds) noexcept
-        {
-            return impl_->Sculpt(
-                document,
-                mode,
-                worldX,
-                worldZ,
-                radius,
-                hardness,
-                strength,
-                deltaValue,
-                levelHeight,
-                smoothBoxHalfSize,
-                smoothSeconds,
-                deltaSeconds);
-        }
-
-        bool TerrainRenderer::EndSculptStroke() noexcept
-        {
-            return impl_->EndSculptStroke();
-        }
-
-        bool TerrainRenderer::UndoSculpt() noexcept
-        {
-            return impl_->UndoSculpt();
-        }
-
-        bool TerrainRenderer::RedoSculpt() noexcept
-        {
-            return impl_->RedoSculpt();
-        }
-
-        bool TerrainRenderer::CanUndoSculpt() const noexcept
-        {
-            return impl_->CanUndoSculpt();
-        }
-
-        bool TerrainRenderer::CanRedoSculpt() const noexcept
-        {
-            return impl_->CanRedoSculpt();
-        }
-
-        bool TerrainRenderer::IsSculptStrokeActive() const noexcept
-        {
-            return impl_->IsSculptStrokeActive();
-        }
-
         [[nodiscard]]
         bool BeginPaintStroke() noexcept
         {
@@ -5237,6 +5168,75 @@ namespace lts::editor
     bool TerrainRenderer::HasTerrain() const noexcept
     {
         return impl_->HasTerrain();
+    }
+
+    bool TerrainRenderer::CanSculpt() const noexcept
+    {
+        return impl_->CanSculpt();
+    }
+
+    bool TerrainRenderer::BeginSculptStroke() noexcept
+    {
+        return impl_->BeginSculptStroke();
+    }
+
+    bool TerrainRenderer::Sculpt(
+        const SceneDocument& document,
+        const TerrainSculptMode mode,
+        const float worldX,
+        const float worldZ,
+        const float radius,
+        const float hardness,
+        const float strength,
+        const float deltaValue,
+        const float levelHeight,
+        const float smoothBoxHalfSize,
+        const float smoothSeconds,
+        const float deltaSeconds) noexcept
+    {
+        return impl_->Sculpt(
+            document,
+            mode,
+            worldX,
+            worldZ,
+            radius,
+            hardness,
+            strength,
+            deltaValue,
+            levelHeight,
+            smoothBoxHalfSize,
+            smoothSeconds,
+            deltaSeconds);
+    }
+
+    bool TerrainRenderer::EndSculptStroke() noexcept
+    {
+        return impl_->EndSculptStroke();
+    }
+
+    bool TerrainRenderer::UndoSculpt() noexcept
+    {
+        return impl_->UndoSculpt();
+    }
+
+    bool TerrainRenderer::RedoSculpt() noexcept
+    {
+        return impl_->RedoSculpt();
+    }
+
+    bool TerrainRenderer::CanUndoSculpt() const noexcept
+    {
+        return impl_->CanUndoSculpt();
+    }
+
+    bool TerrainRenderer::CanRedoSculpt() const noexcept
+    {
+        return impl_->CanRedoSculpt();
+    }
+
+    bool TerrainRenderer::IsSculptStrokeActive() const noexcept
+    {
+        return impl_->IsSculptStrokeActive();
     }
 
     bool TerrainRenderer::SetMaterialLayerCount(
