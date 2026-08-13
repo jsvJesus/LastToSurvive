@@ -53,6 +53,7 @@ namespace studio::editor
         struct MeshReference final
         {
             bool sourceReference = false;
+            bool rewriteXml = false;
 
             std::filesystem::path sourcePath;
             std::filesystem::path meshPath;
@@ -205,14 +206,17 @@ namespace studio::editor
                 logicalPath.lexically_normal();
 
             const std::wstring extension =
-                Lowercase(
-                    normalized.extension().wstring());
+                Lowercase(normalized.extension().wstring());
 
             std::filesystem::path relativePath;
 
             /*
-             * LevelData.xml уже был мигрирован.
-             * Runtime читает только StaticMeshes/*.mesh.
+             * LevelData.xml уже может содержать готовую ссылку:
+             *
+             * Data/StaticMeshes/.../object.mesh
+             *
+             * При этом рядом с mesh ещё могут отсутствовать
+             * сгенерированные material-файлы.
              */
             if (extension == L".mesh")
             {
@@ -236,12 +240,42 @@ namespace studio::editor
                     L"StaticMeshes" /
                     relativePath;
 
+                /*
+                 * Восстанавливаем путь к исходному SCB:
+                 *
+                 * Data/StaticMeshes/folder/object.mesh
+                 * ->
+                 * Data/ObjectsDepot/folder/object.scb
+                 *
+                 * Это позволяет повторно вызвать importer,
+                 * если у mesh отсутствуют материалы.
+                 */
+                std::filesystem::path sourceRelativePath =
+                    relativePath;
+
+                sourceRelativePath.replace_extension(L".scb");
+
+                reference.sourcePath =
+                    workspaceRoot /
+                    L"bin" /
+                    L"Data" /
+                    L"ObjectsDepot" /
+                    sourceRelativePath;
+
+                reference.sourceReference = true;
+
+                /*
+                 * XML уже содержит .mesh, поэтому повторно
+                 * сохранять и переписывать LevelData.xml не нужно.
+                 */
+                reference.rewriteXml = false;
+
                 return true;
             }
 
             /*
-             * В старом XML может быть написано .sco или .scb.
-             * В обоих случаях физически читается только SCB.
+             * Старый LevelData.xml содержит .sco или .scb.
+             * Для импорта физически используется SCB.
              */
             if (
                 extension != L".sco" &&
@@ -261,16 +295,15 @@ namespace studio::editor
             std::filesystem::path sourceRelativePath =
                 relativePath;
 
-            sourceRelativePath.replace_extension(
-                L".scb");
+            sourceRelativePath.replace_extension(L".scb");
 
             std::filesystem::path meshRelativePath =
                 relativePath;
 
-            meshRelativePath.replace_extension(
-                L".mesh");
+            meshRelativePath.replace_extension(L".mesh");
 
             reference.sourceReference = true;
+            reference.rewriteXml = true;
 
             reference.sourcePath =
                 workspaceRoot /
@@ -592,10 +625,163 @@ namespace studio::editor
         }
 
         [[nodiscard]]
-        bool MaterialSetExists(const std::filesystem::path& meshPath) noexcept
+        bool ReadMeshMaterialSlotCount(
+            const std::filesystem::path& meshPath,
+            std::uint32_t& materialSlotCount) noexcept
+        {
+            materialSlotCount = 0U;
+
+            try
+            {
+                constexpr std::array<char, 8U> MeshMagic
+                {
+                    'L', 'T', 'S', 'M', 'E', 'S', 'H', '\0'
+                };
+
+                constexpr std::size_t RequiredHeaderBytes = 44U;
+
+                std::array<std::byte, RequiredHeaderBytes> header{};
+
+                std::ifstream input(
+                    meshPath,
+                    std::ios::binary);
+
+                if (
+                    !input ||
+                    !input.read(
+                        reinterpret_cast<char*>(header.data()),
+                        static_cast<std::streamsize>(
+                            header.size())).good() ||
+                    std::memcmp(
+                        header.data(),
+                        MeshMagic.data(),
+                        MeshMagic.size()) != 0)
+                {
+                    return false;
+                }
+
+                std::uint32_t version = 0U;
+                std::uint32_t endianMarker = 0U;
+                std::uint32_t headerSize = 0U;
+
+                std::memcpy(
+                    &version,
+                    header.data() + 8U,
+                    sizeof(version));
+
+                std::memcpy(
+                    &endianMarker,
+                    header.data() + 12U,
+                    sizeof(endianMarker));
+
+                std::memcpy(
+                    &headerSize,
+                    header.data() + 16U,
+                    sizeof(headerSize));
+
+                /*
+                 * В формате LTSMESH количество material slots
+                 * хранится по смещению 40 байт.
+                 */
+                std::memcpy(
+                    &materialSlotCount,
+                    header.data() + 40U,
+                    sizeof(materialSlotCount));
+
+                return
+                    version == 1U &&
+                    endianMarker == 0x01020304U &&
+                    headerSize == 160U &&
+                    materialSlotCount > 0U &&
+                    materialSlotCount <= 65536U;
+            }
+            catch (...)
+            {
+                materialSlotCount = 0U;
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        bool ParseMaterialSlot(
+            const std::wstring& filename,
+            const std::wstring& prefix,
+            const std::uint32_t materialSlotCount,
+            std::uint32_t& slot) noexcept
+        {
+            slot = 0U;
+
+            if (filename.rfind(prefix, 0U) != 0U)
+            {
+                return false;
+            }
+
+            const std::size_t slotBegin =
+                prefix.size();
+
+            const std::size_t slotEnd =
+                filename.find(
+                    L'_',
+                    slotBegin);
+
+            if (
+                slotEnd == std::wstring::npos ||
+                slotEnd == slotBegin)
+            {
+                return false;
+            }
+
+            for (
+                std::size_t index = slotBegin;
+                index < slotEnd;
+                ++index)
+            {
+                const wchar_t character =
+                    filename[index];
+
+                if (
+                    character < L'0' ||
+                    character > L'9')
+                {
+                    return false;
+                }
+
+                const std::uint32_t digit =
+                    static_cast<std::uint32_t>(
+                        character - L'0');
+
+                if (
+                    slot >
+                    ((std::numeric_limits<std::uint32_t>::max)() -
+                        digit) /
+                        10U)
+                {
+                    return false;
+                }
+
+                slot =
+                    slot * 10U +
+                    digit;
+            }
+
+            return slot < materialSlotCount;
+        }
+
+        [[nodiscard]]
+        bool MaterialSetExists(
+            const std::filesystem::path& meshPath) noexcept
         {
             try
             {
+                std::uint32_t materialSlotCount = 0U;
+
+                if (!ReadMeshMaterialSlotCount(
+                        meshPath,
+                        materialSlotCount))
+                {
+                    return false;
+                }
+
                 const std::filesystem::path directory =
                     meshPath.parent_path() /
                     L"Materials";
@@ -616,13 +802,18 @@ namespace studio::editor
                         meshPath.stem().wstring() +
                         L"_");
 
+                std::vector<std::uint8_t> foundSlots(
+                    materialSlotCount,
+                    0U);
+
+                std::uint32_t foundSlotCount = 0U;
+
                 for (
                     std::filesystem::directory_iterator
                         iterator(directory, error),
                         end;
 
-                    !error &&
-                    iterator != end;
+                    !error && iterator != end;
 
                     iterator.increment(error))
                 {
@@ -638,21 +829,22 @@ namespace studio::editor
                         iterator->path();
 
                     if (
-                        Lowercase(
-                            file.extension().wstring()) !=
-                            L".material")
+                        Lowercase(file.extension().wstring()) !=
+                        L".material")
                     {
                         continue;
                     }
 
                     const std::wstring filename =
-                        Lowercase(
-                            file.filename().wstring());
+                        Lowercase(file.filename().wstring());
 
-                    if (
-                        filename.rfind(
+                    std::uint32_t slot = 0U;
+
+                    if (!ParseMaterialSlot(
+                            filename,
                             prefix,
-                            0U) != 0U)
+                            materialSlotCount,
+                            slot))
                     {
                         continue;
                     }
@@ -666,7 +858,18 @@ namespace studio::editor
                         !error &&
                         size >= 192U)
                     {
-                        return true;
+                        if (foundSlots[slot] == 0U)
+                        {
+                            foundSlots[slot] = 1U;
+                            ++foundSlotCount;
+                        }
+
+                        if (
+                            foundSlotCount ==
+                            materialSlotCount)
+                        {
+                            return true;
+                        }
                     }
 
                     error.clear();
@@ -740,7 +943,13 @@ namespace studio::editor
 
             std::error_code filesystemError;
 
-            if (!std::filesystem::is_regular_file(reference.sourcePath, filesystemError) || filesystemError || !HasScbSignature(reference.sourcePath))
+            if (
+                !std::filesystem::is_regular_file(
+                    reference.sourcePath,
+                    filesystemError) ||
+                filesystemError ||
+                !HasScbSignature(
+                    reference.sourcePath))
             {
                 if (
                     MeshFileExists(
@@ -787,7 +996,12 @@ namespace studio::editor
                 return result;
             }
 
-            bool needsImport = !MeshFileExists(reference.meshPath) || !MaterialSetExists(reference.meshPath);
+            bool needsImport =
+                !MeshFileExists(
+                    reference.meshPath) ||
+                !MaterialSetExists(
+                    reference.meshPath);
+            
             filesystemError.clear();
 
             if (
@@ -831,13 +1045,15 @@ namespace studio::editor
                     engine::assets::Failed(
                         importResult) ||
                     !MeshFileExists(
+                        reference.meshPath) ||
+                    !MaterialSetExists(
                         reference.meshPath))
                 {
                     ++stats.failedMeshes;
 
                     AddError(
                         errors,
-                        "SCB conversion failed:",
+                        "SCB mesh/material conversion failed:",
                         reference.sourcePath);
 
                     meshCache.emplace(
@@ -2670,7 +2886,7 @@ namespace studio::editor
                 pending.available = mesh.available;
                 pending.logicalMeshPath = reference.logicalMeshPath;
                 pending.objectIndex = objectIndex;
-                pending.rewriteXml = reference.sourceReference;
+                pending.rewriteXml = reference.rewriteXml;
 
                 ReadTransform(object, pending.transform);
                 pendingObjects.push_back(std::move(pending));
