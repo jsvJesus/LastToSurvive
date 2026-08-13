@@ -16,6 +16,17 @@ namespace lts::editor
         visualState_.operation = operation;
     }
 
+    void TransformController::SetKeyboardShortcutsEnabled(
+        const bool enabled) noexcept
+    {
+        keyboardShortcutsEnabled_ = enabled;
+    }
+
+    bool TransformController::AreKeyboardShortcutsEnabled() const noexcept
+    {
+        return keyboardShortcutsEnabled_;
+    }
+
     void TransformController::ToggleSpace() noexcept
     {
         visualState_.space =
@@ -470,6 +481,7 @@ namespace lts::editor
         if (
             viewportFocused &&
             !rightMouseDown &&
+            keyboardShortcutsEnabled_ &&
             visualState_.activeAxis == EditorTransformAxis::None)
         {
             const bool selectPressed = WasPressed('Q');
@@ -624,7 +636,15 @@ namespace lts::editor
         status += OperationName(visualState_.operation);
         status += L" | Space: ";
         status += SpaceName(visualState_.space);
-        status += L" | W/E/R Tool | T World/Local | F Focus";
+        
+        if (keyboardShortcutsEnabled_)
+        {
+            status += L" | W/E/R Tool | T World/Local | F Focus";
+        }
+        else
+        {
+            status += L" | Toolbar tools | Camera: WASD + RMB";
+        }
 
         return status;
     }

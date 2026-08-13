@@ -168,7 +168,16 @@ namespace lts::editor
         const bool rightMouseDown =
             IsKeyDown(VK_RBUTTON);
 
-        if (!editorIsForeground || !viewportHasFocus || !rightMouseDown)
+        const bool controlDown =
+            IsKeyDown(VK_CONTROL) ||
+            IsKeyDown(VK_LCONTROL) ||
+            IsKeyDown(VK_RCONTROL);
+
+        if (
+            !editorIsForeground ||
+            !viewportHasFocus ||
+            !rightMouseDown ||
+            controlDown)
         {
             EndMouseLook();
             return;
