@@ -3221,6 +3221,7 @@ namespace studio::editor
             constexpr float toolbarHeight = 42.0F;
             constexpr float secondaryToolbarHeight = 38.0F;
             constexpr float terrainToolToolbarHeight = 38.0F;
+            constexpr float toolbarGap = 5.0F;
 
             const bool settingsActive =
                 g_activePage ==
@@ -3234,31 +3235,58 @@ namespace studio::editor
                 g_activePage ==
                     LevelEditorPage::Objects;
 
-            const bool secondaryToolbarVisible = settingsActive || terrainActive || objectsActive;
-            const bool terrainToolToolbarVisible = terrainActive && g_activeTerrainPage == TerrainToolbarPage::TerrainEditor;
+            const bool secondaryToolbarVisible =
+                settingsActive ||
+                terrainActive ||
+                objectsActive;
 
-            const float controlsTop =
-                 toolbarHeight +
-                 (
-                     secondaryToolbarVisible
-                         ? secondaryToolbarHeight
-                         : 0.0F
-                 ) +
-                 (
-                     terrainToolToolbarVisible
-                         ? terrainToolToolbarHeight
-                         : 0.0F
-                 );
+            const bool terrainToolToolbarVisible =
+                terrainActive &&
+                g_activeTerrainPage ==
+                    TerrainToolbarPage::TerrainEditor;
+
+            const float mainToolbarTop =
+                viewport->WorkPos.y;
+
+            const float secondaryToolbarTop =
+                mainToolbarTop +
+                toolbarHeight;
+
+            const float terrainToolToolbarTop =
+                secondaryToolbarTop +
+                secondaryToolbarHeight;
+
+            float controlsTop =
+                mainToolbarTop +
+                toolbarHeight;
+
+            if (secondaryToolbarVisible)
+            {
+                controlsTop +=
+                    secondaryToolbarHeight;
+            }
+
+            if (terrainToolToolbarVisible)
+            {
+                controlsTop +=
+                    terrainToolToolbarHeight;
+            }
+
+            controlsTop += toolbarGap;
 
             const float panelWidth =
                 (std::min)(
                     375.0F,
                     viewport->WorkSize.x * 0.32F);
 
+            const float workBottom =
+                viewport->WorkPos.y +
+                viewport->WorkSize.y;
+
             const float panelHeight =
                 (std::max)(
                     180.0F,
-                    viewport->WorkSize.y -
+                    workBottom -
                         controlsTop -
                         70.0F);
 
@@ -3348,8 +3376,11 @@ namespace studio::editor
             ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
             ImGui::SetNextWindowPos(
                 ImVec2(
-                    viewport->WorkPos.x + viewport->WorkSize.x - panelWidth - 5.0F,
-                    viewport->WorkPos.y + controlsTop + 5.0F),
+                    viewport->WorkPos.x +
+                        viewport->WorkSize.x -
+                        panelWidth -
+                        5.0F,
+                    controlsTop),
                 ImGuiCond_Always);
             ImGui::SetNextWindowSize(
                 ImVec2(panelWidth, panelHeight),
@@ -3365,15 +3396,13 @@ namespace studio::editor
                 ImGui::SetNextWindowPos(
                     ImVec2(
                         viewport->WorkPos.x,
-                        viewport->WorkPos.y +
-                            toolbarHeight +
-                            secondaryToolbarHeight),
+                        secondaryToolbarTop),
                     ImGuiCond_Always);
-
-                ImGui::SetNextWindowSize(
+                
+                ImGui::SetNextWindowPos(
                     ImVec2(
-                        viewport->WorkSize.x,
-                        terrainToolToolbarHeight),
+                        viewport->WorkPos.x,
+                        terrainToolToolbarTop),
                     ImGuiCond_Always);
 
                 if (ImGui::Begin(
