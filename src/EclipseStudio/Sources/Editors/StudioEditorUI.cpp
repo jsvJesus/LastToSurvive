@@ -92,6 +92,50 @@ namespace studio::editor
         TerrainToolbarPage g_activeTerrainPage =
             TerrainToolbarPage::TerrainLoader;
 
+        TerrainEditorTool g_activeTerrainEditorTool =
+            TerrainEditorTool::Options;
+
+        struct TerrainEditorUiState final
+        {
+            int tileResolution = 2;
+            int qualityLevel = 2;
+            int tileVertexSize = 0;
+            int vertexDensity = 3;
+            int resizeResolution = 2;
+
+            float radius = 8.0F;
+            float hardness = 0.50F;
+            float strength = 0.10F;
+            float deltaValue = 0.25F;
+            float levelHeight = 0.0F;
+
+            float smoothBoxHalfSize = 2.0F;
+            float smoothSeconds = 1.0F;
+
+            int noiseOctaves = 4;
+            float noisePersistence = 0.50F;
+            float noiseFrequency = 0.01F;
+            float noiseAmplitude = 32.0F;
+            float noiseMinHeight = -256.0F;
+            float noiseMaxHeight = 256.0F;
+            float noiseMorphSeconds = 0.25F;
+            bool noiseHeightRelative = true;
+
+            float rampOuterWidth = 12.0F;
+            float rampInnerWidth = 6.0F;
+
+            bool repositionObjects = true;
+
+            bool paintEraser = false;
+            bool showMaterialHeaviness = false;
+            bool useBounds = false;
+            bool enableDetailNormals = true;
+            float tileFactor = 1.0F;
+            int materialType = 2;
+        };
+
+        TerrainEditorUiState g_terrainEditorUi;
+
         struct TerrainMapEntry final
         {
             std::filesystem::path levelRoot;
@@ -1759,79 +1803,381 @@ namespace studio::editor
             }
         }
 
-        void DrawTerrainEditorPage() noexcept
+        void DrawTerrainBrushSettings() noexcept
         {
-            ImGui::TextUnformatted(
-            "Terrain Editor");
+            ImGui::SliderFloat(
+                "Radius",
+                &g_terrainEditorUi.radius,
+                0.25F,
+                512.0F,
+                "%.2f");
 
+            ImGui::SliderFloat(
+                "Hardness",
+                &g_terrainEditorUi.hardness,
+                0.0F,
+                1.0F,
+                "%.2f");
+
+            ImGui::SliderFloat(
+                "Strength",
+                &g_terrainEditorUi.strength,
+                0.001F,
+                1.0F,
+                "%.3f");
+
+            ImGui::Checkbox(
+                "Reposition Objects",
+                &g_terrainEditorUi.repositionObjects);
+        }
+
+        void DrawTerrainOptionsToolPage() noexcept
+        {
+            constexpr const char* tileResolutions[]
+            {
+                "64 x 64",
+                "128 x 128",
+                "256 x 256",
+                "512 x 512"
+            };
+
+            constexpr const char* qualityLevels[]
+            {
+                "Low",
+                "Medium",
+                "High"
+            };
+
+            constexpr const char* tileVertexSizes[]
+            {
+                "1",
+                "2",
+                "4",
+                "8"
+            };
+
+            constexpr const char* vertexDensities[]
+            {
+                "1",
+                "2",
+                "4",
+                "8",
+                "16",
+                "32",
+                "64",
+                "128"
+            };
+
+            constexpr const char* resizeResolutions[]
+            {
+                "256 x 256",
+                "512 x 512",
+                "1024 x 1024",
+                "2048 x 2048",
+                "4096 x 4096",
+                "8192 x 8192"
+            };
+
+            ImGui::TextUnformatted("Terrain Options");
             ImGui::Separator();
 
-            ImGui::TextUnformatted(
-                "DX11 Terrain");
+            ImGui::Combo(
+                "Tile Resolution",
+                &g_terrainEditorUi.tileResolution,
+                tileResolutions,
+                static_cast<int>(
+                    std::size(tileResolutions)));
+
+            ImGui::Combo(
+                "Edit Terrain Quality Level",
+                &g_terrainEditorUi.qualityLevel,
+                qualityLevels,
+                static_cast<int>(
+                    std::size(qualityLevels)));
+
+            ImGui::Combo(
+                "Tile Vertex Size",
+                &g_terrainEditorUi.tileVertexSize,
+                tileVertexSizes,
+                static_cast<int>(
+                    std::size(tileVertexSizes)));
+
+            ImGui::Combo(
+                "Vertex Density",
+                &g_terrainEditorUi.vertexDensity,
+                vertexDensities,
+                static_cast<int>(
+                    std::size(vertexDensities)));
+
+            ImGui::Combo(
+                "Resize Terrain",
+                &g_terrainEditorUi.resizeResolution,
+                resizeResolutions,
+                static_cast<int>(
+                    std::size(resizeResolutions)));
 
             ImGui::Spacing();
-            ImGui::SeparatorText(
-                "Heightmap Import");
 
             ImGui::TextDisabled(
-                "Legacy Terrain V1 / Terrain V2 are not used.");
+                "Terrain resize and geometry rebuild will be "
+                "connected with the DX11 sculpt system.");
+        }
+
+        void DrawTerrainGeometryToolPage(
+            const TerrainEditorTool tool) noexcept
+        {
+            const char* title = "Terrain Tool";
+
+            switch (tool)
+            {
+            case TerrainEditorTool::Down:
+                title = "Terrain Down";
+                break;
+
+            case TerrainEditorTool::Up:
+                title = "Terrain Up";
+                break;
+
+            case TerrainEditorTool::Level:
+                title = "Terrain Level";
+                break;
+
+            case TerrainEditorTool::Smooth:
+                title = "Terrain Smooth";
+                break;
+
+            case TerrainEditorTool::Noise:
+                title = "Terrain Noise";
+                break;
+
+            case TerrainEditorTool::Ramp:
+                title = "Terrain Ramp";
+                break;
+
+            case TerrainEditorTool::Erosion:
+                title = "Terrain Erosion";
+                break;
+
+            default:
+                break;
+            }
+
+            ImGui::TextUnformatted(title);
+            ImGui::Separator();
+
+            if (!g_terrainRenderer.HasTerrain())
+            {
+                ImGui::TextDisabled(
+                    "Load or import a terrain first.");
+            }
+
+            DrawTerrainBrushSettings();
+
+            switch (tool)
+            {
+            case TerrainEditorTool::Down:
+            case TerrainEditorTool::Up:
+
+                ImGui::SliderFloat(
+                    "Delta Value",
+                    &g_terrainEditorUi.deltaValue,
+                    0.001F,
+                    64.0F,
+                    "%.3f");
+
+                break;
+
+            case TerrainEditorTool::Level:
+
+                ImGui::DragFloat(
+                    "Height",
+                    &g_terrainEditorUi.levelHeight,
+                    0.25F,
+                    -8192.0F,
+                    8192.0F,
+                    "%.2f");
+
+                break;
+
+            case TerrainEditorTool::Smooth:
+
+                ImGui::SliderFloat(
+                    "BoxSize / 2",
+                    &g_terrainEditorUi.smoothBoxHalfSize,
+                    1.0F,
+                    32.0F,
+                    "%.1f");
+
+                ImGui::SliderFloat(
+                    "Speed (in sec)",
+                    &g_terrainEditorUi.smoothSeconds,
+                    0.01F,
+                    10.0F,
+                    "%.2f");
+
+                break;
+
+            case TerrainEditorTool::Noise:
+
+                ImGui::SliderInt(
+                    "Octaves",
+                    &g_terrainEditorUi.noiseOctaves,
+                    1,
+                    12);
+
+                ImGui::SliderFloat(
+                    "Persistence",
+                    &g_terrainEditorUi.noisePersistence,
+                    0.0F,
+                    1.0F,
+                    "%.2f");
+
+                ImGui::SliderFloat(
+                    "Frequency",
+                    &g_terrainEditorUi.noiseFrequency,
+                    0.0001F,
+                    1.0F,
+                    "%.4f");
+
+                ImGui::SliderFloat(
+                    "Amplitude",
+                    &g_terrainEditorUi.noiseAmplitude,
+                    0.0F,
+                    1024.0F,
+                    "%.2f");
+
+                ImGui::DragFloat(
+                    "MinHeight",
+                    &g_terrainEditorUi.noiseMinHeight,
+                    0.25F,
+                    -8192.0F,
+                    8192.0F,
+                    "%.2f");
+
+                ImGui::DragFloat(
+                    "MaxHeight",
+                    &g_terrainEditorUi.noiseMaxHeight,
+                    0.25F,
+                    -8192.0F,
+                    8192.0F,
+                    "%.2f");
+
+                ImGui::SliderFloat(
+                    "MorphSec",
+                    &g_terrainEditorUi.noiseMorphSeconds,
+                    0.0F,
+                    10.0F,
+                    "%.2f");
+
+                ImGui::Checkbox(
+                    "Height Relative",
+                    &g_terrainEditorUi.noiseHeightRelative);
+
+                ImGui::BeginDisabled(true);
+                ImGui::Button(
+                    "Flush Cache",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        28.0F));
+                ImGui::EndDisabled();
+
+                break;
+
+            case TerrainEditorTool::Ramp:
+
+                ImGui::SliderFloat(
+                    "WidthOuter",
+                    &g_terrainEditorUi.rampOuterWidth,
+                    0.0F,
+                    512.0F,
+                    "%.2f");
+
+                ImGui::SliderFloat(
+                    "WidthInner",
+                    &g_terrainEditorUi.rampInnerWidth,
+                    0.0F,
+                    g_terrainEditorUi.rampOuterWidth,
+                    "%.2f");
+
+                break;
+
+            case TerrainEditorTool::Erosion:
+
+                ImGui::SeparatorText(
+                    "Erosion Pattern");
+
+                ImGui::TextWrapped(
+                    "Source: bin/Data/Editor/ErosionPatterns/*.dds");
+
+                ImGui::TextDisabled(
+                    "Pattern loading will be connected with "
+                    "the erosion implementation.");
+
+                break;
+
+            default:
+                break;
+            }
 
             ImGui::Spacing();
+            ImGui::SeparatorText("DX11 Sculpt Status");
 
-            if (ImGui::Button(
-                    "Import .r16",
-                    ImVec2(140.0F, 28.0F)))
-            {
-                g_terrainImporter.Open();
-            }
+            ImGui::TextDisabled(
+                "The tool parameters are ready. Viewport brush "
+                "execution will be connected next.");
+        }
 
-            ImGui::SameLine();
-
-            if (g_terrainRenderer.HasTerrain())
-            {
-                ImGui::TextUnformatted("Heightmap loaded");
-            }
-            else
-            {
-                ImGui::TextDisabled("No heightmap loaded");
-            }
-
-            ImGui::TextWrapped(
-                "R16 source automatically detects the sidecar metadata, "
-                "RGBA masks and Colorado material definitions.");
-
-            ImGui::TextWrapped(
-                "Materials: %s",
-                (FindWorkspaceRoot() / L"bin" / L"Data" / L"TerrainData" /
-                    L"Materials").generic_u8string().c_str());
-
+        void DrawTerrainLayerEditor() noexcept
+        {
             lts::editor::EditorSceneEntity* entity =
                 g_sceneDocument.GetSelectedEntityMutable();
 
-            if (entity == nullptr || !entity->terrain.has_value())
+            if (
+                entity == nullptr ||
+                !entity->terrain.has_value())
             {
+                ImGui::TextDisabled(
+                    "Select the Terrain entity to edit its layers.");
+
                 return;
             }
 
-            auto& layers = entity->terrain->layers;
+            auto& layers =
+                entity->terrain->layers;
 
             if (layers.empty())
             {
+                ImGui::TextDisabled(
+                    "Terrain has no material layers.");
+
                 return;
             }
 
-            g_activeLayer = (std::min)(g_activeLayer, layers.size() - 1U);
+            g_activeLayer =
+                (std::min)(
+                    g_activeLayer,
+                    layers.size() - 1U);
 
-            ImGui::SeparatorText("Texture Layers");
-            ImGui::Text("%zu / 18 layers (Base + painted layers)", layers.size());
+            ImGui::SeparatorText("Layers");
 
-            for (std::size_t layerIndex = 0U; layerIndex < layers.size(); ++layerIndex)
+            ImGui::Text(
+                "%zu / 18 layers",
+                layers.size());
+
+            for (std::size_t layerIndex = 0U;
+                 layerIndex < layers.size();
+                 ++layerIndex)
             {
-                auto& layer = layers[layerIndex];
-                ImGui::PushID(static_cast<int>(layerIndex));
+                auto& layer =
+                    layers[layerIndex];
+
+                ImGui::PushID(
+                    static_cast<int>(layerIndex));
 
                 const std::string label =
-                    std::to_string(layerIndex) + ". " + layer.name;
+                    std::to_string(layerIndex) +
+                    ". " +
+                    layer.name;
 
                 if (ImGui::Selectable(
                         label.c_str(),
@@ -1842,57 +2188,254 @@ namespace studio::editor
 
                 if (g_activeLayer == layerIndex)
                 {
-                    bool visible = layer.visible;
-                    std::array<float, 2U> scale{layer.scaleU, layer.scaleV};
+                    bool visible =
+                        layer.visible;
 
-                    ImGui::Checkbox("Visible", &visible);
-                    ImGui::DragFloat2(
-                        "Scale U / V",
-                        scale.data(),
-                        0.25F,
-                        0.001F,
-                        100000.0F,
-                        "%.3f");
+                    std::array<float, 2U> scale
+                    {
+                        layer.scaleU,
+                        layer.scaleV
+                    };
+
+                    std::string diffusePath =
+                        layer.diffusePath;
+
+                    std::string normalPath =
+                        layer.normalPath;
+
+                    bool changed = false;
+
+                    changed |=
+                        ImGui::Checkbox(
+                            "Visible",
+                            &visible);
+
+                    changed |=
+                        ImGui::DragFloat2(
+                            "Scale U / V",
+                            scale.data(),
+                            0.25F,
+                            0.001F,
+                            100000.0F,
+                            "%.3f");
 
                     ImGui::TextWrapped(
                         "Diffuse: %s",
-                        layer.diffusePath.empty()
+                        diffusePath.empty()
                             ? "<fallback>"
-                            : layer.diffusePath.c_str());
+                            : diffusePath.c_str());
 
-                    if (ImGui::Button("Browse Diffuse..."))
+                    if (ImGui::Button(
+                            "Browse Diffuse..."))
                     {
-                        static_cast<void>(SelectTerrainTexture(layer.diffusePath));
+                        changed |=
+                            SelectTerrainTexture(
+                                diffusePath);
                     }
 
                     ImGui::TextWrapped(
                         "Normal: %s",
-                        layer.normalPath.empty()
+                        normalPath.empty()
                             ? "<flat normal>"
-                            : layer.normalPath.c_str());
+                            : normalPath.c_str());
 
-                    if (ImGui::Button("Browse Normal..."))
+                    if (ImGui::Button(
+                            "Browse Normal..."))
                     {
-                        static_cast<void>(SelectTerrainTexture(layer.normalPath));
+                        changed |=
+                            SelectTerrainTexture(
+                                normalPath);
                     }
 
-                    if (visible != layer.visible ||
-                        scale[0] != layer.scaleU || scale[1] != layer.scaleV)
+                    if (changed)
                     {
                         static_cast<void>(
-                            g_sceneDocument.UpdateSelectedTerrainLayer(
-                                layerIndex,
-                                layer.diffusePath,
-                                layer.normalPath,
-                                scale[0],
-                                scale[1],
-                                layer.offsetU,
-                                layer.offsetV,
-                                visible));
+                            g_sceneDocument.
+                                UpdateSelectedTerrainLayer(
+                                    layerIndex,
+                                    diffusePath,
+                                    normalPath,
+                                    scale[0],
+                                    scale[1],
+                                    layer.offsetU,
+                                    layer.offsetV,
+                                    visible));
                     }
                 }
 
                 ImGui::PopID();
+            }
+        }
+
+        void DrawTerrainPaintToolPage() noexcept
+        {
+            constexpr const char* materialTypes[]
+            {
+                "Concrete",
+                "Dirt",
+                "Grass",
+                "Forest",
+                "Snow",
+                "Sand",
+                "Wood"
+            };
+
+            ImGui::TextUnformatted("Terrain Paint");
+            ImGui::Separator();
+
+            if (!g_terrainRenderer.HasTerrain())
+            {
+                ImGui::TextDisabled(
+                    "Load or import a terrain first.");
+            }
+
+            DrawTerrainBrushSettings();
+
+            ImGui::SeparatorText("Paint");
+
+            if (ImGui::RadioButton(
+                    "Eraser",
+                    g_terrainEditorUi.paintEraser))
+            {
+                g_terrainEditorUi.paintEraser = true;
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::RadioButton(
+                    "Brush",
+                    !g_terrainEditorUi.paintEraser))
+            {
+                g_terrainEditorUi.paintEraser = false;
+            }
+
+            ImGui::Checkbox(
+                "Show Material Heaviness",
+                &g_terrainEditorUi.showMaterialHeaviness);
+
+            ImGui::Checkbox(
+                "Use Bounds",
+                &g_terrainEditorUi.useBounds);
+
+            ImGui::Checkbox(
+                "Enable Detail Normals",
+                &g_terrainEditorUi.enableDetailNormals);
+
+            ImGui::SliderFloat(
+                "Tile Factor",
+                &g_terrainEditorUi.tileFactor,
+                0.01F,
+                100.0F,
+                "%.2f");
+
+            ImGui::Combo(
+                "Material Type",
+                &g_terrainEditorUi.materialType,
+                materialTypes,
+                static_cast<int>(
+                    std::size(materialTypes)));
+
+            ImGui::TextWrapped(
+                "Materials: %s",
+                (
+                    FindWorkspaceRoot() /
+                    L"bin" /
+                    L"Data" /
+                    L"TerrainData" /
+                    L"Materials"
+                ).
+                generic_u8string().
+                c_str());
+
+            DrawTerrainLayerEditor();
+
+            ImGui::Spacing();
+            ImGui::TextDisabled(
+                "Viewport material painting will be connected "
+                "to TerrainRenderer::Paint next.");
+        }
+
+        void DrawTerrainHeightmapToolPage() noexcept
+        {
+            ImGui::TextUnformatted("Terrain Heightmap");
+            ImGui::Separator();
+
+            ImGui::TextDisabled(
+                "Legacy Terrain V1 / Terrain V2 are not used.");
+
+            if (ImGui::Button(
+                    "Import Map: .r16",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        28.0F)))
+            {
+                g_terrainImporter.Open();
+            }
+
+            ImGui::BeginDisabled(true);
+
+            ImGui::Button(
+                "Export Map: .r16",
+                ImVec2(
+                    ImGui::GetContentRegionAvail().x,
+                    28.0F));
+
+            ImGui::EndDisabled();
+
+            if (g_terrainRenderer.HasTerrain())
+            {
+                ImGui::TextUnformatted(
+                    "Heightmap loaded.");
+            }
+            else
+            {
+                ImGui::TextDisabled(
+                    "No heightmap loaded.");
+            }
+
+            ImGui::TextWrapped(
+                "The R16 importer automatically detects sidecar "
+                "metadata, RGBA masks and terrain material definitions.");
+
+            ImGui::TextDisabled(
+                "Export will be enabled after the editable CPU "
+                "heightmap storage is connected.");
+        }
+
+        void DrawTerrainEditorPage() noexcept
+        {
+            switch (g_activeTerrainEditorTool)
+            {
+            case TerrainEditorTool::Options:
+
+                DrawTerrainOptionsToolPage();
+
+                break;
+
+            case TerrainEditorTool::Down:
+            case TerrainEditorTool::Up:
+            case TerrainEditorTool::Level:
+            case TerrainEditorTool::Smooth:
+            case TerrainEditorTool::Noise:
+            case TerrainEditorTool::Ramp:
+            case TerrainEditorTool::Erosion:
+
+                DrawTerrainGeometryToolPage(
+                    g_activeTerrainEditorTool);
+
+                break;
+
+            case TerrainEditorTool::Paint:
+
+                DrawTerrainPaintToolPage();
+
+                break;
+
+            case TerrainEditorTool::Heightmap:
+
+                DrawTerrainHeightmapToolPage();
+
+                break;
             }
         }
 
@@ -2652,6 +3195,7 @@ namespace studio::editor
             
             constexpr float toolbarHeight = 42.0F;
             constexpr float secondaryToolbarHeight = 38.0F;
+            constexpr float terrainToolToolbarHeight = 38.0F;
 
             const bool settingsActive =
                 g_activePage ==
@@ -2666,14 +3210,20 @@ namespace studio::editor
                     LevelEditorPage::Objects;
 
             const bool secondaryToolbarVisible = settingsActive || terrainActive || objectsActive;
+            const bool terrainToolToolbarVisible = terrainActive && g_activeTerrainPage == TerrainToolbarPage::TerrainEditor;
 
             const float controlsTop =
-                toolbarHeight +
-                (
-                    secondaryToolbarVisible
-                        ? secondaryToolbarHeight
-                        : 0.0F
-                );
+                 toolbarHeight +
+                 (
+                     secondaryToolbarVisible
+                         ? secondaryToolbarHeight
+                         : 0.0F
+                 ) +
+                 (
+                     terrainToolToolbarVisible
+                         ? terrainToolToolbarHeight
+                         : 0.0F
+                 );
 
             const float panelWidth =
                 (std::min)(
@@ -2780,6 +3330,46 @@ namespace studio::editor
                 ImVec2(panelWidth, panelHeight),
                 ImGuiCond_Always);
             ImGui::SetNextWindowBgAlpha(0.92F);
+
+            if (terrainToolToolbarVisible)
+            {
+                ImGui::SetNextWindowDockID(
+                    0U,
+                    ImGuiCond_Always);
+
+                ImGui::SetNextWindowPos(
+                    ImVec2(
+                        viewport->WorkPos.x,
+                        viewport->WorkPos.y +
+                            toolbarHeight +
+                            secondaryToolbarHeight),
+                    ImGuiCond_Always);
+
+                ImGui::SetNextWindowSize(
+                    ImVec2(
+                        viewport->WorkSize.x,
+                        terrainToolToolbarHeight),
+                    ImGuiCond_Always);
+
+                if (ImGui::Begin(
+                        "##TerrainEditorToolToolbar",
+                        nullptr,
+                        ImGuiWindowFlags_NoMove |
+                            ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_NoCollapse |
+                            ImGuiWindowFlags_NoDocking |
+                            ImGuiWindowFlags_NoTitleBar |
+                            ImGuiWindowFlags_NoSavedSettings |
+                            ImGuiWindowFlags_NoScrollbar |
+                            ImGuiWindowFlags_NoScrollWithMouse))
+                {
+                    g_editorToolbar.
+                        DrawTerrainEditorTools(
+                            g_activeTerrainEditorTool);
+                }
+
+                ImGui::End();
+            }
 
             if (!ImGui::Begin(
                     "##WarZEditorControls",
@@ -2917,6 +3507,8 @@ namespace studio::editor
         g_terrainMapScanStatus.clear();
         g_loadingMapName.clear();
         g_activeTerrainPage = TerrainToolbarPage::TerrainLoader;
+        g_activeTerrainEditorTool = TerrainEditorTool::Options;
+        g_terrainEditorUi = {};
     }
 
     engine::graphics::GraphicsResult RenderEditorWorld(

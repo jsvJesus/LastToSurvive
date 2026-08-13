@@ -50,6 +50,45 @@ namespace studio::editor
         }
     }
 
+    const char* StudioToolbar::GetTerrainEditorToolName(TerrainEditorTool tool) noexcept
+    {
+        switch (tool)
+        {
+        case TerrainEditorTool::Options:
+            return "Options";
+
+        case TerrainEditorTool::Down:
+            return "Down";
+
+        case TerrainEditorTool::Up:
+            return "Up";
+
+        case TerrainEditorTool::Level:
+            return "Level";
+
+        case TerrainEditorTool::Smooth:
+            return "Smooth";
+
+        case TerrainEditorTool::Noise:
+            return "Noise";
+
+        case TerrainEditorTool::Ramp:
+            return "Ramp";
+
+        case TerrainEditorTool::Erosion:
+            return "Erosion";
+
+        case TerrainEditorTool::Paint:
+            return "Paint";
+
+        case TerrainEditorTool::Heightmap:
+            return "Heightmap";
+
+        default:
+            return "Unknown";
+        }
+    }
+
     bool StudioToolbar::DrawTab(
         const char* const label,
         const bool active,
@@ -180,6 +219,44 @@ namespace studio::editor
         {
             activePage =
                 TerrainToolbarPage::TerrainEditor;
+        }
+    }
+
+    void StudioToolbar::DrawTerrainEditorTools(
+        TerrainEditorTool& activeTool) const noexcept
+    {
+        constexpr std::array<TerrainEditorTool, 10U> tools
+        {
+            TerrainEditorTool::Options,
+            TerrainEditorTool::Down,
+            TerrainEditorTool::Up,
+            TerrainEditorTool::Level,
+            TerrainEditorTool::Smooth,
+            TerrainEditorTool::Noise,
+            TerrainEditorTool::Ramp,
+            TerrainEditorTool::Erosion,
+            TerrainEditorTool::Paint,
+            TerrainEditorTool::Heightmap
+        };
+
+        for (std::size_t index = 0U;
+             index < tools.size();
+             ++index)
+        {
+            const TerrainEditorTool tool =
+                tools[index];
+
+            if (index > 0U)
+            {
+                ImGui::SameLine();
+            }
+
+            if (DrawTab(
+                    GetTerrainEditorToolName(tool),
+                    activeTool == tool))
+            {
+                activeTool = tool;
+            }
         }
     }
 }

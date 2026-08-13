@@ -17,6 +17,20 @@ namespace studio::editor
         TerrainLoader = 0,
         TerrainEditor
     };
+    
+    enum class TerrainEditorTool : std::uint8_t
+    {
+        Options = 0,
+        Down,
+        Up,
+        Level,
+        Smooth,
+        Noise,
+        Ramp,
+        Erosion,
+        Paint,
+        Heightmap
+    };
 
     class StudioToolbar final
     {
@@ -43,6 +57,10 @@ namespace studio::editor
         [[nodiscard]]
         static const char* GetPageName(
             LevelEditorPage page) noexcept;
+
+        [[nodiscard]]
+        static const char* GetTerrainEditorToolName(
+            TerrainEditorTool tool) noexcept;
 
         [[nodiscard]]
         static bool DrawTab(
