@@ -89,6 +89,31 @@ namespace studio::editor
         std::size_t g_activeLayer = 0U;
         bool g_initialized = false;
 
+        TerrainToolbarPage g_activeTerrainPage =
+            TerrainToolbarPage::TerrainLoader;
+
+        struct TerrainMapEntry final
+        {
+            std::filesystem::path levelRoot;
+            std::string displayName;
+
+            bool hasLevelData = false;
+            bool hasTerrain = false;
+
+            [[nodiscard]]
+            bool IsLoadable() const noexcept
+            {
+                return hasLevelData && hasTerrain;
+            }
+        };
+
+        std::vector<TerrainMapEntry> g_availableTerrainMaps;
+        int g_selectedTerrainMap = -1;
+        bool g_terrainMapsScanned = false;
+
+        std::string g_terrainMapScanStatus;
+        std::string g_loadingMapName;
+
         [[nodiscard]] bool LoadTerrainAsset(
             engine::graphics::RenderDevice& device,
             const std::filesystem::path& path);
@@ -223,6 +248,156 @@ namespace studio::editor
             output = parsed;
 
             return true;
+        }
+
+        [[nodiscard]]
+        std::string GetTerrainMapDisplayName(
+            const std::filesystem::path& levelRoot)
+        {
+            std::string name =
+                levelRoot.filename().generic_u8string();
+
+            const std::string lowercase =
+                LowercaseAscii(name);
+
+            if (lowercase.rfind("wz_", 0U) == 0U)
+            {
+                name.erase(0U, 3U);
+            }
+
+            return name.empty()
+                ? levelRoot.filename().generic_u8string()
+                : name;
+        }
+
+        void RefreshAvailableTerrainMaps() noexcept
+        {
+            g_availableTerrainMaps.clear();
+            g_selectedTerrainMap = -1;
+            g_terrainMapsScanned = true;
+
+            try
+            {
+                const std::filesystem::path workspace =
+                    FindWorkspaceRoot();
+
+                if (workspace.empty())
+                {
+                    g_terrainMapScanStatus =
+                        "Workspace root was not found.";
+
+                    return;
+                }
+
+                const std::filesystem::path levelsRoot =
+                    workspace / L"bin" / L"Levels";
+
+                std::error_code error;
+
+                if (!std::filesystem::is_directory(
+                        levelsRoot,
+                        error) ||
+                    error)
+                {
+                    g_terrainMapScanStatus =
+                        "bin/Levels directory was not found.";
+
+                    return;
+                }
+
+                std::filesystem::recursive_directory_iterator iterator(
+                    levelsRoot,
+                    std::filesystem::directory_options::
+                        skip_permission_denied,
+                    error);
+
+                const std::filesystem::recursive_directory_iterator end;
+
+                while (!error && iterator != end)
+                {
+                    std::error_code entryError;
+
+                    if (iterator->is_directory(entryError) &&
+                        !entryError)
+                    {
+                        const std::filesystem::path levelRoot =
+                            iterator->path();
+
+                        std::error_code levelDataError;
+                        std::error_code terrainError;
+
+                        const bool hasLevelData =
+                            std::filesystem::is_regular_file(
+                                levelRoot / L"LevelData.xml",
+                                levelDataError) &&
+                            !levelDataError;
+
+                        const bool hasTerrain =
+                            std::filesystem::is_regular_file(
+                                levelRoot /
+                                    L"Terrain" /
+                                    L"Terrain.terrain",
+                                terrainError) &&
+                            !terrainError;
+
+                        if (hasLevelData || hasTerrain)
+                        {
+                            TerrainMapEntry map;
+                            map.levelRoot =
+                                levelRoot.lexically_normal();
+                            map.displayName =
+                                GetTerrainMapDisplayName(levelRoot);
+                            map.hasLevelData = hasLevelData;
+                            map.hasTerrain = hasTerrain;
+
+                            g_availableTerrainMaps.push_back(
+                                std::move(map));
+
+                            iterator.disable_recursion_pending();
+                        }
+                        else if (iterator.depth() >= 1)
+                        {
+                            /*
+                             * Разрешаем один вложенный уровень:
+                             * Levels/WorkInProgress/MyLevel.
+                             */
+                            iterator.disable_recursion_pending();
+                        }
+                    }
+
+                    iterator.increment(error);
+                }
+
+                std::sort(
+                    g_availableTerrainMaps.begin(),
+                    g_availableTerrainMaps.end(),
+                    [](const TerrainMapEntry& left,
+                       const TerrainMapEntry& right)
+                    {
+                        return
+                            LowercaseAscii(left.displayName) <
+                            LowercaseAscii(right.displayName);
+                    });
+
+                if (!g_availableTerrainMaps.empty())
+                {
+                    g_selectedTerrainMap = 0;
+                }
+
+                g_terrainMapScanStatus =
+                    "Found " +
+                    std::to_string(
+                        g_availableTerrainMaps.size()) +
+                    " level folder(s).";
+            }
+            catch (...)
+            {
+                g_availableTerrainMaps.clear();
+                g_selectedTerrainMap = -1;
+
+                g_terrainMapScanStatus =
+                    "Level directory scan failed.";
+            }
         }
 
         [[nodiscard]]
@@ -847,6 +1022,11 @@ namespace studio::editor
 
         void ApplyLegacyLevelResult(LegacyLevelLoadResult result)
         {
+            const std::string loadingMapName =
+                std::move(g_loadingMapName);
+
+            g_loadingMapName.clear();
+            
             if (!result.succeeded)
             {
                 g_loadedLevelDataPath.clear();
@@ -909,14 +1089,21 @@ namespace studio::editor
             g_levelLoadStats = result.stats;
             g_managedLevelObjectIndices = std::move(result.managedObjectIndices);
             g_settingsSaveStatus = "Map is ready for saving.";
-            g_levelLoadStatus = "Colorado loaded: " +
-                std::to_string(result.stats.buildingObjects) +
+            g_loadedMapName = loadingMapName.empty() ? "Level" : loadingMapName;
+            g_levelLoadStatus =
+                g_loadedMapName +
+                " loaded: " +
+                std::to_string(
+                    result.stats.buildingObjects) +
                 " buildings, " +
-                std::to_string(result.stats.roadObjects) +
+                std::to_string(
+                    result.stats.roadObjects) +
                 " roads, " +
-                std::to_string(result.stats.waterPlaneObjects) +
+                std::to_string(
+                    result.stats.waterPlaneObjects) +
                 " water planes; " +
-                std::to_string(result.stats.staticMeshObjects) +
+                std::to_string(
+                    result.stats.staticMeshObjects) +
                 " visible.";
 
             if (!result.warning.empty())
@@ -924,7 +1111,6 @@ namespace studio::editor
                 g_levelLoadStatus += "\n";
                 g_levelLoadStatus += result.warning;
             }
-            g_loadedMapName = "Colorado";
         }
 
         void PollLegacyLevelLoad()
@@ -943,65 +1129,126 @@ namespace studio::editor
             ApplyLegacyLevelResult(g_levelLoadFuture.get());
         }
 
-        [[nodiscard]] bool LoadColoradoMap(
-            engine::graphics::RenderDevice& device)
+        [[nodiscard]]
+        bool LoadTerrainMap(
+            engine::graphics::RenderDevice& device,
+            const std::filesystem::path& levelRoot,
+            const std::string& displayName)
         {
             if (IsLevelLoading())
             {
                 return false;
             }
 
-            const std::filesystem::path workspace = FindWorkspaceRoot();
-            const std::filesystem::path levelRoot =
-                workspace / L"bin" / L"Levels" / L"WZ_Colorado";
-            const std::filesystem::path terrainPath =
-                levelRoot / L"Terrain" / L"Terrain.terrain";
-            const std::filesystem::path levelDataPath =
-                levelRoot / L"LevelData.xml";
-            std::error_code error;
+            const std::filesystem::path workspace =
+                FindWorkspaceRoot();
 
-            if (
-                workspace.empty() ||
-                !std::filesystem::is_regular_file(levelDataPath, error) ||
-                error ||
+            const std::filesystem::path terrainPath =
+                levelRoot /
+                L"Terrain" /
+                L"Terrain.terrain";
+
+            const std::filesystem::path levelDataPath =
+                levelRoot /
+                L"LevelData.xml";
+
+            std::error_code levelDataError;
+
+            if (workspace.empty() ||
+                !std::filesystem::is_regular_file(
+                    levelDataPath,
+                    levelDataError) ||
+                levelDataError)
+            {
+                g_levelLoadStatus =
+                    displayName +
+                    ": LevelData.xml was not found.";
+
+                return false;
+            }
+
+            std::error_code terrainError;
+
+            if (!std::filesystem::is_regular_file(
+                    terrainPath,
+                    terrainError) ||
+                terrainError ||
                 !LoadTerrainAsset(device, terrainPath))
             {
                 g_levelLoadStatus =
-                    "Cannot load Colorado terrain or LevelData.xml.";
+                    displayName +
+                    ": Terrain/Terrain.terrain could not be loaded.";
+
                 return false;
             }
 
             g_levelLoadStats = {};
             g_loadedMapName.clear();
-            g_levelLoadStatus = "Converting SCB assets to Data/StaticMeshes/*.mesh...";
+            g_loadingMapName = displayName;
 
-            g_loadedLevelDataPath = levelDataPath;
+            g_levelLoadStatus =
+                "Loading " +
+                displayName +
+                ". Converting SCB assets...";
+
+            g_loadedLevelDataPath =
+                levelDataPath.lexically_normal();
+
             g_managedLevelObjectIndices.clear();
             g_settingsSaveStatus.clear();
+
+            const std::wstring mapFolderName =
+                levelRoot.filename().wstring();
 
             try
             {
                 g_levelLoadFuture = std::async(
                     std::launch::async,
-                    [workspace, levelDataPath]()
+                    [
+                        workspace,
+                        levelDataPath,
+                        mapFolderName
+                    ]()
                     {
                         return LoadLegacyLevelData(
                             workspace,
                             levelDataPath,
-                            L"Colorado");
+                            mapFolderName);
                     });
             }
             catch (...)
             {
                 g_loadedLevelDataPath.clear();
                 g_managedLevelObjectIndices.clear();
-                g_levelLoadStatus = "Cannot start Colorado background loader.";
+                g_loadingMapName.clear();
+
+                g_levelLoadStatus =
+                    "Cannot start background loader for " +
+                    displayName +
+                    ".";
+
                 return false;
             }
 
             return true;
         }
 
+        [[nodiscard]]
+        bool LoadColoradoMap(
+            engine::graphics::RenderDevice& device)
+        {
+            const std::filesystem::path workspace =
+                FindWorkspaceRoot();
+
+            return LoadTerrainMap(
+                device,
+                workspace /
+                    L"bin" /
+                    L"Levels" /
+                    L"WZ_Colorado",
+                "Colorado");
+        }
+        
         void SaveLoadedMap() noexcept
         {
             if (
@@ -1512,10 +1759,10 @@ namespace studio::editor
             }
         }
 
-        void DrawTerrainPage() noexcept
+        void DrawTerrainEditorPage() noexcept
         {
             ImGui::TextUnformatted(
-                "Terrain");
+            "Terrain Editor");
 
             ImGui::Separator();
 
@@ -1523,51 +1770,8 @@ namespace studio::editor
                 "DX11 Terrain");
 
             ImGui::Spacing();
-
-            ImGui::SeparatorText("Map");
-            constexpr const char* maps[]
-            {
-                "Colorado"
-            };
-            static int selectedMap = 0;
-            ImGui::Combo(
-                "Map",
-                &selectedMap,
-                maps,
-                IM_ARRAYSIZE(maps));
-            ImGui::BeginDisabled(IsLevelLoading() || g_device == nullptr);
-
-            if (ImGui::Button("Load Colorado", ImVec2(140.0F, 28.0F)) &&
-                g_device != nullptr)
-            {
-                static_cast<void>(LoadColoradoMap(*g_device));
-            }
-
-            ImGui::EndDisabled();
-
-            if (IsLevelLoading())
-            {
-                ImGui::SameLine();
-                ImGui::TextUnformatted("Loading...");
-            }
-
-            ImGui::TextWrapped("%s", g_levelLoadStatus.c_str());
-
-            if (!g_loadedMapName.empty())
-            {
-                ImGui::Text(
-                    "obj_Building: %zu placed | %zu unique meshes | "
-                    "%zu converted | %zu cached | %zu missing | %zu failed",
-                    g_levelLoadStats.importedObjects,
-                    g_levelLoadStats.uniqueMeshes,
-                    g_levelLoadStats.convertedMeshes,
-                    g_levelLoadStats.cachedMeshes,
-                    g_levelLoadStats.missingMeshes,
-                    g_levelLoadStats.failedMeshes);
-            }
-
-            ImGui::Spacing();
-            ImGui::SeparatorText("Heightmap Import");
+            ImGui::SeparatorText(
+                "Heightmap Import");
 
             ImGui::TextDisabled(
                 "Legacy Terrain V1 / Terrain V2 are not used.");
@@ -1689,6 +1893,179 @@ namespace studio::editor
                 }
 
                 ImGui::PopID();
+            }
+        }
+
+        void DrawTerrainLoaderPage() noexcept
+        {
+            if (!g_terrainMapsScanned)
+            {
+                RefreshAvailableTerrainMaps();
+            }
+
+            ImGui::TextUnformatted(
+                "Terrain Loader");
+
+            ImGui::Separator();
+
+            ImGui::TextDisabled(
+                "Source: bin/Levels");
+
+            if (ImGui::Button(
+                    "Refresh Levels",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        28.0F)))
+            {
+                RefreshAvailableTerrainMaps();
+            }
+
+            if (!g_terrainMapScanStatus.empty())
+            {
+                ImGui::TextWrapped(
+                    "%s",
+                    g_terrainMapScanStatus.c_str());
+            }
+
+            ImGui::Spacing();
+            ImGui::SeparatorText(
+                "Available Levels");
+
+            if (ImGui::BeginChild(
+                    "##TerrainLevelList",
+                    ImVec2(0.0F, 190.0F),
+                    true))
+            {
+                for (std::size_t index = 0U;
+                     index < g_availableTerrainMaps.size();
+                     ++index)
+                {
+                    const TerrainMapEntry& map =
+                        g_availableTerrainMaps[index];
+
+                    std::string label =
+                        map.displayName;
+
+                    if (!map.IsLoadable())
+                    {
+                        label += " (incomplete)";
+                    }
+
+                    label += "##TerrainMap";
+                    label += std::to_string(index);
+
+                    if (ImGui::Selectable(
+                            label.c_str(),
+                            g_selectedTerrainMap ==
+                                static_cast<int>(index)))
+                    {
+                        g_selectedTerrainMap =
+                            static_cast<int>(index);
+                    }
+                }
+            }
+
+            ImGui::EndChild();
+
+            const bool validSelection =
+                g_selectedTerrainMap >= 0 &&
+                static_cast<std::size_t>(
+                    g_selectedTerrainMap) <
+                    g_availableTerrainMaps.size();
+
+            if (validSelection)
+            {
+                const TerrainMapEntry& map =
+                    g_availableTerrainMaps[
+                        static_cast<std::size_t>(
+                            g_selectedTerrainMap)];
+
+                ImGui::Text(
+                    "Selected: %s",
+                    map.displayName.c_str());
+
+                ImGui::TextWrapped(
+                    "Folder: %s",
+                    map.levelRoot.
+                        filename().
+                        generic_u8string().
+                        c_str());
+
+                if (!map.hasLevelData)
+                {
+                    ImGui::TextDisabled(
+                        "Missing LevelData.xml");
+                }
+
+                if (!map.hasTerrain)
+                {
+                    ImGui::TextDisabled(
+                        "Missing Terrain/Terrain.terrain");
+                }
+
+                const bool canLoad =
+                    map.IsLoadable() &&
+                    !IsLevelLoading() &&
+                    g_device != nullptr;
+
+                ImGui::BeginDisabled(!canLoad);
+
+                if (ImGui::Button(
+                        "Load Selected Map",
+                        ImVec2(
+                            ImGui::GetContentRegionAvail().x,
+                            30.0F)) &&
+                    g_device != nullptr)
+                {
+                    static_cast<void>(
+                        LoadTerrainMap(
+                            *g_device,
+                            map.levelRoot,
+                            map.displayName));
+                }
+
+                ImGui::EndDisabled();
+            }
+
+            if (IsLevelLoading())
+            {
+                ImGui::TextUnformatted(
+                    "Loading...");
+            }
+
+            ImGui::TextWrapped(
+                "%s",
+                g_levelLoadStatus.c_str());
+
+            if (!g_loadedMapName.empty())
+            {
+                ImGui::SeparatorText(
+                    "Load Statistics");
+
+                ImGui::TextWrapped(
+                    "obj_Building: %zu placed | "
+                    "%zu unique meshes | %zu converted | "
+                    "%zu cached | %zu missing | %zu failed",
+                    g_levelLoadStats.importedObjects,
+                    g_levelLoadStats.uniqueMeshes,
+                    g_levelLoadStats.convertedMeshes,
+                    g_levelLoadStats.cachedMeshes,
+                    g_levelLoadStats.missingMeshes,
+                    g_levelLoadStats.failedMeshes);
+            }
+        }
+
+        void DrawTerrainPage() noexcept
+        {
+            switch (g_activeTerrainPage)
+            {
+            case TerrainToolbarPage::TerrainLoader:
+                DrawTerrainLoaderPage();
+                break;
+
+            case TerrainToolbarPage::TerrainEditor:
+                DrawTerrainEditorPage();
+                break;
             }
         }
 
@@ -2280,13 +2657,15 @@ namespace studio::editor
                 g_activePage ==
                     LevelEditorPage::Settings;
 
+            const bool terrainActive =
+                g_activePage ==
+                    LevelEditorPage::Terrain;
+
             const bool objectsActive =
                 g_activePage ==
                     LevelEditorPage::Objects;
 
-            const bool secondaryToolbarVisible =
-                settingsActive ||
-                objectsActive;
+            const bool secondaryToolbarVisible = settingsActive || terrainActive || objectsActive;
 
             const float controlsTop =
                 toolbarHeight +
@@ -2375,6 +2754,11 @@ namespace studio::editor
                     {
                         g_editorToolbar.DrawSettings(
                             g_activeSettingsPage);
+                    }
+                    else if (terrainActive)
+                    {
+                        g_editorToolbar.DrawTerrain(
+                            g_activeTerrainPage);
                     }
                     else if (objectsActive)
                     {
@@ -2527,6 +2911,12 @@ namespace studio::editor
         g_graphicsQuality = EditorGraphicsQuality::High;
         g_simulateDayNight = false;
         g_initialized = false;
+        g_availableTerrainMaps.clear();
+        g_selectedTerrainMap = -1;
+        g_terrainMapsScanned = false;
+        g_terrainMapScanStatus.clear();
+        g_loadingMapName.clear();
+        g_activeTerrainPage = TerrainToolbarPage::TerrainLoader;
     }
 
     engine::graphics::GraphicsResult RenderEditorWorld(

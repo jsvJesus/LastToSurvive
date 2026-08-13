@@ -12,6 +12,12 @@ namespace studio::editor
         OptionsMenu
     };
 
+    enum class TerrainToolbarPage : std::uint8_t
+    {
+        TerrainLoader = 0,
+        TerrainEditor
+    };
+
     class StudioToolbar final
     {
     public:
@@ -29,6 +35,9 @@ namespace studio::editor
 
         void DrawSettings(
             SettingsToolbarPage& activePage) const noexcept;
+
+        void DrawTerrain(
+            TerrainToolbarPage& activePage) const noexcept;
 
     private:
         [[nodiscard]]

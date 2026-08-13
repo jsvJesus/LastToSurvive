@@ -155,4 +155,31 @@ namespace studio::editor
                 SettingsToolbarPage::OptionsMenu;
         }
     }
+
+    void StudioToolbar::DrawTerrain(TerrainToolbarPage& activePage) const noexcept
+    {
+        constexpr float buttonWidth = 165.0F;
+
+        if (DrawTab(
+                "Terrain Loader",
+                activePage ==
+                    TerrainToolbarPage::TerrainLoader,
+                buttonWidth))
+        {
+            activePage =
+                TerrainToolbarPage::TerrainLoader;
+        }
+
+        ImGui::SameLine();
+
+        if (DrawTab(
+                "Terrain Editor",
+                activePage ==
+                    TerrainToolbarPage::TerrainEditor,
+                buttonWidth))
+        {
+            activePage =
+                TerrainToolbarPage::TerrainEditor;
+        }
+    }
 }
