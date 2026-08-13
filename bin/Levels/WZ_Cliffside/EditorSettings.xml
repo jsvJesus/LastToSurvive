@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <!--Editor Settings File-->
 <root>
-	<start_position x="1316.36" y="193.794" z="1286.24" />
-	<main_mode val="9" />
+	<start_position x="1466.37" y="163.466" z="1110.07" />
+	<main_mode val="10" />
 	<terrain_mode val="4" />
-	<obj_mode val="0" />
-	<env_mode val="1" />
+	<obj_mode val="1" />
+	<env_mode val="10" />
 	<paint_terrain_color r="255" g="0" b="0" a="255" />
 	<collections_brush_radius val="1" />
 	<water_brush_radius val="179.012" />
