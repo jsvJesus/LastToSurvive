@@ -27,6 +27,17 @@ namespace lts::editor
         return keyboardShortcutsEnabled_;
     }
 
+    void TransformController::SetEditorRoadPickingEnabled(
+        const bool enabled) noexcept
+    {
+        editorRoadPickingEnabled_ = enabled;
+    }
+
+    bool TransformController::IsEditorRoadPickingEnabled() const noexcept
+    {
+        return editorRoadPickingEnabled_;
+    }
+
     void TransformController::ToggleSpace() noexcept
     {
         visualState_.space =
@@ -578,7 +589,8 @@ namespace lts::editor
                             ray,
                             pickedIndex,
                             distance,
-                            meshRenderer) &&
+                            meshRenderer,
+                            editorRoadPickingEnabled_) &&
                         document.SelectEntityByIndex(pickedIndex))
                     {
                         result.selectionChanged = true;
@@ -636,7 +648,7 @@ namespace lts::editor
         status += OperationName(visualState_.operation);
         status += L" | Space: ";
         status += SpaceName(visualState_.space);
-        
+
         if (keyboardShortcutsEnabled_)
         {
             status += L" | W/E/R Tool | T World/Local | F Focus";

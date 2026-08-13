@@ -274,7 +274,8 @@ namespace lts::editor
         const EditorPickRay& ray,
         std::size_t& outEntityIndex,
         float& outDistance,
-        const StaticMeshRenderer* const meshRenderer) noexcept
+        const StaticMeshRenderer* const meshRenderer,
+        const bool includeEditorRoads) noexcept
     {
         outEntityIndex = InvalidEditorEntityIndex;
         outDistance = std::numeric_limits<float>::max();
@@ -297,6 +298,14 @@ namespace lts::editor
 
         for (std::size_t index = 0U; index < entities.size(); ++index)
         {
+            if (
+                !includeEditorRoads &&
+                entities[index].editorFolder ==
+                    L"LevelData/obj_Road")
+            {
+                continue;
+            }
+
             float distance = 0.0F;
 
             if (!IntersectEntity(

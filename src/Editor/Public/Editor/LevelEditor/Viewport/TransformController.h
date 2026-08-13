@@ -59,9 +59,13 @@ namespace lts::editor
         std::wstring BuildStatusText() const;
 
         void SetOperation(EditorTransformOperation operation) noexcept;
+
         void SetKeyboardShortcutsEnabled(bool enabled) noexcept;
-        [[nodiscard]]
-        bool AreKeyboardShortcutsEnabled() const noexcept;
+        [[nodiscard]] bool AreKeyboardShortcutsEnabled() const noexcept;
+
+        void SetEditorRoadPickingEnabled(bool enabled) noexcept;
+        [[nodiscard]] bool IsEditorRoadPickingEnabled() const noexcept;
+
         void ToggleSpace() noexcept;
         void SetSnappingEnabled(bool enabled) noexcept;
         [[nodiscard]] bool IsSnappingEnabled() const noexcept;
@@ -133,6 +137,7 @@ namespace lts::editor
 
         bool dragChanged_ = false;
         bool keyboardShortcutsEnabled_ = true;
+        bool editorRoadPickingEnabled_ = true;
         bool snappingEnabled_ = false;
         float moveSnap_ = 0.5F;
         float rotateSnap_ = 15.0F;

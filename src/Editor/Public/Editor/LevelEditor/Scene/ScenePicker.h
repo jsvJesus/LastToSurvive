@@ -19,6 +19,7 @@ namespace lts::editor
             const EditorPickRay& ray,
             std::size_t& outEntityIndex,
             float& outDistance,
-            const StaticMeshRenderer* meshRenderer = nullptr) noexcept;
+            const StaticMeshRenderer* meshRenderer = nullptr,
+            bool includeEditorRoads = true) noexcept;
     };
 }

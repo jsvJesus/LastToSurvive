@@ -216,10 +216,7 @@ namespace studio::editor
 
             device_ = &device;
             window_ = window;
-
             transformController_.SetViewportWindow(window);
-            transformController_.SetKeyboardShortcutsEnabled(false);
-
             initialized_ = true;
 
             Refresh();
@@ -425,7 +422,7 @@ namespace studio::editor
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
-                    "Scale operation. Keyboard shortcut is disabled in Studio.");
+                    "Scale operation (R). Universal gizmo will be added later.");
             }
 
             ImGui::SameLine();
@@ -691,7 +688,6 @@ namespace studio::editor
             const bool rightClicked =
                 insideViewport &&
                 !uiCapturesMouse &&
-                io.KeyCtrl &&
                 ImGui::IsMouseClicked(ImGuiMouseButton_Right);
 
             const lts::editor::ViewportClick click =
@@ -1078,7 +1074,7 @@ namespace studio::editor
             if (previewAssetPath_.empty())
             {
                 ImGui::TextDisabled(
-                    "Select a model in StaticMeshes or Ctrl+RMB a scene object.");
+                    "Select a model in StaticMeshes or RMB a scene object.");
                 ImGui::End();
                 return;
             }
@@ -1180,7 +1176,7 @@ namespace studio::editor
                 if (inspectedAssetPath_.empty())
                 {
                     ImGui::TextDisabled(
-                        "Ctrl+RMB a static-mesh object or select a model first.");
+                        "RMB a static-mesh object or select a model first.");
                     materialInspector_.Reset();
                 }
                 else
