@@ -114,6 +114,19 @@ namespace lts::editor
 
                     error.clear();
 
+                    const std::filesystem::path studioGame =
+                        current / L"bin";
+
+                    if (std::filesystem::is_directory(
+                            studioGame / L"Data",
+                            error) &&
+                        !error)
+                    {
+                        return studioGame.lexically_normal();
+                    }
+
+                    error.clear();
+
                     const std::filesystem::path nestedGame =
                         current / L"game";
 
@@ -561,7 +574,7 @@ namespace lts::editor
             while (!cursor.empty())
             {
                 if (Lowercase(
-                        cursor.filename().wstring()) == L"staticmeshes"
+                        cursor.filename().wstring()) == L"staticmeshes")
                 {
                     output = cursor;
 
@@ -1292,9 +1305,9 @@ namespace lts::editor
         }
 
         /*
-         * Файл уже сохранён, поэтому это становится
-         * новым исходным состоянием даже при ошибке
-         * обновления GPU-кэша.
+         * Р¤Р°Р№Р» СѓР¶Рµ СЃРѕС…СЂР°РЅС‘РЅ, РїРѕСЌС‚РѕРјСѓ СЌС‚Рѕ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ
+         * РЅРѕРІС‹Рј РёСЃС…РѕРґРЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёРµРј РґР°Р¶Рµ РїСЂРё РѕС€РёР±РєРµ
+         * РѕР±РЅРѕРІР»РµРЅРёСЏ GPU-РєСЌС€Р°.
          */
         slot.original = slot.edited;
         slot.dirty = false;
@@ -1479,8 +1492,8 @@ namespace lts::editor
                     texture))
             {
                 /*
-                 * Новая текстура сразу записывается
-                 * в .material и появляется во Viewport.
+                 * РќРѕРІР°СЏ С‚РµРєСЃС‚СѓСЂР° СЃСЂР°Р·Сѓ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ
+                 * РІ .material Рё РїРѕСЏРІР»СЏРµС‚СЃСЏ РІРѕ Viewport.
                  */
                 static_cast<void>(
                     SaveMaterial(
@@ -1505,8 +1518,8 @@ namespace lts::editor
             slot.error = false;
 
             /*
-             * Очистка сразу записывается в .material
-             * и сбрасывает GPU-текстуру.
+             * РћС‡РёСЃС‚РєР° СЃСЂР°Р·Сѓ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ РІ .material
+             * Рё СЃР±СЂР°СЃС‹РІР°РµС‚ GPU-С‚РµРєСЃС‚СѓСЂСѓ.
              */
             static_cast<void>(
                 SaveMaterial(

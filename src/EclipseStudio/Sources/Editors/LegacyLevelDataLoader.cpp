@@ -206,17 +206,14 @@ namespace studio::editor
                 logicalPath.lexically_normal();
 
             const std::wstring extension =
-                Lowercase(normalized.extension().wstring());
+                Lowercase(
+                    normalized.extension().wstring());
 
             std::filesystem::path relativePath;
 
             /*
-             * LevelData.xml уже может содержать готовую ссылку:
-             *
-             * Data/StaticMeshes/.../object.mesh
-             *
-             * При этом рядом с mesh ещё могут отсутствовать
-             * сгенерированные material-файлы.
+             * LevelData.xml СѓР¶Рµ Р±С‹Р» РјРёРіСЂРёСЂРѕРІР°РЅ.
+             * Runtime С‡РёС‚Р°РµС‚ С‚РѕР»СЊРєРѕ StaticMeshes/*.mesh.
              */
             if (extension == L".mesh")
             {
@@ -241,19 +238,19 @@ namespace studio::editor
                     relativePath;
 
                 /*
-                 * Восстанавливаем путь к исходному SCB:
-                 *
-                 * Data/StaticMeshes/folder/object.mesh
-                 * ->
-                 * Data/ObjectsDepot/folder/object.scb
-                 *
-                 * Это позволяет повторно вызвать importer,
-                 * если у mesh отсутствуют материалы.
+                 * LevelData.xml may already contain the migrated .mesh path,
+                 * while the generated .material files are still missing.
+                 * Reconstruct the original SCB path so the importer can repair
+                 * the complete mesh/material package on the next level load.
                  */
                 std::filesystem::path sourceRelativePath =
                     relativePath;
 
-                sourceRelativePath.replace_extension(L".scb");
+                sourceRelativePath.replace_extension(
+                    L".scb");
+
+                reference.sourceReference = true;
+                reference.rewriteXml = false;
 
                 reference.sourcePath =
                     workspaceRoot /
@@ -262,20 +259,12 @@ namespace studio::editor
                     L"ObjectsDepot" /
                     sourceRelativePath;
 
-                reference.sourceReference = true;
-
-                /*
-                 * XML уже содержит .mesh, поэтому повторно
-                 * сохранять и переписывать LevelData.xml не нужно.
-                 */
-                reference.rewriteXml = false;
-
                 return true;
             }
 
             /*
-             * Старый LevelData.xml содержит .sco или .scb.
-             * Для импорта физически используется SCB.
+             * Р’ СЃС‚Р°СЂРѕРј XML РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅР°РїРёСЃР°РЅРѕ .sco РёР»Рё .scb.
+             * Р’ РѕР±РѕРёС… СЃР»СѓС‡Р°СЏС… С„РёР·РёС‡РµСЃРєРё С‡РёС‚Р°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ SCB.
              */
             if (
                 extension != L".sco" &&
@@ -295,12 +284,14 @@ namespace studio::editor
             std::filesystem::path sourceRelativePath =
                 relativePath;
 
-            sourceRelativePath.replace_extension(L".scb");
+            sourceRelativePath.replace_extension(
+                L".scb");
 
             std::filesystem::path meshRelativePath =
                 relativePath;
 
-            meshRelativePath.replace_extension(L".mesh");
+            meshRelativePath.replace_extension(
+                L".mesh");
 
             reference.sourceReference = true;
             reference.rewriteXml = true;
@@ -641,7 +632,6 @@ namespace studio::editor
                 constexpr std::size_t RequiredHeaderBytes = 44U;
 
                 std::array<std::byte, RequiredHeaderBytes> header{};
-
                 std::ifstream input(
                     meshPath,
                     std::ios::binary);
@@ -649,7 +639,8 @@ namespace studio::editor
                 if (
                     !input ||
                     !input.read(
-                        reinterpret_cast<char*>(header.data()),
+                        reinterpret_cast<char*>(
+                            header.data()),
                         static_cast<std::streamsize>(
                             header.size())).good() ||
                     std::memcmp(
@@ -679,10 +670,6 @@ namespace studio::editor
                     header.data() + 16U,
                     sizeof(headerSize));
 
-                /*
-                 * В формате LTSMESH количество material slots
-                 * хранится по смещению 40 байт.
-                 */
                 std::memcpy(
                     &materialSlotCount,
                     header.data() + 40U,
@@ -813,7 +800,8 @@ namespace studio::editor
                         iterator(directory, error),
                         end;
 
-                    !error && iterator != end;
+                    !error &&
+                    iterator != end;
 
                     iterator.increment(error))
                 {
@@ -829,14 +817,16 @@ namespace studio::editor
                         iterator->path();
 
                     if (
-                        Lowercase(file.extension().wstring()) !=
-                        L".material")
+                        Lowercase(
+                            file.extension().wstring()) !=
+                            L".material")
                     {
                         continue;
                     }
 
                     const std::wstring filename =
-                        Lowercase(file.filename().wstring());
+                        Lowercase(
+                            file.filename().wstring());
 
                     std::uint32_t slot = 0U;
 
@@ -912,7 +902,7 @@ namespace studio::editor
             result.path = reference.meshPath;
 
             /*
-             * XML уже указывает на готовый .mesh.
+             * XML СѓР¶Рµ СѓРєР°Р·С‹РІР°РµС‚ РЅР° РіРѕС‚РѕРІС‹Р№ .mesh.
              */
             if (!reference.sourceReference)
             {
@@ -1001,7 +991,6 @@ namespace studio::editor
                     reference.meshPath) ||
                 !MaterialSetExists(
                     reference.meshPath);
-            
             filesystemError.clear();
 
             if (
@@ -2481,7 +2470,7 @@ namespace studio::editor
             }
 
             /*
-             * Backup создаётся только один раз.
+             * Backup СЃРѕР·РґР°С‘С‚СЃСЏ С‚РѕР»СЊРєРѕ РѕРґРёРЅ СЂР°Р·.
              */
             if (!CopyFileW(
                     levelDataPath.c_str(),
@@ -2505,8 +2494,8 @@ namespace studio::editor
             }
 
             /*
-             * Оригинальный XML заменяется только после полной
-             * конвертации всех уникальных SCB.
+             * РћСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ XML Р·Р°РјРµРЅСЏРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РїРѕР»РЅРѕР№
+             * РєРѕРЅРІРµСЂС‚Р°С†РёРё РІСЃРµС… СѓРЅРёРєР°Р»СЊРЅС‹С… SCB.
              */
             if (!MoveFileExW(
                     temporaryPath.c_str(),
@@ -2570,9 +2559,9 @@ namespace studio::editor
         LegacyLevelLoadResult result;
 
         /*
-         * mapName раньше использовался для
+         * mapName СЂР°РЅСЊС€Рµ РёСЃРїРѕР»СЊР·РѕРІР°Р»СЃСЏ РґР»СЏ
          * game/Cache/LegacyLevels.
-         * Этого cache-каталога больше нет.
+         * Р­С‚РѕРіРѕ cache-РєР°С‚Р°Р»РѕРіР° Р±РѕР»СЊС€Рµ РЅРµС‚.
          */
         static_cast<void>(mapName);
 

@@ -102,6 +102,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClCompile Include="Sources\Editors\ObjectViewTab.cpp" />
     <ClCompile Include="Sources\Studio\Main.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
     <ClCompile Include="Sources\Editors\StudioEditorUI.cpp" />
@@ -147,6 +148,7 @@
 
   <ItemGroup>
     <ClInclude Include="Sources\Editors\LegacyLevelDataLoader.h" />
+    <ClInclude Include="Sources\Editors\ObjectViewTab.h" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

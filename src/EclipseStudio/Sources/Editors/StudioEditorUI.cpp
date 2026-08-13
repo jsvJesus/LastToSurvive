@@ -1,5 +1,6 @@
 #include "StudioEditorUI.h"
 #include "LegacyLevelDataLoader.h"
+#include "ObjectViewTab.h"
 
 #include <Editor/Commands/CommandHistory.h>
 #include <Editor/LevelEditor/Rendering/ColorCorrectionRenderer.h>
@@ -55,25 +56,12 @@ namespace studio::editor
         lts::editor::ColorCorrectionRenderer g_colorCorrectionRenderer;
         lts::editor::ColorCorrectionSettings g_colorCorrectionSettings;
         lts::editor::TerrainImporter g_terrainImporter;
+        ObjectViewTab g_objectViewTab;
         std::filesystem::path g_loadedTerrainPath;
         std::future<LegacyLevelLoadResult> g_levelLoadFuture;
         LegacyLevelLoadStats g_levelLoadStats;
         std::string g_levelLoadStatus = "No map selected.";
         std::string g_loadedMapName;
-        struct ObjectDepotModel final
-        {
-            std::string relativePath;
-            std::string lowercasePath;
-            std::string category;
-        };
-        std::vector<ObjectDepotModel> g_objectDepotModels;
-        std::vector<std::string> g_objectDepotCategories;
-        std::array<char, 192U> g_objectDepotFilter{};
-        std::size_t g_selectedDepotModel =
-            std::numeric_limits<std::size_t>::max();
-        int g_selectedDepotCategory = -1;
-        bool g_objectDepotScanned = false;
-        std::string g_objectDepotStatus;
         engine::platform::NativeWindowHandle g_window;
         std::size_t g_activeLayer = 0U;
         bool g_initialized = false;
@@ -241,8 +229,8 @@ namespace studio::editor
                 }
 
                 /*
-                 * Старые .terrain могут не иметь Terrain.ini.
-                 * Для них сохраняем прежний transform:
+                 * РЎС‚Р°СЂС‹Рµ .terrain РјРѕРіСѓС‚ РЅРµ РёРјРµС‚СЊ Terrain.ini.
+                 * Р”Р»СЏ РЅРёС… СЃРѕС…СЂР°РЅСЏРµРј РїСЂРµР¶РЅРёР№ transform:
                  * position = 0, scale = 1.
                  */
                 if (!iniExists)
@@ -364,11 +352,11 @@ namespace studio::editor
                     hasScaleZ;
 
                 /*
-                 * Terrain.ini, созданный новым R16 importer,
-                 * обязан содержать полный transform.
+                 * Terrain.ini, СЃРѕР·РґР°РЅРЅС‹Р№ РЅРѕРІС‹Рј R16 importer,
+                 * РѕР±СЏР·Р°РЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РїРѕР»РЅС‹Р№ transform.
                  *
-                 * Если в старом Terrain.ini нет ни одного
-                 * transform-поля, используем default transform.
+                 * Р•СЃР»Рё РІ СЃС‚Р°СЂРѕРј Terrain.ini РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ
+                 * transform-РїРѕР»СЏ, РёСЃРїРѕР»СЊР·СѓРµРј default transform.
                  */
                 if (
                     hasAnyTransformValue &&
@@ -405,108 +393,6 @@ namespace studio::editor
             catch (...)
             {
                 return false;
-            }
-        }
-
-        void RefreshObjectDepot() noexcept
-        {
-            try
-            {
-                g_objectDepotModels.clear();
-                g_objectDepotCategories.clear();
-                g_selectedDepotModel = std::numeric_limits<std::size_t>::max();
-                g_selectedDepotCategory = -1;
-                const std::filesystem::path depotRoot =
-                    FindWorkspaceRoot() / L"bin" / L"Data" / L"ObjectsDepot";
-                std::error_code error;
-
-                if (!std::filesystem::is_directory(depotRoot, error) || error)
-                {
-                    g_objectDepotStatus = "ObjectsDepot directory was not found.";
-                    g_objectDepotScanned = true;
-                    return;
-                }
-
-                for (std::filesystem::recursive_directory_iterator iterator(
-                         depotRoot,
-                         std::filesystem::directory_options::skip_permission_denied,
-                         error),
-                     end;
-                     !error && iterator != end;
-                     iterator.increment(error))
-                {
-                    if (!iterator->is_regular_file(error) || error)
-                    {
-                        error.clear();
-                        continue;
-                    }
-
-                    const std::string extension = LowercaseAscii(
-                        iterator->path().extension().u8string());
-
-                    if (extension != ".sco" && extension != ".scb")
-                    {
-                        continue;
-                    }
-
-                    const std::filesystem::path relative =
-                        std::filesystem::relative(iterator->path(), depotRoot, error);
-
-                    if (error)
-                    {
-                        error.clear();
-                        continue;
-                    }
-
-                    ObjectDepotModel model;
-                    model.relativePath = relative.generic_u8string();
-                    model.lowercasePath = LowercaseAscii(model.relativePath);
-                    const std::filesystem::path parent = relative.parent_path();
-
-                    if (parent.empty())
-                    {
-                        model.category = "(Root)";
-                    }
-                    else
-                    {
-                        model.category = parent.begin()->u8string();
-                    }
-
-                    g_objectDepotModels.push_back(std::move(model));
-                }
-
-                std::sort(
-                    g_objectDepotModels.begin(),
-                    g_objectDepotModels.end(),
-                    [](const ObjectDepotModel& left, const ObjectDepotModel& right)
-                    {
-                        return left.lowercasePath < right.lowercasePath;
-                    });
-
-                for (const ObjectDepotModel& model : g_objectDepotModels)
-                {
-                    g_objectDepotCategories.push_back(model.category);
-                }
-
-                std::sort(
-                    g_objectDepotCategories.begin(),
-                    g_objectDepotCategories.end());
-                g_objectDepotCategories.erase(
-                    std::unique(
-                        g_objectDepotCategories.begin(),
-                        g_objectDepotCategories.end()),
-                    g_objectDepotCategories.end());
-                g_objectDepotStatus =
-                    std::to_string(g_objectDepotModels.size()) +
-                    " models found.";
-                g_objectDepotScanned = true;
-            }
-            catch (...)
-            {
-                g_objectDepotModels.clear();
-                g_objectDepotCategories.clear();
-                g_objectDepotStatus = "ObjectsDepot scan failed.";
-                g_objectDepotScanned = true;
             }
         }
 
@@ -1053,13 +939,13 @@ namespace studio::editor
             }
 
             /*
-             * R16 importer хранит вертикальный центр
-             * и итоговый actor scale в Terrain.ini.
+             * R16 importer С…СЂР°РЅРёС‚ РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ С†РµРЅС‚СЂ
+             * Рё РёС‚РѕРіРѕРІС‹Р№ actor scale РІ Terrain.ini.
              *
-             * Без восстановления этого transform
-             * Terrain загружается в position 0 и scale 1,
-             * из-за чего перестаёт совпадать с объектами
-             * из LevelData.xml.
+             * Р‘РµР· РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЌС‚РѕРіРѕ transform
+             * Terrain Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ РІ position 0 Рё scale 1,
+             * РёР·-Р·Р° С‡РµРіРѕ РїРµСЂРµСЃС‚Р°С‘С‚ СЃРѕРІРїР°РґР°С‚СЊ СЃ РѕР±СЉРµРєС‚Р°РјРё
+             * РёР· LevelData.xml.
              */
             lts::editor::EditorTransform transform{};
 
@@ -1533,156 +1419,6 @@ namespace studio::editor
 
                 ImGui::PopID();
             }
-        }
-
-        void DrawObjectsPage() noexcept
-        {
-            if (!g_objectDepotScanned)
-            {
-                RefreshObjectDepot();
-            }
-
-            ImGui::TextUnformatted("Objects Viewer");
-            ImGui::Separator();
-            ImGui::TextWrapped(
-                "Source: %s",
-                (FindWorkspaceRoot() / L"bin" / L"Data" / L"ObjectsDepot").
-                    generic_u8string().c_str());
-            ImGui::Text("Models: %zu", g_objectDepotModels.size());
-
-            if (IsLevelLoading())
-            {
-                ImGui::TextDisabled("Colorado obj_Building placement is loading...");
-            }
-            else if (!g_loadedMapName.empty())
-            {
-                ImGui::TextDisabled(
-                    "Colorado: %zu obj_Building entries placed",
-                    g_levelLoadStats.importedObjects);
-            }
-
-            if (ImGui::Button("Refresh depot"))
-            {
-                RefreshObjectDepot();
-            }
-
-            ImGui::SameLine();
-            ImGui::TextDisabled("%s", g_objectDepotStatus.c_str());
-            ImGui::InputTextWithHint(
-                "##ObjectDepotSearch",
-                "Search model...",
-                g_objectDepotFilter.data(),
-                g_objectDepotFilter.size());
-
-            const char* currentCategory = "All folders";
-
-            if (
-                g_selectedDepotCategory >= 0 &&
-                static_cast<std::size_t>(g_selectedDepotCategory) <
-                    g_objectDepotCategories.size())
-            {
-                currentCategory = g_objectDepotCategories[
-                    static_cast<std::size_t>(g_selectedDepotCategory)].c_str();
-            }
-
-            if (ImGui::BeginCombo("Folder", currentCategory))
-            {
-                if (ImGui::Selectable(
-                        "All folders",
-                        g_selectedDepotCategory < 0))
-                {
-                    g_selectedDepotCategory = -1;
-                }
-
-                for (std::size_t categoryIndex = 0U;
-                     categoryIndex < g_objectDepotCategories.size();
-                     ++categoryIndex)
-                {
-                    const bool selected =
-                        g_selectedDepotCategory ==
-                        static_cast<int>(categoryIndex);
-
-                    if (ImGui::Selectable(
-                            g_objectDepotCategories[categoryIndex].c_str(),
-                            selected))
-                    {
-                        g_selectedDepotCategory =
-                            static_cast<int>(categoryIndex);
-                    }
-                }
-
-                ImGui::EndCombo();
-            }
-
-            const std::string filter = LowercaseAscii(g_objectDepotFilter.data());
-            std::vector<std::size_t> visibleModels;
-            visibleModels.reserve(g_objectDepotModels.size());
-
-            for (std::size_t modelIndex = 0U;
-                 modelIndex < g_objectDepotModels.size();
-                 ++modelIndex)
-            {
-                const ObjectDepotModel& model = g_objectDepotModels[modelIndex];
-
-                if (
-                    g_selectedDepotCategory >= 0 &&
-                    model.category != g_objectDepotCategories[
-                        static_cast<std::size_t>(g_selectedDepotCategory)])
-                {
-                    continue;
-                }
-
-                if (
-                    !filter.empty() &&
-                    model.lowercasePath.find(filter) == std::string::npos)
-                {
-                    continue;
-                }
-
-                visibleModels.push_back(modelIndex);
-            }
-
-            ImGui::SeparatorText("ObjectsDepot Models");
-            ImGui::TextDisabled("Showing %zu", visibleModels.size());
-            ImGui::BeginChild(
-                "##ObjectsDepotModels",
-                ImVec2(0.0F, 0.0F),
-                true,
-                ImGuiWindowFlags_HorizontalScrollbar);
-            ImGuiListClipper clipper;
-            clipper.Begin(static_cast<int>(visibleModels.size()));
-
-            while (clipper.Step())
-            {
-                for (int index = clipper.DisplayStart;
-                     index < clipper.DisplayEnd;
-                     ++index)
-                {
-                    const std::size_t modelIndex = visibleModels[
-                        static_cast<std::size_t>(index)];
-                    const ObjectDepotModel& model =
-                        g_objectDepotModels[modelIndex];
-                    ImGui::PushID(index);
-
-                    if (ImGui::Selectable(
-                            model.relativePath.c_str(),
-                            g_selectedDepotModel == modelIndex))
-                    {
-                        g_selectedDepotModel = modelIndex;
-                    }
-
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::SetTooltip(
-                            "Data/ObjectsDepot/%s",
-                            model.relativePath.c_str());
-                    }
-
-                    ImGui::PopID();
-                }
-            }
-
-            ImGui::EndChild();
         }
 
         void DrawEnvironmentPage() noexcept
@@ -2171,7 +1907,31 @@ namespace studio::editor
                 "R3-inspired grading is applied to the world before the editor UI.");
         }
 
-        void DrawActivePage() noexcept
+        [[nodiscard]]
+        ObjectViewContext BuildObjectViewContext() noexcept
+        {
+            const ImGuiViewport* const viewport =
+                ImGui::GetMainViewport();
+
+            return
+            {
+                g_sceneDocument,
+                g_commandHistory,
+                g_cameraController,
+                g_staticMeshRenderer,
+                g_terrainRenderer,
+                g_window,
+                0,
+                0,
+                static_cast<std::uint32_t>(
+                    (std::max)(viewport->WorkSize.x, 1.0F)),
+                static_cast<std::uint32_t>(
+                    (std::max)(viewport->WorkSize.y, 1.0F))
+            };
+        }
+
+        void DrawActivePage(
+            ObjectViewContext& objectContext) noexcept
         {
             switch (g_activePage)
             {
@@ -2190,7 +1950,7 @@ namespace studio::editor
 
             case LevelEditorPage::Objects:
 
-                DrawObjectsPage();
+                g_objectViewTab.DrawPage(objectContext);
 
                 break;
 
@@ -2254,12 +2014,23 @@ namespace studio::editor
         {
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
             constexpr float toolbarHeight = 42.0F;
+            constexpr float objectToolbarHeight = 38.0F;
+            const bool objectsActive =
+                g_activePage == LevelEditorPage::Objects;
+
+            const float controlsTop =
+                toolbarHeight +
+                (objectsActive ? objectToolbarHeight : 0.0F);
+
             const float panelWidth = (std::min)(
                 375.0F,
                 viewport->WorkSize.x * 0.32F);
             const float panelHeight = (std::max)(
                 180.0F,
-                viewport->WorkSize.y - toolbarHeight - 70.0F);
+                viewport->WorkSize.y - controlsTop - 70.0F);
+
+            ObjectViewContext objectContext =
+                BuildObjectViewContext();
 
             ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
             ImGui::SetNextWindowPos(
@@ -2289,11 +2060,43 @@ namespace studio::editor
             DrawLevelEditorToolbar();
             ImGui::End();
 
+            if (objectsActive)
+            {
+                ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
+                ImGui::SetNextWindowPos(
+                    ImVec2(
+                        viewport->WorkPos.x,
+                        viewport->WorkPos.y + toolbarHeight),
+                    ImGuiCond_Always);
+                ImGui::SetNextWindowSize(
+                    ImVec2(
+                        viewport->WorkSize.x,
+                        objectToolbarHeight),
+                    ImGuiCond_Always);
+
+                if (ImGui::Begin(
+                        "##ObjectViewToolbar",
+                        nullptr,
+                        ImGuiWindowFlags_NoMove |
+                            ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_NoCollapse |
+                            ImGuiWindowFlags_NoDocking |
+                            ImGuiWindowFlags_NoTitleBar |
+                            ImGuiWindowFlags_NoSavedSettings |
+                            ImGuiWindowFlags_NoScrollbar |
+                            ImGuiWindowFlags_NoScrollWithMouse))
+                {
+                    g_objectViewTab.DrawToolbar();
+                }
+
+                ImGui::End();
+            }
+
             ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
             ImGui::SetNextWindowPos(
                 ImVec2(
                     viewport->WorkPos.x + viewport->WorkSize.x - panelWidth - 5.0F,
-                    viewport->WorkPos.y + toolbarHeight + 5.0F),
+                    viewport->WorkPos.y + controlsTop + 5.0F),
                 ImGuiCond_Always);
             ImGui::SetNextWindowSize(
                 ImVec2(panelWidth, panelHeight),
@@ -2315,8 +2118,14 @@ namespace studio::editor
                 return;
             }
 
-            DrawActivePage();
+            DrawActivePage(objectContext);
             ImGui::End();
+
+            if (objectsActive)
+            {
+                g_objectViewTab.DrawWindows(objectContext);
+                g_objectViewTab.UpdateViewport(objectContext);
+            }
         }
     }
 
@@ -2361,8 +2170,18 @@ namespace studio::editor
             return false;
         }
 
+        if (!g_objectViewTab.Initialize(device, window))
+        {
+            g_staticMeshRenderer.Shutdown(device);
+            g_terrainRenderer.Shutdown(device);
+            g_gridRenderer.Shutdown(device);
+            g_skyRenderer.Shutdown(device);
+            return false;
+        }
+
         if (!g_colorCorrectionRenderer.Initialize(device))
         {
+            g_objectViewTab.Shutdown(device);
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
             g_gridRenderer.Shutdown(device);
@@ -2375,7 +2194,6 @@ namespace studio::editor
         g_cameraController.SetViewportWindow(window);
         g_initialized = true;
         EnsureEnvironmentEntities();
-        RefreshObjectDepot();
         LoadCommandLineTerrain(device);
         return true;
     }
@@ -2395,6 +2213,7 @@ namespace studio::editor
         }
 
         g_colorCorrectionRenderer.Shutdown(device);
+        g_objectViewTab.Shutdown(device);
         g_staticMeshRenderer.Shutdown(device);
         g_terrainRenderer.Shutdown(device);
         g_gridRenderer.Shutdown(device);
@@ -2465,9 +2284,40 @@ namespace studio::editor
             }
         }
 
-        return g_staticMeshRenderer.Render(
-            context,
+        const engine::graphics::GraphicsResult meshResult =
+            g_staticMeshRenderer.Render(
+                context,
+                g_sceneDocument,
+                viewProjection,
+                g_cameraController.GetPosition());
+
+        if (engine::graphics::Failed(meshResult))
+        {
+            return meshResult;
+        }
+
+        if (g_activePage != LevelEditorPage::Objects)
+        {
+            return engine::graphics::GraphicsResult::Success;
+        }
+
+        ObjectViewContext objectContext
+        {
             g_sceneDocument,
+            g_commandHistory,
+            g_cameraController,
+            g_staticMeshRenderer,
+            g_terrainRenderer,
+            g_window,
+            0,
+            0,
+            width,
+            height
+        };
+
+        return g_objectViewTab.Render(
+            context,
+            objectContext,
             viewProjection,
             g_cameraController.GetPosition());
     }
