@@ -102,6 +102,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClCompile Include="Sources\Editors\LegacyLevelDataWriter.cpp" />
     <ClCompile Include="Sources\Editors\StudioToolbar.cpp" />
     <ClCompile Include="Sources\Studio\Main.cpp" />
     <ClCompile Include="Sources\StudioGraphicsShell.cpp" />
@@ -153,6 +154,7 @@
 
   <ItemGroup>
     <ClInclude Include="Sources\Editors\LegacyLevelDataLoader.h" />
+    <ClInclude Include="Sources\Editors\LegacyLevelDataWriter.h" />
     <ClInclude Include="Sources\Editors\ObjectViewTab.h" />
     <ClInclude Include="Sources\Editors\StudioToolbar.h" />
   </ItemGroup>

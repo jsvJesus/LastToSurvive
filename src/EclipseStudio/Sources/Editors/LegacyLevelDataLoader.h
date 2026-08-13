@@ -31,6 +31,7 @@ namespace studio::editor
         std::string warning;
         LegacyLevelLoadStats stats;
         std::vector<engine::scene::SceneEntity> entities;
+        std::vector<std::size_t> managedObjectIndices;
     };
 
     [[nodiscard]] LegacyLevelLoadResult LoadLegacyLevelData(

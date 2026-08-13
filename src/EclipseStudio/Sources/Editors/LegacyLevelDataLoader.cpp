@@ -3013,6 +3013,14 @@ namespace studio::editor
 
                 result.entities.push_back(
                     std::move(entity));
+
+                if (
+                    pending.editorFolder ==
+                    L"LevelData/obj_Building")
+                {
+                    result.managedObjectIndices.push_back(
+                        pending.objectIndex);
+                }
             }
 
             result.stats.importedObjects =

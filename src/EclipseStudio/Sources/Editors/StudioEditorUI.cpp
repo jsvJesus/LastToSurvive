@@ -1,5 +1,6 @@
 #include "StudioEditorUI.h"
 #include "LegacyLevelDataLoader.h"
+#include "LegacyLevelDataWriter.h"
 #include "ObjectViewTab.h"
 #include "StudioToolbar.h"
 
@@ -77,6 +78,9 @@ namespace studio::editor
         lts::editor::TerrainImporter g_terrainImporter;
         ObjectViewTab g_objectViewTab;
         std::filesystem::path g_loadedTerrainPath;
+        std::filesystem::path g_loadedLevelDataPath;
+        std::vector<std::size_t> g_managedLevelObjectIndices;
+        std::string g_settingsSaveStatus;
         std::future<LegacyLevelLoadResult> g_levelLoadFuture;
         LegacyLevelLoadStats g_levelLoadStats;
         std::string g_levelLoadStatus = "No map selected.";
@@ -845,6 +849,8 @@ namespace studio::editor
         {
             if (!result.succeeded)
             {
+                g_loadedLevelDataPath.clear();
+                g_managedLevelObjectIndices.clear();
                 g_levelLoadStatus = result.error.empty()
                     ? "LevelData.xml import failed."
                     : std::move(result.error);
@@ -901,7 +907,8 @@ namespace studio::editor
             g_sceneDocument.RestoreSnapshot(snapshot, false);
             g_sceneDocument.MarkSaved();
             g_levelLoadStats = result.stats;
-            
+            g_managedLevelObjectIndices = std::move(result.managedObjectIndices);
+            g_settingsSaveStatus = "Map is ready for saving.";
             g_levelLoadStatus = "Colorado loaded: " +
                 std::to_string(result.stats.buildingObjects) +
                 " buildings, " +
@@ -968,6 +975,10 @@ namespace studio::editor
             g_loadedMapName.clear();
             g_levelLoadStatus = "Converting SCB assets to Data/StaticMeshes/*.mesh...";
 
+            g_loadedLevelDataPath = levelDataPath;
+            g_managedLevelObjectIndices.clear();
+            g_settingsSaveStatus.clear();
+
             try
             {
                 g_levelLoadFuture = std::async(
@@ -982,11 +993,94 @@ namespace studio::editor
             }
             catch (...)
             {
+                g_loadedLevelDataPath.clear();
+                g_managedLevelObjectIndices.clear();
                 g_levelLoadStatus = "Cannot start Colorado background loader.";
                 return false;
             }
 
             return true;
+        }
+
+        void SaveLoadedMap() noexcept
+        {
+            if (
+                g_loadedLevelDataPath.empty() ||
+                g_loadedMapName.empty() ||
+                IsLevelLoading())
+            {
+                g_settingsSaveStatus =
+                    "No loaded map is available for saving.";
+
+                return;
+            }
+
+            LegacyLevelSaveResult result =
+                SaveLegacyLevelData(
+                    g_loadedLevelDataPath,
+                    g_sceneDocument.GetEntities(),
+                    g_managedLevelObjectIndices);
+
+            if (!result.succeeded)
+            {
+                g_settingsSaveStatus =
+                    result.error.empty()
+                        ? "Map save failed."
+                        : std::move(result.error);
+
+                return;
+            }
+
+            for (
+                const LegacyLevelSavedIdentity& identity :
+                result.identities)
+            {
+                lts::editor::EditorSceneEntity* const entity =
+                    g_sceneDocument.FindEntityMutable(
+                        identity.entityId);
+
+                if (
+                    entity == nullptr ||
+                    !entity->staticMesh.has_value())
+                {
+                    continue;
+                }
+
+                std::wstring name =
+                    std::filesystem::path(
+                        entity->staticMesh->assetPath).
+                        stem().
+                        wstring();
+
+                name +=
+                    L" #" +
+                    std::to_wstring(
+                        identity.objectIndex);
+
+                entity->name =
+                    std::move(name);
+
+                entity->editorFolder =
+                    L"LevelData/obj_Building";
+            }
+
+            g_managedLevelObjectIndices =
+                std::move(
+                    result.managedObjectIndices);
+
+            g_sceneDocument.MarkSaved();
+
+            g_settingsSaveStatus =
+                "Map saved. Updated: " +
+                std::to_string(
+                    result.updatedObjects) +
+                ", added: " +
+                std::to_string(
+                    result.addedObjects) +
+                ", removed: " +
+                std::to_string(
+                    result.removedObjects) +
+                ".";
         }
 
         [[nodiscard]]
@@ -1290,24 +1384,29 @@ namespace studio::editor
 
             ImGui::Spacing();
 
-            /*
-             * Пока кнопка намеренно отключена.
-             * MarkSaved() здесь вызывать нельзя:
-             * он сбросит dirty-флаг без записи LevelData.xml.
-             */
-            ImGui::BeginDisabled(true);
+            const bool canSave =
+                mapLoaded &&
+                !g_loadedLevelDataPath.empty();
 
-            ImGui::Button(
-                "Save Map",
-                ImVec2(
-                    ImGui::GetContentRegionAvail().x,
-                    30.0F));
+            ImGui::BeginDisabled(!canSave);
+
+            if (ImGui::Button(
+                    "Save Map",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        30.0F)))
+            {
+                SaveLoadedMap();
+            }
 
             ImGui::EndDisabled();
 
-            ImGui::TextDisabled(
-                "LevelData.xml writer will be connected "
-                "in the next save-system step.");
+            if (!g_settingsSaveStatus.empty())
+            {
+                ImGui::TextWrapped(
+                    "%s",
+                    g_settingsSaveStatus.c_str());
+            }
 
             ImGui::Spacing();
             ImGui::SeparatorText("Day / Night");
@@ -2415,6 +2514,9 @@ namespace studio::editor
         g_commandHistory.Clear();
         g_sceneDocument.Clear();
         g_loadedTerrainPath.clear();
+        g_loadedLevelDataPath.clear();
+        g_managedLevelObjectIndices.clear();
+        g_settingsSaveStatus.clear();
         g_loadedMapName.clear();
         g_levelLoadStats = {};
         g_levelLoadStatus = "No map selected.";
