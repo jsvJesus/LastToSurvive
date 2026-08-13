@@ -61,16 +61,22 @@ namespace lts::editor
                 LowercasePath(
                     entity.staticMesh->assetPath);
 
-            const std::size_t generatedDirectory =
-                path.find(L"/levelgeneratedv3/");
+            const bool stableLevelDataPath =
+                path.find(
+                    L"/staticmeshes/leveldata/") !=
+                std::wstring::npos;
+
+            const bool legacyGeneratedPath =
+                path.find(
+                    L"/levelgeneratedv") !=
+                std::wstring::npos;
 
             const std::size_t roadAsset =
                 path.find(L"/roads/road_");
 
             return
-                generatedDirectory != std::wstring::npos &&
                 roadAsset != std::wstring::npos &&
-                roadAsset > generatedDirectory;
+                (stableLevelDataPath || legacyGeneratedPath);
         }
 
         [[nodiscard]]

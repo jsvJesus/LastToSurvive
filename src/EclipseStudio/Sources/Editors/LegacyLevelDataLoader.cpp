@@ -39,15 +39,9 @@ namespace studio::editor
 {
     namespace
     {
-        constexpr std::uint32_t ScbSignature =
-            0xFADC0038U;
-
-        constexpr std::size_t MaximumReportedErrors =
-            12U;
-
-        constexpr wchar_t GeneratedSurfaceDirectory[] =
-            L"LevelGeneratedV3";
-
+        constexpr std::uint32_t ScbSignature = 0xFADC0038U;
+        constexpr std::size_t MaximumReportedErrors = 12U;
+        constexpr wchar_t LevelDataMeshDirectory[] = L"LevelData";
         constexpr std::size_t MinimumWaterRegionCells = 64U;
 
         struct MeshReference final
@@ -1380,8 +1374,7 @@ namespace studio::editor
         }
 
         [[nodiscard]]
-        std::filesystem::path BuildGeneratedMeshPath(
-            const std::filesystem::path& workspaceRoot,
+        std::filesystem::path BuildGeneratedMeshRelativePath(
             const std::filesystem::path& levelRoot,
             const wchar_t* const category,
             const std::filesystem::path& sourceName)
@@ -1392,15 +1385,44 @@ namespace studio::editor
             filename.replace_extension(L".mesh");
 
             return
-                workspaceRoot /
-                L"bin" /
-                L"Data" /
-                L"Data" /
-                L"StaticMeshes" /
-                GeneratedSurfaceDirectory /
+                std::filesystem::path(
+                    LevelDataMeshDirectory) /
                 levelRoot.filename() /
                 category /
                 filename;
+        }
+
+        [[nodiscard]]
+        std::filesystem::path BuildGeneratedMeshPath(
+            const std::filesystem::path& workspaceRoot,
+            const std::filesystem::path& levelRoot,
+            const wchar_t* const category,
+            const std::filesystem::path& sourceName)
+        {
+            return
+                workspaceRoot /
+                L"bin" /
+                L"Data" /
+                L"StaticMeshes" /
+                BuildGeneratedMeshRelativePath(
+                    levelRoot,
+                    category,
+                    sourceName);
+        }
+
+        [[nodiscard]]
+        std::filesystem::path BuildGeneratedLogicalMeshPath(
+            const std::filesystem::path& levelRoot,
+            const wchar_t* const category,
+            const std::filesystem::path& sourceName)
+        {
+            return
+                std::filesystem::path(L"Data") /
+                L"StaticMeshes" /
+                BuildGeneratedMeshRelativePath(
+                    levelRoot,
+                    category,
+                    sourceName);
         }
 
         [[nodiscard]]
@@ -2722,6 +2744,11 @@ namespace studio::editor
                     pending.originalName = fileName;
                     pending.editorFolder = L"LevelData/obj_Road";
                     pending.meshPath = destinationPath;
+                    pending.logicalMeshPath =
+                        BuildGeneratedLogicalMeshPath(
+                            levelDataPath.parent_path(),
+                            L"Roads",
+                            sourceName);
                     pending.transform = roadTransform;
                     pending.available = true;
                     pending.castShadows = false;
@@ -2802,9 +2829,13 @@ namespace studio::editor
                     PendingObject pending;
                     pending.node = object;
                     pending.originalName = fileName;
-                    pending.editorFolder =
-                        L"LevelData/obj_WaterPlane";
+                    pending.editorFolder = L"LevelData/obj_WaterPlane";
                     pending.meshPath = destinationPath;
+                    pending.logicalMeshPath =
+                        BuildGeneratedLogicalMeshPath(
+                            levelDataPath.parent_path(),
+                            L"WaterPlanes",
+                            sourceName);
                     pending.transform.position =
                     {
                         AttributeFloat(
@@ -2959,8 +2990,13 @@ namespace studio::editor
 
                 entity.staticMesh.emplace();
 
+                const std::filesystem::path& assetPath =
+                    pending.logicalMeshPath.empty()
+                        ? pending.meshPath
+                        : pending.logicalMeshPath;
+
                 entity.staticMesh->assetPath =
-                    pending.meshPath.
+                    assetPath.
                         lexically_normal().
                         generic_wstring();
 
