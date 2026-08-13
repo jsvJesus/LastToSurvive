@@ -1,6 +1,7 @@
 #include "StudioEditorUI.h"
 #include "LegacyLevelDataLoader.h"
 #include "ObjectViewTab.h"
+#include "StudioToolbar.h"
 
 #include <Editor/Commands/CommandHistory.h>
 #include <Editor/LevelEditor/Rendering/ColorCorrectionRenderer.h>
@@ -44,6 +45,24 @@ namespace studio::editor
     {
         LevelEditorPage g_activePage =
             LevelEditorPage::Settings;
+
+        enum class EditorGraphicsQuality : std::uint8_t
+        {
+            Low = 0,
+            Medium,
+            High,
+            Custom
+        };
+
+        StudioToolbar g_editorToolbar;
+
+        SettingsToolbarPage g_activeSettingsPage =
+            SettingsToolbarPage::SystemSettings;
+
+        EditorGraphicsQuality g_graphicsQuality =
+            EditorGraphicsQuality::High;
+
+        bool g_simulateDayNight = false;
 
         engine::graphics::RenderDevice* g_device = nullptr;
         lts::editor::SceneDocument g_sceneDocument;
@@ -728,6 +747,55 @@ namespace studio::editor
             }
         }
 
+        void UpdateDayNightSimulation(
+            const float deltaSeconds) noexcept
+        {
+            if (
+                !g_simulateDayNight ||
+                g_loadedMapName.empty() ||
+                IsLevelLoading())
+            {
+                return;
+            }
+
+            const EnvironmentEntities entities =
+                ResolveEnvironmentEntities();
+
+            if (
+                entities.environment == nullptr ||
+                !entities.environment->
+                    environment.has_value())
+            {
+                return;
+            }
+
+            constexpr float gameHoursPerSecond =
+                1.0F / 60.0F;
+
+            const float safeDeltaSeconds =
+                std::clamp(
+                    deltaSeconds,
+                    0.0F,
+                    0.25F);
+
+            float nextTime =
+                entities.environment->
+                    environment->
+                    timeOfDay +
+                safeDeltaSeconds *
+                    gameHoursPerSecond;
+
+            if (nextTime >= 24.0F)
+            {
+                nextTime =
+                    std::fmod(
+                        nextTime,
+                        24.0F);
+            }
+
+            ApplyTimeOfDay(nextTime);
+        }
+
         void EnsureEnvironmentEntities() noexcept
         {
             const std::size_t previousSelection = g_sceneDocument.GetSelectedIndex();
@@ -1136,54 +1204,35 @@ namespace studio::editor
             LocalFree(arguments);
         }
 
-        const char* GetPageName(
-            const LevelEditorPage page) noexcept
+        [[nodiscard]]
+        const char* GetGraphicsQualityName(
+            const EditorGraphicsQuality quality) noexcept
         {
-            switch (page)
+            switch (quality)
             {
-            case LevelEditorPage::Settings:
-                return "Settings";
+            case EditorGraphicsQuality::Low:
+                return "Low";
 
-            case LevelEditorPage::Terrain:
-                return "Terrain";
+            case EditorGraphicsQuality::Medium:
+                return "Medium";
 
-            case LevelEditorPage::Objects:
-                return "Objects";
+            case EditorGraphicsQuality::High:
+                return "High";
 
-            case LevelEditorPage::Materials:
-                return "Materials";
-
-            case LevelEditorPage::Environment:
-                return "Environment";
-
-            case LevelEditorPage::Collections:
-                return "Collections";
-
-            case LevelEditorPage::Decorators:
-                return "Decorators";
-
-            case LevelEditorPage::Roads:
-                return "Roads";
-
-            case LevelEditorPage::Gameplay:
-                return "Gameplay";
-
-            case LevelEditorPage::PostFX:
-                return "Post FX";
-
-            case LevelEditorPage::ColorCorrection:
-                return "Color Correction";
+            case EditorGraphicsQuality::Custom:
+                return "Custom";
 
             default:
                 return "Unknown";
             }
         }
 
-        void DrawPageButton(
-            const LevelEditorPage page) noexcept
+        void DrawGraphicsQualityButton(
+            const char* const label,
+            const EditorGraphicsQuality quality) noexcept
         {
             const bool active =
-                g_activePage == page;
+                g_graphicsQuality == quality;
 
             if (active)
             {
@@ -1194,9 +1243,12 @@ namespace studio::editor
             }
 
             if (ImGui::Button(
-                    GetPageName(page)))
+                    label,
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        28.0F)))
             {
-                g_activePage = page;
+                g_graphicsQuality = quality;
             }
 
             if (active)
@@ -1205,39 +1257,159 @@ namespace studio::editor
             }
         }
 
-        void DrawLevelEditorToolbar() noexcept
+        void DrawSystemSettingsPage() noexcept
         {
-            constexpr std::array pages
-            {
-                LevelEditorPage::Settings,
-                LevelEditorPage::Terrain,
-                LevelEditorPage::Objects,
-                LevelEditorPage::Materials,
-                LevelEditorPage::Environment,
-                LevelEditorPage::Collections,
-                LevelEditorPage::Decorators,
-                LevelEditorPage::Roads,
-                LevelEditorPage::Gameplay,
-                LevelEditorPage::PostFX,
-                LevelEditorPage::ColorCorrection
-            };
+            const bool mapLoaded =
+                !g_loadedMapName.empty() &&
+                !IsLevelLoading();
 
-            for (std::size_t index = 0U; index < pages.size(); ++index)
+            ImGui::TextUnformatted(
+                "System Settings");
+
+            ImGui::Separator();
+
+            ImGui::SeparatorText("Current Map");
+
+            if (mapLoaded)
             {
-                if (index > 0U)
+                ImGui::Text(
+                    "Map: %s",
+                    g_loadedMapName.c_str());
+
+                ImGui::Text(
+                    "Scene: %s",
+                    g_sceneDocument.IsDirty()
+                        ? "Modified"
+                        : "Saved");
+            }
+            else
+            {
+                ImGui::TextDisabled(
+                    "No map loaded.");
+            }
+
+            ImGui::Spacing();
+
+            /*
+             * Пока кнопка намеренно отключена.
+             * MarkSaved() здесь вызывать нельзя:
+             * он сбросит dirty-флаг без записи LevelData.xml.
+             */
+            ImGui::BeginDisabled(true);
+
+            ImGui::Button(
+                "Save Map",
+                ImVec2(
+                    ImGui::GetContentRegionAvail().x,
+                    30.0F));
+
+            ImGui::EndDisabled();
+
+            ImGui::TextDisabled(
+                "LevelData.xml writer will be connected "
+                "in the next save-system step.");
+
+            ImGui::Spacing();
+            ImGui::SeparatorText("Day / Night");
+
+            ImGui::BeginDisabled(!mapLoaded);
+
+            ImGui::Checkbox(
+                "Simulate Day / Night",
+                &g_simulateDayNight);
+
+            ImGui::EndDisabled();
+
+            if (mapLoaded)
+            {
+                const EnvironmentEntities entities =
+                    ResolveEnvironmentEntities();
+
+                if (
+                    entities.environment != nullptr &&
+                    entities.environment->
+                        environment.has_value())
                 {
-                    const float nextWidth =
-                        ImGui::CalcTextSize(GetPageName(pages[index])).x +
-                        ImGui::GetStyle().FramePadding.x * 2.0F;
+                    const float time =
+                        entities.environment->
+                            environment->
+                            timeOfDay;
 
-                    if (ImGui::GetCursorPosX() + nextWidth <
-                        ImGui::GetContentRegionMax().x)
-                    {
-                        ImGui::SameLine();
-                    }
+                    const int totalMinutes =
+                        std::clamp(
+                            static_cast<int>(
+                                std::round(
+                                    time * 60.0F)),
+                            0,
+                            24 * 60);
+
+                    ImGui::Text(
+                        "Current time: %02d:%02d",
+                        totalMinutes / 60,
+                        totalMinutes % 60);
                 }
+            }
 
-                DrawPageButton(pages[index]);
+            ImGui::TextDisabled(
+                "Simulation speed: "
+                "1 real second = 1 game minute.");
+        }
+
+        void DrawOptionsMenuPage() noexcept
+        {
+            ImGui::TextUnformatted(
+                "Options Menu");
+
+            ImGui::Separator();
+
+            ImGui::SeparatorText(
+                "Graphics Quality");
+
+            DrawGraphicsQualityButton(
+                "Low",
+                EditorGraphicsQuality::Low);
+
+            DrawGraphicsQualityButton(
+                "Medium",
+                EditorGraphicsQuality::Medium);
+
+            DrawGraphicsQualityButton(
+                "High",
+                EditorGraphicsQuality::High);
+
+            DrawGraphicsQualityButton(
+                "Custom",
+                EditorGraphicsQuality::Custom);
+
+            ImGui::Spacing();
+
+            ImGui::Text(
+                "Selected profile: %s",
+                GetGraphicsQualityName(
+                    g_graphicsQuality));
+
+            ImGui::TextWrapped(
+                "The profile is now part of the Studio UI state. "
+                "Concrete DX11 renderer values will be connected "
+                "as AO, shadows, post-processing and terrain "
+                "quality settings are implemented.");
+        }
+
+        void DrawSettingsPage() noexcept
+        {
+            switch (g_activeSettingsPage)
+            {
+            case SettingsToolbarPage::SystemSettings:
+
+                DrawSystemSettingsPage();
+
+                break;
+
+            case SettingsToolbarPage::OptionsMenu:
+
+                DrawOptionsMenuPage();
+
+                break;
             }
         }
 
@@ -1936,74 +2108,62 @@ namespace studio::editor
             switch (g_activePage)
             {
             case LevelEditorPage::Terrain:
-
                 DrawTerrainPage();
-
+                
                 break;
 
             case LevelEditorPage::Settings:
-
-                DrawPlaceholderPage(
-                    "Settings");
-
+                DrawSettingsPage();
+                
                 break;
 
             case LevelEditorPage::Objects:
-
                 g_objectViewTab.DrawPage(objectContext);
 
                 break;
 
             case LevelEditorPage::Materials:
-
                 DrawPlaceholderPage(
                     "Materials");
 
                 break;
 
             case LevelEditorPage::Environment:
-
                 DrawEnvironmentPage();
 
                 break;
 
             case LevelEditorPage::Collections:
-
                 DrawPlaceholderPage(
                     "Collections");
 
                 break;
 
             case LevelEditorPage::Decorators:
-
                 DrawPlaceholderPage(
                     "Decorators");
 
                 break;
 
             case LevelEditorPage::Roads:
-
                 DrawPlaceholderPage(
                     "Roads");
 
                 break;
 
             case LevelEditorPage::Gameplay:
-
                 DrawPlaceholderPage(
                     "Gameplay");
 
                 break;
 
             case LevelEditorPage::PostFX:
-
                 DrawPlaceholderPage(
                     "Post FX");
 
                 break;
 
             case LevelEditorPage::ColorCorrection:
-
                 DrawColorCorrectionPage();
 
                 break;
@@ -2013,21 +2173,29 @@ namespace studio::editor
         void DrawLevelEditor() noexcept
         {
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
+            
             constexpr float toolbarHeight = 42.0F;
-            constexpr float objectToolbarHeight = 38.0F;
+            constexpr float secondaryToolbarHeight = 38.0F;
+
+            const bool settingsActive =
+                g_activePage ==
+                    LevelEditorPage::Settings;
+
             const bool objectsActive =
-                g_activePage == LevelEditorPage::Objects;
+                g_activePage ==
+                    LevelEditorPage::Objects;
+
+            const bool secondaryToolbarVisible =
+                settingsActive ||
+                objectsActive;
 
             const float controlsTop =
                 toolbarHeight +
-                (objectsActive ? objectToolbarHeight : 0.0F);
-
-            const float panelWidth = (std::min)(
-                375.0F,
-                viewport->WorkSize.x * 0.32F);
-            const float panelHeight = (std::max)(
-                180.0F,
-                viewport->WorkSize.y - controlsTop - 70.0F);
+                (
+                    secondaryToolbarVisible
+                        ? secondaryToolbarHeight
+                        : 0.0F
+                );
 
             ObjectViewContext objectContext =
                 BuildObjectViewContext();
@@ -2057,25 +2225,31 @@ namespace studio::editor
                 return;
             }
 
-            DrawLevelEditorToolbar();
+            g_editorToolbar.DrawMain(
+                g_activePage);
             ImGui::End();
 
-            if (objectsActive)
+            if (secondaryToolbarVisible)
             {
-                ImGui::SetNextWindowDockID(0U, ImGuiCond_Always);
+                ImGui::SetNextWindowDockID(
+                    0U,
+                    ImGuiCond_Always);
+
                 ImGui::SetNextWindowPos(
                     ImVec2(
                         viewport->WorkPos.x,
-                        viewport->WorkPos.y + toolbarHeight),
+                        viewport->WorkPos.y +
+                            toolbarHeight),
                     ImGuiCond_Always);
+
                 ImGui::SetNextWindowSize(
                     ImVec2(
                         viewport->WorkSize.x,
-                        objectToolbarHeight),
+                        secondaryToolbarHeight),
                     ImGuiCond_Always);
 
                 if (ImGui::Begin(
-                        "##ObjectViewToolbar",
+                        "##LevelEditorSecondaryToolbar",
                         nullptr,
                         ImGuiWindowFlags_NoMove |
                             ImGuiWindowFlags_NoResize |
@@ -2086,7 +2260,15 @@ namespace studio::editor
                             ImGuiWindowFlags_NoScrollbar |
                             ImGuiWindowFlags_NoScrollWithMouse))
                 {
-                    g_objectViewTab.DrawToolbar();
+                    if (settingsActive)
+                    {
+                        g_editorToolbar.DrawSettings(
+                            g_activeSettingsPage);
+                    }
+                    else if (objectsActive)
+                    {
+                        g_objectViewTab.DrawToolbar();
+                    }
                 }
 
                 ImGui::End();
@@ -2226,6 +2408,9 @@ namespace studio::editor
         g_levelLoadStatus = "No map selected.";
         g_device = nullptr;
         g_window = {};
+        g_activeSettingsPage = SettingsToolbarPage::SystemSettings;
+        g_graphicsQuality = EditorGraphicsQuality::High;
+        g_simulateDayNight = false;
         g_initialized = false;
     }
 
@@ -2351,6 +2536,9 @@ namespace studio::editor
             g_cameraController.Update(
                 static_cast<double>(io.DeltaTime),
                 io.MouseWheel);
+
+            UpdateDayNightSimulation(
+                io.DeltaTime);
         }
 
         DrawLevelEditor();
