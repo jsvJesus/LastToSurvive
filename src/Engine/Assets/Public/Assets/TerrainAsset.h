@@ -15,8 +15,13 @@ namespace engine::assets
     class TerrainAsset final
     {
     public:
-        [[nodiscard]] static AssetResult Load(
+        [[nodiscard]]
+        static AssetResult Load(
             const std::filesystem::path& path, TerrainAsset& output) noexcept;
+
+        [[nodiscard]]
+       AssetResult SaveHeightsAtomic() const noexcept;
+        
         std::uint32_t width=0U,height=0U,splatWidth=0U,splatHeight=0U;
         float tileSize=0.0F,heightOffset=0.0F,heightScale=0.0F;
         std::vector<std::int16_t> heights;
@@ -24,7 +29,10 @@ namespace engine::assets
         std::vector<TerrainEmbeddedTexture> masks;
         TerrainEmbeddedTexture colorMap, normalMap;
         std::filesystem::path sourcePath;
-        [[nodiscard]] float GetHeight(std::uint32_t x,std::uint32_t z) const noexcept;
-        [[nodiscard]] bool IsValid() const noexcept;
+        
+        [[nodiscard]]
+        float GetHeight(std::uint32_t x,std::uint32_t z) const noexcept;
+        [[nodiscard]]
+        bool IsValid() const noexcept;
     };
 }

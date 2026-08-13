@@ -135,6 +135,15 @@ namespace studio::editor
         };
 
         TerrainEditorUiState g_terrainEditorUi;
+        bool g_terrainBrushHit = false;
+
+        float g_terrainBrushWorldX = 0.0F;
+        float g_terrainBrushWorldZ = 0.0F;
+
+        std::uint32_t g_editorViewportWidth = 0U;
+        std::uint32_t g_editorViewportHeight = 0U;
+
+        std::string g_terrainSculptStatus;
 
         struct TerrainMapEntry final
         {
@@ -1946,6 +1955,319 @@ namespace studio::editor
                 "connected with the DX11 sculpt system.");
         }
 
+        [[nodiscard]]
+        bool IsActiveTerrainSculptTool() noexcept
+        {
+            if (
+                g_activePage !=
+                    LevelEditorPage::Terrain ||
+                g_activeTerrainPage !=
+                    TerrainToolbarPage::TerrainEditor)
+            {
+                return false;
+            }
+
+            switch (g_activeTerrainEditorTool)
+            {
+            case TerrainEditorTool::Down:
+            case TerrainEditorTool::Up:
+            case TerrainEditorTool::Level:
+            case TerrainEditorTool::Smooth:
+                return true;
+
+            default:
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        lts::editor::TerrainSculptMode
+            GetTerrainSculptMode() noexcept
+        {
+            switch (g_activeTerrainEditorTool)
+            {
+            case TerrainEditorTool::Down:
+                return
+                    lts::editor::TerrainSculptMode::Down;
+
+            case TerrainEditorTool::Level:
+                return
+                    lts::editor::TerrainSculptMode::Level;
+
+            case TerrainEditorTool::Smooth:
+                return
+                    lts::editor::TerrainSculptMode::Smooth;
+
+            case TerrainEditorTool::Up:
+            default:
+                return
+                    lts::editor::TerrainSculptMode::Up;
+            }
+        }
+
+        [[nodiscard]]
+        bool PickTerrainBrush(
+            float& worldX,
+            float& worldZ) noexcept
+        {
+            if (
+                g_editorViewportWidth == 0U ||
+                g_editorViewportHeight == 0U)
+            {
+                return false;
+            }
+
+            const ImGuiIO& io =
+                ImGui::GetIO();
+
+            const ImGuiViewport* const viewport =
+                ImGui::GetMainViewport();
+
+            const float mouseX =
+                io.MousePos.x -
+                viewport->Pos.x;
+
+            const float mouseY =
+                io.MousePos.y -
+                viewport->Pos.y;
+
+            if (
+                mouseX < 0.0F ||
+                mouseY < 0.0F ||
+                mouseX >=
+                    static_cast<float>(
+                        g_editorViewportWidth) ||
+                mouseY >=
+                    static_cast<float>(
+                        g_editorViewportHeight))
+            {
+                return false;
+            }
+
+            lts::editor::EditorPickRay ray;
+
+            if (!g_cameraController.BuildPickRay(
+                    static_cast<std::uint32_t>(
+                        mouseX),
+                    static_cast<std::uint32_t>(
+                        mouseY),
+                    g_editorViewportWidth,
+                    g_editorViewportHeight,
+                    ray))
+            {
+                return false;
+            }
+
+            if (std::abs(ray.direction.y) < 0.00001F)
+            {
+                return false;
+            }
+
+            float distance =
+                -ray.origin.y /
+                ray.direction.y;
+
+            if (distance < 0.0F)
+            {
+                distance = 1000.0F;
+            }
+
+            float terrainHeight = 0.0F;
+
+            for (std::uint32_t iteration = 0U;
+                 iteration < 12U;
+                 ++iteration)
+            {
+                const float candidateX =
+                    ray.origin.x +
+                    ray.direction.x *
+                        distance;
+
+                const float candidateZ =
+                    ray.origin.z +
+                    ray.direction.z *
+                        distance;
+
+                if (!g_terrainRenderer.
+                        TryGetSurfaceHeight(
+                            g_sceneDocument,
+                            candidateX,
+                            candidateZ,
+                            terrainHeight))
+                {
+                    return false;
+                }
+
+                const float refinedDistance =
+                    (
+                        terrainHeight -
+                        ray.origin.y
+                    ) /
+                    ray.direction.y;
+
+                if (refinedDistance < 0.0F)
+                {
+                    return false;
+                }
+
+                if (
+                    std::abs(
+                        refinedDistance -
+                        distance) <
+                    0.01F)
+                {
+                    distance =
+                        refinedDistance;
+
+                    break;
+                }
+
+                distance =
+                    refinedDistance;
+            }
+
+            worldX =
+                ray.origin.x +
+                ray.direction.x *
+                    distance;
+
+            worldZ =
+                ray.origin.z +
+                ray.direction.z *
+                    distance;
+
+            return true;
+        }
+
+        void FinishTerrainSculptStroke() noexcept
+        {
+            if (!g_terrainRenderer.
+                    IsSculptStrokeActive())
+            {
+                return;
+            }
+
+            if (g_terrainRenderer.
+                    EndSculptStroke())
+            {
+                g_terrainSculptStatus =
+                    "Terrain stroke saved to bin/Levels.";
+            }
+            else
+            {
+                g_terrainSculptStatus =
+                    "Terrain stroke was empty or could not be saved.";
+            }
+        }
+
+        void UpdateTerrainSculptViewport() noexcept
+        {
+            if (
+                !IsActiveTerrainSculptTool() ||
+                !g_terrainRenderer.CanSculpt())
+            {
+                FinishTerrainSculptStroke();
+
+                g_terrainBrushHit = false;
+
+                return;
+            }
+
+            const ImGuiIO& io =
+                ImGui::GetIO();
+
+            if (
+                g_terrainRenderer.
+                    IsSculptStrokeActive() &&
+                ImGui::IsMouseReleased(
+                    ImGuiMouseButton_Left))
+            {
+                FinishTerrainSculptStroke();
+            }
+
+            if (io.WantCaptureMouse)
+            {
+                g_terrainBrushHit = false;
+
+                return;
+            }
+
+            g_terrainBrushHit =
+                PickTerrainBrush(
+                    g_terrainBrushWorldX,
+                    g_terrainBrushWorldZ);
+
+            if (!g_terrainBrushHit)
+            {
+                return;
+            }
+
+            if (ImGui::IsMouseClicked(
+                    ImGuiMouseButton_Left))
+            {
+                if (!g_terrainRenderer.
+                        BeginSculptStroke())
+                {
+                    g_terrainSculptStatus =
+                        "Cannot begin terrain stroke.";
+
+                    return;
+                }
+            }
+
+            if (
+                ImGui::IsMouseDown(
+                    ImGuiMouseButton_Left) &&
+                g_terrainRenderer.
+                    IsSculptStrokeActive())
+            {
+                static_cast<void>(
+                    g_terrainRenderer.Sculpt(
+                        g_sceneDocument,
+                        GetTerrainSculptMode(),
+                        g_terrainBrushWorldX,
+                        g_terrainBrushWorldZ,
+                        g_terrainEditorUi.radius,
+                        g_terrainEditorUi.hardness,
+                        g_terrainEditorUi.strength,
+                        g_terrainEditorUi.deltaValue,
+                        g_terrainEditorUi.levelHeight,
+                        g_terrainEditorUi.
+                            smoothBoxHalfSize,
+                        g_terrainEditorUi.
+                            smoothSeconds,
+                        io.DeltaTime));
+            }
+
+            if (
+                !io.WantTextInput &&
+                io.KeyCtrl &&
+                ImGui::IsKeyPressed(
+                    ImGuiKey_Z,
+                    false))
+            {
+                if (g_terrainRenderer.UndoSculpt())
+                {
+                    g_terrainSculptStatus =
+                        "Terrain Undo saved to bin/Levels.";
+                }
+            }
+
+            if (
+                !io.WantTextInput &&
+                io.KeyCtrl &&
+                ImGui::IsKeyPressed(
+                    ImGuiKey_Y,
+                    false))
+            {
+                if (g_terrainRenderer.RedoSculpt())
+                {
+                    g_terrainSculptStatus =
+                        "Terrain Redo saved to bin/Levels.";
+                }
+            }
+        }
+
         void DrawTerrainGeometryToolPage(
             const TerrainEditorTool tool) noexcept
         {
@@ -2145,11 +2467,74 @@ namespace studio::editor
             }
 
             ImGui::Spacing();
-            ImGui::SeparatorText("DX11 Sculpt Status");
+            ImGui::SeparatorText(
+                "Terrain History");
 
-            DrawDisabledWrappedText(
-                "The tool parameters are ready. Viewport brush "
-                "execution will be connected next.");
+            const float historyButtonWidth =
+                (
+                    ImGui::GetContentRegionAvail().x -
+                    ImGui::GetStyle().ItemSpacing.x
+                ) *
+                0.5F;
+
+            ImGui::BeginDisabled(
+                !g_terrainRenderer.
+                    CanUndoSculpt());
+
+            if (ImGui::Button(
+                    "Undo",
+                    ImVec2(
+                        historyButtonWidth,
+                        28.0F)))
+            {
+                if (g_terrainRenderer.UndoSculpt())
+                {
+                    g_terrainSculptStatus =
+                        "Terrain Undo saved to bin/Levels.";
+                }
+            }
+
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+
+            ImGui::BeginDisabled(
+                !g_terrainRenderer.
+                    CanRedoSculpt());
+
+            if (ImGui::Button(
+                    "Redo",
+                    ImVec2(
+                        historyButtonWidth,
+                        28.0F)))
+            {
+                if (g_terrainRenderer.RedoSculpt())
+                {
+                    g_terrainSculptStatus =
+                        "Terrain Redo saved to bin/Levels.";
+                }
+            }
+
+            ImGui::EndDisabled();
+
+            if (!g_terrainRenderer.CanSculpt())
+            {
+                DrawDisabledWrappedText(
+                    "Terrain sculpting is allowed only for "
+                    "Terrain.terrain files inside bin/Levels.");
+            }
+            else
+            {
+                DrawDisabledWrappedText(
+                    "Hold LMB over terrain to sculpt. "
+                    "One LMB hold creates one Undo stroke.");
+            }
+
+            if (!g_terrainSculptStatus.empty())
+            {
+                ImGui::TextWrapped(
+                    "%s",
+                    g_terrainSculptStatus.c_str());
+            }
         }
 
         void DrawTerrainLayerEditor() noexcept
@@ -3398,7 +3783,13 @@ namespace studio::editor
                         viewport->WorkPos.x,
                         secondaryToolbarTop),
                     ImGuiCond_Always);
-                
+
+                ImGui::SetNextWindowSize(
+                    ImVec2(
+                        viewport->WorkSize.x,
+                        terrainToolToolbarHeight),
+                    ImGuiCond_Always);
+
                 ImGui::SetNextWindowPos(
                     ImVec2(
                         viewport->WorkPos.x,
@@ -3448,6 +3839,8 @@ namespace studio::editor
                 g_objectViewTab.DrawWindows(objectContext);
                 g_objectViewTab.UpdateViewport(objectContext);
             }
+            
+            UpdateTerrainSculptViewport();
         }
     }
 
@@ -3563,6 +3956,14 @@ namespace studio::editor
         g_activeTerrainPage = TerrainToolbarPage::TerrainLoader;
         g_activeTerrainEditorTool = TerrainEditorTool::Options;
         g_terrainEditorUi = {};
+        g_terrainBrushHit = false;
+        g_terrainBrushWorldX = 0.0F;
+        g_terrainBrushWorldZ = 0.0F;
+
+        g_editorViewportWidth = 0U;
+        g_editorViewportHeight = 0U;
+
+        g_terrainSculptStatus.clear();
     }
 
     engine::graphics::GraphicsResult RenderEditorWorld(
@@ -3574,6 +3975,9 @@ namespace studio::editor
         {
             return engine::graphics::GraphicsResult::Success;
         }
+
+        g_editorViewportWidth = width;
+        g_editorViewportHeight = height;
 
         DirectX::XMFLOAT4X4 viewProjection{};
 
@@ -3650,6 +4054,31 @@ namespace studio::editor
             width,
             height
         };
+
+        if (
+            g_terrainBrushHit &&
+            IsActiveTerrainSculptTool())
+        {
+            const bool lowerTerrain =
+                g_activeTerrainEditorTool ==
+                    TerrainEditorTool::Down;
+
+            const engine::graphics::GraphicsResult brushResult =
+                g_terrainRenderer.RenderBrush(
+                    context,
+                    g_sceneDocument,
+                    viewProjection,
+                    g_terrainBrushWorldX,
+                    g_terrainBrushWorldZ,
+                    g_terrainEditorUi.radius,
+                    lowerTerrain);
+
+            if (engine::graphics::Failed(
+                    brushResult))
+            {
+                return brushResult;
+            }
+        }
 
         return g_objectViewTab.Render(
             context,

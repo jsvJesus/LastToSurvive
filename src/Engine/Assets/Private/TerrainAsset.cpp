@@ -8,6 +8,11 @@
 #include <new>
 #include <utility>
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 namespace engine::assets
 {
     namespace
@@ -276,6 +281,152 @@ namespace engine::assets
 
             result.sourcePath = path;
             output = std::move(result);
+
+            return AssetResult::Success;
+        }
+        catch (const std::bad_alloc&)
+        {
+            return AssetResult::OutOfMemory;
+        }
+        catch (...)
+        {
+            return AssetResult::IoError;
+        }
+    }
+
+    AssetResult TerrainAsset::SaveHeightsAtomic() const noexcept
+    {
+        try
+        {
+            if (
+                sourcePath.empty() ||
+                !IsValid())
+            {
+                return AssetResult::InvalidState;
+            }
+
+            constexpr std::streamoff heightDataOffset =
+                sizeof(std::uint32_t) * 8 +
+                sizeof(float) * 3 +
+                sizeof(std::uint64_t);
+
+            const std::uint64_t heightBytes =
+                static_cast<std::uint64_t>(
+                    heights.size()) *
+                sizeof(std::int16_t);
+
+            std::filesystem::path temporaryPath =
+                sourcePath;
+
+            temporaryPath +=
+                L".studio_height.tmp";
+
+            std::error_code filesystemError;
+
+            std::filesystem::remove(
+                temporaryPath,
+                filesystemError);
+
+            filesystemError.clear();
+
+            if (!std::filesystem::copy_file(
+                    sourcePath,
+                    temporaryPath,
+                    std::filesystem::copy_options::
+                        overwrite_existing,
+                    filesystemError) ||
+                filesystemError)
+            {
+                return AssetResult::IoError;
+            }
+
+            {
+                std::fstream stream(
+                    temporaryPath,
+                    std::ios::binary |
+                        std::ios::in |
+                        std::ios::out);
+
+                if (!stream)
+                {
+                    std::filesystem::remove(
+                        temporaryPath,
+                        filesystemError);
+
+                    return AssetResult::IoError;
+                }
+
+                stream.seekp(
+                    heightDataOffset,
+                    std::ios::beg);
+
+                if (!stream)
+                {
+                    std::filesystem::remove(
+                        temporaryPath,
+                        filesystemError);
+
+                    return AssetResult::IoError;
+                }
+
+                stream.write(
+                    reinterpret_cast<const char*>(
+                        heights.data()),
+                    static_cast<std::streamsize>(
+                        heightBytes));
+
+                stream.flush();
+
+                if (!stream)
+                {
+                    stream.close();
+
+                    std::filesystem::remove(
+                        temporaryPath,
+                        filesystemError);
+
+                    return AssetResult::IoError;
+                }
+            }
+
+#if defined(_WIN32)
+
+            if (!MoveFileExW(
+                    temporaryPath.c_str(),
+                    sourcePath.c_str(),
+                    MOVEFILE_REPLACE_EXISTING |
+                        MOVEFILE_WRITE_THROUGH))
+            {
+                std::filesystem::remove(
+                    temporaryPath,
+                    filesystemError);
+
+                return AssetResult::IoError;
+            }
+
+#else
+
+            std::filesystem::remove(
+                sourcePath,
+                filesystemError);
+
+            filesystemError.clear();
+
+            std::filesystem::rename(
+                temporaryPath,
+                sourcePath,
+                filesystemError);
+
+            if (filesystemError)
+            {
+                std::filesystem::remove(
+                    temporaryPath,
+                    filesystemError);
+
+                return AssetResult::IoError;
+            }
+
+#endif
 
             return AssetResult::Success;
         }

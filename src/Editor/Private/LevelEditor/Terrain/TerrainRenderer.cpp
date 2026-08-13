@@ -51,6 +51,7 @@ namespace lts::editor
         constexpr std::size_t MaximumTerrainLayerCount = 18U;
         constexpr std::size_t MaximumPaintedLayerCount = 17U;
         constexpr std::uint32_t MaximumPaintHistorySize = 32U;
+        constexpr std::uint32_t MaximumHeightHistorySize = 32U;
         constexpr std::uintmax_t MaximumTextureFileSize =
             512ULL * 1024ULL * 1024ULL;
 
@@ -276,6 +277,16 @@ namespace lts::editor
         };
 
         using PaintCommand = std::vector<PaintChange>;
+
+        struct HeightChange final
+        {
+            std::uint32_t sample = 0U;
+            std::int16_t before = 0;
+            std::int16_t after = 0;
+        };
+
+        using HeightCommand =
+            std::vector<HeightChange>;
 
         [[nodiscard]]
         std::uint32_t CalculateTerrainSampleStep(
@@ -2158,6 +2169,23 @@ namespace lts::editor
                 return false;
             }
 
+            terrainVertices_ =
+                std::move(vertices);
+
+            terrainSampleStep_ =
+                sampleStep;
+
+            terrainGpuWidth_ =
+                gpuWidth;
+
+            terrainGpuHeight_ =
+                gpuHeight;
+
+            activeHeightBefore_.clear();
+            heightUndo_.clear();
+            heightRedo_.clear();
+            heightStrokeActive_ = false;
+
             terrainAsset_ = std::move(terrain);
             loaded_ = true;
 
@@ -2322,6 +2350,17 @@ namespace lts::editor
 
             terrainAsset_ = {};
             chunks_.clear();
+
+            terrainVertices_.clear();
+
+            activeHeightBefore_.clear();
+            heightUndo_.clear();
+            heightRedo_.clear();
+
+            terrainSampleStep_ = 1U;
+            terrainGpuWidth_ = 0U;
+            terrainGpuHeight_ = 0U;
+            heightStrokeActive_ = false;
 
             for (std::vector<std::byte>& pixels : maskPixels_)
             {
@@ -3294,6 +3333,1077 @@ namespace lts::editor
             return true;
         }
 
+        bool TerrainRenderer::CanSculpt() const noexcept
+        {
+            return impl_->CanSculpt();
+        }
+
+        [[nodiscard]]
+        bool CanSculpt() const noexcept
+        {
+            if (
+                !loaded_ ||
+                !terrainAsset_.IsValid() ||
+                terrainPath_.empty())
+            {
+                return false;
+            }
+
+            std::error_code error;
+
+            std::filesystem::path normalized =
+                std::filesystem::weakly_canonical(
+                    terrainPath_,
+                    error);
+
+            if (error)
+            {
+                error.clear();
+
+                normalized =
+                    std::filesystem::absolute(
+                        terrainPath_,
+                        error);
+            }
+
+            if (error)
+            {
+                return false;
+            }
+
+            std::string path =
+                normalized.
+                    lexically_normal().
+                    generic_u8string();
+
+            std::transform(
+                path.begin(),
+                path.end(),
+                path.begin(),
+                [](const unsigned char character)
+                {
+                    return static_cast<char>(
+                        std::tolower(character));
+                });
+
+            return
+                path.find("/bin/levels/") !=
+                std::string::npos;
+        }
+
+        [[nodiscard]]
+        bool RefreshHeightGeometry() noexcept
+        {
+            if (
+                device_ == nullptr ||
+                !vertexBuffer_.IsValid() ||
+                !terrainAsset_.IsValid() ||
+                terrainGpuWidth_ < 2U ||
+                terrainGpuHeight_ < 2U)
+            {
+                return false;
+            }
+
+            const std::size_t baseVertexCount =
+                static_cast<std::size_t>(
+                    terrainGpuWidth_) *
+                static_cast<std::size_t>(
+                    terrainGpuHeight_);
+
+            if (terrainVertices_.size() < baseVertexCount)
+            {
+                return false;
+            }
+
+            const auto calculateNormal =
+                [this](
+                    const std::uint32_t sourceX,
+                    const std::uint32_t sourceZ)
+                {
+                    const std::uint32_t sourceLeft =
+                        sourceX > terrainSampleStep_
+                            ? sourceX - terrainSampleStep_
+                            : 0U;
+
+                    const std::uint32_t sourceRight =
+                        (std::min)(
+                            sourceX + terrainSampleStep_,
+                            terrainAsset_.width - 1U);
+
+                    const std::uint32_t sourceDown =
+                        sourceZ > terrainSampleStep_
+                            ? sourceZ - terrainSampleStep_
+                            : 0U;
+
+                    const std::uint32_t sourceUp =
+                        (std::min)(
+                            sourceZ + terrainSampleStep_,
+                            terrainAsset_.height - 1U);
+
+                    const float heightLeft =
+                        terrainAsset_.GetHeight(
+                            sourceLeft,
+                            sourceZ);
+
+                    const float heightRight =
+                        terrainAsset_.GetHeight(
+                            sourceRight,
+                            sourceZ);
+
+                    const float heightDown =
+                        terrainAsset_.GetHeight(
+                            sourceX,
+                            sourceDown);
+
+                    const float heightUp =
+                        terrainAsset_.GetHeight(
+                            sourceX,
+                            sourceUp);
+
+                    const float scaleX =
+                        static_cast<float>(
+                            (std::max)(
+                                sourceRight - sourceLeft,
+                                1U)) *
+                        terrainAsset_.tileSize;
+
+                    const float scaleZ =
+                        static_cast<float>(
+                            (std::max)(
+                                sourceUp - sourceDown,
+                                1U)) *
+                        terrainAsset_.tileSize;
+
+                    const DirectX::XMVECTOR normal =
+                        DirectX::XMVector3Normalize(
+                            DirectX::XMVectorSet(
+                                (heightLeft - heightRight) *
+                                    scaleZ,
+                                scaleX * scaleZ,
+                                (heightDown - heightUp) *
+                                    scaleX,
+                                0.0F));
+
+                    DirectX::XMFLOAT3 result{};
+
+                    DirectX::XMStoreFloat3(
+                        &result,
+                        normal);
+
+                    return result;
+                };
+
+            for (std::uint32_t gpuZ = 0U;
+                 gpuZ < terrainGpuHeight_;
+                 ++gpuZ)
+            {
+                const std::uint32_t sourceZ =
+                    (std::min)(
+                        gpuZ * terrainSampleStep_,
+                        terrainAsset_.height - 1U);
+
+                for (std::uint32_t gpuX = 0U;
+                     gpuX < terrainGpuWidth_;
+                     ++gpuX)
+                {
+                    const std::uint32_t sourceX =
+                        (std::min)(
+                            gpuX * terrainSampleStep_,
+                            terrainAsset_.width - 1U);
+
+                    Vertex& vertex =
+                        terrainVertices_[
+                            static_cast<std::size_t>(gpuZ) *
+                                terrainGpuWidth_ +
+                            gpuX];
+
+                    vertex.position.y =
+                        terrainAsset_.GetHeight(
+                            sourceX,
+                            sourceZ);
+
+                    vertex.normal =
+                        calculateNormal(
+                            sourceX,
+                            sourceZ);
+                }
+            }
+
+            const float skirtDepth =
+                (std::max)(
+                    20.0F,
+                    terrainAsset_.heightScale *
+                        0.025F);
+
+            for (std::size_t index = baseVertexCount;
+                 index < terrainVertices_.size();
+                 ++index)
+            {
+                Vertex& vertex =
+                    terrainVertices_[index];
+
+                const std::uint32_t sourceX =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                vertex.position.x /
+                                terrainAsset_.tileSize)),
+                        terrainAsset_.width - 1U);
+
+                const std::uint32_t sourceZ =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                vertex.position.z /
+                                terrainAsset_.tileSize)),
+                        terrainAsset_.height - 1U);
+
+                vertex.position.y =
+                    terrainAsset_.GetHeight(
+                        sourceX,
+                        sourceZ) -
+                    skirtDepth;
+
+                vertex.normal =
+                    calculateNormal(
+                        sourceX,
+                        sourceZ);
+            }
+
+            const float gpuSpacing =
+                terrainAsset_.tileSize *
+                static_cast<float>(
+                    terrainSampleStep_);
+
+            for (Chunk& chunk : chunks_)
+            {
+                const std::uint32_t minimumX =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                chunk.minimum.x /
+                                gpuSpacing)),
+                        terrainGpuWidth_ - 1U);
+
+                const std::uint32_t maximumX =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                chunk.maximum.x /
+                                gpuSpacing)),
+                        terrainGpuWidth_ - 1U);
+
+                const std::uint32_t minimumZ =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                chunk.minimum.z /
+                                gpuSpacing)),
+                        terrainGpuHeight_ - 1U);
+
+                const std::uint32_t maximumZ =
+                    (std::min)(
+                        static_cast<std::uint32_t>(
+                            std::lround(
+                                chunk.maximum.z /
+                                gpuSpacing)),
+                        terrainGpuHeight_ - 1U);
+
+                float minimumHeight =
+                    std::numeric_limits<float>::max();
+
+                float maximumHeight =
+                    std::numeric_limits<float>::lowest();
+
+                for (std::uint32_t z = minimumZ;
+                     z <= maximumZ;
+                     ++z)
+                {
+                    for (std::uint32_t x = minimumX;
+                         x <= maximumX;
+                         ++x)
+                    {
+                        const float height =
+                            terrainVertices_[
+                                static_cast<std::size_t>(z) *
+                                    terrainGpuWidth_ +
+                                x].
+                                position.y;
+
+                        minimumHeight =
+                            (std::min)(
+                                minimumHeight,
+                                height);
+
+                        maximumHeight =
+                            (std::max)(
+                                maximumHeight,
+                                height);
+                    }
+                }
+
+                chunk.minimum.y =
+                    minimumHeight;
+
+                chunk.maximum.y =
+                    maximumHeight;
+
+                chunk.center.y =
+                    (minimumHeight +
+                     maximumHeight) *
+                    0.5F;
+            }
+
+            auto* const d3d11Device =
+                static_cast<
+                    engine::graphics::d3d11::D3D11Device*>(
+                        device_);
+
+            ID3D11Buffer* const nativeBuffer =
+                d3d11Device->GetNativeBuffer(
+                    vertexBuffer_);
+
+            ID3D11DeviceContext* const nativeContext =
+                d3d11Device->
+                    GetNativeImmediateContext();
+
+            if (
+                nativeBuffer == nullptr ||
+                nativeContext == nullptr)
+            {
+                return false;
+            }
+
+            nativeContext->UpdateSubresource(
+                nativeBuffer,
+                0U,
+                nullptr,
+                terrainVertices_.data(),
+                0U,
+                0U);
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool SaveHeightField() noexcept
+        {
+            const engine::assets::AssetResult result =
+                terrainAsset_.SaveHeightsAtomic();
+
+            if (engine::assets::Failed(result))
+            {
+                std::string message =
+                    "Save terrain heights failed: ";
+
+                message +=
+                    engine::assets::ToString(
+                        result);
+
+                engine::core::GetLogger().Write(
+                    engine::core::LogLevel::Error,
+                    "LTS.Editor.Terrain",
+                    message);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        void ApplyHeightCommand(
+            const HeightCommand& command,
+            const bool useBefore) noexcept
+        {
+            for (const HeightChange& change : command)
+            {
+                if (
+                    change.sample >=
+                    terrainAsset_.heights.size())
+                {
+                    continue;
+                }
+
+                terrainAsset_.heights[
+                    change.sample] =
+                        useBefore
+                            ? change.before
+                            : change.after;
+            }
+
+            static_cast<void>(
+                RefreshHeightGeometry());
+        }
+
+        [[nodiscard]]
+        bool BeginSculptStroke() noexcept
+        {
+            if (
+                !CanSculpt() ||
+                heightStrokeActive_)
+            {
+                return false;
+            }
+
+            activeHeightBefore_.clear();
+            heightStrokeActive_ = true;
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool Sculpt(
+            const SceneDocument& document,
+            const TerrainSculptMode mode,
+            const float worldX,
+            const float worldZ,
+            const float radius,
+            const float hardness,
+            const float strength,
+            const float deltaValue,
+            const float levelHeight,
+            const float smoothBoxHalfSize,
+            const float smoothSeconds,
+            const float deltaSeconds) noexcept
+        {
+            if (
+                !heightStrokeActive_ ||
+                !CanSculpt() ||
+                radius <= 0.0F)
+            {
+                return false;
+            }
+
+            const EditorSceneEntity* actor = nullptr;
+
+            for (const EditorSceneEntity& entity :
+                 document.GetEntities())
+            {
+                if (
+                    entity.terrain.has_value() &&
+                    entity.terrain->visible)
+                {
+                    actor = &entity;
+                    break;
+                }
+            }
+
+            if (
+                actor == nullptr ||
+                std::abs(actor->transform.scale[0]) <
+                    0.00001F ||
+                std::abs(actor->transform.scale[1]) <
+                    0.00001F ||
+                std::abs(actor->transform.scale[2]) <
+                    0.00001F)
+            {
+                return false;
+            }
+
+            const float sampleWorldX =
+                terrainAsset_.tileSize *
+                actor->transform.scale[0];
+
+            const float sampleWorldZ =
+                terrainAsset_.tileSize *
+                actor->transform.scale[2];
+
+            const float centerX =
+                (worldX -
+                 actor->transform.position[0]) /
+                sampleWorldX;
+
+            const float centerZ =
+                (worldZ -
+                 actor->transform.position[2]) /
+                sampleWorldZ;
+
+            const float radiusSamplesX =
+                radius /
+                std::abs(sampleWorldX);
+
+            const float radiusSamplesZ =
+                radius /
+                std::abs(sampleWorldZ);
+
+            const int minimumX =
+                (std::max)(
+                    0,
+                    static_cast<int>(
+                        std::floor(
+                            centerX -
+                            radiusSamplesX)));
+
+            const int maximumX =
+                (std::min)(
+                    static_cast<int>(
+                        terrainAsset_.width - 1U),
+                    static_cast<int>(
+                        std::ceil(
+                            centerX +
+                            radiusSamplesX)));
+
+            const int minimumZ =
+                (std::max)(
+                    0,
+                    static_cast<int>(
+                        std::floor(
+                            centerZ -
+                            radiusSamplesZ)));
+
+            const int maximumZ =
+                (std::min)(
+                    static_cast<int>(
+                        terrainAsset_.height - 1U),
+                    static_cast<int>(
+                        std::ceil(
+                            centerZ +
+                            radiusSamplesZ)));
+
+            const float amplitude =
+                (std::max)(
+                    std::fabs(
+                        terrainAsset_.heightOffset),
+                    std::fabs(
+                        terrainAsset_.heightOffset +
+                        terrainAsset_.heightScale));
+
+            if (amplitude <= 0.0F)
+            {
+                return false;
+            }
+
+            const auto sampleToHeight =
+                [amplitude](
+                    const std::int16_t sample)
+                {
+                    return
+                        static_cast<float>(sample) *
+                        (amplitude / 32767.0F);
+                };
+
+            const auto heightToSample =
+                [amplitude](
+                    const float height)
+                {
+                    const long value =
+                        std::lround(
+                            height *
+                            32767.0F /
+                            amplitude);
+
+                    return static_cast<std::int16_t>(
+                        std::clamp(
+                            value,
+                            static_cast<long>(
+                                (std::numeric_limits<
+                                    std::int16_t>::min)()),
+                            static_cast<long>(
+                                (std::numeric_limits<
+                                    std::int16_t>::max)())));
+                };
+
+            struct PendingHeight final
+            {
+                std::uint32_t sample = 0U;
+                std::int16_t value = 0;
+            };
+
+            std::vector<PendingHeight> pending;
+
+            const float safeHardness =
+                std::clamp(
+                    hardness,
+                    0.0F,
+                    1.0F);
+
+            const float safeStrength =
+                std::clamp(
+                    strength,
+                    0.0F,
+                    1.0F);
+
+            const float safeDeltaSeconds =
+                std::clamp(
+                    deltaSeconds,
+                    0.0F,
+                    0.25F);
+
+            const float frameFactor =
+                safeDeltaSeconds *
+                60.0F;
+
+            const int smoothRadius =
+                (std::max)(
+                    1,
+                    static_cast<int>(
+                        std::lround(
+                            smoothBoxHalfSize)));
+
+            for (int z = minimumZ;
+                 z <= maximumZ;
+                 ++z)
+            {
+                for (int x = minimumX;
+                     x <= maximumX;
+                     ++x)
+                {
+                    const float sampleX =
+                        actor->transform.position[0] +
+                        static_cast<float>(x) *
+                            sampleWorldX;
+
+                    const float sampleZ =
+                        actor->transform.position[2] +
+                        static_cast<float>(z) *
+                            sampleWorldZ;
+
+                    const float deltaX =
+                        sampleX - worldX;
+
+                    const float deltaZ =
+                        sampleZ - worldZ;
+
+                    const float distance =
+                        std::sqrt(
+                            deltaX * deltaX +
+                            deltaZ * deltaZ);
+
+                    const float normalizedDistance =
+                        distance / radius;
+
+                    if (normalizedDistance > 1.0F)
+                    {
+                        continue;
+                    }
+
+                    const float influence =
+                        normalizedDistance <=
+                                safeHardness
+                            ? 1.0F
+                            : 1.0F -
+                                (
+                                    normalizedDistance -
+                                    safeHardness
+                                ) /
+                                (std::max)(
+                                    1.0F -
+                                        safeHardness,
+                                    0.0001F);
+
+                    const std::uint32_t sampleIndex =
+                        static_cast<std::uint32_t>(z) *
+                            terrainAsset_.width +
+                        static_cast<std::uint32_t>(x);
+
+                    const std::int16_t oldSample =
+                        terrainAsset_.heights[
+                            sampleIndex];
+
+                    const float oldHeight =
+                        sampleToHeight(
+                            oldSample);
+
+                    float newHeight =
+                        oldHeight;
+
+                    switch (mode)
+                    {
+                    case TerrainSculptMode::Down:
+
+                        newHeight -=
+                            deltaValue *
+                            safeStrength *
+                            influence *
+                            frameFactor /
+                            actor->transform.scale[1];
+
+                        break;
+
+                    case TerrainSculptMode::Up:
+
+                        newHeight +=
+                            deltaValue *
+                            safeStrength *
+                            influence *
+                            frameFactor /
+                            actor->transform.scale[1];
+
+                        break;
+
+                    case TerrainSculptMode::Level:
+                    {
+                        const float targetHeight =
+                            (
+                                levelHeight -
+                                actor->transform.position[1]
+                            ) /
+                            actor->transform.scale[1];
+
+                        const float amount =
+                            std::clamp(
+                                safeStrength *
+                                    influence *
+                                    safeDeltaSeconds *
+                                    8.0F,
+                                0.0F,
+                                1.0F);
+
+                        newHeight +=
+                            (targetHeight -
+                             oldHeight) *
+                            amount;
+
+                        break;
+                    }
+
+                    case TerrainSculptMode::Smooth:
+                    {
+                        float total = 0.0F;
+                        std::uint32_t count = 0U;
+
+                        const int smoothMinimumX =
+                            (std::max)(
+                                0,
+                                x - smoothRadius);
+
+                        const int smoothMaximumX =
+                            (std::min)(
+                                static_cast<int>(
+                                    terrainAsset_.width - 1U),
+                                x + smoothRadius);
+
+                        const int smoothMinimumZ =
+                            (std::max)(
+                                0,
+                                z - smoothRadius);
+
+                        const int smoothMaximumZ =
+                            (std::min)(
+                                static_cast<int>(
+                                    terrainAsset_.height - 1U),
+                                z + smoothRadius);
+
+                        for (int sampleZIndex =
+                                 smoothMinimumZ;
+                             sampleZIndex <=
+                                 smoothMaximumZ;
+                             ++sampleZIndex)
+                        {
+                            for (int sampleXIndex =
+                                     smoothMinimumX;
+                                 sampleXIndex <=
+                                     smoothMaximumX;
+                                 ++sampleXIndex)
+                            {
+                                const std::uint32_t index =
+                                    static_cast<std::uint32_t>(
+                                        sampleZIndex) *
+                                        terrainAsset_.width +
+                                    static_cast<std::uint32_t>(
+                                        sampleXIndex);
+
+                                total +=
+                                    sampleToHeight(
+                                        terrainAsset_.
+                                            heights[index]);
+
+                                ++count;
+                            }
+                        }
+
+                        if (count > 0U)
+                        {
+                            const float average =
+                                total /
+                                static_cast<float>(
+                                    count);
+
+                            const float amount =
+                                std::clamp(
+                                    safeStrength *
+                                        influence *
+                                        safeDeltaSeconds /
+                                        (std::max)(
+                                            smoothSeconds,
+                                            0.01F),
+                                    0.0F,
+                                    1.0F);
+
+                            newHeight +=
+                                (average -
+                                 oldHeight) *
+                                amount;
+                        }
+
+                        break;
+                    }
+                    }
+
+                    const std::int16_t newSample =
+                        heightToSample(
+                            newHeight);
+
+                    if (newSample == oldSample)
+                    {
+                        continue;
+                    }
+
+                    pending.push_back(
+                        {
+                            sampleIndex,
+                            newSample
+                        });
+                }
+            }
+
+            if (pending.empty())
+            {
+                return false;
+            }
+
+            for (const PendingHeight& value :
+                 pending)
+            {
+                activeHeightBefore_.try_emplace(
+                    value.sample,
+                    terrainAsset_.heights[
+                        value.sample]);
+
+                terrainAsset_.heights[
+                    value.sample] =
+                        value.value;
+            }
+
+            return RefreshHeightGeometry();
+        }
+
+        [[nodiscard]]
+        bool EndSculptStroke() noexcept
+        {
+            if (!heightStrokeActive_)
+            {
+                return false;
+            }
+
+            heightStrokeActive_ = false;
+
+            HeightCommand command;
+
+            command.reserve(
+                activeHeightBefore_.size());
+
+            for (const auto& [sample, before] :
+                 activeHeightBefore_)
+            {
+                const std::int16_t after =
+                    terrainAsset_.heights[sample];
+
+                if (before != after)
+                {
+                    command.push_back(
+                        {
+                            sample,
+                            before,
+                            after
+                        });
+                }
+            }
+
+            activeHeightBefore_.clear();
+
+            if (command.empty())
+            {
+                return false;
+            }
+
+            if (!SaveHeightField())
+            {
+                ApplyHeightCommand(
+                    command,
+                    true);
+
+                return false;
+            }
+
+            heightUndo_.push_back(
+                std::move(command));
+
+            if (
+                heightUndo_.size() >
+                MaximumHeightHistorySize)
+            {
+                heightUndo_.erase(
+                    heightUndo_.begin());
+            }
+
+            heightRedo_.clear();
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool UndoSculpt() noexcept
+        {
+            if (
+                heightStrokeActive_ ||
+                heightUndo_.empty())
+            {
+                return false;
+            }
+
+            HeightCommand command =
+                std::move(
+                    heightUndo_.back());
+
+            heightUndo_.pop_back();
+
+            ApplyHeightCommand(
+                command,
+                true);
+
+            if (!SaveHeightField())
+            {
+                ApplyHeightCommand(
+                    command,
+                    false);
+
+                heightUndo_.push_back(
+                    std::move(command));
+
+                return false;
+            }
+
+            heightRedo_.push_back(
+                std::move(command));
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool RedoSculpt() noexcept
+        {
+            if (
+                heightStrokeActive_ ||
+                heightRedo_.empty())
+            {
+                return false;
+            }
+
+            HeightCommand command =
+                std::move(
+                    heightRedo_.back());
+
+            heightRedo_.pop_back();
+
+            ApplyHeightCommand(
+                command,
+                false);
+
+            if (!SaveHeightField())
+            {
+                ApplyHeightCommand(
+                    command,
+                    true);
+
+                heightRedo_.push_back(
+                    std::move(command));
+
+                return false;
+            }
+
+            heightUndo_.push_back(
+                std::move(command));
+
+            return true;
+        }
+
+        [[nodiscard]]
+        bool CanUndoSculpt() const noexcept
+        {
+            return
+                !heightStrokeActive_ &&
+                !heightUndo_.empty();
+        }
+
+        [[nodiscard]]
+        bool CanRedoSculpt() const noexcept
+        {
+            return
+                !heightStrokeActive_ &&
+                !heightRedo_.empty();
+        }
+
+        [[nodiscard]]
+        bool IsSculptStrokeActive() const noexcept
+        {
+            return heightStrokeActive_;
+        }
+
+        bool TerrainRenderer::BeginSculptStroke() noexcept
+        {
+            return impl_->BeginSculptStroke();
+        }
+
+        bool TerrainRenderer::Sculpt(
+            const SceneDocument& document,
+            const TerrainSculptMode mode,
+            const float worldX,
+            const float worldZ,
+            const float radius,
+            const float hardness,
+            const float strength,
+            const float deltaValue,
+            const float levelHeight,
+            const float smoothBoxHalfSize,
+            const float smoothSeconds,
+            const float deltaSeconds) noexcept
+        {
+            return impl_->Sculpt(
+                document,
+                mode,
+                worldX,
+                worldZ,
+                radius,
+                hardness,
+                strength,
+                deltaValue,
+                levelHeight,
+                smoothBoxHalfSize,
+                smoothSeconds,
+                deltaSeconds);
+        }
+
+        bool TerrainRenderer::EndSculptStroke() noexcept
+        {
+            return impl_->EndSculptStroke();
+        }
+
+        bool TerrainRenderer::UndoSculpt() noexcept
+        {
+            return impl_->UndoSculpt();
+        }
+
+        bool TerrainRenderer::RedoSculpt() noexcept
+        {
+            return impl_->RedoSculpt();
+        }
+
+        bool TerrainRenderer::CanUndoSculpt() const noexcept
+        {
+            return impl_->CanUndoSculpt();
+        }
+
+        bool TerrainRenderer::CanRedoSculpt() const noexcept
+        {
+            return impl_->CanRedoSculpt();
+        }
+
+        bool TerrainRenderer::IsSculptStrokeActive() const noexcept
+        {
+            return impl_->IsSculptStrokeActive();
+        }
+
         [[nodiscard]]
         bool BeginPaintStroke() noexcept
         {
@@ -4047,6 +5157,22 @@ namespace lts::editor
 
         engine::assets::TerrainAsset terrainAsset_;
         std::vector<Chunk> chunks_;
+
+        std::vector<Vertex> terrainVertices_;
+
+        std::unordered_map<
+            std::uint32_t,
+            std::int16_t>
+            activeHeightBefore_;
+
+        std::vector<HeightCommand> heightUndo_;
+        std::vector<HeightCommand> heightRedo_;
+
+        std::uint32_t terrainSampleStep_ = 1U;
+        std::uint32_t terrainGpuWidth_ = 0U;
+        std::uint32_t terrainGpuHeight_ = 0U;
+
+        bool heightStrokeActive_ = false;
 
         engine::graphics::BufferHandle vertexBuffer_{};
         engine::graphics::BufferHandle indexBuffer_{};
