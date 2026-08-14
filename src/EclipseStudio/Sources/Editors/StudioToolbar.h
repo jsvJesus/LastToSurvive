@@ -32,6 +32,25 @@ namespace studio::editor
         Heightmap
     };
 
+    enum class EnvironmentToolbarPage : std::uint8_t
+    {
+        LightSetup = 0,
+        Atmosphere,
+        CloudPlane,
+        Grass,
+        WaterPlanes,
+        Decals,
+        Rain,
+        Weather
+    };
+
+    enum class EnvironmentLightTool : std::uint8_t
+    {
+        SunSetup = 0,
+        MoonSetup,
+        SkySetup
+    };
+
     class StudioToolbar final
     {
     public:
@@ -56,6 +75,12 @@ namespace studio::editor
         void DrawTerrainEditorTools(
             TerrainEditorTool& activeTool) const noexcept;
 
+        void DrawEnvironment(
+            EnvironmentToolbarPage& activePage) const noexcept;
+
+        void DrawEnvironmentLightTools(
+            EnvironmentLightTool& activeTool) const noexcept;
+
     private:
         [[nodiscard]]
         static const char* GetPageName(
@@ -64,6 +89,14 @@ namespace studio::editor
         [[nodiscard]]
         static const char* GetTerrainEditorToolName(
             TerrainEditorTool tool) noexcept;
+
+        [[nodiscard]]
+        static const char* GetEnvironmentPageName(
+            EnvironmentToolbarPage page) noexcept;
+
+        [[nodiscard]]
+        static const char* GetEnvironmentLightToolName(
+            EnvironmentLightTool tool) noexcept;
 
         [[nodiscard]]
         static bool DrawTab(

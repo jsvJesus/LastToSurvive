@@ -95,6 +95,12 @@ namespace studio::editor
         TerrainEditorTool g_activeTerrainEditorTool =
             TerrainEditorTool::Options;
 
+        EnvironmentToolbarPage g_activeEnvironmentPage =
+            EnvironmentToolbarPage::LightSetup;
+
+        EnvironmentLightTool g_activeEnvironmentLightTool =
+            EnvironmentLightTool::SunSetup;
+
         struct TerrainEditorUiState final
         {
             int tileResolution = 2;
@@ -3682,128 +3688,481 @@ bool IsActiveTerrainPaintTool() noexcept
             DrawCreateTerrainPopup();
         }
 
-        void DrawEnvironmentPage() noexcept
+        [[nodiscard]]
+        bool IsWaterPlaneEntity(
+            const lts::editor::EditorSceneEntity& entity) noexcept
         {
-            EnsureEnvironmentEntities();
-            const EnvironmentEntities entities = ResolveEnvironmentEntities();
+            return
+                entity.editorFolder ==
+                    L"LevelData/obj_WaterPlane";
+        }
 
-            ImGui::TextUnformatted("Environment");
+        void DrawEnvironmentWaterPlanesPage() noexcept
+        {
+            ImGui::TextUnformatted("Water Planes");
             ImGui::Separator();
-            ImGui::TextUnformatted("DX11 Environment System");
 
-            if (entities.environment == nullptr ||
-                !entities.environment->environment.has_value() ||
-                entities.sun == nullptr ||
-                !entities.sun->directionalLight.has_value())
+            const auto& entities =
+                g_sceneDocument.GetEntities();
+
+            std::size_t waterPlaneCount = 0U;
+
+            for (const auto& entity : entities)
             {
-                ImGui::TextDisabled("Environment scene entities are unavailable.");
+                if (IsWaterPlaneEntity(entity))
+                {
+                    ++waterPlaneCount;
+                }
+            }
+
+            ImGui::Text(
+                "Loaded water planes: %zu",
+                waterPlaneCount);
+
+            ImGui::TextDisabled(
+                "Source: LevelData.xml / obj_WaterPlane");
+
+            ImGui::Spacing();
+            ImGui::SeparatorText("Map Water Planes");
+
+            if (waterPlaneCount == 0U)
+            {
+                ImGui::TextDisabled(
+                    "This level has no water planes.");
+
                 return;
             }
 
-            auto& environment = *entities.environment->environment;
-            auto& sun = *entities.sun->directionalLight;
+            ImGui::BeginChild(
+                "##EnvironmentWaterPlaneList",
+                ImVec2(0.0F, 240.0F),
+                true);
 
-            ImGui::Spacing();
-            ImGui::SeparatorText("Day & Night");
-
-            float time = environment.timeOfDay;
-
-            if (ImGui::SliderFloat(
-                    "Time##DayNight",
-                    &time,
-                    0.0F,
-                    24.0F,
-                    "%.2f h",
-                    ImGuiSliderFlags_AlwaysClamp))
+            for (std::size_t index = 0U;
+                 index < entities.size();
+                 ++index)
             {
-                ApplyTimeOfDay(time);
+                const auto& entity =
+                    entities[index];
+
+                if (!IsWaterPlaneEntity(entity))
+                {
+                    continue;
+                }
+
+                const bool selected =
+                    g_sceneDocument.GetSelectedIndex() ==
+                    index;
+
+                const std::string label =
+                    std::filesystem::path(
+                        entity.name).
+                        generic_u8string();
+
+                ImGui::PushID(
+                    static_cast<int>(index));
+
+                if (ImGui::Selectable(
+                        label.c_str(),
+                        selected))
+                {
+                    static_cast<void>(
+                        g_sceneDocument.
+                            SelectEntityByIndex(index));
+                }
+
+                ImGui::PopID();
             }
 
-            const int totalMinutes = std::clamp(
-                static_cast<int>(std::round(environment.timeOfDay * 60.0F)),
-                0,
-                24 * 60);
+            ImGui::EndChild();
+
+            const auto* const selected =
+                g_sceneDocument.GetSelectedEntity();
+
+            if (
+                selected == nullptr ||
+                !IsWaterPlaneEntity(*selected))
+            {
+                ImGui::TextDisabled(
+                    "Select a water plane from the list.");
+
+                return;
+            }
+
+            ImGui::SeparatorText(
+                "Selected Water Plane");
+
+            ImGui::TextWrapped(
+                "Name: %s",
+                std::filesystem::path(
+                    selected->name).
+                    generic_u8string().
+                    c_str());
+
+            if (selected->staticMesh.has_value())
+            {
+                ImGui::TextWrapped(
+                    "Mesh: %s",
+                    std::filesystem::path(
+                        selected->
+                            staticMesh->
+                            assetPath).
+                        generic_u8string().
+                        c_str());
+            }
+
             ImGui::Text(
-                "Time: %02d:%02d",
-                totalMinutes / 60,
-                totalMinutes % 60);
+                "Plane height: %.2f",
+                selected->transform.position[1]);
 
-            const float presetWidth =
-                (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5F;
-
-            if (ImGui::Button("Morning / 07:00", ImVec2(presetWidth, 0.0F)))
+            if (ImGui::Button(
+                    "Focus Water Plane",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        28.0F)))
             {
-                ApplyTimeOfDay(7.0F);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Day / 13:00", ImVec2(presetWidth, 0.0F)))
-            {
-                ApplyTimeOfDay(13.0F);
-            }
-            if (ImGui::Button("Evening / 19:00", ImVec2(presetWidth, 0.0F)))
-            {
-                ApplyTimeOfDay(19.0F);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Night / 00:00", ImVec2(presetWidth, 0.0F)))
-            {
-                ApplyTimeOfDay(0.0F);
+                g_cameraController.FocusOn(
+                    DirectX::XMFLOAT3
+                    {
+                        selected->transform.position[0],
+                        selected->transform.position[1],
+                        selected->transform.position[2]
+                    },
+                    40.0F);
             }
 
-            if (ImGui::CollapsingHeader("Sun", ImGuiTreeNodeFlags_DefaultOpen))
+            ImGui::TextDisabled(
+                "Water editing is owned by Environment. "
+                "Objects cannot select or edit this entity.");
+        }
+
+        void DrawEnvironmentPage() noexcept
+        {
+            EnsureEnvironmentEntities();
+
+            if (
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::WaterPlanes)
             {
-                ImGui::Checkbox("Enabled##Sun", &environment.sunEnabled);
-                if (ImGui::Checkbox("Time controls sun", &environment.timeControlsSun) &&
-                    environment.timeControlsSun)
+                DrawEnvironmentWaterPlanesPage();
+
+                return;
+            }
+
+            if (
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::Grass ||
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::Decals ||
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::Rain ||
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::Weather)
+            {
+                ImGui::TextUnformatted("Environment");
+                ImGui::Separator();
+
+                ImGui::TextDisabled(
+                    "This Environment backend "
+                    "is not implemented yet.");
+
+                return;
+            }
+
+            const EnvironmentEntities entities =
+                ResolveEnvironmentEntities();
+
+            ImGui::TextUnformatted("Environment");
+            ImGui::Separator();
+            ImGui::TextUnformatted(
+                "DX11 Environment System");
+
+            if (
+                entities.environment == nullptr ||
+                !entities.environment->
+                    environment.has_value() ||
+                entities.sun == nullptr ||
+                !entities.sun->
+                    directionalLight.has_value())
+            {
+                ImGui::TextDisabled(
+                    "Environment scene entities "
+                    "are unavailable.");
+
+                return;
+            }
+
+            auto& environment =
+                *entities.environment->environment;
+
+            auto& sun =
+                *entities.sun->directionalLight;
+
+            const bool drawSun =
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::LightSetup &&
+                g_activeEnvironmentLightTool ==
+                    EnvironmentLightTool::SunSetup;
+
+            const bool drawMoon =
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::LightSetup &&
+                g_activeEnvironmentLightTool ==
+                    EnvironmentLightTool::MoonSetup;
+
+            const bool drawSky =
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::LightSetup &&
+                g_activeEnvironmentLightTool ==
+                    EnvironmentLightTool::SkySetup;
+
+            const bool drawAtmosphere =
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::Atmosphere;
+
+            const bool drawCloudPlane =
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::CloudPlane;
+
+            if (drawMoon)
+            {
+                ImGui::SeparatorText("Moon Setup");
+
+                ImGui::TextDisabled(
+                    "Moon rendering is not present "
+                    "in the current DX11 SkyRenderer.");
+
+                return;
+            }
+
+            if (drawSun)
+            {
+                ImGui::Spacing();
+                ImGui::SeparatorText("Day & Night");
+
+                float time =
+                    environment.timeOfDay;
+
+                if (ImGui::SliderFloat(
+                        "Time##DayNight",
+                        &time,
+                        0.0F,
+                        24.0F,
+                        "%.2f h",
+                        ImGuiSliderFlags_AlwaysClamp))
                 {
-                    ApplyTimeOfDay(environment.timeOfDay);
+                    ApplyTimeOfDay(time);
                 }
-                ImGui::ColorEdit3("Color##Sun", sun.color.data());
-                ImGui::DragFloat(
-                    "Intensity##Sun",
-                    &sun.intensity,
-                    0.05F,
-                    0.0F,
-                    20.0F,
-                    "%.2f");
 
-                float elevation = -entities.sun->transform.rotationDegrees[0];
-                float azimuth = entities.sun->transform.rotationDegrees[1];
-                ImGui::BeginDisabled(environment.timeControlsSun);
-                bool rotationChanged = ImGui::SliderFloat(
-                    "Elevation",
-                    &elevation,
-                    -90.0F,
-                    90.0F,
-                    "%.1f deg");
-                rotationChanged |= ImGui::SliderFloat(
-                    "Azimuth",
-                    &azimuth,
-                    -180.0F,
-                    180.0F,
-                    "%.1f deg");
-                ImGui::EndDisabled();
+                const int totalMinutes =
+                    std::clamp(
+                        static_cast<int>(
+                            std::round(
+                                environment.timeOfDay *
+                                60.0F)),
+                        0,
+                        24 * 60);
 
-                if (rotationChanged)
+                ImGui::Text(
+                    "Time: %02d:%02d",
+                    totalMinutes / 60,
+                    totalMinutes % 60);
+
+                const float presetWidth =
+                    (
+                        ImGui::GetContentRegionAvail().x -
+                        ImGui::GetStyle().ItemSpacing.x
+                    ) *
+                    0.5F;
+
+                if (ImGui::Button(
+                        "Morning / 07:00",
+                        ImVec2(
+                            presetWidth,
+                            0.0F)))
                 {
-                    entities.sun->transform.rotationDegrees[0] = -elevation;
-                    entities.sun->transform.rotationDegrees[1] = azimuth;
+                    ApplyTimeOfDay(7.0F);
                 }
 
-                ImGui::DragFloat(
-                    "Disk size",
-                    &environment.sunDiskSizeDegrees,
-                    0.02F,
-                    0.01F,
-                    10.0F,
-                    "%.2f deg");
+                ImGui::SameLine();
+
+                if (ImGui::Button(
+                        "Day / 13:00",
+                        ImVec2(
+                            presetWidth,
+                            0.0F)))
+                {
+                    ApplyTimeOfDay(13.0F);
+                }
+
+                if (ImGui::Button(
+                        "Evening / 19:00",
+                        ImVec2(
+                            presetWidth,
+                            0.0F)))
+                {
+                    ApplyTimeOfDay(19.0F);
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(
+                        "Night / 00:00",
+                        ImVec2(
+                            presetWidth,
+                            0.0F)))
+                {
+                    ApplyTimeOfDay(0.0F);
+                }
+
+                if (ImGui::CollapsingHeader(
+                        "Sun",
+                        ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    ImGui::Checkbox(
+                        "Enabled##Sun",
+                        &environment.sunEnabled);
+
+                    if (
+                        ImGui::Checkbox(
+                            "Time controls sun",
+                            &environment.timeControlsSun) &&
+                        environment.timeControlsSun)
+                    {
+                        ApplyTimeOfDay(
+                            environment.timeOfDay);
+                    }
+
+                    ImGui::ColorEdit3(
+                        "Color##Sun",
+                        sun.color.data());
+
+                    ImGui::DragFloat(
+                        "Intensity##Sun",
+                        &sun.intensity,
+                        0.05F,
+                        0.0F,
+                        20.0F,
+                        "%.2f");
+
+                    float elevation =
+                        -entities.sun->
+                            transform.
+                            rotationDegrees[0];
+
+                    float azimuth =
+                        entities.sun->
+                            transform.
+                            rotationDegrees[1];
+
+                    ImGui::BeginDisabled(
+                        environment.timeControlsSun);
+
+                    bool rotationChanged =
+                        ImGui::SliderFloat(
+                            "Elevation",
+                            &elevation,
+                            -90.0F,
+                            90.0F,
+                            "%.1f deg");
+
+                    rotationChanged |=
+                        ImGui::SliderFloat(
+                            "Azimuth",
+                            &azimuth,
+                            -180.0F,
+                            180.0F,
+                            "%.1f deg");
+
+                    ImGui::EndDisabled();
+
+                    if (rotationChanged)
+                    {
+                        entities.sun->
+                            transform.
+                            rotationDegrees[0] =
+                                -elevation;
+
+                        entities.sun->
+                            transform.
+                            rotationDegrees[1] =
+                                azimuth;
+                    }
+
+                    ImGui::DragFloat(
+                        "Disk size",
+                        &environment.
+                            sunDiskSizeDegrees,
+                        0.02F,
+                        0.01F,
+                        10.0F,
+                        "%.2f deg");
+                }
+
+                if (ImGui::CollapsingHeader(
+                        "Shadows",
+                        ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    if (ImGui::Checkbox(
+                            "Sun shadows",
+                            &environment.
+                                shadowsEnabled))
+                    {
+                        sun.castShadows =
+                            environment.
+                                shadowsEnabled;
+                    }
+
+                    ImGui::BeginDisabled(
+                        !environment.
+                            shadowsEnabled);
+
+                    ImGui::SliderFloat(
+                        "Strength##Shadows",
+                        &environment.
+                            shadowStrength,
+                        0.0F,
+                        1.0F,
+                        "%.2f");
+
+                    ImGui::SliderFloat(
+                        "Softness##Shadows",
+                        &environment.
+                            shadowSoftness,
+                        0.05F,
+                        4.0F,
+                        "%.2f");
+
+                    ImGui::DragFloat(
+                        "Distance##Shadows",
+                        &environment.
+                            shadowDistance,
+                        10.0F,
+                        10.0F,
+                        10000.0F,
+                        "%.0f m");
+
+                    ImGui::EndDisabled();
+                }
             }
 
-            if (ImGui::CollapsingHeader("Fog", ImGuiTreeNodeFlags_DefaultOpen))
+            if (
+                drawAtmosphere &&
+                ImGui::CollapsingHeader(
+                    "Dynamic Fog",
+                    ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Checkbox("Enabled##Fog", &environment.fogEnabled);
-                ImGui::BeginDisabled(!environment.fogEnabled);
-                ImGui::ColorEdit3("Color##Fog", environment.fogColor.data());
+                ImGui::Checkbox(
+                    "Enabled##Fog",
+                    &environment.fogEnabled);
+
+                ImGui::BeginDisabled(
+                    !environment.fogEnabled);
+
+                ImGui::ColorEdit3(
+                    "Color##Fog",
+                    environment.fogColor.data());
+
                 ImGui::DragFloat(
                     "Start distance",
                     &environment.fogStart,
@@ -3811,13 +4170,16 @@ bool IsActiveTerrainPaintTool() noexcept
                     0.0F,
                     20000.0F,
                     "%.0f m");
+
                 ImGui::DragFloat(
                     "End distance",
                     &environment.fogEnd,
                     10.0F,
-                    environment.fogStart + 1.0F,
+                    environment.fogStart +
+                        1.0F,
                     40000.0F,
                     "%.0f m");
+
                 ImGui::DragFloat(
                     "Density##Fog",
                     &environment.fogDensity,
@@ -3825,53 +4187,54 @@ bool IsActiveTerrainPaintTool() noexcept
                     0.0F,
                     0.01F,
                     "%.6f");
+
                 ImGui::DragFloat(
                     "Height falloff",
-                    &environment.fogHeightFalloff,
+                    &environment.
+                        fogHeightFalloff,
                     0.00005F,
                     0.0F,
                     0.02F,
                     "%.5f");
-                environment.fogEnd = (std::max)(environment.fogEnd, environment.fogStart + 1.0F);
+
+                environment.fogEnd =
+                    (std::max)(
+                        environment.fogEnd,
+                        environment.fogStart +
+                            1.0F);
+
                 ImGui::EndDisabled();
             }
 
-            if (ImGui::CollapsingHeader("Shadows", ImGuiTreeNodeFlags_DefaultOpen))
+            if (
+                drawSky &&
+                ImGui::CollapsingHeader(
+                    "Sky",
+                    ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (ImGui::Checkbox("Sun shadows", &environment.shadowsEnabled))
-                {
-                    sun.castShadows = environment.shadowsEnabled;
-                }
-                ImGui::BeginDisabled(!environment.shadowsEnabled);
-                ImGui::SliderFloat(
-                    "Strength##Shadows",
-                    &environment.shadowStrength,
-                    0.0F,
-                    1.0F,
-                    "%.2f");
-                ImGui::SliderFloat(
-                    "Softness##Shadows",
-                    &environment.shadowSoftness,
-                    0.05F,
-                    4.0F,
-                    "%.2f");
-                ImGui::DragFloat(
-                    "Distance##Shadows",
-                    &environment.shadowDistance,
-                    10.0F,
-                    10.0F,
-                    10000.0F,
-                    "%.0f m");
-                ImGui::EndDisabled();
-            }
+                ImGui::Checkbox(
+                    "Visible##Sky",
+                    &environment.visible);
 
-            if (ImGui::CollapsingHeader("Sky", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ImGui::Checkbox("Visible##Sky", &environment.visible);
-                ImGui::ColorEdit3("Top", environment.topColor.data());
-                ImGui::ColorEdit3("Horizon", environment.horizonColor.data());
-                ImGui::ColorEdit3("Ground", environment.groundColor.data());
-                ImGui::ColorEdit3("Ambient", environment.ambientColor.data());
+                ImGui::ColorEdit3(
+                    "Top",
+                    environment.topColor.data());
+
+                ImGui::ColorEdit3(
+                    "Horizon",
+                    environment.
+                        horizonColor.data());
+
+                ImGui::ColorEdit3(
+                    "Ground",
+                    environment.
+                        groundColor.data());
+
+                ImGui::ColorEdit3(
+                    "Ambient",
+                    environment.
+                        ambientColor.data());
+
                 ImGui::DragFloat(
                     "Sky intensity",
                     &environment.skyIntensity,
@@ -3879,39 +4242,61 @@ bool IsActiveTerrainPaintTool() noexcept
                     0.0F,
                     8.0F,
                     "%.2f");
+
                 ImGui::DragFloat(
                     "Ambient intensity",
-                    &environment.ambientIntensity,
+                    &environment.
+                        ambientIntensity,
                     0.02F,
                     0.0F,
                     8.0F,
                     "%.2f");
+
                 ImGui::DragFloat(
                     "Horizon exponent",
-                    &environment.horizonExponent,
+                    &environment.
+                        horizonExponent,
                     0.02F,
                     0.05F,
                     8.0F,
                     "%.2f");
             }
 
-            if (ImGui::CollapsingHeader("CloudPlane", ImGuiTreeNodeFlags_DefaultOpen))
+            if (
+                drawCloudPlane &&
+                ImGui::CollapsingHeader(
+                    "Cloud Plane",
+                    ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Checkbox("Enabled##CloudPlane", &environment.cloudPlaneEnabled);
-                ImGui::BeginDisabled(!environment.cloudPlaneEnabled);
-                ImGui::ColorEdit3("Color##CloudPlane", environment.cloudColor.data());
+                ImGui::Checkbox(
+                    "Enabled##CloudPlane",
+                    &environment.
+                        cloudPlaneEnabled);
+
+                ImGui::BeginDisabled(
+                    !environment.
+                        cloudPlaneEnabled);
+
+                ImGui::ColorEdit3(
+                    "Color##CloudPlane",
+                    environment.
+                        cloudColor.data());
+
                 ImGui::SliderFloat(
                     "Coverage",
-                    &environment.cloudCoverage,
+                    &environment.
+                        cloudCoverage,
                     0.0F,
                     1.0F,
                     "%.2f");
+
                 ImGui::SliderFloat(
                     "Density##CloudPlane",
                     &environment.cloudDensity,
                     0.0F,
                     1.0F,
                     "%.2f");
+
                 ImGui::DragFloat(
                     "Scale##CloudPlane",
                     &environment.cloudScale,
@@ -3919,6 +4304,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     0.00002F,
                     0.005F,
                     "%.6f");
+
                 ImGui::DragFloat(
                     "Height##CloudPlane",
                     &environment.cloudHeight,
@@ -3926,6 +4312,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     50.0F,
                     10000.0F,
                     "%.0f m");
+
                 ImGui::DragFloat2(
                     "Wind U / V",
                     environment.cloudSpeed.data(),
@@ -3933,6 +4320,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     -0.1F,
                     0.1F,
                     "%.4f");
+
                 ImGui::EndDisabled();
             }
         }
@@ -4281,15 +4669,29 @@ bool IsActiveTerrainPaintTool() noexcept
                 g_activePage ==
                     LevelEditorPage::Objects;
 
+            const bool environmentActive =
+                g_activePage ==
+                    LevelEditorPage::Environment;
+
             const bool secondaryToolbarVisible =
                 settingsActive ||
                 terrainActive ||
-                objectsActive;
+                objectsActive ||
+                environmentActive;
 
             const bool terrainToolToolbarVisible =
                 terrainActive &&
                 g_activeTerrainPage ==
                     TerrainToolbarPage::TerrainEditor;
+
+            const bool environmentLightToolbarVisible =
+                environmentActive &&
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::LightSetup;
+
+            const bool thirdToolbarVisible =
+                terrainToolToolbarVisible ||
+                environmentLightToolbarVisible;
 
             const float mainToolbarTop =
                 viewport->WorkPos.y;
@@ -4312,7 +4714,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     secondaryToolbarHeight;
             }
 
-            if (terrainToolToolbarVisible)
+            if (thirdToolbarVisible)
             {
                 controlsTop +=
                     terrainToolToolbarHeight;
@@ -4428,12 +4830,17 @@ bool IsActiveTerrainPaintTool() noexcept
                         g_objectViewTab.DrawToolbar(
                             objectContext);
                     }
+                    else if (environmentActive)
+                    {
+                        g_editorToolbar.DrawEnvironment(
+                            g_activeEnvironmentPage);
+                    }
                 }
 
                 ImGui::End();
             }
                     
-            if (terrainToolToolbarVisible)
+            if (thirdToolbarVisible)
             {
                 ImGui::SetNextWindowDockID(
                     0U,
@@ -4452,7 +4859,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     ImGuiCond_Always);
 
                 if (ImGui::Begin(
-                        "##TerrainEditorToolToolbar",
+                        "##LevelEditorThirdToolbar",
                         nullptr,
                         ImGuiWindowFlags_NoMove |
                             ImGuiWindowFlags_NoResize |
@@ -4464,8 +4871,16 @@ bool IsActiveTerrainPaintTool() noexcept
                             ImGuiWindowFlags_NoScrollWithMouse |
                             ImGuiWindowFlags_NoBringToFrontOnFocus))
                 {
-                    g_editorToolbar.DrawTerrainEditorTools(
-                        g_activeTerrainEditorTool);
+                    if (terrainToolToolbarVisible)
+                    {
+                        g_editorToolbar.DrawTerrainEditorTools(
+                            g_activeTerrainEditorTool);
+                    }
+                    else if (environmentLightToolbarVisible)
+                    {
+                        g_editorToolbar.DrawEnvironmentLightTools(
+                            g_activeEnvironmentLightTool);
+                    }
                 }
 
                 ImGui::End();
@@ -4632,8 +5047,12 @@ bool IsActiveTerrainPaintTool() noexcept
         g_terrainMapsScanned = false;
         g_terrainMapScanStatus.clear();
         g_loadingMapName.clear();
+        
         g_activeTerrainPage = TerrainToolbarPage::TerrainLoader;
         g_activeTerrainEditorTool = TerrainEditorTool::Options;
+        g_activeEnvironmentPage = EnvironmentToolbarPage::LightSetup;
+        g_activeEnvironmentLightTool = EnvironmentLightTool::SunSetup;
+
         g_terrainEditorUi = {};
         g_terrainBrushHit = false;
         g_terrainBrushWorldX = 0.0F;

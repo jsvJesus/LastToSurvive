@@ -89,6 +89,59 @@ namespace studio::editor
         }
     }
 
+    const char* StudioToolbar::GetEnvironmentPageName(
+        const EnvironmentToolbarPage page) noexcept
+    {
+        switch (page)
+        {
+        case EnvironmentToolbarPage::LightSetup:
+            return "Light Setup";
+
+        case EnvironmentToolbarPage::Atmosphere:
+            return "Atmosphere";
+
+        case EnvironmentToolbarPage::CloudPlane:
+            return "Cloud Plane";
+
+        case EnvironmentToolbarPage::Grass:
+            return "Grass";
+
+        case EnvironmentToolbarPage::WaterPlanes:
+            return "Water Planes";
+
+        case EnvironmentToolbarPage::Decals:
+            return "Decals";
+
+        case EnvironmentToolbarPage::Rain:
+            return "Rain";
+
+        case EnvironmentToolbarPage::Weather:
+            return "Weather";
+
+        default:
+            return "Unknown";
+        }
+    }
+
+    const char* StudioToolbar::GetEnvironmentLightToolName(
+        const EnvironmentLightTool tool) noexcept
+    {
+        switch (tool)
+        {
+        case EnvironmentLightTool::SunSetup:
+            return "Sun Setup";
+
+        case EnvironmentLightTool::MoonSetup:
+            return "Moon Setup";
+
+        case EnvironmentLightTool::SkySetup:
+            return "Sky Setup";
+
+        default:
+            return "Unknown";
+        }
+    }
+
     bool StudioToolbar::DrawTab(
         const char* const label,
         const bool active,
@@ -254,6 +307,90 @@ namespace studio::editor
             if (DrawTab(
                     GetTerrainEditorToolName(tool),
                     activeTool == tool))
+            {
+                activeTool = tool;
+            }
+        }
+    }
+
+    void StudioToolbar::DrawEnvironment(
+        EnvironmentToolbarPage& activePage) const noexcept
+    {
+        constexpr std::array<EnvironmentToolbarPage, 8U> pages
+        {
+            EnvironmentToolbarPage::LightSetup,
+            EnvironmentToolbarPage::Atmosphere,
+            EnvironmentToolbarPage::CloudPlane,
+            EnvironmentToolbarPage::Grass,
+            EnvironmentToolbarPage::WaterPlanes,
+            EnvironmentToolbarPage::Decals,
+            EnvironmentToolbarPage::Rain,
+            EnvironmentToolbarPage::Weather
+        };
+
+        for (std::size_t index = 0U;
+             index < pages.size();
+             ++index)
+        {
+            const EnvironmentToolbarPage page =
+                pages[index];
+
+            const char* const name =
+                GetEnvironmentPageName(page);
+
+            if (index > 0U)
+            {
+                const float nextWidth =
+                    ImGui::CalcTextSize(name).x +
+                    ImGui::GetStyle().FramePadding.x *
+                        2.0F;
+
+                if (
+                    ImGui::GetCursorPosX() +
+                        nextWidth <
+                    ImGui::GetContentRegionMax().x)
+                {
+                    ImGui::SameLine();
+                }
+            }
+
+            if (DrawTab(
+                    name,
+                    activePage == page))
+            {
+                activePage = page;
+            }
+        }
+    }
+
+    void StudioToolbar::DrawEnvironmentLightTools(
+        EnvironmentLightTool& activeTool) const noexcept
+    {
+        constexpr std::array<EnvironmentLightTool, 3U> tools
+        {
+            EnvironmentLightTool::SunSetup,
+            EnvironmentLightTool::MoonSetup,
+            EnvironmentLightTool::SkySetup
+        };
+
+        constexpr float buttonWidth = 165.0F;
+
+        for (std::size_t index = 0U;
+             index < tools.size();
+             ++index)
+        {
+            const EnvironmentLightTool tool =
+                tools[index];
+
+            if (index > 0U)
+            {
+                ImGui::SameLine();
+            }
+
+            if (DrawTab(
+                    GetEnvironmentLightToolName(tool),
+                    activeTool == tool,
+                    buttonWidth))
             {
                 activeTool = tool;
             }

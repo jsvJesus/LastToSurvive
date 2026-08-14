@@ -220,6 +220,7 @@ namespace studio::editor
             transformController_.SetViewportWindow(window);
             transformController_.SetKeyboardShortcutsEnabled(false);
             transformController_.SetEditorRoadPickingEnabled(false);
+            transformController_.SetEditorWaterPlanePickingEnabled(false);
             
             initialized_ = true;
 
@@ -733,6 +734,17 @@ namespace studio::editor
                 return;
             }
 
+            const lts::editor::EditorSceneEntity* const selectedEntity =
+                context.sceneDocument.GetSelectedEntity();
+
+            if (
+                selectedEntity != nullptr &&
+                IsOwnedByAnotherEditor(*selectedEntity))
+            {
+                context.sceneDocument.ClearSelection();
+                ResetInspectedObject();
+            }
+
             context.viewportWidth =
                 (std::max)(context.viewportWidth, 1U);
 
@@ -867,6 +879,17 @@ namespace studio::editor
 
     private:
         [[nodiscard]]
+        static bool IsOwnedByAnotherEditor(
+            const lts::editor::EditorSceneEntity& entity) noexcept
+        {
+            return
+                entity.editorFolder ==
+                    L"LevelData/obj_Road" ||
+                entity.editorFolder ==
+                    L"LevelData/obj_WaterPlane";
+        }
+        
+        [[nodiscard]]
         static bool IsDeletableObject(
             const lts::editor::EditorSceneEntity& entity) noexcept
         {
@@ -876,14 +899,10 @@ namespace studio::editor
             }
 
             /*
-             * Roads и WaterPlane пока управляются своими
-             * отдельными редакторами.
+             * Roads управляются Roads Editor.
+             * WaterPlane полностью принадлежит Environment Editor.
              */
-            if (
-                entity.editorFolder ==
-                    L"LevelData/obj_Road" ||
-                entity.editorFolder ==
-                    L"LevelData/obj_WaterPlane")
+            if (IsOwnedByAnotherEditor(entity))
             {
                 return false;
             }
@@ -1168,13 +1187,15 @@ namespace studio::editor
             float distance = 0.0F;
 
             if (!lts::editor::ScenePicker::Pick(
-                context.sceneDocument,
-                ray,
-                entityIndex,
-                distance,
-                &context.staticMeshRenderer,
-                false) ||
-            !context.sceneDocument.SelectEntityByIndex(entityIndex))
+                    context.sceneDocument,
+                    ray,
+                    entityIndex,
+                    distance,
+                    &context.staticMeshRenderer,
+                    false,
+                    false) ||
+                !context.sceneDocument.SelectEntityByIndex(
+                    entityIndex))
             {
                 return;
             }

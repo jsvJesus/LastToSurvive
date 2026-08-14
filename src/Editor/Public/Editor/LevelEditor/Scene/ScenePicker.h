@@ -20,6 +20,7 @@ namespace lts::editor
             std::size_t& outEntityIndex,
             float& outDistance,
             const StaticMeshRenderer* meshRenderer = nullptr,
-            bool includeEditorRoads = true) noexcept;
+            bool includeEditorRoads = true,
+            bool includeEditorWaterPlanes = true) noexcept;
     };
 }

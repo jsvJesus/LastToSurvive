@@ -80,6 +80,46 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        bool IsGeneratedEditorWaterPlane(
+            const EditorSceneEntity& entity)
+        {
+            const std::wstring folder =
+                LowercasePath(entity.editorFolder);
+
+            if (folder == L"leveldata/obj_waterplane")
+            {
+                return true;
+            }
+
+            if (!entity.staticMesh.has_value())
+            {
+                return false;
+            }
+
+            const std::wstring path =
+                LowercasePath(
+                    entity.staticMesh->assetPath);
+
+            const bool stableLevelDataPath =
+                path.find(
+                    L"/staticmeshes/leveldata/") !=
+                std::wstring::npos;
+
+            const bool legacyGeneratedPath =
+                path.find(
+                    L"/levelgeneratedv") !=
+                std::wstring::npos;
+
+            const bool waterAsset =
+                path.find(L"/waterplanes/") !=
+                std::wstring::npos;
+
+            return
+                waterAsset &&
+                (stableLevelDataPath || legacyGeneratedPath);
+        }
+
+        [[nodiscard]]
         PickBounds GetEntityBounds(const EditorEntityKind kind) noexcept
         {
             switch (kind)
@@ -336,7 +376,8 @@ namespace lts::editor
         std::size_t& outEntityIndex,
         float& outDistance,
         const StaticMeshRenderer* const meshRenderer,
-        const bool includeEditorRoads) noexcept
+        const bool includeEditorRoads,
+        const bool includeEditorWaterPlanes) noexcept
     {
         outEntityIndex = InvalidEditorEntityIndex;
         outDistance = std::numeric_limits<float>::max();
@@ -362,6 +403,14 @@ namespace lts::editor
             if (
                 !includeEditorRoads &&
                 IsGeneratedEditorRoad(
+                    entities[index]))
+            {
+                continue;
+            }
+
+            if (
+                !includeEditorWaterPlanes &&
+                IsGeneratedEditorWaterPlane(
                     entities[index]))
             {
                 continue;

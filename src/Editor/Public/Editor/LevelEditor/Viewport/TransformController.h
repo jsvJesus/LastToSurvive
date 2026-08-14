@@ -66,6 +66,12 @@ namespace lts::editor
         void SetEditorRoadPickingEnabled(bool enabled) noexcept;
         [[nodiscard]] bool IsEditorRoadPickingEnabled() const noexcept;
 
+        void SetEditorWaterPlanePickingEnabled(
+            bool enabled) noexcept;
+
+        [[nodiscard]]
+        bool IsEditorWaterPlanePickingEnabled() const noexcept;
+
         void ToggleSpace() noexcept;
         void SetSnappingEnabled(bool enabled) noexcept;
         [[nodiscard]] bool IsSnappingEnabled() const noexcept;
@@ -138,6 +144,7 @@ namespace lts::editor
         bool dragChanged_ = false;
         bool keyboardShortcutsEnabled_ = true;
         bool editorRoadPickingEnabled_ = true;
+        bool editorWaterPlanePickingEnabled_ = true;
         bool snappingEnabled_ = false;
         float moveSnap_ = 0.5F;
         float rotateSnap_ = 15.0F;

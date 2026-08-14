@@ -38,6 +38,17 @@ namespace lts::editor
         return editorRoadPickingEnabled_;
     }
 
+    void TransformController::SetEditorWaterPlanePickingEnabled(
+        const bool enabled) noexcept
+    {
+        editorWaterPlanePickingEnabled_ = enabled;
+    }
+
+    bool TransformController::IsEditorWaterPlanePickingEnabled() const noexcept
+    {
+        return editorWaterPlanePickingEnabled_;
+    }
+
     void TransformController::ToggleSpace() noexcept
     {
         visualState_.space =
@@ -590,7 +601,8 @@ namespace lts::editor
                             pickedIndex,
                             distance,
                             meshRenderer,
-                            editorRoadPickingEnabled_) &&
+                            editorRoadPickingEnabled_,
+                            editorWaterPlanePickingEnabled_) &&
                         document.SelectEntityByIndex(pickedIndex))
                     {
                         result.selectionChanged = true;
