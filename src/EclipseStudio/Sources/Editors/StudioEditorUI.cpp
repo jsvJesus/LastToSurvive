@@ -2530,7 +2530,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
         void RebuildSelectedWaterPreview() noexcept
         {
-            const lts::editor::EditorSceneEntity* const selected =
+            const lts::editor::EditorSceneEntity* selected =
                 g_sceneDocument.GetSelectedEntity();
 
             if (
