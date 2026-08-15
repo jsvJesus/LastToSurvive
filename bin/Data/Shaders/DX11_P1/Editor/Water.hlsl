@@ -173,7 +173,7 @@ float3 DecodeWaterNormal(float3 encodedNormal)
 float4 PSMain(VertexOutput input) : SV_TARGET
 {
     float time = WaterParameters.x;
-    float normalTiling = max(WaterParameters.w, 0.0001F);
+    float normalTiling = max(LegacyDetailParameters.w, 0.0001F);
 
     float2 normalUv0 =
         input.worldPosition.xz * normalTiling +
@@ -199,7 +199,7 @@ float4 PSMain(VertexOutput input) : SV_TARGET
             normal0.y * normal1.y,
             normal0.z + normal1.z));
 
-    float normalStrength = saturate(WaterAppearance.x / 2.0F);
+    float normalStrength = saturate(LegacyDetailParameters.x / 2.0F);
     float3 normal = normalize(
         lerp(
             input.geometricNormal,
@@ -211,22 +211,29 @@ float4 PSMain(VertexOutput input) : SV_TARGET
         input.worldPosition);
 
     float viewDot = saturate(dot(normal, viewDirection));
+    float fresnelPower =
+        max(LegacySurfaceParameters.w * 32.0F, 1.0F);
+    float reflectionStrength =
+        saturate(LegacySurfaceParameters.z / 3.0F);
     float fresnel =
         0.020F +
         0.980F *
         pow(
             1.0F - viewDot,
-            max(WaterAppearance.y, 1.0F));
+            fresnelPower);
 
     float3 deepColor = max(BaseColor.rgb, float3(0.005F, 0.018F, 0.025F));
-    float3 shallowColor = lerp(
-        deepColor,
-        float3(0.055F, 0.34F, 0.33F),
-        0.58F);
+    float3 shallowColor = max(
+        LegacyTextureFlags.rgb,
+        float3(0.005F, 0.018F, 0.025F));
+    float3 lightColor = max(
+        LegacyFeatureFlags.rgb,
+        float3(0.005F, 0.018F, 0.025F));
 
     float3 colorNoise = WaterColorTexture.Sample(
         WaterSampler,
-        input.worldPosition.xz * 0.0035F +
+        input.worldPosition.xz *
+            max(MaterialParameters.w, 0.0001F) +
             float2(time * 0.0012F, -time * 0.0008F)).rgb;
 
     float3 bodyColor = lerp(
@@ -237,15 +244,17 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     float3 reflectedDirection = reflect(-viewDirection, normal);
     float skyAmount = saturate(reflectedDirection.y * 0.5F + 0.5F);
     float3 horizonColor = lerp(
-        FogColorEnabled.rgb,
+        lightColor,
         AmbientColor.rgb * 1.65F,
         skyAmount);
 
     float3 sunDirection = normalize(SunDirectionIntensity.xyz);
     float3 reflectedSun = reflect(-sunDirection, normal);
     float sunDot = saturate(dot(reflectedSun, viewDirection));
-    float broadSpecular = pow(sunDot, 96.0F);
-    float tightSpecular = pow(sunDot, 720.0F);
+    float sunPower = max(LegacySurfaceParameters.y, 1.0F);
+    float broadSpecular =
+        pow(sunDot, max(sunPower * 0.15F, 1.0F));
+    float tightSpecular = pow(sunDot, sunPower);
     float sunSpecular =
         (broadSpecular * 0.45F + tightSpecular * 2.8F) *
         SunDirectionIntensity.w;
@@ -253,9 +262,12 @@ float4 PSMain(VertexOutput input) : SV_TARGET
     float3 color = lerp(
         bodyColor,
         horizonColor,
-        saturate(fresnel * 0.86F));
+        saturate(fresnel * reflectionStrength));
 
-    color += SunColor.rgb * sunSpecular;
+    color +=
+        SunColor.rgb *
+        sunSpecular *
+        max(LegacySurfaceParameters.x, 0.0F);
 
     float foamNoise = WaterColorTexture.Sample(
         WaterSampler,

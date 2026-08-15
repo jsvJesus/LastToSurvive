@@ -207,6 +207,8 @@ namespace lts::editor
         [[nodiscard]]
         bool IsDirty() const noexcept;
 
+        void MarkModified() noexcept;
+
         void MarkSaved() noexcept;
 
         [[nodiscard]]

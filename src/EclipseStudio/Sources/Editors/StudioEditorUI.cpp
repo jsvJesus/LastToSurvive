@@ -9,6 +9,7 @@
 #include <Editor/LevelEditor/Rendering/GridRenderer.h>
 #include <Editor/LevelEditor/Rendering/SkyRenderer.h>
 #include <Editor/LevelEditor/Rendering/StaticMeshRenderer.h>
+#include <Editor/LevelEditor/Environment/WaterPlaneEditor.h>
 #include <Editor/LevelEditor/Scene/SceneDocument.h>
 #include <Editor/LevelEditor/Terrain/TerrainImporter.h>
 #include <Editor/LevelEditor/Terrain/TerrainRenderer.h>
@@ -76,6 +77,7 @@ namespace studio::editor
         lts::editor::ColorCorrectionRenderer g_colorCorrectionRenderer;
         lts::editor::ColorCorrectionSettings g_colorCorrectionSettings;
         lts::editor::TerrainImporter g_terrainImporter;
+        lts::editor::WaterPlaneEditor g_waterPlaneEditor;
         ObjectViewTab g_objectViewTab;
         std::filesystem::path g_loadedTerrainPath;
         std::filesystem::path g_loadedLevelDataPath;
@@ -100,6 +102,18 @@ namespace studio::editor
 
         EnvironmentLightTool g_activeEnvironmentLightTool =
             EnvironmentLightTool::SunSetup;
+
+        bool g_waterEraser = false;
+        bool g_waterBrushHit = false;
+        bool g_waterStrokeChanged = false;
+        bool g_waterAssetDirty = false;
+        float g_waterBrushRadius = 150.0F;
+        float g_waterBrushWorldX = 0.0F;
+        float g_waterBrushWorldZ = 0.0F;
+        float g_waterPendingCellSize = 50.0F;
+        lts::editor::EditorEntityId g_waterUiEntityId = 0U;
+        std::array<char, 97U> g_waterName{};
+        std::string g_waterStatus;
 
         struct TerrainEditorUiState final
         {
@@ -430,7 +444,7 @@ namespace studio::editor
                         else if (iterator.depth() >= 1)
                         {
                             /*
-                             * Разрешаем один вложенный уровень:
+                             * Р Р°Р·СЂРµС€Р°РµРј РѕРґРёРЅ РІР»РѕР¶РµРЅРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ:
                              * Levels/WorkInProgress/MyLevel.
                              */
                             iterator.disable_recursion_pending();
@@ -499,8 +513,8 @@ namespace studio::editor
                 }
 
                 /*
-                 * РЎС‚Р°СЂС‹Рµ .terrain РјРѕРіСѓС‚ РЅРµ РёРјРµС‚СЊ Terrain.ini.
-                 * Р”Р»СЏ РЅРёС… СЃРѕС…СЂР°РЅСЏРµРј РїСЂРµР¶РЅРёР№ transform:
+                 * Р РЋРЎвЂљР В°РЎР‚РЎвЂ№Р Вµ .terrain Р СР С•Р С–РЎС“РЎвЂљ Р Р…Р Вµ Р С‘Р СР ВµРЎвЂљРЎРЉ Terrain.ini.
+                 * Р вЂќР В»РЎРЏ Р Р…Р С‘РЎвЂ¦ РЎРѓР С•РЎвЂ¦РЎР‚Р В°Р Р…РЎРЏР ВµР С Р С—РЎР‚Р ВµР В¶Р Р…Р С‘Р в„– transform:
                  * position = 0, scale = 1.
                  */
                 if (!iniExists)
@@ -622,11 +636,11 @@ namespace studio::editor
                     hasScaleZ;
 
                 /*
-                 * Terrain.ini, СЃРѕР·РґР°РЅРЅС‹Р№ РЅРѕРІС‹Рј R16 importer,
-                 * РѕР±СЏР·Р°РЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РїРѕР»РЅС‹Р№ transform.
+                 * Terrain.ini, РЎРѓР С•Р В·Р Т‘Р В°Р Р…Р Р…РЎвЂ№Р в„– Р Р…Р С•Р Р†РЎвЂ№Р С R16 importer,
+                 * Р С•Р В±РЎРЏР В·Р В°Р Р… РЎРѓР С•Р Т‘Р ВµРЎР‚Р В¶Р В°РЎвЂљРЎРЉ Р С—Р С•Р В»Р Р…РЎвЂ№Р в„– transform.
                  *
-                 * Р•СЃР»Рё РІ СЃС‚Р°СЂРѕРј Terrain.ini РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ
-                 * transform-РїРѕР»СЏ, РёСЃРїРѕР»СЊР·СѓРµРј default transform.
+                 * Р вЂўРЎРѓР В»Р С‘ Р Р† РЎРѓРЎвЂљР В°РЎР‚Р С•Р С Terrain.ini Р Р…Р ВµРЎвЂљ Р Р…Р С‘ Р С•Р Т‘Р Р…Р С•Р С–Р С•
+                 * transform-Р С—Р С•Р В»РЎРЏ, Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµР С default transform.
                  */
                 if (
                     hasAnyTransformValue &&
@@ -1268,6 +1282,12 @@ namespace studio::editor
 
             g_managedLevelObjectIndices.clear();
             g_settingsSaveStatus.clear();
+            g_waterStatus.clear();
+            g_waterUiEntityId = 0U;
+            g_waterName.fill('\0');
+            g_waterBrushHit = false;
+            g_waterStrokeChanged = false;
+            g_waterAssetDirty = false;
 
             const std::wstring mapFolderName =
                 levelRoot.filename().wstring();
@@ -1321,6 +1341,108 @@ namespace studio::editor
                 "Colorado");
         }
         
+        void ApplyWaterObjectIndexRemap(
+            const lts::editor::WaterPlaneSaveResult& result) noexcept
+        {
+            for (const auto& [oldIndex, newIndex] : result.objectIndexRemap)
+            {
+                for (const lts::editor::EditorSceneEntity& entity :
+                    g_sceneDocument.GetEntities())
+                {
+                    if (
+                        entity.editorFolder !=
+                            L"LevelData/obj_Building" ||
+                        entity.name.size() < 3U)
+                    {
+                        continue;
+                    }
+
+                    const std::wstring suffix =
+                        L" #" + std::to_wstring(oldIndex);
+
+                    if (
+                        entity.name.size() < suffix.size() ||
+                        entity.name.compare(
+                            entity.name.size() - suffix.size(),
+                            suffix.size(),
+                            suffix) != 0)
+                    {
+                        continue;
+                    }
+
+                    lts::editor::EditorSceneEntity* const mutableEntity =
+                        g_sceneDocument.FindEntityMutable(entity.id);
+
+                    if (mutableEntity != nullptr)
+                    {
+                        mutableEntity->name.erase(
+                            mutableEntity->name.size() - suffix.size());
+                        mutableEntity->name +=
+                            L" #" + std::to_wstring(newIndex);
+                    }
+
+                    break;
+                }
+            }
+
+            g_managedLevelObjectIndices =
+                result.managedObjectIndices;
+        }
+
+        [[nodiscard]]
+        bool SaveWaterPlanes() noexcept
+        {
+            const std::filesystem::path workspace = FindWorkspaceRoot();
+
+            if (
+                workspace.empty() ||
+                g_loadedLevelDataPath.empty() ||
+                g_loadedMapName.empty() ||
+                IsLevelLoading())
+            {
+                g_waterStatus =
+                    "Load a map before saving Water Planes.";
+                return false;
+            }
+
+            lts::editor::WaterPlaneSaveResult result =
+                g_waterPlaneEditor.Save(
+                    workspace,
+                    g_loadedLevelDataPath,
+                    g_sceneDocument,
+                    g_managedLevelObjectIndices);
+
+            if (!result.succeeded)
+            {
+                g_waterStatus =
+                    result.error.empty()
+                        ? "Water Plane save failed."
+                        : std::move(result.error);
+                return false;
+            }
+
+            ApplyWaterObjectIndexRemap(result);
+
+            for (const std::wstring& assetPath : result.meshAssetsToReload)
+            {
+                static_cast<void>(
+                    g_staticMeshRenderer.ReloadMesh(assetPath));
+            }
+
+            g_waterAssetDirty = false;
+
+            g_waterStatus =
+                "Water Planes saved. Updated: " +
+                std::to_string(result.updatedPlanes) +
+                ", added: " +
+                std::to_string(result.addedPlanes) +
+                ", removed: " +
+                std::to_string(result.removedPlanes) +
+                ".";
+
+            return true;
+        }
+
         void SaveLoadedMap() noexcept
         {
             if (
@@ -1387,6 +1509,14 @@ namespace studio::editor
                 std::move(
                     result.managedObjectIndices);
 
+            if (!SaveWaterPlanes())
+            {
+                g_settingsSaveStatus =
+                    "Objects were saved, but Water Planes failed: " +
+                    g_waterStatus;
+                return;
+            }
+
             g_sceneDocument.MarkSaved();
 
             g_settingsSaveStatus =
@@ -1420,13 +1550,13 @@ namespace studio::editor
             }
 
             /*
-             * R16 importer С…СЂР°РЅРёС‚ РІРµСЂС‚РёРєР°Р»СЊРЅС‹Р№ С†РµРЅС‚СЂ
-             * Рё РёС‚РѕРіРѕРІС‹Р№ actor scale РІ Terrain.ini.
+             * R16 importer РЎвЂ¦РЎР‚Р В°Р Р…Р С‘РЎвЂљ Р Р†Р ВµРЎР‚РЎвЂљР С‘Р С”Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– РЎвЂ Р ВµР Р…РЎвЂљРЎР‚
+             * Р С‘ Р С‘РЎвЂљР С•Р С–Р С•Р Р†РЎвЂ№Р в„– actor scale Р Р† Terrain.ini.
              *
-             * Р‘РµР· РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЌС‚РѕРіРѕ transform
-             * Terrain Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ РІ position 0 Рё scale 1,
-             * РёР·-Р·Р° С‡РµРіРѕ РїРµСЂРµСЃС‚Р°С‘С‚ СЃРѕРІРїР°РґР°С‚СЊ СЃ РѕР±СЉРµРєС‚Р°РјРё
-             * РёР· LevelData.xml.
+             * Р вЂР ВµР В· Р Р†Р С•РЎРѓРЎРѓРЎвЂљР В°Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С‘РЎРЏ РЎРЊРЎвЂљР С•Р С–Р С• transform
+             * Terrain Р В·Р В°Р С–РЎР‚РЎС“Р В¶Р В°Р ВµРЎвЂљРЎРѓРЎРЏ Р Р† position 0 Р С‘ scale 1,
+             * Р С‘Р В·-Р В·Р В° РЎвЂЎР ВµР С–Р С• Р С—Р ВµРЎР‚Р ВµРЎРѓРЎвЂљР В°РЎвЂРЎвЂљ РЎРѓР С•Р Р†Р С—Р В°Р Т‘Р В°РЎвЂљРЎРЉ РЎРѓ Р С•Р В±РЎР‰Р ВµР С”РЎвЂљР В°Р СР С‘
+             * Р С‘Р В· LevelData.xml.
              */
             lts::editor::EditorTransform transform{};
 
@@ -2398,6 +2528,152 @@ bool IsActiveTerrainPaintTool() noexcept
             }
         }
 
+        void RebuildSelectedWaterPreview() noexcept
+        {
+            const lts::editor::EditorSceneEntity* const selected =
+                g_sceneDocument.GetSelectedEntity();
+
+            if (
+                selected == nullptr ||
+                !selected->waterPlane.has_value() ||
+                g_loadedLevelDataPath.empty())
+            {
+                return;
+            }
+
+            const std::wstring previousAssetPath =
+                selected->staticMesh.has_value()
+                    ? selected->staticMesh->assetPath
+                    : std::wstring{};
+
+            if (!g_waterPlaneEditor.RebuildSelectedAsset(
+                    FindWorkspaceRoot(),
+                    g_loadedLevelDataPath,
+                    g_sceneDocument,
+                    g_waterStatus))
+            {
+                return;
+            }
+
+            if (!previousAssetPath.empty())
+            {
+                static_cast<void>(
+                    g_staticMeshRenderer.ReloadMesh(
+                        previousAssetPath));
+            }
+
+            selected = g_sceneDocument.GetSelectedEntity();
+
+            if (
+                selected != nullptr &&
+                selected->staticMesh.has_value() &&
+                selected->staticMesh->assetPath != previousAssetPath)
+            {
+                static_cast<void>(
+                    g_staticMeshRenderer.ReloadMesh(
+                        selected->staticMesh->assetPath));
+            }
+
+            g_waterAssetDirty = false;
+        }
+
+        void UpdateWaterPlaneViewport() noexcept
+        {
+            const bool waterPageActive =
+                g_activePage == LevelEditorPage::Environment &&
+                g_activeEnvironmentPage ==
+                    EnvironmentToolbarPage::WaterPlanes;
+
+            const lts::editor::EditorSceneEntity* const selected =
+                g_sceneDocument.GetSelectedEntity();
+
+            if (
+                !waterPageActive ||
+                selected == nullptr ||
+                !selected->waterPlane.has_value() ||
+                g_editorViewportWidth == 0U ||
+                g_editorViewportHeight == 0U)
+            {
+                g_waterBrushHit = false;
+                g_waterStrokeChanged = false;
+                return;
+            }
+
+            const ImGuiIO& io = ImGui::GetIO();
+
+            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            {
+                if (g_waterStrokeChanged || g_waterAssetDirty)
+                {
+                    RebuildSelectedWaterPreview();
+                }
+
+                g_waterStrokeChanged = false;
+            }
+
+            if (io.WantCaptureMouse)
+            {
+                g_waterBrushHit = false;
+                return;
+            }
+
+            const ImGuiViewport* const viewport =
+                ImGui::GetMainViewport();
+            const float mouseX = io.MousePos.x - viewport->Pos.x;
+            const float mouseY = io.MousePos.y - viewport->Pos.y;
+
+            if (
+                mouseX < 0.0F ||
+                mouseY < 0.0F ||
+                mouseX >= static_cast<float>(g_editorViewportWidth) ||
+                mouseY >= static_cast<float>(g_editorViewportHeight))
+            {
+                g_waterBrushHit = false;
+                return;
+            }
+
+            lts::editor::EditorPickRay ray;
+
+            if (!g_cameraController.BuildPickRay(
+                    static_cast<std::uint32_t>(mouseX),
+                    static_cast<std::uint32_t>(mouseY),
+                    g_editorViewportWidth,
+                    g_editorViewportHeight,
+                    ray) ||
+                std::abs(ray.direction.y) < 0.00001F)
+            {
+                g_waterBrushHit = false;
+                return;
+            }
+
+            const float distance =
+                (selected->waterPlane->waterHeight - ray.origin.y) /
+                ray.direction.y;
+
+            if (distance < 0.0F)
+            {
+                g_waterBrushHit = false;
+                return;
+            }
+
+            g_waterBrushWorldX =
+                ray.origin.x + ray.direction.x * distance;
+            g_waterBrushWorldZ =
+                ray.origin.z + ray.direction.z * distance;
+            g_waterBrushHit = true;
+
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            {
+                g_waterStrokeChanged |=
+                    g_waterPlaneEditor.PaintSelected(
+                        g_sceneDocument,
+                        g_waterBrushWorldX,
+                        g_waterBrushWorldZ,
+                        g_waterBrushRadius,
+                        g_waterEraser);
+            }
+        }
+
         void DrawTerrainGeometryToolPage(
             const TerrainEditorTool tool) noexcept
         {
@@ -2670,8 +2946,8 @@ bool IsActiveTerrainPaintTool() noexcept
         void DrawTerrainLayerEditor() noexcept
         {
             /*
-             * Terrain не обязан быть выделен в Objects.
-             * На странице Paint автоматически находим Terrain entity.
+             * Terrain РЅРµ РѕР±СЏР·Р°РЅ Р±С‹С‚СЊ РІС‹РґРµР»РµРЅ РІ Objects.
+             * РќР° СЃС‚СЂР°РЅРёС†Рµ Paint Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РЅР°С…РѕРґРёРј Terrain entity.
              */
             lts::editor::EditorSceneEntity* entity = nullptr;
 
@@ -2733,8 +3009,8 @@ bool IsActiveTerrainPaintTool() noexcept
                 layers.size());
 
             /*
-             * Поле имени нового слоя.
-             * Пустое имя допустимо — backend создаст Layer N.
+             * РџРѕР»Рµ РёРјРµРЅРё РЅРѕРІРѕРіРѕ СЃР»РѕСЏ.
+             * РџСѓСЃС‚РѕРµ РёРјСЏ РґРѕРїСѓСЃС‚РёРјРѕ вЂ” backend СЃРѕР·РґР°СЃС‚ Layer N.
              */
             ImGui::SetNextItemWidth(
                 ImGui::GetContentRegionAvail().x);
@@ -2804,8 +3080,8 @@ bool IsActiveTerrainPaintTool() noexcept
                             "Terrain layer added.";
 
                         /*
-                         * Выходим, потому что vector layers мог
-                         * перераспределить память.
+                         * Р’С‹С…РѕРґРёРј, РїРѕС‚РѕРјСѓ С‡С‚Рѕ vector layers РјРѕРі
+                         * РїРµСЂРµСЂР°СЃРїСЂРµРґРµР»РёС‚СЊ РїР°РјСЏС‚СЊ.
                          */
                         ImGui::EndDisabled();
 
@@ -2838,7 +3114,7 @@ bool IsActiveTerrainPaintTool() noexcept
             ImGui::SameLine();
 
             /*
-             * Base layer с индексом 0 удалять нельзя.
+             * Base layer СЃ РёРЅРґРµРєСЃРѕРј 0 СѓРґР°Р»СЏС‚СЊ РЅРµР»СЊР·СЏ.
              */
             ImGui::BeginDisabled(
                 g_activeLayer == 0U ||
@@ -2860,8 +3136,8 @@ bool IsActiveTerrainPaintTool() noexcept
                     g_sceneDocument.CreateSnapshot();
 
                 /*
-                 * Сначала удаляем описание слоя из SceneDocument.
-                 * При ошибке renderer восстанавливаем snapshot.
+                 * РЎРЅР°С‡Р°Р»Р° СѓРґР°Р»СЏРµРј РѕРїРёСЃР°РЅРёРµ СЃР»РѕСЏ РёР· SceneDocument.
+                 * РџСЂРё РѕС€РёР±РєРµ renderer РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј snapshot.
                  */
                 if (g_sceneDocument.
                         RemoveSelectedTerrainLayer(
@@ -2925,7 +3201,7 @@ bool IsActiveTerrainPaintTool() noexcept
             ImGui::Spacing();
 
             /*
-             * Список слоёв.
+             * РЎРїРёСЃРѕРє СЃР»РѕС‘РІ.
              */
             for (std::size_t layerIndex = 0U;
                  layerIndex < layers.size();
@@ -3122,7 +3398,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     c_str());
 
             /*
-             * Здесь отображаются Add/Delete и список слоёв.
+             * Р—РґРµСЃСЊ РѕС‚РѕР±СЂР°Р¶Р°СЋС‚СЃСЏ Add/Delete Рё СЃРїРёСЃРѕРє СЃР»РѕС‘РІ.
              */
             DrawTerrainLayerEditor();
 
@@ -3681,9 +3957,9 @@ bool IsActiveTerrainPaintTool() noexcept
             }
 
             /*
-             * Вызывается ровно один раз за frame.
-             * Кнопка открытия может находиться и в Loader,
-             * и в Heightmap.
+             * Р’С‹Р·С‹РІР°РµС‚СЃСЏ СЂРѕРІРЅРѕ РѕРґРёРЅ СЂР°Р· Р·Р° frame.
+             * РљРЅРѕРїРєР° РѕС‚РєСЂС‹С‚РёСЏ РјРѕР¶РµС‚ РЅР°С…РѕРґРёС‚СЊСЃСЏ Рё РІ Loader,
+             * Рё РІ Heightmap.
              */
             DrawCreateTerrainPopup();
         }
@@ -3693,8 +3969,8 @@ bool IsActiveTerrainPaintTool() noexcept
             const lts::editor::EditorSceneEntity& entity) noexcept
         {
             return
-                entity.editorFolder ==
-                    L"LevelData/obj_WaterPlane";
+                lts::editor::WaterPlaneEditor::
+                    IsWaterPlaneEntity(entity);
         }
 
         void DrawEnvironmentWaterPlanesPage() noexcept
@@ -3704,7 +3980,6 @@ bool IsActiveTerrainPaintTool() noexcept
 
             const auto& entities =
                 g_sceneDocument.GetEntities();
-
             std::size_t waterPlaneCount = 0U;
 
             for (const auto& entity : entities)
@@ -3722,6 +3997,48 @@ bool IsActiveTerrainPaintTool() noexcept
             ImGui::TextDisabled(
                 "Source: LevelData.xml / obj_WaterPlane");
 
+            const float buttonWidth =
+                (ImGui::GetContentRegionAvail().x -
+                    ImGui::GetStyle().ItemSpacing.x) *
+                0.5F;
+
+            ImGui::BeginDisabled(
+                g_loadedLevelDataPath.empty() ||
+                IsLevelLoading());
+
+            if (ImGui::Button(
+                    "Add Water",
+                    ImVec2(buttonWidth, 28.0F)))
+            {
+                static_cast<void>(
+                    g_waterPlaneEditor.AddWaterPlane(
+                        g_loadedLevelDataPath,
+                        g_sceneDocument,
+                        g_waterStatus));
+            }
+
+            ImGui::SameLine();
+
+            const lts::editor::EditorSceneEntity* selected =
+                g_sceneDocument.GetSelectedEntity();
+
+            ImGui::BeginDisabled(
+                selected == nullptr ||
+                !IsWaterPlaneEntity(*selected));
+
+            if (ImGui::Button(
+                    "Del Water",
+                    ImVec2(buttonWidth, 28.0F)))
+            {
+                static_cast<void>(
+                    g_waterPlaneEditor.DeleteSelectedWaterPlane(
+                        g_sceneDocument,
+                        g_waterStatus));
+            }
+
+            ImGui::EndDisabled();
+            ImGui::EndDisabled();
+
             ImGui::Spacing();
             ImGui::SeparatorText("Map Water Planes");
 
@@ -3729,54 +4046,48 @@ bool IsActiveTerrainPaintTool() noexcept
             {
                 ImGui::TextDisabled(
                     "This level has no water planes.");
-
-                return;
             }
-
-            ImGui::BeginChild(
-                "##EnvironmentWaterPlaneList",
-                ImVec2(0.0F, 240.0F),
-                true);
-
-            for (std::size_t index = 0U;
-                 index < entities.size();
-                 ++index)
+            else
             {
-                const auto& entity =
-                    entities[index];
-
-                if (!IsWaterPlaneEntity(entity))
+                if (ImGui::BeginChild(
+                        "##EnvironmentWaterPlaneList",
+                        ImVec2(0.0F, 150.0F),
+                        true))
                 {
-                    continue;
+                    for (std::size_t index = 0U;
+                         index < entities.size();
+                         ++index)
+                    {
+                        const auto& entity = entities[index];
+
+                        if (!IsWaterPlaneEntity(entity))
+                        {
+                            continue;
+                        }
+
+                        const std::string label =
+                            std::filesystem::path(
+                                entity.waterPlane->sourceName).
+                                generic_u8string();
+
+                        ImGui::PushID(static_cast<int>(index));
+
+                        if (ImGui::Selectable(
+                                label.c_str(),
+                                g_sceneDocument.GetSelectedIndex() == index))
+                        {
+                            static_cast<void>(
+                                g_sceneDocument.SelectEntityByIndex(index));
+                        }
+
+                        ImGui::PopID();
+                    }
                 }
 
-                const bool selected =
-                    g_sceneDocument.GetSelectedIndex() ==
-                    index;
-
-                const std::string label =
-                    std::filesystem::path(
-                        entity.name).
-                        generic_u8string();
-
-                ImGui::PushID(
-                    static_cast<int>(index));
-
-                if (ImGui::Selectable(
-                        label.c_str(),
-                        selected))
-                {
-                    static_cast<void>(
-                        g_sceneDocument.
-                            SelectEntityByIndex(index));
-                }
-
-                ImGui::PopID();
+                ImGui::EndChild();
             }
 
-            ImGui::EndChild();
-
-            const auto* const selected =
+            selected =
                 g_sceneDocument.GetSelectedEntity();
 
             if (
@@ -3789,31 +4100,155 @@ bool IsActiveTerrainPaintTool() noexcept
                 return;
             }
 
-            ImGui::SeparatorText(
-                "Selected Water Plane");
-
-            ImGui::TextWrapped(
-                "Name: %s",
-                std::filesystem::path(
-                    selected->name).
-                    generic_u8string().
-                    c_str());
-
-            if (selected->staticMesh.has_value())
+            if (g_waterUiEntityId != selected->id)
             {
-                ImGui::TextWrapped(
-                    "Mesh: %s",
+                g_waterUiEntityId = selected->id;
+                g_waterPendingCellSize =
+                    selected->waterPlane->cellSize;
+                g_waterName.fill('\0');
+
+                const std::string sourceName =
                     std::filesystem::path(
-                        selected->
-                            staticMesh->
-                            assetPath).
-                        generic_u8string().
-                        c_str());
+                        selected->waterPlane->sourceName).
+                        u8string();
+                const std::size_t copyCount =
+                    (std::min)(
+                        sourceName.size(),
+                        g_waterName.size() - 1U);
+
+                std::copy_n(
+                    sourceName.data(),
+                    copyCount,
+                    g_waterName.data());
             }
 
-            ImGui::Text(
-                "Plane height: %.2f",
-                selected->transform.position[1]);
+            ImGui::SeparatorText("Selected Water Plane");
+
+            if (ImGui::InputText(
+                    "Name",
+                    g_waterName.data(),
+                    g_waterName.size()))
+            {
+                const std::wstring requestedName =
+                    std::filesystem::u8path(
+                        std::string(g_waterName.data())).wstring();
+
+                lts::editor::EditorSceneEntity* const mutableEntity =
+                    g_sceneDocument.GetSelectedEntityMutable();
+
+                if (
+                    mutableEntity != nullptr &&
+                    mutableEntity->waterPlane.has_value())
+                {
+                    mutableEntity->waterPlane->sourceName = requestedName;
+                    mutableEntity->name = requestedName;
+                    g_sceneDocument.MarkModified();
+                    g_waterAssetDirty = true;
+                }
+            }
+
+            selected = g_sceneDocument.GetSelectedEntity();
+
+            if (selected == nullptr || !selected->waterPlane.has_value())
+            {
+                return;
+            }
+
+            const auto& selectedWater = *selected->waterPlane;
+
+            const auto waterToolButton =
+                [buttonWidth](
+                    const char* const label,
+                    const bool selectedTool)
+                {
+                    if (selectedTool)
+                    {
+                        ImGui::PushStyleColor(
+                            ImGuiCol_Border,
+                            ImVec4(1.0F, 0.08F, 0.08F, 1.0F));
+                        ImGui::PushStyleVar(
+                            ImGuiStyleVar_FrameBorderSize,
+                            2.0F);
+                    }
+
+                    const bool pressed =
+                        ImGui::Button(
+                            label,
+                            ImVec2(buttonWidth, 28.0F));
+
+                    if (selectedTool)
+                    {
+                        ImGui::PopStyleVar();
+                        ImGui::PopStyleColor();
+                    }
+
+                    return pressed;
+                };
+
+            if (waterToolButton("Paint", !g_waterEraser))
+            {
+                g_waterEraser = false;
+            }
+
+            ImGui::SameLine();
+
+            if (waterToolButton("Eraser", g_waterEraser))
+            {
+                g_waterEraser = true;
+            }
+
+            ImGui::TextDisabled(
+                g_waterEraser
+                    ? "Active tool: Eraser"
+                    : "Active tool: Paint");
+
+            ImGui::SliderFloat(
+                "Brush Radius",
+                &g_waterBrushRadius,
+                0.1F,
+                500.0F,
+                "%.1f");
+
+            static_cast<void>(
+                ImGui::SliderFloat(
+                    "Cell Size",
+                    &g_waterPendingCellSize,
+                    10.0F,
+                    500.0F,
+                    "%.1f"));
+
+            if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+                if (g_waterPlaneEditor.ResizeSelectedGrid(
+                        g_sceneDocument,
+                        g_waterPendingCellSize,
+                        g_waterStatus))
+                {
+                    g_waterAssetDirty = true;
+                }
+            }
+
+            float planeHeight = selectedWater.waterHeight;
+
+            if (ImGui::SliderFloat(
+                    "Plane Height",
+                    &planeHeight,
+                    -1000.0F,
+                    2000.0F,
+                    "%.2f"))
+            {
+                lts::editor::EditorSceneEntity* const mutableEntity =
+                    g_sceneDocument.GetSelectedEntityMutable();
+
+                if (
+                    mutableEntity != nullptr &&
+                    mutableEntity->waterPlane.has_value())
+                {
+                    mutableEntity->waterPlane->waterHeight = planeHeight;
+                    mutableEntity->transform.position[1] = planeHeight;
+                    g_sceneDocument.MarkModified();
+                }
+            }
 
             if (ImGui::Button(
                     "Focus Water Plane",
@@ -3831,9 +4266,85 @@ bool IsActiveTerrainPaintTool() noexcept
                     40.0F);
             }
 
-            ImGui::TextDisabled(
-                "Water editing is owned by Environment. "
-                "Objects cannot select or edit this entity.");
+            ImGui::SeparatorText("Water Properties");
+
+            lts::editor::EditorSceneEntity* const mutableEntity =
+                g_sceneDocument.GetSelectedEntityMutable();
+
+            if (
+                mutableEntity != nullptr &&
+                mutableEntity->waterPlane.has_value())
+            {
+                auto& water = *mutableEntity->waterPlane;
+                bool changed = false;
+
+                changed |= ImGui::ColorEdit3(
+                    "Water Color",
+                    water.waterColor.data());
+                changed |= ImGui::ColorEdit3(
+                    "Light Color",
+                    water.lightColor.data());
+                changed |= ImGui::ColorEdit3(
+                    "Water Surface Color",
+                    water.surfaceColor.data());
+
+                const auto slider =
+                    [&changed](
+                        const char* const label,
+                        float& value,
+                        const float minimum,
+                        const float maximum)
+                    {
+                        changed |= ImGui::DragFloat(
+                            label,
+                            &value,
+                            0.01F,
+                            minimum,
+                            maximum,
+                            "%.3f");
+                    };
+
+                slider("Far tile scale", water.farTileScale, 1.0F, 64.0F);
+                slider("Far fade start", water.farFadeStart, 1.0F, 1024.0F);
+                slider("Far fade end", water.farFadeEnd, water.farFadeStart + 0.25F, 2048.0F);
+                slider("Far tile amount", water.farTileAmount, 0.125F, 16.0F);
+                changed |= ImGui::Checkbox("Show Bounds", &water.showBounds);
+                slider("Reflect strength", water.reflectionStrength, 0.01F, 3.0F);
+                slider("Fresnel power", water.fresnelPower, 0.01F, 32.0F);
+                slider("Fresnel bumpiness", water.fresnelBumpiness, 0.125F, 16.0F);
+                slider("Refraction index", water.refractionIndex, 1.0F, 10.0F);
+                slider("Refraction perturbation", water.refractionPerturbation, 0.0F, 1.0F);
+                slider("Caustic strength", water.causticStrength, 0.0F, 1.0F);
+                slider("Caustic depth", water.causticDepth, 0.01F, water.maximumAttenuationDistance);
+                slider("Caustic tiling", water.causticTiling, 0.001F, 0.2F);
+                slider("Max attenuation distance", water.maximumAttenuationDistance, 1.0F, 1000.0F);
+                slider("Color tiling", water.colorTiling, 0.001F, 0.1F);
+                slider("Color blend", water.colorBlend, 0.0F, 1.0F);
+                slider("Bump tiling", water.bumpTiling, 0.001F, 0.2F);
+                slider("Sun bumpiness", water.sunBumpiness, 0.1F, 30.0F);
+                slider("Sun intensity", water.sunIntensity, 0.01F, 10.0F);
+                slider("Coastline width", water.coastlineWidth, 0.1F, 10.0F);
+
+                if (changed)
+                {
+                    g_sceneDocument.MarkModified();
+                    g_waterAssetDirty = true;
+                }
+            }
+
+            if (ImGui::Button(
+                    "Save Water Planes",
+                    ImVec2(
+                        ImGui::GetContentRegionAvail().x,
+                        30.0F)))
+            {
+                static_cast<void>(SaveWaterPlanes());
+            }
+
+            if (!g_waterStatus.empty())
+            {
+                ImGui::TextWrapped("%s", g_waterStatus.c_str());
+            }
         }
 
         void DrawEnvironmentPage() noexcept
@@ -4742,7 +5253,7 @@ bool IsActiveTerrainPaintTool() noexcept
                 BuildObjectViewContext();
 
             /*
-             * Главный Navbar.
+             * Р“Р»Р°РІРЅС‹Р№ Navbar.
              */
             ImGui::SetNextWindowDockID(
                 0U,
@@ -4782,7 +5293,7 @@ bool IsActiveTerrainPaintTool() noexcept
             ImGui::End();
 
             /*
-             * Второй Navbar.
+             * Р’С‚РѕСЂРѕР№ Navbar.
              */
             if (secondaryToolbarVisible)
             {
@@ -4935,6 +5446,7 @@ bool IsActiveTerrainPaintTool() noexcept
             }
                     
             UpdateTerrainBrushViewport();
+            UpdateWaterPlaneViewport();
         }
     }
 
@@ -5053,6 +5565,18 @@ bool IsActiveTerrainPaintTool() noexcept
         g_activeEnvironmentPage = EnvironmentToolbarPage::LightSetup;
         g_activeEnvironmentLightTool = EnvironmentLightTool::SunSetup;
 
+        g_waterEraser = false;
+        g_waterBrushHit = false;
+        g_waterStrokeChanged = false;
+        g_waterAssetDirty = false;
+        g_waterBrushRadius = 150.0F;
+        g_waterBrushWorldX = 0.0F;
+        g_waterBrushWorldZ = 0.0F;
+        g_waterPendingCellSize = 50.0F;
+        g_waterUiEntityId = 0U;
+        g_waterName.fill('\0');
+        g_waterStatus.clear();
+
         g_terrainEditorUi = {};
         g_terrainBrushHit = false;
         g_terrainBrushWorldX = 0.0F;
@@ -5170,6 +5694,58 @@ bool IsActiveTerrainPaintTool() noexcept
             if (engine::graphics::Failed(brushResult))
             {
                 return brushResult;
+            }
+        }
+
+        if (
+            g_activePage == LevelEditorPage::Environment &&
+            g_activeEnvironmentPage ==
+                EnvironmentToolbarPage::WaterPlanes)
+        {
+            const lts::editor::EditorSceneEntity* const selected =
+                g_sceneDocument.GetSelectedEntity();
+
+            if (
+                selected != nullptr &&
+                selected->waterPlane.has_value())
+            {
+                const auto& water = *selected->waterPlane;
+
+                if (water.showBounds)
+                {
+                    const engine::graphics::GraphicsResult boundsResult =
+                        g_terrainRenderer.RenderPlaneBounds(
+                            context,
+                            viewProjection,
+                            water.centerX,
+                            water.waterHeight,
+                            water.centerZ,
+                            water.planeWidth,
+                            water.planeDepth);
+
+                    if (engine::graphics::Failed(boundsResult))
+                    {
+                        return boundsResult;
+                    }
+                }
+
+                if (g_waterBrushHit)
+                {
+                    const engine::graphics::GraphicsResult brushResult =
+                        g_terrainRenderer.RenderPlaneBrush(
+                            context,
+                            viewProjection,
+                            g_waterBrushWorldX,
+                            water.waterHeight,
+                            g_waterBrushWorldZ,
+                            g_waterBrushRadius,
+                            g_waterEraser);
+
+                    if (engine::graphics::Failed(brushResult))
+                    {
+                        return brushResult;
+                    }
+                }
             }
         }
 

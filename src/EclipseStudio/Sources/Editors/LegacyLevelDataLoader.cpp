@@ -42,7 +42,7 @@ namespace studio::editor
         constexpr std::uint32_t ScbSignature = 0xFADC0038U;
         constexpr std::size_t MaximumReportedErrors = 12U;
         constexpr wchar_t LevelDataMeshDirectory[] = L"LevelData";
-        constexpr std::size_t MinimumWaterRegionCells = 64U;
+        constexpr std::size_t MinimumWaterRegionCells = 1U;
 
         struct MeshReference final
         {
@@ -79,7 +79,11 @@ namespace studio::editor
             bool available = false;
             bool castShadows = true;
             bool disableDistanceCulling = false;
+            bool hasStaticMesh = true;
             std::int32_t renderOrder = 0;
+
+            std::optional<engine::scene::WaterPlaneComponent>
+                waterPlane;
         };
 
         [[nodiscard]]
@@ -1847,6 +1851,162 @@ namespace studio::editor
         }
 
         [[nodiscard]]
+        bool ReadWaterPlaneComponent(
+            const std::filesystem::path& sourcePath,
+            const std::wstring& sourceName,
+            const pugi::xml_node& settings,
+            engine::scene::WaterPlaneComponent& water,
+            std::wstring& error)
+        {
+            std::ifstream input(sourcePath, std::ios::binary);
+
+            if (!input)
+            {
+                error = L"Water plane data file is missing.";
+                return false;
+            }
+
+            std::uint16_t version = 0U;
+            std::uint32_t width = 0U;
+            std::uint32_t height = 0U;
+
+            if (
+                !ReadBinary(input, version) ||
+                (version != 3U && version != 4U) ||
+                !ReadBinary(input, width) ||
+                !ReadBinary(input, height) ||
+                width == 0U ||
+                height == 0U ||
+                width > 65536U ||
+                height > 65536U ||
+                static_cast<std::uint64_t>(width) * height >
+                    16000000U)
+            {
+                error = L"Water plane grid header is invalid.";
+                return false;
+            }
+
+            const std::size_t cellCount =
+                static_cast<std::size_t>(width) * height;
+
+            water = {};
+            water.sourceName = sourceName;
+            water.savedSourceName = sourceName;
+            water.gridWidth = width;
+            water.gridHeight = height;
+            water.cells.resize(cellCount);
+
+            if (!input.read(
+                    reinterpret_cast<char*>(water.cells.data()),
+                    static_cast<std::streamsize>(cellCount)).good())
+            {
+                error = L"Water plane grid is truncated.";
+                return false;
+            }
+
+            water.waterHeight =
+                AttributeFloat(
+                    settings.attribute("waterplaneheight"),
+                    10.0F);
+            water.cellSize =
+                AttributeFloat(
+                    settings.attribute("cellgridsize"),
+                    50.0F);
+            water.planeWidth =
+                AttributeFloat(
+                    settings.attribute("total_x_size"),
+                    0.0F);
+            water.planeDepth =
+                AttributeFloat(
+                    settings.attribute("total_z_size"),
+                    0.0F);
+            water.centerX =
+                AttributeFloat(
+                    settings.attribute("center_x"),
+                    0.0F);
+            water.centerZ =
+                AttributeFloat(
+                    settings.attribute("center_z"),
+                    0.0F);
+            water.coastSmoothLevels =
+                settings.attribute("coastsmoothlevels")
+                    ? settings.attribute("coastsmoothlevels").as_int()
+                    : 2;
+
+            water.waterColor =
+                PackedColor(
+                    settings.attribute("deep_color")
+                        ? settings.attribute("deep_color").as_uint()
+                        : 0xFF245A73U);
+            water.lightColor =
+                PackedColor(
+                    settings.attribute("shallow_color")
+                        ? settings.attribute("shallow_color").as_uint()
+                        : 0xFF45808FU);
+            water.surfaceColor =
+                PackedColor(
+                    settings.attribute("atten_color")
+                        ? settings.attribute("atten_color").as_uint()
+                        : 0xFF4C7A8CU);
+
+            water.farTileScale = AttributeFloat(
+                settings.attribute("farTileScale"), 13.0F);
+            water.farFadeStart = AttributeFloat(
+                settings.attribute("farTileFadeStart"), 40.0F);
+            water.farFadeEnd = AttributeFloat(
+                settings.attribute("farTileFadeEnd"), 430.0F);
+            water.farTileAmount = AttributeFloat(
+                settings.attribute("farTileAmmount"), 16.0F);
+            water.farTileBumpiness = AttributeFloat(
+                settings.attribute("farTileBumpiness"), 1.0F);
+            water.reflectionStrength = AttributeFloat(
+                settings.attribute("reflectionIntensity"), 1.0F);
+            water.fresnelPower = AttributeFloat(
+                settings.attribute("fresnelPow"), 8.0F);
+            water.fresnelBumpiness = AttributeFloat(
+                settings.attribute("fresnelBumpiness"), 16.0F);
+            water.refractionIndex = AttributeFloat(
+                settings.attribute("refraction_index"), 3.0F);
+            water.refractionPerturbation = AttributeFloat(
+                settings.attribute("refractionPerturbation"), 0.1F);
+            water.causticStrength = AttributeFloat(
+                settings.attribute("caustic_strength"), 0.5F);
+            water.causticDepth = AttributeFloat(
+                settings.attribute("caustic_depth"), 10.0F);
+            water.causticTiling = AttributeFloat(
+                settings.attribute("caustic_tile"), 0.05F);
+            water.maximumAttenuationDistance = AttributeFloat(
+                settings.attribute("editorMaxAttDist"),
+                (std::max)(
+                    1.0F,
+                    AttributeFloat(
+                        settings.attribute("atten_dist"),
+                        10.0F) * 3.0F));
+            water.attenuationDistance = AttributeFloat(
+                settings.attribute("atten_dist"), 10.0F);
+            water.colorTiling = AttributeFloat(
+                settings.attribute("waterColorTile"), 0.01F);
+            water.colorBlend = AttributeFloat(
+                settings.attribute("waterColorBlend"), 0.5F);
+            water.bumpiness = AttributeFloat(
+                settings.attribute("bumpness"), 40.0F);
+            water.bumpTiling = AttributeFloat(
+                settings.attribute("tile_size"), 0.05F);
+            water.sunCosinePower = AttributeFloat(
+                settings.attribute("specular"), 400.0F);
+            water.sunBumpiness = AttributeFloat(
+                settings.attribute("specBumpiness"), 1.0F);
+            water.sunIntensity = AttributeFloat(
+                settings.attribute("specIntensity"), 1.0F);
+            water.specularTiling = AttributeFloat(
+                settings.attribute("specularTiling"), 5.0F);
+            water.coastlineWidth = AttributeFloat(
+                settings.attribute("shallow_depth"), 5.0F);
+
+            return true;
+        }
+
+        [[nodiscard]]
         bool WriteWaterMaterial(
             const std::filesystem::path& workspaceRoot,
             const std::filesystem::path& destinationMeshPath,
@@ -2798,9 +2958,38 @@ namespace studio::editor
                     bool converted = false;
                     std::wstring importError;
 
+                    engine::scene::WaterPlaneComponent
+                        waterPlane;
+
+                    if (!ReadWaterPlaneComponent(
+                            sourcePath,
+                            sourceName.wstring(),
+                            settings,
+                            waterPlane,
+                            importError))
+                    {
+                        ++result.stats.failedMeshes;
+                        AddError(
+                            reportedErrors,
+                            "Water plane data failed:",
+                            sourcePath);
+                        continue;
+                    }
+
+                    const bool hasPaintedCells =
+                        std::any_of(
+                            waterPlane.cells.begin(),
+                            waterPlane.cells.end(),
+                            [](const std::uint8_t value)
+                            {
+                                return value != 0U;
+                            });
+
                     ++result.stats.uniqueMeshes;
 
-                    if (!ImportWaterPlaneMesh(
+                    if (
+                        hasPaintedCells &&
+                        !ImportWaterPlaneMesh(
                             workspaceRoot,
                             sourcePath,
                             levelDataPath,
@@ -2849,9 +3038,13 @@ namespace studio::editor
                             0.0F)
                     };
                     pending.available = true;
+                    pending.hasStaticMesh =
+                        hasPaintedCells;
                     pending.castShadows = false;
                     pending.disableDistanceCulling = true;
                     pending.renderOrder = 100;
+                    pending.waterPlane =
+                        std::move(waterPlane);
                     pending.objectIndex = objectIndex;
                     pendingObjects.push_back(std::move(pending));
                     ++result.stats.waterPlaneObjects;
@@ -2988,28 +3181,33 @@ namespace studio::editor
                 entity.editorFolder =
                     pending.editorFolder;
 
-                entity.staticMesh.emplace();
+                if (pending.hasStaticMesh)
+                {
+                    entity.staticMesh.emplace();
 
-                const std::filesystem::path& assetPath =
-                    pending.logicalMeshPath.empty()
-                        ? pending.meshPath
-                        : pending.logicalMeshPath;
+                    const std::filesystem::path& assetPath =
+                        pending.logicalMeshPath.empty()
+                            ? pending.meshPath
+                            : pending.logicalMeshPath;
 
-                entity.staticMesh->assetPath =
-                    assetPath.
-                        lexically_normal().
-                        generic_wstring();
+                    entity.staticMesh->assetPath =
+                        assetPath.
+                            lexically_normal().
+                            generic_wstring();
 
-                entity.staticMesh->visible = true;
+                    entity.staticMesh->visible = true;
 
-                entity.staticMesh->castShadows =
-                    pending.castShadows;
+                    entity.staticMesh->castShadows =
+                        pending.castShadows;
 
-                entity.staticMesh->disableDistanceCulling =
-                    pending.disableDistanceCulling;
+                    entity.staticMesh->disableDistanceCulling =
+                        pending.disableDistanceCulling;
 
-                entity.staticMesh->renderOrder =
-                    pending.renderOrder;
+                    entity.staticMesh->renderOrder =
+                        pending.renderOrder;
+                }
+
+                entity.waterPlane = pending.waterPlane;
 
                 result.entities.push_back(
                     std::move(entity));

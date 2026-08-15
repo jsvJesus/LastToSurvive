@@ -86,8 +86,8 @@ namespace lts::editor
             DirectX::XMFLOAT4 baseColor;
             DirectX::XMFLOAT4 materialParameters;
 
-            // xyz = РЅР°РїСЂР°РІР»РµРЅРёРµ РѕС‚ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё Рє СЃРѕР»РЅС†Сѓ.
-            // w = РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ.
+            // xyz = Р Р…Р В°Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Р С•РЎвЂљ Р С—Р С•Р Р†Р ВµРЎР‚РЎвЂ¦Р Р…Р С•РЎРѓРЎвЂљР С‘ Р С” РЎРѓР С•Р В»Р Р…РЎвЂ РЎС“.
+            // w = Р Р…Р С•РЎР‚Р СР В°Р В»Р С‘Р В·Р С•Р Р†Р В°Р Р…Р Р…Р В°РЎРЏ Р С‘Р Р…РЎвЂљР ВµР Р…РЎРѓР С‘Р Р†Р Р…Р С•РЎРѓРЎвЂљРЎРЉ.
             DirectX::XMFLOAT4 sunDirectionIntensity;
 
             DirectX::XMFLOAT4 sunColor;
@@ -628,8 +628,8 @@ namespace lts::editor
                 };
 
                 /*
-                 * РЎС‚Р°СЂРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЂР°РІРЅРѕ 4.
-                 * Р”Р»СЏ shader РЅРѕСЂРјР°Р»РёР·СѓРµРј РµРіРѕ Рє 1.
+                 * Р РЋРЎвЂљР В°РЎР‚Р С•Р Вµ Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ Р С—Р С• РЎС“Р СР С•Р В»РЎвЂЎР В°Р Р…Р С‘РЎР‹ РЎР‚Р В°Р Р†Р Р…Р С• 4.
+                 * Р вЂќР В»РЎРЏ shader Р Р…Р С•РЎР‚Р СР В°Р В»Р С‘Р В·РЎС“Р ВµР С Р ВµР С–Р С• Р С” 1.
                  */
                 result.intensity =
                     (std::max)(light.intensity, 0.0F) *
@@ -1673,7 +1673,7 @@ namespace lts::editor
             }
 
             /*
-             * Blend, РѕРґРЅРѕСЃС‚РѕСЂРѕРЅРЅРёР№ РјР°С‚РµСЂРёР°Р».
+             * Blend, Р С•Р Т‘Р Р…Р С•РЎРѓРЎвЂљР С•РЎР‚Р С•Р Р…Р Р…Р С‘Р в„– Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В».
              */
             pipelineDescription.rasterizer.cullMode =
                 engine::graphics::CullMode::Back;
@@ -1946,8 +1946,8 @@ namespace lts::editor
             }
 
             /*
-             * Opaque Рё Mask РёСЃРїРѕР»СЊР·СѓСЋС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ rasterizer/depth state.
-             * Alpha Mask РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ StaticMesh.hlsl С‡РµСЂРµР· clip().
+             * Opaque Р С‘ Mask Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“РЎР‹РЎвЂљ Р С•Р Т‘Р С‘Р Р…Р В°Р С”Р С•Р Р†РЎвЂ№Р в„– rasterizer/depth state.
+             * Alpha Mask Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…РЎРЏР ВµРЎвЂљРЎРѓРЎРЏ Р Р† StaticMesh.hlsl РЎвЂЎР ВµРЎР‚Р ВµР В· clip().
              */
             return doubleSided
                 ? doubleSidedPipeline_
@@ -2260,8 +2260,8 @@ namespace lts::editor
                         alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
 
                         /*
-                         * РЎС‚Р°СЂС‹Р№ road pass РёСЃРїРѕР»СЊР·РѕРІР°Р» alpha РґР»СЏ СЃРјРµС€РёРІР°РЅРёСЏ РєСЂР°С‘РІ,
-                         * РЅРѕ РЅРµ РІС‹РїРѕР»РЅСЏР» alpha clip.
+                         * Р РЋРЎвЂљР В°РЎР‚РЎвЂ№Р в„– road pass Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р В» alpha Р Т‘Р В»РЎРЏ РЎРѓР СР ВµРЎв‚¬Р С‘Р Р†Р В°Р Р…Р С‘РЎРЏ Р С”РЎР‚Р В°РЎвЂР Р†,
+                         * Р Р…Р С• Р Р…Р Вµ Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…РЎРЏР В» alpha clip.
                          */
                         constants.materialParameters.z =
                             !material.roadSurface &&
@@ -2296,6 +2296,29 @@ namespace lts::editor
                             cachedMesh->materials.size() &&
                         cachedMesh->materials[
                             submesh->materialSlot].waterSurface;
+
+                    if (
+                        waterSurface &&
+                        entity.waterPlane.has_value())
+                    {
+                        const auto& water = *entity.waterPlane;
+
+                        constants.legacyTextureFlags =
+                        {
+                            water.lightColor[0],
+                            water.lightColor[1],
+                            water.lightColor[2],
+                            1.0F
+                        };
+                        constants.legacyFeatureFlags =
+                        {
+                            water.surfaceColor[0],
+                            water.surfaceColor[1],
+                            water.surfaceColor[2],
+                            1.0F
+                        };
+                    }
+
                     const engine::graphics::PipelineStateHandle selectedPipeline =
                         SelectMaterialPipeline(
                             alphaMode,
@@ -2381,6 +2404,9 @@ namespace lts::editor
                 std::wstring assetPath;
                 std::vector<InstanceData> instances;
                 std::int32_t renderOrder = 0;
+                DirectX::XMFLOAT4 waterLightColor{};
+                DirectX::XMFLOAT4 waterSurfaceColor{};
+                bool hasWaterProperties = false;
             };
 
             try
@@ -2554,6 +2580,28 @@ namespace lts::editor
                         batch.assetPath = entity.staticMesh->assetPath;
                         batch.renderOrder =
                             entity.staticMesh->renderOrder;
+
+                        if (entity.waterPlane.has_value())
+                        {
+                            const auto& water = *entity.waterPlane;
+
+                            batch.waterLightColor =
+                            {
+                                water.lightColor[0],
+                                water.lightColor[1],
+                                water.lightColor[2],
+                                1.0F
+                            };
+                            batch.waterSurfaceColor =
+                            {
+                                water.surfaceColor[0],
+                                water.surfaceColor[1],
+                                water.surfaceColor[2],
+                                1.0F
+                            };
+                            batch.hasWaterProperties = true;
+                        }
+
                         batch.instances.reserve(8U);
                         batches.push_back(std::move(batch));
                         batchLookup.emplace(key, batchIndex);
@@ -2648,8 +2696,8 @@ namespace lts::editor
                 std::array<engine::graphics::TextureHandle, 6U> boundMaterialTextures{};
 
                 /*
-                 * РЎР±СЂР°СЃС‹РІР°РµРј material SRV РѕРґРёРЅ СЂР°Р· РїРµСЂРµРґ РІСЃРµРј StaticMesh pass.
-                 * Р”Р°Р»СЊС€Рµ РјРµРЅСЏРµРј С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅРѕ РёР·РјРµРЅРёРІС€РёРµСЃСЏ slots.
+                 * Р РЋР В±РЎР‚Р В°РЎРѓРЎвЂ№Р Р†Р В°Р ВµР С material SRV Р С•Р Т‘Р С‘Р Р… РЎР‚Р В°Р В· Р С—Р ВµРЎР‚Р ВµР Т‘ Р Р†РЎРѓР ВµР С StaticMesh pass.
+                 * Р вЂќР В°Р В»РЎРЉРЎв‚¬Р Вµ Р СР ВµР Р…РЎРЏР ВµР С РЎвЂљР С•Р В»РЎРЉР С”Р С• РЎР‚Р ВµР В°Р В»РЎРЉР Р…Р С• Р С‘Р В·Р СР ВµР Р…Р С‘Р Р†РЎв‚¬Р С‘Р ВµРЎРѓРЎРЏ slots.
                  */
                 result = context.UnbindShaderResources(
                     engine::graphics::ShaderStage::Pixel,
@@ -2662,8 +2710,8 @@ namespace lts::editor
                 }
 
                 /*
-                 * Р’СЃРµ StaticMesh РјР°С‚РµСЂРёР°Р»С‹ СЃРµР№С‡Р°СЃ РёСЃРїРѕР»СЊР·СѓСЋС‚ РѕРґРёРЅ material sampler.
-                 * Р‘РёРЅРґРёРј РµРіРѕ РѕРґРёРЅ СЂР°Р· РЅР° РІРµСЃСЊ pass.
+                 * Р вЂ™РЎРѓР Вµ StaticMesh Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»РЎвЂ№ РЎРѓР ВµР в„–РЎвЂЎР В°РЎРѓ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“РЎР‹РЎвЂљ Р С•Р Т‘Р С‘Р Р… material sampler.
+                 * Р вЂР С‘Р Р…Р Т‘Р С‘Р С Р ВµР С–Р С• Р С•Р Т‘Р С‘Р Р… РЎР‚Р В°Р В· Р Р…Р В° Р Р†Р ВµРЎРѓРЎРЉ pass.
                  */
                 if (EnsureMaterialSampler())
                 {
@@ -2782,8 +2830,8 @@ namespace lts::editor
                                 alphaMode = material.roadSurface ? engine::assets::MaterialAlphaMode::Blend : material.desc.alphaMode;
 
                                 /*
-                                 * РЎС‚Р°СЂС‹Р№ road pass РёСЃРїРѕР»СЊР·РѕРІР°Р» alpha РґР»СЏ СЃРјРµС€РёРІР°РЅРёСЏ РєСЂР°С‘РІ,
-                                 * РЅРѕ РЅРµ РІС‹РїРѕР»РЅСЏР» alpha clip.
+                                 * Р РЋРЎвЂљР В°РЎР‚РЎвЂ№Р в„– road pass Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р В» alpha Р Т‘Р В»РЎРЏ РЎРѓР СР ВµРЎв‚¬Р С‘Р Р†Р В°Р Р…Р С‘РЎРЏ Р С”РЎР‚Р В°РЎвЂР Р†,
+                                 * Р Р…Р С• Р Р…Р Вµ Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…РЎРЏР В» alpha clip.
                                  */
                                 constants.materialParameters.z =
                                     !material.roadSurface &&
@@ -2845,6 +2893,17 @@ namespace lts::editor
                                     cachedMesh->materials.size() &&
                                 cachedMesh->materials[
                                     submesh->materialSlot].waterSurface;
+
+                            if (
+                                waterSurface &&
+                                batch.hasWaterProperties)
+                            {
+                                constants.legacyTextureFlags =
+                                    batch.waterLightColor;
+                                constants.legacyFeatureFlags =
+                                    batch.waterSurfaceColor;
+                            }
+
                             const engine::graphics::PipelineStateHandle selectedPipeline =
                                 SelectMaterialPipeline(
                                     alphaMode,
@@ -2982,9 +3041,9 @@ namespace lts::editor
                 }
 
                 /*
-                 * TextureHandle Рё SamplerHandle РЅРµ С‚СЂРѕРіР°РµРј.
-                 * Р—РґРµСЃСЊ РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ С†РІРµС‚, РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ,
-                 * Double Sided Рё РѕСЃС‚Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹.
+                 * TextureHandle Р С‘ SamplerHandle Р Р…Р Вµ РЎвЂљРЎР‚Р С•Р С–Р В°Р ВµР С.
+                 * Р вЂ”Р Т‘Р ВµРЎРѓРЎРЉ Р С•Р В±Р Р…Р С•Р Р†Р В»РЎРЏРЎР‹РЎвЂљРЎРѓРЎРЏ РЎвЂ Р Р†Р ВµРЎвЂљ, Р С—РЎР‚Р С•Р В·РЎР‚Р В°РЎвЂЎР Р…Р С•РЎРѓРЎвЂљРЎРЉ,
+                 * Double Sided Р С‘ Р С•РЎРѓРЎвЂљР В°Р В»РЎРЉР Р…РЎвЂ№Р Вµ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚РЎвЂ№.
                  */
                 cachedMesh->materials[materialSlot].desc =
                     material;
@@ -3034,8 +3093,8 @@ namespace lts::editor
                     meshes_.find(key);
 
                 /*
-                 * Р•СЃР»Рё mesh РµС‰С‘ РЅРµ Р·Р°РіСЂСѓР¶РµРЅ, С‚Рѕ РїСЂРё РїРµСЂРІРѕРј
-                 * СЂРµРЅРґРµСЂРµ РѕРЅ СЃСЂР°Р·Сѓ РїСЂРѕС‡РёС‚Р°РµС‚ РЅРѕРІС‹Р№ РјР°С‚РµСЂРёР°Р».
+                 * Р вЂўРЎРѓР В»Р С‘ mesh Р ВµРЎвЂ°РЎвЂ Р Р…Р Вµ Р В·Р В°Р С–РЎР‚РЎС“Р В¶Р ВµР Р…, РЎвЂљР С• Р С—РЎР‚Р С‘ Р С—Р ВµРЎР‚Р Р†Р С•Р С
+                 * РЎР‚Р ВµР Р…Р Т‘Р ВµРЎР‚Р Вµ Р С•Р Р… РЎРѓРЎР‚Р В°Р В·РЎС“ Р С—РЎР‚Р С•РЎвЂЎР С‘РЎвЂљР В°Р ВµРЎвЂљ Р Р…Р С•Р Р†РЎвЂ№Р в„– Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В».
                  */
                 if (found == meshes_.end())
                 {
@@ -3047,6 +3106,58 @@ namespace lts::editor
                 LoadMaterials(
                     path,
                     found->second.materials);
+
+                return true;
+            }
+            catch (...)
+            {
+                return false;
+            }
+        }
+
+        [[nodiscard]]
+        bool ReloadMesh(
+            const std::wstring& assetPath) noexcept
+        {
+            if (!initialized_ || device_ == nullptr)
+            {
+                return false;
+            }
+
+            try
+            {
+                std::filesystem::path path(assetPath);
+
+                if (!path.is_absolute())
+                {
+                    path =
+                        std::filesystem::current_path() /
+                        path;
+                }
+
+                const std::wstring key =
+                    LowercasePath(
+                        path.lexically_normal().wstring());
+
+                failedMeshes_.erase(key);
+
+                const auto found = meshes_.find(key);
+
+                if (found == meshes_.end())
+                {
+                    return true;
+                }
+
+                if (
+                    found->second.gpu != nullptr &&
+                    engine::graphics::Failed(
+                        found->second.gpu->Release(*device_)))
+                {
+                    return false;
+                }
+
+                meshes_.erase(found);
+                spatialGridRevision_ = 0U;
 
                 return true;
             }
@@ -3226,8 +3337,8 @@ namespace lts::editor
                         if (!inserted && entry->second != path)
                         {
                             /*
-                             * РџСѓСЃС‚РѕР№ path РѕР·РЅР°С‡Р°РµС‚ РЅРµРѕРґРЅРѕР·РЅР°С‡РЅРѕРµ РіР»РѕР±Р°Р»СЊРЅРѕРµ РёРјСЏ.
-                             * РўР°РєРѕР№ СЂРµСЃСѓСЂСЃ РЅРµР»СЊР·СЏ РјРѕР»С‡Р° Р±СЂР°С‚СЊ РёР· С‡СѓР¶РѕРіРѕ РїР°РєРµС‚Р°.
+                             * Р СџРЎС“РЎРѓРЎвЂљР С•Р в„– path Р С•Р В·Р Р…Р В°РЎвЂЎР В°Р ВµРЎвЂљ Р Р…Р ВµР С•Р Т‘Р Р…Р С•Р В·Р Р…Р В°РЎвЂЎР Р…Р С•Р Вµ Р С–Р В»Р С•Р В±Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘Р СРЎРЏ.
+                             * Р СћР В°Р С”Р С•Р в„– РЎР‚Р ВµРЎРѓРЎС“РЎР‚РЎРѓ Р Р…Р ВµР В»РЎРЉР В·РЎРЏ Р СР С•Р В»РЎвЂЎР В° Р В±РЎР‚Р В°РЎвЂљРЎРЉ Р С‘Р В· РЎвЂЎРЎС“Р В¶Р С•Р С–Р С• Р С—Р В°Р С”Р ВµРЎвЂљР В°.
                              */
                             entry->second.clear();
                         }
@@ -3413,8 +3524,8 @@ namespace lts::editor
                 }
 
                 /*
-                 * ImagesDir РІ СЃС‚Р°СЂРѕРј .mat Р·Р°РјРµРЅСЏРµС‚ СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ РїР°РїРєСѓ Textures.
-                 * Р•РіРѕ РЅРµР»СЊР·СЏ РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ РёР»Рё РїСЂРѕРґРѕР»Р¶Р°С‚СЊ РіР»РѕР±Р°Р»СЊРЅС‹Р№ РїРѕРёСЃРє.
+                 * ImagesDir Р Р† РЎРѓРЎвЂљР В°РЎР‚Р С•Р С .mat Р В·Р В°Р СР ВµР Р…РЎРЏР ВµРЎвЂљ РЎРѓРЎвЂљР В°Р Р…Р Т‘Р В°РЎР‚РЎвЂљР Р…РЎС“РЎР‹ Р С—Р В°Р С—Р С”РЎС“ Textures.
+                 * Р вЂўР С–Р С• Р Р…Р ВµР В»РЎРЉР В·РЎРЏ Р С‘Р С–Р Р…Р С•РЎР‚Р С‘РЎР‚Р С•Р Р†Р В°РЎвЂљРЎРЉ Р С‘Р В»Р С‘ Р С—РЎР‚Р С•Р Т‘Р С•Р В»Р В¶Р В°РЎвЂљРЎРЉ Р С–Р В»Р С•Р В±Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Р С—Р С•Р С‘РЎРѓР С”.
                  */
                 if (!imagesDirectory.empty())
                 {
@@ -3461,8 +3572,8 @@ namespace lts::editor
                     }
 
                     /*
-                     * Р’ С‡Р°СЃС‚Рё СЃС‚Р°СЂС‹С… РїР°РєРµС‚РѕРІ ImagesDir Р·Р°РїРёСЃР°РЅ
-                     * РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєР°С‚Р°Р»РѕРіР° РјР°С‚РµСЂРёР°Р»Р° РёР»Рё РїР°РєРµС‚Р°.
+                     * Р вЂ™ РЎвЂЎР В°РЎРѓРЎвЂљР С‘ РЎРѓРЎвЂљР В°РЎР‚РЎвЂ№РЎвЂ¦ Р С—Р В°Р С”Р ВµРЎвЂљР С•Р Р† ImagesDir Р В·Р В°Р С—Р С‘РЎРѓР В°Р Р…
+                     * Р С•РЎвЂљР Р…Р С•РЎРѓР С‘РЎвЂљР ВµР В»РЎРЉР Р…Р С• Р С”Р В°РЎвЂљР В°Р В»Р С•Р С–Р В° Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»Р В° Р С‘Р В»Р С‘ Р С—Р В°Р С”Р ВµРЎвЂљР В°.
                      */
                     const std::filesystem::path relativeImages =
                         std::filesystem::u8path(
@@ -3669,9 +3780,9 @@ namespace lts::editor
                         cached.type = std::move(legacy.type);
 
                         /*
-                         * Р’ СЃС‚Р°СЂРѕРј СЂРµРЅРґРµСЂРµ РґРѕСЂРѕРіРё С€Р»Рё РѕС‚РґРµР»СЊРЅС‹Рј pass:
-                         * alpha РёСЃРїРѕР»СЊР·РѕРІР°Р»Р°СЃСЊ РґР»СЏ РєСЂР°С‘РІ, РЅРѕ alpha clip
-                         * РґР»СЏ FILL_ROADS РЅРµ РІС‹РїРѕР»РЅСЏР»СЃСЏ.
+                         * Р вЂ™ РЎРѓРЎвЂљР В°РЎР‚Р С•Р С РЎР‚Р ВµР Р…Р Т‘Р ВµРЎР‚Р Вµ Р Т‘Р С•РЎР‚Р С•Р С–Р С‘ РЎв‚¬Р В»Р С‘ Р С•РЎвЂљР Т‘Р ВµР В»РЎРЉР Р…РЎвЂ№Р С pass:
+                         * alpha Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р В»Р В°РЎРѓРЎРЉ Р Т‘Р В»РЎРЏ Р С”РЎР‚Р В°РЎвЂР Р†, Р Р…Р С• alpha clip
+                         * Р Т‘Р В»РЎРЏ FILL_ROADS Р Р…Р Вµ Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…РЎРЏР В»РЎРѓРЎРЏ.
                          */
                         for (const auto& component : materialPath)
                         {
@@ -4291,6 +4402,14 @@ namespace lts::editor
         return
             impl_ != nullptr &&
             impl_->ReloadMaterials(assetPath);
+    }
+
+    bool StaticMeshRenderer::ReloadMesh(
+        const std::wstring& assetPath) noexcept
+    {
+        return
+            impl_ != nullptr &&
+            impl_->ReloadMesh(assetPath);
     }
 
     bool StaticMeshRenderer::Initialize(

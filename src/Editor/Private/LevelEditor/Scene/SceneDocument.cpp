@@ -1429,6 +1429,12 @@ namespace lts::editor
         return dirty_;
     }
 
+    void SceneDocument::MarkModified() noexcept
+    {
+        world_.MarkChanged();
+        dirty_ = true;
+    }
+
     void SceneDocument::MarkSaved() noexcept
     {
         dirty_ = false;

@@ -2871,6 +2871,83 @@ namespace lts::editor
         }
 
         [[nodiscard]]
+        engine::graphics::GraphicsResult RenderOverlayLines(
+            engine::graphics::CommandContext& context,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const BrushVertex* const vertices,
+            const std::uint32_t vertexCount) noexcept
+        {
+            if (
+                vertices == nullptr ||
+                vertexCount == 0U ||
+                vertexCount > TerrainBrushVertexCount)
+            {
+                return engine::graphics::GraphicsResult::Success;
+            }
+
+            const BrushConstants constants{viewProjection};
+
+            engine::graphics::GraphicsResult result =
+                context.UpdateBuffer(
+                    brushVertexBuffer_,
+                    vertices,
+                    static_cast<std::size_t>(vertexCount) *
+                        sizeof(BrushVertex));
+
+            if (engine::graphics::Failed(result))
+            {
+                return result;
+            }
+
+            result = context.UpdateBuffer(
+                brushConstantBuffer_,
+                &constants,
+                sizeof(constants));
+
+            if (engine::graphics::Failed(result))
+            {
+                return result;
+            }
+
+            result = context.SetGraphicsPipeline(brushPipeline_);
+
+            const engine::graphics::VertexBufferBinding binding
+            {
+                brushVertexBuffer_,
+                sizeof(BrushVertex),
+                0U
+            };
+
+            if (!engine::graphics::Failed(result))
+            {
+                result = context.SetVertexBuffers(0U, &binding, 1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result = context.SetConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    0U,
+                    &brushConstantBuffer_,
+                    1U);
+            }
+
+            if (!engine::graphics::Failed(result))
+            {
+                result = context.Draw(vertexCount, 0U);
+            }
+
+            static_cast<void>(
+                context.UnbindConstantBuffers(
+                    engine::graphics::ShaderStage::Vertex,
+                    0U,
+                    1U));
+
+            context.UnbindGraphicsPipeline();
+            return result;
+        }
+
+        [[nodiscard]]
         engine::graphics::GraphicsResult RenderBrush(
             engine::graphics::CommandContext& context,
             const SceneDocument& document,
@@ -2956,74 +3033,124 @@ namespace lts::editor
                 return engine::graphics::GraphicsResult::Success;
             }
 
-            const BrushConstants constants{viewProjection};
-
-            engine::graphics::GraphicsResult result =
-                context.UpdateBuffer(
-                brushVertexBuffer_,
+            return RenderOverlayLines(
+                context,
+                viewProjection,
                 vertices.data(),
-                sizeof(vertices));
+                vertexCount);
+        }
 
-            if (engine::graphics::Failed(result))
+        [[nodiscard]]
+        engine::graphics::GraphicsResult RenderPlaneBrush(
+            engine::graphics::CommandContext& context,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const float worldX,
+            const float worldY,
+            const float worldZ,
+            const float radius,
+            const bool erase) noexcept
+        {
+            if (
+                !loaded_ ||
+                !brushPipeline_.IsValid() ||
+                radius <= 0.0F)
             {
-                return result;
+                return engine::graphics::GraphicsResult::Success;
             }
 
-            result =
-                context.UpdateBuffer(
-                    brushConstantBuffer_,
-                    &constants,
-                    sizeof(constants));
+            std::array<BrushVertex, TerrainBrushVertexCount> vertices{};
 
-            if (engine::graphics::Failed(result))
+            const DirectX::XMFLOAT4 color =
+                erase
+                    ? DirectX::XMFLOAT4{0.95F, 0.18F, 0.12F, 1.0F}
+                    : DirectX::XMFLOAT4{0.10F, 0.70F, 1.0F, 1.0F};
+
+            std::uint32_t vertexCount = 0U;
+
+            for (std::uint32_t segment = 0U;
+                 segment < TerrainBrushSegmentCount;
+                 ++segment)
             {
-                return result;
+                const float angle0 =
+                    DirectX::XM_2PI *
+                    static_cast<float>(segment) /
+                    static_cast<float>(TerrainBrushSegmentCount);
+                const float angle1 =
+                    DirectX::XM_2PI *
+                    static_cast<float>(segment + 1U) /
+                    static_cast<float>(TerrainBrushSegmentCount);
+
+                vertices[vertexCount++] =
+                {
+                    {
+                        worldX + std::cos(angle0) * radius,
+                        worldY + 0.35F,
+                        worldZ + std::sin(angle0) * radius
+                    },
+                    color
+                };
+
+                vertices[vertexCount++] =
+                {
+                    {
+                        worldX + std::cos(angle1) * radius,
+                        worldY + 0.35F,
+                        worldZ + std::sin(angle1) * radius
+                    },
+                    color
+                };
             }
 
-            result =
-                context.SetGraphicsPipeline(
-                    brushPipeline_);
+            return RenderOverlayLines(
+                context,
+                viewProjection,
+                vertices.data(),
+                vertexCount);
+        }
 
-            const engine::graphics::VertexBufferBinding binding
+        [[nodiscard]]
+        engine::graphics::GraphicsResult RenderPlaneBounds(
+            engine::graphics::CommandContext& context,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            const float centerX,
+            const float worldY,
+            const float centerZ,
+            const float width,
+            const float depth) noexcept
+        {
+            if (
+                !loaded_ ||
+                !brushPipeline_.IsValid() ||
+                width <= 0.0F ||
+                depth <= 0.0F)
             {
-                brushVertexBuffer_,
-                sizeof(BrushVertex),
-                0U
-            };
-
-            if (!engine::graphics::Failed(result))
-            {
-                result =
-                    context.SetVertexBuffers(
-                        0U,
-                        &binding,
-                        1U);
+                return engine::graphics::GraphicsResult::Success;
             }
 
-            if (!engine::graphics::Failed(result))
-            {
-                result =
-                    context.SetConstantBuffers(
-                        engine::graphics::ShaderStage::Vertex,
-                        0U,
-                        &brushConstantBuffer_,
-                        1U);
-            }
+            const float minimumX = centerX - width * 0.5F;
+            const float maximumX = centerX + width * 0.5F;
+            const float minimumZ = centerZ - depth * 0.5F;
+            const float maximumZ = centerZ + depth * 0.5F;
+            const float y = worldY + 0.35F;
+            const DirectX::XMFLOAT4 color{0.20F, 0.85F, 1.0F, 1.0F};
 
-            if (!engine::graphics::Failed(result))
-            {
-                result = context.Draw(vertexCount, 0U);
-            }
+            const std::array<BrushVertex, 8U> vertices
+            {{
+                {{minimumX, y, minimumZ}, color},
+                {{maximumX, y, minimumZ}, color},
+                {{maximumX, y, minimumZ}, color},
+                {{maximumX, y, maximumZ}, color},
+                {{maximumX, y, maximumZ}, color},
+                {{minimumX, y, maximumZ}, color},
+                {{minimumX, y, maximumZ}, color},
+                {{minimumX, y, minimumZ}, color}
+            }};
 
-            static_cast<void>(
-                context.UnbindConstantBuffers(
-                    engine::graphics::ShaderStage::Vertex,
-                    0U,
-                    1U));
-
-            context.UnbindGraphicsPipeline();
-
-            return result;
+            return RenderOverlayLines(
+                context,
+                viewProjection,
+                vertices.data(),
+                static_cast<std::uint32_t>(vertices.size()));
         }
 
         [[nodiscard]]
@@ -3088,10 +3215,10 @@ namespace lts::editor
             activeMaskCount_ = requiredMaskCount;
 
             /*
-             * При загрузке уровня Terrain Asset может содержать только Base Layer,
-             * а дополнительные слои хранятся в Level Scene.
+             * РџСЂРё Р·Р°РіСЂСѓР·РєРµ СѓСЂРѕРІРЅСЏ Terrain Asset РјРѕР¶РµС‚ СЃРѕРґРµСЂР¶Р°С‚СЊ С‚РѕР»СЊРєРѕ Base Layer,
+             * Р° РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ СЃР»РѕРё С…СЂР°РЅСЏС‚СЃСЏ РІ Level Scene.
              *
-             * После вычисления нужного количества масок повторно читаем .paint.
+             * РџРѕСЃР»Рµ РІС‹С‡РёСЃР»РµРЅРёСЏ РЅСѓР¶РЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° РјР°СЃРѕРє РїРѕРІС‚РѕСЂРЅРѕ С‡РёС‚Р°РµРј .paint.
              */
             if (requiredMaskCount > previousMaskCount)
             {
@@ -3154,7 +3281,7 @@ namespace lts::editor
                 static_cast<std::uint32_t>(pixelCount64);
 
             /*
-             * Удаляем канал выбранного слоя и сдвигаем последующие слои.
+             * РЈРґР°Р»СЏРµРј РєР°РЅР°Р» РІС‹Р±СЂР°РЅРЅРѕРіРѕ СЃР»РѕСЏ Рё СЃРґРІРёРіР°РµРј РїРѕСЃР»РµРґСѓСЋС‰РёРµ СЃР»РѕРё.
              */
             for (std::uint32_t pixel = 0U; pixel < pixelCount; ++pixel)
             {
@@ -5354,5 +5481,43 @@ namespace lts::editor
             worldZ,
             radius,
             erase);
+    }
+
+    engine::graphics::GraphicsResult TerrainRenderer::RenderPlaneBrush(
+        engine::graphics::CommandContext& context,
+        const DirectX::XMFLOAT4X4& viewProjection,
+        const float worldX,
+        const float worldY,
+        const float worldZ,
+        const float radius,
+        const bool erase) noexcept
+    {
+        return impl_->RenderPlaneBrush(
+            context,
+            viewProjection,
+            worldX,
+            worldY,
+            worldZ,
+            radius,
+            erase);
+    }
+
+    engine::graphics::GraphicsResult TerrainRenderer::RenderPlaneBounds(
+        engine::graphics::CommandContext& context,
+        const DirectX::XMFLOAT4X4& viewProjection,
+        const float centerX,
+        const float worldY,
+        const float centerZ,
+        const float width,
+        const float depth) noexcept
+    {
+        return impl_->RenderPlaneBounds(
+            context,
+            viewProjection,
+            centerX,
+            worldY,
+            centerZ,
+            width,
+            depth);
     }
 }

@@ -155,6 +155,26 @@ namespace lts::editor
             float radius,
             bool erase) noexcept;
 
+        [[nodiscard]]
+        engine::graphics::GraphicsResult RenderPlaneBrush(
+            engine::graphics::CommandContext& context,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            float worldX,
+            float worldY,
+            float worldZ,
+            float radius,
+            bool erase) noexcept;
+
+        [[nodiscard]]
+        engine::graphics::GraphicsResult RenderPlaneBounds(
+            engine::graphics::CommandContext& context,
+            const DirectX::XMFLOAT4X4& viewProjection,
+            float centerX,
+            float worldY,
+            float centerZ,
+            float width,
+            float depth) noexcept;
+
     private:
         class Impl;
         std::unique_ptr<Impl> impl_;

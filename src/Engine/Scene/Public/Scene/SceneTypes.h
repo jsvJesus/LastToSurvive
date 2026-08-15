@@ -167,6 +167,69 @@ namespace engine::scene
         std::int32_t renderOrder = 0;
     };
 
+    struct WaterPlaneComponent final
+    {
+        std::wstring sourceName;
+        std::wstring savedSourceName;
+
+        std::uint32_t gridWidth = 0U;
+        std::uint32_t gridHeight = 0U;
+        std::vector<std::uint8_t> cells;
+
+        float waterHeight = 10.0F;
+        float cellSize = 50.0F;
+        float planeWidth = 0.0F;
+        float planeDepth = 0.0F;
+        float centerX = 0.0F;
+        float centerZ = 0.0F;
+        std::int32_t coastSmoothLevels = 2;
+
+        std::array<float, 3U> waterColor
+        {
+            0.14F, 0.35F, 0.45F
+        };
+
+        std::array<float, 3U> lightColor
+        {
+            0.27F, 0.50F, 0.56F
+        };
+
+        std::array<float, 3U> surfaceColor
+        {
+            0.30F, 0.48F, 0.55F
+        };
+
+        float farTileScale = 13.0F;
+        float farFadeStart = 40.0F;
+        float farFadeEnd = 430.0F;
+        float farTileAmount = 16.0F;
+        float farTileBumpiness = 1.0F;
+
+        bool showBounds = false;
+
+        float reflectionStrength = 1.0F;
+        float fresnelPower = 8.0F;
+        float fresnelBumpiness = 1.0F;
+        float refractionIndex = 3.0F;
+        float refractionPerturbation = 0.1F;
+
+        float causticStrength = 0.5F;
+        float causticDepth = 10.0F;
+        float causticTiling = 0.05F;
+        float maximumAttenuationDistance = 30.0F;
+        float attenuationDistance = 10.0F;
+
+        float colorTiling = 0.01F;
+        float colorBlend = 0.5F;
+        float bumpiness = 40.0F;
+        float bumpTiling = 0.05F;
+        float sunCosinePower = 400.0F;
+        float sunBumpiness = 1.0F;
+        float sunIntensity = 1.0F;
+        float specularTiling = 5.0F;
+        float coastlineWidth = 5.0F;
+    };
+
     struct TerrainComponent final
     {
         struct LayerOverride final
@@ -247,6 +310,9 @@ namespace engine::scene
 
         std::optional<StaticMeshComponent>
             staticMesh;
+
+        std::optional<WaterPlaneComponent>
+            waterPlane;
 
         std::optional<TerrainComponent>
             terrain;

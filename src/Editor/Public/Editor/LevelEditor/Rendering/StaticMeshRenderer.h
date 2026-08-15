@@ -42,6 +42,10 @@ namespace lts::editor
             const std::wstring& assetPath) noexcept;
 
         [[nodiscard]]
+        bool ReloadMesh(
+            const std::wstring& assetPath) noexcept;
+
+        [[nodiscard]]
         bool PreviewMaterial(
             const std::wstring& assetPath,
             std::size_t materialSlot,

@@ -112,6 +112,7 @@
     <ClCompile Include="..\Editor\Private\LevelEditor\Scene\ScenePicker.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\UI\MaterialInspector.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Viewport\TransformController.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Environment\WaterPlaneEditor.cpp" />
     <ClCompile Include="Sources\Editors\LegacyLevelDataLoader.cpp" />
     <ClCompile Include="..\Editor\Private\Commands\CommandHistory.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Rendering\GridRenderer.cpp" />
