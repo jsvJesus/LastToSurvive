@@ -709,8 +709,8 @@ namespace lts::editor
                 sourceSrtPath.u8string();
 
             /*
-             * true РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ СЂРµСЃСѓСЂСЃ Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ
-             * РёРјРµРЅРЅРѕ РєР°Рє Grass model.
+             * true означает, что ресурс загружается
+             * именно как Grass model.
              */
             if (!tree.LoadTree(
                     sourceName.c_str(),
