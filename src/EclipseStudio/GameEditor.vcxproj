@@ -84,6 +84,7 @@
         $(ProjectDir)..\Engine\Scene\Public;
         $(ProjectDir)..\..\External\DearImGui;
         $(ProjectDir)..\External\pugiXML\src;
+        $(ProjectDir)..\..\External\SpeedTreeSDK\Include;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -96,12 +97,17 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;shell32.lib;ole32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+        $(ProjectDir)..\..\External\SpeedTreeSDK\Lib\Windows\VS2015.x64;
+        %(AdditionalLibraryDirectories)
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>SpeedTreeCore_Windows_v7.1_VS2015_MT64_Static.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;shell32.lib;ole32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClCompile Include="..\Editor\Private\LevelEditor\Environment\SpeedTreeGrassImporter.cpp" />
     <ClCompile Include="Sources\Editors\LegacyLevelDataWriter.cpp" />
     <ClCompile Include="Sources\Editors\StudioToolbar.cpp" />
     <ClCompile Include="Sources\Studio\Main.cpp" />
