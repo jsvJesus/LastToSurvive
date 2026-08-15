@@ -104,40 +104,102 @@ namespace lts::editor
         [[nodiscard]]
         std::filesystem::path FindTexture(
             const std::filesystem::path& sourceDirectory,
-            const char* textureName)
+            const char* textureName,
+            const std::filesystem::path& fallbackFilename)
         {
+            std::vector<std::filesystem::path>
+                requestedNames;
+
+            const auto appendUniqueName =
+                [&requestedNames](
+                    const std::filesystem::path& value)
+                {
+                    const std::filesystem::path filename =
+                        value.filename();
+
+                    if (filename.empty())
+                    {
+                        return;
+                    }
+
+                    for (
+                        const std::filesystem::path& existing :
+                            requestedNames)
+                    {
+                        if (_wcsicmp(
+                                existing.c_str(),
+                                filename.c_str()) == 0)
+                        {
+                            return;
+                        }
+                    }
+
+                    requestedNames.push_back(filename);
+                };
+
+            /*
+             * The texture names stored in the SRT are authoritative.
+             *
+             * For example:
+             * Grass_Blades_green_wide.srt contains:
+             * Grass_Blades_green_d.dds
+             * Grass_Blades_green_n.dds
+             */
             if (
-                textureName == nullptr ||
-                textureName[0] == '\0')
+                textureName != nullptr &&
+                textureName[0] != '\0')
             {
-                return {};
+                const std::filesystem::path requested =
+                    std::filesystem::u8path(textureName).
+                        filename();
+
+                appendUniqueName(requested);
+
+                /*
+                 * Some older SRT files reference TGA files while the
+                 * shipped runtime asset is the converted DDS file.
+                 */
+                std::filesystem::path ddsName = requested;
+
+                if (!ddsName.empty())
+                {
+                    ddsName.replace_extension(L".dds");
+                    appendUniqueName(ddsName);
+                }
             }
 
-            const std::filesystem::path requested =
-                std::filesystem::u8path(textureName).
-                    filename();
+            /*
+             * This name is used only when the name stored inside the
+             * SRT cannot be resolved.
+             */
+            appendUniqueName(fallbackFilename);
 
-            if (requested.empty())
+            if (requestedNames.empty())
             {
                 return {};
             }
 
             std::error_code error;
 
-            const std::filesystem::path directPath =
-                sourceDirectory /
-                requested;
-
-            if (
-                std::filesystem::is_regular_file(
-                    directPath,
-                    error) &&
-                !error)
+            for (
+                const std::filesystem::path& requested :
+                    requestedNames)
             {
-                return directPath.lexically_normal();
-            }
+                const std::filesystem::path directPath =
+                    sourceDirectory /
+                    requested;
 
-            error.clear();
+                if (
+                    std::filesystem::is_regular_file(
+                        directPath,
+                        error) &&
+                    !error)
+                {
+                    return directPath.lexically_normal();
+                }
+
+                error.clear();
+            }
 
             for (
                 std::filesystem::directory_iterator iterator(
@@ -161,12 +223,16 @@ namespace lts::editor
                 const std::filesystem::path candidate =
                     iterator->path();
 
-                if (
-                    _wcsicmp(
-                        candidate.filename().c_str(),
-                        requested.c_str()) == 0)
+                for (
+                    const std::filesystem::path& requested :
+                        requestedNames)
                 {
-                    return candidate.lexically_normal();
+                    if (_wcsicmp(
+                            candidate.filename().c_str(),
+                            requested.c_str()) == 0)
+                    {
+                        return candidate.lexically_normal();
+                    }
                 }
             }
 
@@ -177,13 +243,26 @@ namespace lts::editor
         std::optional<engine::assets::AssetPath>
         MakeTextureAssetPath(
             const std::filesystem::path& dataRoot,
-            const std::filesystem::path& sourceDirectory,
-            const char* textureName)
+            const std::filesystem::path& sourceSrtPath,
+            const char* textureName,
+            const wchar_t* fallbackSuffix)
         {
+            std::filesystem::path fallbackFilename;
+
+            if (
+                fallbackSuffix != nullptr &&
+                fallbackSuffix[0] != L'\0')
+            {
+                fallbackFilename =
+                    sourceSrtPath.stem().wstring() +
+                    std::wstring(fallbackSuffix);
+            }
+
             const std::filesystem::path texturePath =
                 FindTexture(
-                    sourceDirectory,
-                    textureName);
+                    sourceSrtPath.parent_path(),
+                    textureName,
+                    fallbackFilename);
 
             if (texturePath.empty())
             {
@@ -192,7 +271,7 @@ namespace lts::editor
 
             std::error_code error;
 
-            const std::filesystem::path logicalPath =
+            const std::filesystem::path relativeToData =
                 std::filesystem::relative(
                     texturePath,
                     dataRoot,
@@ -200,10 +279,21 @@ namespace lts::editor
 
             if (
                 error ||
-                logicalPath.empty())
+                relativeToData.empty())
             {
                 return std::nullopt;
             }
+
+            /*
+             * StaticMeshRenderer resolves material texture paths
+             * relative to the bin directory, not bin/Data.
+             *
+             * Therefore the material must contain:
+             * Data/SpeedTree/Grass/.../texture.dds
+             */
+            const std::filesystem::path logicalPath =
+                std::filesystem::path(L"Data") /
+                relativeToData;
 
             engine::assets::AssetPath assetPath;
 
@@ -240,7 +330,7 @@ namespace lts::editor
         bool WriteMaterial(
             const std::filesystem::path& materialPath,
             const std::filesystem::path& dataRoot,
-            const std::filesystem::path& sourceDirectory,
+            const std::filesystem::path& sourceSrtPath,
             const SpeedTree::SRenderState* renderState,
             const std::size_t materialIndex,
             std::string& error)
@@ -307,14 +397,26 @@ namespace lts::editor
                 description.baseColorTexture =
                     MakeTextureAssetPath(
                         dataRoot,
-                        sourceDirectory,
-                        diffuseTexture);
+                        sourceSrtPath,
+                        diffuseTexture,
+                        L"_d.dds");
 
                 description.normalTexture =
                     MakeTextureAssetPath(
                         dataRoot,
-                        sourceDirectory,
-                        normalTexture);
+                        sourceSrtPath,
+                        normalTexture,
+                        L"_n.dds");
+
+                if (!description.baseColorTexture.has_value())
+                {
+                    error =
+                        "Cannot find the SpeedTree Grass diffuse "
+                        "texture for: " +
+                        sourceSrtPath.filename().u8string();
+
+                    return false;
+                }
             }
 
             description.metallicFactor = 0.0F;
@@ -607,8 +709,8 @@ namespace lts::editor
                 sourceSrtPath.u8string();
 
             /*
-             * true означает, что ресурс загружается
-             * именно как Grass model.
+             * true РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ СЂРµСЃСѓСЂСЃ Р·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ
+             * РёРјРµРЅРЅРѕ РєР°Рє Grass model.
              */
             if (!tree.LoadTree(
                     sourceName.c_str(),
@@ -833,7 +935,7 @@ namespace lts::editor
                 if (!WriteMaterial(
                         materialPath,
                         dataRoot,
-                        sourceSrtPath.parent_path(),
+                        sourceSrtPath,
                         renderState,
                         materialIndex,
                         result.error))
