@@ -3363,14 +3363,29 @@ namespace lts::editor
             const float worldZ,
             float& worldHeight) const noexcept
         {
-            if (!loaded_ || !terrainAsset_.IsValid())
+            if (!loaded_ ||
+                !terrainAsset_.IsValid() ||
+                terrainAsset_.tileSize <= 0.0F ||
+                terrainSampleStep_ == 0U ||
+                terrainGpuWidth_ < 2U ||
+                terrainGpuHeight_ < 2U)
+            {
+                return false;
+            }
+
+            const std::size_t requiredVertexCount =
+                static_cast<std::size_t>(terrainGpuWidth_) *
+                static_cast<std::size_t>(terrainGpuHeight_);
+
+            if (terrainVertices_.size() < requiredVertexCount)
             {
                 return false;
             }
 
             const EditorSceneEntity* actor = nullptr;
 
-            for (const EditorSceneEntity& entity : document.GetEntities())
+            for (const EditorSceneEntity& entity :
+                 document.GetEntities())
             {
                 if (entity.terrain.has_value() &&
                     entity.terrain->visible)
@@ -3382,13 +3397,12 @@ namespace lts::editor
 
             if (actor == nullptr ||
                 std::abs(actor->transform.scale[0]) < 0.00001F ||
+                std::abs(actor->transform.scale[1]) < 0.00001F ||
                 std::abs(actor->transform.scale[2]) < 0.00001F)
             {
                 return false;
             }
 
-            // Terrain editing currently keeps the heightfield aligned
-            // to world X/Z. Scale and translation are respected.
             const float localX =
                 (worldX - actor->transform.position[0]) /
                 actor->transform.scale[0];
@@ -3403,61 +3417,166 @@ namespace lts::editor
             const float sampleZ =
                 localZ / terrainAsset_.tileSize;
 
+            const float maximumSampleX =
+                static_cast<float>(
+                    terrainAsset_.width - 1U);
+
+            const float maximumSampleZ =
+                static_cast<float>(
+                    terrainAsset_.height - 1U);
+
             if (sampleX < 0.0F ||
                 sampleZ < 0.0F ||
-                sampleX >
-                    static_cast<float>(terrainAsset_.width - 1U) ||
-                sampleZ >
-                    static_cast<float>(terrainAsset_.height - 1U))
+                sampleX > maximumSampleX ||
+                sampleZ > maximumSampleZ)
             {
                 return false;
             }
 
-            const std::uint32_t x0 =
-                static_cast<std::uint32_t>(
-                    std::floor(sampleX));
+            const float sampleStep =
+                static_cast<float>(terrainSampleStep_);
 
-            const std::uint32_t z0 =
+            std::uint32_t gpuX0 =
                 static_cast<std::uint32_t>(
-                    std::floor(sampleZ));
+                    std::floor(sampleX / sampleStep));
 
-            const std::uint32_t x1 =
+            std::uint32_t gpuZ0 =
+                static_cast<std::uint32_t>(
+                    std::floor(sampleZ / sampleStep));
+
+            gpuX0 =
                 (std::min)(
-                    x0 + 1U,
+                    gpuX0,
+                    terrainGpuWidth_ - 2U);
+
+            gpuZ0 =
+                (std::min)(
+                    gpuZ0,
+                    terrainGpuHeight_ - 2U);
+
+            const std::uint32_t gpuX1 =
+                gpuX0 + 1U;
+
+            const std::uint32_t gpuZ1 =
+                gpuZ0 + 1U;
+
+            const std::uint32_t sourceX0 =
+                (std::min)(
+                    gpuX0 * terrainSampleStep_,
                     terrainAsset_.width - 1U);
 
-            const std::uint32_t z1 =
+            const std::uint32_t sourceX1 =
                 (std::min)(
-                    z0 + 1U,
+                    gpuX1 * terrainSampleStep_,
+                    terrainAsset_.width - 1U);
+
+            const std::uint32_t sourceZ0 =
+                (std::min)(
+                    gpuZ0 * terrainSampleStep_,
                     terrainAsset_.height - 1U);
 
+            const std::uint32_t sourceZ1 =
+                (std::min)(
+                    gpuZ1 * terrainSampleStep_,
+                    terrainAsset_.height - 1U);
+
+            const float sourceWidth =
+                static_cast<float>(
+                    (std::max)(
+                        sourceX1 - sourceX0,
+                        1U));
+
+            const float sourceDepth =
+                static_cast<float>(
+                    (std::max)(
+                        sourceZ1 - sourceZ0,
+                        1U));
+
             const float blendX =
-                sampleX - static_cast<float>(x0);
+                std::clamp(
+                    (sampleX -
+                     static_cast<float>(sourceX0)) /
+                        sourceWidth,
+                    0.0F,
+                    1.0F);
 
             const float blendZ =
-                sampleZ - static_cast<float>(z0);
+                std::clamp(
+                    (sampleZ -
+                     static_cast<float>(sourceZ0)) /
+                        sourceDepth,
+                    0.0F,
+                    1.0F);
 
-            const float height0 =
-                terrainAsset_.GetHeight(x0, z0) *
-                    (1.0F - blendX) +
-                terrainAsset_.GetHeight(x1, z0) *
-                    blendX;
+            const auto getGpuHeight =
+                [this](
+                    const std::uint32_t x,
+                    const std::uint32_t z) noexcept
+                {
+                    return terrainVertices_[
+                        static_cast<std::size_t>(z) *
+                            terrainGpuWidth_ +
+                        x].
+                        position.y;
+                };
 
-            const float height1 =
-                terrainAsset_.GetHeight(x0, z1) *
-                    (1.0F - blendX) +
-                terrainAsset_.GetHeight(x1, z1) *
-                    blendX;
+            const float heightA =
+                getGpuHeight(gpuX0, gpuZ0);
 
-            const float localHeight =
-                height0 * (1.0F - blendZ) +
-                height1 * blendZ;
+            const float heightB =
+                getGpuHeight(gpuX1, gpuZ0);
+
+            const float heightC =
+                getGpuHeight(gpuX0, gpuZ1);
+
+            const float heightD =
+                getGpuHeight(gpuX1, gpuZ1);
+
+            float localHeight = 0.0F;
+
+            /*
+             * Индексы Terrain создаются так:
+             *
+             * A ---- B
+             * |    / |
+             * |  /   |
+             * C ---- D
+             *
+             * { A, C, B } и { B, C, D }.
+             *
+             * Поэтому здесь нужна интерполяция именно по треугольникам,
+             * а не обычная bilinear-интерполяция heightmap.
+             */
+            if (blendX + blendZ <= 1.0F)
+            {
+                localHeight =
+                    heightA +
+                    (heightB - heightA) * blendX +
+                    (heightC - heightA) * blendZ;
+            }
+            else
+            {
+                const float weightB =
+                    1.0F - blendZ;
+
+                const float weightC =
+                    1.0F - blendX;
+
+                const float weightD =
+                    blendX + blendZ - 1.0F;
+
+                localHeight =
+                    heightB * weightB +
+                    heightC * weightC +
+                    heightD * weightD;
+            }
 
             worldHeight =
                 actor->transform.position[1] +
-                localHeight * actor->transform.scale[1];
+                localHeight *
+                    actor->transform.scale[1];
 
-            return true;
+            return std::isfinite(worldHeight);
         }
 
         [[nodiscard]]

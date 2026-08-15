@@ -23,6 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <limits>
 
 namespace lts::editor
 {
@@ -646,6 +647,50 @@ namespace lts::editor
 
             return true;
         }
+
+        [[nodiscard]]
+        bool MoveGrassPivotToGround(
+            std::vector<engine::assets::StaticMeshVertex>& vertices) noexcept
+        {
+            if (vertices.empty())
+            {
+                return false;
+            }
+
+            float minimumY =
+                (std::numeric_limits<float>::max)();
+
+            for (const engine::assets::StaticMeshVertex& vertex :
+                 vertices)
+            {
+                if (!std::isfinite(vertex.position[1]))
+                {
+                    return false;
+                }
+
+                minimumY =
+                    (std::min)(
+                        minimumY,
+                        vertex.position[1]);
+            }
+
+            if (!std::isfinite(minimumY))
+            {
+                return false;
+            }
+
+            /*
+             * После этого нижняя точка растения будет Y = 0.
+             * Instance.y можно ставить точно на поверхность Terrain.
+             */
+            for (engine::assets::StaticMeshVertex& vertex :
+                 vertices)
+            {
+                vertex.position[1] -= minimumY;
+            }
+
+            return true;
+        }
     }
 
     SpeedTreeGrassImportResult
@@ -851,6 +896,14 @@ namespace lts::editor
             {
                 result.error =
                     "SpeedTree conversion produced an empty mesh.";
+
+                return result;
+            }
+
+            if (!MoveGrassPivotToGround(vertices))
+            {
+                result.error =
+                    "Cannot move the Grass mesh pivot to ground.";
 
                 return result;
             }
