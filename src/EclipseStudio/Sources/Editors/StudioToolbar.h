@@ -51,6 +51,13 @@ namespace studio::editor
         SkySetup
     };
 
+    enum class EnvironmentGrassTool : std::uint8_t
+    {
+        Configure = 0,
+        Paint,
+        Erase
+    };
+
     class StudioToolbar final
     {
     public:
@@ -81,6 +88,9 @@ namespace studio::editor
         void DrawEnvironmentLightTools(
             EnvironmentLightTool& activeTool) const noexcept;
 
+        void DrawEnvironmentGrassTools(
+            EnvironmentGrassTool& activeTool) const noexcept;
+
     private:
         [[nodiscard]]
         static const char* GetPageName(
@@ -97,6 +107,10 @@ namespace studio::editor
         [[nodiscard]]
         static const char* GetEnvironmentLightToolName(
             EnvironmentLightTool tool) noexcept;
+
+        [[nodiscard]]
+        static const char* GetEnvironmentGrassToolName(
+            EnvironmentGrassTool tool) noexcept;
 
         [[nodiscard]]
         static bool DrawTab(

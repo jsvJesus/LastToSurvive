@@ -142,6 +142,25 @@ namespace studio::editor
         }
     }
 
+    const char* StudioToolbar::GetEnvironmentGrassToolName(
+        const EnvironmentGrassTool tool) noexcept
+    {
+        switch (tool)
+        {
+        case EnvironmentGrassTool::Configure:
+            return "Configure";
+
+        case EnvironmentGrassTool::Paint:
+            return "Paint";
+
+        case EnvironmentGrassTool::Erase:
+            return "Erase";
+
+        default:
+            return "Unknown";
+        }
+    }
+
     bool StudioToolbar::DrawTab(
         const char* const label,
         const bool active,
@@ -389,6 +408,41 @@ namespace studio::editor
 
             if (DrawTab(
                     GetEnvironmentLightToolName(tool),
+                    activeTool == tool,
+                    buttonWidth))
+            {
+                activeTool = tool;
+            }
+        }
+    }
+
+    void StudioToolbar::DrawEnvironmentGrassTools(
+        EnvironmentGrassTool& activeTool) const noexcept
+    {
+        constexpr std::array<EnvironmentGrassTool, 3U> tools
+        {
+            EnvironmentGrassTool::Configure,
+            EnvironmentGrassTool::Paint,
+            EnvironmentGrassTool::Erase
+        };
+
+        constexpr float buttonWidth = 165.0F;
+
+        for (
+            std::size_t index = 0U;
+            index < tools.size();
+            ++index)
+        {
+            const EnvironmentGrassTool tool =
+                tools[index];
+
+            if (index > 0U)
+            {
+                ImGui::SameLine();
+            }
+
+            if (DrawTab(
+                    GetEnvironmentGrassToolName(tool),
                     activeTool == tool,
                     buttonWidth))
             {
