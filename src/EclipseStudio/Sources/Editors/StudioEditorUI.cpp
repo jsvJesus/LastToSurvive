@@ -10,6 +10,7 @@
 #include <Editor/LevelEditor/Rendering/SkyRenderer.h>
 #include <Editor/LevelEditor/Rendering/StaticMeshRenderer.h>
 #include <Editor/LevelEditor/Environment/WaterPlaneEditor.h>
+#include <Editor/LevelEditor/Environment/GrassEditor.h>
 #include <Editor/LevelEditor/Environment/SpeedTreeGrassImporter.h>
 #include <Editor/LevelEditor/Scene/SceneDocument.h>
 #include <Editor/LevelEditor/Terrain/TerrainImporter.h>
@@ -75,10 +76,17 @@ namespace studio::editor
         lts::editor::GridRenderer g_gridRenderer;
         lts::editor::TerrainRenderer g_terrainRenderer;
         lts::editor::StaticMeshRenderer g_staticMeshRenderer;
+
+        // Для Grass нужен отдельный StaticMeshRenderer.
+        // Нельзя использовать g_staticMeshRenderer одновременно
+        // для основной сцены и временного Grass-документа.
+        lts::editor::StaticMeshRenderer g_grassMeshRenderer;
+        
         lts::editor::ColorCorrectionRenderer g_colorCorrectionRenderer;
         lts::editor::ColorCorrectionSettings g_colorCorrectionSettings;
         lts::editor::TerrainImporter g_terrainImporter;
         lts::editor::WaterPlaneEditor g_waterPlaneEditor;
+        lts::editor::GrassEditor g_grassEditor;
         ObjectViewTab g_objectViewTab;
         std::filesystem::path g_loadedTerrainPath;
         std::filesystem::path g_loadedLevelDataPath;
@@ -107,17 +115,11 @@ namespace studio::editor
         EnvironmentGrassTool g_activeEnvironmentGrassTool =
             EnvironmentGrassTool::Configure;
 
-        lts::editor::SpeedTreeGrassImporter
-            g_speedTreeGrassImporter;
-
-        std::vector<std::filesystem::path>
-            g_grassSrtAssets;
-
-        int g_selectedGrassAsset = -1;
-
-        float g_grassViewDistance = 600.0F;
         float g_grassBrushRadius = 20.0F;
+        float g_grassBrushWorldX = 0.0F;
+        float g_grassBrushWorldZ = 0.0F;
 
+        bool g_grassBrushHit = false;
         bool g_grassAssetsScanned = false;
 
         std::string g_grassStatus;
@@ -1191,6 +1193,25 @@ namespace studio::editor
             snapshot.dirty = false;
             g_sceneDocument.RestoreSnapshot(snapshot, false);
             g_sceneDocument.MarkSaved();
+
+            g_grassBrushHit = false;
+            g_grassAssetsScanned = true;
+
+            const std::filesystem::path levelRoot =
+                g_loadedLevelDataPath.parent_path();
+
+            if (!g_grassEditor.Load(
+                    FindWorkspaceRoot(),
+                    levelRoot,
+                    g_grassStatus))
+            {
+                if (g_grassStatus.empty())
+                {
+                    g_grassStatus =
+                        "Cannot load Grass/grass.dat.";
+                }
+            }
+            
             g_levelLoadStats = result.stats;
             g_managedLevelObjectIndices = std::move(result.managedObjectIndices);
             g_settingsSaveStatus = "Map is ready for saving.";
@@ -1307,6 +1328,13 @@ namespace studio::editor
             g_waterBrushHit = false;
             g_waterStrokeChanged = false;
             g_waterAssetDirty = false;
+
+            g_grassEditor.Reset();
+            g_grassStatus.clear();
+            g_grassBrushHit = false;
+            g_grassBrushWorldX = 0.0F;
+            g_grassBrushWorldZ = 0.0F;
+            g_grassAssetsScanned = false;
 
             const std::wstring mapFolderName =
                 levelRoot.filename().wstring();
@@ -1462,6 +1490,27 @@ namespace studio::editor
             return true;
         }
 
+        [[nodiscard]]
+        bool SaveGrassMap() noexcept
+        {
+            if (g_loadedLevelDataPath.empty() ||
+                g_loadedMapName.empty() ||
+                IsLevelLoading())
+            {
+                g_grassStatus =
+                    "Load a map before saving Grass.";
+
+                return false;
+            }
+
+            const std::filesystem::path levelRoot =
+                g_loadedLevelDataPath.parent_path();
+
+            return g_grassEditor.Save(
+                levelRoot,
+                g_grassStatus);
+        }
+
         void SaveLoadedMap() noexcept
         {
             if (
@@ -1533,6 +1582,16 @@ namespace studio::editor
                 g_settingsSaveStatus =
                     "Objects were saved, but Water Planes failed: " +
                     g_waterStatus;
+                return;
+            }
+
+            if (!SaveGrassMap())
+            {
+                g_settingsSaveStatus =
+                    "Objects and Water Planes were saved, "
+                    "but Grass failed: " +
+                    g_grassStatus;
+
                 return;
             }
 
@@ -2545,6 +2604,102 @@ bool IsActiveTerrainPaintTool() noexcept
                     }
                 }
             }
+        }
+
+        [[nodiscard]]
+        bool IsGrassPaintToolActive() noexcept
+        {
+            if (g_activePage != LevelEditorPage::Environment ||
+                g_activeEnvironmentPage !=
+                    EnvironmentToolbarPage::Grass)
+            {
+                return false;
+            }
+
+            return
+                g_activeEnvironmentGrassTool ==
+                    EnvironmentGrassTool::Paint ||
+                g_activeEnvironmentGrassTool ==
+                    EnvironmentGrassTool::Erase;
+        }
+
+        void FinishGrassStroke() noexcept
+        {
+            if (!g_grassEditor.EndStroke())
+            {
+                return;
+            }
+
+            if (SaveGrassMap())
+            {
+                g_grassStatus =
+                    "Grass stroke saved to Grass/grass.dat.";
+            }
+        }
+
+        void UpdateGrassViewport() noexcept
+        {
+            if (!IsGrassPaintToolActive() ||
+                !g_terrainRenderer.HasTerrain() ||
+                g_loadedLevelDataPath.empty() ||
+                IsLevelLoading())
+            {
+                g_grassBrushHit = false;
+                FinishGrassStroke();
+                return;
+            }
+
+            const ImGuiIO& io =
+                ImGui::GetIO();
+
+            if (ImGui::IsMouseReleased(
+                    ImGuiMouseButton_Left))
+            {
+                FinishGrassStroke();
+            }
+
+            if (io.WantCaptureMouse)
+            {
+                g_grassBrushHit = false;
+                return;
+            }
+
+            g_grassBrushHit =
+                PickTerrainBrush(
+                    g_grassBrushWorldX,
+                    g_grassBrushWorldZ);
+
+            if (!g_grassBrushHit)
+            {
+                return;
+            }
+
+            if (ImGui::IsMouseClicked(
+                    ImGuiMouseButton_Left))
+            {
+                g_grassEditor.BeginStroke();
+            }
+
+            if (!ImGui::IsMouseDown(
+                    ImGuiMouseButton_Left))
+            {
+                return;
+            }
+
+            const bool erase =
+                g_activeEnvironmentGrassTool ==
+                    EnvironmentGrassTool::Erase;
+
+            static_cast<void>(
+                g_grassEditor.Stamp(
+                    FindWorkspaceRoot(),
+                    g_terrainRenderer,
+                    g_sceneDocument,
+                    g_grassBrushWorldX,
+                    g_grassBrushWorldZ,
+                    g_grassBrushRadius,
+                    erase,
+                    g_grassStatus));
         }
 
         void RebuildSelectedWaterPreview() noexcept
@@ -3994,103 +4149,12 @@ bool IsActiveTerrainPaintTool() noexcept
 
         void RefreshGrassAssets() noexcept
         {
-            g_grassSrtAssets.clear();
-            g_selectedGrassAsset = -1;
             g_grassAssetsScanned = true;
 
-            try
-            {
-                const std::filesystem::path grassRoot =
-                    FindWorkspaceRoot() /
-                    L"bin" /
-                    L"Data" /
-                    L"SpeedTree" /
-                    L"Grass";
-
-                std::error_code error;
-
-                if (!std::filesystem::is_directory(
-                        grassRoot,
-                        error) ||
-                    error)
-                {
-                    g_grassStatus =
-                        "Directory was not found: "
-                        "bin/Data/SpeedTree/Grass";
-
-                    return;
-                }
-
-                for (
-                    std::filesystem::recursive_directory_iterator
-                        iterator(
-                            grassRoot,
-                            error),
-                        end;
-
-                    !error &&
-                    iterator != end;
-
-                    iterator.increment(error))
-                {
-                    if (
-                        !iterator->is_regular_file(error) ||
-                        error)
-                    {
-                        error.clear();
-                        continue;
-                    }
-
-                    std::string extension =
-                        LowercaseAscii(
-                            iterator->
-                                path().
-                                extension().
-                                u8string());
-
-                    if (extension != ".srt")
-                    {
-                        continue;
-                    }
-
-                    g_grassSrtAssets.push_back(
-                        iterator->
-                            path().
-                            lexically_normal());
-                }
-
-                std::sort(
-                    g_grassSrtAssets.begin(),
-                    g_grassSrtAssets.end(),
-                    [](const auto& left,
-                       const auto& right)
-                    {
-                        return
-                            LowercaseAscii(
-                                left.generic_u8string()) <
-                            LowercaseAscii(
-                                right.generic_u8string());
-                    });
-
-                if (!g_grassSrtAssets.empty())
-                {
-                    g_selectedGrassAsset = 0;
-                }
-
-                g_grassStatus =
-                    "Grass .srt found: " +
-                    std::to_string(
-                        g_grassSrtAssets.size()) +
-                    ".";
-            }
-            catch (...)
-            {
-                g_grassSrtAssets.clear();
-                g_selectedGrassAsset = -1;
-
-                g_grassStatus =
-                    "Cannot scan SpeedTree Grass directory.";
-            }
+            static_cast<void>(
+                g_grassEditor.RefreshAssets(
+                    FindWorkspaceRoot(),
+                    g_grassStatus));
         }
 
         void DrawGrassAssetList() noexcept
@@ -4111,7 +4175,10 @@ bool IsActiveTerrainPaintTool() noexcept
 
             ImGui::Spacing();
 
-            if (g_grassSrtAssets.empty())
+            const std::vector<lts::editor::GrassAssetEntry>& assets =
+                g_grassEditor.GetAssets();
+
+            if (assets.empty())
             {
                 ImGui::TextDisabled(
                     "No .srt files found.");
@@ -4123,50 +4190,32 @@ bool IsActiveTerrainPaintTool() noexcept
                 return;
             }
 
-            const std::filesystem::path grassRoot =
-                FindWorkspaceRoot() /
-                L"bin" /
-                L"Data" /
-                L"SpeedTree" /
-                L"Grass";
-
             if (ImGui::BeginChild(
                     "##GrassSrtList",
-                    ImVec2(
-                        0.0F,
-                        260.0F),
+                    ImVec2(0.0F, 260.0F),
                     true))
             {
-                for (
-                    std::size_t index = 0U;
-                    index < g_grassSrtAssets.size();
-                    ++index)
+                const std::size_t selectedIndex =
+                    g_grassEditor.GetSelectedAssetIndex();
+
+                for (std::size_t index = 0U;
+                     index < assets.size();
+                     ++index)
                 {
-                    std::error_code error;
-
-                    const std::filesystem::path relativePath =
-                        std::filesystem::relative(
-                            g_grassSrtAssets[index],
-                            grassRoot,
-                            error);
-
                     const std::string label =
-                        error
-                            ? g_grassSrtAssets[index].
-                                filename().
-                                u8string()
-                            : relativePath.generic_u8string();
+                        assets[index]
+                            .relativePath
+                            .generic_u8string();
 
                     const bool selected =
-                        g_selectedGrassAsset ==
-                            static_cast<int>(index);
+                        selectedIndex == index;
 
                     if (ImGui::Selectable(
                             label.c_str(),
                             selected))
                     {
-                        g_selectedGrassAsset =
-                            static_cast<int>(index);
+                        g_grassEditor.SetSelectedAssetIndex(
+                            index);
                     }
 
                     if (selected)
@@ -4185,22 +4234,20 @@ bool IsActiveTerrainPaintTool() noexcept
             ImGui::Separator();
 
             ImGui::Text(
-                "Instances: %u",
-                0U);
+                "Instances: %zu",
+                g_grassEditor.GetInstanceCount());
 
-            if (
-                g_activeEnvironmentGrassTool ==
-                    EnvironmentGrassTool::Configure)
+            ImGui::TextDisabled(
+                "Storage: Grass/grass.dat");
+
+            if (g_activeEnvironmentGrassTool ==
+                EnvironmentGrassTool::Configure)
             {
                 ImGui::TextUnformatted("Configure");
                 ImGui::Spacing();
 
-                /*
-                 * InputFloat позволяет написать точное значение.
-                 * Здесь не используется дёрганый SliderFloat.
-                 */
                 float viewDistance =
-                    g_grassViewDistance;
+                    g_grassEditor.GetViewDistance();
 
                 if (ImGui::InputFloat(
                         "Grass View Distance",
@@ -4209,48 +4256,87 @@ bool IsActiveTerrainPaintTool() noexcept
                         100.0F,
                         "%.2f"))
                 {
-                    g_grassViewDistance =
-                        std::clamp(
-                            viewDistance,
-                            25.0F,
-                            1024.0F);
+                    g_grassEditor.SetViewDistance(
+                        viewDistance);
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit() &&
+                    !g_loadedLevelDataPath.empty())
+                {
+                    static_cast<void>(
+                        SaveGrassMap());
                 }
 
                 ImGui::Spacing();
                 ImGui::Separator();
                 ImGui::Spacing();
 
-                ImGui::BeginDisabled();
+                const bool controlsDisabled =
+                    g_loadedLevelDataPath.empty() ||
+                    IsLevelLoading();
 
-                ImGui::Button(
-                    "Recalc Grass Height",
-                    ImVec2(
-                        ImGui::GetContentRegionAvail().x,
-                        28.0F));
+                ImGui::BeginDisabled(
+                    controlsDisabled);
 
-                ImGui::Button(
-                    "Update Grass Modulation",
-                    ImVec2(
-                        ImGui::GetContentRegionAvail().x,
-                        28.0F));
+                if (ImGui::Button(
+                        "Recalc Grass Height",
+                        ImVec2(
+                            ImGui::GetContentRegionAvail().x,
+                            28.0F)))
+                {
+                    if (g_grassEditor.RecalculateHeights(
+                            g_terrainRenderer,
+                            g_sceneDocument,
+                            g_grassStatus))
+                    {
+                        static_cast<void>(
+                            SaveGrassMap());
+                    }
+                }
 
-                ImGui::Button(
-                    "Clear All Grass",
-                    ImVec2(
-                        ImGui::GetContentRegionAvail().x,
-                        28.0F));
+                if (ImGui::Button(
+                        "Update Grass Modulation",
+                        ImVec2(
+                            ImGui::GetContentRegionAvail().x,
+                            28.0F)))
+                {
+                    if (g_grassEditor.UpdateModulation(
+                            g_grassStatus))
+                    {
+                        static_cast<void>(
+                            SaveGrassMap());
+                    }
+                }
 
-                ImGui::Button(
-                    "Optimize masks",
-                    ImVec2(
-                        ImGui::GetContentRegionAvail().x,
-                        28.0F));
+                if (ImGui::Button(
+                        "Clear All Grass",
+                        ImVec2(
+                            ImGui::GetContentRegionAvail().x,
+                            28.0F)))
+                {
+                    if (g_grassEditor.ClearAll(
+                            g_grassStatus))
+                    {
+                        static_cast<void>(
+                            SaveGrassMap());
+                    }
+                }
+
+                if (ImGui::Button(
+                        "Optimize grass.dat",
+                        ImVec2(
+                            ImGui::GetContentRegionAvail().x,
+                            28.0F)))
+                {
+                    if (g_grassEditor.Optimize(
+                            g_grassStatus))
+                    {
+                        static_cast<void>(
+                            SaveGrassMap());
+                    }
+                }
 
                 ImGui::EndDisabled();
-
-                ImGui::TextDisabled(
-                    "Buttons become active after "
-                    "grass.dat painting backend is connected.");
             }
             else
             {
@@ -4284,12 +4370,14 @@ bool IsActiveTerrainPaintTool() noexcept
 
                 DrawGrassAssetList();
 
-                if (
-                    !erase &&
-                    g_selectedGrassAsset >= 0 &&
-                    g_selectedGrassAsset <
-                        static_cast<int>(
-                            g_grassSrtAssets.size()))
+                const auto& assets =
+                    g_grassEditor.GetAssets();
+
+                const std::size_t selectedIndex =
+                    g_grassEditor.GetSelectedAssetIndex();
+
+                if (!erase &&
+                    selectedIndex < assets.size())
                 {
                     if (ImGui::Button(
                             "Import Selected .srt",
@@ -4299,11 +4387,12 @@ bool IsActiveTerrainPaintTool() noexcept
                     {
                         const lts::editor::
                             SpeedTreeGrassImportResult result =
-                                g_speedTreeGrassImporter.Import(
-                                    FindWorkspaceRoot(),
-                                    g_grassSrtAssets[
-                                        static_cast<std::size_t>(
-                                            g_selectedGrassAsset)]);
+                                lts::editor::
+                                    SpeedTreeGrassImporter{}.
+                                        Import(
+                                            FindWorkspaceRoot(),
+                                            assets[selectedIndex].
+                                                sourcePath);
 
                         if (result.succeeded)
                         {
@@ -4311,10 +4400,14 @@ bool IsActiveTerrainPaintTool() noexcept
                                 "Imported: " +
                                 std::filesystem::path(
                                     result.logicalMeshPath).
-                                    generic_u8string();
+                                        generic_u8string();
 
                             static_cast<void>(
                                 g_staticMeshRenderer.ReloadMesh(
+                                    result.logicalMeshPath));
+
+                            static_cast<void>(
+                                g_grassMeshRenderer.ReloadMesh(
                                     result.logicalMeshPath));
                         }
                         else
@@ -4336,8 +4429,7 @@ bool IsActiveTerrainPaintTool() noexcept
                 else
                 {
                     ImGui::TextDisabled(
-                        "Import checks the selected .srt, "
-                        ".dds and generated DX11 mesh.");
+                        "Hold LMB in viewport to paint Grass.");
                 }
             }
 
@@ -4345,6 +4437,7 @@ bool IsActiveTerrainPaintTool() noexcept
             {
                 ImGui::Spacing();
                 ImGui::Separator();
+
                 ImGui::TextWrapped(
                     "%s",
                     g_grassStatus.c_str());
@@ -5844,6 +5937,7 @@ bool IsActiveTerrainPaintTool() noexcept
                     
             UpdateTerrainBrushViewport();
             UpdateWaterPlaneViewport();
+            UpdateGrassViewport();
         }
     }
 
@@ -5888,8 +5982,18 @@ bool IsActiveTerrainPaintTool() noexcept
             return false;
         }
 
+        if (!g_grassMeshRenderer.Initialize(device))
+        {
+            g_staticMeshRenderer.Shutdown(device);
+            g_terrainRenderer.Shutdown(device);
+            g_gridRenderer.Shutdown(device);
+            g_skyRenderer.Shutdown(device);
+            return false;
+        }
+
         if (!g_objectViewTab.Initialize(device, window))
         {
+            g_grassMeshRenderer.Shutdown(device);
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
             g_gridRenderer.Shutdown(device);
@@ -5900,6 +6004,7 @@ bool IsActiveTerrainPaintTool() noexcept
         if (!g_colorCorrectionRenderer.Initialize(device))
         {
             g_objectViewTab.Shutdown(device);
+            g_grassMeshRenderer.Shutdown(device);
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
             g_gridRenderer.Shutdown(device);
@@ -5932,6 +6037,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
         g_colorCorrectionRenderer.Shutdown(device);
         g_objectViewTab.Shutdown(device);
+        g_grassMeshRenderer.Shutdown(device);
         g_staticMeshRenderer.Shutdown(device);
         g_terrainRenderer.Shutdown(device);
         g_gridRenderer.Shutdown(device);
@@ -5963,11 +6069,13 @@ bool IsActiveTerrainPaintTool() noexcept
         g_activeEnvironmentLightTool = EnvironmentLightTool::SunSetup;
         g_activeEnvironmentGrassTool = EnvironmentGrassTool::Configure;
         
-        g_grassSrtAssets.clear();
-        g_selectedGrassAsset = -1;
+        g_grassEditor.Reset();
+
         g_grassAssetsScanned = false;
-        g_grassViewDistance = 600.0F;
         g_grassBrushRadius = 20.0F;
+        g_grassBrushWorldX = 0.0F;
+        g_grassBrushWorldZ = 0.0F;
+        g_grassBrushHit = false;
         g_grassStatus.clear();
 
         g_waterEraser = false;
@@ -6073,9 +6181,28 @@ bool IsActiveTerrainPaintTool() noexcept
             return meshResult;
         }
 
+        const DirectX::XMFLOAT3 cameraPosition =
+            g_cameraController.GetPosition();
+
+        g_grassEditor.PrepareRenderDocument(
+            g_sceneDocument,
+            cameraPosition);
+
+        const engine::graphics::GraphicsResult grassResult =
+            g_grassMeshRenderer.Render(
+                context,
+                g_grassEditor.GetRenderDocument(),
+                viewProjection,
+                cameraPosition);
+
+        if (engine::graphics::Failed(grassResult))
+        {
+            return grassResult;
+        }
+
         if (
-    g_terrainBrushHit &&
-    IsActiveTerrainBrushTool())
+            g_terrainBrushHit &&
+            IsActiveTerrainBrushTool())
         {
             const bool erase =
                 g_activeTerrainEditorTool ==
@@ -6094,6 +6221,29 @@ bool IsActiveTerrainPaintTool() noexcept
                     g_terrainBrushWorldX,
                     g_terrainBrushWorldZ,
                     g_terrainEditorUi.radius,
+                    erase);
+
+            if (engine::graphics::Failed(brushResult))
+            {
+                return brushResult;
+            }
+        }
+
+        if (g_grassBrushHit &&
+            IsGrassPaintToolActive())
+        {
+            const bool erase =
+                g_activeEnvironmentGrassTool ==
+                    EnvironmentGrassTool::Erase;
+
+            const engine::graphics::GraphicsResult brushResult =
+                g_terrainRenderer.RenderBrush(
+                    context,
+                    g_sceneDocument,
+                    viewProjection,
+                    g_grassBrushWorldX,
+                    g_grassBrushWorldZ,
+                    g_grassBrushRadius,
                     erase);
 
             if (engine::graphics::Failed(brushResult))
