@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<UpperBlendStart
+	AIDX_CrouchBlend = "Bip01_Spine2"
+	AIDX_CrouchAim   = "Bip01_Spine2"
+	AIDX_WalkBlend   = "Bip01_Neck"
+	AIDX_WalkAim     = "Bip01_Neck"
+	AIDX_RunBlend    = "Bip01_Neck"
+	AIDX_SprintBlend = "Bip01_Spine2"
+	AIDX_Reload      = "Bip01_Neck"
+	AIDX_Shoot      = "Bip01_Spine2"
+	AIDX_ProneBlend   = "Bip01_R_Hand"
+	AIDX_ProneAim     = "Bip01_Spine1"
+	AIDX_ProneIdle     = "Bip01_Spine1"
+/>

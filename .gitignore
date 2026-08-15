@@ -187,5 +187,3 @@ packages/
 
 !/bin/Levels/
 !/bin/Levels/**
-!/bin/Data/StaticMeshes/
-!/bin/Data/StaticMeshes/**
