@@ -4230,13 +4230,15 @@ bool IsActiveTerrainPaintTool() noexcept
 
             float planeHeight = selectedWater.waterHeight;
 
-            if (ImGui::SliderFloat(
-                    "Plane Height",
-                    &planeHeight,
-                    -1000.0F,
-                    2000.0F,
-                    "%.2f"))
+            if (ImGui::InputFloat("Plane Height", &planeHeight, 0.01F, 1.0F, "%.2f",
+                ImGuiInputTextFlags_None))
             {
+                planeHeight =
+                    (std::clamp)(
+                        planeHeight,
+                        -10000.0F,
+                        10000.0F);
+
                 lts::editor::EditorSceneEntity* const mutableEntity =
                     g_sceneDocument.GetSelectedEntityMutable();
 
