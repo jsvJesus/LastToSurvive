@@ -48,14 +48,24 @@ st_bool CStateBlockDirectX11::Init(const SAppState& sAppState, const SRenderStat
         if (!sAppState.m_bDepthPrepass)
         {
             sDepthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-            sDepthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+#if defined(ST_REVERSE_Z)
+            sDepthDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+#else
+            sDepthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+#endif
         }
         else
         {
             if (sRenderState.m_eRenderPass != RENDER_PASS_MAIN)
             {
                 sDepthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-                sDepthDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+#if defined(ST_REVERSE_Z)
+                sDepthDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+#else
+                sDepthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+#endif
             }
             else
             {

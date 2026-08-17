@@ -70,7 +70,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;NDEBUG;ST_DIRECTX11;ST_REVERSE_Z;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         $(ProjectDir)..\Engine\Application\Public;
         $(ProjectDir)..\Editor\Public;
@@ -108,7 +108,62 @@
 
   <ItemGroup>
     <ClCompile Include="..\Editor\Private\LevelEditor\Environment\GrassEditor.cpp" />
-    <ClCompile Include="..\Editor\Private\LevelEditor\Environment\SpeedTreeGrassImporter.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Environment\SpeedTreeGrassRenderer.cpp" />
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Forest\Source\Culling.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Forest\Source\Forest.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Forest\Source\Terrain.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Render Interface\Source\RenderInterface.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\DDSTextureLoader.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\DirectX11Renderer.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\GeometryBuffer.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\RenderTarget.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\Shaders.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\StateBlock.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Renderers\DirectX11\Source\Texture.cpp">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <AdditionalOptions>%(AdditionalOptions) /permissive</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="Sources\Editors\LegacyLevelDataWriter.cpp" />
     <ClCompile Include="Sources\Editors\StudioToolbar.cpp" />
     <ClCompile Include="Sources\Studio\Main.cpp" />
