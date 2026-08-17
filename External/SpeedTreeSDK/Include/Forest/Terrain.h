@@ -133,8 +133,9 @@ namespace SpeedTree
     {
     public:
             // internal type definitions
-            typedef typename CCellContainer::iterator TCellIterator;
-            typedef typename CCellContainer::const_iterator TCellConstIterator;
+            using TBase = CMap<SRowCol, TCellType>;
+            using TCellIterator = typename TBase::iterator;
+            using TCellConstIterator = typename TBase::const_iterator;
 
                                         CCellContainer( );
             virtual                     ~CCellContainer( );

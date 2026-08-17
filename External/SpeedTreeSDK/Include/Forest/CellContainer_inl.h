@@ -71,7 +71,7 @@ ST_INLINE const TCellType* CCellContainer<TCellType>::GetCellPtrByRowCol(st_int3
 template<class TCellType>
 ST_INLINE TCellType* CCellContainer<TCellType>::GetCellPtrByPos_Add(const Vec3& vPos)
 {
-    typename CCellContainer<TCellType>::iterator iCell = GetCellItrByPos(vPos);
+    typename CCellContainer<TCellType>::TCellIterator iCell = GetCellItrByPos_Add(vPos);
     if (iCell == CMap<SRowCol, TCellType>::end( ))
         return NULL;
     else
@@ -97,84 +97,109 @@ ST_INLINE const TCellType* CCellContainer<TCellType>::GetCellPtrByPos(const Vec3
 //  CCellContainer::GetCellItrByRowCol_Add
 
 template<class TCellType>
-ST_INLINE typename CCellContainer<TCellType>::iterator CCellContainer<TCellType>::GetCellItrByRowCol_Add(st_int32 nRow, st_int32 nCol)
+ST_INLINE
+typename CCellContainer<TCellType>::TCellIterator
+CCellContainer<TCellType>::GetCellItrByRowCol_Add(
+    st_int32 nRow,
+    st_int32 nCol)
 {
-    // use a cell key to see if the map already contains this row/col cell
-    SRowCol sKey(nRow, nCol);
-    typename CCellContainer<TCellType>::iterator iCell = CMap<SRowCol, TCellType>::find(sKey);
+    const SRowCol key(nRow, nCol);
 
-    // cell wasn't found; did the caller specify that a new cell should be added?
-    if (iCell == CMap<SRowCol, TCellType>::end( ))
+    typename CCellContainer<TCellType>::TCellIterator cell =
+        CMap<SRowCol, TCellType>::find(key);
+
+    if (cell == CMap<SRowCol, TCellType>::end())
     {
-        // add it to the map and return the result
-        TCellType& cCell = (*this)[sKey];
-        assert(!cCell.GetExtents( ).Valid( ));
-        cCell.SetRowCol(nRow, nCol);
+        TCellType& newCell = (*this)[key];
 
-        iCell = CMap<SRowCol, TCellType>::find(sKey);
-        assert((iCell != CMap<SRowCol, TCellType>::end( )));
+        assert(!newCell.GetExtents().Valid());
 
-        // sanity test
-        assert(cCell.IsNew( ));
+        newCell.SetRowCol(nRow, nCol);
+
+        cell = CMap<SRowCol, TCellType>::find(key);
+
+        assert(
+            cell !=
+            CMap<SRowCol, TCellType>::end());
+
+        assert(newCell.IsNew());
     }
 
-    return iCell;
+    return cell;
 }
-
 
 ///////////////////////////////////////////////////////////////////////
 //  CCellContainer::GetCellItrByRowCol
 
 template<class TCellType>
-ST_INLINE typename CCellContainer<TCellType>::const_iterator CCellContainer<TCellType>::GetCellItrByRowCol(st_int32 nRow, st_int32 nCol) const
+ST_INLINE
+typename CCellContainer<TCellType>::TCellConstIterator
+CCellContainer<TCellType>::GetCellItrByRowCol(
+    st_int32 nRow,
+    st_int32 nCol) const
 {
-    // use a cell key to see if the map already contains this row/col cell
-    SRowCol sKey(nRow, nCol);
-    typename CCellContainer::const_iterator iCell = CMap<SRowCol, TCellType>::find(sKey);
+    const SRowCol key(nRow, nCol);
 
-    return iCell;
+    return CMap<SRowCol, TCellType>::find(key);
 }
-
 
 ///////////////////////////////////////////////////////////////////////
 //  CCellContainer::GetCellItrByPos_Add
 
 template<class TCellType>
-ST_INLINE typename CCellContainer<TCellType>::iterator CCellContainer<TCellType>::GetCellItrByPos_Add(const Vec3& vPos)
+ST_INLINE
+typename CCellContainer<TCellType>::TCellIterator
+CCellContainer<TCellType>::GetCellItrByPos_Add(
+    const Vec3& vPos)
 {
-    // convert 3D position to a row/col pair
-    st_int32 nRow, nCol;
-    ComputeCellCoords(vPos, m_fCellSize, nRow, nCol);
+    st_int32 row = 0;
+    st_int32 column = 0;
 
-    // use the row/col pair to get the cell
-    return GetCellItrByRowCol_Add(nRow, nCol);
+    ComputeCellCoords(
+        vPos,
+        m_fCellSize,
+        row,
+        column);
+
+    return GetCellItrByRowCol_Add(
+        row,
+        column);
 }
-
 
 ///////////////////////////////////////////////////////////////////////
 //  CCellContainer::GetCellItrByPos
 
 template<class TCellType>
-ST_INLINE typename CCellContainer<TCellType>::const_iterator CCellContainer<TCellType>::GetCellItrByPos(const Vec3& vPos) const
+ST_INLINE
+typename CCellContainer<TCellType>::TCellConstIterator
+CCellContainer<TCellType>::GetCellItrByPos(
+    const Vec3& vPos) const
 {
-    // convert 3D position to a row/col pair
-    st_int32 nRow, nCol;
-    ComputeCellCoords(vPos, m_fCellSize, nRow, nCol);
+    st_int32 row = 0;
+    st_int32 column = 0;
 
-    // use the row/col pair to get the cell
-    return GetCellItrByRowCol(nRow, nCol);
+    ComputeCellCoords(
+        vPos,
+        m_fCellSize,
+        row,
+        column);
+
+    return GetCellItrByRowCol(
+        row,
+        column);
 }
-
 
 ///////////////////////////////////////////////////////////////////////
 //  CCellContainer::Erase
 
 template<class TCellType>
-ST_INLINE typename CCellContainer<TCellType>::iterator CCellContainer<TCellType>::Erase(typename CCellContainer<TCellType>::iterator iCell)
+ST_INLINE
+typename CCellContainer<TCellType>::TCellIterator
+CCellContainer<TCellType>::Erase(
+    typename CCellContainer<TCellType>::TCellIterator cell)
 {
-    return erase(iCell);
+    return CMap<SRowCol, TCellType>::erase(cell);
 }
-
 
 ///////////////////////////////////////////////////////////////////////
 //  CCellContainer::GetCellSize

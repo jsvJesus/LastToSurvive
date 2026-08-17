@@ -108,6 +108,7 @@
 
   <ItemGroup>
     <ClCompile Include="..\Editor\Private\LevelEditor\Environment\GrassEditor.cpp" />
+    <ClCompile Include="..\Editor\Private\LevelEditor\Environment\SpeedTreeGrassImporter.cpp" />
     <ClCompile Include="..\Editor\Private\LevelEditor\Environment\SpeedTreeGrassRenderer.cpp" />
     <ClCompile Include="..\..\External\SpeedTreeSDK\Source\Forest\Source\Culling.cpp">
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
