@@ -1,6 +1,4 @@
 #include "Editor/LevelEditor/Environment/GrassEditor.h"
-
-#include "Editor/LevelEditor/Environment/SpeedTreeGrassImporter.h"
 #include "Editor/LevelEditor/Terrain/TerrainRenderer.h"
 
 #include <algorithm>
@@ -86,25 +84,6 @@ namespace lts::editor
                 L"Grass" /
                 relativeMeshPath
             ).generic_wstring();
-        }
-
-        [[nodiscard]] std::filesystem::path BuildCookedMeshPath(
-            const std::filesystem::path& workspaceRoot,
-            const std::filesystem::path& relativeSrtPath)
-        {
-            std::filesystem::path relativeMeshPath =
-                relativeSrtPath;
-
-            relativeMeshPath.replace_extension(L".mesh");
-
-            return
-                workspaceRoot /
-                L"bin" /
-                L"Data" /
-                L"StaticMeshes" /
-                L"SpeedTree" /
-                L"Grass" /
-                relativeMeshPath;
         }
 
         [[nodiscard]] bool SamePath(
@@ -552,83 +531,37 @@ namespace lts::editor
     }
 
     bool GrassEditor::EnsureSelectedAssetCooked(
-        const std::filesystem::path& workspaceRoot,
-        std::string& status) noexcept
+    const std::filesystem::path&,
+    std::string& status) noexcept
     {
         if (assets_.empty() ||
             selectedAssetIndex_ >= assets_.size())
         {
-            status =
-                "Select a Grass .srt asset.";
-
+            status = "Select a Grass .srt asset.";
             return false;
         }
 
-        GrassAssetEntry& asset =
+        const GrassAssetEntry& asset =
             assets_[selectedAssetIndex_];
-
-        const std::filesystem::path meshPath =
-            BuildCookedMeshPath(
-                workspaceRoot,
-                asset.relativePath);
 
         std::error_code error;
 
-        const bool meshExists =
-            std::filesystem::is_regular_file(
-                meshPath,
-                error) &&
-            !error;
-
-        bool upToDate = false;
-
-        if (meshExists)
+        if (!IsSrt(asset.sourcePath) ||
+            !std::filesystem::is_regular_file(
+                asset.sourcePath,
+                error) ||
+            error)
         {
-            error.clear();
+            status =
+                "Grass .srt file does not exist: " +
+                asset.sourcePath.generic_u8string();
 
-            const auto meshWriteTime =
-                std::filesystem::last_write_time(
-                    meshPath,
-                    error);
-
-            if (!error)
-            {
-                error.clear();
-
-                const auto sourceWriteTime =
-                    std::filesystem::last_write_time(
-                        asset.sourcePath,
-                        error);
-
-                if (!error)
-                {
-                    upToDate =
-                        meshWriteTime >= sourceWriteTime;
-                }
-            }
-        }
-
-        if (upToDate)
-        {
-            return true;
-        }
-
-        const SpeedTreeGrassImportResult imported =
-            SpeedTreeGrassImporter{}.Import(
-                workspaceRoot,
-                asset.sourcePath);
-
-        if (!imported.succeeded)
-        {
-            status = imported.error;
             return false;
         }
 
-        asset.logicalMeshPath =
-            imported.logicalMeshPath;
-
         status =
-            "SpeedTree Grass asset imported.";
+            "Native SpeedTree asset selected: " +
+            asset.relativePath.generic_u8string();
 
         return true;
     }
@@ -800,9 +733,6 @@ namespace lts::editor
 
                 instance.relativeSrtPath =
                     asset.relativePath;
-
-                instance.logicalMeshPath =
-                    asset.logicalMeshPath;
 
                 instance.x = x;
                 instance.y = y + 0.02F;
@@ -1180,6 +1110,12 @@ namespace lts::editor
         GrassEditor::GetInstanceCount() const noexcept
     {
         return instances_.size();
+    }
+
+    const std::vector<GrassRenderInstance>&
+        GrassEditor::GetRenderInstances() const noexcept
+    {
+        return instances_;
     }
 
     bool GrassEditor::IsDirty() const noexcept

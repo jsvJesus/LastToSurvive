@@ -11,7 +11,7 @@
 #include <Editor/LevelEditor/Rendering/StaticMeshRenderer.h>
 #include <Editor/LevelEditor/Environment/WaterPlaneEditor.h>
 #include <Editor/LevelEditor/Environment/GrassEditor.h>
-#include <Editor/LevelEditor/Environment/SpeedTreeGrassImporter.h>
+#include <Editor/LevelEditor/Environment/SpeedTreeGrassRenderer.h>
 #include <Editor/LevelEditor/Scene/SceneDocument.h>
 #include <Editor/LevelEditor/Terrain/TerrainImporter.h>
 #include <Editor/LevelEditor/Terrain/TerrainRenderer.h>
@@ -76,12 +76,7 @@ namespace studio::editor
         lts::editor::GridRenderer g_gridRenderer;
         lts::editor::TerrainRenderer g_terrainRenderer;
         lts::editor::StaticMeshRenderer g_staticMeshRenderer;
-
-        // Для Grass нужен отдельный StaticMeshRenderer.
-        // Нельзя использовать g_staticMeshRenderer одновременно
-        // для основной сцены и временного Grass-документа.
-        lts::editor::StaticMeshRenderer g_grassMeshRenderer;
-        
+        lts::editor::SpeedTreeGrassRenderer g_speedTreeGrassRenderer;
         lts::editor::ColorCorrectionRenderer g_colorCorrectionRenderer;
         lts::editor::ColorCorrectionSettings g_colorCorrectionSettings;
         lts::editor::TerrainImporter g_terrainImporter;
@@ -4375,51 +4370,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
                 const std::size_t selectedIndex =
                     g_grassEditor.GetSelectedAssetIndex();
-
-                if (!erase &&
-                    selectedIndex < assets.size())
-                {
-                    if (ImGui::Button(
-                            "Import Selected .srt",
-                            ImVec2(
-                                ImGui::GetContentRegionAvail().x,
-                                30.0F)))
-                    {
-                        const lts::editor::
-                            SpeedTreeGrassImportResult result =
-                                lts::editor::
-                                    SpeedTreeGrassImporter{}.
-                                        Import(
-                                            FindWorkspaceRoot(),
-                                            assets[selectedIndex].
-                                                sourcePath);
-
-                        if (result.succeeded)
-                        {
-                            g_grassStatus =
-                                "Imported: " +
-                                std::filesystem::path(
-                                    result.logicalMeshPath).
-                                        generic_u8string();
-
-                            static_cast<void>(
-                                g_staticMeshRenderer.ReloadMesh(
-                                    result.logicalMeshPath));
-
-                            static_cast<void>(
-                                g_grassMeshRenderer.ReloadMesh(
-                                    result.logicalMeshPath));
-                        }
-                        else
-                        {
-                            g_grassStatus =
-                                result.error.empty()
-                                    ? "Grass .srt import failed."
-                                    : result.error;
-                        }
-                    }
-                }
-
+                
                 if (erase)
                 {
                     ImGui::TextDisabled(
@@ -5982,7 +5933,7 @@ bool IsActiveTerrainPaintTool() noexcept
             return false;
         }
 
-        if (!g_grassMeshRenderer.Initialize(device))
+        if (!g_speedTreeGrassRenderer.Initialize(device, FindWorkspaceRoot()))
         {
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
@@ -5993,7 +5944,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
         if (!g_objectViewTab.Initialize(device, window))
         {
-            g_grassMeshRenderer.Shutdown(device);
+            g_speedTreeGrassRenderer.Shutdown(device);
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
             g_gridRenderer.Shutdown(device);
@@ -6004,7 +5955,7 @@ bool IsActiveTerrainPaintTool() noexcept
         if (!g_colorCorrectionRenderer.Initialize(device))
         {
             g_objectViewTab.Shutdown(device);
-            g_grassMeshRenderer.Shutdown(device);
+            g_speedTreeGrassRenderer.Shutdown(device);
             g_staticMeshRenderer.Shutdown(device);
             g_terrainRenderer.Shutdown(device);
             g_gridRenderer.Shutdown(device);
@@ -6037,7 +5988,7 @@ bool IsActiveTerrainPaintTool() noexcept
 
         g_colorCorrectionRenderer.Shutdown(device);
         g_objectViewTab.Shutdown(device);
-        g_grassMeshRenderer.Shutdown(device);
+        g_speedTreeGrassRenderer.Shutdown(device);
         g_staticMeshRenderer.Shutdown(device);
         g_terrainRenderer.Shutdown(device);
         g_gridRenderer.Shutdown(device);
@@ -6125,11 +6076,15 @@ bool IsActiveTerrainPaintTool() noexcept
         g_editorViewportHeight = height;
 
         DirectX::XMFLOAT4X4 viewProjection{};
+        DirectX::XMFLOAT4X4 view{};
+        DirectX::XMFLOAT4X4 projection{};
 
-        if (!g_cameraController.BuildViewProjection(
-                width,
-                height,
-                viewProjection))
+        if (!g_cameraController.BuildViewMatrices(
+            width,
+            height,
+            view,
+            projection,
+            viewProjection))
         {
             return engine::graphics::GraphicsResult::InvalidState;
         }
@@ -6184,16 +6139,13 @@ bool IsActiveTerrainPaintTool() noexcept
         const DirectX::XMFLOAT3 cameraPosition =
             g_cameraController.GetPosition();
 
-        g_grassEditor.PrepareRenderDocument(
-            g_sceneDocument,
-            cameraPosition);
-
-        const engine::graphics::GraphicsResult grassResult =
-            g_grassMeshRenderer.Render(
-                context,
-                g_grassEditor.GetRenderDocument(),
-                viewProjection,
-                cameraPosition);
+        const engine::graphics::GraphicsResult grassResult = g_speedTreeGrassRenderer.Render(
+            width,
+            height,
+            view,
+            projection,
+            cameraPosition,
+            g_grassEditor);
 
         if (engine::graphics::Failed(grassResult))
         {

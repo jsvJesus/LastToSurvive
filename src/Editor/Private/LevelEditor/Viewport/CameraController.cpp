@@ -309,7 +309,26 @@ namespace lts::editor
         const std::uint32_t viewportHeight,
         DirectX::XMFLOAT4X4& outViewProjection) const noexcept
     {
-        if (viewportWidth == 0U || viewportHeight == 0U)
+        DirectX::XMFLOAT4X4 view{};
+        DirectX::XMFLOAT4X4 projection{};
+
+        return BuildViewMatrices(
+            viewportWidth,
+            viewportHeight,
+            view,
+            projection,
+            outViewProjection);
+    }
+
+    bool CameraController::BuildViewMatrices(
+        const std::uint32_t viewportWidth,
+        const std::uint32_t viewportHeight,
+        DirectX::XMFLOAT4X4& outView,
+        DirectX::XMFLOAT4X4& outProjection,
+        DirectX::XMFLOAT4X4& outViewProjection) const noexcept
+    {
+        if (viewportWidth == 0U ||
+            viewportHeight == 0U)
         {
             return false;
         }
@@ -318,7 +337,8 @@ namespace lts::editor
             static_cast<float>(viewportWidth) /
             static_cast<float>(viewportHeight);
 
-        if (!std::isfinite(aspectRatio) || aspectRatio <= 0.0F)
+        if (!std::isfinite(aspectRatio) ||
+            aspectRatio <= 0.0F)
         {
             return false;
         }
@@ -327,10 +347,16 @@ namespace lts::editor
             DirectX::XMLoadFloat3(&position_);
 
         const DirectX::XMVECTOR forward =
-            BuildForwardVector(yawRadians_, pitchRadians_);
+            BuildForwardVector(
+                yawRadians_,
+                pitchRadians_);
 
         const DirectX::XMVECTOR up =
-            DirectX::XMVectorSet(0.0F, 1.0F, 0.0F, 0.0F);
+            DirectX::XMVectorSet(
+                0.0F,
+                1.0F,
+                0.0F,
+                0.0F);
 
         const DirectX::XMMATRIX view =
             DirectX::XMMatrixLookToLH(
@@ -338,14 +364,6 @@ namespace lts::editor
                 forward,
                 up);
 
-        /*
-         * Reverse-Z:
-         * физическая near plane = 0.1,
-         * физическая far plane = 2000.
-         *
-         * DirectXMath создаёт reverse-Z projection,
-         * когда NearZ передаётся больше FarZ.
-        */
         constexpr float PhysicalNearPlane =
             0.1F;
 
@@ -354,8 +372,7 @@ namespace lts::editor
 
         const DirectX::XMMATRIX projection =
             DirectX::XMMatrixPerspectiveFovLH(
-                DirectX::XMConvertToRadians(
-                    60.0F),
+                DirectX::XMConvertToRadians(60.0F),
                 aspectRatio,
                 PhysicalFarPlane,
                 PhysicalNearPlane);
@@ -364,6 +381,14 @@ namespace lts::editor
             DirectX::XMMatrixMultiply(
                 view,
                 projection);
+
+        DirectX::XMStoreFloat4x4(
+            &outView,
+            view);
+
+        DirectX::XMStoreFloat4x4(
+            &outProjection,
+            projection);
 
         DirectX::XMStoreFloat4x4(
             &outViewProjection,

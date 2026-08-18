@@ -54,6 +54,14 @@ namespace lts::editor
             DirectX::XMFLOAT4X4& outViewProjection) const noexcept;
 
         [[nodiscard]]
+        bool BuildViewMatrices(
+            std::uint32_t viewportWidth,
+            std::uint32_t viewportHeight,
+            DirectX::XMFLOAT4X4& outView,
+            DirectX::XMFLOAT4X4& outProjection,
+            DirectX::XMFLOAT4X4& outViewProjection) const noexcept;
+
+        [[nodiscard]]
         bool BuildPickRay(
             std::uint32_t mouseX,
             std::uint32_t mouseY,

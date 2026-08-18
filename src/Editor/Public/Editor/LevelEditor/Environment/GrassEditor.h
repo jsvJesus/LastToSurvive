@@ -23,6 +23,19 @@ namespace lts::editor
         std::wstring logicalMeshPath;
     };
 
+    struct GrassRenderInstance final
+    {
+        std::filesystem::path relativeSrtPath;
+
+        float x = 0.0F;
+        float y = 0.0F;
+        float z = 0.0F;
+
+        float yawDegrees = 0.0F;
+        float scale = 1.0F;
+        float modulation = 1.0F;
+    };
+
     class GrassEditor final
     {
     public:
@@ -89,6 +102,10 @@ namespace lts::editor
         [[nodiscard]] std::size_t
             GetInstanceCount() const noexcept;
 
+        [[nodiscard]]
+        const std::vector<GrassRenderInstance>&
+            GetRenderInstances() const noexcept;
+
         [[nodiscard]] bool
             IsDirty() const noexcept;
 
@@ -99,19 +116,7 @@ namespace lts::editor
             float value) noexcept;
 
     private:
-        struct Instance final
-        {
-            std::filesystem::path relativeSrtPath;
-            std::wstring logicalMeshPath;
-
-            float x = 0.0F;
-            float y = 0.0F;
-            float z = 0.0F;
-
-            float yawDegrees = 0.0F;
-            float scale = 1.0F;
-            float modulation = 1.0F;
-        };
+        using Instance = GrassRenderInstance;
 
         [[nodiscard]] bool EnsureSelectedAssetCooked(
             const std::filesystem::path& workspaceRoot,
