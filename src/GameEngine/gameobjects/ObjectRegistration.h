@@ -10,11 +10,6 @@ IMPLEMENT_CLASS(DummyObject, "DummyObject", "Object");
 AUTOREGISTER_CLASS(DummyObject);
 
 #ifndef WO_SERVER
-#if APEX_ENABLED
-#include "obj_Apex.hpp"
-IMPLEMENT_CLASS(obj_ApexDestructible, "obj_ApexDestructible", "Object");
-AUTOREGISTER_CLASS(obj_ApexDestructible);
-#endif //APEX_ENABLED
 #endif //WO_SERVER
 
 #ifndef WO_SERVER

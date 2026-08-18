@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Final|x64">
+      <Configuration>Final</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{C4F7A2D9-6B31-4E8C-9A52-7D1F0B3E6C84}</ProjectGuid>
+    <RootNamespace>LTSAssets</RootNamespace>
+    <ProjectName>LTS.Assets</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir>
+    <IntDir>$(SolutionDir)..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir>
+    <TargetName>LTS.Assets</TargetName>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_RELEASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\..\..\External\ufbx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SDLCheck>true</SDLCheck>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/permissive- /Zc:__cplusplus /Zc:inline /utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32_LEAN_AND_MEAN;ENGINE_BUILD_FINAL=1;FINAL_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\Platform\Public;$(ProjectDir)..\Graphics\Public;$(ProjectDir)..\..\..\External\ufbx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SDLCheck>true</SDLCheck>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Private\FbxImporterCommon.h" />
+    <ClInclude Include="Public\Assets\AnimationAsset.h" />
+    <ClInclude Include="Public\Assets\AnimationAssetLoader.h" />
+    <ClInclude Include="Public\Assets\AssetData.h" />
+    <ClInclude Include="Public\Assets\AssetHandle.h" />
+    <ClInclude Include="Public\Assets\AssetId.h" />
+    <ClInclude Include="Public\Assets\AssetLoader.h" />
+    <ClInclude Include="Public\Assets\AssetLoaderRegistry.h" />
+    <ClInclude Include="Public\Assets\AssetManager.h" />
+    <ClInclude Include="Public\Assets\AssetMetadata.h" />
+    <ClInclude Include="Public\Assets\AssetPath.h" />
+    <ClInclude Include="Public\Assets\AssetRegistry.h" />
+    <ClInclude Include="Public\Assets\AssetResult.h" />
+    <ClInclude Include="Public\Assets\AssetSource.h" />
+    <ClInclude Include="Public\Assets\AssetState.h" />
+    <ClInclude Include="Public\Assets\AssetType.h" />
+    <ClInclude Include="Public\Assets\DdsTextureDecoder.h" />
+    <ClInclude Include="Public\Assets\DdsTextureLoader.h" />
+    <ClInclude Include="Public\Assets\FbxAnimationsImporter.h" />
+    <ClInclude Include="Public\Assets\FbxAssetData.h" />
+    <ClInclude Include="Public\Assets\FbxAssetImporter.h" />
+    <ClInclude Include="Public\Assets\FbxSkeletalMeshImporter.h" />
+    <ClInclude Include="Public\Assets\FileAssetSource.h" />
+    <ClInclude Include="Public\Assets\FbxStaticMeshImporter.h" />
+    <ClInclude Include="Public\Assets\GpuSkeletalMesh.h" />
+    <ClInclude Include="Public\Assets\LegacyTerrain2Importer.h" />
+    <ClInclude Include="Public\Assets\LegacyMeshImporter.h" />
+    <ClInclude Include="Public\Assets\GpuTexture.h" />
+    <ClInclude Include="Public\Assets\MaterialAssetWriter.h" />
+    <ClInclude Include="Public\Assets\LtsMeshWriter.h" />
+    <ClInclude Include="Public\Assets\GpuMesh.h" />
+    <ClInclude Include="Public\Assets\MaterialAsset.h" />
+    <ClInclude Include="Public\Assets\MaterialAssetLoader.h" />
+    <ClInclude Include="Public\Assets\MeshAsset.h" />
+    <ClInclude Include="Public\Assets\MeshAssetBuilder.h" />
+    <ClInclude Include="Public\Assets\MeshAssetLoader.h" />
+    <ClInclude Include="Public\Assets\LtsStaticModelWriter.h" />
+    <ClInclude Include="Public\Assets\ScbMaterialConverter.h" />
+    <ClInclude Include="Public\Assets\SkeletalMeshAsset.h" />
+    <ClInclude Include="Public\Assets\SkeletalMeshAssetLoader.h" />
+    <ClInclude Include="Public\Assets\SkeletonAsset.h" />
+    <ClInclude Include="Public\Assets\SkeletonAssetLoader.h" />
+    <ClInclude Include="Public\Assets\StaticMeshPrefab.h" />
+    <ClInclude Include="Public\Assets\StaticModelAsset.h" />
+    <ClInclude Include="Public\Assets\StaticModelAssetLoader.h" />
+    <ClInclude Include="Public\Assets\ShaderAsset.h" />
+    <ClInclude Include="Public\Assets\ShaderAssetLoader.h" />
+    <ClInclude Include="Public\Assets\LtsShaderWriter.h" />
+    <ClInclude Include="Public\Assets\TextureAsset.h" />
+    <ClInclude Include="Public\Assets\TextureAssetCache.h" />
+    <ClInclude Include="Public\Assets\TerrainAsset.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\AnimationAsset.cpp" />
+    <ClCompile Include="Private\AnimationAssetLoader.cpp" />
+    <ClCompile Include="Private\AssetData.cpp" />
+    <ClCompile Include="Private\AssetId.cpp" />
+    <ClCompile Include="Private\AssetLoaderRegistry.cpp" />
+    <ClCompile Include="Private\AssetManager.cpp" />
+    <ClCompile Include="Private\AssetPath.cpp" />
+    <ClCompile Include="Private\AssetRegistry.cpp" />
+    <ClCompile Include="Private\AssetResult.cpp" />
+    <ClCompile Include="Private\AssetState.cpp" />
+    <ClCompile Include="Private\AssetType.cpp" />
+    <ClCompile Include="Private\DdsTextureDecoder.cpp" />
+    <ClCompile Include="Private\DdsTextureLoader.cpp" />
+    <ClCompile Include="Private\FbxAnimationsImporter.cpp" />
+    <ClCompile Include="Private\FbxAssetData.cpp" />
+    <ClCompile Include="Private\FbxAssetImporter.cpp" />
+    <ClCompile Include="Private\FbxSkeletalMeshImporter.cpp" />
+    <ClCompile Include="Private\FileAssetSource.cpp" />
+    <ClCompile Include="Private\FbxStaticMeshImporter.cpp" />
+    <ClCompile Include="Private\GpuSkeletalMesh.cpp" />
+    <ClCompile Include="Private\LegacyTerrain2Importer.cpp" />
+    <ClCompile Include="Private\LegacyMeshImporter.cpp" />
+    <ClCompile Include="Private\GpuTexture.cpp" />
+    <ClCompile Include="Private\MaterialAssetWriter.cpp" />
+    <ClCompile Include="Private\LtsMeshWriter.cpp" />
+    <ClCompile Include="Private\GpuMesh.cpp" />
+    <ClCompile Include="Private\MaterialAsset.cpp" />
+    <ClCompile Include="Private\MaterialAssetLoader.cpp" />
+    <ClCompile Include="Private\MeshAsset.cpp" />
+    <ClCompile Include="Private\MeshAssetBuilder.cpp" />
+    <ClCompile Include="Private\MeshAssetLoader.cpp" />
+    <ClCompile Include="Private\LtsStaticModelWriter.cpp" />
+    <ClCompile Include="Private\ScbMaterialConverter.cpp" />
+    <ClCompile Include="Private\SkeletalMeshAsset.cpp" />
+    <ClCompile Include="Private\SkeletalMeshAssetLoader.cpp" />
+    <ClCompile Include="Private\SkeletonAsset.cpp" />
+    <ClCompile Include="Private\SkeletonAssetLoader.cpp" />
+    <ClCompile Include="Private\StaticMeshPrefab.cpp" />
+    <ClCompile Include="Private\StaticModelAsset.cpp" />
+    <ClCompile Include="Private\StaticModelAssetLoader.cpp" />
+    <ClCompile Include="Private\ShaderAsset.cpp" />
+    <ClCompile Include="Private\ShaderAssetLoader.cpp" />
+    <ClCompile Include="Private\LtsShaderWriter.cpp" />
+    <ClCompile Include="Private\TextureAsset.cpp" />
+    <ClCompile Include="Private\TextureAssetCache.cpp" />
+    <ClCompile Include="Private\TerrainAsset.cpp" />
+    <ClCompile Include="..\..\..\External\ufbx\ufbx.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform\LTS.Platform.vcxproj">
+      <Project>{B1C3E5A7-9D2F-4F6A-8B10-2C4D6E8F1357}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <ProjectReference Include="..\Graphics\LTS.Graphics.vcxproj">
+      <Project>{6A2C72E5-61D9-4AD9-A62B-86CBB8B6453F}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

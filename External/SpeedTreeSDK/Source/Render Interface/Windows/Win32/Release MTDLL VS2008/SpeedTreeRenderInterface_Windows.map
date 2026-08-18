@@ -1,0 +1,1466 @@
+ SpeedTreeRenderInterface_Windows_v7.1
+
+ Timestamp is 594c310f (Thu Jun 22 23:05:19 2017)
+
+ Preferred load address is 10000000
+
+ Start         Length     Name                   Class
+ 0001:00000000 0001ca32H .text                   CODE
+ 0001:0001ca40 00000d15H .text$x                 CODE
+ 0001:0001d760 000002b5H .text$yc                CODE
+ 0002:00000000 00000138H .idata$5                DATA
+ 0002:00000138 00000004H .CRT$XCA                DATA
+ 0002:0000013c 0000002cH .CRT$XCU                DATA
+ 0002:00000168 00000004H .CRT$XCZ                DATA
+ 0002:0000016c 00000004H .CRT$XIA                DATA
+ 0002:00000170 00000004H .CRT$XIAA               DATA
+ 0002:00000174 00000004H .CRT$XIC                DATA
+ 0002:00000178 00000004H .CRT$XIZ                DATA
+ 0002:00000180 00000bf8H .rdata                  DATA
+ 0002:00000d78 0000009aH .rdata$debug            DATA
+ 0002:00000e20 000000e0H .rdata$sxdata           DATA
+ 0002:00000f00 00000004H .rtc$IAA                DATA
+ 0002:00000f04 00000004H .rtc$IZZ                DATA
+ 0002:00000f08 00000004H .rtc$TAA                DATA
+ 0002:00000f0c 00000004H .rtc$TZZ                DATA
+ 0002:00000f10 00000b8cH .xdata$x                DATA
+ 0002:00001a9c 00000050H .idata$2                DATA
+ 0002:00001aec 00000014H .idata$3                DATA
+ 0002:00001b00 00000138H .idata$4                DATA
+ 0002:00001c38 00000838H .idata$6                DATA
+ 0002:00002470 0000cb61H .edata                  DATA
+ 0003:00000000 00000030H .data                   DATA
+ 0003:00000030 000003f4H .bss                    DATA
+
+  Address         Publics by Value              Rva+Base       Lib:Object
+
+ 0000:00000000       __except_list              00000000     <absolute>
+ 0000:00000038       ___safe_se_handler_count   00000038     <absolute>
+ 0000:00009876       __ldused                   00009876     <absolute>
+ 0000:00009876       __fltused                  00009876     <absolute>
+ 0000:00000000       ___ImageBase               10000000     <linker-defined>
+ 0001:00000000       ??4st_float16@SpeedTree@@QAEAAV01@ABV01@@Z 10001000 f i RenderInterface.obj
+ 0001:00000020       ??0st_float16@SpeedTree@@QAE@XZ 10001020 f i RenderInterface.obj
+ 0001:00000050       ??0st_float16@SpeedTree@@QAE@M@Z 10001050 f i RenderInterface.obj
+ 0001:00000140       ??0st_float16@SpeedTree@@QAE@ABV01@@Z 10001140 f i RenderInterface.obj
+ 0001:00000160       ??Bst_float16@SpeedTree@@QBEMXZ 10001160 f i RenderInterface.obj
+ 0001:00000240       ??1CFileSystem@SpeedTree@@UAE@XZ 10001240 f i RenderInterface.obj
+ 0001:00000260       ?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@ABV32@@Z 10001260 f i RenderInterface.obj
+ 0001:00000290       ??0CFileSystem@SpeedTree@@QAE@XZ 10001290 f i RenderInterface.obj
+ 0001:000002b0       ??0CFileSystem@SpeedTree@@QAE@ABV01@@Z 100012b0 f i RenderInterface.obj
+ 0001:000002d0       ??4CFileSystem@SpeedTree@@QAEAAV01@ABV01@@Z 100012d0 f i RenderInterface.obj
+ 0001:000002e0       ??_GCFileSystem@SpeedTree@@UAEPAXI@Z 100012e0 f i RenderInterface.obj
+ 0001:00000310       ??_ECFileSystem@SpeedTree@@UAEPAXI@Z 10001310 f i RenderInterface.obj
+ 0001:00000380       ??_G?$CBasicFixedString@$0BAA@@SpeedTree@@UAEPAXI@Z 10001380 f i RenderInterface.obj
+ 0001:000003b0       ??_E?$CBasicFixedString@$0BAA@@SpeedTree@@UAEPAXI@Z 100013b0 f i RenderInterface.obj
+ 0001:00000420       ??4Vec2@SpeedTree@@QAEAAV01@ABV01@@Z 10001420 f i RenderInterface.obj
+ 0001:00000440       ??4Vec3@SpeedTree@@QAEAAV01@ABV01@@Z 10001440 f i RenderInterface.obj
+ 0001:00000470       ??4Vec4@SpeedTree@@QAEAAV01@ABV01@@Z 10001470 f i RenderInterface.obj
+ 0001:000004a0       ??0Vec2@SpeedTree@@QAE@XZ  100014a0 f i RenderInterface.obj
+ 0001:000004c0       ??0Vec2@SpeedTree@@QAE@MM@Z 100014c0 f i RenderInterface.obj
+ 0001:000004f0       ??0Vec2@SpeedTree@@QAE@QBM@Z 100014f0 f i RenderInterface.obj
+ 0001:00000520       ??HVec2@SpeedTree@@QBE?AV01@ABV01@@Z 10001520 f i RenderInterface.obj
+ 0001:00000560       ??YVec2@SpeedTree@@QAE?AV01@ABV01@@Z 10001560 f i RenderInterface.obj
+ 0001:000005b0       ??8Vec2@SpeedTree@@QBE_NABV01@@Z 100015b0 f i RenderInterface.obj
+ 0001:00000600       ?Set@Vec2@SpeedTree@@QAEXMM@Z 10001600 f i RenderInterface.obj
+ 0001:00000620       ?Distance@Vec2@SpeedTree@@QBEMABV12@@Z 10001620 f i RenderInterface.obj
+ 0001:00000680       ??0Vec3@SpeedTree@@QAE@XZ  10001680 f i RenderInterface.obj
+ 0001:000006b0       ??0Vec3@SpeedTree@@QAE@MMM@Z 100016b0 f i RenderInterface.obj
+ 0001:000006e0       ??0Vec3@SpeedTree@@QAE@MM@Z 100016e0 f i RenderInterface.obj
+ 0001:00000710       ??0Vec3@SpeedTree@@QAE@QBM@Z 10001710 f i RenderInterface.obj
+ 0001:00000750       ??AVec3@SpeedTree@@QAEAAMH@Z 10001750 f i RenderInterface.obj
+ 0001:00000770       ??BVec3@SpeedTree@@QAEPAMXZ 10001770 f i RenderInterface.obj
+ 0001:00000780       ??BVec3@SpeedTree@@QBEPBMXZ 10001780 f i RenderInterface.obj
+ 0001:00000790       ??MVec3@SpeedTree@@QBE_NABV01@@Z 10001790 f i RenderInterface.obj
+ 0001:00000850       ??8Vec3@SpeedTree@@QBE_NABV01@@Z 10001850 f i RenderInterface.obj
+ 0001:000008b0       ??9Vec3@SpeedTree@@QBE_NABV01@@Z 100018b0 f i RenderInterface.obj
+ 0001:00000910       ??GVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001910 f i RenderInterface.obj
+ 0001:00000970       ??HVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001970 f i RenderInterface.obj
+ 0001:000009d0       ??YVec3@SpeedTree@@QAE?AV01@ABV01@@Z 100019d0 f i RenderInterface.obj
+ 0001:00000a30       ??DVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001a30 f i RenderInterface.obj
+ 0001:00000a90       ??XVec3@SpeedTree@@QAE?AV01@ABV01@@Z 10001a90 f i RenderInterface.obj
+ 0001:00000af0       ??KVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001af0 f i RenderInterface.obj
+ 0001:00000b50       ??_0Vec3@SpeedTree@@QAE?AV01@ABV01@@Z 10001b50 f i RenderInterface.obj
+ 0001:00000bb0       ??DVec3@SpeedTree@@QBE?AV01@M@Z 10001bb0 f i RenderInterface.obj
+ 0001:00000c00       ??XVec3@SpeedTree@@QAE?AV01@M@Z 10001c00 f i RenderInterface.obj
+ 0001:00000c60       ??KVec3@SpeedTree@@QBE?AV01@M@Z 10001c60 f i RenderInterface.obj
+ 0001:00000cb0       ??_0Vec3@SpeedTree@@QAE?AV01@M@Z 10001cb0 f i RenderInterface.obj
+ 0001:00000d10       ??GVec3@SpeedTree@@QBE?AV01@XZ 10001d10 f i RenderInterface.obj
+ 0001:00000d60       ?Set@Vec3@SpeedTree@@QAEXMMM@Z 10001d60 f i RenderInterface.obj
+ 0001:00000d90       ?Set@Vec3@SpeedTree@@QAEXMM@Z 10001d90 f i RenderInterface.obj
+ 0001:00000dc0       ?Set@Vec3@SpeedTree@@QAEXQBM@Z 10001dc0 f i RenderInterface.obj
+ 0001:00000df0       ?Cross@Vec3@SpeedTree@@QBE?AV12@ABV12@@Z 10001df0 f i RenderInterface.obj
+ 0001:00000e70       ?Distance@Vec3@SpeedTree@@QBEMABV12@@Z 10001e70 f i RenderInterface.obj
+ 0001:00000ec0       ?DistanceSquared@Vec3@SpeedTree@@QBEMABV12@@Z 10001ec0 f i RenderInterface.obj
+ 0001:00000ef0       ?Dot@Vec3@SpeedTree@@QBEMABV12@@Z 10001ef0 f i RenderInterface.obj
+ 0001:00000f30       ?Magnitude@Vec3@SpeedTree@@QBEMXZ 10001f30 f i RenderInterface.obj
+ 0001:00000f60       ?MagnitudeSquared@Vec3@SpeedTree@@QBEMXZ 10001f60 f i RenderInterface.obj
+ 0001:00000fa0       ?Normalize@Vec3@SpeedTree@@QAE?AV12@XZ 10001fa0 f i RenderInterface.obj
+ 0001:00001020       ?Scale@Vec3@SpeedTree@@QAEXM@Z 10002020 f i RenderInterface.obj
+ 0001:00001060       ??0Vec4@SpeedTree@@QAE@XZ  10002060 f i RenderInterface.obj
+ 0001:00001090       ??0Vec4@SpeedTree@@QAE@MMMM@Z 10002090 f i RenderInterface.obj
+ 0001:000010d0       ??0Vec4@SpeedTree@@QAE@MMM@Z 100020d0 f i RenderInterface.obj
+ 0001:00001110       ??0Vec4@SpeedTree@@QAE@MM@Z 10002110 f i RenderInterface.obj
+ 0001:00001150       ??0Vec4@SpeedTree@@QAE@ABVVec3@1@M@Z 10002150 f i RenderInterface.obj
+ 0001:00001190       ??0Vec4@SpeedTree@@QAE@QBM@Z 10002190 f i RenderInterface.obj
+ 0001:000011d0       ??AVec4@SpeedTree@@QAEAAMH@Z 100021d0 f i RenderInterface.obj
+ 0001:000011f0       ??BVec4@SpeedTree@@QAEPAMXZ 100021f0 f i RenderInterface.obj
+ 0001:00001200       ??BVec4@SpeedTree@@QBEPBMXZ 10002200 f i RenderInterface.obj
+ 0001:00001210       ??8Vec4@SpeedTree@@QBE_NABV01@@Z 10002210 f i RenderInterface.obj
+ 0001:00001290       ??9Vec4@SpeedTree@@QBE_NABV01@@Z 10002290 f i RenderInterface.obj
+ 0001:00001310       ??DVec4@SpeedTree@@QBE?AV01@ABV01@@Z 10002310 f i RenderInterface.obj
+ 0001:00001380       ??DVec4@SpeedTree@@QBE?AV01@M@Z 10002380 f i RenderInterface.obj
+ 0001:000013f0       ??XVec4@SpeedTree@@QAE?AV01@M@Z 100023f0 f i RenderInterface.obj
+ 0001:00001460       ??KVec4@SpeedTree@@QBE?AV01@M@Z 10002460 f i RenderInterface.obj
+ 0001:000014d0       ??_0Vec4@SpeedTree@@QAE?AV01@M@Z 100024d0 f i RenderInterface.obj
+ 0001:00001540       ??HVec4@SpeedTree@@QBE?AV01@ABV01@@Z 10002540 f i RenderInterface.obj
+ 0001:000015b0       ?Set@Vec4@SpeedTree@@QAEXMMMM@Z 100025b0 f i RenderInterface.obj
+ 0001:000015e0       ?Set@Vec4@SpeedTree@@QAEXMMM@Z 100025e0 f i RenderInterface.obj
+ 0001:00001610       ?Set@Vec4@SpeedTree@@QAEXMM@Z 10002610 f i RenderInterface.obj
+ 0001:00001630       ?Set@Vec4@SpeedTree@@QAEXQBM@Z 10002630 f i RenderInterface.obj
+ 0001:00001670       ??4Mat3x3@SpeedTree@@QAEAAV01@ABV01@@Z 10002670 f i RenderInterface.obj
+ 0001:000016a0       ??_FMat3x3@SpeedTree@@QAEXXZ 100026a0 f i RenderInterface.obj
+ 0001:000016e0       ??_FMat4x4@SpeedTree@@QAEXXZ 100026e0 f i RenderInterface.obj
+ 0001:00001730       ??0Mat3x3@SpeedTree@@QAE@_N@Z 10002730 f i RenderInterface.obj
+ 0001:00001770       ??0Mat3x3@SpeedTree@@QAE@QBM@Z 10002770 f i RenderInterface.obj
+ 0001:000017a0       ??0Mat3x3@SpeedTree@@QAE@ABVVec3@1@00@Z 100027a0 f i RenderInterface.obj
+ 0001:00001820       ??BMat3x3@SpeedTree@@QAEPAMXZ 10002820 f i RenderInterface.obj
+ 0001:00001830       ??BMat3x3@SpeedTree@@QBEPBMXZ 10002830 f i RenderInterface.obj
+ 0001:00001840       ??DMat3x3@SpeedTree@@QBE?AV01@ABV01@@Z 10002840 f i RenderInterface.obj
+ 0001:00001990       ??DMat3x3@SpeedTree@@QBE?AVVec3@1@ABV21@@Z 10002990 f i RenderInterface.obj
+ 0001:00001a40       ??8Mat3x3@SpeedTree@@QBE_NABV01@@Z 10002a40 f i RenderInterface.obj
+ 0001:00001a70       ??9Mat3x3@SpeedTree@@QBE_NABV01@@Z 10002a70 f i RenderInterface.obj
+ 0001:00001aa0       ?SetIdentity@Mat3x3@SpeedTree@@QAEXXZ 10002aa0 f i RenderInterface.obj
+ 0001:00001ae0       ?Set@Mat3x3@SpeedTree@@QAEXQBM@Z 10002ae0 f i RenderInterface.obj
+ 0001:00001b00       ?RotateX@Mat3x3@SpeedTree@@QAEXM@Z 10002b00 f i RenderInterface.obj
+ 0001:00001bb0       ?RotateY@Mat3x3@SpeedTree@@QAEXM@Z 10002bb0 f i RenderInterface.obj
+ 0001:00001c60       ?RotateZ@Mat3x3@SpeedTree@@QAEXM@Z 10002c60 f i RenderInterface.obj
+ 0001:00001d10       ?RotateArbitrary@Mat3x3@SpeedTree@@QAEXABVVec3@2@M@Z 10002d10 f i RenderInterface.obj
+ 0001:00001ed0       ?Scale@Mat3x3@SpeedTree@@QAEXMMM@Z 10002ed0 f i RenderInterface.obj
+ 0001:00001f70       ?Scale@Mat3x3@SpeedTree@@QAEXABVVec3@2@@Z 10002f70 f i RenderInterface.obj
+ 0001:00001fb0       ??0Mat4x4@SpeedTree@@QAE@_N@Z 10002fb0 f i RenderInterface.obj
+ 0001:00002000       ??0Mat4x4@SpeedTree@@QAE@QBM@Z 10003000 f i RenderInterface.obj
+ 0001:00002030       ??0Mat4x4@SpeedTree@@QAE@MMMMMMMMMMMMMMMM@Z 10003030 f i RenderInterface.obj
+ 0001:00002150       ??BMat4x4@SpeedTree@@QAEPAMXZ 10003150 f i RenderInterface.obj
+ 0001:00002160       ??BMat4x4@SpeedTree@@QBEPBMXZ 10003160 f i RenderInterface.obj
+ 0001:00002170       ??DMat4x4@SpeedTree@@QBE?AV01@ABV01@@Z 10003170 f i RenderInterface.obj
+ 0001:00002370       ??XMat4x4@SpeedTree@@QAE?AV01@ABV01@@Z 10003370 f i RenderInterface.obj
+ 0001:00002530       ??DMat4x4@SpeedTree@@QBE?AVVec3@1@ABV21@@Z 10003530 f i RenderInterface.obj
+ 0001:00002600       ??DMat4x4@SpeedTree@@QBE?AVVec4@1@ABV21@@Z 10003600 f i RenderInterface.obj
+ 0001:00002720       ??8Mat4x4@SpeedTree@@QBE_NABV01@@Z 10003720 f i RenderInterface.obj
+ 0001:00002750       ??9Mat4x4@SpeedTree@@QBE_NABV01@@Z 10003750 f i RenderInterface.obj
+ 0001:00002780       ??4Mat4x4@SpeedTree@@QAEAAV01@ABV01@@Z 10003780 f i RenderInterface.obj
+ 0001:000027b0       ?SetIdentity@Mat4x4@SpeedTree@@QAEXXZ 100037b0 f i RenderInterface.obj
+ 0001:000027f0       ?Set@Mat4x4@SpeedTree@@QAEXQBM@Z 100037f0 f i RenderInterface.obj
+ 0001:00002810       ?Set@Mat4x4@SpeedTree@@QAEXMMMMMMMMMMMMMMMM@Z 10003810 f i RenderInterface.obj
+ 0001:00002930       ?GetVectorComponents@Mat4x4@SpeedTree@@QAEXAAVVec3@2@00@Z 10003930 f i RenderInterface.obj
+ 0001:000029e0       ?Invert@Mat4x4@SpeedTree@@QBE_NAAV12@@Z 100039e0 f i RenderInterface.obj
+ 0001:00002f40       ?Multiply4f@Mat4x4@SpeedTree@@QBEXQBMQAM@Z 10003f40 f i RenderInterface.obj
+ 0001:00003040       ?RotateX@Mat4x4@SpeedTree@@QAEXM@Z 10004040 f i RenderInterface.obj
+ 0001:00003110       ?RotateY@Mat4x4@SpeedTree@@QAEXM@Z 10004110 f i RenderInterface.obj
+ 0001:000031e0       ?RotateZ@Mat4x4@SpeedTree@@QAEXM@Z 100041e0 f i RenderInterface.obj
+ 0001:000032b0       ?RotateArbitrary@Mat4x4@SpeedTree@@QAEXABVVec3@2@M@Z 100042b0 f i RenderInterface.obj
+ 0001:00003480       ?Scale@Mat4x4@SpeedTree@@QAEXMMM@Z 10004480 f i RenderInterface.obj
+ 0001:00003510       ?Scale@Mat4x4@SpeedTree@@QAEXABVVec3@2@@Z 10004510 f i RenderInterface.obj
+ 0001:00003550       ?Translate@Mat4x4@SpeedTree@@QAEXMMM@Z 10004550 f i RenderInterface.obj
+ 0001:000035e0       ?Translate@Mat4x4@SpeedTree@@QAEXABVVec3@2@@Z 100045e0 f i RenderInterface.obj
+ 0001:00003620       ?Transpose@Mat4x4@SpeedTree@@QBE?AV12@XZ 10004620 f i RenderInterface.obj
+ 0001:00003750       ?LookAt@Mat4x4@SpeedTree@@QAEXABVVec3@2@00@Z 10004750 f i RenderInterface.obj
+ 0001:00003910       ?Ortho@Mat4x4@SpeedTree@@QAEXMMMMMM_N@Z 10004910 f i RenderInterface.obj
+ 0001:00003a60       ?Frustum@Mat4x4@SpeedTree@@QAEXMMMMMM@Z 10004a60 f i RenderInterface.obj
+ 0001:00003b80       ?Perspective@Mat4x4@SpeedTree@@QAEXMMMM@Z 10004b80 f i RenderInterface.obj
+ 0001:00003c80       ?AdjustPerspectiveNearAndFar@Mat4x4@SpeedTree@@QAEXMM@Z 10004c80 f i RenderInterface.obj
+ 0001:00003cc0       ??1CCoordSysBase@SpeedTree@@UAE@XZ 10004cc0 f i RenderInterface.obj
+ 0001:00003ce0       ?ConvertToStd@CCoordSysBase@SpeedTree@@QBE?AVVec3@2@QBM@Z 10004ce0 f i RenderInterface.obj
+ 0001:00003d20       ?ConvertFromStd@CCoordSysBase@SpeedTree@@QBE?AVVec3@2@QBM@Z 10004d20 f i RenderInterface.obj
+ 0001:00003d60       ??0CCoordSysBase@SpeedTree@@QAE@XZ 10004d60 f i RenderInterface.obj
+ 0001:00003d80       ??0CCoordSysBase@SpeedTree@@QAE@ABV01@@Z 10004d80 f i RenderInterface.obj
+ 0001:00003da0       ??4CCoordSysBase@SpeedTree@@QAEAAV01@ABV01@@Z 10004da0 f i RenderInterface.obj
+ 0001:00003db0       ??_GCCoordSysBase@SpeedTree@@UAEPAXI@Z 10004db0 f i RenderInterface.obj
+ 0001:00003de0       ??_ECCoordSysBase@SpeedTree@@UAEPAXI@Z 10004de0 f i RenderInterface.obj
+ 0001:00003e50       ??4CCoordSys@SpeedTree@@QAEAAV01@ABV01@@Z 10004e50 f i RenderInterface.obj
+ 0001:00003e60       ??4CExtents@SpeedTree@@QAEAAV01@ABV01@@Z 10004e60 f i RenderInterface.obj
+ 0001:00003ea0       ??0CExtents@SpeedTree@@QAE@XZ 10004ea0 f i RenderInterface.obj
+ 0001:00003f40       ??0CExtents@SpeedTree@@QAE@QBM@Z 10004f40 f i RenderInterface.obj
+ 0001:00003fb0       ??0CExtents@SpeedTree@@QAE@ABVVec3@1@0@Z 10004fb0 f i RenderInterface.obj
+ 0001:00003ff0       ??1CExtents@SpeedTree@@QAE@XZ 10004ff0 f i RenderInterface.obj
+ 0001:00004000       ?Reset@CExtents@SpeedTree@@QAEXXZ 10005000 f i RenderInterface.obj
+ 0001:00004060       ?SetToZeros@CExtents@SpeedTree@@QAEXXZ 10005060 f i RenderInterface.obj
+ 0001:000040b0       ?Order@CExtents@SpeedTree@@QAEXXZ 100050b0 f i RenderInterface.obj
+ 0001:00004160       ?Valid@CExtents@SpeedTree@@QBE_NXZ 10005160 f i RenderInterface.obj
+ 0001:00004200       ?ExpandAround@CExtents@SpeedTree@@QAEXQBM@Z 10005200 f i RenderInterface.obj
+ 0001:00004340       ?ExpandAround@CExtents@SpeedTree@@QAEXABVVec3@2@@Z 10005340 f i RenderInterface.obj
+ 0001:00004480       ?ExpandAround@CExtents@SpeedTree@@QAEXABVVec3@2@M@Z 10005480 f i RenderInterface.obj
+ 0001:00004690       ?ExpandAround@CExtents@SpeedTree@@QAEXABV12@@Z 10005690 f i RenderInterface.obj
+ 0001:00004850       ?Scale@CExtents@SpeedTree@@QAEXM@Z 10005850 f i RenderInterface.obj
+ 0001:00004890       ?Translate@CExtents@SpeedTree@@QAEXABVVec3@2@@Z 10005890 f i RenderInterface.obj
+ 0001:000048d0       ?Orient@CExtents@SpeedTree@@QAEXABVVec3@2@0@Z 100058d0 f i RenderInterface.obj
+ 0001:00004d80       ?Rotate@CExtents@SpeedTree@@QAEXM@Z 10005d80 f i RenderInterface.obj
+ 0001:00004f50       ?ComputeRadiusFromCenter3D@CExtents@SpeedTree@@QBEMXZ 10005f50 f i RenderInterface.obj
+ 0001:00004fa0       ?ComputeRadiusSquaredFromCenter3D@CExtents@SpeedTree@@QBEMXZ 10005fa0 f i RenderInterface.obj
+ 0001:00004ff0       ?ComputeRadiusFromCenter2D@CExtents@SpeedTree@@QBEMXZ 10005ff0 f i RenderInterface.obj
+ 0001:00005060       ?Min@CExtents@SpeedTree@@QBEABVVec3@2@XZ 10006060 f i RenderInterface.obj
+ 0001:00005070       ?Max@CExtents@SpeedTree@@QBEABVVec3@2@XZ 10006070 f i RenderInterface.obj
+ 0001:00005090       ?Midpoint@CExtents@SpeedTree@@QBEMI@Z 10006090 f i RenderInterface.obj
+ 0001:000050c0       ?GetCenter@CExtents@SpeedTree@@QBE?AVVec3@2@XZ 100060c0 f i RenderInterface.obj
+ 0001:00005100       ?GetDiagonal@CExtents@SpeedTree@@QBE?AVVec3@2@XZ 10006100 f i RenderInterface.obj
+ 0001:00005150       ?GetHeight@CExtents@SpeedTree@@QBEMXZ 10006150 f i RenderInterface.obj
+ 0001:00005170       ??BCExtents@SpeedTree@@QAEPAMXZ 10006170 f i RenderInterface.obj
+ 0001:00005180       ??BCExtents@SpeedTree@@QBEPBMXZ 10006180 f i RenderInterface.obj
+ 0001:00005190       ??1CAllocator@SpeedTree@@UAE@XZ 10006190 f i RenderInterface.obj
+ 0001:000051b0       ??0CAllocator@SpeedTree@@QAE@XZ 100061b0 f i RenderInterface.obj
+ 0001:000051d0       ??0CAllocator@SpeedTree@@QAE@ABV01@@Z 100061d0 f i RenderInterface.obj
+ 0001:000051f0       ??4CAllocator@SpeedTree@@QAEAAV01@ABV01@@Z 100061f0 f i RenderInterface.obj
+ 0001:00005200       ??_GCAllocator@SpeedTree@@UAEPAXI@Z 10006200 f i RenderInterface.obj
+ 0001:00005230       ??_ECAllocator@SpeedTree@@UAEPAXI@Z 10006230 f i RenderInterface.obj
+ 0001:000052a0       ??4CHeapSystem@SpeedTree@@QAEAAV01@ABV01@@Z 100062a0 f i RenderInterface.obj
+ 0001:000052b0       ??4SBranchWindLevel@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 100062b0 f i RenderInterface.obj
+ 0001:000052e0       ??4SWindGroup@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 100062e0 f i RenderInterface.obj
+ 0001:00005310       ??0SParams@CWind@SpeedTree@@QAE@ABU012@@Z 10006310 f i RenderInterface.obj
+ 0001:00005590       ??4SParams@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 10006590 f i RenderInterface.obj
+ 0001:000055c0       ??0CWind@SpeedTree@@QAE@ABV01@@Z 100065c0 f i RenderInterface.obj
+ 0001:00005850       ??4CWind@SpeedTree@@QAEAAV01@ABV01@@Z 10006850 f i RenderInterface.obj
+ 0001:00005880       ?SetParams@CWind@SpeedTree@@QAEXABUSParams@12@@Z 10006880 f i RenderInterface.obj
+ 0001:000058a0       ?GetParams@CWind@SpeedTree@@QBEABUSParams@12@XZ 100068a0 f i RenderInterface.obj
+ 0001:000058b0       ?EnableGusting@CWind@SpeedTree@@QAEX_N@Z 100068b0 f i RenderInterface.obj
+ 0001:000058d0       ?SetGustFrequency@CWind@SpeedTree@@QAEXM@Z 100068d0 f i RenderInterface.obj
+ 0001:000058f0       ?SetTreeValues@CWind@SpeedTree@@QAEXABVVec3@2@M@Z 100068f0 f i RenderInterface.obj
+ 0001:00005940       ?GetBranchAnchor@CWind@SpeedTree@@QBEPBMXZ 10006940 f i RenderInterface.obj
+ 0001:00005960       ?GetMaxBranchLength@CWind@SpeedTree@@QBEMXZ 10006960 f i RenderInterface.obj
+ 0001:00005980       ?Normalize@CWind@SpeedTree@@IAEXPAM@Z 10006980 f i RenderInterface.obj
+ 0001:00005a30       ?SetOption@CWind@SpeedTree@@QAEXW4EOptions@12@_N@Z 10006a30 f i RenderInterface.obj
+ 0001:00005a50       ?IsOptionEnabled@CWind@SpeedTree@@QBE_NW4EOptions@12@@Z 10006a50 f i RenderInterface.obj
+ 0001:00005a70       ?IsGlobalWindEnabled@CWind@SpeedTree@@QBE_NXZ 10006a70 f i RenderInterface.obj
+ 0001:00005ac0       ?IsBranchWindEnabled@CWind@SpeedTree@@QBE_NXZ 10006ac0 f i RenderInterface.obj
+ 0001:00005b10       ?GetShaderTable@CWind@SpeedTree@@QBEPBMXZ 10006b10 f i RenderInterface.obj
+ 0001:00005b30       ??4?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006b30 f i RenderInterface.obj
+ 0001:00005b50       ??4?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006b50 f i RenderInterface.obj
+ 0001:00005b70       ??4?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006b70 f i RenderInterface.obj
+ 0001:00005b90       ??4SAttribute@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 10006b90 f i RenderInterface.obj
+ 0001:00005bc0       ??4?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006bc0 f i RenderInterface.obj
+ 0001:00005be0       ??4SProperty@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 10006be0 f i RenderInterface.obj
+ 0001:00005c10       ??0SPropertyComponent@SAttribDesc@SVertexDecl@SpeedTree@@QAE@XZ 10006c10 f i RenderInterface.obj
+ 0001:00005c40       ??4SPropertyComponent@SAttribDesc@SVertexDecl@SpeedTree@@QAEAAU0123@ABU0123@@Z 10006c40 f i RenderInterface.obj
+ 0001:00005c60       ??0SAttribDesc@SVertexDecl@SpeedTree@@QAE@XZ 10006c60 f i RenderInterface.obj
+ 0001:00005cd0       ??4SAttribDesc@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 10006cd0 f i RenderInterface.obj
+ 0001:00005d00       ??4SVertexDecl@SpeedTree@@QAEAAU01@ABU01@@Z 10006d00 f i RenderInterface.obj
+ 0001:00005d30       ??4?$CPaddedPtr@$$CBD@SpeedTree@@QAEAAV01@ABV01@@Z 10006d30 f i RenderInterface.obj
+ 0001:00005d50       ??_F?$CPaddedPtr@$$CBD@SpeedTree@@QAEXXZ 10006d50 f i RenderInterface.obj
+ 0001:00005d70       ??1SRenderState@SpeedTree@@QAE@XZ 10006d70 f i RenderInterface.obj
+ 0001:00005d90       ??4SRenderState@SpeedTree@@QAEAAU01@ABU01@@Z 10006d90 f i RenderInterface.obj
+ 0001:00005dc0       ??4SVerticalBillboards@SpeedTree@@QAEAAU01@ABU01@@Z 10006dc0 f i RenderInterface.obj
+ 0001:00005df0       ??4SHorizontalBillboard@SpeedTree@@QAEAAU01@ABU01@@Z 10006df0 f i RenderInterface.obj
+ 0001:00005e20       ??4SCollisionObject@SpeedTree@@QAEAAU01@ABU01@@Z 10006e20 f i RenderInterface.obj
+ 0001:00005e50       ??4?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006e50 f i RenderInterface.obj
+ 0001:00005e70       ??_F?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEXXZ 10006e70 f i RenderInterface.obj
+ 0001:00005e90       ??4?$CPaddedPtr@E@SpeedTree@@QAEAAV01@ABV01@@Z 10006e90 f i RenderInterface.obj
+ 0001:00005eb0       ??_F?$CPaddedPtr@E@SpeedTree@@QAEXXZ 10006eb0 f i RenderInterface.obj
+ 0001:00005ed0       ??4SDrawCall@SpeedTree@@QAEAAU01@ABU01@@Z 10006ed0 f i RenderInterface.obj
+ 0001:00005f00       ??4SBone@SpeedTree@@QAEAAU01@ABU01@@Z 10006f00 f i RenderInterface.obj
+ 0001:00005f30       ??4?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006f30 f i RenderInterface.obj
+ 0001:00005f50       ??_F?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEXXZ 10006f50 f i RenderInterface.obj
+ 0001:00005f70       ??4?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006f70 f i RenderInterface.obj
+ 0001:00005f90       ??_F?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEXXZ 10006f90 f i RenderInterface.obj
+ 0001:00005fb0       ??4SLod@SpeedTree@@QAEAAU01@ABU01@@Z 10006fb0 f i RenderInterface.obj
+ 0001:00005ff0       ??4?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006ff0 f i RenderInterface.obj
+ 0001:00006010       ??_F?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEXXZ 10007010 f i RenderInterface.obj
+ 0001:00006030       ??4SGeometry@SpeedTree@@QAEAAU01@ABU01@@Z 10007030 f i RenderInterface.obj
+ 0001:00006060       ??4SLodProfile@SpeedTree@@QAEAAU01@ABU01@@Z 10007060 f i RenderInterface.obj
+ 0001:00006090       ??4CAllocatorInterface@SpeedTree@@QAEAAV01@ABV01@@Z 10007090 f i RenderInterface.obj
+ 0001:000060a0       ??4CFileSystemInterface@SpeedTree@@QAEAAV01@ABV01@@Z 100070a0 f i RenderInterface.obj
+ 0001:000060b0       ??0SHueVariationParams@CCore@SpeedTree@@QAE@XZ 100070b0 f i RenderInterface.obj
+ 0001:000060f0       ??4SHueVariationParams@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 100070f0 f i RenderInterface.obj
+ 0001:00006130       ??4SResourceStats@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 10007130 f i RenderInterface.obj
+ 0001:00006160       ??0SResourceSummary@CCore@SpeedTree@@QAE@XZ 10007160 f i RenderInterface.obj
+ 0001:000061b0       ??4SResourceSummary@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 100071b0 f i RenderInterface.obj
+ 0001:000061e0       ??4CCore@SpeedTree@@QAEAAV01@ABV01@@Z 100071e0 f i RenderInterface.obj
+ 0001:000063d0       ??0SLodProfile@SpeedTree@@QAE@XZ 100073d0 f i RenderInterface.obj
+ 0001:00006430       ?IsValid@SLodProfile@SpeedTree@@QBE_NXZ 10007430 f i RenderInterface.obj
+ 0001:000064c0       ?ComputeDerived@SLodProfile@SpeedTree@@QAEXXZ 100074c0 f i RenderInterface.obj
+ 0001:000064f0       ?Scale@SLodProfile@SpeedTree@@QAEXM@Z 100074f0 f i RenderInterface.obj
+ 0001:00006540       ?Square@SLodProfile@SpeedTree@@QBEXAAU12@@Z 10007540 f i RenderInterface.obj
+ 0001:000065c0       ??BSLodProfile@SpeedTree@@QBEPBMXZ 100075c0 f i RenderInterface.obj
+ 0001:000065d0       ?GetFilename@CCore@SpeedTree@@QBEPBDXZ 100075d0 f i RenderInterface.obj
+ 0001:000065f0       ?GetGeometry@CCore@SpeedTree@@QBEPBUSGeometry@2@XZ 100075f0 f i RenderInterface.obj
+ 0001:00006610       ?GetExtents@CCore@SpeedTree@@QBEABVCExtents@2@XZ 10007610 f i RenderInterface.obj
+ 0001:00006630       ?IsLoadedAsGrassModel@CCore@SpeedTree@@QBE_NXZ 10007630 f i RenderInterface.obj
+ 0001:00006650       ?AreTexCoordsFlipped@CCore@SpeedTree@@QBE_NXZ 10007650 f i RenderInterface.obj
+ 0001:00006670       ?GetLodProfile@CCore@SpeedTree@@QBEABUSLodProfile@2@XZ 10007670 f i RenderInterface.obj
+ 0001:00006690       ?GetLodProfileSquared@CCore@SpeedTree@@QBEABUSLodProfile@2@XZ 10007690 f i RenderInterface.obj
+ 0001:000066b0       ?SetLodProfile@CCore@SpeedTree@@QAE_NABUSLodProfile@2@@Z 100076b0 f i RenderInterface.obj
+ 0001:00006720       ?ComputeLodSnapshot@CCore@SpeedTree@@QBEHM@Z 10007720 f i RenderInterface.obj
+ 0001:000067c0       ?ComputeLodByDistance@CCore@SpeedTree@@QBEMM@Z 100077c0 f i RenderInterface.obj
+ 0001:00006880       ?ComputeLodByDistanceSquared@CCore@SpeedTree@@QBEMM@Z 10007880 f i RenderInterface.obj
+ 0001:00006940       ?ComputeLodTransition@CCore@SpeedTree@@SAMMH@Z 10007940 f i RenderInterface.obj
+ 0001:000069f0       ?GetWind@CCore@SpeedTree@@QAEAAVCWind@2@XZ 100079f0 f i RenderInterface.obj
+ 0001:00006a10       ?GetWind@CCore@SpeedTree@@QBEABVCWind@2@XZ 10007a10 f i RenderInterface.obj
+ 0001:00006a30       ?GetWindShaderTable@CCore@SpeedTree@@QBEPBMXZ 10007a30 f i RenderInterface.obj
+ 0001:00006a50       ?GetCollisionObjects@CCore@SpeedTree@@QBEPBUSCollisionObject@2@AAH@Z 10007a50 f i RenderInterface.obj
+ 0001:00006a80       ?SetHueVariationParams@CCore@SpeedTree@@QAEXABUSHueVariationParams@12@@Z 10007a80 f i RenderInterface.obj
+ 0001:00006ac0       ?GetHueVariationParams@CCore@SpeedTree@@QBEABUSHueVariationParams@12@XZ 10007ac0 f i RenderInterface.obj
+ 0001:00006ae0       ?SetAmbientImageScalar@CCore@SpeedTree@@QAEXM@Z 10007ae0 f i RenderInterface.obj
+ 0001:00006b00       ?GetAmbientImageScalar@CCore@SpeedTree@@QBEMXZ 10007b00 f i RenderInterface.obj
+ 0001:00006b20       ?GetUserString@CCore@SpeedTree@@QBEPBDW4EUserStringOrdinal@12@@Z 10007b20 f i RenderInterface.obj
+ 0001:00006b40       ?GetUserData@CCore@SpeedTree@@QBEPAXXZ 10007b40 f i RenderInterface.obj
+ 0001:00006b60       ?SetUserData@CCore@SpeedTree@@QAEXPAX@Z 10007b60 f i RenderInterface.obj
+ 0001:00006b80       ?UncompressVec3@CCore@SpeedTree@@SA?AVVec3@2@PBE@Z 10007b80 f i RenderInterface.obj
+ 0001:00006c20       ?UncompressScalar@CCore@SpeedTree@@SAME@Z 10007c20 f i RenderInterface.obj
+ 0001:00006c60       ?CompressScalar@CCore@SpeedTree@@SAEM@Z 10007c60 f i RenderInterface.obj
+ 0001:00006ca0       ?CompressVec3@CCore@SpeedTree@@SAXQAEABVVec3@2@@Z 10007ca0 f i RenderInterface.obj
+ 0001:00006d70       ?GetVertexPropertyDesc@CCore@SpeedTree@@SAABUSVertexPropertyDesc@2@U?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@@Z 10007d70 f i RenderInterface.obj
+ 0001:00006d90       ?GetPixelPropertyDesc@CCore@SpeedTree@@SAABUSPixelPropertyDesc@2@W4EPixelProperty@2@@Z 10007d90 f i RenderInterface.obj
+ 0001:00006da0       ?ComponentName@CCore@SpeedTree@@SAPBDH@Z 10007da0 f i RenderInterface.obj
+ 0001:00006dd0       ?SrtBuffer@CCore@SpeedTree@@IBEPBEXZ 10007dd0 f i RenderInterface.obj
+ 0001:00006e10       ??0SRenderState@SpeedTree@@QAE@XZ 10007e10 f i RenderInterface.obj
+ 0001:00007120       ??8SRenderState@SpeedTree@@QBE_NABU01@@Z 10008120 f i RenderInterface.obj
+ 0001:00007a60       ??9SRenderState@SpeedTree@@QBE_NABU01@@Z 10008a60 f i RenderInterface.obj
+ 0001:00007a90       ?IsPerPixelModelActive@SRenderState@SpeedTree@@QBE_NXZ 10008a90 f i RenderInterface.obj
+ 0001:00007ad0       ?IsLightingModelInTransition@SRenderState@SpeedTree@@QBE_NXZ 10008ad0 f i RenderInterface.obj
+ 0001:00007af0       ?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10008af0 f i RenderInterface.obj
+ 0001:00008310       ?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 10009310 f i RenderInterface.obj
+ 0001:00008490       ?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10009490 f i RenderInterface.obj
+ 0001:000086a0       ?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 100096a0 f i RenderInterface.obj
+ 0001:00008c10       ?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10009c10 f i RenderInterface.obj
+ 0001:000091f0       ?GetPixelProperties@SRenderState@SpeedTree@@QBEXQA_N@Z 1000a1f0 f i RenderInterface.obj
+ 0001:00009530       ?GetInstanceType@SRenderState@SpeedTree@@QBE?AW4EInstanceType@SVertexDecl@2@XZ 1000a530 f i RenderInterface.obj
+ 0001:000095d0       ?ShaderGenHasFixedDecls@SRenderState@SpeedTree@@QBE_NXZ 1000a5d0 f i RenderInterface.obj
+ 0001:00009620       ?ShaderGenerationMode@SRenderState@SpeedTree@@QBE?AW4EShaderGenerationMode@2@XZ 1000a620 f i RenderInterface.obj
+ 0001:00009640       ?IsTextureLayerPresent@SRenderState@SpeedTree@@QBE_NW4ETextureLayer@2@@Z 1000a640 f i RenderInterface.obj
+ 0001:00009690       ?VertexDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000a690 f i RenderInterface.obj
+ 0001:00009770       ?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000a770 f i RenderInterface.obj
+ 0001:00009890       ?IsBranchWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a890 f i RenderInterface.obj
+ 0001:00009910       ?IsGlobalWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a910 f i RenderInterface.obj
+ 0001:00009930       ?IsFullWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a930 f i RenderInterface.obj
+ 0001:00009980       ?MakeDepthOnly@SRenderState@SpeedTree@@QAEXXZ 1000a980 f i RenderInterface.obj
+ 0001:000099d0       ?MakeShadowCast@SRenderState@SpeedTree@@QAEXXZ 1000a9d0 f i RenderInterface.obj
+ 0001:00009a30       ?HasOnlyBranches@SRenderState@SpeedTree@@QBE_NXZ 1000aa30 f i RenderInterface.obj
+ 0001:00009aa0       ?HasOnlyFronds@SRenderState@SpeedTree@@QBE_NXZ 1000aaa0 f i RenderInterface.obj
+ 0001:00009b10       ?HasOnlyLeaves@SRenderState@SpeedTree@@QBE_N_N0@Z 1000ab10 f i RenderInterface.obj
+ 0001:00009c80       ?HasOnlyRigidMeshes@SRenderState@SpeedTree@@QBE_NXZ 1000ac80 f i RenderInterface.obj
+ 0001:00009cf0       ??0SVerticalBillboards@SpeedTree@@QAE@XZ 1000acf0 f i RenderInterface.obj
+ 0001:00009d70       ??1SVerticalBillboards@SpeedTree@@QAE@XZ 1000ad70 f i RenderInterface.obj
+ 0001:00009d80       ??0SHorizontalBillboard@SpeedTree@@QAE@XZ 1000ad80 f i RenderInterface.obj
+ 0001:00009e30       ??1SHorizontalBillboard@SpeedTree@@QAE@XZ 1000ae30 f i RenderInterface.obj
+ 0001:00009e40       ??0SCollisionObject@SpeedTree@@QAE@XZ 1000ae40 f i RenderInterface.obj
+ 0001:00009eb0       ??1SCollisionObject@SpeedTree@@QAE@XZ 1000aeb0 f i RenderInterface.obj
+ 0001:00009ec0       ??0SDrawCall@SpeedTree@@QAE@XZ 1000aec0 f i RenderInterface.obj
+ 0001:00009f40       ??1SDrawCall@SpeedTree@@QAE@XZ 1000af40 f i RenderInterface.obj
+ 0001:00009f50       ??0SBone@SpeedTree@@QAE@XZ 1000af50 f i RenderInterface.obj
+ 0001:00009fe0       ??0SLod@SpeedTree@@QAE@XZ  1000afe0 f i RenderInterface.obj
+ 0001:0000a040       ??1SLod@SpeedTree@@QAE@XZ  1000b040 f i RenderInterface.obj
+ 0001:0000a050       ??0SGeometry@SpeedTree@@QAE@XZ 1000b050 f i RenderInterface.obj
+ 0001:0000a150       ??1SGeometry@SpeedTree@@QAE@XZ 1000b150 f i RenderInterface.obj
+ 0001:0000a1b0       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAM@Z 1000b1b0 f i RenderInterface.obj
+ 0001:0000a3a0       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAVst_float16@2@@Z 1000b3a0 f i RenderInterface.obj
+ 0001:0000a5b0       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAE@Z 1000b5b0 f i RenderInterface.obj
+ 0001:0000a690       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBM@Z 1000b690 f i RenderInterface.obj
+ 0001:0000a770       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBVst_float16@2@@Z 1000b770 f i RenderInterface.obj
+ 0001:0000a850       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBE@Z 1000b850 f i RenderInterface.obj
+ 0001:0000a930       ??0SAttribute@SVertexDecl@SpeedTree@@QAE@XZ 1000b930 f i RenderInterface.obj
+ 0001:0000a9c0       ?IsUsed@SAttribute@SVertexDecl@SpeedTree@@QBE_NXZ 1000b9c0 f i RenderInterface.obj
+ 0001:0000aa10       ?NumEmptyComponents@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000ba10 f i RenderInterface.obj
+ 0001:0000aa70       ?NumUsedComponents@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000ba70 f i RenderInterface.obj
+ 0001:0000aa90       ?Size@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000ba90 f i RenderInterface.obj
+ 0001:0000aae0       ?Clear@SAttribute@SVertexDecl@SpeedTree@@QAEXXZ 1000bae0 f i RenderInterface.obj
+ 0001:0000ab40       ?FirstFreeComponent@SAttribute@SVertexDecl@SpeedTree@@QBE?AU?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@3@XZ 1000bb40 f i RenderInterface.obj
+ 0001:0000ab90       ??0SProperty@SVertexDecl@SpeedTree@@QAE@XZ 1000bb90 f i RenderInterface.obj
+ 0001:0000ac50       ?IsPresent@SProperty@SVertexDecl@SpeedTree@@QBE_NXZ 1000bc50 f i RenderInterface.obj
+ 0001:0000acb0       ?IsContiguous@SProperty@SVertexDecl@SpeedTree@@QBE_NXZ 1000bcb0 f i RenderInterface.obj
+ 0001:0000ada0       ?NumComponents@SProperty@SVertexDecl@SpeedTree@@QBEHXZ 1000bda0 f i RenderInterface.obj
+ 0001:0000adf0       ??0SVertexDecl@SpeedTree@@QAE@XZ 1000bdf0 f i RenderInterface.obj
+ 0001:0000ae70       ??9SVertexDecl@SpeedTree@@QBE_NABU01@@Z 1000be70 f i RenderInterface.obj
+ 0001:0000aea0       ??MSVertexDecl@SpeedTree@@QBE_NABU01@@Z 1000bea0 f i RenderInterface.obj
+ 0001:0000aed0       ?FormatName@SVertexDecl@SpeedTree@@SAPBDU?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@2@@Z 1000bed0 f i RenderInterface.obj
+ 0001:0000af00       ?FormatSize@SVertexDecl@SpeedTree@@SAHU?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@2@@Z 1000bf00 f i RenderInterface.obj
+ 0001:0000af30       ?AttributeName@SVertexDecl@SpeedTree@@SAPBDU?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@2@@Z 1000bf30 f i RenderInterface.obj
+ 0001:0000afd0       ?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 1000bfd0 f i RenderInterface.obj
+ 0001:0000b270       ??_G?$CArray@D$00@SpeedTree@@UAEPAXI@Z 1000c270 f i RenderInterface.obj
+ 0001:0000b2c0       ??_E?$CArray@D$00@SpeedTree@@UAEPAXI@Z 1000c2c0 f i RenderInterface.obj
+ 0001:0000b350       ??_G?$CBasicString@$00@SpeedTree@@UAEPAXI@Z 1000c350 f i RenderInterface.obj
+ 0001:0000b380       ??_E?$CBasicString@$00@SpeedTree@@UAEPAXI@Z 1000c380 f i RenderInterface.obj
+ 0001:0000b3f0       ?MergeObjectAndInstanceVertexDecls@SVertexDecl@SpeedTree@@SA_NAAU12@ABU12@W4EInstanceType@12@@Z 1000c3f0 f i RenderInterface.obj
+ 0001:0000b550       ?Set@SVertexDecl@SpeedTree@@QAE_NPBUSAttribDesc@12@@Z 1000c550 f i RenderInterface.obj
+ 0001:0000b6f0       ??_H@YGXPAXIHP6EPAX0@Z@Z   1000c6f0 f i RenderInterface.obj
+ 0001:0000b720       ??4CTimer@SpeedTree@@QAEAAV01@ABV01@@Z 1000c720 f i RenderInterface.obj
+ 0001:0000b750       ??_FCTimer@SpeedTree@@QAEXXZ 1000c750 f i RenderInterface.obj
+ 0001:0000b770       ??0CTimer@SpeedTree@@QAE@_N@Z 1000c770 f i RenderInterface.obj
+ 0001:0000b7f0       ?Start@CTimer@SpeedTree@@QAEXXZ 1000c7f0 f i RenderInterface.obj
+ 0001:0000b820       ?Stop@CTimer@SpeedTree@@QBEMXZ 1000c820 f i RenderInterface.obj
+ 0001:0000b870       ?GetMicroSec@CTimer@SpeedTree@@QBEMXZ 1000c870 f i RenderInterface.obj
+ 0001:0000b8c0       ?GetMilliSec@CTimer@SpeedTree@@QBEMXZ 1000c8c0 f i RenderInterface.obj
+ 0001:0000b910       ?GetSec@CTimer@SpeedTree@@QBEMXZ 1000c910 f i RenderInterface.obj
+ 0001:0000b950       ?Mark@CTimer@SpeedTree@@QAEXH@Z 1000c950 f i RenderInterface.obj
+ 0001:0000b990       ?Recall@CTimer@SpeedTree@@QAEMH@Z 1000c990 f i RenderInterface.obj
+ 0001:0000b9c0       ??_G?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000c9c0 f i RenderInterface.obj
+ 0001:0000ba10       ??_E?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000ca10 f i RenderInterface.obj
+ 0001:0000baa0       ??4CScopeTrace@SpeedTree@@QAEAAV01@ABV01@@Z 1000caa0 f i RenderInterface.obj
+ 0001:0000bab0       ??0CScopeTrace@SpeedTree@@QAE@PBD@Z 1000cab0 f i RenderInterface.obj
+ 0001:0000bac0       ??1CScopeTrace@SpeedTree@@QAE@XZ 1000cac0 f i RenderInterface.obj
+ 0001:0000bad0       ?Init@CScopeTrace@SpeedTree@@SAXXZ 1000cad0 f i RenderInterface.obj
+ 0001:0000bae0       ?Start@CScopeTrace@SpeedTree@@SAXXZ 1000cae0 f i RenderInterface.obj
+ 0001:0000baf0       ?IsActive@CScopeTrace@SpeedTree@@SA_NXZ 1000caf0 f i RenderInterface.obj
+ 0001:0000bb00       ?Stop@CScopeTrace@SpeedTree@@SAXXZ 1000cb00 f i RenderInterface.obj
+ 0001:0000bb10       ?Report@CScopeTrace@SpeedTree@@SAXW4EReportFormat@12@AAV?$CBasicString@$00@2@PAUSNode@12@@Z 1000cb10 f i RenderInterface.obj
+ 0001:0000bb20       ??4SHeapReserves@SpeedTree@@QAEAAU01@ABU01@@Z 1000cb20 f i RenderInterface.obj
+ 0001:0000bb50       ??4SInstance@SpeedTree@@QAEAAU01@ABU01@@Z 1000cb50 f i RenderInterface.obj
+ 0001:0000bb80       ??4STreeInstance@SpeedTree@@QAEAAU01@ABU01@@Z 1000cb80 f i RenderInterface.obj
+ 0001:0000bbb0       ??0?$CBlockPool@$00@SpeedTree@@QAE@ABV01@@Z 1000cbb0 f i RenderInterface.obj
+ 0001:0000bc10       ??_G?$CBlockPool@$00@SpeedTree@@UAEPAXI@Z 1000cc10 f i RenderInterface.obj
+ 0001:0000bc50       ??_E?$CBlockPool@$00@SpeedTree@@UAEPAXI@Z 1000cc50 f i RenderInterface.obj
+ 0001:0000bcd0       ??_F?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 1000ccd0 f i RenderInterface.obj
+ 0001:0000bcf0       ??_G?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1000ccf0 f i RenderInterface.obj
+ 0001:0000bd80       ??_E?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1000cd80 f i RenderInterface.obj
+ 0001:0000be50       ??_G?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000ce50 f i RenderInterface.obj
+ 0001:0000bea0       ??_E?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000cea0 f i RenderInterface.obj
+ 0001:0000bf30       ??_G?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000cf30 f i RenderInterface.obj
+ 0001:0000bf80       ??_E?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000cf80 f i RenderInterface.obj
+ 0001:0000c010       ??4S3dTreeInstanceLod@SpeedTree@@QAEAAU01@ABU01@@Z 1000d010 f i RenderInterface.obj
+ 0001:0000c050       ??_G?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d050 f i RenderInterface.obj
+ 0001:0000c0a0       ??_E?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d0a0 f i RenderInterface.obj
+ 0001:0000c130       ??_G?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d130 f i RenderInterface.obj
+ 0001:0000c180       ??_E?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d180 f i RenderInterface.obj
+ 0001:0000c210       ??1SDetailedCullData@SpeedTree@@QAE@XZ 1000d210 f i RenderInterface.obj
+ 0001:0000c2c0       ??0SDetailedCullData@SpeedTree@@QAE@ABU01@@Z 1000d2c0 f i RenderInterface.obj
+ 0001:0000c3f0       ??4SDetailedCullData@SpeedTree@@QAEAAU01@ABU01@@Z 1000d3f0 f i RenderInterface.obj
+ 0001:0000c460       ??_G?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d460 f i RenderInterface.obj
+ 0001:0000c4b0       ??_E?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d4b0 f i RenderInterface.obj
+ 0001:0000c540       ??1CView@SpeedTree@@QAE@XZ 1000d540 f i RenderInterface.obj
+ 0001:0000c550       ??4CView@SpeedTree@@QAEAAV01@ABV01@@Z 1000d550 f i RenderInterface.obj
+ 0001:0000c7f0       ??_G?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d7f0 f i RenderInterface.obj
+ 0001:0000c840       ??_E?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d840 f i RenderInterface.obj
+ 0001:0000c8d0       ??_G?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d8d0 f i RenderInterface.obj
+ 0001:0000c920       ??_E?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000d920 f i RenderInterface.obj
+ 0001:0000c9b0       ??0?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABV01@@Z 1000d9b0 f i RenderInterface.obj
+ 0001:0000cae0       ??4?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 1000dae0 f i RenderInterface.obj
+ 0001:0000cb50       ??_F?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 1000db50 f i RenderInterface.obj
+ 0001:0000cb70       ??_G?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1000db70 f i RenderInterface.obj
+ 0001:0000cc00       ??_E?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1000dc00 f i RenderInterface.obj
+ 0001:0000ccd0       ??_G?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000dcd0 f i RenderInterface.obj
+ 0001:0000cd40       ??_E?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000dd40 f i RenderInterface.obj
+ 0001:0000cdf0       ??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z 1000ddf0 f i RenderInterface.obj
+ 0001:0000cfe0       ??4CVisibleInstances@SpeedTree@@QAEAAV01@ABV01@@Z 1000dfe0 f i RenderInterface.obj
+ 0001:0000d130       ??_FCVisibleInstances@SpeedTree@@QAEXXZ 1000e130 f i RenderInterface.obj
+ 0001:0000d150       ??_GCVisibleInstances@SpeedTree@@UAEPAXI@Z 1000e150 f i RenderInterface.obj
+ 0001:0000d180       ??_ECVisibleInstances@SpeedTree@@UAEPAXI@Z 1000e180 f i RenderInterface.obj
+ 0001:0000d1f0       ??0CForest@SpeedTree@@QAE@ABV01@@Z 1000e1f0 f i RenderInterface.obj
+ 0001:0000d2c0       ??4CForest@SpeedTree@@QAEAAV01@ABV01@@Z 1000e2c0 f i RenderInterface.obj
+ 0001:0000d390       ??_GCForest@SpeedTree@@UAEPAXI@Z 1000e390 f i RenderInterface.obj
+ 0001:0000d3c0       ??_ECForest@SpeedTree@@UAEPAXI@Z 1000e3c0 f i RenderInterface.obj
+ 0001:0000d430       ??0SHeapReserves@SpeedTree@@QAE@XZ 1000e430 f i RenderInterface.obj
+ 0001:0000d490       ??0CView@SpeedTree@@QAE@XZ 1000e490 f i RenderInterface.obj
+ 0001:0000d7c0       ?SetLodRefPoint@CView@SpeedTree@@QAEXABVVec3@2@@Z 1000e7c0 f i RenderInterface.obj
+ 0001:0000d7f0       ?GetCameraPos@CView@SpeedTree@@QBEABVVec3@2@XZ 1000e7f0 f i RenderInterface.obj
+ 0001:0000d800       ?GetLodRefPoint@CView@SpeedTree@@QBEABVVec3@2@XZ 1000e800 f i RenderInterface.obj
+ 0001:0000d820       ?GetProjection@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e820 f i RenderInterface.obj
+ 0001:0000d840       ?GetModelview@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e840 f i RenderInterface.obj
+ 0001:0000d860       ?GetModelviewNoTranslate@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e860 f i RenderInterface.obj
+ 0001:0000d880       ?GetNearClip@CView@SpeedTree@@QBEMXZ 1000e880 f i RenderInterface.obj
+ 0001:0000d8a0       ?GetFarClip@CView@SpeedTree@@QBEMXZ 1000e8a0 f i RenderInterface.obj
+ 0001:0000d8c0       ?GetCameraDir@CView@SpeedTree@@QBEABVVec3@2@XZ 1000e8c0 f i RenderInterface.obj
+ 0001:0000d8e0       ?GetComposite@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e8e0 f i RenderInterface.obj
+ 0001:0000d900       ?GetCompositeNoTranslate@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e900 f i RenderInterface.obj
+ 0001:0000d920       ?GetProjectionInverse@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e920 f i RenderInterface.obj
+ 0001:0000d940       ?GetCameraAzimuth@CView@SpeedTree@@QBEMXZ 1000e940 f i RenderInterface.obj
+ 0001:0000d960       ?GetCameraPitch@CView@SpeedTree@@QBEMXZ 1000e960 f i RenderInterface.obj
+ 0001:0000d980       ?GetFrustumPoints@CView@SpeedTree@@QBEPBVVec3@2@XZ 1000e980 f i RenderInterface.obj
+ 0001:0000d9a0       ?GetFrustumPlanes@CView@SpeedTree@@QBEPBVVec4@2@XZ 1000e9a0 f i RenderInterface.obj
+ 0001:0000d9c0       ?GetFrustumExtents@CView@SpeedTree@@QBEABVCExtents@2@XZ 1000e9c0 f i RenderInterface.obj
+ 0001:0000d9e0       ?GetCameraFacingMatrix@CView@SpeedTree@@QBEABVMat4x4@2@XZ 1000e9e0 f i RenderInterface.obj
+ 0001:0000da00       ?SetHorzBillboardFadeAngles@CView@SpeedTree@@QAEXMM@Z 1000ea00 f i RenderInterface.obj
+ 0001:0000da30       ?GetHorzBillboardFadeAngles@CView@SpeedTree@@QBEXAAM0@Z 1000ea30 f i RenderInterface.obj
+ 0001:0000da60       ?GetHorzBillboardFadeValue@CView@SpeedTree@@QBEMXZ 1000ea60 f i RenderInterface.obj
+ 0001:0000da80       ?WindEnable@CForest@SpeedTree@@QAEX_N@Z 1000ea80 f i RenderInterface.obj
+ 0001:0000daa0       ?WindIsEnabled@CForest@SpeedTree@@QBE_NXZ 1000eaa0 f i RenderInterface.obj
+ 0001:0000dac0       ?WindEnableGusting@CForest@SpeedTree@@QAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@_N@Z 1000eac0 f i RenderInterface.obj
+ 0001:0000db20       ??_G?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000eb20 f i RenderInterface.obj
+ 0001:0000db70       ??_E?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000eb70 f i RenderInterface.obj
+ 0001:0000dc00       ?WindIsGustingEnabled@CForest@SpeedTree@@QBE_NXZ 1000ec00 f i RenderInterface.obj
+ 0001:0000dc20       ?WindAdvance@CForest@SpeedTree@@UAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@M@Z 1000ec20 f i RenderInterface.obj
+ 0001:0000dc90       ?WindPreroll@CForest@SpeedTree@@QAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@M@Z 1000ec90 f i RenderInterface.obj
+ 0001:0000dd40       ?WindSetStrength@CForest@SpeedTree@@QAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@M@Z 1000ed40 f i RenderInterface.obj
+ 0001:0000dda0       ?WindSetInitDirection@CForest@SpeedTree@@QAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@ABVVec3@2@@Z 1000eda0 f i RenderInterface.obj
+ 0001:0000de00       ?WindSetDirection@CForest@SpeedTree@@QAEXABV?$CArray@PAVCCore@SpeedTree@@$00@2@ABVVec3@2@@Z 1000ee00 f i RenderInterface.obj
+ 0001:0000de70       ?WindGetGlobalTime@CForest@SpeedTree@@QBEMXZ 1000ee70 f i RenderInterface.obj
+ 0001:0000de90       ?FrameEnd@CForest@SpeedTree@@QAEXXZ 1000ee90 f i RenderInterface.obj
+ 0001:0000dec0       ?GetFrameIndex@CForest@SpeedTree@@QBEHXZ 1000eec0 f i RenderInterface.obj
+ 0001:0000dee0       ?SetLightDir@CForest@SpeedTree@@QAEXABVVec3@2@@Z 1000eee0 f i RenderInterface.obj
+ 0001:0000df70       ?GetLightDir@CForest@SpeedTree@@QBEABVVec3@2@XZ 1000ef70 f i RenderInterface.obj
+ 0001:0000df90       ?LightDirChanged@CForest@SpeedTree@@QBE_NXZ 1000ef90 f i RenderInterface.obj
+ 0001:0000dfb0       ?SetCascadedShadowMapDistances@CForest@SpeedTree@@QAEXQBMM@Z 1000efb0 f i RenderInterface.obj
+ 0001:0000e000       ?GetCascadedShadowMapDistances@CForest@SpeedTree@@QBEPBMXZ 1000f000 f i RenderInterface.obj
+ 0001:0000e020       ?SetShadowFadePercentage@CForest@SpeedTree@@QAEXM@Z 1000f020 f i RenderInterface.obj
+ 0001:0000e040       ?GetShadowFadePercentage@CForest@SpeedTree@@QBEMXZ 1000f040 f i RenderInterface.obj
+ 0001:0000e060       ??4?$CHeapAllocCheck@V?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 1000f060 f i RenderInterface.obj
+ 0001:0000e070       ??4?$CHeapAllocCheck@V?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 1000f070 f i RenderInterface.obj
+ 0001:0000e080       ??0SDetailedCullData@SpeedTree@@QAE@XZ 1000f080 f i RenderInterface.obj
+ 0001:0000e140       ??0CVisibleInstances@SpeedTree@@QAE@W4EPopulationType@1@_N@Z 1000f140 f i RenderInterface.obj
+ 0001:0000e330       ??1CVisibleInstances@SpeedTree@@UAE@XZ 1000f330 f i RenderInterface.obj
+ 0001:0000e470       ?SetHeapReserves@CVisibleInstances@SpeedTree@@UAEXABUSHeapReserves@2@@Z 1000f470 f i RenderInterface.obj
+ 0001:0000e590       ?SetCellSize@CVisibleInstances@SpeedTree@@QAEXM@Z 1000f590 f i RenderInterface.obj
+ 0001:0000e5b0       ?Clear@CVisibleInstances@SpeedTree@@QAEXXZ 1000f5b0 f i RenderInterface.obj
+ 0001:0000e5d0       ?RoughCells@CVisibleInstances@SpeedTree@@QAEAAV?$CArray@VCCell@SpeedTree@@$00@2@XZ 1000f5d0 f i RenderInterface.obj
+ 0001:0000e5f0       ?VisibleCells@CVisibleInstances@SpeedTree@@QBEABV?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@2@XZ 1000f5f0 f i RenderInterface.obj
+ 0001:0000e610       ?NewlyVisibleCells@CVisibleInstances@SpeedTree@@QAEAAV?$CArray@PAVCCell@SpeedTree@@$00@2@XZ 1000f610 f i RenderInterface.obj
+ 0001:0000e630       ?GetExtentsAsRowCols@CVisibleInstances@SpeedTree@@QBEXAAH000@Z 1000f630 f i RenderInterface.obj
+ 0001:0000e680       ?NotifyOfPopulationChange@CVisibleInstances@SpeedTree@@UAEXXZ 1000f680 f i RenderInterface.obj
+ 0001:0000e7f0       ??4iterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV012@ABV012@@Z 1000f7f0 f i RenderInterface.obj
+ 0001:0000e810       ??_Fiterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 1000f810 f i RenderInterface.obj
+ 0001:0000e830       ??4const_iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV012@ABV012@@Z 1000f830 f i RenderInterface.obj
+ 0001:0000e850       ??_Fconst_iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 1000f850 f i RenderInterface.obj
+ 0001:0000e870       ??4iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV012@ABV012@@Z 1000f870 f i RenderInterface.obj
+ 0001:0000e890       ??_Fiterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 1000f890 f i RenderInterface.obj
+ 0001:0000e8b0       ?Get3dInstanceLods@CVisibleInstances@SpeedTree@@QBEABV?$CArray@USDetailedCullData@SpeedTree@@$00@2@XZ 1000f8b0 f i RenderInterface.obj
+ 0001:0000e8d0       ?GetInstaceLodArrayByBase@CVisibleInstances@SpeedTree@@IAEPAUSDetailedCullData@2@PBVCCore@2@@Z 1000f8d0 f i RenderInterface.obj
+ 0001:0000e9e0       ??4?$CHeapAllocCheck@V?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 1000f9e0 f i RenderInterface.obj
+ 0001:0000e9f0       ??0SInstance@SpeedTree@@QAE@XZ 1000f9f0 f i RenderInterface.obj
+ 0001:0000ea70       ??0STreeInstance@SpeedTree@@QAE@XZ 1000fa70 f i RenderInterface.obj
+ 0001:0000ead0       ?ComputeCullParameters@STreeInstance@SpeedTree@@QAEXXZ 1000fad0 f i RenderInterface.obj
+ 0001:0000ec30       ??_G?$CBasicFixedString@$0IAA@@SpeedTree@@UAEPAXI@Z 1000fc30 f i RenderInterface.obj
+ 0001:0000ec60       ??_E?$CBasicFixedString@$0IAA@@SpeedTree@@UAEPAXI@Z 1000fc60 f i RenderInterface.obj
+ 0001:0000ecd0       ??_G?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000fcd0 f i RenderInterface.obj
+ 0001:0000ed20       ??_E?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 1000fd20 f i RenderInterface.obj
+ 0001:0000edb0       ??4SSimpleMaterial@SpeedTree@@QAEAAU01@ABU01@@Z 1000fdb0 f i RenderInterface.obj
+ 0001:0000ede0       ??0SAppState@SpeedTree@@QAE@XZ 1000fde0 f i RenderInterface.obj
+ 0001:0000ee20       ??4SAppState@SpeedTree@@QAEAAU01@ABU01@@Z 1000fe20 f i RenderInterface.obj
+ 0001:0000ee50       ??4STextureInfo@SpeedTree@@QAEAAU01@ABU01@@Z 1000fe50 f i RenderInterface.obj
+ 0001:0000ee70       ??_G?$CArray@E$00@SpeedTree@@UAEPAXI@Z 1000fe70 f i RenderInterface.obj
+ 0001:0000eec0       ??_E?$CArray@E$00@SpeedTree@@UAEPAXI@Z 1000fec0 f i RenderInterface.obj
+ 0001:0000ef50       ??0STextureInfo@SpeedTree@@QAE@XZ 1000ff50 f i RenderInterface.obj
+ 0001:0000ef80       ??4?$CStatPrimitive@H@CRenderStats@SpeedTree@@QAEAAV012@ABV012@@Z 1000ff80 f i RenderInterface.obj
+ 0001:0000efa0       ??1SObjectStats@CRenderStats@SpeedTree@@QAE@XZ 1000ffa0 f i RenderInterface.obj
+ 0001:0000efc0       ??0SObjectStats@CRenderStats@SpeedTree@@QAE@ABU012@@Z 1000ffc0 f i RenderInterface.obj
+ 0001:0000f040       ??4SObjectStats@CRenderStats@SpeedTree@@QAEAAU012@ABU012@@Z 10010040 f i RenderInterface.obj
+ 0001:0000f0c0       ??4?$CStatPrimitive@M@CRenderStats@SpeedTree@@QAEAAV012@ABV012@@Z 100100c0 f i RenderInterface.obj
+ 0001:0000f0e0       ??_G?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 100100e0 f i RenderInterface.obj
+ 0001:0000f130       ??_E?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 10010130 f i RenderInterface.obj
+ 0001:0000f1c0       ??0CRenderStats@SpeedTree@@QAE@ABV01@@Z 100101c0 f i RenderInterface.obj
+ 0001:0000f250       ??4CRenderStats@SpeedTree@@QAEAAV01@ABV01@@Z 10010250 f i RenderInterface.obj
+ 0001:0000f2b0       ??1SForestRenderInfo@SpeedTree@@QAE@XZ 100102b0 f i RenderInterface.obj
+ 0001:0000f2d0       ??0SForestRenderInfo@SpeedTree@@QAE@ABU01@@Z 100102d0 f i RenderInterface.obj
+ 0001:0000f4f0       ??4SForestRenderInfo@SpeedTree@@QAEAAU01@ABU01@@Z 100104f0 f i RenderInterface.obj
+ 0001:0000f710       ??_G?$CArray@M$00@SpeedTree@@UAEPAXI@Z 10010710 f i RenderInterface.obj
+ 0001:0000f760       ??_E?$CArray@M$00@SpeedTree@@UAEPAXI@Z 10010760 f i RenderInterface.obj
+ 0001:0000f7f0       ??4SInstancedDrawStats@SpeedTree@@QAEAAU01@ABU01@@Z 100107f0 f i RenderInterface.obj
+ 0001:0000f820       ??0SSimpleMaterial@SpeedTree@@QAE@XZ 10010820 f i RenderInterface.obj
+ 0001:0000f8c0       ??0SForestRenderInfo@SpeedTree@@QAE@XZ 100108c0 f i RenderInterface.obj
+ 0001:0000fa80       ??0SObjectStats@CRenderStats@SpeedTree@@QAE@XZ 10010a80 f i RenderInterface.obj
+ 0001:0000fbb0       ??0CRenderStats@SpeedTree@@QAE@XZ 10010bb0 f i RenderInterface.obj
+ 0001:0000fce0       ??1CRenderStats@SpeedTree@@QAE@XZ 10010ce0 f i RenderInterface.obj
+ 0001:0000fd30       ?Reset@SObjectStats@CRenderStats@SpeedTree@@QAEXXZ 10010d30 f i RenderInterface.obj
+ 0001:0000fdc0       ?Reset@CRenderStats@SpeedTree@@QAEXXZ 10010dc0 f i RenderInterface.obj
+ 0001:0000fe40       ?GetObjectStats@CRenderStats@SpeedTree@@QAEAAUSObjectStats@12@ABV?$CBasicFixedString@$0BAA@@2@@Z 10010e40 f i RenderInterface.obj
+ 0001:00010000       ?GetObjectsArray@CRenderStats@SpeedTree@@QBEABV?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@2@XZ 10011000 f i RenderInterface.obj
+ 0001:00010020       ??0SInstancedDrawStats@SpeedTree@@QAE@XZ 10011020 f i RenderInterface.obj
+ 0001:00010050       ??0?$CPaddedPtr@$$CBD@SpeedTree@@QAE@PBD@Z 10011050 f i RenderInterface.obj
+ 0001:00010080       ??1?$CPaddedPtr@$$CBD@SpeedTree@@QAE@XZ 10011080 f i RenderInterface.obj
+ 0001:00010090       ??B?$CPaddedPtr@$$CBD@SpeedTree@@QBEPBDXZ 10011090 f i RenderInterface.obj
+ 0001:000100a0       ??4?$CPaddedPtr@$$CBD@SpeedTree@@QAEPBDPBD@Z 100110a0 f i RenderInterface.obj
+ 0001:000100c0       ??0?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAE@PAUSRenderState@1@@Z 100110c0 f i RenderInterface.obj
+ 0001:000100f0       ??1?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAE@XZ 100110f0 f i RenderInterface.obj
+ 0001:00010100       ??C?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEPAUSRenderState@1@XZ 10011100 f i RenderInterface.obj
+ 0001:00010110       ??C?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QBEPBUSRenderState@1@XZ 10011110 f i RenderInterface.obj
+ 0001:00010120       ??0?$CPaddedPtr@E@SpeedTree@@QAE@PAE@Z 10011120 f i RenderInterface.obj
+ 0001:00010150       ??1?$CPaddedPtr@E@SpeedTree@@QAE@XZ 10011150 f i RenderInterface.obj
+ 0001:00010160       ??B?$CPaddedPtr@E@SpeedTree@@QAEPAEXZ 10011160 f i RenderInterface.obj
+ 0001:00010170       ??B?$CPaddedPtr@E@SpeedTree@@QBEPBEXZ 10011170 f i RenderInterface.obj
+ 0001:00010180       ??0?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAE@PAUSDrawCall@1@@Z 10011180 f i RenderInterface.obj
+ 0001:000101b0       ??1?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAE@XZ 100111b0 f i RenderInterface.obj
+ 0001:000101c0       ??0?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAE@PAUSBone@1@@Z 100111c0 f i RenderInterface.obj
+ 0001:000101f0       ??1?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAE@XZ 100111f0 f i RenderInterface.obj
+ 0001:00010200       ??0?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAE@PAUSLod@1@@Z 10011200 f i RenderInterface.obj
+ 0001:00010230       ??1?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAE@XZ 10011230 f i RenderInterface.obj
+ 0001:00010240       ??0?$CHeapAllocCheck@V?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAE@ABV?$CArray@PBUSTreeInstance@SpeedTree@@$00@1@W4ESdkLimit@1@PBDH@Z 10011240 f i RenderInterface.obj
+ 0001:00010250       ??0?$CHeapAllocCheck@V?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAE@ABV?$CArray@USInstance@SpeedTree@@$00@1@W4ESdkLimit@1@PBDH@Z 10011250 f i RenderInterface.obj
+ 0001:00010260       ??0?$CHeapAllocCheck@V?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@@SpeedTree@@QAE@ABV?$CArray@USDetailedCullData@SpeedTree@@$00@1@W4ESdkLimit@1@PBDH@Z 10011260 f i RenderInterface.obj
+ 0001:00010270       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@PBD@Z 10011270 f i RenderInterface.obj
+ 0001:000102a0       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@ABV01@@Z 100112a0 f i RenderInterface.obj
+ 0001:000102d0       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@XZ 100112d0 f i RenderInterface.obj
+ 0001:00010300       ??1?$CBasicFixedString@$0BAA@@SpeedTree@@UAE@XZ 10011300 f i RenderInterface.obj
+ 0001:00010320       ?empty@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NXZ 10011320 f i RenderInterface.obj
+ 0001:00010340       ?c_str@?$CBasicFixedString@$0BAA@@SpeedTree@@QBEPBDXZ 10011340 f i RenderInterface.obj
+ 0001:00010360       ?length@?$CBasicFixedString@$0BAA@@SpeedTree@@QBEIXZ 10011360 f i RenderInterface.obj
+ 0001:00010380       ?find@?$CBasicFixedString@$0BAA@@SpeedTree@@QBEIDI@Z 10011380 f i RenderInterface.obj
+ 0001:000103e0       ??Y?$CBasicFixedString@$0BAA@@SpeedTree@@QAEXABV01@@Z 100113e0 f i RenderInterface.obj
+ 0001:00010440       ??Y?$CBasicFixedString@$0BAA@@SpeedTree@@QAEXPBD@Z 10011440 f i RenderInterface.obj
+ 0001:000104b0       ??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 100114b0 f i RenderInterface.obj
+ 0001:00010580       ??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 10011580 f i RenderInterface.obj
+ 0001:00010650       ??4?$CBasicFixedString@$0BAA@@SpeedTree@@QAEAAV01@PBD@Z 10011650 f i RenderInterface.obj
+ 0001:000106c0       ??4?$CBasicFixedString@$0BAA@@SpeedTree@@QAEAAV01@ABV01@@Z 100116c0 f i RenderInterface.obj
+ 0001:00010720       ??8?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NABV01@@Z 10011720 f i RenderInterface.obj
+ 0001:00010780       ??A?$CBasicFixedString@$0BAA@@SpeedTree@@QBEABDI@Z 10011780 f i RenderInterface.obj
+ 0001:000107a0       ?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 100117a0 f i RenderInterface.obj
+ 0001:000108a0       ?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 100118a0 f i RenderInterface.obj
+ 0001:00010a40       ??0?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexFormatUntyped@1@@Z 10011a40 f i RenderInterface.obj
+ 0001:00010a60       ??0?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 10011a60 f i RenderInterface.obj
+ 0001:00010a80       ??B?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexFormatUntyped@1@XZ 10011a80 f i RenderInterface.obj
+ 0001:00010aa0       ??0?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexPropertyUntyped@1@@Z 10011aa0 f i RenderInterface.obj
+ 0001:00010ac0       ??0?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 10011ac0 f i RenderInterface.obj
+ 0001:00010ae0       ??B?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexPropertyUntyped@1@XZ 10011ae0 f i RenderInterface.obj
+ 0001:00010b00       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@H@Z 10011b00 f i RenderInterface.obj
+ 0001:00010b20       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexComponentUntyped@1@@Z 10011b20 f i RenderInterface.obj
+ 0001:00010b40       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 10011b40 f i RenderInterface.obj
+ 0001:00010b60       ??B?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexComponentUntyped@1@XZ 10011b60 f i RenderInterface.obj
+ 0001:00010b80       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@H@Z 10011b80 f i RenderInterface.obj
+ 0001:00010ba0       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexAttributeUntyped@1@@Z 10011ba0 f i RenderInterface.obj
+ 0001:00010bc0       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 10011bc0 f i RenderInterface.obj
+ 0001:00010be0       ??B?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexAttributeUntyped@1@XZ 10011be0 f i RenderInterface.obj
+ 0001:00010c00       ??1?$CArray@D$00@SpeedTree@@UAE@XZ 10011c00 f i RenderInterface.obj
+ 0001:00010c40       ??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10011c40 f i RenderInterface.obj
+ 0001:00010cc0       ??Y?$CBasicString@$00@SpeedTree@@QAEXABV01@@Z 10011cc0 f i RenderInterface.obj
+ 0001:00010d40       ?Format@?$CBasicString@$00@SpeedTree@@SA?AV12@PBDZZ 10011d40 f i RenderInterface.obj
+ 0001:00010dd0       ??0?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAE@XZ 10011dd0 f i RenderInterface.obj
+ 0001:00010e20       ??1?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAE@XZ 10011e20 f i RenderInterface.obj
+ 0001:00010e60       ?size@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QBEIXZ 10011e60 f i RenderInterface.obj
+ 0001:00010e80       ??A?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEAAPAUSNode@CScopeTrace@1@I@Z 10011e80 f i RenderInterface.obj
+ 0001:00010ea0       ??1?$CBlockPool@$00@SpeedTree@@UAE@XZ 10011ea0 f i RenderInterface.obj
+ 0001:00010ec0       ??0?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAE@I@Z 10011ec0 f i RenderInterface.obj
+ 0001:00010f40       ??1?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ 10011f40 f i RenderInterface.obj
+ 0001:00010fc0       ?clear@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 10011fc0 f i RenderInterface.obj
+ 0001:00011030       ??A?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEAAV?$CArray@USInstance@SpeedTree@@$00@1@ABQBVCCore@1@@Z 10012030 f i RenderInterface.obj
+ 0001:00011290       ??0?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAE@XZ 10012290 f i RenderInterface.obj
+ 0001:000112e0       ??1?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@UAE@XZ 100122e0 f i RenderInterface.obj
+ 0001:00011320       ?size@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QBEIXZ 10012320 f i RenderInterface.obj
+ 0001:00011340       ?resize@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10012340 f i RenderInterface.obj
+ 0001:00011380       ??A?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAEAAPBUSTreeInstance@1@I@Z 10012380 f i RenderInterface.obj
+ 0001:000113a0       ?SetHeapDescription@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 100123a0 f i RenderInterface.obj
+ 0001:000113c0       ??0?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAE@XZ 100123c0 f i RenderInterface.obj
+ 0001:00011410       ??1?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@UAE@XZ 10012410 f i RenderInterface.obj
+ 0001:00011450       ?clear@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEXXZ 10012450 f i RenderInterface.obj
+ 0001:000114e0       ?size@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QBEIXZ 100124e0 f i RenderInterface.obj
+ 0001:00011500       ?resize@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10012500 f i RenderInterface.obj
+ 0001:00011540       ??A?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEAAUSInstance@1@I@Z 10012540 f i RenderInterface.obj
+ 0001:00011560       ?SetHeapDescription@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 10012560 f i RenderInterface.obj
+ 0001:00011580       ??0?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 10012580 f i RenderInterface.obj
+ 0001:000115d0       ??0?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@QAE@XZ 100125d0 f i RenderInterface.obj
+ 0001:00011620       ??1?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@UAE@XZ 10012620 f i RenderInterface.obj
+ 0001:00011660       ??4?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10012660 f i RenderInterface.obj
+ 0001:000117b0       ??0?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 100127b0 f i RenderInterface.obj
+ 0001:00011800       ??0?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@QAE@XZ 10012800 f i RenderInterface.obj
+ 0001:00011850       ??1?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@UAE@XZ 10012850 f i RenderInterface.obj
+ 0001:00011890       ??4?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10012890 f i RenderInterface.obj
+ 0001:000119d0       ??0?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 100129d0 f i RenderInterface.obj
+ 0001:00011a20       ??0?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAE@XZ 10012a20 f i RenderInterface.obj
+ 0001:00011a70       ??1?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@UAE@XZ 10012a70 f i RenderInterface.obj
+ 0001:00011ab0       ?reserve@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10012ab0 f i RenderInterface.obj
+ 0001:00011bf0       ??4?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10012bf0 f i RenderInterface.obj
+ 0001:00011d80       ?SetHeapDescription@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 10012d80 f i RenderInterface.obj
+ 0001:00011da0       ??0?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 10012da0 f i RenderInterface.obj
+ 0001:00011df0       ??1?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@UAE@XZ 10012df0 f i RenderInterface.obj
+ 0001:00011e30       ??4?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10012e30 f i RenderInterface.obj
+ 0001:00011f70       ??0?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 10012f70 f i RenderInterface.obj
+ 0001:00011fc0       ??0?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAE@XZ 10012fc0 f i RenderInterface.obj
+ 0001:00012010       ??1?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@UAE@XZ 10013010 f i RenderInterface.obj
+ 0001:00012050       ?reserve@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10013050 f i RenderInterface.obj
+ 0001:00012150       ??4?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10013150 f i RenderInterface.obj
+ 0001:00012290       ?SetHeapDescription@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 10013290 f i RenderInterface.obj
+ 0001:000122b0       ??0?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@W4EPopulationType@1@@Z 100132b0 f i RenderInterface.obj
+ 0001:00012380       ??1?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ 10013380 f i RenderInterface.obj
+ 0001:00012490       ?Init@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAEXHH@Z 10013490 f i RenderInterface.obj
+ 0001:000124c0       ?CheckIn@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAEXPAVCCell@2@@Z 100134c0 f i RenderInterface.obj
+ 0001:000124e0       ??0?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@ABV01@@Z 100134e0 f i RenderInterface.obj
+ 0001:000125d0       ??0?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@I@Z 100135d0 f i RenderInterface.obj
+ 0001:00012650       ??1?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ 10013650 f i RenderInterface.obj
+ 0001:000126d0       ?clear@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXXZ 100136d0 f i RenderInterface.obj
+ 0001:00012740       ??4?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10013740 f i RenderInterface.obj
+ 0001:000130a0       ?begin@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE?AViterator@12@XZ 100140a0 f i RenderInterface.obj
+ 0001:00013150       ?end@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE?AViterator@12@XZ 10014150 f i RenderInterface.obj
+ 0001:00013180       ?SetHeapDescription@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEXPBD@Z 10014180 f i RenderInterface.obj
+ 0001:000131a0       ??0?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 100141a0 f i RenderInterface.obj
+ 0001:000131f0       ??0?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAE@XZ 100141f0 f i RenderInterface.obj
+ 0001:00013240       ??1?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@UAE@XZ 10014240 f i RenderInterface.obj
+ 0001:00013290       ?clear@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEXXZ 10014290 f i RenderInterface.obj
+ 0001:00013350       ?size@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QBEIXZ 10014350 f i RenderInterface.obj
+ 0001:00013370       ?resize@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10014370 f i RenderInterface.obj
+ 0001:000133c0       ?back@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEAAUSDetailedCullData@2@XZ 100143c0 f i RenderInterface.obj
+ 0001:000133e0       ??A?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEAAUSDetailedCullData@1@I@Z 100143e0 f i RenderInterface.obj
+ 0001:00013400       ??4?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10014400 f i RenderInterface.obj
+ 0001:00013590       ?SetHeapDescription@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 10014590 f i RenderInterface.obj
+ 0001:000135b0       ??1?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@UAE@XZ 100145b0 f i RenderInterface.obj
+ 0001:000135f0       ?size@?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@QBEIXZ 100145f0 f i RenderInterface.obj
+ 0001:00013610       ??A?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@QBEABQAVCCore@1@I@Z 10014610 f i RenderInterface.obj
+ 0001:00013630       ??9iterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QBE_NABV012@@Z 10014630 f i RenderInterface.obj
+ 0001:00013650       ??Eiterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV012@XZ 10014650 f i RenderInterface.obj
+ 0001:00013830       ??0iterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@IAE@PAXPBV?$CBlockPool@$00@2@@Z 10014830 f i RenderInterface.obj
+ 0001:00013860       ??0const_iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@ABViterator@12@@Z 10014860 f i RenderInterface.obj
+ 0001:000138a0       ??0const_iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@PAXPBV?$CBlockPool@$00@2@@Z 100148a0 f i RenderInterface.obj
+ 0001:000138d0       ??Cconst_iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QBEPBVCNode@12@XZ 100148d0 f i RenderInterface.obj
+ 0001:00013920       ??0iterator@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@PAXPBV?$CBlockPool@$00@2@@Z 10014920 f i RenderInterface.obj
+ 0001:00013950       ??0?$CBasicFixedString@$0IAA@@SpeedTree@@QAE@PBD@Z 10014950 f i RenderInterface.obj
+ 0001:00013980       ??1?$CBasicFixedString@$0IAA@@SpeedTree@@UAE@XZ 10014980 f i RenderInterface.obj
+ 0001:000139a0       ?c_str@?$CBasicFixedString@$0IAA@@SpeedTree@@QBEPBDXZ 100149a0 f i RenderInterface.obj
+ 0001:000139c0       ??1?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAE@XZ 100149c0 f i RenderInterface.obj
+ 0001:00013a00       ?push_back@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE_NABV?$CBasicFixedString@$0BAA@@2@@Z 10014a00 f i RenderInterface.obj
+ 0001:00013ad0       ??1?$CArray@E$00@SpeedTree@@UAE@XZ 10014ad0 f i RenderInterface.obj
+ 0001:00013b10       ??0?$CStatPrimitive@H@CRenderStats@SpeedTree@@QAE@ABH@Z 10014b10 f i RenderInterface.obj
+ 0001:00013b30       ??0?$CStatPrimitive@H@CRenderStats@SpeedTree@@QAE@XZ 10014b30 f i RenderInterface.obj
+ 0001:00013b50       ??0?$CStatPrimitive@M@CRenderStats@SpeedTree@@QAE@ABM@Z 10014b50 f i RenderInterface.obj
+ 0001:00013b70       ??0?$CStatPrimitive@M@CRenderStats@SpeedTree@@QAE@XZ 10014b70 f i RenderInterface.obj
+ 0001:00013b90       ??0?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 10014b90 f i RenderInterface.obj
+ 0001:00013be0       ??0?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAE@XZ 10014be0 f i RenderInterface.obj
+ 0001:00013c30       ??1?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@UAE@XZ 10014c30 f i RenderInterface.obj
+ 0001:00013c70       ?size@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QBEIXZ 10014c70 f i RenderInterface.obj
+ 0001:00013c90       ?resize@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10014c90 f i RenderInterface.obj
+ 0001:00013cd0       ?reserve@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10014cd0 f i RenderInterface.obj
+ 0001:00013e40       ?push_back@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAE_NABUSObjectStats@CRenderStats@2@@Z 10014e40 f i RenderInterface.obj
+ 0001:00013fd0       ?back@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEAAUSObjectStats@CRenderStats@2@XZ 10014fd0 f i RenderInterface.obj
+ 0001:00013ff0       ??A?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEAAUSObjectStats@CRenderStats@1@I@Z 10014ff0 f i RenderInterface.obj
+ 0001:00014010       ??4?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10015010 f i RenderInterface.obj
+ 0001:000141c0       ?SetHeapDescription@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 100151c0 f i RenderInterface.obj
+ 0001:000141e0       ??1?$CArray@M$00@SpeedTree@@UAE@XZ 100151e0 f i RenderInterface.obj
+ 0001:00014220       ??4CCell@SpeedTree@@QAEAAV01@ABV01@@Z 10015220 f i RenderInterface.obj
+ 0001:00014300       ??1SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ 10015300 f i RenderInterface.obj
+ 0001:000143a0       ??0SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABU012@@Z 100153a0 f i RenderInterface.obj
+ 0001:00014470       ??4SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAEAAU012@ABU012@@Z 10015470 f i RenderInterface.obj
+ 0001:000144a0       ??_G?$CArray@PAX$00@SpeedTree@@UAEPAXI@Z 100154a0 f i RenderInterface.obj
+ 0001:000144f0       ??_E?$CArray@PAX$00@SpeedTree@@UAEPAXI@Z 100154f0 f i RenderInterface.obj
+ 0001:00014580       ?resize@?$CBasicFixedString@$0BAA@@SpeedTree@@QAE_NI@Z 10015580 f i RenderInterface.obj
+ 0001:000145d0       ?clear@?$CArray@D$00@SpeedTree@@QAEXXZ 100155d0 f i RenderInterface.obj
+ 0001:00014660       ?reserve@?$CArray@D$00@SpeedTree@@QAE_NI@Z 10015660 f i RenderInterface.obj
+ 0001:00014760       ?SetExternalMemory@?$CArray@D$00@SpeedTree@@QAEXPAEI@Z 10015760 f i RenderInterface.obj
+ 0001:00014810       ??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10015810 f i RenderInterface.obj
+ 0001:000148c0       ?clear@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEXXZ 100158c0 f i RenderInterface.obj
+ 0001:00014950       ?SetExternalMemory@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10015950 f i RenderInterface.obj
+ 0001:00014a00       ??0?$CBlockPool@$00@SpeedTree@@QAE@II@Z 10015a00 f i RenderInterface.obj
+ 0001:00014a60       ?size@?$CBlockPool@$00@SpeedTree@@QBEIXZ 10015a60 f i RenderInterface.obj
+ 0001:00014a80       ?clear@?$CBlockPool@$00@SpeedTree@@QAEX_N@Z 10015a80 f i RenderInterface.obj
+ 0001:00014b40       ?DeleteChildren@CNode@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@AAEXPAV23@@Z 10015b40 f i RenderInterface.obj
+ 0001:00014bf0       ??4?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10015bf0 f i RenderInterface.obj
+ 0001:00015540       ?Rebalance@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@IAEXPAX@Z 10016540 f i RenderInterface.obj
+ 0001:00016160       ?Allocate@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@IAEPAXABQBVCCore@2@PAX@Z 10017160 f i RenderInterface.obj
+ 0001:00016240       ?Deallocate@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@IAEXAAPAX@Z 10017240 f i RenderInterface.obj
+ 0001:000162d0       ?Ptr@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@IBEPAVCNode@12@PAX@Z 100172d0 f i RenderInterface.obj
+ 0001:00016300       ?clear@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAEXXZ 10017300 f i RenderInterface.obj
+ 0001:00016390       ?reserve@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10017390 f i RenderInterface.obj
+ 0001:00016490       ??4?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10017490 f i RenderInterface.obj
+ 0001:000165d0       ?SetExternalMemory@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 100175d0 f i RenderInterface.obj
+ 0001:00016680       ??0?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 10017680 f i RenderInterface.obj
+ 0001:000166d0       ?reserve@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 100176d0 f i RenderInterface.obj
+ 0001:000167d0       ??4?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 100177d0 f i RenderInterface.obj
+ 0001:00016910       ?SetExternalMemory@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10017910 f i RenderInterface.obj
+ 0001:00016a20       ??3@YAXPAX0@Z              10017a20 f i RenderInterface.obj
+ 0001:00016a30       ?Deallocate@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@IAEXPAUSInstance@2@@Z 10017a30 f i RenderInterface.obj
+ 0001:00016a80       ?clear@?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@QAEXXZ 10017a80 f i RenderInterface.obj
+ 0001:00016b10       ?SetExternalMemory@?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10017b10 f i RenderInterface.obj
+ 0001:00016bd0       ?Allocate@?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@IAEPAUS3dTreeInstanceLod@2@I@Z 10017bd0 f i RenderInterface.obj
+ 0001:00016c50       ?Deallocate@?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@IAEXPAUS3dTreeInstanceLod@2@@Z 10017c50 f i RenderInterface.obj
+ 0001:00016ca0       ?clear@?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@QAEXXZ 10017ca0 f i RenderInterface.obj
+ 0001:00016d30       ?SetExternalMemory@?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10017d30 f i RenderInterface.obj
+ 0001:00016de0       ?Allocate@?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@IAEPAPAUSInstance@2@I@Z 10017de0 f i RenderInterface.obj
+ 0001:00016e60       ?Deallocate@?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@IAEXPAPAUSInstance@2@@Z 10017e60 f i RenderInterface.obj
+ 0001:00016eb0       ?clear@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEXXZ 10017eb0 f i RenderInterface.obj
+ 0001:00016f40       ?SetExternalMemory@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10017f40 f i RenderInterface.obj
+ 0001:00017080       ??0CCell@SpeedTree@@QAE@XZ 10018080 f i RenderInterface.obj
+ 0001:000171b0       ??1CCell@SpeedTree@@QAE@XZ 100181b0 f i RenderInterface.obj
+ 0001:000172a0       ?Allocate@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@IAEPAVCCell@2@I@Z 100182a0 f i RenderInterface.obj
+ 0001:000173b0       ?Deallocate@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@IAEXPAVCCell@2@@Z 100183b0 f i RenderInterface.obj
+ 0001:00017410       ??0?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAE@XZ 10018410 f i RenderInterface.obj
+ 0001:00017460       ?clear@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEXXZ 10018460 f i RenderInterface.obj
+ 0001:000174f0       ?size@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QBEIXZ 100184f0 f i RenderInterface.obj
+ 0001:00017510       ??A?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEAAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@1@I@Z 10018510 f i RenderInterface.obj
+ 0001:00017530       ?SetExternalMemory@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10018530 f i RenderInterface.obj
+ 0001:000175e0       ?SetHeapDescription@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEXPBD@Z 100185e0 f i RenderInterface.obj
+ 0001:00017600       ?Allocate@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@IAEPAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@2@I@Z 10018600 f i RenderInterface.obj
+ 0001:00017680       ?Deallocate@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@IAEXPAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@2@@Z 10018680 f i RenderInterface.obj
+ 0001:000176d0       ?clear@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAEXXZ 100186d0 f i RenderInterface.obj
+ 0001:00017760       ?push_back@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAE_NABQAVCCell@2@@Z 10018760 f i RenderInterface.obj
+ 0001:00017820       ?SetExternalMemory@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10018820 f i RenderInterface.obj
+ 0001:000178d0       ?Allocate@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@IAEPAPAVCCell@2@I@Z 100188d0 f i RenderInterface.obj
+ 0001:00017950       ?Deallocate@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@IAEXPAPAVCCell@2@@Z 10018950 f i RenderInterface.obj
+ 0001:000179a0       ?Grow@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@AAEXXZ 100189a0 f i RenderInterface.obj
+ 0001:00017ca0       ??$st_delete@USHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@@SpeedTree@@YAXAAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@0@@Z 10018ca0 f i RenderInterface.obj
+ 0001:00017d30       ?Allocate@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@IAEPAXABUSRowCol@2@PAX@Z 10018d30 f i RenderInterface.obj
+ 0001:00017dd0       ?Deallocate@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@IAEXAAPAX@Z 10018dd0 f i RenderInterface.obj
+ 0001:00017e40       ?Ptr@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@IBEPAVCNode@12@PAX@Z 10018e40 f i RenderInterface.obj
+ 0001:00017e70       ??0?$CArray@PAX$00@SpeedTree@@QAE@XZ 10018e70 f i RenderInterface.obj
+ 0001:00017ec0       ??1?$CArray@PAX$00@SpeedTree@@UAE@XZ 10018ec0 f i RenderInterface.obj
+ 0001:00017f00       ?empty@?$CArray@PAX$00@SpeedTree@@QBE_NXZ 10018f00 f i RenderInterface.obj
+ 0001:00017f20       ?push_back@?$CArray@PAX$00@SpeedTree@@QAE_NABQAX@Z 10018f20 f i RenderInterface.obj
+ 0001:00017fe0       ?pop_back@?$CArray@PAX$00@SpeedTree@@QAEXXZ 10018fe0 f i RenderInterface.obj
+ 0001:00018010       ?back@?$CArray@PAX$00@SpeedTree@@QAEAAPAXXZ 10019010 f i RenderInterface.obj
+ 0001:00018030       ?reserve@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10019030 f i RenderInterface.obj
+ 0001:00018160       ?SetExternalMemory@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10019160 f i RenderInterface.obj
+ 0001:000182a0       ?Allocate@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@IAEPAUSDetailedCullData@2@I@Z 100192a0 f i RenderInterface.obj
+ 0001:000183b0       ?Deallocate@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@IAEXPAUSDetailedCullData@2@@Z 100193b0 f i RenderInterface.obj
+ 0001:00018410       ?clear@?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@QAEXXZ 10019410 f i RenderInterface.obj
+ 0001:000184a0       ?SetExternalMemory@?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 100194a0 f i RenderInterface.obj
+ 0001:00018550       ??4?$CBasicFixedString@$0IAA@@SpeedTree@@QAEAAV01@PBD@Z 10019550 f i RenderInterface.obj
+ 0001:000185c0       ?clear@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXXZ 100195c0 f i RenderInterface.obj
+ 0001:00018620       ?reserve@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10019620 f i RenderInterface.obj
+ 0001:000186f0       ?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 100196f0 f i RenderInterface.obj
+ 0001:00018840       ?clear@?$CArray@E$00@SpeedTree@@QAEXXZ 10019840 f i RenderInterface.obj
+ 0001:000188d0       ?SetExternalMemory@?$CArray@E$00@SpeedTree@@QAEXPAEI@Z 100198d0 f i RenderInterface.obj
+ 0001:00018980       ?Zero@?$CStatPrimitive@H@CRenderStats@SpeedTree@@QAEXXZ 10019980 f i RenderInterface.obj
+ 0001:000189a0       ?Zero@?$CStatPrimitive@M@CRenderStats@SpeedTree@@QAEXXZ 100199a0 f i RenderInterface.obj
+ 0001:000189c0       ?clear@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEXXZ 100199c0 f i RenderInterface.obj
+ 0001:00018a50       ?SetExternalMemory@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10019a50 f i RenderInterface.obj
+ 0001:00018ba0       ?Allocate@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@IAEPAUSObjectStats@CRenderStats@2@I@Z 10019ba0 f i RenderInterface.obj
+ 0001:00018cc0       ?Deallocate@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@IAEXPAUSObjectStats@CRenderStats@2@@Z 10019cc0 f i RenderInterface.obj
+ 0001:00018d10       ?clear@?$CArray@M$00@SpeedTree@@QAEXXZ 10019d10 f i RenderInterface.obj
+ 0001:00018da0       ?SetExternalMemory@?$CArray@M$00@SpeedTree@@QAEXPAEI@Z 10019da0 f i RenderInterface.obj
+ 0001:00018e50       ?DeleteChildren@CNode@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@AAEXPAV23@@Z 10019e50 f i RenderInterface.obj
+ 0001:00018f00       ?Ptr@iterator_base@?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@IBEPAVCNode@23@XZ 10019f00 f i RenderInterface.obj
+ 0001:00018f50       ??_ECCell@SpeedTree@@QAEPAXI@Z 10019f50 f i RenderInterface.obj
+ 0001:00018fc0       ??_ESDetailedCullData@SpeedTree@@QAEPAXI@Z 10019fc0 f i RenderInterface.obj
+ 0001:00019030       ??_ESObjectStats@CRenderStats@SpeedTree@@QAEPAXI@Z 1001a030 f i RenderInterface.obj
+ 0001:000190a0       ??1CNode@?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAE@XZ 1001a0a0 f i RenderInterface.obj
+ 0001:000190e0       ??0SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ 1001a0e0 f i RenderInterface.obj
+ 0001:00019180       ??0?$CArray@D$00@SpeedTree@@QAE@XZ 1001a180 f i RenderInterface.obj
+ 0001:000191d0       ?SetHeapDescription@?$CArray@D$00@SpeedTree@@QAEXPBD@Z 1001a1d0 f i RenderInterface.obj
+ 0001:000191f0       ?Allocate@?$CArray@D$00@SpeedTree@@IAEPADI@Z 1001a1f0 f i RenderInterface.obj
+ 0001:00019260       ?Deallocate@?$CArray@D$00@SpeedTree@@IAEXPAD@Z 1001a260 f i RenderInterface.obj
+ 0001:000192b0       ??4?$CBasicString@$00@SpeedTree@@QAEAAV01@PBD@Z 1001a2b0 f i RenderInterface.obj
+ 0001:00019330       ?Deallocate@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@IAEXPAPAUSNode@CScopeTrace@2@@Z 1001a330 f i RenderInterface.obj
+ 0001:00019380       ?resize@?$CBlockPool@$00@SpeedTree@@QAEXI@Z 1001a380 f i RenderInterface.obj
+ 0001:00019580       ?GrabBlock@?$CBlockPool@$00@SpeedTree@@QAEPAXXZ 1001a580 f i RenderInterface.obj
+ 0001:000195d0       ?ReleaseBlock@?$CBlockPool@$00@SpeedTree@@QAEXAAPAX@Z 1001a5d0 f i RenderInterface.obj
+ 0001:00019610       ?ResolveBlock@?$CBlockPool@$00@SpeedTree@@QBEPAXABQAX@Z 1001a610 f i RenderInterface.obj
+ 0001:00019650       ??$st_delete_array@D@SpeedTree@@YAXAAPAD@Z 1001a650 f i RenderInterface.obj
+ 0001:00019700       ??$st_delete_array@I@SpeedTree@@YAXAAPAI@Z 1001a700 f i RenderInterface.obj
+ 0001:000197b0       ?Allocate@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@IAEPAUSInstance@2@I@Z 1001a7b0 f i RenderInterface.obj
+ 0001:000198b0       ?clear@?$CArray@PAX$00@SpeedTree@@QAEXXZ 1001a8b0 f i RenderInterface.obj
+ 0001:00019940       ?reserve@?$CArray@PAX$00@SpeedTree@@QAE_NI@Z 1001a940 f i RenderInterface.obj
+ 0001:00019a40       ?SetExternalMemory@?$CArray@PAX$00@SpeedTree@@QAEXPAEI@Z 1001aa40 f i RenderInterface.obj
+ 0001:00019af0       ?Allocate@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@IAEPAPBUSTreeInstance@2@I@Z 1001aaf0 f i RenderInterface.obj
+ 0001:00019b70       ?Deallocate@?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@IAEXPAPBUSTreeInstance@2@@Z 1001ab70 f i RenderInterface.obj
+ 0001:00019bc0       ??$st_delete_array@USInstance@SpeedTree@@@SpeedTree@@YAXAAPAUSInstance@0@@Z 1001abc0 f i RenderInterface.obj
+ 0001:00019c70       ??$st_new_array@US3dTreeInstanceLod@SpeedTree@@@SpeedTree@@YAPAUS3dTreeInstanceLod@0@IPBDW4EAllocationType@0@@Z 1001ac70 f i RenderInterface.obj
+ 0001:00019d80       ??$st_delete_array@US3dTreeInstanceLod@SpeedTree@@@SpeedTree@@YAXAAPAUS3dTreeInstanceLod@0@@Z 1001ad80 f i RenderInterface.obj
+ 0001:00019e30       ??$st_new_array@PAUSInstance@SpeedTree@@@SpeedTree@@YAPAPAUSInstance@0@IPBDW4EAllocationType@0@@Z 1001ae30 f i RenderInterface.obj
+ 0001:00019f40       ??$st_delete_array@PAUSInstance@SpeedTree@@@SpeedTree@@YAXAAPAPAUSInstance@0@@Z 1001af40 f i RenderInterface.obj
+ 0001:00019ff0       ?resize@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 1001aff0 f i RenderInterface.obj
+ 0001:0001a040       ??A?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEAAVCCell@1@I@Z 1001b040 f i RenderInterface.obj
+ 0001:0001a060       ??$st_new_array@VCCell@SpeedTree@@@SpeedTree@@YAPAVCCell@0@IPBDW4EAllocationType@0@@Z 1001b060 f i RenderInterface.obj
+ 0001:0001a1d0       ??$st_delete_array@VCCell@SpeedTree@@@SpeedTree@@YAXAAPAVCCell@0@@Z 1001b1d0 f i RenderInterface.obj
+ 0001:0001a2b0       ?resize@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 1001b2b0 f i RenderInterface.obj
+ 0001:0001a2f0       ?back@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAEAAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@2@XZ 1001b2f0 f i RenderInterface.obj
+ 0001:0001a310       ??$st_new_array@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@@SpeedTree@@YAPAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@0@IPBDW4EAllocationType@0@@Z 1001b310 f i RenderInterface.obj
+ 0001:0001a420       ??$st_delete_array@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@@SpeedTree@@YAXAAPAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@0@@Z 1001b420 f i RenderInterface.obj
+ 0001:0001a4d0       ?size@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QBEIXZ 1001b4d0 f i RenderInterface.obj
+ 0001:0001a4f0       ?resize@?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 1001b4f0 f i RenderInterface.obj
+ 0001:0001a530       ??A?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@QAEAAPAVCCell@1@I@Z 1001b530 f i RenderInterface.obj
+ 0001:0001a550       ??$st_new_array@PAVCCell@SpeedTree@@@SpeedTree@@YAPAPAVCCell@0@IPBDW4EAllocationType@0@@Z 1001b550 f i RenderInterface.obj
+ 0001:0001a660       ??$st_delete_array@PAVCCell@SpeedTree@@@SpeedTree@@YAXAAPAPAVCCell@0@@Z 1001b660 f i RenderInterface.obj
+ 0001:0001a710       ?InitCell@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@ABEXAAVCCell@2@@Z 1001b710 f i RenderInterface.obj
+ 0001:0001a740       ??$st_allocate@USHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@@SpeedTree@@YAPAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@0@PBDW4EAllocationType@0@@Z 1001b740 f i RenderInterface.obj
+ 0001:0001a810       ??$st_new_array@USDetailedCullData@SpeedTree@@@SpeedTree@@YAPAUSDetailedCullData@0@IPBDW4EAllocationType@0@@Z 1001b810 f i RenderInterface.obj
+ 0001:0001a980       ??$st_delete_array@USDetailedCullData@SpeedTree@@@SpeedTree@@YAXAAPAUSDetailedCullData@0@@Z 1001b980 f i RenderInterface.obj
+ 0001:0001aa60       ?Deallocate@?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@IAEXPAPAVCCore@2@@Z 1001ba60 f i RenderInterface.obj
+ 0001:0001aab0       ?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 1001bab0 f i RenderInterface.obj
+ 0001:0001abc0       ?Deallocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEXPAV?$CBasicFixedString@$0BAA@@2@@Z 1001bbc0 f i RenderInterface.obj
+ 0001:0001ac40       ?Deallocate@?$CArray@E$00@SpeedTree@@IAEXPAE@Z 1001bc40 f i RenderInterface.obj
+ 0001:0001ac90       ??$st_new_array@USObjectStats@CRenderStats@SpeedTree@@@SpeedTree@@YAPAUSObjectStats@CRenderStats@0@IPBDW4EAllocationType@0@@Z 1001bc90 f i RenderInterface.obj
+ 0001:0001ae10       ??$st_delete_array@USObjectStats@CRenderStats@SpeedTree@@@SpeedTree@@YAXAAPAUSObjectStats@CRenderStats@0@@Z 1001be10 f i RenderInterface.obj
+ 0001:0001af00       ?Deallocate@?$CArray@M$00@SpeedTree@@IAEXPAM@Z 1001bf00 f i RenderInterface.obj
+ 0001:0001af50       ??$st_new_array@D@SpeedTree@@YAPADIPBDW4EAllocationType@0@@Z 1001bf50 f i RenderInterface.obj
+ 0001:0001b060       ??$st_delete_array@PAUSNode@CScopeTrace@SpeedTree@@@SpeedTree@@YAXAAPAPAUSNode@CScopeTrace@0@@Z 1001c060 f i RenderInterface.obj
+ 0001:0001b110       ??$st_new_array@I@SpeedTree@@YAPAIIPBDW4EAllocationType@0@@Z 1001c110 f i RenderInterface.obj
+ 0001:0001b220       ??$st_new_array@USInstance@SpeedTree@@@SpeedTree@@YAPAUSInstance@0@IPBDW4EAllocationType@0@@Z 1001c220 f i RenderInterface.obj
+ 0001:0001b390       ?Allocate@?$CArray@PAX$00@SpeedTree@@IAEPAPAXI@Z 1001c390 f i RenderInterface.obj
+ 0001:0001b410       ?Deallocate@?$CArray@PAX$00@SpeedTree@@IAEXPAPAX@Z 1001c410 f i RenderInterface.obj
+ 0001:0001b460       ??$st_new_array@PBUSTreeInstance@SpeedTree@@@SpeedTree@@YAPAPBUSTreeInstance@0@IPBDW4EAllocationType@0@@Z 1001c460 f i RenderInterface.obj
+ 0001:0001b570       ??$st_delete_array@PBUSTreeInstance@SpeedTree@@@SpeedTree@@YAXAAPAPBUSTreeInstance@0@@Z 1001c570 f i RenderInterface.obj
+ 0001:0001b620       ?reserve@?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 1001c620 f i RenderInterface.obj
+ 0001:0001b720       ??$st_delete_array@PAVCCore@SpeedTree@@@SpeedTree@@YAXAAPAPAVCCore@0@@Z 1001c720 f i RenderInterface.obj
+ 0001:0001b7d0       ??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 1001c7d0 f i RenderInterface.obj
+ 0001:0001b950       ??$st_delete_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAXAAPAV?$CBasicFixedString@$0BAA@@0@@Z 1001c950 f i RenderInterface.obj
+ 0001:0001ba30       ??$st_delete_array@E@SpeedTree@@YAXAAPAE@Z 1001ca30 f i RenderInterface.obj
+ 0001:0001bae0       ??$st_delete_array@M@SpeedTree@@YAXAAPAM@Z 1001cae0 f i RenderInterface.obj
+ 0001:0001bb90       ??$st_new_array@PAX@SpeedTree@@YAPAPAXIPBDW4EAllocationType@0@@Z 1001cb90 f i RenderInterface.obj
+ 0001:0001bca0       ??$st_delete_array@PAX@SpeedTree@@YAXAAPAPAX@Z 1001cca0 f i RenderInterface.obj
+ 0001:0001bd50       ?Cull3dTreesAndComputeLod@CVisibleInstances@SpeedTree@@UAEXABVCView@2@@Z 1001cd50 f   SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0001:0001bd56       ??1CForest@SpeedTree@@UAE@XZ 1001cd56 f   SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0001:0001bd5c       ?FileExists@CFileSystem@SpeedTree@@UAE_NPBD@Z 1001cd5c f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd62       ?FileSize@CFileSystem@SpeedTree@@UAEIPBD@Z 1001cd62 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd68       ?LoadFile@CFileSystem@SpeedTree@@UAEPAEPBDW4ETermHint@12@@Z 1001cd68 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd6e       ?Release@CFileSystem@SpeedTree@@UAEXPAE@Z 1001cd6e f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd74       ?CompareFileTimes@CFileSystem@SpeedTree@@UAE?AW4ETimeCompare@12@PBD0@Z 1001cd74 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd7a       ?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z 1001cd7a f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd80       ?IsYAxisUp@CCoordSys@SpeedTree@@SA_NXZ 1001cd80 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd86       ?IsLeftHanded@CCoordSys@SpeedTree@@SA_NXZ 1001cd86 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd8c       ?ConvertToStd@CCoordSys@SpeedTree@@SA?AVVec3@2@QBM@Z 1001cd8c f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd92       ?RotateUpAxis@CCoordSys@SpeedTree@@SAXAAVMat3x3@2@M@Z 1001cd92 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd98       ?UpComponent@CCoordSys@SpeedTree@@SAMQBM@Z 1001cd98 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bd9e       ??0SResourceStats@CCore@SpeedTree@@QAE@XZ 1001cd9e f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bda4       ?SetError@CCore@SpeedTree@@SAXPBDZZ 1001cda4 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdaa       ?Advance@CWind@SpeedTree@@QAEX_NM@Z 1001cdaa f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdb0       ?SetStrength@CWind@SpeedTree@@QAEXM@Z 1001cdb0 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdb6       ?SetInitDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001cdb6 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdbc       ?SetDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001cdbc f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdc2       ?CurrentUse@CHeapSystem@SpeedTree@@SAAAIXZ 1001cdc2 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdc8       ?Allocator@CHeapSystem@SpeedTree@@SAAAPAVCAllocator@2@XZ 1001cdc8 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdce       ?NumAllocs@CHeapSystem@SpeedTree@@SAAAIXZ 1001cdce f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdd4       ?PeakUse@CHeapSystem@SpeedTree@@SAAAIXZ 1001cdd4 f   SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0001:0001bdda       _QueryPerformanceCounter@4 1001cdda f   kernel32:KERNEL32.dll
+ 0001:0001bde0       _QueryPerformanceFrequency@4 1001cde0 f   kernel32:KERNEL32.dll
+ 0001:0001bde6       ??_U@YAPAXI@Z              1001cde6 f   msvcprt:newaop_s.obj
+ 0001:0001be00       ??3@YAXPAX@Z               1001ce00 f   MSVCRT:MSVCR90.dll
+ 0001:0001be18       ?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z 1001ce18 f   MSVCRT:ehvecdtr.obj
+ 0001:0001be76       ??_M@YGXPAXIHP6EX0@Z@Z     1001ce76 f   MSVCRT:ehvecdtr.obj
+ 0001:0001beda       _sqrt                      1001ceda f   MSVCRT:MSVCR90.dll
+ 0001:0001bee0       _memset                    1001cee0 f   MSVCRT:MSVCR90.dll
+ 0001:0001bee6       _memcpy                    1001cee6 f   MSVCRT:MSVCR90.dll
+ 0001:0001beec       _memcmp                    1001ceec f   MSVCRT:MSVCR90.dll
+ 0001:0001bef2       _sin                       1001cef2 f   MSVCRT:MSVCR90.dll
+ 0001:0001bef8       _cos                       1001cef8 f   MSVCRT:MSVCR90.dll
+ 0001:0001befe       _fabs                      1001cefe f   MSVCRT:MSVCR90.dll
+ 0001:0001bf04       _tan                       1001cf04 f   MSVCRT:MSVCR90.dll
+ 0001:0001bf0a       __purecall                 1001cf0a f   MSVCRT:MSVCR90.dll
+ 0001:0001bf10       __ftol2_sse                1001cf10 f   MSVCRT:ftol2.obj
+ 0001:0001bf19       __ftol2_pentium4           1001cf19 f   MSVCRT:ftol2.obj
+ 0001:0001bf2c       __ftol2_sse_excpt          1001cf2c f   MSVCRT:ftol2.obj
+ 0001:0001bf46       __ftol2                    1001cf46 f   MSVCRT:ftol2.obj
+ 0001:0001bfbb       ??_L@YGXPAXIHP6EX0@Z1@Z    1001cfbb f   MSVCRT:ehvecctr.obj
+ 0001:0001c020       ___CxxFrameHandler3        1001d020 f   MSVCRT:MSVCR90.dll
+ 0001:0001c026       @__security_check_cookie@4 1001d026 f   MSVCRT:secchk.obj
+ 0001:0001c036       _strcmp                    1001d036 f   MSVCRT:MSVCR90.dll
+ 0001:0001c03c       _strlen                    1001d03c f   MSVCRT:MSVCR90.dll
+ 0001:0001c042       ??_V@YAXPAX@Z              1001d042 f   MSVCRT:MSVCR90.dll
+ 0001:0001c048       _memmove                   1001d048 f   MSVCRT:MSVCR90.dll
+ 0001:0001c04e       _free                      1001d04e f   MSVCRT:MSVCR90.dll
+ 0001:0001c054       _malloc                    1001d054 f   MSVCRT:MSVCR90.dll
+ 0001:0001c05a       _NtCurrentTeb              1001d05a f i MSVCRT:crtdll.obj
+ 0001:0001c0b0       __CRT_INIT@12              1001d0b0 f   MSVCRT:crtdll.obj
+ 0001:0001c3ec       __DllMainCRTStartup@12     1001d3ec f   MSVCRT:crtdll.obj
+ 0001:0001c410       ??2@YAPAXI@Z               1001d410 f   MSVCRT:MSVCR90.dll
+ 0001:0001c416       ?terminate@@YAXXZ          1001d416 f   MSVCRT:MSVCR90.dll
+ 0001:0001c41c       __SEH_prolog4              1001d41c f   MSVCRT:sehprolg4.obj
+ 0001:0001c461       __SEH_epilog4              1001d461 f   MSVCRT:sehprolg4.obj
+ 0001:0001c475       __except_handler4          1001d475 f   MSVCRT:chandler4gs.obj
+ 0001:0001c4ea       __get_sse2_info            1001d4ea f   MSVCRT:cpu_disp.obj
+ 0001:0001c54c       ___sse2_available_init     1001d54c f   MSVCRT:cpu_disp.obj
+ 0001:0001c559       ___report_gsfailure        1001d559 f   MSVCRT:gs_report.obj
+ 0001:0001c660       __vsnprintf_s              1001d660 f   MSVCRT:MSVCR90.dll
+ 0001:0001c666       ___clean_type_info_names   1001d666 f   MSVCRT:tncleanup.obj
+ 0001:0001c672       __onexit                   1001d672 f   MSVCRT:atonexit.obj
+ 0001:0001c717       _atexit                    1001d717 f   MSVCRT:atonexit.obj
+ 0001:0001c72e       __RTC_Initialize           1001d72e f   MSVCRT:_initsect_.obj
+ 0001:0001c754       __RTC_Terminate            1001d754 f   MSVCRT:_initsect_.obj
+ 0001:0001c77a       __encode_pointer           1001d77a f   MSVCRT:MSVCR90.dll
+ 0001:0001c780       __malloc_crt               1001d780 f   MSVCRT:MSVCR90.dll
+ 0001:0001c786       __encoded_null             1001d786 f   MSVCRT:MSVCR90.dll
+ 0001:0001c78c       __decode_pointer           1001d78c f   MSVCRT:MSVCR90.dll
+ 0001:0001c7a0       __ValidateImageBase        1001d7a0 f   MSVCRT:pesect.obj
+ 0001:0001c7e0       __FindPESection            1001d7e0 f   MSVCRT:pesect.obj
+ 0001:0001c830       __IsNonwritableInCurrentImage 1001d830 f   MSVCRT:pesect.obj
+ 0001:0001c8ee       __initterm                 1001d8ee f   MSVCRT:MSVCR90.dll
+ 0001:0001c8f4       __initterm_e               1001d8f4 f   MSVCRT:MSVCR90.dll
+ 0001:0001c8fa       __amsg_exit                1001d8fa f   MSVCRT:MSVCR90.dll
+ 0001:0001c900       ___CppXcptFilter           1001d900 f   MSVCRT:MSVCR90.dll
+ 0001:0001c906       _DllMain@12                1001d906 f   MSVCRT:dllmain.obj
+ 0001:0001c92a       ___security_init_cookie    1001d92a f   MSVCRT:gs_support.obj
+ 0001:0001c9c0       __except_handler4_common   1001d9c0 f   MSVCRT:MSVCR90.dll
+ 0001:0001c9c6       __crt_debugger_hook        1001d9c6 f   MSVCRT:MSVCR90.dll
+ 0001:0001c9cc       ___clean_type_info_names_internal 1001d9cc f   MSVCRT:MSVCR90.dll
+ 0001:0001c9d2       __unlock                   1001d9d2 f   MSVCRT:MSVCR90.dll
+ 0001:0001c9d8       ___dllonexit               1001d9d8 f   MSVCRT:MSVCR90.dll
+ 0001:0001c9de       __lock                     1001d9de f   MSVCRT:MSVCR90.dll
+ 0001:0001c9e4       _InterlockedExchange@8     1001d9e4 f   kernel32:KERNEL32.dll
+ 0001:0001c9ea       _Sleep@4                   1001d9ea f   kernel32:KERNEL32.dll
+ 0001:0001c9f0       _InterlockedCompareExchange@12 1001d9f0 f   kernel32:KERNEL32.dll
+ 0001:0001c9f6       _TerminateProcess@8        1001d9f6 f   kernel32:KERNEL32.dll
+ 0001:0001c9fc       _GetCurrentProcess@0       1001d9fc f   kernel32:KERNEL32.dll
+ 0001:0001ca02       _UnhandledExceptionFilter@4 1001da02 f   kernel32:KERNEL32.dll
+ 0001:0001ca08       _SetUnhandledExceptionFilter@4 1001da08 f   kernel32:KERNEL32.dll
+ 0001:0001ca0e       _IsDebuggerPresent@0       1001da0e f   kernel32:KERNEL32.dll
+ 0001:0001ca14       _DisableThreadLibraryCalls@4 1001da14 f   kernel32:KERNEL32.dll
+ 0001:0001ca1a       _GetTickCount@0            1001da1a f   kernel32:KERNEL32.dll
+ 0001:0001ca20       _GetCurrentThreadId@0      1001da20 f   kernel32:KERNEL32.dll
+ 0001:0001ca26       _GetCurrentProcessId@0     1001da26 f   kernel32:KERNEL32.dll
+ 0001:0001ca2c       _GetSystemTimeAsFileTime@4 1001da2c f   kernel32:KERNEL32.dll
+ 0002:00000000       __imp__GetSystemTimeAsFileTime@4 1001f000     kernel32:KERNEL32.dll
+ 0002:00000004       __imp__GetCurrentProcessId@0 1001f004     kernel32:KERNEL32.dll
+ 0002:00000008       __imp__GetCurrentThreadId@0 1001f008     kernel32:KERNEL32.dll
+ 0002:0000000c       __imp__GetTickCount@0      1001f00c     kernel32:KERNEL32.dll
+ 0002:00000010       __imp__DisableThreadLibraryCalls@4 1001f010     kernel32:KERNEL32.dll
+ 0002:00000014       __imp__IsDebuggerPresent@0 1001f014     kernel32:KERNEL32.dll
+ 0002:00000018       __imp__SetUnhandledExceptionFilter@4 1001f018     kernel32:KERNEL32.dll
+ 0002:0000001c       __imp__UnhandledExceptionFilter@4 1001f01c     kernel32:KERNEL32.dll
+ 0002:00000020       __imp__GetCurrentProcess@0 1001f020     kernel32:KERNEL32.dll
+ 0002:00000024       __imp__TerminateProcess@8  1001f024     kernel32:KERNEL32.dll
+ 0002:00000028       __imp__InterlockedCompareExchange@12 1001f028     kernel32:KERNEL32.dll
+ 0002:0000002c       __imp__Sleep@4             1001f02c     kernel32:KERNEL32.dll
+ 0002:00000030       __imp__InterlockedExchange@8 1001f030     kernel32:KERNEL32.dll
+ 0002:00000034       __imp__QueryPerformanceFrequency@4 1001f034     kernel32:KERNEL32.dll
+ 0002:00000038       __imp__QueryPerformanceCounter@4 1001f038     kernel32:KERNEL32.dll
+ 0002:0000003c       \177KERNEL32_NULL_THUNK_DATA 1001f03c     kernel32:KERNEL32.dll
+ 0002:00000040       __imp___unlock             1001f040     MSVCRT:MSVCR90.dll
+ 0002:00000044       __imp____clean_type_info_names_internal 1001f044     MSVCRT:MSVCR90.dll
+ 0002:00000048       __imp___crt_debugger_hook  1001f048     MSVCRT:MSVCR90.dll
+ 0002:0000004c       __imp___except_handler4_common 1001f04c     MSVCRT:MSVCR90.dll
+ 0002:00000050       __imp____CppXcptFilter     1001f050     MSVCRT:MSVCR90.dll
+ 0002:00000054       __imp___adjust_fdiv        1001f054     MSVCRT:MSVCR90.dll
+ 0002:00000058       __imp___amsg_exit          1001f058     MSVCRT:MSVCR90.dll
+ 0002:0000005c       __imp___initterm_e         1001f05c     MSVCRT:MSVCR90.dll
+ 0002:00000060       __imp____dllonexit         1001f060     MSVCRT:MSVCR90.dll
+ 0002:00000064       __imp___onexit             1001f064     MSVCRT:MSVCR90.dll
+ 0002:00000068       __imp___lock               1001f068     MSVCRT:MSVCR90.dll
+ 0002:0000006c       __imp_??3@YAXPAX@Z         1001f06c     MSVCRT:MSVCR90.dll
+ 0002:00000070       __imp__sqrt                1001f070     MSVCRT:MSVCR90.dll
+ 0002:00000074       __imp__memset              1001f074     MSVCRT:MSVCR90.dll
+ 0002:00000078       __imp__memcpy              1001f078     MSVCRT:MSVCR90.dll
+ 0002:0000007c       __imp__memcmp              1001f07c     MSVCRT:MSVCR90.dll
+ 0002:00000080       __imp__sin                 1001f080     MSVCRT:MSVCR90.dll
+ 0002:00000084       __imp__cos                 1001f084     MSVCRT:MSVCR90.dll
+ 0002:00000088       __imp__fabs                1001f088     MSVCRT:MSVCR90.dll
+ 0002:0000008c       __imp__tan                 1001f08c     MSVCRT:MSVCR90.dll
+ 0002:00000090       __imp___purecall           1001f090     MSVCRT:MSVCR90.dll
+ 0002:00000094       __imp____CxxFrameHandler3  1001f094     MSVCRT:MSVCR90.dll
+ 0002:00000098       __imp__strcmp              1001f098     MSVCRT:MSVCR90.dll
+ 0002:0000009c       __imp__strlen              1001f09c     MSVCRT:MSVCR90.dll
+ 0002:000000a0       __imp_??_V@YAXPAX@Z        1001f0a0     MSVCRT:MSVCR90.dll
+ 0002:000000a4       __imp__memmove             1001f0a4     MSVCRT:MSVCR90.dll
+ 0002:000000a8       __imp__free                1001f0a8     MSVCRT:MSVCR90.dll
+ 0002:000000ac       __imp__malloc              1001f0ac     MSVCRT:MSVCR90.dll
+ 0002:000000b0       __imp_??2@YAPAXI@Z         1001f0b0     MSVCRT:MSVCR90.dll
+ 0002:000000b4       __imp_?terminate@@YAXXZ    1001f0b4     MSVCRT:MSVCR90.dll
+ 0002:000000b8       __imp___vsnprintf_s        1001f0b8     MSVCRT:MSVCR90.dll
+ 0002:000000b8       __imp__vsnprintf_s         1001f0b8     MSVCRT:MSVCR90.dll
+ 0002:000000bc       __imp___encode_pointer     1001f0bc     MSVCRT:MSVCR90.dll
+ 0002:000000c0       __imp___malloc_crt         1001f0c0     MSVCRT:MSVCR90.dll
+ 0002:000000c4       __imp___encoded_null       1001f0c4     MSVCRT:MSVCR90.dll
+ 0002:000000c8       __imp___decode_pointer     1001f0c8     MSVCRT:MSVCR90.dll
+ 0002:000000cc       __imp___initterm           1001f0cc     MSVCRT:MSVCR90.dll
+ 0002:000000d0       \177MSVCR90_NULL_THUNK_DATA 1001f0d0     MSVCRT:MSVCR90.dll
+ 0002:000000d4       __imp_?PeakUse@CHeapSystem@SpeedTree@@SAAAIXZ 1001f0d4     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000d8       __imp_?NumAllocs@CHeapSystem@SpeedTree@@SAAAIXZ 1001f0d8     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000dc       __imp_?Allocator@CHeapSystem@SpeedTree@@SAAAPAVCAllocator@2@XZ 1001f0dc     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000e0       __imp_?CurrentUse@CHeapSystem@SpeedTree@@SAAAIXZ 1001f0e0     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000e4       __imp_?SetDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001f0e4     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000e8       __imp_?SetInitDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001f0e8     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000ec       __imp_?SetStrength@CWind@SpeedTree@@QAEXM@Z 1001f0ec     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000f0       __imp_?Advance@CWind@SpeedTree@@QAEX_NM@Z 1001f0f0     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000f4       __imp_?SetError@CCore@SpeedTree@@SAXPBDZZ 1001f0f4     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000f8       __imp_??0SResourceStats@CCore@SpeedTree@@QAE@XZ 1001f0f8     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:000000fc       __imp_?UpComponent@CCoordSys@SpeedTree@@SAMQBM@Z 1001f0fc     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000100       __imp_?RotateUpAxis@CCoordSys@SpeedTree@@SAXAAVMat3x3@2@M@Z 1001f100     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000104       __imp_?ConvertToStd@CCoordSys@SpeedTree@@SA?AVVec3@2@QBM@Z 1001f104     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000108       __imp_?IsLeftHanded@CCoordSys@SpeedTree@@SA_NXZ 1001f108     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:0000010c       __imp_?IsYAxisUp@CCoordSys@SpeedTree@@SA_NXZ 1001f10c     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000110       __imp_?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z 1001f110     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000114       __imp_?CompareFileTimes@CFileSystem@SpeedTree@@UAE?AW4ETimeCompare@12@PBD0@Z 1001f114     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000118       __imp_?Release@CFileSystem@SpeedTree@@UAEXPAE@Z 1001f118     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:0000011c       __imp_?LoadFile@CFileSystem@SpeedTree@@UAEPAEPBDW4ETermHint@12@@Z 1001f11c     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000120       __imp_?FileSize@CFileSystem@SpeedTree@@UAEIPBD@Z 1001f120     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000124       __imp_?FileExists@CFileSystem@SpeedTree@@UAE_NPBD@Z 1001f124     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00000128       \177SpeedTreeCore_Windows_v7.1_NULL_THUNK_DATA 1001f128     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:0000012c       __imp_??1CForest@SpeedTree@@UAE@XZ 1001f12c     SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0002:00000130       __imp_?Cull3dTreesAndComputeLod@CVisibleInstances@SpeedTree@@UAEXABVCView@2@@Z 1001f130     SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0002:00000134       \177SpeedTreeForest_Windows_v7.1_NULL_THUNK_DATA 1001f134     SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0002:00000138       ___xc_a                    1001f138     MSVCRT:cinitexe.obj
+ 0002:00000168       ___xc_z                    1001f168     MSVCRT:cinitexe.obj
+ 0002:0000016c       ___xi_a                    1001f16c     MSVCRT:cinitexe.obj
+ 0002:00000178       ___xi_z                    1001f178     MSVCRT:cinitexe.obj
+ 0002:0000019c       ??_C@_0P@GHFPNOJB@bad?5allocation?$AA@ 1001f19c     RenderInterface.obj
+ 0002:000001ac       ??_C@_01KMDKNFGN@?1?$AA@   1001f1ac     RenderInterface.obj
+ 0002:000001b4       __real@00000000            1001f1b4     RenderInterface.obj
+ 0002:000001b8       ??_7CFileSystem@SpeedTree@@6B@ 1001f1b8     RenderInterface.obj
+ 0002:000001d0       ??_7?$CBasicFixedString@$0BAA@@SpeedTree@@6B@ 1001f1d0     RenderInterface.obj
+ 0002:000001d8       __real@3ff0000000000000    1001f1d8     RenderInterface.obj
+ 0002:000001e0       __real@3e80000000000000    1001f1e0     RenderInterface.obj
+ 0002:000001e8       __real@3f800000            1001f1e8     RenderInterface.obj
+ 0002:000001ec       __real@1e3ce508            1001f1ec     RenderInterface.obj
+ 0002:000001f0       __real@c000000000000000    1001f1f0     RenderInterface.obj
+ 0002:000001f8       __real@4000000000000000    1001f1f8     RenderInterface.obj
+ 0002:00000200       __real@bf800000            1001f200     RenderInterface.obj
+ 0002:00000208       __real@3fe0000000000000    1001f208     RenderInterface.obj
+ 0002:00000210       ??_7CCoordSysBase@SpeedTree@@6B@ 1001f210     RenderInterface.obj
+ 0002:0000024c       __real@ff7fffff            1001f24c     RenderInterface.obj
+ 0002:00000250       __real@7f7fffff            1001f250     RenderInterface.obj
+ 0002:00000258       __real@c7efffffe0000000    1001f258     RenderInterface.obj
+ 0002:00000260       __real@47efffffe0000000    1001f260     RenderInterface.obj
+ 0002:00000268       __real@3f000000            1001f268     RenderInterface.obj
+ 0002:0000026c       ??_7CAllocator@SpeedTree@@6B@ 1001f26c     RenderInterface.obj
+ 0002:00000278       __real@0000000000000000    1001f278     RenderInterface.obj
+ 0002:00000280       __real@44bb8000            1001f280     RenderInterface.obj
+ 0002:00000284       __real@44960000            1001f284     RenderInterface.obj
+ 0002:00000288       __real@44a28000            1001f288     RenderInterface.obj
+ 0002:0000028c       __real@43960000            1001f28c     RenderInterface.obj
+ 0002:00000290       ??_C@_0FN@BLBNOHIO@CCore?3?3SetLodProfile?$CI?$CJ?0?5one?5of?5t@ 1001f290     RenderInterface.obj
+ 0002:000002f0       __real@406fe00000000000    1001f2f0     RenderInterface.obj
+ 0002:000002f8       ?asDescs@?1??GetVertexPropertyDesc@CCore@SpeedTree@@SAABUSVertexPropertyDesc@3@U?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@3@@Z@4QBU43@B 1001f2f8     RenderInterface.obj
+ 0002:000003f4       ??_C@_0L@EGJECNPE@UNASSIGNED?$AA@ 1001f3f4     RenderInterface.obj
+ 0002:00000400       ??_C@_04BFOKOJHP@UASS?$AA@ 1001f400     RenderInterface.obj
+ 0002:00000408       ??_C@_08GCJNLIKG@Position?$AA@ 1001f408     RenderInterface.obj
+ 0002:00000414       ??_C@_04EBMCAJJP@posi?$AA@ 1001f414     RenderInterface.obj
+ 0002:0000041c       ??_C@_0BB@PJFEEHJC@DiffuseTexCoords?$AA@ 1001f41c     RenderInterface.obj
+ 0002:00000430       ??_C@_04GCAENOJH@texd?$AA@ 1001f430     RenderInterface.obj
+ 0002:00000438       ??_C@_06EFAGIKOH@Normal?$AA@ 1001f438     RenderInterface.obj
+ 0002:00000440       ??_C@_04PLLMIPEP@norm?$AA@ 1001f440     RenderInterface.obj
+ 0002:00000448       ??_C@_0M@NBAIFGOC@LodPosition?$AA@ 1001f448     RenderInterface.obj
+ 0002:00000454       ??_C@_04GGLLGPPB@lodp?$AA@ 1001f454     RenderInterface.obj
+ 0002:0000045c       ??_C@_0BB@LCIIINBM@GeometryTypeHint?$AA@ 1001f45c     RenderInterface.obj
+ 0002:00000470       ??_C@_04NPKLNGDP@hint?$AA@ 1001f470     RenderInterface.obj
+ 0002:00000478       ??_C@_0P@MHJCKDAP@LeafCardCorner?$AA@ 1001f478     RenderInterface.obj
+ 0002:00000488       ??_C@_04HPBDHHGM@lfcc?$AA@ 1001f488     RenderInterface.obj
+ 0002:00000490       ??_C@_0BC@MGOJABJM@LeafCardLodScalar?$AA@ 1001f490     RenderInterface.obj
+ 0002:000004a4       ??_C@_04DOINCCAA@lfls?$AA@ 1001f4a4     RenderInterface.obj
+ 0002:000004ac       ??_C@_0BJ@BKGEJAGA@LeafCardSelfShadowOffset?$AA@ 1001f4ac     RenderInterface.obj
+ 0002:000004c8       ??_C@_04MPIAJLBA@lfso?$AA@ 1001f4c8     RenderInterface.obj
+ 0002:000004d0       ??_C@_0P@GNJBBLOP@WindBranchData?$AA@ 1001f4d0     RenderInterface.obj
+ 0002:000004e0       ??_C@_04EPALPBKC@wbrn?$AA@ 1001f4e0     RenderInterface.obj
+ 0002:000004e8       ??_C@_0O@GGNALGEE@WindExtraData?$AA@ 1001f4e8     RenderInterface.obj
+ 0002:000004f8       ??_C@_04GPGGLGBG@wext?$AA@ 1001f4f8     RenderInterface.obj
+ 0002:00000500       ??_C@_09ECDGPDPD@WindFlags?$AA@ 1001f500     RenderInterface.obj
+ 0002:0000050c       ??_C@_04HBDFDMG@wflg?$AA@  1001f50c     RenderInterface.obj
+ 0002:00000514       ??_C@_0BA@KIOKCGN@LeafAnchorPoint?$AA@ 1001f514     RenderInterface.obj
+ 0002:00000524       ??_C@_04OKBMNMIG@lanc?$AA@ 1001f524     RenderInterface.obj
+ 0002:0000052c       ??_C@_06IJABALAN@BoneID?$AA@ 1001f52c     RenderInterface.obj
+ 0002:00000534       ??_C@_04EHEBPCPD@bnid?$AA@ 1001f534     RenderInterface.obj
+ 0002:0000053c       ??_C@_0BC@JLIIJOFB@BranchSeamDiffuse?$AA@ 1001f53c     RenderInterface.obj
+ 0002:00000550       ??_C@_04NPNMIMGA@bsdf?$AA@ 1001f550     RenderInterface.obj
+ 0002:00000558       ??_C@_0BB@PJNHBMLN@BranchSeamDetail?$AA@ 1001f558     RenderInterface.obj
+ 0002:0000056c       ??_C@_04KHCIPMLD@bsdt?$AA@ 1001f56c     RenderInterface.obj
+ 0002:00000574       ??_C@_0BA@JDEGODIJ@DetailTexCoords?$AA@ 1001f574     RenderInterface.obj
+ 0002:00000584       ??_C@_04KKNNFEJP@texl?$AA@ 1001f584     RenderInterface.obj
+ 0002:0000058c       ??_C@_07HKHOACGF@Tangent?$AA@ 1001f58c     RenderInterface.obj
+ 0002:00000594       ??_C@_04NOOAMFMB@tang?$AA@ 1001f594     RenderInterface.obj
+ 0002:0000059c       ??_C@_0BC@OFBMNCFH@LightMapTexCoords?$AA@ 1001f59c     RenderInterface.obj
+ 0002:000005b0       ??_C@_04MKHJGFJB@lmap?$AA@ 1001f5b0     RenderInterface.obj
+ 0002:000005b8       ??_C@_0BB@ILOHAIEP@AmbientOcclusion?$AA@ 1001f5b8     RenderInterface.obj
+ 0002:000005cc       ??_C@_04PKILPMFH@aocc?$AA@ 1001f5cc     RenderInterface.obj
+ 0002:000005d4       ??_C@_03FNDCCAPF@Pad?$AA@  1001f5d4     RenderInterface.obj
+ 0002:000005d8       ??_C@_03PNAAIPML@pad?$AA@  1001f5d8     RenderInterface.obj
+ 0002:000005e0       ?asDescs@?1??GetPixelPropertyDesc@CCore@SpeedTree@@SAABUSPixelPropertyDesc@3@W4EPixelProperty@3@@Z@4QBU43@B 1001f5e0     RenderInterface.obj
+ 0002:00000718       ??_C@_0L@HJOMBOJA@Projection?$AA@ 1001f718     RenderInterface.obj
+ 0002:00000724       ??_C@_04NNKAIPAK@proj?$AA@ 1001f724     RenderInterface.obj
+ 0002:0000072c       ??_C@_09MLMGCFEC@FogScalar?$AA@ 1001f72c     RenderInterface.obj
+ 0002:00000738       ??_C@_04FGAJKMK@fogs?$AA@  1001f738     RenderInterface.obj
+ 0002:00000740       ??_C@_08EOHIBGCM@FogColor?$AA@ 1001f740     RenderInterface.obj
+ 0002:0000074c       ??_C@_04EPKCIIJL@fogc?$AA@ 1001f74c     RenderInterface.obj
+ 0002:00000754       ??_C@_0BH@HEFJHJPF@PerVertexLightingColor?$AA@ 1001f754     RenderInterface.obj
+ 0002:0000076c       ??_C@_04IBEGBNEN@pvlc?$AA@ 1001f76c     RenderInterface.obj
+ 0002:00000774       ??_C@_0BH@GPKEFOAC@LightDirInTangentSpace?$AA@ 1001f774     RenderInterface.obj
+ 0002:0000078c       ??_C@_04IGLBBIED@ldts?$AA@ 1001f78c     RenderInterface.obj
+ 0002:00000794       ??_C@_08MOBOOILK@Binormal?$AA@ 1001f794     RenderInterface.obj
+ 0002:000007a0       ??_C@_04IGPAAFCL@bnrm?$AA@ 1001f7a0     RenderInterface.obj
+ 0002:000007a8       ??_C@_0BD@IMKKLEAE@SpecularHalfVector?$AA@ 1001f7a8     RenderInterface.obj
+ 0002:000007bc       ??_C@_04GHJBGBJH@shvc?$AA@ 1001f7bc     RenderInterface.obj
+ 0002:000007c4       ??_C@_0BF@DLCJCPCB@PerVertexSpecularDot?$AA@ 1001f7c4     RenderInterface.obj
+ 0002:000007dc       ??_C@_04NJHNGPMH@pvsd?$AA@ 1001f7dc     RenderInterface.obj
+ 0002:000007e4       ??_C@_0BJ@OLBFHDJH@PerVertexAmbientContrast?$AA@ 1001f7e4     RenderInterface.obj
+ 0002:00000800       ??_C@_04IJJOIOBO@pvac?$AA@ 1001f800     RenderInterface.obj
+ 0002:00000808       ??_C@_0BC@KCFPAAF@BillboardTo3dFade?$AA@ 1001f808     RenderInterface.obj
+ 0002:0000081c       ??_C@_04FOIKIEKP@bb3f?$AA@ 1001f81c     RenderInterface.obj
+ 0002:00000824       ??_C@_0BD@MJOKOONI@TransmissionFactor?$AA@ 1001f824     RenderInterface.obj
+ 0002:00000838       ??_C@_04EGNCMBME@tran?$AA@ 1001f838     RenderInterface.obj
+ 0002:00000840       ??_C@_0BC@JPCGHODF@RenderEffectsFade?$AA@ 1001f840     RenderInterface.obj
+ 0002:00000854       ??_C@_04DOMGFHLE@efad?$AA@ 1001f854     RenderInterface.obj
+ 0002:0000085c       ??_C@_04PDFOFOKH@?5?5ao?$AA@ 1001f85c     RenderInterface.obj
+ 0002:00000864       ??_C@_04KJDLKNAL@bslt?$AA@ 1001f864     RenderInterface.obj
+ 0002:0000086c       ??_C@_0M@GKIOBELN@ShadowDepth?$AA@ 1001f86c     RenderInterface.obj
+ 0002:00000878       ??_C@_04FCMIICJE@sdep?$AA@ 1001f878     RenderInterface.obj
+ 0002:00000880       ??_C@_0BF@DJADIADD@ShadowMapProjection0?$AA@ 1001f880     RenderInterface.obj
+ 0002:00000898       ??_C@_04MFFEODIA@smp0?$AA@ 1001f898     RenderInterface.obj
+ 0002:000008a0       ??_C@_0BF@CABILBHC@ShadowMapProjection1?$AA@ 1001f8a0     RenderInterface.obj
+ 0002:000008b8       ??_C@_04NMEPNCMB@smp1?$AA@ 1001f8b8     RenderInterface.obj
+ 0002:000008c0       ??_C@_0BF@LDFOCLB@ShadowMapProjection2?$AA@ 1001f8c0     RenderInterface.obj
+ 0002:000008d8       ??_C@_04PHGCIBAC@smp2?$AA@ 1001f8d8     RenderInterface.obj
+ 0002:000008e0       ??_C@_0BF@BCCONDPA@ShadowMapProjection3?$AA@ 1001f8e0     RenderInterface.obj
+ 0002:000008f8       ??_C@_04OOHJLAED@smp3?$AA@ 1001f8f8     RenderInterface.obj
+ 0002:00000900       ??_C@_0N@LEAHCDFL@HueVariation?$AA@ 1001f900     RenderInterface.obj
+ 0002:00000910       ??_C@_04PLAHLDHL@huev?$AA@ 1001f910     RenderInterface.obj
+ 0002:00000918       ??_C@_07CIFAGBMG@unknown?$AA@ 1001f918     RenderInterface.obj
+ 0002:00000920       ??_C@_01FJMABOPO@x?$AA@    1001f920     RenderInterface.obj
+ 0002:00000924       ??_C@_01EANLCPLP@y?$AA@    1001f924     RenderInterface.obj
+ 0002:00000928       ??_C@_01GLPGHMHM@z?$AA@    1001f928     RenderInterface.obj
+ 0002:0000092c       ??_C@_01NOFIACDB@w?$AA@    1001f92c     RenderInterface.obj
+ 0002:00000930       __real@3fb33333            1001f930     RenderInterface.obj
+ 0002:00000934       __real@3e4ccccd            1001f934     RenderInterface.obj
+ 0002:00000938       __real@41f00000            1001f938     RenderInterface.obj
+ 0002:0000093c       ??_C@_07BMBPNLPI@_shadow?$AA@ 1001f93c     RenderInterface.obj
+ 0002:00000944       ??_C@_06DFFKBLON@_zpass?$AA@ 1001f944     RenderInterface.obj
+ 0002:0000094c       ??_C@_08HABOCCI@_forward?$AA@ 1001f94c     RenderInterface.obj
+ 0002:00000958       ??_C@_04MFADHFCC@_s?$CFd?$AA@ 1001f958     RenderInterface.obj
+ 0002:00000960       ??_C@_09HABIKPNN@_deferred?$AA@ 1001f960     RenderInterface.obj
+ 0002:0000096c       ??_C@_05PNOBCIKB@_wind?$AA@ 1001f96c     RenderInterface.obj
+ 0002:00000974       ??_C@_05PLEHBCOF@_horz?$AA@ 1001f974     RenderInterface.obj
+ 0002:0000097c       ??_C@_09HJNFCLGI@billboard?$AA@ 1001f97c     RenderInterface.obj
+ 0002:00000988       ??_C@_02HCAKAFB@_w?$AA@    1001f988     RenderInterface.obj
+ 0002:0000098c       ??_C@_01LKDEMHDF@s?$AA@    1001f98c     RenderInterface.obj
+ 0002:0000098e       ??_C@_00CNPNBAHC@?$AA@     1001f98e     RenderInterface.obj
+ 0002:00000990       ??_C@_0N@POPKGOCJ@rigid_meshes?$AA@ 1001f990     RenderInterface.obj
+ 0002:000009a0       ??_C@_0O@DCGGFEMG@facing_leaves?$AA@ 1001f9a0     RenderInterface.obj
+ 0002:000009b0       ??_C@_06NGLEBKLK@leaves?$AA@ 1001f9b0     RenderInterface.obj
+ 0002:000009b8       ??_C@_0BA@PMCKECKB@fronds_and_caps?$AA@ 1001f9b8     RenderInterface.obj
+ 0002:000009c8       ??_C@_08PACHAMGK@branches?$AA@ 1001f9c8     RenderInterface.obj
+ 0002:000009d4       ??_C@_05JOBLOEL@grass?$AA@ 1001f9d4     RenderInterface.obj
+ 0002:000009dc       ??_C@_02HAOIJKIC@?$CFc?$AA@ 1001f9dc     RenderInterface.obj
+ 0002:000009e0       ??_C@_02DPKJAMEF@?$CFd?$AA@ 1001f9e0     RenderInterface.obj
+ 0002:000009e4       ??_C@_04LOCMGGPM@?$CFd?$CFs?$AA@ 1001f9e4     RenderInterface.obj
+ 0002:000009ec       ??_C@_02NJNOFBBI@?$CFx?$AA@ 1001f9ec     RenderInterface.obj
+ 0002:000009f0       ??_C@_04IHGKJMLH@byte?$AA@ 1001f9f0     RenderInterface.obj
+ 0002:000009f8       ??_C@_0L@MAEIDIIL@half?5float?$AA@ 1001f9f8     RenderInterface.obj
+ 0002:00000a04       ??_C@_0L@CNLLCONH@full?5float?$AA@ 1001fa04     RenderInterface.obj
+ 0002:00000a10       ??_C@_06DMPPPHJO@ATTR15?$AA@ 1001fa10     RenderInterface.obj
+ 0002:00000a18       ??_C@_06CFOEMGNP@ATTR14?$AA@ 1001fa18     RenderInterface.obj
+ 0002:00000a20       ??_C@_06GKKFFABI@ATTR13?$AA@ 1001fa20     RenderInterface.obj
+ 0002:00000a28       ??_C@_06HDLOGBFJ@ATTR12?$AA@ 1001fa28     RenderInterface.obj
+ 0002:00000a30       ??_C@_06FIJDDCJK@ATTR11?$AA@ 1001fa30     RenderInterface.obj
+ 0002:00000a38       ??_C@_06EBIIADNL@ATTR10?$AA@ 1001fa38     RenderInterface.obj
+ 0002:00000a40       ??_C@_05GCHJABAP@ATTR9?$AA@ 1001fa40     RenderInterface.obj
+ 0002:00000a48       ??_C@_05HLGCDAEO@ATTR8?$AA@ 1001fa48     RenderInterface.obj
+ 0002:00000a50       ??_C@_05PMPKCMIB@ATTR7?$AA@ 1001fa50     RenderInterface.obj
+ 0002:00000a58       ??_C@_05OFOBBNMA@ATTR6?$AA@ 1001fa58     RenderInterface.obj
+ 0002:00000a60       ??_C@_05MOMMEOAD@ATTR5?$AA@ 1001fa60     RenderInterface.obj
+ 0002:00000a68       ??_C@_05NHNHHPEC@ATTR4?$AA@ 1001fa68     RenderInterface.obj
+ 0002:00000a70       ??_C@_05JIJGOJIF@ATTR3?$AA@ 1001fa70     RenderInterface.obj
+ 0002:00000a78       ??_C@_05IBINNIME@ATTR2?$AA@ 1001fa78     RenderInterface.obj
+ 0002:00000a80       ??_C@_05KKKAILAH@ATTR1?$AA@ 1001fa80     RenderInterface.obj
+ 0002:00000a88       ??_C@_05LDLLLKEG@ATTR0?$AA@ 1001fa88     RenderInterface.obj
+ 0002:00000a90       ??_C@_07MNGEECKF@?$FN?5?$CI?$CFs?$CJ?6?$AA@ 1001fa90     RenderInterface.obj
+ 0002:00000a98       ??_C@_0L@KMGKLCBO@?$CFs?4?$CFs?$CI?$CFd?$CJ?5?$AA@ 1001fa98     RenderInterface.obj
+ 0002:00000aa4       ??_C@_07BAFKDPAL@?5?5?$CFs?5?$FL?5?$AA@ 1001faa4     RenderInterface.obj
+ 0002:00000aac       ??_C@_0O@BAKOBHGP@16?9bit?5floats?$AA@ 1001faac     RenderInterface.obj
+ 0002:00000abc       ??_C@_0O@DBHJLJFE@32?9bit?5floats?$AA@ 1001fabc     RenderInterface.obj
+ 0002:00000acc       ??_7?$CArray@D$00@SpeedTree@@6B@ 1001facc     RenderInterface.obj
+ 0002:00000ad0       __real@408f400000000000    1001fad0     RenderInterface.obj
+ 0002:00000ad8       __real@412e848000000000    1001fad8     RenderInterface.obj
+ 0002:00000ae0       ??_7?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@6B@ 1001fae0     RenderInterface.obj
+ 0002:00000ae4       ??_7?$CBlockPool@$00@SpeedTree@@6B@ 1001fae4     RenderInterface.obj
+ 0002:00000ae8       ??_7?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@6B@ 1001fae8     RenderInterface.obj
+ 0002:00000aec       ??_7?$CArray@PBUSTreeInstance@SpeedTree@@$00@SpeedTree@@6B@ 1001faec     RenderInterface.obj
+ 0002:00000af0       ??_7?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@6B@ 1001faf0     RenderInterface.obj
+ 0002:00000af4       ??_7?$CArray@US3dTreeInstanceLod@SpeedTree@@$00@SpeedTree@@6B@ 1001faf4     RenderInterface.obj
+ 0002:00000af8       ??_7?$CArray@PAUSInstance@SpeedTree@@$00@SpeedTree@@6B@ 1001faf8     RenderInterface.obj
+ 0002:00000afc       ??_7?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@6B@ 1001fafc     RenderInterface.obj
+ 0002:00000b00       ??_7?$CArray@PAUSHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@$00@SpeedTree@@6B@ 1001fb00     RenderInterface.obj
+ 0002:00000b04       ??_7?$CArray@PAVCCell@SpeedTree@@$00@SpeedTree@@6B@ 1001fb04     RenderInterface.obj
+ 0002:00000b08       ??_7?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@6B@ 1001fb08     RenderInterface.obj
+ 0002:00000b0c       ??_7?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@6B@ 1001fb0c     RenderInterface.obj
+ 0002:00000b10       ??_7CVisibleInstances@SpeedTree@@6B@ 1001fb10     RenderInterface.obj
+ 0002:00000b20       ??_7CForest@SpeedTree@@6B@ 1001fb20     RenderInterface.obj
+ 0002:00000b28       __real@42700000            1001fb28     RenderInterface.obj
+ 0002:00000b30       __real@3f91df46a0000000    1001fb30     RenderInterface.obj
+ 0002:00000b38       __real@42c80000            1001fb38     RenderInterface.obj
+ 0002:00000b3c       ??_7?$CArray@PAVCCore@SpeedTree@@$00@SpeedTree@@6B@ 1001fb3c     RenderInterface.obj
+ 0002:00000b40       __real@3d088889            1001fb40     RenderInterface.obj
+ 0002:00000b44       ??_C@_0CJ@OJOEBMGP@CVisibleInstances?3?3m_aPerBase3dI@ 1001fb44     RenderInterface.obj
+ 0002:00000b70       ??_C@_0BI@HGEOPKJJ@CVisibleInstances?3?3CMap?$AA@ 1001fb70     RenderInterface.obj
+ 0002:00000b88       ??_C@_0BK@LAIINKBF@CVisibleInstances?3?3CArray?$AA@ 1001fb88     RenderInterface.obj
+ 0002:00000ba4       ??_7?$CBasicFixedString@$0IAA@@SpeedTree@@6B@ 1001fba4     RenderInterface.obj
+ 0002:00000ba8       ??_7?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@6B@ 1001fba8     RenderInterface.obj
+ 0002:00000bac       ??_7?$CArray@E$00@SpeedTree@@6B@ 1001fbac     RenderInterface.obj
+ 0002:00000bb0       ??_7?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@6B@ 1001fbb0     RenderInterface.obj
+ 0002:00000bb4       ??_7?$CArray@M$00@SpeedTree@@6B@ 1001fbb4     RenderInterface.obj
+ 0002:00000bb8       __real@3e800000            1001fbb8     RenderInterface.obj
+ 0002:00000bbc       __real@43480000            1001fbbc     RenderInterface.obj
+ 0002:00000bc0       __real@3a83126f            1001fbc0     RenderInterface.obj
+ 0002:00000bc4       __real@3f59999a            1001fbc4     RenderInterface.obj
+ 0002:00000bc8       __real@bf000000            1001fbc8     RenderInterface.obj
+ 0002:00000bcc       __real@3e99999a            1001fbcc     RenderInterface.obj
+ 0002:00000bd0       __real@459c4000            1001fbd0     RenderInterface.obj
+ 0002:00000bd4       __real@451c4000            1001fbd4     RenderInterface.obj
+ 0002:00000bd8       __real@447a0000            1001fbd8     RenderInterface.obj
+ 0002:00000bdc       ??_C@_0BL@PMEPEGII@CRenderStats?3?3CRenderStats?$AA@ 1001fbdc     RenderInterface.obj
+ 0002:00000bf8       ??_7?$CBasicString@$00@SpeedTree@@6B@ 1001fbf8     RenderInterface.obj
+ 0002:00000bfc       ??_C@_0CA@KIJLNFIB@CCellHeapMgr?3?3m_aAvailableCells?$AA@ 1001fbfc     RenderInterface.obj
+ 0002:00000c1c       ??_C@_0BM@KBJIHPLF@CCellHeapMgr?3?3m_aHeapBlocks?$AA@ 1001fc1c     RenderInterface.obj
+ 0002:00000c38       ??_7?$CArray@PAX$00@SpeedTree@@6B@ 1001fc38     RenderInterface.obj
+ 0002:00000c3c       ??_C@_07BCIIEJAJ@CString?$AA@ 1001fc3c     RenderInterface.obj
+ 0002:00000c44       ??_C@_06CGLICOLM@CArray?$AA@ 1001fc44     RenderInterface.obj
+ 0002:00000c4c       ??_C@_0CM@FGHLGOMJ@CArray?5?$CISDK?9side?5grass?5instance?5@ 1001fc4c     RenderInterface.obj
+ 0002:00000c78       ??_C@_0CL@GBENDBLN@CArray?5?$CISDK?9side?5tree?5instance?5p@ 1001fc78     RenderInterface.obj
+ 0002:00000ca4       ??_C@_0BJ@BFHKOEIJ@CCellHeapMgr?3?3SHeapBlock?$AA@ 1001fca4     RenderInterface.obj
+ 0002:00000cc0       ??_C@_0BM@FFHAOGJJ@CCellHeapMgr?3?3m_aCellBuffer?$AA@ 1001fcc0     RenderInterface.obj
+ 0002:00000cdc       ??_C@_0CB@NDCLJBMA@CCellHeapMgr?3?3m_aGrassInstBuffer@ 1001fcdc     RenderInterface.obj
+ 0002:00000d00       ??_C@_0L@PLPJAPAO@CBlockPool?$AA@ 1001fd00     RenderInterface.obj
+ 0002:00000d0c       __pDefaultRawDllMain       1001fd0c     MSVCRT:crtdll.obj
+ 0002:00000d0c       __pRawDllMain              1001fd0c     MSVCRT:crtdll.obj
+ 0002:00000d18       ?ProcessDetach@NativeDll@<CrtImplementationDetails>@@0IB 1001fd18     MSVCRT:tncleanup.obj
+ 0002:00000d1c       ?ProcessAttach@NativeDll@<CrtImplementationDetails>@@0IB 1001fd1c     MSVCRT:tncleanup.obj
+ 0002:00000d20       ?ThreadAttach@NativeDll@<CrtImplementationDetails>@@0IB 1001fd20     MSVCRT:tncleanup.obj
+ 0002:00000d24       ?ThreadDetach@NativeDll@<CrtImplementationDetails>@@0IB 1001fd24     MSVCRT:tncleanup.obj
+ 0002:00000d28       ?ProcessVerifier@NativeDll@<CrtImplementationDetails>@@0IB 1001fd28     MSVCRT:tncleanup.obj
+ 0002:00000d30       __load_config_used         1001fd30     MSVCRT:loadcfg.obj
+ 0002:00000e20       ___safe_se_handler_table   1001fe20     <linker-defined>
+ 0002:00000f00       ___rtc_iaa                 1001ff00     MSVCRT:_initsect_.obj
+ 0002:00000f04       ___rtc_izz                 1001ff04     MSVCRT:_initsect_.obj
+ 0002:00000f08       ___rtc_taa                 1001ff08     MSVCRT:_initsect_.obj
+ 0002:00000f0c       ___rtc_tzz                 1001ff0c     MSVCRT:_initsect_.obj
+ 0002:00001a9c       __IMPORT_DESCRIPTOR_SpeedTreeForest_Windows_v7.1 10020a9c     SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0002:00001ab0       __IMPORT_DESCRIPTOR_SpeedTreeCore_Windows_v7.1 10020ab0     SpeedTreeCore_Windows_v7.1_VS2008_MTDLL:SpeedTreeCore_Windows_v7.1.dll
+ 0002:00001ac4       __IMPORT_DESCRIPTOR_KERNEL32 10020ac4     kernel32:KERNEL32.dll
+ 0002:00001ad8       __IMPORT_DESCRIPTOR_MSVCR90 10020ad8     MSVCRT:MSVCR90.dll
+ 0002:00001aec       __NULL_IMPORT_DESCRIPTOR   10020aec     SpeedTreeForest_Windows_v7.1_VS2008_MTDLL:SpeedTreeForest_Windows_v7.1.dll
+ 0003:00000008       ?asNames@?4??ComponentName@CCore@SpeedTree@@SAPBDH@Z@4PAPBDA 1002e008     RenderInterface.obj
+ 0003:00000020       ___security_cookie         1002e020     MSVCRT:gs_cookie.obj
+ 0003:00000024       ___security_cookie_complement 1002e024     MSVCRT:gs_cookie.obj
+ 0003:00000028       ___native_dllmain_reason   1002e028     MSVCRT:natstart.obj
+ 0003:0000002c       ___native_vcclrit_reason   1002e02c     MSVCRT:natstart.obj
+ 0003:000003fc       __forceCRTManifestRTM      1002e3fc     MSVCRT:crtmanifestrtm.obj
+ 0003:00000400       ?__type_info_root_node@@3U__type_info_node@@A 1002e400     MSVCRT:tncleanup.obj
+ 0003:00000408       __adjust_fdiv              1002e408     <common>
+ 0003:0000040c       ___native_startup_state    1002e40c     <common>
+ 0003:00000410       ___native_startup_lock     1002e410     <common>
+ 0003:00000414       ___onexitend               1002e414     <common>
+ 0003:00000418       ___onexitbegin             1002e418     <common>
+ 0003:0000041c       ___sse2_available          1002e41c     <common>
+ 0003:00000420       ___dyn_tls_init_callback   1002e420     <common>
+
+ entry point at        0001:0001c3ec
+
+ Static symbols
+
+ 0001:0001be06       ?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z 1001ce06 f   MSVCRT:ehvecdtr.obj
+ 0001:0001c061       _pre_c_init                1001d061 f   MSVCRT:crtdll.obj
+ 0001:0001c2d6       ___DllMainCRTStartup       1001d2d6 f   MSVCRT:crtdll.obj
+ 0001:0001c49a       _has_osfxsr_set            1001d49a f   MSVCRT:cpu_disp.obj
+ 0001:0001ca40       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 1001da40 f   RenderInterface.obj
+ 0001:0001ca53       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 1001da53 f   RenderInterface.obj
+ 0001:0001ca70       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 1001da70 f   RenderInterface.obj
+ 0001:0001ca7b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1001da7b f   RenderInterface.obj
+ 0001:0001ca86       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 1001da86 f   RenderInterface.obj
+ 0001:0001ca91       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 1001da91 f   RenderInterface.obj
+ 0001:0001ca9c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1001da9c f   RenderInterface.obj
+ 0001:0001caa7       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 1001daa7 f   RenderInterface.obj
+ 0001:0001cab2       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 1001dab2 f   RenderInterface.obj
+ 0001:0001cabd       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1001dabd f   RenderInterface.obj
+ 0001:0001cac8       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 1001dac8 f   RenderInterface.obj
+ 0001:0001cad3       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 1001dad3 f   RenderInterface.obj
+ 0001:0001cb00       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 1001db00 f   RenderInterface.obj
+ 0001:0001cb0b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1001db0b f   RenderInterface.obj
+ 0001:0001cb40       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 1001db40 f   RenderInterface.obj
+ 0001:0001cb4b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1001db4b f   RenderInterface.obj
+ 0001:0001cb56       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 1001db56 f   RenderInterface.obj
+ 0001:0001cb61       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 1001db61 f   RenderInterface.obj
+ 0001:0001cb6c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1001db6c f   RenderInterface.obj
+ 0001:0001cb77       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 1001db77 f   RenderInterface.obj
+ 0001:0001cba0       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 1001dba0 f   RenderInterface.obj
+ 0001:0001cbab       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1001dbab f   RenderInterface.obj
+ 0001:0001cbb6       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 1001dbb6 f   RenderInterface.obj
+ 0001:0001cbc1       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 1001dbc1 f   RenderInterface.obj
+ 0001:0001cbf0       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 1001dbf0 f   RenderInterface.obj
+ 0001:0001cbfb       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1001dbfb f   RenderInterface.obj
+ 0001:0001cc06       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 1001dc06 f   RenderInterface.obj
+ 0001:0001cc11       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 1001dc11 f   RenderInterface.obj
+ 0001:0001cc1c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1001dc1c f   RenderInterface.obj
+ 0001:0001cc27       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 1001dc27 f   RenderInterface.obj
+ 0001:0001cc32       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 1001dc32 f   RenderInterface.obj
+ 0001:0001cc60       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 1001dc60 f   RenderInterface.obj
+ 0001:0001cc6b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1001dc6b f   RenderInterface.obj
+ 0001:0001cca0       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 1001dca0 f   RenderInterface.obj
+ 0001:0001ccab       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1001dcab f   RenderInterface.obj
+ 0001:0001ccc4       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 1001dcc4 f   RenderInterface.obj
+ 0001:0001ccd2       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 1001dcd2 f   RenderInterface.obj
+ 0001:0001cce0       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 1001dce0 f   RenderInterface.obj
+ 0001:0001cd00       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 1001dd00 f   RenderInterface.obj
+ 0001:0001cd0b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1001dd0b f   RenderInterface.obj
+ 0001:0001cd30       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 1001dd30 f   RenderInterface.obj
+ 0001:0001cd38       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 1001dd38 f   RenderInterface.obj
+ 0001:0001cd40       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 1001dd40 f   RenderInterface.obj
+ 0001:0001cd48       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 1001dd48 f   RenderInterface.obj
+ 0001:0001cd70       __unwindfunclet$??_G?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z$0 1001dd70 f   RenderInterface.obj
+ 0001:0001cd7b       __ehhandler$??_G?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1001dd7b f   RenderInterface.obj
+ 0001:0001cda0       __unwindfunclet$??_E?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z$0 1001dda0 f   RenderInterface.obj
+ 0001:0001cdab       __ehhandler$??_E?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1001ddab f   RenderInterface.obj
+ 0001:0001cdd0       __unwindfunclet$??1SDetailedCullData@SpeedTree@@QAE@XZ$0 1001ddd0 f   RenderInterface.obj
+ 0001:0001cddb       __ehhandler$??1SDetailedCullData@SpeedTree@@QAE@XZ 1001dddb f   RenderInterface.obj
+ 0001:0001ce00       __unwindfunclet$??0SDetailedCullData@SpeedTree@@QAE@ABU01@@Z$0 1001de00 f   RenderInterface.obj
+ 0001:0001ce0e       __ehhandler$??0SDetailedCullData@SpeedTree@@QAE@ABU01@@Z 1001de0e f   RenderInterface.obj
+ 0001:0001ce30       __unwindfunclet$??0?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABV01@@Z$0 1001de30 f   RenderInterface.obj
+ 0001:0001ce3e       __ehhandler$??0?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABV01@@Z 1001de3e f   RenderInterface.obj
+ 0001:0001ce60       __unwindfunclet$??_G?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z$0 1001de60 f   RenderInterface.obj
+ 0001:0001ce6b       __ehhandler$??_G?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1001de6b f   RenderInterface.obj
+ 0001:0001ce90       __unwindfunclet$??_E?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z$0 1001de90 f   RenderInterface.obj
+ 0001:0001ce9b       __ehhandler$??_E?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAEPAXI@Z 1001de9b f   RenderInterface.obj
+ 0001:0001cec0       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z$0 1001dec0 f   RenderInterface.obj
+ 0001:0001cecb       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z$1 1001decb f   RenderInterface.obj
+ 0001:0001ced6       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z$2 1001ded6 f   RenderInterface.obj
+ 0001:0001cee1       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z$3 1001dee1 f   RenderInterface.obj
+ 0001:0001ceef       __ehhandler$??0CVisibleInstances@SpeedTree@@QAE@ABV01@@Z 1001deef f   RenderInterface.obj
+ 0001:0001cf10       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@W4EPopulationType@1@_N@Z$0 1001df10 f   RenderInterface.obj
+ 0001:0001cf1b       __unwindfunclet$??0CVisibleInstances@SpeedTree@@QAE@W4EPopulationType@1@_N@Z$1 1001df1b f   RenderInterface.obj
+ 0001:0001cf26       __ehhandler$??0CVisibleInstances@SpeedTree@@QAE@W4EPopulationType@1@_N@Z 1001df26 f   RenderInterface.obj
+ 0001:0001cf50       __unwindfunclet$??1CVisibleInstances@SpeedTree@@UAE@XZ$0 1001df50 f   RenderInterface.obj
+ 0001:0001cf5b       __unwindfunclet$??1CVisibleInstances@SpeedTree@@UAE@XZ$1 1001df5b f   RenderInterface.obj
+ 0001:0001cf66       __unwindfunclet$??1CVisibleInstances@SpeedTree@@UAE@XZ$2 1001df66 f   RenderInterface.obj
+ 0001:0001cf71       __unwindfunclet$??1CVisibleInstances@SpeedTree@@UAE@XZ$3 1001df71 f   RenderInterface.obj
+ 0001:0001cf7f       __unwindfunclet$??1CVisibleInstances@SpeedTree@@UAE@XZ$5 1001df7f f   RenderInterface.obj
+ 0001:0001cf8a       __ehhandler$??1CVisibleInstances@SpeedTree@@UAE@XZ 1001df8a f   RenderInterface.obj
+ 0001:0001cfb0       __unwindfunclet$?ComputeCullParameters@STreeInstance@SpeedTree@@QAEXXZ$0 1001dfb0 f   RenderInterface.obj
+ 0001:0001cfb8       __ehhandler$?ComputeCullParameters@STreeInstance@SpeedTree@@QAEXXZ 1001dfb8 f   RenderInterface.obj
+ 0001:0001cfe0       __unwindfunclet$??0CRenderStats@SpeedTree@@QAE@XZ$0 1001dfe0 f   RenderInterface.obj
+ 0001:0001cfee       __ehhandler$??0CRenderStats@SpeedTree@@QAE@XZ 1001dfee f   RenderInterface.obj
+ 0001:0001d010       __unwindfunclet$?GetObjectStats@CRenderStats@SpeedTree@@QAEAAUSObjectStats@12@ABV?$CBasicFixedString@$0BAA@@2@@Z$0 1001e010 f   RenderInterface.obj
+ 0001:0001d01b       __ehhandler$?GetObjectStats@CRenderStats@SpeedTree@@QAEAAUSObjectStats@12@ABV?$CBasicFixedString@$0BAA@@2@@Z 1001e01b f   RenderInterface.obj
+ 0001:0001d050       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 1001e050 f   RenderInterface.obj
+ 0001:0001d05b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1001e05b f   RenderInterface.obj
+ 0001:0001d090       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z$0 1001e090 f   RenderInterface.obj
+ 0001:0001d09b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 1001e09b f   RenderInterface.obj
+ 0001:0001d0d0       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 1001e0d0 f   RenderInterface.obj
+ 0001:0001d0db       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1001e0db f   RenderInterface.obj
+ 0001:0001d110       __unwindfunclet$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z$0 1001e110 f   RenderInterface.obj
+ 0001:0001d11b       __ehhandler$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 1001e11b f   RenderInterface.obj
+ 0001:0001d150       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 1001e150 f   RenderInterface.obj
+ 0001:0001d158       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 1001e158 f   RenderInterface.obj
+ 0001:0001d180       __unwindfunclet$??1?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ$0 1001e180 f   RenderInterface.obj
+ 0001:0001d18b       __ehhandler$??1?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ 1001e18b f   RenderInterface.obj
+ 0001:0001d1b0       __unwindfunclet$??1?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ$0 1001e1b0 f   RenderInterface.obj
+ 0001:0001d1be       __unwindfunclet$??1?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ$1 1001e1be f   RenderInterface.obj
+ 0001:0001d1cc       __ehhandler$??1?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ 1001e1cc f   RenderInterface.obj
+ 0001:0001d1f0       __unwindfunclet$??0?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@ABV01@@Z$0 1001e1f0 f   RenderInterface.obj
+ 0001:0001d1fe       __ehhandler$??0?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAE@ABV01@@Z 1001e1fe f   RenderInterface.obj
+ 0001:0001d220       __unwindfunclet$??1?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ$0 1001e220 f   RenderInterface.obj
+ 0001:0001d22b       __ehhandler$??1?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@UAE@XZ 1001e22b f   RenderInterface.obj
+ 0001:0001d250       __unwindfunclet$??4?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z$0 1001e250 f   RenderInterface.obj
+ 0001:0001d258       __unwindfunclet$??4?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z$1 1001e258 f   RenderInterface.obj
+ 0001:0001d260       __ehhandler$??4?$CMap@USRowCol@SpeedTree@@PAVCCell@2@V?$CLess@USRowCol@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z 1001e260 f   RenderInterface.obj
+ 0001:0001d280       __unwindfunclet$??1SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ$0 1001e280 f   RenderInterface.obj
+ 0001:0001d288       __ehhandler$??1SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@XZ 1001e288 f   RenderInterface.obj
+ 0001:0001d2b0       __unwindfunclet$??0SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABU012@@Z$0 1001e2b0 f   RenderInterface.obj
+ 0001:0001d2b8       __ehhandler$??0SHeapBlock@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@QAE@ABU012@@Z 1001e2b8 f   RenderInterface.obj
+ 0001:0001d2e0       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 1001e2e0 f   RenderInterface.obj
+ 0001:0001d2e8       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 1001e2e8 f   RenderInterface.obj
+ 0001:0001d310       __unwindfunclet$??4?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z$0 1001e310 f   RenderInterface.obj
+ 0001:0001d318       __unwindfunclet$??4?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z$1 1001e318 f   RenderInterface.obj
+ 0001:0001d320       __ehhandler$??4?$CMap@PBVCCore@SpeedTree@@V?$CArray@USInstance@SpeedTree@@$00@2@V?$CLess@PBVCCore@SpeedTree@@@2@$00@SpeedTree@@QAEAAV01@ABV01@@Z 1001e320 f   RenderInterface.obj
+ 0001:0001d340       __unwindfunclet$?SetExternalMemory@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e340 f   RenderInterface.obj
+ 0001:0001d35a       __ehhandler$?SetExternalMemory@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e35a f   RenderInterface.obj
+ 0001:0001d380       __unwindfunclet$?SetExternalMemory@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e380 f   RenderInterface.obj
+ 0001:0001d39d       __ehhandler$?SetExternalMemory@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e39d f   RenderInterface.obj
+ 0001:0001d3c0       __unwindfunclet$??0CCell@SpeedTree@@QAE@XZ$0 1001e3c0 f   RenderInterface.obj
+ 0001:0001d3c8       __ehhandler$??0CCell@SpeedTree@@QAE@XZ 1001e3c8 f   RenderInterface.obj
+ 0001:0001d3f0       __unwindfunclet$??1CCell@SpeedTree@@QAE@XZ$0 1001e3f0 f   RenderInterface.obj
+ 0001:0001d3f8       __unwindfunclet$??1CCell@SpeedTree@@QAE@XZ$1 1001e3f8 f   RenderInterface.obj
+ 0001:0001d403       __unwindfunclet$??1CCell@SpeedTree@@QAE@XZ$2 1001e403 f   RenderInterface.obj
+ 0001:0001d40e       __unwindfunclet$??1CCell@SpeedTree@@QAE@XZ$5 1001e40e f   RenderInterface.obj
+ 0001:0001d419       __ehhandler$??1CCell@SpeedTree@@QAE@XZ 1001e419 f   RenderInterface.obj
+ 0001:0001d440       __unwindfunclet$?Allocate@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@IAEPAVCCell@2@I@Z$0 1001e440 f   RenderInterface.obj
+ 0001:0001d44b       __ehhandler$?Allocate@?$CArray@VCCell@SpeedTree@@$00@SpeedTree@@IAEPAVCCell@2@I@Z 1001e44b f   RenderInterface.obj
+ 0001:0001d470       __unwindfunclet$?Grow@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@AAEXXZ$0 1001e470 f   RenderInterface.obj
+ 0001:0001d481       __ehhandler$?Grow@?$CCellHeapMgr@VCCell@SpeedTree@@@SpeedTree@@AAEXXZ 1001e481 f   RenderInterface.obj
+ 0001:0001d4a0       __unwindfunclet$?SetExternalMemory@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e4a0 f   RenderInterface.obj
+ 0001:0001d4ba       __ehhandler$?SetExternalMemory@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e4ba f   RenderInterface.obj
+ 0001:0001d4e0       __unwindfunclet$?Allocate@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@IAEPAUSDetailedCullData@2@I@Z$0 1001e4e0 f   RenderInterface.obj
+ 0001:0001d4eb       __ehhandler$?Allocate@?$CArray@USDetailedCullData@SpeedTree@@$00@SpeedTree@@IAEPAUSDetailedCullData@2@I@Z 1001e4eb f   RenderInterface.obj
+ 0001:0001d510       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e510 f   RenderInterface.obj
+ 0001:0001d52d       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e52d f   RenderInterface.obj
+ 0001:0001d550       __unwindfunclet$?SetExternalMemory@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e550 f   RenderInterface.obj
+ 0001:0001d56d       __ehhandler$?SetExternalMemory@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e56d f   RenderInterface.obj
+ 0001:0001d590       __unwindfunclet$?Allocate@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@IAEPAUSObjectStats@CRenderStats@2@I@Z$0 1001e590 f   RenderInterface.obj
+ 0001:0001d59b       __ehhandler$?Allocate@?$CArray@USObjectStats@CRenderStats@SpeedTree@@$00@SpeedTree@@IAEPAUSObjectStats@CRenderStats@2@I@Z 1001e59b f   RenderInterface.obj
+ 0001:0001d5c0       __unwindfunclet$?Allocate@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@IAEPAUSInstance@2@I@Z$0 1001e5c0 f   RenderInterface.obj
+ 0001:0001d5cb       __ehhandler$?Allocate@?$CArray@USInstance@SpeedTree@@$00@SpeedTree@@IAEPAUSInstance@2@I@Z 1001e5cb f   RenderInterface.obj
+ 0001:0001d5f0       __unwindfunclet$??$st_new_array@VCCell@SpeedTree@@@SpeedTree@@YAPAVCCell@0@IPBDW4EAllocationType@0@@Z$0 1001e5f0 f   RenderInterface.obj
+ 0001:0001d60a       __ehhandler$??$st_new_array@VCCell@SpeedTree@@@SpeedTree@@YAPAVCCell@0@IPBDW4EAllocationType@0@@Z 1001e60a f   RenderInterface.obj
+ 0001:0001d630       __unwindfunclet$??$st_new_array@USDetailedCullData@SpeedTree@@@SpeedTree@@YAPAUSDetailedCullData@0@IPBDW4EAllocationType@0@@Z$0 1001e630 f   RenderInterface.obj
+ 0001:0001d647       __ehhandler$??$st_new_array@USDetailedCullData@SpeedTree@@@SpeedTree@@YAPAUSDetailedCullData@0@IPBDW4EAllocationType@0@@Z 1001e647 f   RenderInterface.obj
+ 0001:0001d670       __unwindfunclet$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z$0 1001e670 f   RenderInterface.obj
+ 0001:0001d67b       __ehhandler$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 1001e67b f   RenderInterface.obj
+ 0001:0001d6a0       __unwindfunclet$??$st_new_array@USObjectStats@CRenderStats@SpeedTree@@@SpeedTree@@YAPAUSObjectStats@CRenderStats@0@IPBDW4EAllocationType@0@@Z$0 1001e6a0 f   RenderInterface.obj
+ 0001:0001d6ba       __ehhandler$??$st_new_array@USObjectStats@CRenderStats@SpeedTree@@@SpeedTree@@YAPAUSObjectStats@CRenderStats@0@IPBDW4EAllocationType@0@@Z 1001e6ba f   RenderInterface.obj
+ 0001:0001d6e0       __unwindfunclet$??$st_new_array@USInstance@SpeedTree@@@SpeedTree@@YAPAUSInstance@0@IPBDW4EAllocationType@0@@Z$0 1001e6e0 f   RenderInterface.obj
+ 0001:0001d6f7       __ehhandler$??$st_new_array@USInstance@SpeedTree@@@SpeedTree@@YAPAUSInstance@0@IPBDW4EAllocationType@0@@Z 1001e6f7 f   RenderInterface.obj
+ 0001:0001d720       __unwindfunclet$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z$0 1001e720 f   RenderInterface.obj
+ 0001:0001d73a       __ehhandler$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 1001e73a f   RenderInterface.obj
+ 0001:0001d760       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001e760 f   RenderInterface.obj
+ 0001:0001d780       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001e780 f   RenderInterface.obj
+ 0001:0001d7b0       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001e7b0 f   RenderInterface.obj
+ 0001:0001d7d0       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001e7d0 f   RenderInterface.obj
+ 0001:0001d7f0       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001e7f0 f   RenderInterface.obj
+ 0001:0001d810       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001e810 f   RenderInterface.obj
+ 0001:0001d830       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001e830 f   RenderInterface.obj
+ 0001:0001d850       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001e850 f   RenderInterface.obj
+ 0001:0001d880       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001e880 f   RenderInterface.obj
+ 0001:0001d8a0       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001e8a0 f   RenderInterface.obj
+ 0001:0001d8c0       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001e8c0 f   RenderInterface.obj

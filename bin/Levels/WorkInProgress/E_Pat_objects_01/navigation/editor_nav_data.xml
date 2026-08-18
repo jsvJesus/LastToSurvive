@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<build_config>
+	<cell_size val="0.254737" />
+	<cell_height val="0.744737" />
+	<walkable_slope_angle val="45" />
+	<agent_height val="2" />
+	<agent_radius val="0.6" />
+	<agent_max_climb val="0.9" />
+</build_config>
+<convex>
+	<point x="1656.55" y="255.719" />
+	<point x="1505.19" y="442.658" />
+	<point x="1402.33" y="373.747" />
+	<point x="1390.68" y="156.063" />
+	<point x="1416.14" y="139.901" />
+	<point x="1500.81" y="147.155" />
+</convex>

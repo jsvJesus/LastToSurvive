@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup><Filter Include="Public"><UniqueIdentifier>{2B5AC532-0547-4852-BF10-BF72E49E433F}</UniqueIdentifier></Filter><Filter Include="Private"><UniqueIdentifier>{5AF951E1-10F1-46D4-95C8-95D1276E32CD}</UniqueIdentifier></Filter></ItemGroup>
+  <ItemGroup><ClInclude Include="Public\Navigation\NavigationAgent.h"><Filter>Public</Filter></ClInclude><ClInclude Include="Public\Navigation\NavigationMesh.h"><Filter>Public</Filter></ClInclude></ItemGroup>
+  <ItemGroup><ClCompile Include="Private\NavigationAgent.cpp"><Filter>Private</Filter></ClCompile><ClCompile Include="Private\NavigationMesh.cpp"><Filter>Private</Filter></ClCompile></ItemGroup>
+</Project>

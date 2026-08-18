@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AmmoArmory>
+  <Item itemID="462901" category="40" Weight="5" FNAME="$Pistol_Ammo9mm" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_9mm.sco" />
+    <Store name="$AmmoBox_HG_SMG_HP" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_9mm.dds" desc="$AmmoBox_HG_SMG_HP_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462904" category="40" Weight="5" FNAME="$Pistol_Ammo45" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_45.sco" />
+    <Store name="$AmmoBox_HG_HP" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_45.dds" desc="$AmmoBox_HG_HP_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462906" category="40" Weight="5" FNAME="$Pistol_Ammo50" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_45.sco" />
+    <Store name="$AmmoBox_HG_AP" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_45.dds" desc="$AmmoBox_HG_AP_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462908" category="40" Weight="5" FNAME="$ASR_Ammo" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_556.sco" />
+    <Store name="$AmmoBox_ASR_HP" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_556.dds" desc="$AmmoBox_ASR_HP_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462914" category="40" Weight="5" FNAME="$Shotgun_Ammo" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_ShotGun.sco" />
+    <Store name="$AmmoBox_ShotGun_Buckshot" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_ShotGun.dds" desc="$AmmoBox_ShotGun_Buckshot_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462926" category="40" Weight="5" FNAME="$Sniper_Ammo" NewChar="1">
+    <Model file="Data/ObjectsDepot/SS_Ammo/AmmoBox_762.sco" />
+    <Store name="$SniperRound_MLR" icon="$Data/ObjectsDepot/SS_Ammo/StoreIcons/AmmoBox_762.dds" desc="$SniperRound_MLR_desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462936" category="40" Weight="5" FNAME="$AT4_Ammo" NewChar="1">
+    <Model file="Data/ObjectsDepot/ROTB_Consumables/AmmoBox_Rocket.sco" />
+    <Store name="$AT4_Rocket_Base" icon="$Data/ObjectsDepot/ROTB_Consumables/StoreIcons/AmmoBox_Rocket.dds" desc="$AT4_Rocket_Base_Desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+  <Item itemID="462944" category="40" Weight="5" FNAME="$RPG7_Ammo" NewChar="1">
+    <Model file="Data/ObjectsDepot/ROTB_Consumables/AmmoBox_Rocket.sco" />
+    <Store name="$RPG7_Rocket_Base" icon="$Data/ObjectsDepot/ROTB_Consumables/StoreIcons/AmmoBox_Rocket.dds" desc="$RPG7_Rocket_Base_Desc" gameMode="0" />
+    <Upgrade clipsize="5000" />
+  </Item>
+</AmmoArmory>

@@ -1,11 +1,38 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "RmlFileInterface.h"
+
+#include <Core/Log.h>
+#include <Platform/File.h>
 
 #include <windows.h>
 #include <cstdio>
+#include <cstdint>
+#include <memory>
+#include <optional>
+#include <string_view>
 #include <vector>
+
+namespace
+{
+	constexpr std::string_view LogCategory =
+		"RmlUI.File";
+
+	engine::platform::FileSeekOrigin ResolveSeekOrigin(
+		const int Origin)
+	{
+		switch (Origin)
+		{
+			case SEEK_CUR:
+				return engine::platform::FileSeekOrigin::Current;
+
+			case SEEK_END:
+				return engine::platform::FileSeekOrigin::End;
+
+			case SEEK_SET:
+			default:
+				return engine::platform::FileSeekOrigin::Begin;
+		}
+	}
+}
 
 RmlFileInterface::RmlFileInterface(
 	const wchar_t* InDataRoot
@@ -316,35 +343,32 @@ Rml::FileHandle RmlFileInterface::Open(
 			path
 		);
 
-	FILE* File = nullptr;
+	auto File =
+		std::make_unique<engine::platform::File>(
+			engine::platform::Path(FullPath),
+			engine::platform::FileAccess::Read,
+			engine::platform::FileCreation::OpenExisting);
 
-	_wfopen_s(
-		&File,
-		FullPath.c_str(),
-		L"rb"
-	);
-
-	if (!File)
+	if (!File->IsOpen())
 	{
 		std::string Text =
-			"[RmlUI][File] Failed to open: ";
+			"Failed to open: ";
 
 		Text +=
 			WideToUtf8(
 				FullPath
 			);
 
-		Text += "\n";
-
-		OutputDebugStringA(
-			Text.c_str()
-		);
+		engine::core::GetLogger().Write(
+			engine::core::LogLevel::Error,
+			LogCategory,
+			Text);
 
 		return 0;
 	}
 
 	return reinterpret_cast<Rml::FileHandle>(
-		File
+		File.release()
 	);
 }
 
@@ -355,14 +379,12 @@ void RmlFileInterface::Close(
 	if (!file)
 		return;
 
-	FILE* File =
-		reinterpret_cast<FILE*>(
+	engine::platform::File* File =
+		reinterpret_cast<engine::platform::File*>(
 			file
 		);
 
-	fclose(
-		File
-	);
+	delete File;
 }
 
 size_t RmlFileInterface::Read(
@@ -380,17 +402,17 @@ size_t RmlFileInterface::Read(
 		return 0;
 	}
 
-	FILE* File =
-		reinterpret_cast<FILE*>(
+	engine::platform::File* File =
+		reinterpret_cast<engine::platform::File*>(
 			file
 		);
 
-	return fread(
-		buffer,
-		1,
-		size,
-		File
-	);
+	const engine::platform::FileIoResult Result =
+		File->Read(
+			buffer,
+			size);
+
+	return Result.bytesTransferred;
 }
 
 bool RmlFileInterface::Seek(
@@ -402,16 +424,14 @@ bool RmlFileInterface::Seek(
 	if (!file)
 		return false;
 
-	FILE* File =
-		reinterpret_cast<FILE*>(
+	engine::platform::File* File =
+		reinterpret_cast<engine::platform::File*>(
 			file
 		);
 
-	return fseek(
-		File,
+	return File->Seek(
 		offset,
-		origin
-	) == 0;
+		ResolveSeekOrigin(origin));
 }
 
 size_t RmlFileInterface::Tell(
@@ -421,20 +441,18 @@ size_t RmlFileInterface::Tell(
 	if (!file)
 		return 0;
 
-	FILE* File =
-		reinterpret_cast<FILE*>(
+	engine::platform::File* File =
+		reinterpret_cast<engine::platform::File*>(
 			file
 		);
 
-	const long Pos =
-		ftell(
-			File
-		);
+	const std::optional<std::uint64_t> Position =
+		File->GetPosition();
 
-	return Pos < 0
+	return !Position
 		? 0
 		: static_cast<size_t>(
-			Pos
+			*Position
 		);
 }
 
@@ -445,36 +463,17 @@ size_t RmlFileInterface::Length(
 	if (!file)
 		return 0;
 
-	FILE* File =
-		reinterpret_cast<FILE*>(
+	engine::platform::File* File =
+		reinterpret_cast<engine::platform::File*>(
 			file
 		);
 
-	const long Current =
-		ftell(
-			File
-		);
+	const std::optional<std::uint64_t> Size =
+		File->GetSize();
 
-	fseek(
-		File,
-		0,
-		SEEK_END
-	);
-
-	const long End =
-		ftell(
-			File
-		);
-
-	fseek(
-		File,
-		Current,
-		SEEK_SET
-	);
-
-	return End < 0
+	return !Size
 		? 0
 		: static_cast<size_t>(
-			End
+			*Size
 		);
 }

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HeroTauntArmory>
+  <Taunt itemID="30793" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Salute" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_salute.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_salute" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30794" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Wave" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_wave.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_wave" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30801" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Facepalm" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_facepalm.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_facepalm" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30810" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Exec" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_exec.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_exec" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30811" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_Dance_Chicken" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_fowl.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_fowl" isLooped="1" />
+  </Taunt>
+  <Taunt itemID="30812" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_fuckyou" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_fuckyou.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_fuckyou" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30813" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_getsome" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_getsome.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_getsome" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30814" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_handsup" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_handsup.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_handsup" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30815" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_heron" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_heron.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_heron" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30816" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_hlop" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_hlop.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_hlop" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30817" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_jump" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_jump.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_jump" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30818" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Robot" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_robot.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_robot" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30819" category="48" Weight="0" NewChar="1">
+    <Store name="$Taunt_Shot" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_shot.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_shot" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30904" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_dance_dougie" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_dance_dougie.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_dance_dougie" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30905" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_dance_superman" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_dance_superman.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_dance_superman" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30906" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_neo" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_neo.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_neo" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30907" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_smokinggun" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_smokinggun.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_smokinggun" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30908" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_youcantseeme" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_youcantseeme.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_youcantseeme" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30909" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_slowclap" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_slowclap.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_slowclap" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30910" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_PK_dance_headbang" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_dance_headbang.dds" desc="$Taunt_PVP_desc" gameMode="1" Rarity="2" />
+    <Desc animation="taunt_dance_headbang" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30943" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_yeahno" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_yeahno.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_yeahno" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30944" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_spanking" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_spanking.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_spanking" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30945" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_blowingkiss" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_blowingkiss.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_blowingkiss" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30946" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_alrighty" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_alrighty.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_alrighty" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30947" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_duh" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_duh.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_duh" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30948" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_cheers" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_cheers.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_cheers" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30949" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_youfirst" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_youfirst.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_youfirst" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30950" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_whoa" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_whoa.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_whoa" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30951" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_formalbow" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_formalbow.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_formalbow" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30952" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_jumpingjacks" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_jumpingjacks.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_jumpingjacks" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30953" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_goodforyou" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_goodforyou.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_goodforyou" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30954" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_dance_macarena" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_dance_macarena.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_dance_macarena" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30955" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_neckcrack" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_neckcrack.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_neckcrack" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30956" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_Raisetheroof" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_Raisetheroof.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_Raisetheroof" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30957" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_ThrowUp" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_ThrowUp.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_ThrowUp" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30958" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_handsupfake" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_Handsupfake.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_Handsupfake" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30960" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_youchoked" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_youchoked.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_youchoked" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30961" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_throatslit" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_throatslit.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_throatslit" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30962" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_supermanshirt" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_supermanshirt.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_supermanshirt" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30963" category="48" Weight="0" NewChar="1">
+    <Store name="$taunt_isitdead" icon="$Data/ObjectsDepot/Taunts/StoreIcons/taunt_isitdead.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="taunt_isitdead" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30964" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_tuch_penish" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_tuch_penish.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Balls" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30965" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_i_fuck_u" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_i_fuck_u.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Big_PThrust" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30966" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_fuck_you" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_fuck_you.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_HandFlip" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30967" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_fap_fap" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_fap_fap.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Jack" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30968" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_cleaned_shoes" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_cleaned_shoes.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Litterbox" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30969" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_u_fucked" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_u_fucked.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_PThrust" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30970" category="48" Weight="0" NewChar="0">
+    <Store name="taunt_Kiss_Ass" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/taunt_Kiss_Ass.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Spank" isLooped="0" />
+  </Taunt>
+  <Taunt itemID="30971" category="48" Weight="0" NewChar="0">
+    <Store name="Hlap_on_Ass" icon="$Data/ObjectsDepot/Taunts/WarZStoreIcons/Hlap_on_Ass.dds" desc="$Taunt_desc" gameMode="1" Rarity="0" />
+    <Desc animation="Taunt_t1_Spank_02" isLooped="0" />
+  </Taunt>
+</HeroTauntArmory>

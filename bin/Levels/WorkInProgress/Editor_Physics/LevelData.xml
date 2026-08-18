@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="-0.6290" z="0.3270" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="68.1966" y="27.4712" z="0.3270" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="0.0000" y="-0.0000" z="90.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="27.7158" z="-90.9054" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="0.0000" y="89.9802" z="0.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="28.2825" z="93.2469" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="360.0000" y="270.0280" z="360.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="-94.8076" y="32.7538" z="0.3270" />
+		<gameObject hash="0" PhysEnable="true" MinQuality="1" BulletPierceable="0">
+			<rotation x="0.0000" y="-0.0000" z="270.0000" />
+		</gameObject>
+		<building />
+	</object>
+	<object className="obj_EnvmapProbe" fileName="__envmap_probe">
+		<position x="-217.6439" y="5.8071" z="-173.3823" />
+		<gameObject hash="3977655724" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true" />
+		<envmapProbe radius="150" infRadius="1" id="1" edge="128" />
+	</object>
+</level>

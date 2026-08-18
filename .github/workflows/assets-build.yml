@@ -1,0 +1,101 @@
+name: Assets Build
+
+on:
+  push:
+    branches:
+      - refactor/engine-modernization
+    paths:
+      - "src/Engine/Assets/**"
+      - "src/Engine/AssetsTests/**"
+      - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/Legacy/**"
+      - "src/Tools/LTS.AssetCooker/**"
+      - "src/Tools/LTS.AssetCooker.Tests/**"
+      - "src/Engine/Platform/**"
+      - ".github/workflows/assets-build.yml"
+  pull_request:
+    paths:
+      - "src/Engine/Assets/**"
+      - "src/Engine/AssetsTests/**"
+      - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/Legacy/**"
+      - "src/Tools/LTS.AssetCooker/**"
+      - "src/Tools/LTS.AssetCooker.Tests/**"
+      - "src/Engine/Platform/**"
+      - ".github/workflows/assets-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Assets Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Assets\LTS.Assets.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Assets Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Assets\LTS.Assets.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Assets Tests
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\AssetsTests\LTS.Assets.Tests.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Run Assets Tests
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE\build\x64\Release\Bin\LTS.Assets.Tests.exe"
+
+      - name: Build Legacy Bridge Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Legacy Assets Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.Assets.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Asset Cooker Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Tools\LTS.AssetCooker\LTS.AssetCooker.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build and run Asset Cooker Tests
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Tools\LTS.AssetCooker.Tests\LTS.AssetCooker.Tests.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+          & "$env:GITHUB_WORKSPACE\build\x64\Release\Bin\LTS.AssetCooker.Tests.exe"
+
+      - name: Build Legacy Bridge Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Legacy Assets Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Legacy\LTS.Legacy.Assets.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"

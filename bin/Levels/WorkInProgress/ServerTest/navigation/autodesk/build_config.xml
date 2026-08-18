@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<build_config>
+	<entity_height val="1.6" />
+	<entity_radius val="0.2" />
+	<step_max val="0.6" />
+	<slope_max val="50" />
+	<raster_precision val="0.2" />
+	<cell_size val="20" />
+	<altitude_tolerance val="0.5" />
+	<verticel_sampling_step val="0.3" />
+</build_config>
+<convex>
+	<point x="25.8795" y="96.7836" />
+	<point x="-96.9779" y="97.0312" />
+	<point x="-98.0197" y="-10.3859" />
+	<point x="8.39145" y="-12.2652" />
+	<seed set="1" x="-32.6635" y="-0.628998" z="24.526" />
+</convex>

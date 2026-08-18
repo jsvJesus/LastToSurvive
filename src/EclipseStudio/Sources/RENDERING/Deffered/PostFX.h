@@ -48,6 +48,9 @@ public:
 	void				PushDefaultSettings();
 	const char*			GetName() const ;
 
+	bool				TryRenderExternal( r3dScreenBuffer* dest,
+										   r3dScreenBuffer* src );
+
 private:
 	virtual void		InitImpl() = 0;
 	virtual	void		CloseImpl() = 0;
@@ -57,6 +60,9 @@ private:
 	virtual void		FinishImpl() = 0;
 
 	virtual void		PushDefaultSettingsImpl();
+
+	virtual bool		TryRenderExternalImpl( r3dScreenBuffer* dest,
+											   r3dScreenBuffer* src );
 
 protected:
 	PostFXData			mData;

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{8431D2A0-D346-41E7-9DC2-3B32B2347018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Graphics">
+      <UniqueIdentifier>{86B78862-DBED-4C74-A992-F62E55E35E39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{D71CE3DD-97EE-4F40-A96B-12FA5EBC710A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Graphics\Buffer.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\CommandContext.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Format.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\GraphicsBackend.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\GraphicsResult.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\InputLayout.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\PipelineState.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\RenderDevice.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\ResourceHandle.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\ResourceUsage.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Sampler.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Shader.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\SwapChain.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Texture.h"><Filter>Public\Graphics</Filter></ClInclude>
+    <ClInclude Include="Public\Graphics\Viewport.h"><Filter>Public\Graphics</Filter></ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\Buffer.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\CommandContext.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\Format.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\GraphicsBackend.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\GraphicsResult.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\InputLayout.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\PipelineState.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\Shader.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\SwapChain.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\Texture.cpp"><Filter>Private</Filter></ClCompile>
+    <ClCompile Include="Private\Viewport.cpp"><Filter>Private</Filter></ClCompile>
+  </ItemGroup>
+</Project>

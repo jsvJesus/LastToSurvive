@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_EnvmapProbe" fileName="__envmap_probe">
+		<position x="-38.4370" y="-5.7457" z="-29.3447" />
+		<gameObject hash="2008917769" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true">
+			<rotation x="98.1873" y="-0.0000" z="0.0000" />
+		</gameObject>
+		<envmapProbe radius="150" infRadius="1" id="0" edge="128" />
+	</object>
+</level>

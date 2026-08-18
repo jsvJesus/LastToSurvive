@@ -14,10 +14,10 @@
 #include "ObjectsCode/sobj_DroppedItem.h"
 #include "ObjectsCode/obj_ServerBarricade.h"
 #include "ServerWeapons/ServerWeapon.h"
+#include "Navigation/ServerNavigation.h"
 
 #include "../../EclipseStudio/Sources/ObjectsCode/Gameplay/ZombieStates.h"
 
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 
 IMPLEMENT_CLASS(obj_Zombie, "obj_Zombie", "Object");
 AUTOREGISTER_CLASS(obj_Zombie);
@@ -51,7 +51,7 @@ AUTOREGISTER_CLASS(obj_Zombie);
 	int		_zstat_NavFails   = 0;
 	int		_zstat_Disabled   = 0;
 
-#if !ENABLE_AUTODESK_NAVIGATION
+#if !ENABLE_RECAST_NAVIGATION
 
 obj_Zombie::obj_Zombie() :
 	netMover(this, 1.0f / 10.0f, (float)PKT_C2C_MoveSetCell_s::PLAYER_CELL_RADIUS)
@@ -272,6 +272,22 @@ bool obj_Zombie::ApplyDamage(GameObject* fromObj, float damage, int bodyPart, ST
 
 #else
 
+namespace
+{
+	bool FindClosestNavigationPoint(r3dPoint3D& point, const float horizontalRange, const float verticalRange)
+	{
+		const engine::math::Vector3 source(point.x, point.y, point.z);
+		engine::math::Vector3 closest;
+		const bool found = server::navigation::GetServerNavigation().GetMesh().FindClosestPoint(
+			source,
+			engine::math::Vector3(horizontalRange, verticalRange, horizontalRange),
+			closest);
+		if (found)
+			point = r3dPoint3D(closest.x, closest.y, closest.z);
+		return found;
+	}
+}
+
 obj_Zombie::obj_Zombie() : 
 	netMover(this, 1.0f / 10.0f, (float)PKT_C2C_MoveSetCell_s::PLAYER_CELL_RADIUS)
 {
@@ -353,6 +369,11 @@ BOOL obj_Zombie::OnCreate()
 	
 	// need to create nav agent so it will be placed to navmesh position
 	CreateNavAgent();
+	if(!navAgent)
+	{
+		r3dOutToLog("Zombie navigation unavailable at %.2f %.2f %.2f\n", GetPosition().x, GetPosition().y, GetPosition().z);
+		DisableZombie();
+	}
 
 	gServerLogic.NetRegisterObjectToPeers(this);
 	
@@ -398,25 +419,12 @@ void obj_Zombie::AILog(int level, const char* fmt, ...)
 	StringCbVPrintfA(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	
-	r3dOutToLog("AIZombie%p[%d] %s", this, navAgent->m_navBot->GetVisualDebugId(), buf);
+	r3dOutToLog("AIZombie%p %s", this, buf);
 }
 
 bool obj_Zombie::CheckNavPos(r3dPoint3D& pos)
 {
-	Kaim::TriangleFromPosQuery q;
-	q.Initialize(gAutodeskNavMesh.GetDB(), R3D_KY(pos));
-	q.PerformQuery();
-	switch(q.GetResult())
-	{
-		default:
-			r3dOutToLog("!!!! TriangleFromPosQuery returned %d\n", q.GetResult());
-			return false;
-		case Kaim::TRIANGLEFROMPOS_DONE_NO_TRIANGLE_FOUND:
-			return false;
-		case Kaim::TRIANGLEFROMPOS_DONE_TRIANGLE_FOUND:
-			pos.y = q.GetAltitudeOfProjectionInTriangle();
-			return true;
-	}
+	return FindClosestNavigationPoint(pos, 0.2f, 1.0f);
 }
 
 void obj_Zombie::CreateNavAgent()
@@ -477,9 +485,9 @@ bool obj_Zombie::MoveNavAgent(const r3dPoint3D& pos, float maxAstarRange)
 
 int obj_Zombie::CheckMoveWatchdog()
 {
-	if(navAgent->m_status == AutodeskNavAgent::ComputingPath)
+	if(navAgent->m_status == ZombieNavAgent::ComputingPath)
 		return 1;
-	if(navAgent->m_status != AutodeskNavAgent::Moving)
+	if(navAgent->m_status != ZombieNavAgent::Moving)
 		return 2;
 	if(staggerTime > 0)
 		return 1;
@@ -507,10 +515,10 @@ int obj_Zombie::CheckMoveStatus()
 	
 	switch(navAgent->m_status)
 	{
-		case AutodeskNavAgent::Idle:
+		case ZombieNavAgent::Idle:
 			return 2;
 			
-		case AutodeskNavAgent::ComputingPath:
+		case ZombieNavAgent::ComputingPath:
 			if(curTime > moveStartTime + 5.0f)
 			{
 				AILog(0, "!!! ComputingPath for %f\n", curTime - moveStartTime);
@@ -520,47 +528,26 @@ int obj_Zombie::CheckMoveStatus()
 			}
 			return 1;
 		
-		case AutodeskNavAgent::PathNotFound:
-			AILog(5, "PATH_NOT_FOUND %d to %f,%f,%f from %f,%f,%f\n", 
-				navAgent->m_pathFinderQuery->GetResult(),
+		case ZombieNavAgent::PathNotFound:
+			AILog(5, "PATH_NOT_FOUND to %f,%f,%f from %f,%f,%f\n",
 				moveTargetPos.x, moveTargetPos.z, moveTargetPos.y,
 				moveStartPos.x, moveStartPos.z, moveStartPos.y);
 
 			StopNavAgent();
 			return 2;
 			
-		case AutodeskNavAgent::Moving:
-			// break to next check for path status
-			break;
+		case ZombieNavAgent::Moving:
+			return 1;
 			
-		case AutodeskNavAgent::Arrived:
+		case ZombieNavAgent::Arrived:
 			return 0;
 
-		case AutodeskNavAgent::Failed:
-			AILog(5, "!!! Failed with %d\n", navAgent->m_navBot->GetTargetOnLivePathStatus());
-			return 2;
-	}
-	
-	Kaim::TargetOnPathStatus status = navAgent->m_navBot->GetTargetOnLivePathStatus();
-	switch(status)
-	{
-		case Kaim::TargetOnPathNotInitialized:
-		case Kaim::TargetOnPathUnknownReachability:
-		case Kaim::TargetOnPathInInvalidNavData:
-			if(curTime > moveStartTime + 5.0f)
-			{
-				AILog(0, "!!! GetPathStatus:%d for %f\n", status, curTime - moveStartTime); //@
-				_zstat_NavFails++;
-				StopNavAgent();
-				return 2;
-			}
-			return 1;
-
-		case Kaim::TargetOnPathNotReachable:
+		case ZombieNavAgent::Failed:
+			AILog(5, "!!! navigation failed\n");
 			return 2;
 	}
 
-	return 1;
+	return 2;
 }
 
 GameObject* obj_Zombie::FindBarricade()
@@ -573,40 +560,17 @@ GameObject* obj_Zombie::FindBarricade()
 		if((GetPosition() - shield->GetPosition()).Length() > shield->m_Radius + _zai_AttackRadius)
 			continue;
 
-		// get obstacle, TODO: rework to point vs OBB logic
-		Kaim::WorldElement* e = gAutodeskNavMesh.obstacles[shield->m_ObstacleId];
-		r3d_assert(e);
-		if(e->GetType() != Kaim::TypeBoxObstacle)
-			continue;
-		Kaim::BoxObstacle* boxObstacle = static_cast<Kaim::BoxObstacle*>(e);
-		
-		// search for every spatial cylinder there
-		for(KyUInt32 cidx = 0; cidx < boxObstacle->GetSpatializedCylinderCount(); cidx++)
-		{
-			const Kaim::SpatializedCylinder& cyl = boxObstacle->GetSpatializedCylinder(cidx);
-			r3dPoint3D p1 = r3dPoint3D(GetPosition().x, 0, GetPosition().z);
-			r3dPoint3D p2 = r3dPoint3D(cyl.GetPosition().x, 0, cyl.GetPosition().y); // KY_R3D
-			float dist = (p1 - p2).Length() - cyl.GetRadius();
-			if(dist < _zai_AttackRadius * 0.7f)
-			{
-				return shield;
-			}
-		}
+		r3dPoint3D zombiePosition(GetPosition().x, 0, GetPosition().z);
+		r3dPoint3D barricadePosition(shield->GetPosition().x, 0, shield->GetPosition().z);
+		if((zombiePosition - barricadePosition).Length() - shield->m_Radius < _zai_AttackRadius * 0.7f)
+			return shield;
 	}
 	return NULL;
 }
 
 bool obj_Zombie::CheckForBarricadeBlock()
 {
-	// we detect barricade by checking for them every sec if we're in avoidance mode.
-	Kaim::IAvoidanceComputer::AvoidanceResult ares = navAgent->m_navBot->GetTrajectory()->GetAvoidanceResult();
-	if(ares == Kaim::IAvoidanceComputer::NoAvoidance)
-	{
-		moveAvoidTime = 0;
-		moveAvoidPos  = GetPosition();
-		return false;
-	}
-	
+	// Recast paths are static for now. Detect a blocking player barricade when movement stalls.
 	moveAvoidTime += r3dGetFrameTime();
 	
 	float avoidTimeCheck = 1.0f;
@@ -760,7 +724,7 @@ bool obj_Zombie::CheckViewToPlayer(const GameObject* obj)
 	PxSceneQueryFlags flags = PxSceneQueryFlag::eDISTANCE;
 	PxRaycastHit hit;
 	PxSceneQueryFilterData filter(PxFilterData(COLLIDABLE_STATIC_MASK, 0, 0, 0), PxSceneQueryFilterFlags(PxSceneQueryFilterFlag::eDYNAMIC | PxSceneQueryFilterFlag::eSTATIC));
-	if(g_pPhysicsWorld->PhysXScene->raycastSingle(porigin, pdir, dist, flags, hit, filter))
+	if(g_pPhysicsWorld->raycastSingle(porigin, pdir, dist, flags, hit, filter))
 	{
 	/*
 		AILog(20, "view obstructed\n");
@@ -893,9 +857,9 @@ bool obj_Zombie::StartAttack(const GameObject* trg)
 
 	// check if zombie can get to the player within 2 radius of attack
 	r3dPoint3D trgPos = trg->GetPosition();
-	if(!gAutodeskNavMesh.AdjustNavPointHeight(trgPos, 1.0f))
+	if(!FindClosestNavigationPoint(trgPos, 0.2f, 1.0f))
 	{
-		if(!gAutodeskNavMesh.GetClosestNavMeshPoint(trgPos, 2.0f, _zai_AttackRadius * 2))
+		if(!FindClosestNavigationPoint(trgPos, _zai_AttackRadius * 2, 2.0f))
 		{
 			AILog(5, "player offmesh at %f %f %f\n", trgPos.x, trgPos.y, trgPos.z);
 			return false;
@@ -967,13 +931,14 @@ BOOL obj_Zombie::Update()
 	// Propagate AI agent position to zombie position
 	if(navAgent)
 	{
+		navAgent->Update(r3dGetFrameTime());
 		SetPosition(navAgent->GetPosition());
 		
-		if(navAgent->m_status == AutodeskNavAgent::Moving)
+		if(navAgent->m_status == ZombieNavAgent::Moving)
 		{
-			Kaim::Vec3f rot  = navAgent->m_velocity;
-			if(rot.GetSquareLength2d() > 0.001f)
-				FaceVector(r3dPoint3D(rot[0], rot[2], rot[1]));
+			const r3dPoint3D& velocity = navAgent->m_velocity;
+			if(velocity.x * velocity.x + velocity.z * velocity.z > 0.001f)
+				FaceVector(velocity);
 		}
 	}
 	moveFrameCount++;
@@ -1170,7 +1135,8 @@ BOOL obj_Zombie::Update()
 				}
 				
 				// if player went off mesh - do nothing, continue what we was doing
-				if(!gAutodeskNavMesh.IsNavPointValid(trg->GetPosition()))
+				r3dPoint3D targetNavigationPosition = trg->GetPosition();
+				if(!FindClosestNavigationPoint(targetNavigationPosition, 0.2f, 1.0f))
 				{
 					break;
 				}
@@ -1341,7 +1307,7 @@ void obj_Zombie::SendAIStateToNet()
 	if(!_zai_DebugAI)
 		return;
 		
-	if(navAgent->m_status == AutodeskNavAgent::Moving)
+	if(navAgent && navAgent->m_status == ZombieNavAgent::Moving)
 	{
 		PKT_S2C_Zombie_DBG_AIInfo_s n;
 		n.from = moveStartPos;
@@ -1355,13 +1321,13 @@ void obj_Zombie::DebugSingleZombie()
 	if(!_zai_DebugAI)
 		return;
 
-	static KyUInt32 debugVisualId = 0;
+	static unsigned debugZombieId = 0;
 	FILE* f = fopen("zdebug.txt", "rt");
 	if(!f) return;
-	fscanf(f, "%d", &debugVisualId);
+	fscanf(f, "%u", &debugZombieId);
 	fclose(f);
 	
-	if(navAgent->m_navBot->GetVisualDebugId() != debugVisualId)
+	if(GetNetworkID() != debugZombieId)
 		return;
 		
 	if(ZombieDisabled)
@@ -1370,14 +1336,8 @@ void obj_Zombie::DebugSingleZombie()
 		return;
 	}
 
-	Kaim::Bot* m_navBot = navAgent->m_navBot;
-	Kaim::AStarQuery<Kaim::AStarCustomizer_Default>* m_pathFinderQuery = navAgent->m_pathFinderQuery;
 	AILog(0, "state: %d, time: %f\n", ZombieState, r3dGetTime() - StateStartTime);
-	AILog(0, "GetTargetOnLivePathStatus(): %d\n", m_navBot->GetTargetOnLivePathStatus());
-	AILog(0, "GetPathValidityStatus(): %d\n", m_navBot->GetLivePath().GetPathValidityStatus());
-	AILog(0, "GetPathFinderResult(): %d %d\n", m_pathFinderQuery->GetPathFinderResult(), m_pathFinderQuery->GetResult());
-	if(m_navBot->GetPathFinderQuery())
-		AILog(0, "m_processStatus: %d\n", m_navBot->GetPathFinderQuery()->m_processStatus);
+	AILog(0, "navigation status: %d\n", navAgent ? navAgent->m_status : ZombieNavAgent::Failed);
 }
 
 BOOL obj_Zombie::OnNetReceive(DWORD EventID, const void* packetData, int packetSize)

@@ -1,0 +1,107 @@
+#pragma once
+
+#include "Editor/Tools/Character/CharacterPose.h"
+
+#include <Graphics/GraphicsResult.h>
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace engine::graphics
+{
+    class CommandContext;
+    class RenderDevice;
+}
+
+namespace lts::editor
+{
+    struct CharacterDefinition;
+
+    struct CharacterPreviewDebugBone final
+    {
+        float x = 0.0F;
+        float y = 0.0F;
+
+        float parentX = 0.0F;
+        float parentY = 0.0F;
+
+        bool hasParent = false;
+    };
+
+    class CharacterPreviewRenderer final
+    {
+    public:
+        CharacterPreviewRenderer() noexcept;
+        ~CharacterPreviewRenderer() noexcept;
+
+        CharacterPreviewRenderer(
+            const CharacterPreviewRenderer&) = delete;
+
+        CharacterPreviewRenderer& operator=(
+            const CharacterPreviewRenderer&) = delete;
+
+        [[nodiscard]]
+        bool Initialize(
+            engine::graphics::RenderDevice& device) noexcept;
+
+        void Shutdown(
+            engine::graphics::RenderDevice& device) noexcept;
+
+        [[nodiscard]]
+        bool LoadCharacter(
+            engine::graphics::RenderDevice& device,
+            const CharacterDefinition& character) noexcept;
+
+        void Update(float deltaSeconds) noexcept;
+
+        [[nodiscard]]
+        bool SetAnimationClip(
+            std::shared_ptr<const CharacterAnimationClip> clip) noexcept;
+
+        void ClearAnimationClip() noexcept;
+
+        void PlayAnimation() noexcept;
+        void PauseAnimation() noexcept;
+        void StopAnimation() noexcept;
+
+        void SetAnimationLooping(bool looping) noexcept;
+        void SetAnimationSpeed(float speed) noexcept;
+
+        [[nodiscard]]
+        bool BuildDebugBones(
+            std::vector<CharacterPreviewDebugBone>& output) const noexcept;
+
+        [[nodiscard]]
+        engine::graphics::GraphicsResult Resize(
+            engine::graphics::RenderDevice& device,
+            std::uint32_t width,
+            std::uint32_t height) noexcept;
+
+        [[nodiscard]]
+        engine::graphics::GraphicsResult Render(
+            engine::graphics::CommandContext& context,
+            float yawDegrees,
+            float pitchDegrees,
+            float distanceMultiplier) noexcept;
+
+        [[nodiscard]]
+        void* GetImGuiTextureId(
+            const engine::graphics::RenderDevice& device) const noexcept;
+
+        [[nodiscard]]
+        bool IsInitialized() const noexcept;
+
+        [[nodiscard]]
+        bool HasCharacter() const noexcept;
+
+        [[nodiscard]]
+        const std::string& GetStatus() const noexcept;
+
+    private:
+        class Impl;
+
+        std::unique_ptr<Impl> impl_;
+    };
+}

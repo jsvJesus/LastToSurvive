@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--Level data-->
+<level version="100" minimapOrigin.x="0" minimapOrigin.z="0" minimapSize.x="100" minimapSize.z="100">
+	<object className="obj_Building" fileName="data/objectsdepot/editor/groundplane_100x100.sco">
+		<position x="0.5000" y="0.0000" z="0.3300" />
+		<gameObject hash="291801431" PhysEnable="true" MinQuality="1" BulletPierceable="0" />
+		<building />
+	</object>
+	<object className="obj_EnvmapProbe" fileName="__envmap_probe">
+		<position x="65.7980" y="12.2174" z="-55.6941" />
+		<gameObject hash="339061184" PhysEnable="true" MinQuality="1" BulletPierceable="0" DisableShadows="true" />
+		<envmapProbe radius="150" infRadius="1" id="0" edge="128" />
+	</object>
+</level>

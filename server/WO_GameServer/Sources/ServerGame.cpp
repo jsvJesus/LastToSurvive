@@ -9,7 +9,6 @@
 #include "../EclipseStudio/Sources/rendering/Deffered/RenderDeffered.h"
 #include "../../GameEngine/TrueNature/Terrain.h"
 #include "../../GameEngine/gameobjects/PhysXWorld.h"
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 #include "../EclipseStudio/Sources/Editors/CollectionsManager.h"
 
 #include "ServerGameLogic.h"
@@ -92,11 +91,6 @@ void PlayGameServer()
 
   gCollectionsManager.Init( 0, 1 );
 
-  r3dOutToLog( "NavMesh.Load...\n" );
-#if ENABLE_AUTODESK_NAVIGATION
-  gAutodeskNavMesh.Init();
-#endif
-
   r3dResetFrameTime();
   GameWorld().Update();
   ServerDummyWorld.Update();
@@ -143,33 +137,6 @@ void PlayGameServer()
     // start physics after game world update right now, as gameworld will move some objects around if necessary
     g_pPhysicsWorld->StartSimulation();
     g_pPhysicsWorld->EndSimulation();
-
-#if ENABLE_AUTODESK_NAVIGATION
-    const float t1 = r3dGetTime();
-    gAutodeskNavMesh.Update();
-    const float t2 = r3dGetTime() - t1;
-
-    bool showSpd = (GetAsyncKeyState('Q') & 0x8000) && (GetAsyncKeyState('E') & 0x8000);
-    bool showKys = false; //(GetAsyncKeyState('Q') & 0x8000) && (GetAsyncKeyState('R') & 0x8000);
-
-    extern int _zstat_NumZombies;
-    extern int _zstat_NavFails;
-    extern int _zstat_Disabled;
-    if(showKys) {
-      gAutodeskNavMesh.perfBridge.Dump();
-      r3dOutToLog("NavMeshUpdate %f sec, z:%d, bad:%d, f:%d\n", t2, _zstat_NumZombies, _zstat_Disabled, _zstat_NavFails);
-    }
-    if(showSpd) {
-      r3dOutToLog("NavMeshUpdate %f sec, z:%d, bad:%d, f:%d\n", t2, _zstat_NumZombies, _zstat_Disabled, _zstat_NavFails);
-    }
-#ifndef _DEBUG    
-    if((t2 > (1.0f / 60.0f))) {
-      r3dOutToLog("!!!! NavMeshUpdate %f sec, z:%d, bad:%d, f:%d\n", t2, _zstat_NumZombies, _zstat_Disabled, _zstat_NavFails);
-      //gAutodeskNavMesh.perfBridge.Dump();
-      //r3dOutToLog("!!!! NavMeshUpdate %f sec, z:%d, bad:%d, f:%d, navPend:%d\n", t2, _zstat_NumZombies, _zstat_Disabled, _zstat_NavFails, _zstat_UnderProcess);
-    }
-#endif
-#endif // ENABLE_AUTODESK_NAVIGATION
 
     GameWorld().EndFrame();
     

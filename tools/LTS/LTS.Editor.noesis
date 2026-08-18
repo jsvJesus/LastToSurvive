@@ -1,0 +1,4 @@
+<Project>
+  <Assembly>LTS_Editor</Assembly>
+  <DefaultDataNamespace>LTS_Editor</DefaultDataNamespace>
+</Project>

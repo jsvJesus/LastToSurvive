@@ -29,6 +29,7 @@ void Menu_Main::Draw()
 
 				  static int __CreateTerrain = 0;
 				  static int __CreateTerrain2 = 0;
+				  static int __CreateTerrain3 = 0;
 				  static int __CreateMesh = 0;
 				  static int __TerrainSize = 0;
 				  static float __TerrainSizeCell = 1.0f;
@@ -45,12 +46,148 @@ static int g_MainRmlMapScroll = 0;
 
 void SaveLevelData( char* Str );
 
-static void* ____DummyObjectConstructor()
+static AObject* ____DummyObjectConstructor()
 {
-	return NULL;
+	return nullptr;
 }
 
 bool gNewLevelCreated = false ;
+
+static bool CreateTerrainV3Files(
+	const char* LevelName
+)
+{
+	if (!LevelName || !LevelName[0])
+		return false;
+
+	char TerrainDir[512] = {};
+	sprintf(
+		TerrainDir,
+		"Levels\\%s\\TerrainV3",
+		LevelName
+	);
+
+	if (mkdir(TerrainDir) == -1 && errno != EEXIST)
+	{
+		r3dOutToLog(
+			"[TerrainV3] Failed to create directory: %s\n",
+			TerrainDir
+		);
+		return false;
+	}
+
+	const int SizeCells =
+		int(pow(2.0f, 8.0f + __TerrainSize));
+	const float CellSize =
+		__TerrainSizeCell > 0.0f
+		? __TerrainSizeCell
+		: 1.0f;
+	const float WorldSize =
+		static_cast<float>(SizeCells) * CellSize;
+	const float HeightAmplitude =
+		__TerrainSizeHeight > 0.0f
+		? __TerrainSizeHeight
+		: 100.0f;
+
+	char DescPath[512] = {};
+	sprintf(
+		DescPath,
+		"%s\\terrain_v3.desc",
+		TerrainDir
+	);
+
+	FILE* DescFile = fopen(DescPath, "wt");
+	if (!DescFile)
+	{
+		r3dOutToLog(
+			"[TerrainV3] Failed to create descriptor: %s\n",
+			DescPath
+		);
+		return false;
+	}
+
+	fprintf(DescFile, "terrain_v3_version 1\n");
+	fprintf(DescFile, "name %s\n", LevelName);
+	fprintf(DescFile, "size_x %.3f\n", WorldSize);
+	fprintf(DescFile, "size_z %.3f\n", WorldSize);
+	fprintf(DescFile, "cell_size %.3f\n", CellSize);
+	fprintf(DescFile, "chunk_cells 64\n");
+	fprintf(DescFile, "base_height 0.000\n");
+	fprintf(DescFile, "height_amplitude %.3f\n", HeightAmplitude);
+	fprintf(DescFile, "min_height %.3f\n", -HeightAmplitude);
+	fprintf(DescFile, "max_height %.3f\n", HeightAmplitude);
+	fprintf(DescFile, "height_source raw_f32_grid\n");
+	fprintf(DescFile, "height_file height.v3\n");
+	fprintf(DescFile, "height_width %d\n", SizeCells + 1);
+	fprintf(DescFile, "height_height %d\n", SizeCells + 1);
+	fclose(DescFile);
+
+	char HeightPath[512] = {};
+	sprintf(
+		HeightPath,
+		"%s\\height.v3",
+		TerrainDir
+	);
+
+	FILE* HeightFile = fopen(HeightPath, "wb");
+	if (!HeightFile)
+	{
+		r3dOutToLog(
+			"[TerrainV3] Failed to create height header: %s\n",
+			HeightPath
+		);
+		return false;
+	}
+
+	const unsigned int Magic = 0x33485654; // TVH3
+	const unsigned int Version = 1;
+	const unsigned int Width = static_cast<unsigned int>(SizeCells + 1);
+	const unsigned int Height = static_cast<unsigned int>(SizeCells + 1);
+
+	fwrite(&Magic, sizeof(Magic), 1, HeightFile);
+	fwrite(&Version, sizeof(Version), 1, HeightFile);
+	fwrite(&Width, sizeof(Width), 1, HeightFile);
+	fwrite(&Height, sizeof(Height), 1, HeightFile);
+	fwrite(&CellSize, sizeof(CellSize), 1, HeightFile);
+	fwrite(&HeightAmplitude, sizeof(HeightAmplitude), 1, HeightFile);
+
+	const float InitialHeight = 0.0f;
+	float HeightBlock[1024];
+	for (int i = 0; i < 1024; ++i)
+		HeightBlock[i] = InitialHeight;
+
+	unsigned long long SamplesLeft =
+		static_cast<unsigned long long>(Width) *
+		static_cast<unsigned long long>(Height);
+
+	while (SamplesLeft > 0)
+	{
+		const size_t SamplesToWrite =
+			SamplesLeft > 1024
+			? 1024
+			: static_cast<size_t>(SamplesLeft);
+
+		if (fwrite(HeightBlock, sizeof(float), SamplesToWrite, HeightFile) != SamplesToWrite)
+		{
+			fclose(HeightFile);
+			r3dOutToLog(
+				"[TerrainV3] Failed to write height samples: %s\n",
+				HeightPath
+			);
+			return false;
+		}
+
+		SamplesLeft -= SamplesToWrite;
+	}
+
+	fclose(HeightFile);
+
+	r3dOutToLog(
+		"[TerrainV3] Created independent TerrainV3 asset: %s\n",
+		DescPath
+	);
+	return true;
+}
 
 bool CreateNewLevel()
 {
@@ -78,7 +215,16 @@ bool CreateNewLevel()
 
 		r3dGameLevel::SetHomeDir( LevelEditName);
 
-		if( __CreateTerrain2 )
+		if( __CreateTerrain3 )
+		{
+			if (!CreateTerrainV3Files(LevelEditName))
+			{
+				g_pPhysicsWorld->Destroy();
+				SAFE_DELETE(g_pPhysicsWorld);
+				return false;
+			}
+		}
+		else if( __CreateTerrain2 )
 		{
 			r3dTerrain2::CreationParams params ;
 
@@ -348,6 +494,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 			g_MainRmlUI.SetAppMainCreateOptions(
 				__CreateTerrain != 0,
 				__CreateTerrain2 != 0,
+				__CreateTerrain3 != 0,
 				__TerrainSize,
 				__TerrainSMapSize,
 				__TerrainSizeCell,
@@ -375,6 +522,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 
 		bool DummyHaveTerrain = false;
 		bool DummyTerrainV2 = false;
+		bool DummyTerrainV3 = false;
 		int DummyTerrainSizeIndex = 0;
 		int DummySplatSizeIndex = 0;
 		float CellSize = __TerrainSizeCell;
@@ -385,6 +533,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 			sizeof(NewLevelName),
 			DummyHaveTerrain,
 			DummyTerrainV2,
+			DummyTerrainV3,
 			DummyTerrainSizeIndex,
 			DummySplatSizeIndex,
 			CellSize,
@@ -428,9 +577,16 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 	{
 		__CreateTerrain = __CreateTerrain ? 0 : 1;
 
+		if (!__CreateTerrain)
+		{
+			__CreateTerrain2 = 0;
+			__CreateTerrain3 = 0;
+		}
+
 		g_MainRmlUI.SetAppMainCreateOptions(
 			__CreateTerrain != 0,
 			__CreateTerrain2 != 0,
+			__CreateTerrain3 != 0,
 			__TerrainSize,
 			__TerrainSMapSize,
 			__TerrainSizeCell,
@@ -440,10 +596,31 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 	else if (strcmp(Action, "terrain2_toggle") == 0)
 	{
 		__CreateTerrain2 = __CreateTerrain2 ? 0 : 1;
+		__CreateTerrain = __CreateTerrain2 ? 1 : __CreateTerrain;
+		if (__CreateTerrain2)
+			__CreateTerrain3 = 0;
 
 		g_MainRmlUI.SetAppMainCreateOptions(
 			__CreateTerrain != 0,
 			__CreateTerrain2 != 0,
+			__CreateTerrain3 != 0,
+			__TerrainSize,
+			__TerrainSMapSize,
+			__TerrainSizeCell,
+			__TerrainSizeHeight
+		);
+	}
+	else if (strcmp(Action, "terrain3_toggle") == 0)
+	{
+		__CreateTerrain3 = __CreateTerrain3 ? 0 : 1;
+		__CreateTerrain = __CreateTerrain3 ? 1 : __CreateTerrain;
+		if (__CreateTerrain3)
+			__CreateTerrain2 = 0;
+
+		g_MainRmlUI.SetAppMainCreateOptions(
+			__CreateTerrain != 0,
+			__CreateTerrain2 != 0,
+			__CreateTerrain3 != 0,
 			__TerrainSize,
 			__TerrainSMapSize,
 			__TerrainSizeCell,
@@ -463,6 +640,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 		g_MainRmlUI.SetAppMainCreateOptions(
 			__CreateTerrain != 0,
 			__CreateTerrain2 != 0,
+			__CreateTerrain3 != 0,
 			__TerrainSize,
 			__TerrainSMapSize,
 			__TerrainSizeCell,
@@ -479,6 +657,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 		g_MainRmlUI.SetAppMainCreateOptions(
 			__CreateTerrain != 0,
 			__CreateTerrain2 != 0,
+			__CreateTerrain3 != 0,
 			__TerrainSize,
 			__TerrainSMapSize,
 			__TerrainSizeCell,
@@ -492,7 +671,7 @@ static void MainRml_OnAction(const char* Action, const char* Value)
 		if (__TerrainSMapSize > __TerrainSize)
 			__TerrainSMapSize = 0;
 
-		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
+		g_MainRmlUI.SetAppMainCreateOptions(__CreateTerrain != 0, __CreateTerrain2 != 0, __CreateTerrain3 != 0, __TerrainSize, __TerrainSMapSize, __TerrainSizeCell, __TerrainSizeHeight);
 	}
 	else if (strcmp(Action, "scroll_up") == 0)
 	{
@@ -741,6 +920,10 @@ int Menu_Main::DoModal()
 						const static char* list1[3] = { "PLANE", "IMAGE", "NOISE" };
 
 						SliderY += imgui_Checkbox( SliderX, SliderY, "Create Terrain V2", &__CreateTerrain2, 1 ) ;
+						SliderY += imgui_Checkbox( SliderX, SliderY, "Create Terrain V3", &__CreateTerrain3, 1 ) ;
+
+						if (__CreateTerrain2 && __CreateTerrain3)
+							__CreateTerrain2 = 0;
 
 						SliderY += imgui_Static(SliderX, SliderY, "Terrain Size");
 						SliderY += imgui_Value_Slider(SliderX, SliderY, "Cell size in Meters",			&__TerrainSizeCell,	1,100,	"%-02.2f",1);

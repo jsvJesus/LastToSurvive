@@ -18,17 +18,34 @@
 
 # Keep only RmlUI source package from External
 /External/*
+!/External/ufbx/
+!/External/ufbx/**
 !/External/RmlUI/
 !/External/RmlUI/**
+!/External/DearImGui/
+!/External/DearImGui/**
 
 # Keep only use sdk from External
 !/External/dxsdk/Include/
 !/External/dxsdk/Include/**
 !/External/discord_social_sdk/include/
 !/External/discord_social_sdk/include/**
+!/External/R3/
+!/External/R3/**
+!/External/SpeedTreeSDK/Include/
+!/External/SpeedTreeSDK/Include/**
+!/External/SpeedTreeSDK/Source/
+!/External/SpeedTreeSDK/Source/**
 
 # Explicitly exclude root runtime/build folder
 /bin/
+
+# Track shader sources, but never runtime shader cache
+/bin/Data/Shaders/Cache/
+/bin/Data/Shaders/Cache/**
+/bin/Data/Shaders/TEXTURE/
+/bin/Data/Shaders/TEXTURE/**
+/bin/Data/Shaders/**/*.csr
 
 # Visual Studio / Rider
 .vs/
@@ -115,6 +132,20 @@ r3dlog.txt
 *.bank
 *.fsb
 *.fev
+*.fbx
+# objects (skm - skeletal mesh, sk - skeletal, anim - animations, mesh - static mesh)
+*.material
+*.mesh
+*.skm
+*.sk
+*.anim
+# level
+*.terrain
+*.level
+#
+*.png
+*.dds
+*.csr
 
 # NuGet / .NET / Avalonia
 .nuget/
@@ -124,15 +155,35 @@ packages/
 # Keep only selected runtime data under root bin
 !/bin/
 /bin/*
+!/game/
+/game/*
+!/game/Data/
+/game/Data/*
+!/tools/
+/tools/*
 !/bin/Data/
 /bin/Data/*
+
+!/bin/Data/Shaders/
+!/bin/Data/Shaders/**
+
 !/bin/Data/Rml/
 !/bin/Data/Rml/**
-!/bin/Data/Shaders/
-/bin/Data/Shaders/*
-!/bin/Data/Shaders/DX9_P1/
-!/bin/Data/Shaders/DX9_P1/**
-!/bin/Data/Shaders/DX11_P1/
-!/bin/Data/Shaders/DX11_P1/**
+
 !/bin/Data/Weapons/
 !/bin/Data/Weapons/**
+
+!/bin/Data/Animations/
+!/bin/Data/Animations/**
+
+!/game/Data/Shaders/
+!/game/Data/Shaders/**
+!/game/Data/Config/
+!/game/Data/Config/**
+!/game/Data/UI/
+!/game/Data/UI/**
+!/tools/LTS/
+!/tools/LTS/**
+
+!/bin/Levels/
+!/bin/Levels/**

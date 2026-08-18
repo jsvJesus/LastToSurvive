@@ -1,9 +1,46 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "RmlFrontEndScreen.h"
 
-#include "r3dDebug.h"
+#include <Core/Log.h>
+
+#include <string>
+#include <string_view>
+
+namespace
+{
+	constexpr std::string_view LogCategory =
+		"RmlUI.FrontEnd.Screen";
+
+	void LogFallbackLoad(
+		const char* const PrimaryDocumentPath,
+		const char* const FallbackDocumentPath)
+	{
+		std::string message =
+			"Failed to load ";
+
+		message += PrimaryDocumentPath;
+		message += ", trying fallback ";
+		message += FallbackDocumentPath;
+
+		engine::core::GetLogger().Write(
+			engine::core::LogLevel::Warning,
+			LogCategory,
+			message);
+	}
+
+	void LogDocumentLoadFailure(
+		const char* const DocumentPath)
+	{
+		std::string message =
+			"Failed to load document ";
+
+		message += DocumentPath;
+
+		engine::core::GetLogger().Write(
+			engine::core::LogLevel::Error,
+			LogCategory,
+			message);
+	}
+}
 
 RmlFrontEndScreen::FClickListener::FClickListener(
 	RmlFrontEndScreen* InOwner
@@ -61,8 +98,7 @@ bool RmlFrontEndScreen::Load(
 
 	if (!Document && FallbackDocumentPath)
 	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd][Screen] Failed to load %s, trying fallback %s\n",
+		LogFallbackLoad(
 			PrimaryDocumentPath,
 			FallbackDocumentPath
 		);
@@ -75,8 +111,7 @@ bool RmlFrontEndScreen::Load(
 
 	if (!Document)
 	{
-		r3dOutToLog(
-			"[RmlUI][FrontEnd][Screen] Failed to load document %s\n",
+		LogDocumentLoadFailure(
 			PrimaryDocumentPath
 		);
 

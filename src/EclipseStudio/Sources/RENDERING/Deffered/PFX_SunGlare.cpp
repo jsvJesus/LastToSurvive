@@ -6,6 +6,9 @@
 #include "PostFXChief.h"
 #include "PFX_SunGlare.h"
 
+#include "rendering/World/WorldRenderer.h"
+#include "rendering/DX11/RenderDX11.h"
+
 //------------------------------------------------------------------------
 
 PFX_SunGlare::PFX_SunGlare()
@@ -137,6 +140,71 @@ PFX_SunGlare::FinishImpl() /*OVERRIDE*/
 	g_pPostFXChief->SetDefaultTexAddressMode( PostFXChief::FREE_TEX_STAGE_START );
 
 	r3dRenderer->SetRenderingMode( R3D_BLEND_POP );
+}
+
+bool PFX_SunGlare::TryRenderExternalImpl(r3dScreenBuffer* dest, r3dScreenBuffer* src)
+{
+#if LTS_STUDIO_DX11 && LTS_STUDIO_DX11_WORLD
+	if( !WorldRender_IsDX11Active() )
+		return false;
+
+	RenderDX11SunGlareSettings dx11Settings;
+	memset( &dx11Settings, 0, sizeof dx11Settings );
+
+	int numSunglares = mSettings.NumSunglares;
+
+	if( numSunglares < 1 )
+		numSunglares = 1;
+
+	if( numSunglares > static_cast<int>( MAX_SUNGLARES ) )
+		numSunglares = static_cast<int>( MAX_SUNGLARES );
+
+	for( int i = 0; i < MAX_SUNGLARES; ++i )
+	{
+		dx11Settings.Threshold[ i < 4 ? i : 3 ] =
+			mSettings.Threshold[ i ];
+
+		const float opacity = mSettings.Opacity[ i ];
+
+		dx11Settings.Tint[ i ][ 0 ] =
+			mSettings.Tint[ i ].R / 255.0f * opacity;
+
+		dx11Settings.Tint[ i ][ 1 ] =
+			mSettings.Tint[ i ].G / 255.0f * opacity;
+
+		dx11Settings.Tint[ i ][ 2 ] =
+			mSettings.Tint[ i ].B / 255.0f * opacity;
+
+		dx11Settings.Tint[ i ][ 3 ] =
+			mSettings.Tint[ i ].A / 255.0f * opacity;
+
+		dx11Settings.TexTransform[ i ][ 0 ] =
+			-mSettings.TexScale[ i ];
+
+		dx11Settings.TexTransform[ i ][ 1 ] =
+			-mSettings.TexScale[ i ];
+
+		dx11Settings.TexTransform[ i ][ 2 ] =
+			0.5f * mSettings.TexScale[ i ] + 0.5f;
+
+		dx11Settings.TexTransform[ i ][ 3 ] =
+			0.5f * mSettings.TexScale[ i ] + 0.5f;
+	}
+
+	dx11Settings.Params[ 0 ] =
+	static_cast<float>( numSunglares );
+
+	dx11Settings.Params[ 1 ] = 0.0f;
+	dx11Settings.Params[ 2 ] = 0.0f;
+	dx11Settings.Params[ 3 ] = 0.0f;
+
+	return RenderDX11_ApplySunGlare(
+		dx11Settings,
+		mShadeTexture
+	);
+#else
+	return false;
+#endif
 }
 
 //------------------------------------------------------------------------

@@ -16,7 +16,6 @@
 
 #include "..\TrueNature\Terrain.h"
 
-#include "ApexWorld.h"
 #include "PhysXRepXHelpers.h"
 #include "VehicleManager.h"
 
@@ -94,46 +93,6 @@
 PhysXWorld* g_pPhysicsWorld = 0;
 // because we might re-cook meshes in physics editor, let's be able to disable cache
 bool gPhysics_DisableCacheForEditor = false;
-
-#ifdef _WIN64
-PhysxUserFileReadStream::PhysxUserFileReadStream(const char* filename)
-: fpr(NULL)
-{
-	fpr = r3d_open(filename, "rb");
-}
-
-PhysxUserFileReadStream::~PhysxUserFileReadStream()
-{
-	if(fpr)
-		fclose(fpr);
-}
-
-PxU32 PhysxUserFileReadStream::read(void* buffer, PxU32 size)
-{
-	if(!fpr)
-		return 0;
-	return (PxU32)fread(buffer, 1, size, fpr);
-}
-
-PhysxUserFileWriteStream::PhysxUserFileWriteStream(const char *fileName)
-: fpw(0)
-{
-	fpw = fopen_for_write(fileName, "wb");
-}
-
-PhysxUserFileWriteStream::~PhysxUserFileWriteStream()
-{
-	if(fpw)
-		fclose(fpw);
-}
-
-PxU32 PhysxUserFileWriteStream::write(const void* src, PxU32 count)
-{
-	if(!fpw)
-		return 0;
-	return (PxU32)fwrite(src, 1, count, fpw);
-}
-#endif
 
 // regular mesh, can be only static
 struct PhysicsMesh
@@ -705,13 +664,8 @@ void PhysXWorld::StartSimulation()
 #endif
 #endif
 
-#if APEX_ENABLED
-				g_pApexWorld->Simulate(substepSize, i == numStepsReq - 2);
-				g_pApexWorld->FetchResults(true);
-#else
                 PhysXScene->simulate(substepSize);
                 PhysXScene->fetchResults(true);
-#endif
             }
         }
         if(accumulator >= substepSize)
@@ -723,13 +677,8 @@ void PhysXWorld::StartSimulation()
 #endif
 #endif
 
-#if APEX_ENABLED
-			g_pApexWorld->Simulate(substepSize, true);
-			g_pApexWorld->FetchResults(true);
-#else
 		    PhysXScene->simulate(substepSize); 
             m_needFetchResults = true;
-#endif
         }
 	}
 }
@@ -738,14 +687,12 @@ void PhysXWorld::EndSimulation()
 {
 	if(!DisablePhysXSimulation)
 	{
-#if !APEX_ENABLED
         if(m_needFetchResults)
 		{
 			r3dCSHolder block(concurrencyGuard) ;
 		    PhysXScene->fetchResults(true);
 			m_needFetchResults = false;
-		}
-#endif
+        }
 	}
 	else
 	{

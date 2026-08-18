@@ -6,6 +6,12 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/File.h>
+
+#include <limits>
+#include <optional>
+#include <vector>
+
 #include "GenericQuadTree.h"
 
 extern r3dCamera gCam;
@@ -446,28 +452,48 @@ void QuadTree::PropagateHeight(int currNodeIdx)
 
 bool QuadTree::LoadFromFile(const char *fileName)
 {
-	r3dFile *f = r3d_open(fileName);
-	if (!f)
+	engine::platform::File file{
+		engine::platform::Path(fileName),
+		engine::platform::FileAccess::Read,
+		engine::platform::FileCreation::OpenExisting
+	};
+	if (!file)
 	{
 		return false;
 	}
 
 	const uint32_t oneCellSize = QuadTreeNode::GetSerializableBlockSize();
-	const uint32_t numCells = f->size / oneCellSize;
-	r3d_assert(f->size % oneCellSize == 0);
+	const std::optional<std::uint64_t> fileSize = file.GetSize();
+	if (
+		!fileSize ||
+		*fileSize % oneCellSize != 0 ||
+		*fileSize / oneCellSize > std::numeric_limits<uint32_t>::max() ||
+		*fileSize > std::numeric_limits<std::size_t>::max()
+	)
+	{
+		return false;
+	}
+
+	const uint32_t numCells = static_cast<uint32_t>(*fileSize / oneCellSize);
+
+	const std::size_t bufferSize = static_cast<std::size_t>(*fileSize);
+	std::vector<char> buffer(bufferSize);
+	const engine::platform::FileIoResult readResult =
+		file.Read(buffer.data(), bufferSize);
+	if (!readResult || readResult.bytesTransferred != bufferSize)
+	{
+		return false;
+	}
+
 	nodesPool.Resize(numCells);
 
-	char *buf = new char[f->size];
-	fread(buf, f->size, 1, f);
-	fclose(f);
-	char *ptr = buf;
+	const char *ptr = buffer.data();
 
 	for (uint32_t i = 0; i < nodesPool.Count(); ++i, ptr += oneCellSize)
 	{
 		nodesPool[i].LoadFromMemory(ptr);
 	}
 
-	delete [] buf;
 	return true;
 }
 
@@ -477,15 +503,13 @@ bool QuadTree::SaveToFile(const char *fileName)
 {
 	RebuildTree();
 	
-	//	Allocate necessary memory block to save all objects
-	FILE *f = fopen_for_write(fileName, "wb");
-
 	const uint32_t oneCellSize = QuadTreeNode::GetSerializableBlockSize();
 	const uint32_t numCells = nodesPool.Count();
-	const uint32_t totalSize = numCells * oneCellSize;
+	const std::size_t totalSize =
+		static_cast<std::size_t>(numCells) * oneCellSize;
 
-	char *buf = new char[totalSize];
-	char *ptr = buf;
+	std::vector<char> buffer(totalSize);
+	char *ptr = buffer.data();
 
 	for (uint32_t i = 0; i < nodesPool.Count(); ++i, ptr += oneCellSize)
 	{
@@ -493,9 +517,22 @@ bool QuadTree::SaveToFile(const char *fileName)
 		n.SaveToMemory(ptr);
 	}
 
-	fwrite(buf, totalSize, 1, f);
-	delete [] buf;
-	fclose(f);
+	engine::platform::File file{
+		engine::platform::Path(fileName),
+		engine::platform::FileAccess::Write,
+		engine::platform::FileCreation::CreateAlways
+	};
+	if (!file)
+	{
+		return false;
+	}
+
+	const engine::platform::FileIoResult writeResult =
+		file.Write(buffer.data(), totalSize);
+	if (!writeResult || writeResult.bytesTransferred != totalSize)
+	{
+		return false;
+	}
 
 	return true;
 }

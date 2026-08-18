@@ -1,17 +1,14 @@
-#include "r3dPCH.h"
-#include "r3d.h"
-
 #include "RmlFrontEndSkills.h"
+
+#include <cstddef>
 
 namespace
 {
-    const char* SkillNodeButtonPrefix =
+    constexpr char SkillNodeButtonPrefix[] =
         "skill_node_";
 
-    const size_t SkillNodeButtonPrefixLength =
-        strlen(
-            SkillNodeButtonPrefix
-        );
+    constexpr std::size_t SkillNodeButtonPrefixLength =
+        sizeof(SkillNodeButtonPrefix) - 1;
 }
 
 RmlFrontEndSkills::RmlFrontEndSkills()

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AmmoArmory>
+	<Ammo name="melee">
+		<Decal source="melee" />
+		<Bullet class="" />
+	</Ammo>
+	<Ammo name="melee_sharp">
+		<Decal source="melee_sharp" />
+		<Bullet class="" />
+	</Ammo>
+	<Ammo name="$Pistol_Ammo9mm">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$Pistol_Ammo45">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$Pistol_Ammo50">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$ASR_Ammo">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="5.45">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$Shotgun_Ammo">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$Sniper_Ammo">
+		<ParticleTracer file="trail_bullet" />
+		<Decal source="bullet" />
+		<Bullet class="obj_Bullet" />
+	</Ammo>
+	<Ammo name="$AT4_Ammo">
+		<ParticleTracer file="WeaponFX_MissileTrail_01" />
+		<Decal source="rocket_glx" />
+		<Bullet class="obj_Bullet" />
+		<DamageArea name="AT4 Missile Explosion" />
+	</Ammo>
+	<Ammo name="$RPG7_Ammo">
+		<ParticleTracer file="WeaponFX_MissileTrail_01" />
+		<Decal source="rocket_glx" />
+		<Bullet class="obj_Bullet" />
+		<DamageArea name="RPG Missile Explosion" />
+	</Ammo>
+	<Ammo name="$Alien_projectile">
+		<ParticleTracer file="env_alien_fireball" />
+		<Decal source="" />
+		<Bullet class="obj_Bullet" />
+		<DamageArea name="Alien Projectile" />
+	</Ammo>
+	<Ammo name="ClaymoreMine">
+		<Decal source="" />
+		<Bullet class="obj_Mine" />
+	</Ammo>
+	
+	<Scope name="default" scopeMask="" scopeBlurMask="" scopeReticule="" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="false" />
+	
+	<!-- Sights -->
+	<Scope name="binoculars" scale="1.55" scopeMask="Data/Weapons/Scopes/Frame_BinocularsCracked.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_BinocularsCracked.dds" scopeReticule="Data/Weapons/Scopes/Scope_Binoculars.dds" reticule="" hasScope="true" lighting="false"/>
+	<!--<Scope name="rangefinder" scale="1.55" scopeMask="Data/Weapons/Scopes/Frame_RangeFinderClean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_RangeFinderClean.dds" scopeReticule="Data/Weapons/Scopes/Scope_Empty.dds" reticule="" hasScope="true" lighting="false"/>
+	<Scope name="nvgframe" scale="1.55" scopeMask="Data/Weapons/Scopes/Frame_NVGClean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_RangeFinderClean.dds" scopeReticule="Data/Weapons/Scopes/Scope_Empty.dds" reticule="" hasScope="true" lighting="false"/>-->
+
+	<Scope name="sniper4_HB" scale="1.4" scopeMask="Data/Weapons/Scopes/Frame_Sniper_Clean2.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Sniper_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_LongRange_Adv.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" fps_fov="3"/>
+	<Scope name="cobra_fps" scale="0.65" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_COBRA.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+	<Scope name="sniper4_SW" scopeMask="Data/Weapons/Scopes/Frame_RangeFinderClean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Scope_Fisheye.dds" scopeReticule="Data/Weapons/Scopes/Scope_Sniper4_HB.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" fps_fov="3"/>
+
+	<Scope name="Scope_HG_Reflex" scale="0.15" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_HG_Reflex.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+	<Scope name="Scope_HG_Red" scale="0.35" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_HG_Red.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+
+	<Scope name="Scope_Reflex1" scale="0.65" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_Reflex1.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+	<Scope name="Scope_Acog1" scale="0.5" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_Acog1.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+	<Scope name="Scope_Red1" scale="1.0" scopeMask="Data/Weapons/Scopes/Frame_ScopeEmpty.dds" scopeNormal="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Clean.dds" scopeReticule="Data/Weapons/Scopes/Scope_Red1.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" hide_player="false" fps_fov="38"/>
+
+	<Scope name="Scope_Sniper_M" scale="1.4" scopeMask="Data/Weapons/Scopes/Frame_Sniper_Clean2.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Scope_Fisheye.dds" scopeReticule="Data/Weapons/Scopes/Scope_Sniper_M.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" fps_fov="3"/>
+	<Scope name="Scope_Sniper_LR" scale="1.4" scopeMask="Data/Weapons/Scopes/Frame_Sniper_Clean2.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Scope_Fisheye.dds" scopeReticule="Data/Weapons/Scopes/Scope_Sniper_LR.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" fps_fov="3"/>
+	<Scope name="Scope_Sniper_ASR" scale="1.4" scopeMask="Data/Weapons/Scopes/Frame_Sniper_Clean2.dds" scopeBlurMask="Data/Weapons/Scopes/FrameMask_Scope_Fisheye.dds" scopeReticule="Data/Weapons/Scopes/Scope_Sniper_ASR.dds" reticule="Data/Weapons/Scopes/default_aim.dds" hasScope="true" lighting="false" fps_fov="3"/>
+</AmmoArmory>

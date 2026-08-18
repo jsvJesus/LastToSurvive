@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Final|x64"><Configuration>Final</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals"><VCProjectVersion>17.0</VCProjectVersion><Keyword>Win32Proj</Keyword><ProjectGuid>{2F8D71A4-68C3-4D19-AE52-9417B60C35F8}</ProjectGuid><RootNamespace>LTSImGui</RootNamespace><ProjectName>LTS.ImGui</ProjectName><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>false</WholeProgramOptimization></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|x64'" Label="Configuration"><ConfigurationType>StaticLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><WholeProgramOptimization>true</WholeProgramOptimization></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings"/><ImportGroup Label="Shared"/>
+  <ImportGroup Label="PropertySheets"><Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform"/></ImportGroup>
+  <PropertyGroup><OutDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Lib\</OutDir><IntDir>$(ProjectDir)..\..\..\build\$(Platform)\$(Configuration)\Obj\$(ProjectName)\</IntDir><TargetName>LTS.ImGui</TargetName></PropertyGroup>
+  <ItemDefinitionGroup><ClCompile><WarningLevel>Level3</WarningLevel><TreatWarningAsError>false</TreatWarningAsError><LanguageStandard>stdcpp17</LanguageStandard><ConformanceMode>true</ConformanceMode><AdditionalOptions>/permissive- /Zc:__cplusplus /utf-8 %(AdditionalOptions)</AdditionalOptions><PreprocessorDefinitions>UNICODE;_UNICODE;NOMINMAX;WIN32_LEAN_AND_MEAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions><AdditionalIncludeDirectories>$(ProjectDir)Public;$(ProjectDir)..\..\..\External\DearImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><RuntimeLibrary>MultiThreaded</RuntimeLibrary><ExceptionHandling>Sync</ExceptionHandling><RuntimeTypeInfo>false</RuntimeTypeInfo><MultiProcessorCompilation>true</MultiProcessorCompilation></ClCompile></ItemDefinitionGroup>
+  <ItemGroup><ClInclude Include="Public\ImGui\ImGuiHost.h"/></ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\ImGuiHost.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\imgui.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\imgui_draw.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\imgui_tables.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\imgui_widgets.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\backends\imgui_impl_win32.cpp"/>
+    <ClCompile Include="..\..\..\External\DearImGui\backends\imgui_impl_dx11.cpp"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/><ImportGroup Label="ExtensionTargets"/>
+</Project>

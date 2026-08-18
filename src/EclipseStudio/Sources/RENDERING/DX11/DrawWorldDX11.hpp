@@ -309,6 +309,12 @@ static bool DrawWorldDX11_FillGBuffer(
     if (!DrawWorldDX11_TerrainGBuffer(Desc))
         return false;
 
+    if (!RenderDX11_DrawStaticObjectsGBuffer())
+        return false;
+
+    if (!RenderDX11_DrawDynamicObjectsGBuffer())
+        return false;
+
     return true;
 }
 
@@ -354,16 +360,7 @@ static bool DrawWorldDX11_Lighting(
         );
     }
 
-    // TODO:
-    // DX9 analogue:
-    // - deferred lighting
-    // - sun light
-    // - point/spot lights
-    // - SSAO/post later
-    //
-    // For now this is empty.
-
-    return true;
+    return RenderDX11_DrawDirectionalLighting();
 }
 
 static bool DrawWorldDX11_Transparent(
@@ -459,20 +456,11 @@ static bool DrawWorldDX11_Post(
     {
         bPostLogged = true;
         OutputDebugStringA(
-            "[DX11][Render] Post skeleton prepared\n"
+            "[DX11][Render] Post stage active\n"
         );
     }
 
-    // TODO:
-    // DX11 post stage later:
-    // - combine lighting result
-    // - fog
-    // - tonemap or copy to composition target
-    // - debug overlay/gbuffer compare
-    //
-    // For now this stage is intentionally empty.
-
-    return true;
+    return RenderDX11_DrawTonemap();
 }
 
 static bool DrawWorldDX11_EndFrame(

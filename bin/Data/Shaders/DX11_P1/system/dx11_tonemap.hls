@@ -1,0 +1,65 @@
+Texture2D gHDRScene : register(t0);
+SamplerState gLinearClampSampler : register(s0);
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT VSMain(uint VertexID : SV_VertexID)
+{
+	const float2 Positions[3] =
+	{
+		float2(-1.0f, -1.0f),
+		float2(-1.0f,  3.0f),
+		float2( 3.0f, -1.0f)
+	};
+
+	const float2 TexCoords[3] =
+	{
+		float2(0.0f, 1.0f),
+		float2(0.0f, -1.0f),
+		float2(2.0f, 1.0f)
+	};
+
+	VS_OUTPUT Output;
+	Output.Position = float4(Positions[VertexID], 0.0f, 1.0f);
+	Output.TexCoord = TexCoords[VertexID];
+	return Output;
+}
+
+float3 FilmTone(float3 Color)
+{
+	const float A = 0.15f;
+	const float B = 0.50f;
+	const float C = 0.10f;
+	const float D = 0.20f;
+	const float E = 0.02f;
+	const float F = 0.30f;
+
+	return
+		((Color * (A * Color + C * B) + D * E) /
+		(Color * (A * Color + B) + D * F)) -
+		E / F;
+}
+
+float4 PSMain(VS_OUTPUT Input) : SV_Target0
+{
+	const float3 HDRColor =
+		max(gHDRScene.Sample(gLinearClampSampler, Input.TexCoord).rgb, 0.0f);
+
+	const float Exposure = 1.0f;
+	const float WhiteLevel = 11.2f;
+	const float3 WhiteScale =
+		1.0f /
+		max(
+			FilmTone(float3(WhiteLevel, WhiteLevel, WhiteLevel)),
+			0.0001f
+		);
+
+	const float3 Tonemapped =
+		saturate(FilmTone(HDRColor * Exposure) * WhiteScale);
+
+	return float4(Tonemapped, 1.0f);
+}

@@ -1,0 +1,87 @@
+cbuffer LightCB : register(b4)
+{
+	float4 gSunDir;
+	float4 gSunColor;
+	float4 gAmbientColor;
+	float4 gFogColor;
+	float4 gFogParams;
+};
+
+Texture2D gGBufferColor : register(t0);
+Texture2D gGBufferNormal : register(t1);
+Texture2D gGBufferDepthLinear : register(t2);
+SamplerState gLinearClampSampler : register(s0);
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT VSMain(uint VertexID : SV_VertexID)
+{
+	const float2 Positions[3] =
+	{
+		float2(-1.0f, -1.0f),
+		float2(-1.0f,  3.0f),
+		float2( 3.0f, -1.0f)
+	};
+
+	const float2 TexCoords[3] =
+	{
+		float2(0.0f, 1.0f),
+		float2(0.0f, -1.0f),
+		float2(2.0f, 1.0f)
+	};
+
+	VS_OUTPUT Output;
+	Output.Position = float4(Positions[VertexID], 0.0f, 1.0f);
+	Output.TexCoord = TexCoords[VertexID];
+	return Output;
+}
+
+float4 PSMain(VS_OUTPUT Input) : SV_Target0
+{
+	const float4 Albedo =
+		gGBufferColor.Sample(gLinearClampSampler, Input.TexCoord);
+
+	const float3 EncodedNormal =
+		gGBufferNormal.Sample(gLinearClampSampler, Input.TexCoord).xyz;
+
+	const float LinearDepth =
+		gGBufferDepthLinear.Sample(gLinearClampSampler, Input.TexCoord).r;
+
+	if (LinearDepth >= 0.99999f)
+	{
+		const float SkyHeight =
+			saturate((0.55f - Input.TexCoord.y) / 0.55f);
+		const float3 SkyZenith =
+			gAmbientColor.rgb * 1.5f +
+			gSunColor.rgb * 0.08f;
+		const float3 SkyColor =
+			lerp(gFogColor.rgb, SkyZenith, SkyHeight);
+		return float4(SkyColor, 1.0f);
+	}
+
+	const float3 Normal =
+		normalize(EncodedNormal * 2.0f - 1.0f);
+
+	const float3 LightDirection =
+		-normalize(gSunDir.xyz);
+
+	const float NDotL =
+		saturate(dot(Normal, LightDirection));
+
+	float3 Color =
+		Albedo.rgb *
+		(gAmbientColor.rgb + gSunColor.rgb * NDotL);
+
+	const float FogAmount =
+		gFogParams.y > 0.0f
+		? saturate((LinearDepth - gFogParams.x) * gFogParams.y)
+		: 0.0f;
+
+	Color = lerp(Color, gFogColor.rgb, FogAmount);
+
+	return float4(max(Color, 0.0f), Albedo.a);
+}

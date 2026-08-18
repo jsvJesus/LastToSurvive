@@ -56,7 +56,7 @@ enum EGameObjectType
 	OBJTYPE_Particle			= (1<<6), // particle emitter
 	OBJTYPE_Sound				= (1<<7), // sound emitter
 	OBJTYPE_Trees				= (1<<8), // all world trees
-	OBJTYPE_ApexDestructible	= (1<<11),
+	OBJTYPE_Reserved11		= (1<<11),
 	OBJTYPE_AnimMesh			= (1<<12),
 	OBJTYPE_DecalProxy			= (1<<13),
 	OBJTYPE_Sprite				= (1<<15),
@@ -266,8 +266,9 @@ private:
 protected:
 	// linked list pointers inside ObjectManager
 	friend class ObjectManager;
-	r3dSec_type<GameObject*, 0x1FAA913A> pNextObject;
-	r3dSec_type<GameObject*, 0x37CFDEF5> pPrevObject;
+
+	GameObject* pNextObject = nullptr;
+	GameObject* pPrevObject = nullptr;
 
 protected:
 	int				FirstUpdate;

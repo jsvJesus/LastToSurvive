@@ -6,6 +6,12 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/Synchronization.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <vector>
+
 #include "GameObj.h"
 #include "ObjManag.h"
 #include "../../EclipseStudio/Sources/rendering/Deffered/RenderDeffered.h"
@@ -17,7 +23,6 @@
 #include "ObjectsCode/World/obj_road.h"
 #include "obj_Mesh.h"
 #include "obj_Dummy.h"
-#include "..\..\Eternity\Include\ParallelQuickSort.h"
 
 
 #include "..\TrueNature\Terrain.h"
@@ -28,7 +33,6 @@
 #include "../../EclipseStudio/Sources/ObjectsCode/weapons/BulletShellManager.h"
 #include "../../EclipseStudio/Sources/Editors/CollectionElementProxyObject.h"
 #include "../../EclipseStudio/Sources/Editors/CollectionsManager.h"
-#include "obj_Apex.hpp"
 
 #ifndef WO_SERVER
 #include "../../EclipseStudio/Sources/ObjectsCode/Gameplay/obj_ItemSpawnPoint.h"
@@ -36,7 +40,7 @@
 
 bool gDestroyingWorld = false;
 
-static r3dTL::TArray< GameObject* > TemporaryObjects ;
+static std::vector<GameObject*> TemporaryObjects;
 
 void ObjectManagerResourceHelper::D3DReleaseResource()
 {
@@ -168,28 +172,28 @@ GameObject *srv_CreateGameObject(const char* class_name, const char* load_name, 
 #if USE_VMPROTECT
   #pragma optimize("g", off)
 #endif
-static r3dSec_type<ObjectManager*, 0xFB8DA94A> g_pGameWorld = NULL;
+static ObjectManager* g_pGameWorld = nullptr;
 void GameWorld_Create()
 {
-	VMPROTECT_BeginVirtualization("GameWorld_Create()");
+	//VMPROTECT_BeginVirtualization("GameWorld_Create()");
 	r3d_assert(g_pGameWorld == NULL);
 	g_pGameWorld = new ObjectManager();
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 void GameWorld_Destroy()
 {
-	VMPROTECT_BeginVirtualization("GameWorld_Destroy()");
+	//VMPROTECT_BeginVirtualization("GameWorld_Destroy()");
 	SAFE_DELETE(g_pGameWorld);
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 ObjectManager& GameWorld()
 {
-	VMPROTECT_BeginMutation("GameWorld()");
+	//VMPROTECT_BeginMutation("GameWorld()");
 	r3d_assert(g_pGameWorld);
 	return *g_pGameWorld;
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 #if USE_VMPROTECT
   #pragma optimize("g", on)
@@ -225,7 +229,7 @@ int ObjectManager::Init(int _MaxObjects, int _MaxStaticObjects)
 	if(bInited) return 0;
 	bInited        = 1;
 
-	TemporaryObjects.Reserve( 1024 );
+	TemporaryObjects.reserve( 1024 );
 
 	m_pRootBox = new SceneBox();
 	m_ResourceHelper = 0;
@@ -261,7 +265,6 @@ int ObjectManager::Init(int _MaxObjects, int _MaxStaticObjects)
 #endif
 #endif
 
-	InitializeCriticalSection( &m_CS ) ;
 	return 1;
 }
 
@@ -396,7 +399,7 @@ int ObjectManager::AddObject(GameObject *obj)
 
 	// add object to linked list
 	{
-		VMPROTECT_BeginMutation("ObjectManager::AddObject-LList");
+		//VMPROTECT_BeginMutation("ObjectManager::AddObject-LList");
 
 		if( !obj->IsStatic() )
 		{
@@ -408,8 +411,8 @@ int ObjectManager::AddObject(GameObject *obj)
 			if(pLastObject) 
 			{
 				r3d_assert(pLastObject->pNextObject == NULL);
-				r3d_assert(obj->pPrevObject == NULL);
-				r3d_assert(obj->pNextObject == NULL);
+				r3d_assert(obj->pPrevObject == nullptr);
+				r3d_assert(obj->pNextObject == nullptr);
 
 				pLastObject->pNextObject = obj;
 				obj->pPrevObject = pLastObject;
@@ -417,7 +420,7 @@ int ObjectManager::AddObject(GameObject *obj)
 			pLastObject = obj;
 		}
 
-		VMPROTECT_End();
+		//VMPROTECT_End();
 	}
 
 #ifndef WO_SERVER
@@ -491,27 +494,49 @@ int ObjectManager::DeleteObject(GameObject* obj, bool call_delete)
 
 	// remove from linked list
 	{
-		VMPROTECT_BeginMutation("ObjectManager::DeleteObject-LList");
+		//VMPROTECT_BeginMutation("ObjectManager::DeleteObject-LList");
 
 		if( !obj->IsStatic() )
 		{
-			if(pFirstObject == obj)
-				pFirstObject = obj->pNextObject;
-			if(pLastObject == obj)
-				pLastObject = obj->pPrevObject;
-			if(obj->pPrevObject) {
-				r3d_assert(obj->pPrevObject->pNextObject == obj);
-				obj->pPrevObject->pNextObject = obj->pNextObject;
+			if (pFirstObject == obj)
+			{
+				pFirstObject =
+					obj->pNextObject;
 			}
-			if(obj->pNextObject) {
-				r3d_assert(obj->pNextObject->pPrevObject == obj);
-				obj->pNextObject->pPrevObject = obj->pPrevObject;
+
+			if (pLastObject == obj)
+			{
+				pLastObject =
+					obj->pPrevObject;
 			}
-			obj->pNextObject = NULL;
-			obj->pPrevObject = NULL;
+
+			if (obj->pPrevObject)
+			{
+				r3d_assert(
+					obj->pPrevObject->
+						pNextObject == obj);
+
+				obj->pPrevObject->
+					pNextObject =
+						obj->pNextObject;
+			}
+
+			if (obj->pNextObject)
+			{
+				r3d_assert(
+					obj->pNextObject->
+						pPrevObject == obj);
+
+				obj->pNextObject->
+					pPrevObject =
+						obj->pPrevObject;
+			}
+
+			obj->pNextObject = nullptr;
+			obj->pPrevObject = nullptr;
 		}
 
-		VMPROTECT_End();
+		//VMPROTECT_End();
 	}
 	
 	obj->OnDestroy();
@@ -654,7 +679,7 @@ GameObject* ObjectManager::GetObject(gobjid_t ID)
 	return NULL;
 }
 
-GameObject* ObjectManager::GetNetworkObject(DWORD netID)
+GameObject* ObjectManager::GetNetworkObject(std::uint32_t netID)
 {
 	R3DPROFILE_FUNCTION("ObjectManager::GetNetworkObject");
 
@@ -753,7 +778,7 @@ void ObjectManager::Update()
 	}
 	R3DPROFILE_END("OnCreate");
 
-	TemporaryObjects.Clear();
+	TemporaryObjects.clear();
 
 	// update & move objects
 	R3DPROFILE_START("Update&Move");
@@ -763,7 +788,7 @@ void ObjectManager::Update()
 
 		if( obj->ObjTypeFlags & OBJTYPE_Particle )
 		{
-			TemporaryObjects.PushBack( obj );
+			TemporaryObjects.push_back( obj );
 		}
 		else
 		{
@@ -821,10 +846,10 @@ void ObjectManager::Update()
 #endif
 #endif
 
-	if( TemporaryObjects.Count() )
+	if( !TemporaryObjects.empty() )
 	{
 		R3DPROFILE_START("Particles - Update");
-		g_pJobChief->Exec( CallUpdate, &TemporaryObjects[ 0 ], TemporaryObjects.Count() );
+		g_pJobChief->Exec( CallUpdate, TemporaryObjects.data(), TemporaryObjects.size() );
 		R3DPROFILE_END("Particles - Update");
 	}
 
@@ -883,7 +908,7 @@ void ObjectManager::EndFrame()
 #endif
 GameObject* ObjectManager::GetFirstObject()
 {
-	VMPROTECT_BeginMutation("ObjectManager::GetFirstObject");
+	//VMPROTECT_BeginMutation("ObjectManager::GetFirstObject");
 
 	for(GameObject* obj = pFirstObject; obj; obj = obj->pNextObject)
 	{
@@ -893,12 +918,12 @@ GameObject* ObjectManager::GetFirstObject()
 	}
 	return NULL;
 	
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 GameObject* ObjectManager::GetNextObject(const GameObject* in_obj)
 {
-	VMPROTECT_BeginMutation("ObjectManager::GetNextObject");
+	//VMPROTECT_BeginMutation("ObjectManager::GetNextObject");
 
 	for(GameObject* obj = in_obj->pNextObject; obj; obj = obj->pNextObject)
 	{
@@ -908,7 +933,7 @@ GameObject* ObjectManager::GetNextObject(const GameObject* in_obj)
 	}
 	return NULL;
 
-	VMPROTECT_End();
+	//VMPROTECT_End();
 }
 
 #if USE_VMPROTECT
@@ -1096,14 +1121,6 @@ GameObject* ObjectManager::CastRay(const r3dPoint3D& vStart, const r3dPoint3D& v
 		}
 #endif
 #endif
-#if APEX_ENABLED
-		else if (obj->isObjType(OBJTYPE_ApexDestructible))
-		{
-			obj_ApexDestructible *oad = reinterpret_cast<obj_ApexDestructible*>(obj);
-			mtrl = oad->GetMaterial(0);
-		}
-#endif
-
 		if(dst >= MinDistSoFar)
 			continue; 
 
@@ -1332,7 +1349,8 @@ uint8_t getShadowSliceBit(GameObject* userObject, const r3dCamera& Cam )
 }
 
 GameObject* TreeObject = 0; // declare it here because of server
-
+
+
 void ObjectManager::DrawDebug(const r3dCamera& Cam)
 {
 	r3dRenderer->SetRenderingMode(R3D_BLEND_NOALPHA | R3D_BLEND_ZC);
@@ -1790,11 +1808,10 @@ ObjectManager::PrepareTransparentShadowsInterm( const r3dCamera& Cam )
 
 void SortRenderArray( RenderArray& rarr, int start )
 {
- 	if(rarr.Count() >= 2 && (int)rarr.Count() > start)
+	if(rarr.Count() >= 2 && (int)rarr.Count() > start)
 	{
 		size_t numElems = static_cast<size_t>(rarr.Count() - start);
-  		ParallelQSort pqs(numElems / g_pJobChief->GetThreadCount());
-  		pqs.Sort(&rarr[start], numElems, RenderArray::TAB_SIZE, renderable_Comparator);
+		std::qsort(&rarr[start], numElems, RenderArray::TAB_SIZE, renderable_Comparator);
 	}
 }
 
@@ -2218,9 +2235,9 @@ ObjectManager::AddToTransparentShadowCasters( GameObject* obj )
 {
 	if( obj->IsTransparentShadowCaster() )
 	{
-		r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
+		engine::platform::MutexLockGuard lock(m_Mutex);
 
-		if( TransparentShadowCasterCount < TransparentShadowCasters.COUNT )
+		if( TransparentShadowCasterCount < static_cast<int>(TransparentShadowCasters.size()) )
 		{
 			TransparentShadowCasters[ TransparentShadowCasterCount++ ] = obj ;
 		}		
@@ -2230,14 +2247,18 @@ ObjectManager::AddToTransparentShadowCasters( GameObject* obj )
 void
 ObjectManager::RemoveFromTransparentShadowCasters( GameObject* obj )
 {
-	r3dCSHolder cs_holder( m_CS ) ; (void) cs_holder ;
+	engine::platform::MutexLockGuard lock(m_Mutex);
 
 	for( int i = 0, e = TransparentShadowCasterCount ; i < e ; i ++ )
 	{
 		if( TransparentShadowCasters[ i ] == obj )
 		{
-			TransparentShadowCasters.Move( i, i + 1, TransparentShadowCasterCount - i - 1 ) ;
+			std::move(
+				TransparentShadowCasters.begin() + i + 1,
+				TransparentShadowCasters.begin() + TransparentShadowCasterCount,
+				TransparentShadowCasters.begin() + i);
 			TransparentShadowCasterCount -- ;
+			TransparentShadowCasters[TransparentShadowCasterCount] = nullptr;
 			break ;
 		}
 	}

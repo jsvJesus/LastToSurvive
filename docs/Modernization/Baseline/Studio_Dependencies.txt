@@ -1,0 +1,50 @@
+﻿Microsoft (R) COFF/PE Dumper Version 14.44.35227.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file Z:\WarZ\bin\Studio.exe
+
+File Type: EXECUTABLE IMAGE
+
+  Image has the following dependencies:
+
+    WINMM.dll
+    WS2_32.dll
+    d3dx9_43.dll
+    d3d9.dll
+    D3DCOMPILER_47.dll
+    fmodex64.dll
+    fmod_event64.dll
+    fmod_event_net64.dll
+    PhysX_64.dll
+    PhysXCooking_64.dll
+    PhysXFoundation_64.dll
+    KERNEL32.dll
+    USER32.dll
+    GDI32.dll
+    ADVAPI32.dll
+    SHELL32.dll
+    discord_partner_sdk.dll
+    rmlui.dll
+    rmlui_debugger.dll
+    IMM32.dll
+    dwmapi.dll
+    dbghelp.dll
+    DINPUT8.dll
+    XINPUT1_4.dll
+    IPHLPAPI.DLL
+    PhysXCommon_64.dll
+    SHLWAPI.dll
+
+  Summary
+
+        1000 .00cfg
+      EC7000 .data
+        1000 .fptable
+        C000 .idata
+       75000 .pdata
+      356000 .rdata
+        2000 .rsrc
+      D45000 .text
+        1000 .tls
+        6000 _RDATA

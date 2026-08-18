@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!--Mesh Property Lib-->
+<mesh_property_lib>
+	<entry name="wz_terrain:cliff_vista_01_a.sco" draw_distance="4096" />
+	<entry name="wz_terrain:cliff_vista_01_b.sco" draw_distance="4096" />
+	<entry name="wz_terrain:cliff_vista_01_c.sco" draw_distance="4096" />
+	<entry name="wz_terrain:cliff_vista_01_d.sco" draw_distance="4096" />
+</mesh_property_lib>

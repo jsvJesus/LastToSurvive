@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{AF640D41-0C65-488E-88F4-86D90EC57415}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Tasks">
+      <UniqueIdentifier>{037F937D-A1BE-44AA-94FA-95FDD5BD25F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{44FC5E10-35B4-413E-A108-0A949D406CBD}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Public\Tasks\CancellationToken.h">
+      <Filter>Public\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Tasks\MainThreadDispatcher.h">
+      <Filter>Public\Tasks</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Tasks\TaskFence.h">
+      <Filter>Public\Tasks</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Private\CancellationToken.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\MainThreadDispatcher.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\TaskFence.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

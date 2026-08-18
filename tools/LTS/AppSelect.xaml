@@ -1,0 +1,27 @@
+<Window
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  d:DesignWidth="1920"
+  d:DesignHeight="1080"
+  Background="#FF4D5052"
+  Foreground="#FFE1E9ED">
+  <Grid>
+    <Image Source="Assets/bg.png" Width="1920" Height="1080"/>
+    <Border Width="600" Height="1200" Margin="660,-60" BorderBrush="#A2944E0F" BorderThickness="1" d:IsLocked="True">
+      <Border.Background>
+        <SolidColorBrush Color="#FF000000" Opacity="0.5"/>
+      </Border.Background>
+      <Image Source="Assets/LTS_logo.png" Width="400" Height="200" Margin="99,259,99,739"/>
+    </Border>
+    <Button x:Name="Button_PlayTestGame" Content="TEST GAME" Width="300" Height="50" Margin="810,470,810,560" BorderBrush="#A2944E0F" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_LevelEditor" Content="LEVEL EDITOR" Width="300" Height="50" Margin="810,530,810,500" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_CharacterEditor" Content="CHARACTER EDITOR" Width="300" Height="50" Margin="810,590,810,440" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_PhysicsEditor" Content="PHYSICS EDITOR" Width="300" Height="50" Margin="810,650,810,380" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_AssetsImporter" Content="FBX IMPORTER" Width="300" Height="50" Margin="810,710,810,320" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_IconGenerator" Content="ICON GENERATOR" Width="300" Height="50" Margin="810,770,810,260" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+    <Button x:Name="Button_Exit" Content="EXIT" Width="300" Height="50" Margin="810,850,810,180" FontFamily="Play" FontSize="18" Template="{DynamicResource AppSelectButtonTemplate}"/>
+  </Grid>
+</Window>

@@ -4,6 +4,11 @@
 #include "r3dPCH.h"
 #include "r3d.h"
 
+#include <Platform/File.h>
+
+#include <limits>
+#include <vector>
+
 #include "GameObjects/GameObj.h"
 #include "GameObjects/EventTransport.h"
 
@@ -621,16 +626,36 @@ void GameObject::LoadPhysicsConfig(const char* meshName, PhysicsObjectConfig& re
 	r3dscpy(physicsFilename, meshName);
 	int len = strlen(physicsFilename);
 	r3dscpy(&physicsFilename[len-3], "phx");
-	if(r3d_access(physicsFilename, 0) == 0)
+
+	engine::platform::File physicsFile{
+		engine::platform::Path(physicsFilename),
+		engine::platform::FileAccess::Read,
+		engine::platform::FileCreation::OpenExisting
+	};
+	if(physicsFile)
 	{
-		r3dFile* f = r3d_open(physicsFilename, "rb");
-		r3d_assert(f);
-		char* fileBuffer = new char[f->size + 1];
-		fread(fileBuffer, f->size, 1, f);
-		fileBuffer[f->size] = 0;
+		const std::optional<std::uint64_t> fileSize = physicsFile.GetSize();
+		if (
+			!fileSize ||
+			*fileSize > static_cast<std::uint64_t>(std::numeric_limits<std::size_t>::max() - 1)
+		)
+		{
+			return;
+		}
+
+		const std::size_t bufferSize = static_cast<std::size_t>(*fileSize);
+		std::vector<char> fileBuffer(bufferSize + 1);
+		const engine::platform::FileIoResult readResult =
+			physicsFile.Read(fileBuffer.data(), bufferSize);
+		if (!readResult || readResult.bytesTransferred != bufferSize)
+		{
+			return;
+		}
+
+		fileBuffer[bufferSize] = 0;
 		pugi::xml_document xmlFile;
-		pugi::xml_parse_result parseResult = xmlFile.load_buffer_inplace(fileBuffer, f->size);
-		fclose(f);
+		pugi::xml_parse_result parseResult =
+			xmlFile.load_buffer_inplace(fileBuffer.data(), bufferSize);
 		if(!parseResult)
 			r3dError("Failed to parse XML, error: %s", parseResult.description());
 		pugi::xml_node xmlPhysics = xmlFile.child("physics");
@@ -656,8 +681,6 @@ void GameObject::LoadPhysicsConfig(const char* meshName, PhysicsObjectConfig& re
 		result.ready = true;
 		r3d_assert(result.meshFilename==NULL);
 		result.meshFilename = strdup(meshName); 
-
-		delete [] fileBuffer;
 	}
 }
 

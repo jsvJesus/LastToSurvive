@@ -6,6 +6,7 @@
 #include "r3dBudgeter.h"
 
 #include "r3dBackgroundTaskDispatcher.h"
+#include "r3dDeviceQueue.h"
 
 #include "r3dDebug.h"
 
@@ -60,7 +61,6 @@
 #include "../../Eternity/Source/r3dEternityWebBrowser.h"
 #include "../../GameEngine/gameobjects/obj_Vehicle.h"
 #include "../../GameEngine/ai/NavGenerationHelpers.h"
-#include "../../GameEngine/ai/AutodeskNav/AutodeskNavMesh.h"
 
 #include "rendering/Deffered/D3DMiscFunctions.h"
 #include "rendering/World/WorldRenderer.h"
@@ -510,13 +510,6 @@ void DestroyGame()
 	SAFE_DELETE(SkyDome);
 	SAFE_DELETE(Sun);
 
-#if ENABLE_AUTODESK_NAVIGATION
-	{
-		r3dOutToLog( "gAutodeskNavMesh.Close...\n" );
-		gAutodeskNavMesh.Close();
-	}
-#endif // ENABLE_AUTODESK_NAVIGATION
-
 	WaterBase::FlushRefractionBuffer();
 
 
@@ -788,10 +781,6 @@ void GameStateGameLoop()
 	g_pPhysicsWorld->EndSimulation();
 	R3DPROFILE_END("Physics EndSimulation");
 
-#if ENABLE_AUTODESK_NAVIGATION
-	gAutodeskNavMesh.Update();
-#endif // ENABLE_AUTODESK_NAVIGATION
-
 	if( r3dRenderer->DeviceAvailable )
 	{
 		g_pPhysicsWorld->DrawDebug();
@@ -814,9 +803,6 @@ void GameStateGameLoop()
 		}
 
 		Nav::gConvexRegionsManager.VisualizeRegions();
-	#if ENABLE_AUTODESK_NAVIGATION
-		gAutodeskNavMesh.DebugDraw();
-	#endif
 
 #endif
 
@@ -959,14 +945,23 @@ void GameStateGameLoop()
 	R3DPROFILE_START("EndRender");
 	r3dRenderer->EndFrame();
 
-	UpdateD3DAntiCheatPrePresent();
+	const bool bDX11OwnsPresentation =
+		WorldRender_PresentDX11();
 
-	r3dRenderer->EndRender(true);
+	if (!bDX11OwnsPresentation)
+	{
+		UpdateD3DAntiCheatPrePresent();
+		r3dRenderer->EndRender(true);
+		UpdateD3DAntiCheatPostPresent();
+	}
+	else
+	{
+		++gRenderFrameCounter;
+		ProcessDeviceQueue(r3dGetTime(), 0.033f);
+	}
 	R3DPROFILE_END("EndRender");
 
-	UpdateD3DAntiCheatPostPresent();
-
-	if( r3dRenderer->DeviceAvailable )
+	if( r3dRenderer->DeviceAvailable && !bDX11OwnsPresentation )
 	{
 		r3dUpdateScreenShot();
 		if(Keyboard->WasPressed(kbsPrtScr) && !Keyboard->IsPressed(kbsLeftControl) )

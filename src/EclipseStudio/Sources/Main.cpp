@@ -1,5 +1,43 @@
 ﻿#include "r3dPCH.h"
 #include "r3d.h"
+
+#include "StudioGraphicsShell.h"
+
+#if defined(_WIN64)
+#include "Core/Log.h"
+#include "Core/Version.h"
+#include "Legacy/LoggingBridge.h"
+#include "Legacy/PointConversion.h"
+
+#include <Platform/Clock.h>
+#include <Platform/DynamicLibrary.h>
+#include <Platform/File.h>
+#include <Platform/Input.h>
+#include <Platform/MessagePump.h>
+#include <Platform/Path.h>
+#include <Platform/Process.h>
+#include <Platform/SystemInfo.h>
+#include <Platform/Synchronization.h>
+#include <Platform/Thread.h>
+#include <Platform/Window.h>
+
+#include <Tasks/CancellationToken.h>
+#include <Tasks/MainThreadDispatcher.h>
+#include <Tasks/TaskFence.h>
+#include <Tasks/JobSystem.h>
+
+#include <Runtime/Engine.h>
+#include <Runtime/RuntimeModule.h>
+
+#include <atomic>
+#include <cstdio>
+#include <array>
+#include <memory>
+#include <string>
+#include <optional>
+#include <utility>
+#endif
+
 #include "r3dNetwork.h"
 #include "shellapi.h"
 #include "resource.h"
@@ -477,6 +515,778 @@ static void ApplyStudioDarkTitleBar(HWND WindowHandle)
 	);
 }
 
+#if defined(_WIN64)
+static void ValidatePlatformWindowBridge()
+{
+	static bool validated = false;
+
+	if (validated)
+	{
+		return;
+	}
+
+	validated = true;
+
+	const auto nativeHandle =
+		engine::platform::NativeWindowHandle::FromValue(
+			reinterpret_cast<std::uintptr_t>(
+				win::hWnd));
+
+	engine::platform::Window studioWindow(
+		nativeHandle);
+
+	const engine::platform::WindowSize clientSize =
+		studioWindow.GetClientSize();
+
+	const std::wstring title =
+		studioWindow.GetTitle();
+
+	const bool pendingMessages =
+		engine::platform::MessagePump::
+			HasPendingMessages();
+
+	r3dOutToLog(
+		"[Platform] Window bridge: valid=%d, "
+		"client=%ux%u, visible=%d, minimized=%d, "
+		"maximized=%d, foreground=%d, titleLength=%u\n",
+		studioWindow.IsValid() ? 1 : 0,
+		clientSize.width,
+		clientSize.height,
+		studioWindow.IsVisible() ? 1 : 0,
+		studioWindow.IsMinimized() ? 1 : 0,
+		studioWindow.IsMaximized() ? 1 : 0,
+		studioWindow.IsForeground() ? 1 : 0,
+		static_cast<unsigned int>(
+			title.size()));
+
+	r3dOutToLog(
+		"[Platform] MessagePump foundation: pending=%d\n",
+		pendingMessages ? 1 : 0);
+
+	r3d_assert(
+		studioWindow.IsValid());
+
+	r3d_assert(
+		!clientSize.IsEmpty());
+
+	const engine::platform::NativeWindowHandle detachedHandle =
+		studioWindow.Detach();
+
+	r3d_assert(
+		!studioWindow.IsValid());
+
+	studioWindow.Attach(
+		detachedHandle);
+
+	r3d_assert(
+		studioWindow.IsValid());
+
+	r3dOutToLog(
+		"[Platform] Window attach/detach: success\n");
+}
+
+static void ValidatePlatformSynchronizationFoundation()
+{
+    engine::platform::Mutex mutex;
+
+    {
+        engine::platform::MutexLockGuard lock(
+            mutex);
+    }
+
+    const bool mutexTryLockSucceeded =
+        mutex.TryLock();
+
+    if (mutexTryLockSucceeded)
+    {
+        mutex.Unlock();
+    }
+
+    engine::platform::Event manualEvent(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    const engine::platform::WaitResult
+        manualInitialWait =
+            manualEvent.Wait(0);
+
+    const bool manualSignalSucceeded =
+        manualEvent.Signal();
+
+    const engine::platform::WaitResult
+        manualFirstWait =
+            manualEvent.Wait(0);
+
+    const engine::platform::WaitResult
+        manualSecondWait =
+            manualEvent.Wait(0);
+
+    const bool manualResetSucceeded =
+        manualEvent.Reset();
+
+    const engine::platform::WaitResult
+        manualAfterResetWait =
+            manualEvent.Wait(0);
+
+    engine::platform::Event automaticEvent(
+        engine::platform::EventResetMode::Automatic,
+        true);
+
+    const engine::platform::WaitResult
+        automaticFirstWait =
+            automaticEvent.Wait(0);
+
+    const engine::platform::WaitResult
+        automaticSecondWait =
+            automaticEvent.Wait(0);
+
+    engine::platform::Semaphore semaphore(
+        0,
+        2);
+
+    const engine::platform::WaitResult
+        semaphoreInitialWait =
+            semaphore.Wait(0);
+
+    const bool semaphoreReleaseSucceeded =
+        semaphore.Release(2);
+
+    const engine::platform::WaitResult
+        semaphoreFirstWait =
+            semaphore.Wait(0);
+
+    const engine::platform::WaitResult
+        semaphoreSecondWait =
+            semaphore.Wait(0);
+
+    const engine::platform::WaitResult
+        semaphoreThirdWait =
+            semaphore.Wait(0);
+
+    r3dOutToLog(
+        "[Platform] Mutex: tryLock=%d\n",
+        mutexTryLockSucceeded ? 1 : 0);
+
+    r3dOutToLog(
+        "[Platform] ManualEvent: valid=%d, "
+        "initial=%s, signal=%d, first=%s, "
+        "second=%s, reset=%d, afterReset=%s, "
+        "error=%u\n",
+        manualEvent.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            manualInitialWait),
+        manualSignalSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            manualFirstWait),
+        engine::platform::ToString(
+            manualSecondWait),
+        manualResetSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            manualAfterResetWait),
+        static_cast<unsigned int>(
+            manualEvent.GetLastErrorCode()));
+
+    r3dOutToLog(
+        "[Platform] AutomaticEvent: valid=%d, "
+        "first=%s, second=%s, error=%u\n",
+        automaticEvent.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            automaticFirstWait),
+        engine::platform::ToString(
+            automaticSecondWait),
+        static_cast<unsigned int>(
+            automaticEvent.GetLastErrorCode()));
+
+    r3dOutToLog(
+        "[Platform] Semaphore: valid=%d, "
+        "initial=%s, release=%d, first=%s, "
+        "second=%s, third=%s, error=%u\n",
+        semaphore.IsValid() ? 1 : 0,
+        engine::platform::ToString(
+            semaphoreInitialWait),
+        semaphoreReleaseSucceeded ? 1 : 0,
+        engine::platform::ToString(
+            semaphoreFirstWait),
+        engine::platform::ToString(
+            semaphoreSecondWait),
+        engine::platform::ToString(
+            semaphoreThirdWait),
+        static_cast<unsigned int>(
+            semaphore.GetLastErrorCode()));
+
+    r3d_assert(mutexTryLockSucceeded);
+
+    r3d_assert(manualEvent.IsValid());
+    r3d_assert(
+        manualInitialWait ==
+        engine::platform::WaitResult::Timeout);
+    r3d_assert(manualSignalSucceeded);
+    r3d_assert(
+        manualFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        manualSecondWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(manualResetSucceeded);
+    r3d_assert(
+        manualAfterResetWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(automaticEvent.IsValid());
+    r3d_assert(
+        automaticFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        automaticSecondWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(semaphore.IsValid());
+    r3d_assert(
+        semaphoreInitialWait ==
+        engine::platform::WaitResult::Timeout);
+    r3d_assert(semaphoreReleaseSucceeded);
+    r3d_assert(
+        semaphoreFirstWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        semaphoreSecondWait ==
+        engine::platform::WaitResult::Success);
+    r3d_assert(
+        semaphoreThirdWait ==
+        engine::platform::WaitResult::Timeout);
+
+    r3dOutToLog(
+        "[Platform] Synchronization foundation: success\n");
+}
+
+static void ValidateTasksFoundation()
+{
+    engine::tasks::CancellationSource
+        cancellationSource;
+
+    const engine::tasks::CancellationToken
+        originalToken =
+            cancellationSource.GetToken();
+
+    const bool cancellationBefore =
+        originalToken.IsCancellationRequested();
+
+    const bool firstCancellation =
+        cancellationSource.Cancel();
+
+    const bool secondCancellation =
+        cancellationSource.Cancel();
+
+    cancellationSource.Reset();
+
+    const engine::tasks::CancellationToken
+        replacementToken =
+            cancellationSource.GetToken();
+
+    const bool originalAfterReset =
+        originalToken.IsCancellationRequested();
+
+    const bool replacementAfterReset =
+        replacementToken.IsCancellationRequested();
+
+    r3dOutToLog(
+        "[Tasks] Cancellation: valid=%d, "
+        "before=%d, first=%d, second=%d, "
+        "originalAfterReset=%d, "
+        "replacementAfterReset=%d\n",
+        originalToken.IsValid() ? 1 : 0,
+        cancellationBefore ? 1 : 0,
+        firstCancellation ? 1 : 0,
+        secondCancellation ? 1 : 0,
+        originalAfterReset ? 1 : 0,
+        replacementAfterReset ? 1 : 0);
+
+    r3d_assert(originalToken.IsValid());
+    r3d_assert(!cancellationBefore);
+    r3d_assert(firstCancellation);
+    r3d_assert(!secondCancellation);
+    r3d_assert(originalAfterReset);
+    r3d_assert(!replacementAfterReset);
+
+    engine::tasks::TaskFence fence;
+
+    const bool fenceInitiallyComplete =
+        fence.IsComplete();
+
+    const bool fenceAdded =
+        fence.Add(2);
+
+    const engine::platform::WaitResult
+        waitBeforeCompletion =
+            fence.Wait(0);
+
+    const bool firstTaskCompleted =
+        fence.Complete();
+
+    const engine::platform::WaitResult
+        waitAfterFirstTask =
+            fence.Wait(0);
+
+    const bool secondTaskCompleted =
+        fence.Complete();
+
+    const engine::platform::WaitResult
+        waitAfterSecondTask =
+            fence.Wait(0);
+
+    r3dOutToLog(
+        "[Tasks] Fence: valid=%d, "
+        "initiallyComplete=%d, add=%d, "
+        "before=%s, firstComplete=%d, "
+        "middle=%s, secondComplete=%d, "
+        "final=%s, pending=%u\n",
+        fence.IsValid() ? 1 : 0,
+        fenceInitiallyComplete ? 1 : 0,
+        fenceAdded ? 1 : 0,
+        engine::platform::ToString(
+            waitBeforeCompletion),
+        firstTaskCompleted ? 1 : 0,
+        engine::platform::ToString(
+            waitAfterFirstTask),
+        secondTaskCompleted ? 1 : 0,
+        engine::platform::ToString(
+            waitAfterSecondTask),
+        static_cast<unsigned int>(
+            fence.GetPendingCount()));
+
+    r3d_assert(fence.IsValid());
+    r3d_assert(fenceInitiallyComplete);
+    r3d_assert(fenceAdded);
+
+    r3d_assert(
+        waitBeforeCompletion ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(firstTaskCompleted);
+
+    r3d_assert(
+        waitAfterFirstTask ==
+        engine::platform::WaitResult::Timeout);
+
+    r3d_assert(secondTaskCompleted);
+
+    r3d_assert(
+        waitAfterSecondTask ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(fence.IsComplete());
+    r3d_assert(fence.GetPendingCount() == 0);
+
+    engine::tasks::MainThreadDispatcher
+        dispatcher;
+
+    const bool dispatcherInitialized =
+        dispatcher.Initialize();
+
+    std::uint32_t executionMask = 0;
+
+    const bool firstPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x1u;
+            });
+
+    const bool secondPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x2u;
+            });
+
+    const bool thirdPosted =
+        dispatcher.Post(
+            [&executionMask]()
+            {
+                executionMask |= 0x4u;
+            });
+
+    const std::size_t firstDispatchCount =
+        dispatcher.Dispatch(2);
+
+    const std::size_t pendingAfterFirstDispatch =
+        dispatcher.GetPendingCount();
+
+    const std::size_t secondDispatchCount =
+        dispatcher.Dispatch();
+
+    const std::size_t pendingAfterSecondDispatch =
+        dispatcher.GetPendingCount();
+
+    dispatcher.Shutdown();
+
+    const bool rejectedAfterShutdown =
+        !dispatcher.Post(
+            []()
+            {
+            });
+
+    r3dOutToLog(
+        "[Tasks] MainThreadDispatcher: "
+        "initialized=%d, owner=%d, "
+        "posted=%d%d%d, first=%u, "
+        "pendingMiddle=%u, second=%u, "
+        "pendingFinal=%u, mask=%u, "
+        "rejectedAfterShutdown=%d\n",
+        dispatcherInitialized ? 1 : 0,
+        dispatcherInitialized ? 1 : 0,
+        firstPosted ? 1 : 0,
+        secondPosted ? 1 : 0,
+        thirdPosted ? 1 : 0,
+        static_cast<unsigned int>(
+            firstDispatchCount),
+        static_cast<unsigned int>(
+            pendingAfterFirstDispatch),
+        static_cast<unsigned int>(
+            secondDispatchCount),
+        static_cast<unsigned int>(
+            pendingAfterSecondDispatch),
+        static_cast<unsigned int>(
+            executionMask),
+        rejectedAfterShutdown ? 1 : 0);
+
+    r3d_assert(dispatcherInitialized);
+    r3d_assert(firstPosted);
+    r3d_assert(secondPosted);
+    r3d_assert(thirdPosted);
+
+    r3d_assert(firstDispatchCount == 2);
+    r3d_assert(pendingAfterFirstDispatch == 1);
+
+    r3d_assert(secondDispatchCount == 1);
+    r3d_assert(pendingAfterSecondDispatch == 0);
+
+    r3d_assert(executionMask == 0x7u);
+    r3d_assert(rejectedAfterShutdown);
+    r3d_assert(!dispatcher.IsInitialized());
+
+    r3dOutToLog(
+        "[Tasks] Foundation validation: success\n");
+}
+
+static void ValidateJobSystemFoundation()
+{
+    engine::tasks::JobSystem jobSystem;
+
+    engine::tasks::JobSystemConfig config;
+    config.workerCount = 1;
+    config.workerNamePrefix =
+        L"LTS.ValidationWorker";
+
+    const bool initialized =
+        jobSystem.Initialize(config);
+
+    r3d_assert(initialized);
+
+    if (!initialized)
+    {
+        return;
+    }
+
+    engine::platform::Event blockerStarted(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    engine::platform::Event blockerRelease(
+        engine::platform::EventResetMode::Manual,
+        false);
+
+    const engine::tasks::TaskHandle blocker =
+        jobSystem.Submit(
+            [&blockerStarted, &blockerRelease](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                (void)blockerStarted.Signal();
+
+                (void)blockerRelease.Wait(
+                    5000);
+            },
+            engine::tasks::TaskPriority::Normal);
+
+    r3d_assert(blocker.IsValid());
+
+    const engine::platform::WaitResult
+        blockerStartedResult =
+            blockerStarted.Wait(5000);
+
+    r3d_assert(
+        blockerStartedResult ==
+        engine::platform::WaitResult::Success);
+
+    engine::platform::Mutex orderMutex;
+
+    std::array<std::uint32_t, 4>
+        executionOrder{};
+
+    std::size_t executionCount = 0;
+
+    auto recordExecution =
+        [&orderMutex,
+         &executionOrder,
+         &executionCount](
+            const std::uint32_t value)
+        {
+            engine::platform::MutexLockGuard lock(
+                orderMutex);
+
+            if (executionCount <
+                executionOrder.size())
+            {
+                executionOrder[
+                    executionCount] =
+                        value;
+
+                ++executionCount;
+            }
+        };
+
+    engine::tasks::TaskFence priorityFence;
+
+    const engine::tasks::TaskHandle lowTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(1);
+            },
+            engine::tasks::TaskPriority::Low,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle criticalTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(4);
+            },
+            engine::tasks::TaskPriority::Critical,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle normalTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(2);
+            },
+            engine::tasks::TaskPriority::Normal,
+            {},
+            &priorityFence);
+
+    const engine::tasks::TaskHandle highTask =
+        jobSystem.Submit(
+            [&recordExecution](
+                const engine::tasks::
+                    CancellationToken&)
+            {
+                recordExecution(3);
+            },
+            engine::tasks::TaskPriority::High,
+            {},
+            &priorityFence);
+
+    r3d_assert(lowTask.IsValid());
+    r3d_assert(criticalTask.IsValid());
+    r3d_assert(normalTask.IsValid());
+    r3d_assert(highTask.IsValid());
+
+    (void)blockerRelease.Signal();
+
+    const engine::platform::WaitResult
+        blockerWait =
+            blocker.Wait(5000);
+
+    const engine::platform::WaitResult
+        priorityWait =
+            priorityFence.Wait(5000);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem: initialized=%d, "
+        "workers=%u, blocker=%s, fence=%s, "
+        "order=%u,%u,%u,%u\n",
+        initialized ? 1 : 0,
+        static_cast<unsigned int>(
+            jobSystem.GetWorkerCount()),
+        engine::platform::ToString(
+            blockerWait),
+        engine::platform::ToString(
+            priorityWait),
+        static_cast<unsigned int>(
+            executionOrder[0]),
+        static_cast<unsigned int>(
+            executionOrder[1]),
+        static_cast<unsigned int>(
+            executionOrder[2]),
+        static_cast<unsigned int>(
+            executionOrder[3]));
+
+    r3d_assert(
+        blockerWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(
+        priorityWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(executionCount == 4);
+
+    r3d_assert(executionOrder[0] == 4);
+    r3d_assert(executionOrder[1] == 3);
+    r3d_assert(executionOrder[2] == 2);
+    r3d_assert(executionOrder[3] == 1);
+
+    r3d_assert(
+        lowTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        normalTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        highTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    r3d_assert(
+        criticalTask.GetState() ==
+        engine::tasks::TaskState::Completed);
+
+    engine::tasks::CancellationSource
+        cancellationSource;
+
+    (void)cancellationSource.Cancel();
+
+    std::atomic<std::uint32_t>
+        cancelledCallbackRuns{0};
+
+    const engine::tasks::TaskHandle
+        cancelledTask =
+            jobSystem.Submit(
+                [&cancelledCallbackRuns](
+                    const engine::tasks::
+                        CancellationToken&)
+                {
+                    cancelledCallbackRuns.fetch_add(
+                        1,
+                        std::memory_order_relaxed);
+                },
+                engine::tasks::TaskPriority::Normal,
+                cancellationSource.GetToken());
+
+    const engine::platform::WaitResult
+        cancelledWait =
+            cancelledTask.Wait(0);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem cancellation: "
+        "wait=%s, state=%s, callbackRuns=%u\n",
+        engine::platform::ToString(
+            cancelledWait),
+        engine::tasks::ToString(
+            cancelledTask.GetState()),
+        static_cast<unsigned int>(
+            cancelledCallbackRuns.load(
+                std::memory_order_acquire)));
+
+    r3d_assert(cancelledTask.IsValid());
+
+    r3d_assert(
+        cancelledWait ==
+        engine::platform::WaitResult::Success);
+
+    r3d_assert(
+        cancelledTask.GetState() ==
+        engine::tasks::TaskState::Cancelled);
+
+    r3d_assert(
+        cancelledCallbackRuns.load(
+            std::memory_order_acquire) == 0);
+
+    const engine::tasks::JobSystemStats stats =
+        jobSystem.GetStats();
+
+    r3dOutToLog(
+        "[Tasks] JobSystem stats: submitted=%llu, "
+        "completed=%llu, cancelled=%llu, "
+        "failed=%llu, running=%u, pending=%u\n",
+        static_cast<unsigned long long>(
+            stats.submittedTaskCount),
+        static_cast<unsigned long long>(
+            stats.completedTaskCount),
+        static_cast<unsigned long long>(
+            stats.cancelledTaskCount),
+        static_cast<unsigned long long>(
+            stats.failedTaskCount),
+        static_cast<unsigned int>(
+            stats.runningTaskCount),
+        static_cast<unsigned int>(
+            stats.pendingTaskCount));
+
+    r3d_assert(
+        stats.submittedTaskCount == 6);
+
+    r3d_assert(
+        stats.completedTaskCount == 5);
+
+    r3d_assert(
+        stats.cancelledTaskCount == 1);
+
+    r3d_assert(
+        stats.failedTaskCount == 0);
+
+    r3d_assert(
+        stats.runningTaskCount == 0);
+
+    r3d_assert(
+        stats.pendingTaskCount == 0);
+
+    jobSystem.Shutdown();
+
+    const engine::tasks::TaskHandle
+        rejectedTask =
+            jobSystem.Submit(
+                [](
+                    const engine::tasks::
+                        CancellationToken&)
+                {
+                });
+
+    const bool rejectedAfterShutdown =
+        !rejectedTask.IsValid();
+
+    r3dOutToLog(
+        "[Tasks] JobSystem shutdown: "
+        "initialized=%d, accepting=%d, "
+        "rejected=%d\n",
+        jobSystem.IsInitialized() ? 1 : 0,
+        jobSystem.IsAcceptingTasks() ? 1 : 0,
+        rejectedAfterShutdown ? 1 : 0);
+
+    r3d_assert(
+        !jobSystem.IsInitialized());
+
+    r3d_assert(
+        !jobSystem.IsAcceptingTasks());
+
+    r3d_assert(
+        rejectedAfterShutdown);
+
+    r3dOutToLog(
+        "[Tasks] JobSystem validation: success\n");
+}
+#endif
+
 void InitRender(int bUseSet = 0)
 {
 	r_out_of_vmem_encountered->SetChangeCallback( &SaveSettingsCallback ) ;
@@ -558,6 +1368,10 @@ void InitRender(int bUseSet = 0)
 
 	ShowWindow(win::hWnd, TRUE);
 	UpdateWindow(win::hWnd);
+
+#if defined(_WIN64)
+	ValidatePlatformWindowBridge();
+#endif
 
 	r3dInitShaders();
 
@@ -783,10 +1597,1060 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 
 CHWInfo g_HardwareInfo;
 
+#if defined(_WIN64)
+static void ValidatePlatformFileFoundation()
+{
+    const engine::platform::Path executablePath =
+        engine::platform::GetExecutablePath();
+
+    engine::platform::File executableFile(
+        executablePath,
+        engine::platform::FileAccess::Read,
+        engine::platform::FileCreation::OpenExisting);
+
+    const bool opened =
+        executableFile.IsOpen();
+
+    const std::optional<std::uint64_t> fileSize =
+        executableFile.GetSize();
+
+    std::array<unsigned char, 2> signature{};
+
+    const engine::platform::FileIoResult readResult =
+        executableFile.Read(
+            signature.data(),
+            signature.size());
+
+    const bool validExecutableSignature =
+        readResult.success &&
+        readResult.bytesTransferred ==
+            signature.size() &&
+        signature[0] == 'M' &&
+        signature[1] == 'Z';
+
+    const bool seekSucceeded =
+        executableFile.Seek(
+            0,
+            engine::platform::FileSeekOrigin::Begin);
+
+    const std::optional<std::uint64_t> position =
+        executableFile.GetPosition();
+
+    const unsigned long long fileSizeValue =
+        static_cast<unsigned long long>(
+            fileSize.value_or(0));
+
+    const unsigned long long positionValue =
+        static_cast<unsigned long long>(
+            position.value_or(
+                static_cast<std::uint64_t>(-1)));
+
+    const unsigned int errorCode =
+        static_cast<unsigned int>(
+            executableFile.GetLastErrorCode());
+
+    r3dOutToLog(
+        "[Platform] File: opened=%d, size=%llu, "
+        "read=%u, signature=%c%c, seek=%d, "
+        "position=%llu, error=%u\n",
+        opened ? 1 : 0,
+        fileSizeValue,
+        static_cast<unsigned int>(
+            readResult.bytesTransferred),
+        signature[0],
+        signature[1],
+        seekSucceeded ? 1 : 0,
+        positionValue,
+        errorCode);
+
+    r3d_assert(opened);
+    r3d_assert(fileSize.has_value());
+    r3d_assert(fileSizeValue > 0);
+    r3d_assert(readResult.success);
+    r3d_assert(validExecutableSignature);
+    r3d_assert(seekSucceeded);
+    r3d_assert(position.has_value());
+    r3d_assert(positionValue == 0);
+
+    engine::platform::File movedFile(
+        std::move(executableFile));
+
+    const bool sourceReleased =
+        !executableFile.IsOpen();
+
+    const bool destinationOwnsFile =
+        movedFile.IsOpen();
+
+    r3dOutToLog(
+        "[Platform] File move: source released=%d, "
+        "destination owns=%d\n",
+        sourceReleased ? 1 : 0,
+        destinationOwnsFile ? 1 : 0);
+
+    r3d_assert(sourceReleased);
+    r3d_assert(destinationOwnsFile);
+
+    movedFile.Close();
+
+    r3d_assert(!movedFile.IsOpen());
+
+    r3dOutToLog(
+        "[Platform] File close: success\n");
+}
+
+static void ValidatePlatformProcessFoundation()
+{
+    const std::uint32_t currentProcessId =
+        engine::platform::GetCurrentProcessId();
+
+    const engine::platform::Path currentProcessPath =
+        engine::platform::GetCurrentProcessPath();
+
+    engine::platform::ProcessStartInfo startInfo;
+    startInfo.executablePath = L"cmd.exe";
+    startInfo.arguments =
+        L"/D /S /C \"exit 37\"";
+    startInfo.windowMode =
+        engine::platform::ProcessWindowMode::NoWindow;
+
+    engine::platform::Process childProcess;
+
+    const bool started =
+        childProcess.Start(startInfo);
+
+	const unsigned int startError =
+	static_cast<unsigned int>(
+		childProcess.GetLastErrorCode());
+
+    const std::uint32_t childProcessId =
+        childProcess.GetId();
+
+    engine::platform::Process movedProcess(
+        std::move(childProcess));
+
+    const bool sourceReleased =
+        !childProcess.IsValid();
+
+    const bool destinationOwnsProcess =
+        movedProcess.IsValid();
+
+	r3dOutToLog(
+	"[Platform] Process: currentId=%u, "
+	"currentPathValid=%d, started=%d, "
+	"startError=%u, childId=%u\n",
+	static_cast<unsigned int>(
+		currentProcessId),
+	currentProcessPath.empty() ? 0 : 1,
+	started ? 1 : 0,
+	startError,
+	static_cast<unsigned int>(
+		childProcessId));
+
+	r3d_assert(currentProcessId != 0);
+	r3d_assert(!currentProcessPath.empty());
+	r3d_assert(started);
+
+	if (!started)
+	{
+		r3dOutToLog(
+			"[Platform] Process validation aborted: "
+			"CreateProcess failed with error=%u\n",
+			startError);
+
+		return;
+	}
+
+    r3d_assert(currentProcessId != 0);
+    r3d_assert(!currentProcessPath.empty());
+    r3d_assert(started);
+    r3d_assert(childProcessId != 0);
+    r3d_assert(sourceReleased);
+    r3d_assert(destinationOwnsProcess);
+
+    const engine::platform::ProcessWaitResult waitResult =
+        movedProcess.Wait(5000);
+
+    const std::optional<std::uint32_t> exitCode =
+        movedProcess.GetExitCode();
+
+    const bool running =
+        movedProcess.IsRunning();
+
+    const unsigned int exitCodeValue =
+        static_cast<unsigned int>(
+            exitCode.value_or(
+                0xFFFFFFFFu));
+
+    const unsigned int errorCode =
+        static_cast<unsigned int>(
+            movedProcess.GetLastErrorCode());
+
+    r3dOutToLog(
+        "[Platform] Process wait: result=%s, "
+        "exitCode=%u, running=%d, error=%u\n",
+        engine::platform::ToString(
+            waitResult),
+        exitCodeValue,
+        running ? 1 : 0,
+        errorCode);
+
+    r3d_assert(
+        waitResult ==
+        engine::platform::ProcessWaitResult::Completed);
+
+    r3d_assert(exitCode.has_value());
+    r3d_assert(exitCodeValue == 37);
+    r3d_assert(!running);
+    r3d_assert(errorCode == 0);
+
+    movedProcess.Close();
+
+    r3d_assert(!movedProcess.IsValid());
+
+    r3dOutToLog(
+        "[Platform] Process close: success\n");
+}
+
+static void ValidatePlatformClockAndThreadFoundation()
+{
+	const engine::platform::Clock::Tick frequency =
+		engine::platform::Clock::Frequency();
+
+	const std::uint32_t threadId =
+		engine::platform::GetCurrentThreadId();
+
+	const bool threadNamed =
+		engine::platform::SetCurrentThreadName(
+			L"StudioStartup");
+
+	const engine::platform::Clock::Tick start =
+		engine::platform::Clock::Now();
+
+	engine::platform::SleepForMilliseconds(20);
+
+	const engine::platform::Clock::Tick end =
+		engine::platform::Clock::Now();
+
+	const double elapsedMilliseconds =
+		engine::platform::Clock::
+			ElapsedMilliseconds(
+				start,
+				end);
+
+	engine::platform::YieldCurrentThread();
+
+	r3dOutToLog(
+		"[Platform] Clock: frequency=%llu, "
+		"start=%llu, end=%llu, elapsed=%.3f ms\n",
+		static_cast<unsigned long long>(
+			frequency),
+		static_cast<unsigned long long>(
+			start),
+		static_cast<unsigned long long>(
+			end),
+		elapsedMilliseconds);
+
+	r3dOutToLog(
+		"[Platform] Thread: id=%u, named=%d, "
+		"yield=success\n",
+		static_cast<unsigned int>(
+			threadId),
+		threadNamed ? 1 : 0);
+
+	r3d_assert(frequency != 0);
+	r3d_assert(start != 0);
+	r3d_assert(end > start);
+	r3d_assert(elapsedMilliseconds > 0.0);
+	r3d_assert(elapsedMilliseconds < 1000.0);
+	r3d_assert(threadId != 0);
+}
+
+static void ValidatePlatformInputFoundation()
+{
+    engine::platform::InputSystem input;
+
+    input.BeginFrame();
+
+    const bool focusHandled =
+        input.HandleNativeMessage(
+            WM_SETFOCUS,
+            0,
+            0);
+
+    const bool keyDownHandled =
+        input.HandleNativeMessage(
+            WM_KEYDOWN,
+            static_cast<std::uintptr_t>('A'),
+            0);
+
+    const bool textHandled =
+        input.HandleNativeMessage(
+            WM_CHAR,
+            static_cast<std::uintptr_t>('A'),
+            0);
+
+    const LPARAM firstMousePosition =
+        MAKELPARAM(
+            120,
+            80);
+
+    const LPARAM secondMousePosition =
+        MAKELPARAM(
+            125,
+            90);
+
+    const bool firstMoveHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEMOVE,
+            0,
+            static_cast<std::intptr_t>(
+                firstMousePosition));
+
+    const bool secondMoveHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEMOVE,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const bool mouseDownHandled =
+        input.HandleNativeMessage(
+            WM_LBUTTONDOWN,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const WPARAM wheelParameter =
+        MAKEWPARAM(
+            0,
+            WHEEL_DELTA);
+
+    const bool wheelHandled =
+        input.HandleNativeMessage(
+            WM_MOUSEWHEEL,
+            static_cast<std::uintptr_t>(
+                wheelParameter),
+            0);
+
+    const std::uintptr_t keyReleaseBits =
+        (std::uintptr_t{1} << 30) |
+        (std::uintptr_t{1} << 31);
+
+    const bool keyUpHandled =
+        input.HandleNativeMessage(
+            WM_KEYUP,
+            static_cast<std::uintptr_t>('A'),
+            static_cast<std::intptr_t>(
+                keyReleaseBits));
+
+    const bool mouseUpHandled =
+        input.HandleNativeMessage(
+            WM_LBUTTONUP,
+            0,
+            static_cast<std::intptr_t>(
+                secondMousePosition));
+
+    const engine::platform::MousePosition mousePosition =
+        input.GetMousePosition();
+
+    const engine::platform::MouseDelta mouseDelta =
+        input.GetMouseDelta();
+
+    bool textEventFound = false;
+
+    for (std::size_t index = 0;
+         index < input.GetEventCount();
+         ++index)
+    {
+        const engine::platform::InputEvent* event =
+            input.GetEvent(index);
+
+        if (event != nullptr &&
+            event->type ==
+                engine::platform::InputEventType::TextInput &&
+            event->codepoint ==
+                static_cast<std::uint32_t>('A'))
+        {
+            textEventFound = true;
+        }
+    }
+
+    r3dOutToLog(
+        "[Platform] Input: focus=%d, "
+        "keyPressed=%d, keyReleased=%d, "
+        "mousePressed=%d, mouseReleased=%d\n",
+        input.HasFocus() ? 1 : 0,
+        input.WasKeyPressed(
+            engine::platform::KeyCode::A) ? 1 : 0,
+        input.WasKeyReleased(
+            engine::platform::KeyCode::A) ? 1 : 0,
+        input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left) ? 1 : 0,
+        input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left) ? 1 : 0);
+
+    r3dOutToLog(
+        "[Platform] Input mouse: "
+        "position=%d,%d, delta=%d,%d, "
+        "wheel=%d\n",
+        mousePosition.x,
+        mousePosition.y,
+        mouseDelta.x,
+        mouseDelta.y,
+        input.GetMouseWheelDelta());
+
+    r3dOutToLog(
+        "[Platform] Input events: count=%u, "
+        "dropped=%u, text=%d\n",
+        static_cast<unsigned int>(
+            input.GetEventCount()),
+        static_cast<unsigned int>(
+            input.GetDroppedEventCount()),
+        textEventFound ? 1 : 0);
+
+    r3d_assert(focusHandled);
+    r3d_assert(keyDownHandled);
+    r3d_assert(textHandled);
+    r3d_assert(firstMoveHandled);
+    r3d_assert(secondMoveHandled);
+    r3d_assert(mouseDownHandled);
+    r3d_assert(wheelHandled);
+    r3d_assert(keyUpHandled);
+    r3d_assert(mouseUpHandled);
+
+    r3d_assert(input.HasFocus());
+
+    r3d_assert(
+        !input.IsKeyDown(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        input.WasKeyPressed(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        input.WasKeyReleased(
+            engine::platform::KeyCode::A));
+
+    r3d_assert(
+        !input.IsMouseButtonDown(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(
+        input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(
+        input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left));
+
+    r3d_assert(mousePosition.x == 125);
+    r3d_assert(mousePosition.y == 90);
+
+    r3d_assert(mouseDelta.x == 5);
+    r3d_assert(mouseDelta.y == 10);
+
+    r3d_assert(
+        input.GetMouseWheelDelta() ==
+        WHEEL_DELTA);
+
+    r3d_assert(textEventFound);
+
+    r3d_assert(
+        input.GetEventCount() == 9);
+
+    r3d_assert(
+        input.GetDroppedEventCount() == 0);
+
+    input.BeginFrame();
+
+    const bool frameResetSucceeded =
+        !input.WasKeyPressed(
+            engine::platform::KeyCode::A) &&
+        !input.WasKeyReleased(
+            engine::platform::KeyCode::A) &&
+        !input.WasMouseButtonPressed(
+            engine::platform::MouseButton::Left) &&
+        !input.WasMouseButtonReleased(
+            engine::platform::MouseButton::Left) &&
+        input.GetMouseDelta().x == 0 &&
+        input.GetMouseDelta().y == 0 &&
+        input.GetMouseWheelDelta() == 0 &&
+        input.GetEventCount() == 0;
+
+    r3dOutToLog(
+        "[Platform] Input frame reset: success=%d\n",
+        frameResetSucceeded ? 1 : 0);
+
+    r3d_assert(frameResetSucceeded);
+}
+
+namespace
+{
+    struct RuntimeValidationService final
+    {
+        std::uint32_t value = 42;
+    };
+
+    struct RuntimeValidationTrace final
+    {
+        std::array<std::uint32_t, 16> values{};
+
+        std::size_t count = 0;
+
+        void Push(
+            const std::uint32_t value) noexcept
+        {
+            if (count < values.size())
+            {
+                values[count] = value;
+                ++count;
+            }
+        }
+    };
+
+    class RuntimeValidationModule final
+        : public engine::runtime::RuntimeModule
+    {
+    public:
+        RuntimeValidationModule(
+            const std::uint32_t moduleId,
+            RuntimeValidationTrace& trace,
+            RuntimeValidationService* service,
+            const bool registerService,
+            const bool requireService) noexcept
+            : moduleId_(moduleId),
+              trace_(trace),
+              service_(service),
+              registerService_(registerService),
+              requireService_(requireService)
+        {
+        }
+
+        const char*
+            GetName() const noexcept override
+        {
+            return moduleId_ == 1
+                ? "Validation.ModuleA"
+                : "Validation.ModuleB";
+        }
+
+        bool Initialize(
+            engine::runtime::Engine& engine) override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 1);
+
+            if (requireService_)
+            {
+                RuntimeValidationService* const
+                    registeredService =
+                        engine.GetServices().
+                            TryGet<
+                                RuntimeValidationService>();
+
+                if (
+                    registeredService == nullptr ||
+                    registeredService->value != 42
+                )
+                {
+                    return false;
+                }
+            }
+
+            if (registerService_)
+            {
+                if (
+                    service_ == nullptr ||
+                    !engine.GetServices().
+                        Register<
+                            RuntimeValidationService>(
+                                *service_)
+                )
+                {
+                    return false;
+                }
+            }
+
+            initialized_ = true;
+
+            return true;
+        }
+
+        void Shutdown(
+            engine::runtime::Engine& engine) noexcept override
+        {
+            if (!initialized_)
+            {
+                return;
+            }
+
+            trace_.Push(
+                moduleId_ * 10 + 4);
+
+            if (
+                registerService_ &&
+                service_ != nullptr
+            )
+            {
+                (void)engine.GetServices().
+                    Unregister<
+                        RuntimeValidationService>(
+                            service_);
+            }
+
+            initialized_ = false;
+        }
+
+        void BeginFrame(
+            engine::runtime::Engine&,
+            const engine::runtime::
+                FrameContext&) noexcept override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 2);
+        }
+
+        void EndFrame(
+            engine::runtime::Engine&,
+            const engine::runtime::
+                FrameContext&) noexcept override
+        {
+            trace_.Push(
+                moduleId_ * 10 + 3);
+        }
+
+    private:
+        std::uint32_t moduleId_ = 0;
+
+        RuntimeValidationTrace& trace_;
+
+        RuntimeValidationService* service_ =
+            nullptr;
+
+        bool registerService_ = false;
+
+        bool requireService_ = false;
+
+        bool initialized_ = false;
+    };
+}
+
+static void ValidateRuntimeFoundation()
+{
+    RuntimeValidationTrace trace;
+
+    RuntimeValidationService service;
+
+    engine::runtime::Engine engine;
+
+    const bool firstModuleAdded =
+        engine.AddModule(
+            std::make_unique<
+                RuntimeValidationModule>(
+                    1,
+                    trace,
+                    &service,
+                    true,
+                    false));
+
+    const bool secondModuleAdded =
+        engine.AddModule(
+            std::make_unique<
+                RuntimeValidationModule>(
+                    2,
+                    trace,
+                    nullptr,
+                    false,
+                    true));
+
+    r3d_assert(firstModuleAdded);
+    r3d_assert(secondModuleAdded);
+
+    engine::runtime::EngineConfig config;
+
+    config.applicationName =
+        "Studio.Runtime.Validation";
+
+    config.mode =
+        engine::runtime::EngineMode::Studio;
+
+    config.rendererBackend =
+        engine::runtime::RendererBackend::D3D9;
+
+    config.enableValidation = true;
+
+    config.enableMainThreadChecks = true;
+
+    const bool initialized =
+        engine.Initialize(
+            std::move(config));
+
+    const RuntimeValidationService*
+        registeredService =
+            engine.GetServices().
+                TryGet<RuntimeValidationService>();
+
+    r3dOutToLog(
+        "[Runtime] Lifecycle: "
+        "initialized=%d, state=%s, "
+        "mode=%s, renderer=%s, "
+        "modules=%u, initializedModules=%u, "
+        "services=%u, ownerThread=%u\n",
+        initialized ? 1 : 0,
+        engine::runtime::ToString(
+            engine.GetState()),
+        engine::runtime::ToString(
+            engine.GetConfig().mode),
+        engine::runtime::ToString(
+            engine.GetConfig().rendererBackend),
+        static_cast<unsigned int>(
+            engine.GetModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetInitializedModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetServices().
+                GetServiceCount()),
+        static_cast<unsigned int>(
+            engine.GetOwnerThreadId()));
+
+    r3d_assert(initialized);
+    r3d_assert(engine.IsInitialized());
+    r3d_assert(engine.IsOwnerThread());
+
+    r3d_assert(
+        engine.GetModuleCount() == 2);
+
+    r3d_assert(
+        engine.GetInitializedModuleCount() == 2);
+
+    /*
+     * Engine + ServiceRegistry +
+     * RuntimeValidationService.
+     */
+    r3d_assert(
+        engine.GetServices().
+            GetServiceCount() == 3);
+
+    r3d_assert(
+        registeredService != nullptr);
+
+    r3d_assert(
+        registeredService->value == 42);
+
+    const bool frameBegan =
+        engine.BeginFrame(
+            1.0 / 60.0);
+
+    const bool frameEnded =
+        engine.EndFrame();
+
+    const engine::runtime::FrameContext
+        frameContext =
+            engine.GetFrameContext();
+
+    r3dOutToLog(
+        "[Runtime] Frame: "
+        "begin=%d, end=%d, active=%d, "
+        "index=%llu, delta=%.6f, "
+        "elapsed=%.6f\n",
+        frameBegan ? 1 : 0,
+        frameEnded ? 1 : 0,
+        engine.IsFrameActive() ? 1 : 0,
+        static_cast<unsigned long long>(
+            frameContext.frameIndex),
+        frameContext.deltaSeconds,
+        frameContext.elapsedSeconds);
+
+    r3d_assert(frameBegan);
+    r3d_assert(frameEnded);
+    r3d_assert(!engine.IsFrameActive());
+
+    r3d_assert(
+        frameContext.frameIndex == 1);
+
+    r3d_assert(
+        frameContext.deltaSeconds > 0.016);
+
+    r3d_assert(
+        frameContext.deltaSeconds < 0.017);
+
+    engine.RequestExit();
+
+    r3d_assert(
+        engine.IsExitRequested());
+
+    engine.Shutdown();
+
+    r3dOutToLog(
+        "[Runtime] Shutdown: "
+        "state=%s, initializedModules=%u, "
+        "services=%u, trace="
+        "%u,%u,%u,%u,%u,%u,%u,%u\n",
+        engine::runtime::ToString(
+            engine.GetState()),
+        static_cast<unsigned int>(
+            engine.GetInitializedModuleCount()),
+        static_cast<unsigned int>(
+            engine.GetServices().
+                GetServiceCount()),
+        static_cast<unsigned int>(
+            trace.values[0]),
+        static_cast<unsigned int>(
+            trace.values[1]),
+        static_cast<unsigned int>(
+            trace.values[2]),
+        static_cast<unsigned int>(
+            trace.values[3]),
+        static_cast<unsigned int>(
+            trace.values[4]),
+        static_cast<unsigned int>(
+            trace.values[5]),
+        static_cast<unsigned int>(
+            trace.values[6]),
+        static_cast<unsigned int>(
+            trace.values[7]));
+
+    r3d_assert(
+        engine.GetState() ==
+        engine::runtime::EngineState::Stopped);
+
+    r3d_assert(
+        engine.GetInitializedModuleCount() == 0);
+
+    r3d_assert(
+        engine.GetServices().
+            GetServiceCount() == 0);
+
+    r3d_assert(trace.count == 8);
+
+    /*
+     * Initialize:
+     * ModuleA, ModuleB
+     *
+     * Begin:
+     * ModuleA, ModuleB
+     *
+     * End:
+     * ModuleB, ModuleA
+     *
+     * Shutdown:
+     * ModuleB, ModuleA
+     */
+    const std::uint32_t expectedTrace[] =
+    {
+        11,
+        21,
+        12,
+        22,
+        23,
+        13,
+        24,
+        14
+    };
+
+    for (
+        std::size_t index = 0;
+        index < 8;
+        ++index
+    )
+    {
+        r3d_assert(
+            trace.values[index] ==
+            expectedTrace[index]);
+    }
+
+    r3dOutToLog(
+        "[Runtime] Foundation validation: success\n");
+}
+#endif
+
 // This function called by engine before main app window created, before any IO initialized. 
 void game::PreInit()
 {
+#if defined(_WIN64)
+	engine::legacy::InitializeLoggingBridge();
+
+	const engine::core::Version coreVersion =
+		engine::core::GetEngineVersion();
+
+	char versionMessage[128] = {};
+
+	std::snprintf(
+		versionMessage,
+		sizeof(versionMessage),
+		"Module initialized: %u.%u.%u.%u",
+		static_cast<unsigned>(coreVersion.major),
+		static_cast<unsigned>(coreVersion.minor),
+		static_cast<unsigned>(coreVersion.patch),
+		static_cast<unsigned>(coreVersion.build)
+	);
+
+	const r3dPoint3D legacyAxis(
+		0.0f,
+		1.0f,
+		0.0f
+	);
+
+	const engine::math::Vector3 modernAxis =
+		engine::legacy::ToVector3(
+			legacyAxis
+		);
+
+	const r3dPoint3D roundTripAxis =
+	engine::legacy::ToLegacyPoint3D<r3dPoint3D>(
+		modernAxis
+	);
+
+	char mathMessage[128] = {};
+
+	std::snprintf(
+		mathMessage,
+		sizeof(mathMessage),
+		"Point bridge ready: (%.1f, %.1f, %.1f)",
+		roundTripAxis.x,
+		roundTripAxis.y,
+		roundTripAxis.z
+	);
+
+	engine::core::GetLogger().Write(
+		engine::core::LogLevel::Information,
+		"Math",
+		mathMessage
+	);
+
+	engine::core::GetLogger().Write(
+		engine::core::LogLevel::Information,
+		"Core",
+		versionMessage
+	);
+
+	const engine::platform::SystemInfo platformInfo =
+		engine::platform::QuerySystemInfo();
+
+	const engine::platform::Path executablePath =
+		engine::platform::GetExecutablePath();
+
+	const std::string executablePathUtf8 =
+		executablePath.u8string();
+
+	constexpr unsigned long long bytesPerMegabyte =
+		1024ull * 1024ull;
+
+	const unsigned long long totalMemoryMegabytes =
+		static_cast<unsigned long long>(
+			platformInfo.totalPhysicalMemoryBytes / bytesPerMegabyte);
+
+	r3dOutToLog(
+		"[Platform] Module initialized: architecture=%s, "
+		"logical processors=%u, page size=%u, memory=%llu MB\n",
+		engine::platform::ToString(platformInfo.architecture),
+		platformInfo.logicalProcessorCount,
+		platformInfo.pageSize,
+		totalMemoryMegabytes);
+
+	r3dOutToLog(
+		"[Platform] Executable: %s\n",
+		executablePathUtf8.c_str());
+
+	engine::platform::DynamicLibrary systemLibrary;
+
+	const bool libraryLoaded =
+		systemLibrary.Load(L"kernel32.dll");
+
+	const bool functionFound =
+		libraryLoaded &&
+		systemLibrary.HasFunction(
+			"GetCurrentProcessId");
+
+	const unsigned int loadError =
+		static_cast<unsigned int>(
+			systemLibrary.GetLastErrorCode());
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary: loaded=%d, "
+		"GetCurrentProcessId=%d, error=%u\n",
+		libraryLoaded ? 1 : 0,
+		functionFound ? 1 : 0,
+		loadError);
+
+	r3d_assert(libraryLoaded);
+	r3d_assert(functionFound);
+
+	engine::platform::DynamicLibrary movedLibrary(
+		std::move(systemLibrary));
+
+	const bool sourceReleased =
+		!systemLibrary.IsLoaded();
+
+	const bool destinationOwnsLibrary =
+		movedLibrary.IsLoaded();
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary move: "
+		"source released=%d, destination owns=%d\n",
+		sourceReleased ? 1 : 0,
+		destinationOwnsLibrary ? 1 : 0);
+
+	r3d_assert(sourceReleased);
+	r3d_assert(destinationOwnsLibrary);
+
+	movedLibrary.Unload();
+
+	r3d_assert(!movedLibrary.IsLoaded());
+
+	r3dOutToLog(
+		"[Platform] DynamicLibrary unload: success\n");
+
+	// Validate
+	ValidatePlatformFileFoundation();
+	ValidatePlatformProcessFoundation();
+	ValidatePlatformClockAndThreadFoundation();
+	ValidatePlatformSynchronizationFoundation();
+	ValidatePlatformInputFoundation();
+	ValidateTasksFoundation();
+	ValidateJobSystemFoundation();
+	ValidateRuntimeFoundation();
+#endif
+
 	u_srand(GetTickCount());
+
+	g_HardwareInfo.Grab();
+
+	win::hWinIcon =
+		::LoadIcon(
+			win::hInstance,
+			MAKEINTRESOURCE(IDI_WARZ)
+		);
+
+	win::szWinName = GetApplicationWindowTitle();
+
+#ifdef FINAL_BUILD
+	win::hWinIcon =
+		::LoadIcon(
+			win::hInstance,
+			MAKEINTRESOURCE(IDI_WARZ)
+		);
+
+	if (
+		strstr(__r3dCmdLine, "-WOUpdatedOk") == NULL &&
+		strstr(__r3dCmdLine, "-gna") == NULL
+	)
+	{
+		MessageBox(
+			NULL,
+			"Please run WarZ launcher.",
+			g_szApplicationName,
+			MB_OK
+		);
+
+		ExitProcess(0);
+	}
+#endif
+
+#ifdef _DEBUG
+	r3dOutToLog("cmd: %s\n", __r3dCmdLine);
+#endif
 
 	g_HardwareInfo.Grab();
 
@@ -1801,6 +3665,10 @@ void game::Shutdown()
 
 	ClientGameLogic::DeleteInstance();
 	GameWorld_Destroy();
+
+#if defined(_WIN64)
+	engine::legacy::ShutdownLoggingBridge();
+#endif
 }
 
 
@@ -1841,18 +3709,67 @@ extern int		_r3d_bTerminateOnZ;
 
 void game::MainLoop()
 {
+#if defined(_WIN64)
+	if (studio::WantsDX11Shell())
+	{
+		r3dOutToLog(
+			"[Graphics] Renderer backend: D3D11\n");
+
+		/*
+		 * Старое Eternity-окно уже было создано
+		 * до входа в game::MainLoop().
+		 *
+		 * DX11 Studio больше его не использует.
+		 * Оставляем HWND существовать только до
+		 * завершения legacy bootstrap, но скрываем его.
+		 */
+		if (win::hWnd != nullptr)
+		{
+			ShowWindow(
+				win::hWnd,
+				SW_HIDE);
+		}
+
+		const studio::StudioGraphicsShellResult dx11Result = studio::RunDX11Shell();
+
+		r3dOutToLog(
+			"[Graphics] D3D11 Studio stopped: %s\n",
+			studio::ToString(
+				dx11Result));
+
+		if (
+			dx11Result !=
+			studio::StudioGraphicsShellResult::
+				Completed)
+		{
+			r3dError(
+				"D3D11 Studio initialization failed: %s",
+				studio::ToString(
+					dx11Result));
+		}
+
+		/*
+		 * В режиме -dx11 мы никогда
+		 * не переходим в legacy DX9 startup.
+		 */
+		return;
+	}
+
+	r3dOutToLog(
+		"[Graphics] Renderer backend: D3D9\n");
+#endif
+
 	// init steam we need to initialize this before the renderer for the overlay.
 	{
 		gSteam.InitSteam();
-		if(gSteam.steamID) {
+
+		if (gSteam.steamID)
+		{
 			gUserProfile.RegisterSteamCallbacks();
 		}
 	}
 
 	InitRender(1);
-
-
-
 
 	CurRenderPipeline = new r3dDefferedRenderer;
 	CurRenderPipeline->Init();
@@ -2067,7 +3984,7 @@ void game::MainLoop()
 	SAFE_DELETE( g_pEngineConsole );
 
 	g_pDefaultConsole = NULL;
-
+	
 	ReleaseDesktopSystem();
 
 	UnregisterMsgProc(

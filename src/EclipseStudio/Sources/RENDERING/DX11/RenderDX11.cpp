@@ -7,7 +7,6 @@
 
 #include <D3D11.h>
 #include <DXGI.h>
-#include <D3Dcompiler.h>
 
 #include <ctype.h>
 #include <math.h>
@@ -15,10 +14,21 @@
 #include <string.h>
 
 #include "GameCommon.h"
+#include "r3dAtmosphere.h"
+#include "gameobjects/GameObj.h"
+#include "gameobjects/ObjManag.h"
+#include "gameobjects/obj_Mesh.h"
 #include "../SF/Console/Config.h"
 #include "TrueNature/ITerrain.h"
 #include "TrueNature2/Terrain2.h"
 #include "rendering/DX11/RenderDX11.h"
+#include "rendering/DX11/RenderDX11Core.h"
+#include "rendering/DX11/RenderDX11FrameTargets.h"
+#include "rendering/DX11/RenderDX11States.h"
+#include "rendering/DX11/RenderDX11ConstantBuffers.h"
+#include "rendering/DX11/RenderDX11Shaders.h"
+
+#include "GameLevel.h"
 
 bool RenderDX11_Init();
 void RenderDX11_Shutdown();
@@ -45,8 +55,216 @@ static void RenderDX11_LogText(
 
 #define OutputDebugStringA RenderDX11_LogText
 
+/*
+ * Временный compatibility layer.
+ *
+ * Он позволяет не менять сразу тысячи обращений
+ * gDX11Device->... и gDX11Context->...
+ *
+ * Позже эти макросы удалим вместе с разделением
+ * RenderDX11.cpp на отдельные подсистемы.
+ */
+#define gDX11Device \
+	(RenderDX11_GetCore().GetDevice())
+
+#define gDX11Context \
+	(RenderDX11_GetCore().GetContext())
+
+#define gDX11FeatureLevel \
+	(RenderDX11_GetCore().GetFeatureLevel())
+
+#define gDX11Initialized \
+	(RenderDX11_GetCore().IsReady())
+
+#define gDX11GBufferColorTexture \
+	(RenderDX11_GetFrameTargets().GBufferColorTexture())
+
+#define gDX11GBufferNormalTexture \
+	(RenderDX11_GetFrameTargets().GBufferNormalTexture())
+
+#define gDX11GBufferDepthLinearTexture \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearTexture())
+
+#define gDX11GBufferAuxTexture \
+	(RenderDX11_GetFrameTargets().GBufferAuxTexture())
+
+#define gDX11SceneColorTexture \
+	(RenderDX11_GetFrameTargets().SceneColorTexture())
+
+#define gDX11FinalColorTexture \
+	(RenderDX11_GetFrameTargets().FinalColorTexture())
+
+#define gDX11DepthTexture \
+	(RenderDX11_GetFrameTargets().DepthTexture())
+
+#define gDX11SmokeReadbackTexture \
+	(RenderDX11_GetFrameTargets().SmokeReadbackTexture())
+
+#define gDX11GBufferColorRTV \
+	(RenderDX11_GetFrameTargets().GBufferColorRTV())
+
+#define gDX11GBufferNormalRTV \
+	(RenderDX11_GetFrameTargets().GBufferNormalRTV())
+
+#define gDX11GBufferDepthLinearRTV \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearRTV())
+
+#define gDX11GBufferAuxRTV \
+	(RenderDX11_GetFrameTargets().GBufferAuxRTV())
+
+#define gDX11SceneColorRTV \
+	(RenderDX11_GetFrameTargets().SceneColorRTV())
+
+#define gDX11FinalColorRTV \
+	(RenderDX11_GetFrameTargets().FinalColorRTV())
+
+#define gDX11DepthDSV \
+	(RenderDX11_GetFrameTargets().DepthDSV())
+
+#define gDX11GBufferColorSRV \
+	(RenderDX11_GetFrameTargets().GBufferColorSRV())
+
+#define gDX11GBufferNormalSRV \
+	(RenderDX11_GetFrameTargets().GBufferNormalSRV())
+
+#define gDX11GBufferDepthLinearSRV \
+	(RenderDX11_GetFrameTargets().GBufferDepthLinearSRV())
+
+#define gDX11SceneColorSRV \
+	(RenderDX11_GetFrameTargets().SceneColorSRV())
+
+#define gDX11Viewport \
+	(RenderDX11_GetFrameTargets().Viewport())
+
+#define gDX11FrameWidth \
+	(RenderDX11_GetFrameTargets().FrameWidth())
+
+#define gDX11FrameHeight \
+	(RenderDX11_GetFrameTargets().FrameHeight())
+
+#define gDX11DepthWriteLessEqual \
+	(RenderDX11_GetStates().DepthWriteLessEqual())
+
+#define gDX11DepthReadLessEqual \
+	(RenderDX11_GetStates().DepthReadLessEqual())
+
+#define gDX11DepthDisabled \
+	(RenderDX11_GetStates().DepthDisabled())
+
+#define gDX11RasterSolidBackCull \
+	(RenderDX11_GetStates().RasterSolidBackCull())
+
+#define gDX11RasterSolidNoCull \
+	(RenderDX11_GetStates().RasterSolidNoCull())
+
+#define gDX11BlendOpaque \
+	(RenderDX11_GetStates().BlendOpaque())
+
+#define gDX11BlendAlpha \
+	(RenderDX11_GetStates().BlendAlpha())
+
+#define gDX11SamplerLinearWrap \
+	(RenderDX11_GetStates().SamplerLinearWrap())
+
+#define gDX11SamplerLinearClamp \
+	(RenderDX11_GetStates().SamplerLinearClamp())
+
+#define gDX11SunGlareBorderSampler \
+	(RenderDX11_GetStates().SunGlareBorderSampler())
+
+#define gDX11FrameCB \
+	(RenderDX11_GetConstantBuffers().Frame())
+
+#define gDX11TerrainCB \
+	(RenderDX11_GetConstantBuffers().Terrain())
+
+#define gDX11ObjectCB \
+	(RenderDX11_GetConstantBuffers().Object())
+
+#define gDX11MaterialCB \
+	(RenderDX11_GetConstantBuffers().Material())
+
+#define gDX11LightCB \
+	(RenderDX11_GetConstantBuffers().Light())
+
+#define gDX11ShadowCB \
+	(RenderDX11_GetConstantBuffers().Shadow())
+
+#define gDX11WaterCB \
+	(RenderDX11_GetConstantBuffers().Water())
+
+#define gDX11GrassCB \
+	(RenderDX11_GetConstantBuffers().Grass())
+
+#define gDX11SunGlareCB \
+	(RenderDX11_GetConstantBuffers().SunGlare())
+
+#define gDX11ClearVS \
+	(RenderDX11_GetShaders().ClearVS())
+
+#define gDX11ClearPS \
+	(RenderDX11_GetShaders().ClearPS())
+
+#define gDX11LightingVS \
+	(RenderDX11_GetShaders().LightingVS())
+
+#define gDX11LightingPS \
+	(RenderDX11_GetShaders().LightingPS())
+
+#define gDX11TonemapVS \
+	(RenderDX11_GetShaders().TonemapVS())
+
+#define gDX11TonemapPS \
+	(RenderDX11_GetShaders().TonemapPS())
+
+#define gDX11TerrainVS \
+	(RenderDX11_GetShaders().TerrainVS())
+
+#define gDX11TerrainPS \
+	(RenderDX11_GetShaders().TerrainPS())
+
+#define gDX11TerrainInputLayout \
+	(RenderDX11_GetShaders().TerrainInputLayout())
+
+#define gDX11StaticMeshVS \
+	(RenderDX11_GetShaders().StaticMeshVS())
+
+#define gDX11StaticMeshPS \
+	(RenderDX11_GetShaders().StaticMeshPS())
+
+#define gDX11StaticMeshInputLayout \
+	(RenderDX11_GetShaders().StaticMeshInputLayout())
+
+#define gDX11SunGlareVS \
+	(RenderDX11_GetShaders().SunGlareVS())
+
+#define gDX11SunGlarePS \
+	(RenderDX11_GetShaders().SunGlarePS())
+
 namespace
 {
+	enum
+	{
+		DX11_TERRAIN2_LAYERS_PER_MASK =
+			r3dTerrain2::LAYERS_PER_MASK,
+
+		// base layer + 12 quality layers = 13
+		DX11_TERRAIN2_MAX_LAYER_COUNT =
+			r3dTerrain2::NUM_QUALITY_LAYERS + 1,
+
+		// 12 painted layers / 3 channels per mask = 4 masks
+		DX11_TERRAIN2_MAX_MASK_COUNT =
+			(
+				r3dTerrain2::NUM_QUALITY_LAYERS +
+				r3dTerrain2::LAYERS_PER_MASK -
+				1
+			) /
+			r3dTerrain2::LAYERS_PER_MASK,
+
+		DX11_TERRAIN2_BATCH_LAYER_COUNT =
+			DX11_TERRAIN2_MAX_LAYER_COUNT
+	};
+
 	static const int DX11_TERRAIN_GRID_DIM = 65;
 	static const int DX11_TERRAIN_VERTEX_COUNT =
 		DX11_TERRAIN_GRID_DIM * DX11_TERRAIN_GRID_DIM;
@@ -61,7 +279,16 @@ namespace
 	static const int DX11_TERRAIN_PATCH_COUNT =
 		DX11_TERRAIN_PATCH_SIDE * DX11_TERRAIN_PATCH_SIDE;
 	static const int DX11_TERRAIN_PATCH_CACHE_COUNT = 256;
-	static const int DX11_TERRAIN_ATLAS_AUTO_REFRESH_BUDGET = 1;
+	static const int DX11_TERRAIN_V3_CACHE_L = 3003;
+	static const int DX11_TERRAIN_V3_DEFAULT_CHUNK_CELLS =
+		DX11_TERRAIN_GRID_DIM - 1;
+	static const float DX11_TERRAIN_V3_DEFAULT_CELL_SIZE = 2.0f;
+	static const float DX11_TERRAIN_V3_DEFAULT_WORLD_SIZE = 8192.0f;
+
+	// Terrain2 can reassign several atlas volumes in one camera update.
+	// Leaving changed volumes stale for later frames makes new tile UVs point
+	// at old atlas contents and produces moving square artifacts.
+	static const int DX11_TERRAIN_ATLAS_AUTO_REFRESH_BUDGET = 16;
 
 	struct WorldDX11FrameCB
 	{
@@ -77,10 +304,24 @@ namespace
 	{
 		float BaseColor[4];
 		float ColorScale[4];
+
+		// x = height offset
+		// y = height range
+		// z = texture/SRV mask debug
+		// w = layer count
 		float DebugParams[4];
+
+		// x = terrain size X
+		// y = terrain size Z
+		// z = inv terrain size X
+		// w = inv terrain size Z
 		float TerrainSize[4];
-		float LayerScale0[4];
-		float LayerScale1[4];
+
+		// xy = layer scale UV
+		// z  = source layer index
+		// w  = reserved
+		float LayerScale[DX11_TERRAIN2_MAX_LAYER_COUNT][4];
+
 		float AtlasTexTransform[4];
 		float AtlasWorld[4];
 	};
@@ -138,10 +379,16 @@ namespace
 	struct WorldDX11TerrainPatchCacheEntry
 	{
 		ID3D11Buffer* VertexBuffer;
+		ID3D11Buffer* IndexBuffer;
 		int TileX;
 		int TileZ;
 		int L;
+		int ConFlags;
+		int VertexDim;
 		float PatchSize;
+		int VertexCapacity;
+		int IndexCapacity;
+		int IndexCount;
 		bool Valid;
 		unsigned int LastUsedFrame;
 	};
@@ -154,6 +401,25 @@ namespace
 		float MaxX;
 		float MaxY;
 		float MaxZ;
+	};
+
+	struct WorldDX11TerrainV3Desc
+	{
+		bool Initialized;
+		bool DescriptorFound;
+		char SourceDir[256];
+		float SizeX;
+		float SizeZ;
+		float CellSize;
+		int ChunkCells;
+		float BaseHeight;
+		float HeightAmplitude;
+		float MinHeight;
+		float MaxHeight;
+		char HeightFile[128];
+		int HeightWidth;
+		int HeightHeight;
+		bool UseRawHeightGrid;
 	};
 
 	struct WorldDX11FrustumPlane
@@ -186,13 +452,38 @@ namespace
 		int SourceLayerIndex;
 	};
 
+	struct WorldDX11StaticMeshVertex
+	{
+		float Position[3];
+		float Normal[3];
+		float TexCoord[2];
+		float Tangent[4];
+	};
+
+	struct WorldDX11StaticMeshCacheEntry
+	{
+		r3dMesh* Source;
+		ID3D11Buffer* VertexBuffer;
+		ID3D11Buffer* IndexBuffer;
+		int NumVertices;
+		int NumIndices;
+		unsigned int LastUsedFrame;
+	};
+
+	struct WorldDX11MaterialTextureCacheEntry
+	{
+		r3dTexture* Source;
+		WorldDX11Terrain2TextureBridge Bridge;
+		unsigned int LastUsedFrame;
+	};
+
 	static const int DX11_PREVIEW_WIDTH = 960;
 	static const int DX11_PREVIEW_HEIGHT = 1080;
-
-	static const int DX11_TERRAIN2_LAYERS_PER_MASK =
-		r3dTerrain2::LAYERS_PER_MASK;
-	static const int DX11_TERRAIN2_BATCH_LAYER_COUNT =
-		DX11_TERRAIN2_LAYERS_PER_MASK + 1;
+	static const int DX11_STATIC_MESH_CACHE_COUNT = 256;
+	static const int DX11_MATERIAL_TEXTURE_CACHE_COUNT = 256;
+	static const int DX11_STATIC_OBJECT_DRAW_LIMIT = 512;
+	static const int DX11_DYNAMIC_OBJECT_DRAW_LIMIT = 256;
+	static const int DX11_MATERIAL_UPLOADS_PER_FRAME = 12;
 
 	typedef char WorldDX11FrameCB_SizeMustBe16ByteAligned[
 		(sizeof(WorldDX11FrameCB) % 16) == 0 ? 1 : -1
@@ -226,28 +517,16 @@ namespace
 		(sizeof(WorldDX11GrassCB) % 16) == 0 ? 1 : -1
 	];
 
-	ID3D11Device*			gDX11Device = 0;
-	ID3D11DeviceContext*	gDX11Context = 0;
+	WorldDX11Terrain2TextureBridge gDX11SunGlareMaskBridge = {};
 
-	ID3D11Texture2D*		gDX11GBufferColorTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferNormalTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferDepthLinearTexture = 0;
-	ID3D11Texture2D*		gDX11GBufferAuxTexture = 0;
-	ID3D11Texture2D*		gDX11DepthTexture = 0;
-	ID3D11Texture2D*		gDX11SmokeReadbackTexture = 0;
-
-	ID3D11RenderTargetView*	gDX11GBufferColorRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferNormalRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferDepthLinearRTV = 0;
-	ID3D11RenderTargetView*	gDX11GBufferAuxRTV = 0;
-	ID3D11DepthStencilView*	gDX11DepthDSV = 0;
-
-	ID3D11VertexShader*		gDX11ClearVS = 0;
-	ID3D11PixelShader*		gDX11ClearPS = 0;
-
-	ID3D11VertexShader*		gDX11TerrainVS = 0;
-	ID3D11PixelShader*		gDX11TerrainPS = 0;
-	ID3D11InputLayout*		gDX11TerrainInputLayout = 0;
+	WorldDX11StaticMeshCacheEntry
+							gDX11StaticMeshCache[DX11_STATIC_MESH_CACHE_COUNT] = {};
+	WorldDX11MaterialTextureCacheEntry
+							gDX11MaterialTextureCache[DX11_MATERIAL_TEXTURE_CACHE_COUNT] = {};
+	int						gDX11StaticObjectDrawCount = 0;
+	int						gDX11DynamicObjectDrawCount = 0;
+	int						gDX11StaticMeshUploadCount = 0;
+	int						gDX11MaterialTextureUploadsThisFrame = 0;
 
 	WorldDX11TerrainPatchCacheEntry
 							gDX11TerrainPatchCache[DX11_TERRAIN_PATCH_CACHE_COUNT] = {};
@@ -257,16 +536,25 @@ namespace
 	int						gDX11TerrainPatchDrawCount = 0;
 	int						gDX11TerrainPatchUpdateCount = 0;
 	int						gDX11TerrainPatchCullCount = 0;
+	WorldDX11TerrainV3Desc	gDX11TerrainV3Desc = {};
+	bool					gDX11TerrainV3PathLogged = false;
+	float*					gDX11TerrainV3HeightSamples = 0;
+	int						gDX11TerrainV3HeightSampleCountX = 0;
+	int						gDX11TerrainV3HeightSampleCountZ = 0;
 
 	r3dTexture*				gDX11Terrain2ColorTexture = 0;
 	r3dTexture*				gDX11Terrain2NormalTexture = 0;
 	r3dTexture*				gDX11Terrain2HeightTexture = 0;
+	r3dTerrain2*				gDX11Terrain2HeightSource = 0;
+	r3dTerrain2::Floats		gDX11Terrain2HeightSamples;
+	int						gDX11Terrain2HeightSampleCountX = 0;
+	int						gDX11Terrain2HeightSampleCountZ = 0;
 
 	WorldDX11Terrain2LayerSlot
 							gDX11Terrain2BatchLayers[
 								DX11_TERRAIN2_BATCH_LAYER_COUNT
 							] = {};
-	r3dTexture*				gDX11Terrain2BatchMaskTexture = 0;
+	r3dTexture*				gDX11Terrain2BatchMaskTexture[DX11_TERRAIN2_MAX_MASK_COUNT] = {};
 	int						gDX11Terrain2LayerCount = 0;
 	int						gDX11Terrain2MaskCount = 0;
 	int						gDX11Terrain2ActiveMaskIndex = 0;
@@ -285,7 +573,10 @@ namespace
 		gDX11Terrain2BatchNormalBridge[
 			DX11_TERRAIN2_BATCH_LAYER_COUNT
 		] = {};
-	WorldDX11Terrain2TextureBridge gDX11Terrain2BatchMaskBridge = {};
+	WorldDX11Terrain2TextureBridge
+	gDX11Terrain2BatchMaskBridge[
+		DX11_TERRAIN2_MAX_MASK_COUNT
+	] = {};
 	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasDiffuseBridges = 0;
 	WorldDX11Terrain2TextureBridge* gDX11Terrain2AtlasNormalBridges = 0;
 	unsigned int*			gDX11Terrain2AtlasVisibleSignatures = 0;
@@ -300,37 +591,7 @@ namespace
 	int						gDX11Terrain2AtlasSkipSRVCount = 0;
 	int						gDX11Terrain2AtlasRefreshCount = 0;
 	int						gDX11Terrain2AtlasRefreshPendingCount = 0;
-
-	ID3D11Buffer*			gDX11FrameCB = 0;
-	ID3D11Buffer*			gDX11TerrainCB = 0;
-	ID3D11Buffer*			gDX11ObjectCB = 0;
-	ID3D11Buffer*			gDX11MaterialCB = 0;
-	ID3D11Buffer*			gDX11LightCB = 0;
-	ID3D11Buffer*			gDX11ShadowCB = 0;
-	ID3D11Buffer*			gDX11WaterCB = 0;
-	ID3D11Buffer*			gDX11GrassCB = 0;
-
-	D3D11_VIEWPORT			gDX11Viewport = {};
-
-	ID3D11DepthStencilState* gDX11DepthWriteLessEqual = 0;
-	ID3D11DepthStencilState* gDX11DepthReadLessEqual = 0;
-	ID3D11DepthStencilState* gDX11DepthDisabled = 0;
-
-	ID3D11RasterizerState*	gDX11RasterSolidBackCull = 0;
-	ID3D11RasterizerState*	gDX11RasterSolidNoCull = 0;
-
-	ID3D11BlendState*		gDX11BlendOpaque = 0;
-	ID3D11BlendState*		gDX11BlendAlpha = 0;
-
-	ID3D11SamplerState*		gDX11SamplerLinearWrap = 0;
-	ID3D11SamplerState*		gDX11SamplerLinearClamp = 0;
-
-	int						gDX11FrameWidth = 0;
-	int						gDX11FrameHeight = 0;
-
-	D3D_FEATURE_LEVEL		gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
-
-	bool					gDX11Initialized = false;
+	
 	bool					gDX11SmokeReadbackLogged = false;
 	bool					gDX11TerrainGBufferReadbackLogged = false;
 	bool					gDX11PreviewValid = false;
@@ -340,6 +601,8 @@ namespace
 	bool					gDX11WorldFrameFailureLogged = false;
 	bool					gDX11WorldFrameDisabled = false;
 	bool					gDX11WorldFrameDisabledLogged = false;
+	bool					gDX11FrameReadyToPresent = false;
+	bool					gDX11DirectPresentLogged = false;
 
 	ID3D11Texture2D*		gDX11PreviewReadbackTexture = 0;
 	DXGI_FORMAT				gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
@@ -367,6 +630,7 @@ namespace
 	void RenderDX11_UpdateTerrain2TextureRefs();
 	void RenderDX11_BindTerrain2TextureSlots();
 	void RenderDX11_ReleaseTerrain2TextureBridges();
+	void RenderDX11_ReleaseStaticMeshResources();
 	
 	bool RenderDX11_UpdateTerrainVertices(
 		ID3D11Buffer* VertexBuffer,
@@ -426,6 +690,24 @@ namespace
 			CachedValue =
 				RenderDX11_CommandLineHasSwitch("-dx11smoke") ||
 				RenderDX11_CommandLineHasSwitch("/dx11smoke");
+		}
+
+		return CachedValue != 0;
+	}
+
+	bool RenderDX11_WantsTerrainV3()
+	{
+		static int CachedValue = -1;
+
+		if (CachedValue < 0)
+		{
+			CachedValue =
+				RenderDX11_CommandLineHasSwitch(
+					"-dx11terrainv3"
+				) ||
+				RenderDX11_CommandLineHasSwitch(
+					"/dx11terrainv3"
+				);
 		}
 
 		return CachedValue != 0;
@@ -899,147 +1181,14 @@ namespace
 		}
 	}
 
-	class RenderDX11IncludeHandler : public ID3DInclude
-	{
-	public:
-		explicit RenderDX11IncludeHandler(
-			const char* ShaderFileName
-		)
-		{
-			BasePath[0] = 0;
-
-			if (!ShaderFileName || !ShaderFileName[0])
-				return;
-
-			r3dscpy(BasePath, ShaderFileName);
-
-			for (char* It = BasePath; *It; ++It)
-			{
-				if (*It == '/')
-					*It = '\\';
-			}
-
-			char* LastSlash = strrchr(BasePath, '\\');
-
-			if (LastSlash)
-				*LastSlash = 0;
-			else
-				BasePath[0] = 0;
-		}
-
-		STDMETHOD(Open)(
-			D3D_INCLUDE_TYPE IncludeType,
-			LPCSTR pFileName,
-			LPCVOID pParentData,
-			LPCVOID* ppData,
-			UINT* pBytes
-		)
-		{
-			(void)IncludeType;
-			(void)pParentData;
-
-			if (!ppData || !pBytes || !pFileName)
-				return E_FAIL;
-
-			*ppData = 0;
-			*pBytes = 0;
-
-			char FileName[MAX_PATH] = {};
-
-			if (BasePath[0])
-			{
-				sprintf_s(
-					FileName,
-					"%s\\%s",
-					BasePath,
-					pFileName
-				);
-			}
-			else
-			{
-				sprintf_s(
-					FileName,
-					"%s",
-					pFileName
-				);
-			}
-
-			r3dFile* File =
-				r3d_open(
-					FileName,
-					"rb"
-				);
-
-			if (!File)
-			{
-				char Text[512] = {};
-				sprintf_s(
-					Text,
-					"[DX11][Render] Missing shader include: %s\n",
-					FileName
-				);
-
-				OutputDebugStringA(Text);
-				return E_FAIL;
-			}
-
-			char* Data =
-				new char[File->size + 1];
-
-			const size_t ReadSize =
-				fread(
-					Data,
-					1,
-					File->size,
-					File
-				);
-
-			fclose(File);
-
-			Data[ReadSize] = 0;
-
-			*ppData = Data;
-			*pBytes = static_cast<UINT>(ReadSize);
-
-			return S_OK;
-		}
-
-		STDMETHOD(Close)(
-			LPCVOID pData
-		)
-		{
-			delete[] reinterpret_cast<const char*>(pData);
-			return S_OK;
-		}
-
-	private:
-		char BasePath[MAX_PATH];
-	};
-
 	void RenderDX11_ReleaseStates()
 	{
-		RenderDX11_SafeRelease(gDX11SamplerLinearClamp);
-		RenderDX11_SafeRelease(gDX11SamplerLinearWrap);
-
-		RenderDX11_SafeRelease(gDX11BlendAlpha);
-		RenderDX11_SafeRelease(gDX11BlendOpaque);
-
-		RenderDX11_SafeRelease(gDX11RasterSolidNoCull);
-		RenderDX11_SafeRelease(gDX11RasterSolidBackCull);
-
-		RenderDX11_SafeRelease(gDX11DepthDisabled);
-		RenderDX11_SafeRelease(gDX11DepthReadLessEqual);
-		RenderDX11_SafeRelease(gDX11DepthWriteLessEqual);
+		RenderDX11_GetStates().Shutdown();
 	}
 
 	void RenderDX11_ReleaseShaders()
 	{
-		RenderDX11_SafeRelease(gDX11TerrainInputLayout);
-		RenderDX11_SafeRelease(gDX11TerrainPS);
-		RenderDX11_SafeRelease(gDX11TerrainVS);
-
-		RenderDX11_SafeRelease(gDX11ClearPS);
-		RenderDX11_SafeRelease(gDX11ClearVS);
+		RenderDX11_GetShaders().Shutdown();
 	}
 
 	void RenderDX11_ReleaseTerrainResources()
@@ -1049,11 +1198,19 @@ namespace
 			RenderDX11_SafeRelease(
 				gDX11TerrainPatchCache[i].VertexBuffer
 			);
+			RenderDX11_SafeRelease(
+				gDX11TerrainPatchCache[i].IndexBuffer
+			);
 
 			gDX11TerrainPatchCache[i].TileX = 0;
 			gDX11TerrainPatchCache[i].TileZ = 0;
 			gDX11TerrainPatchCache[i].L = 0;
+			gDX11TerrainPatchCache[i].ConFlags = 0;
+			gDX11TerrainPatchCache[i].VertexDim = 0;
 			gDX11TerrainPatchCache[i].PatchSize = 0.0f;
+			gDX11TerrainPatchCache[i].VertexCapacity = 0;
+			gDX11TerrainPatchCache[i].IndexCapacity = 0;
+			gDX11TerrainPatchCache[i].IndexCount = 0;
 			gDX11TerrainPatchCache[i].Valid = false;
 			gDX11TerrainPatchCache[i].LastUsedFrame = 0;
 		}
@@ -1065,7 +1222,18 @@ namespace
 		gDX11TerrainPatchUpdateCount = 0;
 		gDX11TerrainPatchCullCount = 0;
 
+		gDX11Terrain2HeightSamples.Clear();
+		gDX11Terrain2HeightSource = 0;
+		gDX11Terrain2HeightSampleCountX = 0;
+		gDX11Terrain2HeightSampleCountZ = 0;
+
+		delete [] gDX11TerrainV3HeightSamples;
+		gDX11TerrainV3HeightSamples = 0;
+		gDX11TerrainV3HeightSampleCountX = 0;
+		gDX11TerrainV3HeightSampleCountZ = 0;
+
 		RenderDX11_ReleaseTerrain2TextureBridges();
+		RenderDX11_ReleaseStaticMeshResources();
 	}
 
 	void RenderDX11_ReleasePreviewTexture()
@@ -1113,148 +1281,44 @@ namespace
 
 	void RenderDX11_ReleaseConstantBuffers()
 	{
-		RenderDX11_SafeRelease(gDX11GrassCB);
-		RenderDX11_SafeRelease(gDX11WaterCB);
-		RenderDX11_SafeRelease(gDX11ShadowCB);
-		RenderDX11_SafeRelease(gDX11LightCB);
-		RenderDX11_SafeRelease(gDX11MaterialCB);
-		RenderDX11_SafeRelease(gDX11ObjectCB);
-		RenderDX11_SafeRelease(gDX11TerrainCB);
-		RenderDX11_SafeRelease(gDX11FrameCB);
-	}
-
-	bool RenderDX11_CreateDynamicConstantBuffer(
-	UINT ByteWidth,
-	const char* DebugName,
-	ID3D11Buffer** OutBuffer
-)
-	{
-		if (!gDX11Device || !OutBuffer)
-			return false;
-
-		*OutBuffer = 0;
-
-		D3D11_BUFFER_DESC Desc = {};
-		Desc.ByteWidth = ByteWidth;
-		Desc.Usage = D3D11_USAGE_DYNAMIC;
-		Desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		Desc.MiscFlags = 0;
-		Desc.StructureByteStride = 0;
-
-		HRESULT Hr =
-			gDX11Device->CreateBuffer(
-				&Desc,
-				0,
-				OutBuffer
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s constant buffer failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "unknown",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
+		RenderDX11_GetConstantBuffers().Shutdown();
 	}
 
 	bool RenderDX11_CreateConstantBuffers()
 	{
-		RenderDX11_ReleaseConstantBuffers();
+		RenderDX11ConstantBuffersCreateDesc Desc;
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11FrameCB),
-			"FrameCB",
-			&gDX11FrameCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.FrameByteWidth =
+			sizeof(WorldDX11FrameCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11TerrainCB),
-			"TerrainCB",
-			&gDX11TerrainCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.TerrainByteWidth =
+			sizeof(WorldDX11TerrainCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11ObjectCB),
-			"ObjectCB",
-			&gDX11ObjectCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.ObjectByteWidth =
+			sizeof(WorldDX11ObjectCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11MaterialCB),
-			"MaterialCB",
-			&gDX11MaterialCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.MaterialByteWidth =
+			sizeof(WorldDX11MaterialCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11LightCB),
-			"LightCB",
-			&gDX11LightCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.LightByteWidth =
+			sizeof(WorldDX11LightCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11ShadowCB),
-			"ShadowCB",
-			&gDX11ShadowCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.ShadowByteWidth =
+			sizeof(WorldDX11ShadowCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11WaterCB),
-			"WaterCB",
-			&gDX11WaterCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.WaterByteWidth =
+			sizeof(WorldDX11WaterCB);
 
-		if (!RenderDX11_CreateDynamicConstantBuffer(
-			sizeof(WorldDX11GrassCB),
-			"GrassCB",
-			&gDX11GrassCB
-		))
-		{
-			RenderDX11_ReleaseConstantBuffers();
-			return false;
-		}
+		Desc.GrassByteWidth =
+			sizeof(WorldDX11GrassCB);
 
-		OutputDebugStringA(
-			"[DX11][Render] Constant buffers created: FrameCB(b0), TerrainCB(b1), ObjectCB(b2), MaterialCB(b3), LightCB(b4), ShadowCB(b5), WaterCB(b6), GrassCB(b7)\n"
-		);
+		Desc.SunGlareByteWidth =
+			sizeof(RenderDX11SunGlareSettings);
 
-		return true;
+		return
+			RenderDX11_GetConstantBuffers().Initialize(
+				Desc
+			);
 	}
 
 	void RenderDX11_SetIdentityMatrix(
@@ -1290,38 +1354,12 @@ namespace
 
 	void RenderDX11_BindFrameCB()
 	{
-		if (!gDX11Context || !gDX11FrameCB)
-			return;
-
-		gDX11Context->VSSetConstantBuffers(
-			0,
-			1,
-			&gDX11FrameCB
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			0,
-			1,
-			&gDX11FrameCB
-		);
+		RenderDX11_GetConstantBuffers().BindFrame();
 	}
 
 	void RenderDX11_BindTerrainCB()
 	{
-		if (!gDX11Context || !gDX11TerrainCB)
-			return;
-
-		gDX11Context->VSSetConstantBuffers(
-			1,
-			1,
-			&gDX11TerrainCB
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			1,
-			1,
-			&gDX11TerrainCB
-		);
+		RenderDX11_GetConstantBuffers().BindTerrain();
 	}
 
 	bool RenderDX11_UpdateConstantBuffer(
@@ -1331,76 +1369,18 @@ namespace
 		const char* DebugName
 	)
 	{
-		if (!gDX11Context || !Buffer || !Data || DataSize == 0)
-			return false;
-
-		D3D11_MAPPED_SUBRESOURCE Mapped = {};
-
-		HRESULT Hr =
-			gDX11Context->Map(
+		return
+			RenderDX11_GetConstantBuffers().Update(
 				Buffer,
-				0,
-				D3D11_MAP_WRITE_DISCARD,
-				0,
-				&Mapped
+				Data,
+				DataSize,
+				DebugName
 			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Map %s constant buffer failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "unknown",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		memcpy(
-			Mapped.pData,
-			Data,
-			DataSize
-		);
-
-		gDX11Context->Unmap(
-			Buffer,
-			0
-		);
-
-		return true;
 	}
 
 	void RenderDX11_BindWorldConstantBuffers()
 	{
-		if (!gDX11Context)
-			return;
-
-		ID3D11Buffer* Buffers[8] =
-		{
-			gDX11FrameCB,
-			gDX11TerrainCB,
-			gDX11ObjectCB,
-			gDX11MaterialCB,
-			gDX11LightCB,
-			gDX11ShadowCB,
-			gDX11WaterCB,
-			gDX11GrassCB
-		};
-
-		gDX11Context->VSSetConstantBuffers(
-			0,
-			8,
-			Buffers
-		);
-
-		gDX11Context->PSSetConstantBuffers(
-			0,
-			8,
-			Buffers
-		);
+		RenderDX11_GetConstantBuffers().BindWorld();
 	}
 
 	void RenderDX11_UpdateDefaultWorldCBs()
@@ -1423,21 +1403,31 @@ namespace
 		MaterialCB.SpecularGloss[1] = 0.5f;
 
 		WorldDX11LightCB LightCB = {};
-		LightCB.SunDir[0] = 0.0f;
-		LightCB.SunDir[1] = -1.0f;
-		LightCB.SunDir[2] = 0.0f;
+		const r3dPoint3D LightDir = GetEnvLightDir();
+		const float4 LightColor = GetEnvLightColor();
+		const float4 AmbientColor = GetEnvLightAmbient();
+		const float EnvironmentTime =
+			r3dGameLevel::Environment.__CurTime / 24.0f;
+		const r3dColor FogColor =
+			r3dGameLevel::Environment.Fog_Color.GetColorValue(
+				EnvironmentTime
+			);
+
+		LightCB.SunDir[0] = LightDir.x;
+		LightCB.SunDir[1] = LightDir.y;
+		LightCB.SunDir[2] = LightDir.z;
 		LightCB.SunDir[3] = 0.0f;
-		LightCB.SunColor[0] = 1.0f;
-		LightCB.SunColor[1] = 1.0f;
-		LightCB.SunColor[2] = 1.0f;
+		LightCB.SunColor[0] = LightColor.x;
+		LightCB.SunColor[1] = LightColor.y;
+		LightCB.SunColor[2] = LightColor.z;
 		LightCB.SunColor[3] = 1.0f;
-		LightCB.AmbientColor[0] = 0.12f;
-		LightCB.AmbientColor[1] = 0.12f;
-		LightCB.AmbientColor[2] = 0.12f;
+		LightCB.AmbientColor[0] = AmbientColor.x;
+		LightCB.AmbientColor[1] = AmbientColor.y;
+		LightCB.AmbientColor[2] = AmbientColor.z;
 		LightCB.AmbientColor[3] = 1.0f;
-		LightCB.FogColor[0] = 0.45f;
-		LightCB.FogColor[1] = 0.50f;
-		LightCB.FogColor[2] = 0.55f;
+		LightCB.FogColor[0] = FogColor.R / 255.0f;
+		LightCB.FogColor[1] = FogColor.G / 255.0f;
+		LightCB.FogColor[2] = FogColor.B / 255.0f;
 		LightCB.FogColor[3] = 1.0f;
 
 		WorldDX11ShadowCB ShadowCB = {};
@@ -1525,7 +1515,42 @@ namespace
 		float TerrainSizeX = 1.0f;
 		float TerrainSizeZ = 1.0f;
 
-		if (Terrain && Terrain->IsLoaded())
+		TerrainCB->DebugParams[0] = 0.0f;
+		TerrainCB->DebugParams[1] = 1.0f;
+
+		if (Terrain2 && Terrain2->IsLoaded())
+		{
+			const r3dTerrainDesc& TerrainDesc =
+				Terrain2->GetDesc();
+
+			TerrainSizeX =
+				R3D_MAX(
+					TerrainDesc.XSize,
+					1.0f
+				);
+
+			TerrainSizeZ =
+				R3D_MAX(
+					TerrainDesc.ZSize,
+					1.0f
+				);
+
+			if (TerrainDesc.XSize > 0.01f)
+				InvTerrainSizeX = 1.0f / TerrainDesc.XSize;
+
+			if (TerrainDesc.ZSize > 0.01f)
+				InvTerrainSizeZ = 1.0f / TerrainDesc.ZSize;
+
+			TerrainCB->DebugParams[0] =
+				TerrainDesc.MinHeight;
+			TerrainCB->DebugParams[1] =
+				R3D_MAX(
+					TerrainDesc.MaxHeight -
+					TerrainDesc.MinHeight,
+					1.0f
+				);
+		}
+		else if (Terrain && Terrain->IsLoaded())
 		{
 			const r3dTerrainDesc& TerrainDesc =
 				Terrain->GetDesc();
@@ -1547,10 +1572,17 @@ namespace
 
 			if (TerrainDesc.ZSize > 0.01f)
 				InvTerrainSizeZ = 1.0f / TerrainDesc.ZSize;
+
+			TerrainCB->DebugParams[0] =
+				TerrainDesc.MinHeight;
+			TerrainCB->DebugParams[1] =
+				R3D_MAX(
+					TerrainDesc.MaxHeight -
+					TerrainDesc.MinHeight,
+					1.0f
+				);
 		}
 
-		TerrainCB->DebugParams[0] = 64.0f;        // height offset
-		TerrainCB->DebugParams[1] = 1.0f / 128.0f; // height range inverse
 		TerrainCB->DebugParams[2] =
 			static_cast<float>(
 				gDX11Terrain2SRVMask |
@@ -1567,23 +1599,37 @@ namespace
 		TerrainCB->TerrainSize[2] = InvTerrainSizeX;
 		TerrainCB->TerrainSize[3] = InvTerrainSizeZ;
 
-		TerrainCB->LayerScale0[0] =
-			gDX11Terrain2BatchLayers[0].ScaleU;
-		TerrainCB->LayerScale0[1] =
-			gDX11Terrain2BatchLayers[0].ScaleV;
-		TerrainCB->LayerScale0[2] =
-			gDX11Terrain2BatchLayers[1].ScaleU;
-		TerrainCB->LayerScale0[3] =
-			gDX11Terrain2BatchLayers[1].ScaleV;
+		for (
+			int LayerIndex = 0;
+			LayerIndex < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++LayerIndex
+		)
+		{
+			TerrainCB->LayerScale[LayerIndex][0] =
+				gDX11Terrain2BatchLayers[LayerIndex].ScaleU;
 
-		TerrainCB->LayerScale1[0] =
-			gDX11Terrain2BatchLayers[2].ScaleU;
-		TerrainCB->LayerScale1[1] =
-			gDX11Terrain2BatchLayers[2].ScaleV;
-		TerrainCB->LayerScale1[2] =
-			gDX11Terrain2BatchLayers[3].ScaleU;
-		TerrainCB->LayerScale1[3] =
-			gDX11Terrain2BatchLayers[3].ScaleV;
+			TerrainCB->LayerScale[LayerIndex][1] =
+				gDX11Terrain2BatchLayers[LayerIndex].ScaleV;
+
+			TerrainCB->LayerScale[LayerIndex][2] =
+				static_cast<float>(
+					gDX11Terrain2BatchLayers[LayerIndex].SourceLayerIndex
+				);
+
+			TerrainCB->LayerScale[LayerIndex][3] =
+				0.0f;
+		}
+
+		TerrainCB->DebugParams[2] =
+			static_cast<float>(
+				gDX11Terrain2SRVMask |
+				gDX11Terrain2ActiveAtlasSRVMask
+			);
+
+		TerrainCB->DebugParams[3] =
+			static_cast<float>(
+				gDX11Terrain2LayerCount
+			);
 
 		TerrainCB->AtlasTexTransform[0] = 0.0f;
 		TerrainCB->AtlasTexTransform[1] = 0.0f;
@@ -1746,9 +1792,16 @@ namespace
 			);
 		}
 
-		RenderDX11_ResetTerrain2TextureBridge(
-			gDX11Terrain2BatchMaskBridge
-		);
+		for (
+			int i = 0;
+			i < DX11_TERRAIN2_MAX_MASK_COUNT;
+			++i
+		)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11Terrain2BatchMaskBridge[i]
+			);
+		}
 
 		for (
 			int i = 0;
@@ -1780,6 +1833,39 @@ namespace
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
 		gDX11Terrain2AtlasRefreshCount = 0;
 		gDX11Terrain2AtlasRefreshPendingCount = 0;
+
+		RenderDX11_ResetTerrain2TextureBridge(
+			gDX11SunGlareMaskBridge
+		);
+	}
+
+	void RenderDX11_ReleaseStaticMeshResources()
+	{
+		for (int i = 0; i < DX11_STATIC_MESH_CACHE_COUNT; ++i)
+		{
+			RenderDX11_SafeRelease(
+				gDX11StaticMeshCache[i].IndexBuffer
+			);
+			RenderDX11_SafeRelease(
+				gDX11StaticMeshCache[i].VertexBuffer
+			);
+			gDX11StaticMeshCache[i] =
+				WorldDX11StaticMeshCacheEntry();
+		}
+
+		for (int i = 0; i < DX11_MATERIAL_TEXTURE_CACHE_COUNT; ++i)
+		{
+			RenderDX11_ResetTerrain2TextureBridge(
+				gDX11MaterialTextureCache[i].Bridge
+			);
+			gDX11MaterialTextureCache[i].Source = 0;
+			gDX11MaterialTextureCache[i].LastUsedFrame = 0;
+		}
+
+		gDX11StaticObjectDrawCount = 0;
+		gDX11DynamicObjectDrawCount = 0;
+		gDX11StaticMeshUploadCount = 0;
+		gDX11MaterialTextureUploadsThisFrame = 0;
 	}
 
 	bool RenderDX11_TranslateTerrain2TextureFormat(
@@ -2666,6 +2752,26 @@ namespace
 			SourceLayerIndex;
 	}
 
+	void RenderDX11_SetTerrain2BatchMaskSlot(
+		int MaskIndex
+	)
+	{
+		if (
+			!Terrain2 ||
+			MaskIndex < 0 ||
+			MaskIndex >= DX11_TERRAIN2_MAX_MASK_COUNT ||
+			MaskIndex >= Terrain2->GetNumMasks()
+		)
+		{
+			return;
+		}
+
+		gDX11Terrain2BatchMaskTexture[MaskIndex] =
+			Terrain2->GetLayerMask(
+				MaskIndex
+			);
+	}
+
 	void RenderDX11_UpdateTerrain2TextureRefs()
 	{
 		gDX11Terrain2ColorTexture = 0;
@@ -2683,7 +2789,15 @@ namespace
 			);
 		}
 
-		gDX11Terrain2BatchMaskTexture = 0;
+		for (
+			int i = 0;
+			i < DX11_TERRAIN2_MAX_MASK_COUNT;
+			++i
+		)
+		{
+			gDX11Terrain2BatchMaskTexture[i] = 0;
+		}
+
 		gDX11Terrain2LayerCount = 0;
 		gDX11Terrain2MaskCount = 0;
 		gDX11Terrain2ActiveMaskIndex = 0;
@@ -2711,33 +2825,30 @@ namespace
 		gDX11Terrain2HeightTexture =
 			Terrain2->GetHeightTexture();
 
-		RenderDX11_SetTerrain2BatchLayerSlot(
-			0,
-			0
-		);
-
-		if (gDX11Terrain2MaskCount > 0)
-		{
-			gDX11Terrain2BatchMaskTexture =
-				Terrain2->GetLayerMask(
-					gDX11Terrain2ActiveMaskIndex
-				);
-		}
-
+		// Bind all terrain layers, not only mask0 batch.
+		// Slot 0 = base layer.
+		// Slots 1..12 = painted layers from mask0..mask3.
 		for (
-			int SlotIndex = 1;
+			int SlotIndex = 0;
 			SlotIndex < DX11_TERRAIN2_BATCH_LAYER_COUNT;
 			++SlotIndex
 		)
 		{
-			const int SourceLayerIndex =
-				gDX11Terrain2ActiveMaskIndex *
-				DX11_TERRAIN2_LAYERS_PER_MASK +
-				SlotIndex;
-
 			RenderDX11_SetTerrain2BatchLayerSlot(
 				SlotIndex,
-				SourceLayerIndex
+				SlotIndex
+			);
+		}
+
+		// Bind all available layer masks.
+		for (
+			int MaskIndex = 0;
+			MaskIndex < DX11_TERRAIN2_MAX_MASK_COUNT;
+			++MaskIndex
+		)
+		{
+			RenderDX11_SetTerrain2BatchMaskSlot(
+				MaskIndex
 			);
 		}
 
@@ -2773,14 +2884,6 @@ namespace
 		{
 			gDX11Terrain2TextureMask |=
 				DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL;
-		}
-
-		if (RenderDX11_IsTerrain2TextureReady(
-			gDX11Terrain2BatchMaskTexture
-		))
-		{
-			gDX11Terrain2TextureMask |=
-				DX11_TERRAIN2_TEXTURE_MASK0;
 		}
 
 		if (RenderDX11_IsTerrain2TextureReady(
@@ -2853,11 +2956,6 @@ namespace
 			RenderDX11_LogTerrain2TextureInfo(
 				"batch layer0 normal",
 				gDX11Terrain2BatchLayers[0].NormalTexture
-			);
-
-			RenderDX11_LogTerrain2TextureInfo(
-				"batch mask",
-				gDX11Terrain2BatchMaskTexture
 			);
 
 			RenderDX11_LogTerrain2TextureInfo(
@@ -2936,52 +3034,76 @@ namespace
 				DX11_TERRAIN2_TEXTURE_LAYER0_NORMAL;
 		}
 
-		if (
-			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2BatchMaskBridge,
-				gDX11Terrain2BatchMaskTexture,
-				"batch mask"
-			)
+		for (
+			int MaskIndex = 0;
+			MaskIndex < DX11_TERRAIN2_MAX_MASK_COUNT;
+			++MaskIndex
 		)
 		{
-			gDX11Terrain2SRVMask |=
-				DX11_TERRAIN2_TEXTURE_MASK0;
+			char MaskName[64] = {};
+			sprintf_s(
+				MaskName,
+				"batch mask%d",
+				MaskIndex
+			);
+
+			if (
+				RenderDX11_UploadTerrain2TextureToDX11(
+					gDX11Terrain2BatchMaskBridge[MaskIndex],
+					gDX11Terrain2BatchMaskTexture[MaskIndex],
+					MaskName
+				)
+			)
+			{
+				// Keep old debug bit for first mask.
+				if (MaskIndex == 0)
+				{
+					gDX11Terrain2SRVMask |=
+						DX11_TERRAIN2_TEXTURE_MASK0;
+				}
+			}
 		}
 
-		if (
-			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2BatchDiffuseBridge[1],
-				gDX11Terrain2BatchLayers[1].DiffuseTexture,
-				"batch layer1 diffuse"
-			)
+		// Upload all painted layers 1..12.
+		// Layer 0 is uploaded earlier as base layer.
+		for (
+			int LayerIndex = 1;
+			LayerIndex < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++LayerIndex
 		)
 		{
-			gDX11Terrain2SRVMask |=
-				DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE;
-		}
+			char LayerName[64] = {};
+			sprintf_s(
+				LayerName,
+				"batch layer%d diffuse",
+				LayerIndex
+			);
 
-		if (
-			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2BatchDiffuseBridge[2],
-				gDX11Terrain2BatchLayers[2].DiffuseTexture,
-				"batch layer2 diffuse"
+			if (
+				RenderDX11_UploadTerrain2TextureToDX11(
+					gDX11Terrain2BatchDiffuseBridge[LayerIndex],
+					gDX11Terrain2BatchLayers[LayerIndex].DiffuseTexture,
+					LayerName
+				)
 			)
-		)
-		{
-			gDX11Terrain2SRVMask |=
-				DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE;
-		}
-
-		if (
-			RenderDX11_UploadTerrain2TextureToDX11(
-				gDX11Terrain2BatchDiffuseBridge[3],
-				gDX11Terrain2BatchLayers[3].DiffuseTexture,
-				"batch layer3 diffuse"
-			)
-		)
-		{
-			gDX11Terrain2SRVMask |=
-				DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE;
+			{
+				// Old debug bits for first 3 layers only.
+				if (LayerIndex == 1)
+				{
+					gDX11Terrain2SRVMask |=
+						DX11_TERRAIN2_TEXTURE_LAYER1_DIFFUSE;
+				}
+				else if (LayerIndex == 2)
+				{
+					gDX11Terrain2SRVMask |=
+						DX11_TERRAIN2_TEXTURE_LAYER2_DIFFUSE;
+				}
+				else if (LayerIndex == 3)
+				{
+					gDX11Terrain2SRVMask |=
+						DX11_TERRAIN2_TEXTURE_LAYER3_DIFFUSE;
+				}
+			}
 		}
 	}
 
@@ -2990,23 +3112,62 @@ namespace
 		if (!gDX11Context)
 			return;
 
-		ID3D11ShaderResourceView* SRVs[9] =
+		// t0  = terrain color modulation
+		// t1  = terrain normal
+		// t2  = terrain height
+		// t3  = base layer diffuse
+		// t4  = base layer normal
+		// t5  = mask0
+		// t6  = mask1
+		// t7  = mask2
+		// t8  = mask3
+		// t9  = layer1 diffuse
+		// ...
+		// t20 = layer12 diffuse
+		ID3D11ShaderResourceView* SRVs[21] = {};
+
+		SRVs[0] = gDX11Terrain2ColorBridge.SRV;
+		SRVs[1] = gDX11Terrain2NormalBridge.SRV;
+		SRVs[2] = gDX11Terrain2HeightBridge.SRV;
+		SRVs[3] = gDX11Terrain2BatchDiffuseBridge[0].SRV;
+		SRVs[4] = gDX11Terrain2BatchNormalBridge[0].SRV;
+
+		for (
+			int MaskIndex = 0;
+			MaskIndex < DX11_TERRAIN2_MAX_MASK_COUNT;
+			++MaskIndex
+		)
 		{
-			gDX11Terrain2ColorBridge.SRV,          // t0
-			gDX11Terrain2NormalBridge.SRV,         // t1
-			gDX11Terrain2HeightBridge.SRV,         // t2
-			gDX11Terrain2BatchDiffuseBridge[0].SRV, // t3
-			gDX11Terrain2BatchNormalBridge[0].SRV,  // t4
-			gDX11Terrain2BatchMaskBridge.SRV,       // t5
-			gDX11Terrain2BatchDiffuseBridge[1].SRV, // t6
-			gDX11Terrain2BatchDiffuseBridge[2].SRV, // t7
-			gDX11Terrain2BatchDiffuseBridge[3].SRV  // t8
-		};
+			SRVs[5 + MaskIndex] =
+				gDX11Terrain2BatchMaskBridge[MaskIndex].SRV;
+		}
+
+		for (
+			int LayerIndex = 1;
+			LayerIndex < DX11_TERRAIN2_BATCH_LAYER_COUNT;
+			++LayerIndex
+		)
+		{
+			const int SlotIndex =
+				9 + (LayerIndex - 1);
+
+			if (SlotIndex >= 0 && SlotIndex < _countof(SRVs))
+			{
+				SRVs[SlotIndex] =
+					gDX11Terrain2BatchDiffuseBridge[LayerIndex].SRV;
+			}
+		}
 
 		gDX11Context->PSSetShaderResources(
 			0,
-			9,
+			_countof(SRVs),
 			SRVs
+		);
+
+		gDX11Context->VSSetShaderResources(
+			2,
+			1,
+			&SRVs[2]
 		);
 
 		ID3D11SamplerState* Samplers[2] =
@@ -3023,6 +3184,12 @@ namespace
 		if (Samplers[0] || Samplers[1])
 		{
 			gDX11Context->PSSetSamplers(
+				0,
+				2,
+				Samplers
+			);
+
+			gDX11Context->VSSetSamplers(
 				0,
 				2,
 				Samplers
@@ -3289,7 +3456,7 @@ namespace
 		}
 
 		gDX11Context->PSSetShaderResources(
-			9,
+			21,
 			2,
 			SRVs
 		);
@@ -3388,387 +3555,9 @@ namespace
 		RenderDX11_BindFrameCB();
 	}
 
-	void RenderDX11_MakeShaderFileName(
-		char* OutFileName,
-		size_t OutFileNameSize,
-		const char* RelativeFileName
-	)
-	{
-		if (!OutFileName || !OutFileNameSize)
-			return;
-
-		OutFileName[0] = 0;
-
-		if (!RelativeFileName || !RelativeFileName[0])
-			return;
-
-		sprintf_s(
-			OutFileName,
-			OutFileNameSize,
-			"Data\\Shaders\\DX11_P1\\%s",
-			RelativeFileName
-		);
-	}
-
-	bool RenderDX11_LoadShaderSource(
-	const char* FileName,
-	char** OutData,
-	UINT* OutSize
-)
-	{
-		if (!FileName || !FileName[0] || !OutData || !OutSize)
-			return false;
-
-		*OutData = 0;
-		*OutSize = 0;
-
-		r3dFile* File =
-			r3d_open(
-				FileName,
-				"rb"
-			);
-
-		if (!File)
-		{
-			char Text[512] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Missing shader file: %s\n",
-				FileName
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		char* Data =
-			new char[File->size + 1];
-
-		const size_t ReadSize =
-			fread(
-				Data,
-				1,
-				File->size,
-				File
-			);
-
-		fclose(File);
-
-		Data[ReadSize] = 0;
-
-		*OutData = Data;
-		*OutSize = static_cast<UINT>(ReadSize);
-
-		return true;
-	}
-
-	bool RenderDX11_CompileShaderFromFile(
-	const char* RelativeFileName,
-	const char* EntryPoint,
-	const char* Profile,
-	ID3DBlob** OutBlob
-)
-	{
-		if (!RelativeFileName || !EntryPoint || !Profile || !OutBlob)
-			return false;
-
-		*OutBlob = 0;
-
-		char FileName[MAX_PATH] = {};
-
-		RenderDX11_MakeShaderFileName(
-			FileName,
-			_countof(FileName),
-			RelativeFileName
-		);
-
-		char* SourceData = 0;
-		UINT SourceSize = 0;
-
-		if (!RenderDX11_LoadShaderSource(
-			FileName,
-			&SourceData,
-			&SourceSize
-		))
-		{
-			return false;
-		}
-
-		UINT Flags = D3DCOMPILE_ENABLE_STRICTNESS;
-
-#if defined(_DEBUG)
-		Flags |= D3DCOMPILE_DEBUG;
-		Flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-		ID3DBlob* ErrorBlob = 0;
-
-		RenderDX11IncludeHandler IncludeHandler(
-			FileName
-		);
-
-		HRESULT Hr =
-			D3DCompile(
-				SourceData,
-				SourceSize,
-				FileName,
-				0,
-				&IncludeHandler,
-				EntryPoint,
-				Profile,
-				Flags,
-				0,
-				OutBlob,
-				&ErrorBlob
-			);
-
-		delete[] SourceData;
-
-		if (FAILED(Hr))
-		{
-			const char* ErrorText =
-				ErrorBlob
-				? reinterpret_cast<const char*>(
-					ErrorBlob->GetBufferPointer()
-				)
-				: "unknown error";
-
-			char Text[4096] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Shader compile failed: %s entry=%s profile=%s HRESULT=0x%08X\n%s\n",
-				FileName,
-				EntryPoint,
-				Profile,
-				static_cast<unsigned int>(Hr),
-				ErrorText
-			);
-
-			OutputDebugStringA(Text);
-
-			RenderDX11_SafeRelease(ErrorBlob);
-
-			if (*OutBlob)
-			{
-				(*OutBlob)->Release();
-				*OutBlob = 0;
-			}
-
-			return false;
-		}
-
-		RenderDX11_SafeRelease(ErrorBlob);
-
-		char Text[512] = {};
-		sprintf_s(
-			Text,
-			"[DX11][Render] Shader compiled: %s entry=%s profile=%s\n",
-			FileName,
-			EntryPoint,
-			Profile
-		);
-
-		OutputDebugStringA(Text);
-
-		return true;
-	}
-
 	bool RenderDX11_CreateShaders()
 	{
-		RenderDX11_ReleaseShaders();
-
-		ID3DBlob* VSBlob = 0;
-		ID3DBlob* PSBlob = 0;
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_clear.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		HRESULT Hr =
-			gDX11Device->CreateVertexShader(
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				0,
-				&gDX11ClearVS
-			);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create clear VS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"system\\dx11_clear.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreatePixelShader(
-				PSBlob->GetBufferPointer(),
-				PSBlob->GetBufferSize(),
-				0,
-				&gDX11ClearPS
-			);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create clear PS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"Nature\\dx11_terrain.hls",
-			"VSMain",
-			"vs_5_0",
-			&VSBlob
-		))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreateVertexShader(
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				0,
-				&gDX11TerrainVS
-			);
-
-		if (FAILED(Hr))
-		{
-			RenderDX11_SafeRelease(VSBlob);
-
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain VS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		const D3D11_INPUT_ELEMENT_DESC TerrainLayoutDesc[] =
-		{
-			{
-				"POSITION",
-				0,
-				DXGI_FORMAT_R32G32B32_FLOAT,
-				0,
-				0,
-				D3D11_INPUT_PER_VERTEX_DATA,
-				0
-			},
-			{
-				"NORMAL",
-				0,
-				DXGI_FORMAT_R32G32B32_FLOAT,
-				0,
-				sizeof(float) * 3,
-				D3D11_INPUT_PER_VERTEX_DATA,
-				0
-			}
-		};
-
-		Hr =
-			gDX11Device->CreateInputLayout(
-				TerrainLayoutDesc,
-				_countof(TerrainLayoutDesc),
-				VSBlob->GetBufferPointer(),
-				VSBlob->GetBufferSize(),
-				&gDX11TerrainInputLayout
-			);
-
-		RenderDX11_SafeRelease(VSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain input layout failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		if (!RenderDX11_CompileShaderFromFile(
-			"Nature\\dx11_terrain.hls",
-			"PSMain",
-			"ps_5_0",
-			&PSBlob
-		))
-		{
-			RenderDX11_SafeRelease(PSBlob);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreatePixelShader(
-				PSBlob->GetBufferPointer(),
-				PSBlob->GetBufferSize(),
-				0,
-				&gDX11TerrainPS
-			);
-
-		RenderDX11_SafeRelease(PSBlob);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create terrain PS failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		OutputDebugStringA(
-			"[DX11][Render] Shaders created\n"
-		);
-
-		return true;
+		return RenderDX11_GetShaders().Initialize();
 	}
 
 	void RenderDX11_BindClearShaders()
@@ -3826,6 +3615,135 @@ namespace
 
 #include "RenderDX11_Terrain.hpp"
 
+	bool RenderDX11_HasLoadedLegacyTerrain()
+	{
+		return
+			Terrain != 0 &&
+			Terrain->IsLoaded();
+	}
+
+	bool RenderDX11_HasTerrainV3()
+	{
+		RenderDX11_EnsureTerrainV3Desc();
+
+		return
+			gDX11TerrainV3Desc.DescriptorFound;
+	}
+
+	bool RenderDX11_ShouldUseTerrainV3()
+	{
+		const bool HasTerrainV3 =
+			RenderDX11_HasTerrainV3();
+
+		const bool HasLegacyTerrain =
+			RenderDX11_HasLoadedLegacyTerrain();
+
+		/*
+		 * Явное принудительное включение V3.
+		 */
+		if (RenderDX11_WantsTerrainV3())
+		{
+			if (!HasTerrainV3)
+			{
+				static bool bMissingV3Logged = false;
+
+				if (!bMissingV3Logged)
+				{
+					bMissingV3Logged = true;
+
+					OutputDebugStringA(
+						"[DX11][Terrain] -dx11terrainv3 requested, "
+						"but TerrainV3 descriptor was not found. "
+						"Using legacy terrain.\n"
+					);
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
+		/*
+		 * Смешанная карта V2 + V3:
+		 * пока V3 разрабатывается, используем рабочий V2.
+		 */
+		if (HasLegacyTerrain)
+			return false;
+
+		/*
+		 * V3-only карта.
+		 */
+		return HasTerrainV3;
+	}
+
+	bool RenderDX11_DrawSelectedTerrain(
+		bool GBufferPass
+	)
+	{
+		if (RenderDX11_ShouldUseTerrainV3())
+		{
+			static bool bTerrainV3SelectedLogged = false;
+
+			if (!bTerrainV3SelectedLogged)
+			{
+				bTerrainV3SelectedLogged = true;
+
+				OutputDebugStringA(
+					"[DX11][Terrain] Selected source: TerrainV3\n"
+				);
+			}
+
+			return RenderDX11_DrawTerrainV3();
+		}
+
+		if (!RenderDX11_HasLoadedLegacyTerrain())
+		{
+			OutputDebugStringA(
+				"[DX11][Terrain] No loaded terrain source\n"
+			);
+
+			return false;
+		}
+
+		static bool bLegacyTerrainSelectedLogged = false;
+
+		if (!bLegacyTerrainSelectedLogged)
+		{
+			bLegacyTerrainSelectedLogged = true;
+
+			OutputDebugStringA(
+				Terrain2
+				? "[DX11][Terrain] Selected source: Terrain2\n"
+				: "[DX11][Terrain] Selected source: Terrain1\n"
+			);
+		}
+
+		/*
+		 * Подготавливаем Terrain1/Terrain2 constant buffer.
+		 */
+		RenderDX11_UpdateTerrainCB();
+
+		if (GBufferPass)
+		{
+			RenderDX11_BindTerrain2TextureSlots();
+		}
+
+		/*
+		 * Сначала используем полноценный native Terrain2 atlas path.
+		 */
+		if (Terrain2)
+		{
+			if (RenderDX11_DrawTerrain2AtlasTiles())
+				return true;
+		}
+
+		/*
+		 * Terrain1 или fallback для Terrain2.
+		 */
+		return RenderDX11_DrawTerrainPatchSet();
+	}
+
 	//////////////////////////////////////
 
 	bool RenderDX11_DrawTerrainGBuffer()
@@ -3839,8 +3757,6 @@ namespace
 		{
 			return false;
 		}
-
-		RenderDX11_UpdateTerrainCB();
 
 		gDX11Context->VSSetShader(
 			gDX11TerrainVS,
@@ -3858,16 +3774,540 @@ namespace
 			0
 		);
 
-		RenderDX11_BindTerrain2TextureSlots();
-
-		if (RenderDX11_DrawTerrain2AtlasTiles())
-			return true;
-
 		gDX11Terrain2ActiveAtlasSRVMask = 0;
 
-		RenderDX11_WriteTerrainCB(0);
+		return RenderDX11_DrawSelectedTerrain(
+			true
+		);
+	}
 
-		return RenderDX11_DrawTerrainPatchSet();
+	WorldDX11StaticMeshCacheEntry*
+	RenderDX11_GetStaticMeshCacheEntry(r3dMesh* Mesh)
+	{
+		if (
+			!Mesh ||
+			!Mesh->IsDrawable() ||
+			Mesh->IsSkeletal() ||
+			(Mesh->VertexFlags & r3dMesh::vfBending) ||
+			Mesh->NumVertices <= 0 ||
+			Mesh->NumIndices <= 0 ||
+			!Mesh->VertexPositions ||
+			!Mesh->VertexNormals ||
+			!Mesh->VertexUVs ||
+			!Mesh->VertexTangents ||
+			!Mesh->VertexTangentWs ||
+			!Mesh->Indices
+		)
+		{
+			return 0;
+		}
+
+		WorldDX11StaticMeshCacheEntry* Entry = 0;
+		WorldDX11StaticMeshCacheEntry* Oldest =
+			&gDX11StaticMeshCache[0];
+
+		for (int i = 0; i < DX11_STATIC_MESH_CACHE_COUNT; ++i)
+		{
+			WorldDX11StaticMeshCacheEntry& Candidate =
+				gDX11StaticMeshCache[i];
+
+			if (
+				Candidate.Source == Mesh &&
+				Candidate.VertexBuffer &&
+				Candidate.IndexBuffer &&
+				Candidate.NumVertices == Mesh->NumVertices &&
+				Candidate.NumIndices == Mesh->NumIndices
+			)
+			{
+				Candidate.LastUsedFrame = gDX11TerrainCacheFrameId;
+				return &Candidate;
+			}
+
+			if (!Candidate.Source && !Entry)
+				Entry = &Candidate;
+
+			if (Candidate.LastUsedFrame < Oldest->LastUsedFrame)
+				Oldest = &Candidate;
+		}
+
+		if (!Entry)
+			Entry = Oldest;
+
+		RenderDX11_SafeRelease(Entry->IndexBuffer);
+		RenderDX11_SafeRelease(Entry->VertexBuffer);
+		*Entry = WorldDX11StaticMeshCacheEntry();
+
+		WorldDX11StaticMeshVertex* Vertices =
+			new WorldDX11StaticMeshVertex[Mesh->NumVertices];
+
+		if (!Vertices)
+			return 0;
+
+		for (int i = 0; i < Mesh->NumVertices; ++i)
+		{
+			const r3dPoint3D& Position = Mesh->VertexPositions[i];
+			const r3dVector& Normal = Mesh->VertexNormals[i];
+			const r3dPoint2D& TexCoord = Mesh->VertexUVs[i];
+			const r3dPoint3D& Tangent = Mesh->VertexTangents[i];
+
+			Vertices[i].Position[0] = Position.x;
+			Vertices[i].Position[1] = Position.y;
+			Vertices[i].Position[2] = Position.z;
+			Vertices[i].Normal[0] = Normal.x;
+			Vertices[i].Normal[1] = Normal.y;
+			Vertices[i].Normal[2] = Normal.z;
+			Vertices[i].TexCoord[0] = TexCoord.x;
+			Vertices[i].TexCoord[1] = TexCoord.y;
+			Vertices[i].Tangent[0] = Tangent.x;
+			Vertices[i].Tangent[1] = Tangent.y;
+			Vertices[i].Tangent[2] = Tangent.z;
+			Vertices[i].Tangent[3] =
+				Mesh->VertexTangentWs[i] > 0 ? 1.0f : -1.0f;
+		}
+
+		D3D11_BUFFER_DESC VertexDesc = {};
+		VertexDesc.ByteWidth =
+			static_cast<UINT>(
+				sizeof(WorldDX11StaticMeshVertex) *
+				Mesh->NumVertices
+			);
+		VertexDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		VertexDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA VertexData = {};
+		VertexData.pSysMem = Vertices;
+
+		HRESULT Hr = gDX11Device->CreateBuffer(
+			&VertexDesc,
+			&VertexData,
+			&Entry->VertexBuffer
+		);
+
+		delete [] Vertices;
+
+		if (FAILED(Hr))
+			return 0;
+
+		D3D11_BUFFER_DESC IndexDesc = {};
+		IndexDesc.ByteWidth =
+			static_cast<UINT>(sizeof(uint32_t) * Mesh->NumIndices);
+		IndexDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		IndexDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA IndexData = {};
+		IndexData.pSysMem = Mesh->Indices;
+
+		Hr = gDX11Device->CreateBuffer(
+			&IndexDesc,
+			&IndexData,
+			&Entry->IndexBuffer
+		);
+
+		if (FAILED(Hr))
+		{
+			RenderDX11_SafeRelease(Entry->VertexBuffer);
+			return 0;
+		}
+
+		Entry->Source = Mesh;
+		Entry->NumVertices = Mesh->NumVertices;
+		Entry->NumIndices = Mesh->NumIndices;
+		Entry->LastUsedFrame = gDX11TerrainCacheFrameId;
+		++gDX11StaticMeshUploadCount;
+		return Entry;
+	}
+
+	ID3D11ShaderResourceView*
+	RenderDX11_GetMaterialTextureSRV(
+		r3dTexture* Texture,
+		const char* DebugName
+	)
+	{
+		if (!Texture)
+			return 0;
+
+		WorldDX11MaterialTextureCacheEntry* Entry = 0;
+		WorldDX11MaterialTextureCacheEntry* Oldest =
+			&gDX11MaterialTextureCache[0];
+
+		for (int i = 0; i < DX11_MATERIAL_TEXTURE_CACHE_COUNT; ++i)
+		{
+			WorldDX11MaterialTextureCacheEntry& Candidate =
+				gDX11MaterialTextureCache[i];
+
+			if (
+				Candidate.Source == Texture &&
+				Candidate.Bridge.SRV
+			)
+			{
+				Candidate.LastUsedFrame = gDX11TerrainCacheFrameId;
+				return Candidate.Bridge.SRV;
+			}
+
+			if (!Candidate.Source && !Entry)
+				Entry = &Candidate;
+
+			if (Candidate.LastUsedFrame < Oldest->LastUsedFrame)
+				Oldest = &Candidate;
+		}
+
+		if (!Entry)
+			Entry = Oldest;
+
+		if (
+			gDX11MaterialTextureUploadsThisFrame >=
+			DX11_MATERIAL_UPLOADS_PER_FRAME
+		)
+		{
+			return 0;
+		}
+
+		RenderDX11_ResetTerrain2TextureBridge(Entry->Bridge);
+		Entry->Source = Texture;
+		Entry->LastUsedFrame = gDX11TerrainCacheFrameId;
+
+		if (!RenderDX11_UploadTerrain2TextureToDX11(
+			Entry->Bridge,
+			Texture,
+			DebugName
+		))
+		{
+			Entry->Source = 0;
+			return 0;
+		}
+
+		++gDX11MaterialTextureUploadsThisFrame;
+		return Entry->Bridge.SRV;
+	}
+
+	bool RenderDX11_DrawStaticMeshObject(
+		GameObject* Object,
+		r3dMesh* Mesh
+	)
+	{
+		WorldDX11StaticMeshCacheEntry* Cache =
+			RenderDX11_GetStaticMeshCacheEntry(Mesh);
+
+		if (!Cache)
+			return false;
+
+		WorldDX11ObjectCB ObjectCB = {};
+		RenderDX11_CopyMatrix(
+			ObjectCB.World,
+			Object->GetTransformMatrix()
+		);
+		RenderDX11_CopyMatrix(
+			ObjectCB.PrevWorld,
+			Object->GetTransformMatrix()
+		);
+		ObjectCB.ObjectColor[0] = 1.0f;
+		ObjectCB.ObjectColor[1] = 1.0f;
+		ObjectCB.ObjectColor[2] = 1.0f;
+		ObjectCB.ObjectColor[3] = 1.0f;
+
+		if (Object->isObjType(OBJTYPE_Mesh))
+		{
+			const MeshGameObject* MeshObject =
+				static_cast<const MeshGameObject*>(Object);
+			ObjectCB.ObjectColor[0] =
+				MeshObject->m_ObjectColor.R / 255.0f;
+			ObjectCB.ObjectColor[1] =
+				MeshObject->m_ObjectColor.G / 255.0f;
+			ObjectCB.ObjectColor[2] =
+				MeshObject->m_ObjectColor.B / 255.0f;
+			ObjectCB.ObjectColor[3] =
+				MeshObject->m_ObjectColor.A / 255.0f;
+		}
+
+		if (!RenderDX11_UpdateConstantBuffer(
+			gDX11ObjectCB,
+			&ObjectCB,
+			sizeof(ObjectCB),
+			"StaticObjectCB"
+		))
+		{
+			return false;
+		}
+
+		const UINT Stride = sizeof(WorldDX11StaticMeshVertex);
+		const UINT Offset = 0;
+		gDX11Context->IASetInputLayout(gDX11StaticMeshInputLayout);
+		gDX11Context->IASetPrimitiveTopology(
+			D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+		);
+		gDX11Context->IASetVertexBuffers(
+			0,
+			1,
+			&Cache->VertexBuffer,
+			&Stride,
+			&Offset
+		);
+		gDX11Context->IASetIndexBuffer(
+			Cache->IndexBuffer,
+			DXGI_FORMAT_R32_UINT,
+			0
+		);
+		gDX11Context->VSSetShader(gDX11StaticMeshVS, 0, 0);
+		gDX11Context->PSSetShader(gDX11StaticMeshPS, 0, 0);
+		gDX11Context->PSSetSamplers(
+			0,
+			1,
+			&gDX11SamplerLinearWrap
+		);
+
+		const int BatchCount =
+			Mesh->NumMatChunks > 0 ? Mesh->NumMatChunks : 1;
+
+		for (int BatchIndex = 0; BatchIndex < BatchCount; ++BatchIndex)
+		{
+			r3dMaterial* Material =
+				Mesh->NumMatChunks > 0
+				? Mesh->MatChunks[BatchIndex].Mat
+				: 0;
+
+			if (
+				Material &&
+				(Material->Flags & (
+					R3D_MAT_TRANSPARENT |
+					R3D_MAT_SKIP_DRAW
+				))
+			)
+			{
+				continue;
+			}
+
+			WorldDX11MaterialCB MaterialCB = {};
+			MaterialCB.DiffuseScale[0] =
+				Material ? Material->DiffuseColor.R / 255.0f : 1.0f;
+			MaterialCB.DiffuseScale[1] =
+				Material ? Material->DiffuseColor.G / 255.0f : 1.0f;
+			MaterialCB.DiffuseScale[2] =
+				Material ? Material->DiffuseColor.B / 255.0f : 1.0f;
+			MaterialCB.DiffuseScale[3] = 1.0f;
+			MaterialCB.NormalScale[0] = 1.0f;
+			MaterialCB.SpecularGloss[0] =
+				Material ? Material->ReflectionPower : 0.0f;
+			MaterialCB.SpecularGloss[1] =
+				Material ? Material->SpecularPower : 0.0f;
+
+			ID3D11ShaderResourceView* DiffuseSRV =
+				Material
+				? RenderDX11_GetMaterialTextureSRV(
+					Material->Texture,
+					"StaticMaterialDiffuse"
+				)
+				: 0;
+			ID3D11ShaderResourceView* NormalSRV =
+				Material
+				? RenderDX11_GetMaterialTextureSRV(
+					Material->BumpTexture,
+					"StaticMaterialNormal"
+				)
+				: 0;
+
+			MaterialCB.MaterialParams[0] = DiffuseSRV ? 1.0f : 0.0f;
+			MaterialCB.MaterialParams[1] = NormalSRV ? 1.0f : 0.0f;
+			MaterialCB.MaterialParams[2] =
+				Material && (Material->Flags & R3D_MAT_HASALPHA)
+				? 1.0f
+				: 0.0f;
+			MaterialCB.MaterialParams[3] =
+				Material && Material->AlphaRef > 0.0f
+				? Material->AlphaRef
+				: 0.15f;
+
+			if (!RenderDX11_UpdateConstantBuffer(
+				gDX11MaterialCB,
+				&MaterialCB,
+				sizeof(MaterialCB),
+				"StaticMaterialCB"
+			))
+			{
+				continue;
+			}
+
+			ID3D11ShaderResourceView* MaterialSRVs[2] =
+			{
+				DiffuseSRV,
+				NormalSRV
+			};
+			gDX11Context->PSSetShaderResources(0, 2, MaterialSRVs);
+			gDX11Context->RSSetState(
+				Material &&
+				(Material->Flags & R3D_MAT_DOUBLESIDED)
+				? gDX11RasterSolidNoCull
+				: gDX11RasterSolidBackCull
+			);
+
+			const int StartIndex =
+				Mesh->NumMatChunks > 0
+				? Mesh->MatChunks[BatchIndex].StartIndex
+				: 0;
+			const int EndIndex =
+				Mesh->NumMatChunks > 0
+				? Mesh->MatChunks[BatchIndex].EndIndex
+				: Mesh->NumIndices;
+			const int IndexCount = EndIndex - StartIndex;
+
+			if (
+				StartIndex >= 0 &&
+				IndexCount > 0 &&
+				EndIndex <= Mesh->NumIndices
+			)
+			{
+				gDX11Context->DrawIndexed(
+					static_cast<UINT>(IndexCount),
+					static_cast<UINT>(StartIndex),
+					0
+				);
+			}
+		}
+
+		ID3D11ShaderResourceView* NullSRVs[2] = { 0, 0 };
+		gDX11Context->PSSetShaderResources(0, 2, NullSRVs);
+		return true;
+	}
+
+	bool RenderDX11_DrawStaticObjectsGBuffer()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11StaticMeshVS ||
+			!gDX11StaticMeshPS ||
+			!gDX11StaticMeshInputLayout
+		)
+		{
+			return false;
+		}
+
+		gDX11StaticObjectDrawCount = 0;
+		ObjectManager& World = GameWorld();
+		const int ObjectCount = World.GetStaticObjectCount();
+
+		for (
+			int i = 0;
+			i < ObjectCount &&
+			gDX11StaticObjectDrawCount < DX11_STATIC_OBJECT_DRAW_LIMIT;
+			++i
+		)
+		{
+			GameObject* Object = World.GetStaticObject(i);
+
+			if (
+				!Object ||
+				!Object->isActive() ||
+				!Object->bLoaded ||
+				(Object->ObjFlags & (
+					OBJFLAG_SkipDraw |
+					OBJFLAG_PlayerCollisionOnly |
+					OBJFLAG_Removed
+				)) ||
+				(
+					!Object->InMainFrustum &&
+					!(Object->ObjFlags & OBJFLAG_AlwaysDraw)
+				)
+			)
+			{
+				continue;
+			}
+
+			r3dMesh* Mesh = Object->GetObjectLodMesh();
+
+			if (!Mesh)
+				Mesh = Object->GetObjectMesh();
+
+			if (
+				!Mesh ||
+				!RenderDX11_DrawStaticMeshObject(Object, Mesh)
+			)
+			{
+				continue;
+			}
+
+			++gDX11StaticObjectDrawCount;
+		}
+
+		static bool bLogged = false;
+		if (!bLogged && gDX11StaticObjectDrawCount > 0)
+		{
+			bLogged = true;
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Static mesh pass active. Drawn=%d Uploaded=%d\n",
+				gDX11StaticObjectDrawCount,
+				gDX11StaticMeshUploadCount
+			);
+			OutputDebugStringA(Text);
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_DrawDynamicObjectsGBuffer()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11StaticMeshVS ||
+			!gDX11StaticMeshPS ||
+			!gDX11StaticMeshInputLayout
+		)
+		{
+			return false;
+		}
+
+		gDX11DynamicObjectDrawCount = 0;
+		ObjectManager& World = GameWorld();
+
+		for (
+			GameObject* Object = World.GetFirstObject();
+			Object &&
+			gDX11DynamicObjectDrawCount < DX11_DYNAMIC_OBJECT_DRAW_LIMIT;
+			Object = World.GetNextObject(Object)
+		)
+		{
+			if (
+				!Object->isActive() ||
+				!Object->bLoaded ||
+				(Object->ObjFlags & (
+					OBJFLAG_SkipDraw |
+					OBJFLAG_PlayerCollisionOnly |
+					OBJFLAG_Removed
+				)) ||
+				(
+					!Object->InMainFrustum &&
+					!(Object->ObjFlags & OBJFLAG_AlwaysDraw)
+				)
+			)
+			{
+				continue;
+			}
+
+			r3dMesh* Mesh = Object->GetObjectLodMesh();
+
+			if (!Mesh)
+				Mesh = Object->GetObjectMesh();
+
+			if (!Mesh || !RenderDX11_DrawStaticMeshObject(Object, Mesh))
+				continue;
+
+			++gDX11DynamicObjectDrawCount;
+		}
+
+		static bool bLogged = false;
+		if (!bLogged && gDX11DynamicObjectDrawCount > 0)
+		{
+			bLogged = true;
+			char Text[256] = {};
+			sprintf_s(
+				Text,
+				"[DX11][Render] Dynamic rigid mesh pass active. Drawn=%d\n",
+				gDX11DynamicObjectDrawCount
+			);
+			OutputDebugStringA(Text);
+		}
+
+		return true;
 	}
 
 	bool RenderDX11_UpdatePreviewTexture()
@@ -4126,18 +4566,19 @@ namespace
 				}
 
 				case DX11_PREVIEW_TERRAIN_MASK:
-				{
-					const unsigned char* Pixel =
-						Row + SourceX * 4;
+					{
+						const unsigned char* Pixel =
+							Row + SourceX * 4;
 
-					PackedColor =
-						RenderDX11_PackPreviewGray(
-							static_cast<float>(Pixel[3]) /
-							255.0f
-						);
+						PackedColor =
+							RenderDX11_PackPreviewColor(
+								static_cast<unsigned int>(Pixel[0]),
+								static_cast<unsigned int>(Pixel[1]),
+								static_cast<unsigned int>(Pixel[2])
+							);
 
-					break;
-				}
+						break;
+					}
 
 				case DX11_PREVIEW_COLOR:
 				default:
@@ -4385,337 +4826,14 @@ namespace
 		}
 	}
 
-	bool RenderDX11_CreateDepthStates()
-	{
-		D3D11_DEPTH_STENCIL_DESC Desc = {};
-		Desc.DepthEnable = TRUE;
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		Desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		Desc.StencilEnable = FALSE;
-
-		HRESULT Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthWriteLessEqual
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth write state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-
-		Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthReadLessEqual
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth read state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.DepthEnable = FALSE;
-		Desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		Desc.DepthFunc = D3D11_COMPARISON_ALWAYS;
-
-		Hr =
-			gDX11Device->CreateDepthStencilState(
-				&Desc,
-				&gDX11DepthDisabled
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth disabled state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateRasterizerStates()
-	{
-		D3D11_RASTERIZER_DESC Desc = {};
-		Desc.FillMode = D3D11_FILL_SOLID;
-		Desc.CullMode = D3D11_CULL_BACK;
-		Desc.FrontCounterClockwise = FALSE;
-		Desc.DepthBias = 0;
-		Desc.DepthBiasClamp = 0.0f;
-		Desc.SlopeScaledDepthBias = 0.0f;
-		Desc.DepthClipEnable = TRUE;
-		Desc.ScissorEnable = FALSE;
-		Desc.MultisampleEnable = FALSE;
-		Desc.AntialiasedLineEnable = FALSE;
-
-		HRESULT Hr =
-			gDX11Device->CreateRasterizerState(
-				&Desc,
-				&gDX11RasterSolidBackCull
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create raster back-cull state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.CullMode = D3D11_CULL_NONE;
-
-		Hr =
-			gDX11Device->CreateRasterizerState(
-				&Desc,
-				&gDX11RasterSolidNoCull
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create raster no-cull state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateBlendStates()
-	{
-		D3D11_BLEND_DESC Desc = {};
-		Desc.AlphaToCoverageEnable = FALSE;
-		Desc.IndependentBlendEnable = FALSE;
-
-		Desc.RenderTarget[0].BlendEnable = FALSE;
-		Desc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-		Desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		Desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].RenderTargetWriteMask =
-			D3D11_COLOR_WRITE_ENABLE_ALL;
-
-		HRESULT Hr =
-			gDX11Device->CreateBlendState(
-				&Desc,
-				&gDX11BlendOpaque
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create opaque blend state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.RenderTarget[0].BlendEnable = TRUE;
-		Desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		Desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		Desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		Desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		Desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-		Desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-		Hr =
-			gDX11Device->CreateBlendState(
-				&Desc,
-				&gDX11BlendAlpha
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create alpha blend state failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateSamplerStates()
-	{
-		D3D11_SAMPLER_DESC Desc = {};
-		Desc.Filter = D3D11_FILTER_ANISOTROPIC;
-		Desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		Desc.MipLODBias = 0.0f;
-		Desc.MaxAnisotropy = 8;
-		Desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		Desc.BorderColor[0] = 0.0f;
-		Desc.BorderColor[1] = 0.0f;
-		Desc.BorderColor[2] = 0.0f;
-		Desc.BorderColor[3] = 0.0f;
-		Desc.MinLOD = 0.0f;
-		Desc.MaxLOD = D3D11_FLOAT32_MAX;
-
-		HRESULT Hr =
-			gDX11Device->CreateSamplerState(
-				&Desc,
-				&gDX11SamplerLinearWrap
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create linear wrap sampler failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		Desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-		Desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-		Desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-
-		Hr =
-			gDX11Device->CreateSamplerState(
-				&Desc,
-				&gDX11SamplerLinearClamp
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create linear clamp sampler failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			OutputDebugStringA(Text);
-			return false;
-		}
-
-		return true;
-	}
-
 	bool RenderDX11_CreateStates()
 	{
-		RenderDX11_ReleaseStates();
-
-		if (!RenderDX11_CreateDepthStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateRasterizerStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateBlendStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		if (!RenderDX11_CreateSamplerStates())
-		{
-			RenderDX11_ReleaseStates();
-			return false;
-		}
-
-		OutputDebugStringA(
-			"[DX11][Render] Render states created\n"
-		);
-
-		return true;
+		return RenderDX11_GetStates().Initialize();
 	}
 
 	void RenderDX11_ApplyDefaultStates()
 	{
-		if (!gDX11Context)
-			return;
-
-		gDX11Context->OMSetDepthStencilState(
-			gDX11DepthWriteLessEqual,
-			0
-		);
-
-		const float BlendFactor[4] =
-		{
-			0.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		gDX11Context->OMSetBlendState(
-			gDX11BlendOpaque,
-			BlendFactor,
-			0xffffffff
-		);
-
-		gDX11Context->RSSetState(
-			gDX11RasterSolidBackCull
-		);
-
-		ID3D11SamplerState* Samplers[1] =
-		{
-			gDX11SamplerLinearWrap
-		};
-
-		gDX11Context->PSSetSamplers(
-			0,
-			1,
-			Samplers
-		);
+		RenderDX11_GetStates().ApplyDefaults();
 	}
 
 	int RenderDX11_ClampSize(int Value)
@@ -4731,49 +4849,25 @@ namespace
 
 	void RenderDX11_ReleaseFrameTargets()
 	{
-		if (gDX11Context)
-		{
-			ID3D11RenderTargetView* NullRTV[4] =
-			{
-				0,
-				0,
-				0,
-				0
-			};
+		RenderDX11_GetFrameTargets().Release();
 
-			gDX11Context->OMSetRenderTargets(
-				4,
-				NullRTV,
-				0
-			);
-		}
+		/*
+		 * Preview readback зависит от выбранного debug-режима
+		 * и пока остаётся частью preview subsystem.
+		 */
+		RenderDX11_SafeRelease(
+			gDX11PreviewReadbackTexture
+		);
 
-		RenderDX11_SafeRelease(gDX11GBufferAuxRTV);
-		RenderDX11_SafeRelease(gDX11GBufferDepthLinearRTV);
-		RenderDX11_SafeRelease(gDX11GBufferNormalRTV);
-		RenderDX11_SafeRelease(gDX11GBufferColorRTV);
-		RenderDX11_SafeRelease(gDX11DepthDSV);
+		gDX11PreviewReadbackFormat =
+			DXGI_FORMAT_UNKNOWN;
 
-		RenderDX11_SafeRelease(gDX11SmokeReadbackTexture);
-		RenderDX11_SafeRelease(gDX11PreviewReadbackTexture);
-
-		gDX11PreviewReadbackFormat = DXGI_FORMAT_UNKNOWN;
 		gDX11PreviewReadbackWidth = 0;
 		gDX11PreviewReadbackHeight = 0;
 
-		RenderDX11_SafeRelease(gDX11GBufferAuxTexture);
-		RenderDX11_SafeRelease(gDX11GBufferDepthLinearTexture);
-		RenderDX11_SafeRelease(gDX11GBufferNormalTexture);
-		RenderDX11_SafeRelease(gDX11GBufferColorTexture);
-		RenderDX11_SafeRelease(gDX11DepthTexture);
-
-		gDX11FrameWidth = 0;
-		gDX11FrameHeight = 0;
 		gDX11SmokeReadbackLogged = false;
 		gDX11TerrainGBufferReadbackLogged = false;
 		gDX11PreviewValid = false;
-
-		gDX11Viewport = D3D11_VIEWPORT();
 	}
 
 	void RenderDX11_LogFrameTargetFailureOnce(
@@ -4793,237 +4887,6 @@ namespace
 		OutputDebugStringA(Text);
 	}
 
-	bool RenderDX11_CreateGBufferTarget(
-		int Width,
-		int Height,
-		DXGI_FORMAT Format,
-		const char* DebugName,
-		ID3D11Texture2D** OutTexture,
-		ID3D11RenderTargetView** OutRTV
-	)
-	{
-		if (!OutTexture || !OutRTV)
-			return false;
-
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = Format;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-		TextureDesc.BindFlags =
-			D3D11_BIND_RENDER_TARGET |
-			D3D11_BIND_SHADER_RESOURCE;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				OutTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s texture failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "gbuffer",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		Hr =
-			gDX11Device->CreateRenderTargetView(
-				*OutTexture,
-				0,
-				OutRTV
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create %s RTV failed. HRESULT=0x%08X\n",
-				DebugName ? DebugName : "gbuffer",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateGBufferTargets(
-		int Width,
-		int Height
-	)
-	{
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			"GBufferColor",
-			&gDX11GBufferColorTexture,
-			&gDX11GBufferColorRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			"GBufferNormal",
-			&gDX11GBufferNormalTexture,
-			&gDX11GBufferNormalRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R32_FLOAT,
-			"GBufferDepthLinear",
-			&gDX11GBufferDepthLinearTexture,
-			&gDX11GBufferDepthLinearRTV
-		))
-		{
-			return false;
-		}
-
-		if (!RenderDX11_CreateGBufferTarget(
-			Width,
-			Height,
-			DXGI_FORMAT_R8G8B8A8_UNORM,
-			"GBufferAux",
-			&gDX11GBufferAuxTexture,
-			&gDX11GBufferAuxRTV
-		))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateDepthTarget(
-		int Width,
-		int Height
-	)
-	{
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-		TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				&gDX11DepthTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth texture failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
-		DSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		DSVDesc.Texture2D.MipSlice = 0;
-
-		Hr =
-			gDX11Device->CreateDepthStencilView(
-				gDX11DepthTexture,
-				&DSVDesc,
-				&gDX11DepthDSV
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create depth DSV failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
-	}
-
-	bool RenderDX11_CreateSmokeReadbackTarget(
-		int Width,
-		int Height
-	)
-	{
-		D3D11_TEXTURE2D_DESC TextureDesc = {};
-		TextureDesc.Width = static_cast<UINT>(Width);
-		TextureDesc.Height = static_cast<UINT>(Height);
-		TextureDesc.MipLevels = 1;
-		TextureDesc.ArraySize = 1;
-		TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		TextureDesc.SampleDesc.Count = 1;
-		TextureDesc.SampleDesc.Quality = 0;
-		TextureDesc.Usage = D3D11_USAGE_STAGING;
-		TextureDesc.BindFlags = 0;
-		TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		TextureDesc.MiscFlags = 0;
-
-		HRESULT Hr =
-			gDX11Device->CreateTexture2D(
-				&TextureDesc,
-				0,
-				&gDX11SmokeReadbackTexture
-			);
-
-		if (FAILED(Hr))
-		{
-			char Text[256] = {};
-			sprintf_s(
-				Text,
-				"[DX11][Render] Create smoke readback texture failed. HRESULT=0x%08X\n",
-				static_cast<unsigned int>(Hr)
-			);
-
-			RenderDX11_LogFrameTargetFailureOnce(Text);
-			return false;
-		}
-
-		return true;
-	}
-
 	void RenderDX11_LogOffscreenOnlyModeOnce()
 	{
 		if (gDX11OffscreenOnlyLogged)
@@ -5032,8 +4895,8 @@ namespace
 		gDX11OffscreenOnlyLogged = true;
 
 		OutputDebugStringA(
-			"[DX11][Render] Offscreen-only mode confirmed. "
-			"DX11 has no swapchain and does not Present. "
+			"[DX11][Render] Compatibility offscreen mode confirmed. "
+			"DX11 does not Present. "
 			"DX9 owns window/backbuffer/UI/Present.\n"
 		);
 	}
@@ -5051,188 +4914,38 @@ namespace
 	}
 
 	bool RenderDX11_EnsureFrameTargets(
-		const WorldDX11FrameDesc& Desc
-	)
+	const WorldDX11FrameDesc& Desc
+)
 	{
-		const int Width =
-			RenderDX11_ClampSize(Desc.Width);
+		const bool Ready =
+			RenderDX11_GetFrameTargets().Ensure(
+				Desc.Width,
+				Desc.Height,
+				RenderDX11_WantsSmokeDebug()
+			);
 
-		const int Height =
-			RenderDX11_ClampSize(Desc.Height);
-
-		if (
-			gDX11GBufferColorTexture &&
-			gDX11GBufferNormalTexture &&
-			gDX11GBufferDepthLinearTexture &&
-			gDX11GBufferAuxTexture &&
-			gDX11DepthTexture &&
-			gDX11GBufferColorRTV &&
-			gDX11GBufferNormalRTV &&
-			gDX11GBufferDepthLinearRTV &&
-			gDX11GBufferAuxRTV &&
-			gDX11DepthDSV &&
-			gDX11FrameWidth == Width &&
-			gDX11FrameHeight == Height &&
-			(
-				!RenderDX11_WantsSmokeDebug() ||
-				gDX11SmokeReadbackTexture
-			)
-		)
+		if (Ready)
 		{
-			return true;
+			gDX11FrameTargetsFailedLogged = false;
 		}
 
-		RenderDX11_ReleaseFrameTargets();
-
-		if (!RenderDX11_CreateGBufferTargets(Width, Height))
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		if (!RenderDX11_CreateDepthTarget(Width, Height))
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		if (
-			RenderDX11_WantsSmokeDebug() &&
-			!RenderDX11_CreateSmokeReadbackTarget(Width, Height)
-		)
-		{
-			RenderDX11_ReleaseFrameTargets();
-			return false;
-		}
-
-		gDX11Viewport.TopLeftX = 0.0f;
-		gDX11Viewport.TopLeftY = 0.0f;
-		gDX11Viewport.Width = static_cast<float>(Width);
-		gDX11Viewport.Height = static_cast<float>(Height);
-		gDX11Viewport.MinDepth = 0.0f;
-		gDX11Viewport.MaxDepth = 1.0f;
-
-		gDX11FrameWidth = Width;
-		gDX11FrameHeight = Height;
-		gDX11FrameTargetsFailedLogged = false;
-
-		char Text[256] = {};
-		sprintf_s(
-			Text,
-			"[DX11][Render] GBuffer targets ready %dx%d\n",
-			Width,
-			Height
-		);
-
-		OutputDebugStringA(Text);
-
-		return true;
+		return Ready;
 	}
 
 	void RenderDX11_BindFrameTargets()
 	{
-		ID3D11RenderTargetView* RTViews[4] =
-		{
-			gDX11GBufferColorRTV,
-			gDX11GBufferNormalRTV,
-			gDX11GBufferDepthLinearRTV,
-			gDX11GBufferAuxRTV
-		};
-
-		gDX11Context->OMSetRenderTargets(
-			4,
-			RTViews,
-			gDX11DepthDSV
-		);
-
-		gDX11Context->RSSetViewports(
-			1,
-			&gDX11Viewport
-		);
-
+		RenderDX11_GetFrameTargets().BindGBuffer();
 		RenderDX11_ApplyDefaultStates();
 	}
 
 	void RenderDX11_ClearFrameTargets()
 	{
-		const float ClearColorAlbedo[4] =
-		{
-			0.02f,
-			0.04f,
-			0.06f,
-			1.0f
-		};
-
-		const float ClearNormal[4] =
-		{
-			0.5f,
-			0.5f,
-			1.0f,
-			1.0f
-		};
-
-		const float ClearDepthLinear[4] =
-		{
-			1.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		const float ClearAux[4] =
-		{
-			0.0f,
-			0.0f,
-			0.0f,
-			0.0f
-		};
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferColorRTV,
-			ClearColorAlbedo
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferNormalRTV,
-			ClearNormal
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferDepthLinearRTV,
-			ClearDepthLinear
-		);
-
-		gDX11Context->ClearRenderTargetView(
-			gDX11GBufferAuxRTV,
-			ClearAux
-		);
-
-		gDX11Context->ClearDepthStencilView(
-			gDX11DepthDSV,
-			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-			1.0f,
-			0
-		);
+		RenderDX11_GetFrameTargets().Clear();
 	}
 
 	void RenderDX11_UnbindFrameTargets()
 	{
-		if (!gDX11Context)
-			return;
-
-		ID3D11RenderTargetView* NullRTV[4] =
-		{
-			0,
-			0,
-			0,
-			0
-		};
-
-		gDX11Context->OMSetRenderTargets(
-			4,
-			NullRTV,
-			0
-		);
+		RenderDX11_GetFrameTargets().Unbind();
 	}
 
 	bool RenderDX11_FailWorldFrame(
@@ -5271,6 +4984,141 @@ namespace
 
 			OutputDebugStringA(
 				"[DX11][Render] World path disabled after a DX11 frame failure. Using DX9 fallback.\n"
+			);
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_CreateSunGlareShaders()
+	{
+		return RenderDX11_GetShaders().EnsureSunGlare();
+	}
+
+	bool RenderDX11_DrawDirectionalLighting()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11LightingVS ||
+			!gDX11LightingPS ||
+			!gDX11SceneColorRTV ||
+			!gDX11GBufferColorSRV ||
+			!gDX11GBufferNormalSRV ||
+			!gDX11GBufferDepthLinearSRV
+		)
+		{
+			return false;
+		}
+
+		gDX11Context->OMSetRenderTargets(
+			1,
+			&gDX11SceneColorRTV,
+			0
+		);
+		gDX11Context->RSSetViewports(1, &gDX11Viewport);
+		gDX11Context->OMSetDepthStencilState(gDX11DepthDisabled, 0);
+
+		const float BlendFactor[4] = {};
+		gDX11Context->OMSetBlendState(
+			gDX11BlendOpaque,
+			BlendFactor,
+			0xffffffff
+		);
+		gDX11Context->RSSetState(gDX11RasterSolidNoCull);
+
+		gDX11Context->IASetInputLayout(0);
+		gDX11Context->IASetPrimitiveTopology(
+			D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+		);
+		gDX11Context->VSSetShader(gDX11LightingVS, 0, 0);
+		gDX11Context->PSSetShader(gDX11LightingPS, 0, 0);
+
+		ID3D11ShaderResourceView* Inputs[3] =
+		{
+			gDX11GBufferColorSRV,
+			gDX11GBufferNormalSRV,
+			gDX11GBufferDepthLinearSRV
+		};
+
+		gDX11Context->PSSetShaderResources(0, 3, Inputs);
+		gDX11Context->PSSetSamplers(
+			0,
+			1,
+			&gDX11SamplerLinearClamp
+		);
+		gDX11Context->Draw(3, 0);
+
+		ID3D11ShaderResourceView* NullInputs[3] = {};
+		gDX11Context->PSSetShaderResources(0, 3, NullInputs);
+
+		static bool bLogged = false;
+		if (!bLogged)
+		{
+			bLogged = true;
+			OutputDebugStringA(
+				"[DX11][Render] Directional lighting pass active\n"
+			);
+		}
+
+		return true;
+	}
+
+	bool RenderDX11_DrawTonemap()
+	{
+		if (
+			!gDX11Context ||
+			!gDX11TonemapVS ||
+			!gDX11TonemapPS ||
+			!gDX11SceneColorSRV ||
+			!gDX11FinalColorRTV
+		)
+		{
+			return false;
+		}
+
+		gDX11Context->OMSetRenderTargets(
+			1,
+			&gDX11FinalColorRTV,
+			0
+		);
+		gDX11Context->RSSetViewports(1, &gDX11Viewport);
+		gDX11Context->OMSetDepthStencilState(gDX11DepthDisabled, 0);
+
+		const float BlendFactor[4] = {};
+		gDX11Context->OMSetBlendState(
+			gDX11BlendOpaque,
+			BlendFactor,
+			0xffffffff
+		);
+		gDX11Context->RSSetState(gDX11RasterSolidNoCull);
+
+		gDX11Context->IASetInputLayout(0);
+		gDX11Context->IASetPrimitiveTopology(
+			D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+		);
+		gDX11Context->VSSetShader(gDX11TonemapVS, 0, 0);
+		gDX11Context->PSSetShader(gDX11TonemapPS, 0, 0);
+		gDX11Context->PSSetShaderResources(
+			0,
+			1,
+			&gDX11SceneColorSRV
+		);
+		gDX11Context->PSSetSamplers(
+			0,
+			1,
+			&gDX11SamplerLinearClamp
+		);
+		gDX11Context->Draw(3, 0);
+
+		ID3D11ShaderResourceView* NullInput = 0;
+		gDX11Context->PSSetShaderResources(0, 1, &NullInput);
+
+		static bool bLogged = false;
+		if (!bLogged)
+		{
+			bLogged = true;
+			OutputDebugStringA(
+				"[DX11][Render] HDR filmic tonemap pass active\n"
 			);
 		}
 
@@ -5418,75 +5266,217 @@ void RenderDX11_DrawDebugPreviewDX9()
 	}
 }
 
-bool RenderDX11_Init()
+bool RenderDX11_ApplySunGlare(
+	const RenderDX11SunGlareSettings& Settings,
+	r3dTexture* ShadeTexture
+)
 {
-	if (gDX11Initialized)
-		return true;
-
-	const D3D_FEATURE_LEVEL FeatureLevels[] =
+#if LTS_STUDIO_DX11_WORLD
+	if (
+		!gDX11Device ||
+		!gDX11Context ||
+		!gDX11GBufferColorRTV ||
+		!gDX11SunGlareCB ||
+		!ShadeTexture
+	)
 	{
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0
+		return false;
+	}
+
+	if (!RenderDX11_CreateSunGlareShaders())
+		return false;
+
+	if (!RenderDX11_UploadTerrain2TextureToDX11(
+		gDX11SunGlareMaskBridge,
+		ShadeTexture,
+		"SunGlareMask"
+	))
+	{
+		return false;
+	}
+
+	if (!gDX11SunGlareMaskBridge.SRV)
+		return false;
+
+	if (!RenderDX11_UpdateConstantBuffer(
+		gDX11SunGlareCB,
+		&Settings,
+		sizeof(Settings),
+		"SunGlareCB"
+	))
+	{
+		return false;
+	}
+
+	ID3D11RenderTargetView* RTViews[1] =
+	{
+		gDX11GBufferColorRTV
 	};
 
-	UINT Flags = 0;
+	gDX11Context->OMSetRenderTargets(
+		1,
+		RTViews,
+		0
+	);
+
+	gDX11Context->RSSetViewports(
+		1,
+		&gDX11Viewport
+	);
+
+	gDX11Context->OMSetDepthStencilState(
+		gDX11DepthDisabled,
+		0
+	);
+
+	const float BlendFactor[4] =
+	{
+		0.0f,
+		0.0f,
+		0.0f,
+		0.0f
+	};
+
+	// For stronger glare use additive.
+	gDX11Context->OMSetBlendState(
+		gDX11BlendAlpha,
+		BlendFactor,
+		0xffffffff
+	);
+
+	gDX11Context->RSSetState(
+		gDX11RasterSolidNoCull
+	);
+
+	gDX11Context->IASetInputLayout(0);
+	gDX11Context->IASetPrimitiveTopology(
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	);
+
+	UINT Stride = 0;
+	UINT Offset = 0;
+	ID3D11Buffer* NullVB = 0;
+
+	gDX11Context->IASetVertexBuffers(
+		0,
+		1,
+		&NullVB,
+		&Stride,
+		&Offset
+	);
+
+	gDX11Context->VSSetShader(
+		gDX11SunGlareVS,
+		0,
+		0
+	);
+
+	gDX11Context->PSSetShader(
+		gDX11SunGlarePS,
+		0,
+		0
+	);
+
+	gDX11Context->PSSetConstantBuffers(
+		8,
+		1,
+		&gDX11SunGlareCB
+	);
+
+	ID3D11ShaderResourceView* SRVs[1] =
+	{
+		gDX11SunGlareMaskBridge.SRV
+	};
+
+	gDX11Context->PSSetShaderResources(
+		0,
+		1,
+		SRVs
+	);
+
+	ID3D11SamplerState* Samplers[1] =
+	{
+		gDX11SunGlareBorderSampler
+		? gDX11SunGlareBorderSampler
+		: gDX11SamplerLinearClamp
+	};
+
+	gDX11Context->PSSetSamplers(
+		0,
+		1,
+		Samplers
+	);
+
+	gDX11Context->Draw(
+		3,
+		0
+	);
+
+	ID3D11ShaderResourceView* NullSRV[1] =
+	{
+		0
+	};
+
+	gDX11Context->PSSetShaderResources(
+		0,
+		1,
+		NullSRV
+	);
+
+	RenderDX11_ApplyDefaultStates();
+
+	return true;
+#else
+	(void)Settings;
+	(void)ShadeTexture;
+	return false;
+#endif
+}
+
+bool RenderDX11_Init()
+{
+	RenderDX11Core& Core =
+		RenderDX11_GetCore();
+
+	if (Core.IsReady())
+		return true;
+
+	RenderDX11CoreCreateDesc CoreDesc;
+
+	CoreDesc.Window =
+		r3dRenderer
+		? r3dRenderer->HLibWin
+		: 0;
+
+	CoreDesc.Width =
+		r3dRenderer
+		? static_cast<unsigned int>(
+			r3dRenderer->ScreenW
+		)
+		: 1;
+
+	CoreDesc.Height =
+		r3dRenderer
+		? static_cast<unsigned int>(
+			r3dRenderer->ScreenH
+		)
+		: 1;
+
+	CoreDesc.Windowed =
+		r3dRenderer
+		? r3dRenderer->bFullScreen == 0
+		: true;
 
 #if defined(_DEBUG)
-	Flags |= D3D11_CREATE_DEVICE_DEBUG;
+	CoreDesc.EnableDebugLayer = true;
 #endif
 
-	HRESULT Hr =
-		D3D11CreateDevice(
-			0,
-			D3D_DRIVER_TYPE_HARDWARE,
-			0,
-			Flags,
-			FeatureLevels,
-			_countof(FeatureLevels),
-			D3D11_SDK_VERSION,
-			&gDX11Device,
-			&gDX11FeatureLevel,
-			&gDX11Context
-		);
-
-#if defined(_DEBUG)
-	if (FAILED(Hr) && (Flags & D3D11_CREATE_DEVICE_DEBUG))
+	if (!Core.Initialize(CoreDesc))
 	{
 		OutputDebugStringA(
-			"[DX11][Render] Debug layer failed. Retrying without debug layer.\n"
+			"[DX11][Render] DX11 core initialization failed\n"
 		);
 
-		Flags &= ~D3D11_CREATE_DEVICE_DEBUG;
-
-		Hr =
-			D3D11CreateDevice(
-				0,
-				D3D_DRIVER_TYPE_HARDWARE,
-				0,
-				Flags,
-				FeatureLevels,
-				_countof(FeatureLevels),
-				D3D11_SDK_VERSION,
-				&gDX11Device,
-				&gDX11FeatureLevel,
-				&gDX11Context
-			);
-	}
-#endif
-
-	if (FAILED(Hr))
-	{
-		char Text[256] = {};
-		sprintf_s(
-			Text,
-			"[DX11][Render] D3D11CreateDevice failed. HRESULT=0x%08X\n",
-			static_cast<unsigned int>(Hr)
-		);
-
-		OutputDebugStringA(Text);
-
-		RenderDX11_Shutdown();
 		return false;
 	}
 
@@ -5520,13 +5510,14 @@ bool RenderDX11_Init()
 		return false;
 	}
 
-	gDX11Initialized = true;
-
 	char Text[256] = {};
+
 	sprintf_s(
 		Text,
 		"[DX11][Render] Initialized. FeatureLevel=%s\n",
-		RenderDX11_FeatureLevelToString(gDX11FeatureLevel)
+		RenderDX11_FeatureLevelToString(
+			Core.GetFeatureLevel()
+		)
 	);
 
 	OutputDebugStringA(Text);
@@ -5536,30 +5527,31 @@ bool RenderDX11_Init()
 
 void RenderDX11_Shutdown()
 {
+	/*
+	 * Сначала уничтожаем все ресурсы верхнего уровня,
+	 * пока DX11 device ещё существует.
+	 */
 	RenderDX11_ReleasePreviewTexture();
 	RenderDX11_ReleaseFrameTargets();
 	RenderDX11_ReleaseTerrainResources();
-
-	if (gDX11Context)
-	{
-		gDX11Context->ClearState();
-		gDX11Context->Flush();
-	}
 
 	RenderDX11_ReleaseShaders();
 	RenderDX11_ReleaseConstantBuffers();
 	RenderDX11_ReleaseStates();
 
-	RenderDX11_SafeRelease(gDX11Context);
-	RenderDX11_SafeRelease(gDX11Device);
-
-	gDX11FeatureLevel = D3D_FEATURE_LEVEL_10_0;
-	gDX11Initialized = false;
 	gDX11OffscreenOnlyLogged = false;
 	gDX11WorldFallbackLogged = false;
 	gDX11WorldFrameFailureLogged = false;
 	gDX11WorldFrameDisabled = false;
 	gDX11WorldFrameDisabledLogged = false;
+	gDX11FrameReadyToPresent = false;
+	gDX11DirectPresentLogged = false;
+
+	/*
+	 * Только после освобождения renderer resources
+	 * уничтожаем context/device/swap chain.
+	 */
+	RenderDX11_GetCore().Shutdown();
 
 	OutputDebugStringA(
 		"[DX11][Render] Shutdown\n"
@@ -5568,16 +5560,15 @@ void RenderDX11_Shutdown()
 
 bool RenderDX11_IsReady()
 {
-	return
-		gDX11Initialized &&
-		gDX11Device != 0 &&
-		gDX11Context != 0;
+	return RenderDX11_GetCore().IsReady();
 }
 
 bool RenderDX11_RenderWorld(
 	const WorldDX11FrameDesc& Desc
 )
 {
+	gDX11FrameReadyToPresent = false;
+
 	if (!RenderDX11_IsReady())
 	{
 		if (!RenderDX11_Init())
@@ -5596,12 +5587,14 @@ bool RenderDX11_RenderWorld(
 		return false;
 	}
 
-	RenderDX11_LogOffscreenOnlyModeOnce();
+	if (!Desc.DirectPresent)
+		RenderDX11_LogOffscreenOnlyModeOnce();
 
 	RenderDX11_BindFrameTargets();
 	RenderDX11_UpdateFrameCB(Desc);
 	RenderDX11_UpdateDefaultWorldCBs();
 	RenderDX11_BeginTerrainCacheFrame();
+	gDX11MaterialTextureUploadsThisFrame = 0;
 
 	RenderDX11_ClearFrameTargets();
 
@@ -5653,12 +5646,134 @@ bool RenderDX11_RenderWorld(
 
 	RenderDX11_UnbindFrameTargets();
 	gDX11WorldFrameFailureLogged = false;
+
+	if (Desc.DirectPresent)
+	{
+		RenderDX11Core& Core = RenderDX11_GetCore();
+
+		if (
+			!Core.Resize(
+				static_cast<unsigned int>(
+					gDX11FrameWidth
+				),
+				static_cast<unsigned int>(
+					gDX11FrameHeight
+				)
+			) ||
+			!Core.CopyToBackBuffer(
+				gDX11FinalColorTexture
+			)
+		)
+		{
+			OutputDebugStringA(
+				"[DX11][Render] Direct presentation copy failed; "
+				"falling back to DX9 world\n"
+			);
+			return false;
+		}
+
+		gDX11FrameReadyToPresent = true;
+
+		if (!gDX11DirectPresentLogged)
+		{
+			gDX11DirectPresentLogged = true;
+			OutputDebugStringA(
+				"[DX11][Render] Direct presentation path active. "
+				"Output is DX11 scene color.\n"
+			);
+		}
+
+		return true;
+	}
+
 	RenderDX11_LogWorldFallbackOnce();
 
 	// Пока возвращаем false.
 	// Это важно: старый DX9 RenderDeferredScene1() продолжит рисовать мир.
 	return false;
 }
+
+bool RenderDX11_Present()
+{
+	if (!gDX11FrameReadyToPresent)
+		return false;
+
+	gDX11FrameReadyToPresent = false;
+
+	return RenderDX11_GetCore().Present();
+}
+
+#undef gDX11SunGlarePS
+#undef gDX11SunGlareVS
+
+#undef gDX11StaticMeshInputLayout
+#undef gDX11StaticMeshPS
+#undef gDX11StaticMeshVS
+
+#undef gDX11TerrainInputLayout
+#undef gDX11TerrainPS
+#undef gDX11TerrainVS
+
+#undef gDX11TonemapPS
+#undef gDX11TonemapVS
+
+#undef gDX11LightingPS
+#undef gDX11LightingVS
+
+#undef gDX11ClearPS
+#undef gDX11ClearVS
+
+#undef gDX11SunGlareCB
+#undef gDX11GrassCB
+#undef gDX11WaterCB
+#undef gDX11ShadowCB
+#undef gDX11LightCB
+#undef gDX11MaterialCB
+#undef gDX11ObjectCB
+#undef gDX11TerrainCB
+#undef gDX11FrameCB
+
+#undef gDX11SunGlareBorderSampler
+#undef gDX11SamplerLinearClamp
+#undef gDX11SamplerLinearWrap
+#undef gDX11BlendAlpha
+#undef gDX11BlendOpaque
+#undef gDX11RasterSolidNoCull
+#undef gDX11RasterSolidBackCull
+#undef gDX11DepthDisabled
+#undef gDX11DepthReadLessEqual
+#undef gDX11DepthWriteLessEqual
+
+#undef gDX11FrameHeight
+#undef gDX11FrameWidth
+#undef gDX11Viewport
+
+#undef gDX11SceneColorSRV
+#undef gDX11GBufferDepthLinearSRV
+#undef gDX11GBufferNormalSRV
+#undef gDX11GBufferColorSRV
+
+#undef gDX11DepthDSV
+#undef gDX11FinalColorRTV
+#undef gDX11SceneColorRTV
+#undef gDX11GBufferAuxRTV
+#undef gDX11GBufferDepthLinearRTV
+#undef gDX11GBufferNormalRTV
+#undef gDX11GBufferColorRTV
+
+#undef gDX11SmokeReadbackTexture
+#undef gDX11DepthTexture
+#undef gDX11FinalColorTexture
+#undef gDX11SceneColorTexture
+#undef gDX11GBufferAuxTexture
+#undef gDX11GBufferDepthLinearTexture
+#undef gDX11GBufferNormalTexture
+#undef gDX11GBufferColorTexture
+
+#undef gDX11Initialized
+#undef gDX11FeatureLevel
+#undef gDX11Context
+#undef gDX11Device
 
 #undef OutputDebugStringA
 

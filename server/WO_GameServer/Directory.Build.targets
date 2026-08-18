@@ -1,0 +1,52 @@
+<Project>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(MSBuildThisFileDirectory)..\..\External;$(MSBuildThisFileDirectory)..\..\External\PhysX\physx\include;$(MSBuildThisFileDirectory)..\..\External\chilkat-x86_64-vc2022\include;$(MSBuildThisFileDirectory)..\..\External\SLikeNet\Source;$(MSBuildThisFileDirectory)..\..\External\SLikeNet\Source\include;$(MSBuildThisFileDirectory)..\..\src\External\dxsdk\Include;$(MSBuildThisFileDirectory)Sources;$(MSBuildThisFileDirectory)..\..\src\EclipseStudio\Sources;$(MSBuildThisFileDirectory)..\..\src\Eternity\include;$(MSBuildThisFileDirectory)..\..\src\GameEngine;$(MSBuildThisFileDirectory)..\..\src\Engine\Core\Public;$(MSBuildThisFileDirectory)..\..\src\Engine\Platform\Public;$(MSBuildThisFileDirectory)..\..\src\Engine\Math\Public;$(MSBuildThisFileDirectory)..\..\src\Engine\Navigation\Public</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_RECAST_NAVIGATION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;shell32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;winmm.lib;ws2_32.lib;strsafe.lib;d3dx9.lib;d3d9.lib;dinput8.lib;dxguid.lib;xinput.lib;iphlpapi.lib;fmodex64_vc.lib;rpcrt4.lib;dnsapi.lib;crypt32.lib;ChilkatRel_x64.lib;Shlwapi.lib;odbc32.lib;odbccp32.lib;wbemuuid.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXFoundation_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXTask_static_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;SLikeNetLibStatic.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)..\..\External\dxsdk\x64Lib;$(MSBuildThisFileDirectory)..\..\External\fmod;$(MSBuildThisFileDirectory)..\..\External\PhysX\physx\bin\win.x86_64.vc143.mt\release;$(MSBuildThisFileDirectory)..\..\External\chilkat-x86_64-vc2022\libs;$(MSBuildThisFileDirectory)..\..\External\SLikeNet\build\vs2022-x64\Lib\LibStatic\Release</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile Include="$(MSBuildThisFileDirectory)Sources\Navigation\ServerNavigation.cpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Sources\Navigation\ServerNavigation.h" />
+
+    <ClCompile Update="..\..\src\GameEngine\gameobjects\AObject.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+
+    <ClCompile Update="..\..\src\GameEngine\gameobjects\PhysXRepXHelpers.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+
+    <!-- The legacy one-line project still lists removed Autodesk sources. -->
+    <ClCompile Remove="..\..\src\GameEngine\ai\AutodeskNav\*.cpp" />
+    <ClInclude Remove="..\..\src\GameEngine\ai\AutodeskNav\*.h" />
+
+    <ClCompile Remove="..\..\src\GameEngine\gameobjects\Apex*.cpp" />
+    <ClCompile Remove="..\..\src\GameEngine\gameobjects\obj_Apex.cpp" />
+    <ClInclude Remove="..\..\src\GameEngine\gameobjects\Apex*.h" />
+    <ClInclude Remove="..\..\src\GameEngine\gameobjects\obj_Apex.hpp" />
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Engine\Platform\LTS.Platform.vcxproj">
+      <Project>{B1C3E5A7-9D2F-4F6A-8B10-2C4D6E8F1357}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Engine\Core\LTS.Core.vcxproj">
+      <Project>{A7F1B4E8-6C32-4A2D-9E85-0C1B7D9F3A41}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\src\Engine\Navigation\LTS.Navigation.vcxproj">
+      <Project>{F26E37A1-62DD-4EE8-9CF5-2DB31D460A71}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

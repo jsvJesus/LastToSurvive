@@ -81,6 +81,9 @@
 					<div class="field_label" id="label_terrain_v2">TERRAIN TYPE</div>
 					<button id="btn_appmain_terrain2_toggle" class="option_button">Terrain V2: OFF</button>
 
+					<div class="field_label" id="label_terrain_v3">TERRAIN V3</div>
+					<button id="btn_appmain_terrain3_toggle" class="option_button">Terrain V3: OFF</button>
+
 					<div class="field_label" id="label_cell_size">CELL SIZE</div>
 					<input id="appmain_cell_size" class="small_input" type="text" value="1.0"/>
 

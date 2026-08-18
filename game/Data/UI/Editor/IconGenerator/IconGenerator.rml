@@ -1,0 +1,28 @@
+<rml>
+<head>
+  <title>Icon Generator</title>
+  <link type="text/rcss" href="IconGenerator.rcss"/>
+</head>
+<body>
+  <div class="module">
+    <h1>ICON GENERATOR</h1>
+    <div id="viewport">MODEL PREVIEW</div>
+    <label>ICON RESOLUTION</label>
+    <select id="icon-resolution">
+      <option>64x64</option>
+      <option>128x128</option>
+      <option>256x256</option>
+      <option>512x512</option>
+    </select>
+    <label>INVENTORY FOOTPRINT</label>
+    <select id="inventory-footprint">
+      <option>1x1</option>
+      <option>1x2</option>
+      <option>2x2</option>
+      <option>2x3</option>
+      <option>3x4</option>
+    </select>
+    <button id="back-to-editor-menu">BACK TO EDITOR MENU</button>
+  </div>
+</body>
+</rml>

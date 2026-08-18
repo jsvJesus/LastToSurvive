@@ -1,0 +1,1820 @@
+ SpeedTreeCore_v7.1
+
+ Timestamp is 5c2f6a55 (Fri Jan 04 15:14:45 2019)
+
+ Preferred load address is 10000000
+
+ Start         Length     Name                   Class
+ 0001:00000000 0001cbb0H .text                   CODE
+ 0001:0001cbb0 00000a29H .text$x                 CODE
+ 0001:0001d5e0 000014b5H .text$yc                CODE
+ 0001:0001eaa0 00000165H .text$yd                CODE
+ 0002:00000000 00000110H .idata$5                DATA
+ 0002:00000110 00000004H .CRT$XCA                DATA
+ 0002:00000114 0000017cH .CRT$XCU                DATA
+ 0002:00000290 00000004H .CRT$XCZ                DATA
+ 0002:00000294 00000004H .CRT$XIA                DATA
+ 0002:00000298 00000004H .CRT$XIAA               DATA
+ 0002:0000029c 00000004H .CRT$XIC                DATA
+ 0002:000002a0 00000004H .CRT$XIZ                DATA
+ 0002:000002b0 000013f0H .rdata                  DATA
+ 0002:000016a0 0000007bH .rdata$debug            DATA
+ 0002:00001720 000000a8H .rdata$sxdata           DATA
+ 0002:000017c8 00000004H .rtc$IAA                DATA
+ 0002:000017cc 00000004H .rtc$IZZ                DATA
+ 0002:000017d0 00000004H .rtc$TAA                DATA
+ 0002:000017d4 00000004H .rtc$TZZ                DATA
+ 0002:000017d8 00000904H .xdata$x                DATA
+ 0002:000020dc 00000028H .idata$2                DATA
+ 0002:00002104 00000014H .idata$3                DATA
+ 0002:00002118 00000110H .idata$4                DATA
+ 0002:00002228 00000430H .idata$6                DATA
+ 0002:00002660 0000a9f5H .edata                  DATA
+ 0003:00000000 00000090H .data                   DATA
+ 0003:00000090 000024e4H .bss                    DATA
+
+  Address         Publics by Value              Rva+Base       Lib:Object
+
+ 0000:00000000       __except_list              00000000     <absolute>
+ 0000:0000002a       ___safe_se_handler_count   0000002a     <absolute>
+ 0000:00009876       __ldused                   00009876     <absolute>
+ 0000:00009876       __fltused                  00009876     <absolute>
+ 0000:00000000       ___ImageBase               10000000     <linker-defined>
+ 0001:00000000       ??1CAllocator@SpeedTree@@UAE@XZ 10001000 f i AllocatorStats.obj
+ 0001:00000020       ??0CAllocator@SpeedTree@@QAE@XZ 10001020 f i AllocatorStats.obj
+ 0001:00000040       ??0CAllocator@SpeedTree@@QAE@ABV01@@Z 10001040 f i AllocatorStats.obj
+ 0001:00000060       ??4CAllocator@SpeedTree@@QAEAAV01@ABV01@@Z 10001060 f i AllocatorStats.obj
+ 0001:00000070       ??_GCAllocator@SpeedTree@@UAEPAXI@Z 10001070 f i AllocatorStats.obj
+ 0001:000000a0       ??_ECAllocator@SpeedTree@@UAEPAXI@Z 100010a0 f i AllocatorStats.obj
+ 0001:00000110       ??4st_float16@SpeedTree@@QAEAAV01@ABV01@@Z 10001110 f i AllocatorStats.obj
+ 0001:00000130       ??0st_float16@SpeedTree@@QAE@XZ 10001130 f i AllocatorStats.obj
+ 0001:00000160       ??0st_float16@SpeedTree@@QAE@M@Z 10001160 f i AllocatorStats.obj
+ 0001:00000250       ??0st_float16@SpeedTree@@QAE@ABV01@@Z 10001250 f i AllocatorStats.obj
+ 0001:00000270       ??Bst_float16@SpeedTree@@QBEMXZ 10001270 f i AllocatorStats.obj
+ 0001:00000350       ??4Vec2@SpeedTree@@QAEAAV01@ABV01@@Z 10001350 f i AllocatorStats.obj
+ 0001:00000370       ??4Vec3@SpeedTree@@QAEAAV01@ABV01@@Z 10001370 f i AllocatorStats.obj
+ 0001:000003a0       ??4Vec4@SpeedTree@@QAEAAV01@ABV01@@Z 100013a0 f i AllocatorStats.obj
+ 0001:000003d0       ??0Vec2@SpeedTree@@QAE@XZ  100013d0 f i AllocatorStats.obj
+ 0001:000003f0       ??0Vec2@SpeedTree@@QAE@MM@Z 100013f0 f i AllocatorStats.obj
+ 0001:00000420       ??0Vec2@SpeedTree@@QAE@QBM@Z 10001420 f i AllocatorStats.obj
+ 0001:00000450       ??HVec2@SpeedTree@@QBE?AV01@ABV01@@Z 10001450 f i AllocatorStats.obj
+ 0001:00000490       ??YVec2@SpeedTree@@QAE?AV01@ABV01@@Z 10001490 f i AllocatorStats.obj
+ 0001:000004e0       ??8Vec2@SpeedTree@@QBE_NABV01@@Z 100014e0 f i AllocatorStats.obj
+ 0001:00000530       ?Set@Vec2@SpeedTree@@QAEXMM@Z 10001530 f i AllocatorStats.obj
+ 0001:00000550       ?Distance@Vec2@SpeedTree@@QBEMABV12@@Z 10001550 f i AllocatorStats.obj
+ 0001:000005b0       ??0Vec3@SpeedTree@@QAE@XZ  100015b0 f i AllocatorStats.obj
+ 0001:000005e0       ??0Vec3@SpeedTree@@QAE@MMM@Z 100015e0 f i AllocatorStats.obj
+ 0001:00000610       ??0Vec3@SpeedTree@@QAE@MM@Z 10001610 f i AllocatorStats.obj
+ 0001:00000640       ??0Vec3@SpeedTree@@QAE@QBM@Z 10001640 f i AllocatorStats.obj
+ 0001:00000680       ??AVec3@SpeedTree@@QAEAAMH@Z 10001680 f i AllocatorStats.obj
+ 0001:000006a0       ??BVec3@SpeedTree@@QAEPAMXZ 100016a0 f i AllocatorStats.obj
+ 0001:000006b0       ??BVec3@SpeedTree@@QBEPBMXZ 100016b0 f i AllocatorStats.obj
+ 0001:000006c0       ??MVec3@SpeedTree@@QBE_NABV01@@Z 100016c0 f i AllocatorStats.obj
+ 0001:00000780       ??8Vec3@SpeedTree@@QBE_NABV01@@Z 10001780 f i AllocatorStats.obj
+ 0001:000007e0       ??9Vec3@SpeedTree@@QBE_NABV01@@Z 100017e0 f i AllocatorStats.obj
+ 0001:00000840       ??GVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001840 f i AllocatorStats.obj
+ 0001:000008a0       ??HVec3@SpeedTree@@QBE?AV01@ABV01@@Z 100018a0 f i AllocatorStats.obj
+ 0001:00000900       ??YVec3@SpeedTree@@QAE?AV01@ABV01@@Z 10001900 f i AllocatorStats.obj
+ 0001:00000960       ??DVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001960 f i AllocatorStats.obj
+ 0001:000009c0       ??XVec3@SpeedTree@@QAE?AV01@ABV01@@Z 100019c0 f i AllocatorStats.obj
+ 0001:00000a20       ??KVec3@SpeedTree@@QBE?AV01@ABV01@@Z 10001a20 f i AllocatorStats.obj
+ 0001:00000a80       ??_0Vec3@SpeedTree@@QAE?AV01@ABV01@@Z 10001a80 f i AllocatorStats.obj
+ 0001:00000ae0       ??DVec3@SpeedTree@@QBE?AV01@M@Z 10001ae0 f i AllocatorStats.obj
+ 0001:00000b30       ??XVec3@SpeedTree@@QAE?AV01@M@Z 10001b30 f i AllocatorStats.obj
+ 0001:00000b90       ??KVec3@SpeedTree@@QBE?AV01@M@Z 10001b90 f i AllocatorStats.obj
+ 0001:00000be0       ??_0Vec3@SpeedTree@@QAE?AV01@M@Z 10001be0 f i AllocatorStats.obj
+ 0001:00000c40       ??GVec3@SpeedTree@@QBE?AV01@XZ 10001c40 f i AllocatorStats.obj
+ 0001:00000c90       ?Set@Vec3@SpeedTree@@QAEXMMM@Z 10001c90 f i AllocatorStats.obj
+ 0001:00000cc0       ?Set@Vec3@SpeedTree@@QAEXMM@Z 10001cc0 f i AllocatorStats.obj
+ 0001:00000cf0       ?Set@Vec3@SpeedTree@@QAEXQBM@Z 10001cf0 f i AllocatorStats.obj
+ 0001:00000d20       ?Cross@Vec3@SpeedTree@@QBE?AV12@ABV12@@Z 10001d20 f i AllocatorStats.obj
+ 0001:00000da0       ?Distance@Vec3@SpeedTree@@QBEMABV12@@Z 10001da0 f i AllocatorStats.obj
+ 0001:00000df0       ?DistanceSquared@Vec3@SpeedTree@@QBEMABV12@@Z 10001df0 f i AllocatorStats.obj
+ 0001:00000e20       ?Dot@Vec3@SpeedTree@@QBEMABV12@@Z 10001e20 f i AllocatorStats.obj
+ 0001:00000e60       ?Magnitude@Vec3@SpeedTree@@QBEMXZ 10001e60 f i AllocatorStats.obj
+ 0001:00000e90       ?MagnitudeSquared@Vec3@SpeedTree@@QBEMXZ 10001e90 f i AllocatorStats.obj
+ 0001:00000ed0       ?Normalize@Vec3@SpeedTree@@QAE?AV12@XZ 10001ed0 f i AllocatorStats.obj
+ 0001:00000f50       ?Scale@Vec3@SpeedTree@@QAEXM@Z 10001f50 f i AllocatorStats.obj
+ 0001:00000f90       ??0Vec4@SpeedTree@@QAE@XZ  10001f90 f i AllocatorStats.obj
+ 0001:00000fc0       ??0Vec4@SpeedTree@@QAE@MMMM@Z 10001fc0 f i AllocatorStats.obj
+ 0001:00001000       ??0Vec4@SpeedTree@@QAE@MMM@Z 10002000 f i AllocatorStats.obj
+ 0001:00001040       ??0Vec4@SpeedTree@@QAE@MM@Z 10002040 f i AllocatorStats.obj
+ 0001:00001080       ??0Vec4@SpeedTree@@QAE@ABVVec3@1@M@Z 10002080 f i AllocatorStats.obj
+ 0001:000010c0       ??0Vec4@SpeedTree@@QAE@QBM@Z 100020c0 f i AllocatorStats.obj
+ 0001:00001100       ??AVec4@SpeedTree@@QAEAAMH@Z 10002100 f i AllocatorStats.obj
+ 0001:00001120       ??BVec4@SpeedTree@@QAEPAMXZ 10002120 f i AllocatorStats.obj
+ 0001:00001130       ??BVec4@SpeedTree@@QBEPBMXZ 10002130 f i AllocatorStats.obj
+ 0001:00001140       ??8Vec4@SpeedTree@@QBE_NABV01@@Z 10002140 f i AllocatorStats.obj
+ 0001:000011c0       ??9Vec4@SpeedTree@@QBE_NABV01@@Z 100021c0 f i AllocatorStats.obj
+ 0001:00001240       ??DVec4@SpeedTree@@QBE?AV01@ABV01@@Z 10002240 f i AllocatorStats.obj
+ 0001:000012b0       ??DVec4@SpeedTree@@QBE?AV01@M@Z 100022b0 f i AllocatorStats.obj
+ 0001:00001320       ??XVec4@SpeedTree@@QAE?AV01@M@Z 10002320 f i AllocatorStats.obj
+ 0001:00001390       ??KVec4@SpeedTree@@QBE?AV01@M@Z 10002390 f i AllocatorStats.obj
+ 0001:00001400       ??_0Vec4@SpeedTree@@QAE?AV01@M@Z 10002400 f i AllocatorStats.obj
+ 0001:00001470       ??HVec4@SpeedTree@@QBE?AV01@ABV01@@Z 10002470 f i AllocatorStats.obj
+ 0001:000014e0       ?Set@Vec4@SpeedTree@@QAEXMMMM@Z 100024e0 f i AllocatorStats.obj
+ 0001:00001510       ?Set@Vec4@SpeedTree@@QAEXMMM@Z 10002510 f i AllocatorStats.obj
+ 0001:00001540       ?Set@Vec4@SpeedTree@@QAEXMM@Z 10002540 f i AllocatorStats.obj
+ 0001:00001560       ?Set@Vec4@SpeedTree@@QAEXQBM@Z 10002560 f i AllocatorStats.obj
+ 0001:000015a0       ??4Mat3x3@SpeedTree@@QAEAAV01@ABV01@@Z 100025a0 f i AllocatorStats.obj
+ 0001:000015d0       ??_FMat3x3@SpeedTree@@QAEXXZ 100025d0 f i AllocatorStats.obj
+ 0001:00001610       ??_FMat4x4@SpeedTree@@QAEXXZ 10002610 f i AllocatorStats.obj
+ 0001:00001660       ??0Mat3x3@SpeedTree@@QAE@_N@Z 10002660 f i AllocatorStats.obj
+ 0001:000016a0       ??0Mat3x3@SpeedTree@@QAE@QBM@Z 100026a0 f i AllocatorStats.obj
+ 0001:000016d0       ??0Mat3x3@SpeedTree@@QAE@ABVVec3@1@00@Z 100026d0 f i AllocatorStats.obj
+ 0001:00001750       ??BMat3x3@SpeedTree@@QAEPAMXZ 10002750 f i AllocatorStats.obj
+ 0001:00001760       ??BMat3x3@SpeedTree@@QBEPBMXZ 10002760 f i AllocatorStats.obj
+ 0001:00001770       ??DMat3x3@SpeedTree@@QBE?AV01@ABV01@@Z 10002770 f i AllocatorStats.obj
+ 0001:000018c0       ??DMat3x3@SpeedTree@@QBE?AVVec3@1@ABV21@@Z 100028c0 f i AllocatorStats.obj
+ 0001:00001970       ??8Mat3x3@SpeedTree@@QBE_NABV01@@Z 10002970 f i AllocatorStats.obj
+ 0001:000019a0       ??9Mat3x3@SpeedTree@@QBE_NABV01@@Z 100029a0 f i AllocatorStats.obj
+ 0001:000019d0       ?SetIdentity@Mat3x3@SpeedTree@@QAEXXZ 100029d0 f i AllocatorStats.obj
+ 0001:00001a10       ?Set@Mat3x3@SpeedTree@@QAEXQBM@Z 10002a10 f i AllocatorStats.obj
+ 0001:00001a30       ?RotateX@Mat3x3@SpeedTree@@QAEXM@Z 10002a30 f i AllocatorStats.obj
+ 0001:00001ae0       ?RotateY@Mat3x3@SpeedTree@@QAEXM@Z 10002ae0 f i AllocatorStats.obj
+ 0001:00001b90       ?RotateZ@Mat3x3@SpeedTree@@QAEXM@Z 10002b90 f i AllocatorStats.obj
+ 0001:00001c40       ?RotateArbitrary@Mat3x3@SpeedTree@@QAEXABVVec3@2@M@Z 10002c40 f i AllocatorStats.obj
+ 0001:00001e00       ?Scale@Mat3x3@SpeedTree@@QAEXMMM@Z 10002e00 f i AllocatorStats.obj
+ 0001:00001ea0       ?Scale@Mat3x3@SpeedTree@@QAEXABVVec3@2@@Z 10002ea0 f i AllocatorStats.obj
+ 0001:00001ee0       ??0Mat4x4@SpeedTree@@QAE@_N@Z 10002ee0 f i AllocatorStats.obj
+ 0001:00001f30       ??0Mat4x4@SpeedTree@@QAE@QBM@Z 10002f30 f i AllocatorStats.obj
+ 0001:00001f60       ??0Mat4x4@SpeedTree@@QAE@MMMMMMMMMMMMMMMM@Z 10002f60 f i AllocatorStats.obj
+ 0001:00002080       ??BMat4x4@SpeedTree@@QAEPAMXZ 10003080 f i AllocatorStats.obj
+ 0001:00002090       ??BMat4x4@SpeedTree@@QBEPBMXZ 10003090 f i AllocatorStats.obj
+ 0001:000020a0       ??DMat4x4@SpeedTree@@QBE?AV01@ABV01@@Z 100030a0 f i AllocatorStats.obj
+ 0001:000022a0       ??XMat4x4@SpeedTree@@QAE?AV01@ABV01@@Z 100032a0 f i AllocatorStats.obj
+ 0001:00002460       ??DMat4x4@SpeedTree@@QBE?AVVec3@1@ABV21@@Z 10003460 f i AllocatorStats.obj
+ 0001:00002530       ??DMat4x4@SpeedTree@@QBE?AVVec4@1@ABV21@@Z 10003530 f i AllocatorStats.obj
+ 0001:00002650       ??8Mat4x4@SpeedTree@@QBE_NABV01@@Z 10003650 f i AllocatorStats.obj
+ 0001:00002680       ??9Mat4x4@SpeedTree@@QBE_NABV01@@Z 10003680 f i AllocatorStats.obj
+ 0001:000026b0       ??4Mat4x4@SpeedTree@@QAEAAV01@ABV01@@Z 100036b0 f i AllocatorStats.obj
+ 0001:000026e0       ?SetIdentity@Mat4x4@SpeedTree@@QAEXXZ 100036e0 f i AllocatorStats.obj
+ 0001:00002720       ?Set@Mat4x4@SpeedTree@@QAEXQBM@Z 10003720 f i AllocatorStats.obj
+ 0001:00002740       ?Set@Mat4x4@SpeedTree@@QAEXMMMMMMMMMMMMMMMM@Z 10003740 f i AllocatorStats.obj
+ 0001:00002860       ?GetVectorComponents@Mat4x4@SpeedTree@@QAEXAAVVec3@2@00@Z 10003860 f i AllocatorStats.obj
+ 0001:00002910       ?Invert@Mat4x4@SpeedTree@@QBE_NAAV12@@Z 10003910 f i AllocatorStats.obj
+ 0001:00002e70       ?Multiply4f@Mat4x4@SpeedTree@@QBEXQBMQAM@Z 10003e70 f i AllocatorStats.obj
+ 0001:00002f70       ?RotateX@Mat4x4@SpeedTree@@QAEXM@Z 10003f70 f i AllocatorStats.obj
+ 0001:00003040       ?RotateY@Mat4x4@SpeedTree@@QAEXM@Z 10004040 f i AllocatorStats.obj
+ 0001:00003110       ?RotateZ@Mat4x4@SpeedTree@@QAEXM@Z 10004110 f i AllocatorStats.obj
+ 0001:000031e0       ?RotateArbitrary@Mat4x4@SpeedTree@@QAEXABVVec3@2@M@Z 100041e0 f i AllocatorStats.obj
+ 0001:000033b0       ?Scale@Mat4x4@SpeedTree@@QAEXMMM@Z 100043b0 f i AllocatorStats.obj
+ 0001:00003440       ?Scale@Mat4x4@SpeedTree@@QAEXABVVec3@2@@Z 10004440 f i AllocatorStats.obj
+ 0001:00003480       ?Translate@Mat4x4@SpeedTree@@QAEXMMM@Z 10004480 f i AllocatorStats.obj
+ 0001:00003510       ?Translate@Mat4x4@SpeedTree@@QAEXABVVec3@2@@Z 10004510 f i AllocatorStats.obj
+ 0001:00003550       ?Transpose@Mat4x4@SpeedTree@@QBE?AV12@XZ 10004550 f i AllocatorStats.obj
+ 0001:00003680       ?LookAt@Mat4x4@SpeedTree@@QAEXABVVec3@2@00@Z 10004680 f i AllocatorStats.obj
+ 0001:00003840       ?Ortho@Mat4x4@SpeedTree@@QAEXMMMMMM_N@Z 10004840 f i AllocatorStats.obj
+ 0001:00003990       ?Frustum@Mat4x4@SpeedTree@@QAEXMMMMMM@Z 10004990 f i AllocatorStats.obj
+ 0001:00003ab0       ?Perspective@Mat4x4@SpeedTree@@QAEXMMMM@Z 10004ab0 f i AllocatorStats.obj
+ 0001:00003bb0       ?AdjustPerspectiveNearAndFar@Mat4x4@SpeedTree@@QAEXMM@Z 10004bb0 f i AllocatorStats.obj
+ 0001:00003bf0       ??1CCoordSysBase@SpeedTree@@UAE@XZ 10004bf0 f i AllocatorStats.obj
+ 0001:00003c10       ?ConvertToStd@CCoordSysBase@SpeedTree@@QBE?AVVec3@2@QBM@Z 10004c10 f i AllocatorStats.obj
+ 0001:00003c50       ?ConvertFromStd@CCoordSysBase@SpeedTree@@QBE?AVVec3@2@QBM@Z 10004c50 f i AllocatorStats.obj
+ 0001:00003c90       ??0CCoordSysBase@SpeedTree@@QAE@XZ 10004c90 f i AllocatorStats.obj
+ 0001:00003cb0       ??0CCoordSysBase@SpeedTree@@QAE@ABV01@@Z 10004cb0 f i AllocatorStats.obj
+ 0001:00003cd0       ??4CCoordSysBase@SpeedTree@@QAEAAV01@ABV01@@Z 10004cd0 f i AllocatorStats.obj
+ 0001:00003ce0       ??_GCCoordSysBase@SpeedTree@@UAEPAXI@Z 10004ce0 f i AllocatorStats.obj
+ 0001:00003d10       ??_ECCoordSysBase@SpeedTree@@UAEPAXI@Z 10004d10 f i AllocatorStats.obj
+ 0001:00003d80       ??4CCoordSys@SpeedTree@@QAEAAV01@ABV01@@Z 10004d80 f i AllocatorStats.obj
+ 0001:00003d90       ??4CExtents@SpeedTree@@QAEAAV01@ABV01@@Z 10004d90 f i AllocatorStats.obj
+ 0001:00003dd0       ??0CExtents@SpeedTree@@QAE@XZ 10004dd0 f i AllocatorStats.obj
+ 0001:00003e70       ??0CExtents@SpeedTree@@QAE@QBM@Z 10004e70 f i AllocatorStats.obj
+ 0001:00003ee0       ??0CExtents@SpeedTree@@QAE@ABVVec3@1@0@Z 10004ee0 f i AllocatorStats.obj
+ 0001:00003f20       ??1CExtents@SpeedTree@@QAE@XZ 10004f20 f i AllocatorStats.obj
+ 0001:00003f30       ?Reset@CExtents@SpeedTree@@QAEXXZ 10004f30 f i AllocatorStats.obj
+ 0001:00003f90       ?SetToZeros@CExtents@SpeedTree@@QAEXXZ 10004f90 f i AllocatorStats.obj
+ 0001:00003fe0       ?Order@CExtents@SpeedTree@@QAEXXZ 10004fe0 f i AllocatorStats.obj
+ 0001:00004090       ?Valid@CExtents@SpeedTree@@QBE_NXZ 10005090 f i AllocatorStats.obj
+ 0001:00004130       ?ExpandAround@CExtents@SpeedTree@@QAEXQBM@Z 10005130 f i AllocatorStats.obj
+ 0001:00004270       ?ExpandAround@CExtents@SpeedTree@@QAEXABVVec3@2@@Z 10005270 f i AllocatorStats.obj
+ 0001:000043b0       ?ExpandAround@CExtents@SpeedTree@@QAEXABVVec3@2@M@Z 100053b0 f i AllocatorStats.obj
+ 0001:000045c0       ?ExpandAround@CExtents@SpeedTree@@QAEXABV12@@Z 100055c0 f i AllocatorStats.obj
+ 0001:00004780       ?Scale@CExtents@SpeedTree@@QAEXM@Z 10005780 f i AllocatorStats.obj
+ 0001:000047c0       ?Translate@CExtents@SpeedTree@@QAEXABVVec3@2@@Z 100057c0 f i AllocatorStats.obj
+ 0001:00004800       ?Orient@CExtents@SpeedTree@@QAEXABVVec3@2@0@Z 10005800 f i AllocatorStats.obj
+ 0001:00004cb0       ?Rotate@CExtents@SpeedTree@@QAEXM@Z 10005cb0 f i AllocatorStats.obj
+ 0001:00004e80       ?ComputeRadiusFromCenter3D@CExtents@SpeedTree@@QBEMXZ 10005e80 f i AllocatorStats.obj
+ 0001:00004ed0       ?ComputeRadiusSquaredFromCenter3D@CExtents@SpeedTree@@QBEMXZ 10005ed0 f i AllocatorStats.obj
+ 0001:00004f20       ?ComputeRadiusFromCenter2D@CExtents@SpeedTree@@QBEMXZ 10005f20 f i AllocatorStats.obj
+ 0001:00004f90       ?Min@CExtents@SpeedTree@@QBEABVVec3@2@XZ 10005f90 f i AllocatorStats.obj
+ 0001:00004fa0       ?Max@CExtents@SpeedTree@@QBEABVVec3@2@XZ 10005fa0 f i AllocatorStats.obj
+ 0001:00004fc0       ?Midpoint@CExtents@SpeedTree@@QBEMI@Z 10005fc0 f i AllocatorStats.obj
+ 0001:00004ff0       ?GetCenter@CExtents@SpeedTree@@QBE?AVVec3@2@XZ 10005ff0 f i AllocatorStats.obj
+ 0001:00005030       ?GetDiagonal@CExtents@SpeedTree@@QBE?AVVec3@2@XZ 10006030 f i AllocatorStats.obj
+ 0001:00005080       ?GetHeight@CExtents@SpeedTree@@QBEMXZ 10006080 f i AllocatorStats.obj
+ 0001:000050a0       ??BCExtents@SpeedTree@@QAEPAMXZ 100060a0 f i AllocatorStats.obj
+ 0001:000050b0       ??BCExtents@SpeedTree@@QBEPBMXZ 100060b0 f i AllocatorStats.obj
+ 0001:000050c0       ??4CHeapSystem@SpeedTree@@QAEAAV01@ABV01@@Z 100060c0 f i AllocatorStats.obj
+ 0001:000050d0       ??4SBranchWindLevel@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 100060d0 f i AllocatorStats.obj
+ 0001:00005100       ??4SWindGroup@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 10006100 f i AllocatorStats.obj
+ 0001:00005130       ??0SParams@CWind@SpeedTree@@QAE@ABU012@@Z 10006130 f i AllocatorStats.obj
+ 0001:000053b0       ??4SParams@CWind@SpeedTree@@QAEAAU012@ABU012@@Z 100063b0 f i AllocatorStats.obj
+ 0001:000053e0       ??0CWind@SpeedTree@@QAE@ABV01@@Z 100063e0 f i AllocatorStats.obj
+ 0001:00005670       ??4CWind@SpeedTree@@QAEAAV01@ABV01@@Z 10006670 f i AllocatorStats.obj
+ 0001:000056a0       ?SetParams@CWind@SpeedTree@@QAEXABUSParams@12@@Z 100066a0 f i AllocatorStats.obj
+ 0001:000056c0       ?GetParams@CWind@SpeedTree@@QBEABUSParams@12@XZ 100066c0 f i AllocatorStats.obj
+ 0001:000056d0       ?EnableGusting@CWind@SpeedTree@@QAEX_N@Z 100066d0 f i AllocatorStats.obj
+ 0001:000056f0       ?SetGustFrequency@CWind@SpeedTree@@QAEXM@Z 100066f0 f i AllocatorStats.obj
+ 0001:00005710       ?SetTreeValues@CWind@SpeedTree@@QAEXABVVec3@2@M@Z 10006710 f i AllocatorStats.obj
+ 0001:00005760       ?GetBranchAnchor@CWind@SpeedTree@@QBEPBMXZ 10006760 f i AllocatorStats.obj
+ 0001:00005780       ?GetMaxBranchLength@CWind@SpeedTree@@QBEMXZ 10006780 f i AllocatorStats.obj
+ 0001:000057a0       ?Normalize@CWind@SpeedTree@@IAEXPAM@Z 100067a0 f i AllocatorStats.obj
+ 0001:00005850       ?SetOption@CWind@SpeedTree@@QAEXW4EOptions@12@_N@Z 10006850 f i AllocatorStats.obj
+ 0001:00005870       ?IsOptionEnabled@CWind@SpeedTree@@QBE_NW4EOptions@12@@Z 10006870 f i AllocatorStats.obj
+ 0001:00005890       ?IsGlobalWindEnabled@CWind@SpeedTree@@QBE_NXZ 10006890 f i AllocatorStats.obj
+ 0001:000058e0       ?IsBranchWindEnabled@CWind@SpeedTree@@QBE_NXZ 100068e0 f i AllocatorStats.obj
+ 0001:00005930       ?GetShaderTable@CWind@SpeedTree@@QBEPBMXZ 10006930 f i AllocatorStats.obj
+ 0001:00005950       ??4?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006950 f i AllocatorStats.obj
+ 0001:00005970       ??4?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006970 f i AllocatorStats.obj
+ 0001:00005990       ??4?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 10006990 f i AllocatorStats.obj
+ 0001:000059b0       ??4SAttribute@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 100069b0 f i AllocatorStats.obj
+ 0001:000059e0       ??4?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAEAAU01@ABU01@@Z 100069e0 f i AllocatorStats.obj
+ 0001:00005a00       ??4SProperty@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 10006a00 f i AllocatorStats.obj
+ 0001:00005a30       ??0SPropertyComponent@SAttribDesc@SVertexDecl@SpeedTree@@QAE@XZ 10006a30 f i AllocatorStats.obj
+ 0001:00005a60       ??4SPropertyComponent@SAttribDesc@SVertexDecl@SpeedTree@@QAEAAU0123@ABU0123@@Z 10006a60 f i AllocatorStats.obj
+ 0001:00005a80       ??0SAttribDesc@SVertexDecl@SpeedTree@@QAE@XZ 10006a80 f i AllocatorStats.obj
+ 0001:00005af0       ??4SAttribDesc@SVertexDecl@SpeedTree@@QAEAAU012@ABU012@@Z 10006af0 f i AllocatorStats.obj
+ 0001:00005b20       ??4SVertexDecl@SpeedTree@@QAEAAU01@ABU01@@Z 10006b20 f i AllocatorStats.obj
+ 0001:00005b50       ??4?$CPaddedPtr@$$CBD@SpeedTree@@QAEAAV01@ABV01@@Z 10006b50 f i AllocatorStats.obj
+ 0001:00005b70       ??_F?$CPaddedPtr@$$CBD@SpeedTree@@QAEXXZ 10006b70 f i AllocatorStats.obj
+ 0001:00005b90       ??1SRenderState@SpeedTree@@QAE@XZ 10006b90 f i AllocatorStats.obj
+ 0001:00005bb0       ??4SRenderState@SpeedTree@@QAEAAU01@ABU01@@Z 10006bb0 f i AllocatorStats.obj
+ 0001:00005be0       ??4SVerticalBillboards@SpeedTree@@QAEAAU01@ABU01@@Z 10006be0 f i AllocatorStats.obj
+ 0001:00005c10       ??4SHorizontalBillboard@SpeedTree@@QAEAAU01@ABU01@@Z 10006c10 f i AllocatorStats.obj
+ 0001:00005c40       ??4SCollisionObject@SpeedTree@@QAEAAU01@ABU01@@Z 10006c40 f i AllocatorStats.obj
+ 0001:00005c70       ??4?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006c70 f i AllocatorStats.obj
+ 0001:00005c90       ??_F?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEXXZ 10006c90 f i AllocatorStats.obj
+ 0001:00005cb0       ??4?$CPaddedPtr@E@SpeedTree@@QAEAAV01@ABV01@@Z 10006cb0 f i AllocatorStats.obj
+ 0001:00005cd0       ??_F?$CPaddedPtr@E@SpeedTree@@QAEXXZ 10006cd0 f i AllocatorStats.obj
+ 0001:00005cf0       ??4SDrawCall@SpeedTree@@QAEAAU01@ABU01@@Z 10006cf0 f i AllocatorStats.obj
+ 0001:00005d20       ??4SBone@SpeedTree@@QAEAAU01@ABU01@@Z 10006d20 f i AllocatorStats.obj
+ 0001:00005d50       ??4?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006d50 f i AllocatorStats.obj
+ 0001:00005d70       ??_F?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEXXZ 10006d70 f i AllocatorStats.obj
+ 0001:00005d90       ??4?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006d90 f i AllocatorStats.obj
+ 0001:00005db0       ??_F?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEXXZ 10006db0 f i AllocatorStats.obj
+ 0001:00005dd0       ??4SLod@SpeedTree@@QAEAAU01@ABU01@@Z 10006dd0 f i AllocatorStats.obj
+ 0001:00005e10       ??4?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10006e10 f i AllocatorStats.obj
+ 0001:00005e30       ??_F?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEXXZ 10006e30 f i AllocatorStats.obj
+ 0001:00005e50       ??4SGeometry@SpeedTree@@QAEAAU01@ABU01@@Z 10006e50 f i AllocatorStats.obj
+ 0001:00005e80       ??4SLodProfile@SpeedTree@@QAEAAU01@ABU01@@Z 10006e80 f i AllocatorStats.obj
+ 0001:00005eb0       ??4CAllocatorInterface@SpeedTree@@QAEAAV01@ABV01@@Z 10006eb0 f i AllocatorStats.obj
+ 0001:00005ec0       ??4CFileSystemInterface@SpeedTree@@QAEAAV01@ABV01@@Z 10006ec0 f i AllocatorStats.obj
+ 0001:00005ed0       ??0SHueVariationParams@CCore@SpeedTree@@QAE@XZ 10006ed0 f i AllocatorStats.obj
+ 0001:00005f10       ??4SHueVariationParams@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 10006f10 f i AllocatorStats.obj
+ 0001:00005f50       ??4SResourceStats@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 10006f50 f i AllocatorStats.obj
+ 0001:00005f80       ??0SResourceSummary@CCore@SpeedTree@@QAE@XZ 10006f80 f i AllocatorStats.obj
+ 0001:00005fd0       ??4SResourceSummary@CCore@SpeedTree@@QAEAAU012@ABU012@@Z 10006fd0 f i AllocatorStats.obj
+ 0001:00006000       ??_G?$CBasicFixedString@$0BAA@@SpeedTree@@UAEPAXI@Z 10007000 f i AllocatorStats.obj
+ 0001:00006030       ??_E?$CBasicFixedString@$0BAA@@SpeedTree@@UAEPAXI@Z 10007030 f i AllocatorStats.obj
+ 0001:000060a0       ??4CCore@SpeedTree@@QAEAAV01@ABV01@@Z 100070a0 f i AllocatorStats.obj
+ 0001:00006290       ??0SLodProfile@SpeedTree@@QAE@XZ 10007290 f i AllocatorStats.obj
+ 0001:000062f0       ?IsValid@SLodProfile@SpeedTree@@QBE_NXZ 100072f0 f i AllocatorStats.obj
+ 0001:00006380       ?ComputeDerived@SLodProfile@SpeedTree@@QAEXXZ 10007380 f i AllocatorStats.obj
+ 0001:000063b0       ?Scale@SLodProfile@SpeedTree@@QAEXM@Z 100073b0 f i AllocatorStats.obj
+ 0001:00006400       ?Square@SLodProfile@SpeedTree@@QBEXAAU12@@Z 10007400 f i AllocatorStats.obj
+ 0001:00006480       ??BSLodProfile@SpeedTree@@QBEPBMXZ 10007480 f i AllocatorStats.obj
+ 0001:00006490       ?GetFilename@CCore@SpeedTree@@QBEPBDXZ 10007490 f i AllocatorStats.obj
+ 0001:000064b0       ?GetGeometry@CCore@SpeedTree@@QBEPBUSGeometry@2@XZ 100074b0 f i AllocatorStats.obj
+ 0001:000064d0       ?GetExtents@CCore@SpeedTree@@QBEABVCExtents@2@XZ 100074d0 f i AllocatorStats.obj
+ 0001:000064f0       ?IsLoadedAsGrassModel@CCore@SpeedTree@@QBE_NXZ 100074f0 f i AllocatorStats.obj
+ 0001:00006510       ?AreTexCoordsFlipped@CCore@SpeedTree@@QBE_NXZ 10007510 f i AllocatorStats.obj
+ 0001:00006530       ?GetLodProfile@CCore@SpeedTree@@QBEABUSLodProfile@2@XZ 10007530 f i AllocatorStats.obj
+ 0001:00006550       ?GetLodProfileSquared@CCore@SpeedTree@@QBEABUSLodProfile@2@XZ 10007550 f i AllocatorStats.obj
+ 0001:00006570       ?SetLodProfile@CCore@SpeedTree@@QAE_NABUSLodProfile@2@@Z 10007570 f i AllocatorStats.obj
+ 0001:000065e0       ?ComputeLodSnapshot@CCore@SpeedTree@@QBEHM@Z 100075e0 f i AllocatorStats.obj
+ 0001:00006680       ?ComputeLodByDistance@CCore@SpeedTree@@QBEMM@Z 10007680 f i AllocatorStats.obj
+ 0001:00006740       ?ComputeLodByDistanceSquared@CCore@SpeedTree@@QBEMM@Z 10007740 f i AllocatorStats.obj
+ 0001:00006800       ?ComputeLodTransition@CCore@SpeedTree@@SAMMH@Z 10007800 f i AllocatorStats.obj
+ 0001:000068b0       ?GetWind@CCore@SpeedTree@@QAEAAVCWind@2@XZ 100078b0 f i AllocatorStats.obj
+ 0001:000068d0       ?GetWind@CCore@SpeedTree@@QBEABVCWind@2@XZ 100078d0 f i AllocatorStats.obj
+ 0001:000068f0       ?GetWindShaderTable@CCore@SpeedTree@@QBEPBMXZ 100078f0 f i AllocatorStats.obj
+ 0001:00006910       ?GetCollisionObjects@CCore@SpeedTree@@QBEPBUSCollisionObject@2@AAH@Z 10007910 f i AllocatorStats.obj
+ 0001:00006940       ?SetHueVariationParams@CCore@SpeedTree@@QAEXABUSHueVariationParams@12@@Z 10007940 f i AllocatorStats.obj
+ 0001:00006980       ?GetHueVariationParams@CCore@SpeedTree@@QBEABUSHueVariationParams@12@XZ 10007980 f i AllocatorStats.obj
+ 0001:000069a0       ?SetAmbientImageScalar@CCore@SpeedTree@@QAEXM@Z 100079a0 f i AllocatorStats.obj
+ 0001:000069c0       ?GetAmbientImageScalar@CCore@SpeedTree@@QBEMXZ 100079c0 f i AllocatorStats.obj
+ 0001:000069e0       ?GetUserString@CCore@SpeedTree@@QBEPBDW4EUserStringOrdinal@12@@Z 100079e0 f i AllocatorStats.obj
+ 0001:00006a00       ?GetUserData@CCore@SpeedTree@@QBEPAXXZ 10007a00 f i AllocatorStats.obj
+ 0001:00006a20       ?SetUserData@CCore@SpeedTree@@QAEXPAX@Z 10007a20 f i AllocatorStats.obj
+ 0001:00006a40       ?UncompressVec3@CCore@SpeedTree@@SA?AVVec3@2@PBE@Z 10007a40 f i AllocatorStats.obj
+ 0001:00006ae0       ?UncompressScalar@CCore@SpeedTree@@SAME@Z 10007ae0 f i AllocatorStats.obj
+ 0001:00006b20       ?CompressScalar@CCore@SpeedTree@@SAEM@Z 10007b20 f i AllocatorStats.obj
+ 0001:00006b60       ?CompressVec3@CCore@SpeedTree@@SAXQAEABVVec3@2@@Z 10007b60 f i AllocatorStats.obj
+ 0001:00006c30       ?GetVertexPropertyDesc@CCore@SpeedTree@@SAABUSVertexPropertyDesc@2@U?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@@Z 10007c30 f i AllocatorStats.obj
+ 0001:00006c50       ?GetPixelPropertyDesc@CCore@SpeedTree@@SAABUSPixelPropertyDesc@2@W4EPixelProperty@2@@Z 10007c50 f i AllocatorStats.obj
+ 0001:00006c60       ?ComponentName@CCore@SpeedTree@@SAPBDH@Z 10007c60 f i AllocatorStats.obj
+ 0001:00006c90       ?SrtBuffer@CCore@SpeedTree@@IBEPBEXZ 10007c90 f i AllocatorStats.obj
+ 0001:00006cd0       ??0SRenderState@SpeedTree@@QAE@XZ 10007cd0 f i AllocatorStats.obj
+ 0001:00006fe0       ??8SRenderState@SpeedTree@@QBE_NABU01@@Z 10007fe0 f i AllocatorStats.obj
+ 0001:00007920       ??9SRenderState@SpeedTree@@QBE_NABU01@@Z 10008920 f i AllocatorStats.obj
+ 0001:00007950       ?IsPerPixelModelActive@SRenderState@SpeedTree@@QBE_NXZ 10008950 f i AllocatorStats.obj
+ 0001:00007990       ?IsLightingModelInTransition@SRenderState@SpeedTree@@QBE_NXZ 10008990 f i AllocatorStats.obj
+ 0001:000079b0       ?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 100089b0 f i AllocatorStats.obj
+ 0001:000081d0       ?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 100091d0 f i AllocatorStats.obj
+ 0001:00008350       ?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10009350 f i AllocatorStats.obj
+ 0001:00008560       ?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10009560 f i AllocatorStats.obj
+ 0001:00008ad0       ?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10009ad0 f i AllocatorStats.obj
+ 0001:000090b0       ?GetPixelProperties@SRenderState@SpeedTree@@QBEXQA_N@Z 1000a0b0 f i AllocatorStats.obj
+ 0001:000093f0       ?GetInstanceType@SRenderState@SpeedTree@@QBE?AW4EInstanceType@SVertexDecl@2@XZ 1000a3f0 f i AllocatorStats.obj
+ 0001:00009490       ?ShaderGenHasFixedDecls@SRenderState@SpeedTree@@QBE_NXZ 1000a490 f i AllocatorStats.obj
+ 0001:000094e0       ?ShaderGenerationMode@SRenderState@SpeedTree@@QBE?AW4EShaderGenerationMode@2@XZ 1000a4e0 f i AllocatorStats.obj
+ 0001:00009500       ?IsTextureLayerPresent@SRenderState@SpeedTree@@QBE_NW4ETextureLayer@2@@Z 1000a500 f i AllocatorStats.obj
+ 0001:00009550       ?VertexDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000a550 f i AllocatorStats.obj
+ 0001:00009630       ?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000a630 f i AllocatorStats.obj
+ 0001:00009750       ?IsBranchWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a750 f i AllocatorStats.obj
+ 0001:000097d0       ?IsGlobalWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a7d0 f i AllocatorStats.obj
+ 0001:000097f0       ?IsFullWindEnabled@SRenderState@SpeedTree@@QBE_NXZ 1000a7f0 f i AllocatorStats.obj
+ 0001:00009840       ?MakeDepthOnly@SRenderState@SpeedTree@@QAEXXZ 1000a840 f i AllocatorStats.obj
+ 0001:00009890       ?MakeShadowCast@SRenderState@SpeedTree@@QAEXXZ 1000a890 f i AllocatorStats.obj
+ 0001:000098f0       ?HasOnlyBranches@SRenderState@SpeedTree@@QBE_NXZ 1000a8f0 f i AllocatorStats.obj
+ 0001:00009960       ?HasOnlyFronds@SRenderState@SpeedTree@@QBE_NXZ 1000a960 f i AllocatorStats.obj
+ 0001:000099d0       ?HasOnlyLeaves@SRenderState@SpeedTree@@QBE_N_N0@Z 1000a9d0 f i AllocatorStats.obj
+ 0001:00009b40       ?HasOnlyRigidMeshes@SRenderState@SpeedTree@@QBE_NXZ 1000ab40 f i AllocatorStats.obj
+ 0001:00009bb0       ??0SVerticalBillboards@SpeedTree@@QAE@XZ 1000abb0 f i AllocatorStats.obj
+ 0001:00009c30       ??1SVerticalBillboards@SpeedTree@@QAE@XZ 1000ac30 f i AllocatorStats.obj
+ 0001:00009c40       ??0SHorizontalBillboard@SpeedTree@@QAE@XZ 1000ac40 f i AllocatorStats.obj
+ 0001:00009cf0       ??1SHorizontalBillboard@SpeedTree@@QAE@XZ 1000acf0 f i AllocatorStats.obj
+ 0001:00009d00       ??0SCollisionObject@SpeedTree@@QAE@XZ 1000ad00 f i AllocatorStats.obj
+ 0001:00009d70       ??1SCollisionObject@SpeedTree@@QAE@XZ 1000ad70 f i AllocatorStats.obj
+ 0001:00009d80       ??0SDrawCall@SpeedTree@@QAE@XZ 1000ad80 f i AllocatorStats.obj
+ 0001:00009e00       ??1SDrawCall@SpeedTree@@QAE@XZ 1000ae00 f i AllocatorStats.obj
+ 0001:00009e10       ??0SBone@SpeedTree@@QAE@XZ 1000ae10 f i AllocatorStats.obj
+ 0001:00009ea0       ??0SLod@SpeedTree@@QAE@XZ  1000aea0 f i AllocatorStats.obj
+ 0001:00009f00       ??1SLod@SpeedTree@@QAE@XZ  1000af00 f i AllocatorStats.obj
+ 0001:00009f10       ??0SGeometry@SpeedTree@@QAE@XZ 1000af10 f i AllocatorStats.obj
+ 0001:0000a010       ??1SGeometry@SpeedTree@@QAE@XZ 1000b010 f i AllocatorStats.obj
+ 0001:0000a070       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAM@Z 1000b070 f i AllocatorStats.obj
+ 0001:0000a260       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAVst_float16@2@@Z 1000b260 f i AllocatorStats.obj
+ 0001:0000a470       ?GetProperty@SDrawCall@SpeedTree@@QBE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQAE@Z 1000b470 f i AllocatorStats.obj
+ 0001:0000a550       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBM@Z 1000b550 f i AllocatorStats.obj
+ 0001:0000a630       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBVst_float16@2@@Z 1000b630 f i AllocatorStats.obj
+ 0001:0000a710       ?SetProperty@SDrawCall@SpeedTree@@QAE_NU?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@2@HQBE@Z 1000b710 f i AllocatorStats.obj
+ 0001:0000a7f0       ??0SAttribute@SVertexDecl@SpeedTree@@QAE@XZ 1000b7f0 f i AllocatorStats.obj
+ 0001:0000a880       ?IsUsed@SAttribute@SVertexDecl@SpeedTree@@QBE_NXZ 1000b880 f i AllocatorStats.obj
+ 0001:0000a8d0       ?NumEmptyComponents@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000b8d0 f i AllocatorStats.obj
+ 0001:0000a930       ?NumUsedComponents@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000b930 f i AllocatorStats.obj
+ 0001:0000a950       ?Size@SAttribute@SVertexDecl@SpeedTree@@QBEHXZ 1000b950 f i AllocatorStats.obj
+ 0001:0000a9a0       ?Clear@SAttribute@SVertexDecl@SpeedTree@@QAEXXZ 1000b9a0 f i AllocatorStats.obj
+ 0001:0000aa00       ?FirstFreeComponent@SAttribute@SVertexDecl@SpeedTree@@QBE?AU?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@3@XZ 1000ba00 f i AllocatorStats.obj
+ 0001:0000aa50       ??0SProperty@SVertexDecl@SpeedTree@@QAE@XZ 1000ba50 f i AllocatorStats.obj
+ 0001:0000ab10       ?IsPresent@SProperty@SVertexDecl@SpeedTree@@QBE_NXZ 1000bb10 f i AllocatorStats.obj
+ 0001:0000ab70       ?IsContiguous@SProperty@SVertexDecl@SpeedTree@@QBE_NXZ 1000bb70 f i AllocatorStats.obj
+ 0001:0000ac60       ?NumComponents@SProperty@SVertexDecl@SpeedTree@@QBEHXZ 1000bc60 f i AllocatorStats.obj
+ 0001:0000acb0       ??0SVertexDecl@SpeedTree@@QAE@XZ 1000bcb0 f i AllocatorStats.obj
+ 0001:0000ad30       ??9SVertexDecl@SpeedTree@@QBE_NABU01@@Z 1000bd30 f i AllocatorStats.obj
+ 0001:0000ad60       ??MSVertexDecl@SpeedTree@@QBE_NABU01@@Z 1000bd60 f i AllocatorStats.obj
+ 0001:0000ad90       ?FormatName@SVertexDecl@SpeedTree@@SAPBDU?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@2@@Z 1000bd90 f i AllocatorStats.obj
+ 0001:0000adc0       ?FormatSize@SVertexDecl@SpeedTree@@SAHU?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@2@@Z 1000bdc0 f i AllocatorStats.obj
+ 0001:0000adf0       ?AttributeName@SVertexDecl@SpeedTree@@SAPBDU?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@2@@Z 1000bdf0 f i AllocatorStats.obj
+ 0001:0000ae80       ?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 1000be80 f i AllocatorStats.obj
+ 0001:0000b120       ??_G?$CArray@D$00@SpeedTree@@UAEPAXI@Z 1000c120 f i AllocatorStats.obj
+ 0001:0000b170       ??_E?$CArray@D$00@SpeedTree@@UAEPAXI@Z 1000c170 f i AllocatorStats.obj
+ 0001:0000b200       ??_G?$CBasicString@$00@SpeedTree@@UAEPAXI@Z 1000c200 f i AllocatorStats.obj
+ 0001:0000b230       ??_E?$CBasicString@$00@SpeedTree@@UAEPAXI@Z 1000c230 f i AllocatorStats.obj
+ 0001:0000b2a0       ?MergeObjectAndInstanceVertexDecls@SVertexDecl@SpeedTree@@SA_NAAU12@ABU12@W4EInstanceType@12@@Z 1000c2a0 f i AllocatorStats.obj
+ 0001:0000b400       ?Set@SVertexDecl@SpeedTree@@QAE_NPBUSAttribDesc@12@@Z 1000c400 f i AllocatorStats.obj
+ 0001:0000b5a0       ??_H@YGXPAXIHP6EPAX0@Z@Z   1000c5a0 f i AllocatorStats.obj
+ 0001:0000b5d0       ??0?$CPaddedPtr@$$CBD@SpeedTree@@QAE@PBD@Z 1000c5d0 f i AllocatorStats.obj
+ 0001:0000b600       ??1?$CPaddedPtr@$$CBD@SpeedTree@@QAE@XZ 1000c600 f i AllocatorStats.obj
+ 0001:0000b610       ??B?$CPaddedPtr@$$CBD@SpeedTree@@QBEPBDXZ 1000c610 f i AllocatorStats.obj
+ 0001:0000b620       ??4?$CPaddedPtr@$$CBD@SpeedTree@@QAEPBDPBD@Z 1000c620 f i AllocatorStats.obj
+ 0001:0000b640       ??0?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAE@PAUSRenderState@1@@Z 1000c640 f i AllocatorStats.obj
+ 0001:0000b670       ??1?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAE@XZ 1000c670 f i AllocatorStats.obj
+ 0001:0000b680       ??C?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEPAUSRenderState@1@XZ 1000c680 f i AllocatorStats.obj
+ 0001:0000b690       ??C?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QBEPBUSRenderState@1@XZ 1000c690 f i AllocatorStats.obj
+ 0001:0000b6a0       ??0?$CPaddedPtr@E@SpeedTree@@QAE@PAE@Z 1000c6a0 f i AllocatorStats.obj
+ 0001:0000b6d0       ??1?$CPaddedPtr@E@SpeedTree@@QAE@XZ 1000c6d0 f i AllocatorStats.obj
+ 0001:0000b6e0       ??B?$CPaddedPtr@E@SpeedTree@@QAEPAEXZ 1000c6e0 f i AllocatorStats.obj
+ 0001:0000b6f0       ??B?$CPaddedPtr@E@SpeedTree@@QBEPBEXZ 1000c6f0 f i AllocatorStats.obj
+ 0001:0000b700       ??0?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAE@PAUSDrawCall@1@@Z 1000c700 f i AllocatorStats.obj
+ 0001:0000b730       ??1?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAE@XZ 1000c730 f i AllocatorStats.obj
+ 0001:0000b740       ??0?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAE@PAUSBone@1@@Z 1000c740 f i AllocatorStats.obj
+ 0001:0000b770       ??1?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAE@XZ 1000c770 f i AllocatorStats.obj
+ 0001:0000b780       ??0?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAE@PAUSLod@1@@Z 1000c780 f i AllocatorStats.obj
+ 0001:0000b7b0       ??1?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAE@XZ 1000c7b0 f i AllocatorStats.obj
+ 0001:0000b7c0       ??0?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexFormatUntyped@1@@Z 1000c7c0 f i AllocatorStats.obj
+ 0001:0000b7e0       ??0?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 1000c7e0 f i AllocatorStats.obj
+ 0001:0000b800       ??B?$Enumeration@W4EVertexFormatUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexFormatUntyped@1@XZ 1000c800 f i AllocatorStats.obj
+ 0001:0000b820       ??0?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexPropertyUntyped@1@@Z 1000c820 f i AllocatorStats.obj
+ 0001:0000b840       ??0?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 1000c840 f i AllocatorStats.obj
+ 0001:0000b860       ??B?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexPropertyUntyped@1@XZ 1000c860 f i AllocatorStats.obj
+ 0001:0000b880       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@H@Z 1000c880 f i AllocatorStats.obj
+ 0001:0000b8a0       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexComponentUntyped@1@@Z 1000c8a0 f i AllocatorStats.obj
+ 0001:0000b8c0       ??0?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 1000c8c0 f i AllocatorStats.obj
+ 0001:0000b8e0       ??B?$Enumeration@W4EVertexComponentUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexComponentUntyped@1@XZ 1000c8e0 f i AllocatorStats.obj
+ 0001:0000b900       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@H@Z 1000c900 f i AllocatorStats.obj
+ 0001:0000b920       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@W4EVertexAttributeUntyped@1@@Z 1000c920 f i AllocatorStats.obj
+ 0001:0000b940       ??0?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QAE@XZ 1000c940 f i AllocatorStats.obj
+ 0001:0000b960       ??B?$Enumeration@W4EVertexAttributeUntyped@SpeedTree@@D@SpeedTree@@QBE?AW4EVertexAttributeUntyped@1@XZ 1000c960 f i AllocatorStats.obj
+ 0001:0000b980       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@PBD@Z 1000c980 f i AllocatorStats.obj
+ 0001:0000b9b0       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@ABV01@@Z 1000c9b0 f i AllocatorStats.obj
+ 0001:0000b9e0       ??0?$CBasicFixedString@$0BAA@@SpeedTree@@QAE@XZ 1000c9e0 f i AllocatorStats.obj
+ 0001:0000ba10       ??1?$CBasicFixedString@$0BAA@@SpeedTree@@UAE@XZ 1000ca10 f i AllocatorStats.obj
+ 0001:0000ba30       ?c_str@?$CBasicFixedString@$0BAA@@SpeedTree@@QBEPBDXZ 1000ca30 f i AllocatorStats.obj
+ 0001:0000ba50       ??Y?$CBasicFixedString@$0BAA@@SpeedTree@@QAEXABV01@@Z 1000ca50 f i AllocatorStats.obj
+ 0001:0000bab0       ??Y?$CBasicFixedString@$0BAA@@SpeedTree@@QAEXPBD@Z 1000cab0 f i AllocatorStats.obj
+ 0001:0000bb20       ??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000cb20 f i AllocatorStats.obj
+ 0001:0000bbf0       ??4?$CBasicFixedString@$0BAA@@SpeedTree@@QAEAAV01@PBD@Z 1000cbf0 f i AllocatorStats.obj
+ 0001:0000bc60       ??4?$CBasicFixedString@$0BAA@@SpeedTree@@QAEAAV01@ABV01@@Z 1000cc60 f i AllocatorStats.obj
+ 0001:0000bcc0       ?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000ccc0 f i AllocatorStats.obj
+ 0001:0000bdc0       ??1?$CArray@D$00@SpeedTree@@UAE@XZ 1000cdc0 f i AllocatorStats.obj
+ 0001:0000be00       ??1?$CBasicString@$00@SpeedTree@@UAE@XZ 1000ce00 f i AllocatorStats.obj
+ 0001:0000be80       ??Y?$CBasicString@$00@SpeedTree@@QAEXABV01@@Z 1000ce80 f i AllocatorStats.obj
+ 0001:0000bf00       ?Format@?$CBasicString@$00@SpeedTree@@SA?AV12@PBDZZ 1000cf00 f i AllocatorStats.obj
+ 0001:0000bf90       ?clear@?$CArray@D$00@SpeedTree@@QAEXXZ 1000cf90 f i AllocatorStats.obj
+ 0001:0000c020       ?reserve@?$CArray@D$00@SpeedTree@@QAE_NI@Z 1000d020 f i AllocatorStats.obj
+ 0001:0000c120       ?SetExternalMemory@?$CArray@D$00@SpeedTree@@QAEXPAEI@Z 1000d120 f i AllocatorStats.obj
+ 0001:0000c1d0       ??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 1000d1d0 f i AllocatorStats.obj
+ 0001:0000c280       ??0?$CArray@D$00@SpeedTree@@QAE@XZ 1000d280 f i AllocatorStats.obj
+ 0001:0000c2d0       ?SetHeapDescription@?$CArray@D$00@SpeedTree@@QAEXPBD@Z 1000d2d0 f i AllocatorStats.obj
+ 0001:0000c2f0       ?Allocate@?$CArray@D$00@SpeedTree@@IAEPADI@Z 1000d2f0 f i AllocatorStats.obj
+ 0001:0000c360       ?Deallocate@?$CArray@D$00@SpeedTree@@IAEXPAD@Z 1000d360 f i AllocatorStats.obj
+ 0001:0000c3b0       ??4?$CBasicString@$00@SpeedTree@@QAEAAV01@PBD@Z 1000d3b0 f i AllocatorStats.obj
+ 0001:0000c430       ??$st_new_array@D@SpeedTree@@YAPADIPBDW4EAllocationType@0@@Z 1000d430 f i AllocatorStats.obj
+ 0001:0000c540       ??$st_delete_array@D@SpeedTree@@YAXAAPAD@Z 1000d540 f i AllocatorStats.obj
+ 0001:0000c5f0       ?SetCoordSys@CCoordSys@SpeedTree@@SAXW4ECoordSysType@12@PBVCCoordSysBase@2@@Z 1000d5f0 f   CoordSys.obj
+ 0001:0000c620       ?CoordSysName@CCoordSys@SpeedTree@@SAPBDW4ECoordSysType@12@@Z 1000d620 f   CoordSys.obj
+ 0001:0000c660       ?IsDefaultCoordSys@CCoordSys@SpeedTree@@SA_NXZ 1000d660 f   CoordSys.obj
+ 0001:0000c680       ?GetBuiltInConverter@CCoordSys@SpeedTree@@SAPBVCCoordSysBase@2@W4ECoordSysType@12@@Z 1000d680 f   CoordSys.obj
+ 0001:0000c6d0       ?GetCoordSysType@CCoordSys@SpeedTree@@SA?AW4ECoordSysType@12@XZ 1000d6d0 f   CoordSys.obj
+ 0001:0000c6e0       ?IsLeftHanded@CCoordSys@SpeedTree@@SA_NXZ 1000d6e0 f   CoordSys.obj
+ 0001:0000c700       ?IsYAxisUp@CCoordSys@SpeedTree@@SA_NXZ 1000d700 f   CoordSys.obj
+ 0001:0000c720       ?ConvertToStd@CCoordSys@SpeedTree@@SA?AVVec3@2@QBM@Z 1000d720 f   CoordSys.obj
+ 0001:0000c760       ?ConvertToStd@CCoordSys@SpeedTree@@SA?AVVec3@2@MMM@Z 1000d760 f   CoordSys.obj
+ 0001:0000c7a0       ?ConvertFromStd@CCoordSys@SpeedTree@@SA?AVVec3@2@QBM@Z 1000d7a0 f   CoordSys.obj
+ 0001:0000c7e0       ?ConvertFromStd@CCoordSys@SpeedTree@@SA?AVVec3@2@MMM@Z 1000d7e0 f   CoordSys.obj
+ 0001:0000c820       ?OutAxis@CCoordSys@SpeedTree@@SAABVVec3@2@XZ 1000d820 f   CoordSys.obj
+ 0001:0000c840       ?RightAxis@CCoordSys@SpeedTree@@SAABVVec3@2@XZ 1000d840 f   CoordSys.obj
+ 0001:0000c860       ?UpAxis@CCoordSys@SpeedTree@@SAABVVec3@2@XZ 1000d860 f   CoordSys.obj
+ 0001:0000c880       ?OutComponent@CCoordSys@SpeedTree@@SAMQBM@Z 1000d880 f   CoordSys.obj
+ 0001:0000c8c0       ?RightComponent@CCoordSys@SpeedTree@@SAMQBM@Z 1000d8c0 f   CoordSys.obj
+ 0001:0000c900       ?UpComponent@CCoordSys@SpeedTree@@SAMQBM@Z 1000d900 f   CoordSys.obj
+ 0001:0000c940       ?RotateUpAxis@CCoordSys@SpeedTree@@SAXAAVMat3x3@2@M@Z 1000d940 f   CoordSys.obj
+ 0001:0000c970       ?RotateUpAxis@CCoordSys@SpeedTree@@SAXAAVMat4x4@2@M@Z 1000d970 f   CoordSys.obj
+ 0001:0000c9a0       ?RotateOutAxis@CCoordSys@SpeedTree@@SAXAAVMat3x3@2@M@Z 1000d9a0 f   CoordSys.obj
+ 0001:0000c9d0       ?RotateOutAxis@CCoordSys@SpeedTree@@SAXAAVMat4x4@2@M@Z 1000d9d0 f   CoordSys.obj
+ 0001:0000ca00       ?IsLeftHanded@CDefaultCoordinateSystem@SpeedTree@@UBE_NXZ 1000da00 f i CoordSys.obj
+ 0001:0000ca10       ?IsYAxisUp@CDefaultCoordinateSystem@SpeedTree@@UBE_NXZ 1000da10 f i CoordSys.obj
+ 0001:0000ca20       ?ConvertToStd@CDefaultCoordinateSystem@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000da20 f i CoordSys.obj
+ 0001:0000ca50       ?ConvertFromStd@CDefaultCoordinateSystem@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000da50 f i CoordSys.obj
+ 0001:0000ca90       ?OutAxis@CDefaultCoordinateSystem@SpeedTree@@UBEABVVec3@2@XZ 1000da90 f i CoordSys.obj
+ 0001:0000caa0       ?RightAxis@CDefaultCoordinateSystem@SpeedTree@@UBEABVVec3@2@XZ 1000daa0 f i CoordSys.obj
+ 0001:0000cab0       ?UpAxis@CDefaultCoordinateSystem@SpeedTree@@UBEABVVec3@2@XZ 1000dab0 f i CoordSys.obj
+ 0001:0000cac0       ?OutComponent@CDefaultCoordinateSystem@SpeedTree@@UBEMMMM@Z 1000dac0 f i CoordSys.obj
+ 0001:0000cad0       ?RightComponent@CDefaultCoordinateSystem@SpeedTree@@UBEMMMM@Z 1000dad0 f i CoordSys.obj
+ 0001:0000cae0       ?UpComponent@CDefaultCoordinateSystem@SpeedTree@@UBEMMMM@Z 1000dae0 f i CoordSys.obj
+ 0001:0000caf0       ?RotateUpAxis@CDefaultCoordinateSystem@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000daf0 f i CoordSys.obj
+ 0001:0000cb10       ?RotateUpAxis@CDefaultCoordinateSystem@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000db10 f i CoordSys.obj
+ 0001:0000cb40       ?RotateOutAxis@CDefaultCoordinateSystem@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000db40 f i CoordSys.obj
+ 0001:0000cb60       ?RotateOutAxis@CDefaultCoordinateSystem@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000db60 f i CoordSys.obj
+ 0001:0000cb90       ??_GCDefaultCoordinateSystem@SpeedTree@@UAEPAXI@Z 1000db90 f i CoordSys.obj
+ 0001:0000cb90       ??_ECDefaultCoordinateSystem@SpeedTree@@UAEPAXI@Z 1000db90 f i CoordSys.obj
+ 0001:0000cbd0       ?IsLeftHanded@CRHCS_Yup@SpeedTree@@UBE_NXZ 1000dbd0 f i CoordSys.obj
+ 0001:0000cbe0       ?IsYAxisUp@CRHCS_Yup@SpeedTree@@UBE_NXZ 1000dbe0 f i CoordSys.obj
+ 0001:0000cbf0       ?ConvertToStd@CRHCS_Yup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000dbf0 f i CoordSys.obj
+ 0001:0000cc20       ?ConvertFromStd@CRHCS_Yup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000dc20 f i CoordSys.obj
+ 0001:0000cc50       ?OutAxis@CRHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000dc50 f i CoordSys.obj
+ 0001:0000cc60       ?RightAxis@CRHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000dc60 f i CoordSys.obj
+ 0001:0000cc70       ?UpAxis@CRHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000dc70 f i CoordSys.obj
+ 0001:0000cc80       ?OutComponent@CRHCS_Yup@SpeedTree@@UBEMMMM@Z 1000dc80 f i CoordSys.obj
+ 0001:0000cca0       ?RightComponent@CRHCS_Yup@SpeedTree@@UBEMMMM@Z 1000dca0 f i CoordSys.obj
+ 0001:0000ccb0       ?UpComponent@CRHCS_Yup@SpeedTree@@UBEMMMM@Z 1000dcb0 f i CoordSys.obj
+ 0001:0000ccc0       ?RotateUpAxis@CRHCS_Yup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000dcc0 f i CoordSys.obj
+ 0001:0000cce0       ?RotateUpAxis@CRHCS_Yup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000dce0 f i CoordSys.obj
+ 0001:0000cd10       ?RotateOutAxis@CRHCS_Yup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000dd10 f i CoordSys.obj
+ 0001:0000cd30       ?RotateOutAxis@CRHCS_Yup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000dd30 f i CoordSys.obj
+ 0001:0000cd60       ??_ECRHCS_Yup@SpeedTree@@UAEPAXI@Z 1000dd60 f i CoordSys.obj
+ 0001:0000cd60       ??_GCRHCS_Yup@SpeedTree@@UAEPAXI@Z 1000dd60 f i CoordSys.obj
+ 0001:0000cda0       ?IsLeftHanded@CLHCS_Yup@SpeedTree@@UBE_NXZ 1000dda0 f i CoordSys.obj
+ 0001:0000cdb0       ?IsYAxisUp@CLHCS_Yup@SpeedTree@@UBE_NXZ 1000ddb0 f i CoordSys.obj
+ 0001:0000cdc0       ?ConvertToStd@CLHCS_Yup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000ddc0 f i CoordSys.obj
+ 0001:0000cdf0       ?ConvertFromStd@CLHCS_Yup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000ddf0 f i CoordSys.obj
+ 0001:0000ce30       ?OutAxis@CLHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000de30 f i CoordSys.obj
+ 0001:0000ce40       ?RightAxis@CLHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000de40 f i CoordSys.obj
+ 0001:0000ce50       ?UpAxis@CLHCS_Yup@SpeedTree@@UBEABVVec3@2@XZ 1000de50 f i CoordSys.obj
+ 0001:0000ce60       ?OutComponent@CLHCS_Yup@SpeedTree@@UBEMMMM@Z 1000de60 f i CoordSys.obj
+ 0001:0000ce70       ?RightComponent@CLHCS_Yup@SpeedTree@@UBEMMMM@Z 1000de70 f i CoordSys.obj
+ 0001:0000ce80       ?UpComponent@CLHCS_Yup@SpeedTree@@UBEMMMM@Z 1000de80 f i CoordSys.obj
+ 0001:0000ce90       ?RotateUpAxis@CLHCS_Yup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000de90 f i CoordSys.obj
+ 0001:0000ceb0       ?RotateUpAxis@CLHCS_Yup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000deb0 f i CoordSys.obj
+ 0001:0000cee0       ?RotateOutAxis@CLHCS_Yup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000dee0 f i CoordSys.obj
+ 0001:0000cf00       ?RotateOutAxis@CLHCS_Yup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000df00 f i CoordSys.obj
+ 0001:0000cf30       ??_GCLHCS_Yup@SpeedTree@@UAEPAXI@Z 1000df30 f i CoordSys.obj
+ 0001:0000cf30       ??_ECLHCS_Yup@SpeedTree@@UAEPAXI@Z 1000df30 f i CoordSys.obj
+ 0001:0000cf70       ?IsLeftHanded@CLHCS_Zup@SpeedTree@@UBE_NXZ 1000df70 f i CoordSys.obj
+ 0001:0000cf80       ?IsYAxisUp@CLHCS_Zup@SpeedTree@@UBE_NXZ 1000df80 f i CoordSys.obj
+ 0001:0000cf90       ?ConvertToStd@CLHCS_Zup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000df90 f i CoordSys.obj
+ 0001:0000cfc0       ?ConvertFromStd@CLHCS_Zup@SpeedTree@@UBE?AVVec3@2@MMM@Z 1000dfc0 f i CoordSys.obj
+ 0001:0000d000       ?OutAxis@CLHCS_Zup@SpeedTree@@UBEABVVec3@2@XZ 1000e000 f i CoordSys.obj
+ 0001:0000d010       ?RightAxis@CLHCS_Zup@SpeedTree@@UBEABVVec3@2@XZ 1000e010 f i CoordSys.obj
+ 0001:0000d020       ?UpAxis@CLHCS_Zup@SpeedTree@@UBEABVVec3@2@XZ 1000e020 f i CoordSys.obj
+ 0001:0000d030       ?OutComponent@CLHCS_Zup@SpeedTree@@UBEMMMM@Z 1000e030 f i CoordSys.obj
+ 0001:0000d050       ?RightComponent@CLHCS_Zup@SpeedTree@@UBEMMMM@Z 1000e050 f i CoordSys.obj
+ 0001:0000d060       ?UpComponent@CLHCS_Zup@SpeedTree@@UBEMMMM@Z 1000e060 f i CoordSys.obj
+ 0001:0000d070       ?RotateUpAxis@CLHCS_Zup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000e070 f i CoordSys.obj
+ 0001:0000d090       ?RotateUpAxis@CLHCS_Zup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000e090 f i CoordSys.obj
+ 0001:0000d0c0       ?RotateOutAxis@CLHCS_Zup@SpeedTree@@UBEXAAVMat3x3@2@M@Z 1000e0c0 f i CoordSys.obj
+ 0001:0000d0e0       ?RotateOutAxis@CLHCS_Zup@SpeedTree@@UBEXAAVMat4x4@2@M@Z 1000e0e0 f i CoordSys.obj
+ 0001:0000d110       ??_GCLHCS_Zup@SpeedTree@@UAEPAXI@Z 1000e110 f i CoordSys.obj
+ 0001:0000d110       ??_ECLHCS_Zup@SpeedTree@@UAEPAXI@Z 1000e110 f i CoordSys.obj
+ 0001:0000d150       ??1CFileSystem@SpeedTree@@UAE@XZ 1000e150 f i Core.obj
+ 0001:0000d170       ?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@ABV32@@Z 1000e170 f i Core.obj
+ 0001:0000d1a0       ??0CFileSystem@SpeedTree@@QAE@XZ 1000e1a0 f i Core.obj
+ 0001:0000d1c0       ??0CFileSystem@SpeedTree@@QAE@ABV01@@Z 1000e1c0 f i Core.obj
+ 0001:0000d1e0       ??4CFileSystem@SpeedTree@@QAEAAV01@ABV01@@Z 1000e1e0 f i Core.obj
+ 0001:0000d1f0       ??_GCFileSystem@SpeedTree@@UAEPAXI@Z 1000e1f0 f i Core.obj
+ 0001:0000d220       ??_ECFileSystem@SpeedTree@@UAEPAXI@Z 1000e220 f i Core.obj
+ 0001:0000d290       ??_GCCore@SpeedTree@@UAEPAXI@Z 1000e290 f i Core.obj
+ 0001:0000d2c0       ??_ECCore@SpeedTree@@UAEPAXI@Z 1000e2c0 f i Core.obj
+ 0001:0000d330       ??4CMutex@SpeedTree@@QAEAAV01@ABV01@@Z 1000e330 f i Core.obj
+ 0001:0000d370       ??0CMutex@SpeedTree@@QAE@XZ 1000e370 f i Core.obj
+ 0001:0000d390       ??1CMutex@SpeedTree@@QAE@XZ 1000e390 f i Core.obj
+ 0001:0000d3b0       ?Lock@CMutex@SpeedTree@@QAEXXZ 1000e3b0 f i Core.obj
+ 0001:0000d3d0       ?Unlock@CMutex@SpeedTree@@QAEXXZ 1000e3d0 f i Core.obj
+ 0001:0000d3f0       ??_G?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@UAEPAXI@Z 1000e3f0 f i Core.obj
+ 0001:0000d440       ??_E?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@UAEPAXI@Z 1000e440 f i Core.obj
+ 0001:0000d4d0       ??0?$CBlockPool@$0A@@SpeedTree@@QAE@ABV01@@Z 1000e4d0 f i Core.obj
+ 0001:0000d530       ??_G?$CBlockPool@$0A@@SpeedTree@@UAEPAXI@Z 1000e530 f i Core.obj
+ 0001:0000d570       ??_E?$CBlockPool@$0A@@SpeedTree@@UAEPAXI@Z 1000e570 f i Core.obj
+ 0001:0000d5f0       ??_F?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEXXZ 1000e5f0 f i Core.obj
+ 0001:0000d610       ??_G?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z 1000e610 f i Core.obj
+ 0001:0000d6a0       ??_E?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z 1000e6a0 f i Core.obj
+ 0001:0000d770       ??0CAllocatorInterface@SpeedTree@@QAE@PAVCAllocator@1@@Z 1000e770 f   Core.obj
+ 0001:0000d790       ??0CFileSystemInterface@SpeedTree@@QAE@PAVCFileSystem@1@@Z 1000e790 f   Core.obj
+ 0001:0000d7b0       ?Get@CFileSystemInterface@SpeedTree@@SAPAVCFileSystem@2@XZ 1000e7b0 f   Core.obj
+ 0001:0000d7c0       ??0CCore@SpeedTree@@QAE@XZ 1000e7c0 f   Core.obj
+ 0001:0000d950       ??1CCore@SpeedTree@@UAE@XZ 1000e950 f   Core.obj
+ 0001:0000da00       ?FileSizeInBytes@CCore@SpeedTree@@SAIPBD@Z 1000ea00 f   Core.obj
+ 0001:0000da80       ?LoadFileIntoBuffer@CCore@SpeedTree@@SAPAEPBDAAIPAE@Z 1000ea80 f   Core.obj
+ 0001:0000dc90       ?IsCompiledForDeferred@CCore@SpeedTree@@QBE_NXZ 1000ec90 f   Core.obj
+ 0001:0000dce0       ?IsCompiledAsGrass@CCore@SpeedTree@@QBE_NXZ 1000ece0 f   Core.obj
+ 0001:0000dd20       ?IsCompiledForDepthPrepass@CCore@SpeedTree@@QBE_NXZ 1000ed20 f   Core.obj
+ 0001:0000dd60       ?LoadTree@CCore@SpeedTree@@QAE_NPBD_NM@Z 1000ed60 f   Core.obj
+ 0001:0000dfb0       ?LoadTree@CCore@SpeedTree@@QAE_NPBEI_N1M@Z 1000efb0 f   Core.obj
+ 0001:0000e190       ?SetClipSpaceDepthRange@CCore@SpeedTree@@SAXMM@Z 1000f190 f   Core.obj
+ 0001:0000e1b0       ?GetClipSpaceDepthRange@CCore@SpeedTree@@SAXAAM0@Z 1000f1b0 f   Core.obj
+ 0001:0000e1d0       ?ReassignPointer@CCore@SpeedTree@@IBEXAAPAEPBE@Z 1000f1d0 f   Core.obj
+ 0001:0000e210       ?ReassignRenderState@CCore@SpeedTree@@IBEXAAUSRenderState@2@PBE@Z 1000f210 f   Core.obj
+ 0001:0000e280       ?DeleteGeometry@CCore@SpeedTree@@QAEXXZ 1000f280 f   Core.obj
+ 0001:0000e610       ??0SResourceStats@CCore@SpeedTree@@QAE@XZ 1000f610 f   Core.obj
+ 0001:0000e650       ?ShutDown@CCore@SpeedTree@@SAXXZ 1000f650 f   Core.obj
+ 0001:0000e660       ?SetError@CCore@SpeedTree@@SAXPBDZZ 1000f660 f   Core.obj
+ 0001:0000e6d0       ?GetError@CCore@SpeedTree@@SAPBDXZ 1000f6d0 f   Core.obj
+ 0001:0000e6e0       ?IsRunTimeBigEndian@CCore@SpeedTree@@SA_NXZ 1000f6e0 f   Core.obj
+ 0001:0000e700       ?Authorize@CCore@SpeedTree@@SA_NPBD@Z 1000f700 f   Core.obj
+ 0001:0000e710       ?IsAuthorized@CCore@SpeedTree@@SA_NXZ 1000f710 f   Core.obj
+ 0001:0000e720       ?Version@CCore@SpeedTree@@SAPBD_N@Z 1000f720 f   Core.obj
+ 0001:0000e740       ?TmpHeapBlockLock@CCore@SpeedTree@@SAPAEIPBDAAH@Z 1000f740 f   Core.obj
+ 0001:0000e850       ?Lock@CSharedHeapBlock@SpeedTree@@QAEPAEIPBD@Z 1000f850 f i Core.obj
+ 0001:0000e980       ?TmpHeapBlockUnlock@CCore@SpeedTree@@SA_NH@Z 1000f980 f   Core.obj
+ 0001:0000e9c0       ?Unlock@CSharedHeapBlock@SpeedTree@@QAE_NXZ 1000f9c0 f i Core.obj
+ 0001:0000ea20       ?TmpHeapBlockFindHandle@CCore@SpeedTree@@SAHPBE@Z 1000fa20 f   Core.obj
+ 0001:0000ea70       ?TmpHeapBlockDelete@CCore@SpeedTree@@SA_NHI@Z 1000fa70 f   Core.obj
+ 0001:0000eac0       ?Delete@CSharedHeapBlock@SpeedTree@@QAE_NXZ 1000fac0 f i Core.obj
+ 0001:0000eb10       ?TmpHeapBlockDeleteAll@CCore@SpeedTree@@SA_NI@Z 1000fb10 f   Core.obj
+ 0001:0000ec40       ?ResourceAllocated@CCore@SpeedTree@@SAXW4EGfxResourceType@2@ABV?$CBasicFixedString@$0BAA@@2@I@Z 1000fc40 f   Core.obj
+ 0001:0000edf0       ??4iterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEAAV012@ABV012@@Z 1000fdf0 f i Core.obj
+ 0001:0000ee10       ??_Fiterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEXXZ 1000fe10 f i Core.obj
+ 0001:0000ee30       ??4const_iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEAAV012@ABV012@@Z 1000fe30 f i Core.obj
+ 0001:0000ee50       ??_Fconst_iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEXXZ 1000fe50 f i Core.obj
+ 0001:0000ee70       ??4iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEAAV012@ABV012@@Z 1000fe70 f i Core.obj
+ 0001:0000ee90       ??_Fiterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEXXZ 1000fe90 f i Core.obj
+ 0001:0000eeb0       ?ResourceReleased@CCore@SpeedTree@@SAXABV?$CBasicFixedString@$0BAA@@2@@Z 1000feb0 f   Core.obj
+ 0001:0000f010       ?GetSdkResourceUsage@CCore@SpeedTree@@SAABUSResourceSummary@12@XZ 10010010 f   Core.obj
+ 0001:0000f050       ?Scale3dGeometry@@YA_NAAUSLod@SpeedTree@@M@Z 10010050 f   Core.obj
+ 0001:0000f3d0       ?ApplyScale@CCore@SpeedTree@@IAEXM@Z 100103d0 f   Core.obj
+ 0001:0000f5b0       ??4?$CPaddedPtr@E@SpeedTree@@QAEPAEPAE@Z 100105b0 f i Core.obj
+ 0001:0000f5d0       ??B?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEPAUSDrawCall@1@XZ 100105d0 f i Core.obj
+ 0001:0000f5e0       ??B?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEPAUSBone@1@XZ 100105e0 f i Core.obj
+ 0001:0000f5f0       ??B?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEPAUSLod@1@XZ 100105f0 f i Core.obj
+ 0001:0000f600       ?clear@?$CBasicFixedString@$0BAA@@SpeedTree@@QAEXXZ 10010600 f i Core.obj
+ 0001:0000f620       ??$st_delete_array@E@SpeedTree@@YAXAAPAE@Z 10010620 f i Core.obj
+ 0001:0000f6d0       ??$st_new_array@E@SpeedTree@@YAPAEIPBDW4EAllocationType@0@@Z 100106d0 f i Core.obj
+ 0001:0000f7e0       ??0?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAE@XZ 100107e0 f i Core.obj
+ 0001:0000f830       ??1?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@UAE@XZ 10010830 f i Core.obj
+ 0001:0000f870       ??1?$CBlockPool@$0A@@SpeedTree@@UAE@XZ 10010870 f i Core.obj
+ 0001:0000f890       ??0?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE@I@Z 10010890 f i Core.obj
+ 0001:0000f910       ??1?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAE@XZ 10010910 f i Core.obj
+ 0001:0000f990       ??A?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEAAUSResourceEntry@@ABV?$CBasicFixedString@$0BAA@@1@@Z 10010990 f i Core.obj
+ 0001:0000fc00       ?end@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE?AViterator@12@XZ 10010c00 f i Core.obj
+ 0001:0000fc30       ?find@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QBE?AViterator@12@ABV?$CBasicFixedString@$0BAA@@2@@Z 10010c30 f i Core.obj
+ 0001:0000fd40       ?erase@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE?AViterator@12@V312@@Z 10010d40 f i Core.obj
+ 0001:00010ef0       ??8iterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QBE_NABV012@@Z 10011ef0 f i Core.obj
+ 0001:00010f10       ??0iterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAE@PAXPBV?$CBlockPool@$0A@@2@@Z 10011f10 f i Core.obj
+ 0001:00010f40       ??0const_iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE@ABViterator@12@@Z 10011f40 f i Core.obj
+ 0001:00010f80       ??0const_iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE@PAXPBV?$CBlockPool@$0A@@2@@Z 10011f80 f i Core.obj
+ 0001:00010fb0       ??0iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE@ABV012@@Z 10011fb0 f i Core.obj
+ 0001:00010ff0       ??0iterator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAE@PAXPBV?$CBlockPool@$0A@@2@@Z 10011ff0 f i Core.obj
+ 0001:00011020       ??Citerator@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QBEPAVCNode@12@XZ 10012020 f i Core.obj
+ 0001:00011070       ??9?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NABV01@@Z 10012070 f i Core.obj
+ 0001:000110e0       ??M?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NABV01@@Z 100120e0 f i Core.obj
+ 0001:00011150       ?clear@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXXZ 10012150 f i Core.obj
+ 0001:000111b0       ?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPAEI@Z 100121b0 f i Core.obj
+ 0001:00011300       ??3@YAXPAX0@Z              10012300 f i Core.obj
+ 0001:00011310       ??0?$CBlockPool@$0A@@SpeedTree@@QAE@II@Z 10012310 f i Core.obj
+ 0001:00011370       ?clear@?$CBlockPool@$0A@@SpeedTree@@QAEX_N@Z 10012370 f i Core.obj
+ 0001:00011420       ?clear@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEXXZ 10012420 f i Core.obj
+ 0001:00011490       ?Rebalance@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAEXPAX@Z 10012490 f i Core.obj
+ 0001:00012150       ?Allocate@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAEPAXABV?$CBasicFixedString@$0BAA@@2@PAX@Z 10013150 f i Core.obj
+ 0001:00012240       ?Deallocate@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAEXAAPAX@Z 10013240 f i Core.obj
+ 0001:000122d0       ?Ptr@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IBEPAVCNode@12@PAX@Z 100132d0 f i Core.obj
+ 0001:00012300       ??Eiterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@QAEAAV012@XZ 10013300 f i Core.obj
+ 0001:000124f0       ?Ptr@iterator_base@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IBEPAVCNode@23@XZ 100134f0 f i Core.obj
+ 0001:00012540       ??_G?$CBasicFixedString@$0EAA@@SpeedTree@@UAEPAXI@Z 10013540 f i Core.obj
+ 0001:00012570       ??_E?$CBasicFixedString@$0EAA@@SpeedTree@@UAEPAXI@Z 10013570 f i Core.obj
+ 0001:000125e0       ??8?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NABV01@@Z 100135e0 f i Core.obj
+ 0001:00012640       ?Deallocate@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@IAEXPAV?$CBasicFixedString@$0EAA@@2@@Z 10013640 f i Core.obj
+ 0001:000126c0       ??0?$CBasicFixedString@$0EAA@@SpeedTree@@QAE@XZ 100136c0 f i Core.obj
+ 0001:000126f0       ??1?$CBasicFixedString@$0EAA@@SpeedTree@@UAE@XZ 100136f0 f i Core.obj
+ 0001:00012710       ?resize@?$CBlockPool@$0A@@SpeedTree@@QAEXI@Z 10013710 f i Core.obj
+ 0001:00012900       ?GrabBlock@?$CBlockPool@$0A@@SpeedTree@@QAEPAXXZ 10013900 f i Core.obj
+ 0001:00012950       ?ReleaseBlock@?$CBlockPool@$0A@@SpeedTree@@QAEXAAPAX@Z 10013950 f i Core.obj
+ 0001:00012990       ?ResolveBlock@?$CBlockPool@$0A@@SpeedTree@@QBEPAXABQAX@Z 10013990 f i Core.obj
+ 0001:000129d0       ??$st_delete_array@I@SpeedTree@@YAXAAPAI@Z 100139d0 f i Core.obj
+ 0001:00012a80       ?DeleteChildren@CNode@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@AAEXPAV23@@Z 10013a80 f i Core.obj
+ 0001:00012b40       ??$st_delete_array@V?$CBasicFixedString@$0EAA@@SpeedTree@@@SpeedTree@@YAXAAPAV?$CBasicFixedString@$0EAA@@0@@Z 10013b40 f i Core.obj
+ 0001:00012c20       ??4?$CBasicFixedString@$0EAA@@SpeedTree@@QAEAAV01@PBD@Z 10013c20 f i Core.obj
+ 0001:00012c90       ??$st_new_array@I@SpeedTree@@YAPAIIPBDW4EAllocationType@0@@Z 10013c90 f i Core.obj
+ 0001:00012da0       ??0CSharedHeapBlock@SpeedTree@@QAE@XZ 10013da0 f i Core.obj
+ 0001:00012df0       ??1CSharedHeapBlock@SpeedTree@@QAE@XZ 10013df0 f i Core.obj
+ 0001:00012e10       ??0CErrorHandler@SpeedTree@@QAE@XZ 10013e10 f i Core.obj
+ 0001:00012e70       ??1CErrorHandler@SpeedTree@@QAE@XZ 10013e70 f i Core.obj
+ 0001:00012ec0       ?SetError@CErrorHandler@SpeedTree@@QAEXPBD@Z 10013ec0 f   ErrorHandler.obj
+ 0001:00012fb0       ?GetError@CErrorHandler@SpeedTree@@QAEPBDXZ 10013fb0 f   ErrorHandler.obj
+ 0001:00013030       ?empty@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QBE_NXZ 10014030 f i ErrorHandler.obj
+ 0001:00013050       ?capacity@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QBEIXZ 10014050 f i ErrorHandler.obj
+ 0001:00013070       ?reserve@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAE_NI@Z 10014070 f i ErrorHandler.obj
+ 0001:00013140       ?pop_back@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXXZ 10014140 f i ErrorHandler.obj
+ 0001:00013170       ?back@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEAAV?$CBasicFixedString@$0EAA@@2@XZ 10014170 f i ErrorHandler.obj
+ 0001:00013190       ?begin@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEPAV?$CBasicFixedString@$0EAA@@2@XZ 10014190 f i ErrorHandler.obj
+ 0001:000131b0       ?insert@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEPAV?$CBasicFixedString@$0EAA@@2@PAV32@ABV32@@Z 100141b0 f i ErrorHandler.obj
+ 0001:000132e0       ?SetHeapDescription@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPBD@Z 100142e0 f i ErrorHandler.obj
+ 0001:00013300       ??0?$CBasicFixedString@$0EAA@@SpeedTree@@QAE@PBD@Z 10014300 f i ErrorHandler.obj
+ 0001:00013330       ?c_str@?$CBasicFixedString@$0EAA@@SpeedTree@@QBEPBDXZ 10014330 f i ErrorHandler.obj
+ 0001:00013350       ?push_back@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAE_NABV?$CBasicFixedString@$0EAA@@2@@Z 10014350 f i ErrorHandler.obj
+ 0001:00013420       ?Allocate@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@IAEPAV?$CBasicFixedString@$0EAA@@2@I@Z 10014420 f i ErrorHandler.obj
+ 0001:00013520       ??4?$CBasicFixedString@$0EAA@@SpeedTree@@QAEAAV01@ABV01@@Z 10014520 f i ErrorHandler.obj
+ 0001:00013580       ??$st_new_array@V?$CBasicFixedString@$0EAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0EAA@@0@IPBDW4EAllocationType@0@@Z 10014580 f i ErrorHandler.obj
+ 0001:00013700       ??_G?$CBasicFixedString@$0IAA@@SpeedTree@@UAEPAXI@Z 10014700 f i FileSystem.obj
+ 0001:00013730       ??_E?$CBasicFixedString@$0IAA@@SpeedTree@@UAEPAXI@Z 10014730 f i FileSystem.obj
+ 0001:000137a0       ??_G?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 100147a0 f i FileSystem.obj
+ 0001:000137f0       ??_E?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 100147f0 f i FileSystem.obj
+ 0001:00013880       ?FileExists@CFileSystem@SpeedTree@@UAE_NPBD@Z 10014880 f   FileSystem.obj
+ 0001:000138e0       ?FileSize@CFileSystem@SpeedTree@@UAEIPBD@Z 100148e0 f   FileSystem.obj
+ 0001:00013900       ?LoadFile@CFileSystem@SpeedTree@@UAEPAEPBDW4ETermHint@12@@Z 10014900 f   FileSystem.obj
+ 0001:00013a60       ?Release@CFileSystem@SpeedTree@@UAEXPAE@Z 10014a60 f   FileSystem.obj
+ 0001:00013ab0       ?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z 10014ab0 f   FileSystem.obj
+ 0001:00013de0       ??0?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@QAE@ABV01@@Z 10014de0 f i FileSystem.obj
+ 0001:00013e50       ??4?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@QAEAAV01@ABV01@@Z 10014e50 f i FileSystem.obj
+ 0001:00013e90       ??_G?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@UAEPAXI@Z 10014e90 f i FileSystem.obj
+ 0001:00013ec0       ??_E?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@UAEPAXI@Z 10014ec0 f i FileSystem.obj
+ 0001:00013f30       ?CompareFileTimes@CFileSystem@SpeedTree@@UAE?AW4ETimeCompare@12@PBD0@Z 10014f30 f   FileSystem.obj
+ 0001:00013fc0       ??0?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@QAE@IPBD_N@Z 10014fc0 f i FileSystem.obj
+ 0001:000140d0       ??1?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@UAE@XZ 100150d0 f i FileSystem.obj
+ 0001:00014170       ?empty@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE_NXZ 10015170 f i FileSystem.obj
+ 0001:00014190       ?find@?$CBasicFixedString@$0BAA@@SpeedTree@@QBEIDI@Z 10015190 f i FileSystem.obj
+ 0001:000141f0       ??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 100151f0 f i FileSystem.obj
+ 0001:000142c0       ??A?$CBasicFixedString@$0BAA@@SpeedTree@@QBEABDI@Z 100152c0 f i FileSystem.obj
+ 0001:000142e0       ?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 100152e0 f i FileSystem.obj
+ 0001:00014480       ??0?$CBasicFixedString@$0IAA@@SpeedTree@@QAE@PBD@Z 10015480 f i FileSystem.obj
+ 0001:000144b0       ??1?$CBasicFixedString@$0IAA@@SpeedTree@@UAE@XZ 100154b0 f i FileSystem.obj
+ 0001:000144d0       ?c_str@?$CBasicFixedString@$0IAA@@SpeedTree@@QBEPBDXZ 100154d0 f i FileSystem.obj
+ 0001:000144f0       ??0?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE@ABV01@@Z 100154f0 f i FileSystem.obj
+ 0001:00014540       ??0?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE@XZ 10015540 f i FileSystem.obj
+ 0001:00014590       ??1?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@UAE@XZ 10015590 f i FileSystem.obj
+ 0001:000145d0       ?size@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QBEIXZ 100155d0 f i FileSystem.obj
+ 0001:000145f0       ?resize@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 100155f0 f i FileSystem.obj
+ 0001:00014630       ?push_back@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE_NABV?$CBasicFixedString@$0BAA@@2@@Z 10015630 f i FileSystem.obj
+ 0001:00014700       ??A?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEAAV?$CBasicFixedString@$0BAA@@1@I@Z 10015700 f i FileSystem.obj
+ 0001:00014720       ??4?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEAAV01@ABV01@@Z 10015720 f i FileSystem.obj
+ 0001:00014830       ?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10015830 f i FileSystem.obj
+ 0001:00014980       ?resize@?$CBasicFixedString@$0BAA@@SpeedTree@@QAE_NI@Z 10015980 f i FileSystem.obj
+ 0001:000149d0       ??4?$CBasicFixedString@$0IAA@@SpeedTree@@QAEAAV01@PBD@Z 100159d0 f i FileSystem.obj
+ 0001:00014a40       ?clear@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXXZ 10015a40 f i FileSystem.obj
+ 0001:00014aa0       ?reserve@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAE_NI@Z 10015aa0 f i FileSystem.obj
+ 0001:00014b70       ?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 10015b70 f i FileSystem.obj
+ 0001:00014c80       ?Deallocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEXPAV?$CBasicFixedString@$0BAA@@2@@Z 10015c80 f i FileSystem.obj
+ 0001:00014d00       ??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 10015d00 f i FileSystem.obj
+ 0001:00014e80       ??$st_delete_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAXAAPAV?$CBasicFixedString@$0BAA@@0@@Z 10015e80 f i FileSystem.obj
+ 0001:00014f60       ?Allocator@CHeapSystem@SpeedTree@@SAAAPAVCAllocator@2@XZ 10015f60 f   Memory.obj
+ 0001:00014f70       ?CurrentUse@CHeapSystem@SpeedTree@@SAAAIXZ 10015f70 f   Memory.obj
+ 0001:00014f80       ?PeakUse@CHeapSystem@SpeedTree@@SAAAIXZ 10015f80 f   Memory.obj
+ 0001:00014f90       ?NumAllocs@CHeapSystem@SpeedTree@@SAAAIXZ 10015f90 f   Memory.obj
+ 0001:00014fa0       ??0CParser@SpeedTree@@QAE@XZ 10015fa0 f   Parser.obj
+ 0001:00015010       ??1CParser@SpeedTree@@QAE@XZ 10016010 f   Parser.obj
+ 0001:00015020       ?Parse@CParser@SpeedTree@@QAE_NPBEQAIIPAVCCore@2@PAUSGeometry@2@@Z 10016020 f   Parser.obj
+ 0001:000151d0       ?ParseHeader@CParser@SpeedTree@@AAE_NXZ 100161d0 f   Parser.obj
+ 0001:000152e0       ?ParseCustomData@CParser@SpeedTree@@AAE_NXZ 100162e0 f   Parser.obj
+ 0001:000153a0       ?ParsePlatform@CParser@SpeedTree@@AAE_NXZ 100163a0 f   Parser.obj
+ 0001:000154e0       ?ParseExtents@CParser@SpeedTree@@AAE_NXZ 100164e0 f   Parser.obj
+ 0001:000155e0       ?ParseLOD@CParser@SpeedTree@@AAE_NXZ 100165e0 f   Parser.obj
+ 0001:00015680       ?ParseWind@CParser@SpeedTree@@AAE_NXZ 10016680 f   Parser.obj
+ 0001:00015920       ?ParseStringTable@CParser@SpeedTree@@AAE_NXZ 10016920 f   Parser.obj
+ 0001:00015a90       ??4?$CPaddedPtr@H@SpeedTree@@QAEAAV01@ABV01@@Z 10016a90 f i Parser.obj
+ 0001:00015ab0       ??_F?$CPaddedPtr@H@SpeedTree@@QAEXXZ 10016ab0 f i Parser.obj
+ 0001:00015ad0       ?ParseCollisionObjects@CParser@SpeedTree@@AAE_NXZ 10016ad0 f   Parser.obj
+ 0001:00015b90       ?ParseRenderStateBlock@CParser@SpeedTree@@AAE_NAAPAUSRenderState@2@H@Z 10016b90 f   Parser.obj
+ 0001:00015c00       ?ParseAndCopyRenderState@CParser@SpeedTree@@AAE_NPAUSRenderState@2@@Z 10016c00 f   Parser.obj
+ 0001:00015c80       ?ParseRenderStates@CParser@SpeedTree@@AAE_NXZ 10016c80 f   Parser.obj
+ 0001:00015e80       ?Parse3dGeometry@CParser@SpeedTree@@AAE_NXZ 10016e80 f   Parser.obj
+ 0001:00016470       ?ParseVertexAndIndexData@CParser@SpeedTree@@AAE_NXZ 10017470 f   Parser.obj
+ 0001:00016600       ?ParseBillboards@CParser@SpeedTree@@AAE_NXZ 10017600 f   Parser.obj
+ 0001:00016960       ?SwapEndianStringPtr@@YAXAAV?$CPaddedPtr@$$CBD@SpeedTree@@@Z 10017960 f   Parser.obj
+ 0001:000169c0       ?SwapEndianRenderState@@YAXAAUSRenderState@SpeedTree@@@Z 100179c0 f   Parser.obj
+ 0001:00016e50       ?ConvertEndianAllData@CParser@SpeedTree@@AAE_NXZ 10017e50 f   Parser.obj
+ 0001:000177a0       ?LookupStringsByIDs@CParser@SpeedTree@@AAE_NXZ 100187a0 f   Parser.obj
+ 0001:00017980       ?ParseInt@CParser@SpeedTree@@AAEHXZ 10018980 f i Parser.obj
+ 0001:00017a50       ?ParseFloat@CParser@SpeedTree@@AAEMXZ 10018a50 f i Parser.obj
+ 0001:00017b20       ?ParseFloat3@CParser@SpeedTree@@AAEXQAM@Z 10018b20 f i Parser.obj
+ 0001:00017b60       ?ParseString@CParser@SpeedTree@@AAE_NAAV?$CBasicFixedString@$0BAA@@2@H@Z 10018b60 f i Parser.obj
+ 0001:00017c50       ?LookupRenderStateStrings@CParser@SpeedTree@@ABEXAAUSRenderState@2@@Z 10018c50 f   Parser.obj
+ 0001:00017e20       ??B?$CPaddedPtr@$$CBD@SpeedTree@@QAEPBDXZ 10018e20 f i Parser.obj
+ 0001:00017e30       ??B?$CPaddedPtr@$$CBD@SpeedTree@@QAEIXZ 10018e30 f i Parser.obj
+ 0001:00017e40       ??4?$CPaddedPtr@USRenderState@SpeedTree@@@SpeedTree@@QAEPAUSRenderState@1@PAU21@@Z 10018e40 f i Parser.obj
+ 0001:00017e60       ??4?$CPaddedPtr@USDrawCall@SpeedTree@@@SpeedTree@@QAEPAUSDrawCall@1@PAU21@@Z 10018e60 f i Parser.obj
+ 0001:00017e80       ??4?$CPaddedPtr@USBone@SpeedTree@@@SpeedTree@@QAEPAUSBone@1@PAU21@@Z 10018e80 f i Parser.obj
+ 0001:00017ea0       ??4?$CPaddedPtr@USLod@SpeedTree@@@SpeedTree@@QAEPAUSLod@1@PAU21@@Z 10018ea0 f i Parser.obj
+ 0001:00017ec0       ??0?$CPaddedPtr@H@SpeedTree@@QAE@PAH@Z 10018ec0 f i Parser.obj
+ 0001:00017ef0       ??$SwapEndian4Bytes@M@SpeedTree@@YAXAAM@Z 10018ef0 f i Parser.obj
+ 0001:00017f30       ??$SwapEndian2Bytes@G@SpeedTree@@YAXAAG@Z 10018f30 f i Parser.obj
+ 0001:00017f60       ??$SwapEndian4Bytes@W4ELodMethod@SpeedTree@@@SpeedTree@@YAXAAW4ELodMethod@0@@Z 10018f60 f i Parser.obj
+ 0001:00017fa0       ??$SwapEndian4Bytes@W4EShaderGenerationMode@SpeedTree@@@SpeedTree@@YAXAAW4EShaderGenerationMode@0@@Z 10018fa0 f i Parser.obj
+ 0001:00017fe0       ??$SwapEndian4Bytes@W4ECullType@SpeedTree@@@SpeedTree@@YAXAAW4ECullType@0@@Z 10018fe0 f i Parser.obj
+ 0001:00018020       ??$SwapEndian4Bytes@W4EFogCurve@SpeedTree@@@SpeedTree@@YAXAAW4EFogCurve@0@@Z 10019020 f i Parser.obj
+ 0001:00018060       ??$SwapEndian4Bytes@W4EFogColorType@SpeedTree@@@SpeedTree@@YAXAAW4EFogColorType@0@@Z 10019060 f i Parser.obj
+ 0001:000180a0       ??$SwapEndian4Bytes@W4EWindLod@SpeedTree@@@SpeedTree@@YAXAAW4EWindLod@0@@Z 100190a0 f i Parser.obj
+ 0001:000180e0       ??$SwapEndian4Bytes@W4ERenderPass@SpeedTree@@@SpeedTree@@YAXAAW4ERenderPass@0@@Z 100190e0 f i Parser.obj
+ 0001:00018120       ??4CTimer@SpeedTree@@QAEAAV01@ABV01@@Z 10019120 f i ScopeTrace.obj
+ 0001:00018150       ??_FCTimer@SpeedTree@@QAEXXZ 10019150 f i ScopeTrace.obj
+ 0001:00018170       ??0CTimer@SpeedTree@@QAE@_N@Z 10019170 f i ScopeTrace.obj
+ 0001:000181f0       ?Start@CTimer@SpeedTree@@QAEXXZ 100191f0 f i ScopeTrace.obj
+ 0001:00018220       ?Stop@CTimer@SpeedTree@@QBEMXZ 10019220 f i ScopeTrace.obj
+ 0001:00018270       ?GetMicroSec@CTimer@SpeedTree@@QBEMXZ 10019270 f i ScopeTrace.obj
+ 0001:000182c0       ?GetMilliSec@CTimer@SpeedTree@@QBEMXZ 100192c0 f i ScopeTrace.obj
+ 0001:00018310       ?GetSec@CTimer@SpeedTree@@QBEMXZ 10019310 f i ScopeTrace.obj
+ 0001:00018350       ?Mark@CTimer@SpeedTree@@QAEXH@Z 10019350 f i ScopeTrace.obj
+ 0001:00018390       ?Recall@CTimer@SpeedTree@@QAEMH@Z 10019390 f i ScopeTrace.obj
+ 0001:000183c0       ??_G?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 100193c0 f i ScopeTrace.obj
+ 0001:00018410       ??_E?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAEPAXI@Z 10019410 f i ScopeTrace.obj
+ 0001:000184a0       ??4CScopeTrace@SpeedTree@@QAEAAV01@ABV01@@Z 100194a0 f i ScopeTrace.obj
+ 0001:000184b0       ??0CScopeTrace@SpeedTree@@QAE@PBD@Z 100194b0 f i ScopeTrace.obj
+ 0001:000184c0       ??1CScopeTrace@SpeedTree@@QAE@XZ 100194c0 f i ScopeTrace.obj
+ 0001:000184d0       ?Init@CScopeTrace@SpeedTree@@SAXXZ 100194d0 f i ScopeTrace.obj
+ 0001:000184e0       ?Start@CScopeTrace@SpeedTree@@SAXXZ 100194e0 f i ScopeTrace.obj
+ 0001:000184f0       ?IsActive@CScopeTrace@SpeedTree@@SA_NXZ 100194f0 f i ScopeTrace.obj
+ 0001:00018500       ?Stop@CScopeTrace@SpeedTree@@SAXXZ 10019500 f i ScopeTrace.obj
+ 0001:00018510       ?Report@CScopeTrace@SpeedTree@@SAXW4EReportFormat@12@AAV?$CBasicString@$00@2@PAUSNode@12@@Z 10019510 f i ScopeTrace.obj
+ 0001:00018520       ??0?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAE@XZ 10019520 f i ScopeTrace.obj
+ 0001:00018570       ??1?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@UAE@XZ 10019570 f i ScopeTrace.obj
+ 0001:000185b0       ?size@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QBEIXZ 100195b0 f i ScopeTrace.obj
+ 0001:000185d0       ??A?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEAAPAUSNode@CScopeTrace@1@I@Z 100195d0 f i ScopeTrace.obj
+ 0001:000185f0       ?clear@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEXXZ 100195f0 f i ScopeTrace.obj
+ 0001:00018680       ?SetExternalMemory@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 10019680 f i ScopeTrace.obj
+ 0001:00018730       ?Deallocate@?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@IAEXPAPAUSNode@CScopeTrace@2@@Z 10019730 f i ScopeTrace.obj
+ 0001:00018780       ??$st_delete_array@PAUSNode@CScopeTrace@SpeedTree@@@SpeedTree@@YAXAAPAPAUSNode@CScopeTrace@0@@Z 10019780 f i ScopeTrace.obj
+ 0001:00018830       ??4CRandom@SpeedTree@@QAEAAV01@ABV01@@Z 10019830 f i Wind.obj
+ 0001:00018860       ??0CRandom@SpeedTree@@QAE@XZ 10019860 f i Wind.obj
+ 0001:00018880       ??0CRandom@SpeedTree@@QAE@I@Z 10019880 f i Wind.obj
+ 0001:000188a0       ??0CRandom@SpeedTree@@QAE@ABV01@@Z 100198a0 f i Wind.obj
+ 0001:000188c0       ??1CRandom@SpeedTree@@QAE@XZ 100198c0 f i Wind.obj
+ 0001:000188d0       ?Seed@CRandom@SpeedTree@@QAEXI@Z 100198d0 f i Wind.obj
+ 0001:00018980       ?GetInteger@CRandom@SpeedTree@@QAEHHH@Z 10019980 f i Wind.obj
+ 0001:000189c0       ?GetFloat@CRandom@SpeedTree@@QAEMMM@Z 100199c0 f i Wind.obj
+ 0001:00018a10       ?GetDouble@CRandom@SpeedTree@@QAENNN@Z 10019a10 f i Wind.obj
+ 0001:00018a50       ?GetGaussianFloat@CRandom@SpeedTree@@QAEMXZ 10019a50 f i Wind.obj
+ 0001:00018b50       ?GetGaussianDouble@CRandom@SpeedTree@@QAENXZ 10019b50 f i Wind.obj
+ 0001:00018c20       ?Reload@CRandom@SpeedTree@@IAEXXZ 10019c20 f i Wind.obj
+ 0001:00018d60       ?GetRawInteger@CRandom@SpeedTree@@IAEIXZ 10019d60 f i Wind.obj
+ 0001:00018e00       ?Twist@CRandom@SpeedTree@@IBEIIII@Z 10019e00 f i Wind.obj
+ 0001:00018e40       ??0SBranchWindLevel@CWind@SpeedTree@@QAE@XZ 10019e40 f   Wind.obj
+ 0001:00018ec0       ??0SWindGroup@CWind@SpeedTree@@QAE@XZ 10019ec0 f   Wind.obj
+ 0001:00018f80       ??0SParams@CWind@SpeedTree@@QAE@XZ 10019f80 f   Wind.obj
+ 0001:000191f0       ??0CWind@SpeedTree@@QAE@XZ 1001a1f0 f   Wind.obj
+ 0001:000193f0       ?Advance@CWind@SpeedTree@@QAEX_NM@Z 1001a3f0 f   Wind.obj
+ 0001:0001a8d0       ?SetStrength@CWind@SpeedTree@@QAEXM@Z 1001b8d0 f   Wind.obj
+ 0001:0001a990       ?Scale@CWind@SpeedTree@@QAEXM@Z 1001b990 f   Wind.obj
+ 0001:0001ab90       ?SetDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001bb90 f   Wind.obj
+ 0001:0001ad60       ?SetInitDirection@CWind@SpeedTree@@QAEXABVVec3@2@@Z 1001bd60 f   Wind.obj
+ 0001:0001ae40       ?Gust@CWind@SpeedTree@@IAEXM@Z 1001be40 f   Wind.obj
+ 0001:0001b280       ?ComputeWindAnchor@CWind@SpeedTree@@IAEXPAM@Z 1001c280 f   Wind.obj
+ 0001:0001b350       ?RandomFloat@CWind@SpeedTree@@IBEMMM@Z 1001c350 f i Wind.obj
+ 0001:0001b410       ?LinearSigmoid@CWind@SpeedTree@@IAEMMM@Z 1001c410 f i Wind.obj
+ 0001:0001b480       ??0CFixedVec3@SpeedTree@@QAE@ABV01@@Z 1001c480 f i Fixed.obj
+ 0001:0001b4d0       ??4CFixedVec3@SpeedTree@@QAEAAV01@ABV01@@Z 1001c4d0 f i Fixed.obj
+ 0001:0001b520       ??0CFixedNumber@SpeedTree@@QAE@XZ 1001c520 f i Fixed.obj
+ 0001:0001b540       ??0CFixedNumber@SpeedTree@@QAE@ABV01@@Z 1001c540 f i Fixed.obj
+ 0001:0001b560       ??0CFixedNumber@SpeedTree@@QAE@M@Z 1001c560 f i Fixed.obj
+ 0001:0001b590       ??4CFixedNumber@SpeedTree@@QAEAAV01@ABV01@@Z 1001c590 f i Fixed.obj
+ 0001:0001b5b0       ??4CFixedNumber@SpeedTree@@QAEAAV01@M@Z 1001c5b0 f i Fixed.obj
+ 0001:0001b5e0       ??MCFixedNumber@SpeedTree@@QBE_NABV01@@Z 1001c5e0 f i Fixed.obj
+ 0001:0001b600       ??8CFixedNumber@SpeedTree@@QBE_NABV01@@Z 1001c600 f i Fixed.obj
+ 0001:0001b620       ??9CFixedNumber@SpeedTree@@QBE_NABV01@@Z 1001c620 f i Fixed.obj
+ 0001:0001b640       ??HCFixedNumber@SpeedTree@@QBE?AV01@ABV01@@Z 1001c640 f i Fixed.obj
+ 0001:0001b670       ??GCFixedNumber@SpeedTree@@QBE?AV01@ABV01@@Z 1001c670 f i Fixed.obj
+ 0001:0001b6a0       ??GCFixedNumber@SpeedTree@@QBE?AV01@XZ 1001c6a0 f i Fixed.obj
+ 0001:0001b6d0       ?ToFloat@CFixedNumber@SpeedTree@@QAEMXZ 1001c6d0 f i Fixed.obj
+ 0001:0001b6f0       ?SetBitsUsedForFraction@CFixedNumber@SpeedTree@@SAXI@Z 1001c6f0 f i Fixed.obj
+ 0001:0001b730       ??0CFixedVec3@SpeedTree@@QAE@XZ 1001c730 f i Fixed.obj
+ 0001:0001b790       ??0CFixedVec3@SpeedTree@@QAE@MMM@Z 1001c790 f i Fixed.obj
+ 0001:0001b7f0       ??0CFixedVec3@SpeedTree@@QAE@MM@Z 1001c7f0 f i Fixed.obj
+ 0001:0001b850       ??0CFixedVec3@SpeedTree@@QAE@QBM@Z 1001c850 f i Fixed.obj
+ 0001:0001b8d0       ??0CFixedVec3@SpeedTree@@QAE@VCFixedNumber@1@00@Z 1001c8d0 f i Fixed.obj
+ 0001:0001b910       ??0CFixedVec3@SpeedTree@@QAE@VCFixedNumber@1@0@Z 1001c910 f i Fixed.obj
+ 0001:0001b960       ??ACFixedVec3@SpeedTree@@QAEAAVCFixedNumber@1@H@Z 1001c960 f i Fixed.obj
+ 0001:0001b980       ??MCFixedVec3@SpeedTree@@QBE_NABV01@@Z 1001c980 f i Fixed.obj
+ 0001:0001ba00       ??8CFixedVec3@SpeedTree@@QBE_NABV01@@Z 1001ca00 f i Fixed.obj
+ 0001:0001ba70       ??9CFixedVec3@SpeedTree@@QBE_NABV01@@Z 1001ca70 f i Fixed.obj
+ 0001:0001bae0       ??GCFixedVec3@SpeedTree@@QBE?AV01@ABV01@@Z 1001cae0 f i Fixed.obj
+ 0001:0001bb90       ??HCFixedVec3@SpeedTree@@QBE?AV01@ABV01@@Z 1001cb90 f i Fixed.obj
+ 0001:0001bc40       ??GCFixedVec3@SpeedTree@@QBE?AV01@XZ 1001cc40 f i Fixed.obj
+ 0001:0001bce0       ?Set@CFixedVec3@SpeedTree@@QAEXMMM@Z 1001cce0 f i Fixed.obj
+ 0001:0001bd40       ?Set@CFixedVec3@SpeedTree@@QAEXMM@Z 1001cd40 f i Fixed.obj
+ 0001:0001bda0       ?Set@CFixedVec3@SpeedTree@@QAEXQBM@Z 1001cda0 f i Fixed.obj
+ 0001:0001be20       ?Set@CFixedVec3@SpeedTree@@QAEXVCFixedNumber@2@00@Z 1001ce20 f i Fixed.obj
+ 0001:0001be60       ?Set@CFixedVec3@SpeedTree@@QAEXVCFixedNumber@2@0@Z 1001ce60 f i Fixed.obj
+ 0001:0001beb0       ?ToVec3@CFixedVec3@SpeedTree@@QAE?AVVec3@2@XZ 1001ceb0 f i Fixed.obj
+ 0001:0001bf08       _InitializeCriticalSection@4 1001cf08 f   kernel32:KERNEL32.dll
+ 0001:0001bf0e       _DeleteCriticalSection@4   1001cf0e f   kernel32:KERNEL32.dll
+ 0001:0001bf14       _EnterCriticalSection@4    1001cf14 f   kernel32:KERNEL32.dll
+ 0001:0001bf1a       _LeaveCriticalSection@4    1001cf1a f   kernel32:KERNEL32.dll
+ 0001:0001bf20       _QueryPerformanceCounter@4 1001cf20 f   kernel32:KERNEL32.dll
+ 0001:0001bf26       _QueryPerformanceFrequency@4 1001cf26 f   kernel32:KERNEL32.dll
+ 0001:0001bf2c       ??_U@YAPAXI@Z              1001cf2c f   msvcprt:newaop_s.obj
+ 0001:0001bf38       __purecall                 1001cf38 f   MSVCRT:MSVCR90.dll
+ 0001:0001bf3e       ??3@YAXPAX@Z               1001cf3e f   MSVCRT:MSVCR90.dll
+ 0001:0001bf56       ?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z 1001cf56 f   MSVCRT:ehvecdtr.obj
+ 0001:0001bfb4       ??_M@YGXPAXIHP6EX0@Z@Z     1001cfb4 f   MSVCRT:ehvecdtr.obj
+ 0001:0001c020       _sqrt                      1001d020 f   MSVCRT:MSVCR90.dll
+ 0001:0001c026       _memset                    1001d026 f   MSVCRT:MSVCR90.dll
+ 0001:0001c02c       _memcpy                    1001d02c f   MSVCRT:MSVCR90.dll
+ 0001:0001c032       _memcmp                    1001d032 f   MSVCRT:MSVCR90.dll
+ 0001:0001c038       _sin                       1001d038 f   MSVCRT:MSVCR90.dll
+ 0001:0001c03e       _cos                       1001d03e f   MSVCRT:MSVCR90.dll
+ 0001:0001c044       _fabs                      1001d044 f   MSVCRT:MSVCR90.dll
+ 0001:0001c04a       _tan                       1001d04a f   MSVCRT:MSVCR90.dll
+ 0001:0001c050       ??_V@YAXPAX@Z              1001d050 f   MSVCRT:MSVCR90.dll
+ 0001:0001c060       __ftol2_sse                1001d060 f   MSVCRT:ftol2.obj
+ 0001:0001c069       __ftol2_pentium4           1001d069 f   MSVCRT:ftol2.obj
+ 0001:0001c07c       __ftol2_sse_excpt          1001d07c f   MSVCRT:ftol2.obj
+ 0001:0001c096       __ftol2                    1001d096 f   MSVCRT:ftol2.obj
+ 0001:0001c10b       ??_L@YGXPAXIHP6EX0@Z1@Z    1001d10b f   MSVCRT:ehvecctr.obj
+ 0001:0001c170       ___CxxFrameHandler3        1001d170 f   MSVCRT:MSVCR90.dll
+ 0001:0001c176       @__security_check_cookie@4 1001d176 f   MSVCRT:secchk.obj
+ 0001:0001c186       _strcmp                    1001d186 f   MSVCRT:MSVCR90.dll
+ 0001:0001c18c       _strlen                    1001d18c f   MSVCRT:MSVCR90.dll
+ 0001:0001c192       _memmove                   1001d192 f   MSVCRT:MSVCR90.dll
+ 0001:0001c198       _malloc                    1001d198 f   MSVCRT:MSVCR90.dll
+ 0001:0001c19e       _free                      1001d19e f   MSVCRT:MSVCR90.dll
+ 0001:0001c1a4       __onexit                   1001d1a4 f   MSVCRT:atonexit.obj
+ 0001:0001c249       _atexit                    1001d249 f   MSVCRT:atonexit.obj
+ 0001:0001c260       _fclose                    1001d260 f   MSVCRT:MSVCR90.dll
+ 0001:0001c266       _ftell                     1001d266 f   MSVCRT:MSVCR90.dll
+ 0001:0001c26c       _fseek                     1001d26c f   MSVCRT:MSVCR90.dll
+ 0001:0001c272       _fopen_s                   1001d272 f   MSVCRT:MSVCR90.dll
+ 0001:0001c278       _strerror_s                1001d278 f   MSVCRT:MSVCR90.dll
+ 0001:0001c27e       __errno                    1001d27e f   MSVCRT:MSVCR90.dll
+ 0001:0001c284       _fread                     1001d284 f   MSVCRT:MSVCR90.dll
+ 0001:0001c28a       _strtok                    1001d28a f   MSVCRT:MSVCR90.dll
+ 0001:0001c290       __stat64i32                1001d290 f   MSVCRT:MSVCR90.dll
+ 0001:0001c296       _log                       1001d296 f   MSVCRT:MSVCR90.dll
+ 0001:0001c29c       _exp                       1001d29c f   MSVCRT:MSVCR90.dll
+ 0001:0001c2a2       _NtCurrentTeb              1001d2a2 f i MSVCRT:crtdll.obj
+ 0001:0001c2f8       __CRT_INIT@12              1001d2f8 f   MSVCRT:crtdll.obj
+ 0001:0001c634       __DllMainCRTStartup@12     1001d634 f   MSVCRT:crtdll.obj
+ 0001:0001c658       ??2@YAPAXI@Z               1001d658 f   MSVCRT:MSVCR90.dll
+ 0001:0001c65e       ?terminate@@YAXXZ          1001d65e f   MSVCRT:MSVCR90.dll
+ 0001:0001c664       __SEH_prolog4              1001d664 f   MSVCRT:sehprolg4.obj
+ 0001:0001c6a9       __SEH_epilog4              1001d6a9 f   MSVCRT:sehprolg4.obj
+ 0001:0001c6bd       __except_handler4          1001d6bd f   MSVCRT:chandler4gs.obj
+ 0001:0001c732       __get_sse2_info            1001d732 f   MSVCRT:cpu_disp.obj
+ 0001:0001c794       ___sse2_available_init     1001d794 f   MSVCRT:cpu_disp.obj
+ 0001:0001c7a1       ___report_gsfailure        1001d7a1 f   MSVCRT:gs_report.obj
+ 0001:0001c8a8       __vsnprintf_s              1001d8a8 f   MSVCRT:MSVCR90.dll
+ 0001:0001c8ae       __unlock                   1001d8ae f   MSVCRT:MSVCR90.dll
+ 0001:0001c8b4       ___dllonexit               1001d8b4 f   MSVCRT:MSVCR90.dll
+ 0001:0001c8ba       __encode_pointer           1001d8ba f   MSVCRT:MSVCR90.dll
+ 0001:0001c8c0       __lock                     1001d8c0 f   MSVCRT:MSVCR90.dll
+ 0001:0001c8c6       __decode_pointer           1001d8c6 f   MSVCRT:MSVCR90.dll
+ 0001:0001c8cc       ___clean_type_info_names   1001d8cc f   MSVCRT:tncleanup.obj
+ 0001:0001c8d8       __RTC_Initialize           1001d8d8 f   MSVCRT:_initsect_.obj
+ 0001:0001c8fe       __RTC_Terminate            1001d8fe f   MSVCRT:_initsect_.obj
+ 0001:0001c924       __malloc_crt               1001d924 f   MSVCRT:MSVCR90.dll
+ 0001:0001c92a       __encoded_null             1001d92a f   MSVCRT:MSVCR90.dll
+ 0001:0001c930       __ValidateImageBase        1001d930 f   MSVCRT:pesect.obj
+ 0001:0001c970       __FindPESection            1001d970 f   MSVCRT:pesect.obj
+ 0001:0001c9c0       __IsNonwritableInCurrentImage 1001d9c0 f   MSVCRT:pesect.obj
+ 0001:0001ca7e       __initterm                 1001da7e f   MSVCRT:MSVCR90.dll
+ 0001:0001ca84       __initterm_e               1001da84 f   MSVCRT:MSVCR90.dll
+ 0001:0001ca8a       __amsg_exit                1001da8a f   MSVCRT:MSVCR90.dll
+ 0001:0001ca90       ___CppXcptFilter           1001da90 f   MSVCRT:MSVCR90.dll
+ 0001:0001ca96       _DllMain@12                1001da96 f   MSVCRT:dllmain.obj
+ 0001:0001caba       ___security_init_cookie    1001daba f   MSVCRT:gs_support.obj
+ 0001:0001cb50       __except_handler4_common   1001db50 f   MSVCRT:MSVCR90.dll
+ 0001:0001cb56       __crt_debugger_hook        1001db56 f   MSVCRT:MSVCR90.dll
+ 0001:0001cb5c       ___clean_type_info_names_internal 1001db5c f   MSVCRT:MSVCR90.dll
+ 0001:0001cb62       _InterlockedExchange@8     1001db62 f   kernel32:KERNEL32.dll
+ 0001:0001cb68       _Sleep@4                   1001db68 f   kernel32:KERNEL32.dll
+ 0001:0001cb6e       _InterlockedCompareExchange@12 1001db6e f   kernel32:KERNEL32.dll
+ 0001:0001cb74       _TerminateProcess@8        1001db74 f   kernel32:KERNEL32.dll
+ 0001:0001cb7a       _GetCurrentProcess@0       1001db7a f   kernel32:KERNEL32.dll
+ 0001:0001cb80       _UnhandledExceptionFilter@4 1001db80 f   kernel32:KERNEL32.dll
+ 0001:0001cb86       _SetUnhandledExceptionFilter@4 1001db86 f   kernel32:KERNEL32.dll
+ 0001:0001cb8c       _IsDebuggerPresent@0       1001db8c f   kernel32:KERNEL32.dll
+ 0001:0001cb92       _DisableThreadLibraryCalls@4 1001db92 f   kernel32:KERNEL32.dll
+ 0001:0001cb98       _GetTickCount@0            1001db98 f   kernel32:KERNEL32.dll
+ 0001:0001cb9e       _GetCurrentThreadId@0      1001db9e f   kernel32:KERNEL32.dll
+ 0001:0001cba4       _GetCurrentProcessId@0     1001dba4 f   kernel32:KERNEL32.dll
+ 0001:0001cbaa       _GetSystemTimeAsFileTime@4 1001dbaa f   kernel32:KERNEL32.dll
+ 0001:0001ec00       ??__Fs_cDice@?1??RandomFloat@CWind@SpeedTree@@IBEMMM@Z@YAXXZ 1001fc00 f i Wind.obj
+ 0002:00000000       __imp__InitializeCriticalSection@4 10020000     kernel32:KERNEL32.dll
+ 0002:00000004       __imp__DeleteCriticalSection@4 10020004     kernel32:KERNEL32.dll
+ 0002:00000008       __imp__EnterCriticalSection@4 10020008     kernel32:KERNEL32.dll
+ 0002:0000000c       __imp__LeaveCriticalSection@4 1002000c     kernel32:KERNEL32.dll
+ 0002:00000010       __imp__QueryPerformanceCounter@4 10020010     kernel32:KERNEL32.dll
+ 0002:00000014       __imp__QueryPerformanceFrequency@4 10020014     kernel32:KERNEL32.dll
+ 0002:00000018       __imp__GetCurrentProcessId@0 10020018     kernel32:KERNEL32.dll
+ 0002:0000001c       __imp__GetCurrentThreadId@0 1002001c     kernel32:KERNEL32.dll
+ 0002:00000020       __imp__GetTickCount@0      10020020     kernel32:KERNEL32.dll
+ 0002:00000024       __imp__DisableThreadLibraryCalls@4 10020024     kernel32:KERNEL32.dll
+ 0002:00000028       __imp__IsDebuggerPresent@0 10020028     kernel32:KERNEL32.dll
+ 0002:0000002c       __imp__SetUnhandledExceptionFilter@4 1002002c     kernel32:KERNEL32.dll
+ 0002:00000030       __imp__UnhandledExceptionFilter@4 10020030     kernel32:KERNEL32.dll
+ 0002:00000034       __imp__GetCurrentProcess@0 10020034     kernel32:KERNEL32.dll
+ 0002:00000038       __imp__TerminateProcess@8  10020038     kernel32:KERNEL32.dll
+ 0002:0000003c       __imp__InterlockedCompareExchange@12 1002003c     kernel32:KERNEL32.dll
+ 0002:00000040       __imp__Sleep@4             10020040     kernel32:KERNEL32.dll
+ 0002:00000044       __imp__InterlockedExchange@8 10020044     kernel32:KERNEL32.dll
+ 0002:00000048       __imp__GetSystemTimeAsFileTime@4 10020048     kernel32:KERNEL32.dll
+ 0002:0000004c       \177KERNEL32_NULL_THUNK_DATA 1002004c     kernel32:KERNEL32.dll
+ 0002:00000050       __imp__strlen              10020050     MSVCRT:MSVCR90.dll
+ 0002:00000054       __imp__memmove             10020054     MSVCRT:MSVCR90.dll
+ 0002:00000058       __imp__malloc              10020058     MSVCRT:MSVCR90.dll
+ 0002:0000005c       __imp__free                1002005c     MSVCRT:MSVCR90.dll
+ 0002:00000060       __imp__fclose              10020060     MSVCRT:MSVCR90.dll
+ 0002:00000064       __imp__ftell               10020064     MSVCRT:MSVCR90.dll
+ 0002:00000068       __imp__fseek               10020068     MSVCRT:MSVCR90.dll
+ 0002:0000006c       __imp__fopen_s             1002006c     MSVCRT:MSVCR90.dll
+ 0002:00000070       __imp__strerror_s          10020070     MSVCRT:MSVCR90.dll
+ 0002:00000074       __imp___errno              10020074     MSVCRT:MSVCR90.dll
+ 0002:00000078       __imp__fread               10020078     MSVCRT:MSVCR90.dll
+ 0002:0000007c       __imp__strtok              1002007c     MSVCRT:MSVCR90.dll
+ 0002:00000080       __imp___stat64i32          10020080     MSVCRT:MSVCR90.dll
+ 0002:00000084       __imp__log                 10020084     MSVCRT:MSVCR90.dll
+ 0002:00000088       __imp__strcmp              10020088     MSVCRT:MSVCR90.dll
+ 0002:0000008c       __imp_??2@YAPAXI@Z         1002008c     MSVCRT:MSVCR90.dll
+ 0002:00000090       __imp_?terminate@@YAXXZ    10020090     MSVCRT:MSVCR90.dll
+ 0002:00000094       __imp__vsnprintf_s         10020094     MSVCRT:MSVCR90.dll
+ 0002:00000094       __imp___vsnprintf_s        10020094     MSVCRT:MSVCR90.dll
+ 0002:00000098       __imp___unlock             10020098     MSVCRT:MSVCR90.dll
+ 0002:0000009c       __imp____dllonexit         1002009c     MSVCRT:MSVCR90.dll
+ 0002:000000a0       __imp___encode_pointer     100200a0     MSVCRT:MSVCR90.dll
+ 0002:000000a4       __imp___lock               100200a4     MSVCRT:MSVCR90.dll
+ 0002:000000a8       __imp___onexit             100200a8     MSVCRT:MSVCR90.dll
+ 0002:000000ac       __imp___decode_pointer     100200ac     MSVCRT:MSVCR90.dll
+ 0002:000000b0       __imp___malloc_crt         100200b0     MSVCRT:MSVCR90.dll
+ 0002:000000b4       __imp___encoded_null       100200b4     MSVCRT:MSVCR90.dll
+ 0002:000000b8       __imp___initterm           100200b8     MSVCRT:MSVCR90.dll
+ 0002:000000bc       __imp___initterm_e         100200bc     MSVCRT:MSVCR90.dll
+ 0002:000000c0       __imp___amsg_exit          100200c0     MSVCRT:MSVCR90.dll
+ 0002:000000c4       __imp___adjust_fdiv        100200c4     MSVCRT:MSVCR90.dll
+ 0002:000000c8       __imp____CppXcptFilter     100200c8     MSVCRT:MSVCR90.dll
+ 0002:000000cc       __imp___except_handler4_common 100200cc     MSVCRT:MSVCR90.dll
+ 0002:000000d0       __imp___crt_debugger_hook  100200d0     MSVCRT:MSVCR90.dll
+ 0002:000000d4       __imp____clean_type_info_names_internal 100200d4     MSVCRT:MSVCR90.dll
+ 0002:000000d8       __imp____CxxFrameHandler3  100200d8     MSVCRT:MSVCR90.dll
+ 0002:000000dc       __imp_??_V@YAXPAX@Z        100200dc     MSVCRT:MSVCR90.dll
+ 0002:000000e0       __imp__tan                 100200e0     MSVCRT:MSVCR90.dll
+ 0002:000000e4       __imp__fabs                100200e4     MSVCRT:MSVCR90.dll
+ 0002:000000e8       __imp__cos                 100200e8     MSVCRT:MSVCR90.dll
+ 0002:000000ec       __imp__sin                 100200ec     MSVCRT:MSVCR90.dll
+ 0002:000000f0       __imp__memcmp              100200f0     MSVCRT:MSVCR90.dll
+ 0002:000000f4       __imp__memcpy              100200f4     MSVCRT:MSVCR90.dll
+ 0002:000000f8       __imp__memset              100200f8     MSVCRT:MSVCR90.dll
+ 0002:000000fc       __imp__sqrt                100200fc     MSVCRT:MSVCR90.dll
+ 0002:00000100       __imp_??3@YAXPAX@Z         10020100     MSVCRT:MSVCR90.dll
+ 0002:00000104       __imp___purecall           10020104     MSVCRT:MSVCR90.dll
+ 0002:00000108       __imp__exp                 10020108     MSVCRT:MSVCR90.dll
+ 0002:0000010c       \177MSVCR90_NULL_THUNK_DATA 1002010c     MSVCRT:MSVCR90.dll
+ 0002:00000110       ___xc_a                    10020110     MSVCRT:cinitexe.obj
+ 0002:00000290       ___xc_z                    10020290     MSVCRT:cinitexe.obj
+ 0002:00000294       ___xi_a                    10020294     MSVCRT:cinitexe.obj
+ 0002:000002a0       ___xi_z                    100202a0     MSVCRT:cinitexe.obj
+ 0002:000002cc       ??_C@_0P@GHFPNOJB@bad?5allocation?$AA@ 100202cc     AllocatorStats.obj
+ 0002:000002dc       ??_C@_01KMDKNFGN@?1?$AA@   100202dc     AllocatorStats.obj
+ 0002:000002e4       ??_7CAllocator@SpeedTree@@6B@ 100202e4     AllocatorStats.obj
+ 0002:000002f0       __real@00000000            100202f0     AllocatorStats.obj
+ 0002:000002f8       __real@3ff0000000000000    100202f8     AllocatorStats.obj
+ 0002:00000300       __real@3e80000000000000    10020300     AllocatorStats.obj
+ 0002:00000308       __real@3f800000            10020308     AllocatorStats.obj
+ 0002:0000030c       __real@1e3ce508            1002030c     AllocatorStats.obj
+ 0002:00000310       __real@c000000000000000    10020310     AllocatorStats.obj
+ 0002:00000318       __real@4000000000000000    10020318     AllocatorStats.obj
+ 0002:00000320       __real@bf800000            10020320     AllocatorStats.obj
+ 0002:00000328       __real@3fe0000000000000    10020328     AllocatorStats.obj
+ 0002:00000330       ??_7CCoordSysBase@SpeedTree@@6B@ 10020330     AllocatorStats.obj
+ 0002:0000036c       __real@ff7fffff            1002036c     AllocatorStats.obj
+ 0002:00000370       __real@7f7fffff            10020370     AllocatorStats.obj
+ 0002:00000378       __real@c7efffffe0000000    10020378     AllocatorStats.obj
+ 0002:00000380       __real@47efffffe0000000    10020380     AllocatorStats.obj
+ 0002:00000388       __real@3f000000            10020388     AllocatorStats.obj
+ 0002:00000390       __real@0000000000000000    10020390     AllocatorStats.obj
+ 0002:00000398       ??_7?$CBasicFixedString@$0BAA@@SpeedTree@@6B@ 10020398     AllocatorStats.obj
+ 0002:0000039c       __real@44bb8000            1002039c     AllocatorStats.obj
+ 0002:000003a0       __real@44960000            100203a0     AllocatorStats.obj
+ 0002:000003a4       __real@44a28000            100203a4     AllocatorStats.obj
+ 0002:000003a8       __real@43960000            100203a8     AllocatorStats.obj
+ 0002:000003b0       ??_C@_0FN@BLBNOHIO@CCore?3?3SetLodProfile?$CI?$CJ?0?5one?5of?5t@ 100203b0     AllocatorStats.obj
+ 0002:00000410       __real@406fe00000000000    10020410     AllocatorStats.obj
+ 0002:00000418       ?asDescs@?1??GetVertexPropertyDesc@CCore@SpeedTree@@SAABUSVertexPropertyDesc@3@U?$Enumeration@W4EVertexPropertyUntyped@SpeedTree@@D@3@@Z@4QBU43@B 10020418     AllocatorStats.obj
+ 0002:00000514       ??_C@_0L@EGJECNPE@UNASSIGNED?$AA@ 10020514     AllocatorStats.obj
+ 0002:00000520       ??_C@_04BFOKOJHP@UASS?$AA@ 10020520     AllocatorStats.obj
+ 0002:00000528       ??_C@_08GCJNLIKG@Position?$AA@ 10020528     AllocatorStats.obj
+ 0002:00000534       ??_C@_04EBMCAJJP@posi?$AA@ 10020534     AllocatorStats.obj
+ 0002:0000053c       ??_C@_0BB@PJFEEHJC@DiffuseTexCoords?$AA@ 1002053c     AllocatorStats.obj
+ 0002:00000550       ??_C@_04GCAENOJH@texd?$AA@ 10020550     AllocatorStats.obj
+ 0002:00000558       ??_C@_06EFAGIKOH@Normal?$AA@ 10020558     AllocatorStats.obj
+ 0002:00000560       ??_C@_04PLLMIPEP@norm?$AA@ 10020560     AllocatorStats.obj
+ 0002:00000568       ??_C@_0M@NBAIFGOC@LodPosition?$AA@ 10020568     AllocatorStats.obj
+ 0002:00000574       ??_C@_04GGLLGPPB@lodp?$AA@ 10020574     AllocatorStats.obj
+ 0002:0000057c       ??_C@_0BB@LCIIINBM@GeometryTypeHint?$AA@ 1002057c     AllocatorStats.obj
+ 0002:00000590       ??_C@_04NPKLNGDP@hint?$AA@ 10020590     AllocatorStats.obj
+ 0002:00000598       ??_C@_0P@MHJCKDAP@LeafCardCorner?$AA@ 10020598     AllocatorStats.obj
+ 0002:000005a8       ??_C@_04HPBDHHGM@lfcc?$AA@ 100205a8     AllocatorStats.obj
+ 0002:000005b0       ??_C@_0BC@MGOJABJM@LeafCardLodScalar?$AA@ 100205b0     AllocatorStats.obj
+ 0002:000005c4       ??_C@_04DOINCCAA@lfls?$AA@ 100205c4     AllocatorStats.obj
+ 0002:000005cc       ??_C@_0BJ@BKGEJAGA@LeafCardSelfShadowOffset?$AA@ 100205cc     AllocatorStats.obj
+ 0002:000005e8       ??_C@_04MPIAJLBA@lfso?$AA@ 100205e8     AllocatorStats.obj
+ 0002:000005f0       ??_C@_0P@GNJBBLOP@WindBranchData?$AA@ 100205f0     AllocatorStats.obj
+ 0002:00000600       ??_C@_04EPALPBKC@wbrn?$AA@ 10020600     AllocatorStats.obj
+ 0002:00000608       ??_C@_0O@GGNALGEE@WindExtraData?$AA@ 10020608     AllocatorStats.obj
+ 0002:00000618       ??_C@_04GPGGLGBG@wext?$AA@ 10020618     AllocatorStats.obj
+ 0002:00000620       ??_C@_09ECDGPDPD@WindFlags?$AA@ 10020620     AllocatorStats.obj
+ 0002:0000062c       ??_C@_04HBDFDMG@wflg?$AA@  1002062c     AllocatorStats.obj
+ 0002:00000634       ??_C@_0BA@KIOKCGN@LeafAnchorPoint?$AA@ 10020634     AllocatorStats.obj
+ 0002:00000644       ??_C@_04OKBMNMIG@lanc?$AA@ 10020644     AllocatorStats.obj
+ 0002:0000064c       ??_C@_06IJABALAN@BoneID?$AA@ 1002064c     AllocatorStats.obj
+ 0002:00000654       ??_C@_04EHEBPCPD@bnid?$AA@ 10020654     AllocatorStats.obj
+ 0002:0000065c       ??_C@_0BC@JLIIJOFB@BranchSeamDiffuse?$AA@ 1002065c     AllocatorStats.obj
+ 0002:00000670       ??_C@_04NPNMIMGA@bsdf?$AA@ 10020670     AllocatorStats.obj
+ 0002:00000678       ??_C@_0BB@PJNHBMLN@BranchSeamDetail?$AA@ 10020678     AllocatorStats.obj
+ 0002:0000068c       ??_C@_04KHCIPMLD@bsdt?$AA@ 1002068c     AllocatorStats.obj
+ 0002:00000694       ??_C@_0BA@JDEGODIJ@DetailTexCoords?$AA@ 10020694     AllocatorStats.obj
+ 0002:000006a4       ??_C@_04KKNNFEJP@texl?$AA@ 100206a4     AllocatorStats.obj
+ 0002:000006ac       ??_C@_07HKHOACGF@Tangent?$AA@ 100206ac     AllocatorStats.obj
+ 0002:000006b4       ??_C@_04NOOAMFMB@tang?$AA@ 100206b4     AllocatorStats.obj
+ 0002:000006bc       ??_C@_0BC@OFBMNCFH@LightMapTexCoords?$AA@ 100206bc     AllocatorStats.obj
+ 0002:000006d0       ??_C@_04MKHJGFJB@lmap?$AA@ 100206d0     AllocatorStats.obj
+ 0002:000006d8       ??_C@_0BB@ILOHAIEP@AmbientOcclusion?$AA@ 100206d8     AllocatorStats.obj
+ 0002:000006ec       ??_C@_04PKILPMFH@aocc?$AA@ 100206ec     AllocatorStats.obj
+ 0002:000006f4       ??_C@_03FNDCCAPF@Pad?$AA@  100206f4     AllocatorStats.obj
+ 0002:000006f8       ??_C@_03PNAAIPML@pad?$AA@  100206f8     AllocatorStats.obj
+ 0002:00000700       ?asDescs@?1??GetPixelPropertyDesc@CCore@SpeedTree@@SAABUSPixelPropertyDesc@3@W4EPixelProperty@3@@Z@4QBU43@B 10020700     AllocatorStats.obj
+ 0002:00000838       ??_C@_0L@HJOMBOJA@Projection?$AA@ 10020838     AllocatorStats.obj
+ 0002:00000844       ??_C@_04NNKAIPAK@proj?$AA@ 10020844     AllocatorStats.obj
+ 0002:0000084c       ??_C@_09MLMGCFEC@FogScalar?$AA@ 1002084c     AllocatorStats.obj
+ 0002:00000858       ??_C@_04FGAJKMK@fogs?$AA@  10020858     AllocatorStats.obj
+ 0002:00000860       ??_C@_08EOHIBGCM@FogColor?$AA@ 10020860     AllocatorStats.obj
+ 0002:0000086c       ??_C@_04EPKCIIJL@fogc?$AA@ 1002086c     AllocatorStats.obj
+ 0002:00000874       ??_C@_0BH@HEFJHJPF@PerVertexLightingColor?$AA@ 10020874     AllocatorStats.obj
+ 0002:0000088c       ??_C@_04IBEGBNEN@pvlc?$AA@ 1002088c     AllocatorStats.obj
+ 0002:00000894       ??_C@_0BH@GPKEFOAC@LightDirInTangentSpace?$AA@ 10020894     AllocatorStats.obj
+ 0002:000008ac       ??_C@_04IGLBBIED@ldts?$AA@ 100208ac     AllocatorStats.obj
+ 0002:000008b4       ??_C@_08MOBOOILK@Binormal?$AA@ 100208b4     AllocatorStats.obj
+ 0002:000008c0       ??_C@_04IGPAAFCL@bnrm?$AA@ 100208c0     AllocatorStats.obj
+ 0002:000008c8       ??_C@_0BD@IMKKLEAE@SpecularHalfVector?$AA@ 100208c8     AllocatorStats.obj
+ 0002:000008dc       ??_C@_04GHJBGBJH@shvc?$AA@ 100208dc     AllocatorStats.obj
+ 0002:000008e4       ??_C@_0BF@DLCJCPCB@PerVertexSpecularDot?$AA@ 100208e4     AllocatorStats.obj
+ 0002:000008fc       ??_C@_04NJHNGPMH@pvsd?$AA@ 100208fc     AllocatorStats.obj
+ 0002:00000904       ??_C@_0BJ@OLBFHDJH@PerVertexAmbientContrast?$AA@ 10020904     AllocatorStats.obj
+ 0002:00000920       ??_C@_04IJJOIOBO@pvac?$AA@ 10020920     AllocatorStats.obj
+ 0002:00000928       ??_C@_0BC@KCFPAAF@BillboardTo3dFade?$AA@ 10020928     AllocatorStats.obj
+ 0002:0000093c       ??_C@_04FOIKIEKP@bb3f?$AA@ 1002093c     AllocatorStats.obj
+ 0002:00000944       ??_C@_0BD@MJOKOONI@TransmissionFactor?$AA@ 10020944     AllocatorStats.obj
+ 0002:00000958       ??_C@_04EGNCMBME@tran?$AA@ 10020958     AllocatorStats.obj
+ 0002:00000960       ??_C@_0BC@JPCGHODF@RenderEffectsFade?$AA@ 10020960     AllocatorStats.obj
+ 0002:00000974       ??_C@_04DOMGFHLE@efad?$AA@ 10020974     AllocatorStats.obj
+ 0002:0000097c       ??_C@_04PDFOFOKH@?5?5ao?$AA@ 1002097c     AllocatorStats.obj
+ 0002:00000984       ??_C@_04KJDLKNAL@bslt?$AA@ 10020984     AllocatorStats.obj
+ 0002:0000098c       ??_C@_0M@GKIOBELN@ShadowDepth?$AA@ 1002098c     AllocatorStats.obj
+ 0002:00000998       ??_C@_04FCMIICJE@sdep?$AA@ 10020998     AllocatorStats.obj
+ 0002:000009a0       ??_C@_0BF@DJADIADD@ShadowMapProjection0?$AA@ 100209a0     AllocatorStats.obj
+ 0002:000009b8       ??_C@_04MFFEODIA@smp0?$AA@ 100209b8     AllocatorStats.obj
+ 0002:000009c0       ??_C@_0BF@CABILBHC@ShadowMapProjection1?$AA@ 100209c0     AllocatorStats.obj
+ 0002:000009d8       ??_C@_04NMEPNCMB@smp1?$AA@ 100209d8     AllocatorStats.obj
+ 0002:000009e0       ??_C@_0BF@LDFOCLB@ShadowMapProjection2?$AA@ 100209e0     AllocatorStats.obj
+ 0002:000009f8       ??_C@_04PHGCIBAC@smp2?$AA@ 100209f8     AllocatorStats.obj
+ 0002:00000a00       ??_C@_0BF@BCCONDPA@ShadowMapProjection3?$AA@ 10020a00     AllocatorStats.obj
+ 0002:00000a18       ??_C@_04OOHJLAED@smp3?$AA@ 10020a18     AllocatorStats.obj
+ 0002:00000a20       ??_C@_0N@LEAHCDFL@HueVariation?$AA@ 10020a20     AllocatorStats.obj
+ 0002:00000a30       ??_C@_04PLAHLDHL@huev?$AA@ 10020a30     AllocatorStats.obj
+ 0002:00000a38       ??_C@_07CIFAGBMG@unknown?$AA@ 10020a38     AllocatorStats.obj
+ 0002:00000a40       ??_C@_01FJMABOPO@x?$AA@    10020a40     AllocatorStats.obj
+ 0002:00000a44       ??_C@_01EANLCPLP@y?$AA@    10020a44     AllocatorStats.obj
+ 0002:00000a48       ??_C@_01GLPGHMHM@z?$AA@    10020a48     AllocatorStats.obj
+ 0002:00000a4c       ??_C@_01NOFIACDB@w?$AA@    10020a4c     AllocatorStats.obj
+ 0002:00000a50       __real@3fb33333            10020a50     AllocatorStats.obj
+ 0002:00000a54       __real@3e4ccccd            10020a54     AllocatorStats.obj
+ 0002:00000a58       __real@41f00000            10020a58     AllocatorStats.obj
+ 0002:00000a5c       ??_C@_07BMBPNLPI@_shadow?$AA@ 10020a5c     AllocatorStats.obj
+ 0002:00000a64       ??_C@_06DFFKBLON@_zpass?$AA@ 10020a64     AllocatorStats.obj
+ 0002:00000a6c       ??_C@_08HABOCCI@_forward?$AA@ 10020a6c     AllocatorStats.obj
+ 0002:00000a78       ??_C@_04MFADHFCC@_s?$CFd?$AA@ 10020a78     AllocatorStats.obj
+ 0002:00000a80       ??_C@_09HABIKPNN@_deferred?$AA@ 10020a80     AllocatorStats.obj
+ 0002:00000a8c       ??_C@_05PNOBCIKB@_wind?$AA@ 10020a8c     AllocatorStats.obj
+ 0002:00000a94       ??_C@_05PLEHBCOF@_horz?$AA@ 10020a94     AllocatorStats.obj
+ 0002:00000a9c       ??_C@_09HJNFCLGI@billboard?$AA@ 10020a9c     AllocatorStats.obj
+ 0002:00000aa8       ??_C@_02HCAKAFB@_w?$AA@    10020aa8     AllocatorStats.obj
+ 0002:00000aac       ??_C@_01LKDEMHDF@s?$AA@    10020aac     AllocatorStats.obj
+ 0002:00000aae       ??_C@_00CNPNBAHC@?$AA@     10020aae     AllocatorStats.obj
+ 0002:00000ab0       ??_C@_0N@POPKGOCJ@rigid_meshes?$AA@ 10020ab0     AllocatorStats.obj
+ 0002:00000ac0       ??_C@_0O@DCGGFEMG@facing_leaves?$AA@ 10020ac0     AllocatorStats.obj
+ 0002:00000ad0       ??_C@_06NGLEBKLK@leaves?$AA@ 10020ad0     AllocatorStats.obj
+ 0002:00000ad8       ??_C@_0BA@PMCKECKB@fronds_and_caps?$AA@ 10020ad8     AllocatorStats.obj
+ 0002:00000ae8       ??_C@_08PACHAMGK@branches?$AA@ 10020ae8     AllocatorStats.obj
+ 0002:00000af4       ??_C@_05JOBLOEL@grass?$AA@ 10020af4     AllocatorStats.obj
+ 0002:00000afc       ??_C@_02HAOIJKIC@?$CFc?$AA@ 10020afc     AllocatorStats.obj
+ 0002:00000b00       ??_C@_02DPKJAMEF@?$CFd?$AA@ 10020b00     AllocatorStats.obj
+ 0002:00000b04       ??_C@_04LOCMGGPM@?$CFd?$CFs?$AA@ 10020b04     AllocatorStats.obj
+ 0002:00000b0c       ??_C@_02NJNOFBBI@?$CFx?$AA@ 10020b0c     AllocatorStats.obj
+ 0002:00000b10       ??_C@_04IHGKJMLH@byte?$AA@ 10020b10     AllocatorStats.obj
+ 0002:00000b18       ??_C@_0L@MAEIDIIL@half?5float?$AA@ 10020b18     AllocatorStats.obj
+ 0002:00000b24       ??_C@_0L@CNLLCONH@full?5float?$AA@ 10020b24     AllocatorStats.obj
+ 0002:00000b30       ??_C@_06DMPPPHJO@ATTR15?$AA@ 10020b30     AllocatorStats.obj
+ 0002:00000b38       ??_C@_06CFOEMGNP@ATTR14?$AA@ 10020b38     AllocatorStats.obj
+ 0002:00000b40       ??_C@_06GKKFFABI@ATTR13?$AA@ 10020b40     AllocatorStats.obj
+ 0002:00000b48       ??_C@_06HDLOGBFJ@ATTR12?$AA@ 10020b48     AllocatorStats.obj
+ 0002:00000b50       ??_C@_06FIJDDCJK@ATTR11?$AA@ 10020b50     AllocatorStats.obj
+ 0002:00000b58       ??_C@_06EBIIADNL@ATTR10?$AA@ 10020b58     AllocatorStats.obj
+ 0002:00000b60       ??_C@_05GCHJABAP@ATTR9?$AA@ 10020b60     AllocatorStats.obj
+ 0002:00000b68       ??_C@_05HLGCDAEO@ATTR8?$AA@ 10020b68     AllocatorStats.obj
+ 0002:00000b70       ??_C@_05PMPKCMIB@ATTR7?$AA@ 10020b70     AllocatorStats.obj
+ 0002:00000b78       ??_C@_05OFOBBNMA@ATTR6?$AA@ 10020b78     AllocatorStats.obj
+ 0002:00000b80       ??_C@_05MOMMEOAD@ATTR5?$AA@ 10020b80     AllocatorStats.obj
+ 0002:00000b88       ??_C@_05NHNHHPEC@ATTR4?$AA@ 10020b88     AllocatorStats.obj
+ 0002:00000b90       ??_C@_05JIJGOJIF@ATTR3?$AA@ 10020b90     AllocatorStats.obj
+ 0002:00000b98       ??_C@_05IBINNIME@ATTR2?$AA@ 10020b98     AllocatorStats.obj
+ 0002:00000ba0       ??_C@_05KKKAILAH@ATTR1?$AA@ 10020ba0     AllocatorStats.obj
+ 0002:00000ba8       ??_C@_05LDLLLKEG@ATTR0?$AA@ 10020ba8     AllocatorStats.obj
+ 0002:00000bb0       ??_C@_07MNGEECKF@?$FN?5?$CI?$CFs?$CJ?6?$AA@ 10020bb0     AllocatorStats.obj
+ 0002:00000bb8       ??_C@_0L@KMGKLCBO@?$CFs?4?$CFs?$CI?$CFd?$CJ?5?$AA@ 10020bb8     AllocatorStats.obj
+ 0002:00000bc4       ??_C@_07BAFKDPAL@?5?5?$CFs?5?$FL?5?$AA@ 10020bc4     AllocatorStats.obj
+ 0002:00000bcc       ??_C@_0O@BAKOBHGP@16?9bit?5floats?$AA@ 10020bcc     AllocatorStats.obj
+ 0002:00000bdc       ??_C@_0O@DBHJLJFE@32?9bit?5floats?$AA@ 10020bdc     AllocatorStats.obj
+ 0002:00000bec       ??_7?$CArray@D$00@SpeedTree@@6B@ 10020bec     AllocatorStats.obj
+ 0002:00000bf0       ??_7?$CBasicString@$00@SpeedTree@@6B@ 10020bf0     AllocatorStats.obj
+ 0002:00000bf4       ??_C@_07BCIIEJAJ@CString?$AA@ 10020bf4     AllocatorStats.obj
+ 0002:00000bfc       ??_C@_06CGLICOLM@CArray?$AA@ 10020bfc     AllocatorStats.obj
+ 0002:00000c04       ??_C@_06EKNFNOKI@custom?$AA@ 10020c04     CoordSys.obj
+ 0002:00000c0c       ??_C@_0BC@OAIKLEJI@left?9handed?0?5Y?5up?$AA@ 10020c0c     CoordSys.obj
+ 0002:00000c20       ??_C@_0BC@KHCKMOEI@left?9handed?0?5Z?5up?$AA@ 10020c20     CoordSys.obj
+ 0002:00000c34       ??_C@_0BD@EBKHBCPG@right?9handed?0?5Y?5up?$AA@ 10020c34     CoordSys.obj
+ 0002:00000c48       ??_C@_0BD@GAHGICG@right?9handed?0?5Z?5up?$AA@ 10020c48     CoordSys.obj
+ 0002:00000c5c       ??_7CDefaultCoordinateSystem@SpeedTree@@6B@ 10020c5c     CoordSys.obj
+ 0002:00000c98       ??_7CRHCS_Yup@SpeedTree@@6B@ 10020c98     CoordSys.obj
+ 0002:00000cd4       ??_7CLHCS_Yup@SpeedTree@@6B@ 10020cd4     CoordSys.obj
+ 0002:00000d10       ??_7CLHCS_Zup@SpeedTree@@6B@ 10020d10     CoordSys.obj
+ 0002:00000d50       ??_7CFileSystem@SpeedTree@@6B@ 10020d50     Core.obj
+ 0002:00000d68       ??_7?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@6B@ 10020d68     Core.obj
+ 0002:00000d6c       ??_7?$CBlockPool@$0A@@SpeedTree@@6B@ 10020d6c     Core.obj
+ 0002:00000d70       ??_7?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@6B@ 10020d70     Core.obj
+ 0002:00000d74       ??_7CCore@SpeedTree@@6B@   10020d74     Core.obj
+ 0002:00000d78       ??_C@_02JDPG@rb?$AA@       10020d78     Core.obj
+ 0002:00000d7c       ??_C@_0BL@MPDFILBA@Failed?5to?5open?5?$FL?$CFs?$FN?3?5?$FL?$CFs?$FN?6?$AA@ 10020d7c     Core.obj
+ 0002:00000d98       ??_C@_0CG@LJPLFCFN@File?5?$FL?$CFs?$FN?5is?5empty?0?5or?5ftell?$CI?$CJ?5f@ 10020d98     Core.obj
+ 0002:00000dc0       ??_C@_0EC@HKCLJCAF@fseek?$CI?$CJ?5failed?5to?5return?5to?5the?5@ 10020dc0     Core.obj
+ 0002:00000e04       ??_C@_0CH@NDCEJFLM@Only?5read?5?$CFd?5of?5?$CFd?5bytes?5from?5?$CFs@ 10020e04     Core.obj
+ 0002:00000e2c       ??_C@_0BK@NPGNBCPF@CCore?3?3LoadFileIntoBuffer?$AA@ 10020e2c     Core.obj
+ 0002:00000e48       ??_C@_0CN@IJNIJDOP@CCore?3?3LoadTree?0?5failed?5to?5open?5@ 10020e48     Core.obj
+ 0002:00000e78       ??_C@_0BA@BPIKNAOL@CCore?3?3LoadTree?$AA@ 10020e78     Core.obj
+ 0002:00000e88       ??_C@_0BG@JLKFDCJL@CCore?3?3DeleteGeometry?$AA@ 10020e88     Core.obj
+ 0002:00000ea0       ??_C@_05IMLBDKPB@7?41?40?$AA@ 10020ea0     Core.obj
+ 0002:00000ea8       ??_C@_0CK@FGOFDDME@SpeedTree?5SDK?5v7?41?40?5Release?5?$CIWi@ 10020ea8     Core.obj
+ 0002:00000ed8       ??_C@_0GI@HMECHJFK@CSharedHeapBlock?3?3Lock?$CI?$CJ?0?5overla@ 10020ed8     Core.obj
+ 0002:00000f40       ??_C@_0BH@PFGEFDPN@CSharedHeapBlock?3?3Lock?$AA@ 10020f40     Core.obj
+ 0002:00000f58       ??_C@_0DN@KENCHJGC@CSharedHeapBlock?3?3Unlock?$CI?$CJ?5calle@ 10020f58     Core.obj
+ 0002:00000f98       ??_C@_0DJ@OJACALFO@CSharedHeapBlock?3?3Delete?$CI?$CJ?5calle@ 10020f98     Core.obj
+ 0002:00000fd8       ??_C@_0FM@NPHFFDGL@CCore?3?3TmpHeapBlockDeleteAll?0?5un@ 10020fd8     Core.obj
+ 0002:00001034       ??_C@_07NFANNNEC@UNKNOWN?$AA@ 10021034     Core.obj
+ 0002:00001040       ??_C@_0EE@HLIBDMMH@CCore?3?3ResourceAllocated?$CI?$CJ?0?5reso@ 10021040     Core.obj
+ 0002:00001084       ??_C@_0DG@FMCKIJDP@CCore?3?3ResourceReleased?$CI?$CJ?0?5canno@ 10021084     Core.obj
+ 0002:000010bc       ??_7?$CBasicFixedString@$0EAA@@SpeedTree@@6B@ 100210bc     Core.obj
+ 0002:000010c0       ??_C@_0L@PLPJAPAO@CBlockPool?$AA@ 100210c0     Core.obj
+ 0002:000010d0       ??_C@_0O@IIKIENPH@CErrorHandler?$AA@ 100210d0     ErrorHandler.obj
+ 0002:000010e4       ??_7?$CBasicFixedString@$0IAA@@SpeedTree@@6B@ 100210e4     FileSystem.obj
+ 0002:000010e8       ??_7?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@6B@ 100210e8     FileSystem.obj
+ 0002:000010ec       ??_C@_01KDCPPGHE@r?$AA@    100210ec     FileSystem.obj
+ 0002:000010f0       ??_C@_0BK@IKOENEAE@CFileSystem?3?3LoadFile?$CI?$CFs?$CJ?$AA@ 100210f0     FileSystem.obj
+ 0002:0000110c       ??_C@_02CBLDBPFN@?1?1?$AA@ 1002110c     FileSystem.obj
+ 0002:00001110       ??_C@_0CD@CIIAAJKD@CFileSystem?3?3CleanPlatformFilena@ 10021110     FileSystem.obj
+ 0002:00001134       ??_C@_02CFKBDFGI@?1?2?$AA@ 10021134     FileSystem.obj
+ 0002:00001138       ??_7?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@6B@ 10021138     FileSystem.obj
+ 0002:0000113c       ??_C@_0L@MMFOHHPF@SRT?507?40?40?$AA@ 1002113c     Parser.obj
+ 0002:0000114c       ??_C@_0CN@MJPLMFLO@CParser?3?3Parse?0?5pMemBlock?5parame@ 1002114c     Parser.obj
+ 0002:0000117c       ??_C@_0DJ@OJOMDFAA@CParser?3?3Parse?0?5buffer?5passed?5in@ 1002117c     Parser.obj
+ 0002:000011b8       ??_C@_0CL@BIHNCPO@CParser?3?3Parse?0?5pGeometry?5pointe@ 100211b8     Parser.obj
+ 0002:000011e8       ??_C@_0FD@KNEAKPLA@Performance?5warning?3?5SRT?5file?5wa@ 100211e8     Parser.obj
+ 0002:0000123c       ??_C@_0CN@HCNKHEA@CParser?3?3ParseHeader?0?5premature?5@ 1002123c     Parser.obj
+ 0002:0000126c       ??_C@_0DJ@HENOEHLA@CParser?3?3ParseHeader?0?5expected?5h@ 1002126c     Parser.obj
+ 0002:000012a8       ??_C@_0DB@ILPNBPLI@CParser?3?3ParseCustomData?0?5premat@ 100212a8     Parser.obj
+ 0002:000012dc       ??_C@_0CP@CDKBMMMM@CParser?3?3ParsePlatform?0?5prematur@ 100212dc     Parser.obj
+ 0002:00001310       ??_C@_0EJ@OFBPIBGP@Warning?3?5SRT?5compiled?5with?5?$FL?$CFs?$FN?5@ 10021310     Parser.obj
+ 0002:0000135c       ??_C@_0CO@PCBPEEON@CParser?3?3ParseExtents?0?5premature@ 1002135c     Parser.obj
+ 0002:0000138c       ??_C@_0CK@HJFDBCMM@CParser?3?3ParseLOD?0?5premature?5end@ 1002138c     Parser.obj
+ 0002:000013b8       ??_C@_0CL@NLMPHOFF@CParser?3?3ParseWind?0?5premature?5en@ 100213b8     Parser.obj
+ 0002:000013e4       ??_C@_0DC@BMAFFJAJ@CParser?3?3ParseStringTable?0?5prema@ 100213e4     Parser.obj
+ 0002:00001418       ??_C@_0DH@EOPEAEK@CParser?3?3ParseCollisionObjects?0?5@ 10021418     Parser.obj
+ 0002:00001450       ??_C@_0DH@IJJDDLN@CParser?3?3ParseRenderStateBlock?0?5@ 10021450     Parser.obj
+ 0002:00001488       ??_C@_0DJ@CHOPENCH@CParser?3?3ParseAndCopyRenderState@ 10021488     Parser.obj
+ 0002:000014c4       ??_C@_0DD@GDOOFBDB@CParser?3?3ParseRenderStates?0?5prem@ 100214c4     Parser.obj
+ 0002:000014f8       ??_C@_0DB@NCMCJAFA@CParser?3?3Parse3dGeometry?0?5premat@ 100214f8     Parser.obj
+ 0002:0000152c       ??_C@_0DJ@JKPPDAKF@CParser?3?3ParseVertexAndIndexData@ 1002152c     Parser.obj
+ 0002:00001568       ??_C@_0DB@OHODPBPD@CParser?3?3ParseBillboards?0?5premat@ 10021568     Parser.obj
+ 0002:000015a0       __real@408f400000000000    100215a0     ScopeTrace.obj
+ 0002:000015a8       __real@412e848000000000    100215a8     ScopeTrace.obj
+ 0002:000015b0       ??_7?$CArray@PAUSNode@CScopeTrace@SpeedTree@@$00@SpeedTree@@6B@ 100215b0     ScopeTrace.obj
+ 0002:000015b8       __real@3df0000000000000    100215b8     Wind.obj
+ 0002:000015c0       __real@3f400000            100215c0     Wind.obj
+ 0002:000015c4       __real@3e99999a            100215c4     Wind.obj
+ 0002:000015c8       __real@3ba3d70a            100215c8     Wind.obj
+ 0002:000015cc       __real@41a00000            100215cc     Wind.obj
+ 0002:000015d0       __real@40800000            100215d0     Wind.obj
+ 0002:000015d4       __real@bf000000            100215d4     Wind.obj
+ 0002:000015d8       __real@3d4ccccd            100215d8     Wind.obj
+ 0002:000015dc       __real@3ecccccd            100215dc     Wind.obj
+ 0002:000015e0       __real@42000000            100215e0     Wind.obj
+ 0002:000015e4       __real@41100000            100215e4     Wind.obj
+ 0002:000015e8       __real@41200000            100215e8     Wind.obj
+ 0002:000015ec       __real@40000000            100215ec     Wind.obj
+ 0002:000015f0       __real@42480000            100215f0     Wind.obj
+ 0002:000015f4       __real@40200000            100215f4     Wind.obj
+ 0002:000015f8       __real@40a00000            100215f8     Wind.obj
+ 0002:00001600       __real@4024000000000000    10021600     Wind.obj
+ 0002:00001608       __real@40d570a4            10021608     Wind.obj
+ 0002:00001610       __real@4022000000000000    10021610     Wind.obj
+ 0002:00001618       __real@bff0000000000000    10021618     Wind.obj
+ 0002:00001620       __real@4008000000000000    10021620     Wind.obj
+ 0002:00001628       __real@3c23d70a            10021628     Wind.obj
+ 0002:0000162c       __real@c0c00000            1002162c     Wind.obj
+ 0002:00001630       __real@40c00000            10021630     Wind.obj
+ 0002:00001634       __pDefaultRawDllMain       10021634     MSVCRT:crtdll.obj
+ 0002:00001634       __pRawDllMain              10021634     MSVCRT:crtdll.obj
+ 0002:00001640       ?ProcessDetach@NativeDll@<CrtImplementationDetails>@@0IB 10021640     MSVCRT:tncleanup.obj
+ 0002:00001644       ?ProcessAttach@NativeDll@<CrtImplementationDetails>@@0IB 10021644     MSVCRT:tncleanup.obj
+ 0002:00001648       ?ThreadAttach@NativeDll@<CrtImplementationDetails>@@0IB 10021648     MSVCRT:tncleanup.obj
+ 0002:0000164c       ?ThreadDetach@NativeDll@<CrtImplementationDetails>@@0IB 1002164c     MSVCRT:tncleanup.obj
+ 0002:00001650       ?ProcessVerifier@NativeDll@<CrtImplementationDetails>@@0IB 10021650     MSVCRT:tncleanup.obj
+ 0002:00001658       __load_config_used         10021658     MSVCRT:loadcfg.obj
+ 0002:00001720       ___safe_se_handler_table   10021720     <linker-defined>
+ 0002:000017c8       ___rtc_iaa                 100217c8     MSVCRT:_initsect_.obj
+ 0002:000017cc       ___rtc_izz                 100217cc     MSVCRT:_initsect_.obj
+ 0002:000017d0       ___rtc_taa                 100217d0     MSVCRT:_initsect_.obj
+ 0002:000017d4       ___rtc_tzz                 100217d4     MSVCRT:_initsect_.obj
+ 0002:000020dc       __IMPORT_DESCRIPTOR_KERNEL32 100220dc     kernel32:KERNEL32.dll
+ 0002:000020f0       __IMPORT_DESCRIPTOR_MSVCR90 100220f0     MSVCRT:MSVCR90.dll
+ 0002:00002104       __NULL_IMPORT_DESCRIPTOR   10022104     kernel32:KERNEL32.dll
+ 0003:00000008       ?asNames@?4??ComponentName@CCore@SpeedTree@@SAPBDH@Z@4PAPBDA 1002e008     AllocatorStats.obj
+ 0003:0000001c       ?m_pCoordSys@CCoordSys@SpeedTree@@2PBVCCoordSysBase@2@B 1002e01c     CoordSys.obj
+ 0003:00000028       ?g_pFileSystem@SpeedTree@@3PAVCFileSystem@1@A 1002e028     Core.obj
+ 0003:00000054       ?c_pSrtHeader@@3PBDB       1002e054     Parser.obj
+ 0003:0000006c       ?m_uiBitsUsedForFraction@CFixedNumber@SpeedTree@@0IA 1002e06c     Fixed.obj
+ 0003:00000080       ___security_cookie         1002e080     MSVCRT:gs_cookie.obj
+ 0003:00000084       ___security_cookie_complement 1002e084     MSVCRT:gs_cookie.obj
+ 0003:00000088       ___native_dllmain_reason   1002e088     MSVCRT:natstart.obj
+ 0003:0000008c       ___native_vcclrit_reason   1002e08c     MSVCRT:natstart.obj
+ 0003:00000130       ?m_eCoordSysType@CCoordSys@SpeedTree@@2W4ECoordSysType@12@A 1002e130     CoordSys.obj
+ 0003:00000140       ?m_vUp@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B 1002e140     CoordSys.obj
+ 0003:00000170       ?m_vOut@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B 1002e170     CoordSys.obj
+ 0003:0000018c       ?m_vRight@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B 1002e18c     CoordSys.obj
+ 0003:0000146c       ?g_cFileSystem@SpeedTree@@3VCFileSystem@1@A 1002f46c     Core.obj
+ 0003:000016e8       ?m_pAllocator@CHeapSystem@SpeedTree@@0PAVCAllocator@2@A 1002f6e8     Memory.obj
+ 0003:000016ec       ?m_siCurrentUsage@CHeapSystem@SpeedTree@@0IA 1002f6ec     Memory.obj
+ 0003:000016f0       ?m_siPeakUsage@CHeapSystem@SpeedTree@@0IA 1002f6f0     Memory.obj
+ 0003:000016f4       ?m_siNumAllocs@CHeapSystem@SpeedTree@@0IA 1002f6f4     Memory.obj
+ 0003:000017a0       ?s_cDice@?1??RandomFloat@CWind@SpeedTree@@IBEMMM@Z@4VCRandom@3@A 1002f7a0     Wind.obj
+ 0003:00002170       ??_B?1??RandomFloat@CWind@SpeedTree@@IBEMMM@Z@51 10030170     Wind.obj
+ 0003:00002214       ?m_fStep@CFixedNumber@SpeedTree@@0MA 10030214     Fixed.obj
+ 0003:0000221c       ?m_fOneOverStep@CFixedNumber@SpeedTree@@0MA 1003021c     Fixed.obj
+ 0003:0000254c       __forceCRTManifestRTM      1003054c     MSVCRT:crtmanifestrtm.obj
+ 0003:00002550       ?__type_info_root_node@@3U__type_info_node@@A 10030550     MSVCRT:tncleanup.obj
+ 0003:00002558       __adjust_fdiv              10030558     <common>
+ 0003:0000255c       ___native_startup_state    1003055c     <common>
+ 0003:00002560       ___native_startup_lock     10030560     <common>
+ 0003:00002564       ___sse2_available          10030564     <common>
+ 0003:00002568       ___dyn_tls_init_callback   10030568     <common>
+ 0003:0000256c       ___onexitend               1003056c     <common>
+ 0003:00002570       ___onexitbegin             10030570     <common>
+
+ entry point at        0001:0001c634
+
+ Static symbols
+
+ 0001:fffff000       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPAEI@Z$0 10000000 f   ErrorHandler.obj
+ 0001:fffff000       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z$0 10000000 f   Wind.obj
+ 0001:fffff000       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 10000000 f   Parser.obj
+ 0001:fffff000       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 10000000 f   ScopeTrace.obj
+ 0001:fffff000       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 10000000 f   Core.obj
+ 0001:fffff000       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 10000000 f   FileSystem.obj
+ 0001:fffff000       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 10000000 f   Parser.obj
+ 0001:fffff008       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 10000008 f   Core.obj
+ 0001:fffff008       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10000008 f   Parser.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   Parser.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   ScopeTrace.obj
+ 0001:fffff008       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 10000008 f   Parser.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   FileSystem.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   ErrorHandler.obj
+ 0001:fffff008       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 10000008 f   ErrorHandler.obj
+ 0001:fffff008       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10000008 f   ErrorHandler.obj
+ 0001:fffff008       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 10000008 f   Wind.obj
+ 0001:fffff008       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10000008 f   Core.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   Core.obj
+ 0001:fffff008       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 10000008 f   FileSystem.obj
+ 0001:fffff008       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 10000008 f   Wind.obj
+ 0001:fffff008       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10000008 f   Wind.obj
+ 0001:fffff008       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 10000008 f   FileSystem.obj
+ 0001:fffff00b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1000000b f   Parser.obj
+ 0001:fffff00b       __ehhandler$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 1000000b f   Wind.obj
+ 0001:fffff00b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000000b f   FileSystem.obj
+ 0001:fffff00b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1000000b f   Parser.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000000b f   Wind.obj
+ 0001:fffff00b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1000000b f   FileSystem.obj
+ 0001:fffff00b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1000000b f   Parser.obj
+ 0001:fffff00b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1000000b f   Core.obj
+ 0001:fffff00b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1000000b f   Wind.obj
+ 0001:fffff00b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1000000b f   Core.obj
+ 0001:fffff00b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 1000000b f   Parser.obj
+ 0001:fffff00b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1000000b f   Core.obj
+ 0001:fffff00b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1000000b f   FileSystem.obj
+ 0001:fffff00b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 1000000b f   Parser.obj
+ 0001:fffff00b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1000000b f   FileSystem.obj
+ 0001:fffff00b       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1000000b f   Core.obj
+ 0001:fffff00b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1000000b f   ErrorHandler.obj
+ 0001:fffff00b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1000000b f   Wind.obj
+ 0001:fffff00b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1000000b f   FileSystem.obj
+ 0001:fffff00b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1000000b f   Core.obj
+ 0001:fffff010       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 10000010 f   Wind.obj
+ 0001:fffff010       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 10000010 f   ErrorHandler.obj
+ 0001:fffff010       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 10000010 f   Parser.obj
+ 0001:fffff010       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 10000010 f   Core.obj
+ 0001:fffff010       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 10000010 f   FileSystem.obj
+ 0001:fffff013       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 10000013 f   Wind.obj
+ 0001:fffff013       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 10000013 f   FileSystem.obj
+ 0001:fffff013       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 10000013 f   Core.obj
+ 0001:fffff013       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 10000013 f   Parser.obj
+ 0001:fffff013       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 10000013 f   ErrorHandler.obj
+ 0001:fffff016       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 10000016 f   ErrorHandler.obj
+ 0001:fffff016       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 10000016 f   Wind.obj
+ 0001:fffff016       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 10000016 f   ErrorHandler.obj
+ 0001:fffff016       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 10000016 f   FileSystem.obj
+ 0001:fffff016       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 10000016 f   ErrorHandler.obj
+ 0001:fffff016       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 10000016 f   Wind.obj
+ 0001:fffff016       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 10000016 f   Wind.obj
+ 0001:fffff016       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 10000016 f   Core.obj
+ 0001:fffff016       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 10000016 f   Wind.obj
+ 0001:fffff016       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 10000016 f   Parser.obj
+ 0001:fffff016       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 10000016 f   Core.obj
+ 0001:fffff016       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 10000016 f   FileSystem.obj
+ 0001:fffff016       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 10000016 f   Core.obj
+ 0001:fffff016       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 10000016 f   Parser.obj
+ 0001:fffff016       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 10000016 f   Parser.obj
+ 0001:fffff016       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 10000016 f   FileSystem.obj
+ 0001:fffff016       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 10000016 f   ErrorHandler.obj
+ 0001:fffff016       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 10000016 f   Core.obj
+ 0001:fffff016       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 10000016 f   Parser.obj
+ 0001:fffff016       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 10000016 f   FileSystem.obj
+ 0001:fffff018       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 10000018 f   ErrorHandler.obj
+ 0001:fffff018       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 10000018 f   Wind.obj
+ 0001:fffff018       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 10000018 f   Parser.obj
+ 0001:fffff018       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 10000018 f   FileSystem.obj
+ 0001:fffff018       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 10000018 f   Core.obj
+ 0001:fffff01a       __ehhandler$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 1000001a f   Parser.obj
+ 0001:fffff01a       __ehhandler$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 1000001a f   Wind.obj
+ 0001:fffff01d       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1000001d f   Wind.obj
+ 0001:fffff01d       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPAEI@Z 1000001d f   ErrorHandler.obj
+ 0001:fffff01d       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1000001d f   Parser.obj
+ 0001:fffff021       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 10000021 f   Parser.obj
+ 0001:fffff021       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 10000021 f   FileSystem.obj
+ 0001:fffff021       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10000021 f   Core.obj
+ 0001:fffff021       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 10000021 f   ErrorHandler.obj
+ 0001:fffff021       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10000021 f   Parser.obj
+ 0001:fffff021       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 10000021 f   Core.obj
+ 0001:fffff021       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10000021 f   ErrorHandler.obj
+ 0001:fffff021       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 10000021 f   FileSystem.obj
+ 0001:fffff021       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 10000021 f   Wind.obj
+ 0001:fffff021       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 10000021 f   Wind.obj
+ 0001:fffff021       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 10000021 f   Parser.obj
+ 0001:fffff021       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 10000021 f   Wind.obj
+ 0001:fffff021       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 10000021 f   ErrorHandler.obj
+ 0001:fffff021       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 10000021 f   Core.obj
+ 0001:fffff021       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 10000021 f   ErrorHandler.obj
+ 0001:fffff021       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10000021 f   FileSystem.obj
+ 0001:fffff021       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 10000021 f   Core.obj
+ 0001:fffff021       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 10000021 f   Wind.obj
+ 0001:fffff021       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 10000021 f   Parser.obj
+ 0001:fffff021       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 10000021 f   FileSystem.obj
+ 0001:fffff024       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 10000024 f   Core.obj
+ 0001:fffff024       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 10000024 f   Wind.obj
+ 0001:fffff024       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 10000024 f   Parser.obj
+ 0001:fffff024       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 10000024 f   FileSystem.obj
+ 0001:fffff024       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 10000024 f   ErrorHandler.obj
+ 0001:fffff02c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1000002c f   Wind.obj
+ 0001:fffff02c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1000002c f   Wind.obj
+ 0001:fffff02c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1000002c f   FileSystem.obj
+ 0001:fffff02c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1000002c f   Parser.obj
+ 0001:fffff02c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1000002c f   ErrorHandler.obj
+ 0001:fffff02c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1000002c f   Core.obj
+ 0001:fffff02c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1000002c f   Core.obj
+ 0001:fffff02c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1000002c f   Wind.obj
+ 0001:fffff02c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1000002c f   ErrorHandler.obj
+ 0001:fffff02c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1000002c f   ErrorHandler.obj
+ 0001:fffff02c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1000002c f   Parser.obj
+ 0001:fffff02c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1000002c f   FileSystem.obj
+ 0001:fffff02c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1000002c f   Parser.obj
+ 0001:fffff02c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1000002c f   Core.obj
+ 0001:fffff02c       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1000002c f   FileSystem.obj
+ 0001:fffff032       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 10000032 f   Core.obj
+ 0001:fffff032       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 10000032 f   ErrorHandler.obj
+ 0001:fffff032       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 10000032 f   FileSystem.obj
+ 0001:fffff032       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 10000032 f   Parser.obj
+ 0001:fffff032       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 10000032 f   Wind.obj
+ 0001:fffff037       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10000037 f   ErrorHandler.obj
+ 0001:fffff037       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 10000037 f   ErrorHandler.obj
+ 0001:fffff037       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 10000037 f   Core.obj
+ 0001:fffff037       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10000037 f   Parser.obj
+ 0001:fffff037       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10000037 f   Core.obj
+ 0001:fffff037       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 10000037 f   Wind.obj
+ 0001:fffff037       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 10000037 f   Parser.obj
+ 0001:fffff037       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 10000037 f   Wind.obj
+ 0001:fffff037       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 10000037 f   Core.obj
+ 0001:fffff037       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10000037 f   Wind.obj
+ 0001:fffff037       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 10000037 f   ErrorHandler.obj
+ 0001:fffff037       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 10000037 f   FileSystem.obj
+ 0001:fffff037       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 10000037 f   Parser.obj
+ 0001:fffff037       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 10000037 f   FileSystem.obj
+ 0001:fffff037       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 10000037 f   FileSystem.obj
+ 0001:fffff040       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 10000040 f   FileSystem.obj
+ 0001:fffff040       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 10000040 f   ErrorHandler.obj
+ 0001:fffff040       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 10000040 f   Wind.obj
+ 0001:fffff040       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 10000040 f   Core.obj
+ 0001:fffff040       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 10000040 f   Parser.obj
+ 0001:fffff042       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10000042 f   Parser.obj
+ 0001:fffff042       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10000042 f   ErrorHandler.obj
+ 0001:fffff042       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10000042 f   Wind.obj
+ 0001:fffff042       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 10000042 f   ErrorHandler.obj
+ 0001:fffff042       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 10000042 f   Core.obj
+ 0001:fffff042       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10000042 f   Core.obj
+ 0001:fffff042       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 10000042 f   FileSystem.obj
+ 0001:fffff042       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 10000042 f   Wind.obj
+ 0001:fffff042       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 10000042 f   Parser.obj
+ 0001:fffff042       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 10000042 f   FileSystem.obj
+ 0001:fffff04d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1000004d f   FileSystem.obj
+ 0001:fffff04d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1000004d f   Wind.obj
+ 0001:fffff04d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1000004d f   Parser.obj
+ 0001:fffff04d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1000004d f   ErrorHandler.obj
+ 0001:fffff04d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1000004d f   Core.obj
+ 0001:fffff058       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 10000058 f   Parser.obj
+ 0001:fffff058       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 10000058 f   Wind.obj
+ 0001:fffff058       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 10000058 f   ErrorHandler.obj
+ 0001:fffff058       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 10000058 f   Core.obj
+ 0001:fffff058       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 10000058 f   FileSystem.obj
+ 0001:fffff063       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10000063 f   Wind.obj
+ 0001:fffff063       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10000063 f   Parser.obj
+ 0001:fffff063       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10000063 f   ErrorHandler.obj
+ 0001:fffff063       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10000063 f   FileSystem.obj
+ 0001:fffff063       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 10000063 f   Core.obj
+ 0001:0001bf44       ?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z 1001cf44 f   MSVCRT:ehvecdtr.obj
+ 0001:0001c2a9       _pre_c_init                1001d2a9 f   MSVCRT:crtdll.obj
+ 0001:0001c51e       ___DllMainCRTStartup       1001d51e f   MSVCRT:crtdll.obj
+ 0001:0001c6e2       _has_osfxsr_set            1001d6e2 f   MSVCRT:cpu_disp.obj
+ 0001:0001cbb0       __unwindfunclet$??0SRenderState@SpeedTree@@QAE@XZ$0 1001dbb0 f   AllocatorStats.obj
+ 0001:0001cbc3       __ehhandler$??0SRenderState@SpeedTree@@QAE@XZ 1001dbc3 f   AllocatorStats.obj
+ 0001:0001cbe0       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$0 1001dbe0 f   AllocatorStats.obj
+ 0001:0001cbeb       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$1 1001dbeb f   AllocatorStats.obj
+ 0001:0001cbf6       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$2 1001dbf6 f   AllocatorStats.obj
+ 0001:0001cc01       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$3 1001dc01 f   AllocatorStats.obj
+ 0001:0001cc0c       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$4 1001dc0c f   AllocatorStats.obj
+ 0001:0001cc17       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$5 1001dc17 f   AllocatorStats.obj
+ 0001:0001cc22       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$6 1001dc22 f   AllocatorStats.obj
+ 0001:0001cc2d       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$7 1001dc2d f   AllocatorStats.obj
+ 0001:0001cc38       __unwindfunclet$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z$8 1001dc38 f   AllocatorStats.obj
+ 0001:0001cc43       __ehhandler$?VertexShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@W4EShadowConfig@12@@Z 1001dc43 f   AllocatorStats.obj
+ 0001:0001cc70       __unwindfunclet$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z$0 1001dc70 f   AllocatorStats.obj
+ 0001:0001cc7b       __ehhandler$?Get5xModeHashName@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@ABUSRenderState@1@@Z 1001dc7b f   AllocatorStats.obj
+ 0001:0001ccb0       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$0 1001dcb0 f   AllocatorStats.obj
+ 0001:0001ccbb       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$1 1001dcbb f   AllocatorStats.obj
+ 0001:0001ccc6       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$2 1001dcc6 f   AllocatorStats.obj
+ 0001:0001ccd1       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$3 1001dcd1 f   AllocatorStats.obj
+ 0001:0001ccdc       __unwindfunclet$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z$4 1001dcdc f   AllocatorStats.obj
+ 0001:0001cce7       __ehhandler$?Base36@SpeedTree@@YA?AV?$CBasicFixedString@$0BAA@@1@I@Z 1001dce7 f   AllocatorStats.obj
+ 0001:0001cd10       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$0 1001dd10 f   AllocatorStats.obj
+ 0001:0001cd1b       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$1 1001dd1b f   AllocatorStats.obj
+ 0001:0001cd26       __unwindfunclet$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z$2 1001dd26 f   AllocatorStats.obj
+ 0001:0001cd31       __ehhandler$?WindStateHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@ABVCWind@2@@Z 1001dd31 f   AllocatorStats.obj
+ 0001:0001cd60       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$0 1001dd60 f   AllocatorStats.obj
+ 0001:0001cd6b       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$1 1001dd6b f   AllocatorStats.obj
+ 0001:0001cd76       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$2 1001dd76 f   AllocatorStats.obj
+ 0001:0001cd81       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$3 1001dd81 f   AllocatorStats.obj
+ 0001:0001cd8c       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$4 1001dd8c f   AllocatorStats.obj
+ 0001:0001cd97       __unwindfunclet$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z$5 1001dd97 f   AllocatorStats.obj
+ 0001:0001cda2       __ehhandler$?PixelShaderHashName@SRenderState@SpeedTree@@QBE?AV?$CBasicFixedString@$0BAA@@2@W4EShadowConfig@12@@Z 1001dda2 f   AllocatorStats.obj
+ 0001:0001cdd0       __unwindfunclet$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ$0 1001ddd0 f   AllocatorStats.obj
+ 0001:0001cddb       __ehhandler$?PixelDeclHash@SRenderState@SpeedTree@@ABE?AV?$CBasicFixedString@$0BAA@@2@XZ 1001dddb f   AllocatorStats.obj
+ 0001:0001ce10       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$0 1001de10 f   AllocatorStats.obj
+ 0001:0001ce1b       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$1 1001de1b f   AllocatorStats.obj
+ 0001:0001ce34       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$2 1001de34 f   AllocatorStats.obj
+ 0001:0001ce42       __unwindfunclet$??0SGeometry@SpeedTree@@QAE@XZ$3 1001de42 f   AllocatorStats.obj
+ 0001:0001ce50       __ehhandler$??0SGeometry@SpeedTree@@QAE@XZ 1001de50 f   AllocatorStats.obj
+ 0001:0001ce70       __unwindfunclet$??1SGeometry@SpeedTree@@QAE@XZ$0 1001de70 f   AllocatorStats.obj
+ 0001:0001ce7b       __ehhandler$??1SGeometry@SpeedTree@@QAE@XZ 1001de7b f   AllocatorStats.obj
+ 0001:0001cea0       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$0 1001dea0 f   AllocatorStats.obj
+ 0001:0001cea8       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$1 1001dea8 f   AllocatorStats.obj
+ 0001:0001ceb0       __unwindfunclet$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z$2 1001deb0 f   AllocatorStats.obj
+ 0001:0001ceb8       __ehhandler$?GetDescription@SVertexDecl@SpeedTree@@QBEXAAV?$CBasicString@$00@2@@Z 1001deb8 f   AllocatorStats.obj
+ 0001:0001cee0       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z$0 1001dee0 f   AllocatorStats.obj
+ 0001:0001ceeb       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@ABV01@@Z 1001deeb f   AllocatorStats.obj
+ 0001:0001cf20       __unwindfunclet$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ$0 1001df20 f   AllocatorStats.obj
+ 0001:0001cf2b       __ehhandler$?Format@?$CBasicFixedString@$0BAA@@SpeedTree@@SA?AV12@PBDZZ 1001df2b f   AllocatorStats.obj
+ 0001:0001cf60       __unwindfunclet$??1?$CBasicString@$00@SpeedTree@@UAE@XZ$0 1001df60 f   AllocatorStats.obj
+ 0001:0001cf68       __ehhandler$??1?$CBasicString@$00@SpeedTree@@UAE@XZ 1001df68 f   AllocatorStats.obj
+ 0001:0001cf90       __unwindfunclet$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z$0 1001df90 f   AllocatorStats.obj
+ 0001:0001cf98       __ehhandler$??0?$CBasicString@$00@SpeedTree@@QAE@PBD@Z 1001df98 f   AllocatorStats.obj
+ 0001:0001cfc0       __unwindfunclet$??_G?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z$0 1001dfc0 f   Core.obj
+ 0001:0001cfcb       __ehhandler$??_G?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z 1001dfcb f   Core.obj
+ 0001:0001cff0       __unwindfunclet$??_E?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z$0 1001dff0 f   Core.obj
+ 0001:0001cffb       __ehhandler$??_E?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAEPAXI@Z 1001dffb f   Core.obj
+ 0001:0001d020       __unwindfunclet$??0CCore@SpeedTree@@QAE@XZ$0 1001e020 f   Core.obj
+ 0001:0001d02b       __unwindfunclet$??0CCore@SpeedTree@@QAE@XZ$1 1001e02b f   Core.obj
+ 0001:0001d039       __unwindfunclet$??0CCore@SpeedTree@@QAE@XZ$2 1001e039 f   Core.obj
+ 0001:0001d047       __ehhandler$??0CCore@SpeedTree@@QAE@XZ 1001e047 f   Core.obj
+ 0001:0001d070       __unwindfunclet$??1CCore@SpeedTree@@UAE@XZ$0 1001e070 f   Core.obj
+ 0001:0001d07b       __unwindfunclet$??1CCore@SpeedTree@@UAE@XZ$1 1001e07b f   Core.obj
+ 0001:0001d089       __unwindfunclet$??1CCore@SpeedTree@@UAE@XZ$2 1001e089 f   Core.obj
+ 0001:0001d097       __unwindfunclet$??1CCore@SpeedTree@@UAE@XZ$3 1001e097 f   Core.obj
+ 0001:0001d0a2       __ehhandler$??1CCore@SpeedTree@@UAE@XZ 1001e0a2 f   Core.obj
+ 0001:0001d0c0       __unwindfunclet$?LoadTree@CCore@SpeedTree@@QAE_NPBD_NM@Z$0 1001e0c0 f   Core.obj
+ 0001:0001d0c8       __ehhandler$?LoadTree@CCore@SpeedTree@@QAE_NPBD_NM@Z 1001e0c8 f   Core.obj
+ 0001:0001d0f0       __unwindfunclet$?LoadTree@CCore@SpeedTree@@QAE_NPBEI_N1M@Z$0 1001e0f0 f   Core.obj
+ 0001:0001d0f8       __unwindfunclet$?LoadTree@CCore@SpeedTree@@QAE_NPBEI_N1M@Z$1 1001e0f8 f   Core.obj
+ 0001:0001d103       __ehhandler$?LoadTree@CCore@SpeedTree@@QAE_NPBEI_N1M@Z 1001e103 f   Core.obj
+ 0001:0001d130       __unwindfunclet$?Lock@CSharedHeapBlock@SpeedTree@@QAEPAEIPBD@Z$0 1001e130 f   Core.obj
+ 0001:0001d13b       __ehhandler$?Lock@CSharedHeapBlock@SpeedTree@@QAEPAEIPBD@Z 1001e13b f   Core.obj
+ 0001:0001d160       __unwindfunclet$?TmpHeapBlockDeleteAll@CCore@SpeedTree@@SA_NI@Z$0 1001e160 f   Core.obj
+ 0001:0001d16b       __ehhandler$?TmpHeapBlockDeleteAll@CCore@SpeedTree@@SA_NI@Z 1001e16b f   Core.obj
+ 0001:0001d1a0       __unwindfunclet$??1?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAE@XZ$0 1001e1a0 f   Core.obj
+ 0001:0001d1ab       __ehhandler$??1?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@UAE@XZ 1001e1ab f   Core.obj
+ 0001:0001d1d0       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPAEI@Z$0 1001e1d0 f   Core.obj
+ 0001:0001d1ed       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@QAEXPAEI@Z 1001e1ed f   Core.obj
+ 0001:0001d210       __unwindfunclet$?Allocate@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAEPAXABV?$CBasicFixedString@$0BAA@@2@PAX@Z$0 1001e210 f   Core.obj
+ 0001:0001d221       __ehhandler$?Allocate@?$CMap@V?$CBasicFixedString@$0BAA@@SpeedTree@@USResourceEntry@@V?$CLess@V?$CBasicFixedString@$0BAA@@SpeedTree@@@2@$0A@@SpeedTree@@IAEPAXABV?$CBasicFixedString@$0BAA@@2@PAX@Z 1001e221 f   Core.obj
+ 0001:0001d240       __unwindfunclet$??__Fg_mResourceMap@@YAXXZ$0 1001e240 f   Core.obj
+ 0001:0001d24a       __ehhandler$??__Fg_mResourceMap@@YAXXZ 1001e24a f   Core.obj
+ 0001:0001d270       __unwindfunclet$?SetError@CErrorHandler@SpeedTree@@QAEXPBD@Z$0 1001e270 f   ErrorHandler.obj
+ 0001:0001d27b       __ehhandler$?SetError@CErrorHandler@SpeedTree@@QAEXPBD@Z 1001e27b f   ErrorHandler.obj
+ 0001:0001d2a0       __unwindfunclet$?Allocate@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@IAEPAV?$CBasicFixedString@$0EAA@@2@I@Z$0 1001e2a0 f   ErrorHandler.obj
+ 0001:0001d2ab       __ehhandler$?Allocate@?$CArray@V?$CBasicFixedString@$0EAA@@SpeedTree@@$0A@@SpeedTree@@IAEPAV?$CBasicFixedString@$0EAA@@2@I@Z 1001e2ab f   ErrorHandler.obj
+ 0001:0001d2d0       __unwindfunclet$??$st_new_array@V?$CBasicFixedString@$0EAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0EAA@@0@IPBDW4EAllocationType@0@@Z$0 1001e2d0 f   ErrorHandler.obj
+ 0001:0001d2ea       __ehhandler$??$st_new_array@V?$CBasicFixedString@$0EAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0EAA@@0@IPBDW4EAllocationType@0@@Z 1001e2ea f   ErrorHandler.obj
+ 0001:0001d310       __unwindfunclet$?LoadFile@CFileSystem@SpeedTree@@UAEPAEPBDW4ETermHint@12@@Z$0 1001e310 f   FileSystem.obj
+ 0001:0001d31b       __ehhandler$?LoadFile@CFileSystem@SpeedTree@@UAEPAEPBDW4ETermHint@12@@Z 1001e31b f   FileSystem.obj
+ 0001:0001d350       __unwindfunclet$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z$0 1001e350 f   FileSystem.obj
+ 0001:0001d35b       __unwindfunclet$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z$1 1001e35b f   FileSystem.obj
+ 0001:0001d366       __unwindfunclet$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z$2 1001e366 f   FileSystem.obj
+ 0001:0001d371       __unwindfunclet$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z$3 1001e371 f   FileSystem.obj
+ 0001:0001d37c       __unwindfunclet$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z$4 1001e37c f   FileSystem.obj
+ 0001:0001d387       __ehhandler$?CleanPlatformFilename@CFileSystem@SpeedTree@@SA?AV?$CBasicFixedString@$0BAA@@2@PBD@Z 1001e387 f   FileSystem.obj
+ 0001:0001d3b0       __unwindfunclet$??0?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@QAE@IPBD_N@Z$0 1001e3b0 f   FileSystem.obj
+ 0001:0001d3b8       __ehhandler$??0?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@QAE@IPBD_N@Z 1001e3b8 f   FileSystem.obj
+ 0001:0001d3e0       __unwindfunclet$??1?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@UAE@XZ$0 1001e3e0 f   FileSystem.obj
+ 0001:0001d3e8       __ehhandler$??1?$CStaticArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@UAE@XZ 1001e3e8 f   FileSystem.obj
+ 0001:0001d410       __unwindfunclet$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z$0 1001e410 f   FileSystem.obj
+ 0001:0001d41b       __ehhandler$??H?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV01@PBD@Z 1001e41b f   FileSystem.obj
+ 0001:0001d450       __unwindfunclet$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z$0 1001e450 f   FileSystem.obj
+ 0001:0001d45b       __ehhandler$?Extension@?$CBasicFixedString@$0BAA@@SpeedTree@@QBE?AV12@D@Z 1001e45b f   FileSystem.obj
+ 0001:0001d490       __unwindfunclet$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z$0 1001e490 f   FileSystem.obj
+ 0001:0001d4ad       __ehhandler$?SetExternalMemory@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@QAEXPAEI@Z 1001e4ad f   FileSystem.obj
+ 0001:0001d4d0       __unwindfunclet$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z$0 1001e4d0 f   FileSystem.obj
+ 0001:0001d4db       __ehhandler$?Allocate@?$CArray@V?$CBasicFixedString@$0BAA@@SpeedTree@@$00@SpeedTree@@IAEPAV?$CBasicFixedString@$0BAA@@2@I@Z 1001e4db f   FileSystem.obj
+ 0001:0001d500       __unwindfunclet$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z$0 1001e500 f   FileSystem.obj
+ 0001:0001d51a       __ehhandler$??$st_new_array@V?$CBasicFixedString@$0BAA@@SpeedTree@@@SpeedTree@@YAPAV?$CBasicFixedString@$0BAA@@0@IPBDW4EAllocationType@0@@Z 1001e51a f   FileSystem.obj
+ 0001:0001d540       __unwindfunclet$?ParseHeader@CParser@SpeedTree@@AAE_NXZ$0 1001e540 f   Parser.obj
+ 0001:0001d54b       __ehhandler$?ParseHeader@CParser@SpeedTree@@AAE_NXZ 1001e54b f   Parser.obj
+ 0001:0001d580       __unwindfunclet$?ParseString@CParser@SpeedTree@@AAE_NAAV?$CBasicFixedString@$0BAA@@2@H@Z$0 1001e580 f   Parser.obj
+ 0001:0001d58b       __ehhandler$?ParseString@CParser@SpeedTree@@AAE_NAAV?$CBasicFixedString@$0BAA@@2@H@Z 1001e58b f   Parser.obj
+ 0001:0001d5b0       __unwindfunclet$?RandomFloat@CWind@SpeedTree@@IBEMMM@Z$0 1001e5b0 f   Wind.obj
+ 0001:0001d5be       __ehhandler$?RandomFloat@CWind@SpeedTree@@IBEMMM@Z 1001e5be f   Wind.obj
+ 0001:0001d5e0       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001e5e0 f   AllocatorStats.obj
+ 0001:0001d600       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001e600 f   AllocatorStats.obj
+ 0001:0001d630       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001e630 f   AllocatorStats.obj
+ 0001:0001d650       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001e650 f   AllocatorStats.obj
+ 0001:0001d670       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001e670 f   AllocatorStats.obj
+ 0001:0001d690       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001e690 f   AllocatorStats.obj
+ 0001:0001d6b0       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001e6b0 f   AllocatorStats.obj
+ 0001:0001d6d0       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001e6d0 f   AllocatorStats.obj
+ 0001:0001d700       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001e700 f   AllocatorStats.obj
+ 0001:0001d720       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001e720 f   AllocatorStats.obj
+ 0001:0001d740       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001e740 f   AllocatorStats.obj
+ 0001:0001d8a0       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001e8a0 f   CoordSys.obj
+ 0001:0001d8c0       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001e8c0 f   CoordSys.obj
+ 0001:0001d8f0       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001e8f0 f   CoordSys.obj
+ 0001:0001d910       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001e910 f   CoordSys.obj
+ 0001:0001d930       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001e930 f   CoordSys.obj
+ 0001:0001d950       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001e950 f   CoordSys.obj
+ 0001:0001d970       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001e970 f   CoordSys.obj
+ 0001:0001d990       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001e990 f   CoordSys.obj
+ 0001:0001d9c0       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001e9c0 f   CoordSys.obj
+ 0001:0001d9e0       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001e9e0 f   CoordSys.obj
+ 0001:0001da00       ??__Eg_cDefaultCoordSys@@YAXXZ 1001ea00 f   CoordSys.obj
+ 0001:0001da30       ??__E?m_vOut@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B@@YAXXZ 1001ea30 f   CoordSys.obj
+ 0001:0001da50       ??__E?m_vRight@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B@@YAXXZ 1001ea50 f   CoordSys.obj
+ 0001:0001da70       ??__E?m_vUp@CDefaultCoordinateSystem@SpeedTree@@0VVec3@2@B@@YAXXZ 1001ea70 f   CoordSys.obj
+ 0001:0001da90       ??__Eg_cRHCS_Yup@@YAXXZ    1001ea90 f   CoordSys.obj
+ 0001:0001dac0       ??__Eg_cLHCS_Yup@@YAXXZ    1001eac0 f   CoordSys.obj
+ 0001:0001daf0       ??__Eg_cLHCS_Zup@@YAXXZ    1001eaf0 f   CoordSys.obj
+ 0001:0001db20       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001eb20 f   Core.obj
+ 0001:0001db40       ??__Eg_cFileSystem@SpeedTree@@YAXXZ 1001eb40 f   Core.obj
+ 0001:0001db60       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001eb60 f   Core.obj
+ 0001:0001db90       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001eb90 f   Core.obj
+ 0001:0001dbb0       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001ebb0 f   Core.obj
+ 0001:0001dbd0       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001ebd0 f   Core.obj
+ 0001:0001dbf0       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001ebf0 f   Core.obj
+ 0001:0001dc10       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001ec10 f   Core.obj
+ 0001:0001dc30       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001ec30 f   Core.obj
+ 0001:0001dc60       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001ec60 f   Core.obj
+ 0001:0001dc80       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001ec80 f   Core.obj
+ 0001:0001dca0       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001eca0 f   Core.obj
+ 0001:0001de00       ??__Eg_acSharedHeapBlocks@@YAXXZ 1001ee00 f   Core.obj
+ 0001:0001de30       ??__Eg_cErrorHandler@@YAXXZ 1001ee30 f   Core.obj
+ 0001:0001de50       ??__Eg_strEvalKey@@YAXXZ   1001ee50 f   Core.obj
+ 0001:0001de80       ??__Eg_sResourceSummary@@YAXXZ 1001ee80 f   Core.obj
+ 0001:0001dea0       ??__Eg_cTmpMemoryMutex@@YAXXZ 1001eea0 f   Core.obj
+ 0001:0001dec0       ??__Eg_mResourceMap@@YAXXZ 1001eec0 f   Core.obj
+ 0001:0001def0       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001eef0 f   ErrorHandler.obj
+ 0001:0001df10       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001ef10 f   ErrorHandler.obj
+ 0001:0001df40       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001ef40 f   ErrorHandler.obj
+ 0001:0001df60       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001ef60 f   ErrorHandler.obj
+ 0001:0001df80       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001ef80 f   ErrorHandler.obj
+ 0001:0001dfa0       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001efa0 f   ErrorHandler.obj
+ 0001:0001dfc0       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001efc0 f   ErrorHandler.obj
+ 0001:0001dfe0       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001efe0 f   ErrorHandler.obj
+ 0001:0001e010       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001f010 f   ErrorHandler.obj
+ 0001:0001e030       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001f030 f   ErrorHandler.obj
+ 0001:0001e050       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001f050 f   ErrorHandler.obj
+ 0001:0001e1b0       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001f1b0 f   FileSystem.obj
+ 0001:0001e1d0       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001f1d0 f   FileSystem.obj
+ 0001:0001e200       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001f200 f   FileSystem.obj
+ 0001:0001e220       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001f220 f   FileSystem.obj
+ 0001:0001e240       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001f240 f   FileSystem.obj
+ 0001:0001e260       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001f260 f   FileSystem.obj
+ 0001:0001e280       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001f280 f   FileSystem.obj
+ 0001:0001e2a0       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001f2a0 f   FileSystem.obj
+ 0001:0001e2d0       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001f2d0 f   FileSystem.obj
+ 0001:0001e2f0       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001f2f0 f   FileSystem.obj
+ 0001:0001e310       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001f310 f   FileSystem.obj
+ 0001:0001e470       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001f470 f   Memory.obj
+ 0001:0001e490       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001f490 f   Parser.obj
+ 0001:0001e4b0       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001f4b0 f   Parser.obj
+ 0001:0001e4e0       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001f4e0 f   Parser.obj
+ 0001:0001e500       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001f500 f   Parser.obj
+ 0001:0001e520       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001f520 f   Parser.obj
+ 0001:0001e540       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001f540 f   Parser.obj
+ 0001:0001e560       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001f560 f   Parser.obj
+ 0001:0001e580       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001f580 f   Parser.obj
+ 0001:0001e5b0       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001f5b0 f   Parser.obj
+ 0001:0001e5d0       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001f5d0 f   Parser.obj
+ 0001:0001e5f0       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001f5f0 f   Parser.obj
+ 0001:0001e750       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001f750 f   ScopeTrace.obj
+ 0001:0001e770       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001f770 f   Wind.obj
+ 0001:0001e790       ??__Ec_vRHCS_Yup_Out@SpeedTree@@YAXXZ 1001f790 f   Wind.obj
+ 0001:0001e7c0       ??__Ec_vRHCS_Yup_Right@SpeedTree@@YAXXZ 1001f7c0 f   Wind.obj
+ 0001:0001e7e0       ??__Ec_vRHCS_Yup_Up@SpeedTree@@YAXXZ 1001f7e0 f   Wind.obj
+ 0001:0001e800       ??__Ec_vLHCS_Yup_Out@SpeedTree@@YAXXZ 1001f800 f   Wind.obj
+ 0001:0001e820       ??__Ec_vLHCS_Yup_Right@SpeedTree@@YAXXZ 1001f820 f   Wind.obj
+ 0001:0001e840       ??__Ec_vLHCS_Yup_Up@SpeedTree@@YAXXZ 1001f840 f   Wind.obj
+ 0001:0001e860       ??__Ec_vLHCS_Zup_Out@SpeedTree@@YAXXZ 1001f860 f   Wind.obj
+ 0001:0001e890       ??__Ec_vLHCS_Zup_Right@SpeedTree@@YAXXZ 1001f890 f   Wind.obj
+ 0001:0001e8b0       ??__Ec_vLHCS_Zup_Up@SpeedTree@@YAXXZ 1001f8b0 f   Wind.obj
+ 0001:0001e8d0       ??__Ec_asInstanceStreamDesc@SpeedTree@@YAXXZ 1001f8d0 f   Wind.obj
+ 0001:0001ea30       ??__Ec_chFolderSeparator@SpeedTree@@YAXXZ 1001fa30 f   Fixed.obj
+ 0001:0001ea50       ??__E?m_fOneOverStep@CFixedNumber@SpeedTree@@0MA@@YAXXZ 1001fa50 f   Fixed.obj
+ 0001:0001ea80       ??__E?m_fStep@CFixedNumber@SpeedTree@@0MA@@YAXXZ 1001fa80 f   Fixed.obj
+ 0001:0001eaa0       ??__Fg_cDefaultCoordSys@@YAXXZ 1001faa0 f   CoordSys.obj
+ 0001:0001eac0       ??__Fg_cRHCS_Yup@@YAXXZ    1001fac0 f   CoordSys.obj
+ 0001:0001eae0       ??__Fg_cLHCS_Yup@@YAXXZ    1001fae0 f   CoordSys.obj
+ 0001:0001eb00       ??__Fg_cLHCS_Zup@@YAXXZ    1001fb00 f   CoordSys.obj
+ 0001:0001eb20       ??__Fg_cFileSystem@SpeedTree@@YAXXZ 1001fb20 f   Core.obj
+ 0001:0001eb30       ??__Fg_acSharedHeapBlocks@@YAXXZ 1001fb30 f   Core.obj
+ 0001:0001eb50       ??__Fg_cErrorHandler@@YAXXZ 1001fb50 f   Core.obj
+ 0001:0001eb70       ??__Fg_strEvalKey@@YAXXZ   1001fb70 f   Core.obj
+ 0001:0001eb80       ??__Fg_cTmpMemoryMutex@@YAXXZ 1001fb80 f   Core.obj
+ 0001:0001eb90       ??__Fg_mResourceMap@@YAXXZ 1001fb90 f   Core.obj

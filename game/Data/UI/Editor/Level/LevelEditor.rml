@@ -1,0 +1,177 @@
+<rml>
+<head>
+  <title>Level Editor</title>
+  <link type="text/rcss" href="LevelEditor.rcss"/>
+</head>
+<body>
+  <div id="level-editor">
+    <div id="menubar">
+      <button id="file-menu" class="menu-item">FILE</button>
+      <button id="edit-menu" class="menu-item">EDIT</button>
+      <button id="window-menu" class="menu-item">WINDOW</button>
+      <button id="tools-menu" class="menu-item">TOOLS</button>
+      <button id="build-menu" class="menu-item">BUILD</button>
+      <button id="help-menu" class="menu-item">HELP</button>
+      <button id="back-to-editor-menu" class="hub-action">EDITOR HUB</button>
+    </div>
+
+    <div id="toolbar">
+      <div class="tool-group">
+        <button id="new-level" class="tool-button">
+          <span class="tool-glyph">+</span>
+          <span class="tool-label">NEW</span>
+        </button>
+        <button id="open-level" class="tool-button">
+          <span class="tool-glyph">O</span>
+          <span class="tool-label">OPEN</span>
+        </button>
+        <button id="save-level" class="tool-button accent-tool">
+          <span class="tool-glyph">S</span>
+          <span class="tool-label">SAVE</span>
+        </button>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <div class="tool-group compact-group">
+        <button id="undo" class="icon-button" title="Undo">U</button>
+        <button id="redo" class="icon-button" title="Redo">R</button>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <div class="tool-group compact-group">
+        <button id="select-tool" class="icon-button active-tool" title="Select">Q</button>
+        <button id="move-tool" class="icon-button" title="Move">W</button>
+        <button id="rotate-tool" class="icon-button" title="Rotate">E</button>
+        <button id="scale-tool" class="icon-button" title="Scale">R</button>
+      </div>
+
+      <button id="coordinate-space" class="combo-button">WORLD <span>v</span></button>
+      <button id="snap-settings" class="combo-button">SNAP 10 <span>v</span></button>
+
+      <div id="play-tools">
+        <button id="play-level" class="play-button">
+          <span class="play-symbol">&gt;</span>
+          PLAY
+        </button>
+        <button id="play-options" class="play-options">v</button>
+      </div>
+    </div>
+
+    <div id="workspace">
+      <div id="left-sidebar">
+        <div class="panel-header">
+          <span>PLACE ACTORS</span>
+          <button class="panel-options">...</button>
+        </div>
+        <input id="actor-search" type="text" value="Search actors"/>
+        <div id="actor-categories">
+          <button class="category active-category">BASIC</button>
+          <button class="category">LIGHTS</button>
+          <button class="category">VOLUMES</button>
+        </div>
+        <div id="actor-grid">
+          <button class="actor-card"><span class="actor-icon cube-icon"></span><span>CUBE</span></button>
+          <button class="actor-card"><span class="actor-icon sphere-icon"></span><span>SPHERE</span></button>
+          <button class="actor-card"><span class="actor-icon plane-icon"></span><span>PLANE</span></button>
+          <button class="actor-card"><span class="actor-icon light-icon">L</span><span>LIGHT</span></button>
+          <button class="actor-card"><span class="actor-icon camera-icon">C</span><span>CAMERA</span></button>
+          <button class="actor-card"><span class="actor-icon player-icon">P</span><span>PLAYER</span></button>
+        </div>
+      </div>
+
+      <div id="center-area">
+        <div id="viewport-toolbar">
+          <button class="viewport-menu">PERSPECTIVE <span>v</span></button>
+          <button class="viewport-menu">LIT <span>v</span></button>
+          <button class="viewport-menu">SHOW <span>v</span></button>
+          <div class="viewport-spacer"></div>
+          <button class="viewport-icon">[+]</button>
+          <button class="viewport-icon">[]</button>
+        </div>
+        <div id="viewport">
+          <div id="viewport-empty-state">
+            <div class="viewport-logo">LTS</div>
+            <div class="viewport-message">SCENE VIEWPORT</div>
+            <div class="viewport-hint">Open or create a level to begin editing</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="right-sidebar">
+        <div id="hierarchy" class="editor-panel">
+          <div class="panel-header">
+            <span>SCENE OUTLINER</span>
+            <button class="add-entity">+ ADD</button>
+          </div>
+          <input id="hierarchy-search" type="text" value="Search scene"/>
+          <div id="scene-tree">
+            <div class="tree-row root-row"><span class="disclosure">v</span><span class="entity-type">W</span><span>Untitled</span></div>
+            <div class="tree-row child-row selected-row"><span class="visibility">o</span><span class="entity-type">C</span><span>Editor Camera</span></div>
+            <div class="tree-row child-row"><span class="visibility">o</span><span class="entity-type">L</span><span>Directional Light</span></div>
+            <div class="tree-row child-row"><span class="visibility">o</span><span class="entity-type">S</span><span>Sky Light</span></div>
+            <div class="tree-row child-row"><span class="visibility">o</span><span class="entity-type">G</span><span>World Grid</span></div>
+          </div>
+        </div>
+
+        <div id="inspector" class="editor-panel">
+          <div class="panel-header">
+            <span>DETAILS</span>
+            <button class="panel-options">...</button>
+          </div>
+          <input id="details-search" type="text" value="Search properties"/>
+          <div class="selected-object">
+            <div class="object-badge">C</div>
+            <div class="object-name"><strong>EDITOR CAMERA</strong><span>Scene Entity</span></div>
+          </div>
+          <div class="property-section">
+            <div class="section-title"><span>v</span> TRANSFORM</div>
+            <div class="property-row"><span>Location</span><div class="vector-fields"><i class="x-field">X 0</i><i class="y-field">Y 2</i><i class="z-field">Z -5</i></div></div>
+            <div class="property-row"><span>Rotation</span><div class="vector-fields"><i class="x-field">X 0</i><i class="y-field">Y 0</i><i class="z-field">Z 0</i></div></div>
+            <div class="property-row"><span>Scale</span><div class="vector-fields"><i class="x-field">X 1</i><i class="y-field">Y 1</i><i class="z-field">Z 1</i></div></div>
+          </div>
+          <div class="property-section">
+            <div class="section-title"><span>&gt;</span> CAMERA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="assets">
+      <div id="content-header">
+        <div class="content-title">CONTENT BROWSER</div>
+        <button id="add-asset" class="content-action">+ ADD</button>
+        <button id="import-asset" class="content-action">IMPORT</button>
+        <div id="asset-breadcrumb">CONTENT / PROJECT / ASSETS</div>
+        <input id="asset-search" type="text" value="Search assets"/>
+      </div>
+      <div id="content-body">
+        <div id="folder-tree">
+          <div class="folder active-folder">v CONTENT</div>
+          <div class="folder child-folder">MESHES</div>
+          <div class="folder child-folder">MATERIALS</div>
+          <div class="folder child-folder">TEXTURES</div>
+          <div class="folder child-folder">LEVELS</div>
+        </div>
+        <div id="asset-list">
+          <button class="asset-card"><div class="asset-preview mesh-preview">M</div><span>Meshes</span></button>
+          <button class="asset-card"><div class="asset-preview material-preview">MAT</div><span>Materials</span></button>
+          <button class="asset-card"><div class="asset-preview texture-preview">T</div><span>Textures</span></button>
+          <button class="asset-card"><div class="asset-preview level-preview">LVL</div><span>Levels</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="status">
+      <span class="status-ok"></span>
+      <span>READY</span>
+      <span class="status-divider"></span>
+      <span>0 ACTORS</span>
+      <span class="status-divider"></span>
+      <span>DX11</span>
+      <div class="status-right">LAST TO SURVIVE EDITOR</div>
+    </div>
+  </div>
+</body>
+</rml>

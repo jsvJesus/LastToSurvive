@@ -1,0 +1,80 @@
+name: Graphics DX11 Build
+
+on:
+  push:
+    branches:
+      - refactor/engine-modernization
+    paths:
+      - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/GraphicsDX11/**"
+      - "src/Engine/GraphicsDX11Tests/**"
+      - ".github/workflows/graphics-dx11-build.yml"
+  pull_request:
+    paths:
+      - "src/Engine/Graphics/**"
+      - "src/Engine/GraphicsDX9/**"
+      - "src/Engine/GraphicsDX11/**"
+      - "src/Engine/GraphicsDX11Tests/**"
+      - ".github/workflows/graphics-dx11-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Graphics Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Graphics\LTS.Graphics.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\Graphics\LTS.Graphics.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics DX9 Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\GraphicsDX9\LTS.Graphics.DX9.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics DX9 Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\GraphicsDX9\LTS.Graphics.DX9.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics DX11 Release x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics DX11 Final x64
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\GraphicsDX11\LTS.Graphics.DX11.vcxproj /m /t:Build /p:Configuration=Final /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Build Graphics DX11 Tests
+        shell: pwsh
+        run: |
+          $solutionDir = (Join-Path $env:GITHUB_WORKSPACE 'src\EclipseStudio') + '\'
+          msbuild src\Engine\GraphicsDX11Tests\LTS.Graphics.DX11.Tests.vcxproj /m /t:Build /p:Configuration=Release /p:Platform=x64 "/p:SolutionDir=$solutionDir"
+
+      - name: Run Graphics DX11 Tests
+        shell: pwsh
+        run: |
+          & "$env:GITHUB_WORKSPACE\build\x64\Release\Bin\LTS.Graphics.DX11.Tests.exe"

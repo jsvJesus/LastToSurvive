@@ -669,6 +669,14 @@ PostFXChief::DoDrawFX( PostFX* PFX, r3dScreenBuffer* src, r3dScreenBuffer* dest,
 
 	r3dRenderer->SetViewport( (float) viewportRect.left, (float) viewportRect.top, (float) destWidth, (float) destHeight ) ;
 
+	// DX11 / external backend path.
+	// Important: this must happen BEFORE PFX->Prepare(),
+	// because Prepare() is used by the old DX9 fullscreen draw path.
+	if( PFX->TryRenderExternal( dest, src ) )
+	{
+		return;
+	}
+
 	const PostFXData& data = PFX->Prepare( dest, src );
 
 	PatchDefaultTextures( dest );
